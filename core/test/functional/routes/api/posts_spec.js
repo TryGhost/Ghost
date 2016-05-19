@@ -94,7 +94,7 @@ describe('Post API', function () {
                     var jsonResponse = res.body;
                     should.exist(jsonResponse.posts);
                     testUtils.API.checkResponse(jsonResponse, 'posts');
-                    jsonResponse.posts.should.have.length(8);
+                    jsonResponse.posts.should.have.length(9);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                     testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                     done();
@@ -147,6 +147,28 @@ describe('Post API', function () {
 
         it('can retrieve just draft posts', function (done) {
             request.get(testUtils.API.getApiQuery('posts/?status=draft'))
+                .set('Authorization', 'Bearer ' + accesstoken)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    var jsonResponse = res.body;
+                    should.exist(jsonResponse.posts);
+                    testUtils.API.checkResponse(jsonResponse, 'posts');
+                    jsonResponse.posts.should.have.length(1);
+                    testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                    testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                    done();
+                });
+        });
+
+        it('can retrieve just scheduled posts', function (done) {
+            request.get(testUtils.API.getApiQuery('posts/?status=scheduled'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
