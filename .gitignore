@@ -59,6 +59,7 @@ CHANGELOG.md
 # Test generated files
 /core/test/functional/*.png
 /core/test/coverage
+/core/test/mocha-tnv.json
 
 /config.js
 

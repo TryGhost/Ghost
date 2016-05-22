@@ -51,7 +51,9 @@ function initDbHashAndFirstRun() {
 function init(options) {
     options = options || {};
 
-    var ghostServer = null;
+    var ghostServer = null,
+        blogApp = express(),
+        parentApp = express();
 
     // ### Initialisation
     // The server and its dependencies require a populated config
@@ -114,11 +116,8 @@ function init(options) {
             slack.listen()
         );
     }).then(function () {
-        // Get reference to an express app instance.
-        var parentApp = express();
-
         // ## Middleware and Routing
-        middleware(parentApp);
+        middleware(blogApp);
 
         // Log all theme errors and warnings
         validateThemes(config.paths.themePath)
@@ -133,6 +132,7 @@ function init(options) {
                 });
             });
 
+        parentApp.use(config.paths.subdir, blogApp);
         return new GhostServer(parentApp);
     }).then(function (_ghostServer) {
         ghostServer = _ghostServer;

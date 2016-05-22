@@ -1,31 +1,29 @@
-var Promise       = require('bluebird'),
-    _             = require('lodash'),
-    fs            = require('fs-extra'),
-    path          = require('path'),
-    Module        = require('module'),
-    uuid          = require('node-uuid'),
-    db            = require('../../server/data/db'),
-    migration     = require('../../server/data/migration/'),
-    fixtureUtils  = require('../../server/data/migration/fixtures/utils'),
-    models        = require('../../server/models'),
-    SettingsAPI   = require('../../server/api/settings'),
-    permissions   = require('../../server/permissions'),
-    sequence      = require('../../server/utils/sequence'),
+/*jshint unused:false*/
+var overrides = require('../../server/overrides'),
+    config = require('../../server/config'),
+    Promise = require('bluebird'),
+    _ = require('lodash'),
+    fs = require('fs-extra'),
+    path = require('path'),
+    uuid = require('node-uuid'),
+    chai = require('chai'),
+    db = require('../../server/data/db'),
+    migration = require('../../server/data/migration/'),
+    fixtureUtils = require('../../server/data/migration/fixtures/utils'),
+    models = require('../../server/models'),
+    SettingsAPI = require('../../server/api/settings'),
+    permissions = require('../../server/permissions'),
+    sequence = require('../../server/utils/sequence'),
     DataGenerator = require('./fixtures/data-generator'),
-    filterData    = require('./fixtures/filter-param'),
-    API           = require('./api'),
-    fork          = require('./fork'),
-    mocks         = require('./mocks'),
-    config        = require('../../server/config'),
+    filterData = require('./fixtures/filter-param'),
+    API = require('./api'),
+    mocks = require('./mocks'),
 
     fixtures,
     getFixtureOps,
     toDoList,
-    originalRequireFn,
     postsInserted = 0,
 
-    mockNotExistingModule,
-    unmockNotExistingModule,
     teardown,
     setup,
     doAuth,
@@ -36,10 +34,14 @@ var Promise       = require('bluebird'),
     initData,
     clearData;
 
+global.should = chai.should();
+global.expect = chai.expect;
+global.assert = chai.assert;
+
 /** TEST FIXTURES **/
 fixtures = {
     insertPosts: function insertPosts(posts) {
-        return Promise.resolve(db.knex('posts').insert(posts));
+        return Promise.resolve(db.knex('posts').insert(posts || DataGenerator.forKnex.posts));
     },
 
     insertPostsAndTags: function insertPostsAndTags() {
@@ -289,7 +291,7 @@ fixtures = {
 
     insertOne: function insertOne(obj, fn, index) {
         return db.knex(obj)
-           .insert(DataGenerator.forKnex[fn](DataGenerator.Content[obj][index || 0]));
+            .insert(DataGenerator.forKnex[fn](DataGenerator.Content[obj][index || 0]));
     },
 
     insertApps: function insertApps() {
@@ -389,7 +391,9 @@ clearData = function clearData() {
 };
 
 toDoList = {
-    app: function insertApp() { return fixtures.insertOne('apps', 'createApp'); },
+    app: function insertApp() {
+        return fixtures.insertOne('apps', 'createApp');
+    },
     app_field: function insertAppField() {
         // TODO: use the actual app ID to create the field
         return fixtures.insertOne('apps', 'createApp').then(function () {
@@ -402,30 +406,70 @@ toDoList = {
             return fixtures.insertOne('app_settings', 'createAppSetting');
         });
     },
-    permission: function insertPermission() { return fixtures.insertOne('permissions', 'createPermission'); },
-    role: function insertRole() { return fixtures.insertOne('roles', 'createRole'); },
-    roles: function insertRoles() { return fixtures.insertRoles(); },
-    tag: function insertTag() { return fixtures.insertOne('tags', 'createTag'); },
-    subscriber: function insertSubscriber() { return fixtures.insertOne('subscribers', 'createSubscriber'); },
-    posts: function insertPostsAndTags() { return fixtures.insertPostsAndTags(); },
-    'posts:mu': function insertMultiAuthorPosts() { return fixtures.insertMultiAuthorPosts(); },
-    tags: function insertMoreTags() { return fixtures.insertMoreTags(); },
-    apps: function insertApps() { return fixtures.insertApps(); },
+    permission: function insertPermission() {
+        return fixtures.insertOne('permissions', 'createPermission');
+    },
+    role: function insertRole() {
+        return fixtures.insertOne('roles', 'createRole');
+    },
+    roles: function insertRoles() {
+        return fixtures.insertRoles();
+    },
+    tag: function insertTag() {
+        return fixtures.insertOne('tags', 'createTag');
+    },
+    subscriber: function insertSubscriber() {
+        return fixtures.insertOne('subscribers', 'createSubscriber');
+    },
+    posts: function insertPostsAndTags() {
+        return fixtures.insertPostsAndTags();
+    },
+    'posts:mu': function insertMultiAuthorPosts() {
+        return fixtures.insertMultiAuthorPosts();
+    },
+    tags: function insertMoreTags() {
+        return fixtures.insertMoreTags();
+    },
+    apps: function insertApps() {
+        return fixtures.insertApps();
+    },
     settings: function populateSettings() {
-        return models.Settings.populateDefaults().then(function () { return SettingsAPI.updateSettingsCache(); });
+        return models.Settings.populateDefaults().then(function () {
+            return SettingsAPI.updateSettingsCache();
+        });
     },
-    'users:roles': function createUsersWithRoles() { return fixtures.createUsersWithRoles(); },
-    users: function createExtraUsers() { return fixtures.createExtraUsers(); },
-    'user:token': function createTokensForUser() { return fixtures.createTokensForUser(); },
-    owner: function insertOwnerUser() { return fixtures.insertOwnerUser(); },
-    'owner:pre': function initOwnerUser() { return fixtures.initOwnerUser(); },
-    'owner:post': function overrideOwnerUser() { return fixtures.overrideOwnerUser(); },
-    'perms:init': function initPermissions() { return permissions.init(); },
+    'users:roles': function createUsersWithRoles() {
+        return fixtures.createUsersWithRoles();
+    },
+    users: function createExtraUsers() {
+        return fixtures.createExtraUsers();
+    },
+    'user:token': function createTokensForUser() {
+        return fixtures.createTokensForUser();
+    },
+    owner: function insertOwnerUser() {
+        return fixtures.insertOwnerUser();
+    },
+    'owner:pre': function initOwnerUser() {
+        return fixtures.initOwnerUser();
+    },
+    'owner:post': function overrideOwnerUser() {
+        return fixtures.overrideOwnerUser();
+    },
+    'perms:init': function initPermissions() {
+        return permissions.init();
+    },
     perms: function permissionsFor(obj) {
-        return function permissionsForObj() { return fixtures.permissionsFor(obj); };
+        return function permissionsForObj() {
+            return fixtures.permissionsFor(obj);
+        };
     },
-    clients: function insertClients() { return fixtures.insertClients(); },
-    filter: function createFilterParamFixtures() { return filterData(DataGenerator); }
+    clients: function insertClients() {
+        return fixtures.insertClients();
+    },
+    filter: function createFilterParamFixtures() {
+        return filterData(DataGenerator);
+    }
 };
 
 /**
@@ -434,10 +478,10 @@ toDoList = {
  * Takes the arguments from a setup function and turns them into an array of promises to fullfil
  *
  * This is effectively a list of instructions with regard to which fixtures should be setup for this test.
-  *  * `default` - a special option which will cause the full suite of normal fixtures to be initialised
-  *  * `perms:init` - initialise the permissions object after having added permissions
-  *  * `perms:obj` - initialise permissions for a particular object type
-  *  * `users:roles` - create a full suite of users, one per role
+ *  * `default` - a special option which will cause the full suite of normal fixtures to be initialised
+ *  * `perms:init` - initialise the permissions object after having added permissions
+ *  * `perms:obj` - initialise permissions for a particular object type
+ *  * `users:roles` - create a full suite of users, one per role
  * @param {Object} toDos
  */
 getFixtureOps = function getFixtureOps(toDos) {
@@ -549,8 +593,8 @@ login = function login(request) {
                 client_id: 'ghost-admin',
                 client_secret: 'not_available'
             }).then(function then(res) {
-                resolve(res.body.access_token);
-            }, reject);
+            resolve(res.body.access_token);
+        }, reject);
     });
 };
 
@@ -561,18 +605,20 @@ togglePermalinks = function togglePermalinks(request, toggle) {
         doAuth(request).then(function (token) {
             request.put('/ghost/api/v0.1/settings/')
                 .set('Authorization', 'Bearer ' + token)
-                .send({settings: [
-                    {
-                        uuid: '75e994ae-490e-45e6-9207-0eab409c1c04',
-                        key: 'permalinks',
-                        value: permalinkString,
-                        type: 'blog',
-                        created_at: '2014-10-16T17:39:16.005Z',
-                        created_by: 1,
-                        updated_at: '2014-10-20T19:44:18.077Z',
-                        updated_by: 1
-                    }
-                ]})
+                .send({
+                    settings: [
+                        {
+                            uuid: '75e994ae-490e-45e6-9207-0eab409c1c04',
+                            key: 'permalinks',
+                            value: permalinkString,
+                            type: 'blog',
+                            created_at: '2014-10-16T17:39:16.005Z',
+                            created_by: 1,
+                            updated_at: '2014-10-20T19:44:18.077Z',
+                            updated_by: 1
+                        }
+                    ]
+                })
                 .end(function (err, res) {
                     if (err) {
                         return reject(err);
@@ -595,23 +641,9 @@ teardown = function teardown(done) {
 };
 
 /**
- * offer helper functions for mocking
- * we start with a small function set to mock non existent modules
+ * auto mock
  */
-originalRequireFn = Module.prototype.require;
-mockNotExistingModule = function mockNotExistingModule(modulePath, module) {
-    Module.prototype.require = function (path) {
-        if (path.match(modulePath)) {
-            return module;
-        }
-
-        return originalRequireFn.apply(this, arguments);
-    };
-};
-
-unmockNotExistingModule = function unmockNotExistingModule() {
-    Module.prototype.require = originalRequireFn;
-};
+mocks.data.db.connection.mock();
 
 module.exports = {
     teardown: teardown,
@@ -620,30 +652,24 @@ module.exports = {
     login: login,
     togglePermalinks: togglePermalinks,
 
-    mockNotExistingModule: mockNotExistingModule,
-    unmockNotExistingModule: unmockNotExistingModule,
-
     initFixtures: initFixtures,
     initData: initData,
     clearData: clearData,
 
     mocks: mocks,
-
     fixtures: fixtures,
 
     DataGenerator: DataGenerator,
     API: API,
 
-    fork: fork,
-
     // Helpers to make it easier to write tests which are easy to read
     context: {
-        internal:   {context: {internal: true}},
-        external:   {context: {external: true}},
-        owner:      {context: {user: 1}},
-        admin:      {context: {user: 2}},
-        editor:     {context: {user: 3}},
-        author:     {context: {user: 4}}
+        internal: {context: {internal: true}},
+        external: {context: {external: true}},
+        owner: {context: {user: 1}},
+        admin: {context: {user: 2}},
+        editor: {context: {user: 3}},
+        author: {context: {user: 4}}
     },
     users: {
         ids: {
@@ -667,9 +693,9 @@ module.exports = {
 
     cacheRules: {
         public: 'public, max-age=0',
-        hour:  'public, max-age=' + 3600,
+        hour: 'public, max-age=' + 3600,
         day: 'public, max-age=' + 86400,
-        year:  'public, max-age=' + 31536000,
+        year: 'public, max-age=' + 31536000,
         private: 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
     }
 };

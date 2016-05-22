@@ -76,6 +76,8 @@
     "pg": "4.1.1"
   },
   "devDependencies": {
+    "mocha-tnv": "1.3.7",
+    "chai": "3.5.0",
     "csscomb": "3.1.8",
     "grunt": "1.0.1",
     "grunt-bg-shell": "2.3.3",

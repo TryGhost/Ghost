@@ -1,4 +1,5 @@
 var getRssUrl = require('../../../server/data/meta/rss_url'),
+    config = require('../../../server/config'),
     should = require('should');
 
 describe('getRssUrl', function () {
@@ -13,13 +14,13 @@ describe('getRssUrl', function () {
         var rssUrl = getRssUrl({
             secure: false
         }, true);
-        should.equal(rssUrl, 'http://127.0.0.1:2369/rss/');
+        should.equal(rssUrl, config.url + '/rss/');
     });
 
     it('should return absolute rss url with https if secure', function () {
         var rssUrl = getRssUrl({
             secure: true
         }, true);
-        should.equal(rssUrl, 'https://127.0.0.1:2369/rss/');
+        should.equal(rssUrl, 'https://' + config.server.host + ':' + config.server.port + '/rss/');
     });
 });
