@@ -276,7 +276,7 @@ User = ghostBookshelf.Model.extend({
 
             query = this.forge(data, {include: options.include});
 
-            query.query('join', 'roles_users', 'users.id', '=', 'roles_users.id');
+            query.query('join', 'roles_users', 'users.id', '=', 'roles_users.user_id');
             query.query('join', 'roles', 'roles_users.role_id', '=', 'roles.id');
             query.query('where', 'roles.name', '=', lookupRole);
         } else {
