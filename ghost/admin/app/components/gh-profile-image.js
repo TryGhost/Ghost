@@ -1,6 +1,6 @@
 import Ember from 'ember';
 import AjaxService from 'ember-ajax/services/ajax';
-import {NotFoundError} from 'ghost-admin/services/ajax';
+import {isNotFoundError} from 'ember-ajax/errors';
 
 const {
     Component,
@@ -76,7 +76,7 @@ export default Component.extend({
                 .catch((error) => {
                     let defaultImageUrl = `url("${this.get('ghostPaths.subdir')}/ghost/img/user-image.png")`;
 
-                    if (error instanceof NotFoundError) {
+                    if (isNotFoundError(error)) {
                         this.$('.placeholder-img')[0].style.backgroundImage = Ember.String.htmlSafe(defaultImageUrl);
                     } else {
                         this.$('.placeholder-img')[0].style.backgroundImage = 'url()';

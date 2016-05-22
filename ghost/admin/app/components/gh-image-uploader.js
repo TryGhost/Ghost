@@ -1,6 +1,9 @@
 import Ember from 'ember';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
-import {RequestEntityTooLargeError, UnsupportedMediaTypeError} from 'ghost-admin/services/ajax';
+import {
+    isRequestEntityTooLargeError,
+    isUnsupportedMediaTypeError
+} from 'ghost-admin/services/ajax';
 
 const {
     Component,
@@ -143,9 +146,9 @@ export default Component.extend({
     uploadFailed(error) {
         let message;
 
-        if (error instanceof UnsupportedMediaTypeError) {
+        if (isUnsupportedMediaTypeError(error)) {
             message = 'The image type you uploaded is not supported. Please use .PNG, .JPG, .GIF, .SVG.';
-        } else if (error instanceof RequestEntityTooLargeError) {
+        } else if (isRequestEntityTooLargeError(error)) {
             message = 'The image you uploaded was larger than the maximum file size your server allows.';
         } else if (error.errors && !isBlank(error.errors[0].message)) {
             message = error.errors[0].message;

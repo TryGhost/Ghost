@@ -4,8 +4,14 @@ import {
     it
 } from 'ember-mocha';
 import Pretender from 'pretender';
-import {AjaxError, UnauthorizedError} from 'ember-ajax/errors';
-import {RequestEntityTooLargeError, UnsupportedMediaTypeError} from 'ghost-admin/services/ajax';
+import {
+    isAjaxError,
+    isUnauthorizedError
+} from 'ember-ajax/errors';
+import {
+    isRequestEntityTooLargeError,
+    isUnsupportedMediaTypeError
+} from 'ghost-admin/services/ajax';
 import config from 'ghost-admin/config/environment';
 
 function stubAjaxEndpoint(server, response = {}, code = 200) {
@@ -85,7 +91,10 @@ describeModule(
             ajax.request('/test/').then(() => {
                 expect(false).to.be.true();
             }).catch((error) => {
-                expect(error.errors).to.deep.equal(['First Error', 'Second Error']);
+                expect(error.errors).to.deep.equal([
+                    {message: 'First Error'},
+                    {message: 'Second Error'}
+                ]);
                 done();
             });
         });
@@ -98,12 +107,12 @@ describeModule(
             ajax.request('/test/').then(() => {
                 expect(false).to.be.true;
             }).catch((error) => {
-                expect(error).to.be.instanceOf(AjaxError);
+                expect(isAjaxError(error)).to.be.true;
                 done();
             });
         });
 
-        it('returns known error object for built-in errors', function (done) {
+        it('handles error checking for built-in errors', function (done) {
             stubAjaxEndpoint(server, '', 401);
 
             let ajax = this.subject();
@@ -111,12 +120,12 @@ describeModule(
             ajax.request('/test/').then(() => {
                 expect(false).to.be.true;
             }).catch((error) => {
-                expect(error).to.be.instanceOf(UnauthorizedError);
+                expect(isUnauthorizedError(error)).to.be.true;
                 done();
             });
         });
 
-        it('returns RequestEntityTooLargeError object for 413 errors', function (done) {
+        it('handles error checking for RequestEntityTooLargeError on 413 errors', function (done) {
             stubAjaxEndpoint(server, {}, 413);
 
             let ajax = this.subject();
@@ -124,12 +133,12 @@ describeModule(
             ajax.request('/test/').then(() => {
                 expect(false).to.be.true;
             }).catch((error) => {
-                expect(error).to.be.instanceOf(RequestEntityTooLargeError);
+                expect(isRequestEntityTooLargeError(error)).to.be.true;
                 done();
             });
         });
 
-        it('returns UnsupportedMediaTypeError object for 415 errors', function (done) {
+        it('handles error checking for UnsupportedMediaTypeError on 415 errors', function (done) {
             stubAjaxEndpoint(server, {}, 415);
 
             let ajax = this.subject();
@@ -137,7 +146,7 @@ describeModule(
             ajax.request('/test/').then(() => {
                 expect(false).to.be.true;
             }).catch((error) => {
-                expect(error).to.be.instanceOf(UnsupportedMediaTypeError);
+                expect(isUnsupportedMediaTypeError(error)).to.be.true;
                 done();
             });
         });
