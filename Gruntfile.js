@@ -269,7 +269,7 @@ var _              = require('lodash'),
                     command: function (mode) {
                         switch (mode) {
                             case 'init':
-                                return 'echo Installing client dependencies... && npm install';
+                                return 'echo Installing client dependencies... && npm install && bower install';
 
                             case 'prod':
                                 return emberPath + ' build --environment=production --silent';
@@ -286,16 +286,6 @@ var _              = require('lodash'),
                             cwd: path.resolve(process.cwd() + '/core/client/'),
                             stdout: false
                         }
-                    }
-                },
-                // #### Run bower install
-                // Used as part of `grunt init`. See the section on [Building Assets](#building%20assets) for more
-                // information.
-                bower: {
-                    command: path.resolve(cwd + '/node_modules/.bin/bower --allow-root install'),
-                    options: {
-                        stdout: true,
-                        stdin: false
                     }
                 },
 
@@ -529,7 +519,7 @@ var _              = require('lodash'),
             } else if (process.env.TEST_SUITE === 'client') {
                 grunt.task.run(['init', 'test-client']);
             } else if (process.env.TEST_SUITE === 'lint') {
-                grunt.task.run(['shell:ember:init', 'shell:bower', 'lint']);
+                grunt.task.run(['shell:ember:init', 'lint']);
             } else {
                 grunt.task.run(['validate-all']);
             }
@@ -786,16 +776,16 @@ var _              = require('lodash'),
         // ### Init assets
         // `grunt init` - will run an initial asset build for you
         //
-        // Grunt init runs `bower install` as well as the standard asset build tasks which occur when you run just
-        // `grunt`. This fetches the latest client side dependencies, and moves them into their proper homes.
+        // Grunt init runs `npm install && bower install` inside `core/client` as well as the standard asset build
+        // tasks which occur when you run just `grunt`. This fetches the latest client-side dependencies.
         //
-        // This task is very important, and should always be run and when fetching down an updated code base just after
+        // This task is very important, and should always be run when fetching down an updated code base just after
         // running `npm install`.
         //
         // `bower` does have some quirks, such as not running as root. If you have problems please try running
         // `grunt init --verbose` to see if there are any errors.
         grunt.registerTask('init', 'Prepare the project for development',
-            ['update_submodules', 'shell:ember:init', 'shell:bower', 'assets', 'default']);
+            ['update_submodules', 'shell:ember:init', 'assets', 'default']);
 
         // ### Basic Asset Building
         // Builds and moves necessary client assets. Prod additionally builds the ember app.
