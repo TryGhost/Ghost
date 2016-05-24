@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import InfiniteScrollMixin from 'ghost/mixins/infinite-scroll';
+import InfiniteScrollMixin from 'ghost-admin/mixins/infinite-scroll';
 
 const {Component} = Ember;
 

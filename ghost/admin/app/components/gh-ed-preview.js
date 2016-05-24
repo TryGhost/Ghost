@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import {formatMarkdown} from 'ghost/helpers/gh-format-markdown';
+import {formatMarkdown} from 'ghost-admin/helpers/gh-format-markdown';
 
 const {
     Component,

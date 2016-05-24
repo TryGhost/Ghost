@@ -1,8 +1,8 @@
 import Ember from 'ember';
 import Resolver from './resolver';
 import loadInitializers from 'ember-load-initializers';
-import 'ghost/utils/link-component';
-import 'ghost/utils/text-field';
+import 'ghost-admin/utils/link-component';
+import 'ghost-admin/utils/text-field';
 import config from './config/environment';
 
 const {Application} = Ember;

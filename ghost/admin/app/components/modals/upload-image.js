@@ -1,6 +1,6 @@
 import Ember from 'ember';
-import ModalComponent from 'ghost/components/modals/base';
-import cajaSanitizers from 'ghost/utils/caja-sanitizers';
+import ModalComponent from 'ghost-admin/components/modals/base';
+import cajaSanitizers from 'ghost-admin/utils/caja-sanitizers';
 
 const {
     computed,

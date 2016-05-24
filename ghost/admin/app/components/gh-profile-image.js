@@ -1,6 +1,6 @@
 import Ember from 'ember';
 import AjaxService from 'ember-ajax/services/ajax';
-import {NotFoundError} from 'ghost/services/ajax';
+import {NotFoundError} from 'ghost-admin/services/ajax';
 
 const {
     Component,

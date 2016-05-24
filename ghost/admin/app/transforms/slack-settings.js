@@ -1,7 +1,7 @@
 /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import Ember from 'ember';
 import Transform from 'ember-data/transform';
-import SlackObject from 'ghost/models/slack-integration';
+import SlackObject from 'ghost-admin/models/slack-integration';
 
 const {isArray} = Ember;
 const emberA = Ember.A;

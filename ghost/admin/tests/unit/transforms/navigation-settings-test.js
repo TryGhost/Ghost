@@ -2,7 +2,7 @@
 import { expect } from 'chai';
 import { describeModule, it } from 'ember-mocha';
 import Ember from 'ember';
-import NavigationItem from 'ghost/models/navigation-item';
+import NavigationItem from 'ghost-admin/models/navigation-item';
 
 const emberA = Ember.A;
 

@@ -5,8 +5,8 @@ import {
 } from 'ember-mocha';
 import Pretender from 'pretender';
 import {AjaxError, UnauthorizedError} from 'ember-ajax/errors';
-import {RequestEntityTooLargeError, UnsupportedMediaTypeError} from 'ghost/services/ajax';
-import config from 'ghost/config/environment';
+import {RequestEntityTooLargeError, UnsupportedMediaTypeError} from 'ghost-admin/services/ajax';
+import config from 'ghost-admin/config/environment';
 
 function stubAjaxEndpoint(server, response = {}, code = 200) {
     server.get('/test/', function () {

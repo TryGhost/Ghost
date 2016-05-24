@@ -1,6 +1,6 @@
 import Ember from 'ember';
-import isNumber from 'ghost/utils/isNumber';
-import boundOneWay from 'ghost/utils/bound-one-way';
+import isNumber from 'ghost-admin/utils/isNumber';
+import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import { invoke } from 'ember-invoke-action';
 
 const {

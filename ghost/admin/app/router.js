@@ -1,6 +1,6 @@
 import Ember from 'ember';
-import ghostPaths from 'ghost/utils/ghost-paths';
-import documentTitle from 'ghost/utils/document-title';
+import ghostPaths from 'ghost-admin/utils/ghost-paths';
+import documentTitle from 'ghost-admin/utils/document-title';
 import config from './config/environment';
 
 const {

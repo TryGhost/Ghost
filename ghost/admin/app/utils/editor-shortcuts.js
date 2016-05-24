@@ -1,7 +1,7 @@
 // # Editor shortcuts
 // Loaded by gh-editor component
 // This map is used to ensure the right action is called by each shortcut
-import ctrlOrCmd from 'ghost/utils/ctrl-or-cmd';
+import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 
 let shortcuts = {};
 

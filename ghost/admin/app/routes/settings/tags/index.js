@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import AuthenticatedRoute from 'ghost/routes/authenticated';
+import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 
 const {
     inject: {service}

@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import getRequestErrorMessage from 'ghost/utils/ajax';
+import getRequestErrorMessage from 'ghost-admin/utils/ajax';
 
 const {
     Mixin,

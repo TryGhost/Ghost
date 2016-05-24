@@ -1,6 +1,6 @@
 /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
-import AuthenticatedRoute from 'ghost/routes/authenticated';
-import NotFoundHandler from 'ghost/mixins/404-handler';
+import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import NotFoundHandler from 'ghost-admin/mixins/404-handler';
 
 export default AuthenticatedRoute.extend(NotFoundHandler, {
 

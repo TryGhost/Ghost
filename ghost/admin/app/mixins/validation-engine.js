@@ -1,22 +1,22 @@
 import Ember from 'ember';
 import DS from 'ember-data';
 import Model from 'ember-data/model';
-import getRequestErrorMessage from 'ghost/utils/ajax';
+import getRequestErrorMessage from 'ghost-admin/utils/ajax';
 
-import InviteUserValidator from 'ghost/validators/invite-user';
-import NavItemValidator from 'ghost/validators/nav-item';
-import PostValidator from 'ghost/validators/post';
-import ResetValidator from 'ghost/validators/reset';
-import SettingValidator from 'ghost/validators/setting';
-import SetupValidator from 'ghost/validators/setup';
-import SigninValidator from 'ghost/validators/signin';
-import SignupValidator from 'ghost/validators/signup';
-import SlackIntegrationValidator from 'ghost/validators/slack-integration';
-import SubscriberValidator from 'ghost/validators/subscriber';
-import TagSettingsValidator from 'ghost/validators/tag-settings';
-import UserValidator from 'ghost/validators/user';
+import InviteUserValidator from 'ghost-admin/validators/invite-user';
+import NavItemValidator from 'ghost-admin/validators/nav-item';
+import PostValidator from 'ghost-admin/validators/post';
+import ResetValidator from 'ghost-admin/validators/reset';
+import SettingValidator from 'ghost-admin/validators/setting';
+import SetupValidator from 'ghost-admin/validators/setup';
+import SigninValidator from 'ghost-admin/validators/signin';
+import SignupValidator from 'ghost-admin/validators/signup';
+import SlackIntegrationValidator from 'ghost-admin/validators/slack-integration';
+import SubscriberValidator from 'ghost-admin/validators/subscriber';
+import TagSettingsValidator from 'ghost-admin/validators/tag-settings';
+import UserValidator from 'ghost-admin/validators/user';
 
-import ValidatorExtensions from 'ghost/utils/validator-extensions';
+import ValidatorExtensions from 'ghost-admin/utils/validator-extensions';
 
 const {Mixin, RSVP, isArray} = Ember;
 const {Errors} = DS;

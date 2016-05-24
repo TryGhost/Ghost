@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import counter from 'ghost/utils/word-count';
+import counter from 'ghost-admin/utils/word-count';
 
 const {Helper} = Ember;
 

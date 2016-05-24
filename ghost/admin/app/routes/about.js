@@ -1,6 +1,6 @@
 import Ember from 'ember';
-import AuthenticatedRoute from 'ghost/routes/authenticated';
-import styleBody from 'ghost/mixins/style-body';
+import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import styleBody from 'ghost-admin/mixins/style-body';
 
 const {
     inject: {service}

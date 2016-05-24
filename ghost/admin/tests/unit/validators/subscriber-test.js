@@ -5,7 +5,7 @@ import {
     it
 } from 'mocha';
 import Ember from 'ember';
-import ValidationEngine from 'ghost/mixins/validation-engine';
+import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 
 const {run} = Ember;
 
