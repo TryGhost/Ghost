@@ -20,6 +20,7 @@
   "license": "MIT",
   "devDependencies": {
     "broccoli-asset-rev": "2.4.2",
+    "csscomb": "3.1.8",
     "ember-ajax": "0.7.1",
     "ember-cli": "2.5.1",
     "ember-cli-app-version": "1.0.0",
@@ -58,9 +59,14 @@
     "emberx-file-input": "1.0.0",
     "fs-extra": "0.30.0",
     "glob": "^7.0.3",
+    "grunt": "1.0.1",
+    "grunt-contrib-jshint": "1.0.0",
+    "grunt-jscs": "2.8.0",
+    "grunt-shell": "1.3.0",
     "liquid-fire": "0.23.1",
     "liquid-tether": "1.1.1",
     "loader.js": "4.0.7",
+    "matchdep": "1.0.1",
     "walk-sync": "^0.2.6"
   },
   "ember-addon": {
