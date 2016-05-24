@@ -10,7 +10,7 @@ import Ember from 'ember';
 import startApp from '../../helpers/start-app';
 import destroyApp from '../../helpers/destroy-app';
 import Mirage from 'ember-cli-mirage';
-import { invalidateSession, authenticateSession } from 'ghost/tests/helpers/ember-simple-auth';
+import { invalidateSession, authenticateSession } from 'ghost-admin/tests/helpers/ember-simple-auth';
 
 const {run} = Ember;
 

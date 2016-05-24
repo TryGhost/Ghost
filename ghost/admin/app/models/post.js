@@ -3,7 +3,7 @@ import Ember from 'ember';
 import Model from 'ember-data/model';
 import attr from 'ember-data/attr';
 import { belongsTo, hasMany } from 'ember-data/relationships';
-import ValidationEngine from 'ghost/mixins/validation-engine';
+import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 
 const {
     computed,

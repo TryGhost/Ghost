@@ -6,7 +6,7 @@ import {
 } from 'mocha';
 import {
   highlightedText
-} from 'ghost/helpers/highlighted-text';
+} from 'ghost-admin/helpers/highlighted-text';
 
 describe('Unit: Helper: highlighted-text', function() {
 

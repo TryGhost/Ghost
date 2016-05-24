@@ -1,4 +1,4 @@
-import ApplicationAdapter from 'ghost/adapters/application';
+import ApplicationAdapter from 'ghost-admin/adapters/application';
 
 export default ApplicationAdapter.extend({
     updateRecord(store, type, record) {

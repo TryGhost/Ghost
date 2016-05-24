@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import ValidationState from 'ghost/mixins/validation-state';
+import ValidationState from 'ghost-admin/mixins/validation-state';
 import SortableItem from 'ember-sortable/mixins/sortable-item';
 
 const {Component, computed, run} = Ember;

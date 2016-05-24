@@ -6,7 +6,7 @@ import {
 } from 'mocha';
 import {
     isEqual
-} from 'ghost/helpers/is-equal';
+} from 'ghost-admin/helpers/is-equal';
 
 describe('Unit: Helper: is-equal', function () {
     // Replace this with your real tests.

@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import ValidationStateMixin from 'ghost/mixins/validation-state';
+import ValidationStateMixin from 'ghost-admin/mixins/validation-state';
 
 const {Component, computed} = Ember;
 

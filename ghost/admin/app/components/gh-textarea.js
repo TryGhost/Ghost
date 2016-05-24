@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import TextInputMixin from 'ghost/mixins/text-input';
+import TextInputMixin from 'ghost-admin/mixins/text-input';
 
 const {TextArea} = Ember;
 

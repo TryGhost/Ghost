@@ -6,7 +6,7 @@ import {
 } from 'mocha';
 import {
     isNot
-} from 'ghost/helpers/is-not';
+} from 'ghost-admin/helpers/is-not';
 
 describe('Unit: Helper: is-not', function () {
     // Replace this with your real tests.

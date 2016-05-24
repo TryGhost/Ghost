@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import SettingsSaveMixin from 'ghost/mixins/settings-save';
+import SettingsSaveMixin from 'ghost-admin/mixins/settings-save';
 
 const {
     Controller,

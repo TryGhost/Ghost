@@ -1,6 +1,6 @@
 import Ember from 'ember';
-import ghostPaths from 'ghost/utils/ghost-paths';
-import {RequestEntityTooLargeError, UnsupportedMediaTypeError} from 'ghost/services/ajax';
+import ghostPaths from 'ghost-admin/utils/ghost-paths';
+import {RequestEntityTooLargeError, UnsupportedMediaTypeError} from 'ghost-admin/services/ajax';
 
 const {
     Component,

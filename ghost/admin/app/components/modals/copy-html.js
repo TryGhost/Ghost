@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import ModalComponent from 'ghost/components/modals/base';
+import ModalComponent from 'ghost-admin/components/modals/base';
 
 const {computed} = Ember;
 const {alias} = computed;

@@ -1,6 +1,6 @@
 /* global html_sanitize*/
 import Ember from 'ember';
-import cajaSanitizers from 'ghost/utils/caja-sanitizers';
+import cajaSanitizers from 'ghost-admin/utils/caja-sanitizers';
 
 const {Helper} = Ember;
 

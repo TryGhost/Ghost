@@ -1,4 +1,4 @@
-import AuthenticatedRoute from 'ghost/routes/authenticated';
+import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 
 export default AuthenticatedRoute.extend({
 

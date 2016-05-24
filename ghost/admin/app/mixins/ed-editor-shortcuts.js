@@ -1,6 +1,6 @@
 /* global moment, Showdown */
 import Ember from 'ember';
-import titleize from 'ghost/utils/titleize';
+import titleize from 'ghost-admin/utils/titleize';
 
 const {Mixin} = Ember;
 

@@ -1,6 +1,6 @@
-import AuthenticatedRoute from 'ghost/routes/authenticated';
-import styleBody from 'ghost/mixins/style-body';
-import CurrentUserSettings from 'ghost/mixins/current-user-settings';
+import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import styleBody from 'ghost-admin/mixins/style-body';
+import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
 
 export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     titleToken: 'Settings - Labs',

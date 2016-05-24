@@ -3,7 +3,7 @@ import { invoke, invokeAction } from 'ember-invoke-action';
 import {
     RequestEntityTooLargeError,
     UnsupportedMediaTypeError
-} from 'ghost/services/ajax';
+} from 'ghost-admin/services/ajax';
 
 const {
     Component,

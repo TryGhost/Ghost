@@ -1,7 +1,7 @@
 import Ember from 'ember';
-import ShortcutsMixin from 'ghost/mixins/shortcuts';
-import imageManager from 'ghost/utils/ed-image-manager';
-import editorShortcuts from 'ghost/utils/editor-shortcuts';
+import ShortcutsMixin from 'ghost-admin/mixins/shortcuts';
+import imageManager from 'ghost-admin/utils/ed-image-manager';
+import editorShortcuts from 'ghost-admin/utils/editor-shortcuts';
 import {invokeAction} from 'ember-invoke-action';
 
 const {Component, computed, run} = Ember;

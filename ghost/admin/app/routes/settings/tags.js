@@ -1,9 +1,9 @@
 /* global key */
 import Ember from 'ember';
-import AuthenticatedRoute from 'ghost/routes/authenticated';
-import CurrentUserSettings from 'ghost/mixins/current-user-settings';
-import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
-import PaginationMixin from 'ghost/mixins/pagination';
+import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
+import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
+import PaginationMixin from 'ghost-admin/mixins/pagination';
 
 export default AuthenticatedRoute.extend(CurrentUserSettings, PaginationMixin, ShortcutsRoute, {
     titleToken: 'Settings - Tags',

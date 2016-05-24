@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import ghostPaths from 'ghost/utils/ghost-paths';
+import ghostPaths from 'ghost-admin/utils/ghost-paths';
 
 const {Service, _ProxyMixin} = Ember;
 
