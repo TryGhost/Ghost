@@ -18,7 +18,6 @@ var _              = require('lodash'),
     cwd            = process.cwd().replace(/( |\(|\))/g, escapeChar + '$1'),
     buildDirectory = path.resolve(cwd, '.build'),
     distDirectory  = path.resolve(cwd, '.dist'),
-    mochaPath      = path.resolve(cwd + '/node_modules/.bin/mocha'),
     emberPath      = path.resolve(cwd + '/core/client/node_modules/.bin/ember'),
 
     // ## Grunt configuration
@@ -208,7 +207,10 @@ var _              = require('lodash'),
                     src: [
                         'core/test/functional/module/**/*_spec.js'
                     ]
-                }
+                },
+
+                // #### Run single test (src is set dynamically, see grunt task 'test')
+                single: {}
             },
 
             // ### grunt-mocha-istanbul
@@ -286,12 +288,6 @@ var _              = require('lodash'),
                             cwd: path.resolve(process.cwd() + '/core/client/'),
                             stdout: false
                         }
-                    }
-                },
-
-                test: {
-                    command: function (test) {
-                        return 'node ' + mochaPath  + ' --timeout=15000 --ui=bdd --reporter=spec --colors core/test/' + test;
                     }
                 },
 
@@ -501,7 +497,18 @@ var _              = require('lodash'),
                 grunt.fail.fatal('No test provided. `grunt test` expects a filename. e.g.: `grunt test:unit/apps_spec.js`. Did you mean `npm test` or `grunt validate`?');
             }
 
-            grunt.task.run('test-setup', 'shell:test:' + test);
+            test = 'core/test/' + test;
+
+            // CASE: execute folder
+            if (!test.match(/.js/)) {
+                test += '/**';
+            } else if (!fs.existsSync(test)) {
+                grunt.fail.fatal('This file does not exist!');
+            }
+
+            cfg.mochacli.single.src = [test];
+            grunt.initConfig(cfg);
+            grunt.task.run('test-setup', 'mochacli:single');
         });
 
         // ### Validate
