@@ -1,10 +1,8 @@
 var should          = require('should'),
     Promise         = require('bluebird'),
-
-    // Stuff we are testing
-    mail            = require('../../../server/mail'),
-    configUtils     = require('../../utils/configUtils'),
-    i18n            = require('../../../server/i18n'),
+    mail            = require('../../server/mail'),
+    configUtils     = require('../utils/configUtils'),
+    i18n            = require('../../server/i18n'),
     mailer,
 
     // Mock SMTP config
