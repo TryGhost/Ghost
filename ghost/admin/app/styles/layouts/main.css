@@ -120,31 +120,8 @@ body > .ember-view:not(.liquid-target-container) {
     margin: 0 15px 10px;
 }
 
-.gh-nav-search .selectize-control {
-    display: flex;
-}
-
-.gh-nav-search-input .selectize-input {
-    padding: 4px 8px;
-    padding-right: 30px;
-    height: auto;
-}
-.gh-nav-search-input .selectize-input,
-.gh-nav-search-input .selectize-input input,
-.gh-nav-search-input .selectize-dropdown {
-    font-size: 1.3rem;
-}
-
-.gh-nav-search .selectize-input.dropdown-active {
-    border-bottom: #fff 1px solid;
-}
-
-.gh-nav-search .selectize-input.dropdown-active:before {
-    display: none;
-}
-
-.gh-nav-search .selectize-dropdown-content {
-    max-height: calc(100vh - 150px);
+.gh-nav-search .ember-power-select-trigger {
+    outline: 0;
 }
 
 .gh-nav-search-button {
