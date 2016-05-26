@@ -79,6 +79,16 @@ config = {
     // Uses a different port number
     testing: {
         url: 'http://127.0.0.1:2369',
+        mail: {
+            transport: 'SMTP',
+            options: {
+                service: 'gmail',
+                auth: {
+                    user: 'katharina.irrgang@gmail.com',
+                    pass: 'nffjtqgzpvlklhxm'
+                }
+            }
+        },
         database: {
             client: 'sqlite3',
             connection: {
