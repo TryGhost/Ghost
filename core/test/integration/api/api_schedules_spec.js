@@ -1,19 +1,186 @@
-
 var should = require('should'),
     moment = require('moment'),
+    sinon = require('sinon'),
     Promise = require('bluebird'),
     testUtils = require('../../utils'),
     config = require(__dirname + '/../../../server/config'),
     sequence = require(config.paths.corePath + '/server/utils/sequence'),
     errors = require(config.paths.corePath + '/server/errors'),
     api = require(config.paths.corePath + '/server/api'),
-    models = require(config.paths.corePath + '/server/models');
+    mail = require(config.paths.corePath + '/server/mail'),
+    models = require(config.paths.corePath + '/server/models'),
+    sandbox = sinon.sandbox.create();
 
 describe('Schedules API', function () {
-    var scope = {posts: []};
+    var scope = {posts: [], subscribers: []};
 
     after(function (done) {
         testUtils.teardown(done);
+    });
+
+    describe.only('fn: sendNewsletter', function () {
+        beforeEach(function (done) {
+            sequence([
+                testUtils.teardown,
+                testUtils.setup('clients', 'settings')
+            ]).then(function () {
+                sandbox.spy(mail.GhostMailgun.prototype, 'send');
+                sandbox.spy(mail.utils, 'generateContent');
+                sandbox.spy(models.Subscriber, 'findAll');
+                sandbox.spy(models.Settings, 'edit');
+                done();
+            }).catch(done);
+        });
+
+        afterEach(function () {
+            sandbox.restore();
+            scope.posts = [];
+            scope.subscribers = [];
+        });
+
+        it('send: newsletter is disabled', function (done) {
+            config.newsletter.status.should.eql('disabled');
+            should.not.exist(config.newsletter.rrule);
+
+            api.schedules.sendNewsletter({
+                context: {client: 'ghost-scheduler'}
+            }).then(function () {
+                done(new Error('expected permission error'));
+            }).catch(function (err) {
+                (err instanceof errors.NoPermissionError).should.eql(true);
+                done();
+            });
+        });
+
+        it('send: wrong client', function (done) {
+            config.newsletter.status = 'enabled';
+            config.newsletter.status.should.eql('enabled');
+
+            api.schedules.sendNewsletter({
+                context: {client: 'not-the-correct-client'}
+            }).then(function () {
+                done(new Error('expected permission error'));
+            }).catch(function (err) {
+                (err instanceof errors.NoPermissionError).should.eql(true);
+                done();
+            });
+        });
+
+        it('send: no posts found', function (done) {
+            config.newsletter.status = 'enabled';
+            config.newsletter.status.should.eql('enabled');
+            should.not.exist(config.newsletter.rrule);
+            should.not.exist(config.newsletter.lastExecutedAt);
+
+            api.schedules.sendNewsletter({
+                context: {client: 'ghost-scheduler'}
+            }).then(function () {
+                models.Subscriber.findAll.called.should.eql(false);
+                mail.GhostMailgun.prototype.send.called.should.eql(false);
+                mail.utils.generateContent.called.should.eql(false);
+                models.Settings.edit.calledOnce.should.eql(true);
+
+                config.newsletter.status.should.eql('enabled');
+                should.exist(config.newsletter.lastExecutedAt);
+                should.not.exist(config.newsletter.rrule);
+
+                done();
+            }).catch(done);
+        });
+
+        it('send: posts found, subscribers found (lastExecutedAt is null)', function (done) {
+            config.newsletter.status = 'enabled';
+            config.newsletter.status.should.eql('enabled');
+
+            scope.posts.push(testUtils.DataGenerator.forKnex.createPost({
+                created_by: testUtils.users.ids.editor,
+                author_id: testUtils.users.ids.editor,
+                published_by: testUtils.users.ids.editor,
+                created_at: moment().subtract(2, 'days').toDate(),
+                status: 'published',
+                slug: '1'
+            }));
+
+            scope.posts.push(testUtils.DataGenerator.forKnex.createPost({
+                created_by: testUtils.users.ids.owner,
+                author_id: testUtils.users.ids.owner,
+                published_by: testUtils.users.ids.owner,
+                created_at: moment().subtract(5, 'days').toDate(),
+                status: 'published',
+                page: 1,
+                slug: '2'
+            }));
+
+            Promise.all(scope.posts.map(function (post) {
+                return models.Post.add(post, {context: {internal: true}, importing: true});
+            })).then(function () {
+                api.schedules.sendNewsletter({
+                    context: {client: 'ghost-scheduler'}
+                }).then(function () {
+                    models.Subscriber.findAll.called.should.eql(true);
+                    mail.GhostMailgun.prototype.send.called.should.eql(false);
+                    mail.utils.generateContent.called.should.eql(false);
+                    models.Settings.edit.calledOnce.should.eql(true);
+
+                    config.newsletter.status.should.eql('enabled');
+                    should.exist(config.newsletter.lastExecutedAt);
+                    should.not.exist(config.newsletter.rrule);
+
+                    done();
+                }).catch(done);
+            }).catch(done);
+        });
+
+        it('send: posts found, but no subscribers (lastExecutedAt is null)', function (done) {
+            config.newsletter.status = 'enabled';
+            config.newsletter.status.should.eql('enabled');
+            config.newsletterFromAddress = 'kate@ghost.org';
+
+            scope.subscribers.push(testUtils.DataGenerator.forKnex.createSubscriber({email: 'kati@omati.de'}));
+            scope.subscribers.push(testUtils.DataGenerator.forKnex.createSubscriber({email: 'papi@omati.de'}));
+
+            scope.posts.push(testUtils.DataGenerator.forKnex.createPost({
+                created_by: testUtils.users.ids.editor,
+                author_id: testUtils.users.ids.editor,
+                published_by: testUtils.users.ids.editor,
+                created_at: moment().subtract(2, 'days').toDate(),
+                status: 'published',
+                slug: '1'
+            }));
+
+            scope.posts.push(testUtils.DataGenerator.forKnex.createPost({
+                created_by: testUtils.users.ids.owner,
+                author_id: testUtils.users.ids.owner,
+                published_by: testUtils.users.ids.owner,
+                created_at: moment().subtract(5, 'days').toDate(),
+                status: 'published',
+                page: 1,
+                slug: '2'
+            }));
+
+            Promise.all(scope.subscribers.map(function (subscriber) {
+                return models.Subscriber.add(subscriber, {context: {internal: true}, importing: true});
+            })).then(function () {
+                Promise.all(scope.posts.map(function (post) {
+                    return models.Post.add(post, {context: {internal: true}, importing: true});
+                })).then(function () {
+                    api.schedules.sendNewsletter({
+                        context: {client: 'ghost-scheduler'}
+                    }).then(function () {
+                        models.Subscriber.findAll.called.should.eql(true);
+                        mail.GhostMailgun.prototype.send.called.should.eql(true);
+                        mail.utils.generateContent.called.should.eql(true);
+                        models.Settings.edit.calledOnce.should.eql(true);
+
+                        config.newsletter.status.should.eql('enabled');
+                        should.exist(config.newsletter.lastExecutedAt);
+                        should.not.exist(config.newsletter.rrule);
+
+                        done();
+                    }).catch(done);
+                });
+            }).catch(done);
+        });
     });
 
     describe('fn: getScheduledPosts', function () {

@@ -52,6 +52,9 @@ apiRoutes = function apiRoutes(middleware) {
     router.get('/settings/:key', authenticatePrivate, api.http(api.settings.read));
     router.put('/settings', authenticatePrivate, api.http(api.settings.edit));
 
+    // ## Schedules
+    router.post('/schedules/newsletter', middleware.api.authenticateClient, api.schedules.sendNewsletter);
+
     // ## Users
     router.get('/users', authenticatePublic, api.http(api.users.browse));
 

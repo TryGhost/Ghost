@@ -63,7 +63,9 @@ updateConfigCache = function () {
             facebook: (settingsCache.facebook && settingsCache.facebook.value) || '',
             timezone: (settingsCache.activeTimezone && settingsCache.activeTimezone.value) || config.theme.timezone
         },
-        labs: labsValue
+        labs: labsValue,
+        newsletter: JSON.parse(settingsCache.newsletter.value),
+        newsletterFromAddress: settingsCache.newsletter_from_address.value
     });
 };
 
