@@ -62,6 +62,7 @@
     "passport-http-bearer": "1.0.1",
     "passport-oauth2-client-password": "0.1.2",
     "path-match": "1.2.4",
+    "rrule": "jkbrzt/rrule#master",
     "rss": "1.2.1",
     "semver": "5.1.1",
     "showdown-ghost": "0.3.6",
