@@ -232,6 +232,8 @@ describe('Acceptance: Subscribers', function() {
                 // it displays the import subscribers modal
                 expect(find('.fullscreen-modal').length, 'import subscribers modal displayed')
                     .to.equal(1);
+                expect(find('.fullscreen-modal input[type="file"]').length, 'import modal contains file input')
+                    .to.equal(1);
             });
 
             // cancel the modal
@@ -243,13 +245,33 @@ describe('Acceptance: Subscribers', function() {
                     .to.equal(0);
             });
 
-            // TODO: how to simulate file upload?
+            click('.btn:contains("Import CSV")');
+            fileUpload('.fullscreen-modal input[type="file"]');
 
-            // re-open import modal
-            // upload a file
-            // modal title changes
-            // modal button changes
-            // table is reset
+            andThen(function () {
+                // modal title changes
+                expect(find('.fullscreen-modal h1').text().trim(), 'import modal title after import')
+                    .to.equal('Import Successful');
+
+                // modal button changes
+                expect(find('.fullscreen-modal .modal-footer button').text().trim(), 'import modal button text after import')
+                    .to.equal('Close');
+
+                // subscriber total is updated
+                expect(find('#total-subscribers').text().trim(), 'subscribers total after import')
+                    .to.equal('90');
+
+                // table is reset
+                let [lastRequest] = server.pretender.handledRequests.slice(-1);
+                expect(lastRequest.url, 'endpoint requested after import')
+                    .to.match(/\/subscribers\/\?/);
+                expect(lastRequest.queryParams.page, 'page requested after import')
+                    .to.equal('1');
+
+                expect(find('.subscribers-table .lt-body .lt-row').length, 'number of rows in table after import')
+                    .to.equal(30);
+            });
+
             // close modal
         });
     });

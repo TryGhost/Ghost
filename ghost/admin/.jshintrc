@@ -6,7 +6,8 @@
     "-Promise",
     "-Notification",
     "validator",
-    "moment"
+    "moment",
+    "fileUpload"
   ],
   "browser": true,
   "boss": true,
