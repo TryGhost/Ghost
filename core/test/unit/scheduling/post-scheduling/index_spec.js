@@ -1,4 +1,3 @@
-
 var should = require('should'),
     sinon = require('sinon'),
     Promise = require('bluebird'),
@@ -22,6 +21,7 @@ describe('Scheduling: Post Scheduling', function () {
         post: null
     };
 
+    // TODO: remove, this is a unit test
     before(testUtils.teardown);
     beforeEach(testUtils.setup());
 
