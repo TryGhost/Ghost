@@ -7,7 +7,7 @@ import {
 
 describeModule(
     'route:subscribers/import',
-    'SubscribersImportRoute',
+    'Unit: Route: subscribers/import',
     {
         // Specify the other units that are required for this test.
         needs: ['service:notifications']
