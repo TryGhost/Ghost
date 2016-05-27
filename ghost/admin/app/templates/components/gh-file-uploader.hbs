@@ -13,8 +13,8 @@
     {{/if}}
 {{else}}
     <div class="upload-form">
-        {{#x-file-input multiple=false alt=labelText action=(action 'fileSelected') accept="text/csv"}}
+        {{#gh-file-input multiple=false alt=labelText action=(action 'fileSelected') accept="text/csv"}}
             <div class="description">{{labelText}}</div>
-        {{/x-file-input}}
+        {{/gh-file-input}}
     </div>
 {{/if}}
