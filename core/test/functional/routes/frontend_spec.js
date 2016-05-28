@@ -516,13 +516,26 @@ describe('Frontend Routing', function () {
         });
 
         it('should load a post with date permalink', function (done) {
-            // get today's date
             var date  = moment().format('YYYY/MM/DD');
 
             request.get('/' + date + '/welcome-to-ghost/')
                 .expect(200)
                 .expect('Content-Type', /html/)
                 .end(doEnd(done));
+        });
+
+        it('expect redirect because of wrong/old permalink prefix', function (done) {
+            var date  = moment().format('YYYY/MM/DD');
+
+            request.get('/2016/04/01/welcome-to-ghost/')
+                .expect('Content-Type', /html/)
+                .end(function (err, res) {
+                    res.status.should.eql(301);
+                    request.get('/' + date + '/welcome-to-ghost/')
+                        .expect(200)
+                        .expect('Content-Type', /html/)
+                        .end(doEnd(done));
+                });
         });
 
         it('should serve RSS with date permalink', function (done) {
