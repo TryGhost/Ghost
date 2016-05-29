@@ -90,7 +90,7 @@
     "grunt-express-server": "0.5.3",
     "grunt-jscs": "2.8.0",
     "grunt-mocha-cli": "2.1.0",
-    "grunt-mocha-istanbul": "4.0.2",
+    "grunt-mocha-istanbul": "5.0.0",
     "grunt-shell": "1.3.0",
     "grunt-update-submodules": "0.4.1",
     "istanbul": "0.4.3",
