@@ -2,7 +2,7 @@
   "name": "ghost",
   "dependencies": {
     "blueimp-md5": "2.3.0",
-    "codemirror": "5.13.2",
+    "codemirror": "5.15.2",
     "devicejs": "0.2.7",
     "ember": "2.5.1",
     "ember-cli-shims": "0.1.1",
