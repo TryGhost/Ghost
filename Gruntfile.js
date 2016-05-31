@@ -98,15 +98,6 @@ var _              = require('lodash'),
                     jshintrc: true
                 },
 
-                client: [
-                    'core/client/**/*.js',
-                    '!core/client/node_modules/**/*.js',
-                    '!core/client/bower_components/**/*.js',
-                    '!core/client/tmp/**/*.js',
-                    '!core/client/dist/**/*.js',
-                    '!core/client/vendor/**/*.js'
-                ],
-
                 server: [
                     '*.js',
                     '!config*.js', // note: i added this, do we want this linted?
@@ -121,36 +112,6 @@ var _              = require('lodash'),
             jscs: {
                 options: {
                     config: true
-                },
-
-                client: {
-                    options: {
-                        config: 'core/client/.jscsrc'
-                    },
-
-                    files: {
-                        src: [
-                            'core/client/**/*.js',
-                            '!core/client/node_modules/**/*.js',
-                            '!core/client/bower_components/**/*.js',
-                            '!core/client/tests/**/*.js',
-                            '!core/client/tmp/**/*.js',
-                            '!core/client/dist/**/*.js',
-                            '!core/client/vendor/**/*.js'
-                        ]
-                    }
-                },
-
-                client_tests: {
-                    options: {
-                        config: 'core/client/tests/.jscsrc'
-                    },
-
-                    files: {
-                        src: [
-                            'core/client/tests/**/*.js'
-                        ]
-                    }
                 },
 
                 server: {
@@ -306,10 +267,6 @@ var _              = require('lodash'),
 
                 csscombfix: {
                     command: path.resolve(cwd + '/node_modules/.bin/csscomb -c core/client/app/styles/csscomb.json -v core/client/app/styles')
-                },
-
-                csscomblint: {
-                    command: path.resolve(cwd + '/node_modules/.bin/csscomb -c core/client/app/styles/csscomb.json -lv core/client/app/styles')
                 }
             },
 
@@ -384,6 +341,14 @@ var _              = require('lodash'),
                     files: {
                         'core/shared/ghost-url.min.js': 'core/shared/ghost-url.js'
                     }
+                }
+            },
+
+            // ### grunt-subgrunt
+            // Run grunt tasks in submodule Gruntfiles
+            subgrunt: {
+                lint: {
+                    'core/client': 'lint'
                 }
             }
         };
@@ -531,7 +496,7 @@ var _              = require('lodash'),
             } else if (process.env.TEST_SUITE === 'client') {
                 grunt.task.run(['init', 'test-client']);
             } else if (process.env.TEST_SUITE === 'lint') {
-                grunt.task.run(['shell:ember:init', 'lint']);
+                grunt.task.run(['lint']);
             } else {
                 grunt.task.run(['validate-all']);
             }
@@ -560,8 +525,12 @@ var _              = require('lodash'),
         // ### Lint
         //
         // `grunt lint` will run the linter and the code style checker so you can make sure your code is pretty
-        grunt.registerTask('lint', 'Run the code style checks and linter',
-            ['jshint', 'jscs', 'shell:csscomblint']
+        grunt.registerTask('lint', 'Run the code style checks and linter for server',
+            ['jshint', 'jscs']
+        );
+
+        grunt.registerTask('lint-all', 'Run the code style checks and linter for server and client',
+            ['lint', 'subgrunt:lint']
         );
 
         // ### test-setup *(utility)(
