@@ -7,6 +7,9 @@ var _ = require('lodash'),
     exports,
     models;
 
+// Initialise model events
+require('./base/events');
+
 /**
  * Expose all models
  */
