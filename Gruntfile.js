@@ -227,7 +227,7 @@ var _              = require('lodash'),
                         mask: '**/*_spec.js',
                         coverageFolder: 'core/test/coverage/unit',
                         mochaOptions: ['--timeout=15000'],
-                        excludes: ['core/client/**', 'core/server/built']
+                        excludes: ['core/client', 'core/server/built']
                     }
                 },
                 coverage_all: {
@@ -241,7 +241,7 @@ var _              = require('lodash'),
                         coverageFolder: 'core/test/coverage/all',
                         mask: '**/*_spec.js',
                         mochaOptions: ['--timeout=15000'],
-                        excludes: ['core/client/**', 'core/server/built']
+                        excludes: ['core/client', 'core/server/built']
                     }
 
                 }
