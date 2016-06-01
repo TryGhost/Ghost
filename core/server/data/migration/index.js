@@ -28,27 +28,27 @@ logger = {
 init = function init(tablesOnly) {
     tablesOnly = tablesOnly || false;
 
-    // There are 4 possibilities:
-    // 1. The database exists and is up-to-date
-    // 2. The database exists but is out of date
-    // 3. The database exists but the currentVersion setting does not or cannot be understood
-    // 4. The database has not yet been created
+    // There are 4 possible cases:
+    // CASE 1: The database exists and is up-to-date
+    // CASE 2: The database exists but is out of date
+    // CASE 3: The database exists but the currentVersion setting does not or cannot be understood
+    // CASE 4: The database has not yet been created
     return versioning.getDatabaseVersion().then(function (databaseVersion) {
         var defaultVersion = versioning.getDefaultDatabaseVersion();
 
         // Update goes first, to allow for FORCE_MIGRATION
-        // 2. The database exists but is out of date
+        // CASE 2: The database exists but is out of date
         if (databaseVersion < defaultVersion || process.env.FORCE_MIGRATION) {
             // Migrate to latest version
             logger.info('Database upgrade required from version ' + databaseVersion + ' to ' +  defaultVersion);
             return update(databaseVersion, defaultVersion, logger);
 
-            // 1. The database exists and is up-to-date
+            // CASE 1: The database exists and is up-to-date
         } else if (databaseVersion === defaultVersion) {
             logger.info('Up-to-date at version ' + databaseVersion);
             return;
 
-            // 3. The database exists but the currentVersion setting does not or cannot be understood
+            // CASE 3: The database exists but the currentVersion setting does not or cannot be understood
         } else {
             // In this case we don't understand the version because it is too high
             errors.logErrorAndExit(
@@ -58,14 +58,14 @@ init = function init(tablesOnly) {
         }
     }, function (err) {
         if (err && err.message === 'Settings table does not exist') {
-            // 4. The database has not yet been created
+            // CASE 4: The database has not yet been created
             // Bring everything up from initial version.
             logger.info('Database initialisation required for version ' + versioning.getDefaultDatabaseVersion());
             return populate(logger, tablesOnly);
         }
-        // 3. The database exists but the currentVersion setting does not or cannot be understood
-        // In this case the setting was missing or there was some other problem
-        errors.logErrorAndExit('There is a problem with the database', err.message);
+        // CASE 3: the database exists but the currentVersion setting does not or cannot be understood
+        //         In this case the setting was missing or there was some other problem
+        errors.logErrorAndExit(err, 'Problem occurred during migration initialisation!');
     });
 };
 
