@@ -176,7 +176,8 @@ var _              = require('lodash'),
                     ui: 'bdd',
                     reporter: grunt.option('reporter') || 'spec',
                     timeout: '15000',
-                    save: grunt.option('reporter-output')
+                    save: grunt.option('reporter-output'),
+                    require: ['core/server/overrides']
                 },
 
                 // #### All Unit tests
