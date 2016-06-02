@@ -89,17 +89,12 @@ Settings = ghostBookshelf.Model.extend({
         });
     }
 }, {
-    findOne: function (data, options) {
-        if (_.isEmpty(data)) {
-            options = data;
-        }
-
+    findOne: function (options) {
         // Allow for just passing the key instead of attributes
-        if (!_.isObject(data)) {
-            data = {key: data};
+        if (!_.isObject(options)) {
+            options = {key: options};
         }
-
-        return Promise.resolve(ghostBookshelf.Model.findOne.call(this, data, options));
+        return Promise.resolve(ghostBookshelf.Model.findOne.call(this, options));
     },
 
     edit: function (data, options) {
@@ -130,11 +125,6 @@ Settings = ghostBookshelf.Model.extend({
                     if (options.context.internal && item.hasOwnProperty('type')) {
                         saveData.type = item.type;
                     }
-                    // it's allowed to edit all attributes in case of importing/migrating
-                    if (options.importing) {
-                        saveData = item;
-                    }
-
                     return setting.save(saveData, options);
                 }
 
