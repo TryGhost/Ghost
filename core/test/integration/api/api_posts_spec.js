@@ -584,4 +584,161 @@ describe('Post API', function () {
             });
         });
     });
+
+    describe('Edit', function () {
+        // These tests are for #6920
+        it('should update post & not delete tags with `tags` not included', function (done) {
+            var options = {context: {user: 1}, id: 1},
+                includeOptions = {include: 'tags'},
+                startTags;
+
+            // Step 1, fetch a post from the API with tags
+            PostAPI.read(_.extend({}, options, includeOptions)).then(function (results) {
+                var postWithoutTags = results.posts[0];
+                should.exist(results.posts[0]);
+                should.exist(results.posts[0].tags);
+                results.posts[0].tags.should.have.lengthOf(2);
+
+                // Save the tags for testing against later
+                startTags = _.clone(results.posts[0].tags);
+
+                // Remove the tags from the object we're sending - we'll send no `tags` property at all
+                delete postWithoutTags.tags;
+
+                // Update a single property so we can see the post does get updated
+                postWithoutTags.title = 'HTML Ipsum Updated';
+
+                // Step 2, call edit but don't include tags in the response
+                return PostAPI.edit({posts: [postWithoutTags]}, options);
+            }).then(function (results) {
+                should.exist(results.posts[0]);
+                should.not.exist(results.posts[0].tags);
+                results.posts[0].title.should.eql('HTML Ipsum Updated');
+
+                // Step 3, request the post with its tags again, to check they are still present
+                return PostAPI.read(_.extend({}, options, includeOptions));
+            }).then(function (results) {
+                should.exist(results.posts[0]);
+                should.exist(results.posts[0].tags);
+                results.posts[0].tags.should.have.lengthOf(2);
+                results.posts[0].tags.should.eql(startTags);
+
+                done();
+            }).catch(done);
+        });
+
+        it('should update post & not delete tags with `tags` set to undefined', function (done) {
+            var options = {context: {user: 1}, id: 1},
+                includeOptions = {include: 'tags'},
+                startTags;
+
+            // Step 1, fetch a post from the API with tags
+            PostAPI.read(_.extend({}, options, includeOptions)).then(function (results) {
+                var postWithoutTags = results.posts[0];
+                should.exist(results.posts[0]);
+                should.exist(results.posts[0].tags);
+                results.posts[0].tags.should.have.lengthOf(2);
+
+                // Save the tags for testing against later
+                startTags = _.clone(results.posts[0].tags);
+
+                // Remove the tags from the object we're sending - we'll send no `tags` property at all
+                postWithoutTags.tags = undefined;
+
+                // Update a single property so we can see the post does get updated
+                postWithoutTags.title = 'HTML Ipsum Updated';
+
+                // Step 2, call edit but don't include tags in the response
+                return PostAPI.edit({posts: [postWithoutTags]}, options);
+            }).then(function (results) {
+                should.exist(results.posts[0]);
+                should.not.exist(results.posts[0].tags);
+                results.posts[0].title.should.eql('HTML Ipsum Updated');
+
+                // Step 3, request the post with its tags again, to check they are still present
+                return PostAPI.read(_.extend({}, options, includeOptions));
+            }).then(function (results) {
+                should.exist(results.posts[0]);
+                should.exist(results.posts[0].tags);
+                results.posts[0].tags.should.have.lengthOf(2);
+                results.posts[0].tags.should.eql(startTags);
+
+                done();
+            }).catch(done);
+        });
+
+        it('should update post & not delete tags with `tags` set to null', function (done) {
+            var options = {context: {user: 1}, id: 1},
+                includeOptions = {include: 'tags'},
+                startTags;
+
+            // Step 1, fetch a post from the API with tags
+            PostAPI.read(_.extend({}, options, includeOptions)).then(function (results) {
+                var postWithoutTags = results.posts[0];
+                should.exist(results.posts[0]);
+                should.exist(results.posts[0].tags);
+                results.posts[0].tags.should.have.lengthOf(2);
+
+                // Save the tags for testing against later
+                startTags = _.clone(results.posts[0].tags);
+
+                // Remove the tags from the object we're sending - we'll send no `tags` property at all
+                postWithoutTags.tags = null;
+
+                // Update a single property so we can see the post does get updated
+                postWithoutTags.title = 'HTML Ipsum Updated';
+
+                // Step 2, call edit but don't include tags in the response
+                return PostAPI.edit({posts: [postWithoutTags]}, options);
+            }).then(function (results) {
+                should.exist(results.posts[0]);
+                should.not.exist(results.posts[0].tags);
+                results.posts[0].title.should.eql('HTML Ipsum Updated');
+
+                // Step 3, request the post with its tags again, to check they are still present
+                return PostAPI.read(_.extend({}, options, includeOptions));
+            }).then(function (results) {
+                should.exist(results.posts[0]);
+                should.exist(results.posts[0].tags);
+                results.posts[0].tags.should.have.lengthOf(2);
+                results.posts[0].tags.should.eql(startTags);
+
+                done();
+            }).catch(done);
+        });
+
+        it('should update post & should delete tags with `tags` set to []', function (done) {
+            var options = {context: {user: 1}, id: 1},
+                includeOptions = {include: 'tags'};
+
+            // Step 1, fetch a post from the API with tags
+            PostAPI.read(_.extend({}, options, includeOptions)).then(function (results) {
+                var postWithoutTags = results.posts[0];
+                should.exist(results.posts[0]);
+                should.exist(results.posts[0].tags);
+                results.posts[0].tags.should.have.lengthOf(2);
+
+                // Remove the tags from the object we're sending - we'll send no `tags` property at all
+                postWithoutTags.tags = [];
+
+                // Update a single property so we can see the post does get updated
+                postWithoutTags.title = 'HTML Ipsum Updated';
+
+                // Step 2, call edit but don't include tags in the response
+                return PostAPI.edit({posts: [postWithoutTags]}, options);
+            }).then(function (results) {
+                should.exist(results.posts[0]);
+                should.not.exist(results.posts[0].tags);
+                results.posts[0].title.should.eql('HTML Ipsum Updated');
+
+                // Step 3, request the post with its tags again, to check they are still present
+                return PostAPI.read(_.extend({}, options, includeOptions));
+            }).then(function (results) {
+                should.exist(results.posts[0]);
+                results.posts[0].tags.should.eql([]);
+
+                done();
+            }).catch(done);
+        });
+    });
 });
