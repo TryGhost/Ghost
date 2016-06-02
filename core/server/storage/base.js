@@ -5,7 +5,7 @@ function StorageBase() {
 }
 
 StorageBase.prototype.getTargetDir = function (baseDir) {
-    var m = moment(),
+    var m = moment(new Date().getTime()),
         month = m.format('MM'),
         year =  m.format('YYYY');
 
