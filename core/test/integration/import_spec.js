@@ -3,7 +3,6 @@ var testUtils   = require('../utils/index'),
     should      = require('should'),
     sinon       = require('sinon'),
     Promise     = require('bluebird'),
-    moment      = require('moment'),
     assert      = require('assert'),
     _           = require('lodash'),
     validator   = require('validator'),
@@ -158,7 +157,7 @@ describe('Import', function () {
 
         it('safely imports data, from 001', function (done) {
             var exportData,
-                timestamp = moment().startOf('day').valueOf(); // no ms
+                timestamp = 1349928000000;
 
             testUtils.fixtures.loadExportFixture('export-001').then(function (exported) {
                 exportData = exported;
@@ -216,9 +215,9 @@ describe('Import', function () {
                 // in MySQL we're returned a date object.
                 // We pass the returned post always through the date object
                 // to ensure the return is consistent for all DBs.
-                assert.equal(moment(posts[0].created_at).valueOf(), timestamp);
-                assert.equal(moment(posts[0].updated_at).valueOf(), timestamp);
-                assert.equal(moment(posts[0].published_at).valueOf(), timestamp);
+                assert.equal(new Date(posts[0].created_at).getTime(), timestamp);
+                assert.equal(new Date(posts[0].updated_at).getTime(), timestamp);
+                assert.equal(new Date(posts[0].published_at).getTime(), timestamp);
 
                 done();
             }).catch(done);
@@ -322,7 +321,7 @@ describe('Import', function () {
 
         it('safely imports data from 002', function (done) {
             var exportData,
-                timestamp = moment().startOf('day').valueOf(); // no ms
+                timestamp = 1349928000000;
 
             testUtils.fixtures.loadExportFixture('export-002').then(function (exported) {
                 exportData = exported;
@@ -380,9 +379,9 @@ describe('Import', function () {
                 // in MySQL we're returned a date object.
                 // We pass the returned post always through the date object
                 // to ensure the return is consistant for all DBs.
-                assert.equal(moment(posts[0].created_at).valueOf(), timestamp);
-                assert.equal(moment(posts[0].updated_at).valueOf(), timestamp);
-                assert.equal(moment(posts[0].published_at).valueOf(), timestamp);
+                assert.equal(new Date(posts[0].created_at).getTime(), timestamp);
+                assert.equal(new Date(posts[0].updated_at).getTime(), timestamp);
+                assert.equal(new Date(posts[0].published_at).getTime(), timestamp);
 
                 done();
             }).catch(done);

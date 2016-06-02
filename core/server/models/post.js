@@ -12,6 +12,7 @@ var _              = require('lodash'),
     config         = require('../config'),
     baseUtils      = require('./base/utils'),
     i18n           = require('../i18n'),
+    toString       = require('lodash.tostring'),
     Post,
     Posts;
 
@@ -178,11 +179,11 @@ Post = ghostBookshelf.Model.extend({
 
         ghostBookshelf.Model.prototype.saving.call(this, model, attr, options);
 
-        this.set('html', converter.makeHtml(_.toString(this.get('markdown'))));
+        this.set('html', converter.makeHtml(toString(this.get('markdown'))));
 
         // disabling sanitization until we can implement a better version
         title = this.get('title') || i18n.t('errors.models.post.untitled');
-        this.set('title', _.toString(title).trim());
+        this.set('title', toString(title).trim());
 
         // ### Business logic for published_at and published_by
         // If the current status is 'published' and published_at is not set, set it to now
@@ -461,7 +462,8 @@ Post = ghostBookshelf.Model.extend({
             validOptions = {
                 findOne: ['columns', 'importing', 'withRelated', 'require'],
                 findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status', 'staticPages'],
-                findAll: ['columns', 'filter']
+                findAll: ['columns', 'filter'],
+                add: ['importing']
             };
 
         if (validOptions[methodName]) {
