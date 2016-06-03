@@ -37,7 +37,6 @@ describeModule(
 
             store.find('post', 1).catch(() => {
                 let [request] = server.handledRequests;
-                console.log(request);
                 expect(request.requestHeaders['X-Ghost-Version']).to.equal(version);
                 done();
             });
