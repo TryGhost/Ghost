@@ -5,7 +5,7 @@ import {
     it
 } from 'mocha';
 import Ember from 'ember';
-import InfiniteScrollMixin from 'ghost/mixins/infinite-scroll';
+import InfiniteScrollMixin from 'ghost-admin/mixins/infinite-scroll';
 
 describe('Unit: Mixin: infinite-scroll', function () {
     // Replace this with your real tests.

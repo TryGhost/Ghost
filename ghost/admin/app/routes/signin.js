@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import styleBody from 'ghost/mixins/style-body';
+import styleBody from 'ghost-admin/mixins/style-body';
 import Configuration from 'ember-simple-auth/configuration';
 import DS from 'ember-data';
 

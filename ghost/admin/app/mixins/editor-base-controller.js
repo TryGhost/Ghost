@@ -1,6 +1,6 @@
 import Ember from 'ember';
-import PostModel from 'ghost/models/post';
-import boundOneWay from 'ghost/utils/bound-one-way';
+import PostModel from 'ghost-admin/models/post';
+import boundOneWay from 'ghost-admin/utils/bound-one-way';
 
 const {
     Mixin,

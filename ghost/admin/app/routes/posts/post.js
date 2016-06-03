@@ -1,8 +1,8 @@
-import AuthenticatedRoute from 'ghost/routes/authenticated';
-import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
-import NotFoundHandler from 'ghost/mixins/404-handler';
-import isNumber from 'ghost/utils/isNumber';
-import isFinite from 'ghost/utils/isFinite';
+import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
+import NotFoundHandler from 'ghost-admin/mixins/404-handler';
+import isNumber from 'ghost-admin/utils/isNumber';
+import isFinite from 'ghost-admin/utils/isFinite';
 
 export default AuthenticatedRoute.extend(ShortcutsRoute, NotFoundHandler, {
     model(params) {

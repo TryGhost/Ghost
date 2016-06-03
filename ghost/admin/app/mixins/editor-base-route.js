@@ -1,7 +1,7 @@
 import Ember from 'ember';
-import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
-import styleBody from 'ghost/mixins/style-body';
-import ctrlOrCmd from 'ghost/utils/ctrl-or-cmd';
+import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
+import styleBody from 'ghost-admin/mixins/style-body';
+import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 
 const {$, Mixin, RSVP, run} = Ember;
 

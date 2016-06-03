@@ -1,7 +1,7 @@
 import Ember from 'ember';
-import AuthenticatedRoute from 'ghost/routes/authenticated';
-import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
-import PaginationMixin from 'ghost/mixins/pagination';
+import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
+import PaginationMixin from 'ghost-admin/mixins/pagination';
 
 export default AuthenticatedRoute.extend(ShortcutsRoute, PaginationMixin, {
     titleToken: 'Content',

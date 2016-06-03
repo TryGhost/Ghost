@@ -1,6 +1,6 @@
 /* global key */
 import Ember from 'ember';
-import boundOneWay from 'ghost/utils/bound-one-way';
+import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import {invokeAction} from 'ember-invoke-action';
 
 const {

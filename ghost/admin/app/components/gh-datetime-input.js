@@ -1,7 +1,7 @@
 import Ember from 'ember';
-import TextInputMixin from 'ghost/mixins/text-input';
-import boundOneWay from 'ghost/utils/bound-one-way';
-import {formatDate} from 'ghost/utils/date-formatting';
+import TextInputMixin from 'ghost-admin/mixins/text-input';
+import boundOneWay from 'ghost-admin/utils/bound-one-way';
+import {formatDate} from 'ghost-admin/utils/date-formatting';
 import {invokeAction} from 'ember-invoke-action';
 
 const {

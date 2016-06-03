@@ -1,6 +1,6 @@
 import Ember from 'ember';
-import ModalComponent from 'ghost/components/modals/base';
-import ValidationEngine from 'ghost/mixins/validation-engine';
+import ModalComponent from 'ghost-admin/components/modals/base';
+import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 
 const {
     RSVP: {Promise},

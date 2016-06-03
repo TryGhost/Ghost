@@ -1,6 +1,6 @@
 import Ember from 'ember';
-import SettingsSaveMixin from 'ghost/mixins/settings-save';
-import randomPassword from 'ghost/utils/random-password';
+import SettingsSaveMixin from 'ghost-admin/mixins/settings-save';
+import randomPassword from 'ghost-admin/utils/random-password';
 
 const {
     Controller,

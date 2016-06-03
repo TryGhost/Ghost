@@ -4,7 +4,7 @@ import {
     it
 } from 'ember-mocha';
 import Pretender from 'pretender';
-import config from 'ghost/config/environment';
+import config from 'ghost-admin/config/environment';
 
 describeModule(
     'service:store',

@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import Table from 'ember-light-table';
-import PaginationMixin from 'ghost/mixins/pagination';
-import ghostPaths from 'ghost/utils/ghost-paths';
+import PaginationMixin from 'ghost-admin/mixins/pagination';
+import ghostPaths from 'ghost-admin/utils/ghost-paths';
 
 const {
     $,

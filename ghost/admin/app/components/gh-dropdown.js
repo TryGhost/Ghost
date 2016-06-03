@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import DropdownMixin from 'ghost/mixins/dropdown-mixin';
+import DropdownMixin from 'ghost-admin/mixins/dropdown-mixin';
 
 const {
     Component,

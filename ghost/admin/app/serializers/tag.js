@@ -1,6 +1,6 @@
 /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import Ember from 'ember';
-import ApplicationSerializer from 'ghost/serializers/application';
+import ApplicationSerializer from 'ghost-admin/serializers/application';
 
 export default ApplicationSerializer.extend({
     serializeIntoHash(hash, type, record, options) {

@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import ShortcutsMixin from 'ghost/mixins/shortcuts';
+import ShortcutsMixin from 'ghost-admin/mixins/shortcuts';
 
 const {Mixin} = Ember;
 

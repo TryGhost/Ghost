@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import BaseAdapter from 'ghost/adapters/base';
+import BaseAdapter from 'ghost-admin/adapters/base';
 
 const {get, isNone} = Ember;
 

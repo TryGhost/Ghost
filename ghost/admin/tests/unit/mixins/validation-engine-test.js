@@ -5,7 +5,7 @@ import {
     it
 } from 'mocha';
 import Ember from 'ember';
-import ValidationEngineMixin from 'ghost/mixins/validation-engine';
+import ValidationEngineMixin from 'ghost-admin/mixins/validation-engine';
 
 describe('ValidationEngineMixin', function () {
     // Replace this with your real tests.

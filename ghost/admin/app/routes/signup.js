@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import DS from 'ember-data';
 import Configuration from 'ember-simple-auth/configuration';
-import styleBody from 'ghost/mixins/style-body';
+import styleBody from 'ghost-admin/mixins/style-body';
 
 const {
     Route,

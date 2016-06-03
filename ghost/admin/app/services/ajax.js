@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import AjaxService from 'ember-ajax/services/ajax';
 import {AjaxError} from 'ember-ajax/errors';
-import config from 'ghost/config/environment';
+import config from 'ghost-admin/config/environment';
 
 const {inject, computed} = Ember;
 

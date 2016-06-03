@@ -7,9 +7,9 @@ import {
 } from 'mocha';
 import { expect } from 'chai';
 import Ember from 'ember';
-import startApp from 'ghost/tests/helpers/start-app';
-import destroyApp from 'ghost/tests/helpers/destroy-app';
-import { invalidateSession, authenticateSession } from 'ghost/tests/helpers/ember-simple-auth';
+import startApp from 'ghost-admin/tests/helpers/start-app';
+import destroyApp from 'ghost-admin/tests/helpers/destroy-app';
+import { invalidateSession, authenticateSession } from 'ghost-admin/tests/helpers/ember-simple-auth';
 import Mirage from 'ember-cli-mirage';
 
 describe('Acceptance: Setup', function () {
