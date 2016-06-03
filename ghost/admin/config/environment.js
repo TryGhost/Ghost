@@ -21,7 +21,7 @@ module.exports = function (environment) {
             // override the default version string which contains git info from
             // https://github.com/cibernox/git-repo-version. Only include the
             // `major.minor` version numbers
-            version: require('../package.json').version.replace(/\.\d+$/, '')
+            version: require('../package.json').version.match(/^(\d+\.)?(\d+)/)[0]
         },
 
         'ember-simple-auth': {
