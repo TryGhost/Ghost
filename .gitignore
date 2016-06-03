@@ -7,6 +7,8 @@ b-cov
 *.pid
 *.gz
 
+!core/test/utils/fixtures/**/*.csv
+
 pids
 logs
 results
