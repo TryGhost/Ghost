@@ -1,5 +1,5 @@
-var knex     = require('knex'),
-    config   = require('../../config'),
+var knex = require('knex'),
+    config = require('../../config'),
     dbConfig = config.database,
     knexInstance;
 
@@ -7,7 +7,11 @@ function configure(dbConfig) {
     var client = dbConfig.client,
         pg;
 
-    if (client === 'pg' || client === 'postgres' || client === 'postgresql') {
+    dbConfig.isPostgreSQL = function () {
+        return client === 'pg' || client === 'postgres' || client === 'postgresql';
+    };
+
+    if (dbConfig.isPostgreSQL()) {
         try {
             pg = require('pg');
         } catch (e) {
@@ -20,10 +24,24 @@ function configure(dbConfig) {
         pg.types.setTypeParser(20, function (val) {
             return val === null ? null : parseInt(val, 10);
         });
+
+        // https://github.com/tgriesser/knex/issues/97
+        // this sets the timezone to UTC only for the connection!
+        dbConfig.pool = {
+            afterCreate: function (connection, callback) {
+                connection.query('set timezone=\'UTC\'', function (err) {
+                    callback(err, connection);
+                });
+            }
+        };
     }
 
     if (client === 'sqlite3') {
         dbConfig.useNullAsDefault = dbConfig.useNullAsDefault || false;
+    }
+
+    if (client === 'mysql') {
+        dbConfig.connection.timezone = 'UTC';
     }
 
     return dbConfig;
