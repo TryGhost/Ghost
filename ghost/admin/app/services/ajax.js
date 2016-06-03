@@ -1,6 +1,7 @@
 import Ember from 'ember';
 import AjaxService from 'ember-ajax/services/ajax';
 import {AjaxError} from 'ember-ajax/errors';
+import config from 'ghost/config/environment';
 
 const {inject, computed} = Ember;
 
@@ -24,18 +25,17 @@ export default AjaxService.extend({
 
     headers: computed('session.isAuthenticated', function () {
         let session = this.get('session');
+        let headers = {};
+
+        headers['X-Ghost-Version'] = config.APP.version;
 
         if (session.get('isAuthenticated')) {
-            let headers = {};
-
             session.authorize('authorizer:oauth2', (headerName, headerValue) => {
                 headers[headerName] = headerValue;
             });
-
-            return headers;
-        } else {
-            return [];
         }
+
+        return headers;
     }),
 
     handleResponse(status, headers, payload) {
