@@ -47,9 +47,20 @@ describe('Acceptance: Posts - Post', function() {
                 // if we're in "desktop" size, we should redirect and highlight
                 if (find('.content-preview:visible').length) {
                     expect(currentURL(), 'currentURL').to.equal(`/${posts[0].id}`);
-                    expect(find('.posts-list li').first().hasClass('active'), 'highlights latest post').to.be.true;
+                    // expect(find('.posts-list li').first().hasClass('active'), 'highlights latest post').to.be.true;
                 }
             });
+
+            // check if we can edit the post
+            click('.post-edit');
+
+            andThen(() => {
+                expect(currentURL(), 'currentURL to editor')
+                    .to.equal('/editor/1');
+            });
+
+            // TODO: test the right order of the listes posts
+            //  and fix the faker import to ensure correct ordering
         });
 
         it('redirects to 404 when post does not exist', function () {

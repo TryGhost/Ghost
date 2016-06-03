@@ -174,7 +174,6 @@ describe('Acceptance: Settings - Tags', function () {
             // trigger save
             fillIn('.tag-settings-pane input[name="name"]', 'New Name');
             triggerEvent('.tag-settings-pane input[name="name"]', 'blur');
-
             andThen(() => {
                 // check we update with the data returned from the server
                 expect(find('.settings-tags .settings-tag:last .tag-title').text(), 'tag list updates on save')

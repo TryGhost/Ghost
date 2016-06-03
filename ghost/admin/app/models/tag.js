@@ -15,8 +15,8 @@ export default Model.extend(ValidationEngine, {
     metaDescription: attr('string'),
     image: attr('string'),
     hidden: attr('boolean'),
-    createdAt: attr('moment-date'),
-    updatedAt: attr('moment-date'),
+    createdAt: attr('moment-utc'),
+    updatedAt: attr('moment-utc'),
     createdBy: attr(),
     updatedBy: attr(),
     count: attr('raw')
