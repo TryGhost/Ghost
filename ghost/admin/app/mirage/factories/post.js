@@ -1,5 +1,5 @@
 /* jscs:disable */
-import Mirage from 'ember-cli-mirage';
+import Mirage, {faker} from 'ember-cli-mirage';
 
 export default Mirage.Factory.extend({
     uuid(i) { return  `post-${i}`; },
@@ -10,14 +10,15 @@ export default Mirage.Factory.extend({
     image(i) { return  `/content/images/2015/10/post-${i}.jpg`; },
     featured() { return  false; },
     page() { return  false; },
-    status(i) { return  `/content/images/2015/10/post-${i}.jpg`; },
+    status(i) { return  faker.list.cycle('draft', 'published')(i); },
     meta_description(i) { return  `Meta description for post ${i}.`; },
     meta_title(i) { return  `Meta Title for post ${i}`; },
     author_id() { return  1; },
     updated_at() { return  '2015-10-19T16:25:07.756Z'; },
     updated_by() { return  1; },
-    published_at() { return  '2015-10-19T16:25:07.756Z'; },
+    published_at() { return  '2015-12-19T16:25:07.000Z'; },
     published_by() { return  1; },
     created_at() { return  '2015-09-11T09:44:29.871Z'; },
-    created_by() { return  1; }
+    created_by() { return  1; },
+    tags() { return []; }
 });

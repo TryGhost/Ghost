@@ -26,6 +26,6 @@ export default Component.extend({
     lastLogin: computed('user.lastLogin', function () {
         let lastLogin = this.get('user.lastLogin');
 
-        return lastLogin ? lastLogin.fromNow() : '(Never)';
+        return lastLogin ? moment(lastLogin).fromNow() : '(Never)';
     })
 });

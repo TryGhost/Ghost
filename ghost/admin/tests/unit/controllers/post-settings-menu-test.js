@@ -4,6 +4,7 @@ import {
     describeModule,
     it
 } from 'ember-mocha';
+import sinon from 'sinon';
 
 const {run} = Ember;
 
@@ -15,7 +16,7 @@ describeModule(
     'controller:post-settings-menu',
     'Unit: Controller: post-settings-menu',
     {
-        needs: ['controller:application', 'service:notifications', 'service:slug-generator']
+        needs: ['controller:application', 'service:notifications', 'service:slug-generator', 'service:timeZone']
     },
 
     function () {
