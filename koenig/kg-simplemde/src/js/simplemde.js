@@ -1697,7 +1697,7 @@ SimpleMDE.prototype.createToolbar = function(items) {
 			if(item.action) {
 				if(typeof item.action === "function") {
 					el.onclick = function(e) {
-                        e.preventDefault();
+						e.preventDefault();
 						item.action(self);
 					};
 				} else if(typeof item.action === "string") {
