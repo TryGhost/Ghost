@@ -6,8 +6,9 @@ import {
 import Pretender from 'pretender';
 import {AjaxError, UnauthorizedError} from 'ember-ajax/errors';
 import {RequestEntityTooLargeError, UnsupportedMediaTypeError} from 'ghost/services/ajax';
+import config from 'ghost/config/environment';
 
-function stubAjaxEndpoint(server, response = {}, code = 500) {
+function stubAjaxEndpoint(server, response = {}, code = 200) {
     server.get('/test/', function () {
         return [
             code,
@@ -34,9 +35,22 @@ describeModule(
             server.shutdown();
         });
 
+        it('adds Ghost version header to requests', function (done) {
+            let {version} = config.APP;
+            let ajax = this.subject();
+
+            stubAjaxEndpoint(server, {});
+
+            ajax.request('/test/').then(() => {
+                let [request] = server.handledRequests;
+                expect(request.requestHeaders['X-Ghost-Version']).to.equal(version);
+                done();
+            });
+        });
+
         it('correctly parses single message response text', function (done) {
             let error = {message: 'Test Error'};
-            stubAjaxEndpoint(server, error);
+            stubAjaxEndpoint(server, error, 500);
 
             let ajax = this.subject();
 
@@ -50,7 +64,7 @@ describeModule(
 
         it('correctly parses single error response text', function (done) {
             let error = {error: 'Test Error'};
-            stubAjaxEndpoint(server, error);
+            stubAjaxEndpoint(server, error, 500);
 
             let ajax = this.subject();
 
@@ -64,7 +78,7 @@ describeModule(
 
         it('correctly parses multiple error messages', function (done) {
             let error = {errors: ['First Error', 'Second Error']};
-            stubAjaxEndpoint(server, error);
+            stubAjaxEndpoint(server, error, 500);
 
             let ajax = this.subject();
 
@@ -77,7 +91,7 @@ describeModule(
         });
 
         it('returns default error object for non built-in error', function (done) {
-            stubAjaxEndpoint(server, {});
+            stubAjaxEndpoint(server, {}, 500);
 
             let ajax = this.subject();
 

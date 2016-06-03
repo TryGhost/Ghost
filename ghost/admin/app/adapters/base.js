@@ -2,6 +2,7 @@ import Ember from 'ember';
 import RESTAdapter from 'ember-data/adapters/rest';
 import ghostPaths from 'ghost/utils/ghost-paths';
 import DataAdapterMixin from 'ember-simple-auth/mixins/data-adapter-mixin';
+import config from 'ghost/config/environment';
 
 const {
     inject: {service}
@@ -14,6 +15,10 @@ export default RESTAdapter.extend(DataAdapterMixin, {
     namespace: ghostPaths().apiRoot.slice(1),
 
     session: service(),
+
+    headers: {
+        'X-Ghost-Version': config.APP.version
+    },
 
     shouldBackgroundReloadRecord() {
         return false;
