@@ -4,8 +4,8 @@ import {
     describe,
     it
 } from 'mocha';
-import validator from 'ghost/validators/slack-integration';
-import SlackObject from 'ghost/models/slack-integration';
+import validator from 'ghost-admin/validators/slack-integration';
+import SlackObject from 'ghost-admin/models/slack-integration';
 
 const testInvalidUrl = function (url) {
     let slackObject = SlackObject.create({url});

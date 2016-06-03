@@ -1,8 +1,8 @@
 import Ember from 'ember';
 import RESTAdapter from 'ember-data/adapters/rest';
-import ghostPaths from 'ghost/utils/ghost-paths';
+import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import DataAdapterMixin from 'ember-simple-auth/mixins/data-adapter-mixin';
-import config from 'ghost/config/environment';
+import config from 'ghost-admin/config/environment';
 
 const {
     inject: {service}

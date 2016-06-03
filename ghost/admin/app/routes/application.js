@@ -1,9 +1,9 @@
 import Ember from 'ember';
 import AuthConfiguration from 'ember-simple-auth/configuration';
 import ApplicationRouteMixin from 'ember-simple-auth/mixins/application-route-mixin';
-import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
-import ctrlOrCmd from 'ghost/utils/ctrl-or-cmd';
-import windowProxy from 'ghost/utils/window-proxy';
+import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
+import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
+import windowProxy from 'ghost-admin/utils/window-proxy';
 
 const {
     Route,

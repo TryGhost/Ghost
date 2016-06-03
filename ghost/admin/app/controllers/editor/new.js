@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import EditorControllerMixin from 'ghost/mixins/editor-base-controller';
+import EditorControllerMixin from 'ghost-admin/mixins/editor-base-controller';
 
 const {Controller} = Ember;
 

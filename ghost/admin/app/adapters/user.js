@@ -1,5 +1,5 @@
-import ApplicationAdapter from 'ghost/adapters/application';
-import SlugUrl from 'ghost/mixins/slug-url';
+import ApplicationAdapter from 'ghost-admin/adapters/application';
+import SlugUrl from 'ghost-admin/mixins/slug-url';
 
 export default ApplicationAdapter.extend(SlugUrl, {
     find(store, type, id) {

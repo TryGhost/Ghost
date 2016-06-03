@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { describeComponent, it } from 'ember-mocha';
 import hbs from 'htmlbars-inline-precompile';
 import Ember from 'ember';
-import NavItem from 'ghost/models/navigation-item';
+import NavItem from 'ghost-admin/models/navigation-item';
 
 const {run} = Ember;
 

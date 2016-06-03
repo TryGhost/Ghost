@@ -4,9 +4,9 @@ import {
 } from 'ember-mocha';
 import Pretender from 'pretender';
 import wait from 'ember-test-helpers/wait';
-import FeatureService, {feature} from 'ghost/services/feature';
+import FeatureService, {feature} from 'ghost-admin/services/feature';
 import Ember from 'ember';
-import { errorOverride, errorReset } from 'ghost/tests/helpers/adapter-error';
+import { errorOverride, errorReset } from 'ghost-admin/tests/helpers/adapter-error';
 
 const {RSVP, merge, run} = Ember;
 const EmberError = Ember.Error;

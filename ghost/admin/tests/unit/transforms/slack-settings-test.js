@@ -2,7 +2,7 @@
 import { expect } from 'chai';
 import { describeModule, it } from 'ember-mocha';
 import Ember from 'ember';
-import SlackIntegration from 'ghost/models/slack-integration';
+import SlackIntegration from 'ghost-admin/models/slack-integration';
 
 const emberA = Ember.A;
 

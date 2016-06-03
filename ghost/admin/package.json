@@ -1,10 +1,18 @@
 {
-  "name": "ghost",
+  "name": "ghost-admin",
   "version": "0.8.0",
-  "description": "Small description for ghost goes here",
+  "description": "Ember.js admin client for Ghost",
+  "author": "Ghost Foundation",
+  "homepage": "http://ghost.org",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/TryGhost/Ghost-Admin.git"
+  },
+  "bugs": "https://github.com/TryGhost/Ghost/issues",
+  "contributors": "https://github.com/TryGhost/Ghost-Admin/graphs/contributors",
+  "license": "MIT",
   "private": true,
   "directories": {
-    "doc": "doc",
     "test": "tests"
   },
   "scripts": {
@@ -12,12 +20,9 @@
     "build": "ember build",
     "test": "ember test"
   },
-  "repository": "",
   "engines": {
     "node": ">= 0.10.0"
   },
-  "author": "",
-  "license": "MIT",
   "devDependencies": {
     "broccoli-asset-rev": "2.4.2",
     "csscomb": "3.1.8",

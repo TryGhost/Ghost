@@ -10,8 +10,8 @@ import { expect } from 'chai';
 import Ember from 'ember';
 import startApp from '../../helpers/start-app';
 import destroyApp from '../../helpers/destroy-app';
-import { invalidateSession, authenticateSession } from 'ghost/tests/helpers/ember-simple-auth';
-import { errorOverride, errorReset } from 'ghost/tests/helpers/adapter-error';
+import { invalidateSession, authenticateSession } from 'ghost-admin/tests/helpers/ember-simple-auth';
+import { errorOverride, errorReset } from 'ghost-admin/tests/helpers/adapter-error';
 import Mirage from 'ember-cli-mirage';
 
 const {run} = Ember;

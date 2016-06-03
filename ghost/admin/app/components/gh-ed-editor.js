@@ -1,7 +1,7 @@
 import Ember from 'ember';
-import EditorAPI from 'ghost/mixins/ed-editor-api';
-import EditorShortcuts from 'ghost/mixins/ed-editor-shortcuts';
-import EditorScroll from 'ghost/mixins/ed-editor-scroll';
+import EditorAPI from 'ghost-admin/mixins/ed-editor-api';
+import EditorShortcuts from 'ghost-admin/mixins/ed-editor-shortcuts';
+import EditorScroll from 'ghost-admin/mixins/ed-editor-scroll';
 import {invokeAction} from 'ember-invoke-action';
 
 const {TextArea, run} = Ember;

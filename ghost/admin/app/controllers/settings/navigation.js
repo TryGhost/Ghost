@@ -1,6 +1,6 @@
 import Ember from 'ember';
-import SettingsSaveMixin from 'ghost/mixins/settings-save';
-import NavigationItem from 'ghost/models/navigation-item';
+import SettingsSaveMixin from 'ghost-admin/mixins/settings-save';
+import NavigationItem from 'ghost-admin/models/navigation-item';
 
 const {
     Controller,

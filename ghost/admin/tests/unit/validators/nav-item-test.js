@@ -4,8 +4,8 @@ import {
     describe,
     it
 } from 'mocha';
-import validator from 'ghost/validators/nav-item';
-import NavItem from 'ghost/models/navigation-item';
+import validator from 'ghost-admin/validators/nav-item';
+import NavItem from 'ghost-admin/models/navigation-item';
 
 const testInvalidUrl = function (url) {
     let navItem = NavItem.create({url});

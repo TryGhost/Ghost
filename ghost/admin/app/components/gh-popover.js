@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import GhostDropdown from 'ghost/components/gh-dropdown';
+import GhostDropdown from 'ghost-admin/components/gh-dropdown';
 
 const {
     inject: {service}

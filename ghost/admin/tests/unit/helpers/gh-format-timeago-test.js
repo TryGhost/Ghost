@@ -6,7 +6,7 @@ import {
 } from 'mocha';
 import {
     timeAgo
-} from 'ghost/helpers/gh-format-timeago';
+} from 'ghost-admin/helpers/gh-format-timeago';
 import sinon from 'sinon';
 
 describe('Unit: Helper: gh-format-timeago', function () {

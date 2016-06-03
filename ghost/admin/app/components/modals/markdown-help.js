@@ -1,4 +1,4 @@
-import ModalComponent from 'ghost/components/modals/base';
+import ModalComponent from 'ghost-admin/components/modals/base';
 
 export default ModalComponent.extend({
 });

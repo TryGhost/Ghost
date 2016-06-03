@@ -1,4 +1,4 @@
-import NewUserValidator from 'ghost/validators/new-user';
+import NewUserValidator from 'ghost-admin/validators/new-user';
 
 export default NewUserValidator.create({
     properties: ['name', 'email', 'password', 'blogTitle'],

@@ -1,8 +1,8 @@
 import Ember from 'ember';
-import {parseDateString} from 'ghost/utils/date-formatting';
-import SettingsMenuMixin from 'ghost/mixins/settings-menu-controller';
-import boundOneWay from 'ghost/utils/bound-one-way';
-import isNumber from 'ghost/utils/isNumber';
+import {parseDateString} from 'ghost-admin/utils/date-formatting';
+import SettingsMenuMixin from 'ghost-admin/mixins/settings-menu-controller';
+import boundOneWay from 'ghost-admin/utils/bound-one-way';
+import isNumber from 'ghost-admin/utils/isNumber';
 
 const {
     $,

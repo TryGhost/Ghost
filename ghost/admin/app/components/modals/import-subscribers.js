@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import { invokeAction } from 'ember-invoke-action';
-import ModalComponent from 'ghost/components/modals/base';
-import ghostPaths from 'ghost/utils/ghost-paths';
+import ModalComponent from 'ghost-admin/components/modals/base';
+import ghostPaths from 'ghost-admin/utils/ghost-paths';
 
 const {computed} = Ember;
 

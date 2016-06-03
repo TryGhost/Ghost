@@ -3,7 +3,7 @@
 
 module.exports = function (environment) {
     var ENV = {
-        modulePrefix: 'ghost',
+        modulePrefix: 'ghost-admin',
         environment: environment,
         baseURL: '/',
         locationType: 'trailing-history',

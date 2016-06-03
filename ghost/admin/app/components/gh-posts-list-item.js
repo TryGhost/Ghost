@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import ActiveLinkWrapper from 'ghost/mixins/active-link-wrapper';
+import ActiveLinkWrapper from 'ghost-admin/mixins/active-link-wrapper';
 import {invokeAction} from 'ember-invoke-action';
 
 const {

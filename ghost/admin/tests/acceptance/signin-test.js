@@ -8,7 +8,7 @@ import {
 import { expect } from 'chai';
 import startApp from '../helpers/start-app';
 import destroyApp from '../helpers/destroy-app';
-import { invalidateSession, authenticateSession } from 'ghost/tests/helpers/ember-simple-auth';
+import { invalidateSession, authenticateSession } from 'ghost-admin/tests/helpers/ember-simple-auth';
 import Mirage from 'ember-cli-mirage';
 
 describe('Acceptance: Signin', function() {

@@ -1,6 +1,6 @@
 import Ember from 'ember';
 import AuthenticatedRouteMixin from 'ember-simple-auth/mixins/authenticated-route-mixin';
-import MobileIndexRoute from 'ghost/routes/mobile-index-route';
+import MobileIndexRoute from 'ghost-admin/routes/mobile-index-route';
 
 const {
     computed,
