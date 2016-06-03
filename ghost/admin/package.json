@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "0.0.0",
+  "version": "0.8.0",
   "description": "Small description for ghost goes here",
   "private": true,
   "directories": {

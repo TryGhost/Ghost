@@ -15,8 +15,13 @@ module.exports = function (environment) {
         },
 
         APP: {
-              // Here you can pass flags/options to your application instance
-              // when it is created
+            // Here you can pass flags/options to your application instance
+            // when it is created
+
+            // override the default version string which contains git info from
+            // https://github.com/cibernox/git-repo-version. Only include the
+            // `major.minor` version numbers
+            version: require('../package.json').version.replace(/\.\d+$/, '')
         },
 
         'ember-simple-auth': {
