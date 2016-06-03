@@ -364,6 +364,53 @@ describe('Post API', function () {
 
     // ## Add
     describe('Add', function () {
+        it('create and ensure dates are correct', function (done) {
+            var newPost = {posts: [{status: 'published', published_at: '2016-05-30T07:00:00.000Z'}]};
+
+            request.post(testUtils.API.getApiQuery('posts'))
+                .set('Authorization', 'Bearer ' + accesstoken)
+                .send(newPost)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    res.body.posts[0].published_at.should.eql('2016-05-30T07:00:00.000Z');
+                    res.body.posts[0].published_at = '2016-05-30T09:00:00.000Z';
+
+                    request.put(testUtils.API.getApiQuery('posts/' + res.body.posts[0].id + '/'))
+                        .set('Authorization', 'Bearer ' + accesstoken)
+                        .send(res.body)
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(200)
+                        .end(function (err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            res.body.posts[0].published_at.should.eql('2016-05-30T09:00:00.000Z');
+
+                            request.get(testUtils.API.getApiQuery('posts/' + res.body.posts[0].id + '/'))
+                                .set('Authorization', 'Bearer ' + accesstoken)
+                                .expect('Content-Type', /json/)
+                                .expect('Cache-Control', testUtils.cacheRules.private)
+                                .expect(200)
+                                .end(function (err, res) {
+                                    if (err) {
+                                        return done(err);
+                                    }
+
+                                    res.body.posts[0].published_at.should.eql('2016-05-30T09:00:00.000Z');
+                                    done();
+                                });
+                        });
+                });
+        });
+
         it('can create a new draft, publish post, update post', function (done) {
             var newTitle = 'My Post',
                 newTagName = 'My Tag',
