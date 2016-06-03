@@ -141,7 +141,8 @@ Post = ghostBookshelf.Model.extend({
             prevTitle   = this._previousAttributes.title,
             prevSlug    = this._previousAttributes.slug,
             tagsToCheck = this.get('tags'),
-            publishedAt = this.get('published_at');
+            publishedAt = this.get('published_at'),
+            tags = [];
 
         // both page and post can get scheduled
         if (newStatus === 'scheduled') {
@@ -164,18 +165,22 @@ Post = ghostBookshelf.Model.extend({
             }
         }
 
-        // keep tags for 'saved' event and deduplicate upper/lowercase tags
-        this.myTags = [];
-
-        _.each(tagsToCheck, function each(item) {
-            for (i = 0; i < self.myTags.length; i = i + 1) {
-                if (self.myTags[i].name.toLocaleLowerCase() === item.name.toLocaleLowerCase()) {
-                    return;
+        // If we have a tags property passed in
+        if (!_.isUndefined(tagsToCheck) && !_.isNull(tagsToCheck)) {
+            //  and deduplicate upper/lowercase tags
+            _.each(tagsToCheck, function each(item) {
+                for (i = 0; i < tags.length; i = i + 1) {
+                    if (tags[i].name.toLocaleLowerCase() === item.name.toLocaleLowerCase()) {
+                        return;
+                    }
                 }
-            }
 
-            self.myTags.push(item);
-        });
+                tags.push(item);
+            });
+
+            // keep tags for 'saved' event
+            this.tagsToSave = tags;
+        }
 
         ghostBookshelf.Model.prototype.saving.call(this, model, attr, options);
 
@@ -252,7 +257,12 @@ Post = ghostBookshelf.Model.extend({
      * @return {Promise(ghostBookshelf.Models.Post)} Updated Post model
      */
     updateTags: function updateTags(savedModel, response, options) {
-        var newTags = this.myTags,
+        if (_.isUndefined(this.tagsToSave)) {
+            // The tag property was not set, so we shouldn't be doing any playing with tags on this request
+            return Promise.resolve();
+        }
+
+        var newTags = this.tagsToSave,
             TagModel = ghostBookshelf.model('Tag');
 
         options = options || {};
