@@ -66,23 +66,26 @@ function ping(post) {
 
         req = http.request(options);
         req.write(pingXML);
-        req.on('error', function (error) {
-            errors.logError(
-                error,
-                i18n.t('errors.data.xml.xmlrpc.pingUpdateFailed.error'),
-                i18n.t('errors.data.xml.xmlrpc.pingUpdateFailed.help', {url: 'http://support.ghost.org'})
-            );
-        });
+        req.on('error', function handleError(error) {
+                errors.logError(
+                    error,
+                    i18n.t('errors.data.xml.xmlrpc.pingUpdateFailed.error'),
+                    i18n.t('errors.data.xml.xmlrpc.pingUpdateFailed.help', {url: 'http://support.ghost.org'})
+                );
+            }
+        );
         req.end();
     });
 }
 
-function init() {
-    events.on('post.published', function (model) {
-        ping(model.toJSON());
-    });
+function listener(model) {
+    ping(model.toJSON());
+}
+
+function listen() {
+    events.on('post.published', listener);
 }
 
 module.exports = {
-    init: init
+    listen: listen
 };
