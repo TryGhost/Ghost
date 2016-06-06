@@ -296,6 +296,10 @@ var _              = require('lodash'),
                     command: 'npm shrinkwrap'
                 },
 
+                prune: {
+                    command: 'npm prune'
+                },
+
                 dedupe: {
                     command: 'npm dedupe'
                 },
@@ -852,7 +856,7 @@ var _              = require('lodash'),
                     dest: '<%= paths.releaseBuild %>/'
                 });
 
-                grunt.task.run(['init', 'prod', 'clean:release',  'shell:dedupe', 'shell:shrinkwrap', 'copy:release', 'compress:release']);
+                grunt.task.run(['init', 'prod', 'clean:release',  'shell:dedupe', 'shell:prune', 'shell:shrinkwrap', 'copy:release', 'compress:release']);
             }
         );
     };
