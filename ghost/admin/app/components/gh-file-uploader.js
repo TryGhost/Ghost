@@ -1,8 +1,8 @@
 import Ember from 'ember';
 import { invoke, invokeAction } from 'ember-invoke-action';
 import {
-    RequestEntityTooLargeError,
-    UnsupportedMediaTypeError
+    isRequestEntityTooLargeError,
+    isUnsupportedMediaTypeError
 } from 'ghost-admin/services/ajax';
 
 const {
@@ -130,9 +130,9 @@ export default Component.extend({
     _uploadFailed(error) {
         let message;
 
-        if (error instanceof UnsupportedMediaTypeError) {
+        if (isUnsupportedMediaTypeError(error)) {
             message = 'The file type you uploaded is not supported.';
-        } else if (error instanceof RequestEntityTooLargeError) {
+        } else if (isRequestEntityTooLargeError(error)) {
             message = 'The file you uploaded was larger than the maximum file size your server allows.';
         } else if (error.errors && !isBlank(error.errors[0].message)) {
             message = error.errors[0].message;

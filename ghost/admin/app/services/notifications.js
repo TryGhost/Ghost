@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import {AjaxError} from 'ember-ajax/errors';
+import {isAjaxError} from 'ember-ajax/errors';
 
 const {
     Service,
@@ -115,7 +115,7 @@ export default Service.extend({
 
         options.defaultErrorText = options.defaultErrorText || 'There was a problem on the server, please try again.';
 
-        if (resp instanceof AjaxError) {
+        if (isAjaxError(resp)) {
             resp = resp.errors;
         }
 
