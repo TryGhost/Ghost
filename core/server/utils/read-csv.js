@@ -1,64 +1,57 @@
-var readline = require('readline'),
-    Promise = require('bluebird'),
-    lodash = require('lodash'),
-    errors = require('../errors'),
+var Promise = require('bluebird'),
+    csvParser = require('csv-parser'),
+    _ = require('lodash'),
     fs = require('fs');
 
 function readCSV(options) {
-    var path = options.path,
-        columnsToExtract = options.columnsToExtract || [],
-        firstLine = true,
-        mapping = {},
-        toReturn = [],
-        rl;
+    var columnsToExtract = options.columnsToExtract || [],
+        results = [], rows = [];
 
     return new Promise(function (resolve, reject) {
-        rl = readline.createInterface({
-            input: fs.createReadStream(path),
-            terminal: false
-        });
+        var readFile = fs.createReadStream(options.path);
 
-        rl.on('line', function (line) {
-            var values = line.split(','),
-                entry = {};
-
-            // CASE: column headers
-            if (firstLine) {
-                if (values.length === 1) {
-                    mapping[columnsToExtract[0]] = 0;
-                } else {
-                    try {
-                        lodash.each(columnsToExtract, function (columnToExtract) {
-                            mapping[columnToExtract] = lodash.findIndex(values, function (value) {
-                                if (value.match(columnToExtract)) {
-                                    return true;
-                                }
-                            });
-
-                            // CASE: column does not exist
-                            if (mapping[columnToExtract] === -1) {
-                                throw new errors.ValidationError(
-                                    'Column header missing: "{{column}}".'.replace('{{column}}', columnToExtract)
-                                );
-                            }
-                        });
-                    } catch (err) {
-                        reject(err);
-                    }
-                }
-
-                firstLine = false;
-            } else {
-                lodash.each(mapping, function (index, columnName) {
-                    entry[columnName] = values[index];
+        readFile.on('err', function (err) {
+            reject(err);
+        })
+        .pipe(csvParser())
+        .on('data', function (row) {
+            rows.push(row);
+        })
+        .on('end', function () {
+            // If CSV is single column - return all values including header
+            var headers = _.keys(rows[0]), result = {}, columnMap = {};
+            if (columnsToExtract.length === 1 && headers.length === 1) {
+                results = _.map(rows, function (value) {
+                    result = {};
+                    result[columnsToExtract[0].name] = value[headers[0]];
+                    return result;
                 });
 
-                toReturn.push(entry);
-            }
-        });
+                // Add first row
+                result = {};
+                result[columnsToExtract[0].name] = headers[0];
+                results = [result].concat(results);
+            } else {
+                // If there are multiple columns in csv file
+                // try to match headers using lookup value
 
-        rl.on('close', function () {
-            resolve(toReturn);
+                _.map(columnsToExtract, function findMatches(column) {
+                    _.each(headers, function checkheader(header) {
+                        if (column.lookup.test(header)) {
+                            columnMap[column.name] = header;
+                        }
+                    });
+                });
+
+                results = _.map(rows, function evaluateRow(row) {
+                    var result = {};
+                    _.each(columnMap, function returnMatches(value, key) {
+                        result[key] = row[value];
+                    });
+                    return result;
+                });
+            }
+            resolve(results);
         });
     });
 }
