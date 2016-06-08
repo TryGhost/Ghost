@@ -1,48 +1,48 @@
 {
   "name": "simplemde",
-  "version": "1.10.1",
+  "version": "1.11.0",
   "description": "A simple, beautiful, and embeddable JavaScript Markdown editor. Features autosaving and spell checking.",
   "keywords": [
-	"embeddable",
-	"markdown",
-	"editor",
-	"javascript",
-	"wysiwyg"
+    "embeddable",
+    "markdown",
+    "editor",
+    "javascript",
+    "wysiwyg"
   ],
   "homepage": "https://github.com/NextStepWebs/simplemde-markdown-editor",
   "main": "./src/js/simplemde.js",
   "license": "MIT",
   "company": "Next Step Webs, Inc.",
   "author": {
-	"name": "Wes Cossick",
-	"url": "http://www.WesCossick.com"
+    "name": "Wes Cossick",
+    "url": "http://www.WesCossick.com"
   },
   "bugs": {
-	"url": "https://github.com/NextStepWebs/simplemde-markdown-editor/issues"
+    "url": "https://github.com/NextStepWebs/simplemde-markdown-editor/issues"
   },
   "dependencies": {
-	"codemirror": "*",
-	"codemirror-spell-checker": "*",
-	"marked": "*"
+    "codemirror": "*",
+    "codemirror-spell-checker": "*",
+    "marked": "*"
   },
   "devDependencies": {
-	"browserify": "*",
-	"debug": "*",
-	"eslint": "*",
-	"gulp": "*",
-	"gulp-concat": "*",
-	"gulp-debug": "*",
-	"gulp-eslint": "*",
-	"gulp-header": "*",
-	"gulp-jsbeautifier": "*",
-	"gulp-clean-css": "*",
-	"gulp-rename": "*",
-	"gulp-uglify": "*",
-	"vinyl-source-stream": "*",
-	"vinyl-buffer": "*"
+    "browserify": "*",
+    "debug": "*",
+    "eslint": "*",
+    "gulp": "*",
+    "gulp-concat": "*",
+    "gulp-debug": "*",
+    "gulp-eslint": "*",
+    "gulp-header": "*",
+    "gulp-jsbeautifier": "*",
+    "gulp-clean-css": "*",
+    "gulp-rename": "*",
+    "gulp-uglify": "*",
+    "vinyl-source-stream": "*",
+    "vinyl-buffer": "*"
   },
   "repository": {
-	"type": "git",
-	"url": "https://github.com/NextStepWebs/simplemde-markdown-editor"
+    "type": "git",
+    "url": "https://github.com/NextStepWebs/simplemde-markdown-editor"
   }
 }
