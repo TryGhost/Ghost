@@ -60,7 +60,7 @@
     "ember-sortable": "1.8.1",
     "ember-suave": "2.0.1",
     "ember-watson": "0.8.2",
-    "ember-wormhole": "0.3.6",
+    "ember-wormhole": "0.4.0",
     "emberx-file-input": "1.0.0",
     "fs-extra": "0.30.0",
     "glob": "^7.0.3",
