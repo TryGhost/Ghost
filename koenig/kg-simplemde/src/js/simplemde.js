@@ -740,6 +740,9 @@ function toggleSideBySide(editor) {
 	} else {
 		cm.off("update", cm.sideBySideRenderingFunction);
 	}
+
+	// Refresh to fix selection being off (#309)
+	cm.refresh();
 }
 
 
