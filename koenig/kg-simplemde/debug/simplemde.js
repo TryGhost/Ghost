@@ -15729,6 +15729,9 @@ function toggleSideBySide(editor) {
 	} else {
 		cm.off("update", cm.sideBySideRenderingFunction);
 	}
+
+	// Refresh to fix selection being off (#309)
+	cm.refresh();
 }
 
 
@@ -16038,7 +16041,7 @@ function extend(target) {
 
 /* The right word count in respect for CJK. */
 function wordCount(data) {
-	var pattern = /[a-zA-Z0-9_\u0392-\u03c9]+|[\u4E00-\u9FFF\u3400-\u4dbf\uf900-\ufaff\u3040-\u309f\uac00-\ud7af]+/g;
+	var pattern = /[a-zA-Z0-9_\u0392-\u03c9\u0410-\u04F9]+|[\u4E00-\u9FFF\u3400-\u4dbf\uf900-\ufaff\u3040-\u309f\uac00-\ud7af]+/g;
 	var m = data.match(pattern);
 	var count = 0;
 	if(m === null) return count;
@@ -16228,7 +16231,7 @@ var toolbarBuiltInButtons = {
 
 var insertTexts = {
 	link: ["[", "](#url#)"],
-	image: ["![", "](#url#)"],
+	image: ["![](", "#url#)"],
 	table: ["", "\n\n| Column 1 | Column 2 | Column 3 |\n| -------- | -------- | -------- |\n| Text     | Text     | Text     |\n\n"],
 	horizontalRule: ["", "\n\n-----\n\n"]
 };
@@ -16503,6 +16506,13 @@ SimpleMDE.prototype.render = function(el) {
 	this.gui.sideBySide = this.createSideBySide();
 
 	this._rendered = this.element;
+
+
+	// Fixes CodeMirror bug (#344)
+	var temp_cm = this.codemirror;
+	setTimeout(function() {
+		temp_cm.refresh();
+	}.bind(temp_cm), 0);
 };
 
 // Safari, in Private Browsing Mode, looks like it supports localStorage but all calls to setItem throw QuotaExceededError. We're going to detect this and set a variable accordingly.
@@ -16689,7 +16699,8 @@ SimpleMDE.prototype.createToolbar = function(items) {
 			// bind events, special for info
 			if(item.action) {
 				if(typeof item.action === "function") {
-					el.onclick = function() {
+					el.onclick = function(e) {
+						e.preventDefault();
 						item.action(self);
 					};
 				} else if(typeof item.action === "string") {
@@ -16760,14 +16771,14 @@ SimpleMDE.prototype.createStatusbar = function(status) {
 
 			if(name === "words") {
 				defaultValue = function(el) {
-					el.innerHTML = "0";
+					el.innerHTML = wordCount(cm.getValue());
 				};
 				onUpdate = function(el) {
 					el.innerHTML = wordCount(cm.getValue());
 				};
 			} else if(name === "lines") {
 				defaultValue = function(el) {
-					el.innerHTML = "0";
+					el.innerHTML = cm.lineCount();
 				};
 				onUpdate = function(el) {
 					el.innerHTML = cm.lineCount();
