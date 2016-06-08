@@ -297,8 +297,8 @@ export default Controller.extend(SettingsMenuMixin, {
                 }
                 return;
             }
-            this.get('timeZone.offset').then((offset) => {
-                let newPublishedAt = parseDateString(userInput, offset);
+            this.get('timeZone.blogTimezone').then((blogTimezone) => {
+                let newPublishedAt = parseDateString(userInput, blogTimezone);
                 let publishedAt = moment.utc(this.get('model.publishedAt'));
                 let errMessage = '';
 
