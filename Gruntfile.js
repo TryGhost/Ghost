@@ -494,6 +494,7 @@ var _              = require('lodash'),
         // `grunt test:unit/apps_spec.js` will run just the tests inside the apps_spec.js file
         //
         // It works for any path relative to the core/test folder. It will also run all the tests in a single directory
+        // You can also run a test with grunt test:core/test/unit/... to get bash autocompletion
         //
         // `grunt test:integration/api` - runs the api integration tests
         // `grunt test:integration` - runs the integration tests in the root folder and excludes all api & model tests
@@ -502,7 +503,9 @@ var _              = require('lodash'),
                 grunt.fail.fatal('No test provided. `grunt test` expects a filename. e.g.: `grunt test:unit/apps_spec.js`. Did you mean `npm test` or `grunt validate`?');
             }
 
-            test = 'core/test/' + test;
+            if (!test.match(/core\/test/)) {
+                test = 'core/test/' + test;
+            }
 
             // CASE: execute folder
             if (!test.match(/.js/)) {
