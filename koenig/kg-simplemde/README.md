@@ -20,11 +20,11 @@ Via [bower](https://www.bower.io).
 bower install simplemde --save
 ```
 
-Via [jsDelivr](http://www.jsdelivr.com/#!simplemde). *Please note, jsDelivr may take a few days to update to the latest release.*
+Via [jsDelivr](https://www.jsdelivr.com/#!simplemde). *Please note, jsDelivr may take a few days to update to the latest release.*
 
 ```HTML
-<link rel="stylesheet" href="//cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
-<script src="//cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+<script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
 ```
 
 ## Quick start
@@ -103,6 +103,7 @@ simplemde.value("This text will appear in the editor");
 - **spellChecker**: If set to `false`, disable the spell checker. Defaults to `true`.
 - **status**: If set to `false`, hide the status bar. Defaults to the array of built-in status bar items.
   - Optionally, you can set an array of status bar items to include, and in what order. You can even define your own custom status bar items.
+- **styleSelectedText**: If set to `false`, remove the `CodeMirror-selectedtext` class from selected lines. Defaults to `true`.
 - **tabSize**: If set, customize the tab size. Defaults to `2`.
 - **toolbar**: If set to `false`, hide the toolbar. Defaults to the [array of icons](#toolbar-icons).
 - **toolbarTips**: If set to `false`, disable toolbar button tips. Defaults to `true`.
@@ -170,6 +171,7 @@ var simplemde = new SimpleMDE({
 			el.innerHTML = ++this.keystrokes + " Keystrokes";
 		}
 	}], // Another optional usage, with a custom status bar item that counts keystrokes
+	styleSelectedText: false,
 	tabSize: 4,
 	toolbar: false,
 	toolbarTips: false,
@@ -225,7 +227,7 @@ var simplemde = new SimpleMDE({
 		},
 		{
 			name: "custom",
-			action: customFunction(editor){
+			action: function customFunction(editor){
 				// Add your own code
 			},
 			className: "fa fa-star",
@@ -324,6 +326,6 @@ simplemde.clearAutosavedValue(); // no returned value
 ```
 
 ## How it works
-SimpleMDE began as an improvement of [lepture's Editor project](https://github.com/lepture/editor), but has now taken on an identity of its own. It is bundled with [CodeMirror](https://github.com/codemirror/codemirror) and depends on [Font Awesome](http://fortawesome.github.io/Font-Awesome/).
+SimpleMDE began as an improvement of [lepture's Editor project](https://github.com/lepture/editor), but has now taken on an identity of its own. It is bundled with [CodeMirror](https://github.com/codemirror/codemirror) and depends on [Font Awesome](http://fontawesome.io).
 
 CodeMirror is the backbone of the project and parses much of the Markdown syntax as it's being written. This allows us to add styles to the Markdown that's being written. Additionally, a toolbar and status bar have been added to the top and bottom, respectively. Previews are rendered by [Marked](https://github.com/chjj/marked) using GFM.

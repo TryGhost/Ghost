@@ -1,5 +1,5 @@
 /**
- * simplemde v1.10.1
+ * simplemde v1.11.0
  * Copyright Next Step Webs, Inc.
  * @link https://github.com/NextStepWebs/simplemde-markdown-editor
  * @license MIT
@@ -58,7 +58,7 @@
 }
 .cm-fat-cursor .CodeMirror-cursor {
   width: auto;
-  border: 0;
+  border: 0 !important;
   background: #7e7;
 }
 .cm-fat-cursor div.CodeMirror-cursors {
@@ -197,6 +197,7 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {color: #f22;}
 
 .CodeMirror-gutters {
   position: absolute; left: 0; top: 0;
+  min-height: 100%;
   z-index: 3;
 }
 .CodeMirror-gutter {
@@ -251,6 +252,8 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {color: #f22;}
   position: relative;
   overflow: visible;
   -webkit-tap-highlight-color: transparent;
+  -webkit-font-variant-ligatures: none;
+  font-variant-ligatures: none;
 }
 .CodeMirror-wrap pre {
   word-wrap: break-word;
@@ -669,5 +672,5 @@ span.CodeMirror-selectedtext { background: none; }
     opacity: .5;
 }
 .CodeMirror .cm-spell-error:not(.cm-url):not(.cm-comment):not(.cm-tag):not(.cm-word) {
-	 background: rgba(255, 0, 0, .15);
+    background: rgba(255, 0, 0, .15);
 }

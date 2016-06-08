@@ -7,9 +7,10 @@ require("codemirror/addon/display/fullscreen.js");
 require("codemirror/mode/markdown/markdown.js");
 require("codemirror/addon/mode/overlay.js");
 require("codemirror/addon/display/placeholder.js");
+require("codemirror/addon/selection/mark-selection.js");
 require("codemirror/mode/gfm/gfm.js");
 require("codemirror/mode/xml/xml.js");
-require("spell-checker");
+var CodeMirrorSpellChecker = require("codemirror-spell-checker");
 var marked = require("marked");
 
 
@@ -739,6 +740,9 @@ function toggleSideBySide(editor) {
 	} else {
 		cm.off("update", cm.sideBySideRenderingFunction);
 	}
+
+	// Refresh to fix selection being off (#309)
+	cm.refresh();
 }
 
 
@@ -1048,7 +1052,7 @@ function extend(target) {
 
 /* The right word count in respect for CJK. */
 function wordCount(data) {
-	var pattern = /[a-zA-Z0-9_\u0392-\u03c9]+|[\u4E00-\u9FFF\u3400-\u4dbf\uf900-\ufaff\u3040-\u309f\uac00-\ud7af]+/g;
+	var pattern = /[a-zA-Z0-9_\u0392-\u03c9\u0410-\u04F9]+|[\u4E00-\u9FFF\u3400-\u4dbf\uf900-\ufaff\u3040-\u309f\uac00-\ud7af]+/g;
 	var m = data.match(pattern);
 	var count = 0;
 	if(m === null) return count;
@@ -1238,7 +1242,7 @@ var toolbarBuiltInButtons = {
 
 var insertTexts = {
 	link: ["[", "](#url#)"],
-	image: ["![", "](#url#)"],
+	image: ["![](", "#url#)"],
 	table: ["", "\n\n| Column 1 | Column 2 | Column 3 |\n| -------- | -------- | -------- |\n| Text     | Text     | Text     |\n\n"],
 	horizontalRule: ["", "\n\n-----\n\n"]
 };
@@ -1465,6 +1469,10 @@ SimpleMDE.prototype.render = function(el) {
 		backdrop = options.parsingConfig;
 		backdrop.name = "gfm";
 		backdrop.gitHubSpice = false;
+
+		CodeMirrorSpellChecker({
+			codeMirrorInstance: CodeMirror
+		});
 	} else {
 		mode = options.parsingConfig;
 		mode.name = "gfm";
@@ -1483,7 +1491,8 @@ SimpleMDE.prototype.render = function(el) {
 		extraKeys: keyMaps,
 		lineWrapping: (options.lineWrapping === false) ? false : true,
 		allowDropFileTypes: ["text/plain"],
-		placeholder: options.placeholder || el.getAttribute("placeholder") || ""
+		placeholder: options.placeholder || el.getAttribute("placeholder") || "",
+		styleSelectedText: (options.styleSelectedText != undefined) ? options.styleSelectedText : true
 	});
 
 	if(options.forceSync === true) {
@@ -1508,6 +1517,13 @@ SimpleMDE.prototype.render = function(el) {
 	this.gui.sideBySide = this.createSideBySide();
 
 	this._rendered = this.element;
+
+
+	// Fixes CodeMirror bug (#344)
+	var temp_cm = this.codemirror;
+	setTimeout(function() {
+		temp_cm.refresh();
+	}.bind(temp_cm), 0);
 };
 
 // Safari, in Private Browsing Mode, looks like it supports localStorage but all calls to setItem throw QuotaExceededError. We're going to detect this and set a variable accordingly.
@@ -1672,9 +1688,7 @@ SimpleMDE.prototype.createToolbar = function(items) {
 			var nonSeparatorIconsFollow = false;
 
 			for(var x = (i + 1); x < items.length; x++) {
-				console.log(x);
 				if(items[x] !== "|" && (!self.options.hideIcons || self.options.hideIcons.indexOf(items[x].name) == -1)) {
-					console.log(items[x]);
 					nonSeparatorIconsFollow = true;
 				}
 			}
@@ -1696,7 +1710,8 @@ SimpleMDE.prototype.createToolbar = function(items) {
 			// bind events, special for info
 			if(item.action) {
 				if(typeof item.action === "function") {
-					el.onclick = function() {
+					el.onclick = function(e) {
+						e.preventDefault();
 						item.action(self);
 					};
 				} else if(typeof item.action === "string") {
@@ -1767,14 +1782,14 @@ SimpleMDE.prototype.createStatusbar = function(status) {
 
 			if(name === "words") {
 				defaultValue = function(el) {
-					el.innerHTML = "0";
+					el.innerHTML = wordCount(cm.getValue());
 				};
 				onUpdate = function(el) {
 					el.innerHTML = wordCount(cm.getValue());
 				};
 			} else if(name === "lines") {
 				defaultValue = function(el) {
-					el.innerHTML = "0";
+					el.innerHTML = cm.lineCount();
 				};
 				onUpdate = function(el) {
 					el.innerHTML = cm.lineCount();
@@ -1989,9 +2004,17 @@ SimpleMDE.prototype.toTextArea = function() {
 	var cm = this.codemirror;
 	var wrapper = cm.getWrapperElement();
 
-	wrapper.parentNode.removeChild(this.gui.toolbar);
-	wrapper.parentNode.removeChild(this.gui.statusbar);
-	wrapper.parentNode.removeChild(this.gui.sideBySide);
+	if(wrapper.parentNode) {
+		if(this.gui.toolbar) {
+			wrapper.parentNode.removeChild(this.gui.toolbar);
+		}
+		if(this.gui.statusbar) {
+			wrapper.parentNode.removeChild(this.gui.statusbar);
+		}
+		if(this.gui.sideBySide) {
+			wrapper.parentNode.removeChild(this.gui.sideBySide);
+		}
+	}
 
 	cm.toTextArea();
 
