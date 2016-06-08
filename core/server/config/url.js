@@ -204,11 +204,11 @@ function urlFor(context, data, absolute) {
             baseUrl = getBaseUrl(secure);
             hostname = baseUrl.split('//')[1] + ghostConfig.paths.subdir;
             if (urlPath.indexOf(hostname) > -1
-                && urlPath.indexOf('.' + hostname) === -1
-                && urlPath.indexOf('mailto:') !== 0) {
+                && !urlPath.split(hostname)[0].match(/\.|mailto:/)) {
                 // make link relative to account for possible
                 // mismatch in http/https etc, force absolute
                 // do not do so if link is a subdomain of blog url
+                // or if hostname is inside of the slug
                 urlPath = urlPath.split(hostname)[1];
                 if (urlPath.substring(0, 1) !== '/') {
                     urlPath = '/' + urlPath;
