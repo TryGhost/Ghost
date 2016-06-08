@@ -21,46 +21,25 @@
 	"url": "https://github.com/NextStepWebs/simplemde-markdown-editor/issues"
   },
   "dependencies": {
-	"codemirror": "codemirror/CodeMirror",
-	"codemirror-spell-checker": "nextstepwebs/codemirror-spell-checker",
-	"marked": "0.3.5"
+	"codemirror": "*",
+	"codemirror-spell-checker": "*",
+	"marked": "*"
   },
   "devDependencies": {
-	"browserify": "^11.2.0",
-	"browserify-shim": "^3.8.10",
-	"debug": "^2.2.0",
+	"browserify": "*",
+	"debug": "*",
 	"eslint": "*",
 	"gulp": "*",
 	"gulp-concat": "*",
-	"gulp-debug": "^2.1.1",
+	"gulp-debug": "*",
 	"gulp-eslint": "*",
 	"gulp-header": "*",
 	"gulp-jsbeautifier": "*",
-	"gulp-minify-css": "^1.2.1",
-	"gulp-rename": "^1.2.2",
+	"gulp-clean-css": "*",
+	"gulp-rename": "*",
 	"gulp-uglify": "*",
 	"vinyl-source-stream": "*",
 	"vinyl-buffer": "*"
-  },
-  "browserify": {
-	"transform": [
-	  "browserify-shim"
-	]
-  },
-  "browser": {
-	"spell-checker": "codemirror-spell-checker/src/js/spell-checker.js",
-	"typo": "codemirror-spell-checker/src/js/typo.js"
-  },
-  "browserify-shim": {
-	"spell-checker": {
-	  "depends": [
-		"typo:Typo",
-		"codemirror:CodeMirror"
-	  ]
-	},
-	"typo": {
-	  "exports": "Typo"
-	}
   },
   "repository": {
 	"type": "git",

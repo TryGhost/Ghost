@@ -10,7 +10,7 @@ require("codemirror/addon/display/placeholder.js");
 require("codemirror/addon/selection/mark-selection.js");
 require("codemirror/mode/gfm/gfm.js");
 require("codemirror/mode/xml/xml.js");
-require("spell-checker");
+var CodeMirrorSpellChecker = require("codemirror-spell-checker");
 var marked = require("marked");
 
 
@@ -1466,6 +1466,10 @@ SimpleMDE.prototype.render = function(el) {
 		backdrop = options.parsingConfig;
 		backdrop.name = "gfm";
 		backdrop.gitHubSpice = false;
+
+		CodeMirrorSpellChecker({
+			codeMirrorInstance: CodeMirror
+		});
 	} else {
 		mode = options.parsingConfig;
 		mode.name = "gfm";
