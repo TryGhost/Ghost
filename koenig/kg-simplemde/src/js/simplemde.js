@@ -1052,7 +1052,7 @@ function extend(target) {
 
 /* The right word count in respect for CJK. */
 function wordCount(data) {
-	var pattern = /[a-zA-Z0-9_\u0392-\u03c9\u0410-\u04F9]]+|[\u4E00-\u9FFF\u3400-\u4dbf\uf900-\ufaff\u3040-\u309f\uac00-\ud7af]+/g;
+	var pattern = /[a-zA-Z0-9_\u0392-\u03c9\u0410-\u04F9]+|[\u4E00-\u9FFF\u3400-\u4dbf\uf900-\ufaff\u3040-\u309f\uac00-\ud7af]+/g;
 	var m = data.match(pattern);
 	var count = 0;
 	if(m === null) return count;
@@ -1517,8 +1517,8 @@ SimpleMDE.prototype.render = function(el) {
 	this.gui.sideBySide = this.createSideBySide();
 
 	this._rendered = this.element;
-	
-	
+
+
 	// Fixes CodeMirror bug (#344)
 	var temp_cm = this.codemirror;
 	setTimeout(function() {
@@ -1782,14 +1782,14 @@ SimpleMDE.prototype.createStatusbar = function(status) {
 
 			if(name === "words") {
 				defaultValue = function(el) {
-					el.innerHTML = "0";
+					el.innerHTML = wordCount(cm.getValue());
 				};
 				onUpdate = function(el) {
 					el.innerHTML = wordCount(cm.getValue());
 				};
 			} else if(name === "lines") {
 				defaultValue = function(el) {
-					el.innerHTML = "0";
+					el.innerHTML = cm.lineCount();
 				};
 				onUpdate = function(el) {
 					el.innerHTML = cm.lineCount();
