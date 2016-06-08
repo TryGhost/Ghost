@@ -1517,6 +1517,13 @@ SimpleMDE.prototype.render = function(el) {
 	this.gui.sideBySide = this.createSideBySide();
 
 	this._rendered = this.element;
+	
+	
+	// Fixes CodeMirror bug (#344)
+	var temp_cm = this.codemirror;
+	setTimeout(function() {
+		temp_cm.refresh();
+	}.bind(temp_cm), 0);
 };
 
 // Safari, in Private Browsing Mode, looks like it supports localStorage but all calls to setItem throw QuotaExceededError. We're going to detect this and set a variable accordingly.
