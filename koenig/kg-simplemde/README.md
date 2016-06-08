@@ -20,11 +20,11 @@ Via [bower](https://www.bower.io).
 bower install simplemde --save
 ```
 
-Via [jsDelivr](http://www.jsdelivr.com/#!simplemde). *Please note, jsDelivr may take a few days to update to the latest release.*
+Via [jsDelivr](https://www.jsdelivr.com/#!simplemde). *Please note, jsDelivr may take a few days to update to the latest release.*
 
 ```HTML
-<link rel="stylesheet" href="//cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
-<script src="//cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+<script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
 ```
 
 ## Quick start
@@ -326,6 +326,6 @@ simplemde.clearAutosavedValue(); // no returned value
 ```
 
 ## How it works
-SimpleMDE began as an improvement of [lepture's Editor project](https://github.com/lepture/editor), but has now taken on an identity of its own. It is bundled with [CodeMirror](https://github.com/codemirror/codemirror) and depends on [Font Awesome](http://fortawesome.github.io/Font-Awesome/).
+SimpleMDE began as an improvement of [lepture's Editor project](https://github.com/lepture/editor), but has now taken on an identity of its own. It is bundled with [CodeMirror](https://github.com/codemirror/codemirror) and depends on [Font Awesome](http://fontawesome.io).
 
 CodeMirror is the backbone of the project and parses much of the Markdown syntax as it's being written. This allows us to add styles to the Markdown that's being written. Additionally, a toolbar and status bar have been added to the top and bottom, respectively. Previews are rendered by [Marked](https://github.com/chjj/marked) using GFM.
