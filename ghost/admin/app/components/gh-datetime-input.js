@@ -23,7 +23,7 @@ export default Component.extend(TextInputMixin, {
     didReceiveAttrs() {
         let promises = {
             datetime: RSVP.resolve(this.get('datetime') || moment.utc()),
-            offset: RSVP.resolve(this.get('timeZone.offset'))
+            blogTimezone: RSVP.resolve(this.get('timeZone.blogTimezone'))
         };
 
         if (!this.get('update')) {
@@ -31,7 +31,7 @@ export default Component.extend(TextInputMixin, {
         }
 
         RSVP.hash(promises).then((hash) => {
-            this.set('datetime', formatDate(hash.datetime || moment.utc(), hash.offset));
+            this.set('datetime', formatDate(hash.datetime || moment.utc(), hash.blogTimezone));
         });
     },
 

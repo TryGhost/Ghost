@@ -19,7 +19,7 @@ export default Service.extend({
         return store.queryRecord('setting', {type: 'blog,theme,private'});
     }),
 
-    offset: computed('_settings.activeTimezone', function () {
+    blogTimezone: computed('_settings.activeTimezone', function () {
         return this.get('_settings').then((settings) => {
             return this._parseTimezones(settings);
         });
