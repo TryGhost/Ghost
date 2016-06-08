@@ -96,6 +96,7 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
         signedIn() {
             this.get('notifications').clearAll();
             this.send('loadServerNotifications', true);
+            this.send('checkForOutdatedDesktopApp');
         },
 
         invalidateSession() {
@@ -119,6 +120,26 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
                         });
                     }
                 });
+            }
+        },
+
+        checkForOutdatedDesktopApp() {
+            // Check if the user is running an older version of Ghost Desktop
+            // that needs to be manually updated
+            // (yes, the desktop team is deeply ashamed of these lines 😢)
+            let ua = navigator && navigator.userAgent ? navigator.userAgent : null;
+
+            if (ua && ua.includes && ua.includes('ghost-desktop')) {
+                let updateCheck = /ghost-desktop\/0\.((5\.0)|((4|2)\.0)|((3\.)(0|1)))/;
+                let link = '<a href="https://dev.ghost.org/ghost-desktop-manual-update" target="_blank">click here</a>';
+                let msg = `Your version of Ghost Desktop needs to be manually updated. Please ${link} to get started.`;
+
+                if (updateCheck.test(ua)) {
+                    this.get('notifications').showAlert(msg.htmlSafe(), {
+                        type: 'upgrade',
+                        key: 'desktop.manual.upgrade'
+                    });
+                }
             }
         },
 
