@@ -23,6 +23,10 @@ apiRoutes = function apiRoutes(middleware) {
     // alias delete with del
     router.del = router.delete;
 
+    // Check version matches for API requests, depends on res.locals.safeVersion being set
+    // Therefore must come after themeHandler.ghostLocals, for now
+    router.use(middleware.api.versionMatch);
+
     // ## CORS pre-flight check
     router.options('*', middleware.api.cors);
 
