@@ -1,4 +1,3 @@
-/*globals describe, it, before, after*/
 
 var sinon = require('sinon'),
     rewire = require('rewire'),

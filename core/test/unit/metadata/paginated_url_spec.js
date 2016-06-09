@@ -1,4 +1,3 @@
-/*globals describe, it, before, beforeEach, after */
 var should          = require('should'),
     getPaginatedUrl = require('../../../server/data/meta/paginated_url'),
     configUtils     = require('../../utils/configUtils');

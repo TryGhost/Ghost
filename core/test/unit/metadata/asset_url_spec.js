@@ -1,4 +1,3 @@
-/*globals describe, it*/
 var getAssetUrl = require('../../../server/data/meta/asset_url'),
     config = require('../../../server/config');
 

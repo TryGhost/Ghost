@@ -1,4 +1,3 @@
-/*globals describe, it, beforeEach, afterEach */
 var fs              = require('fs'),
     sinon           = require('sinon'),
     should          = require('should'),

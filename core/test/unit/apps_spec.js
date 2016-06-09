@@ -1,4 +1,3 @@
-/*globals describe, beforeEach, afterEach, it*/
 var path         = require('path'),
     EventEmitter = require('events').EventEmitter,
     should       = require('should'),

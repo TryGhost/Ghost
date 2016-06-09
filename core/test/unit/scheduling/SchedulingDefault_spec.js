@@ -1,4 +1,3 @@
-/*globals describe, it, beforeEach, afterEach*/
 var config = require(__dirname + '/../../../server/config'),
     moment = require('moment'),
     _ = require('lodash'),

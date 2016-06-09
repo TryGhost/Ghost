@@ -1,4 +1,3 @@
-/*globals describe, before, beforeEach, afterEach, it */
 var _             = require('lodash'),
     testUtils     = require('../../utils'),
     rewire        = require('rewire'),

@@ -1,4 +1,3 @@
-/*globals describe, it*/
 var getStructuredData = require('../../../server/data/meta/structured_data'),
     should = require('should');
 

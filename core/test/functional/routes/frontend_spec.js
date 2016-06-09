@@ -1,4 +1,3 @@
-/*global describe, it, before, after */
 
 // # Frontend Route tests
 // As it stands, these tests depend on the database, and as such are integration tests.
