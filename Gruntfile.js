@@ -188,7 +188,7 @@ var _              = require('lodash'),
                     options: {
                         mask: '**/*_spec.js',
                         coverageFolder: 'core/test/coverage/unit',
-                        mochaOptions: ['--timeout=15000'],
+                        mochaOptions: ['--timeout=15000', '--require', 'core/server/overrides'],
                         excludes: ['core/client', 'core/server/built']
                     }
                 },
@@ -202,7 +202,7 @@ var _              = require('lodash'),
                     options: {
                         coverageFolder: 'core/test/coverage/all',
                         mask: '**/*_spec.js',
-                        mochaOptions: ['--timeout=15000'],
+                        mochaOptions: ['--timeout=15000', '--require', 'core/server/overrides'],
                         excludes: ['core/client', 'core/server/built']
                     }
 
