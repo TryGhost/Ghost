@@ -98,7 +98,7 @@ describe('Acceptance: Team', function () {
                     expect(document.title, 'title after clicking user').to.equal('Team - User - Test Blog');
 
                     // view title should exist and be linkable and active
-                    expect(find('.view-title a[href="/team"]').hasClass('active'), 'has linkable url back to team main page')
+                    expect(find('.view-title a[href="/ghost/team"]').hasClass('active'), 'has linkable url back to team main page')
                         .to.be.true;
                 });
 
