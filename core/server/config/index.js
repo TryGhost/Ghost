@@ -255,8 +255,9 @@ ConfigManager.prototype.load = function (configFilePath) {
             Promise.resolve(pendingConfig).then(function () {
                 return self.validate();
             }).then(function (rawConfig) {
-                resolve(self.init(rawConfig));
-            }).catch(reject);
+                return self.init(rawConfig);
+            }).then(resolve)
+            .catch(reject);
         });
     });
 };
