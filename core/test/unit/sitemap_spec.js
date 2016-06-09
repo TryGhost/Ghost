@@ -1,4 +1,3 @@
-/*globals describe, afterEach, it */
 var _           = require('lodash'),
     should      = require('should'),
     sinon       = require('sinon'),

@@ -1,4 +1,3 @@
-/*global describe, it */
 // # Module tests
 // This tests using Ghost as an npm module
 var should     = require('should'),

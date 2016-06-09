@@ -1,4 +1,3 @@
-/*globals describe, it, after, before, beforeEach, afterEach */
 
 var should = require('should'),
     moment = require('moment'),
