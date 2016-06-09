@@ -62,6 +62,9 @@
             }
         },
         "middleware": {
+            "api": {
+                "versionMismatch": "Request for version {requestVersion} does not match current version {currentVersion}."
+            },
             "auth": {
                 "clientAuthenticationFailed": "Client Authentication Failed",
                 "clientCredentialsNotProvided": "Client credentials were not provided",

@@ -27,6 +27,7 @@ var bodyParser      = require('body-parser'),
     staticTheme      = require('./static-theme'),
     themeHandler     = require('./theme-handler'),
     uncapitalise     = require('./uncapitalise'),
+    versionMatch     = require('./api/version-match'),
     cors             = require('./cors'),
     netjet           = require('netjet'),
     labs             = require('./labs'),
@@ -50,7 +51,8 @@ middleware = {
         requiresAuthorizedUserPublicAPI: auth.requiresAuthorizedUserPublicAPI,
         errorHandler: errors.handleAPIError,
         cors: cors,
-        labs: labs
+        labs: labs,
+        versionMatch: versionMatch
     }
 };
 
