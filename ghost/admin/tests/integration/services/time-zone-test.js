@@ -38,13 +38,13 @@ describeModule(
             server.shutdown();
         });
 
-        it('should return a timezone offset', function (done) {
+        it('should return the blogs timezone', function (done) {
             let service = this.subject();
 
             settingsStub(server);
 
-            service.get('offset').then(function (offset) {
-                expect(offset).to.equal('Africa/Cairo');
+            service.get('blogTimezone').then(function (blogTimezone) {
+                expect(blogTimezone).to.equal('Africa/Cairo');
                 done();
             });
         });
