@@ -1,5 +1,3 @@
-/*globals describe, afterEach, before, beforeEach, it*/
-
 var should         = require('should'),
     sinon          = require('sinon'),
     hbs            = require('express-hbs'),

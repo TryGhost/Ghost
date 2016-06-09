@@ -1,4 +1,3 @@
-/*globals describe, beforeEach, afterEach, it*/
 var should          = require('should'),
     sinon           = require('sinon'),
     middleware      = require('../../../server/middleware').middleware;

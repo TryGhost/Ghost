@@ -1,4 +1,3 @@
-/*globals describe, before, beforeEach, afterEach, it*/
 
 /*jshint unused:false*/
 var should = require('should'),
