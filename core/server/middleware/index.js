@@ -1,6 +1,9 @@
 var bodyParser      = require('body-parser'),
+    compress        = require('compression'),
     config          = require('../config'),
     errors          = require('../errors'),
+    express         = require('express'),
+    hbs             = require('express-hbs'),
     logger          = require('morgan'),
     path            = require('path'),
     routes          = require('../routes'),
@@ -27,6 +30,7 @@ var bodyParser      = require('body-parser'),
     cors             = require('./cors'),
     netjet           = require('netjet'),
     labs             = require('./labs'),
+    helpers          = require('../helpers'),
 
     ClientPasswordStrategy  = require('passport-oauth2-client-password').Strategy,
     BearerStrategy          = require('passport-http-bearer').Strategy,
@@ -50,14 +54,33 @@ middleware = {
     }
 };
 
-setupMiddleware = function setupMiddleware(blogApp, adminApp) {
+setupMiddleware = function setupMiddleware(blogApp) {
     var logging = config.logging,
-        corePath = config.paths.corePath;
+        corePath = config.paths.corePath,
+        adminApp = express(),
+        adminHbs = hbs.create();
 
+    // ##Configuration
+
+    // enabled gzip compression by default
+    if (config.server.compress !== false) {
+        blogApp.use(compress());
+    }
+
+    // ## View engine
+    // set the view engine
+    blogApp.set('view engine', 'hbs');
+
+    // Create a hbs instance for admin and init view engine
+    adminApp.set('view engine', 'hbs');
+    adminApp.engine('hbs', adminHbs.express3({}));
+
+    // Load helpers
+    helpers.loadCoreHelpers(adminHbs);
+
+    // Initialize Auth Handlers & OAuth middleware
     passport.use(new ClientPasswordStrategy(authStrategies.clientPasswordStrategy));
     passport.use(new BearerStrategy(authStrategies.bearerStrategy));
-
-    // Initialize OAuth middleware
     oauth.init();
 
     // Make sure 'req.secure' is valid for proxied requests
