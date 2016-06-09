@@ -48,7 +48,6 @@ themeHandler = {
         // Pass 'secure' flag to the view engine
         // so that templates can choose 'url' vs 'urlSSL'
         res.locals.secure = req.secure;
-
         next();
     },
 
@@ -89,40 +88,37 @@ themeHandler = {
     // Updates the blogApp's activeTheme variable and subsequently
     // activates that theme's views with the hbs templating engine if it
     // is not yet activated.
-    updateActiveTheme: function updateActiveTheme(req, res, next) {
-        var blogApp = req.app;
+    //
+    // on server bootstrap we activate the default theme (which is casper)
+    updateActiveTheme: function updateActiveTheme(blog) {
+        themeHandler.activateTheme(blog, config.theme.activeTheme);
 
-        api.settings.read({context: {internal: true}, key: 'activeTheme'}).then(function then(response) {
-            var activeTheme = response.settings[0];
+        return function updateActiveThemeDynamically(req, res, next) {
+            var blogApp = req.app;
 
-            // Check if the theme changed
-            if (activeTheme.value !== blogApp.get('activeTheme')) {
-                // Change theme
-                if (!config.paths.availableThemes.hasOwnProperty(activeTheme.value)) {
-                    if (!res.isAdmin) {
-                        // Throw an error if the theme is not available, but not on the admin UI
-                        return errors.throwError(i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeTheme.value}));
+            api.settings.read({context: {internal: true}, key: 'activeTheme'}).then(function then(response) {
+                var activeTheme = response.settings[0];
+
+                // Check if the theme changed
+                if (activeTheme.value !== blogApp.get('activeTheme')) {
+                    // Change theme
+                    if (!config.paths.availableThemes.hasOwnProperty(activeTheme.value)) {
+                        if (!res.isAdmin) {
+                            // Throw an error if the theme is not available, but not on the admin UI
+                            return errors.throwError(i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeTheme.value}));
+                        } else {
+                            errors.logWarn(i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeTheme.value}));
+                            return next();
+                        }
                     } else {
-                        // At this point the activated theme is not present and the current
-                        // request is for the admin client.  In order to allow the user access
-                        // to the admin client we set an hbs instance on the app so that middleware
-                        // processing can continue.
-                        blogApp.engine('hbs', hbs.express3());
-                        errors.logWarn(i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeTheme.value}));
-
-                        return next();
+                        themeHandler.activateTheme(blogApp, activeTheme.value);
                     }
-                } else {
-                    themeHandler.activateTheme(blogApp, activeTheme.value);
                 }
-            }
-            next();
-        }).catch(function handleError(err) {
-            // Trying to start up without the active theme present, setup a simple hbs instance
-            // and render an error page straight away.
-            blogApp.engine('hbs', hbs.express3());
-            next(err);
-        });
+                next();
+            }).catch(function handleError(err) {
+                next(err);
+            });
+        };
     }
 };
 
