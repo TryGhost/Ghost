@@ -68,7 +68,7 @@
     "showdown-ghost": "0.3.6",
     "sqlite3": "3.1.4",
     "unidecode": "0.1.8",
-    "validator": "5.3.0",
+    "validator": "5.4.0",
     "xml": "1.0.1"
   },
   "optionalDependencies": {
