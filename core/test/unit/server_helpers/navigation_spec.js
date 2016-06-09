@@ -70,6 +70,18 @@ describe('{{navigation}} helper', function () {
         rendered.string.should.be.equal('');
     });
 
+    it('can handle relativeUrl not being set (e.g. for images/assets)', function () {
+        var singleItem = {label: 'Foo', url: '/foo'},
+            rendered;
+        delete optionsData.data.root.relativeUrl;
+
+        optionsData.data.blog.navigation = [singleItem];
+        rendered = helpers.navigation(optionsData);
+        rendered.string.should.containEql('li');
+        rendered.string.should.containEql('nav-foo');
+        rendered.string.should.containEql('/foo');
+    });
+
     it('can render one item', function () {
         var singleItem = {label: 'Foo', url: '/foo'},
             testUrl = 'href="' + configUtils.config.url + '/foo"',
