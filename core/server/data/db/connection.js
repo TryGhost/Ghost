@@ -1,6 +1,5 @@
 var knex = require('knex'),
     config = require('../../config'),
-    dbConfig = config.database,
     knexInstance;
 
 function configure(dbConfig) {
@@ -47,8 +46,8 @@ function configure(dbConfig) {
     return dbConfig;
 }
 
-if (!knexInstance && dbConfig && dbConfig.client) {
-    knexInstance = knex(configure(dbConfig));
+if (!knexInstance && config.database && config.database.client) {
+    knexInstance = knex(configure(config.database));
 }
 
 module.exports = knexInstance;
