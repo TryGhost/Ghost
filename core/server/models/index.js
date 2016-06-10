@@ -3,17 +3,15 @@
  */
 
 var _ = require('lodash'),
-
     exports,
     models;
 
-// Initialise model events
-require('./base/events');
+// enable event listeners
+require('./base/listeners');
 
 /**
  * Expose all models
  */
-
 exports = module.exports;
 
 models = [

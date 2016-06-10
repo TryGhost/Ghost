@@ -19,7 +19,6 @@ var _          = require('lodash'),
     validation = require('../../data/validation'),
     plugins    = require('../plugins'),
     i18n       = require('../../i18n'),
-
     ghostBookshelf,
     proto;
 
