@@ -33,7 +33,11 @@ var Promise       = require('bluebird'),
 
 /** TEST FIXTURES **/
 fixtures = {
-    insertPosts: function insertPosts() {
+    insertPosts: function insertPosts(posts) {
+        return Promise.resolve(db.knex('posts').insert(posts));
+    },
+
+    insertPostsAndTags: function insertPosts() {
         return Promise.resolve(db.knex('posts').insert(DataGenerator.forKnex.posts)).then(function () {
             return db.knex('tags').insert(DataGenerator.forKnex.tags);
         }).then(function () {
@@ -278,9 +282,9 @@ fixtures = {
         });
     },
 
-    insertOne: function insertOne(obj, fn) {
+    insertOne: function insertOne(obj, fn, index) {
         return db.knex(obj)
-           .insert(DataGenerator.forKnex[fn](DataGenerator.Content[obj][0]));
+           .insert(DataGenerator.forKnex[fn](DataGenerator.Content[obj][index || 0]));
     },
 
     insertApps: function insertApps() {
@@ -399,7 +403,7 @@ toDoList = {
     tag: function insertTag() { return fixtures.insertOne('tags', 'createTag'); },
     subscriber: function insertSubscriber() { return fixtures.insertOne('subscribers', 'createSubscriber'); },
 
-    posts: function insertPosts() { return fixtures.insertPosts(); },
+    posts: function insertPosts() { return fixtures.insertPostsAndTags(); },
     'posts:mu': function insertMultiAuthorPosts() { return fixtures.insertMultiAuthorPosts(); },
     tags: function insertMoreTags() { return fixtures.insertMoreTags(); },
     apps: function insertApps() { return fixtures.insertApps(); },
