@@ -367,6 +367,12 @@ describe('Config', function () {
                 testData = {nav: {url: '#this-anchor'}};
                 config.urlFor(testContext, testData).should.equal('#this-anchor');
 
+                testData = {nav: {url: 'http://some-external-page.com/my-ghost-blog.com'}};
+                config.urlFor(testContext, testData).should.equal('http://some-external-page.com/my-ghost-blog.com');
+
+                testData = {nav: {url: 'http://some-external-page.com/stuff-my-ghost-blog.com-around'}};
+                config.urlFor(testContext, testData).should.equal('http://some-external-page.com/stuff-my-ghost-blog.com-around');
+
                 configUtils.set({url: 'http://my-ghost-blog.com/blog'});
                 testData = {nav: {url: 'http://my-ghost-blog.com/blog/short-and-sweet/'}};
                 config.urlFor(testContext, testData).should.equal('http://my-ghost-blog.com/blog/short-and-sweet/');
