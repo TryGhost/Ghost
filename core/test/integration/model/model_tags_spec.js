@@ -47,7 +47,7 @@ describe('Tag Model', function () {
     });
 
     it('returns count.posts if include count.posts', function (done) {
-        testUtils.fixtures.insertPosts().then(function () {
+        testUtils.fixtures.insertPostsAndTags().then(function () {
             TagModel.findOne({slug: 'kitchen-sink'}, {include: 'count.posts'}).then(function (tag) {
                 should.exist(tag);
                 tag.toJSON().count.posts.should.equal(2);
@@ -59,7 +59,7 @@ describe('Tag Model', function () {
 
     describe('findPage', function () {
         beforeEach(function (done) {
-            testUtils.fixtures.insertPosts().then(function () {
+            testUtils.fixtures.insertPostsAndTags().then(function () {
                 done();
             }).catch(done);
         });
@@ -90,7 +90,7 @@ describe('Tag Model', function () {
 
     describe('findOne', function () {
         beforeEach(function (done) {
-            testUtils.fixtures.insertPosts().then(function () {
+            testUtils.fixtures.insertPostsAndTags().then(function () {
                 done();
             }).catch(done);
         });
