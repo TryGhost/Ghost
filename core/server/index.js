@@ -83,9 +83,9 @@ function init(options) {
             // Initialize sitemaps
             sitemap.init(),
             // Initialize xmrpc ping
-            xmlrpc.init(),
+            xmlrpc.listen(),
             // Initialize slack ping
-            slack.init()
+            slack.listen()
         );
     }).then(function () {
         // Get reference to an express app instance.
