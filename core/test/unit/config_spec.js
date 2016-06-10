@@ -7,13 +7,16 @@ var should         = require('should'),
     _              = require('lodash'),
 
     testUtils      = require('../utils'),
-    i18n            = require('../../server/i18n'),
+    i18n           = require('../../server/i18n'),
+    /*jshint unused:false*/
+    db             = require('../../server/data/db/connection'),
 
     // Thing we are testing
     configUtils    = require('../utils/configUtils'),
     config         = configUtils.config,
     // storing current environment
     currentEnv     = process.env.NODE_ENV;
+
 i18n.init();
 
 describe('Config', function () {
@@ -538,7 +541,17 @@ describe('Config', function () {
             config.load().then(function (config) {
                 config.url.should.equal(configUtils.defaultConfig.url);
                 config.database.client.should.equal(configUtils.defaultConfig.database.client);
-                config.database.connection.should.eql(configUtils.defaultConfig.database.connection);
+
+                if (config.database.client === 'sqlite3') {
+                    config.database.connection.filename.should.eql(configUtils.defaultConfig.database.connection.filename);
+                } else {
+                    config.database.connection.charset.should.eql(configUtils.defaultConfig.database.connection.charset);
+                    config.database.connection.database.should.eql(configUtils.defaultConfig.database.connection.database);
+                    config.database.connection.host.should.eql(configUtils.defaultConfig.database.connection.host);
+                    config.database.connection.password.should.eql(configUtils.defaultConfig.database.connection.password);
+                    config.database.connection.user.should.eql(configUtils.defaultConfig.database.connection.user);
+                }
+
                 config.server.host.should.equal(configUtils.defaultConfig.server.host);
                 config.server.port.should.equal(configUtils.defaultConfig.server.port);
 
@@ -553,7 +566,16 @@ describe('Config', function () {
             config.load(path.join(configUtils.defaultConfig.paths.appRoot, 'config.example.js')).then(function (config) {
                 config.url.should.equal(configUtils.defaultConfig.url);
                 config.database.client.should.equal(configUtils.defaultConfig.database.client);
-                config.database.connection.should.eql(configUtils.defaultConfig.database.connection);
+
+                if (config.database.client === 'sqlite3') {
+                    config.database.connection.filename.should.eql(configUtils.defaultConfig.database.connection.filename);
+                } else {
+                    config.database.connection.charset.should.eql(configUtils.defaultConfig.database.connection.charset);
+                    config.database.connection.database.should.eql(configUtils.defaultConfig.database.connection.database);
+                    config.database.connection.host.should.eql(configUtils.defaultConfig.database.connection.host);
+                    config.database.connection.password.should.eql(configUtils.defaultConfig.database.connection.password);
+                    config.database.connection.user.should.eql(configUtils.defaultConfig.database.connection.user);
+                }
                 config.server.host.should.equal(configUtils.defaultConfig.server.host);
                 config.server.port.should.equal(configUtils.defaultConfig.server.port);
 
