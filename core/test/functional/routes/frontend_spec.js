@@ -31,7 +31,7 @@ describe('Frontend Routing', function () {
 
     function addPosts(done) {
         testUtils.initData().then(function () {
-            return testUtils.fixtures.insertPosts();
+            return testUtils.fixtures.insertPostsAndTags();
         }).then(function () {
             done();
         });
@@ -570,7 +570,7 @@ describe('Frontend Routing', function () {
     describe('Site Map', function () {
         before(function (done) {
             testUtils.initData().then(function () {
-                return testUtils.fixtures.insertPosts();
+                return testUtils.fixtures.insertPostsAndTags();
             }).then(function () {
                 done();
             }).catch(done);
