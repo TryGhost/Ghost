@@ -14,6 +14,7 @@ var Promise       = require('bluebird'),
     filterData    = require('./fixtures/filter-param'),
     API           = require('./api'),
     fork          = require('./fork'),
+    mocks         = require('./mocks'),
     config        = require('../../server/config'),
 
     fixtures,
@@ -595,6 +596,8 @@ module.exports = {
     initFixtures: initFixtures,
     initData: initData,
     clearData: clearData,
+
+    mocks: mocks,
 
     fixtures: fixtures,
 
