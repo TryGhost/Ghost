@@ -88,6 +88,10 @@
 			"name": "Atlantic/Cape_Verde",
 			"label": "(GMT -1:00) Cape Verde Is."
 		},
+        {
+            "name": "Etc/UTC",
+            "label": "(GMT) UTC"
+        },
 		{
 			"name": "Africa/Casablanca",
 			"label": "(GMT +0:00) Casablanca, Monrovia"
