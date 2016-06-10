@@ -44,7 +44,7 @@
             }
         },
         "activeTimezone": {
-            "defaultValue": "Europe/Dublin",
+            "defaultValue": "Etc/UTC",
             "validations": {
                 "isNull": false
             }
