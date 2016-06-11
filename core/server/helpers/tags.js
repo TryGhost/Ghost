@@ -27,8 +27,8 @@ tags = function (options) {
         output = '';
 
     function createTagList(tags) {
-        if (labs.isSet('hiddenTags')) {
-            tags = _.filter(tags, 'hidden', false);
+        if (labs.isSet('internalTags')) {
+            tags = _.filter(tags, 'visibility', 'public');
         }
 
         if (autolink) {

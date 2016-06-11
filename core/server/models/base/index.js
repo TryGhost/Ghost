@@ -15,6 +15,7 @@ var _          = require('lodash'),
     Promise    = require('bluebird'),
     schema     = require('../../data/schema'),
     utils      = require('../../utils'),
+    labs       = require('../../utils/labs'),
     uuid       = require('node-uuid'),
     validation = require('../../data/validation'),
     plugins    = require('../plugins'),
@@ -492,6 +493,15 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         if (baseName === 'user' && options && options.shortSlug && slugTryCount === 1 && slug !== 'ghost-owner') {
             longSlug = slug;
             slug = (slug.indexOf('-') > -1) ? slug.substr(0, slug.indexOf('-')) : slug;
+        }
+
+        if (!_.has(options, 'importing') || !options.importing) {
+            // TODO: remove the labs requirement when internal tags is out of beta
+            // This checks if the first character of a tag name is a #. If it is, this
+            // is an internal tag, and as such we should add 'hash' to the beginning of the slug
+            if (labs.isSet('internalTags') && baseName === 'tag' && /^#/.test(base)) {
+                slug = 'hash-' + slug;
+            }
         }
 
         // Check the filtered slug doesn't match any of the reserved keywords
