@@ -4,11 +4,12 @@ import documentTitle from 'ghost-admin/utils/document-title';
 import config from './config/environment';
 
 const {
+    Router,
     inject: {service},
     on
 } = Ember;
 
-const Router = Ember.Router.extend({
+const GhostRouter = Router.extend({
     location: config.locationType, // use HTML5 History API instead of hash-tag based URLs
     rootURL: ghostPaths().adminRoot, // admin interface lives under sub-directory /ghost
 
@@ -21,7 +22,7 @@ const Router = Ember.Router.extend({
 
 documentTitle();
 
-Router.map(function () {
+GhostRouter.map(function () {
     this.route('setup', function () {
         this.route('one');
         this.route('two');
@@ -67,4 +68,4 @@ Router.map(function () {
     this.route('error404', {path: '/*path'});
 });
 
-export default Router;
+export default GhostRouter;

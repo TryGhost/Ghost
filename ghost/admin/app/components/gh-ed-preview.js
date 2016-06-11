@@ -3,8 +3,10 @@ import {formatMarkdown} from 'ghost-admin/helpers/gh-format-markdown';
 
 const {
     Component,
+    Object: EmberObject,
     run,
-    uuid
+    uuid,
+    A: emberA
 } = Ember;
 
 export default Component.extend({
@@ -14,7 +16,7 @@ export default Component.extend({
 
     init() {
         this._super(...arguments);
-        this.set('imageUploadComponents', Ember.A([]));
+        this.set('imageUploadComponents', emberA([]));
         this.buildPreviewHTML();
     },
 
@@ -58,7 +60,7 @@ export default Component.extend({
         let components = this.get('imageUploadComponents');
 
         if (dropzones.length !== components.length) {
-            components = Ember.A([]);
+            components = emberA([]);
             this.set('imageUploadComponents', components);
         }
 
@@ -78,7 +80,7 @@ export default Component.extend({
                 component.set('destinationElementId', destinationElementId);
                 component.set('src', src);
             } else {
-                let imageUpload = Ember.Object.create({
+                let imageUpload = EmberObject.create({
                     destinationElementId,
                     id,
                     src,

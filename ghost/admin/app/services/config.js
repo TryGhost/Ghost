@@ -1,15 +1,13 @@
 import Ember from 'ember';
 
 const {
+    $,
     Service,
     _ProxyMixin,
     computed,
     inject: {service}
 } = Ember;
-
-function isNumeric(num) {
-    return Ember.$.isNumeric(num);
-}
+const {isNumeric} = $;
 
 function _mapType(val, type) {
     if (val === '') {
@@ -34,7 +32,7 @@ export default Service.extend(_ProxyMixin, {
     ghostPaths: service(),
 
     content: computed(function () {
-        let metaConfigTags = Ember.$('meta[name^="env-"]');
+        let metaConfigTags = $('meta[name^="env-"]');
         let config = {};
 
         metaConfigTags.each((i, el) => {

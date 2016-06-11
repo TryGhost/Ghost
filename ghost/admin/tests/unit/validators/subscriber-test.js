@@ -7,9 +7,12 @@ import {
 import Ember from 'ember';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 
-const {run} = Ember;
+const {
+    run,
+    Object: EmberObject
+} = Ember;
 
-const Subscriber = Ember.Object.extend(ValidationEngine, {
+const Subscriber = EmberObject.extend(ValidationEngine, {
     validationType: 'subscriber',
 
     email: null

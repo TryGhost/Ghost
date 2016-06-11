@@ -3,8 +3,10 @@ import Ember from 'ember';
 import Transform from 'ember-data/transform';
 import SlackObject from 'ghost-admin/models/slack-integration';
 
-const {isArray} = Ember;
-const emberA = Ember.A;
+const {
+    isArray,
+    A: emberA
+} = Ember;
 
 export default Transform.extend({
     deserialize(serialized) {

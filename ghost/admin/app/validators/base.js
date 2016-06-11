@@ -1,10 +1,14 @@
 import Ember from 'ember';
 
+const {
+    Object: EmberObject
+} = Ember;
+
 /**
  * Base validator that all validators should extend
  * Handles checking of individual properties or the entire model
  */
-export default Ember.Object.extend({
+export default EmberObject.extend({
     properties: [],
     passed: false,
 

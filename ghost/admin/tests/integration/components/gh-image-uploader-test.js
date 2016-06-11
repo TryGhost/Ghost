@@ -11,17 +11,17 @@ import Pretender from 'pretender';
 import wait from 'ember-test-helpers/wait';
 import {createFile, fileUpload} from '../../helpers/file-upload';
 
-const {run} = Ember;
+const {$, run, Service} = Ember;
 
 const keyCodes = {
     enter: 13
 };
 
-const configStub = Ember.Service.extend({
+const configStub = Service.extend({
     fileStorage: true
 });
 
-const sessionStub = Ember.Service.extend({
+const sessionStub = Service.extend({
     isAuthenticated: false,
     authorize(authorizer, block) {
         if (this.get('isAuthenticated')) {
@@ -339,7 +339,7 @@ describeComponent(
                 this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
 
                 run(() => {
-                    let dragover = Ember.$.Event('dragover', {
+                    let dragover = $.Event('dragover', {
                         dataTransfer: {
                             files: []
                         }
@@ -358,7 +358,7 @@ describeComponent(
 
             it('triggers file upload on file drop', function (done) {
                 let uploadSuccess = sinon.spy();
-                let drop = Ember.$.Event('drop', {
+                let drop = $.Event('drop', {
                     dataTransfer: {
                         files: [createFile()]
                     }

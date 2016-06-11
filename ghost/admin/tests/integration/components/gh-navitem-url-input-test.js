@@ -7,7 +7,7 @@ import {
 import hbs from 'htmlbars-inline-precompile';
 import Ember from 'ember';
 
-const {run} = Ember;
+const {$, run} = Ember;
 
 // we want baseUrl to match the running domain so relative URLs are
 // handled as expected (browser auto-sets the domain when using a.href)
@@ -84,7 +84,7 @@ describeComponent(
             expect($input.val()).to.equal(currentUrl);
             run(() => {
                 // TODO: why is ember's keyEvent helper not available here?
-                let e = Ember.$.Event('keydown');
+                let e = $.Event('keydown');
                 e.keyCode = 8;
                 $input.trigger(e);
             });
@@ -100,7 +100,7 @@ describeComponent(
             expect($input.val()).to.equal(currentUrl);
             run(() => {
                 // TODO: why is ember's keyEvent helper not available here?
-                let e = Ember.$.Event('keydown');
+                let e = $.Event('keydown');
                 e.keyCode = 46;
                 $input.trigger(e);
             });
@@ -218,7 +218,7 @@ describeComponent(
 
             run(() => {
                 // TODO: why is ember's keyEvent helper not available here?
-                let e = Ember.$.Event('keypress');
+                let e = $.Event('keypress');
                 e.keyCode = 13;
                 $input.trigger(e);
             });
@@ -239,7 +239,7 @@ describeComponent(
 
             run(() => {
                 // TODO: why is ember's keyEvent helper not available here?
-                let e = Ember.$.Event('keydown');
+                let e = $.Event('keydown');
                 e.keyCode = 83;
                 e.metaKey = true;
                 $input.trigger(e);

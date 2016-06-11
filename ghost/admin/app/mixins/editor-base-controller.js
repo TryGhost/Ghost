@@ -7,6 +7,7 @@ const {
     RSVP: {resolve},
     computed,
     inject: {service, controller},
+    String: {htmlSafe},
     observer,
     run
 } = Ember;
@@ -262,7 +263,7 @@ export default Mixin.create({
         }
 
         message += `<br />${error}`;
-        message = Ember.String.htmlSafe(message);
+        message = htmlSafe(message);
 
         notifications.showAlert(message, {type: 'error', delayed: delay, key: 'post.save'});
     },

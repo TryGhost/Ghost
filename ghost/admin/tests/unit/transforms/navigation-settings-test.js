@@ -4,15 +4,14 @@ import { describeModule, it } from 'ember-mocha';
 import Ember from 'ember';
 import NavigationItem from 'ghost-admin/models/navigation-item';
 
-const emberA = Ember.A;
+const {
+    A: emberA
+} = Ember;
 
 describeModule(
     'transform:navigation-settings',
     'Unit: Transform: navigation-settings',
-    {
-        // Specify the other units that are required for this test.
-        // needs: ['transform:foo']
-    },
+    {},
     function() {
         it('deserializes navigation json', function () {
             let transform = this.subject();

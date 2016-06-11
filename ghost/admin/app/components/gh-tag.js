@@ -1,7 +1,9 @@
 import Ember from 'ember';
 import {invokeAction} from 'ember-invoke-action';
 
-export default Ember.Component.extend({
+const {Component} = Ember;
+
+export default Component.extend({
     willDestroyElement() {
         this._super(...arguments);
 

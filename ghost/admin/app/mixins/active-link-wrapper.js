@@ -2,10 +2,14 @@
 
 import Ember from 'ember';
 
-const {computed, run} = Ember;
-const emberA = Ember.A;
+const {
+    computed,
+    run,
+    Mixin,
+    A: emberA
+} = Ember;
 
-export default Ember.Mixin.create({
+export default Mixin.create({
 
     classNameBindings: ['active'],
 

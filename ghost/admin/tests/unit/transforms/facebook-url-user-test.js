@@ -3,15 +3,14 @@ import { expect } from 'chai';
 import { describeModule, it } from 'ember-mocha';
 import Ember from 'ember';
 
-const emberA = Ember.A;
+const {
+    A: emberA
+} = Ember;
 
 describeModule(
     'transform:facebook-url-user',
     'Unit: Transform: facebook-url-user',
-    {
-        // Specify the other units that are required for this test.
-        // needs: ['transform:foo']
-    },
+    {},
     function() {
         it('deserializes facebook url', function () {
             let transform = this.subject();

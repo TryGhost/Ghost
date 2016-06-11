@@ -14,6 +14,8 @@ import Mirage from 'ember-cli-mirage';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 
+const {$, run} = Ember;
+
 const Ghost = ghostPaths();
 
 describe('Acceptance: Authentication', function () {
@@ -94,13 +96,13 @@ describe('Acceptance: Authentication', function () {
     });
 
     describe('editor', function () {
-        let origDebounce = Ember.run.debounce;
-        let origThrottle = Ember.run.throttle;
+        let origDebounce = run.debounce;
+        let origThrottle = run.throttle;
 
         // we don't want the autosave interfering in this test
         beforeEach(function () {
-            Ember.run.debounce = function () { };
-            Ember.run.throttle = function () { };
+            run.debounce = function () { };
+            run.throttle = function () { };
         });
 
         it('displays re-auth modal attempting to save with invalid session', function () {
@@ -154,8 +156,8 @@ describe('Acceptance: Authentication', function () {
 
         // don't clobber debounce/throttle for future tests
         afterEach(function () {
-            Ember.run.debounce = origDebounce;
-            Ember.run.throttle = origThrottle;
+            run.debounce = origDebounce;
+            run.throttle = origThrottle;
         });
     });
 
