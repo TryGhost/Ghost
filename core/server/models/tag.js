@@ -77,7 +77,7 @@ Tag = ghostBookshelf.Model.extend({
             validOptions = {
                 findPage: ['page', 'limit', 'columns', 'filter', 'order'],
                 findAll: ['columns'],
-                findOne: ['hidden']
+                findOne: ['visibility']
             };
 
         if (validOptions[methodName]) {
