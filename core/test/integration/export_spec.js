@@ -40,7 +40,7 @@ describe('Exporter', function () {
 
             exportData.meta.version.should.equal(DEF_DB_VERSION);
 
-            dbVersionSetting = _.findWhere(exportData.data.settings, {key: 'databaseVersion'});
+            dbVersionSetting = _.find(exportData.data.settings, {key: 'databaseVersion'});
 
             should.exist(dbVersionSetting);
 

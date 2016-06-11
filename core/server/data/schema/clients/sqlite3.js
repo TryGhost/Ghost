@@ -17,7 +17,7 @@ doRaw = function doRaw(query, fn) {
 
 getTables = function getTables() {
     return doRaw('select * from sqlite_master where type = "table"', function (response) {
-        return _.reject(_.pluck(response, 'tbl_name'), function (name) {
+        return _.reject(_.map(response, 'tbl_name'), function (name) {
             return name === 'sqlite_sequence';
         });
     });
@@ -25,13 +25,13 @@ getTables = function getTables() {
 
 getIndexes = function getIndexes(table) {
     return doRaw('pragma index_list("' + table + '")', function (response) {
-        return _.flatten(_.pluck(response, 'name'));
+        return _.flatten(_.map(response, 'name'));
     });
 };
 
 getColumns = function getColumns(table) {
     return doRaw('pragma table_info("' + table + '")', function (response) {
-        return _.flatten(_.pluck(response, 'name'));
+        return _.flatten(_.map(response, 'name'));
     });
 };
 

@@ -23,23 +23,23 @@ body_class = function (options) {
 
     if (post) {
         // To be removed from pages by #2597 when we're ready to deprecate this
-        // i.e. this should be if (_.contains(context, 'post') && post) { ... }
+        // i.e. this should be if (_.includes(context, 'post') && post) { ... }
         classes.push('post-template');
     }
 
-    if (_.contains(context, 'home')) {
+    if (_.includes(context, 'home')) {
         classes.push('home-template');
-    } else if (_.contains(context, 'page') && page) {
+    } else if (_.includes(context, 'page') && page) {
         classes.push('page-template');
         // To be removed by #2597 when we're ready to deprecate this
         classes.push('page');
-    } else if (_.contains(context, 'tag') && this.tag) {
+    } else if (_.includes(context, 'tag') && this.tag) {
         classes.push('tag-template');
         classes.push('tag-' + this.tag.slug);
-    } else if (_.contains(context, 'author') && this.author) {
+    } else if (_.includes(context, 'author') && this.author) {
         classes.push('author-template');
         classes.push('author-' + this.author.slug);
-    } else if (_.contains(context, 'private')) {
+    } else if (_.includes(context, 'private')) {
         classes.push('private-template');
     }
 
@@ -47,7 +47,7 @@ body_class = function (options) {
         classes = classes.concat(tags.map(function (tag) { return 'tag-' + tag.slug; }));
     }
 
-    if (_.contains(context, 'paged')) {
+    if (_.includes(context, 'paged')) {
         classes.push('paged');
         // To be removed from pages by #2597 when we're ready to deprecate this
         classes.push('archive-template');

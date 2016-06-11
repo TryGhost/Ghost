@@ -11,7 +11,7 @@ var _  = require('lodash'),
 
 doRawFlattenAndPluck = function doRaw(query, name) {
     return db.knex.raw(query).then(function (response) {
-        return _.flatten(_.pluck(response.rows, name));
+        return _.flatten(_.map(response.rows, name));
     });
 };
 

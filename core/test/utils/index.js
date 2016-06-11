@@ -61,7 +61,7 @@ fixtures = {
         }).then(function () {
             return db.knex('users').select('id');
         }).then(function (results) {
-            authors = _.pluck(results, 'id');
+            authors = _.map(results, 'id');
 
             // Let's insert posts with random authors
             for (i = 0; i < max; i += 1) {
@@ -85,8 +85,8 @@ fixtures = {
                 db.knex('tags').select('id')
             ]);
         }).then(function (results) {
-            var posts = _.pluck(results[0], 'id'),
-                tags = _.pluck(results[1], 'id'),
+            var posts = _.map(results[0], 'id'),
+                tags = _.map(results[1], 'id'),
                 promises = [],
                 i;
 
@@ -162,10 +162,10 @@ fixtures = {
             db.knex('posts').orderBy('id', 'asc').select('id'),
             db.knex('tags').select('id', 'name')
         ]).then(function (results) {
-            var posts = _.pluck(results[0], 'id'),
+            var posts = _.map(results[0], 'id'),
                 injectionTagId = _.chain(results[1])
-                    .where({name: 'injection'})
-                    .pluck('id')
+                    .filter({name: 'injection'})
+                    .map('id')
                     .value()[0],
                 promises = [],
                 i;

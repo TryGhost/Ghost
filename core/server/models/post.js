@@ -286,14 +286,14 @@ Post = ghostBookshelf.Model.extend({
                     if (newTags.length === 0) {
                         return false;
                     }
-                    return _.any(newTags, function (newTag) {
+                    return _.some(newTags, function (newTag) {
                         return baseUtils.tagUpdate.tagsAreEqual(currentTag, newTag);
                     });
                 });
 
                 // Tags from the new tag array which don't exist in the DB should be created
-                tagsToCreate = _.pluck(_.reject(newTags, function (newTag) {
-                    return _.any(existingTags, function (existingTag) {
+                tagsToCreate = _.map(_.reject(newTags, function (newTag) {
+                    return _.some(existingTags, function (existingTag) {
                         return baseUtils.tagUpdate.tagsAreEqual(existingTag, newTag);
                     });
                 }), 'name');
@@ -434,7 +434,7 @@ Post = ghostBookshelf.Model.extend({
         if (options.staticPages && options.staticPages !== 'all') {
             // convert string true/false to boolean
             if (!_.isBoolean(options.staticPages)) {
-                options.staticPages = _.contains(['true', '1'], options.staticPages);
+                options.staticPages = _.includes(['true', '1'], options.staticPages);
             }
             options.where.statements.push({prop: 'page', op: '=', value: options.staticPages});
             delete options.staticPages;
@@ -447,7 +447,7 @@ Post = ghostBookshelf.Model.extend({
         // the status provided.
         if (options.status && options.status !== 'all') {
             // make sure that status is valid
-            options.status = _.contains(['published', 'draft'], options.status) ? options.status : 'published';
+            options.status = _.includes(['published', 'draft'], options.status) ? options.status : 'published';
             options.where.statements.push({prop: 'status', op: '=', value: options.status});
             delete options.status;
         } else if (options.status === 'all') {
@@ -508,8 +508,8 @@ Post = ghostBookshelf.Model.extend({
     findOne: function findOne(data, options) {
         options = options || {};
 
-        var withNext = _.contains(options.include, 'next'),
-            withPrev = _.contains(options.include, 'previous'),
+        var withNext = _.includes(options.include, 'next'),
+            withPrev = _.includes(options.include, 'previous'),
             nextRelations = _.transform(options.include, function (relations, include) {
                 if (include === 'next.tags') {
                     relations.push('tags');

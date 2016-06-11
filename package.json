@@ -49,8 +49,7 @@
     "intl-messageformat": "1.3.0",
     "jsonpath": "0.2.4",
     "knex": "0.10.0",
-    "lodash": "3.10.1",
-    "lodash.tostring": "4.1.3",
+    "lodash": "4.13.1",
     "moment": "2.13.0",
     "moment-timezone": "0.5.4",
     "morgan": "1.7.0",
@@ -111,7 +110,6 @@
     "ignore": [
       "bower",
       "glob",
-      "lodash",
       "mysql",
       "nodemailer",
       "pg",
