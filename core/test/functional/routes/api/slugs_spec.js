@@ -123,6 +123,29 @@ describe('Slug API', function () {
             });
     });
 
+    it('should be able to get a client slug', function (done) {
+        request.get(testUtils.API.getApiQuery('slugs/client/a client/'))
+            .set('Authorization', 'Bearer ' + accesstoken)
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                var jsonResponse = res.body;
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.slugs);
+                jsonResponse.slugs.should.have.length(1);
+                testUtils.API.checkResponse(jsonResponse.slugs[0], 'slug');
+                jsonResponse.slugs[0].slug.should.equal('a-client');
+
+                done();
+            });
+    });
+
     it('should not be able to get a slug for an unknown type', function (done) {
         request.get(testUtils.API.getApiQuery('slugs/unknown/who knows/'))
             .set('Authorization', 'Bearer ' + accesstoken)

@@ -311,6 +311,28 @@ DataGenerator.Content = {
             id: ObjectId.generate(),
             email: 'subscriber2@test.com'
         }
+    ],
+
+    clients: [
+        {
+            name: 'Test Client',
+            slug: 'test-client',
+            secret: 'not_available',
+            type: 'ua',
+            status: 'enabled'
+        },
+        {
+            name: 'Another Test Client',
+            slug: 'another-test-client',
+            secret: 'not_available',
+            type: 'ua',
+            status: 'development'
+        }
+    ],
+
+    client_trusted_domains: [
+        {trusted_domain: 'http://test.com'},
+        {trusted_domain: 'https://test.com'}
     ]
 };
 
@@ -326,7 +348,8 @@ DataGenerator.forKnex = (function () {
         users,
         roles_users,
         clients,
-        invites;
+        invites,
+        client_trusted_domains;
 
     function createBasic(overrides) {
         var newObj = _.cloneDeep(overrides);
@@ -480,6 +503,15 @@ DataGenerator.forKnex = (function () {
         });
     }
 
+    function createTrustedDomain(overrides) {
+        var newObj = _.cloneDeep(overrides);
+
+        return _.defaults(newObj, {
+            client_id: 1,
+            uuid: uuid.v4()
+        });
+    }
+
     posts = [
         createPost(DataGenerator.Content.posts[0]),
         createPost(DataGenerator.Content.posts[1]),
@@ -517,6 +549,13 @@ DataGenerator.forKnex = (function () {
         createClient({name: 'Ghost Admin', slug: 'ghost-admin', type: 'ua'}),
         createClient({name: 'Ghost Scheduler', slug: 'ghost-scheduler', type: 'web'}),
         createClient({name: 'Ghost Auth', slug: 'ghost-auth', type: 'web'})
+        createBasic(DataGenerator.Content.clients[0]),
+        createBasic(DataGenerator.Content.clients[1])
+    ];
+
+    client_trusted_domains = [
+        createTrustedDomain(DataGenerator.Content.client_trusted_domains[0]),
+        createTrustedDomain(DataGenerator.Content.client_trusted_domains[1])
     ];
 
     roles_users = [
@@ -580,7 +619,8 @@ DataGenerator.forKnex = (function () {
         roles: roles,
         users: users,
         roles_users: roles_users,
-        clients: clients
+        clients: clients,
+        client_trusted_domains: client_trusted_domains
     };
 }());
 

@@ -283,7 +283,7 @@ fixtures = {
 
     // Creates a client, and access and refresh tokens for user 3 (author)
     createTokensForUser: function createTokensForUser() {
-        return db.knex('clients').insert(DataGenerator.forKnex.clients).then(function () {
+        return db.knex('clients').insert(DataGenerator.forKnex.clients[0]).then(function () {
             return db.knex('accesstokens').insert(DataGenerator.forKnex.createToken({user_id: DataGenerator.Content.users[2].id}));
         }).then(function () {
             return db.knex('refreshtokens').insert(DataGenerator.forKnex.createToken({user_id: DataGenerator.Content.users[2].id}));
@@ -386,6 +386,10 @@ fixtures = {
         return db.knex('clients').insert(DataGenerator.forKnex.clients);
     },
 
+    insertTrustedDomains: function insertTrustedDomains() {
+        return db.knex('client_trusted_domains').insert(DataGenerator.forKnex.client_trusted_domains);
+    },
+
     insertAccessToken: function insertAccessToken(override) {
         return db.knex('accesstokens').insert(DataGenerator.forKnex.createToken(override));
     },
@@ -448,8 +452,10 @@ toDoList = {
         return function permissionsForObj() { return fixtures.permissionsFor(obj); };
     },
     clients: function insertClients() { return fixtures.insertClients(); },
+    trusted_domains: function insertTrustedDomains() { return fixtures.insertTrustedDomains(); },
     filter: function createFilterParamFixtures() { return filterData(DataGenerator); },
     invites: function insertInvites() { return fixtures.insertInvites(); }
+    filter: function createFilterParamFixtures() { return filterData(DataGenerator); }
 };
 
 /**

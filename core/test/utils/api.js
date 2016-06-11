@@ -9,18 +9,20 @@ var _               = require('lodash'),
     protocol        = 'http://',
     expectedProperties = {
         // API top level
-        posts:         ['posts', 'meta'],
-        tags:          ['tags', 'meta'],
-        users:         ['users', 'meta'],
-        settings:      ['settings', 'meta'],
-        subscribers:   ['subscribers', 'meta'],
-        roles:         ['roles'],
-        pagination:    ['page', 'limit', 'pages', 'total', 'next', 'prev'],
-        slugs:         ['slugs'],
-        slug:          ['slug'],
+        posts:              ['posts', 'meta'],
+        tags:               ['tags', 'meta'],
+        users:              ['users', 'meta'],
+        settings:           ['settings', 'meta'],
+        subscribers:        ['subscribers', 'meta'],
+        clients:            ['clients', 'meta'],
+        roles:              ['roles'],
+        trusted_domains:    ['trusted_domains'],
+        pagination:         ['page', 'limit', 'pages', 'total', 'next', 'prev'],
+        slugs:              ['slugs'],
+        slug:               ['slug'],
         // object / model level
         // Post API swaps author_id to author, and always returns a computed 'url' property
-        post:        _(schema.posts).keys().without('author_id').concat('author', 'url').value(),
+        post:           _(schema.posts).keys().without('author_id').concat('author', 'url').value(),
         // User API always removes the password field
         user:        _(schema.users).keys().without('password').without('ghost_auth_access_token').value(),
         // Tag API swaps parent_id to parent
@@ -30,9 +32,11 @@ var _               = require('lodash'),
         accesstoken: _.keys(schema.accesstokens),
         role:        _.keys(schema.roles),
         permission:  _.keys(schema.permissions),
+        invites:      _(schema.invites).keys().without('token').value()
+        client:         _.keys(schema.clients),
+        trusted_domain: _.keys(schema.client_trusted_domains),
         notification: ['type', 'message', 'status', 'id', 'dismissible', 'location'],
         theme:        ['uuid', 'name', 'version', 'active'],
-        invites:      _(schema.invites).keys().without('token').value()
     };
 
 function getApiQuery(route) {
