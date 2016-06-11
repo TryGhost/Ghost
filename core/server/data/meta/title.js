@@ -13,13 +13,13 @@ function getTitle(data, root) {
     }
     if (data.meta_title) {
         title = data.meta_title;
-    } else if (_.contains(context, 'home')) {
+    } else if (_.includes(context, 'home')) {
         title = blog.title;
-    } else if (_.contains(context, 'author') && data.author) {
+    } else if (_.includes(context, 'author') && data.author) {
         title = data.author.name + pageString + ' - ' + blog.title;
-    } else if (_.contains(context, 'tag') && data.tag) {
+    } else if (_.includes(context, 'tag') && data.tag) {
         title = data.tag.meta_title || data.tag.name + pageString + ' - ' + blog.title;
-    } else if ((_.contains(context, 'post') || _.contains(context, 'page')) && data.post) {
+    } else if ((_.includes(context, 'post') || _.includes(context, 'page')) && data.post) {
         title = data.post.meta_title || data.post.title;
     } else {
         title = blog.title + pageString;

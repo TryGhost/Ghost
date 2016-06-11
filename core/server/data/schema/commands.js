@@ -81,7 +81,7 @@ function deleteTable(table) {
 function getTables() {
     var client = db.knex.client.config.client;
 
-    if (_.contains(_.keys(clients), client)) {
+    if (_.includes(_.keys(clients), client)) {
         return clients[client].getTables();
     }
 
@@ -91,7 +91,7 @@ function getTables() {
 function getIndexes(table) {
     var client = db.knex.client.config.client;
 
-    if (_.contains(_.keys(clients), client)) {
+    if (_.includes(_.keys(clients), client)) {
         return clients[client].getIndexes(table);
     }
 
@@ -101,7 +101,7 @@ function getIndexes(table) {
 function getColumns(table) {
     var client = db.knex.client.config.client;
 
-    if (_.contains(_.keys(clients), client)) {
+    if (_.includes(_.keys(clients), client)) {
         return clients[client].getColumns(table);
     }
 

@@ -18,7 +18,7 @@ updatedSettingKeys = {
 
 areEmpty = function (object) {
     var fields = _.toArray(arguments).slice(1),
-        areEmpty = _.all(fields, function (field) {
+        areEmpty = _.every(fields, function (field) {
             return _.isEmpty(object[field]);
         });
 
@@ -26,7 +26,7 @@ areEmpty = function (object) {
 };
 
 stripProperties = function stripProperties(properties, data) {
-    data = _.clone(data, true);
+    data = _.cloneDeep(data);
     _.each(data, function (obj) {
         _.each(properties, function (property) {
             delete obj[property];
@@ -139,7 +139,7 @@ utils = {
     },
 
     preProcessRolesUsers: function preProcessRolesUsers(tableData, owner, roles) {
-        var validRoles = _.pluck(roles, 'name');
+        var validRoles = _.map(roles, 'name');
         if (!tableData.roles || !tableData.roles.length) {
             tableData.roles = roles;
         }
