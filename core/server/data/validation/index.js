@@ -34,7 +34,7 @@ validator.extend('empty', function empty(str) {
 });
 
 validator.extend('notContains', function notContains(str, badString) {
-    return !_.contains(str, badString);
+    return !_.includes(str, badString);
 });
 
 validator.extend('isEmptyOrURL', function isEmptyOrURL(str) {

@@ -392,7 +392,7 @@ describe('Sitemap', function () {
                     })),
                     hasImage;
 
-                hasImage = _.any(urlNode.url, function (node) {
+                hasImage = _.some(urlNode.url, function (node) {
                     return !_.isUndefined(node['image:image']);
                 });
 
@@ -478,7 +478,7 @@ describe('Sitemap', function () {
                     })),
                     hasImage;
 
-                hasImage = _.any(urlNode.url, function (node) {
+                hasImage = _.some(urlNode.url, function (node) {
                     return !_.isUndefined(node['image:image']);
                 });
 
@@ -500,7 +500,7 @@ describe('Sitemap', function () {
                     })),
                     hasImage;
 
-                hasImage = _.any(urlNode.url, function (node) {
+                hasImage = _.some(urlNode.url, function (node) {
                     return !_.isUndefined(node['image:image']);
                 });
 
@@ -522,7 +522,7 @@ describe('Sitemap', function () {
                     })),
                     hasImage;
 
-                hasImage = _.any(urlNode.url, function (node) {
+                hasImage = _.some(urlNode.url, function (node) {
                     return !_.isUndefined(node['image:image']);
                 });
 

@@ -289,7 +289,7 @@ utils = {
                 return;
             }
 
-            object[docName][index] = _.omit(object[docName][index], _.isNull);
+            object[docName][index] = _.omitBy(object[docName][index], _.isNull);
         });
 
         if (editId && object[docName][0].id && parseInt(editId, 10) !== parseInt(object[docName][0].id, 10)) {
@@ -305,7 +305,7 @@ utils = {
         var type = fileData.mimetype,
             ext = path.extname(fileData.name).toLowerCase();
 
-        if (_.contains(types, type) && _.contains(extensions, ext)) {
+        if (_.includes(types, type) && _.includes(extensions, ext)) {
             return true;
         }
         return false;

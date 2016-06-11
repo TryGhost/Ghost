@@ -35,7 +35,7 @@ describe('Database Migration (special functions)', function () {
             this.obj.roles.should.be.an.Array();
 
             // Ensure the roles are in id order
-            roleNames = _(this.obj.roles).sortBy('id').pluck('name').value();
+            roleNames = _(this.obj.roles).sortBy('id').map('name').value();
             roleNames.should.eql(roles);
         });
 
@@ -271,4 +271,3 @@ describe('Database Migration (special functions)', function () {
         });
     });
 });
-

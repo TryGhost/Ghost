@@ -20,7 +20,7 @@ is = function (context, options) {
         return expr.split(',').map(function (v) {
             return v.trim();
         }).reduce(function (p, c) {
-            return p || _.contains(currentContext, c);
+            return p || _.includes(currentContext, c);
         }, false);
     }
 

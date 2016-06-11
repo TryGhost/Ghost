@@ -24,13 +24,13 @@ getTables = function getTables() {
 
 getIndexes = function getIndexes(table) {
     return doRawAndFlatten('SHOW INDEXES from ' + table, function (response) {
-        return _.pluck(response[0], 'Key_name');
+        return _.map(response[0], 'Key_name');
     });
 };
 
 getColumns = function getColumns(table) {
     return doRawAndFlatten('SHOW COLUMNS FROM ' + table, function (response) {
-        return _.pluck(response[0], 'Field');
+        return _.map(response[0], 'Field');
     });
 };
 

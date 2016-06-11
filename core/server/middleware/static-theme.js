@@ -7,7 +7,7 @@ var _       = require('lodash'),
 function isBlackListedFileType(file) {
     var blackListedFileTypes = ['.hbs', '.md', '.json'],
         ext = path.extname(file);
-    return _.contains(blackListedFileTypes, ext);
+    return _.includes(blackListedFileTypes, ext);
 }
 
 function forwardToExpressStatic(req, res, next) {
