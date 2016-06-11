@@ -34,14 +34,17 @@ function sendMail(object) {
 
     return mailer.send(object.mail[0].message).catch(function (err) {
         if (mailer.state.usingDirect) {
-            notifications.add({notifications: [{
-                type: 'warn',
-                message: [
-                    i18n.t('warnings.index.unableToSendEmail'),
-                    i18n.t('common.seeLinkForInstructions',
-                    {link: '<a href=\'http://support.ghost.org/mail\' target=\'_blank\'>http://support.ghost.org/mail</a>'})
-                ].join(' ')
-            }]}, {context: {internal: true}});
+            notifications.add(
+                {notifications: [{
+                    type: 'warn',
+                    message: [
+                        i18n.t('warnings.index.unableToSendEmail'),
+                        i18n.t('common.seeLinkForInstructions',
+                            {link: '<a href=\'http://support.ghost.org/mail\' target=\'_blank\'>http://support.ghost.org/mail</a>'})
+                    ].join(' ')
+                }]},
+                {context: {internal: true}}
+            );
         }
 
         return Promise.reject(new errors.EmailError(err.message));
