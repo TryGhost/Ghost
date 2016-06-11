@@ -1,16 +1,25 @@
-/*globals describe, before, it*/
+/*globals describe, afterEach, before, it*/
+
 var should         = require('should'),
+    sinon          = require('sinon'),
     hbs            = require('express-hbs'),
     utils          = require('./utils'),
     rewire         = require('rewire'),
 
 // Stuff we are testing
     handlebars     = hbs.handlebars,
-    helpers        = rewire('../../../server/helpers');
+    labs           = require('../../../server/utils/labs'),
+    helpers        = rewire('../../../server/helpers'),
+
+    sandbox = sinon.sandbox.create();
 
 describe('{{tags}} helper', function () {
     before(function () {
         utils.loadHelpers();
+    });
+
+    afterEach(function () {
+        sandbox.restore();
     });
 
     it('has loaded tags helper', function () {
@@ -173,5 +182,31 @@ describe('{{tags}} helper', function () {
         should.exist(rendered);
 
         String(rendered).should.equal('<a href="/tag/foo-bar/">foo</a>, <a href="/tag/bar/">bar</a>, <a href="/tag/baz/">baz</a>');
+    });
+
+    describe('Hidden/Internal tags', function () {
+        // @TODO: remove these once internal tags are out of beta
+        it('Should output internal tags when the labs flag IS NOT set', function () {
+            sandbox.stub(labs, 'isSet').returns(false);
+            var tags = [{name: 'foo', slug: 'foo-bar', visibility: 'public'}, {name: 'bar', slug: 'bar', visibility: 'public'}],
+                rendered = helpers.tags.call(
+                    {tags: tags}
+                );
+            should.exist(rendered);
+
+            String(rendered).should.equal('<a href="/tag/foo-bar/">foo</a>, <a href="/tag/bar/">bar</a>');
+        });
+
+        it('Should NOT output internal tags when the labs flag IS set', function () {
+            sandbox.stub(labs, 'isSet').returns(true);
+
+            var tags = [{name: 'foo', slug: 'foo-bar', visibility: 'public'}, {name: 'bar', slug: 'bar', visibility: 'internal'}],
+                rendered = helpers.tags.call(
+                    {tags: tags}
+                );
+            should.exist(rendered);
+
+            String(rendered).should.equal('<a href="/tag/foo-bar/">foo</a>');
+        });
     });
 });
