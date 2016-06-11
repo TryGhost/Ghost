@@ -185,9 +185,10 @@ describe('{{tags}} helper', function () {
     });
 
     describe('Hidden/Internal tags', function () {
+        // @TODO: remove these once internal tags are out of beta
         it('Should output internal tags when the labs flag IS NOT set', function () {
             sandbox.stub(labs, 'isSet').returns(false);
-            var tags = [{name: 'foo', slug: 'foo-bar', hidden: false}, {name: 'bar', slug: 'bar', hidden: true}],
+            var tags = [{name: 'foo', slug: 'foo-bar', visibility: 'public'}, {name: 'bar', slug: 'bar', visibility: 'public'}],
                 rendered = helpers.tags.call(
                     {tags: tags}
                 );
@@ -199,7 +200,7 @@ describe('{{tags}} helper', function () {
         it('Should NOT output internal tags when the labs flag IS set', function () {
             sandbox.stub(labs, 'isSet').returns(true);
 
-            var tags = [{name: 'foo', slug: 'foo-bar', hidden: false}, {name: 'bar', slug: 'bar', hidden: true}],
+            var tags = [{name: 'foo', slug: 'foo-bar', visibility: 'public'}, {name: 'bar', slug: 'bar', visibility: 'internal'}],
                 rendered = helpers.tags.call(
                     {tags: tags}
                 );
