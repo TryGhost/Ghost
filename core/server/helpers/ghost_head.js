@@ -22,7 +22,7 @@ var getMetaData = require('../data/meta'),
 
 function getClient() {
     if (labs.isSet('publicAPI') === true) {
-        return api.clients.read({slug: 'ghost-frontend'}).then(function (client) {
+        return api.clients.read({slug: 'ghost-frontend', context: {internal: true}}).then(function (client) {
             client = client.clients[0];
 
             if (client.status === 'enabled') {

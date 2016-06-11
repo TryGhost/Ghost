@@ -39,8 +39,7 @@ clients = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             utils.validate(docName, {opts: utils.browseDefaultOptions}),
-            // TODO: add permissions
-            // utils.handlePublicPermissions(docName, 'browse'),
+            utils.handlePublicPermissions(docName, 'browse'),
             utils.convertOptions(allowedIncludes),
             modelQuery
         ];
@@ -73,8 +72,7 @@ clients = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             utils.validate(docName, {attrs: attrs}),
-            // TODO: add permissions
-            // utils.handlePublicPermissions(docName, 'read'),
+            utils.handlePermissions(docName, 'read'),
             utils.convertOptions(allowedIncludes),
             modelQuery
         ];
@@ -110,8 +108,7 @@ clients = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             utils.validate(docName),
-            // TODO: add permissions
-            // utils.handlePermissions(docName, 'add'),
+            utils.handlePermissions(docName, 'add'),
             utils.convertOptions(allowedIncludes),
             doQuery
         ];
@@ -147,8 +144,7 @@ clients = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             utils.validate(docName, {opts: utils.idDefaultOptions}),
-            // TODO: add permissions
-            // utils.handlePermissions(docName, 'edit'),
+            utils.handlePermissions(docName, 'edit'),
             utils.convertOptions(allowedIncludes),
             modelQuery
         ];
@@ -192,8 +188,7 @@ clients = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             utils.validate(docName, {opts: utils.idDefaultOptions}),
-            // TODO: add permissions
-            // utils.handlePermissions(docName, 'destroy'),
+            utils.handlePermissions(docName, 'destroy'),
             utils.convertOptions(allowedIncludes),
             modelQuery
         ];
