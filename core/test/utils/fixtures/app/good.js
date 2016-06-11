@@ -1,6 +1,6 @@
 var path = require('path'),
-	util = require('./goodlib.js'),
-	nested = require('./nested/goodnested');
+    util = require('./goodlib.js'),
+    nested = require('./nested/goodnested');
 
 function GoodApp(app) {
     this.app = app;
