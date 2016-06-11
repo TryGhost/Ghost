@@ -28,7 +28,7 @@ tags = function (options) {
 
     function createTagList(tags) {
         if (labs.isSet('internalTags')) {
-            tags = _.filter(tags, 'visibility', 'public');
+            tags = _.filter(tags, ['visibility', 'public']);
         }
 
         if (autolink) {
@@ -39,7 +39,7 @@ tags = function (options) {
                 });
             });
         }
-        return _(tags).pluck('name').each(_.escape);
+        return _(tags).map('name').each(_.escape);
     }
 
     if (this.tags && this.tags.length) {

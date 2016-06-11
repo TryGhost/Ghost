@@ -143,7 +143,7 @@ generateFeed = function generateFeed(data) {
                 guid: post.uuid,
                 url: itemUrl,
                 date: post.published_at,
-                categories: _.pluck(post.tags, 'name'),
+                categories: _.map(post.tags, 'name'),
                 author: post.author ? post.author.name : null,
                 custom_elements: []
             },
