@@ -6,8 +6,10 @@ import {
 } from 'ember-mocha';
 import Ember from 'ember';
 
-const {run} = Ember;
-const emberA = Ember.A;
+const {
+    run,
+    A: emberA
+} = Ember;
 
 describeComponent(
     'gh-selectize',

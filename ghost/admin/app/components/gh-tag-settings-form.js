@@ -8,7 +8,8 @@ const {
     Handlebars,
     computed,
     get,
-    inject: {service}
+    inject: {service},
+    String: {htmlSafe}
 } = Ember;
 const {reads} = computed;
 
@@ -45,7 +46,7 @@ export default Component.extend({
         if (metaTitle && metaTitle.length > 70) {
             metaTitle = metaTitle.substring(0, 70).trim();
             metaTitle = Handlebars.Utils.escapeExpression(metaTitle);
-            metaTitle = Ember.String.htmlSafe(`${metaTitle}&hellip;`);
+            metaTitle = htmlSafe(`${metaTitle}&hellip;`);
         }
 
         return metaTitle;
@@ -64,7 +65,7 @@ export default Component.extend({
 
         if (seoURL.length > 70) {
             seoURL = seoURL.substring(0, 70).trim();
-            seoURL = Ember.String.htmlSafe(`${seoURL}&hellip;`);
+            seoURL = htmlSafe(`${seoURL}&hellip;`);
         }
 
         return seoURL;
@@ -78,7 +79,7 @@ export default Component.extend({
         if (metaDescription && metaDescription.length > 156) {
             metaDescription = metaDescription.substring(0, 156).trim();
             metaDescription = Handlebars.Utils.escapeExpression(metaDescription);
-            metaDescription = Ember.String.htmlSafe(`${metaDescription}&hellip;`);
+            metaDescription = htmlSafe(`${metaDescription}&hellip;`);
         }
 
         return metaDescription;

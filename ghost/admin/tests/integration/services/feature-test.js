@@ -8,8 +8,12 @@ import FeatureService, {feature} from 'ghost-admin/services/feature';
 import Ember from 'ember';
 import { errorOverride, errorReset } from 'ghost-admin/tests/helpers/adapter-error';
 
-const {RSVP, merge, run} = Ember;
-const EmberError = Ember.Error;
+const {
+    RSVP,
+    merge,
+    run,
+    Error: EmberError
+} = Ember;
 
 function stubSettings(server, labs, validSave = true, validSettings = true) {
     let settings = [

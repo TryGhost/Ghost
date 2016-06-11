@@ -5,7 +5,8 @@ import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 const {
     $,
     computed,
-    inject: {service}
+    inject: {service},
+    String: {htmlSafe}
 } = Ember;
 
 export default ModalComponent.extend(ValidationEngine, {
@@ -52,7 +53,7 @@ export default ModalComponent.extend(ValidationEngine, {
                 }).catch((error) => {
                     if (error && error.errors) {
                         error.errors.forEach((err) => {
-                            err.message = Ember.String.htmlSafe(err.message);
+                            err.message = htmlSafe(err.message);
                         });
 
                         this.get('errors').add('password', 'Incorrect password');

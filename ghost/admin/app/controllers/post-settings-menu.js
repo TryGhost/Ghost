@@ -14,6 +14,7 @@ const {
     computed,
     guidFor,
     inject: {service, controller},
+    String: {htmlSafe},
     isArray,
     isBlank,
     observer,
@@ -96,7 +97,7 @@ export default Controller.extend(SettingsMenuMixin, {
         if (metaTitle.length > 70) {
             metaTitle = metaTitle.substring(0, 70).trim();
             metaTitle = Handlebars.Utils.escapeExpression(metaTitle);
-            metaTitle = Ember.String.htmlSafe(`${metaTitle}&hellip;`);
+            metaTitle = htmlSafe(`${metaTitle}&hellip;`);
         }
 
         return metaTitle;
@@ -129,7 +130,7 @@ export default Controller.extend(SettingsMenuMixin, {
             // Limit to 156 characters
             placeholder = placeholder.substring(0, 156).trim();
             placeholder = Handlebars.Utils.escapeExpression(placeholder);
-            placeholder = Ember.String.htmlSafe(`${placeholder}&hellip;`);
+            placeholder = htmlSafe(`${placeholder}&hellip;`);
         }
 
         return placeholder;
@@ -147,7 +148,7 @@ export default Controller.extend(SettingsMenuMixin, {
 
         if (seoURL.length > 70) {
             seoURL = seoURL.substring(0, 70).trim();
-            seoURL = Ember.String.htmlSafe(`${seoURL}&hellip;`);
+            seoURL = htmlSafe(`${seoURL}&hellip;`);
         }
 
         return seoURL;

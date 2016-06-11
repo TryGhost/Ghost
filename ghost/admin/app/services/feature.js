@@ -4,10 +4,9 @@ const {
     Service,
     computed,
     inject: {service},
+    Error: EmberError,
     set
 } = Ember;
-
-const EmberError = Ember.Error;
 
 export function feature(name) {
     return computed(`config.${name}`, `labs.${name}`, {

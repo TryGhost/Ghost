@@ -10,9 +10,9 @@ import Ember from 'ember';
 import Pretender from 'pretender';
 import wait from 'ember-test-helpers/wait';
 
-const {run} = Ember;
+const {Service, run} = Ember;
 
-let pathsStub = Ember.Service.extend({
+let pathsStub = Service.extend({
     url: {
         api() {
             return '';

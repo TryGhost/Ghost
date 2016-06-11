@@ -4,7 +4,10 @@ import {
     it
 } from 'ember-mocha';
 
-const {run} = Ember;
+const {
+    run,
+    Object: EmberObject
+} = Ember;
 
 describeModule(
     'controller:settings/general',
@@ -16,7 +19,7 @@ describeModule(
     function () {
         it('isDatedPermalinks should be correct', function () {
             let controller = this.subject({
-                model: Ember.Object.create({
+                model: EmberObject.create({
                     permalinks: '/:year/:month/:day/:slug/'
                 })
             });
@@ -32,7 +35,7 @@ describeModule(
 
         it('setting isDatedPermalinks should switch between dated and slug', function () {
             let controller = this.subject({
-                model: Ember.Object.create({
+                model: EmberObject.create({
                     permalinks: '/:year/:month/:day/:slug/'
                 })
             });
@@ -74,7 +77,7 @@ describeModule(
             });
 
             controller = this.subject({
-                model: Ember.Object.create({
+                model: EmberObject.create({
                     availableThemes: themes
                 })
             });

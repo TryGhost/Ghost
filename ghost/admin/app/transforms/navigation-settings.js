@@ -2,8 +2,10 @@ import Ember from 'ember';
 import Transform from 'ember-data/transform';
 import NavigationItem from 'ghost-admin/models/navigation-item';
 
-const {isArray} = Ember;
-const emberA = Ember.A;
+const {
+    isArray,
+    A: emberA
+} = Ember;
 
 export default Transform.extend({
     deserialize(serialized) {

@@ -35,7 +35,7 @@ export default Mixin.create(styleBody, ShortcutsRoute, {
         },
 
         toggleZenMode() {
-            Ember.$('body').toggleClass('zen');
+            $('body').toggleClass('zen');
         },
 
         willTransition(transition) {

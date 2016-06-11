@@ -5,7 +5,8 @@ import DS from 'ember-data';
 
 const {
     Route,
-    inject: {service}
+    inject: {service},
+    Object: EmberObject
 } = Ember;
 const {Errors} = DS;
 
@@ -25,7 +26,7 @@ export default Route.extend(styleBody, {
     },
 
     model() {
-        return Ember.Object.create({
+        return EmberObject.create({
             identification: '',
             password: '',
             errors: Errors.create()

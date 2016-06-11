@@ -4,10 +4,12 @@ import AjaxService from 'ember-ajax/services/ajax';
 const {
     Route,
     inject: {service},
+    Object: EmberObject,
+    testing,
     run
 } = Ember;
 
-let DownloadCountPoller = Ember.Object.extend({
+let DownloadCountPoller = EmberObject.extend({
     url: null,
     count: '',
     runId: null,
@@ -21,10 +23,10 @@ let DownloadCountPoller = Ember.Object.extend({
     },
 
     poll() {
-        let interval = Ember.testing ? 20 : 2000;
+        let interval = testing ? 20 : 2000;
         let runId = run.later(this, function () {
             this.downloadCounter();
-            if (!Ember.testing) {
+            if (!testing) {
                 this.poll();
             }
         }, interval);

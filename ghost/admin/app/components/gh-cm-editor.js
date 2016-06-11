@@ -1,7 +1,7 @@
 /* global CodeMirror */
 import Ember from 'ember';
 
-const {Component} = Ember;
+const {Component, run} = Ember;
 
 export default Component.extend({
     classNameBindings: ['isFocused:focused'],
@@ -26,10 +26,10 @@ export default Component.extend({
         editor.getDoc().setValue(this.get('value'));
 
         // events
-        editor.on('focus', Ember.run.bind(this, 'set', 'isFocused', true));
-        editor.on('blur', Ember.run.bind(this, 'set', 'isFocused', false));
+        editor.on('focus', run.bind(this, 'set', 'isFocused', true));
+        editor.on('blur', run.bind(this, 'set', 'isFocused', false));
         editor.on('change', () => {
-            Ember.run(this, function () {
+            run(this, function () {
                 this.set('value', editor.getDoc().getValue());
             });
         });

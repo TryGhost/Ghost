@@ -2,7 +2,11 @@
 import Ember from 'ember';
 import Mirage from 'ember-cli-mirage';
 
-const {$, isBlank} = Ember;
+const {
+    $,
+    isBlank,
+    String: {dasherize}
+} = Ember;
 
 function paginatedResponse(modelName, allModels, request) {
     let page = +request.queryParams.page || 1;
@@ -300,7 +304,7 @@ export function testConfig() {
     this.get('/slugs/post/:slug/', function (db, request) {
         return {
             slugs: [
-                {slug: Ember.String.dasherize(decodeURIComponent(request.params.slug))}
+                {slug: dasherize(decodeURIComponent(request.params.slug))}
             ]
         };
     });
@@ -308,7 +312,7 @@ export function testConfig() {
     this.get('/slugs/user/:slug/', function (db, request) {
         return {
             slugs: [
-                {slug: Ember.String.dasherize(decodeURIComponent(request.params.slug))}
+                {slug: dasherize(decodeURIComponent(request.params.slug))}
             ]
         };
     });

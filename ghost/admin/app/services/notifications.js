@@ -4,11 +4,11 @@ import {isAjaxError} from 'ember-ajax/errors';
 const {
     Service,
     computed: {filter},
+    A: emberA,
     get,
     set,
     isArray
 } = Ember;
-const emberA = Ember.A;
 
 // Notification keys take the form of "noun.verb.message", eg:
 //

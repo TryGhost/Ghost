@@ -6,7 +6,8 @@ import styleBody from 'ghost-admin/mixins/style-body';
 const {
     Route,
     RSVP: {Promise},
-    inject: {service}
+    inject: {service},
+    Object: EmberObject
 } = Ember;
 const {Errors} = DS;
 
@@ -28,7 +29,7 @@ export default Route.extend(styleBody, {
     },
 
     model(params) {
-        let model = Ember.Object.create();
+        let model = EmberObject.create();
         let re = /^(?:[A-Za-z0-9_\-]{4})*(?:[A-Za-z0-9_\-]{2}|[A-Za-z0-9_\-]{3})?$/;
         let email,
             tokenText;

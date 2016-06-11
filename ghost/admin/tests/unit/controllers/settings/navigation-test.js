@@ -4,7 +4,10 @@ import { describeModule, it } from 'ember-mocha';
 import Ember from 'ember';
 import NavItem from 'ghost-admin/models/navigation-item';
 
-const {run} = Ember;
+const {
+    run,
+    Object: EmberObject
+} = Ember;
 
 const navSettingJSON = `[
     {"label":"Home","url":"/"},
@@ -50,7 +53,7 @@ describeModule(
             let ctrl = this.subject();
 
             run(() => {
-                ctrl.set('model', Ember.Object.create({navigation: [
+                ctrl.set('model', EmberObject.create({navigation: [
                     NavItem.create({label: 'First',   url: '/'}),
                     NavItem.create({label: '',        url: '/second'}),
                     NavItem.create({label: 'Third',   url: ''})
@@ -75,7 +78,7 @@ describeModule(
             let ctrl = this.subject();
 
             run(() => {
-                ctrl.set('model', Ember.Object.create({navigation: [
+                ctrl.set('model', EmberObject.create({navigation: [
                     NavItem.create({label: 'First',   url: '/'}),
                     NavItem.create({label: '',        url: ''})
                 ]}));
@@ -97,7 +100,7 @@ describeModule(
             let ctrl = this.subject();
 
             run(() => {
-                ctrl.set('model', Ember.Object.create({navigation: [
+                ctrl.set('model', EmberObject.create({navigation: [
                     NavItem.create({label: 'First', url: '/first', last: true})
                 ]}));
             });
@@ -124,7 +127,7 @@ describeModule(
             let ctrl = this.subject();
 
             run(() => {
-                ctrl.set('model', Ember.Object.create({navigation: [
+                ctrl.set('model', EmberObject.create({navigation: [
                     NavItem.create({label: '', url: '', last: true})
                 ]}));
                 expect(ctrl.get('model.navigation.length')).to.equal(1);
@@ -141,7 +144,7 @@ describeModule(
             ];
 
             run(() => {
-                ctrl.set('model', Ember.Object.create({navigation: navItems}));
+                ctrl.set('model', EmberObject.create({navigation: navItems}));
                 expect(ctrl.get('model.navigation').mapBy('label')).to.deep.equal(['First', 'Second']);
                 ctrl.send('deleteItem', ctrl.get('model.navigation.firstObject'));
                 expect(ctrl.get('model.navigation').mapBy('label')).to.deep.equal(['Second']);
@@ -156,7 +159,7 @@ describeModule(
             ];
 
             run(() => {
-                ctrl.set('model', Ember.Object.create({navigation: navItems}));
+                ctrl.set('model', EmberObject.create({navigation: navItems}));
                 expect(ctrl.get('model.navigation').mapBy('label')).to.deep.equal(['First', 'Second']);
                 ctrl.send('reorderItems', navItems.reverseObjects());
                 expect(ctrl.get('model.navigation').mapBy('label')).to.deep.equal(['Second', 'First']);
@@ -171,7 +174,7 @@ describeModule(
             ];
 
             run(() => {
-                ctrl.set('model', Ember.Object.create({navigation: navItems}));
+                ctrl.set('model', EmberObject.create({navigation: navItems}));
                 expect(ctrl.get('model.navigation').mapBy('url')).to.deep.equal(['/first', '/second']);
                 ctrl.send('updateUrl', '/new', ctrl.get('model.navigation.firstObject'));
                 expect(ctrl.get('model.navigation').mapBy('url')).to.deep.equal(['/new', '/second']);

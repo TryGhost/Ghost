@@ -7,8 +7,11 @@ import {
 import hbs from 'htmlbars-inline-precompile';
 import Ember from 'ember';
 
-const {Service, run} = Ember;
-const emberA = Ember.A;
+const {
+    Service,
+    run,
+    A: emberA
+} = Ember;
 
 let notificationsStub = Service.extend({
     notifications: emberA()

@@ -5,11 +5,11 @@ import {invokeAction} from 'ember-invoke-action';
 const {
     RSVP: {Promise},
     inject: {service},
+    A: emberA,
     isBlank,
     on,
     run
 } = Ember;
-const emberA = Ember.A;
 
 const FullScreenModalComponent = LiquidTether.extend({
     to: 'fullscreen-modal',

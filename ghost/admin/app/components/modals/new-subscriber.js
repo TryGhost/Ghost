@@ -1,11 +1,13 @@
 import Ember from 'ember';
 import ModalComponent from 'ghost-admin/components/modals/base';
 
+const {A: emberA} = Ember;
+
 export default ModalComponent.extend({
     actions: {
         updateEmail(newEmail) {
             this.set('model.email', newEmail);
-            this.set('model.hasValidated', Ember.A());
+            this.set('model.hasValidated', emberA());
             this.get('model.errors').clear();
         },
 

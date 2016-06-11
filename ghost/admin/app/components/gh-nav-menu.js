@@ -2,6 +2,7 @@ import Ember from 'ember';
 
 const {
     Component,
+    String: {htmlSafe},
     inject: {service},
     computed
 } = Ember;
@@ -16,7 +17,7 @@ export default Component.extend({
     navMenuIcon: computed('ghostPaths.subdir', function () {
         let url = `${this.get('ghostPaths.subdir')}/ghost/img/ghosticon.jpg`;
 
-        return Ember.String.htmlSafe(`background-image: url(${url})`);
+        return htmlSafe(`background-image: url(${url})`);
     }),
 
     config: service(),

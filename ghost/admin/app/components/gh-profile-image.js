@@ -5,6 +5,7 @@ import {isNotFoundError} from 'ember-ajax/errors';
 const {
     Component,
     computed,
+    String: {htmlSafe},
     inject: {service},
     isBlank,
     run
@@ -48,7 +49,7 @@ export default Component.extend({
 
     defaultImage: computed('ghostPaths', function () {
         let url = `${this.get('ghostPaths.subdir')}/ghost/img/user-image.png`;
-        return Ember.String.htmlSafe(`background-image: url(${url})`);
+        return htmlSafe(`background-image: url(${url})`);
     }),
 
     trySetValidEmail() {
@@ -77,7 +78,7 @@ export default Component.extend({
                     let defaultImageUrl = `url("${this.get('ghostPaths.subdir')}/ghost/img/user-image.png")`;
 
                     if (isNotFoundError(error)) {
-                        this.$('.placeholder-img')[0].style.backgroundImage = Ember.String.htmlSafe(defaultImageUrl);
+                        this.$('.placeholder-img')[0].style.backgroundImage = htmlSafe(defaultImageUrl);
                     } else {
                         this.$('.placeholder-img')[0].style.backgroundImage = 'url()';
                     }
@@ -85,7 +86,7 @@ export default Component.extend({
 
             style = `background-image: url(${gravatarUrl})`;
         }
-        return Ember.String.htmlSafe(style);
+        return htmlSafe(style);
     }),
 
     didInsertElement() {

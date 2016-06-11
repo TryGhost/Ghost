@@ -8,6 +8,7 @@ const {
     RSVP,
     computed,
     inject: {service},
+    String: {htmlSafe},
     run,
     isArray
 } = Ember;
@@ -63,7 +64,7 @@ export default Controller.extend({
     userImageBackground: computed('user.image', 'userDefault', function () {
         let url = this.get('user.image') || this.get('userDefault');
 
-        return Ember.String.htmlSafe(`background-image: url(${url})`);
+        return htmlSafe(`background-image: url(${url})`);
     }),
     // end duplicated
 
@@ -74,7 +75,7 @@ export default Controller.extend({
     coverImageBackground: computed('user.cover', 'coverDefault', function () {
         let url = this.get('user.cover') || this.get('coverDefault');
 
-        return Ember.String.htmlSafe(`background-image: url(${url})`);
+        return htmlSafe(`background-image: url(${url})`);
     }),
 
     coverTitle: computed('user.name', function () {

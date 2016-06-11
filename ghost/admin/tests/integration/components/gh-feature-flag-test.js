@@ -7,7 +7,9 @@ import hbs from 'htmlbars-inline-precompile';
 import Ember from 'ember';
 import wait from 'ember-test-helpers/wait';
 
-const featureStub = Ember.Service.extend({
+const {Service} = Ember;
+
+const featureStub = Service.extend({
     testFlag: true
 });
 

@@ -7,10 +7,11 @@ const {
     $,
     assign,
     computed,
-    inject: {service}
+    inject: {service},
+    Controller
 } = Ember;
 
-export default Ember.Controller.extend(PaginationMixin, {
+export default Controller.extend(PaginationMixin, {
 
     queryParams: ['order', 'direction'],
     order: 'created_at',

@@ -18,9 +18,13 @@ import UserValidator from 'ghost-admin/validators/user';
 
 import ValidatorExtensions from 'ghost-admin/utils/validator-extensions';
 
-const {Mixin, RSVP, isArray} = Ember;
+const {
+    Mixin,
+    RSVP,
+    A: emberA,
+    isArray
+} = Ember;
 const {Errors} = DS;
-const emberA = Ember.A;
 
 // our extensions to the validator library
 ValidatorExtensions.init();

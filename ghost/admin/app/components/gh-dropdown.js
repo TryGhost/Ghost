@@ -4,7 +4,8 @@ import DropdownMixin from 'ghost-admin/mixins/dropdown-mixin';
 const {
     Component,
     computed,
-    inject: {service}
+    inject: {service},
+    run
 } = Ember;
 
 export default Component.extend(DropdownMixin, {
@@ -42,7 +43,7 @@ export default Component.extend(DropdownMixin, {
 
         this.$().on('animationend webkitAnimationEnd oanimationend MSAnimationEnd', (event) => {
             if (event.originalEvent.animationName === 'fade-out') {
-                Ember.run(this, function () {
+                run(this, function () {
                     if (this.get('closing')) {
                         this.set('isOpen', false);
                         this.set('closing', false);
