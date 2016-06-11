@@ -377,13 +377,15 @@ authentication = {
         }
 
         function formatResponse(isSetup) {
-            return {setup: [{
-                status: isSetup,
-                // Pre-populate from config if, and only if the values exist in config.
-                title: config.title || undefined,
-                name: config.user_name || undefined,
-                email: config.user_email || undefined
-            }]};
+            return {setup: [
+                {
+                    status: isSetup,
+                    // Pre-populate from config if, and only if the values exist in config.
+                    title: config.title || undefined,
+                    name: config.user_name || undefined,
+                    email: config.user_email || undefined
+                }
+            ]};
         }
 
         tasks = [
