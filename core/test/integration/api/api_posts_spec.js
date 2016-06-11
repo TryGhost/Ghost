@@ -214,7 +214,7 @@ describe('Post API', function () {
                 results.posts.length.should.be.eql(2);
 
                 _.each(results.posts, function (post) {
-                    var slugs = _.pluck(post.tags, 'slug');
+                    var slugs = _.map(post.tags, 'slug');
                     slugs.should.containEql('kitchen-sink');
                 });
 
@@ -343,12 +343,12 @@ describe('Post API', function () {
             var posts, expectedTitles;
 
             posts = _(testUtils.DataGenerator.Content.posts).reject('page').reject({status: 'scheduled'}).value();
-            expectedTitles = _(posts).pluck('title').sortBy().value();
+            expectedTitles = _(posts).map('title').sortBy().value();
 
             PostAPI.browse({context: {user: 1}, status: 'all', order: 'title asc', fields: 'title'}).then(function (results) {
                 should.exist(results.posts);
 
-                var titles = _.pluck(results.posts, 'title');
+                var titles = _.map(results.posts, 'title');
                 titles.should.eql(expectedTitles);
 
                 done();
@@ -359,12 +359,12 @@ describe('Post API', function () {
             var posts, expectedTitles;
 
             posts = _(testUtils.DataGenerator.Content.posts).reject('page').reject({status: 'scheduled'}).value();
-            expectedTitles = _(posts).pluck('title').sortBy().reverse().value();
+            expectedTitles = _(posts).map('title').sortBy().reverse().value();
 
             PostAPI.browse({context: {user: 1}, status: 'all', order: 'title DESC', fields: 'title'}).then(function (results) {
                 should.exist(results.posts);
 
-                var titles = _.pluck(results.posts, 'title');
+                var titles = _.map(results.posts, 'title');
                 titles.should.eql(expectedTitles);
 
                 done();
@@ -375,12 +375,12 @@ describe('Post API', function () {
             var posts, expectedTitles;
 
             posts = _(testUtils.DataGenerator.Content.posts).reject('page').reject({status: 'scheduled'}).value();
-            expectedTitles = _(posts).pluck('title').sortBy().value();
+            expectedTitles = _(posts).map('title').sortBy().value();
 
             PostAPI.browse({context: {user: 1}, status: 'all', order: 'bunny DESC, title ASC', fields: 'title'}).then(function (results) {
                 should.exist(results.posts);
 
-                var titles = _.pluck(results.posts, 'title');
+                var titles = _.map(results.posts, 'title');
                 titles.should.eql(expectedTitles);
 
                 done();

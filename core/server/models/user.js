@@ -48,13 +48,13 @@ User = ghostBookshelf.Model.extend({
             model.emitChange('added');
 
             // active is the default state, so if status isn't provided, this will be an active user
-            if (!model.get('status') || _.contains(activeStates, model.get('status'))) {
+            if (!model.get('status') || _.includes(activeStates, model.get('status'))) {
                 model.emitChange('activated');
             }
         });
         this.on('updated', function onUpdated(model) {
             model.statusChanging = model.get('status') !== model.updated('status');
-            model.isActive = _.contains(activeStates, model.get('status'));
+            model.isActive = _.includes(activeStates, model.get('status'));
 
             if (model.statusChanging) {
                 model.emitChange(model.isActive ? 'activated' : 'deactivated');
@@ -67,7 +67,7 @@ User = ghostBookshelf.Model.extend({
             model.emitChange('edited');
         });
         this.on('destroyed', function onDestroyed(model) {
-            if (_.contains(activeStates, model.previous('status'))) {
+            if (_.includes(activeStates, model.previous('status'))) {
                 model.emitChange('deactivated');
             }
 
@@ -475,16 +475,16 @@ User = ghostBookshelf.Model.extend({
         if (action === 'edit') {
             // Owner can only be editted by owner
             if (loadedPermissions.user && userModel.hasRole('Owner')) {
-                hasUserPermission = _.any(loadedPermissions.user.roles, {name: 'Owner'});
+                hasUserPermission = _.some(loadedPermissions.user.roles, {name: 'Owner'});
             }
             // Users with the role 'Editor' and 'Author' have complex permissions when the action === 'edit'
             // We now have all the info we need to construct the permissions
-            if (loadedPermissions.user && _.any(loadedPermissions.user.roles, {name: 'Author'})) {
+            if (loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Author'})) {
                 // If this is the same user that requests the operation allow it.
                 hasUserPermission = hasUserPermission || context.user === userModel.get('id');
             }
 
-            if (loadedPermissions.user && _.any(loadedPermissions.user.roles, {name: 'Editor'})) {
+            if (loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Editor'})) {
                 // If this is the same user that requests the operation allow it.
                 hasUserPermission = context.user === userModel.get('id');
 
@@ -500,7 +500,7 @@ User = ghostBookshelf.Model.extend({
             }
 
             // Users with the role 'Editor' have complex permissions when the action === 'destroy'
-            if (loadedPermissions.user && _.any(loadedPermissions.user.roles, {name: 'Editor'})) {
+            if (loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Editor'})) {
                 // If this is the same user that requests the operation allow it.
                 hasUserPermission = context.user === userModel.get('id');
 
@@ -768,7 +768,7 @@ User = ghostBookshelf.Model.extend({
 
             // check if user has the owner role
             var currentRoles = contextUser.toJSON(options).roles;
-            if (!_.any(currentRoles, {id: ownerRole.id})) {
+            if (!_.some(currentRoles, {id: ownerRole.id})) {
                 return Promise.reject(new errors.NoPermissionError(i18n.t('errors.models.user.onlyOwnerCanTransferOwnerRole')));
             }
 
@@ -779,7 +779,7 @@ User = ghostBookshelf.Model.extend({
                 user = results[1],
                 currentRoles = user.toJSON(options).roles;
 
-            if (!_.any(currentRoles, {id: adminRole.id})) {
+            if (!_.some(currentRoles, {id: adminRole.id})) {
                 return Promise.reject(new errors.ValidationError('errors.models.user.onlyAdmCanBeAssignedOwnerRole'));
             }
 

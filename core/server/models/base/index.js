@@ -199,7 +199,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             if (key.substring(0, 7) !== '_pivot_') {
                 // if include is set, expand to full object
                 var fullKey = _.isEmpty(options.baseKey) ? key : options.baseKey + '.' + key;
-                if (_.contains(self.include, fullKey)) {
+                if (_.includes(self.include, fullKey)) {
                     attrs[key] = relation.toJSON(_.extend({}, options, {baseKey: fullKey, include: self.include}));
                 }
             }
@@ -509,7 +509,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             // Some keywords cannot be changed
             slugList = _.union(slugList, config.slugs.protected);
 
-            return _.contains(slugList, slug) ? slug + '-' + baseName : slug;
+            return _.includes(slugList, slug) ? slug + '-' + baseName : slug;
         }).then(function then(slug) {
             // if slug is empty after trimming use the model name
             if (!slug) {

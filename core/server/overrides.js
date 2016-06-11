@@ -1,11 +1,4 @@
-var moment = require('moment-timezone'),
-    _ = require('lodash'),
-    toString = require('lodash.tostring');
-
-/**
- * the version of lodash included in Ghost (3.10.1) does not have _.toString - it is added in a later version.
- */
-_.toString = toString;
+var moment = require('moment-timezone');
 
 /**
  * force UTC
@@ -15,4 +8,3 @@ _.toString = toString;
  *   - be careful when you work with date operations, therefor always wrap a date into moment
  */
 moment.tz.setDefault('UTC');
-

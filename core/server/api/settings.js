@@ -108,7 +108,7 @@ updateSettingsCache = function (settings) {
  * @returns {*}
  */
 settingsFilter = function (settings, filter) {
-    return _.object(_.filter(_.pairs(settings), function (setting) {
+    return _.fromPairs(_.filter(_.toPairs(settings), function (setting) {
         if (filter) {
             return _.some(filter.split(','), function (f) {
                 return setting[1].type === f;

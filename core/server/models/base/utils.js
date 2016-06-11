@@ -15,7 +15,7 @@ tagUpdate = {
             return false;
         }
         return TagModel.forge()
-            .query('whereIn', 'name', _.pluck(tagsToMatch, 'name')).fetchAll(options);
+            .query('whereIn', 'name', _.map(tagsToMatch, 'name')).fetchAll(options);
     },
 
     detachTagFromPost: function detachTagFromPost(post, tag, options) {
@@ -62,7 +62,7 @@ tagUpdate = {
             return false;
         }
         // Return if no item is not the same (double negative is horrible)
-        return !_.any(tags1, function (tag1, index) {
+        return !_.some(tags1, function (tag1, index) {
             return !tagUpdate.tagsAreEqual(tag1, tags2[index]);
         });
     }
