@@ -33,6 +33,7 @@ function getBaseConfig() {
         useGoogleFonts: {value: !config.isPrivacyDisabled('useGoogleFonts'), type: 'bool'},
         useGravatar:    {value: !config.isPrivacyDisabled('useGravatar'), type: 'bool'},
         publicAPI:      labsFlag('publicAPI'),
+        internalTags:   labsFlag('internalTags'),
         blogUrl:        {value: config.url.replace(/\/$/, ''), type: 'string'},
         blogTitle:      {value: config.theme.title, type: 'string'},
         routeKeywords:  {value: JSON.stringify(config.routeKeywords), type: 'json'}

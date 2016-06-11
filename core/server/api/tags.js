@@ -54,7 +54,7 @@ tags = {
      * @return {Promise<Tag>} Tag
      */
     read: function read(options) {
-        var attrs = ['id', 'slug'],
+        var attrs = ['id', 'slug', 'visibility'],
             tasks;
 
         /**
