@@ -8,7 +8,6 @@
     "window",
     "location",
     "setTimeout",
-    "$",
     "-Promise",
     "define",
     "console",

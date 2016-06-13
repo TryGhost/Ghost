@@ -3,7 +3,8 @@ import Ember from 'ember';
 const {
     Component,
     computed,
-    inject: {service}
+    inject: {service},
+    String: {htmlSafe}
 } = Ember;
 
 export default Component.extend({
@@ -20,7 +21,7 @@ export default Component.extend({
     userImageBackground: computed('user.image', 'userDefault', function () {
         let url = this.get('user.image') || this.get('userDefault');
 
-        return Ember.String.htmlSafe(`background-image: url(${url})`);
+        return htmlSafe(`background-image: url(${url})`);
     }),
 
     lastLogin: computed('user.lastLogin', function () {

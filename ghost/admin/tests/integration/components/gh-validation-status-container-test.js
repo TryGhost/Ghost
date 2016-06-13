@@ -8,6 +8,11 @@ import hbs from 'htmlbars-inline-precompile';
 import Ember from 'ember';
 import DS from 'ember-data';
 
+const {
+    Object: EmberObject
+} = Ember;
+const {Errors} = DS;
+
 describeComponent(
     'gh-validation-status-container',
     'Integration: Component: gh-validation-status-container',
@@ -16,10 +21,10 @@ describeComponent(
     },
     function () {
         beforeEach(function () {
-            let testObject = new Ember.Object();
+            let testObject = EmberObject.create();
             testObject.set('name', 'Test');
             testObject.set('hasValidated', []);
-            testObject.set('errors', DS.Errors.create());
+            testObject.set('errors', Errors.create());
 
             this.set('testObject', testObject);
         });

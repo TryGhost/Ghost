@@ -11,7 +11,7 @@ import startApp from '../../helpers/start-app';
 import destroyApp from '../../helpers/destroy-app';
 import { invalidateSession, authenticateSession } from 'ghost-admin/tests/helpers/ember-simple-auth';
 
-const {run} = Ember;
+const {$, run} = Ember;
 
 describe('Acceptance: Settings - General', function () {
     let application;

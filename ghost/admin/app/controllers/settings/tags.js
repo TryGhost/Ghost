@@ -2,11 +2,12 @@ import Ember from 'ember';
 
 const {
     computed,
-    inject: {controller}
+    inject: {controller},
+    Controller
 } = Ember;
 const {alias, equal, sort} = computed;
 
-export default Ember.Controller.extend({
+export default Controller.extend({
 
     tagController: controller('settings.tags.tag'),
 

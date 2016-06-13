@@ -3,10 +3,11 @@ import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 
 const {
     computed,
-    isBlank
+    isBlank,
+    Object: EmberObject
 } = Ember;
 
-export default Ember.Object.extend(ValidationEngine, {
+export default EmberObject.extend(ValidationEngine, {
     label: '',
     url: '',
     isNew: false,

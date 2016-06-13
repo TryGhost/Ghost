@@ -7,6 +7,7 @@ import {
 
 const {
     Component,
+    String: {htmlSafe},
     computed,
     inject: {service},
     isBlank,
@@ -51,7 +52,7 @@ export default Component.extend({
             width = '0';
         }
 
-        return Ember.String.htmlSafe(`width: ${width}`);
+        return htmlSafe(`width: ${width}`);
     }),
 
     dragOver(event) {

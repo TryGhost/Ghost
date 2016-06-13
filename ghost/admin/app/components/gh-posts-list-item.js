@@ -5,6 +5,7 @@ import {invokeAction} from 'ember-invoke-action';
 const {
     $,
     Component,
+    String: {htmlSafe},
     computed,
     inject: {service}
 } = Ember;
@@ -32,7 +33,7 @@ export default Component.extend(ActiveLinkWrapper, {
     }),
 
     authorAvatarBackground: computed('authorAvatar', function () {
-        return Ember.String.htmlSafe(`background-image: url(${this.get('authorAvatar')})`);
+        return htmlSafe(`background-image: url(${this.get('authorAvatar')})`);
     }),
 
     click() {

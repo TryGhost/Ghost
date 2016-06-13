@@ -9,9 +9,12 @@ import Ember from 'ember';
 // import validator from 'ghost-admin/validators/tag-settings';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 
-const {run} = Ember;
+const {
+    run,
+    Object: EmberObject
+} = Ember;
 
-const Tag = Ember.Object.extend(ValidationEngine, {
+const Tag = EmberObject.extend(ValidationEngine, {
     validationType: 'tag',
 
     name: null,

@@ -1,6 +1,8 @@
 /* global Blob */
 import Ember from 'ember';
 
+const {$, Test} = Ember;
+
 export function createFile(content = ['test'], options = {}) {
     let {
         name,
@@ -15,14 +17,14 @@ export function createFile(content = ['test'], options = {}) {
 
 export function fileUpload($element, content, options) {
     let file = createFile(content, options);
-    let event = Ember.$.Event('change', {
+    let event = $.Event('change', {
         testingFiles: [file]
     });
 
     $element.trigger(event);
 }
 
-export default Ember.Test.registerAsyncHelper('fileUpload', function(app, selector, content, options) {
+export default Test.registerAsyncHelper('fileUpload', function(app, selector, content, options) {
     let file = createFile(content, options);
 
     return triggerEvent(

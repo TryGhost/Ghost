@@ -2,8 +2,14 @@
 import Ember from 'ember';
 import EmberSelectizeComponent from 'ember-cli-selectize/components/ember-selectize';
 
-const {computed, isArray, isBlank, get, run} = Ember;
-const emberA = Ember.A;
+const {
+    A: emberA,
+    computed,
+    isArray,
+    isBlank,
+    get,
+    run
+} = Ember;
 
 export default EmberSelectizeComponent.extend({
 
@@ -54,8 +60,8 @@ export default EmberSelectizeComponent.extend({
     },
 
     _onChange(args) {
-        let selection = Ember.get(this, 'selection');
-        let valuePath = Ember.get(this, '_valuePath');
+        let selection = get(this, 'selection');
+        let valuePath = get(this, '_valuePath');
         let reorderedSelection = emberA([]);
 
         if (!args || !selection || !isArray(selection) || args.length !== get(selection, 'length')) {
