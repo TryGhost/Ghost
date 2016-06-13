@@ -413,6 +413,17 @@ describe('Config', function () {
                 config.urlPathForPost(testData).should.equal(postLink);
             });
 
+            it('permalink is /:year/:month/:day/:slug, blog timezone is Asia Tokyo', function () {
+                config.theme.timezone = 'Asia/Tokyo';
+                config.theme.permalinks = '/:year/:month/:day/:slug/';
+
+                var testData = testUtils.DataGenerator.Content.posts[2],
+                    postLink = '/2016/05/18/short-and-sweet/';
+
+                testData.published_at = new Date('2016-05-18T06:30:00.000Z');
+                config.urlPathForPost(testData).should.equal(postLink);
+            });
+
             it('post is page, no permalink usage allowed at all', function () {
                 config.theme.timezone = 'America/Los_Angeles';
                 config.theme.permalinks = '/:year/:month/:day/:slug/';
