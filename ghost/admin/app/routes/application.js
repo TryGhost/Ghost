@@ -7,6 +7,7 @@ import windowProxy from 'ghost-admin/utils/window-proxy';
 
 const {
     Route,
+    String: {htmlSafe},
     inject: {service},
     run
 } = Ember;
@@ -34,6 +35,7 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
         if (this.get('session.isAuthenticated')) {
             this.set('appLoadTransition', transition);
             transition.send('loadServerNotifications');
+            transition.send('checkForOutdatedDesktopApp');
 
             // return the feature loading promise so that we block until settings
             // are loaded in order for synchronous access everywhere
@@ -96,7 +98,6 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
         signedIn() {
             this.get('notifications').clearAll();
             this.send('loadServerNotifications', true);
-            this.send('checkForOutdatedDesktopApp');
         },
 
         invalidateSession() {
@@ -135,8 +136,8 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
                 let msg = `Your version of Ghost Desktop needs to be manually updated. Please ${link} to get started.`;
 
                 if (updateCheck.test(ua)) {
-                    this.get('notifications').showAlert(msg.htmlSafe(), {
-                        type: 'upgrade',
+                    this.get('notifications').showAlert(htmlSafe(msg), {
+                        type: 'warn',
                         key: 'desktop.manual.upgrade'
                     });
                 }
