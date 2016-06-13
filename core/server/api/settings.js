@@ -61,7 +61,7 @@ updateConfigCache = function () {
             permalinks: (settingsCache.permalinks && settingsCache.permalinks.value) || '/:slug/',
             twitter: (settingsCache.twitter && settingsCache.twitter.value) || '',
             facebook: (settingsCache.facebook && settingsCache.facebook.value) || '',
-            timezone: (settingsCache.activeTimezone && settingsCache.activeTimezone.value) || 'Europe/Dublin'
+            timezone: (settingsCache.activeTimezone && settingsCache.activeTimezone.value) || config.theme.timezone
         },
         labs: labsValue
     });
