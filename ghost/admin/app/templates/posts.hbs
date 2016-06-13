@@ -33,9 +33,11 @@
                                     {{/if}}
                                 </span>
                                 {{#if feature.internalTags}}
-                                    {{#each post.internalTags as |tag|}}
-                                        <span class="label label-default">{{tag.name}}</span>
-                                    {{/each}}
+                                    <div class="internal-tags-list">
+                                        {{#each post.internalTags as |tag|}}
+                                            <span class="label label-default">{{tag.name}}</span>
+                                        {{/each}}
+                                    </div>
                                 {{/if}}
                             </section>
                         {{/link-to}}
