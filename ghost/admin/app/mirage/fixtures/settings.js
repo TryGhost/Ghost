@@ -210,7 +210,7 @@ export default [
         updated_at: '2015-09-23T13:32:49.868Z',
         updated_by: 1,
         uuid: '310c9169-9613-48b0-8bc4-d1e1c9be85b8',
-        value: 'Europe/Dublin'
+        value: 'Etc/UTC'
     },
     {
         key: 'availableThemes',
