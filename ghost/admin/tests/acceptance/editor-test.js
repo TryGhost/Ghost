@@ -225,7 +225,7 @@ describe('Acceptance: Editor', function() {
                 expect(currentURL(), 'currentURL for settings')
                     .to.equal('/settings/general');
                 expect(find('#activeTimezone option:selected').text().trim(), 'default timezone')
-                    .to.equal('(GMT) Greenwich Mean Time : Dublin, Edinburgh, London');
+                    .to.equal('(GMT) UTC');
                 // select a new timezone
                 find('#activeTimezone option[value="Pacific/Auckland"]').prop('selected', true);
             });
@@ -236,7 +236,7 @@ describe('Acceptance: Editor', function() {
 
             andThen(() => {
                 expect(find('#activeTimezone option:selected').text().trim(), 'new timezone after saving')
-                    .to.equal('(GMT +13:00) Auckland, Wellington');
+                    .to.equal('(GMT +12:00) Auckland, Wellington');
             });
 
             // and now go back to the editor
@@ -246,7 +246,7 @@ describe('Acceptance: Editor', function() {
                 expect(currentURL(), 'currentURL in editor')
                     .to.equal('/editor/2');
                 expect(find('input[name="post-setting-date"]').val(), 'date with timezone offset')
-                    .to.equal('10 May 16 @ 21:00');
+                    .to.equal('10 May 16 @ 22:00');
             });
         });
     });

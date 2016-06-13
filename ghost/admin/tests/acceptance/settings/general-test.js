@@ -140,8 +140,8 @@ describe('Acceptance: Settings - General', function () {
             andThen(() => {
                 expect(currentURL(), 'currentURL').to.equal('/settings/general');
 
-                expect(find('#activeTimezone select option').length, 'available timezones').to.equal(65);
-                expect(find('#activeTimezone option:selected').text().trim()).to.equal('(GMT) Greenwich Mean Time : Dublin, Edinburgh, London');
+                expect(find('#activeTimezone select option').length, 'available timezones').to.equal(66);
+                expect(find('#activeTimezone option:selected').text().trim()).to.equal('(GMT) UTC');
                 find('#activeTimezone option[value="Africa/Cairo"]').prop('selected', true);
             });
 
