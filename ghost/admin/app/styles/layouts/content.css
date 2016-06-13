@@ -64,6 +64,11 @@
     line-height: 18px;
 }
 
+.content-list .entry-meta .internal-tags-list {
+    margin-top: 5px;
+    line-height: 22px;
+}
+
 .content-list .avatar {
     position: relative;
     float: left;
