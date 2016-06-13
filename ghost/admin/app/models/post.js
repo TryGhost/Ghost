@@ -9,7 +9,7 @@ const {
     computed,
     inject: {service}
 } = Ember;
-const {equal} = computed;
+const {equal, filterBy} = computed;
 
 export default Model.extend(ValidationEngine, {
     validationType: 'post',
@@ -68,6 +68,7 @@ export default Model.extend(ValidationEngine, {
 
     isPublished: equal('status', 'published'),
     isDraft: equal('status', 'draft'),
+    internalTags: filterBy('tags', 'isInternal', true),
 
     // remove client-generated tags, which have `id: null`.
     // Ember Data won't recognize/update them automatically

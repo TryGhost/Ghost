@@ -1,6 +1,11 @@
 import Ember from 'ember';
 
-const {Controller, compare, computed} = Ember;
+const {
+    Controller,
+    compare,
+    computed,
+    inject: {service}
+} = Ember;
 const {equal} = computed;
 
 // a custom sort function is needed in order to sort the posts list the same way the server would:
@@ -67,6 +72,7 @@ function publishedAtCompare(item1, item2) {
 }
 
 export default Controller.extend({
+    feature: service(),
 
     showDeletePostModal: false,
 
