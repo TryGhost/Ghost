@@ -2,6 +2,13 @@
     {{#link-to 'settings.tags.tag' tag class="tag-edit-button"}}
         <span class="tag-title">{{tag.name}}</span>
         <span class="label label-default">/{{tag.slug}}</span>
+
+        {{#if feature.internalTags}}
+            {{#if tag.isInternal}}
+                <span class="label label-blue">internal</span>
+            {{/if}}
+        {{/if}}
+
         <p class="tag-description">{{tag.description}}</p>
         <span class="tags-count">{{tag.count.posts}}</span>
     {{/link-to}}
