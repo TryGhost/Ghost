@@ -285,6 +285,25 @@ describe('Acceptance: Settings - Tags', function () {
             });
         });
 
+        it('shows the internal tag label', function () {
+            server.create('tag', {name: '#internal-tag', slug: 'hash-internal-tag', visibility: 'internal'});
+
+            visit('settings/tags/');
+
+            andThen(() => {
+                expect(currentURL()).to.equal('/settings/tags/hash-internal-tag');
+
+                expect(find('.settings-tags .settings-tag').length, 'tag list count')
+                    .to.equal(1);
+
+                expect(find('.settings-tags .settings-tag:first .label.label-blue').length, 'internal tag label')
+                    .to.equal(1);
+
+                expect(find('.settings-tags .settings-tag:first .label.label-blue').text().trim(), 'internal tag label text')
+                    .to.equal('internal');
+            });
+        });
+
         it('redirects to 404 when tag does not exist', function () {
             server.get('/tags/slug/unknown/', function () {
                 return new Mirage.Response(404, {'Content-Type': 'application/json'}, {errors: [{message: 'Tag not found.', errorType: 'NotFoundError'}]});

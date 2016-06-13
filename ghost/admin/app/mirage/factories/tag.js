@@ -5,7 +5,7 @@ export default Mirage.Factory.extend({
     created_at() { return  '2015-09-11T09:44:29.871Z'; },
     created_by() { return  1; },
     description(i) { return  `Description for tag ${i}.`; },
-    hidden() { return  false; },
+    visibility() { return 'public'; },
     image(i) { return  `/content/images/2015/10/tag-${i}.jpg`; },
     meta_description(i) { return  `Meta description for tag ${i}.`; },
     meta_title(i) { return  `Meta Title for tag ${i}`; },
