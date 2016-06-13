@@ -45,7 +45,7 @@ describe('Config', function () {
             var themeConfig = config.theme;
 
             // This will fail if there are any extra keys
-            themeConfig.should.have.keys('url', 'title', 'description', 'logo', 'cover');
+            themeConfig.should.have.keys('url', 'title', 'description', 'logo', 'cover', 'timezone');
         });
 
         it('should have the correct values for each key', function () {
@@ -393,8 +393,8 @@ describe('Config', function () {
         });
 
         describe('urlPathForPost', function () {
-            it('permalink is /:slug/', function () {
-                configUtils.set({theme: {permalinks: '/:slug/', timezone: 'Europe/Dublin'}});
+            it('permalink is /:slug/, timezone is default', function () {
+                config.theme.permalinks = '/:slug/';
 
                 var testData = testUtils.DataGenerator.Content.posts[2],
                     postLink = '/short-and-sweet/';
@@ -403,7 +403,9 @@ describe('Config', function () {
             });
 
             it('permalink is /:year/:month/:day/:slug, blog timezone is Los Angeles', function () {
-                configUtils.set({theme: {permalinks: '/:year/:month/:day/:slug/', timezone: 'America/Los_Angeles'}});
+                config.theme.timezone = 'America/Los_Angeles';
+                config.theme.permalinks = '/:year/:month/:day/:slug/';
+
                 var testData = testUtils.DataGenerator.Content.posts[2],
                     postLink = '/2016/05/17/short-and-sweet/';
 
@@ -412,7 +414,8 @@ describe('Config', function () {
             });
 
             it('post is page, no permalink usage allowed at all', function () {
-                configUtils.set({theme: {permalinks: '/:year/:month/:day/:slug/', timezone: 'America/Los_Angeles'}});
+                config.theme.timezone = 'America/Los_Angeles';
+                config.theme.permalinks = '/:year/:month/:day/:slug/';
 
                 var testData = testUtils.DataGenerator.Content.posts[5],
                     postLink = '/static-page-test/';
@@ -421,7 +424,8 @@ describe('Config', function () {
             });
 
             it('permalink is /:year/:id:/:author', function () {
-                configUtils.set({theme: {permalinks: '/:year/:id/:author/', timezone: 'America/Los_Angeles'}});
+                config.theme.timezone = 'America/Los_Angeles';
+                config.theme.permalinks = '/:year/:id/:author/';
 
                 var testData = _.merge(testUtils.DataGenerator.Content.posts[2], {id: 3}, {author: {slug: 'joe-blog'}}),
                     postLink = '/2015/3/joe-blog/';
@@ -431,7 +435,8 @@ describe('Config', function () {
             });
 
             it('permalink is /:year/:id:/:author', function () {
-                configUtils.set({theme: {permalinks: '/:year/:id/:author/', timezone: 'Europe/Berlin'}});
+                config.theme.timezone = 'Europe/Berlin';
+                config.theme.permalinks = '/:year/:id/:author/';
 
                 var testData = _.merge(testUtils.DataGenerator.Content.posts[2], {id: 3}, {author: {slug: 'joe-blog'}}),
                     postLink = '/2016/3/joe-blog/';

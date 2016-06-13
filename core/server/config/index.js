@@ -184,7 +184,10 @@ ConfigManager.prototype.set = function (config) {
         },
         theme: {
             // normalise the URL by removing any trailing slash
-            url: this._config.url ? this._config.url.replace(/\/$/, '') : ''
+            url: this._config.url ? this._config.url.replace(/\/$/, '') : '',
+
+            // default timezone
+            timezone: 'Etc/UTC'
         },
         routeKeywords: {
             tag: 'tag',
