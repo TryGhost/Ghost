@@ -5,6 +5,8 @@ import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import PaginationMixin from 'ghost-admin/mixins/pagination';
 
+const {$} = Ember;
+
 export default AuthenticatedRoute.extend(CurrentUserSettings, PaginationMixin, ShortcutsRoute, {
     titleToken: 'Settings - Tags',
 
@@ -62,7 +64,7 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, PaginationMixin, S
     },
 
     scrollContent(amount) {
-        let content = Ember.$('.tag-settings-pane');
+        let content = $('.tag-settings-pane');
         let scrolled = content.scrollTop();
 
         content.scrollTop(scrolled + 50 * amount);

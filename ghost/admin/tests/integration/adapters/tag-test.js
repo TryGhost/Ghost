@@ -26,15 +26,17 @@ describeModule(
 
         it('loads tags from regular endpoint when all are fetched', function (done) {
             server.get('/ghost/api/v0.1/tags/', function () {
-                return [200, {'Content-Type': 'application/json'}, JSON.stringify({tags: [{
-                    id: 1,
-                    name: 'Tag 1',
-                    slug: 'tag-1'
-                }, {
-                    id: 2,
-                    name: 'Tag 2',
-                    slug: 'tag-2'
-                }]})];
+                return [200, {'Content-Type': 'application/json'}, JSON.stringify({tags: [
+                    {
+                        id: 1,
+                        name: 'Tag 1',
+                        slug: 'tag-1'
+                    }, {
+                        id: 2,
+                        name: 'Tag 2',
+                        slug: 'tag-2'
+                    }
+                ]})];
             });
 
             store.findAll('tag', {reload: true}).then((tags) => {
@@ -46,11 +48,13 @@ describeModule(
 
         it('loads tag from slug endpoint when single tag is queried and slug is passed in', function (done) {
             server.get('/ghost/api/v0.1/tags/slug/tag-1/', function () {
-                return [200, {'Content-Type': 'application/json'}, JSON.stringify({tags: [{
-                    id: 1,
-                    slug: 'tag-1',
-                    name: 'Tag 1'
-                }]})];
+                return [200, {'Content-Type': 'application/json'}, JSON.stringify({tags: [
+                    {
+                        id: 1,
+                        slug: 'tag-1',
+                        name: 'Tag 1'
+                    }
+                ]})];
             });
 
             store.queryRecord('tag', {slug: 'tag-1'}).then((tag) => {

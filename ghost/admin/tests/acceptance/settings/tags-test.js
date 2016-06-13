@@ -14,7 +14,7 @@ import { invalidateSession, authenticateSession } from 'ghost-admin/tests/helper
 import { errorOverride, errorReset } from 'ghost-admin/tests/helpers/adapter-error';
 import Mirage from 'ember-cli-mirage';
 
-const {run} = Ember;
+const {$, run} = Ember;
 
 // Grabbed from keymaster's testing code because Ember's `keyEvent` helper
 // is for some reason not triggering the events in a way that keymaster detects:

@@ -9,13 +9,18 @@ import hbs from 'htmlbars-inline-precompile';
 import Ember from 'ember';
 import DS from 'ember-data';
 
-const {run} = Ember;
+const {
+    Service,
+    run,
+    Object: EmberObject
+} = Ember;
+const {Errors} = DS;
 
-let configStub = Ember.Service.extend({
+let configStub = Service.extend({
     blogUrl: 'http://localhost:2368'
 });
 
-let mediaQueriesStub = Ember.Service.extend({
+let mediaQueriesStub = Service.extend({
     maxWidth600: false
 });
 
@@ -28,14 +33,14 @@ describeComponent(
     function () {
         beforeEach(function () {
             /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
-            let tag = Ember.Object.create({
+            let tag = EmberObject.create({
                 id: 1,
                 name: 'Test',
                 slug: 'test',
                 description: 'Description.',
                 metaTitle: 'Meta Title',
                 metaDescription: 'Meta description',
-                errors: DS.Errors.create(),
+                errors: Errors.create(),
                 hasValidated: []
             });
             /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
@@ -288,7 +293,7 @@ describeComponent(
             expect(this.$('.tag-meta-settings-pane').hasClass('settings-menu-pane-in'), 'meta data pane is shown').to.be.true;
 
             run(() => {
-                this.set('tag', Ember.Object.create({id: '2'}));
+                this.set('tag', EmberObject.create({id: '2'}));
             });
             expect(this.$('.tag-settings-pane').hasClass('settings-menu-pane-in'), 'resets to main settings').to.be.true;
         });

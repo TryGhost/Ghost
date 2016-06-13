@@ -1,13 +1,17 @@
 import Ember from 'ember';
 import ApplicationSerializer from 'ghost-admin/serializers/application';
 
+const {
+    String: {pluralize}
+} = Ember;
+
 export default ApplicationSerializer.extend({
     serializeIntoHash(hash, type, record, options) {
         // Settings API does not want ids
         options = options || {};
         options.includeId = false;
 
-        let root = Ember.String.pluralize(type.modelName);
+        let root = pluralize(type.modelName);
         let data = this.serialize(record, options);
         let payload = [];
 

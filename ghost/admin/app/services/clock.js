@@ -2,6 +2,7 @@ import Ember from 'ember';
 
 const {
     Service,
+    testing,
     run
 } = Ember;
 
@@ -26,7 +27,7 @@ export default Service.extend({
             hour:   now.hours()
         });
 
-        if (!Ember.testing) {
+        if (!testing) {
             run.later(() => {
                 this.tick();
             }, ONE_SECOND);

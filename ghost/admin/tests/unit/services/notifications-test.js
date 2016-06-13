@@ -8,16 +8,17 @@ import {
 } from 'ember-mocha';
 import {AjaxError, InvalidError} from 'ember-ajax/errors';
 
-const {run, get} = Ember;
-const emberA = Ember.A;
+const {
+    run,
+    get,
+    A: emberA,
+    Object: EmberObject
+} = Ember;
 
 describeModule(
     'service:notifications',
     'Unit: Service: notifications',
-    {
-        // Specify the other units that are required for this test.
-        // needs: ['model:notification']
-    },
+    {},
     function () {
         beforeEach(function () {
             this.subject().set('content', emberA());
@@ -42,7 +43,7 @@ describeModule(
 
         it('#handleNotification deals with DS.Notification notifications', function () {
             let notifications = this.subject();
-            let notification = Ember.Object.create({message: '<h1>Test</h1>', status: 'alert'});
+            let notification = EmberObject.create({message: '<h1>Test</h1>', status: 'alert'});
 
             notification.toJSON = function () {};
 
@@ -291,7 +292,7 @@ describeModule(
         });
 
         it('#closeNotification removes and deletes DS.Notification records', function () {
-            let notification = Ember.Object.create({message: 'Close test', status: 'alert'});
+            let notification = EmberObject.create({message: 'Close test', status: 'alert'});
             let notifications = this.subject();
 
             notification.toJSON = function () {};
@@ -360,7 +361,7 @@ describeModule(
 
         it('#clearAll removes everything without deletion', function () {
             let notifications = this.subject();
-            let notificationModel = Ember.Object.create({message: 'model'});
+            let notificationModel = EmberObject.create({message: 'model'});
 
             notificationModel.toJSON = function () {};
             notificationModel.deleteRecord = function () {};

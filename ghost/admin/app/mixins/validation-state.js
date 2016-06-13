@@ -1,7 +1,11 @@
 import Ember from 'ember';
 
-const {Mixin, computed, isEmpty} = Ember;
-const emberA = Ember.A;
+const {
+    Mixin,
+    computed,
+    isEmpty,
+    A: emberA
+} = Ember;
 
 export default Mixin.create({
 

@@ -11,7 +11,7 @@ import wait from 'ember-test-helpers/wait';
 import sinon from 'sinon';
 import {createFile, fileUpload} from '../../helpers/file-upload';
 
-const {run} = Ember;
+const {$, run} = Ember;
 
 const stubSuccessfulUpload = function (server, delay = 0) {
     server.post('/ghost/api/v0.1/uploads/', function () {
@@ -257,7 +257,7 @@ describeComponent(
             this.render(hbs`{{gh-file-uploader}}`);
 
             run(() => {
-                let dragover = Ember.$.Event('dragover', {
+                let dragover = $.Event('dragover', {
                     dataTransfer: {
                         files: []
                     }
@@ -276,7 +276,7 @@ describeComponent(
 
         it('triggers file upload on file drop', function (done) {
             let uploadSuccess = sinon.spy();
-            let drop = Ember.$.Event('drop', {
+            let drop = $.Event('drop', {
                 dataTransfer: {
                     files: [createFile()]
                 }

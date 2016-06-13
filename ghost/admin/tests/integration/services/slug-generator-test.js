@@ -6,7 +6,9 @@ import {
 import Pretender from 'pretender';
 import Ember from 'ember';
 
-const {dasherize} = Ember.String;
+const {
+    String: {dasherize}
+} = Ember;
 
 function stubSlugEndpoint(server, type, slug) {
     server.get('/ghost/api/v0.1/slugs/:type/:slug/', function (request) {

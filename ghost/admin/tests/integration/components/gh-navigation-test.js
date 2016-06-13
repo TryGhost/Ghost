@@ -5,7 +5,7 @@ import hbs from 'htmlbars-inline-precompile';
 import Ember from 'ember';
 import NavItem from 'ghost-admin/models/navigation-item';
 
-const {run} = Ember;
+const {$, run} = Ember;
 
 describeComponent(
     'gh-navigation',
@@ -55,7 +55,7 @@ describeComponent(
             expectedOldIndex = 1;
             expectedNewIndex = 0;
             run(() => {
-                Ember.$(this.$('.gh-blognav-item')[1]).simulateDragSortable({
+                $(this.$('.gh-blognav-item')[1]).simulateDragSortable({
                     move: -1,
                     handle: '.gh-blognav-grab'
                 });
@@ -65,7 +65,7 @@ describeComponent(
             expectedOldIndex = 1;
             expectedNewIndex = 2;
             run(() => {
-                Ember.$(this.$('.gh-blognav-item')[1]).simulateDragSortable({
+                $(this.$('.gh-blognav-item')[1]).simulateDragSortable({
                     move: 1,
                     handle: '.gh-blognav-grab'
                 });

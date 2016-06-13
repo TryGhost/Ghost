@@ -3,6 +3,7 @@ import getRequestErrorMessage from 'ghost-admin/utils/ajax';
 
 const {
     Mixin,
+    assign,
     computed,
     RSVP,
     inject: {service}
@@ -35,7 +36,7 @@ export default Mixin.create({
 
     init() {
         let paginationSettings = this.get('paginationSettings');
-        let settings = Ember.assign({}, defaultPaginationSettings, paginationSettings);
+        let settings = assign({}, defaultPaginationSettings, paginationSettings);
 
         this._super(...arguments);
         this.set('paginationSettings', settings);
