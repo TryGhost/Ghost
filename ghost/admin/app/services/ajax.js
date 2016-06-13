@@ -53,7 +53,7 @@ export default AjaxService.extend({
         }
 
         return headers;
-    }),
+    }).volatile(),
 
     handleResponse(status, headers, payload) {
         if (this.isRequestEntityTooLargeError(status, headers, payload)) {
