@@ -346,12 +346,7 @@ describe('Post Model', function () {
             });
 
             it('can findOne, returning a dated permalink', function (done) {
-                var firstPost = 1,
-                    today = testUtils.DataGenerator.Content.posts[0].published_at,
-                    dd = ('0' + today.getDate()).slice(-2),
-                    mm = ('0' + (today.getMonth() + 1)).slice(-2),
-                    yyyy = today.getFullYear(),
-                    postLink = '/' + yyyy + '/' + mm + '/' + dd + '/html-ipsum/';
+                var firstPost = 1;
 
                 configUtils.set({theme: {
                     permalinks: '/:year/:month/:day/:slug/'
@@ -361,7 +356,10 @@ describe('Post Model', function () {
                     .then(function (result) {
                         should.exist(result);
                         firstPost = result.toJSON();
-                        firstPost.url.should.equal(postLink);
+
+                        // published_at of post 1 is 2015-01-01 00:00:00
+                        // default blog TZ is UTC
+                        firstPost.url.should.equal('/2015/01/01/html-ipsum/');
 
                         done();
                     }).catch(done);
