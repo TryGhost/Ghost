@@ -282,5 +282,47 @@ describe('Scheduling Default Adapter', function () {
                 setTimeout(retry, 100);
             })();
         });
+
+        it('pingUrl, but blog returns 503', function (done) {
+            var app = express(),
+                server = http.createServer(app),
+                returned500Count = 0,
+                returned200 = false,
+                reqBody;
+
+            scope.adapter.retryTimeoutInMs = 200;
+
+            app.use(bodyParser.json());
+            app.put('/ping', function (req, res) {
+                reqBody = req.body;
+
+                if (returned500Count === 5) {
+                    returned200 = true;
+                    return res.sendStatus(200);
+                }
+
+                returned500Count = returned500Count + 1;
+                res.sendStatus(503);
+            });
+
+            server.listen(1111);
+
+            scope.adapter._pingUrl({
+                url: 'http://localhost:1111/ping',
+                time: moment().valueOf(),
+                extra: {
+                    httpMethod: 'PUT'
+                }
+            });
+
+            (function retry() {
+                if (returned200) {
+                    should.exist(reqBody.force);
+                    return server.close(done);
+                }
+
+                setTimeout(retry, 100);
+            })();
+        });
     });
 });
