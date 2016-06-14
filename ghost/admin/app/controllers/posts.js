@@ -9,7 +9,7 @@ const {
 const {equal} = computed;
 
 // a custom sort function is needed in order to sort the posts list the same way the server would:
-//     status: ASC
+//     status: scheduled, draft, published
 //     publishedAt: DESC
 //     updatedAt: DESC
 //     id: DESC
@@ -32,7 +32,7 @@ function comparator(item1, item2) {
     }
 
     idResult = compare(parseInt(item1.get('id')), parseInt(item2.get('id')));
-    statusResult = compare(item1.get('status'), item2.get('status'));
+    statusResult = statusCompare(item1, item2);
     updatedAtResult = compare(updated1.valueOf(), updated2.valueOf());
     publishedAtResult = publishedAtCompare(item1, item2);
 
@@ -50,6 +50,38 @@ function comparator(item1, item2) {
     }
 
     return statusResult;
+}
+
+function statusCompare(item1, item2) {
+    let status1 = item1.get('status');
+    let status2 = item2.get('status');
+
+    // if any of those is empty
+    if (!status1 && !status2) {
+        return 0;
+    }
+
+    if (!status1 && status2) {
+        return -1;
+    }
+
+    if (!status2 && status1) {
+        return 1;
+    }
+
+    // We have to make sure, that scheduled posts will be listed first
+    // after that, draft and published will be sorted alphabetically and don't need
+    // any manual comparison.
+
+    if (status1 === 'scheduled' && (status2 === 'draft' || status2 === 'published')) {
+        return -1;
+    }
+
+    if (status2 === 'scheduled' && (status1 === 'draft' || status1 === 'published')) {
+        return 1;
+    }
+
+    return compare(status1.valueOf(), status2.valueOf());
 }
 
 function publishedAtCompare(item1, item2) {

@@ -116,7 +116,7 @@
 }
 
 .content-list .status .scheduled {
-    color: var(--orange);
+    color: var(--green);
 }
 
 .content-list ol {

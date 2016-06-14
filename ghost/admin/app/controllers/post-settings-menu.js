@@ -298,6 +298,9 @@ export default Controller.extend(SettingsMenuMixin, {
                 }
                 return;
             }
+
+            // The user inputs a date which he expects to be in his timezone. Therefore, from now on
+            // we have to work with the timezone offset which we get from the timeZone Service.
             this.get('timeZone.blogTimezone').then((blogTimezone) => {
                 let newPublishedAt = parseDateString(userInput, blogTimezone);
                 let publishedAt = moment.utc(this.get('model.publishedAt'));
@@ -316,7 +319,29 @@ export default Controller.extend(SettingsMenuMixin, {
                 newPublishedAt = moment.utc(newPublishedAt);
 
                 if (newPublishedAt.diff(moment.utc(new Date()), 'hours', true) > 0) {
-                    errMessage = 'Published Date cannot currently be in the future.';
+
+                    // We have to check that the time from now is not shorter than 2 minutes,
+                    // otherwise we'll have issues with the serverside scheduling procedure
+                    if (newPublishedAt.diff(moment.utc(new Date()), 'minutes', true) < 2) {
+                        errMessage = 'Must be at least 2 minutes from now.';
+                    } else {
+                        // in case the post is already published and the user sets the date
+                        // afterwards to a future time, we stop here, and he has to unpublish
+                        // his post first
+                        if (this.get('model.isPublished')) {
+                            errMessage = 'Your post is already published.';
+                            // this is the indicator for the different save button layout
+                            this.set('timeScheduled', false);
+                        }
+                        // everything fine, we can start the schedule workflow and change
+                        // the save buttons according to it
+                        this.set('timeScheduled', true);
+                    }
+                    // if the post is already scheduled and the user changes the date back into the
+                    // past, we'll set the status of the post back to draft, so he can start all over
+                    // again
+                } else if (this.get('model.isScheduled')) {
+                    this.set('model.status', 'draft');
                 }
 
                 // If errors, notify and exit.

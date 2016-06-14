@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-const {Component, computed, observer, run} = Ember;
+const {Component, computed, observer, run, testing} = Ember;
 const {equal} = computed;
 
 export default Component.extend({
@@ -28,6 +28,7 @@ export default Component.extend({
     toggleSpinner: observer('submitting', function () {
         let submitting = this.get('submitting');
         let timeout = this.get('showSpinnerTimeout');
+        let delay = testing ? 10 : 1000;
 
         if (submitting) {
             this.set('showSpinner', true);
@@ -36,7 +37,7 @@ export default Component.extend({
                     this.set('showSpinner', false);
                 }
                 this.set('showSpinnerTimeout', null);
-            }, 1000));
+            }, delay));
         } else if (!submitting && timeout === null) {
             this.set('showSpinner', false);
         }
