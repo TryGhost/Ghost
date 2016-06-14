@@ -3,6 +3,7 @@
 var should = require('should'),
     sinon = require('sinon'),
     Promise = require('bluebird'),
+    moment = require('moment'),
     config = require(__dirname + '/../../../../server/config'),
     testUtils = require(config.paths.corePath + '/test/utils'),
     errors = require(config.paths.corePath + '/server/errors'),
@@ -70,7 +71,7 @@ describe('Scheduling: Post Scheduling', function () {
                     scope.adapter.schedule.called.should.eql(true);
 
                     scope.adapter.schedule.calledWith({
-                        time: scope.post.get('published_at'),
+                        time: moment(scope.post.get('published_at')).valueOf(),
                         url: scope.apiUrl + '/schedules/posts/' + scope.post.get('id') + '?client_id=' + scope.client.get('slug') + '&client_secret=' + scope.client.get('secret'),
                         extra: {
                             httpMethod: 'PUT',
