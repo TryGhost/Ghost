@@ -29,8 +29,8 @@ export default ModalComponent.extend({
         this.get('routing').transitionTo('posts');
     },
 
-    _failure() {
-        this.get('notifications').showAlert('Your post could not be deleted. Please try again.', {type: 'error', key: 'post.delete.failed'});
+    _failure(error) {
+        this.get('notifications').showAPIError(error, {key: 'post.delete.failed'});
     },
 
     actions: {
@@ -39,8 +39,8 @@ export default ModalComponent.extend({
 
             this._deletePost().then(() => {
                 this._success();
-            }, () => {
-                this._failure();
+            }, (error) => {
+                this._failure(error);
             }).finally(() => {
                 this.send('closeModal');
             });

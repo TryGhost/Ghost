@@ -10,6 +10,7 @@ import {
     it
 } from 'ember-mocha';
 import {AjaxError, InvalidError} from 'ember-ajax/errors';
+import {ServerUnreachableError} from 'ghost-admin/services/ajax';
 
 describeModule(
     'service:notifications',
@@ -149,23 +150,6 @@ describeModule(
             expect(notifications.get('notifications.length')).to.equal(2);
         });
 
-        // TODO: review whether this can be removed once it's no longer used by validations
-        it('#showErrors adds multiple notifications', function () {
-            let notifications = this.subject();
-
-            run(() => {
-                notifications.showErrors([
-                    {message: 'First'},
-                    {message: 'Second'}
-                ]);
-            });
-
-            expect(notifications.get('notifications')).to.deep.equal([
-                {message: 'First', status: 'notification', type: 'error', key: undefined},
-                {message: 'Second', status: 'notification', type: 'error', key: undefined}
-            ]);
-        });
-
         it('#showAPIError handles single json response error', function () {
             let notifications = this.subject();
             let error = new AjaxError([{message: 'Single error'}]);
@@ -181,24 +165,21 @@ describeModule(
             expect(get(alert, 'key')).to.equal('api-error');
         });
 
-        // TODO: update once we have unique api key handling
         it('#showAPIError handles multiple json response errors', function () {
             let notifications = this.subject();
             let error = new AjaxError([
-                {message: 'First error'},
-                {message: 'Second error'}
+                {title: 'First error', message: 'First error message'},
+                {title: 'Second error', message: 'Second error message'}
             ]);
 
             run(() => {
                 notifications.showAPIError(error);
             });
 
-            // First error is removed due to duplicate api-key
-            let alert = notifications.get('alerts.firstObject');
-            expect(get(alert, 'message')).to.equal('Second error');
-            expect(get(alert, 'status')).to.equal('alert');
-            expect(get(alert, 'type')).to.equal('error');
-            expect(get(alert, 'key')).to.equal('api-error');
+            expect(notifications.get('alerts.length')).to.equal(2);
+            let [alert1, alert2] = notifications.get('alerts');
+            expect(alert1).to.deep.equal({message: 'First error message', status: 'alert', type: 'error', key: 'api-error.first-error'});
+            expect(alert2).to.deep.equal({message: 'Second error message', status: 'alert', type: 'error', key: 'api-error.second-error'});
         });
 
         it('#showAPIError displays default error text if response has no error/message', function () {
@@ -228,7 +209,7 @@ describeModule(
                 notifications.showAPIError('Test', {key: 'test.alert'});
             });
 
-            expect(notifications.get('alerts.firstObject.key')).to.equal('test.alert.api-error');
+            expect(notifications.get('alerts.firstObject.key')).to.equal('api-error.test.alert');
         });
 
         it('#showAPIError sets correct key when not passed a key', function () {
@@ -241,19 +222,34 @@ describeModule(
             expect(notifications.get('alerts.firstObject.key')).to.equal('api-error');
         });
 
-        it('#showAPIError parses errors from ember-ajax correctly', function () {
+        it('#showAPIError parses default ember-ajax errors correctly', function () {
             let notifications = this.subject();
-            let error = new InvalidError([{message: 'Test Error'}]);
+            let error = new InvalidError();
 
             run(() => {
                 notifications.showAPIError(error);
             });
 
             let notification = notifications.get('alerts.firstObject');
-            expect(get(notification, 'message')).to.equal('Test Error');
+            expect(get(notification, 'message')).to.equal('Request was rejected because it was invalid');
             expect(get(notification, 'status')).to.equal('alert');
             expect(get(notification, 'type')).to.equal('error');
-            expect(get(notification, 'key')).to.equal('api-error');
+            expect(get(notification, 'key')).to.equal('api-error.ajax-error');
+        });
+
+        it('#showAPIError parses custom ember-ajax errors correctly', function () {
+            let notifications = this.subject();
+            let error = new ServerUnreachableError();
+
+            run(() => {
+                notifications.showAPIError(error);
+            });
+
+            let notification = notifications.get('alerts.firstObject');
+            expect(get(notification, 'message')).to.equal('Server was unreachable');
+            expect(get(notification, 'status')).to.equal('alert');
+            expect(get(notification, 'type')).to.equal('error');
+            expect(get(notification, 'key')).to.equal('api-error.ajax-error');
         });
 
         it('#displayDelayed moves delayed notifications into content', function () {

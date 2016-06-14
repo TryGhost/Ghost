@@ -171,24 +171,27 @@
             {{#unless isAdminUserOnOwnerProfile}}
                 <fieldset>
                     {{#unless isNotOwnProfile}}
-                    <div class="form-group">
-                        <label for="user-password-old">Old Password</label>
-                        {{gh-input user.password type="password" id="user-password-old" update=(action (mut user.password))}}
-                    </div>
+                        {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="password"}}
+                            <label for="user-password-old">Old Password</label>
+                            {{gh-input value=user.password type="password" id="user-password-old" update=(action 'updatePassword') onenter=(action "changePassword")}}
+                            {{gh-error-message errors=user.errors property="password"}}
+                        {{/gh-form-group}}
                     {{/unless}}
 
-                    <div class="form-group">
+                    {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="newPassword"}}
                         <label for="user-password-new">New Password</label>
-                        {{gh-input user.newPassword type="password" id="user-password-new" update=(action (mut user.newPassword))}}
-                    </div>
+                        {{gh-input user.newPassword type="password" id="user-password-new" update=(action 'updateNewPassword') onenter=(action "changePassword")}}
+                        {{gh-error-message errors=user.errors property="newPassword"}}
+                    {{/gh-form-group}}
 
-                    <div class="form-group">
+                    {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="ne2Password"}}
                         <label for="user-new-password-verification">Verify Password</label>
-                        {{gh-input user.ne2Password type="password" id="user-new-password-verification" update=(action (mut user.ne2Password))}}
-                    </div>
+                        {{gh-input user.ne2Password type="password" id="user-new-password-verification" update=(action 'updateNe2Password') onenter=(action "changePassword")}}
+                        {{gh-error-message errors=user.errors property="ne2Password"}}
+                    {{/gh-form-group}}
 
                     <div class="form-group">
-                        <button type="button" class="btn btn-red button-change-password" {{action "password"}}>Change Password</button>
+                        {{#gh-spin-button class="btn btn-red button-change-password" action=(action "changePassword") submitting=updatingPassword}}Change Password{{/gh-spin-button}}
                     </div>
                 </fieldset>
             {{/unless}}

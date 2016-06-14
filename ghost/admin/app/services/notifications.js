@@ -5,6 +5,8 @@ import get from 'ember-metal/get';
 import set from 'ember-metal/set';
 import injectService from 'ember-service/inject';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
+import {isBlank} from 'ember-utils';
+import {dasherize} from 'ember-string';
 
 // Notification keys take the form of "noun.verb.message", eg:
 //
@@ -82,25 +84,6 @@ export default Service.extend({
         }, options.delayed);
     },
 
-    // TODO: review whether this can be removed once no longer used by validations
-    showErrors(errors, options) {
-        options = options || {};
-        options.type = options.type || 'error';
-        // TODO: getting keys from the server would be useful here (necessary for i18n)
-        options.key = (options.key && `${options.key}.api-error`) || 'api-error';
-
-        if (!options.doNotCloseNotifications) {
-            this.closeNotifications();
-        }
-
-        // ensure all errors that are passed in get shown
-        options.doNotCloseNotifications = true;
-
-        for (let i = 0; i < errors.length; i += 1) {
-            this.showNotification(errors[i].message || errors[i], options);
-        }
-    },
-
     showAPIError(resp, options) {
         // handle "global" errors
         if (isVersionMismatchError(resp)) {
@@ -120,24 +103,26 @@ export default Service.extend({
     _showAPIError(resp, options) {
         options = options || {};
         options.type = options.type || 'error';
-        // TODO: getting keys from the server would be useful here (necessary for i18n)
-        options.key = (options.key && `${options.key}.api-error`) || 'api-error';
 
-        if (!options.doNotCloseNotifications) {
-            this.closeNotifications();
+        // if possible use the title to get a unique key
+        // - we only show one alert for each key so if we get multiple errors
+        //   only the last one will be shown
+        if (!options.key && !isBlank(get(resp, 'title'))) {
+            options.key = dasherize(get(resp, 'title'));
+        }
+        options.key = ['api-error', options.key].compact().join('.');
+
+        let msg = options.defaultErrorText || 'There was a problem on the server, please try again.';
+
+        if (resp instanceof String) {
+            msg = resp;
+        } else if (!isBlank(get(resp, 'detail'))) {
+            msg = resp.detail;
+        } else if (!isBlank(get(resp, 'message'))) {
+            msg = resp.message;
         }
 
-        options.defaultErrorText = options.defaultErrorText || 'There was a problem on the server, please try again.';
-
-        if (resp && isEmberArray(resp) && resp.length) { // Array of errors
-            this.showErrors(resp, options);
-        } else if (resp && resp.message) {
-            this.showAlert(resp.message, options);
-        } else if (resp && resp.detail) { // ember-ajax provided error message
-            this.showAlert(resp.detail, options);
-        } else { // text error or no error
-            this.showAlert(resp || options.defaultErrorText, options);
-        }
+        this.showAlert(msg, options);
     },
 
     displayDelayed() {

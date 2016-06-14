@@ -26,8 +26,22 @@ export function isVersionMismatchError(errorOrStatus, payload) {
 
 /* Request entity too large error */
 
+export function ServerUnreachableError(errors) {
+    AjaxError.call(this, errors, 'Server was unreachable');
+}
+
+ServerUnreachableError.prototype = Object.create(AjaxError.prototype);
+
+export function isServerUnreachableError(error) {
+    if (isAjaxError(error)) {
+        return error instanceof ServerUnreachableError;
+    } else {
+        return error === 0 || error === '0';
+    }
+}
+
 export function RequestEntityTooLargeError(errors) {
-    AjaxError.call(this, errors, 'Request was rejected because it\'s larger than the maximum file size the server allows');
+    AjaxError.call(this, errors, 'Request is larger than the maximum file size the server allows');
 }
 
 RequestEntityTooLargeError.prototype = Object.create(AjaxError.prototype);
@@ -43,7 +57,7 @@ export function isRequestEntityTooLargeError(errorOrStatus) {
 /* Unsupported media type error */
 
 export function UnsupportedMediaTypeError(errors) {
-    AjaxError.call(this, errors, 'Request was rejected because it contains an unknown or unsupported file type.');
+    AjaxError.call(this, errors, 'Request contains an unknown or unsupported file type.');
 }
 
 UnsupportedMediaTypeError.prototype = Object.create(AjaxError.prototype);
@@ -79,6 +93,8 @@ export default AjaxService.extend({
     handleResponse(status, headers, payload) {
         if (this.isVersionMismatchError(status, headers, payload)) {
             return new VersionMismatchError(payload.errors);
+        } else if (this.isServerUnreachableError(status, headers, payload)) {
+            return new ServerUnreachableError(payload.errors);
         } else if (this.isRequestEntityTooLargeError(status, headers, payload)) {
             return new RequestEntityTooLargeError(payload.errors);
         } else if (this.isUnsupportedMediaTypeError(status, headers, payload)) {
@@ -108,6 +124,10 @@ export default AjaxService.extend({
 
     isVersionMismatchError(status, headers, payload) {
         return isVersionMismatchError(status, payload);
+    },
+
+    isServerUnreachableError(status/*, headers, payload */) {
+        return isServerUnreachableError(status);
     },
 
     isRequestEntityTooLargeError(status/*, headers, payload */) {

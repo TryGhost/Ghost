@@ -472,12 +472,19 @@ export function testConfig() {
 
     this.put('/users/:id/', function (db, request) {
         let {id} = request.params;
-        let [attrs] = JSON.parse(request.requestBody).users;
-        let record = db.users.update(id, attrs);
 
-        return {
-            user: record
-        };
+        if (id === 'password') {
+            return {
+                password: [{message: 'Password changed successfully.'}]
+            };
+        } else {
+            let [attrs] = JSON.parse(request.requestBody).users;
+            let record = db.users.update(id, attrs);
+
+            return {
+                user: record
+            };
+        }
     });
 
     /* External sites ------------------------------------------------------- */
