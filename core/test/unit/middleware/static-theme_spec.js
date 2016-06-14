@@ -82,4 +82,25 @@ describe('staticTheme', function () {
             done();
         });
     });
+
+    it('should not call next if file is on whitelist', function (done) {
+        var req = {
+                path: 'manifest.json',
+                app: {
+                    get: function () { return 'casper'; }
+                }
+            },
+            activeThemeStub,
+            sandbox = sinon.sandbox.create();
+
+        activeThemeStub = sandbox.spy(req.app, 'get');
+
+        staticTheme(null)(req, null, function (reqArg, res, next2) {
+            /*jshint unused:false */
+            sandbox.restore();
+            next.called.should.be.false();
+            activeThemeStub.called.should.be.true();
+            done();
+        });
+    });
 });
