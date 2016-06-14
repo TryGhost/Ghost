@@ -13,11 +13,11 @@ _private.normalize = function normalize(options) {
         client = options.client;
 
     return {
-        time: object.get('published_at'),
+        time: moment(object.get('published_at')).valueOf(),
         url: apiUrl + '/schedules/posts/' + object.get('id') + '?client_id=' + client.get('slug') + '&client_secret=' + client.get('secret'),
         extra: {
             httpMethod: 'PUT',
-            oldTime: object.updated('published_at') || null
+            oldTime: object.updated('published_at') ? moment(object.updated('published_at')).valueOf() : null
         }
     };
 };
