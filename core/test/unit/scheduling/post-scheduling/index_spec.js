@@ -64,8 +64,7 @@ describe('Scheduling: Post Scheduling', function () {
         describe('success', function () {
             it('will be scheduled', function (done) {
                 postScheduling.init({
-                    apiUrl: scope.apiUrl,
-                    postScheduling: {}
+                    apiUrl: scope.apiUrl
                 }).then(function () {
                     scope.events['post.scheduled'](scope.post);
                     scope.adapter.schedule.called.should.eql(true);
@@ -90,8 +89,7 @@ describe('Scheduling: Post Scheduling', function () {
                 ];
 
                 postScheduling.init({
-                    apiUrl: scope.apiUrl,
-                    postScheduling: {}
+                    apiUrl: scope.apiUrl
                 }).then(function () {
                     scope.adapter.reschedule.calledTwice.should.eql(true);
                     done();
