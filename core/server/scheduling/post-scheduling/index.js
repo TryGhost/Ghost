@@ -36,10 +36,8 @@ _private.loadScheduledPosts = function () {
 };
 
 exports.init = function init(options) {
-    options = options || {};
-
-    var config = options.postScheduling,
-        apiUrl = options.apiUrl,
+    var config = options || {},
+        apiUrl = config.apiUrl,
         adapter = null,
         client = null;
 
