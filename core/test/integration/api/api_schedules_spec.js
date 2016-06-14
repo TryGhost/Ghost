@@ -231,10 +231,9 @@ describe('Schedules API', function () {
                     slug: 'fourth'
                 }));
 
-                Promise.all(scope.posts.map(function (post) {
+                Promise.mapSeries(scope.posts, function (post) {
                     return models.Post.add(post, {context: {internal: true}});
-                })).then(function (result) {
-                    // returns id 1 and 2, but hard to check, because PG returns a different order
+                }).then(function (result) {
                     result.length.should.eql(4);
                     return done();
                 }).catch(done);
