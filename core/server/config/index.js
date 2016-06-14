@@ -91,10 +91,13 @@ ConfigManager.prototype.init = function (rawConfig) {
  */
 ConfigManager.prototype.set = function (config) {
     var localPath = '',
-        defaultStorage = 'local-file-store',
+        defaultStorageAdapter = 'local-file-store',
+        defaultSchedulingAdapter = 'SchedulingDefault',
+        activeStorageAdapter,
+        activePostSchedulingAdapter,
         contentPath,
-        activeStorage,
         storagePath,
+        postSchedulingPath,
         subdir,
         assetHash;
 
@@ -142,16 +145,26 @@ ConfigManager.prototype.set = function (config) {
     assetHash = this._config.assetHash ||
         (crypto.createHash('md5').update(packageInfo.version + Date.now()).digest('hex')).substring(0, 10);
 
-    // Protect against accessing a non-existent object.
-    // This ensures there's always at least a storage object
-    // because it's referenced in multiple places.
+    // read storage adapter from config file or attach default adapter
     this._config.storage = this._config.storage || {};
-    activeStorage = this._config.storage.active || defaultStorage;
+    activeStorageAdapter = this._config.storage.active || defaultStorageAdapter;
 
-    if (activeStorage === defaultStorage) {
+    // read scheduling adapter(s) from config file or attach default adapter
+    this._config.scheduling = this._config.scheduling || {};
+    this._config.scheduling.postScheduling = this._config.scheduling.postScheduling || {};
+    activePostSchedulingAdapter = this._config.scheduling.postScheduling.active || defaultSchedulingAdapter;
+
+    // we support custom adapters located in content folder
+    if (activeStorageAdapter === defaultStorageAdapter) {
         storagePath = path.join(corePath, '/server/storage/');
     } else {
         storagePath = path.join(contentPath, 'storage');
+    }
+
+    if (activePostSchedulingAdapter === defaultSchedulingAdapter) {
+        postSchedulingPath = path.join(corePath, '/server/scheduling/');
+    } else {
+        postSchedulingPath = path.join(contentPath, '/scheduling/');
     }
 
     _.merge(this._config, {
@@ -163,7 +176,7 @@ ConfigManager.prototype.set = function (config) {
             configExample:    path.join(appRoot, 'config.example.js'),
             corePath:         corePath,
 
-            storage:          path.join(storagePath, activeStorage),
+            storage:          path.join(storagePath, activeStorageAdapter),
 
             contentPath:      contentPath,
             themePath:        path.resolve(contentPath, 'themes'),
@@ -179,8 +192,14 @@ ConfigManager.prototype.set = function (config) {
             availableApps:    this._config.paths.availableApps || {},
             clientAssets:     path.join(corePath, '/built/assets/')
         },
+        scheduling: {
+            postScheduling: {
+                active: activePostSchedulingAdapter,
+                path: postSchedulingPath
+            }
+        },
         storage: {
-            active: activeStorage
+            active: activeStorageAdapter
         },
         theme: {
             // normalise the URL by removing any trailing slash
@@ -216,7 +235,11 @@ ConfigManager.prototype.set = function (config) {
         deprecatedItems: ['updateCheck', 'mail.fromaddress'],
         // create a hash for cache busting assets
         assetHash: assetHash,
-        preloadHeaders: this._config.preloadHeaders || false
+        preloadHeaders: this._config.preloadHeaders || false,
+        times: {
+            cannotScheduleAPostBeforeInMinutes: 2,
+            publishAPostBySchedulerToleranceInMinutes: 2
+        }
     });
 
     // Also pass config object to

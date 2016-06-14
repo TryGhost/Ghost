@@ -60,7 +60,8 @@ Post = ghostBookshelf.Model.extend({
             model.wasPublished = model.updated('status') === 'published';
             model.wasScheduled = model.updated('status') === 'scheduled';
             model.resourceTypeChanging = model.get('page') !== model.updated('page');
-            model.needsReschedule = model.get('published_at') !== model.updated('published_at');
+            model.publishedAtHasChanged = model.hasDateChanged('published_at');
+            model.needsReschedule = model.publishedAtHasChanged && model.isScheduled;
 
             // Handle added and deleted for post -> page or page -> post
             if (model.resourceTypeChanging) {
@@ -100,7 +101,7 @@ Post = ghostBookshelf.Model.extend({
                     }
 
                     // CASE: from scheduled to something
-                    if (model.wasScheduled && !model.isScheduled) {
+                    if (model.wasScheduled && !model.isScheduled && !model.isPublished) {
                         model.emitChange('unscheduled');
                     }
                 } else {
@@ -137,13 +138,23 @@ Post = ghostBookshelf.Model.extend({
             // Variables to make the slug checking more readable
             newTitle    = this.get('title'),
             newStatus   = this.get('status'),
+            olderStatus = this.previous('status'),
             prevTitle   = this._previousAttributes.title,
             prevSlug    = this._previousAttributes.slug,
             tagsToCheck = this.get('tags'),
             publishedAt = this.get('published_at'),
+            publishedAtHasChanged = this.hasDateChanged('published_at'),
             tags = [];
 
-        // both page and post can get scheduled
+        // CASE: disallow published -> scheduled
+        // @TODO: remove when we have versioning based on updated_at
+        if (newStatus !== olderStatus && newStatus === 'scheduled' && olderStatus === 'published') {
+            return Promise.reject(new errors.ValidationError(
+                i18n.t('errors.models.post.isAlreadyPublished', {key: 'status'})
+            ));
+        }
+
+        // CASE: both page and post can get scheduled
         if (newStatus === 'scheduled') {
             if (!publishedAt) {
                 return Promise.reject(new errors.ValidationError(
@@ -153,13 +164,12 @@ Post = ghostBookshelf.Model.extend({
                 return Promise.reject(new errors.ValidationError(
                     i18n.t('errors.models.post.valueCannotBeBlank', {key: 'published_at'})
                 ));
-            } else if (moment(publishedAt).isBefore(moment())) {
+            // CASE: to schedule/reschedule a post, a minimum diff of x minutes is needed (default configured is 2minutes)
+            } else if (publishedAtHasChanged && moment(publishedAt).isBefore(moment().add(config.times.cannotScheduleAPostBeforeInMinutes, 'minutes'))) {
                 return Promise.reject(new errors.ValidationError(
-                    i18n.t('errors.models.post.expectedPublishedAtInFuture')
-                ));
-            } else if (moment(publishedAt).isBefore(moment().add(5, 'minutes'))) {
-                return Promise.reject(new errors.ValidationError(
-                    i18n.t('errors.models.post.expectedPublishedAtInFuture')
+                    i18n.t('errors.models.post.expectedPublishedAtInFuture', {
+                        cannotScheduleAPostBeforeInMinutes: config.times.cannotScheduleAPostBeforeInMinutes
+                    })
                 ));
             }
         }
@@ -447,11 +457,11 @@ Post = ghostBookshelf.Model.extend({
         // the status provided.
         if (options.status && options.status !== 'all') {
             // make sure that status is valid
-            options.status = _.includes(['published', 'draft'], options.status) ? options.status : 'published';
+            options.status = _.includes(['published', 'draft', 'scheduled'], options.status) ? options.status : 'published';
             options.where.statements.push({prop: 'status', op: '=', value: options.status});
             delete options.status;
         } else if (options.status === 'all') {
-            options.where.statements.push({prop: 'status', op: 'IN', value: ['published', 'draft']});
+            options.where.statements.push({prop: 'status', op: 'IN', value: ['published', 'draft', 'scheduled']});
             delete options.status;
         }
 

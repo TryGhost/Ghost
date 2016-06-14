@@ -43,6 +43,7 @@ utils = {
          */
         return function doValidate() {
             var object, options, permittedOptions;
+
             if (arguments.length === 2) {
                 object = arguments[0];
                 options = _.clone(arguments[1]) || {};
@@ -114,6 +115,8 @@ utils = {
                 slug: {isSlug: true},
                 page: {matches: /^\d+$/},
                 limit: {matches: /^\d+|all$/},
+                from: {isDate: true},
+                to: {isDate: true},
                 fields: {matches: /^[\w, ]+$/},
                 order: {matches: /^[a-z0-9_,\. ]+$/i},
                 name: {}
