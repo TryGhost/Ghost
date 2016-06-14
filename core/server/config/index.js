@@ -94,10 +94,10 @@ ConfigManager.prototype.set = function (config) {
         defaultStorageAdapter = 'local-file-store',
         defaultSchedulingAdapter = 'SchedulingDefault',
         activeStorageAdapter,
-        activePostSchedulingAdapter,
+        activeSchedulingAdapter,
         contentPath,
         storagePath,
-        postSchedulingPath,
+        schedulingPath,
         subdir,
         assetHash;
 
@@ -151,8 +151,7 @@ ConfigManager.prototype.set = function (config) {
 
     // read scheduling adapter(s) from config file or attach default adapter
     this._config.scheduling = this._config.scheduling || {};
-    this._config.scheduling.postScheduling = this._config.scheduling.postScheduling || {};
-    activePostSchedulingAdapter = this._config.scheduling.postScheduling.active || defaultSchedulingAdapter;
+    activeSchedulingAdapter = this._config.scheduling.active || defaultSchedulingAdapter;
 
     // we support custom adapters located in content folder
     if (activeStorageAdapter === defaultStorageAdapter) {
@@ -161,10 +160,10 @@ ConfigManager.prototype.set = function (config) {
         storagePath = path.join(contentPath, 'storage');
     }
 
-    if (activePostSchedulingAdapter === defaultSchedulingAdapter) {
-        postSchedulingPath = path.join(corePath, '/server/scheduling/');
+    if (activeSchedulingAdapter === defaultSchedulingAdapter) {
+        schedulingPath = path.join(corePath, '/server/scheduling/');
     } else {
-        postSchedulingPath = path.join(contentPath, '/scheduling/');
+        schedulingPath = path.join(contentPath, '/scheduling/');
     }
 
     _.merge(this._config, {
@@ -193,10 +192,8 @@ ConfigManager.prototype.set = function (config) {
             clientAssets:     path.join(corePath, '/built/assets/')
         },
         scheduling: {
-            postScheduling: {
-                active: activePostSchedulingAdapter,
-                path: postSchedulingPath
-            }
+            active: activeSchedulingAdapter,
+            path: schedulingPath
         },
         storage: {
             active: activeStorageAdapter
