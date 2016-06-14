@@ -3,6 +3,7 @@
 
 // Module dependencies
 var express     = require('express'),
+    _           = require('lodash'),
     uuid        = require('node-uuid'),
     Promise     = require('bluebird'),
     i18n        = require('./i18n'),
@@ -18,6 +19,7 @@ var express     = require('express'),
     xmlrpc      = require('./data/xml/xmlrpc'),
     slack       = require('./data/slack'),
     GhostServer = require('./ghost-server'),
+    scheduling  = require('./scheduling'),
     validateThemes = require('./utils/validate-themes'),
 
     dbHash;
@@ -47,6 +49,8 @@ function initDbHashAndFirstRun() {
 // Sets up the express server instances, runs init on a bunch of stuff, configures views, helpers, routes and more
 // Finally it returns an instance of GhostServer
 function init(options) {
+    var ghostServer = null;
+
     // ### Initialisation
     // The server and its dependencies require a populated config
     // It returns a promise that is resolved when the application
@@ -108,6 +112,14 @@ function init(options) {
             });
 
         return new GhostServer(parentApp);
+    }).then(function (_ghostServer) {
+        ghostServer = _ghostServer;
+
+        // scheduling can trigger api requests, that's why we initialize the module after the ghost server creation
+        // scheduling module can create x schedulers with different adapters
+        return scheduling.init(_.extend(config.scheduling, {apiUrl: config.url + config.urlFor('api')}));
+    }).then(function () {
+        return ghostServer;
     });
 }
 

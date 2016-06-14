@@ -7,19 +7,20 @@
 // allowed to access data via the API.
 var _          = require('lodash'),
     bookshelf  = require('bookshelf'),
+    moment     = require('moment'),
+    Promise    = require('bluebird'),
+    uuid       = require('node-uuid'),
     config     = require('../../config'),
     db         = require('../../data/db'),
     errors     = require('../../errors'),
     filters    = require('../../filters'),
-    moment     = require('moment'),
-    Promise    = require('bluebird'),
     schema     = require('../../data/schema'),
     utils      = require('../../utils'),
     labs       = require('../../utils/labs'),
-    uuid       = require('node-uuid'),
     validation = require('../../data/validation'),
     plugins    = require('../plugins'),
     i18n       = require('../../i18n'),
+
     ghostBookshelf,
     proto;
 
@@ -217,6 +218,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     // Get a specific updated attribute value
     updated: function updated(attr) {
         return this.updatedAttributes()[attr];
+    },
+
+    hasDateChanged: function (attr) {
+        return moment(this.get(attr)).diff(moment(this.updated(attr))) !== 0;
     }
 }, {
     // ## Data Utility Functions
