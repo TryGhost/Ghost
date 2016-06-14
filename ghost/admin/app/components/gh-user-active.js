@@ -24,9 +24,9 @@ export default Component.extend({
         return htmlSafe(`background-image: url(${url})`);
     }),
 
-    lastLogin: computed('user.lastLogin', function () {
-        let lastLogin = this.get('user.lastLogin');
+    lastLoginUTC: computed('user.lastLoginUTC', function () {
+        let lastLoginUTC = this.get('user.lastLoginUTC');
 
-        return lastLogin ? moment(lastLogin).fromNow() : '(Never)';
+        return lastLoginUTC ? moment(lastLoginUTC).fromNow() : '(Never)';
     })
 });

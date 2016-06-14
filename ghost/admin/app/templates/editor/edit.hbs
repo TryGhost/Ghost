@@ -4,7 +4,7 @@
             {{gh-trim-focus-input type="text" id="entry-title" placeholder="Your Post Title" value=model.titleScratch tabindex="1" focus=shouldFocusTitle focus-out="updateTitle" }}
         {{/gh-view-title}}
         {{#if scheduleCountdown}}
-            <time datetime="{{post.publishedAt}}" class="gh-notification gh-notification-schedule">
+            <time datetime="{{post.publishedAtUTC}}" class="gh-notification gh-notification-schedule">
                 Post will be published {{scheduleCountdown}}.
             </time>
         {{/if}}

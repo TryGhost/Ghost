@@ -14,10 +14,10 @@ export default Component.extend({
 
     notifications: service(),
 
-    createdAt: computed('user.createdAt', function () {
-        let createdAt = this.get('user.createdAt');
+    createdAtUTC: computed('user.createdAtUTC', function () {
+        let createdAtUTC = this.get('user.createdAtUTC');
 
-        return createdAt ? moment(createdAt).fromNow() : '';
+        return createdAtUTC ? moment(createdAtUTC).fromNow() : '';
     }),
 
     actions: {

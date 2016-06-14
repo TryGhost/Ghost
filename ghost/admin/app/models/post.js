@@ -28,11 +28,11 @@ export default Model.extend(ValidationEngine, {
     metaDescription: attr('string'),
     author: belongsTo('user', {async: true}),
     authorId: attr('number'),
-    updatedAt: attr('moment-utc'),
+    updatedAtUTC: attr('moment-utc'),
     updatedBy: attr(),
-    publishedAt: attr('moment-utc'),
+    publishedAtUTC: attr('moment-utc'),
     publishedBy: belongsTo('user', {async: true}),
-    createdAt: attr('moment-utc'),
+    createdAtUTC: attr('moment-utc'),
     createdBy: attr(),
     tags: hasMany('tag', {
         embedded: 'always',
@@ -74,11 +74,11 @@ export default Model.extend(ValidationEngine, {
 
     // TODO: move this into gh-posts-list-item component
     // Checks every second, if we reached the scheduled date
-    timeScheduled: computed('publishedAt', 'clock.second', function () {
-        let publishedAt = this.get('publishedAt') || moment.utc(new Date());
+    timeScheduled: computed('publishedAtUTC', 'clock.second', function () {
+        let publishedAtUTC = this.get('publishedAtUTC') || moment.utc(new Date());
         this.get('clock.second');
 
-        return publishedAt.diff(moment.utc(new Date()), 'hours', true) > 0 ? true : false;
+        return publishedAtUTC.diff(moment.utc(new Date()), 'hours', true) > 0 ? true : false;
     }),
 
     // remove client-generated tags, which have `id: null`.

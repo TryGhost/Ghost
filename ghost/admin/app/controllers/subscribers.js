@@ -57,7 +57,7 @@ export default Controller.extend(PaginationMixin, {
             ascending: direction === 'asc'
         }, {
             label: 'Subscription Date',
-            valuePath: 'createdAt',
+            valuePath: 'createdAtUTC',
             format(value) {
                 return value.format('MMMM DD, YYYY');
             },
@@ -111,7 +111,7 @@ export default Controller.extend(PaginationMixin, {
 
             if (column.sorted) {
                 this.setProperties({
-                    order: column.get('valuePath').trim().underscore(),
+                    order: column.get('valuePath').trim().replace(/UTC$/, '').underscore(),
                     direction: column.ascending ? 'asc' : 'desc'
                 });
                 table.setRows([]);
