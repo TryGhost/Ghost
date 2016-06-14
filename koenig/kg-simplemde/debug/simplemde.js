@@ -1,5 +1,5 @@
 /**
- * simplemde v1.11.1
+ * simplemde v1.11.2
  * Copyright Next Step Webs, Inc.
  * @link https://github.com/NextStepWebs/simplemde-markdown-editor
  * @license MIT
@@ -1833,7 +1833,6 @@ function isnan (val) {
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"base64-js":1,"ieee754":15,"isarray":16}],4:[function(require,module,exports){
-/* globals CodeMirror */
 // Use strict mode (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode)
 "use strict";
 
@@ -1842,98 +1841,117 @@ function isnan (val) {
 var Typo = require("typo-js");
 
 
-// Initialize data globally to reduce memory consumption
-var num_loaded = 0;
-var aff_loading = false;
-var dic_loading = false;
-var aff_data = "";
-var dic_data = "";
-var typo;
+// Create function
+function CodeMirrorSpellChecker(options) {
+	// Initialize
+	options = options || {};
 
 
-CodeMirror.defineMode("spell-checker", function(config) {
-	// Load AFF/DIC data
-	if(!aff_loading) {
-		aff_loading = true;
-		var xhr_aff = new XMLHttpRequest();
-		xhr_aff.open("GET", "https://cdn.jsdelivr.net/codemirror.spell-checker/latest/en_US.aff", true);
-		xhr_aff.onload = function() {
-			if(xhr_aff.readyState === 4 && xhr_aff.status === 200) {
-				aff_data = xhr_aff.responseText;
-				num_loaded++;
-
-				if(num_loaded == 2) {
-					typo = new Typo("en_US", aff_data, dic_data, {
-						platform: "any"
-					});
-				}
-			}
-		};
-		xhr_aff.send(null);
-	}
-
-	if(!dic_loading) {
-		dic_loading = true;
-		var xhr_dic = new XMLHttpRequest();
-		xhr_dic.open("GET", "https://cdn.jsdelivr.net/codemirror.spell-checker/latest/en_US.dic", true);
-		xhr_dic.onload = function() {
-			if(xhr_dic.readyState === 4 && xhr_dic.status === 200) {
-				dic_data = xhr_dic.responseText;
-				num_loaded++;
-
-				if(num_loaded == 2) {
-					typo = new Typo("en_US", aff_data, dic_data, {
-						platform: "any"
-					});
-				}
-			}
-		};
-		xhr_dic.send(null);
+	// Verify
+	if(typeof options.codeMirrorInstance !== "function" || typeof options.codeMirrorInstance.defineMode !== "function") {
+		console.log("CodeMirror Spell Checker: You must provide an instance of CodeMirror via the option `codeMirrorInstance`");
+		return;
 	}
 
 
-	// Define what separates a word
-	var rx_word = "!\"#$%&()*+,-./:;<=>?@[\\]^_`{|}~ ";
+	// Because some browsers don't support this functionality yet
+	if(!String.prototype.includes) {
+		String.prototype.includes = function() {
+			"use strict";
+			return String.prototype.indexOf.apply(this, arguments) !== -1;
+		};
+	}
 
 
-	// Create the overlay and such
-	var overlay = {
-		token: function(stream) {
-			var ch = stream.peek();
-			var word = "";
+	// Define the new mode
+	options.codeMirrorInstance.defineMode("spell-checker", function(config) {
+		// Load AFF/DIC data
+		if(!CodeMirrorSpellChecker.aff_loading) {
+			CodeMirrorSpellChecker.aff_loading = true;
+			var xhr_aff = new XMLHttpRequest();
+			xhr_aff.open("GET", "https://cdn.jsdelivr.net/codemirror.spell-checker/latest/en_US.aff", true);
+			xhr_aff.onload = function() {
+				if(xhr_aff.readyState === 4 && xhr_aff.status === 200) {
+					CodeMirrorSpellChecker.aff_data = xhr_aff.responseText;
+					CodeMirrorSpellChecker.num_loaded++;
 
-			if(rx_word.includes(ch)) {
-				stream.next();
+					if(CodeMirrorSpellChecker.num_loaded == 2) {
+						CodeMirrorSpellChecker.typo = new Typo("en_US", CodeMirrorSpellChecker.aff_data, CodeMirrorSpellChecker.dic_data, {
+							platform: "any"
+						});
+					}
+				}
+			};
+			xhr_aff.send(null);
+		}
+
+		if(!CodeMirrorSpellChecker.dic_loading) {
+			CodeMirrorSpellChecker.dic_loading = true;
+			var xhr_dic = new XMLHttpRequest();
+			xhr_dic.open("GET", "https://cdn.jsdelivr.net/codemirror.spell-checker/latest/en_US.dic", true);
+			xhr_dic.onload = function() {
+				if(xhr_dic.readyState === 4 && xhr_dic.status === 200) {
+					CodeMirrorSpellChecker.dic_data = xhr_dic.responseText;
+					CodeMirrorSpellChecker.num_loaded++;
+
+					if(CodeMirrorSpellChecker.num_loaded == 2) {
+						CodeMirrorSpellChecker.typo = new Typo("en_US", CodeMirrorSpellChecker.aff_data, CodeMirrorSpellChecker.dic_data, {
+							platform: "any"
+						});
+					}
+				}
+			};
+			xhr_dic.send(null);
+		}
+
+
+		// Define what separates a word
+		var rx_word = "!\"#$%&()*+,-./:;<=>?@[\\]^_`{|}~ ";
+
+
+		// Create the overlay and such
+		var overlay = {
+			token: function(stream) {
+				var ch = stream.peek();
+				var word = "";
+
+				if(rx_word.includes(ch)) {
+					stream.next();
+					return null;
+				}
+
+				while((ch = stream.peek()) != null && !rx_word.includes(ch)) {
+					word += ch;
+					stream.next();
+				}
+
+				if(CodeMirrorSpellChecker.typo && !CodeMirrorSpellChecker.typo.check(word))
+					return "spell-error"; // CSS class: cm-spell-error
+
 				return null;
 			}
+		};
 
-			while((ch = stream.peek()) != null && !rx_word.includes(ch)) {
-				word += ch;
-				stream.next();
-			}
+		var mode = options.codeMirrorInstance.getMode(
+			config, config.backdrop || "text/plain"
+		);
 
-			if(typo && !typo.check(word))
-				return "spell-error"; // CSS class: cm-spell-error
-
-			return null;
-		}
-	};
-
-	var mode = CodeMirror.getMode(
-		config, config.backdrop || "text/plain"
-	);
-
-	return CodeMirror.overlayMode(mode, overlay, true);
-});
-
-
-// Because some browsers don't support this functionality yet
-if(!String.prototype.includes) {
-	String.prototype.includes = function() {
-		"use strict";
-		return String.prototype.indexOf.apply(this, arguments) !== -1;
-	};
+		return options.codeMirrorInstance.overlayMode(mode, overlay, true);
+	});
 }
+
+
+// Initialize data globally to reduce memory consumption
+CodeMirrorSpellChecker.num_loaded = 0;
+CodeMirrorSpellChecker.aff_loading = false;
+CodeMirrorSpellChecker.dic_loading = false;
+CodeMirrorSpellChecker.aff_data = "";
+CodeMirrorSpellChecker.dic_data = "";
+CodeMirrorSpellChecker.typo;
+
+
+// Export
+module.exports = CodeMirrorSpellChecker;
 },{"typo-js":18}],5:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
