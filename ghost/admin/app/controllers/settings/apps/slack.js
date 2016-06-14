@@ -61,9 +61,7 @@ export default Controller.extend({
                 this.set('isSaving', true);
 
                 return settings.save().catch((err) => {
-                    if (err && err.isAdapterError) {
-                        this.get('notifications').showAPIError(err);
-                    }
+                    this.get('notifications').showAPIError(err);
                     throw err;
                 }).finally(() => {
                     this.set('isSaving', false);

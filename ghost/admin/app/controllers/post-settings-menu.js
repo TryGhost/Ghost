@@ -185,11 +185,8 @@ export default Controller.extend(SettingsMenuMixin, {
     }),
 
     showErrors(errors) {
-        if (isVersionMismatchError(errors)) {
-            return this.get('notifications').showAPIError(errors);
-        }
         errors = isEmberArray(errors) ? errors : [errors];
-        this.get('notifications').showErrors(errors);
+        this.get('notifications').showAPIError(errors);
     },
 
     actions: {
