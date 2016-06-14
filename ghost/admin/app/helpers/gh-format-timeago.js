@@ -7,9 +7,8 @@ export function timeAgo(params) {
         return;
     }
     let [timeago] = params;
-    let utc = moment.utc();
 
-    return moment(timeago).from(utc);
+    return moment(timeago).from(moment.utc());
 }
 
 export default Helper.helper(function (params) {

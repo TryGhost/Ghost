@@ -24,12 +24,19 @@
                                         {{#if post.page}}
                                             <span class="page">Page</span>
                                         {{else}}
-                                            <time datetime="{{post.publishedAt}}" class="date published">
-                                                Published {{gh-format-timeago post.publishedAt}}
+                                            <time datetime="{{post.publishedAt}}" class="date published">{{gh-format-timeago post.publishedAt}}
                                             </time>
                                         {{/if}}
                                     {{else}}
-                                        <span class="draft">Draft</span>
+                    					{{#if component.isScheduled}}
+                    						<span class="scheduled">Scheduled</span>
+                                            <span>&ndash;
+                                                <time datetime="{{post.publishedAt}}" class-="date scheduled">{{gh-format-time-scheduled post.publishedAt component.blogTimezone}}
+                                                </time>
+                                            </span>
+                    					{{else}}
+                                            <span class="draft">Draft</span>
+                    					{{/if}}
                                     {{/if}}
                                 </span>
                                 {{#if feature.internalTags}}

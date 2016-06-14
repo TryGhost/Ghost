@@ -31,6 +31,7 @@ export default Mixin.create({
 
     postSettingsMenuController: controller('post-settings-menu'),
     notifications: service(),
+    clock: service(),
 
     init() {
         this._super(...arguments);
@@ -68,6 +69,8 @@ export default Mixin.create({
      * can the post's status change.
      */
     willPublish: boundOneWay('model.isPublished'),
+    willSchedule: boundOneWay('model.isScheduled'),
+    scheduledWillPublish: boundOneWay('model.isPublished'),
 
     // set by the editor route and `hasDirtyAttributes`. useful when checking
     // whether the number of tags has changed for `hasDirtyAttributes`.
@@ -79,6 +82,44 @@ export default Mixin.create({
 
     postOrPage: computed('model.page', function () {
         return this.get('model.page') ? 'Page' : 'Post';
+    }),
+
+    // countdown timer to show the time left until publish time for a scheduled post
+    // starts 15 minutes before scheduled time
+    scheduleCountdown: computed('model.status', 'clock.second', 'model.publishedAt', 'model.timeScheduled', function () {
+        let status = this.get('model.status');
+        let publishTime = this.get('model.publishedAt');
+
+        this.get('clock.second');
+
+        if (this.get('model.timeScheduled') && status === 'scheduled' && publishTime.diff(moment.utc(new Date()), 'minutes', true) < 15) {
+            return moment(publishTime).fromNow();
+        } else {
+            return false;
+        }
+    }),
+
+    // statusFreeze has two tasks:
+    // 1. 2 minutes before the scheduled time it will return true to change the button layout in gh-editor-save-button. There will be no
+    //    dropdown menu, the save button gets the status 'isDangerous' to turn red and will only have the option to unschedule the post
+    // 2. when the scheduled time is reached we use a helper 'scheduledWillPublish' to pretend we're already dealing with a published post.
+    //    This will take effect on the save button menu, the workflows and existing conditionals.
+    statusFreeze: computed('model.status', 'clock.second', 'model.publishedAt', 'model.timeScheduled', function () {
+        let status = this.get('model.status');
+        let publishTime = this.get('model.publishedAt');
+
+        this.get('clock.second');
+
+        if (this.get('model.timeScheduled') && status === 'scheduled' && publishTime.diff(moment.utc(new Date()), 'minutes', true) < 2) {
+            return true;
+        } else if (!this.get('model.timeScheduled') && !this.get('scheduledWillPublish') && status === 'scheduled' && publishTime.diff(moment.utc(new Date()), 'hours', true) < 0) {
+            // set the helper to true, until the model refreshed
+            this.set('scheduledWillPublish', true);
+            this.showSaveNotification('scheduled', 'published', false);
+            return false;
+        } else {
+            return false;
+        }
     }),
 
     // compares previousTagNames to tagNames
@@ -198,12 +239,19 @@ export default Mixin.create({
         errors: {
             post: {
                 published: {
-                    published: 'Update failed.',
-                    draft: 'Saving failed.'
+                    published: 'Update failed',
+                    draft: 'Saving failed',
+                    scheduled: 'Scheduling failed'
                 },
                 draft: {
-                    published: 'Publish failed.',
-                    draft: 'Saving failed.'
+                    published: 'Publish failed',
+                    draft: 'Saving failed',
+                    scheduled: 'Scheduling failed'
+                },
+                scheduled: {
+                    scheduled: 'Updated failed',
+                    draft: 'Unscheduling failed',
+                    published: 'Publish failed'
                 }
 
             }
@@ -213,11 +261,18 @@ export default Mixin.create({
             post: {
                 published: {
                     published: 'Updated.',
-                    draft: 'Saved.'
+                    draft: 'Saved.',
+                    scheduled: 'Scheduled.'
                 },
                 draft: {
                     published: 'Published!',
-                    draft: 'Saved.'
+                    draft: 'Saved.',
+                    scheduled: 'Scheduled.'
+                },
+                scheduled: {
+                    scheduled: 'Updated.',
+                    draft: 'Unscheduled.',
+                    published: 'Published!'
                 }
             }
         }
@@ -262,7 +317,7 @@ export default Mixin.create({
             error = 'Unknown Error';
         }
 
-        message += `<br />${error}`;
+        message += `: ${error}`;
         message = htmlSafe(message);
 
         notifications.showAlert(message, {type: 'error', delayed: delay, key: 'post.save'});
@@ -291,14 +346,22 @@ export default Mixin.create({
             let promise, status;
 
             options = options || {};
-
             this.toggleProperty('submitting');
-
             if (options.backgroundSave) {
                 // do not allow a post's status to be set to published by a background save
                 status = 'draft';
             } else {
-                status = this.get('willPublish') ? 'published' : 'draft';
+                if (this.get('scheduledWillPublish')) {
+                    status = (!this.get('willSchedule') && !this.get('willPublish')) ? 'draft' : 'published';
+                } else {
+                    if (this.get('willPublish') && !this.get('model.isScheduled') && !this.get('statusFreeze')) {
+                        status = 'published';
+                    } else if (this.get('willSchedule') && !this.get('model.isPublished') && !this.get('statusFreeze')) {
+                        status = 'scheduled';
+                    } else {
+                        status = 'draft';
+                    }
+                }
             }
 
             this.send('cancelTimers');
@@ -332,6 +395,12 @@ export default Mixin.create({
                     }
 
                     this.toggleProperty('submitting');
+
+                    // reset the helper CP back to false after saving and refetching the new model
+                    // which is published by the scheduler process on the server now
+                    if (this.get('scheduledWillPublish')) {
+                        this.set('scheduledWillPublish', false);
+                    }
                     return model;
                 });
             }).catch((errors) => {
@@ -354,7 +423,12 @@ export default Mixin.create({
         setSaveType(newType) {
             if (newType === 'publish') {
                 this.set('willPublish', true);
+                this.set('willSchedule', false);
             } else if (newType === 'draft') {
+                this.set('willPublish', false);
+                this.set('willSchedule', false);
+            } else if (newType === 'schedule') {
+                this.set('willSchedule', true);
                 this.set('willPublish', false);
             }
         },
