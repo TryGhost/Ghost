@@ -1,4 +1,4 @@
-/*globals describe, it, beforeEach, afterEach*/
+/*globals describe, it, beforeEach, before, afterEach*/
 
 var should = require('should'),
     sinon = require('sinon'),
@@ -23,6 +23,7 @@ describe('Scheduling: Post Scheduling', function () {
         post: null
     };
 
+    before(testUtils.teardown);
     beforeEach(testUtils.setup());
 
     beforeEach(function () {
