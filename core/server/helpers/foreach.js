@@ -6,20 +6,48 @@ var hbs             = require('express-hbs'),
     _               = require('lodash'),
     errors          = require('../errors'),
     i18n            = require('../i18n'),
+    labs            = require('../utils/labs'),
+    utils           = require('./utils'),
 
     hbsUtils        = hbs.handlebars.Utils,
     foreach;
 
-foreach = function (itemType, options) {
+function filterItemsByVisibility(items, options) {
+    var visibility = utils.parseVisibility(options);
+
+    if (!labs.isSet('internalTags') || _.includes(visibility, 'all')) {
+        return items;
+    }
+
+    function visibilityFilter(item) {
+        // If the item doesn't have a visibility property && options.hash.visibility wasn't set
+        // We return the item, else we need to be sure that this item has the property
+        if (!item.visibility && !options.hash.visibility || _.includes(visibility, item.visibility)) {
+            return item;
+        }
+    }
+
+    // We don't want to change the structure of what is returned
+    return _.isArray(items) ? _.filter(items, visibilityFilter) : _.pickBy(items, visibilityFilter);
+}
+
+foreach = function (items, options) {
     if (!options) {
         errors.logWarn(i18n.t('warnings.helpers.foreach.iteratorNeeded'));
     }
+
+    if (hbsUtils.isFunction(items)) {
+        items = items.call(this);
+    }
+
+    // Exclude items which should not be visible in the theme
+    items = filterItemsByVisibility(items, options);
 
     // Initial values set based on parameters sent through. If nothing sent, set to defaults
     var fn = options.fn,
         inverse = options.inverse,
         columns = options.hash.columns,
-        length = _.size(itemType),
+        length = _.size(items),
         limit = parseInt(options.hash.limit, 10) || length,
         from = parseInt(options.hash.from, 10) || 1,
         to = parseInt(options.hash.to, 10) || length,
@@ -35,10 +63,6 @@ foreach = function (itemType, options) {
 
     if (options.data && options.ids) {
         contextPath = hbsUtils.appendContextPath(options.data.contextPath, options.ids[0]) + '.';
-    }
-
-    if (hbsUtils.isFunction(itemType)) {
-        itemType = itemType.call(this);
     }
 
     if (options.data) {
@@ -61,9 +85,9 @@ foreach = function (itemType, options) {
             }
         }
 
-        output = output + fn(itemType[field], {
+        output = output + fn(items[field], {
             data: data,
-            blockParams: hbsUtils.blockParams([itemType[field], field], [contextPath + field, null])
+            blockParams: hbsUtils.blockParams([items[field], field], [contextPath + field, null])
         });
     }
 
@@ -88,8 +112,8 @@ foreach = function (itemType, options) {
         });
     }
 
-    if (itemType && typeof itemType === 'object') {
-        iterateCollection(itemType);
+    if (items && typeof items === 'object') {
+        iterateCollection(items);
     }
 
     if (length === 0) {
