@@ -13,6 +13,7 @@ function SchedulingDefault(options) {
     this.runTimeoutInMs = 1000 * 60 * 5;
     this.offsetInMinutes = 10;
     this.beforePingInMs = -50;
+    this.retryTimeoutInMs = 1000 * 5;
 
     this.allJobs = {};
     this.deletedJobs = {};
@@ -158,14 +159,16 @@ SchedulingDefault.prototype._execute = function (jobs) {
 };
 
 /**
- * if we detect to publish a post in the past (case blog is down)
- * we add a force flag
+ * - if we detect to publish a post in the past (case blog is down), we add a force flag
  */
 SchedulingDefault.prototype._pingUrl = function (object) {
     var url = object.url,
         time = object.time,
         httpMethod = object.extra.httpMethod,
-        req = request[httpMethod.toLowerCase()](url);
+        tries = object.tries || 0,
+        maxTries = 30,
+        req = request[httpMethod.toLowerCase()](url),
+        self = this, timeout;
 
     if (moment(time).isBefore(moment())) {
         if (httpMethod === 'GET') {
@@ -182,6 +185,16 @@ SchedulingDefault.prototype._pingUrl = function (object) {
             // CASE: post/page was deleted already
             if (response && response.status === 404) {
                 return;
+            }
+
+            // CASE: blog is in maintenance mode, retry
+            if (response && response.status === 503 && tries < maxTries) {
+                timeout = setTimeout(function pingAgain() {
+                    clearTimeout(timeout);
+
+                    object.tries = tries + 1;
+                    self._pingUrl(object);
+                }, self.retryTimeoutInMs);
             }
 
             errors.logError(err);
