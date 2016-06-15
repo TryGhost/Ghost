@@ -111,7 +111,13 @@ SchedulingDefault.prototype._addJob = function (object) {
 };
 
 SchedulingDefault.prototype._deleteJob = function (object) {
-    this.deletedJobs[object.url + '_' + moment(object.time).valueOf()] = true;
+    var deleteKey = object.url + '_' + moment(object.time).valueOf();
+
+    if (!this.deletedJobs[deleteKey]) {
+        this.deletedJobs[deleteKey] = [];
+    }
+
+    this.deletedJobs[deleteKey].push(object);
 };
 
 /**
@@ -146,7 +152,12 @@ SchedulingDefault.prototype._execute = function (jobs) {
                         var deleteKey = job.url + '_' + moment(job.time).valueOf();
 
                         if (self.deletedJobs[deleteKey]) {
-                            delete self.deletedJobs[deleteKey];
+                            if (self.deletedJobs[deleteKey].length === 1) {
+                                delete self.deletedJobs[deleteKey];
+                            } else {
+                                self.deletedJobs[deleteKey].pop();
+                            }
+
                             return;
                         }
 
@@ -164,7 +175,7 @@ SchedulingDefault.prototype._execute = function (jobs) {
 SchedulingDefault.prototype._pingUrl = function (object) {
     var url = object.url,
         time = object.time,
-        httpMethod = object.extra.httpMethod,
+        httpMethod = object.extra ? object.extra.httpMethod : 'PUT',
         tries = object.tries || 0,
         maxTries = 30,
         req = request[httpMethod.toLowerCase()](url),
