@@ -1,4 +1,4 @@
-/*globals describe, it, before, afterEach*/
+/*globals describe, it, beforeEach, afterEach*/
 var config = require(__dirname + '/../../../server/config'),
     moment = require('moment'),
     _ = require('lodash'),
@@ -6,24 +6,25 @@ var config = require(__dirname + '/../../../server/config'),
     express = require('express'),
     bodyParser = require('body-parser'),
     http = require('http'),
-    sinon = require('sinon');
+    sinon = require('sinon'),
+    SchedulingDefault = require(config.paths.corePath + '/server/scheduling/SchedulingDefault'),
+    sandbox = sinon.sandbox.create();
 
 describe('Scheduling Default Adapter', function () {
     var scope = {};
 
-    before(function () {
-        scope.SchedulingDefault = require(config.paths.corePath + '/server/scheduling/SchedulingDefault');
-        scope.adapter = new scope.SchedulingDefault();
+    beforeEach(function () {
+        scope.adapter = new SchedulingDefault();
     });
 
     afterEach(function () {
-        scope.adapter.allJobs = {};
+        sandbox.restore();
     });
 
     describe('success', function () {
         it('addJob (schedule)', function () {
-            sinon.stub(scope.adapter, 'run');
-            sinon.stub(scope.adapter, '_execute');
+            sandbox.stub(scope.adapter, 'run');
+            sandbox.stub(scope.adapter, '_execute');
 
             var dates = [
                 moment().add(1, 'day').subtract(30, 'seconds').toDate(),
@@ -59,9 +60,6 @@ describe('Scheduling Default Adapter', function () {
                 moment(dates[3]).valueOf().toString(),
                 moment(dates[0]).valueOf().toString()
             ]);
-
-            scope.adapter.run.restore();
-            scope.adapter._execute.restore();
         });
 
         it('run', function (done) {
@@ -70,10 +68,9 @@ describe('Scheduling Default Adapter', function () {
                 }),
                 allJobs = {};
 
-            sinon.stub(scope.adapter, '_execute', function (nextJobs) {
+            sandbox.stub(scope.adapter, '_execute', function (nextJobs) {
                 Object.keys(nextJobs).length.should.eql(182);
                 Object.keys(scope.adapter.allJobs).length.should.eql(1000 - 182);
-                scope.adapter._execute.restore();
                 done();
             });
 
@@ -95,8 +92,8 @@ describe('Scheduling Default Adapter', function () {
                 }),
                 nextJobs = {};
 
-            sinon.stub(scope.adapter, 'run');
-            sinon.stub(scope.adapter, '_pingUrl', function () {
+            sandbox.stub(scope.adapter, 'run');
+            sandbox.stub(scope.adapter, '_pingUrl', function () {
                 pinged = pinged + 1;
             });
 
@@ -111,42 +108,46 @@ describe('Scheduling Default Adapter', function () {
                     return setTimeout(retry, 100);
                 }
 
-                scope.adapter.run.restore();
-                scope.adapter._pingUrl.restore();
                 done();
             })();
         });
 
         it('delete job (unschedule)', function (done) {
-            sinon.stub(scope.adapter, 'run');
-            sinon.stub(scope.adapter, '_pingUrl');
+            var pinged = 0,
+                jobsToDelete = {},
+                jobsToExecute = {};
 
-            // add 3 jobs to delete
-            var jobs = {};
-            jobs[moment().add(500, 'milliseconds').valueOf()] = [{url: '/first', time: 1234}];
-            jobs[moment().add(550, 'milliseconds').valueOf()] = [{url: '/first', time: 1235}];
-            jobs[moment().add(600, 'milliseconds').valueOf()] = [{url: '/second', time: 1236}];
+            sandbox.stub(scope.adapter, 'run');
+            sandbox.stub(scope.adapter, '_pingUrl', function () {
+                pinged = pinged + 1;
+            });
 
-            _.map(jobs, function (value) {
+            // add jobs to delete
+            jobsToDelete[moment().add(500, 'milliseconds').valueOf()] = [{url: '/1', time: 1234}];
+            jobsToDelete[moment().add(550, 'milliseconds').valueOf()] = [{url: '/2', time: 1235}];
+            jobsToDelete[moment().add(600, 'milliseconds').valueOf()] = [{url: '/1', time: 1234}];
+            jobsToDelete[moment().add(650, 'milliseconds').valueOf()] = [{url: '/3', time: 1236}];
+
+            _.map(jobsToDelete, function (value) {
                 scope.adapter._deleteJob(value[0]);
             });
 
-            // add another, which will be pinged
-            jobs[moment().add(650, 'milliseconds').valueOf()] = [{url: '/third', time: 1237}];
+            // add jobs, which will be pinged
+            jobsToExecute[moment().add(700, 'milliseconds').valueOf()] = [{url: '/1', time: 1234}];
+            jobsToExecute[moment().add(750, 'milliseconds').valueOf()] = [{url: '/1', time: 1234}];
+            jobsToExecute[moment().add(800, 'milliseconds').valueOf()] = [{url: '/1', time: 1234}];
+            jobsToExecute[moment().add(850, 'milliseconds').valueOf()] = [{url: '/4', time: 1237}];
 
             // simulate execute is called
-            scope.adapter._execute(jobs);
+            scope.adapter._execute(jobsToExecute);
 
             (function retry() {
-                if (!scope.adapter._pingUrl.called) {
-                    return setTimeout(retry, 10);
+                if (pinged !== 2) {
+                    return setTimeout(retry, 100);
                 }
 
-                Object.keys(scope.adapter.deletedJobs).length.should.eql(0);
-                scope.adapter._pingUrl.calledOnce.should.eql(true);
-
-                scope.adapter.run.restore();
-                scope.adapter._pingUrl.restore();
+                Object.keys(scope.adapter.deletedJobs).length.should.eql(2);
+                pinged.should.eql(2);
                 done();
             })();
         });
