@@ -1,24 +1,26 @@
-var commands = require('../../schema').commands,
-    db       = require('../../db'),
+var Promise = require('bluebird'),
+    commands = require('../../schema').commands,
+    table = 'posts_tags',
+    column = 'sort_order',
+    message = 'Adding column: ' + table + '.' + column;
 
-    table    = 'posts_tags',
-    column   = 'sort_order',
-    message  = 'Adding column: ' + table + '.' + column;
+module.exports = function addSortOrderColumnToPostsTags(options, logger) {
+    var transaction = options.transacting;
 
-module.exports = function addSortOrderColumnToPostsTags(logger) {
-    return db.knex.schema.hasTable(table).then(function (exists) {
-        if (exists) {
-            return db.knex.schema.hasColumn(table, column).then(function (exists) {
-                if (!exists) {
-                    logger.info(message);
-                    return commands.addColumn(table, column);
-                } else {
-                    logger.warn(message);
-                }
-            });
-        } else {
-            // @TODO: this should probably be an error
-            logger.warn(message);
-        }
-    });
+    return transaction.schema.hasTable(table)
+        .then(function (exists) {
+            if (!exists) {
+                return Promise.reject(new Error('Table does not exist!'));
+            }
+
+            return transaction.schema.hasColumn(table, column);
+        })
+        .then(function (exists) {
+            if (!exists) {
+                logger.info(message);
+                return commands.addColumn(table, column, transaction);
+            } else {
+                logger.warn(message);
+            }
+        });
 };

@@ -28,6 +28,12 @@ logger = {
 init = function init(tablesOnly) {
     tablesOnly = tablesOnly || false;
 
+    var modelOptions = {
+        context: {
+            internal: true
+        }
+    };
+
     // There are 4 possible cases:
     // CASE 1: The database exists and is up-to-date
     // CASE 2: The database exists but is out of date
@@ -41,7 +47,7 @@ init = function init(tablesOnly) {
         if (databaseVersion < defaultVersion || process.env.FORCE_MIGRATION) {
             // Migrate to latest version
             logger.info('Database upgrade required from version ' + databaseVersion + ' to ' +  defaultVersion);
-            return update(databaseVersion, defaultVersion, logger);
+            return update(databaseVersion, defaultVersion, logger, modelOptions);
 
             // CASE 1: The database exists and is up-to-date
         } else if (databaseVersion === defaultVersion) {
@@ -61,7 +67,7 @@ init = function init(tablesOnly) {
             // CASE 4: The database has not yet been created
             // Bring everything up from initial version.
             logger.info('Database initialisation required for version ' + versioning.getDefaultDatabaseVersion());
-            return populate(logger, tablesOnly);
+            return populate(logger, tablesOnly, modelOptions);
         }
         // CASE 3: the database exists but the currentVersion setting does not or cannot be understood
         //         In this case the setting was missing or there was some other problem
