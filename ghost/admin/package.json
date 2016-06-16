@@ -26,7 +26,6 @@
   "devDependencies": {
     "broccoli-asset-rev": "2.4.2",
     "csscomb": "3.1.8",
-    "cst": "0.3.0",
     "ember-ajax": "2.4.1",
     "ember-cli": "2.6.1",
     "ember-cli-app-version": "1.0.0",
@@ -59,7 +58,7 @@
     "ember-simple-auth": "1.1.0",
     "ember-sinon": "0.5.1",
     "ember-sortable": "1.8.1",
-    "ember-suave": "3.0.0",
+    "ember-suave": "3.0.1",
     "ember-watson": "0.8.2",
     "ember-wormhole": "0.4.0",
     "emberx-file-input": "1.0.0",
