@@ -86,9 +86,9 @@ export default Mixin.create({
 
     // countdown timer to show the time left until publish time for a scheduled post
     // starts 15 minutes before scheduled time
-    scheduleCountdown: computed('model.status', 'clock.second', 'model.publishedAt', 'model.timeScheduled', function () {
+    scheduleCountdown: computed('model.status', 'clock.second', 'model.publishedAtUTC', 'model.timeScheduled', function () {
         let status = this.get('model.status');
-        let publishTime = this.get('model.publishedAt');
+        let publishTime = this.get('model.publishedAtUTC');
 
         this.get('clock.second');
 
@@ -104,9 +104,9 @@ export default Mixin.create({
     //    dropdown menu, the save button gets the status 'isDangerous' to turn red and will only have the option to unschedule the post
     // 2. when the scheduled time is reached we use a helper 'scheduledWillPublish' to pretend we're already dealing with a published post.
     //    This will take effect on the save button menu, the workflows and existing conditionals.
-    statusFreeze: computed('model.status', 'clock.second', 'model.publishedAt', 'model.timeScheduled', function () {
+    statusFreeze: computed('model.status', 'clock.second', 'model.publishedAtUTC', 'model.timeScheduled', function () {
         let status = this.get('model.status');
-        let publishTime = this.get('model.publishedAt');
+        let publishTime = this.get('model.publishedAtUTC');
 
         this.get('clock.second');
 

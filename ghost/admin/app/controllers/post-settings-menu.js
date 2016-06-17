@@ -290,11 +290,11 @@ export default Controller.extend(SettingsMenuMixin, {
          * Action sent by post settings menu view.
          * (#1351)
          */
-        setPublishedAt(userInput) {
+        setPublishedAtUTC(userInput) {
             if (!userInput) {
-                // Clear out the publishedAt field for a draft
+                // Clear out the publishedAtUTC field for a draft
                 if (this.get('model.isDraft')) {
-                    this.set('model.publishedAt', null);
+                    this.set('model.publishedAtUTC', null);
                 }
                 return;
             }
@@ -303,8 +303,9 @@ export default Controller.extend(SettingsMenuMixin, {
             // we have to work with the timezone offset which we get from the timeZone Service.
             this.get('timeZone.blogTimezone').then((blogTimezone) => {
                 let newPublishedAt = parseDateString(userInput, blogTimezone);
-                let publishedAt = moment.utc(this.get('model.publishedAt'));
+                let publishedAtUTC = moment.utc(this.get('model.publishedAtUTC'));
                 let errMessage = '';
+                let newPublishedAtUTC;
 
                 // Clear previous errors
                 this.get('model.errors').remove('post-setting-date');
@@ -316,13 +317,13 @@ export default Controller.extend(SettingsMenuMixin, {
                 }
 
                 // Date is a valid date, so now make it UTC
-                newPublishedAt = moment.utc(newPublishedAt);
+                newPublishedAtUTC = moment.utc(newPublishedAt);
 
-                if (newPublishedAt.diff(moment.utc(new Date()), 'hours', true) > 0) {
+                if (newPublishedAtUTC.diff(moment.utc(new Date()), 'hours', true) > 0) {
 
                     // We have to check that the time from now is not shorter than 2 minutes,
                     // otherwise we'll have issues with the serverside scheduling procedure
-                    if (newPublishedAt.diff(moment.utc(new Date()), 'minutes', true) < 2) {
+                    if (newPublishedAtUTC.diff(moment.utc(new Date()), 'minutes', true) < 2) {
                         errMessage = 'Must be at least 2 minutes from now.';
                     } else {
                         // in case the post is already published and the user sets the date
@@ -351,12 +352,12 @@ export default Controller.extend(SettingsMenuMixin, {
                 }
 
                 // Do nothing if the user didn't actually change the date
-                if (publishedAt && publishedAt.isSame(newPublishedAt)) {
+                if (publishedAtUTC && publishedAtUTC.isSame(newPublishedAtUTC)) {
                     return;
                 }
 
                 // Validation complete
-                this.set('model.publishedAt', newPublishedAt);
+                this.set('model.publishedAtUTC', newPublishedAtUTC);
 
                 // If this is a new post.  Don't save the model.  Defer the save
                 // to the user pressing the save button
@@ -440,7 +441,7 @@ export default Controller.extend(SettingsMenuMixin, {
         },
 
         resetPubDate() {
-            this.set('publishedAtValue', '');
+            this.set('publishedAtUTCValue', '');
         },
 
         closeNavMenu() {

@@ -36,8 +36,8 @@
                 {{else}}
                     <label for="post-setting-date">Publish Date</label>
                 {{/if}}
-                {{gh-datetime-input value=model.publishedAt
-                                    update=(action "setPublishedAt")
+                {{gh-datetime-input value=model.publishedAtUTC
+                                    update=(action "setPublishedAtUTC")
                                     inputClass="post-setting-date"
                                     inputId="post-setting-date"
                                     inputName="post-setting-date"}}
