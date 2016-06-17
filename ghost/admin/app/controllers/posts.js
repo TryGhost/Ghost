@@ -10,12 +10,12 @@ const {equal} = computed;
 
 // a custom sort function is needed in order to sort the posts list the same way the server would:
 //     status: scheduled, draft, published
-//     publishedAt: DESC
-//     updatedAt: DESC
+//     publishedAtUTC: DESC
+//     updatedAtUTC: DESC
 //     id: DESC
 function comparator(item1, item2) {
-    let updated1 = item1.get('updatedAt');
-    let updated2 = item2.get('updatedAt');
+    let updated1 = item1.get('updatedAtUTC');
+    let updated2 = item2.get('updatedAtUTC');
     let idResult,
         publishedAtResult,
         statusResult,
@@ -85,8 +85,8 @@ function statusCompare(item1, item2) {
 }
 
 function publishedAtCompare(item1, item2) {
-    let published1 = item1.get('publishedAt');
-    let published2 = item2.get('publishedAt');
+    let published1 = item1.get('publishedAtUTC');
+    let published2 = item2.get('publishedAtUTC');
 
     if (!published1 && !published2) {
         return 0;
@@ -112,7 +112,7 @@ export default Controller.extend({
     postListFocused: equal('keyboardFocus', 'postList'),
     postContentFocused: equal('keyboardFocus', 'postContent'),
 
-    sortedPosts: computed('model.@each.status', 'model.@each.publishedAt', 'model.@each.isNew', 'model.@each.updatedAt', function () {
+    sortedPosts: computed('model.@each.status', 'model.@each.publishedAtUTC', 'model.@each.isNew', 'model.@each.updatedAtUTC', function () {
         let postsArray = this.get('model').toArray();
 
         return postsArray.sort(comparator);

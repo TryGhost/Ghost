@@ -10,7 +10,10 @@ const {
 export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
     // settings for the EmbeddedRecordsMixin.
     attrs: {
-        tags: {embedded: 'always'}
+        tags: {embedded: 'always'},
+        publishedAtUTC: {key: 'published_at'},
+        createdAtUTC: {key: 'created_at'},
+        updatedAtUTC: {key: 'updated_at'}
     },
 
     normalize(model, hash, prop) {

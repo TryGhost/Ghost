@@ -24,14 +24,16 @@
                                         {{#if post.page}}
                                             <span class="page">Page</span>
                                         {{else}}
-                                            <time datetime="{{post.publishedAt}}" class="date published">{{gh-format-timeago post.publishedAt}}
+                                            <time datetime="{{post.publishedAtUTC}}" class="date published">
+                                                Published {{gh-format-timeago post.publishedAtUTC}}
                                             </time>
                                         {{/if}}
                                     {{else}}
                     					{{#if component.isScheduled}}
                     						<span class="scheduled">Scheduled</span>
                                             <span>&ndash;
-                                                <time datetime="{{post.publishedAt}}" class-="date scheduled">{{gh-format-time-scheduled post.publishedAt component.blogTimezone}}
+                                                <time datetime="{{post.publishedAtUTC}}" class-="date scheduled">
+                                                    {{gh-format-time-scheduled post.publishedAtUTC component.blogTimezone}}
                                                 </time>
                                             </span>
                     					{{else}}

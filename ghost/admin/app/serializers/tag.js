@@ -7,6 +7,11 @@ const {
 } = Ember;
 
 export default ApplicationSerializer.extend({
+    attrs: {
+        createdAtUTC: {key: 'created_at'},
+        updatedAtUTC: {key: 'updated_at'}
+    },
+
     serializeIntoHash(hash, type, record, options) {
         options = options || {};
         options.includeId = true;
