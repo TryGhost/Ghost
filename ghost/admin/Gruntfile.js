@@ -59,6 +59,14 @@ module.exports = function(grunt) {
         },
 
         shell: {
+            'npm-install': {
+                command: 'npm install'
+            },
+
+            'bower-install': {
+                command: 'bower install'
+            },
+
             csscombfix: {
                 command: path.resolve(cwd + '/node_modules/.bin/csscomb -c app/styles/csscomb.json -v app/styles')
             },
@@ -68,6 +76,10 @@ module.exports = function(grunt) {
             }
         }
     });
+
+    grunt.registerTask('init', 'Install the client dependencies',
+        ['shell:npm-install', 'shell:bower-install']
+    );
 
     grunt.registerTask('lint', 'Run the code style checks and linter',
         ['jshint', 'jscs', 'shell:csscomblint']
