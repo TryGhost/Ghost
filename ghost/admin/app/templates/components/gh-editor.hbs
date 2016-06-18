@@ -8,17 +8,20 @@
         <a class="markdown-help-icon" href="" title="Markdown Help" {{action (route-action "toggleMarkdownHelpModal")}}><i class="icon-markdown"></i></a>
     </header>
     <section id="entry-markdown-content" class="entry-markdown-content">
-        {{gh-ed-editor classNames="markdown-editor js-markdown-editor"
-                       tabindex="1"
-                       spellcheck="true"
-                       value=value
-                       setEditor=(action "setEditor")
-                       updateScrollInfo=(action "updateScrollInfo")
-                       toggleCopyHTMLModal=(action "toggleCopyHTMLModal")
-                       onFocusIn=editorFocused
-                       height=height
-                       focus=shouldFocusEditor
-                       readonly=editorDisabled}}
+        {{gh-ed-editor value
+            classNames="markdown-editor js-markdown-editor"
+            tabindex="1"
+            spellcheck="true"
+            value=value
+            setEditor=(action "setEditor")
+            updateScrollInfo=(action "updateScrollInfo")
+            toggleCopyHTMLModal=(action "toggleCopyHTMLModal")
+            onFocusIn=editorFocused
+            height=height
+            focus=shouldFocusEditor
+            readonly=editorDisabled
+            update=(action (mut value))
+        }}
     </section>
 </section>
 
