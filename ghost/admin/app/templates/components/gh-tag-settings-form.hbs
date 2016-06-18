@@ -17,20 +17,20 @@
         <form>
             {{#gh-form-group errors=tag.errors hasValidated=tag.hasValidated property="name"}}
                 <label for="tag-name">Name</label>
-                {{gh-input id="tag-name" name="name" type="text" value=scratchName focus-out=(action 'setProperty' 'name')}}
+                {{gh-input scratchName id="tag-name" name="name" type="text" focusOut=(action 'setProperty' 'name' scratchName) update=(action (mut scratchName))}}
                 {{gh-error-message errors=tag.errors property="name"}}
             {{/gh-form-group}}
 
             {{#gh-form-group errors=tag.errors hasValidated=tag.hasValidated property="slug"}}
                 <label for="tag-slug">URL</label>
-                {{gh-input id="tag-slug" name="slug" type="text" value=scratchSlug focus-out=(action 'setProperty' 'slug')}}
+                {{gh-input scratchSlug id="tag-slug" name="slug" type="text" focusOut=(action 'setProperty' 'slug' scratchSlug) update=(action (mut scratchSlug))}}
                 {{gh-url-preview prefix="tag" slug=scratchSlug tagName="p" classNames="description"}}
                 {{gh-error-message errors=activeTag.errors property="slug"}}
             {{/gh-form-group}}
 
             {{#gh-form-group errors=tag.errors hasValidated=tag.hasValidated property="description"}}
                 <label for="tag-description">Description</label>
-                {{gh-textarea id="tag-description" name="description" value=scratchDescription focus-out=(action 'setProperty' 'description')}}
+                {{gh-textarea scratchDescription id="tag-description" name="description" focusOut=(action 'setProperty' 'description' scratchDescription) update=(action (mut scratchDescription))}}
                 {{gh-error-message errors=tag.errors property="description"}}
                 <p>Maximum: <b>200</b> characters. You’ve used {{gh-count-down-characters scratchDescription 200}}</p>
             {{/gh-form-group}}
@@ -63,14 +63,14 @@
         <form>
             {{#gh-form-group errors=tag.errors hasValidated=tag.hasValidated property="metaTitle"}}
                 <label for="meta-title">Meta Title</label>
-                {{gh-input id="meta-title" name="metaTitle" type="text" value=scratchMetaTitle focus-out=(action 'setProperty' 'metaTitle')}}
+                {{gh-input scratchMetaTitle id="meta-title" name="metaTitle" type="text" focusOut=(action 'setProperty' 'metaTitle' scratchMetaTitle) update=(action (mut scratchMetaTitle))}}
                 {{gh-error-message errors=tag.errors property="metaTitle"}}
                 <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters scratchMetaTitle 70}}</p>
             {{/gh-form-group}}
 
             {{#gh-form-group errors=tag.errors hasValidated=tag.hasValidated property="metaDescription"}}
                 <label for="meta-description">Meta Description</label>
-                {{gh-textarea id="meta-description" name="metaDescription" value=scratchMetaDescription focus-out=(action 'setProperty' 'metaDescription')}}
+                {{gh-textarea scratchMetaDescription id="meta-description" name="metaDescription" focusOut=(action 'setProperty' 'metaDescription' scratchMetaDescription) update=(action (mut scratchMetaDescription))}}
                 {{gh-error-message errors=tag.errors property="metaDescription"}}
                 <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters scratchMetaDescription 156}}</p>
             {{/gh-form-group}}

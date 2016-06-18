@@ -1,12 +1,15 @@
 /* global CodeMirror */
 import Ember from 'ember';
+import boundOneWay from 'ghost-admin/utils/bound-one-way';
+import {InvokeActionMixin} from 'ember-invoke-action';
 
 const {Component, run} = Ember;
+const {bind} = run;
 
-export default Component.extend({
+const CmEditorComponent =  Component.extend(InvokeActionMixin, {
     classNameBindings: ['isFocused:focused'],
 
-    value: '', // make sure a value exists
+    _value: boundOneWay('value'), // make sure a value exists
     isFocused: false,
 
     // options for the editor
@@ -21,16 +24,16 @@ export default Component.extend({
         this._super(...arguments);
 
         let options = this.getProperties('lineNumbers', 'indentUnit', 'mode', 'theme');
-        let editor = new CodeMirror(this.get('element'), options);
+        let editor = new CodeMirror(this.element, options);
 
-        editor.getDoc().setValue(this.get('value'));
+        editor.getDoc().setValue(this.get('_value'));
 
         // events
-        editor.on('focus', run.bind(this, 'set', 'isFocused', true));
-        editor.on('blur', run.bind(this, 'set', 'isFocused', false));
+        editor.on('focus', bind(this, 'set', 'isFocused', true));
+        editor.on('blur', bind(this, 'set', 'isFocused', false));
         editor.on('change', () => {
             run(this, function () {
-                this.set('value', editor.getDoc().getValue());
+                this.invokeAction('update', editor.getDoc().getValue());
             });
         });
 
@@ -45,3 +48,9 @@ export default Component.extend({
         this._editor = null;
     }
 });
+
+CmEditorComponent.reopenClass({
+    positionalParams: ['value']
+});
+
+export default CmEditorComponent;

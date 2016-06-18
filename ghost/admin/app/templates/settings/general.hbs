@@ -12,14 +12,14 @@
 
                 {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="title"}}
                     <label for="blog-title">Blog Title</label>
-                    {{gh-input id="blog-title" class="gh-input" name="general[title]" type="text" value=model.title focusOut=(action "validate" "title" target=model)}}
+                    {{gh-input model.title id="blog-title" name="general[title]" type="text" focusOut=(action "validate" "title" target=model) update=(action (mut model.title))}}
                     {{gh-error-message errors=model.errors property="title"}}
                     <p>The name of your blog</p>
                 {{/gh-form-group}}
 
                 {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="description" class="description-container"}}
                     <label for="blog-description">Blog Description</label>
-                    {{gh-textarea id="blog-description" class="gh-input" name="general[description]" value=model.description focusOut=(action "validate" "description" target=model)}}
+                    {{gh-textarea model.description id="blog-description" name="general[description]" focusOut=(action "validate" "description" target=model) update=(action (mut model.description))}}
                     {{gh-error-message errors=model.errors property="description"}}
                     <p>
                         Describe what your blog is about
@@ -67,14 +67,14 @@
                 <div class="form-group">
                     <label for="postsPerPage">Posts per page</label>
                     {{! `pattern` brings up numeric keypad allowing any number of digits}}
-                    {{gh-input id="postsPerPage" class="gh-input" name="general[postsPerPage]" focus-out="checkPostsPerPage" value=model.postsPerPage min="1" max="1000" type="number" pattern="[0-9]*"}}
+                    {{gh-input model.postsPerPage id="postsPerPage" name="general[postsPerPage]" focus-out="checkPostsPerPage" min="1" max="1000" type="number" pattern="[0-9]*" update=(action (mut model.postsPerPage))}}
                     <p>How many posts should be displayed on each page</p>
                 </div>
 
                 <div class="form-group for-checkbox">
                     <label for="permalinks">Dated Permalinks</label>
                     <label class="checkbox" for="permalinks">
-                        {{input id="permalinks" class="gh-input" name="general[permalinks]" type="checkbox" checked=isDatedPermalinks}}
+                        {{one-way-checkbox isDatedPermalinks id="permalinks" class="gh-input" name="general[permalinks]" update=(action (mut isDatedPermalinks))}}
                         <span class="input-toggle-component"></span>
                         <p>Include the date in your post URLs</p>
                     </label>
@@ -132,8 +132,7 @@
                 <div class="form-group for-checkbox">
                     <label for="isPrivate">Make this blog private</label>
                     <label class="checkbox" for="isPrivate">
-                        {{input id="isPrivate" name="general[isPrivate]" type="checkbox"
-                        checked=model.isPrivate}}
+                        {{one-way-checkbox model.isPrivate id="isPrivate" name="general[isPrivate]" type="checkbox" update=(action (mut model.isPrivate))}}
                         <span class="input-toggle-component"></span>
                         <p>Enable password protection</p>
                     </label>
@@ -141,7 +140,7 @@
 
                 {{#if model.isPrivate}}
                     {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="password"}}
-                        {{gh-input name="general[password]" type="text" value=model.password focusOut=(action "validate" "password" target=model)}}
+                        {{gh-input model.password name="general[password]" type="text" focusOut=(action "validate" "password" target=model) update=(action (mut model.password))}}
                         {{gh-error-message errors=model.errors property="password"}}
                         <p>This password will be needed to access your blog. All search engine optimization and social features are now disabled. This password is stored in plaintext.</p>
                     {{/gh-form-group}}

@@ -1,7 +1,7 @@
 <section class="gh-view">
     <header class="view-header">
         {{#gh-view-title classNames="gh-editor-title" openMobileMenu="openMobileMenu"}}
-            {{gh-trim-focus-input type="text" id="entry-title" placeholder="Your Post Title" value=model.titleScratch tabindex="1" focus=shouldFocusTitle focus-out="updateTitle" }}
+            {{gh-trim-focus-input model.titleScratch type="text" id="entry-title" placeholder="Your Post Title" tabindex="1" focus=shouldFocusTitle focus-out="updateTitle" update=(action (mut model.titleScratch))}}
         {{/gh-view-title}}
         {{#if scheduleCountdown}}
             <time datetime="{{post.publishedAtUTC}}" class="gh-notification gh-notification-schedule">

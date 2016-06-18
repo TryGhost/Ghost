@@ -16,13 +16,13 @@
                 <div class="form-group settings-code">
                     <label for="ghost-head">Blog Header</label>
                     <p>Code here will be injected into the <code>\{{ghost_head}}</code> tag on every page of your blog</p>
-                    {{gh-cm-editor id="ghost-head" class="gh-input settings-code-editor" name="codeInjection[ghost_head]" type="text" value=model.ghost_head}}
+                    {{gh-cm-editor model.ghost_head id="ghost-head" class="gh-input settings-code-editor" name="codeInjection[ghost_head]" type="text" update=(action (mut model.ghost_head))}}
                 </div>
 
                 <div class="form-group settings-code">
                     <label for="ghost-foot">Blog Footer</label>
                     <p>Code here will be injected into the <code>\{{ghost_foot}}</code> tag on every page of your blog</p>
-                    {{gh-cm-editor id="ghost-foot" class="gh-input settings-code-editor" name="codeInjection[ghost_foot]" type="text" value=model.ghost_foot}}
+                    {{gh-cm-editor model.ghost_foot id="ghost-foot" class="gh-input settings-code-editor" name="codeInjection[ghost_foot]" type="text" update=(action (mut model.ghost_foot))}}
                 </div>
             </fieldset>
         </form>
