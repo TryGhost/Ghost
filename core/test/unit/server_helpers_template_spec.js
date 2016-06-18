@@ -1,4 +1,3 @@
-/*globals describe, it*/
 var should    = require('should'),
     hbs = require('express-hbs'),
 

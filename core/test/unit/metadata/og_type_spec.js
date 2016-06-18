@@ -1,4 +1,3 @@
-/*globals describe, it*/
 var getOgType = require('../../../server/data/meta/og_type'),
     should = require('should');
 

@@ -1,4 +1,3 @@
-/*global describe, it, before, after */
 // # Api Route tests
 // As it stands, these tests depend on the database, and as such are integration tests.
 // Mocking out the models to not touch the DB would turn these into unit tests, and should probably be done in future,

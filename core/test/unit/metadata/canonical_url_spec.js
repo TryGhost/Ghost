@@ -1,4 +1,3 @@
-/*globals describe, it*/
 var getCanonicalUrl = require('../../../server/data/meta/canonical_url');
 
 describe('getCanonicalUrl', function () {

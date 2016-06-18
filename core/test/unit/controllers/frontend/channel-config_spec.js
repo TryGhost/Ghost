@@ -1,4 +1,3 @@
-/*globals describe, it*/
 /*jshint expr:true*/
 var should   = require('should'),
     channelConfig = require('../../../../server/controllers/frontend/channel-config').get;

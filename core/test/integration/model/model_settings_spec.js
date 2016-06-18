@@ -1,4 +1,3 @@
-/*globals describe, before, beforeEach, afterEach, it*/
 var testUtils       = require('../../utils'),
     should          = require('should'),
     sinon           = require('sinon'),

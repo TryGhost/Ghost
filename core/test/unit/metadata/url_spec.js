@@ -1,4 +1,3 @@
-/*globals describe, it*/
 var getUrl = require('../../../server/data/meta/url');
 
 describe('getUrl', function () {

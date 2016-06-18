@@ -1,4 +1,3 @@
-/*globals describe, it*/
 var getSchema = require('../../../server/data/meta/schema'),
     should = require('should');
 

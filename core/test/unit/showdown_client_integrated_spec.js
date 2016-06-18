@@ -4,7 +4,6 @@
  * Ensures that the final output from showdown + client extensions is as expected
  */
 
-/*globals describe, it */
 var should      = require('should'),
 
     // Stuff we are testing

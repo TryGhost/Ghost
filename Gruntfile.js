@@ -95,7 +95,7 @@ var _              = require('lodash'),
             // more information.
             jshint: {
                 options: {
-                    jshintrc: true
+                    jshintrc: '.jshintrc'
                 },
 
                 server: [

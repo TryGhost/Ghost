@@ -1,4 +1,3 @@
-/*globals describe, it*/
 var getExcerpt = require('../../../server/data/meta/excerpt');
 
 describe('getExcerpt', function () {
