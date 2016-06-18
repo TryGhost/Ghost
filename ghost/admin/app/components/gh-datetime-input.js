@@ -1,8 +1,7 @@
 import Ember from 'ember';
-import TextInputMixin from 'ghost-admin/mixins/text-input';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import {formatDate} from 'ghost-admin/utils/date-formatting';
-import {invokeAction} from 'ember-invoke-action';
+import {InvokeActionMixin} from 'ember-invoke-action';
 
 const {
     Component,
@@ -10,7 +9,7 @@ const {
     inject: {service}
 } = Ember;
 
-export default Component.extend(TextInputMixin, {
+export default Component.extend(InvokeActionMixin, {
     tagName: 'span',
     classNames: 'input-icon icon-calendar',
 
@@ -38,6 +37,6 @@ export default Component.extend(TextInputMixin, {
     focusOut() {
         let datetime = this.get('datetime');
 
-        invokeAction(this, 'update', datetime);
+        this.invokeAction('update', datetime);
     }
 });

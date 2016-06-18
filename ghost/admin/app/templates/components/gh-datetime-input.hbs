@@ -1,5 +1,7 @@
-{{gh-input value=datetime
-           id=inputId
-           class=inputClass
-           name=inputName
-           stopEnterKeyDownPropagation="true"}}
+{{gh-input datetime
+    id=inputId
+    class=inputClass
+    name=inputName
+    stopEnterKeyDownPropagation="true"
+    update=(action (mut datetime))
+}}
