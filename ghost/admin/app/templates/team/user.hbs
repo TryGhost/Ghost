@@ -79,7 +79,7 @@
 
                 {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="name" class="first-form-group"}}
                     <label for="user-name">Full Name</label>
-                    {{input value=user.name id="user-name" class="gh-input user-name" placeholder="Full Name" autocorrect="off" focusOut=(action "validate" "name" target=user)}}
+                    {{gh-input user.name id="user-name" class="user-name" placeholder="Full Name" autocorrect="off" focusOut=(action "validate" "name" target=user) update=(action (mut user.name))}}
                     {{#if user.errors.name}}
                         {{gh-error-message errors=user.errors property="name"}}
                     {{else}}
@@ -93,7 +93,7 @@
 
                 {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="slug"}}
                     <label for="user-slug">Slug</label>
-                    {{gh-input class="gh-input user-name" id="user-slug" value=slugValue name="user" focus-out="updateSlug" placeholder="Slug" selectOnClick="true" autocorrect="off"}}
+                    {{gh-input slugValue class="user-name" id="user-slug" name="user" focusOut=(action "updateSlug" slugValue) placeholder="Slug" selectOnClick="true" autocorrect="off" update=(action (mut slugValue))}}
                     <p>{{gh-blog-url}}/author/{{slugValue}}</p>
                     {{gh-error-message errors=user.errors property="slug"}}
                 {{/gh-form-group}}
@@ -102,7 +102,7 @@
                     <label for="user-email">Email</label>
                     {{!-- Administrators only see text of Owner's email address but not input --}}
                     {{#unless isAdminUserOnOwnerProfile}}
-                        {{input type="email" value=user.email id="user-email" name="email" class="gh-input" placeholder="Email Address" autocapitalize="off" autocorrect="off" autocomplete="off" focusOut=(action "validate" "email" target=user)}}
+                        {{gh-input user.email type="email" id="user-email" name="email" placeholder="Email Address" autocapitalize="off" autocorrect="off" autocomplete="off" focusOut=(action "validate" "email" target=user) update=(action (mut user.email))}}
                         {{gh-error-message errors=user.errors property="email"}}
                     {{else}}
                         <span>{{user.email}}</span>
@@ -128,14 +128,14 @@
 
                 {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="location"}}
                     <label for="user-location">Location</label>
-                    {{input type="text" value=user.location id="user-location" class="gh-input" focusOut=(action "validate" "location" target=user)}}
+                    {{gh-input user.location type="text" id="user-location" focusOut=(action "validate" "location" target=user) update=(action (mut user.location))}}
                     {{gh-error-message errors=user.errors property="location"}}
                     <p>Where in the world do you live?</p>
                 {{/gh-form-group}}
 
                 {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="website"}}
                     <label for="user-website">Website</label>
-                    {{input type="url" value=user.website id="user-website" class="gh-input" autocapitalize="off" autocorrect="off" autocomplete="off" focusOut=(action "validate" "website" target=user)}}
+                    {{gh-input user.website type="url" id="user-website" autocapitalize="off" autocorrect="off" autocomplete="off" focusOut=(action "validate" "website" target=user) update=(action (mut user.website))}}
                     {{gh-error-message errors=user.errors property="website"}}
                     <p>Have a website or blog other than this one? Link it!</p>
                 {{/gh-form-group}}
@@ -156,7 +156,7 @@
 
                 {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="bio" class="bio-container"}}
                     <label for="user-bio">Bio</label>
-                    {{textarea id="user-bio" class="gh-input" value=user.bio focusOut=(action "validate" "bio" target=user)}}
+                    {{gh-textarea user.bio id="user-bio" focusOut=(action "validate" "bio" target=user) update=(action (mut user.bio))}}
                     {{gh-error-message errors=user.errors property="bio"}}
                     <p>
                         Write about you, in 200 characters or less.
@@ -173,23 +173,23 @@
                     {{#unless isNotOwnProfile}}
                     <div class="form-group">
                         <label for="user-password-old">Old Password</label>
-                        {{input value=user.password type="password" id="user-password-old" class="gh-input"}}
+                        {{gh-input user.password type="password" id="user-password-old" update=(action (mut user.password))}}
                     </div>
                     {{/unless}}
 
                     <div class="form-group">
                         <label for="user-password-new">New Password</label>
-                        {{input value=user.newPassword type="password" id="user-password-new" class="gh-input"}}
+                        {{gh-input user.newPassword type="password" id="user-password-new" update=(action (mut user.newPassword))}}
                     </div>
 
                     <div class="form-group">
                         <label for="user-new-password-verification">Verify Password</label>
-                        {{input value=user.ne2Password type="password" id="user-new-password-verification" class="gh-input"}}
+                        {{gh-input user.ne2Password type="password" id="user-new-password-verification" update=(action (mut user.ne2Password))}}
                     </div>
+
                     <div class="form-group">
                         <button type="button" class="btn btn-red button-change-password" {{action "password"}}>Change Password</button>
                     </div>
-
                 </fieldset>
             {{/unless}}
         </form>

@@ -1,8 +1,6 @@
-import Ember from 'ember';
+import OneWayInput from 'ember-one-way-controls/components/one-way-input';
 import TextInputMixin from 'ghost-admin/mixins/text-input';
 
-const {TextField} = Ember;
-
-export default TextField.extend(TextInputMixin, {
+export default OneWayInput.extend(TextInputMixin, {
     classNames: 'gh-input'
 });

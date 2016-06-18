@@ -26,7 +26,7 @@
     {{else}}
         {{!-- URL input --}}
         <form class="url-form">
-            {{one-way-input class="url gh-input" placeholder="http://" value=url update=(action "onInput") onenter=(action "saveUrl")}}
+            {{gh-input url class="url" placeholder="http://" update=(action "onInput") onenter=(action "saveUrl")}}
             {{#if saveButton}}
                 <button class="btn btn-blue gh-input" {{action 'saveUrl'}}>Save</button>
             {{else}}
