@@ -232,9 +232,6 @@ var _              = require('lodash'),
                 ember: {
                     command: function (mode) {
                         switch (mode) {
-                            case 'init':
-                                return 'echo Installing client dependencies... && npm install && bower install';
-
                             case 'prod':
                                 return emberPath + ' build --environment=production --silent';
 
@@ -347,6 +344,10 @@ var _              = require('lodash'),
             // ### grunt-subgrunt
             // Run grunt tasks in submodule Gruntfiles
             subgrunt: {
+                init: {
+                    'core/client': 'init'
+                },
+
                 lint: {
                     'core/client': 'lint'
                 }
@@ -769,7 +770,7 @@ var _              = require('lodash'),
         // `bower` does have some quirks, such as not running as root. If you have problems please try running
         // `grunt init --verbose` to see if there are any errors.
         grunt.registerTask('init', 'Prepare the project for development',
-            ['update_submodules', 'shell:ember:init', 'assets', 'default']);
+            ['update_submodules', 'subgrunt:init', 'assets', 'default']);
 
         // ### Basic Asset Building
         // Builds and moves necessary client assets. Prod additionally builds the ember app.
