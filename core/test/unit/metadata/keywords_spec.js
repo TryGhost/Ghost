@@ -1,4 +1,3 @@
-/*globals describe, it*/
 var getKeywords = require('../../../server/data/meta/keywords'),
     should = require('should');
 

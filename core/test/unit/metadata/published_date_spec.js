@@ -1,4 +1,3 @@
-/*globals describe, it*/
 var getPublishedDate = require('../../../server/data/meta/published_date'),
     should = require('should');
 

@@ -1,4 +1,3 @@
-/*globals describe, before, beforeEach, it*/
 var should         = require('should'),
     hbs            = require('express-hbs'),
     utils          = require('./utils'),

@@ -1,4 +1,3 @@
-/*globals describe, beforeEach, afterEach, it*/
 var moment   = require('moment'),
     should   = require('should'),
     sinon    = require('sinon'),

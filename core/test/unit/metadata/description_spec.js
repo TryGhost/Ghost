@@ -1,4 +1,3 @@
-/*globals describe, it*/
 var getMetaDescription = require('../../../server/data/meta/description');
 
 describe('getMetaDescription', function () {
