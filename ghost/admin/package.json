@@ -24,7 +24,7 @@
     "node": ">= 0.10.0"
   },
   "devDependencies": {
-    "broccoli-asset-rev": "2.4.2",
+    "broccoli-asset-rev": "2.4.3",
     "csscomb": "3.1.8",
     "ember-ajax": "2.4.1",
     "ember-cli": "2.6.1",
