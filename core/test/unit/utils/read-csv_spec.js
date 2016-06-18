@@ -1,4 +1,3 @@
-/*globals describe, it*/
 
 var utils = require('../../../server/utils'),
     should = require('should'),

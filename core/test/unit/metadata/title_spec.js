@@ -1,4 +1,3 @@
-/*globals describe, it*/
 var getTitle = require('../../../server/data/meta/title'),
     config = require('../../../server/config');
 

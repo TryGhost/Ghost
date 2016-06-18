@@ -1,4 +1,3 @@
-/*globals describe, before, after, it */
 var testUtils = require('../../utils'),
     should    = require('should'),
     _         = require('lodash'),

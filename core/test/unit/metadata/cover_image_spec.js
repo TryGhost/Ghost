@@ -1,4 +1,3 @@
-/*globals describe, it*/
 var getCoverImage = require('../../../server/data/meta/cover_image'),
     should = require('should');
 

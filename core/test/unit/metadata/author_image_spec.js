@@ -1,4 +1,3 @@
-/*globals describe, it*/
 var getAuthorImage = require('../../../server/data/meta/author_image'),
     should = require('should'),
     config = require('../../../server/config');

@@ -1,4 +1,3 @@
-/*globals describe, it, before, after */
 var should          = require('should'),
     getContextObject = require('../../../server/data/meta/context_object.js'),
     configUtils     = require('../../utils/configUtils');

@@ -1,4 +1,3 @@
-/*globals describe, before, after, beforeEach, afterEach, it*/
 var fs              = require('fs-extra'),
     moment          = require('moment'),
     path            = require('path'),
