@@ -6,7 +6,7 @@
 
 <div class="gh-blognav-line">
     {{#gh-validation-status-container tagName="span" class="gh-blognav-label" errors=navItem.errors property="label" hasValidated=navItem.hasValidated}}
-        {{gh-trim-focus-input navItem.label focus=navItem.last placeholder="Label" keyPress=(action "clearLabelErrors") update=(action (mut navItem.label))}}
+        {{gh-trim-focus-input navItem.label shouldFocus=navItem.last placeholder="Label" keyPress=(action "clearLabelErrors") update=(action (mut navItem.label))}}
         {{gh-error-message errors=navItem.errors property="label"}}
     {{/gh-validation-status-container}}
     {{#gh-validation-status-container tagName="span" class="gh-blognav-url" errors=navItem.errors property="url" hasValidated=navItem.hasValidated}}
