@@ -104,7 +104,7 @@ function createUrl(urlPath, absolute, secure) {
 function urlPathForPost(post) {
     var output = '',
         permalinks = ghostConfig.theme.permalinks,
-        publishedAtMoment = moment.tz(post.published_at, ghostConfig.theme.timezone),
+        publishedAtMoment = moment.tz(post.published_at || Date.now(), ghostConfig.theme.timezone),
         tags = {
             year:   function () { return publishedAtMoment.format('YYYY'); },
             month:  function () { return publishedAtMoment.format('MM'); },
