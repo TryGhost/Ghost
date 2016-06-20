@@ -28,13 +28,13 @@ describeComponent(
 
         it('does not have the autofocus attribute if not set to focus', function () {
             this.set('text', 'some text');
-            this.render(hbs`{{gh-trim-focus-input text focus=false}}`);
+            this.render(hbs`{{gh-trim-focus-input text shouldFocus=false}}`);
             expect(this.$('.gh-input').attr('autofocus')).to.not.be.ok;
         });
 
         it('has the autofocus attribute if set to focus', function () {
             this.set('text', 'some text');
-            this.render(hbs`{{gh-trim-focus-input text focus=true}}`);
+            this.render(hbs`{{gh-trim-focus-input text shouldFocus=true}}`);
             expect(this.$('.gh-input').attr('autofocus')).to.be.ok;
         });
     }
