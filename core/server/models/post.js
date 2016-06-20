@@ -551,7 +551,7 @@ Post = ghostBookshelf.Model.extend({
 
         return ghostBookshelf.Model.findOne.call(this, data, options).then(function then(post) {
             if ((withNext || withPrev) && post && !post.page) {
-                var publishedAt = post.get('published_at'),
+                var publishedAt = moment(post.get('published_at')).format('YYYY-MM-DD HH:mm:ss'),
                     prev,
                     next;
 
