@@ -1,6 +1,7 @@
 var should         = require('should'),
     sinon          = require('sinon'),
     Promise        = require('bluebird'),
+    moment         = require('moment'),
     path           = require('path'),
     fs             = require('fs'),
     _              = require('lodash'),
@@ -452,6 +453,20 @@ describe('Config', function () {
                     postLink = '/2016/3/joe-blog/';
 
                 testData.published_at = new Date('2016-01-01T00:00:00.000Z');
+                config.urlPathForPost(testData).should.equal(postLink);
+            });
+
+            it('post is not published yet', function () {
+                config.theme.permalinks = '/:year/:month/:day/:slug/';
+
+                var testData = _.merge(testUtils.DataGenerator.Content.posts[2], {id: 3, published_at: null}),
+                    nowMoment = moment(),
+                    postLink = '/YYYY/MM/DD/short-and-sweet/';
+
+                postLink = postLink.replace('YYYY', nowMoment.format('YYYY'));
+                postLink = postLink.replace('MM', nowMoment.format('MM'));
+                postLink = postLink.replace('DD', nowMoment.format('DD'));
+
                 config.urlPathForPost(testData).should.equal(postLink);
             });
         });
