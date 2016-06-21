@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "bcryptjs": "2.3.0",
-    "bluebird": "3.4.0",
+    "bluebird": "3.4.1",
     "body-parser": "1.15.1",
     "bookshelf": "0.9.5",
     "chalk": "1.1.3",
