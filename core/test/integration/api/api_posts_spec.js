@@ -1,14 +1,40 @@
-var testUtils     = require('../../utils'),
+var Promise       = require('bluebird'),
     should        = require('should'),
     _             = require('lodash'),
+    testUtils     = require('../../utils'),
     errors        = require('../../../server/errors'),
+    db            = require('../../../server/data/db'),
+    models        = require('../../../server/models'),
     PostAPI       = require('../../../server/api/posts');
 
 describe('Post API', function () {
-    // Keep the DB clean
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
-    beforeEach(testUtils.setup('users:roles', 'perms:post', 'posts', 'perms:init'));
+    beforeEach(testUtils.setup('users:roles', 'perms:post', 'perms:init'));
+
+    // @TODO: remove when https://github.com/TryGhost/Ghost/issues/6930 is fixed
+    // we insert the posts via the model layer, because right now the test utils insert dates wrong
+    beforeEach(function (done) {
+        Promise.mapSeries(testUtils.DataGenerator.forKnex.posts, function (post) {
+            return models.Post.add(post, {context: {internal:true}});
+        }).then(function () {
+            done();
+        }).catch(done);
+    });
+    beforeEach(function (done) {
+        Promise.mapSeries(testUtils.DataGenerator.forKnex.tags, function (tag) {
+            return models.Tag.add(tag, {context: {internal:true}});
+        }).then(function () {
+            done();
+        }).catch(done);
+    });
+    beforeEach(function (done) {
+        db.knex('posts_tags').insert(testUtils.DataGenerator.forKnex.posts_tags)
+            .then(function () {
+                done();
+            })
+            .catch(done);
+    });
 
     function extractFirstPost(posts) {
         return _.filter(posts, {id: 1})[0];
