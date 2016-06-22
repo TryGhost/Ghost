@@ -23,7 +23,7 @@ env:
     - DB=pg NODE_ENV=testing-pg
 matrix:
   include:
-    - node_js: "0.10"
+    - node_js: "0.12"
       env: TEST_SUITE=lint
 before_install:
   - if [ $DB == "mysql" ]; then mysql -e 'create database ghost_testing'; fi
