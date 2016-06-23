@@ -109,7 +109,8 @@ function updateCheckRequest() {
         reqData = JSON.stringify(reqData);
 
         headers = {
-            'Content-Length': reqData.length
+            "Content-Type": "application/json",
+            "Content-Length": Buffer.byteLength(reqData)
         };
 
         return new Promise(function p(resolve, reject) {
@@ -162,7 +163,7 @@ function updateCheckResponse(response) {
             internal
         ),
         api.settings.edit(
-            {settings: [{key: 'displayUpdateNotification', value: response.version}]},
+            {settings: [{key: 'displayUpdateNotification', value: response.release.name}]},
             internal
         )
     );
