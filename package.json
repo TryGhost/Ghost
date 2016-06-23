@@ -95,7 +95,7 @@
     "grunt-shell": "1.3.0",
     "grunt-subgrunt": "1.2.0",
     "grunt-update-submodules": "0.4.1",
-    "istanbul": "0.4.3",
+    "istanbul": "0.4.4",
     "matchdep": "1.0.1",
     "mocha": "2.5.3",
     "nock": "8.0.0",
