@@ -23,9 +23,33 @@ date = function (date, options) {
     // ensure that context is undefined, not null, as that can cause errors
     date = date === null ? undefined : date;
 
+    var convertToStr = function(context) {
+        var diff = moment(context).diff(moment(), "days");
+        if (diff < -6) {
+            return moment(context).format("YYYY年MM月DD日");
+        } else if (diff < -2) {
+            return moment(context).format("dddd");
+        } else if (diff < -1) {
+            return "一昨日";
+        } else if (diff < 0) {
+            return "昨日";
+        } else if (diff < 1) {
+            return moment(context).fromNow();
+        } else if (diff < 2) {
+            return "明日";
+        } else if (diff < 3) {
+            return "明後日";
+        } else {
+            return moment(context).format("YYYY年MM月DD日");
+        }
+    };
+
     var f = options.hash.format || 'MMM DD, YYYY',
         timeago = options.hash.timeago,
-        timeNow = moment().tz(timezone);
+        timeNow = moment().tz(timezone),
+        lang = options.hash.lang || "en";
+
+    moment.locale(lang);
 
     if (timeago) {
         date = timezone ?  moment(date).tz(timezone).from(timeNow) : moment(date).fromNow();

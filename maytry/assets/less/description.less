@@ -1,0 +1,118 @@
+/* ------------ Description ------------ */
+
+.blog-description {
+  position: relative;
+  text-align: center;
+  //background: @border-color;
+  background: @mt-theme-color;
+  color: white;
+  padding: 5px 10px 0;
+
+  h1 {
+    color: white;
+  }
+
+  .post-title {
+    margin: 5px;
+  }
+
+  // 記事ページのトップのステータス欄
+  .post-status {
+    position: relative;
+    bottom: 0;
+    margin-left: 25px;
+    font-size: 16px;
+    text-align: left;
+    z-index: 2;
+
+    .post-edit-history {
+      margin-bottom: 10px;
+
+      a {
+        color: white;
+      }
+    }
+  }
+
+  .author-bio {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .website-link {
+    color: #00FFF4;
+    &:hover {
+      color: @link-hover-font-color;
+      text-decoration: underline;
+    }
+    &:focus {
+      color: @link-hover-font-color;
+      text-decoration: none;
+      outline: none;
+      border: 0;
+    }
+  }
+}
+
+.blog-description-non-bg {
+  position: relative;
+  text-align: center;
+  color: white;
+
+  .post-title {
+    margin: 5px;
+  }
+
+  // 記事ページのトップのステータス欄
+  .post-status {
+    position: relative;
+    bottom: 0;
+    margin: 10px 5px 0;
+    font-size: 14px;
+    text-align: left;
+    z-index: 2;
+
+    .post-edit-history {
+      a {
+        color: white;
+      }
+    }
+  }
+}
+
+.tag-description {
+  position: relative;
+  padding: 30px 15px;
+  background: @border-color;
+
+  &:after {
+    &:extend(.blog-description:after);
+  }
+
+  p {
+    font-weight: 100;
+    margin-bottom: 0;
+    text-align: center;
+    font-size: 24px;
+  }
+}
+
+@media only screen and (max-width: 767px) {
+
+  .tag-description {
+    background: white;
+
+    &:after {
+      bottom: 100%;
+      border-width: 0;
+      margin-left: 0;
+    }
+
+    p {
+      font-weight: 100;
+      margin-bottom: 0;
+      text-align: center;
+      font-size: 16px;
+    }
+  }
+}

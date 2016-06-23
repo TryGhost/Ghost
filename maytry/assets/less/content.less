@@ -1,0 +1,356 @@
+/* ------------ Content ------------ */
+
+.content-container {
+  margin: 0 auto;
+  padding-top: 10px;
+  width: 100%;
+  max-width: @container-width;
+}
+
+.blog-container {
+  width: 100%;
+
+  &.full_post {
+    padding-left: 98px;
+
+    .word_counts {
+      h1, h2 {
+        padding-top: 100px;
+        margin-top: -100px;
+
+        &:not(:first-child) {
+          margin-top: -80px;
+        }
+      }
+
+      h3 {
+        padding-top: 90px;
+        margin-top: -90px;
+
+        &:not(:first-child) {
+          margin-top: -80px;
+        }
+      }
+    }
+  }
+
+  p,
+  ul li,
+  ol li {
+    font-weight: 500;
+  }
+
+  .time_min {
+    text-transform: uppercase;
+    text-align: right;
+
+    span.words {
+      color: @emphasis-color;
+    }
+  }
+
+  .article-status {
+    top: -20px;
+  }
+
+  .left-column {
+    float: left;
+    min-width: 320px;
+  }
+
+  .center-column {
+    float: left;
+    min-width: 840px;
+  }
+
+  .right-column {
+    float: left;
+    min-width: 320px;
+  }
+}
+
+.blog-content {
+  background: @background-color;
+  margin: 5px;
+  padding: 15px;
+  border-left: 1px solid @border-color;
+  border-right: 1px solid @border-color;
+          border-radius: 10px; /* CSS3草案 */
+  -webkit-border-radius: 10px; /* Safari,Google Chrome用 */
+     -moz-border-radius: 10px; /* Firefox用 */
+
+  .word_counts {
+    ul {
+      margin: 10px 20px;
+
+      li {
+        list-style-type: disc;
+      }
+    }
+
+    h2 {
+      font-size: 34px;
+      border-bottom: 1px solid @emphasis-color;
+    }
+
+    h3 {
+      font-size: 24px;
+      margin-top: 20px;
+      margin-bottom: 6px;
+      border-bottom: 1px solid @emphasis-color;
+    }
+
+    h4 {
+      font-size: 20px;
+      margin: 24px 0 4px;
+    }
+
+    img {
+      display: block;
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+  }
+
+  .post-status {
+    .author {
+      float: left;
+
+      img {
+        width: 25px;
+        height: 25px;
+      }
+    }
+
+    .published_date {
+      float: left;
+
+      >span {
+        position: relative;
+        top: 5px;
+      }
+    }
+
+    .time_min {
+      >span {
+        position: relative;
+        top: 5px;
+      }
+    }
+  }
+
+  .post-title {
+    margin: 0;
+    padding: 0;
+    clear: both;
+
+    h2 {
+      font-size: 30px;
+      font-weight: 900;
+      line-height: 1.4;
+
+      a {
+        color: @font-color;
+
+        &:hover {
+          text-decoration: none
+        }
+      }
+    }
+  }
+
+  p {
+    margin: 0;
+  }
+
+  ul li,
+  ol li {
+    font-size: 16px;
+  }
+
+  .read-more {
+    text-align: right;
+  }
+}
+
+/* Overline From Center */
+.overlay-effect {
+  display: inline-block;
+  vertical-align: middle;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -moz-osx-font-smoothing: grayscale;
+  position: relative;
+  overflow: hidden;
+
+  &:before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    left: 50%;
+    right: 50%;
+    bottom: 0;
+    background: @emphasis-color;
+    height: 1px;
+    -webkit-transition-property: left, right;
+    transition-property: left, right;
+    -webkit-transition-duration: 0.3s;
+    transition-duration: 0.3s;
+    -webkit-transition-timing-function: ease-out;
+    transition-timing-function: ease-out;
+  }
+
+  &:hover:before, &:focus:before, &:active:before {
+    left: 0;
+    right: 0;
+  }
+}
+
+
+@media only screen and (max-width: 1200px) {
+  .content-container {
+    max-width: 920px;
+  }
+}
+
+@media only screen and (max-width: 919px) {
+  p.year_month {
+    text-align: left;
+    margin-left: 25px;
+    margin-right: 0;
+  }
+
+  .content-container {
+    max-width: 768px;
+
+    .medium-10 {
+      width: 100%;
+
+      .blog-content {
+        background: @background-color;
+        border-radius: 10px;        /* CSS3草案 */
+        -webkit-border-radius: 10px;    /* Safari,Google Chrome用 */
+        -moz-border-radius: 10px;   /* Firefox用 */
+
+        .post-title h2 {
+          font-size: 25px;
+        }
+      }
+    }
+  }
+
+  .social-links li {
+    margin: 0 2px;
+  }
+
+  blockquote:not([class]) p {
+    font-size: 17px;
+    line-height: 26px;
+  }
+
+  #share {
+    margin: 20px 0 0 25px;
+
+    .jssocials-share {
+      float: left;
+      display: block;
+      clear: none;
+      margin: 0 3px;
+    }
+  }
+}
+
+@media only screen and (max-width: 767px) {
+  .content-container {
+    &.home-container {
+      padding: 5px 10px;
+    }
+
+    .blog-container.full_post {
+      .word_counts {
+        h1, h2 {
+          padding-top: 20px;
+          margin-top: -20px;
+
+          &:not(:first-child) {
+            margin-top: 0;
+          }
+        }
+
+        h3 {
+          padding-top: 10px;
+          margin-top: -10px;
+
+          &:not(:first-child) {
+            margin-top: 0;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 640px) {
+  .content-container {
+    min-width: 320px;  // iPhone5
+    padding-top: 5px;
+
+    .blog-container {
+      &.full_post {
+        padding: 0;
+      }
+
+      .blog-content {
+        .post-title h2 {
+          font-size: 22px;
+          line-height: 1.3;
+        }
+      }
+    }
+  }
+}
+
+/* ------------ Comments ------------ */
+
+.comment {
+  width: 100% !important;
+  background: white;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  -webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+blockquote:not([class]) {
+  background: rgba(0, 0, 0, 0) url("../images/quote-left.png") no-repeat scroll left top;
+  border: 0 none;
+  margin: 25px 0;
+  padding: 20px 50px;
+  position: relative;
+  text-align: center;
+
+  &::after {
+    background: rgba(0, 0, 0, 0) url("../images/quote-right.png") no-repeat scroll right bottom;
+    bottom: 0;
+    content: "";
+    display: block;
+    height: 44px;
+    position: absolute;
+    right: 0;
+    width: 60px;
+  }
+
+  p {
+    border-bottom: 1px solid;
+    display: inline;
+    margin: 0;
+    padding-bottom: 2px;
+    font-size: 22px;
+    line-height: 36px;
+    font-weight: 100;
+  }
+}
