@@ -1,0 +1,186 @@
+/* ------------ Header ------------ */
+
+.slicknav_menu {
+  background: @mt-theme-color;
+
+  .slicknav_btn {
+    background: #25254E;
+  }
+}
+
+/* ------------ Navigation ------------ */
+
+.mobile-nav {
+  .main-nav {
+    display: none;
+    ul#menu {
+      float: none;
+      li {
+        padding: 0;
+        font-size: 16px;
+      }
+    }
+  }
+}
+
+.header {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  position: fixed;
+  z-index: 99;
+  color: white;
+
+  .main-nav {
+    width: 100%;
+
+    &.no-opacity {
+      background: rgba(0, 0, 0, 1);
+    }
+  }
+
+  &.full-width {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+}
+
+.row {
+  &.topbar {
+    max-width: 1170px;
+    transition: all 0.4s ease;
+    -moz-transition: all 0.4s ease;
+    -webkit-transition: all 0.4s ease;
+    -o-transition: all 0.4s ease;
+  }
+
+  &.multi-col {
+    max-width: 100%;
+    transition: all 0.4s ease;
+    -moz-transition: all 0.4s ease;
+    -webkit-transition: all 0.4s ease;
+    -o-transition: all 0.4s ease;
+  }
+}
+
+.header-area {
+  padding-top: 80px;
+}
+
+.logo {
+  text-align: center;
+
+  &.left-side {
+    text-align: left;
+  }
+
+  a {
+    color: white;
+
+    &:hover {
+      text-decoration: none
+    }
+  }
+
+  h1 {
+    font-size: 34px;
+  }
+
+  img {
+    max-height: 70px;
+    width: auto;
+  }
+}
+
+/*** Superfish Essential Styles ***/
+ul#menu {
+  display: table;
+  float: right;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+
+  li {
+    float: left;
+    padding: 10px;
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 1px;
+
+    a {
+      color: white;
+      padding: 9px;
+
+      &:hover {
+        text-decoration: none
+      }
+    }
+  }
+}
+
+.hover-effect {
+  display: inline-block;
+  vertical-align: middle;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -moz-osx-font-smoothing: grayscale;
+  position: relative;
+  overflow: hidden;
+
+  &:before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    left: 100%;
+    right: 0;
+    top: 0;
+    background: @emphasis-color;
+    height: 1px;
+    -webkit-transition-property: left;
+    transition-property: left;
+    -webkit-transition-duration: 0.3s;
+    transition-duration: 0.3s;
+    -webkit-transition-timing-function: ease-out;
+    transition-timing-function: ease-out;
+  }
+
+  &:hover, &:focus, &:active {
+    &:before{
+      left: 0;
+    }
+  }
+}
+
+@media only screen and (max-width: 640px) {
+  .mobile-nav .main-nav {
+    display: block;
+  }
+
+  .header .main-nav {
+    display: none;
+  }
+
+  .hover-effect:before {
+    height: 0;
+  }
+
+  .slicknav_nav a:hover {
+    text-decoration: none
+  }
+
+  .header {
+    position: absolute;
+
+    &.full-width {
+      display: none;
+    }
+
+    .logo {
+      padding: 10px 5px 5px;
+    }
+  }
+}

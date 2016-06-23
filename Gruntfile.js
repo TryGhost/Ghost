@@ -69,6 +69,20 @@ var _              = require('lodash'),
                     options: {
                         livereload: true
                     }
+                },
+                less: {
+                    files: 'maytry/assets/less/*.less',
+                    tasks: 'less'
+                }
+            },
+            less: {
+                compileTheme: {
+                    options: {
+                        strictMath: true,
+                        outputSourceFiles: true
+                    },
+                    src: 'maytry/assets/less/app.less',
+                    dest: 'content/themes/maytry/assets/css/app.css'
                 }
             },
 
