@@ -24,6 +24,7 @@
     "node": ">= 0.10.0"
   },
   "devDependencies": {
+    "bower": "1.7.9",
     "broccoli-asset-rev": "2.4.3",
     "csscomb": "3.1.8",
     "ember-ajax": "2.4.1",
