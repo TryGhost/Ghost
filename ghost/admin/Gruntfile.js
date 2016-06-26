@@ -64,7 +64,7 @@ module.exports = function(grunt) {
             },
 
             'bower-install': {
-                command: 'bower install'
+                command: path.resolve(cwd + '/node_modules/.bin/bower install')
             },
 
             csscombfix: {
