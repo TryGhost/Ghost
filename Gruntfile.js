@@ -782,7 +782,7 @@ var _              = require('lodash'),
         //
         // Build assets and dev version of the admin app.
         grunt.registerTask('default', 'Build JS & templates for development',
-            ['shell:ember:dev']);
+            ['subgrunt:init', 'shell:ember:dev']);
 
         // ### Production assets
         // `grunt prod` - will build the minified assets used in production.
