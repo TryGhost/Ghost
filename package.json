@@ -29,7 +29,7 @@
     "bcryptjs": "2.3.0",
     "bluebird": "3.4.1",
     "body-parser": "1.15.1",
-    "bookshelf": "0.9.5",
+    "bookshelf": "https://github.com/acburdine/bookshelf#master-built",
     "chalk": "1.1.3",
     "cheerio": "0.20.0",
     "compression": "1.6.2",
