@@ -78,6 +78,8 @@
   "devDependencies": {
     "bower": "1.4.1",
     "csscomb": "3.1.8",
+    "gh-contrib-list": "0.1.1",
+    "git-wrapper": "0.1.1",
     "grunt": "1.0.1",
     "grunt-bg-shell": "2.3.3",
     "grunt-cli": "1.2.0",
@@ -104,8 +106,7 @@
     "should-http": "0.0.4",
     "sinon": "1.17.4",
     "supertest": "1.2.0",
-    "tmp": "0.0.28",
-    "top-gh-contribs": "2.0.4"
+    "tmp": "0.0.28"
   },
   "greenkeeper": {
     "ignore": [
