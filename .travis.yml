@@ -25,6 +25,9 @@ matrix:
   include:
     - node_js: "0.10"
       env: TEST_SUITE=lint
+branches:
+  exclude:
+    - /^greenkeeper-.+$/
 before_install:
   - if [ $DB == "mysql" ]; then mysql -e 'create database ghost_testing'; fi
   - if [ $DB == "pg" ]; then psql -c 'create database ghost_testing;' -U postgres; fi
