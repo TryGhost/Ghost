@@ -1014,15 +1014,17 @@ describe('Fixtures', function () {
                         sandbox.stub(Date.prototype, 'getTimezoneOffset', function () {
                             return serverTimezoneOffset;
                         });
-
-                        sandbox.stub(models.Settings, 'findOne', function () {
-                            return Promise.resolve({attributes: {value: migrationsSettingsValue}});
-                        });
                     });
 
                     describe('error cases', function () {
                         before(function () {
                             serverTimezoneOffset = 0;
+                        });
+
+                        beforeEach(function () {
+                            sandbox.stub(models.Settings, 'findOne', function () {
+                                return Promise.resolve({attributes: {value: migrationsSettingsValue}});
+                            });
                         });
 
                         it('server offset is 0', function (done) {
@@ -1080,21 +1082,25 @@ describe('Fixtures', function () {
                                 return Promise.resolve({});
                             });
 
-                            sandbox.stub(models.Base.Model, 'findAll', function () {
-                                var model = models.Base.Model.forge();
-                                model.set('id', Date.now());
-                                model.set('created_at', createdAt);
-                                model.set('key', model.id.toString());
+                            _.each(['Post', 'User', 'Subscriber', 'Settings', 'Role', 'Permission', 'Tag', 'App', 'AppSetting', 'AppField', 'Client'], function (modelType) {
+                                sandbox.stub(models[modelType], 'findAll', function () {
+                                    var model = models[modelType].forge();
+                                    model.set('id', Date.now());
+                                    model.set('created_at', createdAt);
+                                    model.set('key', model.id.toString());
 
-                                newModels[model.id] = model;
-                                return Promise.resolve({models: [model]});
+                                    newModels[model.id] = model;
+                                    return Promise.resolve({models: [model]});
+                                });
+
+                                if (modelType !== 'Settings') {
+                                    sandbox.stub(models[modelType], 'findOne', function (data) {
+                                        return Promise.resolve(newModels[data.id]);
+                                    });
+                                }
+
+                                sandbox.stub(models[modelType], 'edit').returns(Promise.resolve({}));
                             });
-
-                            sandbox.stub(models.Base.Model, 'findOne', function (data) {
-                                return Promise.resolve(newModels[data.id]);
-                            });
-
-                            sandbox.stub(models.Base.Model, 'edit').returns(Promise.resolve({}));
                         });
 
                         it('sqlite: no UTC update, only format', function (done) {
