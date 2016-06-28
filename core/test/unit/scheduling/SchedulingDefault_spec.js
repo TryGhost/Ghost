@@ -151,6 +151,11 @@ describe('Scheduling Default Adapter', function () {
             })();
         });
 
+        it('delete job (unschedule): time is null', function () {
+            scope.adapter._deleteJob({time: null, url: '/test'});
+            Object.keys(scope.adapter.deletedJobs).length.should.eql(0);
+        });
+
         it('pingUrl (PUT)', function (done) {
             var app = express(),
                 server = http.createServer(app),

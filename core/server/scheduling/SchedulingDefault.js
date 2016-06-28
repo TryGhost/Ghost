@@ -111,6 +111,10 @@ SchedulingDefault.prototype._addJob = function (object) {
 };
 
 SchedulingDefault.prototype._deleteJob = function (object) {
+    if (!object.time) {
+        return;
+    }
+
     var deleteKey = object.url + '_' + moment(object.time).valueOf();
 
     if (!this.deletedJobs[deleteKey]) {
