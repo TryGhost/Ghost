@@ -5,11 +5,15 @@ language: node_js
 node_js:
   - "0.10"
 
+env:
+  global:
+    - GITHUB_OAUTH_KEY=003a44d58f12089d0c0261338298af3813330949
+
 matrix:
   include:
     - node_js: "0.10"
       env: TEST_SUITE=lint
-      
+
 branches:
   exclude:
     - /^greenkeeper-.+$/
