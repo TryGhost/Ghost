@@ -9,7 +9,7 @@ utils = {
     isProduction: process.env.NODE_ENV === 'production',
     tagLinkTemplate: _.template('<div class="ui labeled button" tabindex="0">' +
         '<a class="ui button" href="<%= url %>"><%= name %></a>' +
-        '<a class="ui teal tag label" href="<%= url %>"><%= post_count %></a>' +
+        '<a class="ui teal tag label" href="<%= url %>"><%= count_posts %></a>' +
         '</div>'),
     // @TODO this can probably be made more generic and used in more places
     findKey: function findKey(key, object, data) {

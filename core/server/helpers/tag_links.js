@@ -21,10 +21,11 @@ tag_links = function(options) {
       internal: true
     },
     limit: 'all',
-    include: 'post_count'
+    include: 'count.posts'
   }).then(function(res) {
     // 記事に関連するタグのみ選出
     var tags = res.tags;
+    console.log(tags);
     if(!all) {
       tags = _.filter(res.tags, function(tag) {
         return _.includes(tagIds, tag.id);
@@ -32,15 +33,15 @@ tag_links = function(options) {
     }
     // 降順でソート
     tags.sort(function(a, b){
-      if(a.post_count < b.post_count) return 1;
-      if(a.post_count > b.post_count) return -1;
+      if(a.count.posts < b.count.posts) return 1;
+      if(a.count.posts > b.count.posts) return -1;
       return 0;
     });
     var joined = _.map(tags, function(tag) {
       return utils.tagLinkTemplate({
         url: config.urlFor('tag', {tag: tag}),
         name: _.escape(tag.name),
-        post_count: tag.post_count
+        count_posts: tag.count.posts
       });
     }).join("");
     return new hbs.handlebars.SafeString(joined);
