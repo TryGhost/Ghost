@@ -2,9 +2,9 @@ var should          = require('should'),
     Promise         = require('bluebird'),
 
     // Stuff we are testing
-    GhostMail       = require('../../server/mail'),
-    configUtils     = require('../utils/configUtils'),
-    i18n            = require('../../server/i18n'),
+    mail            = require('../../../server/mail'),
+    configUtils     = require('../../utils/configUtils'),
+    i18n            = require('../../../server/i18n'),
     mailer,
 
     // Mock SMTP config
@@ -37,7 +37,7 @@ var should          = require('should'),
 
 i18n.init();
 
-describe('Mail', function () {
+describe('Mail: Ghostmailer', function () {
     afterEach(function () {
         mailer = null;
 
@@ -45,7 +45,7 @@ describe('Mail', function () {
     });
 
     it('should attach mail provider to ghost instance', function () {
-        mailer = new GhostMail();
+        mailer = new mail.GhostMailer();
 
         should.exist(mailer);
         mailer.should.have.property('send').and.be.a.Function();
@@ -53,7 +53,7 @@ describe('Mail', function () {
 
     it('should setup SMTP transport on initialization', function () {
         configUtils.set({mail: SMTP});
-        mailer = new GhostMail();
+        mailer = new mail.GhostMailer();
 
         mailer.should.have.property('transport');
         mailer.transport.transportType.should.eql('SMTP');
@@ -63,7 +63,7 @@ describe('Mail', function () {
     it('should fallback to direct if config is empty', function () {
         configUtils.set({mail: {}});
 
-        mailer = new GhostMail();
+        mailer = new mail.GhostMailer();
 
         mailer.should.have.property('transport');
         mailer.transport.transportType.should.eql('DIRECT');
@@ -72,7 +72,7 @@ describe('Mail', function () {
     it('sends valid message successfully ', function (done) {
         configUtils.set({mail: {transport: 'stub'}});
 
-        mailer = new GhostMail();
+        mailer = new mail.GhostMailer();
 
         mailer.transport.transportType.should.eql('STUB');
 
@@ -88,7 +88,7 @@ describe('Mail', function () {
     it('handles failure', function (done) {
         configUtils.set({mail: {transport: 'stub', options: {error: 'Stub made a boo boo :('}}});
 
-        mailer = new GhostMail();
+        mailer = new mail.GhostMailer();
 
         mailer.transport.transportType.should.eql('STUB');
 
@@ -101,7 +101,7 @@ describe('Mail', function () {
     });
 
     it('should fail to send messages when given insufficient data', function (done) {
-        mailer = new GhostMail();
+        mailer = new mail.GhostMailer();
 
         Promise.all([
             mailer.send().reflect(),
@@ -122,7 +122,7 @@ describe('Mail', function () {
         beforeEach(function () {
             configUtils.set({mail: {}});
 
-            mailer = new GhostMail();
+            mailer = new mail.GhostMailer();
         });
 
         afterEach(function () {
@@ -171,7 +171,7 @@ describe('Mail', function () {
                 }
             });
 
-            mailer = new GhostMail();
+            mailer = new mail.GhostMailer();
 
             mailer.from().should.equal('"Blog Title" <static@example.com>');
         });
@@ -180,7 +180,7 @@ describe('Mail', function () {
             // Standard domain
             configUtils.set({url: 'http://default.com', mail: {from: null}, theme: {title: 'Test'}});
 
-            mailer = new GhostMail();
+            mailer = new mail.GhostMailer();
 
             mailer.from().should.equal('"Test" <ghost@default.com>');
 
@@ -197,7 +197,7 @@ describe('Mail', function () {
             // Standard domain
             configUtils.set({mail: {from: '"bar" <from@default.com>', fromaddress: '"Qux" <fa@default.com>'}});
 
-            mailer = new GhostMail();
+            mailer = new mail.GhostMailer();
 
             mailer.from().should.equal('"bar" <from@default.com>');
         });
@@ -206,7 +206,7 @@ describe('Mail', function () {
             // from and fromaddress are both set
             configUtils.set({mail: {from: 'from@default.com', fromaddress: 'fa@default.com'}, theme: {title: 'Test'}});
 
-            mailer = new GhostMail();
+            mailer = new mail.GhostMailer();
 
             mailer.from().should.equal('"Test" <from@default.com>');
 
@@ -223,7 +223,7 @@ describe('Mail', function () {
             // from and fromaddress are both set
             configUtils.set({mail: {from: '"R2D2" <from@default.com>', fromaddress: '"C3PO" <fa@default.com>'}, theme: {title: 'Test'}});
 
-            mailer = new GhostMail();
+            mailer = new mail.GhostMailer();
 
             mailer.from().should.equal('"R2D2" <from@default.com>');
 
@@ -239,7 +239,7 @@ describe('Mail', function () {
         it('should use default title if not theme title is provided', function () {
             configUtils.set({url: 'http://default.com:2368/', mail: {from: null}, theme: {title: null}});
 
-            mailer = new GhostMail();
+            mailer = new mail.GhostMailer();
 
             mailer.from().should.equal('"Ghost at default.com" <ghost@default.com>');
         });
