@@ -553,14 +553,13 @@ describe('Frontend Routing', function () {
                     should.exist(res.headers.date);
 
                     var content = res.text,
-                        today = new Date(),
-                        dd = ('0' + today.getDate()).slice(-2),
-                        mm = ('0' + (today.getMonth() + 1)).slice(-2),
-                        yyyy = today.getFullYear(),
+                        todayMoment = moment(),
+                        dd = todayMoment.format('DD'),
+                        mm = todayMoment.format('MM'),
+                        yyyy = todayMoment.format('YYYY'),
                         postLink = '/' + yyyy + '/' + mm + '/' + dd + '/welcome-to-ghost/';
 
                     content.indexOf(postLink).should.be.above(0);
-
                     done();
                 });
         });
