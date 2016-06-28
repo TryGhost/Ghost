@@ -1,0 +1,104 @@
+/* ------------ Global ------------ */
+
+body {
+  font-family: @mt-font-family;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 14px;
+  line-height: 1;
+  color: @font-color;
+  position: relative;
+  -webkit-font-smoothing: antialiased;
+  background-color: @mt-theme-color;
+  margin: 0;
+  text-rendering: optimizeLegibility;
+}
+
+ul, li {
+  list-style-type: none;
+  margin: 0;
+}
+
+.row {
+  max-width: 1170px;
+
+  &.full-width {
+    max-width: 100%;
+  }
+}
+
+iframe {
+  margin: 0 0 10px;
+  border: 0;
+  width: 100%;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.flex-video {
+  position: relative;
+  padding-top: 1.5625rem;
+  padding-bottom: 67.5%;
+  height: 0;
+  margin-bottom: 1rem;
+  overflow: hidden;
+
+  &.widescreen {
+    padding-bottom: 56.34%;
+  }
+
+  &.vimeo {
+    padding-top: 0;
+  }
+
+  iframe, object, embed, video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.align-center, div.align-center {
+  display: block;
+  margin: 5px auto 15px auto;
+}
+
+.align-right {
+  float: right;
+  margin: 5px 0 20px 20px;
+}
+
+.align-left {
+  float: left;
+  margin: 5px 20px 20px 0;
+}
+
+a img {
+  &.align-right {
+    float: right;
+    margin: 5px 0 20px 20px;
+  }
+
+  &.align-none {
+    margin: 5px 20px 20px 0;
+  }
+
+  &.align-left {
+    float: left;
+    margin: 5px 20px 20px 0;
+  }
+
+  &.align-center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto
+  }
+}
+
+.spacing-20 {
+  padding-top: 20px;
+}
