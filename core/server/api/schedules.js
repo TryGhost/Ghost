@@ -203,13 +203,14 @@ exports.sendNewsletter = function sendNewsletter(object, options) {
                 });
             });
         })
-        // @TODO: error handling?
         .finally(function () {
             // we always update the settings entry, even if it was not successful, to ensure newsletter gets rescheduled
             config.newsletter.lastExecutedAt = toMoment.valueOf();
-            return dataProvider.Settings.edit({
+            dataProvider.Settings.edit({
                 key: 'newsletter',
                 value: JSON.stringify(config.newsletter)
-            }, options);
+            }, options).catch(function (err) {
+                errors.logError(err, 'schedules: error on settings update');
+            });
         })
 };

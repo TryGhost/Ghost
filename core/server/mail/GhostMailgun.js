@@ -22,15 +22,10 @@ var GhostMailgun = function (options) {
 GhostMailgun.prototype.send = function (options, done) {
     var to = lodash.cloneDeep(options.to),
         self = this,
-        tag = options.tag,
         mailgunIds = [];
 
     if (!to || !lodash.isArray(to) || !to.length || !to[0].hasOwnProperty('email') || !to[0].hasOwnProperty('id')) {
         return done(new errors.ValidationError('GhostMailgun: property `to` is invalid'));
-    }
-
-    if (lodash.isEmpty(tag)) {
-        return done(new errors.ValidationError('GhostMailgun: tag is required'));
     }
 
     var sendBatch = function (options, batchDone) {
@@ -60,7 +55,7 @@ GhostMailgun.prototype.send = function (options, done) {
             'o:tracking': true,
             'o:tracking-clicks': true,
             'o:tracking-opens': true,
-            'o:tag': tag
+            // 'o:tag': tag
         }, batchDone);
     };
 
@@ -74,6 +69,7 @@ GhostMailgun.prototype.send = function (options, done) {
 
         sendBatch(options, function (err, response) {
             if (err) {
+                // CASE: 404 -> domain/apiKey is incorrect
                 return done(err);
             }
 
