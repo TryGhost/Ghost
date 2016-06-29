@@ -13,20 +13,13 @@ _private.normalize = function normalize(options) {
     var object = options.object,
         apiUrl = options.apiUrl,
         client = options.client,
-        rrule = serverUtils.rrule.parseString(object.rrule),
         time = null;
 
     // CASE: newsletter was never executed, take the next iterator date
     if (!object.lastExecutedAt) {
-        time = rrule.all(function (date, index) {
-            return index < 1;
-        });
+        time = serverUtils.rrule.getNextDate({rruleString: object.rrule});
     } else {
-        time = rrule.all(function (date) {
-            return moment(date).diff(object.lastExecutedAt).diff() > 0;
-        });
-
-        time = time[0];
+        time = serverUtils.rrule.getNextDate({rruleString: object.rrule, date: object.lastExecutedAt});
     }
 
     return {
