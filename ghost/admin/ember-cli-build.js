@@ -41,6 +41,19 @@ module.exports = function (defaults) {
         },
         hinting: false,
         fingerprint: disabled,
+        nodeAssets: {
+            codemirror: {
+                import: [
+                    'lib/codemirror.js',
+                    'lib/codemirror.css',
+                    'theme/xq-light.css',
+                    'mode/htmlmixed/htmlmixed.js',
+                    'mode/xml/xml.js',
+                    'mode/css/css.js',
+                    'mode/javascript/javascript.js',
+                ]
+            }
+        },
         'ember-cli-selectize': {
             theme: false
         }
@@ -65,11 +78,6 @@ module.exports = function (defaults) {
     app.import('bower_components/jquery-file-upload/js/jquery.fileupload-image.js');
     app.import('bower_components/google-caja/html-css-sanitizer-bundle.js');
     app.import('bower_components/jqueryui-touch-punch/jquery.ui.touch-punch.js');
-    app.import('bower_components/codemirror/lib/codemirror.js');
-    app.import('bower_components/codemirror/mode/htmlmixed/htmlmixed.js');
-    app.import('bower_components/codemirror/mode/xml/xml.js');
-    app.import('bower_components/codemirror/mode/css/css.js');
-    app.import('bower_components/codemirror/mode/javascript/javascript.js');
     app.import('bower_components/password-generator/lib/password-generator.js');
     app.import('bower_components/blueimp-md5/js/md5.js');
 
@@ -77,10 +85,6 @@ module.exports = function (defaults) {
         app.import(app.bowerDirectory + '/jquery.simulate.drag-sortable/jquery.simulate.drag-sortable.js', {type: 'test'});
         app.import(app.bowerDirectory + '/jquery-deparam/jquery-deparam.js', {type: 'test'});
     }
-
-    // 'dem Styles
-    app.import('bower_components/codemirror/lib/codemirror.css');
-    app.import('bower_components/codemirror/theme/xq-light.css');
 
     return app.toTree();
 };
