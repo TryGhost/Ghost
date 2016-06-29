@@ -33,11 +33,13 @@ adminControllers = {
         }
 
         updateCheck().then(function then() {
-            return updateCheck.showUpdateNotification();
-        }).then(function then(updateVersion) {
-            if (!updateVersion) {
+            return updateCheck.getUpdateNotifications();
+        }).then(function then(notifications) {
+            if (notifications.length === 0) {
                 return;
             }
+
+            var updateVersion = notifications[0];
 
             var notification = {
                 type: 'upgrade',
