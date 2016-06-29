@@ -89,7 +89,14 @@
             "defaultValue": "[{\"url\":\"\"}]"
         },
         "newsletter": {
-            "defaultValue": "{\"rrule\":null, \"status\": \"disabled\", \"lastExecutedAt\": null}"
+            "defaultValue": "{\"rrule\":null, \"status\": \"disabled\", \"lastExecutedAt\": null}",
+            "validations": {
+                "rrule": {
+                    "validations": {
+                        "isRRULE": true
+                    }
+                }
+            }
         }
     },
     "theme": {

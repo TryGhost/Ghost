@@ -6,6 +6,7 @@ var schema    = require('../schema').tables,
     errors    = require('../../errors'),
     config    = require('../../config'),
     readThemes  = require('../../utils/read-themes'),
+    utils       = require('../../utils'),
     i18n        = require('../../i18n'),
 
     validateSchema,
@@ -43,6 +44,14 @@ validator.extend('isEmptyOrURL', function isEmptyOrURL(str) {
 
 validator.extend('isSlug', function isSlug(str) {
     return validator.matches(str, /^[a-z0-9\-_]+$/);
+});
+
+validator.extend('isRRULE', function isRRULE(str) {
+    if (_.isEmpty(str)) {
+        return true;
+    }
+
+    return utils.rrule.parseString(str) !== null;
 });
 
 // Validation against schema attributes
@@ -165,7 +174,20 @@ validateActiveTheme = function validateActiveTheme(themeName) {
 // available validators: https://github.com/chriso/validator.js#validators
 validate = function validate(value, key, validations) {
     var validationErrors = [];
-    value = _.toString(value);
+
+    try {
+        value = JSON.parse(value);
+
+        _.each(value, function (val, key) {
+            if (!validations[key]) {
+                return;
+            }
+
+            validationErrors = validationErrors.concat(validate(_.toString(val), key, validations[key].validations));
+        });
+
+        return validationErrors;
+    } catch(err) {}
 
     _.each(validations, function each(validationOptions, validationName) {
         var goodResult = true;

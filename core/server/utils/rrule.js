@@ -5,7 +5,11 @@ var RRule = require('rrule').RRule,
 
 // https://www.textmagic.com/free-tools/rrule-generator
 exports.parseString = function (str) {
-    return RRule.fromString(str);
+    try {
+        return RRule.fromString(str);
+    } catch (err) {
+        return null;
+    }
 };
 
 exports.dateToString = function (date) {
