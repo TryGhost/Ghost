@@ -42,6 +42,9 @@ module.exports = function (defaults) {
         hinting: false,
         fingerprint: disabled,
         nodeAssets: {
+            'blueimp-md5': {
+                import: ['js/md5.js']
+            },
             codemirror: {
                 import: [
                     'lib/codemirror.js',
@@ -56,6 +59,15 @@ module.exports = function (defaults) {
             'jquery-deparam': {
                 enabled: EmberApp.env() === 'test',
                 import: ['jquery-deparam.js']
+            },
+            moment: {
+                import: ['moment.js']
+            },
+            'moment-timezone': {
+                import: ['builds/moment-timezone-with-data.js']
+            },
+            'password-generator': {
+                import: ['lib/password-generator.js']
             }
         },
         'ember-cli-selectize': {
@@ -71,8 +83,6 @@ module.exports = function (defaults) {
     app.import('bower_components/showdown-ghost/src/extensions/ghostimagepreview.js');
     app.import('bower_components/showdown-ghost/src/extensions/footnotes.js');
     app.import('bower_components/showdown-ghost/src/extensions/highlight.js');
-    app.import('bower_components/moment/moment.js');
-    app.import('bower_components/moment-timezone/builds/moment-timezone-with-data.js');
     app.import('bower_components/keymaster/keymaster.js');
     app.import('bower_components/devicejs/lib/device.js');
     app.import('bower_components/jquery-ui/jquery-ui.js');
@@ -82,8 +92,6 @@ module.exports = function (defaults) {
     app.import('bower_components/jquery-file-upload/js/jquery.fileupload-image.js');
     app.import('bower_components/google-caja/html-css-sanitizer-bundle.js');
     app.import('bower_components/jqueryui-touch-punch/jquery.ui.touch-punch.js');
-    app.import('bower_components/password-generator/lib/password-generator.js');
-    app.import('bower_components/blueimp-md5/js/md5.js');
 
     if (app.env === 'test') {
         app.import(app.bowerDirectory + '/jquery.simulate.drag-sortable/jquery.simulate.drag-sortable.js', {type: 'test'});

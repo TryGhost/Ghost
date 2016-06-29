@@ -1,7 +1,6 @@
 {
   "name": "ghost",
   "dependencies": {
-    "blueimp-md5": "2.3.0",
     "devicejs": "0.2.7",
     "ember": "2.6.1",
     "ember-cli-shims": "0.1.3",
@@ -16,10 +15,7 @@
     "jquery.simulate.drag-sortable": "0.1.0",
     "keymaster": "1.6.3",
     "lodash": "3.7.0",
-    "moment": "2.13.0",
-    "moment-timezone": "0.5.4",
     "normalize.css": "3.0.3",
-    "password-generator": "2.0.2",
     "pretender": "1.1.0",
     "rangyinputs": "1.2.0",
     "selectize": "~0.12.1",
