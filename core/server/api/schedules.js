@@ -146,35 +146,30 @@ exports.sendNewsletter = function sendNewsletter(object, options) {
                 return Promise.resolve();
             }
 
-            posts = result.models;
+            posts = result.toJSON();
             return dataProvider.Subscriber.findAll({filter: 'status:subscribed'});
         }).then(function (result) {
             if (!result || !result.length) {
                 return Promise.resolve();
             }
 
-            subscribers = result.models;
-
-            return Promise.all(_.map(posts, function (post) {
-                return mail.utils.generateContent({
-                    template: 'newsletter/post',
-                    data: post.toJSON()
-                });
-            })).then(function (posts) {
-                return _.reduce(posts, function (first, second) {
-                    return first.html + second.html;
-                });
-            });
-        })
-        .then(function (html) {
-            if (!html) {
-                return Promise.resolve();
-            }
+            subscribers = result.toJSON();
 
             return mail.utils.generateContent({
-                template: 'newsletter/index',
+                template: 'newsletter',
                 data: {
-                    posts: html
+                    blog: {
+                        title: config.theme.title,
+                        logo: config.theme.logo,
+                        url: config.getBaseUrl(),
+                        // @TODO: replace me
+                        unsubscribe: 'http://ghost.org/unsubscribe',
+                        post: posts
+                    },
+                    newsletter: {
+                        interval: config.newsletter.rrule.match(/FREQ=(\w+);/)[1],
+                        date: moment().format('MMMM Do YYYY')
+                    }
                 }
             });
         })
@@ -182,10 +177,6 @@ exports.sendNewsletter = function sendNewsletter(object, options) {
             if (!result) {
                 return Promise.resolve();
             }
-
-            subscribers = subscribers.map(function (subscriber) {
-                return subscriber.toJSON();
-            });
 
             return new Promise(function (resolve, reject) {
                 mailgun.send({
