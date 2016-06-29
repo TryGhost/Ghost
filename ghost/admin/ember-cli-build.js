@@ -52,6 +52,10 @@ module.exports = function (defaults) {
                     'mode/css/css.js',
                     'mode/javascript/javascript.js',
                 ]
+            },
+            'jquery-deparam': {
+                enabled: EmberApp.env() === 'test',
+                import: ['jquery-deparam.js']
             }
         },
         'ember-cli-selectize': {
@@ -83,7 +87,6 @@ module.exports = function (defaults) {
 
     if (app.env === 'test') {
         app.import(app.bowerDirectory + '/jquery.simulate.drag-sortable/jquery.simulate.drag-sortable.js', {type: 'test'});
-        app.import(app.bowerDirectory + '/jquery-deparam/jquery-deparam.js', {type: 'test'});
     }
 
     return app.toTree();
