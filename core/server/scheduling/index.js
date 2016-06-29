@@ -8,7 +8,7 @@ var postScheduling = require(__dirname + '/post-scheduling'),
  */
 exports.init = function init(options) {
     options = options || {};
-
+    
     return postScheduling.init(options)
         .then(function () {
             return newsletterScheduling.init(options);

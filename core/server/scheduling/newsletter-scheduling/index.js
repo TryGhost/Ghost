@@ -55,19 +55,21 @@ exports.init = function init(options) {
         .then(function (_client) {
             client = _client;
 
-            return schedulingUtils.createAdapter(config);
+            return schedulingUtils.createAdapter(options);
         })
         .then(function (_adapter) {
             adapter = _adapter;
 
-            adapter.reschedule(_private.normalize({
-                object: {
-                    lastExecutedAt: config.newsletter.lastExecutedAt,
-                    rrule: config.newsletter.rrule
-                },
-                apiUrl: apiUrl,
-                client: client
-            }));
+            if (config.newsletter.status === 'enabled') {
+                adapter.reschedule(_private.normalize({
+                    object: {
+                        lastExecutedAt: config.newsletter.lastExecutedAt,
+                        rrule: config.newsletter.rrule
+                    },
+                    apiUrl: apiUrl,
+                    client: client
+                }));
+            }
 
             return Promise.resolve();
         })
