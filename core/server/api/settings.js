@@ -49,7 +49,7 @@ updateConfigCache = function () {
             errors.logError.apply(this, errorMessages);
         }
     }
-
+    
     config.set({
         theme: {
             title: (settingsCache.title && settingsCache.title.value) || '',
