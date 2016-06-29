@@ -326,7 +326,7 @@
             },
             "job": {
                 "notFound": "Job not found.",
-                "publishInThePast": "Use the force flag to publish a post in the past."
+                "jobInThePast": "Use the force flag to execute job in the past."
             },
             "settings": {
                 "problemFindingSetting": "Problem finding setting: {key}",

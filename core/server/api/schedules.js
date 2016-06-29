@@ -6,10 +6,10 @@ var _ = require('lodash'),
     dataProvider = require(config.paths.corePath + '/server/models'),
     i18n = require(config.paths.corePath + '/server/i18n'),
     errors = require(config.paths.corePath + '/server/errors'),
+    serverUtils = require(config.paths.corePath + '/server/utils'),
     apiPosts = require(config.paths.corePath + '/server/api/posts'),
     mail = require(config.paths.corePath + '/server/mail'),
-    apiSettings = require(config.paths.corePath + '/server/api/settings'),
-    utils = require('./utils');
+    apiUtils = require('./utils');
 
 /**
  * publish a scheduled post
@@ -23,7 +23,7 @@ exports.publishPost = function publishPost(object, options) {
     }
 
     var post, publishedAtMoment,
-        publishAPostBySchedulerToleranceInMinutes = config.times.publishAPostBySchedulerToleranceInMinutes;
+        schedulerToleranceInMinutes = config.times.schedulerToleranceInMinutes;
 
     // CASE: only the scheduler client is allowed to publish (hardcoded because of missing client permission system)
     if (!options.context || !options.context.client || options.context.client !== 'ghost-scheduler') {
@@ -33,7 +33,7 @@ exports.publishPost = function publishPost(object, options) {
     options.context = {internal: true};
 
     return pipeline([
-        utils.validate('posts', {opts: utils.idDefaultOptions}),
+        apiUtils.validate('posts', {opts: apiUtils.idDefaultOptions}),
         function (cleanOptions) {
             cleanOptions.status = 'scheduled';
 
@@ -42,12 +42,12 @@ exports.publishPost = function publishPost(object, options) {
                     post = result.posts[0];
                     publishedAtMoment = moment(post.published_at);
 
-                    if (publishedAtMoment.diff(moment(), 'minutes') > publishAPostBySchedulerToleranceInMinutes) {
+                    if (publishedAtMoment.diff(moment(), 'minutes') > schedulerToleranceInMinutes) {
                         return Promise.reject(new errors.NotFoundError(i18n.t('errors.api.job.notFound')));
                     }
 
-                    if (publishedAtMoment.diff(moment(), 'minutes') < publishAPostBySchedulerToleranceInMinutes * -1 && object.force !== true) {
-                        return Promise.reject(new errors.NotFoundError(i18n.t('errors.api.job.publishInThePast')));
+                    if (publishedAtMoment.diff(moment(), 'minutes') < schedulerToleranceInMinutes * -1 && object.force !== true) {
+                        return Promise.reject(new errors.NotFoundError(i18n.t('errors.api.job.jobInThePast')));
                     }
 
                     return apiPosts.edit({posts: [{status: 'published'}]}, _.pick(cleanOptions, ['context', 'id']));
@@ -65,7 +65,7 @@ exports.getScheduledPosts = function readPosts(options) {
     options.context = {internal: true};
 
     return pipeline([
-        utils.validate('posts', {opts: ['from', 'to']}),
+        apiUtils.validate('posts', {opts: ['from', 'to']}),
         function (cleanOptions) {
             cleanOptions.filter = 'status:scheduled';
             cleanOptions.columns = ['id', 'published_at', 'created_at'];
@@ -90,9 +90,15 @@ exports.getScheduledPosts = function readPosts(options) {
  * @TODO:
  * - mail config!mailgun config!
  */
-exports.sendNewsletter = function sendNewsletter(options) {
+exports.sendNewsletter = function sendNewsletter(object, options) {
+    if (_.isEmpty(options)) {
+        options = object || {};
+        object = {};
+    }
+
     var fromMoment = config.newsletter.lastExecutedAt ? moment(config.newsletter.lastExecutedAt) : moment().subtract(30, 'days'),
         toMoment = moment(),
+        schedulerToleranceInMinutes = config.times.schedulerToleranceInMinutes,
         mailgun = new mail.GhostMailgun({
             apiKey: config.mail.options.auth.apiKey,
             domain: config.mail.options.auth.domain
@@ -108,8 +114,23 @@ exports.sendNewsletter = function sendNewsletter(options) {
         return Promise.reject(new errors.NoPermissionError(i18n.t('errors.permissions.noPermissionToAction')));
     }
 
-    // @TODO: ensure newsletter should really get executed NOW
-    // this can be done by checking NOW with getting the next execution date by rrule
+    // CASE: double check that newsletter should get send now
+    try {
+        var nextExecutionDate = serverUtils.rrule.getNextDate({
+            rruleString: config.newsletter.rrule,
+            date: config.newsletter.lastExecutedAt
+        });
+
+        if (moment(nextExecutionDate).diff(moment(), 'minutes') > schedulerToleranceInMinutes) {
+            return Promise.reject(new errors.NotFoundError(i18n.t('errors.api.job.notFound')));
+        }
+
+        if (moment(nextExecutionDate).diff(moment(), 'minutes') < schedulerToleranceInMinutes * -1 && object.force !== true) {
+            return Promise.reject(new errors.NotFoundError(i18n.t('errors.api.job.jobInThePast')));
+        }
+    } catch (err) {
+        return Promise.reject(err);
+    }
 
     options.context = {internal: true};
 
@@ -170,7 +191,6 @@ exports.sendNewsletter = function sendNewsletter(options) {
                 mailgun.send({
                     title: 'Newsletter',
                     from: config.newsletterFromAddress || config.mail.from,
-                    tag: (config.userId || config.getBaseUrl()) + '_' + moment().valueOf(),
                     to: subscribers,
                     text: result.text,
                     html: result.html

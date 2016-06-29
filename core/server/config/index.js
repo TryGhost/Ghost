@@ -235,7 +235,7 @@ ConfigManager.prototype.set = function (config) {
         preloadHeaders: this._config.preloadHeaders || false,
         times: {
             cannotScheduleAPostBeforeInMinutes: 2,
-            publishAPostBySchedulerToleranceInMinutes: 2
+            schedulerToleranceInMinutes: 2
         }
     });
 
