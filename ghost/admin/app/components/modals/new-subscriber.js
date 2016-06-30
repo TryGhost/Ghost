@@ -1,7 +1,5 @@
-import Ember from 'ember';
+import {A as emberA} from 'ember-array/utils';
 import ModalComponent from 'ghost-admin/components/modals/base';
-
-const {A: emberA} = Ember;
 
 export default ModalComponent.extend({
     actions: {

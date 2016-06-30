@@ -4,7 +4,6 @@ import {
     it
 } from 'ember-mocha';
 import Pretender from 'pretender';
-import Ember from 'ember';
 
 function settingsStub(server) {
     let settings = [

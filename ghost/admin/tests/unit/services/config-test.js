@@ -4,9 +4,7 @@ import {
     describeModule,
     it
 } from 'ember-mocha';
-import Ember from 'ember';
-
-const {$} = Ember;
+import $ from 'jquery';
 
 describeModule(
     'service:config',

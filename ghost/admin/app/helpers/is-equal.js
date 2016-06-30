@@ -1,6 +1,4 @@
-import Ember from 'ember';
-
-const {Helper} = Ember;
+import {helper} from 'ember-helper';
 
 export function isEqual(params) {
     let [lhs, rhs] = params;
@@ -8,6 +6,6 @@ export function isEqual(params) {
     return lhs === rhs;
 }
 
-export default Helper.helper(function (params) {
+export default helper(function (params) {
     return isEqual(params);
 });

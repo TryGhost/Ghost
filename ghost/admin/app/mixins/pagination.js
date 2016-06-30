@@ -1,13 +1,10 @@
-import Ember from 'ember';
-import getRequestErrorMessage from 'ghost-admin/utils/ajax';
+import Mixin from 'ember-metal/mixin';
+import {assign} from 'ember-platform';
+import computed from 'ember-computed';
+import RSVP from 'rsvp';
+import injectService from 'ember-service/inject';
 
-const {
-    Mixin,
-    assign,
-    computed,
-    RSVP,
-    inject: {service}
-} = Ember;
+import getRequestErrorMessage from 'ghost-admin/utils/ajax';
 
 let defaultPaginationSettings = {
     page: 1,
@@ -15,7 +12,7 @@ let defaultPaginationSettings = {
 };
 
 export default Mixin.create({
-    notifications: service(),
+    notifications: injectService(),
 
     paginationModel: null,
     paginationSettings: null,

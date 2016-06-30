@@ -1,14 +1,10 @@
-import Ember from 'ember';
+import Controller from 'ember-controller';
+import computed from 'ember-computed';
+import injectService from 'ember-service/inject';
+import observer from 'ember-metal/observer';
+import run from 'ember-runloop';
 import SettingsSaveMixin from 'ghost-admin/mixins/settings-save';
 import randomPassword from 'ghost-admin/utils/random-password';
-
-const {
-    Controller,
-    computed,
-    inject: {service},
-    observer,
-    run
-} = Ember;
 
 export default Controller.extend(SettingsSaveMixin, {
 
@@ -17,11 +13,11 @@ export default Controller.extend(SettingsSaveMixin, {
 
     availableTimezones: null,
 
-    notifications: service(),
-    config: service(),
+    notifications: injectService(),
+    config: injectService(),
     _scratchFacebook: null,
     _scratchTwitter: null,
-    clock: service(),
+    clock: injectService(),
 
     selectedTheme: computed('model.activeTheme', 'themes', function () {
         let activeTheme = this.get('model.activeTheme');

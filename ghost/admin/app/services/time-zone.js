@@ -1,13 +1,9 @@
-import Ember from 'ember';
-
-const {
-    Service,
-    computed,
-    inject: {service}
-} = Ember;
+import Service from 'ember-service';
+import computed from 'ember-computed';
+import injectService from 'ember-service/inject';
 
 export default Service.extend({
-    store: service(),
+    store: injectService(),
 
     _parseTimezones(settings) {
         let activeTimezone = settings.get('activeTimezone');

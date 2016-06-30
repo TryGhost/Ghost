@@ -1,8 +1,4 @@
-import Ember from 'ember';
-
-const {
-    Object: EmberObject
-} = Ember;
+import EmberObject from 'ember-object';
 
 /**
  * Base validator that all validators should extend

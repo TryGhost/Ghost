@@ -1,6 +1,5 @@
-import Ember from 'ember';
-
-const {Evented, Mixin} = Ember;
+import Mixin from 'ember-metal/mixin';
+import Evented from 'ember-evented';
 
 /*
   Dropdowns and their buttons are evented and do not propagate clicks.

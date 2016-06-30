@@ -1,4 +1,6 @@
-import Ember from 'ember';
+import Mixin from 'ember-metal/mixin';
+import RSVP from 'rsvp';
+import {A as emberA, isEmberArray} from 'ember-array/utils';
 import DS from 'ember-data';
 import Model from 'ember-data/model';
 import getRequestErrorMessage from 'ghost-admin/utils/ajax';
@@ -18,12 +20,6 @@ import UserValidator from 'ghost-admin/validators/user';
 
 import ValidatorExtensions from 'ghost-admin/utils/validator-extensions';
 
-const {
-    Mixin,
-    RSVP,
-    A: emberA,
-    isArray
-} = Ember;
 const {Errors} = DS;
 
 // our extensions to the validator library
@@ -149,7 +145,7 @@ export default Mixin.create({
             return _super.call(this, options);
         }).catch((result) => {
             // server save failed or validator type doesn't exist
-            if (result && !isArray(result)) {
+            if (result && !isEmberArray(result)) {
                 // return the array of errors from the server
                 result = getRequestErrorMessage(result);
             }

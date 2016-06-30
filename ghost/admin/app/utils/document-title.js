@@ -1,6 +1,7 @@
-import Ember from 'ember';
-
-const {Route, Router, isArray, on} = Ember;
+import Route from 'ember-route';
+import Router from 'ember-router';
+import {isEmberArray} from 'ember-array/utils';
+import on from 'ember-evented/on';
 
 export default function () {
     Route.reopen({
@@ -25,7 +26,7 @@ export default function () {
                     titleToken = this.titleToken(this.currentModel);
                 }
 
-                if (isArray(titleToken)) {
+                if (isEmberArray(titleToken)) {
                     tokens.unshift(...titleToken);
                 } else if (titleToken) {
                     tokens.unshift(titleToken);

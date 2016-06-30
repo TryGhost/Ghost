@@ -1,12 +1,10 @@
 /* jshint expr:true */
-import Ember from 'ember';
+import run from 'ember-runloop';
 import {expect} from 'chai';
 import {
     describeComponent,
     it
 } from 'ember-mocha';
-
-const {run} = Ember;
 
 describeComponent(
     'gh-navitem-url-input',

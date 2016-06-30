@@ -1,17 +1,13 @@
-import Ember from 'ember';
+import RSVP from 'rsvp';
+import Controller from 'ember-controller';
+import computed from 'ember-computed';
+import injectService from 'ember-service/inject';
 import SettingsSaveMixin from 'ghost-admin/mixins/settings-save';
 import NavigationItem from 'ghost-admin/models/navigation-item';
 
-const {
-    Controller,
-    RSVP,
-    computed,
-    inject: {service}
-} = Ember;
-
 export default Controller.extend(SettingsSaveMixin, {
-    config: service(),
-    notifications: service(),
+    config: injectService(),
+    notifications: injectService(),
 
     newNavItem: null,
 

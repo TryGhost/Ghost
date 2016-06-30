@@ -1,11 +1,7 @@
-import Ember from 'ember';
+import {capitalize} from 'ember-string';
 const lowerWords = ['of', 'a', 'the', 'and', 'an', 'or', 'nor', 'but', 'is', 'if',
                     'then', 'else', 'when', 'at', 'from', 'by', 'on', 'off', 'for',
                     'in', 'out', 'over', 'to', 'into', 'with'];
-
-const {
-    String: {capitalize}
-} = Ember;
 
 export default function (input) {
     let words = input.split(' ').map((word, index) => {

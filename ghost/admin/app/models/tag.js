@@ -1,16 +1,11 @@
 /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
-import Ember from 'ember';
+import {equal} from 'ember-computed';
+import observer from 'ember-metal/observer';
+import injectService from 'ember-service/inject';
+
 import Model from 'ember-data/model';
 import attr from 'ember-data/attr';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
-
-const {
-    computed,
-    observer,
-    inject: {service}
-} = Ember;
-
-const {equal} = computed;
 
 export default Model.extend(ValidationEngine, {
     validationType: 'tag',
@@ -33,7 +28,7 @@ export default Model.extend(ValidationEngine, {
     isInternal: equal('visibility', 'internal'),
     isPublic: equal('visibility', 'public'),
 
-    feature: service(),
+    feature: injectService(),
 
     setVisibility() {
         let internalRegex = /^#.?/;

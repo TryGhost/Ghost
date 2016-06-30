@@ -5,13 +5,12 @@ import {
     it
 } from 'ember-mocha';
 import hbs from 'htmlbars-inline-precompile';
-import Ember from 'ember';
+import $ from 'jquery';
+import run from 'ember-runloop';
 import Pretender from 'pretender';
 import wait from 'ember-test-helpers/wait';
 import sinon from 'sinon';
 import {createFile, fileUpload} from '../../helpers/file-upload';
-
-const {$, run} = Ember;
 
 const stubSuccessfulUpload = function (server, delay = 0) {
     server.post('/ghost/api/v0.1/uploads/', function () {

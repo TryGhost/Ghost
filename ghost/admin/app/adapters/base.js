@@ -1,12 +1,8 @@
-import Ember from 'ember';
+import injectService from 'ember-service/inject';
 import RESTAdapter from 'ember-data/adapters/rest';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import DataAdapterMixin from 'ember-simple-auth/mixins/data-adapter-mixin';
 import config from 'ghost-admin/config/environment';
-
-const {
-    inject: {service}
-} = Ember;
 
 export default RESTAdapter.extend(DataAdapterMixin, {
     authorizer: 'authorizer:oauth2',
@@ -14,7 +10,7 @@ export default RESTAdapter.extend(DataAdapterMixin, {
     host: window.location.origin,
     namespace: ghostPaths().apiRoot.slice(1),
 
-    session: service(),
+    session: injectService(),
 
     headers: {
         'X-Ghost-Version': config.APP.version

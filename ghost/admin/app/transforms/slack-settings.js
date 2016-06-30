@@ -1,12 +1,7 @@
 /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
-import Ember from 'ember';
+import {A as emberA, isEmberArray} from 'ember-array/utils';
 import Transform from 'ember-data/transform';
 import SlackObject from 'ghost-admin/models/slack-integration';
-
-const {
-    isArray,
-    A: emberA
-} = Ember;
 
 export default Transform.extend({
     deserialize(serialized) {
@@ -25,7 +20,7 @@ export default Transform.extend({
 
     serialize(deserialized) {
         let settingsArray;
-        if (isArray(deserialized)) {
+        if (isEmberArray(deserialized)) {
             settingsArray = deserialized.map((item) => {
                 let url = (item.get('url') || '').trim();
 

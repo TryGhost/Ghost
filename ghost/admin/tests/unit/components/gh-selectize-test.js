@@ -4,12 +4,8 @@ import {
     describeComponent,
     it
 } from 'ember-mocha';
-import Ember from 'ember';
-
-const {
-    run,
-    A: emberA
-} = Ember;
+import {A as emberA} from 'ember-array/utils';
+import run from 'ember-runloop';
 
 describeComponent(
     'gh-selectize',

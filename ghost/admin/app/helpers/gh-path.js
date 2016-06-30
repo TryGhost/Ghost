@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import {helper} from 'ember-helper';
+import {htmlSafe} from 'ember-string';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 
 // Handlebars Helper {{gh-path}}
@@ -8,12 +9,7 @@ import ghostPaths from 'ghost-admin/utils/ghost-paths';
 // {{gh-path 'api'}} for Ghost's api root (/myblog/ghost/api/v0.1/)
 // {{gh-path 'admin' '/assets/hi.png'}} for resolved url (/myblog/ghost/assets/hi.png)
 
-const {
-    Helper,
-    String: {htmlSafe}
-} = Ember;
-
-export default Helper.helper(function (params) {
+export default helper(function (params) {
     let paths = ghostPaths();
     let [path, url] = params;
     let base;

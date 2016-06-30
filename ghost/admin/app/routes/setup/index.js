@@ -1,6 +1,4 @@
-import Ember from 'ember';
-
-const {Route} = Ember;
+import Route from 'ember-route';
 
 export default Route.extend({
     beforeModel() {

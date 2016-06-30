@@ -1,13 +1,9 @@
-import Ember from 'ember';
-
-const {
-    Mixin,
-    computed,
-    inject: {controller}
-} = Ember;
+import Mixin from 'ember-metal/mixin';
+import computed from 'ember-computed';
+import injectController from 'ember-controller/inject';
 
 export default Mixin.create({
-    application: controller(),
+    application: injectController(),
 
     isViewingSubview: computed('application.showSettingsMenu', {
         get() {

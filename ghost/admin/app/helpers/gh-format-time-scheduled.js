@@ -1,6 +1,4 @@
-import Ember from 'ember';
-
-const {Helper} = Ember;
+import {helper} from 'ember-helper';
 
 export function timeToSchedule(params) {
     if (!params || !params.length) {
@@ -15,6 +13,6 @@ export function timeToSchedule(params) {
     }
 }
 
-export default Helper.helper(function (params) {
+export default helper(function (params) {
     return timeToSchedule(params);
 });

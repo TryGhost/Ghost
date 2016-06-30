@@ -1,9 +1,7 @@
-import Ember from 'ember';
+import {helper} from 'ember-helper';
 import counter from 'ghost-admin/utils/word-count';
 
-const {Helper} = Ember;
-
-export default Helper.helper(function (params) {
+export default helper(function (params) {
     if (!params || !params.length) {
         return;
     }

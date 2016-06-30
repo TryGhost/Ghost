@@ -1,9 +1,11 @@
 import Ember from 'ember';
+import Test from 'ember-test';
 
 // This is needed for testing error responses in acceptance tests
 // See http://williamsbdev.com/posts/testing-rsvp-errors-handled-globally/
 
-const {Test, Logger} = Ember;
+// ember-cli-shims doesn't export Logger
+const {Logger} = Ember;
 
 let originalException;
 let originalLoggerError;

@@ -4,12 +4,8 @@ import {
     describe,
     it
 } from 'mocha';
-import Ember from 'ember';
+import EmberObject from 'ember-object';
 import InfiniteScrollMixin from 'ghost-admin/mixins/infinite-scroll';
-
-const {
-    Object: EmberObject
-} = Ember;
 
 describe('Unit: Mixin: infinite-scroll', function () {
     // Replace this with your real tests.

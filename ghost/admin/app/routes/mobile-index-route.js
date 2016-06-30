@@ -1,12 +1,10 @@
-import Ember from 'ember';
+import Route from 'ember-route';
+import {addObserver, removeObserver} from 'ember-metal/observer';
+import injectService from 'ember-service/inject';
 
-const {
-    Route,
-    addObserver,
-    inject: {service},
-    removeObserver,
-    K
-} = Ember;
+function K() {
+    return this;
+}
 
 // Routes that extend MobileIndexRoute need to implement
 // desktopTransition, a function which is called when
@@ -15,7 +13,7 @@ export default Route.extend({
     desktopTransition: K,
     _callDesktopTransition: null,
 
-    mediaQueries: service(),
+    mediaQueries: injectService(),
 
     activate() {
         this._super(...arguments);

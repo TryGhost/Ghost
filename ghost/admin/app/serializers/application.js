@@ -1,9 +1,8 @@
 import Ember from 'ember';
+import {decamelize} from 'ember-string';
 import RESTSerializer from 'ember-data/serializers/rest';
 
-const {
-    String: {decamelize, pluralize}
-} = Ember;
+const {String: {pluralize}} = Ember;
 
 export default RESTSerializer.extend({
     serializeIntoHash(hash, type, record, options) {

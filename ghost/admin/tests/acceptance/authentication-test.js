@@ -6,15 +6,14 @@ import {
     afterEach
 } from 'mocha';
 import { expect } from 'chai';
-import Ember from 'ember';
+import $ from 'jquery';
+import run from 'ember-runloop';
 import startApp from '../helpers/start-app';
 import destroyApp from '../helpers/destroy-app';
 import { authenticateSession, currentSession, invalidateSession } from 'ghost-admin/tests/helpers/ember-simple-auth';
 import Mirage from 'ember-cli-mirage';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
-
-const {$, run} = Ember;
 
 const Ghost = ghostPaths();
 

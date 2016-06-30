@@ -1,12 +1,6 @@
-import Ember from 'ember';
+import {alias} from 'ember-computed';
+import injectService from 'ember-service/inject';
 import ModalComponent from 'ghost-admin/components/modals/base';
-
-const {
-    computed,
-    inject: {service}
-} = Ember;
-
-const {alias} = computed;
 
 export default ModalComponent.extend({
 
@@ -14,8 +8,8 @@ export default ModalComponent.extend({
 
     post: alias('model'),
 
-    notifications: service(),
-    routing: service('-routing'),
+    notifications: injectService(),
+    routing: injectService('-routing'),
 
     _deletePost() {
         let post = this.get('post');

@@ -5,10 +5,9 @@ import {
     it
 } from 'ember-mocha';
 import hbs from 'htmlbars-inline-precompile';
-import Ember from 'ember';
+import run from 'ember-runloop';
+import RSVP from 'rsvp';
 import sinon from 'sinon';
-
-const {RSVP, run} = Ember;
 
 describeComponent(
     'transfer-owner',

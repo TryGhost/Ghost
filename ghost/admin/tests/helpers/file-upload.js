@@ -1,7 +1,6 @@
 /* global Blob */
-import Ember from 'ember';
-
-const {$, Test} = Ember;
+import $ from 'jquery';
+import Test from 'ember-test';
 
 export function createFile(content = ['test'], options = {}) {
     let {

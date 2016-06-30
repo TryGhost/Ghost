@@ -1,14 +1,9 @@
-import Ember from 'ember';
+import Service from 'ember-service';
+import {filter} from 'ember-computed';
+import {A as emberA, isEmberArray} from 'ember-array/utils';
+import get from 'ember-metal/get';
+import set from 'ember-metal/set';
 import {isAjaxError} from 'ember-ajax/errors';
-
-const {
-    Service,
-    computed: {filter},
-    A: emberA,
-    get,
-    set,
-    isArray
-} = Ember;
 
 // Notification keys take the form of "noun.verb.message", eg:
 //
@@ -119,7 +114,7 @@ export default Service.extend({
             resp = resp.errors;
         }
 
-        if (resp && isArray(resp) && resp.length) { // Array of errors
+        if (resp && isEmberArray(resp) && resp.length) { // Array of errors
             this.showErrors(resp, options);
         } else if (resp && resp.detail) { // ember-ajax provided error message
             this.showAlert(resp.detail, options);

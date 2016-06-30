@@ -4,7 +4,6 @@ import {
     it
 } from 'ember-mocha';
 import Pretender from 'pretender';
-import Ember from 'ember';
 
 function stubAvailableTimezonesEndpoint(server) {
     server.get('/ghost/api/v0.1/configuration/timezones', function (request) {

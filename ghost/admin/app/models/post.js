@@ -1,17 +1,15 @@
 /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import Ember from 'ember';
+import computed, {equal, filterBy} from 'ember-computed';
+import injectService from 'ember-service/inject';
+
 import Model from 'ember-data/model';
 import attr from 'ember-data/attr';
 import { belongsTo, hasMany } from 'ember-data/relationships';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 
-const {
-    Comparable,
-    compare,
-    computed,
-    inject: {service}
-} = Ember;
-const {equal, filterBy} = computed;
+// ember-cli-shims doesn't export these so we must get them manually
+const {Comparable, compare} = Ember;
 
 function statusCompare(postA, postB) {
     let status1 = postA.get('status');
@@ -93,10 +91,10 @@ export default Model.extend(Comparable, ValidationEngine, {
     }),
     url: attr('string'),
 
-    config: service(),
-    ghostPaths: service(),
-    timeZone: service(),
-    clock: service(),
+    config: injectService(),
+    ghostPaths: injectService(),
+    timeZone: injectService(),
+    clock: injectService(),
 
     absoluteUrl: computed('url', 'ghostPaths.url', 'config.blogUrl', function () {
         let blogUrl = this.get('config.blogUrl');

@@ -1,12 +1,11 @@
+import $ from 'jquery';
 import Ember from 'ember';
+import Service from 'ember-service';
+import computed from 'ember-computed';
+import injectService from 'ember-service/inject';
 
-const {
-    $,
-    Service,
-    _ProxyMixin,
-    computed,
-    inject: {service}
-} = Ember;
+// ember-cli-shims doesn't export _ProxyMixin
+const {_ProxyMixin} = Ember;
 const {isNumeric} = $;
 
 function _mapType(val, type) {
@@ -28,8 +27,8 @@ function _mapType(val, type) {
 }
 
 export default Service.extend(_ProxyMixin, {
-    ajax: service(),
-    ghostPaths: service(),
+    ajax: injectService(),
+    ghostPaths: injectService(),
 
     content: computed(function () {
         let metaConfigTags = $('meta[name^="env-"]');

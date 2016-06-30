@@ -1,13 +1,10 @@
-import Ember from 'ember';
+import Route from 'ember-route';
+import injectService from 'ember-service/inject';
+import EmberObject from 'ember-object';
 import styleBody from 'ghost-admin/mixins/style-body';
 import Configuration from 'ember-simple-auth/configuration';
 import DS from 'ember-data';
 
-const {
-    Route,
-    inject: {service},
-    Object: EmberObject
-} = Ember;
 const {Errors} = DS;
 
 export default Route.extend(styleBody, {
@@ -15,7 +12,7 @@ export default Route.extend(styleBody, {
 
     classNames: ['ghost-login'],
 
-    session: service(),
+    session: injectService(),
 
     beforeModel() {
         this._super(...arguments);

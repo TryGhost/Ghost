@@ -1,20 +1,16 @@
-import Ember from 'ember';
+import Route from 'ember-route';
+import injectService from 'ember-service/inject';
 import Configuration from 'ember-simple-auth/configuration';
 import styleBody from 'ghost-admin/mixins/style-body';
-
-const {
-    Route,
-    inject: {service}
-} = Ember;
 
 export default Route.extend(styleBody, {
     titleToken: 'Setup',
 
     classNames: ['ghost-setup'],
 
-    ghostPaths: service('ghost-paths'),
-    session: service(),
-    ajax: service(),
+    ghostPaths: injectService(),
+    session: injectService(),
+    ajax: injectService(),
 
     // use the beforeModel hook to check to see whether or not setup has been
     // previously completed.  If it has, stop the transition into the setup page.

@@ -5,10 +5,8 @@ import {
     it
 } from 'ember-mocha';
 import hbs from 'htmlbars-inline-precompile';
-import Ember from 'ember';
+import run from 'ember-runloop';
 import sinon from 'sinon';
-
-const {run} = Ember;
 
 describeComponent(
     'gh-image-uploader-with-preview',

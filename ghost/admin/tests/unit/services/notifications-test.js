@@ -1,5 +1,8 @@
 /* jshint expr:true */
-import Ember from 'ember';
+import run from 'ember-runloop';
+import get from 'ember-metal/get';
+import {A as emberA} from 'ember-array/utils';
+import EmberObject from 'ember-object';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import {
@@ -7,13 +10,6 @@ import {
     it
 } from 'ember-mocha';
 import {AjaxError, InvalidError} from 'ember-ajax/errors';
-
-const {
-    run,
-    get,
-    A: emberA,
-    Object: EmberObject
-} = Ember;
 
 describeModule(
     'service:notifications',

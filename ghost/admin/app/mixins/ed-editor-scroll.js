@@ -1,7 +1,6 @@
-import Ember from 'ember';
+import Mixin from 'ember-metal/mixin';
+import run from 'ember-runloop';
 import {invokeAction} from 'ember-invoke-action';
-
-const {Mixin, run} = Ember;
 
 export default Mixin.create({
     /**

@@ -1,11 +1,7 @@
-import Ember from 'ember';
-
-const {
-    $,
-    Controller,
-    inject: {service},
-    isArray
-} = Ember;
+import $ from 'jquery';
+import Controller from 'ember-controller';
+import injectService from 'ember-service/inject';
+import {isEmberArray} from 'ember-array/utils';
 
 export default Controller.extend({
     uploadButtonText: 'Import',
@@ -13,10 +9,10 @@ export default Controller.extend({
     submitting: false,
     showDeleteAllModal: false,
 
-    ghostPaths: service(),
-    notifications: service(),
-    session: service(),
-    ajax: service(),
+    ghostPaths: injectService(),
+    notifications: injectService(),
+    session: injectService(),
+    ajax: injectService(),
 
     actions: {
         onUpload(file) {
@@ -44,7 +40,7 @@ export default Controller.extend({
                 // TODO: keep as notification, add link to view content
                 notifications.showNotification('Import successful.', {key: 'import.upload.success'});
             }).catch((response) => {
-                if (response && response.errors && isArray(response.errors)) {
+                if (response && response.errors && isEmberArray(response.errors)) {
                     this.set('importErrors', response.errors);
                 }
 

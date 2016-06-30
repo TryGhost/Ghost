@@ -1,16 +1,12 @@
-import Ember from 'ember';
-import { invoke } from 'ember-invoke-action';
-
-const {
-    Controller,
-    computed: {empty},
-    inject: {service}
-} = Ember;
+import Controller from 'ember-controller';
+import {empty} from 'ember-computed';
+import injectService from 'ember-service/inject';
+import {invoke} from 'ember-invoke-action';
 
 export default Controller.extend({
-    ghostPaths: service(),
-    ajax: service(),
-    notifications: service(),
+    ghostPaths: injectService(),
+    ajax: injectService(),
+    notifications: injectService(),
 
     // will be set by route
     settings: null,

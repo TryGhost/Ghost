@@ -1,15 +1,10 @@
-import Ember from 'ember';
-
-const {
-    computed,
-    inject: {controller},
-    Controller
-} = Ember;
-const {alias, equal, sort} = computed;
+import Controller from 'ember-controller';
+import injectController from 'ember-controller/inject';
+import {alias, equal, sort} from 'ember-computed';
 
 export default Controller.extend({
 
-    tagController: controller('settings.tags.tag'),
+    tagController: injectController('settings.tags.tag'),
 
     selectedTag: alias('tagController.tag'),
 

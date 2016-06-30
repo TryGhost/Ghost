@@ -7,14 +7,13 @@ import {
     afterEach
 } from 'mocha';
 import { expect } from 'chai';
-import Ember from 'ember';
+import $ from 'jquery';
+import run from 'ember-runloop';
 import startApp from '../../helpers/start-app';
 import destroyApp from '../../helpers/destroy-app';
 import { invalidateSession, authenticateSession } from 'ghost-admin/tests/helpers/ember-simple-auth';
 import { errorOverride, errorReset } from 'ghost-admin/tests/helpers/adapter-error';
 import Mirage from 'ember-cli-mirage';
-
-const {$, run} = Ember;
 
 // Grabbed from keymaster's testing code because Ember's `keyEvent` helper
 // is for some reason not triggering the events in a way that keymaster detects:

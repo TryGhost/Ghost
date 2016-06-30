@@ -1,6 +1,5 @@
-import Ember from 'ember';
-
-const {assign, $} = Ember;
+import $ from 'jquery';
+import {assign} from 'ember-platform';
 
 export default {
     name: 'jquery-ajax-oauth-prefilter',

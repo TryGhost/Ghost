@@ -1,10 +1,8 @@
-import Ember from 'ember';
+import run from 'ember-runloop';
 import {
     describeModel,
     it
 } from 'ember-mocha';
-
-const {run} = Ember;
 
 describeModel('role', 'Unit: Model: role', function () {
     it('provides a lowercase version of the name', function () {

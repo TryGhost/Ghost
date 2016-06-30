@@ -1,16 +1,13 @@
-import Ember from 'ember';
+import Route from 'ember-route';
+import {htmlSafe} from 'ember-string';
+import injectService from 'ember-service/inject';
+import run from 'ember-runloop';
+
 import AuthConfiguration from 'ember-simple-auth/configuration';
 import ApplicationRouteMixin from 'ember-simple-auth/mixins/application-route-mixin';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
-
-const {
-    Route,
-    String: {htmlSafe},
-    inject: {service},
-    run
-} = Ember;
 
 function K() {
     return this;
@@ -24,10 +21,10 @@ shortcuts[`${ctrlOrCmd}+s`] = {action: 'save', scope: 'all'};
 export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
     shortcuts,
 
-    config: service(),
-    feature: service(),
-    dropdown: service(),
-    notifications: service(),
+    config: injectService(),
+    feature: injectService(),
+    dropdown: injectService(),
+    notifications: injectService(),
 
     afterModel(model, transition) {
         this._super(...arguments);

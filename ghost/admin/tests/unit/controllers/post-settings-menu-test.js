@@ -1,16 +1,12 @@
 /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
-import Ember from 'ember';
+import run from 'ember-runloop';
+import RSVP from 'rsvp';
+import EmberObject from 'ember-object';
 import {
     describeModule,
     it
 } from 'ember-mocha';
 import sinon from 'sinon';
-
-const {
-    run,
-    Object: EmberObject,
-    RSVP
-} = Ember;
 
 function K() {
     return this;

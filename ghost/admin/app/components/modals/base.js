@@ -1,8 +1,7 @@
 /* global key */
-import Ember from 'ember';
+import Component from 'ember-component';
+import run from 'ember-runloop';
 import {invokeAction} from 'ember-invoke-action';
-
-const {Component, run} = Ember;
 
 export default Component.extend({
     tagName: 'section',
