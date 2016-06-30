@@ -1,7 +1,5 @@
-import Ember from 'ember';
+import Component from 'ember-component';
 import InfiniteScrollMixin from 'ghost-admin/mixins/infinite-scroll';
-
-const {Component} = Ember;
 
 export default Component.extend(InfiniteScrollMixin, {
     actions: {

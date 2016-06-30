@@ -1,6 +1,6 @@
-import Ember from 'ember';
-
-const {Component, computed, isEmpty} = Ember;
+import Component from 'ember-component';
+import computed, {notEmpty} from 'ember-computed';
+import {isEmpty} from 'ember-utils';
 
 /**
  * Renders one random error message when passed a DS.Errors object
@@ -17,7 +17,7 @@ export default Component.extend({
     errors: null,
     property: '',
 
-    isVisible: computed.notEmpty('errors'),
+    isVisible: notEmpty('errors'),
 
     message: computed('errors.[]', 'property', function () {
         let property = this.get('property');

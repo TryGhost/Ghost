@@ -1,17 +1,12 @@
-import Ember from 'ember';
+import Component from 'ember-component';
+import computed, {notEmpty} from 'ember-computed';
+import {htmlSafe} from 'ember-string';
+import injectService from 'ember-service/inject';
+import {isBlank} from 'ember-utils';
+import run from 'ember-runloop';
+
 import AjaxService from 'ember-ajax/services/ajax';
 import {isNotFoundError} from 'ember-ajax/errors';
-
-const {
-    Component,
-    computed,
-    String: {htmlSafe},
-    inject: {service},
-    isBlank,
-    run
-} = Ember;
-
-const {notEmpty} = computed;
 
 /**
  * A component to manage a user profile image. By default it just handles picture uploads,
@@ -36,9 +31,10 @@ export default Component.extend({
     hasUploadedImage: false,
     fileStorage: true,
     ajax: AjaxService.create(),
-    config: service(),
 
-    ghostPaths: service(),
+    config: injectService(),
+    ghostPaths: injectService(),
+
     displayGravatar: notEmpty('validEmail'),
 
     init() {

@@ -1,6 +1,7 @@
 import Ember from 'ember';
 import XFileInput from 'emberx-file-input/components/x-file-input';
 
+// ember-cli-shims doesn't export Ember.testing
 const {testing} = Ember;
 
 export default XFileInput.extend({

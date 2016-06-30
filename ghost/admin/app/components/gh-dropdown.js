@@ -1,12 +1,8 @@
-import Ember from 'ember';
+import Component from 'ember-component';
+import computed from 'ember-computed';
+import injectService from 'ember-service/inject';
+import run from 'ember-runloop';
 import DropdownMixin from 'ghost-admin/mixins/dropdown-mixin';
-
-const {
-    Component,
-    computed,
-    inject: {service},
-    run
-} = Ember;
 
 export default Component.extend(DropdownMixin, {
     classNames: 'dropdown',
@@ -26,7 +22,7 @@ export default Component.extend(DropdownMixin, {
         return this.get('isOpen') && !this.get('closing');
     }),
 
-    dropdown: service(),
+    dropdown: injectService(),
 
     open() {
         this.set('isOpen', true);

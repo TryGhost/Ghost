@@ -1,7 +1,5 @@
-import Ember from 'ember';
-
-const {Component, computed} = Ember;
-const {reads} = computed;
+import Component from 'ember-component';
+import {reads} from 'ember-computed';
 
 function K() {
     return this;

@@ -1,11 +1,7 @@
-import Ember from 'ember';
-
-const {
-    Component,
-    String: {htmlSafe},
-    inject: {service},
-    computed
-} = Ember;
+import Component from 'ember-component';
+import {htmlSafe} from 'ember-string';
+import injectService from 'ember-service/inject';
+import computed from 'ember-computed';
 
 export default Component.extend({
     tagName: 'nav',
@@ -20,10 +16,10 @@ export default Component.extend({
         return htmlSafe(`background-image: url(${url})`);
     }),
 
-    config: service(),
-    session: service(),
-    ghostPaths: service(),
-    feature: service(),
+    config: injectService(),
+    session: injectService(),
+    ghostPaths: injectService(),
+    feature: injectService(),
 
     mouseEnter() {
         this.sendAction('onMouseEnter');

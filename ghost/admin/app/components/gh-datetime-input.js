@@ -1,13 +1,9 @@
-import Ember from 'ember';
+import Component from 'ember-component';
+import RSVP from 'rsvp';
+import injectService from 'ember-service/inject';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import {formatDate} from 'ghost-admin/utils/date-formatting';
 import {InvokeActionMixin} from 'ember-invoke-action';
-
-const {
-    Component,
-    RSVP,
-    inject: {service}
-} = Ember;
 
 export default Component.extend(InvokeActionMixin, {
     tagName: 'span',
@@ -17,7 +13,7 @@ export default Component.extend(InvokeActionMixin, {
     inputClass: null,
     inputId: null,
     inputName: null,
-    timeZone: service(),
+    timeZone: injectService(),
 
     didReceiveAttrs() {
         let promises = {

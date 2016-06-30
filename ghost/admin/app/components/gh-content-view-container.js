@@ -1,15 +1,11 @@
-import Ember from 'ember';
-
-const {
-    Component,
-    computed,
-    inject: {service}
-} = Ember;
+import Component from 'ember-component';
+import {reads} from 'ember-computed';
+import injectService from 'ember-service/inject';
 
 export default Component.extend({
     tagName: 'section',
     classNames: ['gh-view', 'content-view-container'],
 
-    mediaQueries: service(),
-    previewIsHidden: computed.reads('mediaQueries.maxWidth900')
+    mediaQueries: injectService(),
+    previewIsHidden: reads('mediaQueries.maxWidth900')
 });

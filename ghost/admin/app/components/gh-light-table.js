@@ -1,7 +1,6 @@
-import Ember from 'ember';
+import $ from 'jquery';
+import run from 'ember-runloop';
 import LightTable from 'ember-light-table/components/light-table';
-
-const {$, run} = Ember;
 
 export default LightTable.extend({
 

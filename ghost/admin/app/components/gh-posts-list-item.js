@@ -1,17 +1,16 @@
+import $ from 'jquery';
 import Ember from 'ember';
+import Component from 'ember-component';
+import {htmlSafe} from 'ember-string';
+import computed, {alias, equal} from 'ember-computed';
+import injectService from 'ember-service/inject';
+
 import ActiveLinkWrapper from 'ghost-admin/mixins/active-link-wrapper';
 import {invokeAction} from 'ember-invoke-action';
 
-const {
-    $,
-    Component,
-    String: {htmlSafe},
-    computed,
-    inject: {service},
-    ObjectProxy,
-    PromiseProxyMixin
-} = Ember;
-const {alias, equal} = computed;
+// ember-cli-shims doesn't export these
+const {ObjectProxy, PromiseProxyMixin} = Ember;
+
 const ObjectPromiseProxy = ObjectProxy.extend(PromiseProxyMixin);
 
 export default Component.extend(ActiveLinkWrapper, {
@@ -26,8 +25,8 @@ export default Component.extend(ActiveLinkWrapper, {
     isPublished: equal('post.status', 'published'),
     isScheduled: equal('post.status', 'scheduled'),
 
-    ghostPaths: service(),
-    timeZone: service(),
+    ghostPaths: injectService(),
+    timeZone: injectService(),
 
     authorName: computed('post.author.name', 'post.author.email', function () {
         return this.get('post.author.name') || this.get('post.author.email');

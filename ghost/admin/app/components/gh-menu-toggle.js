@@ -1,10 +1,6 @@
-import Ember from 'ember';
-
-const {
-    Component,
-    computed,
-    inject: {service}
-} = Ember;
+import Component from 'ember-component';
+import computed, {reads} from 'ember-computed';
+import injectService from 'ember-service/inject';
 
 /*
     This cute little component has two jobs.
@@ -19,8 +15,8 @@ const {
 export default Component.extend({
     classNames: ['gh-menu-toggle'],
 
-    mediaQueries: service(),
-    isMobile: computed.reads('mediaQueries.isMobile'),
+    mediaQueries: injectService(),
+    isMobile: reads('mediaQueries.isMobile'),
     maximise: false,
 
     iconClass: computed('maximise', 'isMobile', function () {

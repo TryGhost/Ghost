@@ -1,9 +1,8 @@
-import Ember from 'ember';
+import Component from 'ember-component';
+import computed, {alias, readOnly} from 'ember-computed';
+import run from 'ember-runloop';
 import ValidationState from 'ghost-admin/mixins/validation-state';
 import SortableItem from 'ember-sortable/mixins/sortable-item';
-
-const {Component, computed, run} = Ember;
-const {alias, readOnly} = computed;
 
 export default Component.extend(ValidationState, SortableItem, {
     classNames: 'gh-blognav-item',

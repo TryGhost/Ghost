@@ -1,10 +1,9 @@
-import Ember from 'ember';
+import TextArea from 'ember-components/text-area';
+import run from 'ember-runloop';
 import EditorAPI from 'ghost-admin/mixins/ed-editor-api';
 import EditorShortcuts from 'ghost-admin/mixins/ed-editor-shortcuts';
 import EditorScroll from 'ghost-admin/mixins/ed-editor-scroll';
 import {InvokeActionMixin} from 'ember-invoke-action';
-
-const {TextArea, run} = Ember;
 
 export default TextArea.extend(EditorAPI, EditorShortcuts, EditorScroll, InvokeActionMixin, {
     focus: false,

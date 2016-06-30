@@ -1,7 +1,11 @@
+import Component from 'ember-component';
 import Ember from 'ember';
+import {equal} from 'ember-computed';
+import observer from 'ember-metal/observer';
+import run from 'ember-runloop';
 
-const {Component, computed, observer, run, testing} = Ember;
-const {equal} = computed;
+// ember-cli-shims doesn't export Ember.Testing
+const {testing} = Ember;
 
 export default Component.extend({
     tagName: 'button',

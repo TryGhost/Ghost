@@ -1,10 +1,6 @@
-import Ember from 'ember';
-
-const {
-    Component,
-    computed,
-    inject: {service}
-} = Ember;
+import Component from 'ember-component';
+import injectService from 'ember-service/inject';
+import computed from 'ember-computed';
 
 export default Component.extend({
     tagName: 'article',
@@ -13,7 +9,7 @@ export default Component.extend({
 
     message: null,
 
-    notifications: service(),
+    notifications: injectService(),
 
     typeClass: computed('message.type', function () {
         let type = this.get('message.type');

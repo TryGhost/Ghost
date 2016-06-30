@@ -1,16 +1,11 @@
 /* global key */
 /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
-import Ember from 'ember';
-
-const {
-    Component,
-    RSVP,
-    computed,
-    run,
-    inject: {service},
-    isBlank,
-    isEmpty
-} = Ember;
+import Component from 'ember-component';
+import RSVP from 'rsvp';
+import computed from 'ember-computed';
+import run from 'ember-runloop';
+import injectService from 'ember-service/inject';
+import {isBlank, isEmpty} from 'ember-utils';
 
 export function computedGroup(category) {
     return computed('content', 'currentSearch', function () {
@@ -41,9 +36,9 @@ export default Component.extend({
     users: computedGroup('Users'),
     tags: computedGroup('Tags'),
 
-    _store: service('store'),
-    _routing: service('-routing'),
-    ajax: service(),
+    _store: injectService('store'),
+    _routing: injectService('-routing'),
+    ajax: injectService(),
 
     refreshContent() {
         let promises = [];

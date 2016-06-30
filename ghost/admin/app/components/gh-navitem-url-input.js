@@ -1,7 +1,7 @@
-import Ember from 'ember';
+import TextField from 'ember-components/text-field';
+import computed from 'ember-computed';
+import run from 'ember-runloop';
 import {InvokeActionMixin} from 'ember-invoke-action';
-
-const {TextField, computed, run} = Ember;
 
 let joinUrlParts = function (url, path) {
     if (path[0] !== '/' && url.slice(-1) !== '/') {

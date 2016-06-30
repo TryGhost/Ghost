@@ -1,7 +1,5 @@
-import Ember from 'ember';
-
-const {Component, computed} = Ember;
-const {alias} = computed;
+import Component from 'ember-component';
+import computed, {alias} from 'ember-computed';
 
 // See gh-tabs-manager.js for use
 export default Component.extend({

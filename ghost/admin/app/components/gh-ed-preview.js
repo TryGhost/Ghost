@@ -1,13 +1,12 @@
 import Ember from 'ember';
+import Component from 'ember-component';
+import EmberObject from 'ember-object';
+import run from 'ember-runloop';
+import {A as emberA} from 'ember-array/utils';
 import {formatMarkdown} from 'ghost-admin/helpers/gh-format-markdown';
 
-const {
-    Component,
-    Object: EmberObject,
-    run,
-    uuid,
-    A: emberA
-} = Ember;
+// ember-cli-shims doesn't export uuid
+const {uuid} = Ember;
 
 export default Component.extend({
     _scrollWrapper: null,
