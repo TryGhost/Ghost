@@ -39,9 +39,22 @@ var crypto   = require('crypto'),
     currentVersion = config.ghostVersion;
 
 /**
+ * Attempts to parse string to JSON.
+ * @return {Object} is successful. Otherwise, undefined.
+ */
+function safeParseJson(json) {
+    var obj;
+    try {
+        obj = JSON.parse(json);
+    } catch (e) {
+    }
+    return obj;
+}
+
+/**
  * Default error handler for update check promises. In case of a promise
  * failure, "nextUpdateCheck" is set to 24 hours from now.
- * @param error
+ * @param {Error} error
  */
 function updateCheckError(error) {
     api.settings.edit(
@@ -58,31 +71,17 @@ function updateCheckError(error) {
 
 /**
  * Prepares fields to be submitted to UpdateCheck service.
- *
- * @returns {*} an object accepted by UpdateCheck service.
+ * @returns Object an object accepted by UpdateCheck service.
  */
 function prepareBlogSnapshot() {
-    var data = {},
-        mailConfig = config.mail;
-
-    /**
-     * Converts "activeApps" into a string of comma separated values.
-     * @param response
-     * @returns {*}
-     */
-    var appsToCsv = function(response) {
-        var apps = response.settings[0];
-
-        try {
-            apps = JSON.parse(apps.value);
-        } catch(e) {
-            return errors.rejectError(e);
-        }
-
-        return _.reduce(apps, function(memo, item) {
-            return memo === '' ? memo + item : memo + ', ' + item;
-        }, '');
-    };
+    var data       = {},
+        mailConfig = config.mail,
+        appsToCsv  = function (response) {
+            var apps = safeParseJson(response.settings[0].value);
+            return _.reduce(apps, function (memo, item) {
+                return memo === '' ? memo + item : memo + ', ' + item;
+            }, '');
+        };
 
     return Promise.props({
         hash: api.settings.read(_.extend({key: 'dbHash'}, internal)).reflect(),
@@ -131,8 +130,8 @@ function updateCheckRequest() {
         snapshot = JSON.stringify(snapshot);
 
         headers = {
-            "Content-Type": "application/json",
-            "Content-Length": Buffer.byteLength(snapshot)
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(snapshot)
         };
 
         return new Promise(function p(resolve, reject) {
@@ -173,26 +172,76 @@ function updateCheckRequest() {
 
 /**
  * Update Check Response. Handles the response from UpdateCheck service. On response:
- * 1. Updates the time we can next make a check
+ * 1. Updates the time for next checkin
  * 2. Checks if the version in the response is new, and updates the notification setting
- * @param response
+ * @param {Object} response body after calling UpdateCheck service
  * @returns {Promise}
  */
 function updateCheckResponse(response) {
-    var ops = [];
+    return Promise.all([
+        api.settings.edit({settings: [{key: 'nextUpdateCheck', value: response.next_check}]}, internal),
+        api.settings.edit({settings: [{key: 'displayUpdateNotification', value: response.release.name}]}, internal)
+    ]);
+}
 
-    ops.push(
-        api.settings.edit(
-            {settings: [{key: 'nextUpdateCheck', value: response.next_check}]},
-            internal
-        ),
-        api.settings.edit(
-            {settings: [{key: 'displayUpdateNotification', value: response.release.name}]},
-            internal
-        )
-    );
+/**
+ * Stores upgrade message in notification store. Also save any other notifications not "seen".
+ * @returns version notification
+ */
+function unresolvedNotifications() {
+    return api.settings.read(_.extend({key: 'displayUpdateNotification'}, internal)).then(function then(response) {
+        var display = response.settings[0];
 
-    return Promise.all(ops);
+        // Version 0.4 used boolean to indicate the need for an update. This special case is
+        // translated to the version string.
+        // TODO: remove in future version.
+        if (display.value === 'false' || display.value === 'true' || display.value === '1' || display.value === '0') {
+            display.value = '0.4.0';
+        }
+
+        if (display && display.value && currentVersion && semver.gt(display.value, currentVersion)) {
+            return display.value;
+        }
+    }).then(function (newVersion) {
+        var newVersionNotification = null,
+            getStoredNotifications = api.notifications.browse({context: {internal: true}}),
+            getSeenNotifications   = api.settings.read({context: {internal: true}, key: 'seenNotifications'});
+
+        // if a new version is available, construct a message
+        if(newVersion) {
+            newVersionNotification = {
+                location: 'top',
+                type: 'upgrade',
+                status: 'upgrade',
+                dismissible: false,
+                message: i18n.t('notices.controllers.newVersionAvailable', {
+                    version: newVersion,
+                    link: '<a href="http://support.ghost.org/how-to-upgrade/" target="_blank">Click here</a>'
+                })
+            };
+        }
+
+        return [newVersionNotification, getStoredNotifications, getSeenNotifications];
+    }).spread(function (newVersionNotification, stored, seen) {
+        var storedNotifications = stored.notifications,
+            seenNotifications   = JSON.parse(seen.settings[0].value);
+
+        // if upgrade notification was prepared, add to list
+        if(!_.isEmpty(newVersionNotification)) {
+            storedNotifications.push(newVersionNotification);
+        }
+
+        // Remove seen notifications and duplicates before saving all
+        var notifications = _.chain(storedNotifications)
+        .filter(function filter(n) {
+            return !n.uuid || !_.contains(seenNotifications, n.uuid);
+        })
+        .uniqBy('message')
+        .value();
+
+        // Finally, save notifications
+        return api.notifications.add({notifications: notifications}, {context: {internal: true}});
+    });
 }
 
 /**
@@ -200,62 +249,37 @@ function updateCheckResponse(response) {
  * 1. updateCheck is defined as false in config.js
  * 2. we've already done a check this session
  * 3. we're not in production or development mode
- * @returns {*}
+ * @returns {Promise}
  */
 function updateCheck() {
     // TODO: need to remove config.updateCheck in favor of config.privacy.updateCheck in future version (it is now deprecated)
-    if(config.updateCheck === false || config.isPrivacyDisabled('useUpdateCheck') || _.indexOf(allowedCheckEnvironments, process.env.NODE_ENV) === -1) {
-        // No update check
+    if (config.updateCheck === false || config.isPrivacyDisabled('useUpdateCheck') || _.indexOf(allowedCheckEnvironments, process.env.NODE_ENV) === -1) {
         return Promise.resolve();
     }
 
     /**
      * Evaluates to true if "nextUpdateCheck" > current time
-     * @param nextUpdateCheck
-     * @returns {*|boolean}
+     * @param {String} nextUpdateCheck
+     * @returns {boolean}
      */
-    var isItTimeToCheckIn = function(nextUpdateCheck) {
+    var isCheckinTime = function (nextUpdateCheck) {
         nextUpdateCheck = nextUpdateCheck.settings[0];
         return nextUpdateCheck && nextUpdateCheck.value && nextUpdateCheck.value > moment().unix();
     };
 
     return api.settings.read(_.extend({key: 'nextUpdateCheck'}, internal))
     .then(function then(result) {
-
-        // If it's not time to check yet, do nothing.
-        if(!isItTimeToCheckIn(result)) {
-            return;
+        // If it's not time to check yet, show any unresolved notifications
+        if (!isCheckinTime(result)) {
+            return unresolvedNotifications();
         }
 
         return updateCheckRequest()
         .then(updateCheckResponse)
+        .then(unresolvedNotifications)
         .catch(updateCheckError);
     })
     .catch(updateCheckError);
-
-}
-
-
-function getUpdateNotifications() {
-    return api.settings.read(_.extend({key: 'displayUpdateNotification'}, internal)).then(function then(response) {
-        var notifications = [];
-
-        _.each(response.settings, function(notification) {
-            // Version 0.4 used boolean to indicate the need for an update. This special case is
-            // translated to the version string.
-            // TODO: remove in future version.
-            if(notification.value === 'false' || notification.value === 'true' || notification.value === '1' || notification.value === '0') {
-                notification.value = '0.4.0';
-            }
-
-            if(notification && notification.value && currentVersion && semver.gt(notification.value, currentVersion)) {
-                notifications.push(notification);
-            }
-        });
-
-        return notifications;
-    });
 }
 
 module.exports = updateCheck;
-module.exports.getUpdateNotifications = getUpdateNotifications;
