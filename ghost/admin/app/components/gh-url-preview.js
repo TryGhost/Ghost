@@ -1,10 +1,6 @@
-import Ember from 'ember';
-
-const {
-    Component,
-    computed,
-    inject: {service}
-} = Ember;
+import Component from 'ember-component';
+import computed from 'ember-computed';
+import injectService from 'ember-service/inject';
 
 /*
 Example usage:
@@ -15,7 +11,7 @@ export default Component.extend({
     prefix: null,
     slug: null,
 
-    config: service(),
+    config: injectService(),
 
     url: computed('slug', function () {
         // Get the blog URL and strip the scheme

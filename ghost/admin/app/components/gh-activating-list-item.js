@@ -1,6 +1,5 @@
-import Ember from 'ember';
-
-const {Component, run} = Ember;
+import Component from 'ember-component';
+import {schedule} from 'ember-runloop';
 
 export default Component.extend({
     tagName: 'li',
@@ -14,7 +13,7 @@ export default Component.extend({
 
     actions: {
         setActive(value) {
-            run.schedule('afterRender', this, function () {
+            schedule('afterRender', this, function () {
                 this.set('active', value);
             });
         }

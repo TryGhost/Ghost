@@ -1,18 +1,15 @@
-import Ember from 'ember';
+import Component from 'ember-component';
+import {htmlSafe} from 'ember-string';
+import injectService from 'ember-service/inject';
+import computed from 'ember-computed';
+import {isBlank} from 'ember-utils';
+import run from 'ember-runloop';
+
 import { invoke, invokeAction } from 'ember-invoke-action';
 import {
     isRequestEntityTooLargeError,
     isUnsupportedMediaTypeError
 } from 'ghost-admin/services/ajax';
-
-const {
-    Component,
-    String: {htmlSafe},
-    computed,
-    inject: {service},
-    isBlank,
-    run
-} = Ember;
 
 export default Component.extend({
     tagName: 'section',
@@ -30,7 +27,7 @@ export default Component.extend({
     failureMessage: null,
     uploadPercentage: 0,
 
-    ajax: service(),
+    ajax: injectService(),
 
     formData: computed('file', function () {
         let paramName = this.get('paramName');

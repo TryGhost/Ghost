@@ -1,10 +1,8 @@
 /* global CodeMirror */
-import Ember from 'ember';
+import Component from 'ember-component';
+import run, {bind} from 'ember-runloop';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import {InvokeActionMixin} from 'ember-invoke-action';
-
-const {Component, run} = Ember;
-const {bind} = run;
 
 const CmEditorComponent =  Component.extend(InvokeActionMixin, {
     classNameBindings: ['isFocused:focused'],

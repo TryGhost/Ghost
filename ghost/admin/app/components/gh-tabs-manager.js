@@ -1,6 +1,4 @@
-import Ember from 'ember';
-
-const {Component} = Ember;
+import Component from 'ember-component';
 
 /**
  * Heavily inspired by ic-tabs (https://github.com/instructure/ic-tabs)

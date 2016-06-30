@@ -1,11 +1,7 @@
 /*jshint scripturl:true*/
-import Ember from 'ember';
-
-const {
-    $,
-    Component,
-    String: {htmlSafe}
-} = Ember;
+import $ from 'jquery';
+import Component from 'ember-component';
+import {htmlSafe} from 'ember-string';
 
 export default Component.extend({
     tagName: 'a',

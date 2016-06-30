@@ -1,10 +1,6 @@
-import Ember from 'ember';
-
-const {
-    Component,
-    computed,
-    inject: {service}
-} = Ember;
+import Component from 'ember-component';
+import computed from 'ember-computed';
+import service from 'ember-service/inject';
 
 export default Component.extend({
     tagName: '',

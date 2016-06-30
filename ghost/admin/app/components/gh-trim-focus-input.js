@@ -1,8 +1,6 @@
 /*global device*/
-import Ember from 'ember';
+import computed from 'ember-computed';
 import GhostInput from 'ghost-admin/components/gh-input';
-
-const {computed} = Ember;
 
 /**
  * This doesn't override the OneWayInput component because

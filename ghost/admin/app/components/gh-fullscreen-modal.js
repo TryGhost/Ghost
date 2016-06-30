@@ -1,15 +1,14 @@
-import Ember from 'ember';
+import RSVP from 'rsvp';
+import injectService from 'ember-service/inject';
+import {A as emberA} from 'ember-array/utils';
+import {isBlank} from 'ember-utils';
+import on from 'ember-evented/on';
+import run from 'ember-runloop';
+
 import LiquidTether from 'liquid-tether/components/liquid-tether';
 import {invokeAction} from 'ember-invoke-action';
 
-const {
-    RSVP: {Promise},
-    inject: {service},
-    A: emberA,
-    isBlank,
-    on,
-    run
-} = Ember;
+const {Promise} = RSVP;
 
 const FullScreenModalComponent = LiquidTether.extend({
     to: 'fullscreen-modal',
@@ -21,7 +20,7 @@ const FullScreenModalComponent = LiquidTether.extend({
     overlayClass: 'fullscreen-modal-background',
     modalPath: 'unknown',
 
-    dropdown: service(),
+    dropdown: injectService(),
 
     init() {
         this._super(...arguments);

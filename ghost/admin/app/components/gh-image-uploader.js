@@ -1,18 +1,15 @@
-import Ember from 'ember';
+import Component from 'ember-component';
+import computed from 'ember-computed';
+import injectService from 'ember-service/inject';
+import {htmlSafe} from 'ember-string';
+import {isBlank} from 'ember-utils';
+import run from 'ember-runloop';
+
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {
     isRequestEntityTooLargeError,
     isUnsupportedMediaTypeError
 } from 'ghost-admin/services/ajax';
-
-const {
-    Component,
-    computed,
-    inject: {service},
-    String: {htmlSafe},
-    isBlank,
-    run
-} = Ember;
 
 export default Component.extend({
     tagName: 'section',
@@ -30,8 +27,8 @@ export default Component.extend({
     url: null,
     uploadPercentage: 0,
 
-    ajax: service(),
-    config: service(),
+    ajax: injectService(),
+    config: injectService(),
 
     // TODO: this wouldn't be necessary if the server could accept direct
     // file uploads

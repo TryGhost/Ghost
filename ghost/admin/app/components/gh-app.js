@@ -1,10 +1,6 @@
-import Ember from 'ember';
-
-const {
-    Component,
-    observer,
-    $
-} = Ember;
+import $ from 'jquery';
+import Component from 'ember-component';
+import observer from 'ember-metal/observer';
 
 export default Component.extend({
     classNames: ['gh-app'],

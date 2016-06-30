@@ -1,17 +1,16 @@
 /* global key */
+import Component from 'ember-component';
 import Ember from 'ember';
+import computed, {reads} from 'ember-computed';
+import get from 'ember-metal/get';
+import injectService from 'ember-service/inject';
+import {htmlSafe} from 'ember-string';
+
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import {invokeAction} from 'ember-invoke-action';
 
-const {
-    Component,
-    Handlebars,
-    computed,
-    get,
-    inject: {service},
-    String: {htmlSafe}
-} = Ember;
-const {reads} = computed;
+// ember-cli-shims doesn't export this
+const {Handlebars} = Ember;
 
 export default Component.extend({
 
@@ -25,9 +24,9 @@ export default Component.extend({
 
     isViewingSubview: false,
 
-    feature: service(),
-    config: service(),
-    mediaQueries: service(),
+    feature: injectService(),
+    config: injectService(),
+    mediaQueries: injectService(),
 
     isMobile: reads('mediaQueries.maxWidth600'),
 
