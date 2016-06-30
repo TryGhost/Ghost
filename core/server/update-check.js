@@ -188,58 +188,66 @@ function updateCheckResponse(response) {
  * Stores upgrade message in notification store. Also save any other notifications not "seen".
  * @returns version notification
  */
-function unresolvedNotifications() {
+function renderNotifications() {
     return api.settings.read(_.extend({key: 'displayUpdateNotification'}, internal)).then(function then(response) {
-        var display = response.settings[0];
+        var update  = {},
+            version = response.settings[0];
 
         // Version 0.4 used boolean to indicate the need for an update. This special case is
         // translated to the version string.
         // TODO: remove in future version.
-        if (display.value === 'false' || display.value === 'true' || display.value === '1' || display.value === '0') {
-            display.value = '0.4.0';
+        if (version.value === 'false' || version.value === 'true' || version.value === '1' || version.value === '0') {
+            version.value = '0.4.0';
         }
 
-        if (display && display.value && currentVersion && semver.gt(display.value, currentVersion)) {
-            return display.value;
-        }
-    }).then(function (newVersion) {
-        var newVersionNotification = null,
+        // available: true if a new version is available.
+        update = {
+            available: version && version.value && currentVersion && semver.gt(version.value, currentVersion),
+            version: version.value
+        };
+
+        return update;
+    }).then(function then(update) {
+        var updateNotification = null,
             getStoredNotifications = api.notifications.browse({context: {internal: true}}),
             getSeenNotifications   = api.settings.read({context: {internal: true}, key: 'seenNotifications'});
 
-        // if a new version is available, construct a message
-        if(newVersion) {
-            newVersionNotification = {
-                location: 'top',
+        // If a new version is available, construct a notification
+        if (update.available) {
+            updateNotification = {
                 type: 'upgrade',
-                status: 'upgrade',
+                location: 'settings-about-upgrade',
                 dismissible: false,
+                status: 'alert',
                 message: i18n.t('notices.controllers.newVersionAvailable', {
-                    version: newVersion,
+                    version: update.version,
                     link: '<a href="http://support.ghost.org/how-to-upgrade/" target="_blank">Click here</a>'
                 })
             };
         }
 
-        return [newVersionNotification, getStoredNotifications, getSeenNotifications];
-    }).spread(function (newVersionNotification, stored, seen) {
-        var storedNotifications = stored.notifications,
-            seenNotifications   = JSON.parse(seen.settings[0].value);
-
-        // if upgrade notification was prepared, add to list
-        if(!_.isEmpty(newVersionNotification)) {
-            storedNotifications.push(newVersionNotification);
-        }
+        return [
+            updateNotification,     // upgrade availability notification
+            getStoredNotifications, // currently available notifications
+            getSeenNotifications    // UUIDs of seen notifications
+        ];
+    }).spread(function (updateNotification, stored, seen) {
+        var notifications     = [],
+            seenNotifications = JSON.parse(seen.settings[0].value);
 
         // Remove seen notifications and duplicates before saving all
-        var notifications = _.chain(storedNotifications)
+        notifications = _.chain(stored.notifications)
         .filter(function filter(n) {
-            return !n.uuid || !_.contains(seenNotifications, n.uuid);
+            var wasSeen = _.has(n, 'uuid') && _.contains(seenNotifications, n.uuid);
+            return !wasSeen;
         })
         .uniqBy('message')
         .value();
 
-        // Finally, save notifications
+        if (!_.some(stored.notifications, {message: updateNotification.message})) {
+            notifications.push(updateNotification);
+        }
+
         return api.notifications.add({notifications: notifications}, {context: {internal: true}});
     });
 }
@@ -257,26 +265,18 @@ function updateCheck() {
         return Promise.resolve();
     }
 
-    /**
-     * Evaluates to true if "nextUpdateCheck" > current time
-     * @param {String} nextUpdateCheck
-     * @returns {boolean}
-     */
-    var isCheckinTime = function (nextUpdateCheck) {
-        nextUpdateCheck = nextUpdateCheck.settings[0];
-        return nextUpdateCheck && nextUpdateCheck.value && nextUpdateCheck.value > moment().unix();
-    };
+    return api.settings.read(_.extend({key: 'nextUpdateCheck'}, internal)).then(function then(result) {
+        var next              = result.settings[0],
+            tooEarlyToCheckin = next && next.value && next.value > moment().unix();
 
-    return api.settings.read(_.extend({key: 'nextUpdateCheck'}, internal))
-    .then(function then(result) {
         // If it's not time to check yet, show any unresolved notifications
-        if (!isCheckinTime(result)) {
-            return unresolvedNotifications();
+        if (tooEarlyToCheckin) {
+            return renderNotifications();
         }
 
         return updateCheckRequest()
         .then(updateCheckResponse)
-        .then(unresolvedNotifications)
+        .then(renderNotifications)
         .catch(updateCheckError);
     })
     .catch(updateCheckError);
