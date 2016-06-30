@@ -7,6 +7,7 @@ function ValidationError(message, offendingProperty) {
     this.statusCode = 422;
     if (offendingProperty) {
         this.property = offendingProperty;
+        console.log('Offending Property: ', offendingProperty);
     }
     this.errorType = this.name;
 }
