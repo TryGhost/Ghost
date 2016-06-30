@@ -1,6 +1,6 @@
 import RSVP from 'rsvp';
 import injectService from 'ember-service/inject';
-import {A as emberA} from 'ember-array/utils';
+import {A as emberA, isEmberArray} from 'ember-array/utils';
 import run from 'ember-runloop';
 import ModalComponent from 'ghost-admin/components/modals/base';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
@@ -113,7 +113,11 @@ export default ModalComponent.extend(ValidationEngine, {
                     }
                 }).catch((errors) => {
                     newUser.deleteRecord();
-                    notifications.showErrors(errors, {key: 'invite.send'});
+                    if (isEmberArray(errors)) {
+                        notifications.showErrors(errors, {key: 'invite.send'});
+                    } else {
+                        notifications.showAPIError(errors, {key: 'invite.send'});
+                    }
                 }).finally(() => {
                     this.send('closeModal');
                 });

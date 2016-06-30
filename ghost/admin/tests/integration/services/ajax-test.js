@@ -9,6 +9,7 @@ import {
     isUnauthorizedError
 } from 'ember-ajax/errors';
 import {
+    isVersionMismatchError,
     isRequestEntityTooLargeError,
     isUnsupportedMediaTypeError
 } from 'ghost-admin/services/ajax';
@@ -121,6 +122,30 @@ describeModule(
                 expect(false).to.be.true;
             }).catch((error) => {
                 expect(isUnauthorizedError(error)).to.be.true;
+                done();
+            });
+        });
+
+        it('handles error checking for VersionMismatchError', function (done) {
+            server.get('/test/', function () {
+                return [
+                    400,
+                    {'Content-Type': 'application/json'},
+                    JSON.stringify({
+                        errors: [{
+                            errorType: 'VersionMismatchError',
+                            statusCode: 400
+                        }]
+                    })
+                ];
+            });
+
+            let ajax = this.subject();
+
+            ajax.request('/test/').then(() => {
+                expect(false).to.be.true;
+            }).catch((error) => {
+                expect(isVersionMismatchError(error)).to.be.true;
                 done();
             });
         });

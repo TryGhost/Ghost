@@ -3,7 +3,8 @@ import {filter} from 'ember-computed';
 import {A as emberA, isEmberArray} from 'ember-array/utils';
 import get from 'ember-metal/get';
 import set from 'ember-metal/set';
-import {isAjaxError} from 'ember-ajax/errors';
+import injectService from 'ember-service/inject';
+import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 
 // Notification keys take the form of "noun.verb.message", eg:
 //
@@ -17,6 +18,8 @@ import {isAjaxError} from 'ember-ajax/errors';
 export default Service.extend({
     delayedNotifications: emberA(),
     content: emberA(),
+
+    upgradeStatus: injectService(),
 
     alerts: filter('content', function (notification) {
         let status = get(notification, 'status');
@@ -99,6 +102,22 @@ export default Service.extend({
     },
 
     showAPIError(resp, options) {
+        // handle "global" errors
+        if (isVersionMismatchError(resp)) {
+            return this.get('upgradeStatus').requireUpgrade();
+        }
+
+        // loop over Ember Data / ember-ajax errors object
+        if (resp && isEmberArray(resp.errors)) {
+            return resp.errors.forEach((error) => {
+                this._showAPIError(error, options);
+            });
+        }
+
+        this._showAPIError(resp, options);
+    },
+
+    _showAPIError(resp, options) {
         options = options || {};
         options.type = options.type || 'error';
         // TODO: getting keys from the server would be useful here (necessary for i18n)
@@ -110,12 +129,10 @@ export default Service.extend({
 
         options.defaultErrorText = options.defaultErrorText || 'There was a problem on the server, please try again.';
 
-        if (isAjaxError(resp)) {
-            resp = resp.errors;
-        }
-
         if (resp && isEmberArray(resp) && resp.length) { // Array of errors
             this.showErrors(resp, options);
+        } else if (resp && resp.message) {
+            this.showAlert(resp.message, options);
         } else if (resp && resp.detail) { // ember-ajax provided error message
             this.showAlert(resp.detail, options);
         } else { // text error or no error

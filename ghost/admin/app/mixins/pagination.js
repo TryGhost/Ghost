@@ -4,8 +4,6 @@ import computed from 'ember-computed';
 import RSVP from 'rsvp';
 import injectService from 'ember-service/inject';
 
-import getRequestErrorMessage from 'ghost-admin/utils/ajax';
-
 let defaultPaginationSettings = {
     page: 1,
     limit: 15
@@ -40,25 +38,11 @@ export default Mixin.create({
         this.set('paginationMeta', {});
     },
 
-    /**
-     * Takes an ajax response, concatenates any error messages, then generates an error notification.
-     * @param {jqXHR} response The jQuery ajax reponse object.
-     * @return
-     */
-    reportLoadError(response) {
-        let message = 'A problem was encountered while loading more records';
-
-        if (response) {
-            // Get message from response
-            message += `: ${getRequestErrorMessage(response, true)}`;
-        } else {
-            message += '.';
-        }
-
-        this.get('notifications').showAlert(message, {type: 'error', key: 'pagination.load.failed'});
+    reportLoadError(error) {
+        this.get('notifications').showAPIError(error, {key: 'pagination.load.failed'});
     },
 
-    loadFirstPage() {
+    loadFirstPage(transition) {
         let paginationSettings = this.get('paginationSettings');
         let modelName = this.get('paginationModel');
 
@@ -69,8 +53,14 @@ export default Mixin.create({
         return this.get('store').query(modelName, paginationSettings).then((results) => {
             this.set('paginationMeta', results.meta);
             return results;
-        }).catch((response) => {
-            this.reportLoadError(response);
+        }).catch((error) => {
+            // if we have a transition we're executing in a route hook so we
+            // want to throw in order to trigger the global error handler
+            if (transition) {
+                throw error;
+            } else {
+                this.reportLoadError(error);
+            }
         }).finally(() => {
             this.set('isLoading', false);
         });
@@ -99,8 +89,8 @@ export default Mixin.create({
                 return store.query(modelName, paginationSettings).then((results) => {
                     this.set('paginationMeta', results.meta);
                     return results;
-                }).catch((response) => {
-                    this.reportLoadError(response);
+                }).catch((error) => {
+                    this.reportLoadError(error);
                 }).finally(() => {
                     this.set('isLoading', false);
                 });

@@ -2,6 +2,7 @@ import Route from 'ember-route';
 import {htmlSafe} from 'ember-string';
 import injectService from 'ember-service/inject';
 import run from 'ember-runloop';
+import {isEmberArray} from 'ember-array/utils';
 
 import AuthConfiguration from 'ember-simple-auth/configuration';
 import ApplicationRouteMixin from 'ember-simple-auth/mixins/application-route-mixin';
@@ -146,6 +147,46 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
         },
 
         // noop default for unhandled save (used from shortcuts)
-        save: K
+        save: K,
+
+        error(error, transition) {
+            if (error && isEmberArray(error.errors)) {
+                switch (error.errors[0].errorType) {
+
+                    case 'NotFoundError':
+                        if (transition) {
+                            transition.abort();
+                        }
+
+                        let routeInfo = transition.handlerInfos[transition.handlerInfos.length - 1];
+                        let router = this.get('router');
+                        let params = [];
+
+                        for (let key of Object.keys(routeInfo.params)) {
+                            params.push(routeInfo.params[key]);
+                        }
+
+                        return this.transitionTo('error404', router.generate(routeInfo.name, ...params).replace('/ghost/', '').replace(/^\//g, ''));
+
+                    case 'VersionMismatchError':
+                        if (transition) {
+                            transition.abort();
+                        }
+
+                        this.get('upgradeStatus').requireUpgrade();
+                        return false;
+
+                    default:
+                        this.get('notifications').showAPIError(error);
+                        // don't show the 500 page if we weren't navigating
+                        if (!transition) {
+                            return false;
+                        }
+                }
+            }
+
+            // fallback to 500 error page
+            return true;
+        }
     }
 });

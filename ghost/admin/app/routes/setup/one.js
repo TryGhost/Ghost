@@ -15,6 +15,7 @@ let DownloadCountPoller = EmberObject.extend({
     runId: null,
 
     ajax: AjaxService.create(),
+    notifications: injectService(),
 
     init() {
         this._super(...arguments);
@@ -44,8 +45,9 @@ let DownloadCountPoller = EmberObject.extend({
             }
 
             this.set('count', count);
-        }).catch(() => {
+        }).catch((error) => {
             this.set('count', '');
+            this.get('notifications').showAPIError(error);
         });
     }
 });

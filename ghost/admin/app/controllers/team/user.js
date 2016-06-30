@@ -141,8 +141,10 @@ export default Controller.extend({
 
                 return model;
             }).catch((errors) => {
-                if (errors) {
+                if (isEmberArray(errors)) {
                     this.get('notifications').showErrors(errors, {key: 'user.update'});
+                } else {
+                    this.get('notifications').showAPIError(errors);
                 }
 
                 this.toggleProperty('submitting');

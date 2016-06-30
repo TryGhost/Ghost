@@ -166,34 +166,39 @@ describeModule(
             ]);
         });
 
-        it('#showAPIError adds single json response error', function () {
+        it('#showAPIError handles single json response error', function () {
             let notifications = this.subject();
-            let error = new AjaxError('Single error');
+            let error = new AjaxError([{message: 'Single error'}]);
 
             run(() => {
                 notifications.showAPIError(error);
             });
 
-            let notification = notifications.get('alerts.firstObject');
-            expect(get(notification, 'message')).to.equal('Single error');
-            expect(get(notification, 'status')).to.equal('alert');
-            expect(get(notification, 'type')).to.equal('error');
-            expect(get(notification, 'key')).to.equal('api-error');
+            let alert = notifications.get('alerts.firstObject');
+            expect(get(alert, 'message')).to.equal('Single error');
+            expect(get(alert, 'status')).to.equal('alert');
+            expect(get(alert, 'type')).to.equal('error');
+            expect(get(alert, 'key')).to.equal('api-error');
         });
 
-        // used to display validation errors returned from the server
-        it('#showAPIError adds multiple json response errors', function () {
+        // TODO: update once we have unique api key handling
+        it('#showAPIError handles multiple json response errors', function () {
             let notifications = this.subject();
-            let error = new AjaxError(['First error', 'Second error']);
+            let error = new AjaxError([
+                {message: 'First error'},
+                {message: 'Second error'}
+            ]);
 
             run(() => {
                 notifications.showAPIError(error);
             });
 
-            expect(notifications.get('notifications')).to.deep.equal([
-                {message: 'First error', status: 'notification', type: 'error', key: undefined},
-                {message: 'Second error', status: 'notification', type: 'error', key: undefined}
-            ]);
+            // First error is removed due to duplicate api-key
+            let alert = notifications.get('alerts.firstObject');
+            expect(get(alert, 'message')).to.equal('Second error');
+            expect(get(alert, 'status')).to.equal('alert');
+            expect(get(alert, 'type')).to.equal('error');
+            expect(get(alert, 'key')).to.equal('api-error');
         });
 
         it('#showAPIError displays default error text if response has no error/message', function () {
@@ -238,7 +243,7 @@ describeModule(
 
         it('#showAPIError parses errors from ember-ajax correctly', function () {
             let notifications = this.subject();
-            let error = new InvalidError('Test Error');
+            let error = new InvalidError([{message: 'Test Error'}]);
 
             run(() => {
                 notifications.showAPIError(error);

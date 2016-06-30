@@ -49,6 +49,10 @@ export default Mixin.create(styleBody, ShortcutsRoute, {
             let deletedWithoutChanges,
                 fromNewToEdit;
 
+            if (this.get('upgradeStatus.isRequired')) {
+                return this._super(...arguments);
+            }
+
             // if a save is in-flight we don't know whether or not it's safe to leave
             // so we abort the transition and retry after the save has completed.
             if (state.isSaving) {

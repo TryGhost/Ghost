@@ -11,6 +11,13 @@ import Pretender from 'pretender';
 import wait from 'ember-test-helpers/wait';
 import sinon from 'sinon';
 import {createFile, fileUpload} from '../../helpers/file-upload';
+import Service from 'ember-service';
+
+const notificationsStub = Service.extend({
+    showAPIError(error, options) {
+        // noop - to be stubbed
+    }
+});
 
 const stubSuccessfulUpload = function (server, delay = 0) {
     server.post('/ghost/api/v0.1/uploads/', function () {
@@ -41,6 +48,9 @@ describeComponent(
         beforeEach(function () {
             server = new Pretender();
             this.set('uploadUrl', '/ghost/api/v0.1/uploads/');
+
+            this.register('service:notifications', notificationsStub);
+            this.inject.service('notifications', {as: 'notifications'});
         });
 
         afterEach(function () {
@@ -213,6 +223,35 @@ describeComponent(
             wait().then(() => {
                 expect(this.$('.failed').length, 'error message is displayed').to.equal(1);
                 expect(this.$('.failed').text()).to.match(/Something went wrong/);
+                done();
+            });
+        });
+
+        it('triggers notifications.showAPIError for VersionMismatchError', function (done) {
+            let showAPIError = sinon.spy();
+            this.set('notifications.showAPIError', showAPIError);
+
+            stubFailedUpload(server, 400, 'VersionMismatchError');
+
+            this.render(hbs`{{gh-file-uploader url=uploadUrl}}`);
+            fileUpload(this.$('input[type="file"]'));
+
+            wait().then(() => {
+                expect(showAPIError.calledOnce).to.be.true;
+                done();
+            });
+        });
+
+        it('doesn\'t trigger notifications.showAPIError for other errors', function (done) {
+            let showAPIError = sinon.spy();
+            this.set('notifications.showAPIError', showAPIError);
+
+            stubFailedUpload(server, 400, 'UnknownError');
+            this.render(hbs`{{gh-file-uploader url=uploadUrl}}`);
+            fileUpload(this.$('input[type="file"]'));
+
+            wait().then(() => {
+                expect(showAPIError.called).to.be.false;
                 done();
             });
         });
