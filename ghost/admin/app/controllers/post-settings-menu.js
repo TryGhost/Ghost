@@ -16,6 +16,7 @@ import {parseDateString} from 'ghost-admin/utils/date-formatting';
 import SettingsMenuMixin from 'ghost-admin/mixins/settings-menu-controller';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import isNumber from 'ghost-admin/utils/isNumber';
+import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 
 const {ArrayProxy, Handlebars, PromiseProxyMixin} = Ember;
 
@@ -74,10 +75,13 @@ export default Controller.extend(SettingsMenuMixin, {
                 if (!isBlank(slug)) {
                     this.set(destination, slug);
                 }
-            }).catch(() => {
+            }).catch((error) => {
                 // Nothing to do (would be nice to log this somewhere though),
                 // but a rejected promise needs to be handled here so that a resolved
                 // promise is returned.
+                if (isVersionMismatchError(error)) {
+                    this.get('notifications').showAPIError(error);
+                }
             });
         });
 
@@ -181,6 +185,9 @@ export default Controller.extend(SettingsMenuMixin, {
     }),
 
     showErrors(errors) {
+        if (isVersionMismatchError(errors)) {
+            return this.get('notifications').showAPIError(errors);
+        }
         errors = isEmberArray(errors) ? errors : [errors];
         this.get('notifications').showErrors(errors);
     },

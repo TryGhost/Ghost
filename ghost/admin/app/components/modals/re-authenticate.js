@@ -4,6 +4,7 @@ import injectService from 'ember-service/inject';
 import {htmlSafe} from 'ember-string';
 import ModalComponent from 'ghost-admin/components/modals/base';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
+import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 
 export default ModalComponent.extend(ValidationEngine, {
     validationType: 'signin',
@@ -49,6 +50,9 @@ export default ModalComponent.extend(ValidationEngine, {
                 }).catch((error) => {
                     if (error && error.errors) {
                         error.errors.forEach((err) => {
+                            if (isVersionMismatchError(err)) {
+                                return this.get('notifications').showAPIError(error);
+                            }
                             err.message = htmlSafe(err.message);
                         });
 

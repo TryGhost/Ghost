@@ -65,17 +65,17 @@ export default Service.extend({
             this.notifyPropertyChange('labs');
             return this.get(`labs.${key}`);
 
-        }).catch((errors) => {
+        }).catch((error) => {
             settings.rollbackAttributes();
             this.notifyPropertyChange('labs');
 
             // we'll always have an errors object unless we hit a
             // validation error
-            if (!errors) {
+            if (!error) {
                 throw new EmberError(`Validation of the feature service settings model failed when updating labs.`);
             }
 
-            this.get('notifications').showErrors(errors);
+            this.get('notifications').showAPIError(error);
 
             return this.get(`labs.${key}`);
         });

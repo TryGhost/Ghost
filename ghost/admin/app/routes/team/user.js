@@ -2,9 +2,8 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
 import styleBody from 'ghost-admin/mixins/style-body';
-import NotFoundHandler from 'ghost-admin/mixins/404-handler';
 
-export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, NotFoundHandler, {
+export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     titleToken: 'Team - User',
 
     classNames: ['team-view-user'],
