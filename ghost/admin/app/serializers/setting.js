@@ -1,9 +1,7 @@
 import Ember from 'ember';
 import ApplicationSerializer from 'ghost-admin/serializers/application';
 
-const {
-    String: {pluralize}
-} = Ember;
+const {String: {pluralize}} = Ember;
 
 export default ApplicationSerializer.extend({
     serializeIntoHash(hash, type, record, options) {

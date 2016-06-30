@@ -1,14 +1,10 @@
-import Ember from 'ember';
+import computed from 'ember-computed';
+import injectService from 'ember-service/inject';
 import SessionService from 'ember-simple-auth/services/session';
 
-const {
-    computed,
-    inject: {service}
-} = Ember;
-
 export default SessionService.extend({
-    store: service(),
-    feature: service(),
+    store: injectService(),
+    feature: injectService(),
 
     user: computed(function () {
         return this.get('store').findRecord('user', 'me');

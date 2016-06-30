@@ -1,7 +1,7 @@
-import Ember from 'ember';
+import run from 'ember-runloop';
+import {isBlank} from 'ember-utils';
+import Component from 'ember-component';
 import {invokeAction} from 'ember-invoke-action';
-
-const {run, isBlank, Component} = Ember;
 
 export default Component.extend({
     open() {

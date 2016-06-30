@@ -1,19 +1,15 @@
-import Ember from 'ember';
+import Router from 'ember-router';
+import injectService from 'ember-service/inject';
+import on from 'ember-evented/on';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import documentTitle from 'ghost-admin/utils/document-title';
 import config from './config/environment';
-
-const {
-    Router,
-    inject: {service},
-    on
-} = Ember;
 
 const GhostRouter = Router.extend({
     location: config.locationType, // use HTML5 History API instead of hash-tag based URLs
     rootURL: ghostPaths().adminRoot, // admin interface lives under sub-directory /ghost
 
-    notifications: service(),
+    notifications: injectService(),
 
     displayDelayedNotifications: on('didTransition', function () {
         this.get('notifications').displayDelayed();

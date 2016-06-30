@@ -1,13 +1,9 @@
-import Ember from 'ember';
+import run from 'ember-runloop';
+import EmberObject from 'ember-object';
 import {
     describeModel,
     it
 } from 'ember-mocha';
-
-const {
-    run,
-    Object: EmberObject
-} = Ember;
 
 describeModel(
     'post',

@@ -1,8 +1,6 @@
 /* global moment, Showdown */
-import Ember from 'ember';
+import Mixin from 'ember-metal/mixin';
 import titleize from 'ghost-admin/utils/titleize';
-
-const {Mixin} = Ember;
 
 // Used for simple, noncomputational replace-and-go! shortcuts.
 // See default case in shortcut function below.

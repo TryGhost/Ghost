@@ -5,7 +5,6 @@ import {
     it
 } from 'ember-mocha';
 import hbs from 'htmlbars-inline-precompile';
-import Ember from 'ember';
 
 describeComponent(
     'gh-tags-management-container',

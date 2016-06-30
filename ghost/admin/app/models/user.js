@@ -1,15 +1,11 @@
 /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
-import Ember from 'ember';
+import computed, {equal, empty} from 'ember-computed';
+import injectService from 'ember-service/inject';
+
 import Model from 'ember-data/model';
 import attr from 'ember-data/attr';
 import { hasMany } from 'ember-data/relationships';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
-
-const {
-    computed,
-    inject: {service}
-} = Ember;
-const {equal, empty} = computed;
 
 export default Model.extend(ValidationEngine, {
     validationType: 'user',
@@ -41,8 +37,8 @@ export default Model.extend(ValidationEngine, {
     facebook: attr('facebook-url-user'),
     twitter: attr('twitter-url-user'),
 
-    ghostPaths: service(),
-    ajax: service(),
+    ghostPaths: injectService(),
+    ajax: injectService(),
 
     // TODO: Once client-side permissions are in place,
     // remove the hard role check.

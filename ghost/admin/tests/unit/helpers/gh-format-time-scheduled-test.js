@@ -1,5 +1,5 @@
 /* jshint expr:true */
-import Ember from 'ember';
+import EmberObject from 'ember-object';
 import {expect} from 'chai';
 import {
     describe,
@@ -9,8 +9,6 @@ import {
     timeToSchedule
 } from 'ghost-admin/helpers/gh-format-time-scheduled';
 import sinon from 'sinon';
-
-const {Object: EmberObject} = Ember;
 
 describe('Unit: Helper: gh-format-time-scheduled', function () {
     let mockDate;

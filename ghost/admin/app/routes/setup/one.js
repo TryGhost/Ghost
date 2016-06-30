@@ -1,13 +1,13 @@
 import Ember from 'ember';
+import Route from 'ember-route';
+import injectService from 'ember-service/inject';
+import EmberObject from 'ember-object';
+import run from 'ember-runloop';
+
 import AjaxService from 'ember-ajax/services/ajax';
 
-const {
-    Route,
-    inject: {service},
-    Object: EmberObject,
-    testing,
-    run
-} = Ember;
+// ember-cli-shims doesn't export Ember.testing
+const {testing} = Ember;
 
 let DownloadCountPoller = EmberObject.extend({
     url: null,
@@ -51,7 +51,7 @@ let DownloadCountPoller = EmberObject.extend({
 });
 
 export default Route.extend({
-    ghostPaths: service('ghost-paths'),
+    ghostPaths: injectService(),
 
     model() {
         return DownloadCountPoller.create({url: this.get('ghostPaths.count')});

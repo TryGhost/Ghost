@@ -1,5 +1,4 @@
 /* jshint expr:true */
-import Ember from 'ember';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import {
@@ -10,8 +9,9 @@ import hbs from 'htmlbars-inline-precompile';
 import Pretender from 'pretender';
 import wait from 'ember-test-helpers/wait';
 import {createFile, fileUpload} from '../../helpers/file-upload';
-
-const {$, run, Service} = Ember;
+import $ from 'jquery';
+import run from 'ember-runloop';
+import Service from 'ember-service';
 
 const keyCodes = {
     enter: 13

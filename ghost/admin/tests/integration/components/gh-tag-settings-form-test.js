@@ -6,14 +6,11 @@ import {
     it
 } from 'ember-mocha';
 import hbs from 'htmlbars-inline-precompile';
-import Ember from 'ember';
+import Service from 'ember-service';
+import EmberObject from 'ember-object';
+import run from 'ember-runloop';
 import DS from 'ember-data';
 
-const {
-    Service,
-    run,
-    Object: EmberObject
-} = Ember;
 const {Errors} = DS;
 
 let configStub = Service.extend({

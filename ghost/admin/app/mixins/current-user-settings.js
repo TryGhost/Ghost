@@ -1,6 +1,4 @@
-import Ember from 'ember';
-
-const {Mixin} = Ember;
+import Mixin from 'ember-metal/mixin';
 
 export default Mixin.create({
     transitionAuthor() {

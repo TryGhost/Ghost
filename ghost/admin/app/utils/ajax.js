@@ -1,6 +1,4 @@
-import Ember from 'ember';
-
-const {isArray} = Ember;
+import {isEmberArray} from 'ember-array/utils';
 
 // TODO: this should be removed and instead have our app serializer properly
 // process the response so that errors can be tied to the model
@@ -23,7 +21,7 @@ export default function getRequestErrorMessage(request, performConcat) {
     if (request.status !== 200) {
         try {
             // Try to parse out the error, or default to 'Unknown'
-            if (request.errors && isArray(request.errors)) {
+            if (request.errors && isEmberArray(request.errors)) {
                 message = request.errors.map((errorItem) => {
                     return errorItem.message;
                 });
@@ -36,7 +34,7 @@ export default function getRequestErrorMessage(request, performConcat) {
         }
     }
 
-    if (performConcat && isArray(message)) {
+    if (performConcat && isEmberArray(message)) {
         message = message.join('<br />');
     }
 

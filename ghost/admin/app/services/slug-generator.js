@@ -1,14 +1,12 @@
-import Ember from 'ember';
+import Service from 'ember-service';
+import RSVP from 'rsvp';
+import injectService from 'ember-service/inject';
 
-const {
-    RSVP: {resolve},
-    inject: {service},
-    Service
-} = Ember;
+const {resolve} = RSVP;
 
 export default Service.extend({
-    ghostPaths: service(),
-    ajax: service(),
+    ghostPaths: injectService(),
+    ajax: injectService(),
 
     generateSlug(slugType, textToSlugify) {
         let url;

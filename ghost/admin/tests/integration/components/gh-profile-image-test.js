@@ -6,11 +6,10 @@ import {
     it
 } from 'ember-mocha';
 import hbs from 'htmlbars-inline-precompile';
-import Ember from 'ember';
+import Service from 'ember-service';
+import run from 'ember-runloop';
 import Pretender from 'pretender';
 import wait from 'ember-test-helpers/wait';
-
-const {Service, run} = Ember;
 
 let pathsStub = Service.extend({
     url: {

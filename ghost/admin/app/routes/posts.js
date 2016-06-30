@@ -1,9 +1,7 @@
-import Ember from 'ember';
+import $ from 'jquery';
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import PaginationMixin from 'ghost-admin/mixins/pagination';
-
-const {$} = Ember;
 
 export default AuthenticatedRoute.extend(ShortcutsRoute, PaginationMixin, {
     titleToken: 'Content',

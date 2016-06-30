@@ -1,7 +1,8 @@
 import Ember from 'ember';
+import computed from 'ember-computed';
 import {invokeAction} from 'ember-invoke-action';
 
-const {LinkComponent, computed} = Ember;
+const {LinkComponent} = Ember;
 
 LinkComponent.reopen({
     active: computed('attrs.params', '_routing.currentState', function () {

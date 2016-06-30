@@ -4,11 +4,7 @@ import {
     it
 } from 'ember-mocha';
 import Pretender from 'pretender';
-import Ember from 'ember';
-
-const {
-    String: {dasherize}
-} = Ember;
+import {dasherize} from 'ember-string';
 
 function stubSlugEndpoint(server, type, slug) {
     server.get('/ghost/api/v0.1/slugs/:type/:slug/', function (request) {

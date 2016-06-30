@@ -1,6 +1,4 @@
-import Ember from 'ember';
-
-const {computed} = Ember;
+import computed from 'ember-computed';
 
 /**
  * Defines a property similarly to `Ember.computed.oneway`,

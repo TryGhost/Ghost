@@ -1,6 +1,4 @@
-import Ember from 'ember';
-
-const {HistoryLocation} = Ember;
+import HistoryLocation from 'ember-locations/history';
 
 let trailingHistory = HistoryLocation.extend({
     formatURL() {

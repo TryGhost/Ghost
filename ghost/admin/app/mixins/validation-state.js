@@ -1,11 +1,7 @@
-import Ember from 'ember';
-
-const {
-    Mixin,
-    computed,
-    isEmpty,
-    A: emberA
-} = Ember;
+import Mixin from 'ember-metal/mixin';
+import computed from 'ember-computed';
+import {isEmpty} from 'ember-utils';
+import {A as emberA} from 'ember-array/utils';
 
 export default Mixin.create({
 

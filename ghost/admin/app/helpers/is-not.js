@@ -1,11 +1,9 @@
-import Ember from 'ember';
-
-const {Helper} = Ember;
+import {helper} from 'ember-helper';
 
 export function isNot(params) {
     return !params;
 }
 
-export default Helper.helper(function (params) {
+export default helper(function (params) {
     return isNot(params);
 });

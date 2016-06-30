@@ -1,12 +1,11 @@
 import Ember from 'ember';
+import Service from 'ember-service';
+import computed from 'ember-computed';
+import injectService from 'ember-service/inject';
+import set from 'ember-metal/set';
 
-const {
-    Service,
-    computed,
-    inject: {service},
-    Error: EmberError,
-    set
-} = Ember;
+// ember-cli-shims doesn't export Error
+const {Error: EmberError} = Ember;
 
 export function feature(name) {
     return computed(`config.${name}`, `labs.${name}`, {
@@ -25,9 +24,9 @@ export function feature(name) {
 }
 
 export default Service.extend({
-    store: service(),
-    config: service(),
-    notifications: service(),
+    store: injectService(),
+    config: injectService(),
+    notifications: injectService(),
 
     publicAPI: feature('publicAPI'),
     subscribers: feature('subscribers'),

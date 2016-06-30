@@ -1,10 +1,8 @@
-import Ember from 'ember';
+import run from 'ember-runloop';
 import {
     describeModel,
     it
 } from 'ember-mocha';
-
-const {run} = Ember;
 
 describeModel(
     'user',

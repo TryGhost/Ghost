@@ -3,10 +3,8 @@ import {
     describeComponent,
     it
 } from 'ember-mocha';
-import Ember from 'ember';
+import run from 'ember-runloop';
 import hbs from 'htmlbars-inline-precompile';
-
-const {run} = Ember;
 
 describeComponent(
     'gh-trim-focus-input',

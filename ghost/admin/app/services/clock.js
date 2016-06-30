@@ -1,10 +1,9 @@
 import Ember from 'ember';
+import Service from 'ember-service';
+import run from 'ember-runloop';
 
-const {
-    Service,
-    testing,
-    run
-} = Ember;
+// ember-cli-shims doesn't export Ember.testing
+const {testing} = Ember;
 
 const ONE_SECOND = 1000;
 

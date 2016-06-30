@@ -1,19 +1,15 @@
-import Ember from 'ember';
+import RSVP from 'rsvp';
+import injectService from 'ember-service/inject';
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
 import styleBody from 'ghost-admin/mixins/style-body';
-
-const {
-    RSVP,
-    inject: {service}
-} = Ember;
 
 export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     titleToken: 'Settings - General',
 
     classNames: ['settings-view-general'],
 
-    config: service(),
+    config: injectService(),
 
     beforeModel() {
         this._super(...arguments);

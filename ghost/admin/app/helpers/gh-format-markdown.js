@@ -1,11 +1,7 @@
 /* global Showdown, html_sanitize*/
-import Ember from 'ember';
+import {helper} from 'ember-helper';
+import {htmlSafe} from 'ember-string';
 import cajaSanitizers from 'ghost-admin/utils/caja-sanitizers';
-
-const {
-    Helper,
-    String: {htmlSafe}
-} = Ember;
 
 let showdown = new Showdown.converter({extensions: ['ghostimagepreview', 'ghostgfm', 'footnotes', 'highlight']});
 
@@ -34,4 +30,4 @@ export function formatMarkdown(params) {
     return htmlSafe(escapedhtml);
 }
 
-export default Helper.helper(formatMarkdown);
+export default helper(formatMarkdown);

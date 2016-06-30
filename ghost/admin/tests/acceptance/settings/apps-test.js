@@ -6,12 +6,10 @@ import {
     afterEach
 } from 'mocha';
 import { expect } from 'chai';
-import Ember from 'ember';
+import run from 'ember-runloop';
 import startApp from '../../helpers/start-app';
 import destroyApp from '../../helpers/destroy-app';
 import { invalidateSession, authenticateSession } from 'ghost-admin/tests/helpers/ember-simple-auth';
-
-const {run} = Ember;
 
 describe('Acceptance: Settings - Apps', function () {
     let application;

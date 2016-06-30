@@ -1,12 +1,8 @@
 /* jshint expr:true */
 import { expect } from 'chai';
 import { describeModule, it } from 'ember-mocha';
-import Ember from 'ember';
+import {A as emberA} from 'ember-array/utils';
 import NavigationItem from 'ghost-admin/models/navigation-item';
-
-const {
-    A: emberA
-} = Ember;
 
 describeModule(
     'transform:navigation-settings',

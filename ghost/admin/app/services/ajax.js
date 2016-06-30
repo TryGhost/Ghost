@@ -1,13 +1,9 @@
-import Ember from 'ember';
+import computed from 'ember-computed';
+import injectService from 'ember-service/inject';
+import {isEmberArray} from 'ember-array/utils';
 import AjaxService from 'ember-ajax/services/ajax';
 import {AjaxError, isAjaxError} from 'ember-ajax/errors';
 import config from 'ghost-admin/config/environment';
-
-const {
-    computed,
-    inject,
-    isArray
-} = Ember;
 
 export function RequestEntityTooLargeError(errors) {
     AjaxError.call(this, errors, 'Request was rejected because it\'s larger than the maximum file size the server allows');
@@ -38,7 +34,7 @@ export function isUnsupportedMediaTypeError(error) {
 }
 
 export default AjaxService.extend({
-    session: inject.service(),
+    session: injectService(),
 
     headers: computed('session.isAuthenticated', function () {
         let session = this.get('session');
@@ -69,7 +65,7 @@ export default AjaxService.extend({
         if (payload && typeof payload === 'object') {
             payload.errors = payload.error || payload.errors || payload.message || undefined;
 
-            if (isArray(payload.errors)) {
+            if (isEmberArray(payload.errors)) {
                 payload.errors = payload.errors.map(function(error) {
                     if (typeof error === 'string') {
                         return {message: error};

@@ -1,6 +1,4 @@
-import Ember from 'ember';
-
-const {Helper} = Ember;
+import {helper} from 'ember-helper';
 
 export function timeAgo(params) {
     if (!params || !params.length) {
@@ -11,7 +9,7 @@ export function timeAgo(params) {
     return moment(timeago).from(moment.utc());
 }
 
-export default Helper.helper(function (params) {
+export default helper(function (params) {
     return timeAgo(params);
     // stefanpenner says cool for small number of timeagos.
     // For large numbers moment sucks => single Ember.Object based clock better

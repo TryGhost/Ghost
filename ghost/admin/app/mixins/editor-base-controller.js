@@ -1,17 +1,17 @@
 import Ember from 'ember';
+import Mixin from 'ember-metal/mixin';
+import RSVP from 'rsvp';
+import computed, {alias} from 'ember-computed';
+import injectService from 'ember-service/inject';
+import injectController from 'ember-controller/inject';
+import {htmlSafe} from 'ember-string';
+import observer from 'ember-metal/observer';
+import run from 'ember-runloop';
+
 import PostModel from 'ghost-admin/models/post';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 
-const {
-    Mixin,
-    RSVP: {resolve},
-    computed,
-    inject: {service, controller},
-    String: {htmlSafe},
-    observer,
-    run
-} = Ember;
-const {alias} = computed;
+const {resolve} = RSVP;
 
 // this array will hold properties we need to watch
 // to know if the model has been changed (`controller.hasDirtyAttributes`)
@@ -29,9 +29,9 @@ export default Mixin.create({
     showLeaveEditorModal: false,
     showReAuthenticateModal: false,
 
-    postSettingsMenuController: controller('post-settings-menu'),
-    notifications: service(),
-    clock: service(),
+    postSettingsMenuController: injectController('post-settings-menu'),
+    notifications: injectService(),
+    clock: injectService(),
 
     init() {
         this._super(...arguments);

@@ -1,6 +1,6 @@
-import Ember from 'ember';
-
-const {$, Mixin, run} = Ember;
+import $ from 'jquery';
+import run from 'ember-runloop';
+import Mixin from 'ember-metal/mixin';
 
 function K() {
     return this;

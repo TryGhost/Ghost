@@ -1,11 +1,6 @@
-import Ember from 'ember';
+import {A as emberA, isEmberArray} from 'ember-array/utils';
 import Transform from 'ember-data/transform';
 import NavigationItem from 'ghost-admin/models/navigation-item';
-
-const {
-    isArray,
-    A: emberA
-} = Ember;
 
 export default Transform.extend({
     deserialize(serialized) {
@@ -27,7 +22,7 @@ export default Transform.extend({
     serialize(deserialized) {
         let settingsArray;
 
-        if (isArray(deserialized)) {
+        if (isEmberArray(deserialized)) {
             settingsArray = deserialized.map((item) => {
                 let label = item.get('label').trim();
                 let url = item.get('url').trim();

@@ -5,9 +5,7 @@ import {
     it
 } from 'ember-mocha';
 import hbs from 'htmlbars-inline-precompile';
-import Ember from 'ember';
-
-const {run} = Ember;
+import run from 'ember-runloop';
 
 describeComponent(
     'gh-cm-editor',

@@ -4,13 +4,13 @@ import {
     describe,
     it
 } from 'mocha';
-import Ember from 'ember';
+// import EmberObject from 'ember-object';
 import ValidationEngineMixin from 'ghost-admin/mixins/validation-engine';
 
 describe('ValidationEngineMixin', function () {
     // Replace this with your real tests.
     // it('works', function () {
-    //     var ValidationEngineObject = Ember.Object.extend(ValidationEngineMixin);
+    //     var ValidationEngineObject = EmberObject.extend(ValidationEngineMixin);
     //     var subject = ValidationEngineObject.create();
     //     expect(subject).to.be.ok;
     // });

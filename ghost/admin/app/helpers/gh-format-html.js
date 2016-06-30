@@ -1,13 +1,9 @@
 /* global html_sanitize*/
-import Ember from 'ember';
+import {helper} from 'ember-helper';
+import {htmlSafe} from 'ember-string';
 import cajaSanitizers from 'ghost-admin/utils/caja-sanitizers';
 
-const {
-    Helper,
-    String: {htmlSafe}
-} = Ember;
-
-export default Helper.helper(function (params) {
+export default helper(function (params) {
     if (!params || !params.length) {
         return;
     }

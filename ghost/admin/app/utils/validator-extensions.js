@@ -1,6 +1,4 @@
-import Ember from 'ember';
-
-const {isBlank} = Ember;
+import {isBlank} from 'ember-utils';
 
 function init() {
     // Provide a few custom validators

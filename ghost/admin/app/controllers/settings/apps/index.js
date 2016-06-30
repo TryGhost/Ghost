@@ -1,14 +1,9 @@
-import Ember from 'ember';
-
-const {
-    computed,
-    inject: {controller},
-    Controller
-} = Ember;
-const {alias} = computed;
+import Controller from 'ember-controller';
+import injectController from 'ember-controller/inject';
+import {alias} from 'ember-computed';
 
 export default Controller.extend({
-    appsController: controller('settings.apps'),
+    appsController: injectController('settings.apps'),
 
     slack: alias('appsController.model.slack.firstObject')
 });

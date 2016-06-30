@@ -1,13 +1,11 @@
-import Ember from 'ember';
+import RSVP from 'rsvp';
+import injectService from 'ember-service/inject';
+import {A as emberA} from 'ember-array/utils';
+import run from 'ember-runloop';
 import ModalComponent from 'ghost-admin/components/modals/base';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 
-const {
-    RSVP: {Promise},
-    inject: {service},
-    A: emberA,
-    run
-} = Ember;
+const {Promise} = RSVP;
 
 export default ModalComponent.extend(ValidationEngine, {
     classNames: 'modal-content invite-new-user',
@@ -19,8 +17,8 @@ export default ModalComponent.extend(ValidationEngine, {
 
     validationType: 'inviteUser',
 
-    notifications: service(),
-    store: service(),
+    notifications: injectService(),
+    store: injectService(),
 
     init() {
         this._super(...arguments);

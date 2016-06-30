@@ -1,6 +1,5 @@
-import Ember from 'ember';
-
-const {Mixin, run} = Ember;
+import Mixin from 'ember-metal/mixin';
+import run from 'ember-runloop';
 
 export default Mixin.create({
     isLoading: false,

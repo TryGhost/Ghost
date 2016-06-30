@@ -1,6 +1,6 @@
-import Ember from 'ember';
-
-const {$, Mixin, run} = Ember;
+import $ from 'jquery';
+import Mixin from 'ember-metal/mixin';
+import run from 'ember-runloop';
 
 // mixin used for routes that need to set a css className on the body tag
 export default Mixin.create({

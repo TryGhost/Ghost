@@ -1,9 +1,11 @@
-import Ember from 'ember';
+import $ from 'jquery';
+import Mixin from 'ember-metal/mixin';
+import RSVP from 'rsvp';
+import run from 'ember-runloop';
+
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import styleBody from 'ghost-admin/mixins/style-body';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
-
-const {$, Mixin, RSVP, run} = Ember;
 
 let generalShortcuts = {};
 generalShortcuts[`${ctrlOrCmd}+alt+p`] = 'publish';

@@ -1,6 +1,5 @@
-import Ember from 'ember';
-
-const {Service, run} = Ember;
+import Service from 'ember-service';
+import run from 'ember-runloop';
 
 const MEDIA_QUERIES = {
     maxWidth600: '(max-width: 600px)',
