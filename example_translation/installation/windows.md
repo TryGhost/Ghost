@@ -1,5 +1,5 @@
 ---
-lang: example_translation
+lang: zh_CN
 layout: installation
 meta_title: How to Install Ghost on Your Server - Ghost Docs
 meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.

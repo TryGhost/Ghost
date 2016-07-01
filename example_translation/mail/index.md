@@ -1,5 +1,5 @@
 ---
-lang: example_translation
+lang: zh_CN
 layout: mail
 meta_title: Ghost Mail Configuration - Ghost Docs
 meta_description: How to configure your email server and send emails with the Ghost blogging platform. Everything you need to know.
