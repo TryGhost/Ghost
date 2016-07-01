@@ -25,7 +25,7 @@
             <div class="gh-flow">
                 <header class="gh-flow-head">
                     <nav class="gh-flow-nav">
-                        <a href="{{@blog.url}}" class="gh-flow-back"><i class="icon-arrow-left"></i> Back</a>
+                        <a href="{{#if subscribed_url}}{{subscribed_url}}{{else}}{{@blog.url}}{{/if}}" class="gh-flow-back"><i class="icon-arrow-left"></i> Back</a>
                     </nav>
                 </header>
 
