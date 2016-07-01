@@ -24,6 +24,8 @@ languages:
       key: 'it'
     - name: '繁體中文'
       key: 'zh_TW'
+    - name: 'Bahasa Indonesia'
+      key: 'id_ID'
     - name: 'Português'
       key: 'pt_BR'
 
@@ -148,6 +150,14 @@ translations:
     deploy:       'Deploy'
     upgrading:    'Aggiornamento'
     troubleshooting: 'Risoluzione dei Problemi'
+  id-ID:
+    site_title:   'Panduan Ghost'
+    installation: 'Instalasi'
+    usage:        'Penggunaan'
+    email:        'Email'
+    themes:       'Tema'
+    translations: 'Terjemahan'
+    help:         'Bantuan'
   zh_TW:
     site_title:   'Ghost 使用手冊'
     installation: '安裝'
