@@ -25,7 +25,7 @@
                 {{/if}}
 
                 <span class="input-icon icon-link">
-                    {{gh-input slugValue class="post-setting-slug" id="url" name="post-setting-slug" focusOut=(action "updateSlug") stopEnterKeyDownPropagation="true" update=(action (mut slugValue))}}
+                    {{gh-input slugValue class="post-setting-slug" id="url" name="post-setting-slug" focusOut=(action "updateSlug" slugValue) stopEnterKeyDownPropagation="true" update=(action (mut slugValue))}}
                 </span>
                 {{gh-url-preview slug=slugValue tagName="p" classNames="description"}}
             </div>
