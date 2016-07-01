@@ -211,7 +211,11 @@ function urlFor(context, data, absolute) {
                 // or if hostname is inside of the slug
                 urlPath = urlPath.split(hostname)[1];
                 if (urlPath.substring(0, 1) !== '/') {
-                    urlPath = '/' + urlPath;
+                    if (urlPath.substring(0, 1) !== ':') {
+                        urlPath = '/' + urlPath;
+                    } else {
+                        urlPath = data.nav.url;
+                    }
                 }
                 absolute = true;
             }
