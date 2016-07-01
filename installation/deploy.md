@@ -43,6 +43,7 @@ The following links contain instructions on how to get up and running with:
 *   [A2 Hosting](http://www.a2hosting.com/high-speed-ghost-hosting) - (autoinstaller)
 *   [DigitalOcean](http://ghosted.co/install-ghost-digitalocean/) - from [Corbett Barr](http://ghosted.co)
 *   [Dreamhost](http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/) - from [howtoinstallghost.com](http://howtoinstallghost.com)
+*   [Microsoft Azure](http://www.choskim.me/how-to-install-ghost-on-microsoft-azure/) - from [Cho S. Kim](http://www.choskim.me/)
 *   [Webfaction](http://www.howtoinstallghost.com/how-to-install-ghost-on-webfaction-hosting/) - from [howtoinstallghost.com](http://howtoinstallghost.com)
 *   [Rackspace](http://ghost.pellegrom.me/installing-ghost-on-ubuntu/) (Ubuntu 13.04 + linux service) - from [Gilbert Pellegrom](http://ghost.pellegrom.me/)
 *   [OpenShift Online](https://www.openshift.com/quickstarts/ghost) - (autoinstaller)
