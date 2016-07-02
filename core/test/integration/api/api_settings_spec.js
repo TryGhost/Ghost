@@ -40,7 +40,6 @@ describe('Settings API', function () {
     it('uses Date objects for dateTime fields', function (done) {
         return callApiWithContext(defaultContext, 'browse', {}).then(function (results) {
             should.exist(results);
-
             results.settings[0].created_at.should.be.an.instanceof(Date);
 
             done();

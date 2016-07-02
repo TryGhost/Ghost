@@ -46,6 +46,7 @@ apiRoutes = function apiRoutes(middleware) {
 
     // ## Schedules
     router.put('/schedules/posts/:id', [middleware.api.authenticateClient, middleware.api.authenticateUser], api.http(api.schedules.publishPost));
+    router.post('/schedules/newsletter', middleware.api.authenticateClient, api.schedules.sendNewsletter);
 
     // ## Settings
     router.get('/settings', authenticatePrivate, api.http(api.settings.browse));
@@ -115,6 +116,9 @@ apiRoutes = function apiRoutes(middleware) {
 
     // ## Slack
     router.post('/slack/test', authenticatePrivate, api.http(api.slack.sendTest));
+
+    // ## Newsletter
+    router.post('/newsletter/test', authenticatePrivate, api.http(api.newsletter.sendTest));
 
     // ## Authentication
     router.post('/authentication/passwordreset',

@@ -89,6 +89,7 @@ describe('Settings Model', function () {
         it('can edit multiple', function (done) {
             var model1,
                 model2,
+                model3,
                 editedModel;
 
             SettingsModel.findAll().then(function (results) {
@@ -98,12 +99,13 @@ describe('Settings Model', function () {
 
                 model1 = {key: 'description', value: 'another new value'};
                 model2 = {key: 'title', value: 'new title'};
+                model3 = {key: 'newsletter', value: JSON.stringify({status:'enabled',rrule: 'FREQ=YEARLY;BYMONTH=1;BYMONTHDAY=1'})};
 
-                return SettingsModel.edit([model1, model2], context);
+                return SettingsModel.edit([model1, model2, model3], context);
             }).then(function (edited) {
                 should.exist(edited);
 
-                edited.length.should.equal(2);
+                edited.length.should.equal(3);
 
                 editedModel = edited[0];
 
@@ -115,7 +117,12 @@ describe('Settings Model', function () {
                 editedModel.attributes.key.should.equal(model2.key);
                 editedModel.attributes.value.should.equal(model2.value);
 
-                eventSpy.callCount.should.equal(4);
+                editedModel = edited[2];
+
+                editedModel.attributes.key.should.equal(model3.key);
+                editedModel.attributes.value.should.equal(model3.value);
+
+                eventSpy.callCount.should.equal(6);
 
                 // We can't rely on the order of updates.
                 // We can however expect the first and third call to
@@ -125,6 +132,7 @@ describe('Settings Model', function () {
 
                 eventSpy.calledWith('settings.description.edited').should.be.true();
                 eventSpy.calledWith('settings.title.edited').should.be.true();
+                eventSpy.calledWith('settings.newsletter.edited').should.be.true();
 
                 done();
             }).catch(done);

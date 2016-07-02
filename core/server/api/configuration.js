@@ -36,7 +36,8 @@ function getBaseConfig() {
         internalTags:   labsFlag('internalTags'),
         blogUrl:        {value: config.url.replace(/\/$/, ''), type: 'string'},
         blogTitle:      {value: config.theme.title, type: 'string'},
-        routeKeywords:  {value: JSON.stringify(config.routeKeywords), type: 'json'}
+        routeKeywords:  {value: JSON.stringify(config.routeKeywords), type: 'json'},
+        newsletter:     {value: JSON.stringify(config.newsletter), type: 'json'}
     };
 }
 

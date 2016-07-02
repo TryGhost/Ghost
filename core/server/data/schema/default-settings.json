@@ -20,6 +20,9 @@
         "title": {
             "defaultValue": "Ghost"
         },
+        "newsletter_from_address": {
+            "defaultValue": null
+        },
         "description": {
             "defaultValue": "Just a blogging platform."
         },
@@ -84,6 +87,16 @@
         },
         "slack": {
             "defaultValue": "[{\"url\":\"\"}]"
+        },
+        "newsletter": {
+            "defaultValue": "{\"rrule\":null, \"status\": \"disabled\", \"lastExecutedAt\": null}",
+            "validations": {
+                "rrule": {
+                    "validations": {
+                        "isRRULE": true
+                    }
+                }
+            }
         }
     },
     "theme": {

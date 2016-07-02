@@ -144,7 +144,7 @@ apiMail = {
 
         tasks = [
             modelQuery,
-            generateContent,
+            mail.utils.generateContent,
             send
         ];
 
