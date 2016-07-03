@@ -52,10 +52,10 @@ git clone git://github.com/tryghost/ghost.git
 cd ghost
 ```
 
-Install grunt. No prizes here.
+Install grunt and bower. No prizes here.
 
 ```bash
-npm install -g grunt-cli
+npm install -g grunt-cli bower
 ```
 
 Install Ghost. If you're running locally, use [master](https://github.com/TryGhost/Ghost/tree/master). For production, use [stable](https://github.com/TryGhost/Ghost/tree/stable). :no_entry_sign::rocket::microscope:
