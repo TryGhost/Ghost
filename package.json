@@ -99,7 +99,7 @@
     "matchdep": "1.0.1",
     "mocha": "2.5.3",
     "nock": "8.0.0",
-    "rewire": "2.5.1",
+    "rewire": "2.5.2",
     "should": "9.0.2",
     "should-http": "0.0.4",
     "sinon": "1.17.4",
