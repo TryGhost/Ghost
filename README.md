@@ -58,6 +58,12 @@ Install grunt. No prizes here.
 npm install -g grunt-cli
 ```
 
+Install bower. Life couldn't be any easier.
+
+```bash
+npm i -g bower
+```
+
 Install Ghost. If you're running locally, use [master](https://github.com/TryGhost/Ghost/tree/master). For production, use [stable](https://github.com/TryGhost/Ghost/tree/stable). :no_entry_sign::rocket::microscope:
 
 ```bash
