@@ -1,9 +1,7 @@
-var _             = require('lodash'),
-    Promise       = require('bluebird'),
+var Promise       = require('bluebird'),
     api           = require('../api'),
     errors        = require('../errors'),
     updateCheck   = require('../update-check'),
-    i18n          = require('../i18n'),
     adminControllers;
 
 adminControllers = {
@@ -32,27 +30,7 @@ adminControllers = {
             });
         }
 
-        updateCheck().then(function then() {
-            return updateCheck.showUpdateNotification();
-        }).then(function then(updateVersion) {
-            if (!updateVersion) {
-                return;
-            }
-
-            var notification = {
-                type: 'upgrade',
-                location: 'settings-about-upgrade',
-                dismissible: false,
-                status: 'alert',
-                message: i18n.t('notices.controllers.newVersionAvailable',
-                                {version: updateVersion, link: '<a href="http://support.ghost.org/how-to-upgrade/" target="_blank">Click here</a>'})};
-
-            return api.notifications.browse({context: {internal: true}}).then(function then(results) {
-                if (!_.some(results.notifications, {message: notification.message})) {
-                    return api.notifications.add({notifications: [notification]}, {context: {internal: true}});
-                }
-            });
-        }).finally(function noMatterWhat() {
+        updateCheck().finally(function noMatterWhat() {
             renderIndex();
         }).catch(errors.logError);
     }

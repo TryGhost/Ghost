@@ -23,9 +23,9 @@ describe('Update Check', function () {
     afterEach(testUtils.teardown);
 
     it('should report the correct data', function (done) {
-        var updateCheckData = updateCheck.__get__('updateCheckData');
+        var prepareBlogSnapshot = updateCheck.__get__('prepareBlogSnapshot');
 
-        updateCheckData().then(function (data) {
+        prepareBlogSnapshot().then(function (data) {
             should.exist(data);
             data.ghost_version.should.equal(packageInfo.version);
             data.node_version.should.equal(process.versions.node);

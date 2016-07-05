@@ -38,6 +38,24 @@ var crypto   = require('crypto'),
     checkEndpoint = 'updates.ghost.org',
     currentVersion = config.ghostVersion;
 
+/**
+ * Attempts to parse string to JSON.
+ * @return {Object} is successful. Otherwise, undefined.
+ */
+function safeParseJson(json) {
+    var obj;
+    try {
+        obj = JSON.parse(json);
+    } catch (e) {
+    }
+    return obj;
+}
+
+/**
+ * Default error handler for update check promises. In case of a promise
+ * failure, "nextUpdateCheck" is set to 24 hours from now.
+ * @param {Error} error
+ */
 function updateCheckError(error) {
     api.settings.edit(
         {settings: [{key: 'nextUpdateCheck', value: Math.round(Date.now() / 1000 + 24 * 3600)}]},
@@ -51,30 +69,24 @@ function updateCheckError(error) {
     );
 }
 
-function updateCheckData() {
-    var data = {},
-        mailConfig = config.mail;
-
-    data.ghost_version   = currentVersion;
-    data.node_version    = process.versions.node;
-    data.env             = process.env.NODE_ENV;
-    data.database_type   = config.database.client;
-    data.email_transport = mailConfig &&
-    (mailConfig.options && mailConfig.options.service ?
-        mailConfig.options.service :
-        mailConfig.transport);
+/**
+ * Prepares fields to be submitted to UpdateCheck service.
+ * @returns Object an object accepted by UpdateCheck service.
+ */
+function prepareBlogSnapshot() {
+    var data       = {},
+        mailConfig = config.mail,
+        appsToCsv  = function (response) {
+            var apps = safeParseJson(response.settings[0].value);
+            return _.reduce(apps, function (memo, item) {
+                return memo === '' ? memo + item : memo + ', ' + item;
+            }, '');
+        };
 
     return Promise.props({
         hash: api.settings.read(_.extend({key: 'dbHash'}, internal)).reflect(),
         theme: api.settings.read(_.extend({key: 'activeTheme'}, internal)).reflect(),
-        apps: api.settings.read(_.extend({key: 'activeApps'}, internal))
-            .then(function (response) {
-                var apps = response.settings[0];
-
-                apps = JSON.parse(apps.value);
-
-                return _.reduce(apps, function (memo, item) { return memo === '' ? memo + item : memo + ', ' + item; }, '');
-            }).reflect(),
+        apps: api.settings.read(_.extend({key: 'activeApps'}, internal)).then(appsToCsv).reflect(),
         posts: api.posts.browse().reflect(),
         users: api.users.browse(internal).reflect(),
         npm: Promise.promisify(exec)('npm -v').reflect()
@@ -95,21 +107,31 @@ function updateCheckData() {
         data.user_count      = users && users.users && users.users.length ? users.users.length : 0;
         data.blog_created_at = users && users.users && users.users[0] && users.users[0].created_at ? moment(users.users[0].created_at).unix() : '';
         data.npm_version     = npm.trim();
-
+        data.ghost_version   = currentVersion;
+        data.node_version    = process.versions.node;
+        data.env             = process.env.NODE_ENV;
+        data.database_type   = config.database.client;
+        data.email_transport = mailConfig && (mailConfig.options && mailConfig.options.service ? mailConfig.options.service : mailConfig.transport);
         return data;
     }).catch(updateCheckError);
 }
 
+/**
+ * Constructs POST request to submit snapshot to UpdateCheck service.
+ *
+ * @returns {*}
+ */
 function updateCheckRequest() {
-    return updateCheckData().then(function then(reqData) {
+    return prepareBlogSnapshot().then(function then(snapshot) {
         var resData = '',
             headers,
             req;
 
-        reqData = JSON.stringify(reqData);
+        snapshot = JSON.stringify(snapshot);
 
         headers = {
-            'Content-Length': reqData.length
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(snapshot)
         };
 
         return new Promise(function p(resolve, reject) {
@@ -142,78 +164,122 @@ function updateCheckRequest() {
                 reject(error);
             });
 
-            req.write(reqData);
+            req.write(snapshot);
             req.end();
         });
     });
 }
 
-// ## Update Check Response
-// Handles the response from the update check
-// Does two things with the information received:
-// 1. Updates the time we can next make a check
-// 2. Checks if the version in the response is new, and updates the notification setting
+/**
+ * Update Check Response. Handles the response from UpdateCheck service. On response:
+ * 1. Updates the time for next checkin
+ * 2. Checks if the version in the response is new, and updates the notification setting
+ * @param {Object} response body after calling UpdateCheck service
+ * @returns {Promise}
+ */
 function updateCheckResponse(response) {
-    var ops = [];
-
-    ops.push(
-        api.settings.edit(
-            {settings: [{key: 'nextUpdateCheck', value: response.next_check}]},
-            internal
-        ),
-        api.settings.edit(
-            {settings: [{key: 'displayUpdateNotification', value: response.version}]},
-            internal
-        )
-    );
-
-    return Promise.all(ops);
+    return Promise.all([
+        api.settings.edit({settings: [{key: 'nextUpdateCheck', value: response.next_check}]}, internal),
+        api.settings.edit({settings: [{key: 'displayUpdateNotification', value: response.version || response.release.name}]}, internal)
+    ]);
 }
 
-function updateCheck() {
-    // The check will not happen if:
-    // 1. updateCheck is defined as false in config.js
-    // 2. we've already done a check this session
-    // 3. we're not in production or development mode
-    // TODO: need to remove config.updateCheck in favor of config.privacy.updateCheck in future version (it is now deprecated)
-    if (config.updateCheck === false || config.isPrivacyDisabled('useUpdateCheck') || _.indexOf(allowedCheckEnvironments, process.env.NODE_ENV) === -1) {
-        // No update check
-        return Promise.resolve();
-    } else {
-        return api.settings.read(_.extend({key: 'nextUpdateCheck'}, internal)).then(function then(result) {
-            var nextUpdateCheck = result.settings[0];
-
-            if (nextUpdateCheck && nextUpdateCheck.value && nextUpdateCheck.value > moment().unix()) {
-                // It's not time to check yet
-                return;
-            } else {
-                // We need to do a check
-                return updateCheckRequest()
-                    .then(updateCheckResponse)
-                    .catch(updateCheckError);
-            }
-        }).catch(updateCheckError);
-    }
-}
-
-function showUpdateNotification() {
+/**
+ * Stores upgrade message in notification store. Also save any other notifications not "seen".
+ * @returns version notification
+ */
+function renderNotifications() {
     return api.settings.read(_.extend({key: 'displayUpdateNotification'}, internal)).then(function then(response) {
-        var display = response.settings[0];
+        var update  = {},
+            version = response.settings[0];
 
         // Version 0.4 used boolean to indicate the need for an update. This special case is
         // translated to the version string.
         // TODO: remove in future version.
-        if (display.value === 'false' || display.value === 'true' || display.value === '1' || display.value === '0') {
-            display.value = '0.4.0';
+        if (version.value === 'false' || version.value === 'true' || version.value === '1' || version.value === '0') {
+            version.value = '0.4.0';
         }
 
-        if (display && display.value && currentVersion && semver.gt(display.value, currentVersion)) {
-            return display.value;
+        // available: true if a new version is available.
+        update = {
+            available: version && version.value && currentVersion && semver.gt(version.value, currentVersion),
+            version: version.value
+        };
+
+        return update;
+    }).then(function then(update) {
+        var updateNotification = null,
+            getStoredNotifications = api.notifications.browse({context: {internal: true}}),
+            getSeenNotifications   = api.settings.read({context: {internal: true}, key: 'seenNotifications'});
+
+        // If a new version is available, construct a notification
+        if (update.available) {
+            updateNotification = {
+                type: 'upgrade',
+                location: 'settings-about-upgrade',
+                dismissible: false,
+                status: 'alert',
+                message: i18n.t('notices.controllers.newVersionAvailable', {
+                    version: update.version,
+                    link: '<a href="http://support.ghost.org/how-to-upgrade/" target="_blank">Click here</a>'
+                })
+            };
         }
 
-        return false;
+        return [
+            updateNotification,     // upgrade availability notification
+            getStoredNotifications, // currently available notifications
+            getSeenNotifications    // UUIDs of seen notifications
+        ];
+    }).spread(function (updateNotification, stored, seen) {
+        var notifications     = [],
+            seenNotifications = JSON.parse(seen.settings[0].value);
+
+        // Remove seen notifications and duplicates before saving all
+        notifications = _.chain(stored.notifications)
+        .filter(function filter(n) {
+            var wasSeen = _.has(n, 'uuid') && _.contains(seenNotifications, n.uuid);
+            return !wasSeen;
+        })
+        .uniqBy('message')
+        .value();
+
+        if (!_.some(stored.notifications, {message: updateNotification.message})) {
+            notifications.push(updateNotification);
+        }
+
+        return api.notifications.add({notifications: notifications}, {context: {internal: true}});
     });
 }
 
+/**
+ * The check will not happen if:
+ * 1. updateCheck is defined as false in config.js
+ * 2. we've already done a check this session
+ * 3. we're not in production or development mode
+ * @returns {Promise}
+ */
+function updateCheck() {
+    // TODO: need to remove config.updateCheck in favor of config.privacy.updateCheck in future version (it is now deprecated)
+    if (config.updateCheck === false || config.isPrivacyDisabled('useUpdateCheck') || _.indexOf(allowedCheckEnvironments, process.env.NODE_ENV) === -1) {
+        return Promise.resolve();
+    }
+
+    return api.settings.read(_.extend({key: 'nextUpdateCheck'}, internal)).then(function then(result) {
+        var next              = result.settings[0],
+            tooEarlyToCheckin = next && next.value && next.value > moment().unix();
+
+        // If it's not time to check yet, show any unresolved notifications
+        if (tooEarlyToCheckin) {
+            return renderNotifications();
+        }
+
+        return updateCheckRequest()
+        .then(updateCheckResponse)
+        .then(renderNotifications)
+        .catch(updateCheckError);
+    })
+    .catch(updateCheckError);
+}
+
 module.exports = updateCheck;
-module.exports.showUpdateNotification = showUpdateNotification;
