@@ -2,17 +2,63 @@
 /* global require, module */
 
 var EmberApp = require('ember-cli/lib/broccoli/ember-app'),
+    concat = require('broccoli-concat'),
+    mergeTrees = require('broccoli-merge-trees'),
+    uglify = require('broccoli-uglify-js'),
+    cleanCSS = require('broccoli-clean-css'),
     environment = EmberApp.env(),
     isProduction = environment === 'production',
     mythCompress = isProduction || environment === 'test',
     disabled = {enabled: false},
-    assetLocation;
+    assetLocation, codemirrorAssets;
 
 assetLocation = function (fileName) {
     if (isProduction) {
         fileName = fileName.replace('.', '.min.');
     }
     return '/assets/' + fileName;
+};
+
+codemirrorAssets = function () {
+    var codemirrorFiles = [
+        'lib/codemirror.css',
+        'theme/xq-light.css',
+        'lib/codemirror.js',
+        'mode/htmlmixed/htmlmixed.js',
+        'mode/xml/xml.js',
+        'mode/css/css.js',
+        'mode/javascript/javascript.js'
+    ];
+
+    if (environment === 'test') {
+        return {import: codemirrorFiles};
+    }
+
+    return {
+        public: {
+            include: codemirrorFiles,
+            destDir: '/',
+            processTree: function (tree) {
+                var jsTree = concat(tree, {
+                    outputFile: 'assets/codemirror/codemirror.js',
+                    headerFiles: ['lib/codemirror.js'],
+                    inputFiles: ['mode/**/*']
+                });
+
+                var cssTree = concat(tree, {
+                    outputFile: 'assets/codemirror/codemirror.css',
+                    inputFiles: ['**/*.css']
+                });
+
+                if (isProduction) {
+                    jsTree = uglify(jsTree);
+                    cssTree = cleanCSS(cssTree);
+                }
+
+                return mergeTrees([jsTree, cssTree]);
+            }
+        }
+    };
 };
 
 module.exports = function (defaults) {
@@ -45,17 +91,7 @@ module.exports = function (defaults) {
             'blueimp-md5': {
                 import: ['js/md5.js']
             },
-            codemirror: {
-                import: [
-                    'lib/codemirror.js',
-                    'lib/codemirror.css',
-                    'theme/xq-light.css',
-                    'mode/htmlmixed/htmlmixed.js',
-                    'mode/xml/xml.js',
-                    'mode/css/css.js',
-                    'mode/javascript/javascript.js',
-                ]
-            },
+            codemirror: codemirrorAssets(),
             'jquery-deparam': {
                 enabled: EmberApp.env() === 'test',
                 import: ['jquery-deparam.js']

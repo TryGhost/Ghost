@@ -1,6 +1,8 @@
 /* global CodeMirror */
 import Component from 'ember-component';
-import run, {bind} from 'ember-runloop';
+import run, {bind, scheduleOnce} from 'ember-runloop';
+import injectService from 'ember-service/inject';
+
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import {InvokeActionMixin} from 'ember-invoke-action';
 
@@ -18,9 +20,21 @@ const CmEditorComponent =  Component.extend(InvokeActionMixin, {
 
     _editor: null, // reference to CodeMirror editor
 
+    lazyLoader: injectService(),
+
     didInsertElement() {
         this._super(...arguments);
 
+        this.get('lazyLoader').loadStyle('codemirror', 'codemirror/codemirror.css');
+
+        this.get('lazyLoader').loadScript('codemirror', 'codemirror/codemirror.js').then(() => {
+            scheduleOnce('afterRender', this, function () {
+                this._initCodeMirror();
+            });
+        });
+    },
+
+    _initCodeMirror() {
         let options = this.getProperties('lineNumbers', 'indentUnit', 'mode', 'theme');
         let editor = new CodeMirror(this.element, options);
 
