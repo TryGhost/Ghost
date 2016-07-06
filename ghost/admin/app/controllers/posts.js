@@ -1,15 +1,12 @@
 import Ember from 'ember';
+import Controller from 'ember-controller';
+import computed, {equal} from 'ember-computed';
+import injectService from 'ember-service/inject';
 
-const {
-    Controller,
-    compare,
-    computed,
-    inject: {service}
-} = Ember;
-const {equal} = computed;
+const {compare} = Ember;
 
 export default Controller.extend({
-    feature: service(),
+    feature: injectService(),
 
     showDeletePostModal: false,
 

@@ -1,14 +1,10 @@
-import Ember from 'ember';
-
-const {
-    Controller,
-    computed,
-    inject: {service}
-} = Ember;
+import Controller from 'ember-controller';
+import computed from 'ember-computed';
+import injectService from 'ember-service/inject';
 
 export default Controller.extend({
-    dropdown: service(),
-    session: service(),
+    dropdown: injectService(),
+    session: injectService(),
 
     showNavMenu: computed('currentPath', 'session.isAuthenticated', function () {
         return (this.get('currentPath') !== 'error404' || this.get('session.isAuthenticated')) &&

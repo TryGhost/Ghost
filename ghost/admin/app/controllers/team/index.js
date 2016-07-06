@@ -1,11 +1,6 @@
-import Ember from 'ember';
-
-const {
-    Controller,
-    computed,
-    inject: {service}
-} = Ember;
-const {alias, filter} = computed;
+import Controller from 'ember-controller';
+import {alias, filter} from 'ember-computed';
+import injectService from 'ember-service/inject';
 
 export default Controller.extend({
 
@@ -13,7 +8,7 @@ export default Controller.extend({
 
     users: alias('model'),
 
-    session: service(),
+    session: injectService(),
 
     activeUsers: filter('users', function (user) {
         return /^active|warn-[1-4]|locked$/.test(user.get('status'));

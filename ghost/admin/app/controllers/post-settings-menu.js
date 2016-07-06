@@ -1,38 +1,36 @@
+import $ from 'jquery';
 import Ember from 'ember';
+import Controller from 'ember-controller';
+import RSVP from 'rsvp';
+import computed from 'ember-computed';
+import {guidFor} from 'ember-metal/utils';
+import injectService from 'ember-service/inject';
+import injectController from 'ember-controller/inject';
+import {htmlSafe} from 'ember-string';
+import {isEmberArray} from 'ember-array/utils';
+import {isBlank} from 'ember-utils';
+import observer from 'ember-metal/observer';
+import run from 'ember-runloop';
+
 import {parseDateString} from 'ghost-admin/utils/date-formatting';
 import SettingsMenuMixin from 'ghost-admin/mixins/settings-menu-controller';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import isNumber from 'ghost-admin/utils/isNumber';
 
-const {
-    $,
-    ArrayProxy,
-    Controller,
-    Handlebars,
-    PromiseProxyMixin,
-    RSVP,
-    computed,
-    guidFor,
-    inject: {service, controller},
-    String: {htmlSafe},
-    isArray,
-    isBlank,
-    observer,
-    run
-} = Ember;
+const {ArrayProxy, Handlebars, PromiseProxyMixin} = Ember;
 
 export default Controller.extend(SettingsMenuMixin, {
     debounceId: null,
     lastPromise: null,
     selectedAuthor: null,
 
-    application: controller(),
-    config: service(),
-    ghostPaths: service(),
-    notifications: service(),
-    session: service(),
-    slugGenerator: service(),
-    timeZone: service(),
+    application: injectController(),
+    config: injectService(),
+    ghostPaths: injectService(),
+    notifications: injectService(),
+    session: injectService(),
+    slugGenerator: injectService(),
+    timeZone: injectService(),
 
     initializeSelectedAuthor: observer('model', function () {
         return this.get('model.author').then((author) => {
@@ -183,7 +181,7 @@ export default Controller.extend(SettingsMenuMixin, {
     }),
 
     showErrors(errors) {
-        errors = isArray(errors) ? errors : [errors];
+        errors = isEmberArray(errors) ? errors : [errors];
         this.get('notifications').showErrors(errors);
     },
 

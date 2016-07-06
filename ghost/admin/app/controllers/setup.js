@@ -1,22 +1,16 @@
-import Ember from 'ember';
-
-const {
-    Controller,
-    computed,
-    get,
-    inject: {service, controller}
-} = Ember;
-const {match} = computed;
+import Controller from 'ember-controller';
+import computed, {match} from 'ember-computed';
+import injectService from 'ember-service/inject';
+import injectController from 'ember-controller/inject';
 
 export default Controller.extend({
-    appController: controller('application'),
-    ghostPaths: service(),
+    appController: injectController('application'),
+    ghostPaths: injectService(),
 
     showBackLink: match('appController.currentRouteName', /^setup\.(two|three)$/),
 
     backRoute: computed('appController.currentRouteName', function () {
-        let appController = this.get('appController');
-        let currentRoute = get(appController, 'currentRouteName');
+        let currentRoute = this.get('appController.currentRouteName');
 
         return currentRoute === 'setup.two' ? 'setup.one' : 'setup.two';
     })

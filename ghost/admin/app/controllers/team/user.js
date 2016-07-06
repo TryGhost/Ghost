@@ -1,18 +1,14 @@
-import Ember from 'ember';
+import Controller from 'ember-controller';
+import RSVP from 'rsvp';
+import computed, {alias, and, not, or, readOnly} from 'ember-computed';
+import injectService from 'ember-service/inject';
+import {htmlSafe} from 'ember-string';
+import run from 'ember-runloop';
+import {isEmberArray} from 'ember-array/utils';
+
 import isNumber from 'ghost-admin/utils/isNumber';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import { invoke } from 'ember-invoke-action';
-
-const {
-    Controller,
-    RSVP,
-    computed,
-    inject: {service},
-    String: {htmlSafe},
-    run,
-    isArray
-} = Ember;
-const {alias, and, not, or, readOnly} = computed;
 
 export default Controller.extend({
     submitting: false,
@@ -24,12 +20,12 @@ export default Controller.extend({
     _scratchFacebook: null,
     _scratchTwitter: null,
 
-    ajax: service(),
-    dropdown: service(),
-    ghostPaths: service(),
-    notifications: service(),
-    session: service(),
-    slugGenerator: service(),
+    ajax: injectService(),
+    dropdown: injectService(),
+    ghostPaths: injectService(),
+    notifications: injectService(),
+    session: injectService(),
+    slugGenerator: injectService(),
 
     user: alias('model'),
     currentUser: alias('session.user'),
@@ -394,7 +390,7 @@ export default Controller.extend({
             }).then((response) => {
                 // manually update the roles for the users that just changed roles
                 // because store.pushPayload is not working with embedded relations
-                if (response && isArray(response.users)) {
+                if (response && isEmberArray(response.users)) {
                     response.users.forEach((userJSON) => {
                         let user = this.store.peekRecord('user', userJSON.id);
                         let role = this.store.peekRecord('role', userJSON.roles[0].id);

@@ -1,12 +1,12 @@
-import Ember from 'ember';
+import Controller from 'ember-controller';
+import RSVP from 'rsvp';
+import injectService from 'ember-service/inject';
+import injectController from 'ember-controller/inject';
+import {isEmberArray} from 'ember-array/utils';
+
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 
-const {
-    Controller,
-    RSVP: {Promise},
-    inject: {service, controller},
-    isArray
-} = Ember;
+const {Promise} = RSVP;
 
 export default Controller.extend(ValidationEngine, {
     size: 90,
@@ -19,12 +19,12 @@ export default Controller.extend(ValidationEngine, {
     submitting: false,
     flowErrors: '',
 
-    ghostPaths: service(),
-    notifications: service(),
-    application: controller(),
-    config: service(),
-    session: service(),
-    ajax: service(),
+    ghostPaths: injectService(),
+    notifications: injectService(),
+    application: injectController(),
+    config: injectService(),
+    session: injectService(),
+    ajax: injectService(),
 
     // ValidationEngine settings
     validationType: 'setup',
@@ -56,7 +56,7 @@ export default Controller.extend(ValidationEngine, {
     _handleSaveError(resp) {
         this.toggleProperty('submitting');
 
-        if (resp && resp.errors && isArray(resp.errors)) {
+        if (resp && resp.errors && isEmberArray(resp.errors)) {
             this.set('flowErrors', resp.errors[0].message);
         } else {
             this.get('notifications').showAPIError(resp, {key: 'setup.blog-details'});
