@@ -1,23 +1,21 @@
-import Ember from 'ember';
-import ValidationEngine from 'ghost-admin/mixins/validation-engine';
+import $ from 'jquery';
+import Controller from 'ember-controller';
+import injectService from 'ember-service/inject';
+import injectController from 'ember-controller/inject';
+import {isEmberArray} from 'ember-array/utils';
 
-const {
-    $,
-    Controller,
-    inject: {service, controller},
-    isArray
-} = Ember;
+import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 
 export default Controller.extend(ValidationEngine, {
     submitting: false,
     loggingIn: false,
     authProperties: ['identification', 'password'],
 
-    ghostPaths: service(),
-    notifications: service(),
-    session: service(),
-    application: controller(),
-    ajax: service(),
+    ghostPaths: injectService(),
+    notifications: injectService(),
+    session: injectService(),
+    application: injectController(),
+    ajax: injectService(),
     flowErrors: '',
 
     // ValidationEngine settings
@@ -94,7 +92,7 @@ export default Controller.extend(ValidationEngine, {
                 }).catch((resp) => {
                     this.toggleProperty('submitting');
 
-                    if (resp && resp.errors && isArray(resp.errors)) {
+                    if (resp && resp.errors && isEmberArray(resp.errors)) {
                         let [{message}] = resp.errors;
 
                         this.set('flowErrors', message);

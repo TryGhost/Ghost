@@ -1,12 +1,11 @@
-import Ember from 'ember';
+import Controller from 'ember-controller';
+import RSVP from 'rsvp';
+import injectService from 'ember-service/inject';
+import {isEmberArray} from 'ember-array/utils';
+
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 
-const {
-    Controller,
-    RSVP: {Promise},
-    inject: {service},
-    isArray
-} = Ember;
+const {Promise} = RSVP;
 
 export default Controller.extend(ValidationEngine, {
     // ValidationEngine settings
@@ -16,11 +15,11 @@ export default Controller.extend(ValidationEngine, {
     flowErrors: '',
     image: null,
 
-    ghostPaths: service(),
-    config: service(),
-    notifications: service(),
-    session: service(),
-    ajax: service(),
+    ghostPaths: injectService(),
+    config: injectService(),
+    notifications: injectService(),
+    session: injectService(),
+    ajax: injectService(),
 
     sendImage() {
         let image = this.get('image');
@@ -78,7 +77,7 @@ export default Controller.extend(ValidationEngine, {
                 }).catch((resp) => {
                     this.toggleProperty('submitting');
 
-                    if (resp && resp.errors && isArray(resp.errors)) {
+                    if (resp && resp.errors && isEmberArray(resp.errors)) {
                         this.set('flowErrors', resp.errors[0].message);
                     } else {
                         notifications.showAPIError(resp, {key: 'signup.complete'});
