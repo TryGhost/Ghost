@@ -9,6 +9,14 @@ const {
 } = Ember;
 
 /* jshint unused:false */
+function maintenanceResponse() {
+    return new Mirage.Response(503, {}, {
+        errors: [{
+            errorType: 'Maintenance'
+        }]
+    });
+}
+
 function versionMismatchResponse() {
     return new Mirage.Response(400, {}, {
         errors: [{

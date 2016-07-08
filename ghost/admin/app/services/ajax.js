@@ -70,6 +70,24 @@ export function isUnsupportedMediaTypeError(errorOrStatus) {
     }
 }
 
+/* Maintenance error */
+
+export function MaintenanceError(errors) {
+    AjaxError.call(this, errors, 'Ghost is currently undergoing maintenance, please wait a moment then retry.');
+}
+
+MaintenanceError.prototype = Object.create(AjaxError.prototype);
+
+export function isMaintenanceError(errorOrStatus) {
+    if (isAjaxError(errorOrStatus)) {
+        return errorOrStatus instanceof MaintenanceError;
+    } else if (errorOrStatus && get(errorOrStatus, 'isAdapterError')) {
+        return get(errorOrStatus, 'errors.firstObject.errorType') === 'Maintenance';
+    } else {
+        return errorOrStatus === 503;
+    }
+}
+
 /* end: custom error types */
 
 export default AjaxService.extend({
@@ -99,6 +117,8 @@ export default AjaxService.extend({
             return new RequestEntityTooLargeError(payload.errors);
         } else if (this.isUnsupportedMediaTypeError(status, headers, payload)) {
             return new UnsupportedMediaTypeError(payload.errors);
+        } else if (this.isMaintenanceError(status, headers, payload)) {
+            return new MaintenanceError(payload.errors);
         }
 
         return this._super(...arguments);
@@ -136,5 +156,9 @@ export default AjaxService.extend({
 
     isUnsupportedMediaTypeError(status/*, headers, payload */) {
         return isUnsupportedMediaTypeError(status);
+    },
+
+    isMaintenanceError(status, headers, payload) {
+        return isMaintenanceError(status, payload);
     }
 });
