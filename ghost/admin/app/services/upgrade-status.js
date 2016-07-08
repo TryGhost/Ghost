@@ -6,6 +6,13 @@ export default Service.extend({
 
     notifications: injectService(),
 
+    maintenanceAlert() {
+        this.get('notifications').showAlert(
+            'Sorry, Ghost is currently undergoing maintenance, please wait a moment then try again.',
+            {type: 'error', key: 'api-error.under-maintenance'}
+        );
+    },
+
     requireUpgrade() {
         this.set('isRequired', true);
         this.get('notifications').showAlert(

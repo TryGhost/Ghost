@@ -176,6 +176,14 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
                         this.get('upgradeStatus').requireUpgrade();
                         return false;
 
+                    case 'Maintenance':
+                        if (transition) {
+                            transition.abort();
+                        }
+
+                        this.get('upgradeStatus').maintenanceAlert();
+                        return false;
+
                     default:
                         this.get('notifications').showAPIError(error);
                         // don't show the 500 page if we weren't navigating

@@ -4,9 +4,12 @@ import {A as emberA, isEmberArray} from 'ember-array/utils';
 import get from 'ember-metal/get';
 import set from 'ember-metal/set';
 import injectService from 'ember-service/inject';
-import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {isBlank} from 'ember-utils';
 import {dasherize} from 'ember-string';
+import {
+    isMaintenanceError,
+    isVersionMismatchError
+} from 'ghost-admin/services/ajax';
 
 // Notification keys take the form of "noun.verb.message", eg:
 //
@@ -88,6 +91,9 @@ export default Service.extend({
         // handle "global" errors
         if (isVersionMismatchError(resp)) {
             return this.get('upgradeStatus').requireUpgrade();
+        } else if (isMaintenanceError(resp)) {
+            console.log(this.get('upgradeStatus'));
+            return this.get('upgradeStatus').maintenanceAlert();
         }
 
         // loop over Ember Data / ember-ajax errors object
