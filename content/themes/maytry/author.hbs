@@ -1,0 +1,86 @@
+{{!< default}}
+
+{{#author}}
+  <div class="blog-cover-container">
+    <div class="featured-image">
+      {{#if cover}}
+        <img src="{{cover}}" alt="{{name}}"/>
+      {{else}}
+        {{#if @blog.cover}}
+          <img src="{{@blog.cover}}" alt="{{name}}"/>
+        {{else}}
+          <img src="{{asset "images/HIRO95_ukabukuragetotokyo_resize.jpg"}}" alt="{{name}}"/>
+        {{/if}}
+      {{/if}}
+    </div>
+    <div class="featured-info hide-for-small-only">
+      <div class="author-status">
+        <div class="author-img">
+          {{#if image}}
+            <img src="{{image}}" alt="{{name}}" class="align-center"/>
+          {{/if}}
+        </div>
+        <h1 class="author-title">{{name}}</h1>
+      </div>
+    </div>
+  </div>
+  <div class="blog-description">
+    <div class="author-status row collapse">
+      <!-- スモールサイズでの表示 -->
+      <div class="small-3 columns show-for-small-only">
+        <div class="author-img">
+          {{#if image}}
+            <img src="{{image}}" alt="{{name}}"/>
+          {{else}}
+            <img class="no_image" src="{{asset "/images/no_image.svg"}}"/>
+          {{/if}}
+        </div>
+      </div>
+      <div class="small-9 columns show-for-small-only">
+        <div class="mt-panel">
+          <div class="mt-panel-header">
+            <h1 class="author-title">{{name}}</h1>
+            {{#if website}}
+              <span><a class="website-link" href="{{website}}" target="_blank">{{website}}</a></span>
+            {{/if}}
+          </div>
+          <div class="mt-panel-body">
+            {{#if bio}}
+              <p class="author-bio">{{bio}}</p>
+            {{/if}}
+          </div>
+        </div>
+      </div>
+      <!-- 普通サイズでの表示 -->
+      <div class="columns hide-for-small-only">
+        <div class="mt-panel">
+          <div class="mt-panel-body">
+            {{#if bio}}
+              <p class="author-bio">{{bio}}</p>
+            {{/if}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{{/author}}
+
+<div class="content-container home-container">
+  <div class="row multi-col collapse">
+    <div class="medium-8 columns main-column">
+      {{#foreach posts}}
+        {{> content_post}}
+      {{/foreach}}
+    </div>
+    <div class="medium-4 columns side-column">
+      <div class="mt-panel">
+        <h2 class="mt-label category-label">タグ</h2>
+        <div class="post-tags">{{tag_links all=true}}</div>
+        <h2 class="mt-label twitter-label">Twitter</h2>
+        <a class="twitter-timeline" href="https://twitter.com/_slont" data-widget-id="686940648100868097">Tweets by @_slont</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{pagination}}

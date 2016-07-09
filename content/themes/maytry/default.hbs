@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<!--[if IE 8]>
+<html class="no-js lt-ie9" lang="ja">
+<![endif]--><!--[if gt IE 8]>
+<html lang="ja">
+<![endif]-->
+<![if !IE]>
+<html lang="ja">
+<![endif]>
+<head>
+  {{! Document Settings }}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  {{! Page Meta }}
+  <title>{{meta_title}}</title>
+  <meta name="description" content="{{meta_description}}"/>
+  {{! Favicon }}
+  <!-- iOS Safari -->
+  <link rel="apple-touch-icon" sizes="180x180" href="{{asset "images/icons/favicon_color.png"}}">
+  <!-- iOS Safari(旧) / Android標準ブラウザ(一部) -->
+  <link rel="apple-touch-icon-precomposed" href="{{asset "images/icons/favicon_color.png"}}">
+  <!-- Android標準ブラウザ(一部) -->
+  <link rel="shortcut icon" href="{{asset "images/icons/favicon_alpha.png"}}">
+  <!-- Android Chrome -->
+  <link rel="icon" sizes="192x192" href="{{asset "images/icons/favicon_alpha.png"}}">
+  {{! RSS }}
+  <link rel="alternate" type="application/rss+xml" title="{{@blog.title}} » Feed" href="/rss">
+  {{! Styles'n'Scripts }}
+  <link href='http://fonts.googleapis.com/css?family=Roboto:400,100,300,700,900&amp;subset=latin,latin-ext'
+        rel='stylesheet' type='text/css'>
+  <link href='http://fonts.googleapis.com/css?family=Abril+Fatface&amp;subset=latin,latin-ext' rel='stylesheet'
+        type='text/css'>
+  <link rel="stylesheet" href="{{asset "css/normalize.css"}}">
+  <link rel="stylesheet" href="{{asset "css/foundation.min.css"}}">
+  <link rel="stylesheet" href="{{asset "css/font-awesome.min.css"}}">
+  <link rel="stylesheet" href="{{asset "css/semantic.min.css"}}">
+  <link rel="stylesheet" type="text/css" href="{{asset "css/jssocials.css"}}"/>
+  <link rel="stylesheet" type="text/css" href="{{asset "css/jssocials-theme-flat.css"}}"/>
+  <link rel="stylesheet" href="{{asset "css/slicknav.css"}}">
+  <link rel="stylesheet" href="{{asset "css/app.css"}}">
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script type="text/javascript" src="{{asset "/js/vendor/readingTime.js"}}"></script>
+  <script language="JavaScript">
+    $(document).ready( function () {
+      $("a[href^='http']:not([href*='" + location.hostname + "'])").attr('target', '_blank');
+    })
+  </script>
+  {{! Syntax Hilighter}}
+  <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.2/styles/tomorrow-night-bright.min.css"/>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.2/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  {{ghost_head}}
+</head>
+
+<body class="{{body_class}}">
+
+{{! Header }}
+<div class="mobile-nav">
+  {{navigation}}
+</div>
+
+{{! Logo & Menu }}
+<div class="header">
+  <div class="row topbar collapse">
+    <div class="medium-3 columns">
+      <div class="logo">
+        {{#if @blog.logo}}
+          <a href="{{@blog.url}}"><img src="{{@blog.logo}}" alt="{{@blog.title}}"/></a>
+        {{else}}
+          <h1><a href="{{@blog.url}}">{{@blog.title}}</a></h1>
+        {{/if}}
+      </div>
+    </div>
+    <div class="medium-9 columns">
+      {{navigation}}
+    </div>
+  </div>
+</div>
+
+{{{body}}}
+
+<footer>
+  <div class="copyright">
+    <div class="row">
+      <div class="small-12 columns">
+        <ul class="social-links">
+          <li><a href="#" title="Twitter"><i class="fa fa-twitter"></i></a></li>
+          <li><a href="#" title="Facebook"><i class="fa fa-facebook"></i></a></li>
+          <li><a href="#" title="Linkedin"><i class="fa fa-linkedin"></i></a></li>
+          <li><a href="#" title="Pinterest"><i class="fa fa-pinterest-p"></i></a></li>
+          <li><a href="#" title="Instagram"><i class="fa fa-instagram"></i></a></li>
+          <li><a href="#" title="Github"><i class="fa fa-github-alt"></i></a></li>
+        </ul>
+        <p class="text-center">Copyright 2015 Danzig. All Rights Reserved.</p>
+      </div>
+    </div>
+  </div>
+</footer>
+<a href="#top" id="back-to-top"><img src="{{asset "images/icons/backtop.png"}}" alt="Back to top"></a>
+
+{{ghost_foot}}
+
+{{! Menu for Small Screens }}
+<script type="text/javascript" src="{{asset "/js/vendor/jquery.slicknav.min.js"}}"></script>
+<script type="text/javascript" src="{{asset "/js/vendor/scrollReveal.min.js"}}"></script>
+<script type="text/javascript" src="{{asset "/js/vendor/scrollchaser.js"}}"></script>
+<script type="text/javascript" src="{{asset "/js/vendor/scrollspy.js"}}"></script>
+{{! Scripts Hooks }}
+<script type="text/javascript" src="{{asset "/js/semantic.min.js"}}"></script>
+<script type="text/javascript" src="{{asset "/js/vendor/jssocials.min.js"}}"></script>
+<script type="text/javascript" src="{{asset "/js/custom.js"}}"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!-- 画面 -->
+{{! The post content }}
+<div class="{{post_class}} blog-container" data-file="{{url}}" data-target=".word_counts">
+  <div class="row multi-col collapse">
+    <div class="medium-2 columns">
+      <div class="year_month">{{date published_at timeago="true"}}</div>
+      <div class="time_min"><span class="words"></span> words (<span class="eta"></span>)</div>
+      <script>
+          (function($){
+            "use strict";
+            $(".blog-container").each(function() {
+              $(this).readingTime({
+                readingTimeTarget: $(this).find(".eta"),
+                wordCountTarget: $(this).find(".words"),
+                lang: document.getElementsByTagName("html")[0].getAttribute("lang"),
+                remotePath: $(this).attr("data-file"),
+                remoteTarget: $(this).attr("data-target")
+              });
+            });
+          })(jQuery);
+      </script>
+      <div id="share"></div>
+    </div>
+    <div class="medium-8 columns">
+      <div class="blog-content">
+        <div class="word_counts">
+          {{content}}
+        </div>
+      </div>
+    </div>
+    <div class="medium-2 columns post-tags">
+      <p class="year_month">by <a href="{{url}}">{{author.name}}</a>
+    </div>
+  </div>
+</div>

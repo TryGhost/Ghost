@@ -1,0 +1,47 @@
+{{!< default}}
+
+<!-- BLOG COVER-->
+<div class="blog-cover-container">
+  <div class="featured-image">
+    {{#if @blog.cover}}
+      <img src="{{@blog.cover}}" alt="{{@blog.title}}"/>
+    {{else}}
+      <img src="{{asset "images/HIRO95_ukabukuragetotokyo_resize.jpg"}}" alt="{{@blog.title}}"/>
+    {{/if}}
+  </div>
+  <div class="featured-info">
+    {{#if @blog.description}}
+      <h1>{{@blog.description}}</h1>
+    {{/if}}
+  </div>
+</div>
+
+{{! The main content area on the homepage }}
+
+<!-- END OF FEATURED POSTS -->
+
+<div class="content-container home-container">
+  <div class="row multi-col collapse">
+    <div class="medium-8 columns main-column">
+      {{#foreach posts}}
+        {{> content_post}}
+      {{/foreach}}
+    </div>
+    <div class="medium-4 columns side-column">
+      <div class="popular-posts-area mt-panel mt-panel-default">
+        <h2 class="mt-label popular-label">人気記事</h2>
+        <div class="popular-posts">{{popular_posts max=4}}</div>
+      </div>
+      <div class="tags-area mt-panel">
+        <h2 class="mt-label category-label">タグ</h2>
+        <div class="post-tags">{{tag_links all=true}}</div>
+      </div>
+      <div class="twitter-area mt-panel">
+        <h2 class="mt-label twitter-label">Twitter</h2>
+        <a class="twitter-timeline" href="https://twitter.com/_slont" data-widget-id="686940648100868097">Tweets by @_slont</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{pagination}}

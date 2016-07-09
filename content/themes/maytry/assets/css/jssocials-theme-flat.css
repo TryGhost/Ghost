@@ -1,0 +1,69 @@
+.jssocials-share-twitter .jssocials-share-link {
+  background: #00aced; }
+  .jssocials-share-twitter .jssocials-share-link:hover {
+    background: #0087ba; }
+
+.jssocials-share-facebook .jssocials-share-link {
+  background: #3b5998; }
+  .jssocials-share-facebook .jssocials-share-link:hover {
+    background: #2d4373; }
+
+.jssocials-share-googleplus .jssocials-share-link {
+  background: #dd4b39; }
+  .jssocials-share-googleplus .jssocials-share-link:hover {
+    background: #c23321; }
+
+.jssocials-share-linkedin .jssocials-share-link {
+  background: #007bb6; }
+  .jssocials-share-linkedin .jssocials-share-link:hover {
+    background: #005983; }
+
+.jssocials-share-pinterest .jssocials-share-link {
+  background: #cb2027; }
+  .jssocials-share-pinterest .jssocials-share-link:hover {
+    background: #9f191f; }
+
+.jssocials-share-email .jssocials-share-link {
+  background: #3490F3; }
+  .jssocials-share-email .jssocials-share-link:hover {
+    background: #0e76e6; }
+
+.jssocials-share-link {
+  padding: .5em .6em;
+  color: #fff;
+  -webkit-transition: background 200ms ease-in-out, border-color 200ms ease-in-out;
+          transition: background 200ms ease-in-out, border-color 200ms ease-in-out; }
+  .jssocials-share-link:hover, .jssocials-share-link:focus, .jssocials-share-link:active {
+    color: #fff; }
+
+.jssocials-share-count-box {
+  position: relative;
+  height: 2.5em;
+  padding: 0 .3em;
+  margin-left: 0.3em;
+  background: #f5f5f5;
+  -webkit-transition: background 200ms ease-in-out, border-color 200ms ease-in-out;
+          transition: background 200ms ease-in-out, border-color 200ms ease-in-out; }
+  .jssocials-share-count-box:hover {
+    background: gainsboro; }
+    .jssocials-share-count-box:hover:after {
+      border-color: transparent gainsboro transparent transparent; }
+  .jssocials-share-count-box:after {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 0.85em;
+    left: -0.3em;
+    width: 0;
+    height: 0;
+    border-width: 0.4em 0.4em 0.4em 0;
+    border-style: solid;
+    border-color: transparent #f5f5f5 transparent transparent;
+    -webkit-transform: rotate(360deg);
+        -ms-transform: rotate(360deg);
+            transform: rotate(360deg);
+    -webkit-transition: background 200ms ease-in-out, border-color 200ms ease-in-out;
+            transition: background 200ms ease-in-out, border-color 200ms ease-in-out; }
+  .jssocials-share-count-box .jssocials-share-count {
+    line-height: 2.5em;
+    color: #444; }
