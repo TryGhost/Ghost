@@ -35,7 +35,7 @@ popular_posts = function(options) {
   var cursor = col.find({'query.period': period});
   return cursor.next().then(function(res) {
     contentInfos = res.rows.slice(0, Math.min(max, res.rows.length));
-    db.close();
+    // db.close();
     return api.posts.browse({
           context: {
             internal: true
