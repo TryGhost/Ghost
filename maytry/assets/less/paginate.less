@@ -49,19 +49,22 @@ a.newer-posts {
 }
 
 .prev-next {
-  margin: 25px 0;
   border: 1px solid @border-color;
   border-radius: 5px;
   padding: 5px 10px 10px;
+  font-weight: bold;
+
+  &.row {
+    margin: 25px 0;
+  }
 }
 
 .prev {
-  padding: 10px 0;
+  padding: 0;
   margin: 5px 0;
 
-  h6 {
+  h4 {
     color: #787878;
-    font-size: 13px;
     border-bottom: 4px solid @border-color;
     padding-bottom: 4px;
     margin-bottom: 4px;
@@ -84,12 +87,11 @@ a.newer-posts {
 }
 
 .next {
-  padding: 10px 0;
+  padding: 0;
   margin: 5px 0;
 
-  h6 {
+  h4 {
     color: grey;
-    font-size: 13px;
     border-bottom: 4px solid @border-color;
     text-align: right;
     padding-bottom: 4px;
@@ -114,9 +116,6 @@ a.newer-posts {
 }
 
 @media only screen and (max-width: 1024px) {
-  .next {
-    margin-top: -20px;
-  }
 }
 
 @media only screen and (max-width: 767px) {

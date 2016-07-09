@@ -2,7 +2,7 @@
   "use strict";
 
   // 文字数と予想時間
-  $(".blog-container").each(function() {
+  $(".blog-content").each(function() {
     $(this).readingTime({
       readingTimeTarget: $(this).find(".eta"),
       wordCountTarget: $(this).find(".words"),
@@ -44,7 +44,7 @@
   if(640 < window.innerWidth && 0 < $('.outline').size()) {
     $('.outline').scrollChaser({
       wrapper: '.blog-container',
-      offsetTop: window.innerWidth <= 640 ? -5 : 65,
+      offsetTop: window.innerWidth <= 640 ? -5 : 70,
       offsetBottom: 5,
       absolute: true
     });
@@ -57,7 +57,7 @@
   if(0 < $('.share-side-bar').size()) {
     $('.share-side-bar').scrollChaser({
       wrapper: '.blog-container',
-      offsetTop: window.innerWidth <= 640 ? -5 : 65,
+      offsetTop: window.innerWidth <= 640 ? -5 : 70,
       absolute: true
     });
   }

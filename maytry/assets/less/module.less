@@ -13,60 +13,45 @@ p.year_month {
   font-size: 13px;
 }
 
+.mt-panel {
+  margin: 5px;
+
+  .mt-panel-header {
+    padding: 10px 10px 5px;
+    border-bottom: 1px solid;
+  }
+
+  .mt-panel-body {
+    padding: 5px 10px;
+  }
+
+  .mt-panel-footer {
+    padding: 0 10px 10px;
+  }
+
+  &.mt-panel-default {
+    background: white;
+    margin: 10px 5px;
+    padding: 10px;
+    border-radius: 10px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+  }
+}
+
 .post-tags {
   margin-left: -4px;
   margin-bottom: 5px;
   letter-spacing: .09em;
 
-  p.year_month {
-    text-align: left;
-    border-bottom: 1px solid #e6e6e6;
-    padding: 25px 0 15px;
-    margin-left: 15px;
-    margin-right: 0;
-    text-transform: uppercase;
-    font-size: 13px;
-
-    a {
-      color: @font-color;
-
-      &:hover {
-        color: @emphasis-color;
-        text-decoration: none
-      }
-    }
-  }
-
-  h4 {
-    margin: 17px 0 0 25px;
-    text-align: left;
-
-    a {
-      display: inline-block;
-      font-size: 11px;
-      text-transform: uppercase;
-      color: grey;
-      border: 1px solid grey;
-      border-radius: 5px;
-      padding: 8px;
-      margin: 0 5px 8px 0;
-
-      &:hover {
-        background: @emphasis-color;
-        border-color: @emphasis-color;
-        color: white;
-        text-decoration: none;
-      }
-    }
-  }
-
   .ui.labeled.button {
-    margin: 2px 4px;
+    margin: 4px;
+    font-size: 14px;
 
     .ui.button {
-      background: whitesmoke;
-      font-size: 12px;
+      background: lightgrey;
       padding: 3px 10px 3px 3px;
+      color: black;
 
       .icon.tag {
         margin-right: 0;
@@ -76,7 +61,6 @@ p.year_month {
 
     .ui.label {
       text-decoration: none;
-      font-size: 12px;
       padding: 3px 3px 3px 9px;
 
       &:before {
@@ -90,7 +74,7 @@ p.year_month {
 .read-more {
   a {
     display: inline-block;
-    font-size: 11px;
+    font-size: 14px;
     text-transform: uppercase;
     color: @font-color;
     border: 1px solid #787878;
@@ -225,26 +209,9 @@ p.year_month {
   }
 }
 
-.mt-panel {
-  margin: 5px;
-
-  .mt-panel-header {
-    padding: 10px 10px 5px;
-    border-bottom: 1px solid;
-  }
-
-  .mt-panel-body {
-    padding: 5px 10px;
-  }
-
-  .mt-panel-footer {
-    padding: 0 10px 10px;
-  }
-}
-
 .outline {
   background: @background-color;
-  margin: 5px;
+  margin: 0 5px 5px;
   padding: 5px;
           border-radius: 10px; /* CSS3草案 */
   -webkit-border-radius: 10px; /* Safari,Google Chrome用 */
@@ -285,7 +252,6 @@ p.year_month {
 .social-area-syncer {
   position: relative;
   min-height: 80px;
-  margin-top: 20px;
   margin-bottom: -20px;
 
   ul.social-button-syncer {
@@ -323,7 +289,7 @@ p.year_month {
   ul.social-button-syncer {
     position: relative;
     width: 86px;
-    top: -25px;
+    top: -10px;
     right: 91px;
     background: @background-color;
     border-radius: 10px;

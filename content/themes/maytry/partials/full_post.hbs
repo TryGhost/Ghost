@@ -9,14 +9,17 @@
           <a href="https://twitter.com/share" class="twitter-share-button" data-via="_slont">Tweet</a>
         </li>
         <li class="sc-fb"><!-- Facebook -->
-          <div class="fb-like" data-layout="box_count" data-action="like" data-show-faces="false" data-share="false"></div>
+          <div class="fb-like" data-layout="box_count" data-action="like" data-show-faces="false"
+               data-share="false"></div>
         </li>
         <li><!-- はてなブックマーク -->
           <a class="hatena-bookmark-button" data-hatena-bookmark-layout="vertical-balloon"
              data-hatena-bookmark-lang="ja" title="このエントリーをはてなブックマークに追加">
-            <img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="20" height="20" style="border: none;"/>
+            <img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加"
+                 width="20" height="20" style="border: none;"/>
           </a>
-          <script type="text/javascript" src="https://b.st-hatena.com/js/bookmark_button.js" charset="utf-8" async="async"></script>
+          <script type="text/javascript" src="https://b.st-hatena.com/js/bookmark_button.js" charset="utf-8"
+                  async="async"></script>
         </li>
         <li class="sc-li"><!-- LINE -->
           <a href="http://line.me/R/msg/text/?">
@@ -37,14 +40,17 @@
               <a href="https://twitter.com/share" class="twitter-share-button" data-via="_slont">Tweet</a>
             </li>
             <li class="sc-fb"><!-- Facebook -->
-              <div class="fb-like" data-layout="box_count" data-action="like" data-show-faces="false" data-share="false"></div>
+              <div class="fb-like" data-layout="box_count" data-action="like" data-show-faces="false"
+                   data-share="false"></div>
             </li>
             <li><!-- はてなブックマーク -->
               <a class="hatena-bookmark-button" data-hatena-bookmark-layout="vertical-balloon"
                  data-hatena-bookmark-lang="ja" title="このエントリーをはてなブックマークに追加">
-                <img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="20" height="20" style="border: none;"/>
+                <img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加"
+                     width="20" height="20" style="border: none;"/>
               </a>
-              <script type="text/javascript" src="https://b.st-hatena.com/js/bookmark_button.js" charset="utf-8" async="async"></script>
+              <script type="text/javascript" src="https://b.st-hatena.com/js/bookmark_button.js" charset="utf-8"
+                      async="async"></script>
             </li>
             <li class="sc-li"><!-- LINE -->
               <a href="http://line.me/R/msg/text/?">
@@ -54,23 +60,27 @@
           </ul>
         </div>
         <!-- 前後の投稿 -->
-        <div class="prev-next">
-          <div class="row">
-            <div class="small-12 large-6 columns">
-              {{#prev_post}}
-                <div class="prev">
-                  <a href="{{url}}"><h6>前の投稿</h6><p>{{title}}</p></a>
-                </div>
-              {{/prev_post}}
-            </div>
+        <div class="prev-next row">
+          <div class="small-12 large-6 columns">
+            {{#prev_post}}
+              <div class="prev">
+                <a href="{{url}}">
+                  <h4>前の投稿</h4>
+                  <p>{{title}}</p>
+                </a>
+              </div>
+            {{/prev_post}}
+          </div>
 
-            <div class="small-12 large-6 columns">
-              {{#next_post}}
-                <div class="next">
-                  <a href="{{url}}"><h6>次の投稿</h6><p>{{title}}</p></a>
-                </div>
-              {{/next_post}}
-            </div>
+          <div class="small-12 large-6 columns">
+            {{#next_post}}
+              <div class="next">
+                <a href="{{url}}">
+                  <h4>次の投稿</h4>
+                  <p>{{title}}</p>
+                </a>
+              </div>
+            {{/next_post}}
           </div>
         </div>
 
@@ -83,12 +93,10 @@
                 {{/if}}
               </div>
               <div class="author-status">
-                <h3>
-                  {{name}}
-                  {{#if website}}
-                    <span><a href="{{website}}" target="_blank">{{website}}</a></span>
-                  {{/if}}
-                </h3>
+                <h2>{{name}}</h2>
+                {{#if website}}
+                  <span><a href="{{website}}" target="_blank">{{website}}</a></span>
+                {{/if}}
                 {{#if bio}}
                   <p>{{bio}}</p>
                 {{/if}}

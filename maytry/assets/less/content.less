@@ -14,6 +14,8 @@
     padding-left: 98px;
 
     .word_counts {
+      margin-bottom: 30px;
+
       h1, h2 {
         padding-top: 100px;
         margin-top: -100px;
@@ -40,15 +42,6 @@
     font-weight: 500;
   }
 
-  .time_min {
-    text-transform: uppercase;
-    text-align: right;
-
-    span.words {
-      color: @emphasis-color;
-    }
-  }
-
   .article-status {
     top: -20px;
   }
@@ -70,14 +63,18 @@
 }
 
 .blog-content {
-  background: @background-color;
-  margin: 5px;
-  padding: 15px;
+  background-color: @background-color;
+  margin: 10px 5px;
+  padding: 10px;
   border-left: 1px solid @border-color;
   border-right: 1px solid @border-color;
           border-radius: 10px; /* CSS3草案 */
   -webkit-border-radius: 10px; /* Safari,Google Chrome用 */
      -moz-border-radius: 10px; /* Firefox用 */
+
+  &:first-child {
+    margin-top: 0;
+  }
 
   .word_counts {
     ul {
@@ -113,10 +110,20 @@
     }
   }
 
-  .post-status {
-    .author {
-      float: left;
+  .time_min {
+    text-transform: uppercase;
+    text-align: right;
 
+    span.words {
+      color: @emphasis-color;
+    }
+  }
+
+  .post-status {
+    display: flex;
+    align-items: center;
+
+    .author {
       img {
         width: 25px;
         height: 25px;
@@ -124,19 +131,10 @@
     }
 
     .published_date {
-      float: left;
-
-      >span {
-        position: relative;
-        top: 5px;
-      }
+      margin-right: auto;
     }
 
     .time_min {
-      >span {
-        position: relative;
-        top: 5px;
-      }
     }
   }
 
@@ -210,6 +208,42 @@
   }
 }
 
+.side-column {
+  .mt-panel.mt-panel-default {
+    margin: 10px 5px;
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  h2.mt-label {
+    color: @font-color;
+    font-size: 30px;
+  }
+
+  .popular-posts-area {
+    .popular-post {
+      margin-bottom: 15px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      a {
+        font-size: 16px;
+        font-weight: bold;
+        color: @mt-theme-color;
+        opacity: .8;
+        text-decoration: none;
+
+        &:hover {
+          color: @emphasis-color;
+        }
+      }
+    }
+  }
+}
 
 @media only screen and (max-width: 1200px) {
   .content-container {

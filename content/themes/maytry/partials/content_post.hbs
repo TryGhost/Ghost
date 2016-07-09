@@ -1,38 +1,29 @@
 <!-- トップ画面 -->
 {{! The post content }}
-<div class="{{post_class}} blog-container" data-file="{{url}}" data-target=".word_counts">
-  <div class="row multi-col collapse">
-    <div class="medium-12 columns">
-      <div class="blog-content">
-        <div class="post-status">
-          <div class="author">
-            {{#author}}
-              {{#if image}}
-                <a href="{{url}}"><img src="{{image}}"/></a>
-              {{/if}}
-              <a class="middle-vertical" href="{{url}}">{{name}}</a>&nbsp;-&nbsp;
-            {{/author}}
-          </div>
-          <div class="published_date">
-            <span>
-              {{date published_at lang="ja" timeago="true"}}
-            </span>
-          </div>
-          <div class="time_min">
-            <span>
-              <span class="words"></span>語
-              (<span class="eta"></span>)
-            </span>
-          </div>
-        </div>
-        <div class="post-title" data-sr="enter right and move 20px, wait 0.15s">
-          <h2><a href="{{url}}" title="{{title}}" class="overlay-effect">{{title}}</a></h2>
-        </div>
-        <div class="post-tags">{{tag_links}}</div>
-        <p>{{excerpt characters=100}}</p>
-
-        <div class="read-more"><a href="{{url}}" title="{{title}}">続きを読む<i class="fa fa-long-arrow-right"></i></a></div>
-      </div>
+<div class="{{post_class}} blog-content" data-file="{{url}}" data-target=".word_counts">
+  <div class="post-status">
+    <div class="author">
+      {{#author}}
+        {{#if image}}
+          <a href="{{url}}"><img src="{{image}}"/></a>
+        {{/if}}
+        <a class="middle-vertical" href="{{url}}">{{name}}</a>&nbsp;-&nbsp;
+      {{/author}}
+    </div>
+    <div class="published_date">
+      <span>
+        {{date published_at lang="ja" timeago="true"}}
+      </span>
+    </div>
+    <div class="time_min">
+      <span class="words"></span>語
+      (<span class="eta"></span>)
     </div>
   </div>
+  <div class="post-title" data-sr="enter right and move 20px, wait 0.15s">
+    <h2><a href="{{url}}" title="{{title}}" class="overlay-effect">{{title}}</a></h2>
+  </div>
+  <div class="post-tags">{{tag_links}}</div>
+  <p>{{excerpt characters=100}}</p>
+  <div class="read-more"><a href="{{url}}" title="{{title}}">続きを読む<i class="fa fa-long-arrow-right"></i></a></div>
 </div>

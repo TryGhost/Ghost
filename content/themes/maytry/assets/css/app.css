@@ -144,6 +144,9 @@
 .blog-container.full_post {
   padding-left: 98px;
 }
+.blog-container.full_post .word_counts {
+  margin-bottom: 30px;
+}
 .blog-container.full_post .word_counts h1,
 .blog-container.full_post .word_counts h2 {
   padding-top: 100px;
@@ -165,13 +168,6 @@
 .blog-container ol li {
   font-weight: 500;
 }
-.blog-container .time_min {
-  text-transform: uppercase;
-  text-align: right;
-}
-.blog-container .time_min span.words {
-  color: #EE6600;
-}
 .blog-container .article-status {
   top: -20px;
 }
@@ -188,9 +184,9 @@
   min-width: 320px;
 }
 .blog-content {
-  background: white;
-  margin: 5px;
-  padding: 15px;
+  background-color: white;
+  margin: 10px 5px;
+  padding: 10px;
   border-left: 1px solid #e6e6e6;
   border-right: 1px solid #e6e6e6;
   border-radius: 10px;
@@ -199,6 +195,9 @@
   /* Safari,Google Chrome用 */
   -moz-border-radius: 10px;
   /* Firefox用 */
+}
+.blog-content:first-child {
+  margin-top: 0;
 }
 .blog-content .word_counts ul {
   margin: 10px 20px;
@@ -226,23 +225,23 @@
   max-width: 700px;
   margin: 0 auto;
 }
-.blog-content .post-status .author {
-  float: left;
+.blog-content .time_min {
+  text-transform: uppercase;
+  text-align: right;
+}
+.blog-content .time_min span.words {
+  color: #EE6600;
+}
+.blog-content .post-status {
+  display: flex;
+  align-items: center;
 }
 .blog-content .post-status .author img {
   width: 25px;
   height: 25px;
 }
 .blog-content .post-status .published_date {
-  float: left;
-}
-.blog-content .post-status .published_date > span {
-  position: relative;
-  top: 5px;
-}
-.blog-content .post-status .time_min > span {
-  position: relative;
-  top: 5px;
+  margin-right: auto;
 }
 .blog-content .post-title {
   margin: 0;
@@ -304,6 +303,32 @@
 .overlay-effect:active:before {
   left: 0;
   right: 0;
+}
+.side-column .mt-panel.mt-panel-default {
+  margin: 10px 5px;
+}
+.side-column .mt-panel.mt-panel-default:first-child {
+  margin-top: 0;
+}
+.side-column h2.mt-label {
+  color: #3f3f3f;
+  font-size: 30px;
+}
+.side-column .popular-posts-area .popular-post {
+  margin-bottom: 15px;
+}
+.side-column .popular-posts-area .popular-post:last-child {
+  margin-bottom: 0;
+}
+.side-column .popular-posts-area .popular-post a {
+  font-size: 16px;
+  font-weight: bold;
+  color: #00002d;
+  opacity: .8;
+  text-decoration: none;
+}
+.side-column .popular-posts-area .popular-post a:hover {
+  color: #EE6600;
 }
 @media only screen and (max-width: 1200px) {
   .content-container {
@@ -929,10 +954,23 @@ p.year_month {
   text-transform: uppercase;
   font-size: 13px;
 }
+.mt-panel {
+  margin: 5px;
+}
+.mt-panel .mt-panel-header {
+  padding: 10px 10px 5px;
+  border-bottom: 1px solid;
+}
+.mt-panel .mt-panel-body {
+  padding: 5px 10px;
+}
+.mt-panel .mt-panel-footer {
+  padding: 0 10px 10px;
+}
 .mt-panel.mt-panel-default {
   background: white;
-  margin: 5px;
-  padding: 5px;
+  margin: 10px 5px;
+  padding: 10px;
   border-radius: 10px;
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
@@ -942,49 +980,14 @@ p.year_month {
   margin-bottom: 5px;
   letter-spacing: .09em;
 }
-.post-tags p.year_month {
-  text-align: left;
-  border-bottom: 1px solid #e6e6e6;
-  padding: 25px 0 15px;
-  margin-left: 15px;
-  margin-right: 0;
-  text-transform: uppercase;
-  font-size: 13px;
-}
-.post-tags p.year_month a {
-  color: #3f3f3f;
-}
-.post-tags p.year_month a:hover {
-  color: #EE6600;
-  text-decoration: none;
-}
-.post-tags h4 {
-  margin: 17px 0 0 25px;
-  text-align: left;
-}
-.post-tags h4 a {
-  display: inline-block;
-  font-size: 11px;
-  text-transform: uppercase;
-  color: grey;
-  border: 1px solid grey;
-  border-radius: 5px;
-  padding: 8px;
-  margin: 0 5px 8px 0;
-}
-.post-tags h4 a:hover {
-  background: #EE6600;
-  border-color: #EE6600;
-  color: white;
-  text-decoration: none;
-}
 .post-tags .ui.labeled.button {
-  margin: 2px 4px;
+  margin: 4px;
+  font-size: 14px;
 }
 .post-tags .ui.labeled.button .ui.button {
   background: lightgrey;
-  font-size: 12px;
   padding: 3px 10px 3px 3px;
+  color: black;
 }
 .post-tags .ui.labeled.button .ui.button .icon.tag {
   margin-right: 0;
@@ -992,7 +995,6 @@ p.year_month {
 }
 .post-tags .ui.labeled.button .ui.label {
   text-decoration: none;
-  font-size: 12px;
   padding: 3px 3px 3px 9px;
 }
 .post-tags .ui.labeled.button .ui.label:before {
@@ -1001,7 +1003,7 @@ p.year_month {
 }
 .read-more a {
   display: inline-block;
-  font-size: 11px;
+  font-size: 14px;
   text-transform: uppercase;
   color: #3f3f3f;
   border: 1px solid #787878;
@@ -1119,22 +1121,9 @@ p.year_month {
   clear: both;
   margin: 0;
 }
-.mt-panel {
-  margin: 5px;
-}
-.mt-panel .mt-panel-header {
-  padding: 10px 10px 5px;
-  border-bottom: 1px solid;
-}
-.mt-panel .mt-panel-body {
-  padding: 5px 10px;
-}
-.mt-panel .mt-panel-footer {
-  padding: 0 10px 10px;
-}
 .outline {
   background: white;
-  margin: 5px;
+  margin: 0 5px 5px;
   padding: 5px;
   border-radius: 10px;
   /* CSS3草案 */
@@ -1172,7 +1161,6 @@ p.year_month {
 .social-area-syncer {
   position: relative;
   min-height: 80px;
-  margin-top: 20px;
   margin-bottom: -20px;
 }
 .social-area-syncer ul.social-button-syncer {
@@ -1205,7 +1193,7 @@ p.year_month {
 .social-area-syncer.share-side-bar ul.social-button-syncer {
   position: relative;
   width: 86px;
-  top: -25px;
+  top: -10px;
   right: 91px;
   background: white;
   border-radius: 10px;
@@ -1265,18 +1253,20 @@ a.newer-posts:hover {
   left: 0;
 }
 .prev-next {
-  margin: 25px 0;
   border: 1px solid #e6e6e6;
   border-radius: 5px;
   padding: 5px 10px 10px;
+  font-weight: bold;
+}
+.prev-next.row {
+  margin: 25px 0;
 }
 .prev {
-  padding: 10px 0;
+  padding: 0;
   margin: 5px 0;
 }
-.prev h6 {
+.prev h4 {
   color: #787878;
-  font-size: 13px;
   border-bottom: 4px solid #e6e6e6;
   padding-bottom: 4px;
   margin-bottom: 4px;
@@ -1292,12 +1282,11 @@ a.newer-posts:hover {
   color: #EE6600;
 }
 .next {
-  padding: 10px 0;
+  padding: 0;
   margin: 5px 0;
 }
-.next h6 {
+.next h4 {
   color: grey;
-  font-size: 13px;
   border-bottom: 4px solid #e6e6e6;
   text-align: right;
   padding-bottom: 4px;
@@ -1314,11 +1303,6 @@ a.newer-posts:hover {
 .next a:hover p {
   color: #EE6600;
 }
-@media only screen and (max-width: 1024px) {
-  .next {
-    margin-top: -20px;
-  }
-}
 @media only screen and (max-width: 767px) {
   .older-posts,
   .newer-posts {
@@ -1328,6 +1312,9 @@ a.newer-posts:hover {
 /* ------------ Typography ------------ */
 body {
   letter-spacing: 0.5px;
+}
+p {
+  color: black;
 }
 h1,
 h2,
