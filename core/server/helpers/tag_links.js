@@ -14,23 +14,23 @@ var hbs    = require('express-hbs'),
 
 tag_links = function(options) {
   var tagIds = _.map(this.tags, 'id'),
-      // 全件表示するかどうか
+  // 全件表示するかどうか
       all = options.hash && options.hash.all ? options.hash.all : false;
-  return api.tags.browse({
+  var query = {
     context: {
       internal: true
     },
     limit: 'all',
     include: 'count.posts'
-  }).then(function(res) {
+  };
+  if (!all) {
+    query.filter = tagIds.map(function(id) {
+      return 'id:' + id;
+    }).join(',');
+  }
+  return api.tags.browse(query).then(function(res) {
     // 記事に関連するタグのみ選出
     var tags = res.tags;
-    console.log(tags);
-    if(!all) {
-      tags = _.filter(res.tags, function(tag) {
-        return _.includes(tagIds, tag.id);
-      });
-    }
     // 降順でソート
     tags.sort(function(a, b){
       if(a.count.posts < b.count.posts) return 1;

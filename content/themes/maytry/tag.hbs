@@ -1,0 +1,45 @@
+{{!< default}}
+
+{{#tag}}
+  <div class="blog-cover-container">
+    <div class="featured-image">
+      {{#if image}}
+        <img src="{{image}}" alt="{{name}}"/>
+      {{else}}
+        {{#if @blog.cover}}
+          <img src="{{@blog.cover}}" alt="{{name}}"/>
+        {{else}}
+          <img src="{{asset "images/HIRO95_ukabukuragetotokyo_resize.jpg"}}" alt="{{tag.name}}"/>
+        {{/if}}
+      {{/if}}
+    </div>
+    <div class="featured-info">
+      <h1>{{name}}</h1>
+    </div>
+  </div>
+
+  {{#if description}}
+    <div class="tag-description">
+      <div class="row">
+        <div class="small-12 columns">
+          <p>{{description}}</p>
+        </div>
+      </div>
+    </div>
+  {{/if}}
+{{/tag}}
+
+<div class="content-container">
+  <div class="row multi-col collapse">
+    <div class="medium-8 columns main-column">
+      {{#foreach posts}}
+        {{> content_post}}
+      {{/foreach}}
+    </div>
+    <div class="medium-4 columns main-column">
+      Comming soon...
+    </div>
+  </div>
+</div>
+
+{{pagination}}

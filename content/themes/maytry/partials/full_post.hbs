@@ -1,0 +1,115 @@
+<!-- 記事画面 -->
+{{! The post content }}
+<div class="{{post_class}} blog-container full_post" data-file="{{url}}" data-target=".word_counts">
+  <div class="row multi-col collapse">
+    <!-- ソーシャルボタン -->
+    <div class="social-area-syncer share-side-bar hide-for-small-only">
+      <ul class="social-button-syncer">
+        <li class="sc-tw"><!-- Twitter -->
+          <a href="https://twitter.com/share" class="twitter-share-button" data-via="_slont">Tweet</a>
+        </li>
+        <li class="sc-fb"><!-- Facebook -->
+          <div class="fb-like" data-layout="box_count" data-action="like" data-show-faces="false"
+               data-share="false"></div>
+        </li>
+        <li><!-- はてなブックマーク -->
+          <a class="hatena-bookmark-button" data-hatena-bookmark-layout="vertical-balloon"
+             data-hatena-bookmark-lang="ja" title="このエントリーをはてなブックマークに追加">
+            <img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加"
+                 width="20" height="20" style="border: none;"/>
+          </a>
+          <script type="text/javascript" src="https://b.st-hatena.com/js/bookmark_button.js" charset="utf-8"
+                  async="async"></script>
+        </li>
+        <li class="sc-li"><!-- LINE -->
+          <a href="http://line.me/R/msg/text/?">
+            <img src="../assets/images/icons/linebutton_40x40.png" alt="LINEに送る"/>
+          </a>
+        </li>
+      </ul>
+    </div>
+    <div class="medium-9 columns">
+      <div class="blog-content">
+        <div class="word_counts">
+          {{content addId=true}}
+        </div>
+        <!-- ソーシャルボタン -->
+        <div class="social-area-syncer show-for-small-only">
+          <ul class="social-button-syncer">
+            <li class="sc-tw"><!-- Twitter -->
+              <a href="https://twitter.com/share" class="twitter-share-button" data-via="_slont">Tweet</a>
+            </li>
+            <li class="sc-fb"><!-- Facebook -->
+              <div class="fb-like" data-layout="box_count" data-action="like" data-show-faces="false"
+                   data-share="false"></div>
+            </li>
+            <li><!-- はてなブックマーク -->
+              <a class="hatena-bookmark-button" data-hatena-bookmark-layout="vertical-balloon"
+                 data-hatena-bookmark-lang="ja" title="このエントリーをはてなブックマークに追加">
+                <img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加"
+                     width="20" height="20" style="border: none;"/>
+              </a>
+              <script type="text/javascript" src="https://b.st-hatena.com/js/bookmark_button.js" charset="utf-8"
+                      async="async"></script>
+            </li>
+            <li class="sc-li"><!-- LINE -->
+              <a href="http://line.me/R/msg/text/?">
+                <img src="../assets/images/icons/linebutton_40x40.png" alt="LINEに送る"/>
+              </a>
+            </li>
+          </ul>
+        </div>
+        <!-- 前後の投稿 -->
+        <div class="prev-next row">
+          <div class="small-12 large-6 columns">
+            {{#prev_post}}
+              <div class="prev">
+                <a href="{{url}}">
+                  <h4>前の投稿</h4>
+                  <p>{{title}}</p>
+                </a>
+              </div>
+            {{/prev_post}}
+          </div>
+
+          <div class="small-12 large-6 columns">
+            {{#next_post}}
+              <div class="next">
+                <a href="{{url}}">
+                  <h4>次の投稿</h4>
+                  <p>{{title}}</p>
+                </a>
+              </div>
+            {{/next_post}}
+          </div>
+        </div>
+
+        {{#if author}}
+          {{#author}}
+            <div class="author-wrap">
+              <div class="author-img">
+                {{#if image}}
+                  <img src="{{image}}" alt="{{name}}"/>
+                {{/if}}
+              </div>
+              <div class="author-status">
+                <h2>{{name}}</h2>
+                {{#if website}}
+                  <span><a href="{{website}}" target="_blank">{{website}}</a></span>
+                {{/if}}
+                {{#if bio}}
+                  <p>{{bio}}</p>
+                {{/if}}
+              </div>
+            </div>
+          {{/author}}
+        {{/if}}
+        {{> comments}}
+      </div>
+    </div>
+
+    <div class="medium-3 columns">
+      {{outline}}
+    </div>
+  </div>
+</div>
