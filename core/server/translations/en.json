@@ -503,6 +503,10 @@
             },
             "template": {
                 "templateNotFound": "Template {name} not found."
+            },
+            "compare": {
+                "notEnoughArgs": "'compare' helper requires at least 2 arguments",
+                "unknownOperator": "unknown {operator} 'compare' operator"
             }
         }
     },

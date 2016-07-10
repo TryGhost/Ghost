@@ -37,6 +37,7 @@ coreHelpers.tags = require('./tags');
 coreHelpers.title = require('./title');
 coreHelpers.twitter_url = require('./twitter_url');
 coreHelpers.url = require('./url');
+coreHelpers.compare = require('./compare');
 
 // Specialist helpers for certain templates
 coreHelpers.input_password = require('./input_password');
@@ -115,6 +116,7 @@ registerHelpers = function (adminHbs) {
     registerThemeHelper('twitter_url', coreHelpers.twitter_url);
     registerThemeHelper('facebook_url', coreHelpers.facebook_url);
     registerThemeHelper('url', coreHelpers.url);
+    registerThemeHelper('compare', coreHelpers.compare);
 
     // Async theme helpers
     registerAsyncThemeHelper('ghost_foot', coreHelpers.ghost_foot);
