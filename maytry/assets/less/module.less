@@ -29,14 +29,25 @@ p.year_month {
     padding: 0 10px 10px;
   }
 
-  &.mt-panel-default {
-    background: white;
+  &.mt-panel-default,
+  &.mt-panel-transparent {
     margin: 10px 5px;
     padding: 10px;
-    border-radius: 10px;
-    -webkit-border-radius: 10px;
-    -moz-border-radius: 10px;
   }
+}
+
+.mt-panel-default {
+  background: white;
+  border-radius: 10px;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+}
+
+.mt-panel-transparent {
+  border: 1px solid white;
+  border-radius: 10px;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
 }
 
 .post-tags {
@@ -158,21 +169,6 @@ p.year_month {
   }
 }
 
-.share-side-bar,
-.md_outline {
-  &.scroll-chase {
-    position: fixed;
-    top: 77px;
-  }
-
-  @media only screen and (max-width: 767px) {
-    &.scroll-chase {
-      position: fixed;
-      top: -3px;
-    }
-  }
-}
-
 /* Side bar */
 .share-side-bar {
   position: absolute;
@@ -243,6 +239,20 @@ p.year_month {
           color: black;
           font-weight: 600;
           border-left: 3px solid @mt-theme-color;
+        }
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 640px) {
+  .outline {
+    .navbar {
+      ul {
+        font-size: 18px;
+
+        li {
+          margin: 10px 0;
         }
       }
     }
