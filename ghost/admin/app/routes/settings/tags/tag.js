@@ -1,8 +1,7 @@
 /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
-import NotFoundHandler from 'ghost-admin/mixins/404-handler';
 
-export default AuthenticatedRoute.extend(NotFoundHandler, {
+export default AuthenticatedRoute.extend({
 
     model(params) {
         return this.store.queryRecord('tag', {slug: params.tag_slug});

@@ -403,10 +403,19 @@ export default Mixin.create({
                     }
                     return model;
                 });
-            }).catch((errors) => {
+            }).catch((error) => {
+                // re-throw if we have a general server error
+                // TODO: use isValidationError(error) once we have
+                // ember-ajax/ember-data integration
+                if (error && error.errors && error.errors[0].errorType !== 'ValidationError') {
+                    this.toggleProperty('submitting');
+                    this.send('error', error);
+                    return;
+                }
+
                 if (!options.silent) {
-                    errors = errors || this.get('model.errors.messages');
-                    this.showErrorAlert(prevStatus, this.get('model.status'), errors);
+                    error = error || this.get('model.errors.messages');
+                    this.showErrorAlert(prevStatus, this.get('model.status'), error);
                 }
 
                 this.set('model.status', prevStatus);

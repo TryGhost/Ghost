@@ -39,6 +39,7 @@ export default Component.extend({
     _store: injectService('store'),
     _routing: injectService('-routing'),
     ajax: injectService(),
+    notifications: injectService(),
 
     refreshContent() {
         let promises = [];
@@ -91,7 +92,6 @@ export default Component.extend({
         let content = this.get('content');
 
         return this.get('ajax').request(postsUrl, {data: postsQuery}).then((posts) => {
-
             content.pushObjects(posts.posts.map((post) => {
                 return {
                     id: `post.${post.id}`,
@@ -99,6 +99,8 @@ export default Component.extend({
                     category: post.page ? 'Pages' : 'Posts'
                 };
             }));
+        }).catch((error) => {
+            this.get('notifications').showAPIError(error, {key: 'search.loadPosts.error'});
         });
     },
 
@@ -116,6 +118,8 @@ export default Component.extend({
                     category: 'Users'
                 };
             }));
+        }).catch((error) => {
+            this.get('notifications').showAPIError(error, {key: 'search.loadUsers.error'});
         });
     },
 
@@ -133,6 +137,8 @@ export default Component.extend({
                     category: 'Tags'
                 };
             }));
+        }).catch((error) => {
+            this.get('notifications').showAPIError(error, {key: 'search.loadTags.error'});
         });
     },
 

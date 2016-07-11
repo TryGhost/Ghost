@@ -111,9 +111,9 @@ export default ModalComponent.extend(ValidationEngine, {
                     } else {
                         notifications.showNotification(notificationText, {key: 'invite.send.success'});
                     }
-                }).catch((errors) => {
+                }).catch((error) => {
                     newUser.deleteRecord();
-                    notifications.showErrors(errors, {key: 'invite.send'});
+                    notifications.showAPIError(error, {key: 'invite.send'});
                 }).finally(() => {
                     this.send('closeModal');
                 });

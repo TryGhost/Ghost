@@ -21,6 +21,12 @@ const configStub = Service.extend({
     fileStorage: true
 });
 
+const notificationsStub = Service.extend({
+    showAPIError(error, options) {
+        // noop - to be stubbed
+    }
+});
+
 const sessionStub = Service.extend({
     isAuthenticated: false,
     authorize(authorizer, block) {
@@ -59,8 +65,10 @@ describeComponent(
         beforeEach(function () {
             this.register('service:config', configStub);
             this.register('service:session', sessionStub);
+            this.register('service:notifications', notificationsStub);
             this.inject.service('config', {as: 'configService'});
             this.inject.service('session', {as: 'sessionService'});
+            this.inject.service('notifications', {as: 'notifications'});
             this.set('update', function () {});
             server = new Pretender();
         });
@@ -294,6 +302,35 @@ describeComponent(
                 wait().then(() => {
                     expect(this.$('.failed').length, 'error message is displayed').to.equal(1);
                     expect(this.$('.failed').text()).to.match(/Something went wrong/);
+                    done();
+                });
+            });
+
+            it('triggers notifications.showAPIError for VersionMismatchError', function (done) {
+                let showAPIError = sinon.spy();
+                this.set('notifications.showAPIError', showAPIError);
+
+                stubFailedUpload(server, 400, 'VersionMismatchError');
+
+                this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+                fileUpload(this.$('input[type="file"]'));
+
+                wait().then(() => {
+                    expect(showAPIError.calledOnce).to.be.true;
+                    done();
+                });
+            });
+
+            it('doesn\'t trigger notifications.showAPIError for other errors', function (done) {
+                let showAPIError = sinon.spy();
+                this.set('notifications.showAPIError', showAPIError);
+
+                stubFailedUpload(server, 400, 'UnknownError');
+                this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+                fileUpload(this.$('input[type="file"]'));
+
+                wait().then(() => {
+                    expect(showAPIError.called).to.be.false;
                     done();
                 });
             });

@@ -29,8 +29,8 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, PaginationMixin, S
             .then(this.transitionAuthor());
     },
 
-    model() {
-        return this.loadFirstPage().then(() => {
+    model(params, transition) {
+        return this.loadFirstPage(transition).then(() => {
             return this.store.filter('tag', (tag) => {
                 return !tag.get('isNew');
             });

@@ -24,6 +24,8 @@ describe('Acceptance: Editor', function() {
     });
 
     it('redirects to signin when not authenticated', function () {
+        server.create('post');
+
         invalidateSession(application);
         visit('/editor/1');
 
@@ -35,6 +37,7 @@ describe('Acceptance: Editor', function() {
     it('does not redirect to team page when authenticated as author', function () {
         let role = server.create('role', {name: 'Author'});
         let user = server.create('user', {roles: [role], slug: 'test-user'});
+        server.create('post');
 
         authenticateSession(application);
         visit('/editor/1');
@@ -47,12 +50,26 @@ describe('Acceptance: Editor', function() {
     it('does not redirect to team page when authenticated as editor', function () {
         let role = server.create('role', {name: 'Editor'});
         let user = server.create('user', {roles: [role], slug: 'test-user'});
+        server.create('post');
 
         authenticateSession(application);
         visit('/editor/1');
 
         andThen(() => {
             expect(currentURL(), 'currentURL').to.equal('/editor/1');
+        });
+    });
+
+    it('displays 404 when post does not exist', function () {
+        let role = server.create('role', {name: 'Editor'});
+        let user = server.create('user', {roles: [role], slug: 'test-user'});
+
+        authenticateSession(application);
+        visit('/editor/1');
+
+        andThen(() => {
+            expect(currentPath()).to.equal('error404');
+            expect(currentURL()).to.equal('/editor/1');
         });
     });
 

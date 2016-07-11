@@ -7,6 +7,7 @@ import run from 'ember-runloop';
 
 import { invoke, invokeAction } from 'ember-invoke-action';
 import {
+    isVersionMismatchError,
     isRequestEntityTooLargeError,
     isUnsupportedMediaTypeError
 } from 'ghost-admin/services/ajax';
@@ -28,6 +29,7 @@ export default Component.extend({
     uploadPercentage: 0,
 
     ajax: injectService(),
+    notifications: injectService(),
 
     formData: computed('file', function () {
         let paramName = this.get('paramName');
@@ -127,6 +129,10 @@ export default Component.extend({
 
     _uploadFailed(error) {
         let message;
+
+        if (isVersionMismatchError(error)) {
+            this.get('notifications').showAPIError(error);
+        }
 
         if (isUnsupportedMediaTypeError(error)) {
             message = 'The file type you uploaded is not supported.';

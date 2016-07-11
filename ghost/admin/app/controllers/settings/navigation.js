@@ -38,7 +38,7 @@ export default Controller.extend(SettingsSaveMixin, {
 
         return RSVP.all(validationPromises).then(() => {
             return this.get('model').save().catch((err) => {
-                notifications.showErrors(err);
+                notifications.showAPIError(err);
             });
         }).catch(() => {
             // TODO: noop - needed to satisfy spinner button
