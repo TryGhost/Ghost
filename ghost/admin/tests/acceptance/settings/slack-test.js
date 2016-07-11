@@ -108,6 +108,7 @@ describe('Acceptance: Settings - Apps - Slack', function () {
             click('.gh-alert-blue .gh-alert-close');
             click('#sendTestNotification');
 
+            // we shouldn't try to send the test request if the save fails
             andThen(() => {
                 let [lastRequest] = server.pretender.handledRequests.slice(-1);
                 expect(lastRequest.url).to.not.match(/\/slack\/test/);

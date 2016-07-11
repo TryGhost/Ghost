@@ -174,8 +174,16 @@ describeModule(
                 });
 
                 return wait().then(() => {
-                    expect(server.handlers[1].numberOfCalls).to.equal(1);
-                    expect(service.get('notifications.notifications').length).to.equal(1);
+                    expect(
+                        server.handlers[1].numberOfCalls,
+                        'PUT call is made'
+                    ).to.equal(1);
+
+                    expect(
+                        service.get('notifications.alerts').length,
+                        'number of alerts shown'
+                    ).to.equal(1);
+
                     expect(service.get('testFlag')).to.be.false;
                     done();
                 });

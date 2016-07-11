@@ -16,12 +16,26 @@ export default ModalComponent.extend({
 
             confirmAction().then(() => {
                 this.send('closeModal');
-            }).catch((errors) => {
-                let [error] = errors;
-                if (error && error.match(/email/i)) {
-                    this.get('model.errors').add('email', error);
-                    this.get('model.hasValidated').pushObject('email');
+            }).catch((error) => {
+                // TODO: server-side validation errors should be serialized
+                // properly so that errors are added to the model's errors
+                // property
+                if (error && error.isAdapterError) {
+                    let [firstError] = error.errors;
+                    let {message, errorType} = firstError;
+
+                    if (errorType === 'ValidationError') {
+                        if (message && message.match(/email/i)) {
+                            this.get('model.errors').add('email', message);
+                            this.get('model.hasValidated').pushObject('email');
+                            return;
+                        }
+                    }
                 }
+
+                // this is a route action so it should bubble up to the global
+                // error handler
+                throw error;
             }).finally(() => {
                 if (!this.get('isDestroying') && !this.get('isDestroyed')) {
                     this.set('submitting', false);

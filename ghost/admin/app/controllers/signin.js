@@ -4,6 +4,10 @@ import injectService from 'ember-service/inject';
 import injectController from 'ember-controller/inject';
 import {isEmberArray} from 'ember-array/utils';
 
+import {
+    VersionMismatchError,
+    isVersionMismatchError
+} from 'ghost-admin/services/ajax';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 
 export default Controller.extend(ValidationEngine, {
@@ -31,6 +35,14 @@ export default Controller.extend(ValidationEngine, {
                 this.toggleProperty('loggingIn');
 
                 if (error && error.errors) {
+                    // we don't get back an ember-data/ember-ajax error object
+                    // back so we need to pass in a null status in order to
+                    // test against the payload
+                    if (isVersionMismatchError(null, error)) {
+                        let versionMismatchError = new VersionMismatchError(error);
+                        return this.get('notifications').showAPIError(versionMismatchError);
+                    }
+
                     error.errors.forEach((err) => {
                         err.message = err.message.htmlSafe();
                     });
@@ -62,12 +74,8 @@ export default Controller.extend(ValidationEngine, {
             this.validate({property: 'signin'}).then(() => {
                 this.toggleProperty('loggingIn');
                 this.send('authenticate');
-            }).catch((error) => {
-                if (error) {
-                    this.get('notifications').showAPIError(error, {key: 'signin.authenticate'});
-                } else {
-                    this.set('flowErrors', 'Please fill out the form to sign in.');
-                }
+            }).catch(() => {
+                this.set('flowErrors', 'Please fill out the form to sign in.');
             });
         },
 
@@ -89,11 +97,15 @@ export default Controller.extend(ValidationEngine, {
                 }).then(() => {
                     this.toggleProperty('submitting');
                     notifications.showAlert('Please check your email for instructions.', {type: 'info', key: 'forgot-password.send.success'});
-                }).catch((resp) => {
+                }).catch((error) => {
                     this.toggleProperty('submitting');
 
-                    if (resp && resp.errors && isEmberArray(resp.errors)) {
-                        let [{message}] = resp.errors;
+                    if (isVersionMismatchError(error)) {
+                        return notifications.showAPIError(error);
+                    }
+
+                    if (error && error.errors && isEmberArray(error.errors)) {
+                        let [{message}] = error.errors;
 
                         this.set('flowErrors', message);
 
@@ -101,7 +113,7 @@ export default Controller.extend(ValidationEngine, {
                             this.get('model.errors').add('identification', '');
                         }
                     } else {
-                        notifications.showAPIError(resp, {defaultErrorText: 'There was a problem with the reset, please try again.', key: 'forgot-password.send'});
+                        notifications.showAPIError(error, {defaultErrorText: 'There was a problem with the reset, please try again.', key: 'forgot-password.send'});
                     }
                 });
             }).catch(() => {

@@ -4,6 +4,7 @@ import injectService from 'ember-service/inject';
 import {isEmberArray} from 'ember-array/utils';
 
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
+import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 
 const {Promise} = RSVP;
 
@@ -74,13 +75,16 @@ export default Controller.extend(ValidationEngine, {
                     }).catch((resp) => {
                         notifications.showAPIError(resp, {key: 'signup.complete'});
                     });
-                }).catch((resp) => {
+                }).catch((error) => {
                     this.toggleProperty('submitting');
 
-                    if (resp && resp.errors && isEmberArray(resp.errors)) {
-                        this.set('flowErrors', resp.errors[0].message);
+                    if (error && error.errors && isEmberArray(error.errors)) {
+                        if (isVersionMismatchError(error)) {
+                            notifications.showAPIError(error);
+                        }
+                        this.set('flowErrors', error.errors[0].message);
                     } else {
-                        notifications.showAPIError(resp, {key: 'signup.complete'});
+                        notifications.showAPIError(error, {key: 'signup.complete'});
                     }
                 });
             }).catch(() => {

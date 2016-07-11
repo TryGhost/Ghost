@@ -46,7 +46,6 @@ export default RESTAdapter.extend(DataAdapterMixin, {
         if (status === 401) {
             if (this.get('session.isAuthenticated')) {
                 this.get('session').invalidate();
-                return; // prevent error from bubbling because invalidate is async
             }
         }
 

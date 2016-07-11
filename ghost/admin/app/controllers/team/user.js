@@ -12,6 +12,7 @@ import { invoke } from 'ember-invoke-action';
 
 export default Controller.extend({
     submitting: false,
+    updatingPassword: false,
     lastPromise: null,
     showDeleteUserModal: false,
     showTransferOwnerModal: false,
@@ -140,11 +141,12 @@ export default Controller.extend({
                 this.get('notifications').closeAlerts('user.update');
 
                 return model;
-            }).catch((errors) => {
-                if (errors) {
-                    this.get('notifications').showErrors(errors, {key: 'user.update'});
+            }).catch((error) => {
+                // validation engine returns undefined so we have to check
+                // before treating the failure as an API error
+                if (error) {
+                    this.get('notifications').showAPIError(error, {key: 'user.update'});
                 }
-
                 this.toggleProperty('submitting');
             });
 
@@ -166,11 +168,13 @@ export default Controller.extend({
             }
         },
 
-        password() {
+        changePassword() {
             let user = this.get('user');
 
-            if (user.get('isPasswordValid')) {
-                user.saveNewPassword().then((model) => {
+            if (!this.get('updatingPassword')) {
+                this.set('updatingPassword', true);
+
+                return user.saveNewPassword().then((model) => {
                     // Clear properties from view
                     user.setProperties({
                         password: '',
@@ -178,15 +182,22 @@ export default Controller.extend({
                         ne2Password: ''
                     });
 
-                    this.get('notifications').showAlert('Password updated.', {type: 'success', key: 'user.change-password.success'});
+                    this.get('notifications').showNotification('Password updated.', {type: 'success', key: 'user.change-password.success'});
+
+                    // clear errors manually for ne2password because validation
+                    // engine only clears the "validated proeprty"
+                    // TODO: clean up once we have a better validations library
+                    user.get('errors').remove('ne2Password');
 
                     return model;
-                }).catch((errors) => {
-                    this.get('notifications').showAPIError(errors, {key: 'user.change-password'});
+                }).catch((error) => {
+                    // error will be undefined if we have a validation error
+                    if (error) {
+                        this.get('notifications').showAPIError(error, {key: 'user.change-password'});
+                    }
+                }).finally(() => {
+                    this.set('updatingPassword', false);
                 });
-            } else {
-                // TODO: switch to in-line validation
-                this.get('notifications').showErrors(user.get('passwordValidationErrors'), {key: 'user.change-password'});
             }
         },
 
@@ -417,6 +428,26 @@ export default Controller.extend({
 
         toggleUploadImageModal() {
             this.toggleProperty('showUploadImageModal');
+        },
+
+        // TODO: remove those mutation actions once we have better
+        // inline validations that auto-clear errors on input
+        updatePassword(password) {
+            this.set('user.password', password);
+            this.get('user.hasValidated').removeObject('password');
+            this.get('user.errors').remove('password');
+        },
+
+        updateNewPassword(password) {
+            this.set('user.newPassword', password);
+            this.get('user.hasValidated').removeObject('newPassword');
+            this.get('user.errors').remove('newPassword');
+        },
+
+        updateNe2Password(password) {
+            this.set('user.ne2Password', password);
+            this.get('user.hasValidated').removeObject('ne2Password');
+            this.get('user.errors').remove('ne2Password');
         }
     }
 });

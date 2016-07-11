@@ -8,6 +8,24 @@ const {
     String: {dasherize}
 } = Ember;
 
+/* jshint unused:false */
+function maintenanceResponse() {
+    return new Mirage.Response(503, {}, {
+        errors: [{
+            errorType: 'Maintenance'
+        }]
+    });
+}
+
+function versionMismatchResponse() {
+    return new Mirage.Response(400, {}, {
+        errors: [{
+            errorType: 'VersionMismatchError'
+        }]
+    });
+}
+/* jshint unused:true */
+
 function paginatedResponse(modelName, allModels, request) {
     let page = +request.queryParams.page || 1;
     let limit = request.queryParams.limit || 15;
@@ -122,7 +140,7 @@ export default function () {
     this.timing = 400;      // delay for each request, automatically set to 0 during testing
 
     // Mock endpoints here to override real API requests during development
-    mockSubscribers(this);
+    // this.put('/posts/:id/', versionMismatchResponse);
 
     // keep this line, it allows all other API requests to hit the real server
     this.passthrough();
@@ -211,13 +229,20 @@ export function testConfig() {
         return response;
     });
 
-    this.get('/posts/:id', function (db, request) {
+    this.get('/posts/:id/', function (db, request) {
         let {id} = request.params;
         let post = db.posts.find(id);
 
-        return {
-            posts: [post]
-        };
+        if (!post) {
+            return new Mirage.Response(404, {}, {
+                errors: [{
+                    errorType: 'NotFoundError',
+                    message: 'Post not found.'
+                }]
+            });
+        } else {
+            return {posts: [post]};
+        }
     });
 
     this.put('/posts/:id/', function (db, request) {
@@ -455,12 +480,19 @@ export function testConfig() {
 
     this.put('/users/:id/', function (db, request) {
         let {id} = request.params;
-        let [attrs] = JSON.parse(request.requestBody).users;
-        let record = db.users.update(id, attrs);
 
-        return {
-            user: record
-        };
+        if (id === 'password') {
+            return {
+                password: [{message: 'Password changed successfully.'}]
+            };
+        } else {
+            let [attrs] = JSON.parse(request.requestBody).users;
+            let record = db.users.update(id, attrs);
+
+            return {
+                user: record
+            };
+        }
     });
 
     /* External sites ------------------------------------------------------- */

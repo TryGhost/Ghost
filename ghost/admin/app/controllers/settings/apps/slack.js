@@ -33,6 +33,7 @@ export default Controller.extend({
                     notifications.showAlert('Check your slack channel test message.', {type: 'info', key: 'slack-test.send.success'});
                 }).catch((error) => {
                     notifications.showAPIError(error, {key: 'slack-test:send'});
+                    throw error;
                 });
             }).catch(() => {
                 // noop - error already handled in .save
@@ -60,7 +61,7 @@ export default Controller.extend({
                 this.set('isSaving', true);
 
                 return settings.save().catch((err) => {
-                    this.get('notifications').showErrors(err);
+                    this.get('notifications').showAPIError(err);
                     throw err;
                 }).finally(() => {
                     this.set('isSaving', false);

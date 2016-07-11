@@ -11,6 +11,7 @@ import destroyApp from '../helpers/destroy-app';
 import { invalidateSession, authenticateSession } from 'ghost-admin/tests/helpers/ember-simple-auth';
 import { errorOverride, errorReset } from 'ghost-admin/tests/helpers/adapter-error';
 import Mirage from 'ember-cli-mirage';
+import $ from 'jquery';
 
 describe('Acceptance: Team', function () {
     let application;
@@ -61,9 +62,11 @@ describe('Acceptance: Team', function () {
     });
 
     describe('when logged in', function () {
+        let admin;
+
         beforeEach(function () {
             let role = server.create('role', {name: 'Admininstrator'});
-            let user = server.create('user', {roles: [role]});
+            admin = server.create('user', {roles: [role]});
 
             server.loadFixtures();
 
@@ -238,7 +241,7 @@ describe('Acceptance: Team', function () {
             let user;
 
             beforeEach(function () {
-                server.create('user', {
+                user = server.create('user', {
                     slug: 'test-1',
                     name: 'Test User',
                     facebook: 'test',
@@ -455,6 +458,133 @@ describe('Acceptance: Team', function () {
 
                 andThen(() => {
                     expect(find('.user-details-bottom .form-group:nth-of-type(7)').hasClass('error'), 'bio input should be in error state').to.be.true;
+                });
+
+                // password reset ------
+
+                // button triggers validation
+                click('.button-change-password');
+
+                andThen(() => {
+                    expect(
+                        find('#user-password-new').closest('.form-group').hasClass('error'),
+                        'new password has error class when blank'
+                    ).to.be.true;
+
+                    expect(
+                        find('#user-password-new').siblings('.response').text(),
+                        'new password error when blank'
+                    ).to.match(/can't be blank/);
+                });
+
+                // typing in inputs clears validation
+                fillIn('#user-password-new', 'password');
+                triggerEvent('#user-password-new', 'input');
+
+                andThen(() => {
+                    expect(
+                        find('#user-password-new').closest('.form-group').hasClass('error'),
+                        'password validation is visible after typing'
+                    ).to.be.false;
+                });
+
+                // enter key triggers action
+                keyEvent('#user-password-new', 'keyup', 13);
+
+                andThen(() => {
+                    expect(
+                        find('#user-new-password-verification').closest('.form-group').hasClass('error'),
+                        'confirm password has error class when it doesn\'t match'
+                    ).to.be.true;
+
+                    expect(
+                        find('#user-new-password-verification').siblings('.response').text(),
+                        'confirm password error when it doesn\'t match'
+                    ).to.match(/do not match/);
+                });
+
+                // submits with correct details
+                fillIn('#user-new-password-verification', 'password');
+                click('.button-change-password');
+
+                andThen(() => {
+                    // hits the endpoint
+                    let [lastRequest] = server.pretender.handledRequests.slice(-1);
+                    let params = $.deparam(lastRequest.requestBody);
+
+                    expect(lastRequest.url, 'password request URL')
+                        .to.match(/\/users\/password/);
+
+                    /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+                    expect(params.password[0].user_id).to.equal(user.id.toString());
+                    expect(params.password[0].newPassword).to.equal('password');
+                    expect(params.password[0].ne2Password).to.equal('password');
+                    /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
+
+                    // clears the fields
+                    expect(
+                        find('#user-password-new').val(),
+                        'password field after submit'
+                    ).to.be.blank;
+
+                    expect(
+                        find('#user-new-password-verification').val(),
+                        'password verification field after submit'
+                    ).to.be.blank;
+
+                    // displays a notification
+                    expect(
+                        find('.gh-notifications .gh-notification').length,
+                        'password saved notification is displayed'
+                    ).to.equal(1);
+                });
+            });
+        });
+
+        describe('own user', function () {
+            beforeEach(function () {
+                server.loadFixtures();
+            });
+
+            it('requires current password when changing password', function () {
+                visit(`/team/${admin.slug}`);
+
+                // test the "old password" field is validated
+                click('.button-change-password');
+
+                andThen(() => {
+                    // old password has error
+                    expect(
+                        find('#user-password-old').closest('.form-group').hasClass('error'),
+                        'old password has error class when blank'
+                    ).to.be.true;
+
+                    expect(
+                        find('#user-password-old').siblings('.response').text(),
+                        'old password error when blank'
+                    ).to.match(/is required/);
+
+                    // new password has error
+                    expect(
+                        find('#user-password-new').closest('.form-group').hasClass('error'),
+                        'new password has error class when blank'
+                    ).to.be.true;
+
+                    expect(
+                        find('#user-password-new').siblings('.response').text(),
+                        'new password error when blank'
+                    ).to.match(/can't be blank/);
+                });
+
+                // validation is cleared when typing
+                fillIn('#user-password-old', 'password');
+                triggerEvent('#user-password-old', 'input');
+
+                andThen(() => {
+                    expect(
+                        find('#user-password-old').closest('.form-group').hasClass('error'),
+                        'old password validation is in error state after typing'
+                    ).to.be.false;
                 });
             });
         });

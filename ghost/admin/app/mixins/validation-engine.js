@@ -3,7 +3,6 @@ import RSVP from 'rsvp';
 import {A as emberA, isEmberArray} from 'ember-array/utils';
 import DS from 'ember-data';
 import Model from 'ember-data/model';
-import getRequestErrorMessage from 'ghost-admin/utils/ajax';
 
 import InviteUserValidator from 'ghost-admin/validators/invite-user';
 import NavItemValidator from 'ghost-admin/validators/nav-item';
@@ -146,8 +145,7 @@ export default Mixin.create({
         }).catch((result) => {
             // server save failed or validator type doesn't exist
             if (result && !isEmberArray(result)) {
-                // return the array of errors from the server
-                result = getRequestErrorMessage(result);
+                throw result;
             }
 
             return RSVP.reject(result);

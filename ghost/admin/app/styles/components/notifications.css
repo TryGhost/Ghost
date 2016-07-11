@@ -130,7 +130,7 @@
 
 /* Base alert style */
 .gh-alert {
-    z-index: 1000;
+    z-index: 9999;
     flex-grow: 1;
     display: flex;
     justify-content: space-between;
