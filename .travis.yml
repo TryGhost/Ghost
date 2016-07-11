@@ -27,7 +27,7 @@ before_install:
 after_success:
   - |
       if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-        if [[ "$DB" = "sqlite3" && "$TRAVIS_NODE_VERSION" = "0.10" ]]; then
+        if [[ "$DB" = "sqlite3" && "$TRAVIS_NODE_VERSION" = "0.12" ]]; then
           echo "Generate coverage..."
           grunt coverage
           npm install -g codeclimate-test-reporter
