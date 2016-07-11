@@ -1,7 +1,7 @@
 language: node_js
 # When changing node version also update it on lines 34, 36 and 46.
 node_js:
-  - "4"
+  - "0.12"
 sudo: false
 cache:
   directories:
