@@ -1,0 +1,10 @@
+version: 0.0
+os: linux
+files:
+  - source: /
+    destination: /var/www/blog
+hooks:
+  BeforeInstall:
+    - location: bin/install.sh
+      timeout: 900
+      runas: root
