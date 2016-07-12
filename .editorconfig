@@ -13,7 +13,7 @@ trim_trailing_whitespace = true
 [*.hbs]
 insert_final_newline = false
 
-[{package,bower}.json]
+[{package}.json]
 indent_size = 2
 
 [*.md]

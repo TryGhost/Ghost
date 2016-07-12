@@ -76,7 +76,6 @@
     "pg": "4.1.1"
   },
   "devDependencies": {
-    "bower": "1.4.1",
     "csscomb": "3.1.8",
     "grunt": "1.0.1",
     "grunt-bg-shell": "2.3.3",
@@ -109,7 +108,6 @@
   },
   "greenkeeper": {
     "ignore": [
-      "bower",
       "glob",
       "mysql",
       "nodemailer",
