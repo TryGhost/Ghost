@@ -8,7 +8,7 @@
     "ghost",
     "blog",
     "cms"
-  ],
+  ],  
   "repository": {
     "type": "git",
     "url": "git://github.com/TryGhost/Ghost.git"
