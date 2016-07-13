@@ -12,7 +12,7 @@ var _   = require('lodash'),
 cacheControl = function cacheControl(options) {
     /*jslint unparam:true*/
     var profiles = {
-            public: 'public, max-age=300',
+            public: 'public, max-age=0',
             private: 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
         },
         output;
