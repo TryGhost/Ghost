@@ -3,8 +3,8 @@
 var Promise  = require('bluebird'),
     commands = require('../schema').commands,
     fixtures = require('./fixtures'),
+    models = require('../../models'),
     schema   = require('../schema').tables,
-
     schemaTables = Object.keys(schema),
     populate;
 
@@ -17,7 +17,7 @@ var Promise  = require('bluebird'),
  * @param {Boolean} [tablesOnly] - used by tests
  * @returns {Promise<*>}
  */
-populate = function populate(logger, tablesOnly) {
+populate = function populate(logger, tablesOnly, modelOptions) {
     logger.info('Creating tables...');
 
     var tableSequence = Promise.mapSeries(schemaTables, function createTable(table) {
@@ -31,9 +31,9 @@ populate = function populate(logger, tablesOnly) {
 
     return tableSequence.then(function () {
         // Load the fixtures
-        return fixtures.populate(logger);
+        return fixtures.populate(logger, modelOptions);
     }).then(function () {
-        return fixtures.ensureDefaultSettings(logger);
+        return models.Settings.populateDefaults(modelOptions);
     });
 };
 

@@ -1,27 +1,29 @@
-var Promise  = require('bluebird'),
+var Promise = require('bluebird'),
     commands = require('../../schema').commands,
-    db       = require('../../db'),
+    table = 'clients',
+    columns = ['redirection_uri', 'logo', 'status', 'type', 'description'];
 
-    table    = 'clients',
-    columns  = ['redirection_uri', 'logo', 'status', 'type', 'description'];
+module.exports = function addManyColumnsToClients(options, logger) {
+    var transaction = options.transacting;
 
-module.exports = function addManyColumnsToClients(logger) {
-    return db.knex.schema.hasTable(table).then(function (exists) {
-        if (exists) {
+    return transaction.schema.hasTable(table)
+        .then(function (exists) {
+            if (!exists) {
+                return Promise.reject(new Error('Table does not exist!'));
+            }
+
             return Promise.mapSeries(columns, function (column) {
                 var message = 'Adding column: ' + table + '.' + column;
-                return db.knex.schema.hasColumn(table, column).then(function (exists) {
-                    if (!exists) {
-                        logger.info(message);
-                        return commands.addColumn(table, column);
-                    } else {
-                        logger.warn(message);
-                    }
-                });
+
+                return transaction.schema.hasColumn(table, column)
+                    .then(function (exists) {
+                        if (!exists) {
+                            logger.info(message);
+                            return commands.addColumn(table, column, transaction);
+                        } else {
+                            logger.warn(message);
+                        }
+                    });
             });
-        } else {
-            // @TODO: this should probably be an error
-            logger.warn('Adding columns to table: ' + table);
-        }
-    });
+        });
 };

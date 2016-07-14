@@ -152,7 +152,7 @@ describe('Database Migration (special functions)', function () {
             beforeEach(testUtils.setup());
 
             it('should populate all fixtures correctly', function (done) {
-                fixtures.populate(loggerStub).then(function () {
+                fixtures.populate(loggerStub, {context:{internal:true}}).then(function () {
                     var props = {
                         posts: Models.Post.findAll({include: ['tags']}),
                         tags: Models.Tag.findAll(),
@@ -220,7 +220,7 @@ describe('Database Migration (special functions)', function () {
             beforeEach(testUtils.setup('users:roles', 'perms:db', 'perms:init'));
 
             it('should update client permissions correctly', function (done) {
-                fixtures005[2]({}, loggerStub).then(function () {
+                fixtures005[2]({context:{internal:true}}, loggerStub).then(function () {
                     var props = {
                         roles: Models.Role.findAll(),
                         permissions: Models.Permission.findAll({include: ['roles']})

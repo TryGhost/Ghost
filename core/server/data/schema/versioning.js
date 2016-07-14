@@ -45,10 +45,10 @@ function getDatabaseVersion() {
     });
 }
 
-function setDatabaseVersion() {
-    return db.knex('settings')
+function setDatabaseVersion(transaction, version) {
+    return (transaction || db.knex)('settings')
         .where('key', 'databaseVersion')
-        .update({value: defaultDatabaseVersion});
+        .update({value: version || defaultDatabaseVersion});
 }
 
 function pad(num, width) {
@@ -58,6 +58,7 @@ function pad(num, width) {
 function getMigrationVersions(fromVersion, toVersion) {
     var versions = [],
         i;
+
     for (i = parseInt(fromVersion, 10); i <= toVersion; i += 1) {
         versions.push(pad(i, 3));
     }
@@ -81,27 +82,27 @@ function showCannotMigrateError() {
  *
  * @param {String} version
  * @param {String} relPath
- * @param {Function} logInfo
+ * @param {Function} logger
  * @returns {Array}
  */
-function getVersionTasks(version, relPath, logInfo) {
+function getVersionTasks(version, relPath, logger) {
     var tasks = [];
 
     try {
         tasks = require(path.join(relPath, version));
     } catch (e) {
-        logInfo('No tasks found for version', version);
+        logger.info('No tasks found for version', version);
     }
 
     return tasks;
 }
 
-function getUpdateDatabaseTasks(version, logInfo) {
-    return getVersionTasks(version, '../migration/', logInfo);
+function getUpdateDatabaseTasks(version, logger) {
+    return getVersionTasks(version, '../migration/', logger);
 }
 
-function getUpdateFixturesTasks(version, logInfo) {
-    return getVersionTasks(version, '../migration/fixtures/', logInfo);
+function getUpdateFixturesTasks(version, logger) {
+    return getVersionTasks(version, '../migration/fixtures/', logger);
 }
 
 module.exports = {

@@ -87,25 +87,28 @@ errors = {
     },
 
     logComponentInfo: function (component, info) {
-        if ((process.env.NODE_ENV === 'development' ||
+        if (process.env.NODE_LEVEL === 'DEBUG' ||
+            process.env.NODE_ENV === 'development' ||
             process.env.NODE_ENV === 'staging' ||
-            process.env.NODE_ENV === 'production')) {
+            process.env.NODE_ENV === 'production') {
             console.info(chalk.cyan(component + ':', info));
         }
     },
 
     logComponentWarn: function (component, warning) {
-        if ((process.env.NODE_ENV === 'development' ||
+        if (process.env.NODE_LEVEL === 'DEBUG' ||
+            process.env.NODE_ENV === 'development' ||
             process.env.NODE_ENV === 'staging' ||
-            process.env.NODE_ENV === 'production')) {
+            process.env.NODE_ENV === 'production') {
             console.info(chalk.yellow(component + ':', warning));
         }
     },
 
     logWarn: function (warn, context, help) {
-        if ((process.env.NODE_ENV === 'development' ||
+        if (process.env.NODE_LEVEL === 'DEBUG' ||
+            process.env.NODE_ENV === 'development' ||
             process.env.NODE_ENV === 'staging' ||
-            process.env.NODE_ENV === 'production')) {
+            process.env.NODE_ENV === 'production') {
             warn = warn || i18n.t('errors.errors.noMessageSupplied');
             var msgs = [chalk.yellow(i18n.t('errors.errors.warning'), warn), '\n'];
 

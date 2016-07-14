@@ -14,8 +14,6 @@ var _            = require('lodash'),
     findRelationFixture,
     findModelFixture,
 
-    // Public
-    modelOptions = {context: {internal: true}},
     addFixturesForModel,
     addFixturesForRelation,
     findModelFixtureEntry,
@@ -77,11 +75,11 @@ matchObj = function matchObj(match, item) {
  * @param {{from, to, entries}} relation
  * @returns {Promise<*>}
  */
-fetchRelationData = function fetchRelationData(relation) {
-    var fromOptions = _.extend({}, modelOptions, {withRelated: [relation.from.relation]}),
+fetchRelationData = function fetchRelationData(relation, options) {
+    var fromOptions = _.extend({}, options, {withRelated: [relation.from.relation]}),
         props = {
             from: models[relation.from.model].findAll(fromOptions),
-            to: models[relation.to.model].findAll(modelOptions)
+            to: models[relation.to.model].findAll(options)
         };
 
     return Promise.props(props);
@@ -95,11 +93,11 @@ fetchRelationData = function fetchRelationData(relation) {
  * @param {{name, entries}} modelFixture
  * @returns {Promise.<*>}
  */
-addFixturesForModel = function addFixturesForModel(modelFixture) {
+addFixturesForModel = function addFixturesForModel(modelFixture, options) {
     return Promise.mapSeries(modelFixture.entries, function (entry) {
-        return models[modelFixture.name].findOne(entry, modelOptions).then(function (found) {
+        return models[modelFixture.name].findOne(entry, options).then(function (found) {
             if (!found) {
-                return models[modelFixture.name].add(entry, modelOptions);
+                return models[modelFixture.name].add(entry, options);
             }
         });
     }).then(function (results) {
@@ -115,10 +113,10 @@ addFixturesForModel = function addFixturesForModel(modelFixture) {
  * @param {{from, to, entries}} relationFixture
  * @returns {Promise.<*>}
  */
-addFixturesForRelation = function addFixturesForRelation(relationFixture) {
+addFixturesForRelation = function addFixturesForRelation(relationFixture, options) {
     var ops = [], max = 0;
 
-    return fetchRelationData(relationFixture).then(function getRelationOps(data) {
+    return fetchRelationData(relationFixture, options).then(function getRelationOps(data) {
         _.each(relationFixture.entries, function processEntries(entry, key) {
             var fromItem = data.from.find(matchFunc(relationFixture.from.match, key));
 
@@ -135,7 +133,7 @@ addFixturesForRelation = function addFixturesForRelation(relationFixture) {
 
                 if (toItems && toItems.length > 0) {
                     ops.push(function addRelationItems() {
-                        return fromItem[relationFixture.from.relation]().attach(toItems);
+                        return fromItem[relationFixture.from.relation]().attach(toItems, options);
                     });
                 }
             });
@@ -228,6 +226,5 @@ module.exports = {
     addFixturesForRelation: addFixturesForRelation,
     findModelFixtureEntry: findModelFixtureEntry,
     findModelFixtures: findModelFixtures,
-    findPermissionRelationsForObject: findPermissionRelationsForObject,
-    modelOptions: modelOptions
+    findPermissionRelationsForObject: findPermissionRelationsForObject
 };

@@ -1,27 +1,28 @@
-var Promise  = require('bluebird'),
+var Promise = require('bluebird'),
     commands = require('../../schema').commands,
-    db       = require('../../db'),
+    table = 'users',
+    columns = ['facebook', 'twitter'];
 
-    table    = 'users',
-    columns  = ['facebook', 'twitter'];
+module.exports = function addSocialMediaColumnsToUsers(options, logger) {
+    var transaction = options.transacting;
 
-module.exports = function addSocialMediaColumnsToUsers(logger) {
-    return db.knex.schema.hasTable(table).then(function (exists) {
-        if (exists) {
+    return transaction.schema.hasTable(table)
+        .then(function (exists) {
+            if (!exists) {
+                return Promise.reject(new Error('Table does not exist!'));
+            }
+
             return Promise.mapSeries(columns, function (column) {
                 var message = 'Adding column: ' + table + '.' + column;
-                return db.knex.schema.hasColumn(table, column).then(function (exists) {
+
+                return transaction.schema.hasColumn(table, column).then(function (exists) {
                     if (!exists) {
                         logger.info(message);
-                        return commands.addColumn(table, column);
+                        return commands.addColumn(table, column, transaction);
                     } else {
                         logger.warn(message);
                     }
                 });
             });
-        } else {
-            // @TODO: this should probably be an error
-            logger.warn('Adding columns to table: ' + table);
-        }
-    });
+        });
 };

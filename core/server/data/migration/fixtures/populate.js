@@ -22,8 +22,10 @@ var Promise      = require('bluebird'),
  *
  * @returns {Promise<*>}
  */
-addAllModels = function addAllModels() {
-    return Promise.mapSeries(fixtures.models, fixtureUtils.addFixturesForModel);
+addAllModels = function addAllModels(modelOptions) {
+    return Promise.mapSeries(fixtures.models, function (model) {
+        return fixtureUtils.addFixturesForModel(model, modelOptions);
+    });
 };
 
 /**
@@ -32,8 +34,10 @@ addAllModels = function addAllModels() {
  *
  * @returns {Promise|Array}
  */
-addAllRelations = function addAllRelations() {
-    return Promise.mapSeries(fixtures.relations, fixtureUtils.addFixturesForRelation);
+addAllRelations = function addAllRelations(modelOptions) {
+    return Promise.mapSeries(fixtures.relations, function (model) {
+        return fixtureUtils.addFixturesForRelation(model, modelOptions);
+    });
 };
 
 /**
@@ -44,7 +48,7 @@ addAllRelations = function addAllRelations() {
  * @param {{info: logger.info, warn: logger.warn}} logger
  * @returns {Promise<*>}
  */
-createOwner = function createOwner(logger) {
+createOwner = function createOwner(logger, modelOptions) {
     var user = {
         name:             'Ghost Owner',
         email:            'ghost@ghost.org',
@@ -57,7 +61,7 @@ createOwner = function createOwner(logger) {
             user.roles = [ownerRole.id];
 
             logger.info('Creating owner');
-            return models.User.add(user, fixtureUtils.modelOptions);
+            return models.User.add(user, modelOptions);
         }
     });
 };
@@ -70,15 +74,15 @@ createOwner = function createOwner(logger) {
  * @param {{info: logger.info, warn: logger.warn}} logger
  * @returns {Promise<*>}
  */
-populate = function populate(logger) {
+populate = function populate(logger, modelOptions) {
     logger.info('Running fixture populations');
 
-    // ### Ensure all models are added
-    return addAllModels()
-    // ### Ensure all relations are added
-        .then(addAllRelations)
+    return addAllModels(modelOptions)
         .then(function () {
-            return createOwner(logger);
+            return addAllRelations(modelOptions);
+        })
+        .then(function () {
+            return createOwner(logger, modelOptions);
         });
 };
 

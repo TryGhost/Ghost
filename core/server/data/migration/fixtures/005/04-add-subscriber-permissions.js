@@ -22,9 +22,9 @@ module.exports = function addSubscriberPermissions(options, logger) {
     var modelToAdd = getPermissions(),
         relationToAdd = getRelations();
 
-    return utils.addFixturesForModel(modelToAdd).then(function (result) {
+    return utils.addFixturesForModel(modelToAdd, options).then(function (result) {
         printResult(logger, result, 'Adding permissions fixtures for ' + resource + 's');
-        return utils.addFixturesForRelation(relationToAdd);
+        return utils.addFixturesForRelation(relationToAdd, options);
     }).then(function (result) {
         printResult(logger, result, 'Adding permissions_roles fixtures for ' + resource + 's');
     });
