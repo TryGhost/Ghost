@@ -19,6 +19,25 @@ module.exports = function(grunt) {
     require('matchdep').filterDev(['grunt-*', '!grunt-cli']).forEach(grunt.loadNpmTasks);
 
     grunt.initConfig({
+        clean: {
+            built: {
+                src: [
+                    'dist/**',
+                    'public/assets/img/contributors/**',
+                    'app/templates/-contributors.hbs'
+                ]
+            },
+            dependencies: {
+                src: [
+                    'bower_components/**',
+                    'node_modules/**'
+                ]
+            },
+            tmp: {
+                src: ['tmp/**']
+            }
+        },
+
         jshint: {
             options: {
                 jshintrc: true,
