@@ -192,7 +192,7 @@ describe('pagination', function () {
                 toQuery: sandbox.stub()
             };
             mockQuery.clone.returns(mockQuery);
-            mockQuery.select.returns([{aggregate: 1}]);
+            mockQuery.select.returns(Promise.resolve([{aggregate: 1}]));
 
             model = function () {};
 
@@ -340,7 +340,7 @@ describe('pagination', function () {
 
         it('returns expected response even when aggregate is empty', function (done) {
             // override aggregate response
-            mockQuery.select.returns([]);
+            mockQuery.select.returns(Promise.resolve([]));
             paginationUtils.parseOptions.returns({});
 
             bookshelf.Model.prototype.fetchPage().then(function (result) {
@@ -349,19 +349,6 @@ describe('pagination', function () {
                 result.collection.should.be.an.Object();
                 result.pagination.should.be.an.Object();
 
-                done();
-            });
-        });
-
-        it('will output sql statements in debug mode', function (done) {
-            model.prototype.debug = true;
-            mockQuery.select.returns({toQuery: function () {}});
-            paginationUtils.parseOptions.returns({});
-
-            var consoleSpy = sandbox.spy(console, 'log');
-
-            bookshelf.Model.prototype.fetchPage().then(function () {
-                consoleSpy.calledOnce.should.be.true();
                 done();
             });
         });

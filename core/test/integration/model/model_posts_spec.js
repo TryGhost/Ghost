@@ -77,7 +77,6 @@ describe('Post Model', function () {
                 PostModel.findAll().then(function (results) {
                     should.exist(results);
                     results.length.should.be.above(1);
-
                     done();
                 }).catch(done);
             });
