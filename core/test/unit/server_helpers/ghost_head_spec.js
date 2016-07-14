@@ -83,7 +83,7 @@ describe('{{ghost_head}} helper', function () {
             ).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/" \/>/);
-                rendered.string.should.match(/<meta name="referrer" content="origin" \/>/);
+                rendered.string.should.match(/<meta name="referrer" content="origin-when-cross-origin" \/>/);
                 rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
                 rendered.string.should.match(/<meta property="og:type" content="website" \/>/);
                 rendered.string.should.match(/<meta property="og:title" content="Ghost" \/>/);
@@ -135,7 +135,7 @@ describe('{{ghost_head}} helper', function () {
             ).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/about\/" \/>/);
-                rendered.string.should.match(/<meta name="referrer" content="origin" \/>/);
+                rendered.string.should.match(/<meta name="referrer" content="origin-when-cross-origin" \/>/);
                 rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
                 rendered.string.should.match(/<meta property="og:type" content="website" \/>/);
                 rendered.string.should.match(/<meta property="og:title" content="About" \/>/);
@@ -800,6 +800,32 @@ describe('{{ghost_head}} helper', function () {
                     done();
                 }).catch(done);
             });
+        });
+    });
+
+    describe('with changed origin in config file', function () {
+        beforeEach(function () {
+            configUtils.set({
+                url: 'http://testurl.com/blog/',
+                theme: {
+                    title: 'Ghost',
+                    description: 'blog description',
+                    cover: '/content/images/blog-cover.png'
+                },
+                referrerPolicy: 'origin'
+            });
+        });
+
+        it('contains the changed origin', function (done) {
+            helpers.ghost_head.call(
+                {safeVersion: '0.3', context: ['paged', 'index']},
+                {data: {root: {context: []}}}
+            ).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.match(/<meta name="referrer" content="origin" \/>/);
+
+                done();
+            }).catch(done);
         });
     });
 
