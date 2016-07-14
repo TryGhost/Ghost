@@ -67,22 +67,29 @@ export default Component.extend({
             let el = oldEl.cloneNode(true);
             let component = components[i];
             let uploadTarget = el.querySelector('.js-upload-target');
+            let altTextWrapper = oldEl.querySelector('.js-drop-zone .description strong');
             let id = uuid();
             let destinationElementId = `image-uploader-${id}`;
-            let src;
+            let src, altText;
 
             if (uploadTarget) {
                 src = uploadTarget.getAttribute('src');
             }
 
+            if (altTextWrapper) {
+                altText = altTextWrapper.innerHTML;
+            }
+
             if (component) {
                 component.set('destinationElementId', destinationElementId);
                 component.set('src', src);
+                component.set('altText', altText);
             } else {
                 let imageUpload = EmberObject.create({
                     destinationElementId,
                     id,
                     src,
+                    altText,
                     index: i
                 });
 

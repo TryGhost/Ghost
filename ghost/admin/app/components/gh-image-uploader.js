@@ -19,7 +19,7 @@ export default Component.extend({
     classNameBindings: ['dragClass'],
 
     image: null,
-    text: 'Upload an image',
+    text: '',
     saveButton: true,
 
     dragClass: null,
