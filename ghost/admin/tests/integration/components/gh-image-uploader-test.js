@@ -132,7 +132,7 @@ describeComponent(
         describe('file upload form', function () {
             it('renders form with supplied text', function () {
                 this.render(hbs`{{gh-image-uploader image=image text="text test"}}`);
-                expect(this.$('.description').text().trim()).to.equal('text test');
+                expect(this.$('.description').text().trim()).to.equal('Upload image of text test');
             });
 
             it('generates request to correct endpoint', function (done) {
@@ -433,7 +433,7 @@ describeComponent(
             it('can render without a save button', function () {
                 this.render(hbs`{{gh-image-uploader image=image saveButton=false text="text test"}}`);
                 expect(this.$('button').length).to.equal(0);
-                expect(this.$('.description').text().trim()).to.equal('text test');
+                expect(this.$('.description').text().trim()).to.equal('Upload image of text test');
             });
 
             it('fires update action when save button clicked', function () {

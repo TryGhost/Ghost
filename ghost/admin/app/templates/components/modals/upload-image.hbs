@@ -7,10 +7,12 @@
             </a>
         </div>
     {{else}}
-        {{gh-image-uploader image=newUrl
-                            saveButton=false
-                            update=(action 'fileUploaded')
-                            onInput=(action (mut newUrl))}}
+        {{gh-image-uploader
+            image=newUrl
+            saveButton=false
+            update=(action 'fileUploaded')
+            onInput=(action (mut newUrl))
+        }}
     {{/if}}
 </div>
 
