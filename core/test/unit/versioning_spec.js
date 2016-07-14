@@ -201,32 +201,33 @@ describe('Versioning', function () {
     });
 
     describe('getUpdateTasks', function () {
-        it('`getUpdateFixturesTasks` returns empty array if no tasks are found', function () {
-            var logStub = sandbox.stub();
+        var logStub;
 
+        beforeEach(function () {
+            logStub = {
+                info: sandbox.stub(),
+                warn: sandbox.stub()
+            };
+        });
+
+        it('`getUpdateFixturesTasks` returns empty array if no tasks are found', function () {
             versioning.getUpdateFixturesTasks('999', logStub).should.eql([]);
-            logStub.calledOnce.should.be.true();
+            logStub.info.calledOnce.should.be.true();
         });
 
         it('`getUpdateFixturesTasks` returns 8 items for 004', function () {
-            var logStub = sandbox.stub();
-
             versioning.getUpdateFixturesTasks('004', logStub).should.be.an.Array().with.lengthOf(8);
-            logStub.calledOnce.should.be.false();
+            logStub.info.calledOnce.should.be.false();
         });
 
         it('`getUpdateDatabaseTasks` returns empty array if no tasks are found', function () {
-            var logStub = sandbox.stub();
-
             versioning.getUpdateDatabaseTasks('999', logStub).should.eql([]);
-            logStub.calledOnce.should.be.true();
+            logStub.info.calledOnce.should.be.true();
         });
 
         it('`getUpdateDatabaseTasks` returns 5 items for 004', function () {
-            var logStub = sandbox.stub();
-
             versioning.getUpdateDatabaseTasks('004', logStub).should.be.an.Array().with.lengthOf(5);
-            logStub.calledOnce.should.be.false();
+            logStub.info.calledOnce.should.be.false();
         });
     });
 });

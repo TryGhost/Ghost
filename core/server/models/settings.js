@@ -6,7 +6,7 @@ var Settings,
     Promise        = require('bluebird'),
     validation     = require('../data/validation'),
     events         = require('../events'),
-    internal       = {context: {internal: true}},
+    internalContext = {context: {internal: true}},
     i18n           = require('../i18n'),
 
     defaultSettings;
@@ -127,7 +127,7 @@ Settings = ghostBookshelf.Model.extend({
                         saveData.value = item.value;
                     }
                     // Internal context can overwrite type (for fixture migrations)
-                    if (options.context.internal && item.hasOwnProperty('type')) {
+                    if (options.context && options.context.internal && item.hasOwnProperty('type')) {
                         saveData.type = item.type;
                     }
                     // it's allowed to edit all attributes in case of importing/migrating
@@ -156,12 +156,16 @@ Settings = ghostBookshelf.Model.extend({
             var defaultSetting = _.clone(getDefaultSettings()[key]);
             defaultSetting.value = defaultSetting.defaultValue;
 
-            return Settings.forge(defaultSetting).save(null, internal);
+            return Settings.forge(defaultSetting).save(null, internalContext);
         });
     },
 
-    populateDefaults: function populateDefaults() {
-        return this.findAll().then(function then(allSettings) {
+    populateDefaults: function populateDefaults(options) {
+        options = options || {};
+
+        options = _.merge({}, options, internalContext);
+
+        return this.findAll(options).then(function then(allSettings) {
             var usedKeys = allSettings.models.map(function mapper(setting) { return setting.get('key'); }),
                 insertOperations = [];
 
@@ -173,7 +177,7 @@ Settings = ghostBookshelf.Model.extend({
                 }
                 if (isMissingFromDB) {
                     defaultSetting.value = defaultSetting.defaultValue;
-                    insertOperations.push(Settings.forge(defaultSetting).save(null, internal));
+                    insertOperations.push(Settings.forge(defaultSetting).save(null, options));
                 }
             });
 

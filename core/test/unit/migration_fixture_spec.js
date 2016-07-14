@@ -16,18 +16,19 @@ var should  = require('should'),
     fixtures004   = require('../../server/data/migration/fixtures/004'),
     fixtures005   = require('../../server/data/migration/fixtures/005'),
     fixtures006   = require('../../server/data/migration/fixtures/006'),
-    ensureDefaultSettings = require('../../server/data/migration/fixtures/settings'),
 
     sandbox       = sinon.sandbox.create();
 
 describe('Fixtures', function () {
-    var loggerStub;
+    var loggerStub, transactionStub;
 
     beforeEach(function () {
         loggerStub = {
             info: sandbox.stub(),
             warn: sandbox.stub()
         };
+
+        transactionStub = sandbox.stub();
 
         models.init();
     });
@@ -38,39 +39,24 @@ describe('Fixtures', function () {
     });
 
     describe('Update fixtures', function () {
-        it('should call `getUpdateFixturesTasks` when upgrading from 003 -> 004', function (done) {
-            var getVersionTasksStub = sandbox.stub(versioning, 'getUpdateFixturesTasks').returns([]);
-
-            update(['004'], loggerStub).then(function () {
-                loggerStub.info.calledOnce.should.be.true();
-                loggerStub.warn.called.should.be.false();
-                getVersionTasksStub.calledOnce.should.be.true();
-                done();
-            }).catch(done);
-        });
-
-        it('should NOT call `getUpdateFixturesTasks` when upgrading from 004 -> 004', function (done) {
-            var getVersionTasksStub = sandbox.stub(versioning, 'getUpdateFixturesTasks').returns([]);
-
-            update([], loggerStub).then(function () {
-                loggerStub.info.calledOnce.should.be.true();
-                loggerStub.warn.called.should.be.false();
-                getVersionTasksStub.calledOnce.should.be.false();
-                done();
-            }).catch(done);
-        });
-
         it('should call tasks in correct order if provided', function (done) {
-            var task1Stub = sandbox.stub().returns(Promise.resolve()),
-                task2Stub = sandbox.stub().returns(Promise.resolve()),
-                getVersionTasksStub = sandbox.stub(versioning, 'getUpdateFixturesTasks').returns([task1Stub, task2Stub]);
+            var sequenceStub = sandbox.stub(),
+                sequenceReset = update.__set__('sequence', sequenceStub),
+                tasks = [
+                    sandbox.stub(),
+                    sandbox.stub()
+                ];
 
-            update(['000'], loggerStub).then(function () {
-                loggerStub.info.calledTwice.should.be.true();
+            sequenceStub.returns(Promise.resolve([]));
+
+            update(tasks, loggerStub, {transacting: transactionStub}).then(function () {
+                loggerStub.info.calledOnce.should.be.true();
                 loggerStub.warn.called.should.be.false();
-                getVersionTasksStub.calledOnce.should.be.true();
-                task1Stub.calledOnce.should.be.true();
-                task2Stub.calledOnce.should.be.true();
+
+                sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(2);
+                sequenceStub.firstCall.args[1].should.eql({transacting: transactionStub});
+                sequenceStub.firstCall.args[2].should.eql(loggerStub);
+                sequenceReset();
                 done();
             }).catch(done);
         });
@@ -80,36 +66,28 @@ describe('Fixtures', function () {
                 // Setup
                 // Create a new stub, this will replace sequence, so that db calls don't actually get run
                 var sequenceStub = sandbox.stub(),
-                    sequenceReset = update.__set__('sequence', sequenceStub);
+                    sequenceReset = update.__set__('sequence', sequenceStub),
+                    tasks = versioning.getUpdateFixturesTasks('004', loggerStub);
 
-                // The first time we call sequence, it should be to execute a top level version, e.g 004
-                // yieldsTo('0') means this stub will execute the function at index 0 of the array passed as the
-                // first argument. In short the `runVersionTasks` function gets executed, and sequence gets called
-                // again with the array of tasks to execute for 004, which is what we want to check
-                sequenceStub.onFirstCall().yieldsTo('0').returns(Promise.resolve([]));
+                sequenceStub.returns(Promise.resolve([]));
 
-                update(['004'], loggerStub).then(function (result) {
+                update(tasks, loggerStub, {transacting:transactionStub}).then(function (result) {
                     should.exist(result);
 
-                    loggerStub.info.calledTwice.should.be.true();
+                    loggerStub.info.calledOnce.should.be.true();
                     loggerStub.warn.called.should.be.false();
 
-                    sequenceStub.calledTwice.should.be.true();
-
+                    sequenceStub.calledOnce.should.be.true();
                     sequenceStub.firstCall.calledWith(sinon.match.array, sinon.match.object, loggerStub).should.be.true();
-                    sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(1);
-                    sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'runVersionTasks');
-
-                    sequenceStub.secondCall.calledWith(sinon.match.array, sinon.match.object, loggerStub).should.be.true();
-                    sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(8);
-                    sequenceStub.secondCall.args[0][0].should.be.a.Function().with.property('name', 'moveJQuery');
-                    sequenceStub.secondCall.args[0][1].should.be.a.Function().with.property('name', 'updatePrivateSetting');
-                    sequenceStub.secondCall.args[0][2].should.be.a.Function().with.property('name', 'updatePasswordSetting');
-                    sequenceStub.secondCall.args[0][3].should.be.a.Function().with.property('name', 'updateGhostAdminClient');
-                    sequenceStub.secondCall.args[0][4].should.be.a.Function().with.property('name', 'addGhostFrontendClient');
-                    sequenceStub.secondCall.args[0][5].should.be.a.Function().with.property('name', 'cleanBrokenTags');
-                    sequenceStub.secondCall.args[0][6].should.be.a.Function().with.property('name', 'addPostTagOrder');
-                    sequenceStub.secondCall.args[0][7].should.be.a.Function().with.property('name', 'addNewPostFixture');
+                    sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(8);
+                    sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'moveJQuery');
+                    sequenceStub.firstCall.args[0][1].should.be.a.Function().with.property('name', 'updatePrivateSetting');
+                    sequenceStub.firstCall.args[0][2].should.be.a.Function().with.property('name', 'updatePasswordSetting');
+                    sequenceStub.firstCall.args[0][3].should.be.a.Function().with.property('name', 'updateGhostAdminClient');
+                    sequenceStub.firstCall.args[0][4].should.be.a.Function().with.property('name', 'addGhostFrontendClient');
+                    sequenceStub.firstCall.args[0][5].should.be.a.Function().with.property('name', 'cleanBrokenTags');
+                    sequenceStub.firstCall.args[0][6].should.be.a.Function().with.property('name', 'addPostTagOrder');
+                    sequenceStub.firstCall.args[0][7].should.be.a.Function().with.property('name', 'addNewPostFixture');
 
                     // Reset
                     sequenceReset();
@@ -713,32 +691,25 @@ describe('Fixtures', function () {
                 // Setup
                 // Create a new stub, this will replace sequence, so that db calls don't actually get run
                 var sequenceStub = sandbox.stub(),
-                    sequenceReset = update.__set__('sequence', sequenceStub);
+                    sequenceReset = update.__set__('sequence', sequenceStub),
+                    tasks = versioning.getUpdateFixturesTasks('005', loggerStub);
 
-                // The first time we call sequence, it should be to execute a top level version, e.g 005
-                // yieldsTo('0') means this stub will execute the function at index 0 of the array passed as the
-                // first argument. In short the `runVersionTasks` function gets executed, and sequence gets called
-                // again with the array of tasks to execute for 005, which is what we want to check
-                sequenceStub.onFirstCall().yieldsTo('0').returns(Promise.resolve([]));
+                sequenceStub.returns(Promise.resolve([]));
 
-                update(['005'], loggerStub).then(function (result) {
+                update(tasks, loggerStub, {transacting: transactionStub}).then(function (result) {
                     should.exist(result);
 
-                    loggerStub.info.calledTwice.should.be.true();
+                    loggerStub.info.calledOnce.should.be.true();
                     loggerStub.warn.called.should.be.false();
 
-                    sequenceStub.calledTwice.should.be.true();
+                    sequenceStub.calledOnce.should.be.true();
 
                     sequenceStub.firstCall.calledWith(sinon.match.array, sinon.match.object, loggerStub).should.be.true();
-                    sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(1);
-                    sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'runVersionTasks');
-
-                    sequenceStub.secondCall.calledWith(sinon.match.array, sinon.match.object, loggerStub).should.be.true();
-                    sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(4);
-                    sequenceStub.secondCall.args[0][0].should.be.a.Function().with.property('name', 'updateGhostClientsSecrets');
-                    sequenceStub.secondCall.args[0][1].should.be.a.Function().with.property('name', 'addGhostFrontendClient');
-                    sequenceStub.secondCall.args[0][2].should.be.a.Function().with.property('name', 'addClientPermissions');
-                    sequenceStub.secondCall.args[0][3].should.be.a.Function().with.property('name', 'addSubscriberPermissions');
+                    sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(4);
+                    sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'updateGhostClientsSecrets');
+                    sequenceStub.firstCall.args[0][1].should.be.a.Function().with.property('name', 'addGhostFrontendClient');
+                    sequenceStub.firstCall.args[0][2].should.be.a.Function().with.property('name', 'addClientPermissions');
+                    sequenceStub.firstCall.args[0][3].should.be.a.Function().with.property('name', 'addSubscriberPermissions');
 
                     // Reset
                     sequenceReset();
@@ -955,29 +926,22 @@ describe('Fixtures', function () {
                 // Setup
                 // Create a new stub, this will replace sequence, so that db calls don't actually get run
                 var sequenceStub = sandbox.stub(),
-                    sequenceReset = update.__set__('sequence', sequenceStub);
+                    sequenceReset = update.__set__('sequence', sequenceStub),
+                    tasks = versioning.getUpdateFixturesTasks('006', loggerStub);
 
-                // The first time we call sequence, it should be to execute a top level version, e.g 006
-                // yieldsTo('0') means this stub will execute the function at index 0 of the array passed as the
-                // first argument. In short the `runVersionTasks` function gets executed, and sequence gets called
-                // again with the array of tasks to execute for 006, which is what we want to check
-                sequenceStub.onFirstCall().yieldsTo('0').returns(Promise.resolve([]));
+                sequenceStub.returns(Promise.resolve([]));
 
-                update(['006'], loggerStub).then(function (result) {
+                update(tasks, loggerStub, {transacting:transactionStub}).then(function (result) {
                     should.exist(result);
 
-                    loggerStub.info.calledTwice.should.be.true();
+                    loggerStub.info.calledOnce.should.be.true();
                     loggerStub.warn.called.should.be.false();
 
-                    sequenceStub.calledTwice.should.be.true();
+                    sequenceStub.calledOnce.should.be.true();
 
                     sequenceStub.firstCall.calledWith(sinon.match.array, sinon.match.object, loggerStub).should.be.true();
                     sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(1);
-                    sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'runVersionTasks');
-
-                    sequenceStub.secondCall.calledWith(sinon.match.array, sinon.match.object, loggerStub).should.be.true();
-                    sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(1);
-                    sequenceStub.secondCall.args[0][0].should.be.a.Function().with.property('name', 'transformDatesIntoUTC');
+                    sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'transformDatesIntoUTC');
 
                     // Reset
                     sequenceReset();
@@ -997,16 +961,6 @@ describe('Fixtures', function () {
                         migrationsSettingsValue;
 
                     beforeEach(function () {
-                        sandbox.stub(models.Base, 'transaction', function (stubDone) {
-                            return new Promise(function (resolve) {
-                                stubDone();
-
-                                setTimeout(function () {
-                                    resolve();
-                                }, 500);
-                            });
-                        });
-
                         configUtils.config.database.isPostgreSQL = function () {
                             return false;
                         };
@@ -1255,19 +1209,6 @@ describe('Fixtures', function () {
                     done();
                 }).catch(done);
             });
-        });
-    });
-
-    describe('Ensure default settings', function () {
-        it('should call populate settings and provide messaging', function (done) {
-            var settingsStub = sandbox.stub(models.Settings, 'populateDefaults').returns(new Promise.resolve());
-
-            ensureDefaultSettings(loggerStub).then(function () {
-                settingsStub.calledOnce.should.be.true();
-                loggerStub.info.calledOnce.should.be.true();
-
-                done();
-            }).catch(done);
         });
     });
 });
