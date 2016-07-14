@@ -1,24 +1,26 @@
-var commands = require('../../schema').commands,
-    db       = require('../../db'),
+var Promise = require('bluebird'),
+    commands = require('../../schema').commands,
+    table = 'tags',
+    column = 'hidden',
+    message = 'Removing column: ' + table + '.' + column;
 
-    table    = 'tags',
-    column   = 'hidden',
-    message  = 'Removing column: ' + table + '.' + column;
+module.exports = function dropHiddenColumnFromTags(options, logger) {
+    var transaction = options.transacting;
 
-module.exports = function dropHiddenColumnFromTags(logger) {
-    return db.knex.schema.hasTable(table).then(function (exists) {
-        if (exists) {
-            return db.knex.schema.hasColumn(table, column).then(function (exists) {
-                if (exists) {
-                    logger.info(message);
-                    return commands.dropColumn(table, column);
-                } else {
-                    logger.warn(message);
-                }
-            });
-        } else {
-            // @TODO: this should probably be an error
-            logger.warn(message);
-        }
-    });
+    return transaction.schema.hasTable(table)
+        .then(function (exists) {
+            if (!exists) {
+                return Promise.reject(new Error('Table does not exist!'));
+            }
+
+            return transaction.schema.hasColumn(table, column);
+        })
+        .then(function (exists) {
+            if (exists) {
+                logger.info(message);
+                return commands.dropColumn(table, column, transaction);
+            } else {
+                logger.warn(message);
+            }
+        });
 };

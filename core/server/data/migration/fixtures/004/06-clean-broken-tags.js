@@ -1,11 +1,12 @@
 // Clean tags which start with commas, the only illegal char in tags
-var models  = require('../../../../models'),
+var models = require('../../../../models'),
     Promise = require('bluebird'),
     message = 'Cleaning malformed tags';
 
 module.exports = function cleanBrokenTags(options, logger) {
     return models.Tag.findAll(options).then(function (tags) {
         var tagOps = [];
+
         if (tags) {
             tags.each(function (tag) {
                 var name = tag.get('name'),
