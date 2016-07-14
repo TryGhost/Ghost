@@ -1022,7 +1022,7 @@ describe('Fixtures', function () {
                                 // CASE: we update migrations settings entry
                                 if (this.get('key') === 'migrations') {
                                     migrationsSettingsWasUpdated = true;
-                                    return Promise.resolve(newModels[Object.keys(newModels)[0]]);
+                                    return Promise.resolve(newModels[Object.keys(newModels)[0]] || {attributes: {value: migrationsSettingsValue}});
                                 }
 
                                 return Promise.resolve(newModels[Number(this.get('key'))]);
