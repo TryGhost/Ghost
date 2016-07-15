@@ -348,9 +348,12 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         if (options.order) {
             options.order = self.parseOrderOption(options.order, options.include);
+        } else if (self.orderDefaultRaw) {
+            options.orderRaw = self.orderDefaultRaw();
         } else {
             options.order = self.orderDefaultOptions();
         }
+
         return itemCollection.fetchPage(options).then(function formatResponse(response) {
             var data = {};
 

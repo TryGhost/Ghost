@@ -21,6 +21,7 @@ describe('Post API', function () {
             done();
         }).catch(done);
     });
+
     beforeEach(function (done) {
         Promise.mapSeries(testUtils.DataGenerator.forKnex.tags, function (tag) {
             return models.Tag.add(tag, {context: {internal:true}});
@@ -28,6 +29,7 @@ describe('Post API', function () {
             done();
         }).catch(done);
     });
+
     beforeEach(function (done) {
         db.knex('posts_tags').insert(testUtils.DataGenerator.forKnex.posts_tags)
             .then(function () {
@@ -43,17 +45,45 @@ describe('Post API', function () {
     should.exist(PostAPI);
 
     describe('Browse', function () {
-        it('can fetch featured posts', function (done) {
-            PostAPI.browse({context: {user: 1}, filter: 'featured:true'}).then(function (results) {
+        it('can fetch all posts with internal context in correct order', function (done) {
+            PostAPI.browse({context: {internal: true}}).then(function (results) {
                 should.exist(results.posts);
-                results.posts.length.should.eql(4);
-                results.posts[0].featured.should.eql(true);
+                results.posts.length.should.eql(8);
+
+                results.posts[0].status.should.eql('scheduled');
+
+                results.posts[1].status.should.eql('draft');
+                results.posts[2].status.should.eql('draft');
+
+                results.posts[3].status.should.eql('published');
+                results.posts[4].status.should.eql('published');
+                results.posts[5].status.should.eql('published');
+                results.posts[6].status.should.eql('published');
+                results.posts[7].status.should.eql('published');
 
                 done();
             }).catch(done);
         });
 
-        it('can exclude featured posts', function (done) {
+        it('can fetch featured posts for user 1', function (done) {
+            PostAPI.browse({context: {user: 1}, filter: 'featured:true'}).then(function (results) {
+                should.exist(results.posts);
+                results.posts.length.should.eql(4);
+                results.posts[0].featured.should.eql(true);
+                done();
+            }).catch(done);
+        });
+
+        it('can fetch featured posts for user 2', function (done) {
+            PostAPI.browse({context: {user: 2}, filter: 'featured:true'}).then(function (results) {
+                should.exist(results.posts);
+                results.posts.length.should.eql(4);
+                results.posts[0].featured.should.eql(true);
+                done();
+            }).catch(done);
+        });
+
+        it('can exclude featured posts for user 1', function (done) {
             PostAPI.browse({context: {user: 1}, status: 'all', filter: 'featured:false'}).then(function (results) {
                 should.exist(results.posts);
                 results.posts.length.should.eql(1);
@@ -135,7 +165,8 @@ describe('Post API', function () {
             PostAPI.browse({context: {user: 1}, page: 1, limit: 2, status: 'all'}).then(function (results) {
                 should.exist(results.posts);
                 results.posts.length.should.eql(2);
-                results.posts[0].slug.should.eql('unfinished');
+                results.posts[0].slug.should.eql('scheduled-post');
+                results.posts[1].slug.should.eql('unfinished');
                 results.meta.pagination.page.should.eql(1);
                 results.meta.pagination.next.should.eql(2);
 
@@ -147,7 +178,8 @@ describe('Post API', function () {
             PostAPI.browse({context: {user: 1}, page: 2, limit: 2, status: 'all'}).then(function (results) {
                 should.exist(results.posts);
                 results.posts.length.should.eql(2);
-                results.posts[0].slug.should.eql('short-and-sweet');
+                results.posts[0].slug.should.eql('not-so-short-bit-complex');
+                results.posts[1].slug.should.eql('short-and-sweet');
                 results.meta.pagination.page.should.eql(2);
                 results.meta.pagination.next.should.eql(3);
                 results.meta.pagination.prev.should.eql(1);
@@ -217,8 +249,10 @@ describe('Post API', function () {
 
         it('can include tags', function (done) {
             PostAPI.browse({context: {user: 1}, status: 'all', include: 'tags'}).then(function (results) {
-                should.exist(results.posts[0].tags[0].name);
-                results.posts[0].tags[0].name.should.eql('pollo');
+                results.posts[0].tags.length.should.eql(0);
+                results.posts[1].tags.length.should.eql(1);
+
+                results.posts[1].tags[0].name.should.eql('pollo');
                 done();
             }).catch(done);
         });

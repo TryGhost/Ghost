@@ -429,6 +429,16 @@ Post = ghostBookshelf.Model.extend({
         };
     },
 
+    orderDefaultRaw: function () {
+        return '' +
+            'CASE WHEN posts.status = \'scheduled\' THEN 1 ' +
+            'WHEN posts.status = \'draft\' THEN 2 ' +
+            'ELSE 3 END ASC,' +
+            'posts.published_at DESC,' +
+            'posts.updated_at DESC,' +
+            'posts.id DESC';
+    },
+
     /**
      * @deprecated in favour of filter
      */

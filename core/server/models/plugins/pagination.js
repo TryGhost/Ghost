@@ -2,8 +2,6 @@
 //
 // Extends Bookshelf.Model with a `fetchPage` method. Handles everything to do with paginated requests.
 var _          = require('lodash'),
-    Promise    = require('bluebird'),
-
     defaults,
     paginationUtils,
     pagination;
@@ -130,6 +128,11 @@ pagination = function pagination(bookshelf) {
         /**
          * ### Fetch page
          * A `fetch` extension to get a paginated set of items from a collection
+         *
+         * We trigger two queries:
+         * 1. count query to know how many pages left (important: we don't attach any group/order statements!)
+         * 2. the actualy fetch query with limit and page property
+         *
          * @param {options} options
          * @returns {paginatedResult} set of results + pagination metadata
          */
@@ -140,57 +143,58 @@ pagination = function pagination(bookshelf) {
             // Get the table name and idAttribute for this model
             var tableName = _.result(this.constructor.prototype, 'tableName'),
                 idAttribute = _.result(this.constructor.prototype, 'idAttribute'),
-                countPromise,
-                collectionPromise,
-                self = this;
+                self = this,
+                countPromise = this.query().clone().select(
+                    bookshelf.knex.raw('count(distinct ' + tableName + '.' + idAttribute + ') as aggregate')
+                );
+
+            // the debug flag doesn't work for the raw knex count query!
+            if (this.debug) {
+                console.log('COUNT', countPromise.toQuery());
+            }
 
             // #### Pre count clauses
             // Add any where or join clauses which need to be included with the aggregate query
 
             // Clone the base query & set up a promise to get the count of total items in the full set
             // Due to lack of support for count distinct, this is pretty complex.
-            countPromise = this.query().clone().select(
-                bookshelf.knex.raw('count(distinct ' + tableName + '.' + idAttribute + ') as aggregate')
-            );
+            return countPromise.then(function (countResult) {
+                // #### Post count clauses
+                // Add any where or join clauses which need to NOT be included with the aggregate query
 
-            // #### Post count clauses
-            // Add any where or join clauses which need to NOT be included with the aggregate query
+                // Setup the pagination parameters so that we return the correct items from the set
+                paginationUtils.addLimitAndOffset(self, options);
 
-            // Setup the pagination parameters so that we return the correct items from the set
-            paginationUtils.addLimitAndOffset(self, options);
+                // Apply ordering options if they are present
+                if (options.order && !_.isEmpty(options.order)) {
+                    _.forOwn(options.order, function (direction, property) {
+                        if (property === 'count.posts') {
+                            self.query('orderBy', 'count__posts', direction);
+                        } else {
+                            self.query('orderBy', tableName + '.' + property, direction);
+                        }
+                    });
+                } else if (options.orderRaw) {
+                    self.query(function (qb) {
+                        qb.orderByRaw(options.orderRaw);
+                    });
+                }
 
-            // Apply ordering options if they are present
-            if (options.order && !_.isEmpty(options.order)) {
-                _.forOwn(options.order, function (direction, property) {
-                    if (property === 'count.posts') {
-                        self.query('orderBy', 'count__posts', direction);
-                    } else {
-                        self.query('orderBy', tableName + '.' + property, direction);
-                    }
-                });
-            }
+                if (options.groups && !_.isEmpty(options.groups)) {
+                    _.each(options.groups, function (group) {
+                        self.query('groupBy', group);
+                    });
+                }
 
-            if (options.groups && !_.isEmpty(options.groups)) {
-                _.each(options.groups, function (group) {
-                    self.query('groupBy', group);
-                });
-            }
-
-            if (this.debug) {
-                console.log('COUNT', countPromise.toQuery());
-            }
-
-            // Setup the promise to do a fetch on our collection, running the specified query
-            // @TODO: ensure option handling is done using an explicit pick elsewhere
-            collectionPromise = self.fetchAll(_.omit(options, ['page', 'limit']));
-
-            // Resolve the two promises
-            return Promise.join(collectionPromise, countPromise).then(function formatResponse(results) {
-                // Format the collection & count result into `{collection: [], pagination: {}}`
-                return {
-                    collection: results[0],
-                    pagination: paginationUtils.formatResponse(results[1][0] ? results[1][0].aggregate : 0, options)
-                };
+                // Setup the promise to do a fetch on our collection, running the specified query
+                // @TODO: ensure option handling is done using an explicit pick elsewhere
+                return self.fetchAll(_.omit(options, ['page', 'limit']))
+                    .then(function (fetchResult) {
+                        return {
+                            collection: fetchResult,
+                            pagination: paginationUtils.formatResponse(countResult[0] ? countResult[0].aggregate : 0, options)
+                        };
+                    });
             });
         }
     });
