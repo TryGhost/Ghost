@@ -3,7 +3,7 @@ dist: trusty
 
 language: node_js
 node_js:
-  - "0.10"
+  - "4"
 
 env:
   global:
@@ -11,7 +11,7 @@ env:
 
 matrix:
   include:
-    - node_js: "0.10"
+    - node_js: "4"
       env: TEST_SUITE=lint
 
 branches:

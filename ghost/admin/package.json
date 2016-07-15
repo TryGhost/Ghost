@@ -21,7 +21,7 @@
     "test": "ember test"
   },
   "engines": {
-    "node": ">= 0.10.0"
+    "node": "~0.10.0 || ~0.12.0 || ^4.2.0"
   },
   "devDependencies": {
     "bluebird": "3.4.1",
