@@ -15,7 +15,7 @@ matrix:
       env: TEST_SUITE=lint
 
 branches:
-  exclude:
+  except:
     - /^greenkeeper-.+$/
 
 cache:
