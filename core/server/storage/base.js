@@ -39,7 +39,7 @@ StorageBase.prototype.generateUnique = function (store, dir, name, ext, i) {
 
 StorageBase.prototype.getUniqueFileName = function (store, image, targetDir) {
     var ext = path.extname(image.name),
-        name = path.basename(image.name, ext).replace(/[\W]/gi, '-'),
+        name = path.basename(image.name, ext).replace(/[^\w@]/gi, '-'),
         self = this;
 
     return self.generateUnique(store, targetDir, name, ext, 0);
