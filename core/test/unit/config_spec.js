@@ -195,6 +195,9 @@ describe('Config', function () {
                 configUtils.set({url: 'http://my-ghost-blog.com/blog'});
                 config.urlJoin('blog', 'blog/about').should.equal('blog/about');
                 config.urlJoin('blog/', 'blog/about').should.equal('blog/about');
+                configUtils.set({url: 'http://my-ghost-blog.com/my/blog'});
+                config.urlJoin('my/blog', 'my/blog/about').should.equal('my/blog/about');
+                config.urlJoin('my/blog/', 'my/blog/about').should.equal('my/blog/about');
             });
         });
 

@@ -32,7 +32,7 @@ function getBaseUrl(secure) {
 function urlJoin() {
     var args = Array.prototype.slice.call(arguments),
         prefixDoubleSlash = false,
-        subdir = ghostConfig.paths.subdir.replace(/\//g, ''),
+        subdir = ghostConfig.paths.subdir.replace(/^\/|\/+$/, ''),
         subdirRegex,
         url;
 
