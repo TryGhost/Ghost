@@ -7,7 +7,7 @@ var Promise       = require('bluebird'),
     db            = require('../../server/data/db'),
     migration     = require('../../server/data/migration/'),
     fixtureUtils  = require('../../server/data/migration/fixtures/utils'),
-    Models        = require('../../server/models'),
+    models        = require('../../server/models'),
     SettingsAPI   = require('../../server/api/settings'),
     permissions   = require('../../server/permissions'),
     sequence      = require('../../server/utils/sequence'),
@@ -380,7 +380,7 @@ fixtures = {
 
 /** Test Utility Functions **/
 initData = function initData() {
-    return migration.init();
+    return migration.populate();
 };
 
 clearData = function clearData() {
@@ -412,7 +412,7 @@ toDoList = {
     tags: function insertMoreTags() { return fixtures.insertMoreTags(); },
     apps: function insertApps() { return fixtures.insertApps(); },
     settings: function populateSettings() {
-        return Models.Settings.populateDefaults().then(function () { return SettingsAPI.updateSettingsCache(); });
+        return models.Settings.populateDefaults().then(function () { return SettingsAPI.updateSettingsCache(); });
     },
     'users:roles': function createUsersWithRoles() { return fixtures.createUsersWithRoles(); },
     users: function createExtraUsers() { return fixtures.createExtraUsers(); },
@@ -448,7 +448,7 @@ getFixtureOps = function getFixtureOps(toDos) {
     // Database initialisation
     if (toDos.init || toDos.default) {
         fixtureOps.push(function initDB() {
-            return migration.init(tablesOnly);
+            return migration.populate({tablesOnly: tablesOnly});
         });
 
         delete toDos.default;
@@ -496,7 +496,7 @@ setup = function setup() {
         args = arguments;
 
     return function setup(done) {
-        Models.init();
+        models.init();
 
         if (done) {
             initFixtures.apply(self, args).then(function () {

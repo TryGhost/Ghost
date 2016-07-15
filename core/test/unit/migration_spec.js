@@ -1,12 +1,12 @@
-var should          = require('should'),
-    sinon           = require('sinon'),
-    rewire          = require('rewire'),
-    _               = require('lodash'),
-    Promise         = require('bluebird'),
-    crypto          = require('crypto'),
-    fs              = require('fs'),
+var should = require('should'),
+    sinon = require('sinon'),
+    rewire = require('rewire'),
+    _ = require('lodash'),
+    Promise = require('bluebird'),
+    crypto = require('crypto'),
+    fs = require('fs'),
 
-    // Stuff we are testing
+// Stuff we are testing
     db = require('../../server/data/db'),
     errors = require('../../server/errors'),
     models = require('../../server/models'),
@@ -60,7 +60,7 @@ describe('DB version integrity', function () {
 });
 
 describe('Migrations', function () {
-    var loggerStub;
+    var loggerStub, resetLogger;
 
     before(function () {
         models.init();
@@ -68,6 +68,7 @@ describe('Migrations', function () {
 
     afterEach(function () {
         sandbox.restore();
+        resetLogger();
     });
 
     beforeEach(function () {
@@ -75,6 +76,8 @@ describe('Migrations', function () {
             info: sandbox.stub(),
             warn: sandbox.stub()
         };
+
+        resetLogger = update.__set__('logger', loggerStub);
     });
 
     describe('Backup', function () {
@@ -166,35 +169,28 @@ describe('Migrations', function () {
     });
 
     describe('Populate', function () {
-        var createStub, fixturesStub, settingsStub;
+        var createStub, fixturesStub;
 
         beforeEach(function () {
             createStub = sandbox.stub(schema.commands, 'createTable').returns(new Promise.resolve());
             fixturesStub = sandbox.stub(fixtures, 'populate').returns(new Promise.resolve());
-            settingsStub = sandbox.stub(models.Settings, 'populateDefaults').returns(new Promise.resolve());
         });
 
         it('should create all tables, and populate fixtures', function (done) {
-            populate(loggerStub).then(function (result) {
+            populate().then(function (result) {
                 should.not.exist(result);
 
                 createStub.called.should.be.true();
                 createStub.callCount.should.be.eql(schemaTables.length);
                 createStub.firstCall.calledWith(schemaTables[0]).should.be.true();
                 createStub.lastCall.calledWith(schemaTables[schemaTables.length - 1]).should.be.true();
-
                 fixturesStub.calledOnce.should.be.true();
-                settingsStub.calledOnce.should.be.true();
-
-                loggerStub.info.called.should.be.true();
-                loggerStub.warn.called.should.be.false();
-
                 done();
             }).catch(done);
         });
 
         it('should should only create tables, with tablesOnly setting', function (done) {
-            populate(loggerStub, true).then(function (result) {
+            populate({tablesOnly: true}).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Array().with.lengthOf(schemaTables.length);
 
@@ -202,13 +198,7 @@ describe('Migrations', function () {
                 createStub.callCount.should.be.eql(schemaTables.length);
                 createStub.firstCall.calledWith(schemaTables[0]).should.be.true();
                 createStub.lastCall.calledWith(schemaTables[schemaTables.length - 1]).should.be.true();
-
                 fixturesStub.called.should.be.false();
-                settingsStub.called.should.be.false();
-
-                loggerStub.info.called.should.be.true();
-                loggerStub.warn.called.should.be.false();
-
                 done();
             }).catch(done);
         });
@@ -216,7 +206,7 @@ describe('Migrations', function () {
 
     describe('Update', function () {
         describe('Update function', function () {
-            var resetBackup, backupStub, settingsStub, fixturesStub, setDbStub, errorStub, versionsSpy, tasksSpy, transactionStub, transaction;
+            var resetBackup, backupStub, fixturesStub, setDbStub, versionsSpy, tasksSpy, transactionStub, transaction;
 
             beforeEach(function () {
                 transaction = {
@@ -226,10 +216,8 @@ describe('Migrations', function () {
 
                 // Stubs
                 backupStub = sandbox.stub().returns(new Promise.resolve());
-                settingsStub = sandbox.stub(models.Settings, 'populateDefaults').returns(new Promise.resolve());
                 fixturesStub = sandbox.stub(fixtures, 'update').returns(new Promise.resolve());
                 setDbStub = sandbox.stub(schema.versioning, 'setDatabaseVersion').returns(new Promise.resolve());
-                errorStub = sandbox.stub(schema.versioning, 'showCannotMigrateError').returns(new Promise.resolve());
 
                 transactionStub = sandbox.stub(db.knex, 'transaction', function (transactionStart) {
                     return new Promise(function () {
@@ -264,24 +252,25 @@ describe('Migrations', function () {
 
                 it('should attempt to run the pre & post update tasks correctly', function (done) {
                     // Execute
-                    update('100', '102', loggerStub).then(function () {
-                        // Before the update, it does some tasks...
-                        // It should not show an error for these versions
-                        errorStub.called.should.be.false();
+                    update({fromVersion: '100', toVersion: '102'}).then(function () {
                         // getMigrationVersions should be called with the correct versions
                         versionsSpy.calledOnce.should.be.true();
                         versionsSpy.calledWith('100', '102').should.be.true();
+
                         // It should attempt to do a backup
                         backupStub.calledOnce.should.be.true();
 
                         // Now it's going to try to actually do the update...
                         updateDatabaseSchemaStub.calledTwice.should.be.true();
-                        updateDatabaseSchemaStub.firstCall.calledWith([], loggerStub, {transacting: transaction}).should.be.true();
-                        updateDatabaseSchemaStub.secondCall.calledWith([], loggerStub, {transacting: transaction}).should.be.true();
+                        updateDatabaseSchemaStub.firstCall.calledWith([], loggerStub, {
+                            transacting: transaction,
+                            context: {internal: true}
+                        }).should.be.true();
+                        updateDatabaseSchemaStub.secondCall.calledWith([], loggerStub, {
+                            transacting: transaction,
+                            context: {internal: true}
+                        }).should.be.true();
 
-                        // And now there are some final tasks to wrap up...
-                        // First, the ensure default settings task
-                        settingsStub.calledTwice.should.be.true();
                         // Then fixture updates
                         fixturesStub.calledTwice.should.be.true();
                         // And finally, set the new DB version
@@ -292,7 +281,7 @@ describe('Migrations', function () {
 
                         // Just to be sure, lets assert the call order
                         sinon.assert.callOrder(
-                            versionsSpy, backupStub, updateDatabaseSchemaStub, settingsStub, fixturesStub, setDbStub
+                            versionsSpy, backupStub, updateDatabaseSchemaStub, fixturesStub, setDbStub
                         );
 
                         done();
@@ -300,34 +289,20 @@ describe('Migrations', function () {
                 });
 
                 it('should throw error if versions are too old', function (done) {
-                    // Execute
-                    update('000', '002', loggerStub).then(function () {
-                        // It should show an error for these versions
-                        errorStub.called.should.be.true();
-
-                        // And so should not do the update...
+                    update({fromVersion: '000', toVersion: '002'}).then(function () {
+                        done(new Error('expected database version too old error'));
+                    }).catch(function (err) {
                         updateDatabaseSchemaStub.calledOnce.should.be.false();
-
-                        // Because we stubbed everything, loggerStub didn't get called
-                        loggerStub.info.called.should.be.false();
-                        loggerStub.warn.called.should.be.false();
-
+                        (err instanceof errors.DatabaseVersion).should.eql(true);
                         done();
-                    }).catch(done);
+                    });
                 });
 
-                it('should upgrade from minimum version, if FORCE_MIGRATION is set', function (done) {
-                    // Setup
-                    process.env.FORCE_MIGRATION = true;
-
+                it('should upgrade from minimum version, if force migration is set', function (done) {
                     var migrateToDatabaseVersionStub = sandbox.stub().returns(new Promise.resolve()),
                         migrateToDatabaseVersionReset = update.__set__('migrateToDatabaseVersion', migrateToDatabaseVersionStub);
 
-                    // Execute
-                    update('005', '006', loggerStub).then(function () {
-                        // It should not show an error for these versions
-                        errorStub.called.should.be.false();
-
+                    update({fromVersion: '005', toVersion: '006', forceMigration: true}).then(function () {
                         // getMigrationVersions should be called with the correct versions
                         versionsSpy.calledOnce.should.be.true();
                         versionsSpy.calledWith('003', '006').should.be.true();
@@ -339,16 +314,86 @@ describe('Migrations', function () {
                         migrateToDatabaseVersionStub.secondCall.args[0].should.eql('005');
                         migrateToDatabaseVersionStub.thirdCall.args[0].should.eql('006');
 
-                        // Because we stubbed everything, loggerStub didn't get called
-                        loggerStub.info.called.should.be.false();
-                        loggerStub.warn.called.should.be.false();
-
-                        // Restore
-                        delete process.env.FORCE_MIGRATION;
-
                         migrateToDatabaseVersionReset();
                         done();
                     }).catch(done);
+                });
+
+                it('should do an UPDATE if newer database version is higher', function (done) {
+                    var migrateToDatabaseVersionStub = sandbox.stub().returns(new Promise.resolve()),
+                        migrateToDatabaseVersionReset = update.__set__('migrateToDatabaseVersion', migrateToDatabaseVersionStub);
+
+                    update({fromVersion: '004', toVersion: '005'}).then(function () {
+                        versionsSpy.calledOnce.should.be.true();
+                        versionsSpy.calledWith('004', '005').should.be.true();
+                        versionsSpy.returned(['004', '005']).should.be.true();
+
+                        migrateToDatabaseVersionStub.callCount.should.eql(1);
+                        migrateToDatabaseVersionStub.firstCall.args[0].should.eql('005');
+
+                        migrateToDatabaseVersionReset();
+
+                        done();
+                    }).catch(done);
+                });
+
+                it('should do an UPDATE if default version is significantly higher', function (done) {
+                    var migrateToDatabaseVersionStub = sandbox.stub().returns(new Promise.resolve()),
+                        migrateToDatabaseVersionReset = update.__set__('migrateToDatabaseVersion', migrateToDatabaseVersionStub);
+
+                    update({fromVersion: '004', toVersion: '010'}).then(function () {
+                        versionsSpy.calledOnce.should.be.true();
+                        versionsSpy.calledWith('004', '010').should.be.true();
+                        versionsSpy.returned(['004', '005', '006', '007', '008', '009', '010']).should.be.true();
+
+                        migrateToDatabaseVersionStub.callCount.should.eql(6);
+                        migrateToDatabaseVersionStub.firstCall.args[0].should.eql('005');
+                        migrateToDatabaseVersionStub.lastCall.args[0].should.eql('010');
+
+                        migrateToDatabaseVersionReset();
+
+                        done();
+                    }).catch(done);
+                });
+
+                it('should just return if versions are the same', function (done) {
+                    var migrateToDatabaseVersionStub = sandbox.stub().returns(new Promise.resolve()),
+                        migrateToDatabaseVersionReset = update.__set__('migrateToDatabaseVersion', migrateToDatabaseVersionStub);
+
+                    update({fromVersion: '004', toVersion: '004'}).then(function () {
+                        versionsSpy.calledOnce.should.be.false();
+                        migrateToDatabaseVersionStub.callCount.should.eql(0);
+                        migrateToDatabaseVersionReset();
+
+                        done();
+                    }).catch(done);
+                });
+
+                it('should do an UPDATE even if versions are the same, when FORCE_MIGRATION set', function (done) {
+                    var migrateToDatabaseVersionStub = sandbox.stub().returns(new Promise.resolve()),
+                        migrateToDatabaseVersionReset = update.__set__('migrateToDatabaseVersion', migrateToDatabaseVersionStub);
+
+                    update({fromVersion: '004', toVersion: '004', forceMigration: true}).then(function () {
+                        versionsSpy.calledOnce.should.be.true();
+                        versionsSpy.calledWith('003', '004').should.be.true();
+                        versionsSpy.returned(['003', '004']).should.be.true();
+
+                        migrateToDatabaseVersionStub.callCount.should.eql(1);
+                        migrateToDatabaseVersionStub.firstCall.args[0].should.eql('004');
+                        migrateToDatabaseVersionReset();
+
+                        done();
+                    }).catch(done);
+                });
+
+                it('should throw an error if the database version is higher than the default', function (done) {
+                    update({fromVersion: '010', toVersion: '004'}).then(function () {
+                        done(new Error('expected database version too old error'));
+                    }).catch(function (err) {
+                        updateDatabaseSchemaStub.calledOnce.should.be.false();
+                        (err instanceof errors.DatabaseVersion).should.eql(true);
+                        done();
+                    });
                 });
             });
 
@@ -362,9 +407,7 @@ describe('Migrations', function () {
                     sequenceStub.returns(Promise.resolve([]));
 
                     // Execute
-                    update('003', '004', loggerStub).then(function () {
-                        errorStub.called.should.be.false();
-
+                    update({fromVersion: '003', toVersion: '004'}).then(function () {
                         versionsSpy.calledOnce.should.be.true();
                         versionsSpy.calledWith('003', '004').should.be.true();
 
@@ -381,7 +424,10 @@ describe('Migrations', function () {
                         sequenceStub.calledOnce.should.be.true();
 
                         sequenceStub.firstCall.calledWith(sinon.match.array, {
-                            transacting: transaction
+                            transacting: transaction,
+                            context: {
+                                internal: true
+                            }
                         }, loggerStub).should.be.true();
 
                         sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(5);
@@ -842,9 +888,7 @@ describe('Migrations', function () {
                     sequenceStub.returns(Promise.resolve([]));
 
                     // Execute
-                    update('004', '005', loggerStub).then(function () {
-                        errorStub.called.should.be.false();
-
+                    update({fromVersion: '004', toVersion: '005'}).then(function () {
                         versionsSpy.calledOnce.should.be.true();
                         versionsSpy.calledWith('004', '005').should.be.true();
                         versionsSpy.returned(['004', '005']).should.be.true();
@@ -856,7 +900,10 @@ describe('Migrations', function () {
                         sequenceStub.calledOnce.should.be.true();
 
                         sequenceStub.firstCall.calledWith(sinon.match.array, {
-                            transacting: transaction
+                            transacting: transaction,
+                            context: {
+                                internal: true
+                            }
                         }, loggerStub).should.be.true();
 
                         sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(5);
@@ -1352,227 +1399,6 @@ describe('Migrations', function () {
                     done();
                 }).catch(done);
             });
-        });
-    });
-
-    describe('Init', function () {
-        var defaultVersionStub, databaseVersionStub, errorStub, updateStub, populateStub,
-            resetLog, resetUpdate, resetPopulate;
-
-        beforeEach(function () {
-            defaultVersionStub = sandbox.stub(schema.versioning, 'getDefaultDatabaseVersion');
-            databaseVersionStub = sandbox.stub(schema.versioning, 'getDatabaseVersion');
-            errorStub = sandbox.stub(errors, 'logErrorAndExit');
-            updateStub = sandbox.stub();
-            populateStub = sandbox.stub();
-
-            resetLog = migration.__set__('logger', loggerStub);
-            resetUpdate = migration.__set__('update', updateStub);
-            resetPopulate = migration.__set__('populate', populateStub);
-        });
-
-        afterEach(function () {
-            resetLog();
-            resetUpdate();
-            resetPopulate();
-        });
-
-        it('should do an UPDATE if default version is higher', function (done) {
-            // Setup
-            defaultVersionStub.returns('005');
-            databaseVersionStub.returns(new Promise.resolve('004'));
-
-            // Execute
-            migration.init().then(function () {
-                defaultVersionStub.calledOnce.should.be.true();
-                databaseVersionStub.calledOnce.should.be.true();
-                loggerStub.info.calledOnce.should.be.true();
-                loggerStub.warn.called.should.be.false();
-
-                updateStub.calledOnce.should.be.true();
-                updateStub.calledWith('004', '005', loggerStub).should.be.true();
-
-                errorStub.called.should.be.false();
-                populateStub.called.should.be.false();
-
-                done();
-            }).catch(done);
-        });
-
-        it('should do an UPDATE if default version is significantly higher', function (done) {
-            // Setup
-            defaultVersionStub.returns('010');
-            databaseVersionStub.returns(new Promise.resolve('004'));
-
-            // Execute
-            migration.init().then(function () {
-                defaultVersionStub.calledOnce.should.be.true();
-                databaseVersionStub.calledOnce.should.be.true();
-                loggerStub.info.calledOnce.should.be.true();
-                loggerStub.warn.called.should.be.false();
-
-                updateStub.calledOnce.should.be.true();
-                updateStub.calledWith('004', '010', loggerStub).should.be.true();
-
-                errorStub.called.should.be.false();
-                populateStub.called.should.be.false();
-
-                done();
-            }).catch(done);
-        });
-
-        it('should just return if versions are the same', function (done) {
-            // Setup
-            defaultVersionStub.returns('004');
-            databaseVersionStub.returns(new Promise.resolve('004'));
-
-            // Execute
-            migration.init().then(function () {
-                defaultVersionStub.calledOnce.should.be.true();
-                databaseVersionStub.calledOnce.should.be.true();
-                loggerStub.info.calledOnce.should.be.true();
-                loggerStub.warn.called.should.be.false();
-
-                errorStub.called.should.be.false();
-                updateStub.called.should.be.false();
-                populateStub.called.should.be.false();
-
-                done();
-            }).catch(done);
-        });
-
-        it('should do an UPDATE even if versions are the same, when FORCE_MIGRATION set', function (done) {
-            // Setup
-            defaultVersionStub.returns('004');
-            databaseVersionStub.returns(new Promise.resolve('004'));
-            process.env.FORCE_MIGRATION = true;
-
-            // Execute
-            migration.init().then(function () {
-                defaultVersionStub.calledOnce.should.be.true();
-                databaseVersionStub.calledOnce.should.be.true();
-                loggerStub.info.calledOnce.should.be.true();
-                loggerStub.warn.called.should.be.false();
-
-                updateStub.calledOnce.should.be.true();
-                updateStub.calledWith('004', '004', loggerStub).should.be.true();
-
-                errorStub.called.should.be.false();
-                populateStub.called.should.be.false();
-
-                delete process.env.FORCE_MIGRATION;
-                done();
-            }).catch(done);
-        });
-
-        it('should do a POPULATE if settings table does not exist', function (done) {
-            // Setup
-            defaultVersionStub.returns('004');
-            databaseVersionStub.returns(new Promise.reject(new Error('Settings table does not exist')));
-
-            // Execute
-            migration.init().then(function () {
-                defaultVersionStub.calledOnce.should.be.true();
-                databaseVersionStub.calledOnce.should.be.true();
-                loggerStub.info.calledOnce.should.be.true();
-                loggerStub.warn.called.should.be.false();
-
-                populateStub.called.should.be.true();
-                populateStub.calledWith(loggerStub, false).should.be.true();
-
-                errorStub.called.should.be.false();
-                updateStub.called.should.be.false();
-
-                done();
-            }).catch(done);
-        });
-
-        it('should do a POPULATE with TABLES ONLY if settings table does not exist & tablesOnly is set', function (done) {
-            // Setup
-            defaultVersionStub.returns('004');
-            databaseVersionStub.returns(new Promise.reject(new Error('Settings table does not exist')));
-
-            // Execute
-            migration.init(true).then(function () {
-                defaultVersionStub.calledOnce.should.be.true();
-                databaseVersionStub.calledOnce.should.be.true();
-                loggerStub.info.calledOnce.should.be.true();
-                loggerStub.warn.called.should.be.false();
-
-                populateStub.called.should.be.true();
-                populateStub.calledWith(loggerStub, true).should.be.true();
-
-                errorStub.called.should.be.false();
-                updateStub.called.should.be.false();
-
-                done();
-            }).catch(done);
-        });
-
-        it('should throw an error if the database version is higher than the default', function (done) {
-            // Setup
-            defaultVersionStub.returns('004');
-            databaseVersionStub.returns(new Promise.resolve('010'));
-
-            // Execute
-            migration.init().then(function () {
-                defaultVersionStub.calledOnce.should.be.true();
-                databaseVersionStub.calledOnce.should.be.true();
-                loggerStub.info.called.should.be.false();
-                loggerStub.warn.called.should.be.false();
-                errorStub.calledOnce.should.be.true();
-
-                populateStub.called.should.be.false();
-                updateStub.called.should.be.false();
-
-                done();
-            }).catch(done);
-        });
-
-        it('should throw an error if the database version returns an error other than settings not existing', function (done) {
-            // Setup
-            defaultVersionStub.returns('004');
-            databaseVersionStub.returns(new Promise.reject(new Error('Something went wrong')));
-
-            // Execute
-            migration.init().then(function () {
-                databaseVersionStub.calledOnce.should.be.true();
-                loggerStub.info.called.should.be.false();
-                loggerStub.warn.called.should.be.false();
-                errorStub.calledOnce.should.be.true();
-
-                defaultVersionStub.calledOnce.should.be.false();
-                populateStub.called.should.be.false();
-                updateStub.called.should.be.false();
-
-                done();
-            }).catch(done);
-        });
-    });
-
-    describe('Logger', function () {
-        var logger, errorsInfoStub, errorsWarnStub;
-
-        beforeEach(function () {
-            logger = migration.__get__('logger');
-            errorsInfoStub = sandbox.stub(errors, 'logComponentInfo');
-            errorsWarnStub = sandbox.stub(errors, 'logComponentWarn');
-        });
-
-        it('should output an info message prefixed with "Migrations"', function () {
-            logger.info('Stuff');
-
-            errorsInfoStub.calledOnce.should.be.true();
-            errorsInfoStub.calledWith('Migrations', 'Stuff').should.be.true();
-            errorsWarnStub.called.should.be.false();
-        });
-
-        it('should output a warn message prefixed with "Skipped Migrations"', function () {
-            logger.warn('Stuff');
-
-            errorsWarnStub.calledOnce.should.be.true();
-            errorsWarnStub.calledWith('Skipping Migrations', 'Stuff').should.be.true();
-            errorsInfoStub.called.should.be.false();
         });
     });
 });
