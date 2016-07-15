@@ -191,6 +191,7 @@ ConfigManager.prototype.set = function (config) {
             availableApps:    this._config.paths.availableApps || {},
             clientAssets:     path.join(corePath, '/built/assets/')
         },
+        maintenance: {},
         scheduling: {
             active: activeSchedulingAdapter,
             path: schedulingPath
