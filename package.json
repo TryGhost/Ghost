@@ -18,7 +18,7 @@
   "license": "MIT",
   "main": "./core/index",
   "scripts": {
-    "preinstall": "npm install semver && node -e \"require('./core/server/utils/startup-check.js').nodeVersion()\"",
+    "preinstall": "node core/server/utils/npm/preinstall.js",
     "start": "node index",
     "test": "grunt validate --verbose"
   },
