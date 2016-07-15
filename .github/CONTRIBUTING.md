@@ -98,7 +98,7 @@ Any other info e.g. Why do you consider this to be a bug? What did you expect to
 ### Technical details:
 
 * Ghost Version: master (latest commit: a761de2079dca4df49567b1bddac492f25033985)
-* Node Version: 0.10.16
+* Node Version: 4.4.7
 * Browser: Chrome 48.0.2564.109 on Mac OS X 10.10.4
 * Database: SQLite / MySQL / postgres
 ```
@@ -188,7 +188,7 @@ Looking to get setup to work on Ghost? AWESOME! The [Ghost-Vagrant](https://gith
 
 **What you'll need:**
 
-- Node version 0.10.x & npm
+- A supported Node.js version & npm  (see [Supported Node Versions](http://support.ghost.org/supported-node-versions/))
 - phantomjs 2.1.x
 ([instructions](https://github.com/TryGhost/Ghost/wiki/Functional-testing-with-PhantomJS-and-CasperJS)) for running tests
 
