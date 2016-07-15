@@ -23,7 +23,7 @@ events.on('token.added', function (tokenModel) {
 events.on('settings.activeTimezone.edited', function (settingModel) {
     var newTimezone = settingModel.attributes.value,
         previousTimezone = settingModel._updatedAttributes.value,
-        timezoneOffset = moment.tz(newTimezone).utcOffset();
+        timezoneOffsetDiff = moment.tz(newTimezone).utcOffset() - moment.tz(previousTimezone).utcOffset();
 
     // CASE: TZ was updated, but did not change
     if (previousTimezone === newTimezone) {
@@ -38,7 +38,7 @@ events.on('settings.activeTimezone.edited', function (settingModel) {
 
             return sequence(results.map(function (post) {
                 return function reschedulePostIfPossible() {
-                    var newPublishedAtMoment = moment(post.get('published_at')).add(timezoneOffset, 'minutes');
+                    var newPublishedAtMoment = moment(post.get('published_at')).add(timezoneOffsetDiff, 'minutes');
 
                     /**
                      * CASE:
