@@ -1,9 +1,10 @@
 language: node_js
 # When changing node version also update it on lines 34, 36 and 46.
 node_js:
-  - "0.10"
-  - "0.12"
   - "4"
+  - "0.12"
+  - "0.10"
+  - "6"
 sudo: false
 cache:
   directories:
@@ -23,10 +24,13 @@ env:
     - DB=pg NODE_ENV=testing-pg
 matrix:
   include:
-    - node_js: "0.10"
+    - node_js: "4"
       env: TEST_SUITE=lint
+  allow_failures:
+    - node_js: "6"
+  fast_finish: true
 branches:
-  exclude:
+  except:
     - /^greenkeeper-.+$/
 before_install:
   - if [ $DB == "mysql" ]; then mysql -e 'create database ghost_testing'; fi
@@ -34,7 +38,7 @@ before_install:
 after_success:
   - |
       if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-        if [[ "$DB" = "sqlite3" && "$TRAVIS_NODE_VERSION" = "0.10" ]]; then
+        if [[ "$DB" = "sqlite3" && "$TRAVIS_NODE_VERSION" = "4" ]]; then
           echo "Generate coverage..."
           grunt coverage
           npm install -g codeclimate-test-reporter
