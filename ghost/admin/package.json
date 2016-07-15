@@ -36,7 +36,7 @@
     "codemirror": "5.16.0",
     "csscomb": "3.1.8",
     "ember-ajax": "2.4.1",
-    "ember-cli": "2.6.2",
+    "ember-cli": "2.6.3",
     "ember-cli-app-version": "1.0.0",
     "ember-cli-babel": "5.1.6",
     "ember-cli-content-security-policy": "0.5.0",
