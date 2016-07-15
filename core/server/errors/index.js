@@ -20,6 +20,9 @@ var _                          = require('lodash'),
     TokenRevocationError       = require('./token-revocation-error'),
     VersionMismatchError       = require('./version-mismatch-error'),
     IncorrectUsage             = require('./incorrect-usage'),
+    Maintenance                = require('./maintenance'),
+    DatabaseNotPopulated       = require('./database-not-populated'),
+    DatabaseVersion            = require('./database-version'),
     i18n                       = require('../i18n'),
     config,
     errors,
@@ -452,3 +455,6 @@ module.exports.TooManyRequestsError       = TooManyRequestsError;
 module.exports.TokenRevocationError       = TokenRevocationError;
 module.exports.VersionMismatchError       = VersionMismatchError;
 module.exports.IncorrectUsage             = IncorrectUsage;
+module.exports.Maintenance                = Maintenance;
+module.exports.DatabaseNotPopulated       = DatabaseNotPopulated;
+module.exports.DatabaseVersion            = DatabaseVersion;

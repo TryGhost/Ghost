@@ -1,4 +1,5 @@
 var path            = require('path'),
+    Promise         = require('bluebird'),
     db              = require('../db'),
     errors          = require('../../errors'),
     i18n            = require('../../i18n'),
@@ -6,10 +7,10 @@ var path            = require('path'),
 
     defaultDatabaseVersion;
 
-// Default Database Version
+// Newest Database Version
 // The migration version number according to the hardcoded default settings
 // This is the version the database should be at or migrated to
-function getDefaultDatabaseVersion() {
+function getNewestDatabaseVersion() {
     if (!defaultDatabaseVersion) {
         // This be the current version according to the software
         defaultDatabaseVersion = defaultSettings.core.databaseVersion.defaultValue;
@@ -31,17 +32,14 @@ function getDatabaseVersion() {
                 .first('value')
                 .then(function (version) {
                     if (!version || isNaN(version.value)) {
-                        return errors.rejectError(new Error(
-                            i18n.t('errors.data.versioning.index.dbVersionNotRecognized')
-                        ));
+                        return Promise.reject(new errors.DatabaseVersion(i18n.t('errors.data.versioning.index.dbVersionNotRecognized')));
                     }
 
                     return version.value;
                 });
         }
-        return errors.rejectError(new Error(
-            i18n.t('errors.data.versioning.index.settingsTableDoesNotExist')
-        ));
+
+        return Promise.reject(new errors.DatabaseNotPopulated(i18n.t('errors.data.versioning.index.databaseNotPopulated')));
     });
 }
 
@@ -64,14 +62,6 @@ function getMigrationVersions(fromVersion, toVersion) {
     }
 
     return versions;
-}
-
-function showCannotMigrateError() {
-    return errors.logAndRejectError(
-        i18n.t('errors.data.versioning.index.cannotMigrate.error'),
-        i18n.t('errors.data.versioning.index.cannotMigrate.context'),
-        i18n.t('common.seeLinkForInstructions', {link: 'http://support.ghost.org/how-to-upgrade/'})
-    );
 }
 
 /**
@@ -107,8 +97,7 @@ function getUpdateFixturesTasks(version, logger) {
 
 module.exports = {
     canMigrateFromVersion: '003',
-    showCannotMigrateError: showCannotMigrateError,
-    getDefaultDatabaseVersion: getDefaultDatabaseVersion,
+    getNewestDatabaseVersion: getNewestDatabaseVersion,
     getDatabaseVersion: getDatabaseVersion,
     setDatabaseVersion: setDatabaseVersion,
     getMigrationVersions: getMigrationVersions,

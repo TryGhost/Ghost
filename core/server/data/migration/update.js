@@ -3,14 +3,25 @@
 var Promise = require('bluebird'),
     backup = require('./backup'),
     fixtures = require('./fixtures'),
-    models = require('../../models'),
+    errors = require('../../errors'),
+    i18n = require('../../i18n'),
     db = require('../../data/db'),
     sequence = require('../../utils/sequence'),
     versioning = require('../schema').versioning,
 
     updateDatabaseSchema,
     migrateToDatabaseVersion,
-    update;
+    update, logger;
+
+// @TODO: remove me asap!
+logger = {
+    info: function info(message) {
+        errors.logComponentInfo('Migrations', message);
+    },
+    warn: function warn(message) {
+        errors.logComponentWarn('Skipping Migrations', message);
+    }
+};
 
 /**
  * update database schema for one single version
@@ -48,9 +59,6 @@ migrateToDatabaseVersion = function migrateToDatabaseVersion(version, logger, mo
                     return versioning.setDatabaseVersion(transaction, version);
                 })
                 .then(function () {
-                    return models.Settings.populateDefaults(modelOptions);
-                })
-                .then(function () {
                     transaction.commit();
                     resolve();
                 })
@@ -68,36 +76,54 @@ migrateToDatabaseVersion = function migrateToDatabaseVersion(version, logger, mo
 /**
  * ## Update
  * Does a backup, then updates the database and fixtures
- *
- * @param {String} fromVersion
- * @param {String} toVersion
- * @param {{info: logger.info, warn: logger.warn}} logger
- * @returns {Promise<*>}
  */
-update = function update(fromVersion, toVersion, logger, modelOptions) {
-    modelOptions = modelOptions || {};
-    // Is the current version lower than the version we can migrate from?
-    // E.g. is this blog's DB older than 003?
+update = function update(options) {
+    options = options || {};
+
+    var fromVersion = options.fromVersion,
+        toVersion = options.toVersion,
+        forceMigration = options.forceMigration,
+        versionsToUpdate,
+        modelOptions = {
+            context: {
+                internal: true
+            }
+        };
+
+    // CASE: current database version is lower then we support
     if (fromVersion < versioning.canMigrateFromVersion) {
-        return versioning.showCannotMigrateError();
+        return Promise.reject(new errors.DatabaseVersion(
+            i18n.t('errors.data.versioning.index.cannotMigrate.error'),
+            i18n.t('errors.data.versioning.index.cannotMigrate.context'),
+            i18n.t('common.seeLinkForInstructions', {link: 'http://support.ghost.org/how-to-upgrade/'})
+        ));
     }
+    // CASE: the database exists but is out of date
+    else if (fromVersion < toVersion || forceMigration) {
+        fromVersion = forceMigration ? versioning.canMigrateFromVersion : fromVersion;
 
-    fromVersion = process.env.FORCE_MIGRATION ? versioning.canMigrateFromVersion : fromVersion;
+        // Figure out which versions we're updating through.
+        // This shouldn't include the from/current version (which we're already on)
+        versionsToUpdate = versioning.getMigrationVersions(fromVersion, toVersion).slice(1);
 
-    // Figure out which versions we're updating through.
-    // This shouldn't include the from/current version (which we're already on)
-    var versionsToUpdate = versioning.getMigrationVersions(fromVersion, toVersion).slice(1);
-
-    return backup(logger)
-        .then(function () {
-            return Promise.mapSeries(versionsToUpdate, function (versionToUpdate) {
-                return migrateToDatabaseVersion(versionToUpdate, logger, modelOptions);
+        return backup(logger)
+            .then(function () {
+                return Promise.mapSeries(versionsToUpdate, function (versionToUpdate) {
+                    return migrateToDatabaseVersion(versionToUpdate, logger, modelOptions);
+                });
+            })
+            .then(function () {
+                logger.info('Finished!');
             });
-        })
-        .catch(function () {
-            // we don't want that your blog can't start
-            Promise.resolve();
-        });
+    }
+    // CASE: database is up-to-date
+    else if (fromVersion === toVersion) {
+        return Promise.resolve();
+    }
+    // CASE: we don't understand the version
+    else {
+        return Promise.reject(new errors.DatabaseVersion(i18n.t('errors.data.versioning.index.dbVersionNotRecognized')));
+    }
 };
 
 module.exports = update;

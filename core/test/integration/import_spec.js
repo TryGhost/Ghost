@@ -14,7 +14,7 @@ var testUtils   = require('../utils/index'),
     importer        = require('../../server/data/import'),
     DataImporter    = require('../../server/data/import/data-importer'),
 
-    DEF_DB_VERSION  = versioning.getDefaultDatabaseVersion(),
+    DEF_DB_VERSION  = versioning.getNewestDatabaseVersion(),
     knex = db.knex,
     sandbox = sinon.sandbox.create();
 

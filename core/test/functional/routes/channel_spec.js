@@ -79,6 +79,8 @@ describe('Channel Routes', function () {
         });
 
         describe('RSS', function () {
+            before(testUtils.teardown);
+
             before(function (done) {
                 testUtils.initData().then(function () {
                     return testUtils.fixtures.overrideOwnerUser();
@@ -276,6 +278,8 @@ describe('Channel Routes', function () {
         });
 
         describe('Paged', function () {
+            before(testUtils.teardown);
+
             // Add enough posts to trigger pages
             before(function (done) {
                 testUtils.initData().then(function () {

@@ -27,6 +27,7 @@ var bodyParser      = require('body-parser'),
     staticTheme      = require('./static-theme'),
     themeHandler     = require('./theme-handler'),
     uncapitalise     = require('./uncapitalise'),
+    maintenance     = require('./maintenance'),
     versionMatch     = require('./api/version-match'),
     cors             = require('./cors'),
     netjet           = require('netjet'),
@@ -52,7 +53,8 @@ middleware = {
         errorHandler: errors.handleAPIError,
         cors: cors,
         labs: labs,
-        versionMatch: versionMatch
+        versionMatch: versionMatch,
+        maintenance: maintenance
     }
 };
 
@@ -106,6 +108,7 @@ setupMiddleware = function setupMiddleware(blogApp) {
             }
         }));
     }
+
     // Favicon
     blogApp.use(serveSharedFile('favicon.ico', 'image/x-icon', utils.ONE_DAY_S));
 
@@ -196,6 +199,9 @@ setupMiddleware = function setupMiddleware(blogApp) {
     adminApp.use(redirectToSetup);
     adminApp.use(routes.admin());
     blogApp.use('/ghost', adminApp);
+
+    // send 503 error page in case of maintenance
+    blogApp.use(maintenance);
 
     // Set up Frontend routes (including private blogging routes)
     blogApp.use(routes.frontend());

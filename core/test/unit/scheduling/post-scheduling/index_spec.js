@@ -22,8 +22,9 @@ describe('Scheduling: Post Scheduling', function () {
         post: null
     };
 
-    before(testUtils.teardown);
-    beforeEach(testUtils.setup());
+    before(function () {
+        models.init();
+    });
 
     beforeEach(function () {
         scope.client = models.Client.forge(testUtils.DataGenerator.forKnex.createClient({slug: 'ghost-scheduler'}));

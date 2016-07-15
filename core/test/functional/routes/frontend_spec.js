@@ -381,6 +381,7 @@ describe('Frontend Routing', function () {
 
     describe('Subdirectory (with slash)', function () {
         var forkedGhost, request;
+
         before(function (done) {
             var configTest = testUtils.fork.config();
             configTest.url = 'http://localhost/blog/';
@@ -466,6 +467,7 @@ describe('Frontend Routing', function () {
     // we'll use X-Forwarded-Proto: https to simulate an 'https://' request behind a proxy
     describe('HTTPS', function () {
         var forkedGhost, request;
+
         before(function (done) {
             var configTestHttps = testUtils.fork.config();
             configTestHttps.forceAdminSSL = {redirect: false};
@@ -566,6 +568,8 @@ describe('Frontend Routing', function () {
     });
 
     describe('Site Map', function () {
+        before(testUtils.teardown);
+
         before(function (done) {
             testUtils.initData().then(function () {
                 return testUtils.fixtures.insertPostsAndTags();
