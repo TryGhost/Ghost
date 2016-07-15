@@ -63,7 +63,7 @@
     "passport-oauth2-client-password": "0.1.2",
     "path-match": "1.2.4",
     "rss": "1.2.1",
-    "semver": "5.2.0",
+    "semver": "5.3.0",
     "showdown-ghost": "0.3.6",
     "sqlite3": "3.1.4",
     "superagent": "1.8.3",
