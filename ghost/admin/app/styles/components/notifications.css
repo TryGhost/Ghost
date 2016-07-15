@@ -118,6 +118,10 @@
     line-height: 1.3em;
 }
 
+.gh-notification-schedule:hover {
+    cursor: default;
+}
+
 /* Alerts
 /* ---------------------------------------------------------- */
 
