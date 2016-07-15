@@ -12,6 +12,7 @@ logs
 results
 
 npm-debug.log
+.nvmrc
 .bowerrc
 .idea/*
 *.iml

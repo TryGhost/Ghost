@@ -26,6 +26,7 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
     feature: injectService(),
     dropdown: injectService(),
     notifications: injectService(),
+    upgradeNotification: injectService(),
 
     afterModel(model, transition) {
         this._super(...arguments);
@@ -114,7 +115,11 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
                     if (!user.get('isAuthor') && !user.get('isEditor')) {
                         this.store.findAll('notification', {reload: true}).then((serverNotifications) => {
                             serverNotifications.forEach((notification) => {
-                                this.get('notifications').handleNotification(notification, isDelayed);
+                                if (notification.get('type') === 'upgrade') {
+                                    this.get('upgradeNotification').set('content', notification.get('message'));
+                                } else {
+                                    this.get('notifications').handleNotification(notification, isDelayed);
+                                }
                             });
                         });
                     }
