@@ -367,7 +367,7 @@ var _              = require('lodash'),
             compress: {
                 release: {
                     options: {
-                        archive: '<%= paths.releaseDist %>/Ghost-<%= pkg.version %>.zip'
+                        archive: '<%= paths.releaseDist %>/Ghost-release.zip'
                     },
                     expand: true,
                     cwd: '<%= paths.releaseBuild %>/',
