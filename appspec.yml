@@ -5,6 +5,6 @@ files:
     destination: /var/www/blog
 hooks:
   BeforeInstall:
-    - location: bin/install.sh
+    - location: bin/install.sh #file is located in the EC2
       timeout: 900
       runas: root
