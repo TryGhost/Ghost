@@ -92,7 +92,6 @@ export default Service.extend({
         if (isVersionMismatchError(resp)) {
             return this.get('upgradeStatus').requireUpgrade();
         } else if (isMaintenanceError(resp)) {
-            console.log(this.get('upgradeStatus'));
             return this.get('upgradeStatus').maintenanceAlert();
         }
 

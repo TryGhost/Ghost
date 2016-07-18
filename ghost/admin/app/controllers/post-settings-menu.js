@@ -7,7 +7,6 @@ import {guidFor} from 'ember-metal/utils';
 import injectService from 'ember-service/inject';
 import injectController from 'ember-controller/inject';
 import {htmlSafe} from 'ember-string';
-import {isEmberArray} from 'ember-array/utils';
 import {isBlank} from 'ember-utils';
 import observer from 'ember-metal/observer';
 import run from 'ember-runloop';
@@ -184,9 +183,11 @@ export default Controller.extend(SettingsMenuMixin, {
         });
     }),
 
-    showErrors(errors) {
-        errors = isEmberArray(errors) ? errors : [errors];
-        this.get('notifications').showAPIError(errors);
+    showError(error) {
+        // TODO: remove null check once ValidationEngine has been removed
+        if (error) {
+            this.get('notifications').showAPIError(error);
+        }
     },
 
     actions: {
@@ -203,8 +204,8 @@ export default Controller.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.get('model').save().catch((errors) => {
-                this.showErrors(errors);
+            this.get('model').save().catch((error) => {
+                this.showError(error);
                 this.get('model').rollbackAttributes();
             });
         },
@@ -218,8 +219,8 @@ export default Controller.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.get('model').save(this.get('saveOptions')).catch((errors) => {
-                this.showErrors(errors);
+            this.get('model').save(this.get('saveOptions')).catch((error) => {
+                this.showError(error);
                 this.get('model').rollbackAttributes();
             });
         },
@@ -281,8 +282,8 @@ export default Controller.extend(SettingsMenuMixin, {
                 }
 
                 return this.get('model').save();
-            }).catch((errors) => {
-                this.showErrors(errors);
+            }).catch((error) => {
+                this.showError(error);
                 this.get('model').rollbackAttributes();
             });
         },
@@ -367,8 +368,8 @@ export default Controller.extend(SettingsMenuMixin, {
                     return;
                 }
 
-                this.get('model').save().catch((errors) => {
-                    this.showErrors(errors);
+                this.get('model').save().catch((error) => {
+                    this.showError(error);
                     this.get('model').rollbackAttributes();
                 });
             });
@@ -423,8 +424,8 @@ export default Controller.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.get('model').save().catch((errors) => {
-                this.showErrors(errors);
+            this.get('model').save().catch((error) => {
+                this.showError(error);
                 this.get('model').rollbackAttributes();
             });
         },
@@ -436,8 +437,8 @@ export default Controller.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.get('model').save().catch((errors) => {
-                this.showErrors(errors);
+            this.get('model').save().catch((error) => {
+                this.showError(error);
                 this.get('model').rollbackAttributes();
             });
         },
@@ -466,8 +467,8 @@ export default Controller.extend(SettingsMenuMixin, {
                 return;
             }
 
-            model.save().catch((errors) => {
-                this.showErrors(errors);
+            model.save().catch((error) => {
+                this.showError(error);
                 this.set('selectedAuthor', author);
                 model.rollbackAttributes();
             });

@@ -297,27 +297,25 @@ export default Mixin.create({
         notifications.showNotification(message.htmlSafe(), {delayed: delay});
     },
 
-    showErrorAlert(prevStatus, status, errors, delay) {
+    showErrorAlert(prevStatus, status, error, delay) {
         let message = this.messageMap.errors.post[prevStatus][status];
         let notifications = this.get('notifications');
-        let error;
+        let errorMessage;
 
         function isString(str) {
             /*global toString*/
             return toString.call(str) === '[object String]';
         }
 
-        if (errors && isString(errors)) {
-            error = errors;
-        } else if (errors && errors[0] && isString(errors[0])) {
-            error = errors[0];
-        } else if (errors && errors[0] && errors[0].message && isString(errors[0].message)) {
-            error = errors[0].message;
+        if (error && isString(error)) {
+            errorMessage = error;
+        } else if (error && error.errors && error.errors[0].message) {
+            errorMessage = error.errors[0].message;
         } else {
-            error = 'Unknown Error';
+            errorMessage = 'Unknown Error';
         }
 
-        message += `: ${error}`;
+        message += `: ${errorMessage}`;
         message = htmlSafe(message);
 
         notifications.showAlert(message, {type: 'error', delayed: delay, key: 'post.save'});

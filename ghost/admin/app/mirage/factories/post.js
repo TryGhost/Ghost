@@ -3,6 +3,7 @@ import Mirage, {faker} from 'ember-cli-mirage';
 
 export default Mirage.Factory.extend({
     uuid(i) { return  `post-${i}`; },
+    title(i) { return `Post ${i}`; },
     description(i) { return  `Title for post ${i}.`; },
     slug(i) { return  `post-${i}`; },
     markdown(i) { return  `Markdown for post ${i}.`; },
