@@ -108,7 +108,6 @@ describe('Acceptance: Editor', function() {
 
             // saves the post with the new date
             fillIn('input[name="post-setting-date"]', '10 May 16 @ 10:00');
-            // return pauseTest();
             triggerEvent('input[name="post-setting-date"]', 'blur');
             // saving
             click('.view-header .btn.btn-sm.js-publish-button');
@@ -337,6 +336,58 @@ describe('Acceptance: Editor', function() {
                 // expect no countdown notification after unscheduling
                 expect(find('.gh-notification.gh-notification-schedule').text().trim(), 'notification countdown')
                     .to.equal('');
+            });
+        });
+
+        it('handles validation errors when scheduling', function () {
+            let saveCount = 0;
+
+            server.put('/posts/:id/', function (db, request) {
+                // we have three saves occurring here :-(
+                // 1. Auto-save of draft
+                // 2. Change of publish time
+                // 3. Pressing the Schedule button
+                saveCount++;
+                if (saveCount === 3) {
+                    return new Mirage.Response(422, {}, {
+                        errors: [{
+                            errorType: 'ValidationError',
+                            message: 'Error test'
+                        }]
+                    });
+                } else {
+                    let {id} = request.params;
+                    let [attrs] = JSON.parse(request.requestBody).posts;
+                    delete attrs.id;
+
+                    let post = db.posts.update(id, attrs);
+
+                    return {
+                        posts: [post]
+                    };
+                }
+            });
+
+            let post = server.create('post', 1);
+            let plusTenMin = moment().add(10, 'minutes').format('DD MMM YY @ HH:mm').toString();
+
+            visit(`/editor/${post.id}`);
+
+            fillIn('input[name="post-setting-date"]', plusTenMin);
+            triggerEvent('input[name="post-setting-date"]', 'blur');
+            click('.post-save-schedule a');
+            click('.view-header .btn.btn-sm.js-publish-button');
+
+            andThen(() => {
+                expect(
+                    find('.gh-alert').length,
+                    'number of alerts after failed schedule'
+                ).to.equal(1);
+
+                expect(
+                    find('.gh-alert').text(),
+                    'alert text after failed schedule'
+                ).to.match(/Scheduling failed: Error test/);
             });
         });
 

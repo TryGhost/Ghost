@@ -23,8 +23,6 @@ describe('Unit: Validator: subscriber', function () {
         let subscriber = Subscriber.create({});
         let properties = subscriber.get('validators.subscriber.properties');
 
-        console.log(subscriber);
-
         expect(properties, 'properties').to.include('email');
     });
 
