@@ -1,18 +1,25 @@
 // Supported formats of https://github.com/image-size/image-size:
-// BMP
-// GIF
-// JPEG
-// PNG
-// PSD
-// TIFF
-// WebP
-// SVG
+// BMP, GIF, JPEG, PNG, PSD, TIFF, WebP, SVG
+// ***
+// Takes the url of the image and an optional timeout
+// getImageSizeFromUrl returns an Object like this
+// {
+//     height: 50,
+//     url: 'http://myblog.com/images/cat.jpg',
+//     width: 50
+// };
+// if the dimensions can be fetched and returns the url back, if not.
+// ***
+// In case we get a locally stored image or a not complete url (like //www.gravatar.com/andsoon),
+// we add the protocol to the incomplete one and use urlFor() to get the absolute URL.
+// If the request fails or image-size is not able to read the file, we return the original URL.
 
 var sizeOf = require('image-size'),
     url = require('url'),
     Promise = require('bluebird'),
     http = require('http'),
     https = require('https'),
+    config = require('../config'),
     dimensions,
     request,
     prot;
@@ -22,9 +29,24 @@ module.exports.getImageSizeFromUrl = function getImageSizeFromUrl(imagePath, tim
         var timer,
             imageObject = {},
             timerEnded = false,
-            options = url.parse(imagePath);
+            options;
 
         imageObject.url = imagePath;
+
+        // check if we got an url without any protocol
+        if (imagePath.indexOf('http') === -1) {
+            // our gravatar urls start with '//' in that case add 'http:'
+            if (imagePath.indexOf('//') === 0) {
+                // it's a gravatar url
+                imagePath = 'http:' + imagePath;
+            } else {
+                // get absolute url for image
+                imagePath = config.urlFor('image', {image: imagePath}, true);
+            }
+        }
+
+        options = url.parse(imagePath);
+
         prot = imagePath.indexOf('https') === 0 ? https : http;
         options.headers = {'User-Agent': 'Mozilla/5.0'};
 
