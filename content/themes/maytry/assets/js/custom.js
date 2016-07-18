@@ -1,6 +1,11 @@
 (function($) {
   "use strict";
 
+  // 外部リンクを別タブで開く
+  $(document).ready( function () {
+    $("a[href^='http']:not([href*='" + location.hostname + "'])").attr('target', '_blank');
+  });
+
   // 文字数と予想時間
   $(".blog-content").each(function() {
     $(this).readingTime({

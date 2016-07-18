@@ -304,18 +304,19 @@
 }
 .side-column .mt-panel {
   margin: 10px 5px;
-  padding: 10px;
+  padding: 0 10px 10px;
   border-bottom: solid 1px white;
 }
 .side-column .mt-panel:first-child {
-  padding-top: 0;
   margin-top: 0;
 }
 .side-column .mt-panel:last-child {
   border-bottom: none;
 }
 .side-column h2.mt-label {
+  margin-top: 0;
   font-size: 30px;
+  font-weight: bold;
 }
 .side-column .popular-posts-area .popular-post {
   margin-bottom: 15px;
@@ -327,7 +328,6 @@
   font-size: 20px;
   font-weight: bold;
   color: white;
-  opacity: .8;
   text-decoration: none;
 }
 .side-column .popular-posts-area .popular-post a:hover {
@@ -1011,8 +1011,11 @@ p.year_month {
   padding: 3px 3px 3px 9px;
 }
 .post-tags .ui.labeled.button .ui.label:before {
-  width: 13px;
-  height: 13px;
+  width: 15px;
+  height: 15px;
+}
+.post-tags .ui.labeled.button .ui.label:after {
+  box-shadow: 0 1px 3px 1px rgba(0, 0, 0, 0.3);
 }
 .read-more a {
   display: inline-block;
@@ -1374,7 +1377,7 @@ a:focus {
 code {
   max-height: 600px;
   line-height: 1.3;
-  font-family: "Ricty Diminished", "游ゴシック体", "Yu Gothic", YuGothic, "ヒラギノ角ゴ Pro", "Hiragino Kaku Gothic Pro", "メイリオ", "Meiryo", sans-serif, 'Abril Fatface', cursive;
+  font-family: "Ricty Diminished", "Roboto", "游ゴシック体", "Yu Gothic", YuGothic, "ヒラギノ角ゴ Pro", "Hiragino Kaku Gothic Pro", "メイリオ", "Meiryo", sans-serif, 'Abril Fatface', cursive;
   font-weight: bold;
   background: whitesmoke;
   border-radius: 6px;
@@ -1430,7 +1433,7 @@ hr.round {
   height: 0;
   max-width: 15%;
 }
-.middle-vertical {
+.vertical-middle {
   vertical-align: middle;
 }
 @media only screen and (max-width: 640px) {
