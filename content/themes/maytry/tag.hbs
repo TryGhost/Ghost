@@ -36,8 +36,11 @@
         {{> content_post}}
       {{/foreach}}
     </div>
-    <div class="medium-4 columns main-column">
-      Comming soon...
+    <div class="medium-4 columns side-column">
+      <div class="popular-posts-area mt-panel">
+        <h2 class="mt-label popular-label">人気記事</h2>
+        <div class="popular-posts">{{popular_posts max=4}}</div>
+      </div>
     </div>
   </div>
 </div>

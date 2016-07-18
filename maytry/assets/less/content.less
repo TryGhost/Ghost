@@ -64,13 +64,13 @@
 
 .blog-content {
   background-color: @background-color;
-  margin: 10px 5px;
+  margin: 10px 5px 10px 0;
   padding: 10px;
   border-left: 1px solid @border-color;
   border-right: 1px solid @border-color;
-          border-radius: 10px; /* CSS3草案 */
+  border-radius: 10px; /* CSS3草案 */
   -webkit-border-radius: 10px; /* Safari,Google Chrome用 */
-     -moz-border-radius: 10px; /* Firefox用 */
+  -moz-border-radius: 10px; /* Firefox用 */
 
   &:first-child {
     margin-top: 0;
@@ -150,9 +150,10 @@
 
       a {
         color: @font-color;
+        text-decoration: none;
 
         &:hover {
-          text-decoration: none
+          color: @emphasis-color;
         }
       }
     }
@@ -209,16 +210,22 @@
 }
 
 .side-column {
-  .mt-panel.mt-panel-default {
+  .mt-panel {
     margin: 10px 5px;
+    padding: 10px;
+    border-bottom: solid 1px white;
 
     &:first-child {
+      padding-top: 0;
       margin-top: 0;
+    }
+
+    &:last-child {
+      border-bottom: none;
     }
   }
 
   h2.mt-label {
-    color: @font-color;
     font-size: 30px;
   }
 
@@ -231,9 +238,9 @@
       }
 
       a {
-        font-size: 16px;
+        font-size: 20px;
         font-weight: bold;
-        color: @mt-theme-color;
+        color: white;
         opacity: .8;
         text-decoration: none;
 
@@ -266,9 +273,9 @@
 
       .blog-content {
         background: @background-color;
-        border-radius: 10px;        /* CSS3草案 */
-        -webkit-border-radius: 10px;    /* Safari,Google Chrome用 */
-        -moz-border-radius: 10px;   /* Firefox用 */
+        border-radius: 10px; /* CSS3草案 */
+        -webkit-border-radius: 10px; /* Safari,Google Chrome用 */
+        -moz-border-radius: 10px; /* Firefox用 */
 
         .post-title h2 {
           font-size: 25px;
@@ -330,7 +337,7 @@
 
 @media only screen and (max-width: 640px) {
   .content-container {
-    min-width: 320px;  // iPhone5
+    min-width: 320px; // iPhone5
     padding-top: 5px;
 
     .blog-container {
@@ -339,6 +346,8 @@
       }
 
       .blog-content {
+        margin: 10px 5px;
+
         .post-title h2 {
           font-size: 22px;
           line-height: 1.3;
