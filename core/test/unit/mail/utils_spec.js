@@ -1,5 +1,5 @@
 var sinon = require('sinon'),
-    mail = require(__dirname + '../../../../server/mail'),
+    mail = require('../../../server/mail'),
     sandbox = sinon.sandbox.create();
 
 describe('Mail: Utils', function () {
