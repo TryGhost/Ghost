@@ -65,6 +65,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         };
     },
 
+    // When loading an instance, subclasses can specify default to fetch
+    defaultColumnsToFetch: function defaultColumnsToFetch() {
+        return [];
+    },
+
     // Bookshelf `initialize` - declare a constructor-like method for model creation
     initialize: function initialize() {
         var self = this,
@@ -318,10 +323,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     findPage: function findPage(options) {
         options = options || {};
 
-        var self = this,
-            itemCollection = this.forge(null, {context: options.context}),
-            tableName      = _.result(this.prototype, 'tableName'),
-            allColumns = options.columns;
+        var self             = this,
+            itemCollection   = this.forge(null, {context: options.context}),
+            tableName        = _.result(this.prototype, 'tableName'),
+            requestedColumns = options.columns;
 
         // Set this to true or pass ?debug=true as an API option to get output
         itemCollection.debug = options.debug && process.env.NODE_ENV !== 'production';
@@ -342,8 +347,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         options.withRelated = _.union(options.withRelated, options.include);
 
         // Ensure only valid fields/columns are added to query
+        // and append default columns to fetch
         if (options.columns) {
             options.columns = _.intersection(options.columns, this.prototype.permittedAttributes());
+            options.columns = _.union(options.columns, this.prototype.defaultColumnsToFetch());
         }
 
         if (options.order) {
@@ -355,13 +362,18 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
 
         return itemCollection.fetchPage(options).then(function formatResponse(response) {
-            var data = {};
+            var data   = {},
+                models = [];
+
+            options.columns = requestedColumns;
+            models = response.collection.toJSON(options);
 
             // re-add any computed properties that were stripped out before the call to fetchPage
-            options.columns = allColumns;
-            data[tableName] = response.collection.toJSON(options);
+            // pick only requested before returning JSON
+            data[tableName] = _.map(models, function transform(model) {
+                return options.columns ? _.pick(model, options.columns) : model;
+            });
             data.meta = {pagination: response.pagination};
-
             return data;
         });
     },

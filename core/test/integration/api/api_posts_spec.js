@@ -2,6 +2,7 @@ var Promise       = require('bluebird'),
     should        = require('should'),
     _             = require('lodash'),
     testUtils     = require('../../utils'),
+    configUtils   = require('../../utils/configUtils'),
     errors        = require('../../../server/errors'),
     db            = require('../../../server/data/db'),
     models        = require('../../../server/models'),
@@ -45,6 +46,16 @@ describe('Post API', function () {
     should.exist(PostAPI);
 
     describe('Browse', function () {
+        beforeEach(function () {
+            configUtils.set({theme: {
+                permalinks: '/:slug/'
+            }});
+        });
+
+        afterEach(function () {
+            configUtils.restore();
+        });
+
         it('can fetch all posts with internal context in correct order', function (done) {
             PostAPI.browse({context: {internal: true}}).then(function (results) {
                 should.exist(results.posts);
@@ -354,6 +365,18 @@ describe('Post API', function () {
                 should.exist(results.posts[0].published_at);
                 should.exist(results.posts[0].slug);
                 should.not.exist(results.posts[0].title);
+
+                done();
+            }).catch(done);
+        });
+
+        it('with context.user can fetch url and author fields', function (done) {
+            PostAPI.browse({context: {user: 1}, status: 'all', limit: 5}).then(function (results) {
+                should.exist(results.posts);
+
+                should.exist(results.posts[0].url);
+                should.notEqual(results.posts[0].url, 'undefined');
+                should.exist(results.posts[0].author);
 
                 done();
             }).catch(done);
