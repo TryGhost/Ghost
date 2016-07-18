@@ -23,17 +23,13 @@ tag_links = function(options) {
     limit: 'all',
     include: 'count.posts'
   };
-  if(!all) {
-    if(_.isEmpty(tagIds)) {
-      query.limit = '1';
-    } else {
-      query.filter = tagIds.map(function(id) {
-        return 'id:' + id;
-      }).join(',');
-    }
+  if(!all && !_.isEmpty(tagIds)) {
+    query.filter = tagIds.map(function(id) {
+      return 'id:' + id;
+    }).join(',');
   }
   return api.tags.browse(query).then(function(res) {
-    if(_.isEmpty(tagIds)) {
+    if(!all && _.isEmpty(tagIds)) {
       return new hbs.handlebars.SafeString("");
     }
     // 記事に関連するタグのみ選出
