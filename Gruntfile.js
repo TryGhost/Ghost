@@ -73,6 +73,10 @@ var _              = require('lodash'),
                 less: {
                     files: 'maytry/assets/less/*.less',
                     tasks: 'less'
+                },
+                concat: {
+                    files: 'maytry/assets/js/*.js',
+                    tasks: 'concat'
                 }
             },
             less: {
@@ -83,6 +87,22 @@ var _              = require('lodash'),
                     },
                     src: 'maytry/assets/less/app.less',
                     dest: 'content/themes/maytry/assets/css/app.css'
+                }
+            },
+
+            concat: {
+                files: {
+                    src : [
+                        'content/themes/maytry/assets/js/vendor/highlight.pack.js',
+                        'content/themes/maytry/assets/js/vendor/jquery.slicknav.min.js',
+                        'content/themes/maytry/assets/js/vendor/scrollReveal.min.js',
+                        'content/themes/maytry/assets/js/vendor/scrollchaser.js',
+                        'content/themes/maytry/assets/js/vendor/scrollspy.js',
+                        'content/themes/maytry/assets/js/vendor/readingTime.js',
+                        'content/themes/maytry/assets/js/vendor/jssocials.min.js',
+                        'content/themes/maytry/assets/js/custom.js'
+                    ],
+                    dest: 'content/themes/maytry/assets/js/bundle.js'
                 }
             },
 
@@ -351,6 +371,11 @@ var _              = require('lodash'),
                     },
                     files: {
                         'core/shared/ghost-url.min.js': 'core/shared/ghost-url.js'
+                    }
+                },
+                maytry: {
+                    files: {
+                        'content/themes/maytry/assets/js/app.js': 'content/themes/maytry/assets/js/bundle.js'
                     }
                 }
             },
@@ -846,6 +871,7 @@ var _              = require('lodash'),
                 grunt.task.run(['init', 'prod', 'clean:release',  'shell:dedupe', 'shell:prune', 'shell:shrinkwrap', 'copy:release', 'compress:release']);
             }
         );
+        grunt.registerTask('bundle', ['concat', 'uglify:maytry']);
     };
 
 module.exports = configureGrunt;
