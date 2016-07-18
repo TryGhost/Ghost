@@ -23,32 +23,17 @@
   <link rel="shortcut icon" href="{{asset "images/icons/favicon_alpha.png"}}">
   <!-- Android Chrome -->
   <link rel="icon" sizes="192x192" href="{{asset "images/icons/favicon_alpha.png"}}">
-  {{! RSS }}
-  <link rel="alternate" type="application/rss+xml" title="{{@blog.title}} » Feed" href="/rss">
   {{! Styles'n'Scripts }}
-  <link href='http://fonts.googleapis.com/css?family=Roboto:400,100,300,700,900&amp;subset=latin,latin-ext'
-        rel='stylesheet' type='text/css'>
-  <link href='http://fonts.googleapis.com/css?family=Abril+Fatface&amp;subset=latin,latin-ext' rel='stylesheet'
-        type='text/css'>
+  <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Roboto:400,100,300,700,900&amp;subset=latin,latin-ext'>
   <link rel="stylesheet" href="{{asset "css/normalize.css"}}">
   <link rel="stylesheet" href="{{asset "css/foundation.min.css"}}">
   <link rel="stylesheet" href="{{asset "css/font-awesome.min.css"}}">
-  <link rel="stylesheet" href="{{asset "css/semantic.min.css"}}">
-  <link rel="stylesheet" type="text/css" href="{{asset "css/jssocials.css"}}"/>
-  <link rel="stylesheet" type="text/css" href="{{asset "css/jssocials-theme-flat.css"}}"/>
+  <link rel="stylesheet" href="{{asset "css/semantic/custom.min.css"}}">
+  <link rel="stylesheet" href="{{asset "css/jssocials.css"}}"/>
+  <link rel="stylesheet" href="{{asset "css/jssocials-theme-flat.css"}}"/>
   <link rel="stylesheet" href="{{asset "css/slicknav.css"}}">
+  <link rel="stylesheet" href="{{asset "css/tomorrow-night-bright.css"}}"/>
   <link rel="stylesheet" href="{{asset "css/app.css"}}">
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-  <script type="text/javascript" src="{{asset "/js/vendor/readingTime.js"}}"></script>
-  <script language="JavaScript">
-    $(document).ready( function () {
-      $("a[href^='http']:not([href*='" + location.hostname + "'])").attr('target', '_blank');
-    })
-  </script>
-  {{! Syntax Hilighter}}
-  <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.2/styles/tomorrow-night-bright.min.css"/>
-  <script src="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.2/highlight.min.js"></script>
-  <script>hljs.initHighlightingOnLoad();</script>
   {{ghost_head}}
 </head>
 
@@ -98,16 +83,18 @@
 </footer>
 <a href="#top" id="back-to-top"><img src="{{asset "images/icons/backtop.png"}}" alt="Back to top"></a>
 
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 {{ghost_foot}}
-
+{{! Syntax Hilighter}}
+<script src="{{asset "js/vendor/highlight.pack.js"}}" async defer></script>
 {{! Menu for Small Screens }}
-<script type="text/javascript" src="{{asset "/js/vendor/jquery.slicknav.min.js"}}"></script>
-<script type="text/javascript" src="{{asset "/js/vendor/scrollReveal.min.js"}}"></script>
-<script type="text/javascript" src="{{asset "/js/vendor/scrollchaser.js"}}"></script>
-<script type="text/javascript" src="{{asset "/js/vendor/scrollspy.js"}}"></script>
+<script src="{{asset "/js/vendor/jquery.slicknav.min.js"}}" async defer></script>
+<script src="{{asset "/js/vendor/scrollReveal.min.js"}}"></script>
+<script src="{{asset "/js/vendor/scrollchaser.js"}}"></script>
+<script src="{{asset "/js/vendor/scrollspy.js"}}"></script>
 {{! Scripts Hooks }}
-<script type="text/javascript" src="{{asset "/js/semantic.min.js"}}"></script>
-<script type="text/javascript" src="{{asset "/js/vendor/jssocials.min.js"}}"></script>
-<script type="text/javascript" src="{{asset "/js/custom.js"}}"></script>
+<script src="{{asset "/js/vendor/readingTime.js"}}"></script>
+<script src="{{asset "/js/vendor/jssocials.min.js"}}"></script>
+<script src="{{asset "/js/custom.js"}}"></script>
 </body>
 </html>
