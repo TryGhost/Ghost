@@ -2,6 +2,10 @@ var knex = require('knex'),
     config = require('../../config'),
     knexInstance;
 
+// @TODO:
+// - if you require this file before config file was loaded,
+// - then this file is cached and you have no chance to connect to the db anymore
+// - bring dynamic into this file (db.connect())
 function configure(dbConfig) {
     var client = dbConfig.client,
         pg;

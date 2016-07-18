@@ -33,23 +33,21 @@ describe('Versioning', function () {
         });
     });
 
-    describe('getDefaultDatabaseVersion', function () {
+    describe('getNewestDatabaseVersion', function () {
         it('should return the correct version', function () {
             var currentVersion = require('../../server/data/schema').defaultSettings.core.databaseVersion.defaultValue;
             // This function has an internal cache, so we call it twice.
             // First, to check that it fetches the correct version from default-settings.json.
-            versioning.getDefaultDatabaseVersion().should.eql(currentVersion);
+            versioning.getNewestDatabaseVersion().should.eql(currentVersion);
             // Second, to check that it returns the same value from the cache.
-            versioning.getDefaultDatabaseVersion().should.eql(currentVersion);
+            versioning.getNewestDatabaseVersion().should.eql(currentVersion);
         });
     });
 
     describe('getDatabaseVersion', function () {
-        var errorSpy, knexStub, knexMock, queryMock;
+        var knexStub, knexMock, queryMock;
 
         beforeEach(function () {
-            errorSpy = sandbox.spy(errors, 'rejectError');
-
             queryMock = {
                 where: sandbox.stub().returnsThis(),
                 first: sandbox.stub()
@@ -77,8 +75,7 @@ describe('Versioning', function () {
                 done('Should throw an error if the settings table does not exist');
             }).catch(function (err) {
                 should.exist(err);
-                err.message.should.eql('Settings table does not exist');
-                errorSpy.calledOnce.should.be.true();
+                (err instanceof errors.DatabaseNotPopulated).should.eql(true);
 
                 knexStub.get.calledOnce.should.be.true();
                 knexMock.schema.hasTable.calledOnce.should.be.true();
@@ -98,7 +95,6 @@ describe('Versioning', function () {
             versioning.getDatabaseVersion().then(function (version) {
                 should.exist(version);
                 version.should.eql('001');
-                errorSpy.called.should.be.false();
 
                 knexStub.get.calledTwice.should.be.true();
                 knexMock.schema.hasTable.calledOnce.should.be.true();
@@ -120,8 +116,7 @@ describe('Versioning', function () {
                 done('Should throw an error if version does not exist');
             }).catch(function (err) {
                 should.exist(err);
-                err.message.should.eql('Database version is not recognized');
-                errorSpy.calledOnce.should.be.true();
+                (err instanceof errors.DatabaseVersion).should.eql(true);
 
                 knexStub.get.calledTwice.should.be.true();
                 knexMock.schema.hasTable.calledOnce.should.be.true();
@@ -143,8 +138,7 @@ describe('Versioning', function () {
                 done('Should throw an error if version is not a number');
             }).catch(function (err) {
                 should.exist(err);
-                err.message.should.eql('Database version is not recognized');
-                errorSpy.calledOnce.should.be.true();
+                (err instanceof errors.DatabaseVersion).should.eql(true);
 
                 knexStub.get.calledTwice.should.be.true();
                 knexMock.schema.hasTable.calledOnce.should.be.true();
@@ -187,46 +181,34 @@ describe('Versioning', function () {
         });
     });
 
-    describe('showCannotMigrateError', function () {
-        it('should output a detailed error message', function () {
-            var errorStub = sandbox.stub(errors, 'logAndRejectError');
-            versioning.showCannotMigrateError();
-            errorStub.calledOnce.should.be.true();
-            errorStub.calledWith(
-                'Unable to upgrade from version 0.4.2 or earlier',
-                'Please upgrade to 0.7.1 first',
-                'See http://support.ghost.org/how-to-upgrade/ for instructions.'
-            ).should.be.true();
-        });
-    });
-
     describe('getUpdateTasks', function () {
-        it('`getUpdateFixturesTasks` returns empty array if no tasks are found', function () {
-            var logStub = sandbox.stub();
+        var logStub;
 
+        beforeEach(function () {
+            logStub = {
+                info: sandbox.stub(),
+                warn: sandbox.stub()
+            };
+        });
+
+        it('`getUpdateFixturesTasks` returns empty array if no tasks are found', function () {
             versioning.getUpdateFixturesTasks('999', logStub).should.eql([]);
-            logStub.calledOnce.should.be.true();
+            logStub.info.calledOnce.should.be.true();
         });
 
         it('`getUpdateFixturesTasks` returns 8 items for 004', function () {
-            var logStub = sandbox.stub();
-
             versioning.getUpdateFixturesTasks('004', logStub).should.be.an.Array().with.lengthOf(8);
-            logStub.calledOnce.should.be.false();
+            logStub.info.calledOnce.should.be.false();
         });
 
         it('`getUpdateDatabaseTasks` returns empty array if no tasks are found', function () {
-            var logStub = sandbox.stub();
-
             versioning.getUpdateDatabaseTasks('999', logStub).should.eql([]);
-            logStub.calledOnce.should.be.true();
+            logStub.info.calledOnce.should.be.true();
         });
 
         it('`getUpdateDatabaseTasks` returns 5 items for 004', function () {
-            var logStub = sandbox.stub();
-
             versioning.getUpdateDatabaseTasks('004', logStub).should.be.an.Array().with.lengthOf(5);
-            logStub.calledOnce.should.be.false();
+            logStub.info.calledOnce.should.be.false();
         });
     });
 });

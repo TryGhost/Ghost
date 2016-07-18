@@ -23,6 +23,9 @@ apiRoutes = function apiRoutes(middleware) {
     // alias delete with del
     router.del = router.delete;
 
+    // send 503 json response in case of maintenance
+    router.use(middleware.api.maintenance);
+
     // Check version matches for API requests, depends on res.locals.safeVersion being set
     // Therefore must come after themeHandler.ghostLocals, for now
     router.use(middleware.api.versionMatch);

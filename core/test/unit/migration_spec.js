@@ -1,26 +1,27 @@
-var should          = require('should'),
-    sinon           = require('sinon'),
-    rewire          = require('rewire'),
-    _               = require('lodash'),
-    Promise         = require('bluebird'),
-    crypto          = require('crypto'),
-    fs              = require('fs'),
+var should = require('should'),
+    sinon = require('sinon'),
+    rewire = require('rewire'),
+    _ = require('lodash'),
+    Promise = require('bluebird'),
+    crypto = require('crypto'),
+    fs = require('fs'),
 
-    // Stuff we are testing
-    db              = require('../../server/data/db'),
-    errors          = require('../../server/errors/'),
-    exporter        = require('../../server/data/export'),
-    schema          = require('../../server/data/schema'),
+// Stuff we are testing
+    db = require('../../server/data/db'),
+    errors = require('../../server/errors'),
+    models = require('../../server/models'),
+    exporter = require('../../server/data/export'),
+    schema = require('../../server/data/schema'),
 
-    migration       = rewire('../../server/data/migration'),
-    fixtures        = require('../../server/data/migration/fixtures'),
-    populate        = require('../../server/data/migration/populate'),
-    update          = rewire('../../server/data/migration/update'),
-    updates004      = require('../../server/data/migration/004'),
-    updates005      = require('../../server/data/migration/005'),
+    migration = rewire('../../server/data/migration'),
+    fixtures = require('../../server/data/migration/fixtures'),
+    populate = require('../../server/data/migration/populate'),
+    update = rewire('../../server/data/migration/update'),
+    updates004 = require('../../server/data/migration/004'),
+    updates005 = require('../../server/data/migration/005'),
 
     defaultSettings = schema.defaultSettings,
-    schemaTables    = Object.keys(schema.tables),
+    schemaTables = Object.keys(schema.tables),
 
     sandbox = sinon.sandbox.create();
 
@@ -59,10 +60,15 @@ describe('DB version integrity', function () {
 });
 
 describe('Migrations', function () {
-    var loggerStub;
+    var loggerStub, resetLogger;
+
+    before(function () {
+        models.init();
+    });
 
     afterEach(function () {
         sandbox.restore();
+        resetLogger();
     });
 
     beforeEach(function () {
@@ -70,6 +76,8 @@ describe('Migrations', function () {
             info: sandbox.stub(),
             warn: sandbox.stub()
         };
+
+        resetLogger = update.__set__('logger', loggerStub);
     });
 
     describe('Backup', function () {
@@ -161,35 +169,28 @@ describe('Migrations', function () {
     });
 
     describe('Populate', function () {
-        var createStub, fixturesStub, settingsStub;
+        var createStub, fixturesStub;
 
         beforeEach(function () {
             createStub = sandbox.stub(schema.commands, 'createTable').returns(new Promise.resolve());
             fixturesStub = sandbox.stub(fixtures, 'populate').returns(new Promise.resolve());
-            settingsStub = sandbox.stub(fixtures, 'ensureDefaultSettings').returns(new Promise.resolve());
         });
 
         it('should create all tables, and populate fixtures', function (done) {
-            populate(loggerStub).then(function (result) {
+            populate().then(function (result) {
                 should.not.exist(result);
 
                 createStub.called.should.be.true();
                 createStub.callCount.should.be.eql(schemaTables.length);
                 createStub.firstCall.calledWith(schemaTables[0]).should.be.true();
                 createStub.lastCall.calledWith(schemaTables[schemaTables.length - 1]).should.be.true();
-
                 fixturesStub.calledOnce.should.be.true();
-                settingsStub.calledOnce.should.be.true();
-
-                loggerStub.info.called.should.be.true();
-                loggerStub.warn.called.should.be.false();
-
                 done();
             }).catch(done);
         });
 
         it('should should only create tables, with tablesOnly setting', function (done) {
-            populate(loggerStub, true).then(function (result) {
+            populate({tablesOnly: true}).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Array().with.lengthOf(schemaTables.length);
 
@@ -197,13 +198,7 @@ describe('Migrations', function () {
                 createStub.callCount.should.be.eql(schemaTables.length);
                 createStub.firstCall.calledWith(schemaTables[0]).should.be.true();
                 createStub.lastCall.calledWith(schemaTables[schemaTables.length - 1]).should.be.true();
-
                 fixturesStub.called.should.be.false();
-                settingsStub.called.should.be.false();
-
-                loggerStub.info.called.should.be.true();
-                loggerStub.warn.called.should.be.false();
-
                 done();
             }).catch(done);
         });
@@ -211,71 +206,82 @@ describe('Migrations', function () {
 
     describe('Update', function () {
         describe('Update function', function () {
-            var reset, backupStub, settingsStub, fixturesStub, setDbStub, errorStub, versionsSpy, tasksSpy;
+            var resetBackup, backupStub, fixturesStub, setDbStub, versionsSpy, tasksSpy, transactionStub, transaction;
 
             beforeEach(function () {
+                transaction = {
+                    rollback: sandbox.stub(),
+                    commit: sandbox.stub()
+                };
+
                 // Stubs
                 backupStub = sandbox.stub().returns(new Promise.resolve());
-                settingsStub = sandbox.stub(fixtures, 'ensureDefaultSettings').returns(new Promise.resolve());
                 fixturesStub = sandbox.stub(fixtures, 'update').returns(new Promise.resolve());
                 setDbStub = sandbox.stub(schema.versioning, 'setDatabaseVersion').returns(new Promise.resolve());
-                errorStub = sandbox.stub(schema.versioning, 'showCannotMigrateError').returns(new Promise.resolve());
+
+                transactionStub = sandbox.stub(db.knex, 'transaction', function (transactionStart) {
+                    return new Promise(function () {
+                        transactionStart(transaction);
+                    });
+                });
+
                 // Spys
                 versionsSpy = sandbox.spy(schema.versioning, 'getMigrationVersions');
                 tasksSpy = sandbox.spy(schema.versioning, 'getUpdateDatabaseTasks');
 
                 // Internal overrides
-                reset = update.__set__('backup', backupStub);
+                resetBackup = update.__set__('backup', backupStub);
             });
 
             afterEach(function () {
-                reset();
+                resetBackup();
             });
 
             describe('Pre & post update process', function () {
-                var updateStub, updateReset;
+                var updateDatabaseSchemaStub, updateDatabaseSchemaReset;
 
                 beforeEach(function () {
                     // For these tests, stub out the actual update task
-                    updateStub = sandbox.stub().returns(new Promise.resolve());
-                    updateReset = update.__set__('updateDatabaseSchema', updateStub);
+                    updateDatabaseSchemaStub = sandbox.stub().returns(new Promise.resolve());
+                    updateDatabaseSchemaReset = update.__set__('updateDatabaseSchema', updateDatabaseSchemaStub);
                 });
 
                 afterEach(function () {
-                    updateReset();
+                    updateDatabaseSchemaReset();
                 });
 
                 it('should attempt to run the pre & post update tasks correctly', function (done) {
                     // Execute
-                    update('100', '102', loggerStub).then(function () {
-                        // Before the update, it does some tasks...
-                        // It should not show an error for these versions
-                        errorStub.called.should.be.false();
+                    update({fromVersion: '100', toVersion: '102'}).then(function () {
                         // getMigrationVersions should be called with the correct versions
                         versionsSpy.calledOnce.should.be.true();
                         versionsSpy.calledWith('100', '102').should.be.true();
+
                         // It should attempt to do a backup
                         backupStub.calledOnce.should.be.true();
 
                         // Now it's going to try to actually do the update...
-                        updateStub.calledOnce.should.be.true();
-                        updateStub.calledWith(['101', '102'], loggerStub).should.be.true();
+                        updateDatabaseSchemaStub.calledTwice.should.be.true();
+                        updateDatabaseSchemaStub.firstCall.calledWith([], loggerStub, {
+                            transacting: transaction,
+                            context: {internal: true}
+                        }).should.be.true();
+                        updateDatabaseSchemaStub.secondCall.calledWith([], loggerStub, {
+                            transacting: transaction,
+                            context: {internal: true}
+                        }).should.be.true();
 
-                        // And now there are some final tasks to wrap up...
-                        // First, the ensure default settings task
-                        settingsStub.calledOnce.should.be.true();
                         // Then fixture updates
-                        fixturesStub.calledOnce.should.be.true();
+                        fixturesStub.calledTwice.should.be.true();
                         // And finally, set the new DB version
-                        setDbStub.calledOnce.should.be.true();
+                        setDbStub.calledTwice.should.be.true();
 
-                        // Because we stubbed everything, loggerStub didn't get called
-                        loggerStub.info.called.should.be.false();
-                        loggerStub.warn.called.should.be.false();
+                        transaction.commit.called.should.eql(true);
+                        transaction.rollback.called.should.eql(false);
 
                         // Just to be sure, lets assert the call order
                         sinon.assert.callOrder(
-                            versionsSpy, backupStub, updateStub, settingsStub, fixturesStub, setDbStub
+                            versionsSpy, backupStub, updateDatabaseSchemaStub, fixturesStub, setDbStub
                         );
 
                         done();
@@ -283,49 +289,111 @@ describe('Migrations', function () {
                 });
 
                 it('should throw error if versions are too old', function (done) {
-                    // Execute
-                    update('000', '002', loggerStub).then(function () {
-                        // It should show an error for these versions
-                        errorStub.called.should.be.true();
-
-                        // And so should not do the update...
-                        updateStub.calledOnce.should.be.false();
-
-                        // Because we stubbed everything, loggerStub didn't get called
-                        loggerStub.info.called.should.be.false();
-                        loggerStub.warn.called.should.be.false();
-
+                    update({fromVersion: '000', toVersion: '002'}).then(function () {
+                        done(new Error('expected database version too old error'));
+                    }).catch(function (err) {
+                        updateDatabaseSchemaStub.calledOnce.should.be.false();
+                        (err instanceof errors.DatabaseVersion).should.eql(true);
                         done();
-                    }).catch(done);
+                    });
                 });
 
-                it('should upgrade from minimum version, if FORCE_MIGRATION is set', function (done) {
-                    // Setup
-                    process.env.FORCE_MIGRATION = true;
+                it('should upgrade from minimum version, if force migration is set', function (done) {
+                    var migrateToDatabaseVersionStub = sandbox.stub().returns(new Promise.resolve()),
+                        migrateToDatabaseVersionReset = update.__set__('migrateToDatabaseVersion', migrateToDatabaseVersionStub);
 
-                    // Execute
-                    update('005', '006', loggerStub).then(function () {
-                        // It should not show an error for these versions
-                        errorStub.called.should.be.false();
-
+                    update({fromVersion: '005', toVersion: '006', forceMigration: true}).then(function () {
                         // getMigrationVersions should be called with the correct versions
                         versionsSpy.calledOnce.should.be.true();
                         versionsSpy.calledWith('003', '006').should.be.true();
                         versionsSpy.returned(['003', '004', '005', '006']).should.be.true();
 
                         // It should try to do the update
-                        updateStub.calledOnce.should.be.true();
-                        updateStub.calledWith(['004', '005', '006']).should.be.true();
+                        migrateToDatabaseVersionStub.callCount.should.eql(3);
+                        migrateToDatabaseVersionStub.firstCall.args[0].should.eql('004');
+                        migrateToDatabaseVersionStub.secondCall.args[0].should.eql('005');
+                        migrateToDatabaseVersionStub.thirdCall.args[0].should.eql('006');
 
-                        // Because we stubbed everything, loggerStub didn't get called
-                        loggerStub.info.called.should.be.false();
-                        loggerStub.warn.called.should.be.false();
+                        migrateToDatabaseVersionReset();
+                        done();
+                    }).catch(done);
+                });
 
-                        // Restore
-                        delete process.env.FORCE_MIGRATION;
+                it('should do an UPDATE if newer database version is higher', function (done) {
+                    var migrateToDatabaseVersionStub = sandbox.stub().returns(new Promise.resolve()),
+                        migrateToDatabaseVersionReset = update.__set__('migrateToDatabaseVersion', migrateToDatabaseVersionStub);
+
+                    update({fromVersion: '004', toVersion: '005'}).then(function () {
+                        versionsSpy.calledOnce.should.be.true();
+                        versionsSpy.calledWith('004', '005').should.be.true();
+                        versionsSpy.returned(['004', '005']).should.be.true();
+
+                        migrateToDatabaseVersionStub.callCount.should.eql(1);
+                        migrateToDatabaseVersionStub.firstCall.args[0].should.eql('005');
+
+                        migrateToDatabaseVersionReset();
 
                         done();
                     }).catch(done);
+                });
+
+                it('should do an UPDATE if default version is significantly higher', function (done) {
+                    var migrateToDatabaseVersionStub = sandbox.stub().returns(new Promise.resolve()),
+                        migrateToDatabaseVersionReset = update.__set__('migrateToDatabaseVersion', migrateToDatabaseVersionStub);
+
+                    update({fromVersion: '004', toVersion: '010'}).then(function () {
+                        versionsSpy.calledOnce.should.be.true();
+                        versionsSpy.calledWith('004', '010').should.be.true();
+                        versionsSpy.returned(['004', '005', '006', '007', '008', '009', '010']).should.be.true();
+
+                        migrateToDatabaseVersionStub.callCount.should.eql(6);
+                        migrateToDatabaseVersionStub.firstCall.args[0].should.eql('005');
+                        migrateToDatabaseVersionStub.lastCall.args[0].should.eql('010');
+
+                        migrateToDatabaseVersionReset();
+
+                        done();
+                    }).catch(done);
+                });
+
+                it('should just return if versions are the same', function (done) {
+                    var migrateToDatabaseVersionStub = sandbox.stub().returns(new Promise.resolve()),
+                        migrateToDatabaseVersionReset = update.__set__('migrateToDatabaseVersion', migrateToDatabaseVersionStub);
+
+                    update({fromVersion: '004', toVersion: '004'}).then(function () {
+                        versionsSpy.calledOnce.should.be.false();
+                        migrateToDatabaseVersionStub.callCount.should.eql(0);
+                        migrateToDatabaseVersionReset();
+
+                        done();
+                    }).catch(done);
+                });
+
+                it('should do an UPDATE even if versions are the same, when FORCE_MIGRATION set', function (done) {
+                    var migrateToDatabaseVersionStub = sandbox.stub().returns(new Promise.resolve()),
+                        migrateToDatabaseVersionReset = update.__set__('migrateToDatabaseVersion', migrateToDatabaseVersionStub);
+
+                    update({fromVersion: '004', toVersion: '004', forceMigration: true}).then(function () {
+                        versionsSpy.calledOnce.should.be.true();
+                        versionsSpy.calledWith('003', '004').should.be.true();
+                        versionsSpy.returned(['003', '004']).should.be.true();
+
+                        migrateToDatabaseVersionStub.callCount.should.eql(1);
+                        migrateToDatabaseVersionStub.firstCall.args[0].should.eql('004');
+                        migrateToDatabaseVersionReset();
+
+                        done();
+                    }).catch(done);
+                });
+
+                it('should throw an error if the database version is higher than the default', function (done) {
+                    update({fromVersion: '010', toVersion: '004'}).then(function () {
+                        done(new Error('expected database version too old error'));
+                    }).catch(function (err) {
+                        updateDatabaseSchemaStub.calledOnce.should.be.false();
+                        (err instanceof errors.DatabaseVersion).should.eql(true);
+                        done();
+                    });
                 });
             });
 
@@ -336,38 +404,38 @@ describe('Migrations', function () {
                     var sequenceStub = sandbox.stub(),
                         sequenceReset = update.__set__('sequence', sequenceStub);
 
-                    // The first time we call sequence, it should be to execute a top level version, e.g 004
-                    // yieldsTo('0') means this stub will execute the function at index 0 of the array passed as the
-                    // first argument. In short the `runVersionTasks` function gets executed, and sequence gets called
-                    // again with the array of tasks to execute for 004, which is what we want to check
-                    sequenceStub.onFirstCall().yieldsTo('0').returns(Promise.resolve([]));
+                    sequenceStub.returns(Promise.resolve([]));
 
                     // Execute
-                    update('003', '004', loggerStub).then(function () {
-                        errorStub.called.should.be.false();
-                        loggerStub.info.calledTwice.should.be.true();
-
+                    update({fromVersion: '003', toVersion: '004'}).then(function () {
                         versionsSpy.calledOnce.should.be.true();
                         versionsSpy.calledWith('003', '004').should.be.true();
+
+                        // returns the same, but get sliced afterwards!
                         versionsSpy.returned(['003', '004']).should.be.true();
 
                         tasksSpy.calledOnce.should.be.true();
                         tasksSpy.calledWith('004', loggerStub).should.be.true();
                         tasksSpy.firstCall.returnValue.should.be.an.Array().with.lengthOf(5);
 
-                        sequenceStub.calledTwice.should.be.true();
+                        transaction.commit.called.should.eql(true);
+                        transaction.rollback.called.should.eql(false);
 
-                        sequenceStub.firstCall.calledWith(sinon.match.array, loggerStub).should.be.true();
-                        sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(1);
-                        sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'runVersionTasks');
+                        sequenceStub.calledOnce.should.be.true();
 
-                        sequenceStub.secondCall.calledWith(sinon.match.array, loggerStub).should.be.true();
-                        sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(5);
-                        sequenceStub.secondCall.args[0][0].should.be.a.Function().with.property('name', 'addTourColumnToUsers');
-                        sequenceStub.secondCall.args[0][1].should.be.a.Function().with.property('name', 'addSortOrderColumnToPostsTags');
-                        sequenceStub.secondCall.args[0][2].should.be.a.Function().with.property('name', 'addManyColumnsToClients');
-                        sequenceStub.secondCall.args[0][3].should.be.a.Function().with.property('name', 'addClientTrustedDomainsTable');
-                        sequenceStub.secondCall.args[0][4].should.be.a.Function().with.property('name', 'dropUniqueOnClientsSecret');
+                        sequenceStub.firstCall.calledWith(sinon.match.array, {
+                            transacting: transaction,
+                            context: {
+                                internal: true
+                            }
+                        }, loggerStub).should.be.true();
+
+                        sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(5);
+                        sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'addTourColumnToUsers');
+                        sequenceStub.firstCall.args[0][1].should.be.a.Function().with.property('name', 'addSortOrderColumnToPostsTags');
+                        sequenceStub.firstCall.args[0][2].should.be.a.Function().with.property('name', 'addManyColumnsToClients');
+                        sequenceStub.firstCall.args[0][3].should.be.a.Function().with.property('name', 'addClientTrustedDomainsTable');
+                        sequenceStub.firstCall.args[0][4].should.be.a.Function().with.property('name', 'dropUniqueOnClientsSecret');
 
                         // Reset sequence
                         sequenceReset();
@@ -386,7 +454,11 @@ describe('Migrations', function () {
                             hasColumn: sandbox.stub()
                         };
                         // this MUST use sinon, not sandbox, see sinonjs/sinon#781
-                        knexStub = sinon.stub(db, 'knex', {get: function () { return knexMock; }});
+                        knexStub = sinon.stub(db, 'knex', {
+                            get: function () {
+                                return knexMock;
+                            }
+                        });
 
                         addColumnStub = sandbox.stub(schema.commands, 'addColumn');
                         createTableStub = sandbox.stub(schema.commands, 'createTable');
@@ -411,19 +483,24 @@ describe('Migrations', function () {
                             knexMock.schema.hasTable.withArgs('users').returns(new Promise.resolve(false));
 
                             // Execute
-                            addTourColumn(loggerStub).then(function () {
-                                knexMock.schema.hasTable.calledOnce.should.be.true();
-                                knexMock.schema.hasTable.calledWith('users').should.be.true();
+                            addTourColumn({transacting: knexMock}, loggerStub)
+                                .then(function () {
+                                    done(new Error('expected table not found error'));
+                                })
+                                .catch(function (err) {
+                                    should.exist(err);
+                                    err.message.should.eql('Table does not exist!');
+                                    knexMock.schema.hasTable.calledOnce.should.be.true();
+                                    knexMock.schema.hasTable.calledWith('users').should.be.true();
 
-                                knexMock.schema.hasColumn.called.should.be.false();
+                                    knexMock.schema.hasColumn.called.should.be.false();
 
-                                addColumnStub.called.should.be.false();
+                                    addColumnStub.called.should.be.false();
 
-                                loggerStub.info.called.should.be.false();
-                                loggerStub.warn.calledOnce.should.be.true();
-
-                                done();
-                            }).catch(done);
+                                    loggerStub.info.called.should.be.false();
+                                    loggerStub.warn.calledOnce.should.be.false();
+                                    done();
+                                });
                         });
 
                         it('does not try to add a new column if the column already exists', function (done) {
@@ -432,7 +509,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('users', 'tour').returns(new Promise.resolve(true));
 
                             // Execute
-                            addTourColumn(loggerStub).then(function () {
+                            addTourColumn({transacting: knexMock}, loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('users').should.be.true();
 
@@ -454,7 +531,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('users', 'tour').returns(new Promise.resolve(false));
 
                             // Execute
-                            addTourColumn(loggerStub).then(function () {
+                            addTourColumn({transacting: knexMock}, loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('users').should.be.true();
 
@@ -480,19 +557,24 @@ describe('Migrations', function () {
                             knexMock.schema.hasTable.withArgs('posts_tags').returns(new Promise.resolve(false));
 
                             // Execute
-                            addSortOrderColumn(loggerStub).then(function () {
-                                knexMock.schema.hasTable.calledOnce.should.be.true();
-                                knexMock.schema.hasTable.calledWith('posts_tags').should.be.true();
+                            addSortOrderColumn({transacting: knexMock}, loggerStub)
+                                .then(function () {
+                                    done(new Error('expected table not found error'));
+                                })
+                                .catch(function (err) {
+                                    should.exist(err);
+                                    err.message.should.eql('Table does not exist!');
+                                    knexMock.schema.hasTable.calledOnce.should.be.true();
+                                    knexMock.schema.hasTable.calledWith('posts_tags').should.be.true();
 
-                                knexMock.schema.hasColumn.called.should.be.false();
+                                    knexMock.schema.hasColumn.called.should.be.false();
 
-                                addColumnStub.called.should.be.false();
+                                    addColumnStub.called.should.be.false();
 
-                                loggerStub.info.called.should.be.false();
-                                loggerStub.warn.calledOnce.should.be.true();
-
-                                done();
-                            }).catch(done);
+                                    loggerStub.info.called.should.be.false();
+                                    loggerStub.warn.calledOnce.should.be.false();
+                                    done();
+                                });
                         });
 
                         it('does not try to add a new column if the column already exists', function (done) {
@@ -501,7 +583,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('posts_tags', 'sort_order').returns(new Promise.resolve(true));
 
                             // Execute
-                            addSortOrderColumn(loggerStub).then(function () {
+                            addSortOrderColumn({transacting: knexMock}, loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('posts_tags').should.be.true();
 
@@ -523,7 +605,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('posts_tags', 'sort_order').returns(new Promise.resolve(false));
 
                             // Execute
-                            addSortOrderColumn(loggerStub).then(function () {
+                            addSortOrderColumn({transacting: knexMock}, loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('posts_tags').should.be.true();
 
@@ -549,19 +631,24 @@ describe('Migrations', function () {
                             knexMock.schema.hasTable.withArgs('clients').returns(new Promise.resolve(false));
 
                             // Execute
-                            addClientColumns(loggerStub).then(function () {
-                                knexMock.schema.hasTable.calledOnce.should.be.true();
-                                knexMock.schema.hasTable.calledWith('clients').should.be.true();
+                            addClientColumns({transacting: knexMock}, loggerStub)
+                                .then(function () {
+                                    done(new Error('expected table not found error'));
+                                })
+                                .catch(function (err) {
+                                    should.exist(err);
+                                    err.message.should.eql('Table does not exist!');
+                                    knexMock.schema.hasTable.calledOnce.should.be.true();
+                                    knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
-                                knexMock.schema.hasColumn.called.should.be.false();
+                                    knexMock.schema.hasColumn.called.should.be.false();
 
-                                addColumnStub.called.should.be.false();
+                                    addColumnStub.called.should.be.false();
 
-                                loggerStub.info.called.should.be.false();
-                                loggerStub.warn.calledOnce.should.be.true();
-
-                                done();
-                            }).catch(done);
+                                    loggerStub.info.called.should.be.false();
+                                    loggerStub.warn.calledOnce.should.be.false();
+                                    done();
+                                });
                         });
 
                         it('does not try to add new columns if the columns already exist', function (done) {
@@ -574,7 +661,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('clients', 'description').returns(new Promise.resolve(true));
 
                             // Execute
-                            addClientColumns(loggerStub).then(function () {
+                            addClientColumns({transacting: knexMock}, loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
@@ -604,7 +691,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('clients', 'description').returns(new Promise.resolve(false));
 
                             // Execute
-                            addClientColumns(loggerStub).then(function () {
+                            addClientColumns({transacting: knexMock}, loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
@@ -639,7 +726,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('clients', 'description').returns(new Promise.resolve(true));
 
                             // Execute
-                            addClientColumns(loggerStub).then(function () {
+                            addClientColumns({transacting: knexMock}, loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
@@ -670,17 +757,20 @@ describe('Migrations', function () {
                             knexMock.schema.hasTable.withArgs('client_trusted_domains').returns(new Promise.resolve(true));
 
                             // Execute
-                            addTrustedDomains(loggerStub).then(function () {
-                                knexMock.schema.hasTable.calledOnce.should.be.true();
-                                knexMock.schema.hasTable.calledWith('client_trusted_domains').should.be.true();
+                            addTrustedDomains({transacting: knexMock}, loggerStub)
+                                .then(function () {
+                                    knexMock.schema.hasTable.calledOnce.should.be.true();
+                                    knexMock.schema.hasTable.calledWith('client_trusted_domains').should.be.true();
 
-                                createTableStub.called.should.be.false();
+                                    knexMock.schema.hasColumn.called.should.be.false();
 
-                                loggerStub.info.called.should.be.false();
-                                loggerStub.warn.calledOnce.should.be.true();
+                                    addColumnStub.called.should.be.false();
 
-                                done();
-                            }).catch(done);
+                                    loggerStub.info.called.should.be.false();
+                                    loggerStub.warn.calledOnce.should.be.true();
+                                    done();
+                                })
+                                .catch(done);
                         });
 
                         it('tries to add a new table if the table does not exist', function (done) {
@@ -688,7 +778,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasTable.withArgs('client_trusted_domains').returns(new Promise.resolve(false));
 
                             // Execute
-                            addTrustedDomains(loggerStub).then(function () {
+                            addTrustedDomains({transacting: knexMock}, loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('client_trusted_domains').should.be.true();
 
@@ -714,19 +804,24 @@ describe('Migrations', function () {
                             knexMock.schema.hasTable.withArgs('clients').returns(new Promise.resolve(false));
 
                             // Execute
-                            dropUnique(loggerStub).then(function () {
-                                knexMock.schema.hasTable.calledOnce.should.be.true();
-                                knexMock.schema.hasTable.calledWith('clients').should.be.true();
+                            dropUnique({transacting: knexMock}, loggerStub)
+                                .then(function () {
+                                    done(new Error('expected table not found error'));
+                                })
+                                .catch(function (err) {
+                                    should.exist(err);
+                                    err.message.should.eql('Table does not exist!');
+                                    knexMock.schema.hasTable.calledOnce.should.be.true();
+                                    knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
-                                getIndexesStub.called.should.be.false();
+                                    knexMock.schema.hasColumn.called.should.be.false();
 
-                                dropUniqueStub.called.should.be.false();
+                                    addColumnStub.called.should.be.false();
 
-                                loggerStub.info.called.should.be.false();
-                                loggerStub.warn.calledOnce.should.be.true();
-
-                                done();
-                            }).catch(done);
+                                    loggerStub.info.called.should.be.false();
+                                    loggerStub.warn.calledOnce.should.be.false();
+                                    done();
+                                });
                         });
 
                         it('does not try to drop unique if the index does not exist', function (done) {
@@ -738,7 +833,7 @@ describe('Migrations', function () {
                             );
 
                             // Execute
-                            dropUnique(loggerStub).then(function () {
+                            dropUnique({transacting: knexMock}, loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
@@ -763,7 +858,7 @@ describe('Migrations', function () {
                             );
 
                             // Execute
-                            dropUnique(loggerStub).then(function () {
+                            dropUnique({transacting: knexMock}, loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
@@ -790,17 +885,10 @@ describe('Migrations', function () {
                     var sequenceStub = sandbox.stub(),
                         sequenceReset = update.__set__('sequence', sequenceStub);
 
-                    // The first time we call sequence, it should be to execute a top level version, e.g 005
-                    // yieldsTo('0') means this stub will execute the function at index 0 of the array passed as the
-                    // first argument. In short the `runVersionTasks` function gets executed, and sequence gets called
-                    // again with the array of tasks to execute for 005, which is what we want to check
-                    sequenceStub.onFirstCall().yieldsTo('0').returns(Promise.resolve([]));
+                    sequenceStub.returns(Promise.resolve([]));
 
                     // Execute
-                    update('004', '005', loggerStub).then(function () {
-                        errorStub.called.should.be.false();
-                        loggerStub.info.calledTwice.should.be.true();
-
+                    update({fromVersion: '004', toVersion: '005'}).then(function () {
                         versionsSpy.calledOnce.should.be.true();
                         versionsSpy.calledWith('004', '005').should.be.true();
                         versionsSpy.returned(['004', '005']).should.be.true();
@@ -809,19 +897,21 @@ describe('Migrations', function () {
                         tasksSpy.calledWith('005', loggerStub).should.be.true();
                         tasksSpy.firstCall.returnValue.should.be.an.Array().with.lengthOf(5);
 
-                        sequenceStub.calledTwice.should.be.true();
+                        sequenceStub.calledOnce.should.be.true();
 
-                        sequenceStub.firstCall.calledWith(sinon.match.array, loggerStub).should.be.true();
-                        sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(1);
-                        sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'runVersionTasks');
+                        sequenceStub.firstCall.calledWith(sinon.match.array, {
+                            transacting: transaction,
+                            context: {
+                                internal: true
+                            }
+                        }, loggerStub).should.be.true();
 
-                        sequenceStub.secondCall.calledWith(sinon.match.array, loggerStub).should.be.true();
-                        sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(5);
-                        sequenceStub.secondCall.args[0][0].should.be.a.Function().with.property('name', 'dropHiddenColumnFromTags');
-                        sequenceStub.secondCall.args[0][1].should.be.a.Function().with.property('name', 'addVisibilityColumnToKeyTables');
-                        sequenceStub.secondCall.args[0][2].should.be.a.Function().with.property('name', 'addMobiledocColumnToPosts');
-                        sequenceStub.secondCall.args[0][3].should.be.a.Function().with.property('name', 'addSocialMediaColumnsToUsers');
-                        sequenceStub.secondCall.args[0][4].should.be.a.Function().with.property('name', 'addSubscribersTable');
+                        sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(5);
+                        sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'dropHiddenColumnFromTags');
+                        sequenceStub.firstCall.args[0][1].should.be.a.Function().with.property('name', 'addVisibilityColumnToKeyTables');
+                        sequenceStub.firstCall.args[0][2].should.be.a.Function().with.property('name', 'addMobiledocColumnToPosts');
+                        sequenceStub.firstCall.args[0][3].should.be.a.Function().with.property('name', 'addSocialMediaColumnsToUsers');
+                        sequenceStub.firstCall.args[0][4].should.be.a.Function().with.property('name', 'addSubscribersTable');
 
                         // Reset sequence
                         sequenceReset();
@@ -840,7 +930,11 @@ describe('Migrations', function () {
                             hasColumn: sandbox.stub()
                         };
                         // this MUST use sinon, not sandbox, see sinonjs/sinon#781
-                        knexStub = sinon.stub(db, 'knex', {get: function () { return knexMock; }});
+                        knexStub = sinon.stub(db, 'knex', {
+                            get: function () {
+                                return knexMock;
+                            }
+                        });
 
                         dropColumnStub = sandbox.stub(schema.commands, 'dropColumn');
                         addColumnStub = sandbox.stub(schema.commands, 'addColumn');
@@ -864,19 +958,24 @@ describe('Migrations', function () {
                             knexMock.schema.hasTable.withArgs('tags').returns(Promise.resolve(false));
 
                             // Execute
-                            dropHiddenColumn(loggerStub).then(function () {
-                                knexMock.schema.hasTable.calledOnce.should.be.true();
-                                knexMock.schema.hasTable.calledWith('tags').should.be.true();
+                            dropHiddenColumn({transacting: knexMock}, loggerStub)
+                                .then(function () {
+                                    done(new Error('expected table not found error'));
+                                })
+                                .catch(function (err) {
+                                    should.exist(err);
+                                    err.message.should.eql('Table does not exist!');
+                                    knexMock.schema.hasTable.calledOnce.should.be.true();
+                                    knexMock.schema.hasTable.calledWith('tags').should.be.true();
 
-                                knexMock.schema.hasColumn.called.should.be.false();
+                                    knexMock.schema.hasColumn.called.should.be.false();
 
-                                dropColumnStub.called.should.be.false();
+                                    addColumnStub.called.should.be.false();
 
-                                loggerStub.info.called.should.be.false();
-                                loggerStub.warn.calledOnce.should.be.true();
-
-                                done();
-                            }).catch(done);
+                                    loggerStub.info.called.should.be.false();
+                                    loggerStub.warn.calledOnce.should.be.false();
+                                    done();
+                                });
                         });
 
                         it('does not try to drop column if the column does not exist', function (done) {
@@ -885,7 +984,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('tags', 'hidden').returns(Promise.resolve(false));
 
                             // Execute
-                            dropHiddenColumn(loggerStub).then(function () {
+                            dropHiddenColumn({transacting: knexMock}, loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('tags').should.be.true();
 
@@ -907,7 +1006,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('tags', 'hidden').returns(Promise.resolve(true));
 
                             // Execute
-                            dropHiddenColumn(loggerStub).then(function () {
+                            dropHiddenColumn({transacting: knexMock}, loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('tags').should.be.true();
 
@@ -935,21 +1034,24 @@ describe('Migrations', function () {
                             knexMock.schema.hasTable.withArgs('users').returns(Promise.resolve(false));
 
                             // Execute
-                            addVisibilityColumn(loggerStub).then(function () {
-                                knexMock.schema.hasTable.calledThrice.should.be.true();
-                                knexMock.schema.hasTable.calledWith('posts').should.be.true();
-                                knexMock.schema.hasTable.calledWith('tags').should.be.true();
-                                knexMock.schema.hasTable.calledWith('users').should.be.true();
+                            addVisibilityColumn({transacting: knexMock}, loggerStub)
+                                .then(function () {
+                                    done(new Error('expected table not found error'));
+                                })
+                                .catch(function (err) {
+                                    should.exist(err);
+                                    err.message.should.eql('Table does not exist!');
+                                    knexMock.schema.hasTable.calledOnce.should.be.true();
+                                    knexMock.schema.hasTable.firstCall.calledWith('posts').should.be.true();
 
-                                knexMock.schema.hasColumn.called.should.be.false();
+                                    knexMock.schema.hasColumn.called.should.be.false();
 
-                                addColumnStub.called.should.be.false();
+                                    addColumnStub.called.should.be.false();
 
-                                loggerStub.info.called.should.be.false();
-                                loggerStub.warn.calledThrice.should.be.true();
-
-                                done();
-                            }).catch(done);
+                                    loggerStub.info.called.should.be.false();
+                                    loggerStub.warn.calledOnce.should.be.false();
+                                    done();
+                                });
                         });
 
                         it('does not try to add new columns if the columns already exist', function (done) {
@@ -963,7 +1065,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('users', 'visibility').returns(Promise.resolve(true));
 
                             // Execute
-                            addVisibilityColumn(loggerStub).then(function () {
+                            addVisibilityColumn({transacting: knexMock}, loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledThrice.should.be.true();
                                 knexMock.schema.hasTable.calledWith('posts').should.be.true();
                                 knexMock.schema.hasTable.calledWith('tags').should.be.true();
@@ -994,7 +1096,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('users', 'visibility').returns(Promise.resolve(false));
 
                             // Execute
-                            addVisibilityColumn(loggerStub).then(function () {
+                            addVisibilityColumn({transacting: knexMock}, loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledThrice.should.be.true();
                                 knexMock.schema.hasTable.calledWith('posts').should.be.true();
                                 knexMock.schema.hasTable.calledWith('tags').should.be.true();
@@ -1027,7 +1129,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('tags', 'visibility').returns(Promise.resolve(true));
                             knexMock.schema.hasColumn.withArgs('users', 'visibility').returns(Promise.resolve(false));
                             // Execute
-                            addVisibilityColumn(loggerStub).then(function () {
+                            addVisibilityColumn({transacting: knexMock}, loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledThrice.should.be.true();
                                 knexMock.schema.hasTable.calledWith('posts').should.be.true();
                                 knexMock.schema.hasTable.calledWith('tags').should.be.true();
@@ -1059,19 +1161,24 @@ describe('Migrations', function () {
                             knexMock.schema.hasTable.withArgs('posts').returns(Promise.resolve(false));
 
                             // Execute
-                            addMobiledocColumn(loggerStub).then(function () {
-                                knexMock.schema.hasTable.calledOnce.should.be.true();
-                                knexMock.schema.hasTable.calledWith('posts').should.be.true();
+                            addMobiledocColumn({transacting: knexMock}, loggerStub)
+                                .then(function () {
+                                    done(new Error('expected table not found error'));
+                                })
+                                .catch(function (err) {
+                                    should.exist(err);
+                                    err.message.should.eql('Table does not exist!');
+                                    knexMock.schema.hasTable.calledOnce.should.be.true();
+                                    knexMock.schema.hasTable.firstCall.calledWith('posts').should.be.true();
 
-                                knexMock.schema.hasColumn.called.should.be.false();
+                                    knexMock.schema.hasColumn.called.should.be.false();
 
-                                addColumnStub.called.should.be.false();
+                                    addColumnStub.called.should.be.false();
 
-                                loggerStub.info.called.should.be.false();
-                                loggerStub.warn.calledOnce.should.be.true();
-
-                                done();
-                            }).catch(done);
+                                    loggerStub.info.called.should.be.false();
+                                    loggerStub.warn.calledOnce.should.be.false();
+                                    done();
+                                });
                         });
 
                         it('does not try to add a new column if the column already exists', function (done) {
@@ -1080,7 +1187,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('posts', 'mobiledoc').returns(Promise.resolve(true));
 
                             // Execute
-                            addMobiledocColumn(loggerStub).then(function () {
+                            addMobiledocColumn({transacting: knexMock}, loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('posts').should.be.true();
 
@@ -1102,7 +1209,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('posts', 'mobiledoc').returns(Promise.resolve(false));
 
                             // Execute
-                            addMobiledocColumn(loggerStub).then(function () {
+                            addMobiledocColumn({transacting: knexMock}, loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('posts').should.be.true();
 
@@ -1128,19 +1235,24 @@ describe('Migrations', function () {
                             knexMock.schema.hasTable.withArgs('users').returns(Promise.resolve(false));
 
                             // Execute
-                            addSocialMediaColumns(loggerStub).then(function () {
-                                knexMock.schema.hasTable.calledOnce.should.be.true();
-                                knexMock.schema.hasTable.calledWith('users').should.be.true();
+                            addSocialMediaColumns({transacting: knexMock}, loggerStub)
+                                .then(function () {
+                                    done(new Error('expected table not found error'));
+                                })
+                                .catch(function (err) {
+                                    should.exist(err);
+                                    err.message.should.eql('Table does not exist!');
+                                    knexMock.schema.hasTable.calledOnce.should.be.true();
+                                    knexMock.schema.hasTable.firstCall.calledWith('users').should.be.true();
 
-                                knexMock.schema.hasColumn.called.should.be.false();
+                                    knexMock.schema.hasColumn.called.should.be.false();
 
-                                addColumnStub.called.should.be.false();
+                                    addColumnStub.called.should.be.false();
 
-                                loggerStub.info.called.should.be.false();
-                                loggerStub.warn.calledOnce.should.be.true();
-
-                                done();
-                            }).catch(done);
+                                    loggerStub.info.called.should.be.false();
+                                    loggerStub.warn.calledOnce.should.be.false();
+                                    done();
+                                });
                         });
 
                         it('does not try to add new columns if the columns already exist', function (done) {
@@ -1150,7 +1262,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('users', 'twitter').returns(Promise.resolve(true));
 
                             // Execute
-                            addSocialMediaColumns(loggerStub).then(function () {
+                            addSocialMediaColumns({transacting: knexMock}, loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('users').should.be.true();
 
@@ -1174,7 +1286,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('users', 'twitter').returns(Promise.resolve(false));
 
                             // Execute
-                            addSocialMediaColumns(loggerStub).then(function () {
+                            addSocialMediaColumns({transacting: knexMock}, loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('users').should.be.true();
 
@@ -1200,7 +1312,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('users', 'twitter').returns(Promise.resolve(true));
 
                             // Execute
-                            addSocialMediaColumns(loggerStub).then(function () {
+                            addSocialMediaColumns({transacting: knexMock}, loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('users').should.be.true();
 
@@ -1228,7 +1340,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasTable.withArgs('subscribers').returns(new Promise.resolve(true));
 
                             // Execute
-                            addSubscribers(loggerStub).then(function () {
+                            addSubscribers({transacting: knexMock}, loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('subscribers').should.be.true();
 
@@ -1246,7 +1358,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasTable.withArgs('subscribers').returns(new Promise.resolve(false));
 
                             // Execute
-                            addSubscribers(loggerStub).then(function () {
+                            addSubscribers({transacting: knexMock}, loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('subscribers').should.be.true();
 
@@ -1265,18 +1377,10 @@ describe('Migrations', function () {
         });
 
         describe('Update Database Schema', function () {
-            var updateDatabaseSchema = update.__get__('updateDatabaseSchema'),
-                getVersionTasksStub;
-
-            beforeEach(function () {
-                getVersionTasksStub = sandbox.stub(schema.versioning, 'getUpdateDatabaseTasks');
-            });
+            var updateDatabaseSchema = update.__get__('updateDatabaseSchema');
 
             it('should not do anything if there are no tasks', function (done) {
-                getVersionTasksStub.returns([]);
-
-                updateDatabaseSchema(['001'], loggerStub).then(function () {
-                    getVersionTasksStub.calledOnce.should.be.true();
+                updateDatabaseSchema([], {}, loggerStub).then(function () {
                     loggerStub.info.called.should.be.false();
                     loggerStub.warn.called.should.be.false();
                     done();
@@ -1287,240 +1391,14 @@ describe('Migrations', function () {
                 var task1Stub = sandbox.stub().returns(new Promise.resolve()),
                     task2Stub = sandbox.stub().returns(new Promise.resolve());
 
-                getVersionTasksStub.returns([task1Stub, task2Stub]);
-
-                updateDatabaseSchema(['001'], loggerStub).then(function () {
-                    getVersionTasksStub.calledOnce.should.be.true();
+                updateDatabaseSchema([task1Stub, task2Stub], loggerStub).then(function () {
                     task1Stub.calledOnce.should.be.true();
                     task2Stub.calledOnce.should.be.true();
-                    loggerStub.info.calledTwice.should.be.true();
-
-                    sinon.assert.callOrder(getVersionTasksStub, loggerStub.info, loggerStub.info,  task1Stub, task2Stub);
+                    sinon.assert.callOrder(task1Stub, task2Stub);
 
                     done();
                 }).catch(done);
             });
-        });
-    });
-
-    describe('Init', function () {
-        var defaultVersionStub, databaseVersionStub, errorStub, updateStub, populateStub,
-            resetLog, resetUpdate, resetPopulate;
-
-        beforeEach(function () {
-            defaultVersionStub = sandbox.stub(schema.versioning, 'getDefaultDatabaseVersion');
-            databaseVersionStub = sandbox.stub(schema.versioning, 'getDatabaseVersion');
-            errorStub = sandbox.stub(errors, 'logErrorAndExit');
-            updateStub = sandbox.stub();
-            populateStub = sandbox.stub();
-
-            resetLog = migration.__set__('logger', loggerStub);
-            resetUpdate = migration.__set__('update', updateStub);
-            resetPopulate = migration.__set__('populate', populateStub);
-        });
-
-        afterEach(function () {
-            resetLog();
-            resetUpdate();
-            resetPopulate();
-        });
-
-        it('should do an UPDATE if default version is higher', function (done) {
-            // Setup
-            defaultVersionStub.returns('005');
-            databaseVersionStub.returns(new Promise.resolve('004'));
-
-            // Execute
-            migration.init().then(function () {
-                defaultVersionStub.calledOnce.should.be.true();
-                databaseVersionStub.calledOnce.should.be.true();
-                loggerStub.info.calledOnce.should.be.true();
-                loggerStub.warn.called.should.be.false();
-
-                updateStub.calledOnce.should.be.true();
-                updateStub.calledWith('004', '005', loggerStub).should.be.true();
-
-                errorStub.called.should.be.false();
-                populateStub.called.should.be.false();
-
-                done();
-            }).catch(done);
-        });
-
-        it('should do an UPDATE if default version is significantly higher', function (done) {
-            // Setup
-            defaultVersionStub.returns('010');
-            databaseVersionStub.returns(new Promise.resolve('004'));
-
-            // Execute
-            migration.init().then(function () {
-                defaultVersionStub.calledOnce.should.be.true();
-                databaseVersionStub.calledOnce.should.be.true();
-                loggerStub.info.calledOnce.should.be.true();
-                loggerStub.warn.called.should.be.false();
-
-                updateStub.calledOnce.should.be.true();
-                updateStub.calledWith('004', '010', loggerStub).should.be.true();
-
-                errorStub.called.should.be.false();
-                populateStub.called.should.be.false();
-
-                done();
-            }).catch(done);
-        });
-
-        it('should just return if versions are the same', function (done) {
-            // Setup
-            defaultVersionStub.returns('004');
-            databaseVersionStub.returns(new Promise.resolve('004'));
-
-            // Execute
-            migration.init().then(function () {
-                defaultVersionStub.calledOnce.should.be.true();
-                databaseVersionStub.calledOnce.should.be.true();
-                loggerStub.info.calledOnce.should.be.true();
-                loggerStub.warn.called.should.be.false();
-
-                errorStub.called.should.be.false();
-                updateStub.called.should.be.false();
-                populateStub.called.should.be.false();
-
-                done();
-            }).catch(done);
-        });
-
-        it('should do an UPDATE even if versions are the same, when FORCE_MIGRATION set', function (done) {
-            // Setup
-            defaultVersionStub.returns('004');
-            databaseVersionStub.returns(new Promise.resolve('004'));
-            process.env.FORCE_MIGRATION = true;
-
-            // Execute
-            migration.init().then(function () {
-                defaultVersionStub.calledOnce.should.be.true();
-                databaseVersionStub.calledOnce.should.be.true();
-                loggerStub.info.calledOnce.should.be.true();
-                loggerStub.warn.called.should.be.false();
-
-                updateStub.calledOnce.should.be.true();
-                updateStub.calledWith('004', '004', loggerStub).should.be.true();
-
-                errorStub.called.should.be.false();
-                populateStub.called.should.be.false();
-
-                delete process.env.FORCE_MIGRATION;
-                done();
-            }).catch(done);
-        });
-
-        it('should do a POPULATE if settings table does not exist', function (done) {
-            // Setup
-            defaultVersionStub.returns('004');
-            databaseVersionStub.returns(new Promise.reject(new Error('Settings table does not exist')));
-
-            // Execute
-            migration.init().then(function () {
-                defaultVersionStub.calledOnce.should.be.true();
-                databaseVersionStub.calledOnce.should.be.true();
-                loggerStub.info.calledOnce.should.be.true();
-                loggerStub.warn.called.should.be.false();
-
-                populateStub.called.should.be.true();
-                populateStub.calledWith(loggerStub, false).should.be.true();
-
-                errorStub.called.should.be.false();
-                updateStub.called.should.be.false();
-
-                done();
-            }).catch(done);
-        });
-
-        it('should do a POPULATE with TABLES ONLY if settings table does not exist & tablesOnly is set', function (done) {
-            // Setup
-            defaultVersionStub.returns('004');
-            databaseVersionStub.returns(new Promise.reject(new Error('Settings table does not exist')));
-
-            // Execute
-            migration.init(true).then(function () {
-                defaultVersionStub.calledOnce.should.be.true();
-                databaseVersionStub.calledOnce.should.be.true();
-                loggerStub.info.calledOnce.should.be.true();
-                loggerStub.warn.called.should.be.false();
-
-                populateStub.called.should.be.true();
-                populateStub.calledWith(loggerStub, true).should.be.true();
-
-                errorStub.called.should.be.false();
-                updateStub.called.should.be.false();
-
-                done();
-            }).catch(done);
-        });
-
-        it('should throw an error if the database version is higher than the default', function (done) {
-            // Setup
-            defaultVersionStub.returns('004');
-            databaseVersionStub.returns(new Promise.resolve('010'));
-
-            // Execute
-            migration.init().then(function () {
-                defaultVersionStub.calledOnce.should.be.true();
-                databaseVersionStub.calledOnce.should.be.true();
-                loggerStub.info.called.should.be.false();
-                loggerStub.warn.called.should.be.false();
-                errorStub.calledOnce.should.be.true();
-
-                populateStub.called.should.be.false();
-                updateStub.called.should.be.false();
-
-                done();
-            }).catch(done);
-        });
-
-        it('should throw an error if the database version returns an error other than settings not existing', function (done) {
-            // Setup
-            defaultVersionStub.returns('004');
-            databaseVersionStub.returns(new Promise.reject(new Error('Something went wrong')));
-
-            // Execute
-            migration.init().then(function () {
-                databaseVersionStub.calledOnce.should.be.true();
-                loggerStub.info.called.should.be.false();
-                loggerStub.warn.called.should.be.false();
-                errorStub.calledOnce.should.be.true();
-
-                defaultVersionStub.calledOnce.should.be.false();
-                populateStub.called.should.be.false();
-                updateStub.called.should.be.false();
-
-                done();
-            }).catch(done);
-        });
-    });
-
-    describe('Logger', function () {
-        var logger, errorsInfoStub, errorsWarnStub;
-
-        beforeEach(function () {
-            logger = migration.__get__('logger');
-            errorsInfoStub = sandbox.stub(errors, 'logComponentInfo');
-            errorsWarnStub = sandbox.stub(errors, 'logComponentWarn');
-        });
-
-        it('should output an info message prefixed with "Migrations"', function () {
-            logger.info('Stuff');
-
-            errorsInfoStub.calledOnce.should.be.true();
-            errorsInfoStub.calledWith('Migrations', 'Stuff').should.be.true();
-            errorsWarnStub.called.should.be.false();
-        });
-
-        it('should output a warn message prefixed with "Skipped Migrations"', function () {
-            logger.warn('Stuff');
-
-            errorsWarnStub.calledOnce.should.be.true();
-            errorsWarnStub.calledWith('Skipping Migrations', 'Stuff').should.be.true();
-            errorsInfoStub.called.should.be.false();
         });
     });
 });

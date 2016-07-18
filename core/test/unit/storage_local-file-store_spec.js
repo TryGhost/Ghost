@@ -74,6 +74,15 @@ describe('Local File System Storage', function () {
         }).catch(done);
     });
 
+    it('should allow "@" symbol to image for Apple hi-res (retina) modifier', function (done) {
+        image.name = 'photo@2x.jpg';
+        localFileStore.save(image).then(function (url) {
+            url.should.equal('/content/images/2013/09/photo@2x.jpg');
+
+            done();
+        }).catch(done);
+    });
+
     it('should send correct path to image when date is in Jan 2014', function (done) {
         fakeDate(1, 2014);
 

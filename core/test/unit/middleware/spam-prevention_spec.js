@@ -1,5 +1,6 @@
 var should      = require('should'),
     sinon       = require('sinon'),
+    rewire      = require('rewire'),
     middleware  = require('../../../server/middleware').middleware;
 
 describe('Middleware: spamPrevention', function () {
@@ -18,6 +19,7 @@ describe('Middleware: spamPrevention', function () {
         spyNext = sinon.spy(function (param) {
             error = param;
         });
+        middleware.spamPrevention = rewire('../../../server/middleware/spam-prevention');
     });
 
     afterEach(function () {
@@ -84,7 +86,7 @@ describe('Middleware: spamPrevention', function () {
             // fast forward 1 hour
             process.hrtime.restore();
             stub = sinon.stub(process, 'hrtime', function () {
-                return [3700000, 10];
+                return [3610, 10];
             });
 
             middleware.spamPrevention.signin(req, null, spyNext);
