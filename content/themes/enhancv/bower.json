@@ -1,0 +1,8 @@
+{
+  "name": "Bastard",
+  "version": "1.3.0",
+  "dependencies": {
+    "bootstrap-sass": "^3.3.6",
+    "highlightjs": "^9.4.0"
+  }
+}

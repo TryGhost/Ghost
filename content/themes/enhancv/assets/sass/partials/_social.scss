@@ -1,0 +1,28 @@
+/* ==========================================================================
+   12. Social Links
+   ========================================================================== */
+
+.btn-outline {
+  margin-top: 15px;
+  border: solid 1px $gray-light;
+  font-size: 24px;
+  color: $gray-light;
+  background: 0 0;
+  transition: all .3s ease-in-out;
+  &:hover, &:focus, &:active, &.active {
+    border: solid 1px $gray-light;
+    color: #000;
+    background: $gray-light;
+  }
+}
+
+.btn-social {
+  display: inline-block;
+  width: 48px;
+  height: 48px;
+  border: 1px solid $gray-light;
+  border-radius: 100%;
+  text-align: center;
+  font-size: 24px;
+  line-height: 46px;
+}

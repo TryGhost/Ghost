@@ -1,0 +1,123 @@
+/* ==========================================================================
+   4. Navigation - styles for the navigation bar
+   ========================================================================== */
+
+navbar {
+  margin-bottom: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  background-color: #000;
+}
+
+.navbar-brand {
+  font-weight: 700;
+  &:focus {
+    outline: 0;
+  }
+}
+
+.navbar-custom {
+  a {
+    color: #fff;
+  }
+  .nav li {
+    a {
+      -webkit-transition: background .3s ease-in-out;
+      -moz-transition: background .3s ease-in-out;
+      transition: background .3s ease-in-out;
+      &:hover, &:focus {
+        outline: 0;
+        background-color: rgba(255, 255, 255, 0.2);
+      }
+    }
+    &.active {
+      outline: 0;
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+  }
+}
+
+.navbar-toggle {
+  padding: 4px 6px;
+  font-size: 16px;
+  color: #fff;
+  &:focus, &:active {
+    outline: 0;
+  }
+}
+
+/* Main page scroll arrow styles */
+
+.btn-circle {
+  width: 90px;
+  height: 90px;
+  border-radius: 60px;
+  font-size: 40px;
+  color: rgba(255, 255, 255, 0.6);
+  -webkit-transition: background .4s ease-in-out;
+  -moz-transition: background .4s ease-in-out;
+  transition: background .4s ease-in-out;
+  &:hover, &:focus {
+    outline: 0;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.page-scroll .btn-circle {
+  i.animated {
+    -webkit-transition-property: -webkit-transform;
+    -webkit-transition-duration: 1s;
+    -moz-transition-property: -moz-transform;
+    -moz-transition-duration: 1s;
+    -webkit-animation-name: pulse;
+    -moz-animation-name: pulse;
+    -webkit-animation-duration: 1.5s;
+    -moz-animation-duration: 1.5s;
+    -webkit-animation-iteration-count: infinite;
+    -moz-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: linear;
+    -moz-animation-timing-function: linear;
+  }
+  &:hover i.animated {
+    -webkit-animation-name: pulse;
+    -moz-animation-name: pulse;
+    -webkit-animation-duration: 1.5s;
+    -moz-animation-duration: 1.5s;
+    -webkit-animation-iteration-count: infinite;
+    -moz-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: linear;
+    -moz-animation-timing-function: linear;
+  }
+}
+
+@-webkit-keyframes pulse {
+  0% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+  50% {
+    -webkit-transform: scale(1.2);
+    transform: scale(1.2);
+  }
+  100% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+}
+
+
+@-moz-keyframes pulse {
+  0% {
+    -moz-transform: scale(1);
+    transform: scale(1);
+  }
+  50% {
+    -moz-transform: scale(1.2);
+    transform: scale(1.2);
+  }
+  100% {
+    -moz-transform: scale(1);
+    transform: scale(1);
+  }
+}

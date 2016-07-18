@@ -1,0 +1,283 @@
+/* ==========================================================================
+   4. General - The main styles for the the theme
+   ========================================================================== */
+
+/* Panel Overlay */
+
+.panel-cover-overlay {
+  display: block;
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-image: linear-gradient(180deg,rgba(0, 0, 0, 0.4) 20%, rgba(0, 0, 0, 0.7));
+}
+
+/* Bigass cover image on the home page */
+
+.site-head {
+  position: relative;
+  display: table;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  color: $gray-light;
+  background: url(../images/cover.jpg) no-repeat center center;
+  background-size: cover;
+}
+
+/* Yo-logo. Yolo-go. Upload one in ghost/settings/ */
+
+.blog-logo {
+  text-decoration: none;
+  img {
+    display: block;
+    max-height: 100px;
+    max-width: 350px;
+    width: auto;
+    margin: 0 auto;
+    line-height: 0;
+  }
+  svg {
+    fill: $brand-primary;
+  }
+}
+
+/* The details of your blog. Defined in ghost/settings/ */
+
+.blog-title {
+  margin: 10px 0 10px 0;
+  font-size: 5rem;
+  letter-spacing: -1px;
+  font-weight: bold;
+  font-family: 'Open Sans', sans-serif;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+}
+
+.blog-description {
+  margin: 0;
+  font-size: 1.8rem;
+  line-height: 1.5em;
+  font-weight: 300;
+  font-family: 'Noto Serif', serif;
+  letter-spacing: 0;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+/* Top ornament */
+.top-ornament {
+    background: url(../images/top-ornament.svg) no-repeat top center;
+    margin: 0px auto 30px;
+    position: relative;
+    height: 59px;
+    border-top: rgba(235, 242, 246, 0.29) 1px solid;
+}
+
+/* Every post, on every page, gets this style on its <article> tag */
+
+.post {
+  position: relative;
+  width: 80%;
+  max-width: 710px;
+  margin: 4rem auto;
+  padding-bottom: 4rem;
+  word-break: break-word;
+  hyphens: auto;
+  &:after {
+    position: absolute;
+    bottom-margin: 10px;
+    display: block;
+    width: 100%;
+    height: 70px;
+    content: "";
+    background: url(../images/divider.svg) no-repeat;
+    background-size: 700px 20px;
+    background-position: center center;
+  }
+}
+
+
+/* Add a little circle in the middle of the border-bottom on our .post
+   just for the lolz and stylepoints. */
+
+.post-title {
+  color: $yellow-dark;
+  margin: 0;
+  a {
+    text-decoration: none;
+    color: $yellow-dark;
+  }
+}
+
+.post-excerpt p {
+  margin: 1.6rem 0 0 0;
+  font-size: 0.95em;
+  line-height: 1.6em;
+  color: $gray-medium;
+}
+
+.post-meta {
+  display: inline-block;
+  margin: 0 0 5px 0;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 1.5rem;
+  color: #9EABB3;
+  a {
+    color: #9EABB3;
+    text-decoration: none;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.user-meta {
+  position: relative;
+  padding: 0.3rem 40px 0 100px;
+  min-height: 77px;
+}
+
+.user-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.user-name {
+  display: block;
+  font-weight: bold;
+}
+
+.user-bio {
+  display: block;
+  max-width: 440px;
+  font-size: 1.4rem;
+  line-height: 1.5em;
+}
+
+.publish-meta {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 4.3rem 0 4rem 0;
+  text-align: right;
+}
+
+.publish-heading {
+  display: block;
+  font-weight: bold;
+}
+
+.publish-date {
+  display: block;
+  font-size: 1.4rem;
+  line-height: 1.5em;
+}
+
+
+/* Big cover image on the home page */
+.main-header {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    /*margin-bottom: 5rem;*/
+    text-align: center;
+    background: #222 no-repeat center center;
+    background-size: cover;
+    overflow-x: hidden;
+
+    .main-nav-fixed {
+      height: 100px;
+      width: 100%;
+      position: fixed;
+      z-index: 100;
+      display: table;
+    }
+
+    .inner {
+      width: 80%;
+    }
+
+    .navbar-brand {
+      padding: 15px 15px 15px 50px;
+    }
+
+    .navbar {
+      border-radius: 0;
+      border-left: 0;
+      border-right: 0;
+      border-top: 0;
+      min-height: 100%;
+      display: table-cell;
+      vertical-align: middle;
+    }
+}
+
+/*.main-nav {
+    position: relative;
+    padding: 35px 40px;
+    margin: 0 0 30px 0;
+
+    !* Special styles when overlaid on an image*!
+    &.overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 70px;
+      border: none;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.2) 0%,rgba(0,0,0,0) 100%);
+    }
+
+    a {
+      text-decoration: none;
+      font-family: 'Open Sans', sans-serif;
+    }
+}*/
+
+.no-cover {
+  &.main-header {
+    min-height: 100px;
+    max-height: 40vh;
+    background: #fff;
+  }
+
+  &.post-head.main-header {
+    height: 100px;
+    min-height: 0;
+    margin-bottom: 0;
+    background: transparent;
+  }
+
+  .page-title {
+    color: rgba(0,0,0,0.8);
+  }
+
+  .main-nav.overlay {
+    background: none;
+  }
+
+  .page-description {
+    color: rgba(0,0,0,0.5);
+  }
+}
+
+.post-head.main-header {
+    height: 65vh;
+    min-height: 180px;
+}
+
+/* Hide when there's no cover image or on page2+ */
+.no-cover .scroll-down,
+.no-cover.main-header:after,
+.archive-template .scroll-down,
+.archive-template .main-header:after {
+    display: none
+}
+
+.post-head.main-header {
+  height: 65vh;
+  min-height: 180px;
+}

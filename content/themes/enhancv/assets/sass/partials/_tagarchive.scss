@@ -1,0 +1,41 @@
+/* ==========================================================================
+   8. Tag archive
+   ========================================================================== */
+
+.archive-template, .tag-template {
+  .site-head {
+    height: auto;
+    padding-bottom: 5rem;
+    a {
+      color: $gray-medium;
+    }
+  }
+  .blog-logo {
+    display: block;
+    margin-top: 5rem;
+  }
+}
+
+.tag-archive-header {
+  text-align: center;
+  max-width: 700px;
+  margin: 4rem auto;
+  position: relative;
+  h1 {
+    font-family: Georgia, Times, "Times New Roman", serif;
+    letter-spacing: 0.1em;
+  }
+  &:after {
+    display: block;
+    content: "";
+    height: 70px;
+    bottom: -15px;
+    background: url(../images/tag-divider.svg) no-repeat top center;
+    background-size: 700px 20px;
+  }
+}
+
+.archive-template .blog-title {
+  display: inline-block;
+  padding: 2.5rem 0;
+}

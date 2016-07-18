@@ -1,0 +1,153 @@
+
+/* ==========================================================================
+   6. Single Post - When you click on an individual post
+   ========================================================================== */
+
+h1.post-title {
+  color: $yellow-dark;
+}
+
+/* Stop .full-img from creating horizontal scroll - slight hack due to
+   imperfections with browser width % calculations and rounding */
+
+.post-template {
+  .content {
+    overflow: hidden;
+  }
+  .post {
+    margin-top: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+    &:after {
+      display: none;
+    }
+  }
+  .post-header {
+    padding: 60px 0;
+    text-align: center;
+  }
+  .blog-title {
+    display: inline-block;
+    padding: 2.5rem 0;
+  }
+  h2, h3, h4 {
+    color: $gray-light;
+  }
+}
+
+/* Tweak the .post wrapper style */
+
+/* Kill that stylish little circle that was on the border, too */
+
+/* Insert some mad padding up in the header for better spacing */
+
+/* Keep images centred and within the bounds of the post-width */
+
+.post-content {
+  color: $gray-medium;
+  img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+    padding: 0.6em 0;
+  }
+  .full-img {
+    width: 126%;
+    max-width: none;
+    margin: 0 -13%;
+  }
+  code {
+    color: #993030;
+  }
+}
+
+/* Break out larger images to be wider than the main text column
+   the class is applied with jQuery */
+
+/* The author credit area after the post */
+
+.post-footer {
+  position: relative;
+  margin: 4rem 0 0 0;
+  padding: 4rem 0 0 0;
+  border-top: rgba(235, 242, 246, 0.29) 1px solid;
+  h4 {
+    font-size: 1.8rem;
+    margin: 0;
+  }
+  p {
+    margin: 1rem 0;
+    font-size: 1.4rem;
+    line-height: 1.6em;
+  }
+}
+
+/* list of author links - location / url */
+
+.author-meta {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  font-size: 1.4rem;
+  line-height: 1;
+  font-style: italic;
+  color: #9EABB3;
+  li {
+    float: left;
+    margin-left: 10px;
+    /* space to the left of the bullet */
+    &:before {
+      content: "•";
+      display: inline-block;
+      margin-right: 10px;
+      /* space to the right of the bullet */
+      color: #BBC7CC;
+    }
+    &:first-child {
+      margin-left: 0;
+      &:before {
+        display: none;
+      }
+    }
+  }
+  a {
+    color: #9EABB3;
+    &:hover {
+      color: #57A3E8;
+    }
+  }
+}
+
+/* bullet divider */
+
+/* disable the bullet divider for the first item in the list */
+
+/* Create some space to the right for the share links */
+
+.post-footer {
+  .author {
+    margin-right: 180px;
+  }
+  .share {
+    position: absolute;
+    top: 4rem;
+    right: 0;
+    width: 140px;
+    a {
+      font-size: 1.8rem;
+      display: inline-block;
+      margin: 1rem 1.6rem 1.6rem 0;
+      color: #BBC7CC;
+      text-decoration: none;
+      &:hover {
+        color: #50585D;
+      }
+    }
+  }
+}
+
+/* Drop the share links in the space to the right.
+   Doing it like this means it's easier for the author bio
+   to be flexible at smaller screen sizes while the share
+   links remain at a fixed width the whole time */

@@ -1,27 +1,22 @@
 {{!< default}}
 
-{{!-- The comment above "< default" means - insert everything in this file into
-    the {{{body}}} of the default.hbs template, containing the blog header/footer. --}}
+{{! The comment above "< default" means - insert everything in this file into
+    the {body} of the default.hbs template, which contains our header/footer. }}
 
-{{!-- Everything inside the #post tags pulls data from the post --}}
+{{! Everything inside the #post tags pulls data from the post }}
 {{#post}}
 
-<header class="main-header post-head {{#if image}}" style="background-image: url({{image}}){{else}}no-cover{{/if}}">
-    <nav class="main-nav {{#if image}}overlay{{/if}} clearfix">
-        {{#if @blog.logo}}<a class="blog-logo" href="{{@blog.url}}"><img src="{{@blog.logo}}" alt="{{@blog.title}}" /></a>{{/if}}
-        {{#if @blog.navigation}}
-            <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
-        {{/if}}
-    </nav>
-</header>
+{{> main-header}}
 
+<div id="top" class="top-ornament"></div>
 <main class="content" role="main">
+
     <article class="{{post_class}}">
 
         <header class="post-header">
-            <h1 class="post-title">{{title}}</h1>
+            <h1 class="post-title">{{{title}}}</h1>
             <section class="post-meta">
-                <time class="post-date" datetime="{{date format="YYYY-MM-DD"}}">{{date format="DD MMMM YYYY"}}</time> {{tags prefix=" on "}}
+                <time class="post-date" datetime="{{date format='YYYY-MM-DD'}}">{{date format="MMMM Do, YYYY"}}</time> {{tags prefix=" on " separator=" | "}}
             </section>
         </header>
 
@@ -31,30 +26,14 @@
 
         <footer class="post-footer">
 
-        {{!-- Everything inside the #author tags pulls data from the author --}}
-        {{#author}}
-
-            {{#if image}}
-            <figure class="author-image">
-                <a class="img" href="{{url}}" style="background-image: url({{image}})"><span class="hidden">{{name}}'s Picture</span></a>
-            </figure>
-            {{/if}}
-
             <section class="author">
-                <h4><a href="{{url}}">{{name}}</a></h4>
-
-                {{#if bio}}
-                    <p>{{bio}}</p>
-                {{else}}
-                    <p>Read <a href="{{url}}">more posts</a> by this author.</p>
-                {{/if}}
-                <div class="author-meta">
-                    {{#if location}}<span class="author-location icon-location">{{location}}</span>{{/if}}
-                    {{#if website}}<span class="author-link icon-link"><a href="{{website}}">{{website}}</a></span>{{/if}}
-                </div>
+                <h4>{{author.name}}</h4>
+                <p>{{author.bio}}</p>
+                <ul class="author-meta clearfix">
+                    {{#if author.location}}<li>{{author.location}}</li>{{/if}}
+                    {{#if author.website}}<li><a href="{{author.website}}">{{author.website}}</a></li>{{/if}}
+                </ul>
             </section>
-
-        {{/author}}
 
             <section class="share">
                 <h4>Share this post</h4>
@@ -72,23 +51,10 @@
                 </a>
             </section>
 
-            {{!-- Email subscribe form at the bottom of the page --}}
-            {{#if @labs.subscribers}}
-            <section class="gh-subscribe">
-                <h3 class="gh-subscribe-title">Subscribe to {{@blog.title}}</h3>
-                <p>Get the latest posts delivered right to your inbox.</p>
-                {{subscribe_form placeholder="Your email address"}}
-                <span class="gh-subscribe-rss">or subscribe <a href="http://cloud.feedly.com/#subscription/feed/{{@blog.url}}/rss/">via RSS</a> with Feedly!</span>
-            </section>
-            {{/if}}
-
         </footer>
 
     </article>
-</main>
-
-{{!-- Links to Previous/Next posts --}}
-<aside class="read-next">
+<div class="read-next">
     {{#next_post}}
     <a class="read-next-story {{#if image}}" style="background-image: url({{image}}){{else}}no-cover{{/if}}" href="{{url}}">
         <section class="post">
@@ -105,6 +71,8 @@
         </section>
     </a>
     {{/prev_post}}
-</aside>
+</div>
+</main>
+
 
 {{/post}}
