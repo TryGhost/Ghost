@@ -4,7 +4,7 @@ files:
   - source: /
     destination: /var/www/blog
 hooks:
-  BeforeInstall:
+  AfterInstall:
     - location: bin/beforeInstall.sh
       timeout: 900
       runas: root
