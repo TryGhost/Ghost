@@ -23,12 +23,19 @@ tag_links = function(options) {
     limit: 'all',
     include: 'count.posts'
   };
-  if (!all) {
-    query.filter = tagIds.map(function(id) {
-      return 'id:' + id;
-    }).join(',');
+  if(!all) {
+    if(_.isEmpty(tagIds)) {
+      query.limit = '1';
+    } else {
+      query.filter = tagIds.map(function(id) {
+        return 'id:' + id;
+      }).join(',');
+    }
   }
   return api.tags.browse(query).then(function(res) {
+    if(_.isEmpty(tagIds)) {
+      return new hbs.handlebars.SafeString("");
+    }
     // 記事に関連するタグのみ選出
     var tags = res.tags;
     // 降順でソート
@@ -37,7 +44,7 @@ tag_links = function(options) {
       if(a.count.posts > b.count.posts) return -1;
       return 0;
     });
-    var joined = _.map(tags, function(tag) {
+    var joined = tags.map(function(tag) {
       return utils.tagLinkTemplate({
         url: config.urlFor('tag', {tag: tag}),
         name: _.escape(tag.name),
