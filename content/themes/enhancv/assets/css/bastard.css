@@ -2453,7 +2453,7 @@ output {
   color: #555555;
   background-color: #fff;
   background-image: none;
-  border: 1px solid #ccc;
+  border: 1px solid #e6e6e6;
   border-radius: 35px;
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
   -webkit-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
@@ -2981,23 +2981,23 @@ fieldset[disabled] a.btn {
 .btn-default {
   color: #333;
   background-color: #fff;
-  border-color: #ccc; }
+  border-color: #e6e6e6; }
 
 .btn-default:focus, .btn-default.focus {
   color: #333;
   background-color: #e6e6e6;
-  border-color: #8c8c8c; }
+  border-color: #a6a6a6; }
 
 .btn-default:hover {
   color: #333;
   background-color: #e6e6e6;
-  border-color: #adadad; }
+  border-color: #c7c7c7; }
 
 .btn-default:active, .btn-default.active,
 .open > .btn-default.dropdown-toggle {
   color: #333;
   background-color: #e6e6e6;
-  border-color: #adadad; }
+  border-color: #c7c7c7; }
 
 .btn-default:active:hover, .btn-default:active:focus, .btn-default:active.focus, .btn-default.active:hover, .btn-default.active:focus, .btn-default.active.focus,
 .open > .btn-default.dropdown-toggle:hover,
@@ -3005,7 +3005,7 @@ fieldset[disabled] a.btn {
 .open > .btn-default.dropdown-toggle.focus {
   color: #333;
   background-color: #d4d4d4;
-  border-color: #8c8c8c; }
+  border-color: #a6a6a6; }
 
 .btn-default:active, .btn-default.active,
 .open > .btn-default.dropdown-toggle {
@@ -3016,7 +3016,7 @@ fieldset[disabled] .btn-default:hover,
 fieldset[disabled] .btn-default:focus,
 fieldset[disabled] .btn-default.focus {
   background-color: #fff;
-  border-color: #ccc; }
+  border-color: #e6e6e6; }
 
 .btn-default .badge {
   color: #fff;
@@ -3684,7 +3684,7 @@ tbody.collapse.in {
   color: #555555;
   text-align: center;
   background-color: #cccccc;
-  border: 1px solid #ccc;
+  border: 1px solid #e6e6e6;
   border-radius: 35px; }
 
 .input-group-addon.input-sm,
@@ -4205,7 +4205,7 @@ tbody.collapse.in {
 
 .navbar-default {
   background-color: #fff;
-  border-color: #e6e6e6; }
+  border-color: #f3f3f3; }
 
 .navbar-default .navbar-brand {
   color: #777; }
@@ -4243,7 +4243,7 @@ tbody.collapse.in {
 
 .navbar-default .navbar-collapse,
 .navbar-default .navbar-form {
-  border-color: #e6e6e6; }
+  border-color: #f3f3f3; }
 
 .navbar-default .navbar-nav > .open > a, .navbar-default .navbar-nav > .open > a:hover, .navbar-default .navbar-nav > .open > a:focus {
   background-color: #eeeeee;
@@ -6355,29 +6355,32 @@ html {
 body {
   height: 100%;
   max-height: 100%;
-  background-color: #000000;
+  font-family: "Roboto", Helvetica, Arial, sans-serif;
+  letter-spacing: 0.01rem;
+  font-size: 1.8rem;
+  line-height: 1.75em;
   -webkit-font-feature-settings: 'kern' 1;
-  -moz-font-feature-settings: 'kern' 1;
-  -o-font-feature-settings: 'kern' 1;
+     -moz-font-feature-settings: 'kern' 1;
+          font-feature-settings: 'kern' 1;
   text-rendering: geometricPrecision; }
 
-::-moz-selection, ::-moz-selection {
-  color: #222;
-  background: #D6EDFF;
+::-moz-selection {
+  color: #fff;
+  background: #2dc08c;
   text-shadow: none; }
 
-::-moz-selection, ::selection {
-  color: #222;
-  background: #D6EDFF;
+::selection {
+  color: #fff;
+  background: #2dc08c;
   text-shadow: none; }
 
 h1, h2, h3, h4, h5, h6 {
   -webkit-font-feature-settings: 'dlig' 1, 'liga' 1, 'lnum' 1, 'kern' 1;
-  -moz-font-feature-settings: 'dlig' 1, 'liga' 1, 'lnum' 1, 'kern' 1;
-  -o-font-feature-settings: 'dlig' 1, 'liga' 1, 'lnum' 1, 'kern' 1;
+     -moz-font-feature-settings: 'dlig' 1, 'liga' 1, 'lnum' 1, 'kern' 1;
+          font-feature-settings: 'dlig' 1, 'liga' 1, 'lnum' 1, 'kern' 1;
   line-height: 1.15em;
   margin: 0 0 0.4em 0;
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Roboto", Helvetica, Arial, sans-serif;
   text-rendering: geometricPrecision; }
 
 h1 {
@@ -6405,20 +6408,13 @@ h6 {
   font-size: 2rem; }
 
 a {
-  color: #ffeb99;
   -webkit-transition: color ease 0.3s;
           transition: color ease 0.3s; }
 
-a:hover {
-  color: #caad00; }
-
-h1 a, h2 a, h3 a, h4 a, h5 a, h6 a {
-  color: #50585D; }
-
 p, ul, ol, dl {
   -webkit-font-feature-settings: 'liga' 1, 'onum' 1, 'kern' 1;
-  -moz-font-feature-settings: 'liga' 1, 'onum' 1, 'kern' 1;
-  -o-font-feature-settings: 'liga' 1, 'onum' 1, 'kern' 1;
+     -moz-font-feature-settings: 'liga' 1, 'onum' 1, 'kern' 1;
+          font-feature-settings: 'liga' 1, 'onum' 1, 'kern' 1;
   margin: 0 0 1.6em 0;
   text-rendering: geometricPrecision; }
 

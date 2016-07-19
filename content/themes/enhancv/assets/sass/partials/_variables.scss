@@ -16,7 +16,7 @@ $gray-light:             lighten($gray-base, 46.7%) !default; // #777
 $gray-lighter:           lighten($gray-base, 80%); // #ccc
 
 $brand-primary:         #00c092;
-$brand-success:         #2dc08c !default;
+$brand-success:         #2dc08c;
 $brand-info:            #5bc0de !default;
 $brand-warning:         #f36f00;
 $brand-danger:          #fa1029;
@@ -151,7 +151,7 @@ $btn-font-weight:                normal !default;
 
 $btn-default-color:              #333 !default;
 $btn-default-bg:                 #fff !default;
-$btn-default-border:             #ccc !default;
+$btn-default-border:             #e6e6e6;
 
 $btn-primary-color:              #fff !default;
 $btn-primary-bg:                 $brand-primary !default;
@@ -193,7 +193,7 @@ $input-bg-disabled:              $gray-lighter !default;
 //** Text color for `<input>`s
 $input-color:                    $gray !default;
 //** `<input>` border color
-$input-border:                   #ccc !default;
+$input-border:                   #e6e6e6;
 
 // TODO: Rename `$input-border-radius` to `$input-border-radius-base` in v4
 //** Default `.form-control` border radius
@@ -371,7 +371,7 @@ $navbar-collapse-max-height:       340px !default;
 
 $navbar-default-color:             #777 !default;
 $navbar-default-bg:                #fff;
-$navbar-default-border:            #e6e6e6;
+$navbar-default-border:            #f3f3f3;
 
 // Navbar links
 $navbar-default-link-color:                #777 !default;
