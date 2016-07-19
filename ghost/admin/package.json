@@ -48,7 +48,7 @@
     "ember-cli-jshint": "1.0.4",
     "ember-cli-mirage": "0.1.13",
     "ember-cli-mocha": "0.10.4",
-    "ember-cli-node-assets": "0.1.3",
+    "ember-cli-node-assets": "0.1.4",
     "ember-cli-pretender": "0.6.0",
     "ember-cli-release": "0.2.8",
     "ember-cli-selectize": "0.5.5",
