@@ -41,6 +41,14 @@ var _              = require('lodash'),
             // Load package.json so that we can create correctly versioned releases.
             pkg: grunt.file.readJSON('package.json'),
 
+            clientFiles: [
+                'server/views/default.hbs',
+                'built/assets/ghost.js',
+                'built/assets/ghost.css',
+                'built/assets/vendor.js',
+                'built/assets/vendor.css'
+            ],
+
             // ### grunt-contrib-watch
             // Watch files and livereload in the browser during development.
             // See the [grunt dev](#live%20reload) task for how this is used.
@@ -485,6 +493,16 @@ var _              = require('lodash'),
             grunt.task.run('test-setup', 'mochacli:single');
         });
 
+        // #### Stub out ghost files *(Utility Task)*
+        // Creates stub files in the built directory and the views directory
+        // so that the test environments do not need to build out the client files
+        grunt.registerTask('stubClientFiles', function () {
+            _.each(cfg.clientFiles, function (file) {
+                var filePath = path.resolve(cwd + '/core/' + file);
+                fs.ensureFileSync(filePath);
+            });
+        });
+
         // ### Validate
         // **Main testing task**
         //
@@ -496,9 +514,7 @@ var _              = require('lodash'),
         // `grunt validate` is called by `npm test` and is used by Travis.
         grunt.registerTask('validate', 'Run tests and lint code', function () {
             if (process.env.TEST_SUITE === 'server') {
-                grunt.task.run(['init', 'test-server']);
-            } else if (process.env.TEST_SUITE === 'client') {
-                grunt.task.run(['init', 'test-client']);
+                grunt.task.run(['stubClientFiles', 'test-server']);
             } else if (process.env.TEST_SUITE === 'lint') {
                 grunt.task.run(['lint']);
             } else {
