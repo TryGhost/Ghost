@@ -337,9 +337,9 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
-        it('http://localhost/blog should 303 to  http://localhost/blog/', function (done) {
+        it('http://localhost/blog should 301 to  http://localhost/blog/', function (done) {
             request.get('/blog')
-                .expect(303)
+                .expect(301)
                 .expect('Location', '/blog/')
                 .end(doEnd(done));
         });
@@ -414,9 +414,9 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
-        it('/blog should 303 to /blog/', function (done) {
+        it('/blog should 301 to /blog/', function (done) {
             request.get('/blog')
-                .expect(303)
+                .expect(301)
                 .expect('Location', '/blog/')
                 .end(doEnd(done));
         });

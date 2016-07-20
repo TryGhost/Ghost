@@ -38,7 +38,7 @@
     "cors": "2.7.1",
     "csv-parser": "1.9.3",
     "downsize": "0.0.8",
-    "express": "4.13.4",
+    "express": "4.14.0",
     "express-hbs": "1.0.2",
     "extract-zip": "1.5.0",
     "fs-extra": "0.30.0",
