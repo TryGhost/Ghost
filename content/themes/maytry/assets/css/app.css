@@ -218,8 +218,6 @@
 }
 .blog-content .word_counts img {
   display: block;
-  width: 100%;
-  max-width: 700px;
   margin: 0 auto;
 }
 .blog-content .time_min {
