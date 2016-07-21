@@ -1,21 +1,20 @@
 var bodyParser      = require('body-parser'),
     compress        = require('compression'),
+    config          = require('../config'),
+    errors          = require('../errors'),
     express         = require('express'),
     hbs             = require('express-hbs'),
     logger          = require('morgan'),
-    multer          = require('multer'),
-    netjet          = require('netjet'),
     path            = require('path'),
+    routes          = require('../routes'),
     serveStatic     = require('express').static,
     slashes         = require('connect-slashes'),
-    tmpdir          = require('os').tmpdir,
-    passport        = require('passport'),
-    config          = require('../config'),
-    errors          = require('../errors'),
-    routes          = require('../routes'),
     storage         = require('../storage'),
+    passport        = require('passport'),
     utils           = require('../utils'),
     sitemapHandler  = require('../data/xml/sitemap/handler'),
+    multer          = require('multer'),
+    tmpdir          = require('os').tmpdir,
     authStrategies   = require('./auth-strategies'),
     auth             = require('./auth'),
     cacheControl     = require('./cache-control'),
@@ -31,6 +30,7 @@ var bodyParser      = require('body-parser'),
     maintenance     = require('./maintenance'),
     versionMatch     = require('./api/version-match'),
     cors             = require('./cors'),
+    netjet           = require('netjet'),
     labs             = require('./labs'),
     helpers          = require('../helpers'),
 
@@ -129,7 +129,7 @@ setupMiddleware = function setupMiddleware(blogApp) {
 
     // First determine whether we're serving admin or theme content
     blogApp.use(decideIsAdmin);
-    blogApp.use(themeHandler.updateActiveTheme(blogApp));
+    blogApp.use(themeHandler.updateActiveTheme);
     blogApp.use(themeHandler.configHbsForContext);
 
     // Admin only config

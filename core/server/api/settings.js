@@ -52,7 +52,6 @@ updateConfigCache = function () {
 
     config.set({
         theme: {
-            activeTheme: settingsCache.activeTheme.value,
             title: (settingsCache.title && settingsCache.title.value) || '',
             description: (settingsCache.description && settingsCache.description.value) || '',
             logo: (settingsCache.logo && settingsCache.logo.value) || '',
