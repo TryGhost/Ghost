@@ -358,6 +358,12 @@ describe('Config', function () {
                 testData = {nav: {url: 'http://my-ghost-blog.com/short-and-sweet/'}, secure: true};
                 config.urlFor(testContext, testData).should.equal('https://my-ghost-blog.com/short-and-sweet/');
 
+                testData = {nav: {url: 'http://my-ghost-blog.com:3000/'}};
+                config.urlFor(testContext, testData).should.equal('http://my-ghost-blog.com:3000/');
+
+                testData = {nav: {url: 'http://my-ghost-blog.com:3000/short-and-sweet/'}};
+                config.urlFor(testContext, testData).should.equal('http://my-ghost-blog.com:3000/short-and-sweet/');
+
                 testData = {nav: {url: 'http://sub.my-ghost-blog.com/'}};
                 config.urlFor(testContext, testData).should.equal('http://sub.my-ghost-blog.com/');
 
