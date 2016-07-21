@@ -68,7 +68,7 @@
     "sqlite3": "3.1.4",
     "superagent": "2.1.0",
     "unidecode": "0.1.8",
-    "validator": "5.4.0",
+    "validator": "5.5.0",
     "xml": "1.0.1"
   },
   "optionalDependencies": {
