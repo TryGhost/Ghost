@@ -1,4 +1,5 @@
 var _ = require('lodash'),
+    Promise = require('bluebird'),
     config = require('../../config'),
     getUrl = require('./url'),
     getCanonicalUrl = require('./canonical_url'),
@@ -55,7 +56,10 @@ function getMetaData(data, root) {
     metaData.structuredData = getStructuredData(metaData);
     metaData.schema = getSchema(metaData, data);
 
-    return metaData;
+    // instead of Promise here, soon we'll have a call to a new function which augments the images with their image sizes
+    return new Promise(function (resolve) {
+        return resolve(metaData);
+    });
 }
 
 module.exports = getMetaData;

@@ -76,28 +76,36 @@ function ghost_head(options) {
         return;
     }
 
-    var metaData = getMetaData(this, options.data.root),
+    var metaData,
+        client,
         head = [],
         context = this.context ? this.context[0] : null,
         useStructuredData = !config.isPrivacyDisabled('useStructuredData'),
         safeVersion = this.safeVersion,
-        referrerPolicy = config.referrerPolicy ? config.referrerPolicy : 'origin-when-cross-origin';
+        referrerPolicy = config.referrerPolicy ? config.referrerPolicy : 'origin-when-cross-origin',
+        fetch = {
+            metaData: getMetaData(this, options.data.root),
+            client: getClient()
+        };
 
-    return getClient().then(function (client) {
+    return Promise.props(fetch).then(function (response) {
+        client = response.client;
+        metaData = response.metaData;
+
         if (context) {
             // head is our main array that holds our meta data
             head.push('<link rel="canonical" href="' +
-            escapeExpression(metaData.canonicalUrl) + '" />');
+                escapeExpression(metaData.canonicalUrl) + '" />');
             head.push('<meta name="referrer" content="' + referrerPolicy + '" />');
 
             if (metaData.previousUrl) {
                 head.push('<link rel="prev" href="' +
-                escapeExpression(metaData.previousUrl) + '" />');
+                    escapeExpression(metaData.previousUrl) + '" />');
             }
 
             if (metaData.nextUrl) {
                 head.push('<link rel="next" href="' +
-                escapeExpression(metaData.nextUrl) + '" />');
+                    escapeExpression(metaData.nextUrl) + '" />');
             }
 
             if (context !== 'paged' && useStructuredData) {
@@ -118,10 +126,10 @@ function ghost_head(options) {
         }
 
         head.push('<meta name="generator" content="Ghost ' +
-        escapeExpression(safeVersion) + '" />');
+            escapeExpression(safeVersion) + '" />');
         head.push('<link rel="alternate" type="application/rss+xml" title="' +
-        escapeExpression(metaData.blog.title)  + '" href="' +
-        escapeExpression(metaData.rssUrl) + '" />');
+            escapeExpression(metaData.blog.title)  + '" href="' +
+            escapeExpression(metaData.rssUrl) + '" />');
 
         return api.settings.read({key: 'ghost_head'});
     }).then(function (response) {
