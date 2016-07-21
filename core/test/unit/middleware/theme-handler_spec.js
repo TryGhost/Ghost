@@ -127,34 +127,19 @@ describe('Theme Handler', function () {
     });
 
     describe('updateActiveTheme', function () {
-        it('sets active theme on bootstrap', function () {
-            should.not.exist(blogApp.get('activeTheme'));
-
-            var activateThemeSpy = sandbox.spy(themeHandler, 'activateTheme');
-            configUtils.set({theme: {activeTheme: 'casper'}});
-            configUtils.set({paths: {availableThemes: {casper: {}}}});
-
-            themeHandler.updateActiveTheme(blogApp);
-            activateThemeSpy.calledOnce.should.eql(true);
-            blogApp.get('activeTheme').should.eql('casper');
-        });
-
         it('updates the active theme if changed', function (done) {
             var activateThemeSpy = sandbox.spy(themeHandler, 'activateTheme');
-
             sandbox.stub(api.settings, 'read').withArgs(sandbox.match.has('key', 'activeTheme')).returns(Promise.resolve({
                 settings: [{
-                    key: 'activateTheme',
-                    value: 'new-theme'
+                    key: 'activeKey',
+                    value: 'casper'
                 }]
             }));
+            blogApp.set('activeTheme', 'not-casper');
+            configUtils.set({paths: {availableThemes: {casper: {}}}});
 
-            configUtils.set({theme: {activeTheme: 'casper'}});
-            configUtils.set({paths: {availableThemes: {casper: {}, 'new-theme': {}}}});
-
-            themeHandler.updateActiveTheme(blogApp)(req, res, function () {
-                activateThemeSpy.calledTwice.should.be.true();
-                blogApp.get('activeTheme').should.eql('new-theme');
+            themeHandler.updateActiveTheme(req, res, function () {
+                activateThemeSpy.called.should.be.true();
                 done();
             });
         });
@@ -163,17 +148,15 @@ describe('Theme Handler', function () {
             var activateThemeSpy = sandbox.spy(themeHandler, 'activateTheme');
             sandbox.stub(api.settings, 'read').withArgs(sandbox.match.has('key', 'activeTheme')).returns(Promise.resolve({
                 settings: [{
-                    key: 'activateTheme',
+                    key: 'activeKey',
                     value: 'casper'
                 }]
             }));
-
-            configUtils.set({theme: {activeTheme: 'casper'}});
+            blogApp.set('activeTheme', 'casper');
             configUtils.set({paths: {availableThemes: {casper: {}}}});
 
-            themeHandler.updateActiveTheme(blogApp)(req, res, function () {
-                activateThemeSpy.calledOnce.should.be.true();
-                blogApp.get('activeTheme').should.eql('casper');
+            themeHandler.updateActiveTheme(req, res, function () {
+                activateThemeSpy.called.should.be.false();
                 done();
             });
         });
@@ -188,14 +171,13 @@ describe('Theme Handler', function () {
                     value: 'rasper'
                 }]
             }));
-
-            configUtils.set({theme: {activeTheme: 'casper'}});
+            blogApp.set('activeTheme', 'not-casper');
             configUtils.set({paths: {availableThemes: {casper: {}}}});
 
-            themeHandler.updateActiveTheme(blogApp)(req, res, function (err) {
+            themeHandler.updateActiveTheme(req, res, function (err) {
                 should.exist(err);
                 errorSpy.called.should.be.true();
-                activateThemeSpy.calledOnce.should.be.true();
+                activateThemeSpy.called.should.be.false();
                 err.message.should.eql('The currently active theme "rasper" is missing.');
                 done();
             });
@@ -212,14 +194,13 @@ describe('Theme Handler', function () {
                     value: 'rasper'
                 }]
             }));
-
             res.isAdmin = true;
-            configUtils.set({theme: {activeTheme: 'casper'}});
+            blogApp.set('activeTheme', 'not-casper');
             configUtils.set({paths: {availableThemes: {casper: {}}}});
 
-            themeHandler.updateActiveTheme(blogApp)(req, res, function () {
+            themeHandler.updateActiveTheme(req, res, function () {
                 errorSpy.called.should.be.false();
-                activateThemeSpy.calledOnce.should.be.true();
+                activateThemeSpy.called.should.be.false();
                 warnSpy.called.should.be.true();
                 warnSpy.calledWith('The currently active theme "rasper" is missing.').should.be.true();
                 done();
