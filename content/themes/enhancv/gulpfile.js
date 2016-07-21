@@ -44,6 +44,7 @@ var files = {
     js: [
         'assets/bower_components/bootstrap-sass/assets/javascripts/bootstrap.js',
         'assets/bower_components/highlightjs/highlight.pack.js',
+        'assets/bower_components/js-throttle-debounce/src/js-throttle-debounce.js',
         'assets/js/jquery.fitvids.js',
         'assets/js/jquery.parallax-1.1.3.js',
         'assets/js/jquery.easing.1.3.js',

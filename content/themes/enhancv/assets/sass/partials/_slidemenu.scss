@@ -2,54 +2,29 @@
    13. Slider Menu
    ========================================================================== */
 
-.site-nav-logo {
-  position: fixed;
-  left: 10px;
-  top: 10px;
-  width: 45px;
-  height: 45px;
-  background-color: rgba(0,0,0,0.6);
-  overflow: hidden;
-  z-index: 99;
-
-  .logo {
-    display: block;
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    width: 35px;
-    height: 35px;
-    border-radius: 100%;
-    background-size: cover;
-    background-repeat: no-repeat;
-  }
-}
-
 #slidemenu-wrapper {
-  margin-left: -250px;
-  left: 0;
+  margin-right: -250px;
+  right: 0;
   width: 250px;
   background: $medium-black;
   position: fixed;
   height: 100%;
   overflow-y: auto;
   z-index: 1000;
-  -webkit-transition: all 0.4s ease 0s;
-  -moz-transition: all 0.4s ease 0s;
-  -ms-transition: all 0.4s ease 0s;
-  -o-transition: all 0.4s ease 0s;
   transition: all 0.4s ease 0s;
-    a {
-      color: $gray-medium;
-      &:active, &:focus {
-        color: $yellow-dark;
-      }
-      &:hover {
-        color: $yellow-dark;
-        background: #000000;
-      }
+
+  a {
+    color: $gray-medium;
+
+    &:active, &:focus {
+      color: $yellow-dark;
     }
 
+    &:hover {
+      color: $yellow-dark;
+      background: #000000;
+    }
+  }
 }
 
 .slidemenu-nav {
@@ -60,23 +35,28 @@
   list-style: none;
   margin: 0;
   padding: 0;
+
   li {
     font-weight: 400;
     font-size: 14px;
     line-height: 35px;
     text-indent: 10px;
+
     a {
       color: #999999;
       display: block;
       text-decoration: none;
+
       &:hover {
         color: $yellow-dark;
         background: rgba(0, 0, 0, 0.9);
         text-decoration: none;
       }
+
       &:active, &:focus {
         text-decoration: none;
       }
+
       i {
       margin-right: 10px;
      }
@@ -89,12 +69,8 @@
 }
 
 #slidemenu-wrapper.active {
-  left: 250px;
+  right: 250px;
   width: 250px;
-  -webkit-transition: all 0.4s ease 0s;
-  -moz-transition: all 0.4s ease 0s;
-  -ms-transition: all 0.4s ease 0s;
-  -o-transition: all 0.4s ease 0s;
   transition: all 0.4s ease 0s;
 }
 

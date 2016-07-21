@@ -13,6 +13,7 @@ body {
   height: 100%;
   max-height: 100%;
   font-family: $font-family-base;
+  color: $text-color;
   letter-spacing: 0.01rem;
   font-size: 1.8rem;
   line-height: 1.75em;
@@ -116,26 +117,30 @@ hr {
 }
 
 blockquote {
-  -moz-box-sizing: border-box;
   box-sizing: border-box;
   margin: 1.6em 0 1.6em -2.2em;
   padding: 0 0 0 1.6em;
   border-left: #4a4a4a 0.4em solid;
+
   p {
     margin: 0.8em 0;
     font-style: italic;
   }
+
   small {
     display: inline-block;
     margin: 0.8em 0 0.8em 1.5em;
     font-size: 0.9em;
-    color: #ccc;
+    color: $info-font-color;
+
     &:before {
       content: '\2014 \00A0';
     }
   }
+
   cite {
     font-weight: bold;
+
     a {
       font-weight: normal;
     }
@@ -143,7 +148,7 @@ blockquote {
 }
 
 mark {
-  background-color: #ffc336;
+  background-color: $brand-warning;
 }
 
 code, tt {
@@ -151,29 +156,26 @@ code, tt {
   font-family: Inconsolata, monospace, sans-serif;
   font-size: 0.85em;
   white-space: pre-wrap;
-  border: 1px solid #333;
-  background: #222;
+  border: 1px solid $gray-lighter;
+  background: #fafafa;
   border-radius: 5px;
-  -webkit-font-feature-settings: "liga" 0;
-  -moz-font-feature-settings: "liga" 0;
   font-feature-settings: "liga" 0;
 }
 
 pre {
-  -moz-box-sizing: border-box;
   box-sizing: border-box;
   margin: 1.6em 0;
-  border: 1px solid $medium-black;
+  border: 1px solid $gray-lighter;
   width: 100%;
   padding: 1px;
   font-family: Inconsolata, monospace, sans-serif;
   font-size: 0.9em;
   white-space: pre;
   overflow: auto;
-  background: $dark-black;
+  background: #fafafa;
+
   code {
     font-size: inherit;
-    white-space: -moz-pre-wrap;
     white-space: pre-wrap;
     background: transparent;
     border: none;
@@ -183,7 +185,6 @@ pre {
 
 tt {
   font-size: inherit;
-  white-space: -moz-pre-wrap;
   white-space: pre-wrap;
   background: transparent;
   border: none;
@@ -194,12 +195,12 @@ kbd {
   display: inline-block;
   margin-bottom: 0.4em;
   padding: 1px 8px;
-  border: #ccc 1px solid;
+  border: 1px solid $gray-lighter;
   color: #666;
   text-shadow: #fff 0 1px 0;
   font-size: 0.9em;
   font-weight: bold;
-  background: #f4f4f4;
+  background: #fafafa;
   border-radius: 4px;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 0 white inset;
 }
@@ -210,6 +211,7 @@ table {
   width: 100%;
   max-width: 100%;
   background-color: transparent;
+
   th, td {
     padding: 8px;
     line-height: 20px;
@@ -218,7 +220,7 @@ table {
     border-top: 1px solid #efefef;
   }
   th {
-    color: #000;
+    color: #333;
   }
   caption + thead tr:first-child {
     th, td {
@@ -266,42 +268,35 @@ label {
 .fluid-width-video-wrapper {
   display: block;
   margin: 1.6em 0;
+
   iframe {
     margin: 0;
   }
 }
 
+// inputs & placeholders
 input[type="text"], input[type="password"], input[type="datetime"], input[type="datetime-local"], input[type="date"], input[type="month"], input[type="time"], input[type="week"], input[type="number"], input[type="email"], input[type="url"], input[type="search"], input[type="tel"] {
-  width: 240px;
-  padding: 0.4em 0.4em;
-  background: #222;
-  border: rgba(235, 242, 246, 0.29) 1px solid;
-  border-radius: 3px;
   font-size: .9em;
-  color: #666666;
+
+  &.form-control {
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.035);
+    height: 37px;
+  }
+}
+
+::-webkit-input-placeholder {
+  opacity: 1;
+}
+
+textarea, input {
+  &:focus::placeholder {
+    opacity: 0.35;
+  }
 }
 /* When a video is inside the fitvids wrapper, drop the
 margin on the iframe, cause it breaks stuff. */
 
 /* Buttons */
-/*.btn-custom {
-  font-size: 2.0rem !important;
-  display: inline-block;
-  padding: .5rem 1rem;
-  color: $yellow-dark;
-  background-color: $dark-black;
-  border: .2rem solid $gray-darker;
-  border-radius: .1rem;
-  margin: 0.5rem !important;
-}
-
-.btn-custom:hover,
-.btn-custom:focus {
-  color: #26282d;
-  background-color: $yellow-dark;
-  border-color: $yellow-dark;
-}*/
-
 .btn {
   padding: 8px 16px;
   font-weight: 100;
@@ -447,6 +442,7 @@ $directions: 'top' 'bottom' 'left' 'right';
         font-size: 16px;
         font-weight: 300;
       }
+
       .close {
         top: 0;
         margin-top: 0;

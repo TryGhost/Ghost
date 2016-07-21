@@ -40,5 +40,6 @@
     "gulp-uglify": "^1.5.1",
     "jshint": "^2.8.0",
     "run-sequence": "^1.1.5"
-  }
+  },
+  "dependencies": {}
 }

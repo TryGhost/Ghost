@@ -20,6 +20,8 @@ $brand-success:         #2dc08c;
 $brand-info:            #5bc0de !default;
 $brand-warning:         #f36f00;
 $brand-danger:          #fa1029;
+$info-font-color: #b3b3b3;
+$default-border-color: #e6e6e6;
 
 
 //== Scaffolding
@@ -140,7 +142,7 @@ $table-bg-hover:                #f5f5f5 !default;
 $table-bg-active:               $table-bg-hover !default;
 
 //** Border color for table and cell borders.
-$table-border-color:            #ddd !default;
+$table-border-color:            $default-border-color;
 
 
 //== Buttons
@@ -151,7 +153,7 @@ $btn-font-weight:                normal !default;
 
 $btn-default-color:              #333 !default;
 $btn-default-bg:                 #fff !default;
-$btn-default-border:             #e6e6e6;
+$btn-default-border:             $default-border-color;
 
 $btn-primary-color:              #fff !default;
 $btn-primary-bg:                 $brand-primary !default;
@@ -191,9 +193,9 @@ $input-bg:                       #fff !default;
 $input-bg-disabled:              $gray-lighter !default;
 
 //** Text color for `<input>`s
-$input-color:                    $gray !default;
+$input-color:                    $text-color;
 //** `<input>` border color
-$input-border:                   #e6e6e6;
+$input-border:                   $default-border-color;
 
 // TODO: Rename `$input-border-radius` to `$input-border-radius-base` in v4
 //** Default `.form-control` border radius
@@ -239,9 +241,9 @@ $cursor-disabled:                not-allowed !default;
 //** Background for the dropdown menu.
 $dropdown-bg:                    #fff !default;
 //** Dropdown menu `border-color`.
-$dropdown-border:                rgba(0,0,0,.15) !default;
+$dropdown-border:                $default-border-color;
 //** Dropdown menu `border-color` **for IE8**.
-$dropdown-fallback-border:       #ccc !default;
+$dropdown-fallback-border:       $default-border-color;
 //** Divider color for between dropdown items.
 $dropdown-divider-bg:            #e5e5e5 !default;
 
@@ -388,8 +390,8 @@ $navbar-default-brand-hover-color:         darken($navbar-default-brand-color, 1
 $navbar-default-brand-hover-bg:            transparent !default;
 
 // Navbar toggle
-$navbar-default-toggle-hover-bg:           #ddd !default;
-$navbar-default-toggle-icon-bar-bg:        #888 !default;
+$navbar-default-toggle-hover-bg:           transparent;
+$navbar-default-toggle-icon-bar-bg:        #333;
 $navbar-default-toggle-border-color:       #ddd !default;
 
 
@@ -431,7 +433,7 @@ $nav-disabled-link-color:                   $gray-light !default;
 $nav-disabled-link-hover-color:             $gray-light !default;
 
 //== Tabs
-$nav-tabs-border-color:                     #ddd !default;
+$nav-tabs-border-color:                     $default-border-color;
 
 $nav-tabs-link-hover-border-color:          $gray-lighter !default;
 
@@ -454,11 +456,11 @@ $nav-pills-active-link-hover-color:         $component-active-color !default;
 
 $pagination-color:                     $link-color !default;
 $pagination-bg:                        #fff !default;
-$pagination-border:                    #ddd !default;
+$pagination-border:                    $default-border-color;
 
 $pagination-hover-color:               $link-hover-color !default;
 $pagination-hover-bg:                  $gray-lighter !default;
-$pagination-hover-border:              #ddd !default;
+$pagination-hover-border:              $default-border-color;
 
 $pagination-active-color:              #fff !default;
 $pagination-active-bg:                 $brand-primary !default;
@@ -466,7 +468,7 @@ $pagination-active-border:             $brand-primary !default;
 
 $pagination-disabled-color:            $gray-light !default;
 $pagination-disabled-bg:               #fff !default;
-$pagination-disabled-border:           #ddd !default;
+$pagination-disabled-border:           $default-border-color;
 
 
 //== Pager
@@ -718,7 +720,7 @@ $panel-inner-border:          #ddd !default;
 $panel-footer-bg:             #f5f5f5 !default;
 
 $panel-default-text:          $gray-dark !default;
-$panel-default-border:        #ddd !default;
+$panel-default-border:        $default-border-color;
 $panel-default-heading-bg:    #f5f5f5 !default;
 
 $panel-primary-text:          #fff !default;
@@ -751,7 +753,7 @@ $thumbnail-padding:           4px !default;
 //** Thumbnail background color
 $thumbnail-bg:                $body-bg !default;
 //** Thumbnail border color
-$thumbnail-border:            #ddd !default;
+$thumbnail-border:            $default-border-color;
 //** Thumbnail border radius
 $thumbnail-border-radius:     $border-radius-base !default;
 
@@ -765,7 +767,7 @@ $thumbnail-caption-padding:   9px !default;
 //
 //##
 
-$well-bg:                     #f5f5f5 !default;
+$well-bg:                     #fafafa !default;
 $well-border:                 darken($well-bg, 7%) !default;
 
 
@@ -842,7 +844,7 @@ $kbd-bg:                      #333 !default;
 
 $pre-bg:                      #f5f5f5 !default;
 $pre-color:                   $gray-dark !default;
-$pre-border-color:            #ccc !default;
+$pre-border-color:            $default-border-color;
 $pre-scrollable-max-height:   340px !default;
 
 

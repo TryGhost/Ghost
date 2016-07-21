@@ -176,45 +176,6 @@
   line-height: 1.5em;
 }
 
-
-/* Big cover image on the home page */
-.main-header {
-    position: relative;
-    width: 100%;
-    height: 100vh;
-    /*margin-bottom: 5rem;*/
-    text-align: center;
-    background: #222 no-repeat center center;
-    background-size: cover;
-    overflow-x: hidden;
-
-    .main-nav-fixed {
-      height: 100px;
-      width: 100%;
-      position: fixed;
-      z-index: 100;
-      display: table;
-    }
-
-    .inner {
-      width: 80%;
-    }
-
-    .navbar-brand {
-      padding: 15px 15px 15px 50px;
-    }
-
-    .navbar {
-      border-radius: 0;
-      border-left: 0;
-      border-right: 0;
-      border-top: 0;
-      min-height: 100%;
-      display: table-cell;
-      vertical-align: middle;
-    }
-}
-
 /*.main-nav {
     position: relative;
     padding: 35px 40px;
@@ -236,48 +197,3 @@
       font-family: 'Open Sans', sans-serif;
     }
 }*/
-
-.no-cover {
-  &.main-header {
-    min-height: 100px;
-    max-height: 40vh;
-    background: #fff;
-  }
-
-  &.post-head.main-header {
-    height: 100px;
-    min-height: 0;
-    margin-bottom: 0;
-    background: transparent;
-  }
-
-  .page-title {
-    color: rgba(0,0,0,0.8);
-  }
-
-  .main-nav.overlay {
-    background: none;
-  }
-
-  .page-description {
-    color: rgba(0,0,0,0.5);
-  }
-}
-
-.post-head.main-header {
-    height: 65vh;
-    min-height: 180px;
-}
-
-/* Hide when there's no cover image or on page2+ */
-.no-cover .scroll-down,
-.no-cover.main-header:after,
-.archive-template .scroll-down,
-.archive-template .main-header:after {
-    display: none;
-}
-
-.post-head.main-header {
-  height: 65vh;
-  min-height: 180px;
-}

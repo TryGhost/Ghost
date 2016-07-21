@@ -83,6 +83,7 @@
     -ms-flex-direction: column;
     flex-direction: column;
     margin-top: 4rem;
+
     p {
       display: none;
     }
@@ -119,10 +120,6 @@
 
   .no-cover.main-header {
     height: 30vh;
-  }
-
-  .site-nav-logo {
-    position: relative;
   }
 
   .blog-logo img {
@@ -282,6 +279,15 @@
 
 }
 
+
+@media only screen and (min-width: $screen-sm) {
+  .main-header {
+
+    .navbar-brand {
+      padding: 15px 15px 15px 50px;
+    }
+  }
+}
 /* ==========================================================================
    End of file. Media queries should be the last thing here. Do not add stuff
    below this point, or it will probably fuck everything up.

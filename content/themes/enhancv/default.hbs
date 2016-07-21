@@ -59,16 +59,13 @@
   </head>
 <body class="{{body_class}}">
     <!-- Side Menu -->
-        <!--Gravatar link, update avatar image url to use your own; s = size in pixels -->
-        {{!--{{> gravatar}}--}}
-        <!-- /Gravatar link -->
     <div id="slidemenu-wrapper">
         {{> slidemenu}}
     </div>
     <!-- /Side Menu -->
 
-        {{! Everything else gets inserted here }}
-        {{{body}}}
+    {{! Everything else gets inserted here }}
+    {{{body}}}
 
     <footer class="site-footer clearfix">
         <a class="subscribe icon-feed" href="{{@blog.url}}/rss/"><span class="tooltip">Subscribe!</span></a>

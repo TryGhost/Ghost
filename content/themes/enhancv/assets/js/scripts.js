@@ -17570,6 +17570,63 @@ hljs.registerLanguage('zephir', function(hljs) {
   return hljs;
 }));
 
+/*
+ * js-throttle-debounce v0.1.1
+ * https://github.com/emn178/js-throttle-debounce
+ *
+ * Copyright 2015, emn178@gmail.com
+ *
+ * Licensed under the MIT license:
+ * http://www.opensource.org/licenses/MIT
+ */
+;(function(root, undefined) {
+  'use strict';
+
+  Function.prototype.throttle = function(delay, ignoreLast) {
+    var func = this;
+    var lastTime = 0;
+    var timer;
+    if(delay === undefined) {
+      delay = 100;
+    }
+    return function() {
+      var self = this, args = arguments;
+      var exec = function() {
+        lastTime = new Date();
+        func.apply(self, args);
+      };
+      if(timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+      var diff = new Date() - lastTime;
+      if (diff > delay) {
+        exec();
+      } else if(!ignoreLast) {
+        timer = setTimeout(exec, delay - diff);
+      }
+    };
+  };
+
+  Function.prototype.debounce = function(delay) {
+    var func = this;
+    var timer;
+    if(delay === undefined) {
+      delay = 100;
+    }
+    return function() {
+      var self = this, args = arguments;
+      if(timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+      timer = setTimeout(function() {
+        func.apply(self, args);
+      }, delay);
+    };
+  };
+}(this));
+
 /*global jQuery */
 /*jshint browser:true */
 /*!
@@ -17938,7 +17995,7 @@ jQuery.extend( jQuery.easing,
             e.preventDefault();
             $("#slidemenu-wrapper").toggleClass("active");
         });
-        $("#slidemenu-toggle").click(function(e) {
+        $("*[data-slidemenu-toggle]").click(function(e) {
             e.preventDefault();
             $("#slidemenu-wrapper").toggleClass("active");
         });
@@ -17971,6 +18028,28 @@ jQuery.extend( jQuery.easing,
         bastardFullImg();
         $(window).smartresize(bastardFullImg);
 
+        //sub-nav hide on scroll
+        var $subNav = $('.sub-nav-main');
+
+        if ($subNav.length > 0) {
+            var subNavPosTop = $subNav.position().top;
+            var hnadleSubNav = function () {
+                if ($(document).scrollTop() > 200) {
+                    $subNav.animate({
+                        top: (subNavPosTop-50) + 'px'
+                    }, 'fast', function () {
+                        $subNav.addClass('absolute');
+                    });
+                } else {
+                    $subNav.removeClass('absolute');
+                    $subNav.animate({
+                        top: subNavPosTop
+                    }, 'fast');
+                }
+            };
+
+            $(window).on('scroll', hnadleSubNav.debounce(100));
+        }
     });
 
 }(jQuery));

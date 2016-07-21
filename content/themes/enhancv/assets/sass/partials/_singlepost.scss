@@ -44,7 +44,8 @@ h1.post-title {
 /* Keep images centred and within the bounds of the post-width */
 
 .post-content {
-  color: $gray-medium;
+  color: $text-color;
+
   img {
     display: block;
     max-width: 100%;
@@ -52,11 +53,13 @@ h1.post-title {
     margin: 0 auto;
     padding: 0.6em 0;
   }
+
   .full-img {
     width: 126%;
     max-width: none;
     margin: 0 -13%;
   }
+
   code {
     color: #993030;
   }

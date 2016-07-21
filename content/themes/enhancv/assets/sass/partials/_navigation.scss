@@ -2,48 +2,186 @@
    4. Navigation - styles for the navigation bar
    ========================================================================== */
 
-navbar {
-  margin-bottom: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-  text-transform: uppercase;
-  background-color: #000;
-}
+.navbar-default {
 
-.navbar-brand {
-  font-weight: 700;
-  &:focus {
-    outline: 0;
-  }
-}
+  .navbar-toggle {
+    border: 0 none;
+    padding-left: 25px;
+    background-color: transparent !important;
 
-.navbar-custom {
-  a {
-    color: #fff;
-  }
-  .nav li {
-    a {
-      -webkit-transition: background .3s ease-in-out;
-      -moz-transition: background .3s ease-in-out;
-      transition: background .3s ease-in-out;
-      &:hover, &:focus {
-        outline: 0;
-        background-color: rgba(255, 255, 255, 0.2);
+    .icon-bar {
+      position: relative;
+      width: 19px;
+      transition: transform .2s ease-in-out, background-color .2s linear;
+    }
+
+    &:focus, &:active, &:hover {
+      background-color: transparent;
+      outline: 0;
+    }
+
+    &:hover {
+      transform: translate(0, 0);
+
+      .icon-bar-up {
+        transform: translate(0, -3px);
+      }
+      .icon-bar-down {
+        transform: translate(0, 3px);
       }
     }
-    &.active {
-      outline: 0;
-      background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .navbar-brand svg {
+    transition: fill .2s linear;
+  }
+
+  .navbar-form.search-form {
+    border: 0 none;
+    margin: 7px 0;
+
+    .form-group {
+      position: relative;
+      width: 234px;
+
+      input.form-control {
+        position: relative;
+        padding-left: 38px;
+        background: transparent;
+        box-shadow: none;
+        display: inline-block;
+        width: 102px;
+        border: 1px solid transparent;
+        transition: width 0.35s, box-shadow 0.45s;
+
+        &:hover,
+        &.hover,
+        &:focus,
+        &:valid {
+          width: 200px;
+          box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.035);
+          border-color: $input-border;
+        }
+
+        &::placeholder {
+          font-style: normal;
+          color: $text-color;
+          opacity: 1;
+        }
+      }
+
+      .form-control-feedback {
+        position: relative;
+        left: 40px;
+        z-index: 2;
+        display: inline-block;
+        width: 34px;
+        height: 39px;
+        line-height: 39px;
+        text-align: center;
+        font-size: 14px;
+        transition: left 0.35s ease;
+      }
     }
   }
 }
 
-.navbar-toggle {
-  padding: 4px 6px;
-  font-size: 16px;
-  color: #fff;
-  &:focus, &:active {
-    outline: 0;
+/* Big cover image on the home page */
+.main-header {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  /*margin-bottom: 5rem;*/
+  text-align: center;
+  background: #fff no-repeat center 158px;
+  background-size: cover;
+  overflow-x: hidden;
+
+  .main-nav-fixed {
+    height: 100px;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    display: table;
+    background: #fff;
   }
+
+  .inner {
+    width: 80%;
+  }
+
+  .navbar {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    border-top: 0;
+    min-height: 100%;
+    display: table-cell;
+    vertical-align: middle;
+  }
+}
+
+.sub-nav-main {
+  position: fixed;
+  z-index: 100;
+  top: 100px;
+  left: 0;
+  height: 58px;
+  width: 100%;
+  overflow-x: hidden;
+  background: #fff;
+  border-bottom: 1px solid $navbar-default-border;
+
+  &.absolute {
+    position: absolute;
+  }
+}
+
+.no-cover {
+  &.main-header {
+    min-height: 100px;
+    max-height: 40vh;
+    background: #fff;
+  }
+
+  &.post-head.main-header {
+    height: 100px;
+    min-height: 0;
+    margin-bottom: 0;
+    background: transparent;
+  }
+
+  .page-title {
+    color: rgba(0,0,0,0.8);
+  }
+
+  .main-nav.overlay {
+    background: none;
+  }
+
+  .page-description {
+    color: rgba(0,0,0,0.5);
+  }
+}
+
+.post-head.main-header {
+  height: 80vh;
+  min-height: 180px;
+}
+
+/* Hide when there's no cover image or on page2+ */
+.no-cover .scroll-down,
+.no-cover.main-header:after,
+.archive-template .scroll-down,
+.archive-template .main-header:after {
+  display: none;
+}
+
+.post-head.main-header {
+  height: 65vh;
+  min-height: 180px;
 }
 
 /* Main page scroll arrow styles */
@@ -54,8 +192,6 @@ navbar {
   border-radius: 60px;
   font-size: 40px;
   color: rgba(255, 255, 255, 0.6);
-  -webkit-transition: background .4s ease-in-out;
-  -moz-transition: background .4s ease-in-out;
   transition: background .4s ease-in-out;
   &:hover, &:focus {
     outline: 0;
