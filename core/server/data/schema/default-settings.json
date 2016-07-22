@@ -12,6 +12,9 @@
         "displayUpdateNotification": {
             "defaultValue": null
         },
+        "seenNotifications": {
+            "defaultValue": "[]"
+        },
         "migrations": {
             "defaultValue": "{}"
         }
