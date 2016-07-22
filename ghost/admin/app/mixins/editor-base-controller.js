@@ -7,6 +7,7 @@ import injectController from 'ember-controller/inject';
 import {htmlSafe} from 'ember-string';
 import observer from 'ember-metal/observer';
 import run from 'ember-runloop';
+import {isEmberArray} from 'ember-array/utils';
 
 import PostModel from 'ghost-admin/models/post';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
@@ -309,6 +310,10 @@ export default Mixin.create({
 
         if (error && isString(error)) {
             errorMessage = error;
+        } else if (error && isEmberArray(error)) {
+            // This is here because validation errors are returned as an array
+            // TODO: remove this once validations are fixed
+            errorMessage = error[0];
         } else if (error && error.errors && error.errors[0].message) {
             errorMessage = error.errors[0].message;
         } else {
