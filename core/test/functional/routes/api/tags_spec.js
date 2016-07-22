@@ -1,12 +1,10 @@
-var testUtils     = require('../../../utils'),
-    should        = require('should'),
-    supertest     = require('supertest'),
-
-    ghost         = require('../../../../../core'),
-
+var supertest = require('supertest'),
+    /*jshint unused:false*/
+    should = require('should'),
+    ghost = require('../../../../../core'),
     request;
 
-describe('Tag API', function () {
+describe('Tag API', function (tnv) {
     var accesstoken = '';
 
     before(function (done) {
@@ -15,7 +13,7 @@ describe('Tag API', function () {
         ghost().then(function (ghostServer) {
             request = supertest.agent(ghostServer.rootApp);
         }).then(function () {
-            return testUtils.doAuth(request, 'posts');
+            return tnv.doAuth(request, 'posts');
         }).then(function (token) {
             accesstoken = token;
             done();
@@ -23,16 +21,16 @@ describe('Tag API', function () {
     });
 
     after(function (done) {
-        testUtils.clearData().then(function () {
+        tnv.clearData().then(function () {
             done();
         }).catch(done);
     });
 
     it('can retrieve all tags', function (done) {
-        request.get(testUtils.API.getApiQuery('tags/'))
+        request.get(tnv.API.getApiQuery('tags/'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect('Cache-Control', tnv.cacheRules.private)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -44,9 +42,8 @@ describe('Tag API', function () {
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.tags);
                 jsonResponse.tags.should.have.length(6);
-                testUtils.API.checkResponse(jsonResponse.tags[0], 'tag');
-                testUtils.API.isISO8601(jsonResponse.tags[0].created_at).should.be.true();
-
+                tnv.API.checkResponse(jsonResponse.tags[0], 'tag');
+                tnv.API.isISO8601(jsonResponse.tags[0].created_at).should.eql(true);
                 done();
             });
     });

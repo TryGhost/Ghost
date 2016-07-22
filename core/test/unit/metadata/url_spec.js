@@ -1,4 +1,5 @@
-var getUrl = require('../../../server/data/meta/url');
+var getUrl = require('../../../server/data/meta/url'),
+    config = require('../../../server/config');
 
 describe('getUrl', function () {
     it('should return url for a post', function () {
@@ -20,7 +21,7 @@ describe('getUrl', function () {
             slug: 'welcome-post',
             url: '/post/welcome-post/'
         }, true);
-        url.should.equal('http://127.0.0.1:2369/post/welcome-post/');
+        url.should.equal(config.url + '/post/welcome-post/');
     });
 
     it('should return url for a tag', function () {
@@ -41,7 +42,7 @@ describe('getUrl', function () {
             parent: null,
             secure: true
         }, true);
-        url.should.equal('https://127.0.0.1:2369/tag/great/');
+        url.should.equal('https://127.0.0.1:' + config.server.port + '/tag/great/');
     });
 
     it('should return url for a author', function () {
@@ -66,7 +67,7 @@ describe('getUrl', function () {
             slug: 'author-name',
             secure: true
         }, true);
-        url.should.equal('https://127.0.0.1:2369/author/author-name/');
+        url.should.equal('https://127.0.0.1:' + config.server.port + '/author/author-name/');
     });
 
     it('should return url for a nav', function () {
@@ -86,7 +87,7 @@ describe('getUrl', function () {
             slug: 'about-me',
             current: true
         }, true);
-        url.should.equal('http://127.0.0.1:2369/about-me/');
+        url.should.equal(config.url + '/about-me/');
     });
 
     it('should return url for a context object with relative url', function () {

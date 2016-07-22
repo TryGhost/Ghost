@@ -11,6 +11,10 @@ configUtils.set = function (newConfig) {
     config.set(newConfig);
 };
 
+configUtils.reclone = function () {
+    configUtils.defaultConfig = _.cloneDeep(config.get());
+};
+
 configUtils.restore = function () {
     var topLevelOptional = ['mail', 'updateCheck', 'storage', 'forceAdminSSL', 'urlSSL', 'compress', 'privacy'];
 

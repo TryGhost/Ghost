@@ -135,52 +135,6 @@ var _              = require('lodash'),
                 }
             },
 
-            // ### grunt-mocha-cli
-            // Configuration for the mocha test runner, used to run unit, integration and route tests as part of
-            // `grunt validate`. See [grunt validate](#validate) and its sub tasks for more information.
-            mochacli: {
-                options: {
-                    ui: 'bdd',
-                    reporter: grunt.option('reporter') || 'spec',
-                    timeout: '15000',
-                    save: grunt.option('reporter-output'),
-                    require: ['core/server/overrides']
-                },
-
-                // #### All Unit tests
-                unit: {
-                    src: [
-                        'core/test/unit/**/*_spec.js',
-                        'core/server/apps/**/tests/*_spec.js'
-                    ]
-                },
-
-                // #### All Integration tests
-                integration: {
-                    src: [
-                        'core/test/integration/**/*_spec.js',
-                        'core/test/integration/*_spec.js'
-                    ]
-                },
-
-                // #### All Route tests
-                routes: {
-                    src: [
-                        'core/test/functional/routes/**/*_spec.js'
-                    ]
-                },
-
-                // #### All Module tests
-                module: {
-                    src: [
-                        'core/test/functional/module/**/*_spec.js'
-                    ]
-                },
-
-                // #### Run single test (src is set dynamically, see grunt task 'test')
-                single: {}
-            },
-
             // ### grunt-mocha-istanbul
             // Configuration for the mocha test coverage generator
             // `grunt coverage`.
@@ -253,6 +207,29 @@ var _              = require('lodash'),
                             cwd: path.resolve(process.cwd() + '/core/client/'),
                             stdout: false
                         }
+                    }
+                },
+
+                test: {
+                    command: function () {
+                        var query = grunt.option('q'),
+                            folder = grunt.option('path'),
+                            exclude = grunt.option('exclude'),
+                            command = 'node core/test/mocha-tnv.js && node_modules/mocha-tnv/bin/tnv --config=core/test/mocha-tnv.json';
+
+                        if (query) {
+                            command += ' --query=' + query;
+                        }
+
+                        if (folder) {
+                            command += ' --folder=' + folder;
+                        }
+
+                        if (exclude) {
+                            command += ' --exclude=' + exclude;
+                        }
+
+                        return command;
                     }
                 },
 
@@ -470,25 +447,8 @@ var _              = require('lodash'),
         //
         // `grunt test:integration/api` - runs the api integration tests
         // `grunt test:integration` - runs the integration tests in the root folder and excludes all api & model tests
-        grunt.registerTask('test', 'Run a particular spec file from the core/test directory e.g. `grunt test:unit/apps_spec.js`', function (test) {
-            if (!test) {
-                grunt.fail.fatal('No test provided. `grunt test` expects a filename. e.g.: `grunt test:unit/apps_spec.js`. Did you mean `npm test` or `grunt validate`?');
-            }
-
-            if (!test.match(/core\/test/)) {
-                test = 'core/test/' + test;
-            }
-
-            // CASE: execute folder
-            if (!test.match(/.js/)) {
-                test += '/**';
-            } else if (!fs.existsSync(test)) {
-                grunt.fail.fatal('This file does not exist!');
-            }
-
-            cfg.mochacli.single.src = [test];
-            grunt.initConfig(cfg);
-            grunt.task.run('test-setup', 'mochacli:single');
+        grunt.registerTask('test', 'Run a particular spec file from the core/test directory e.g. `grunt test:unit/apps_spec.js`', function () {
+            grunt.task.run('test-setup', 'shell:test');
         });
 
         // #### Stub out ghost files *(Utility Task)*
@@ -535,7 +495,7 @@ var _              = require('lodash'),
             ['test-server', 'test-client']);
 
         grunt.registerTask('test-server', 'Run server tests',
-            ['test-routes', 'test-module', 'test-unit', 'test-integration']);
+            ['test-setup', 'shell:test']);
 
         grunt.registerTask('test-client', 'Run client tests',
             ['test-ember']);
@@ -600,6 +560,7 @@ var _              = require('lodash'),
         // don't cause bugs. At present, pg often fails and is not officially supported.
         //
         // A coverage report can be generated for these tests using the `grunt test-coverage` task.
+        // @TODO: rewirte these grunt tasks
         grunt.registerTask('test-integration', 'Run integration tests (mocha + db access)',
             ['test-setup', 'mochacli:integration']
         );

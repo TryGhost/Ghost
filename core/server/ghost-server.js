@@ -27,14 +27,11 @@ function GhostServer(rootApp) {
  *
  * ### Start
  * Starts the ghost server listening on the configured port.
- * Alternatively you can pass in your own express instance and let Ghost
- * start listening for you.
- * @param  {Object} externalApp - Optional express app instance.
  * @return {Promise} Resolves once Ghost has started
  */
-GhostServer.prototype.start = function (externalApp) {
+GhostServer.prototype.start = function () {
     var self = this,
-        rootApp = externalApp ? externalApp : self.rootApp;
+        rootApp = self.rootApp;
 
     return new Promise(function (resolve) {
         var socketConfig = config.getSocket();
