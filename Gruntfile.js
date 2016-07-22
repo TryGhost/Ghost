@@ -8,11 +8,9 @@
 var _              = require('lodash'),
     chalk          = require('chalk'),
     fs             = require('fs-extra'),
-    https          = require('https'),
-    moment         = require('moment'),
-    getTopContribs = require('top-gh-contribs'),
     path           = require('path'),
     Promise        = require('bluebird'),
+    Git            = require('git-wrapper'),
 
     escapeChar     = process.platform.match(/^win/) ? '^' : '\\',
     cwd            = process.cwd().replace(/( |\(|\))/g, escapeChar + '$1'),
@@ -675,87 +673,6 @@ var _              = require('lodash'),
                 console.log('>', 'Always two there are, no more, no less. A master and a ' + chalk.bold('stable') + '.');
             });
 
-        // ### Build About Page *(Utility Task)*
-        // Builds the github contributors partial template used on the Settings/About page,
-        // and downloads the avatar for each of the users.
-        // Run by any task that compiles the ember assets or manually via `grunt buildAboutPage`.
-        // Only builds if the contributors template does not exist.
-        // To force a build regardless, supply the --force option.
-        //     `grunt buildAboutPage --force`
-        grunt.registerTask('buildAboutPage', 'Compile assets for the About Ghost page', function () {
-            var done = this.async(),
-                templatePath = 'core/client/app/templates/-contributors.hbs',
-                imagePath = 'core/client/public/assets/img/contributors/',
-                timeSpan = moment().subtract(90, 'days').format('YYYY-MM-DD'),
-                oauthKey = process.env.GITHUB_OAUTH_KEY;
-
-            if (fs.existsSync(templatePath) && !grunt.option('force')) {
-                grunt.log.writeln('Contributors template already exists.');
-                grunt.log.writeln(chalk.bold('Skipped'));
-                return done();
-            }
-
-            grunt.verbose.writeln('Downloading release and contributor information from GitHub');
-
-            return Promise.join(
-                Promise.promisify(fs.mkdirs)(imagePath),
-                getTopContribs({
-                    user: 'tryghost',
-                    repo: 'ghost',
-                    oauthKey: oauthKey,
-                    sinceDate: timeSpan,
-                    count: 18,
-                    retry: true
-                })
-            ).then(function (results) {
-                var contributors = results[1],
-                    contributorTemplate = '<article>\n    <a href="<%githubUrl%>" title="<%name%>">\n' +
-                        '        <img src="{{gh-path "admin" "/img/contributors"}}/<%name%>" alt="<%name%>" />\n' +
-                        '    </a>\n</article>',
-
-                    downloadImagePromise = function (url, name) {
-                        return new Promise(function (resolve, reject) {
-                            var file = fs.createWriteStream(path.join(__dirname, imagePath, name));
-                            https.get(url, function (response) {
-                                    response.pipe(file);
-                                    file.on('finish', function () {
-                                        file.close();
-                                        resolve();
-                                    });
-                                })
-                                .on('error', reject);
-                        });
-                    };
-
-                grunt.verbose.writeln('Creating contributors template.');
-                grunt.file.write(templatePath,
-                    // Map contributors to the template.
-                    _.map(contributors, function (contributor) {
-                        return contributorTemplate
-                            .replace(/<%githubUrl%>/g, contributor.githubUrl)
-                            .replace(/<%name%>/g, contributor.name);
-                    }).join('\n')
-                );
-
-                grunt.verbose.writeln('Downloading images for top contributors');
-                return Promise.all(_.map(contributors, function (contributor) {
-                    return downloadImagePromise(contributor.avatarUrl + '&s=60', contributor.name);
-                }));
-            }).then(done).catch(function (error) {
-                grunt.log.error(error);
-
-                if (error.http_status) {
-                    grunt.log.writeln('GitHub API request returned status: ' + error.http_status);
-                }
-
-                if (error.ratelimit_limit) {
-                    grunt.log.writeln('Rate limit data: limit: %d, remaining: %d, reset: %s', error.ratelimit_limit, error.ratelimit_remaining, moment.unix(error.ratelimit_reset).fromNow());
-                }
-
-                done(false);
-            });
-        });
-
         // ## Building assets
         //
         // Ghost's GitHub repository contains the un-built source code for Ghost. If you're looking for the already
@@ -786,12 +703,7 @@ var _              = require('lodash'),
         // `bower` does have some quirks, such as not running as root. If you have problems please try running
         // `grunt init --verbose` to see if there are any errors.
         grunt.registerTask('init', 'Prepare the project for development',
-            ['update_submodules', 'subgrunt:init', 'assets', 'default']);
-
-        // ### Basic Asset Building
-        // Builds and moves necessary client assets. Prod additionally builds the ember app.
-        grunt.registerTask('assets', 'Basic asset building & moving',
-            ['clean:tmp', 'buildAboutPage']);
+            ['update_submodules', 'subgrunt:init', 'clean:tmp', 'default']);
 
         // ### Default asset build
         // `grunt` - default grunt task
@@ -820,6 +732,78 @@ var _              = require('lodash'),
         // Note that the current implementation of watch only works with casper, not other themes.
         grunt.registerTask('dev', 'Dev Mode; watch files and restart server on changes',
            ['bgShell:ember', 'express:dev', 'watch']);
+
+        // ### Contributors
+        // `grunt contributors:<tag-name>` - generate a comma-separated list of contributors for a Ghost release.
+        //
+        // You must supply a tag name to us
+        //
+        grunt.registerTask('contributors', 'Generate a list of contributors for a release', function () {
+            var getContribList = require('gh-contrib-list'),
+                oauthKey = process.env.GITHUB_OAUTH_KEY,
+                thisGit = new Git(),
+                clientGit = new Git({'git-dir': path.resolve(cwd + '/core/client/.git')}),
+                done = this.async();
+
+            function mergeContribs(first, second) {
+                _.each(second, function (contributor) {
+                    var contributorInFirst = _.find(first, ['id', contributor.id]);
+
+                    if (contributorInFirst) {
+                        contributorInFirst.commitCount += contributor.commitCount;
+                    } else {
+                        first.push(contributor);
+                    }
+                });
+
+                return _.orderBy(first, ['commitCount'], ['desc']);
+            }
+
+            if (!this.args) {
+                grunt.log.error('You must supply a tag name. Please run like this: `grunt contributors:<tag-name>`');
+            }
+
+            return Promise.props({
+                ghost: Promise.promisify(thisGit.exec, {context: thisGit})('rev-list', {n: 1}, this.args),
+                admin: Promise.promisify(clientGit.exec, {context: clientGit})('rev-list', {n: 1}, this.args)
+            }).then(function (props) {
+                return Promise.join(
+                    getContribList({
+                        user: 'tryghost',
+                        repo: 'ghost',
+                        oauthKey: oauthKey,
+                        commit: props.ghost.trim(),
+                        removeGreenkeeper: true,
+                        retry: true
+                    }),
+                    getContribList({
+                        user: 'tryghost',
+                        repo: 'ghost-admin',
+                        oauthKey: oauthKey,
+                        commit: props.admin.trim(),
+                        removeGreenkeeper: true,
+                        retry: true
+                    })
+                );
+            }).then(function (results) {
+                var contributors = mergeContribs(results[0], results[1]);
+
+                grunt.log.writeln(_.map(contributors, 'name').join(', '));
+                done();
+            }).catch(function (error) {
+                grunt.log.error(error);
+
+                if (error.http_status) {
+                    grunt.log.writeln('GitHub API request returned status: ' + error.http_status);
+                }
+
+                if (error.ratelimit_limit) {
+                    grunt.log.writeln('Rate limit data: limit: %d, remaining: %d, reset: %s', error.ratelimit_limit, error.ratelimit_remaining, require('moment').unix(error.ratelimit_reset).fromNow());
+                }
+
+                done(false);
+            });
+        });
 
         // ### Release
         // Run `grunt release` to create a Ghost release zip file.
