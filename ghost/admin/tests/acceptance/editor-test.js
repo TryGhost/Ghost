@@ -391,6 +391,35 @@ describe('Acceptance: Editor', function() {
             });
         });
 
+        it('handles title validation errors correctly', function () {
+            let post = server.createList('post', 1);
+
+            // post id 1 is a draft, checking for draft behaviour now
+            visit('/editor/1');
+
+            andThen(() => {
+                expect(currentURL(), 'currentURL')
+                    .to.equal('/editor/1');
+            });
+
+            // Test title validation
+            fillIn('input[id="entry-title"]', Array(160).join('a'));
+            triggerEvent('input[id="entry-title"]', 'blur');
+            click('.view-header .btn.btn-sm.js-publish-button');
+
+            andThen(() => {
+                expect(
+                    find('.gh-alert').length,
+                    'number of alerts after invalid title'
+                ).to.equal(1);
+
+                expect(
+                    find('.gh-alert').text(),
+                    'alert text after invalid title'
+                ).to.match(/Title cannot be longer than 150 characters/);
+            });
+        });
+
         it('renders first countdown notification before scheduled time', function () {
             /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
             let clock = sinon.useFakeTimers(moment().valueOf());
