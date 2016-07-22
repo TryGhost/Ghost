@@ -171,7 +171,8 @@
         },
         "general": {
             "moreInfo": "\nMore info: {info}",
-            "requiredOnFuture": "This will be required in future. Please see {link}"
+            "requiredOnFuture": "This will be required in future. Please see {link}",
+            "database": "Database problem, please try again or contact our support."
         },
         "httpServer": {
             "addressInUse": {
