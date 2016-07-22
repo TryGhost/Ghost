@@ -35,5 +35,17 @@ describeComponent(
             this.render(hbs`{{gh-trim-focus-input text shouldFocus=true}}`);
             expect(this.$('.gh-input').attr('autofocus')).to.be.ok;
         });
+
+        it('handles undefined values', function () {
+            this.set('text', undefined);
+            this.render(hbs`{{gh-trim-focus-input text shouldFocus=true}}`);
+            expect(this.$('.gh-input').attr('autofocus')).to.be.ok;
+        });
+
+        it('handles non-string values', function () {
+            this.set('text', 10);
+            this.render(hbs`{{gh-trim-focus-input text shouldFocus=true}}`);
+            expect(this.$('.gh-input').val()).to.equal('10');
+        });
     }
 );
