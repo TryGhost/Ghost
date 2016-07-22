@@ -155,6 +155,13 @@ var _              = require('lodash'),
                     ]
                 },
 
+                // #### All Extra tests
+                extra: {
+                    src: [
+                        'core/test/extra/**/*_spec.js'
+                    ]
+                },
+
                 // #### All Integration tests
                 integration: {
                     src: [
@@ -203,7 +210,8 @@ var _              = require('lodash'),
                         'core/test/integration',
                         'core/server/apps',
                         'core/test/functional',
-                        'core/test/unit'
+                        'core/test/unit',
+                        'core/test/extra'
                     ],
                     options: {
                         coverageFolder: 'core/test/coverage/all',
@@ -535,7 +543,7 @@ var _              = require('lodash'),
             ['test-server', 'test-client']);
 
         grunt.registerTask('test-server', 'Run server tests',
-            ['test-routes', 'test-module', 'test-unit', 'test-integration']);
+            ['test-routes', 'test-module', 'test-unit', 'test-integration', 'test-extra']);
 
         grunt.registerTask('test-client', 'Run client tests',
             ['test-ember']);
@@ -576,6 +584,11 @@ var _              = require('lodash'),
             ['test-setup', 'mochacli:unit']
         );
 
+        // ### Extra Tests *(sub task)*
+        grunt.registerTask('test-extra', 'Run unit tests (mocha)',
+            ['test-setup', 'mochacli:extra']
+        );
+
         // ### Integration tests *(sub task)*
         // `grunt test-integration` will run just the integration tests
         //
@@ -593,7 +606,7 @@ var _              = require('lodash'),
         //
         // If you need to run an individual integration test file you can use the `grunt test:<file_path>` task:
         //
-        // `grunt test:integration/api/api_tags_spec.js`
+        // `grunt test:integration/api/tags_spec.js`
         //
         // Their purpose is to test that both the api and models behave as expected when the database layer is involved.
         // These tests are run against sqlite3, mysql and pg on travis and ensure that differences between the databases
