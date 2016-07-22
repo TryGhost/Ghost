@@ -136,6 +136,7 @@ apiRoutes = function apiRoutes(middleware) {
         middleware.oauth.generateAccessToken
     );
     router.post('/authentication/revoke', authenticatePrivate, api.http(api.authentication.revoke));
+    router.del('/authentication/tokens', authenticatePrivate, api.http(api.authentication.revokeOtherTokens));
 
     // ## Uploads
     router.post('/uploads', authenticatePrivate, middleware.upload.single('uploadimage'), api.http(api.uploads.add));

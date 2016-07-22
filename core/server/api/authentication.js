@@ -1,5 +1,6 @@
 var _                = require('lodash'),
     validator        = require('validator'),
+    Promise          = require('bluebird'),
     pipeline         = require('../utils/pipeline'),
     dataProvider     = require('../models'),
     settings         = require('./settings'),
@@ -547,6 +548,38 @@ authentication = {
         tasks = [
             processArgs,
             revokeToken
+        ];
+
+        return pipeline(tasks, tokenDetails, localOptions);
+    },
+
+    /**
+     * Revokes all tokens except the currently active one. This is used to implement "Signoff all other web sessions".
+     * @param {Object} tokenDetails
+     * @param {Object} options
+     * @return {Promise<Object>} an object containing the revoked token.
+     */
+    revokeOtherTokens: function revokeToken(tokenDetails, options) {
+        var tasks,
+            localOptions = _.cloneDeep(options || {});
+
+        function processArgs(tokenDetails, options) {
+            return _.assign({}, tokenDetails, options);
+        }
+
+        function revokeInactiveToken(options) {
+            var destroyInactiveAccessTokens = dataProvider.Accesstoken.destroyInactiveTokensByUser(options),
+                destroyInactiveRefreshTokens = dataProvider.Refreshtoken.destroyInactiveTokensByUser(options);
+
+            return Promise.all(destroyInactiveAccessTokens, destroyInactiveRefreshTokens)
+            .catch(function () {
+                throw new errors.TokenRevocationError(i18n.t('errors.api.authentication.tokenRevocationFailed'));
+            });
+        }
+
+        tasks = [
+            processArgs,
+            revokeInactiveToken
         ];
 
         return pipeline(tasks, tokenDetails, localOptions);

@@ -76,6 +76,25 @@ Basetoken = ghostBookshelf.Model.extend({
             .then(function then(model) {
                 return model.destroy(options);
             });
+    },
+
+    /**
+     * ### destroyByUser
+     * @param  {[type]} options has context and id. Context is the user doing the destroy, id is the user to destroy
+     */
+    destroyInactiveTokensByUser: function destroyByUser(options) {
+        var userId = options.id,
+            token  = options.token;
+
+        options = this.filterOptions(options, 'destroyByUser');
+
+        return ghostBookshelf.Collection.forge([], {model: this})
+        .query('where', 'token', '<>', token)
+        .andWhere('user_id', '=', userId)
+        .fetch(options)
+        .then(function then(collection) {
+            collection.invokeThen('destroy', options);
+        });
     }
 });
 
