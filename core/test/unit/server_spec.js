@@ -90,7 +90,7 @@ describe('server bootstrap', function () {
                         forceMigration: undefined
                     }).should.eql(true);
 
-                    models.Settings.populateDefaults.callCount.should.eql(2);
+                    models.Settings.populateDefaults.callCount.should.eql(1);
                     migration.populate.calledOnce.should.eql(false);
                     config.maintenance.enabled.should.eql(false);
 

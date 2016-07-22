@@ -77,8 +77,6 @@ function init(options) {
                     forceMigration: process.env.FORCE_MIGRATION
                 }).then(function () {
                     config.maintenance.enabled = false;
-                }).then(function () {
-                    return models.Settings.populateDefaults();
                 }).catch(function (err) {
                     errors.logErrorAndExit(err, err.context, err.help);
                 });
