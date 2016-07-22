@@ -32,7 +32,11 @@ const TrimFocusInputComponent = GhostInput.extend({
     },
 
     sanitizeInput(input) {
-        return input.trim();
+        if (input && typeof input.trim === 'function') {
+            return input.trim();
+        } else {
+            return input;
+        }
     },
 
     _focus() {

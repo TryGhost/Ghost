@@ -12,24 +12,26 @@
                 <input style="display:none;" type="password" name="fakepasswordremembered"/>
 
                 {{gh-profile-image fileStorage=config.fileStorage email=model.email setImage="setImage"}}
-                {{#gh-form-group errors=model.errors hasValidated=hasValidated property="email"}}
+
+                {{#gh-form-group}}
                     <label for="email-address">Email address</label>
                     <span class="input-icon icon-mail">
-                        {{gh-input model.email type="email" name="email" placeholder="Eg. john@example.com" onenter=(action "signup") disabled="disabled" autocorrect="off" focusOut=(action "validate" "email") update=(action (mut model.email))}}
+                        {{gh-input model.email type="email" name="email" placeholder="Eg. john@example.com" disabled="disabled" autocorrect="off"}}
                     </span>
-                    {{gh-error-message errors=model.errors property="email"}}
                 {{/gh-form-group}}
+
                 {{#gh-form-group errors=model.errors hasValidated=hasValidated property="name"}}
                     <label for="full-name">Full name</label>
                     <span class="input-icon icon-user">
-                        {{gh-trim-focus-input model.name tabindex="1" type="text" name="name" placeholder="Eg. John H. Watson" enter=(action "signup") autocorrect="off" focusOut=(action "validate" "name") update=(action (mut model.name))}}
+                        {{gh-trim-focus-input model.name tabindex="1" type="text" name="name" placeholder="Eg. John H. Watson" onenter=(action "signup") autocorrect="off" focusOut=(action "validate" "name") update=(action (mut model.name))}}
                     </span>
                     {{gh-error-message errors=model.errors property="name"}}
                 {{/gh-form-group}}
+
                 {{#gh-form-group errors=model.errors hasValidated=hasValidated property="password"}}
                     <label for="password">Password</label>
                     <span class="input-icon icon-lock">
-                        {{gh-input model.password tabindex="2" type="password" name="password" enter=(action "signup") autocorrect="off" focusOut=(action "validate" "password") update=(action (mut model.password))}}
+                        {{gh-input model.password tabindex="2" type="password" name="password" placeholder="At least 8 characters" onenter=(action "signup") autocorrect="off" focusOut=(action "validate" "password") update=(action (mut model.password))}}
                     </span>
                     {{gh-error-message errors=model.errors property="password"}}
                 {{/gh-form-group}}
