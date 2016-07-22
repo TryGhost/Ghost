@@ -118,7 +118,6 @@
 /* ---------------------------------------------------------- */
 .gh-upgrade-notification {
     color: var(--red);
-    font-size: 20px;
 }
 
 .gh-upgrade-notification a {
