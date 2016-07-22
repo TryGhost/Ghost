@@ -18028,27 +18028,42 @@ jQuery.extend( jQuery.easing,
         bastardFullImg();
         $(window).smartresize(bastardFullImg);
 
+        var breakpoint = {};
+        breakpoint.refreshValue = function () {
+            this.value = window.getComputedStyle(
+                document.querySelector('body'), ':before'
+            ).getPropertyValue('content').replace(/\"/g, '');
+        };
+
+        $(window).on('load resize', function () {
+            breakpoint.refreshValue();
+        });
+
         //sub-nav hide on scroll
         var $subNav = $('.sub-nav-main');
 
         if ($subNav.length > 0) {
             var subNavPosTop = $subNav.position().top;
-            var hnadleSubNav = function () {
-                if ($(document).scrollTop() > 200) {
-                    $subNav.animate({
-                        top: (subNavPosTop-50) + 'px'
-                    }, 'fast', function () {
-                        $subNav.addClass('absolute');
-                    });
-                } else {
-                    $subNav.removeClass('absolute');
-                    $subNav.animate({
-                        top: subNavPosTop
-                    }, 'fast');
+            var handleSubNav = function () {
+                console.log(breakpoint.value);
+                if ($.inArray(breakpoint.value, ['smartphone', 'smartphone_wide']) === -1) {
+                    console.log('baaaaa');
+                    if ($(document).scrollTop() > 200) {
+                        $subNav.animate({
+                            top: (subNavPosTop - 50) + 'px'
+                        }, 'fast', function () {
+                            $subNav.addClass('absolute');
+                        });
+                    } else {
+                        $subNav.removeClass('absolute');
+                        $subNav.animate({
+                            top: subNavPosTop
+                        }, 'fast');
+                    }
                 }
             };
 
-            $(window).on('scroll', hnadleSubNav.debounce(100));
+            $(window).on('scroll', handleSubNav.debounce(100));
         }
     });
 

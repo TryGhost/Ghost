@@ -137,6 +137,30 @@
   &.absolute {
     position: absolute;
   }
+
+  .navbar-toggle {
+    float: none;
+    margin: auto;
+  }
+
+  .nav-inline {
+    line-height: 55px;
+
+    .nav-link {
+      margin: 0 20px;
+      color: $text-color;
+      font-weight: 300;
+      font-size: 1.7rem;
+      transition: color 0.3s ease-in-out;
+
+      &:hover, &:active {
+        color: $brand-primary;
+      }
+      &.active {
+        color: $info-font-color;
+      }
+    }
+  }
 }
 
 .no-cover {

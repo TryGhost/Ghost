@@ -2,6 +2,37 @@
    16. Media Queries - Smaller than 900px
    ========================================================================== */
 
+// code to transfer media query breakpoints to javascript
+body:before {
+  content: "smartphone";
+  display: none; /* Prevent from displaying. */
+}
+@media (min-width: $screen-xs) {
+  body:before {
+    content: "smartphone_wide";
+  }
+}
+@media (min-width: $screen-sm) {
+  body:before {
+    content: "tablet_narrow";
+  }
+}
+@media (min-width: $screen-md) {
+  body:before {
+    content: "tablet_wide";
+  }
+}
+@media (min-width: $screen-lg) {
+  body:before {
+    content: "desktop";
+  }
+}
+@media (min-width: 1600px) {
+  body:before {
+    content: "wide";
+  }
+}
+
 @media only screen and (max-width: 900px) {
   blockquote {
     margin-left: 0;
@@ -285,6 +316,20 @@
 
     .navbar-brand {
       padding: 15px 15px 15px 50px;
+    }
+  }
+}
+
+@media only screen and (max-width: $screen-sm) {
+  .sub-nav-main {
+    height: auto;
+
+    .nav-inline {
+      display: block;
+
+      .nav-link {
+        display: block;
+      }
     }
   }
 }

@@ -7049,6 +7049,27 @@ fieldset[disabled] .btn-muted-link:focus {
 .sub-nav-main.absolute {
   position: absolute; }
 
+.sub-nav-main .navbar-toggle {
+  float: none;
+  margin: auto; }
+
+.sub-nav-main .nav-inline {
+  line-height: 55px; }
+
+.sub-nav-main .nav-inline .nav-link {
+  margin: 0 20px;
+  color: #333333;
+  font-weight: 300;
+  font-size: 1.7rem;
+  -webkit-transition: color 0.3s ease-in-out;
+          transition: color 0.3s ease-in-out; }
+
+.sub-nav-main .nav-inline .nav-link:hover, .sub-nav-main .nav-inline .nav-link:active {
+  color: #00c092; }
+
+.sub-nav-main .nav-inline .nav-link.active {
+  color: #b3b3b3; }
+
 .no-cover.main-header {
   min-height: 100px;
   max-height: 40vh;
@@ -7901,6 +7922,31 @@ h1.post-title {
 /* ==========================================================================
    16. Media Queries - Smaller than 900px
    ========================================================================== */
+body:before {
+  content: "smartphone";
+  display: none;
+  /* Prevent from displaying. */ }
+
+@media (min-width: 480px) {
+  body:before {
+    content: "smartphone_wide"; } }
+
+@media (min-width: 768px) {
+  body:before {
+    content: "tablet_narrow"; } }
+
+@media (min-width: 992px) {
+  body:before {
+    content: "tablet_wide"; } }
+
+@media (min-width: 1200px) {
+  body:before {
+    content: "desktop"; } }
+
+@media (min-width: 1600px) {
+  body:before {
+    content: "wide"; } }
+
 @media only screen and (max-width: 900px) {
   blockquote {
     margin-left: 0; }
@@ -8086,6 +8132,14 @@ h1.post-title {
 @media only screen and (min-width: 768px) {
   .main-header .navbar-brand {
     padding: 15px 15px 15px 50px; } }
+
+@media only screen and (max-width: 768px) {
+  .sub-nav-main {
+    height: auto; }
+  .sub-nav-main .nav-inline {
+    display: block; }
+  .sub-nav-main .nav-inline .nav-link {
+    display: block; } }
 
 /* ==========================================================================
    End of file. Media queries should be the last thing here. Do not add stuff
