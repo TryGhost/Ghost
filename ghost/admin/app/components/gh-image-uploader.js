@@ -20,6 +20,7 @@ export default Component.extend({
 
     image: null,
     text: '',
+    altText: '',
     saveButton: true,
 
     dragClass: null,
@@ -42,6 +43,12 @@ export default Component.extend({
         formData.append('uploadimage', file);
 
         return formData;
+    }),
+
+    description: computed('text', 'altText', function () {
+        let altText = this.get('altText');
+
+        return this.get('text') || (altText ? `Upload image of "${altText}"` : 'Upload an image');
     }),
 
     progressStyle: computed('uploadPercentage', function () {

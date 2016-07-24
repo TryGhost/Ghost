@@ -8,9 +8,11 @@
 {{else}}
     {{gh-image-uploader
         text=text
+        altText=altText
         update=(action 'update')
         onInput=(action 'onInput')
         uploadStarted=(action 'uploadStarted')
         uploadFinished=(action 'uploadFinished')
-        formChanged=(action 'formChanged')}}
+        formChanged=(action 'formChanged')
+    }}
 {{/if}}
