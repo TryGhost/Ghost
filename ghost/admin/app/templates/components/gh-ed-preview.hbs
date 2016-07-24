@@ -4,7 +4,7 @@
     {{#ember-wormhole to=uploader.destinationElementId}}
         {{gh-image-uploader-with-preview
             image=uploader.src
-            text=uploader.altText
+            altText=uploader.altText
             update=(action "updateImageSrc" uploader.index)
             remove=(action "updateImageSrc" uploader.index "")
             uploadStarted=uploadStarted
