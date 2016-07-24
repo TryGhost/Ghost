@@ -207,13 +207,13 @@
   border-bottom: 1px solid #EE6600;
 }
 .blog-content .word_counts h3 {
-  font-size: 24px;
+  font-size: 26px;
   margin-top: 20px;
   margin-bottom: 6px;
   border-bottom: 1px solid #EE6600;
 }
 .blog-content .word_counts h4 {
-  font-size: 20px;
+  font-size: 22px;
   margin: 24px 0 4px;
 }
 .blog-content .word_counts img {
@@ -1334,6 +1334,7 @@ h5,
 h6 {
   font-family: "游ゴシック体", "Yu Gothic", YuGothic, "ヒラギノ角ゴ Pro", "Hiragino Kaku Gothic Pro", "メイリオ", "Meiryo", sans-serif, 'Abril Fatface', cursive;
   font-style: normal;
+  font-weight: bold;
   color: #3f3f3f;
   text-rendering: optimizeLegibility;
   line-height: 1.1;
