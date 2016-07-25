@@ -69,6 +69,7 @@ function init(options) {
     }).then(function () {
         return versioning.getDatabaseVersion()
             .then(function (currentVersion) {
+                var maintenanceState = config.maintenance.enabled || false;
                 config.maintenance.enabled = true;
 
                 migrations.update({
@@ -76,7 +77,7 @@ function init(options) {
                     toVersion: versioning.getNewestDatabaseVersion(),
                     forceMigration: process.env.FORCE_MIGRATION
                 }).then(function () {
-                    config.maintenance.enabled = false;
+                    config.maintenance.enabled = maintenanceState;
                 }).catch(function (err) {
                     errors.logErrorAndExit(err, err.context, err.help);
                 });

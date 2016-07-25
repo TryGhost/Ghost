@@ -197,7 +197,9 @@ setupMiddleware = function setupMiddleware(blogApp) {
 
     // Mount admin express app to /ghost and set up routes
     adminApp.use(redirectToSetup);
+    adminApp.use(maintenance);
     adminApp.use(routes.admin());
+
     blogApp.use('/ghost', adminApp);
 
     // send 503 error page in case of maintenance
