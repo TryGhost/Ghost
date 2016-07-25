@@ -324,7 +324,8 @@ errors = {
         function renderErrorInt(errorView) {
             var stack = null;
 
-            if (statusCode !== 404 && process.env.NODE_ENV !== 'production' && err.stack) {
+            // Not Found and Maintenance Errors don't need a stack trace
+            if (statusCode !== 404 && statusCode !== 503 && process.env.NODE_ENV !== 'production' && err.stack) {
                 stack = parseStack(err.stack);
             }
 
