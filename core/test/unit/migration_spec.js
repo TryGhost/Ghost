@@ -6,7 +6,7 @@ var should = require('should'),
     crypto = require('crypto'),
     fs = require('fs'),
 
-// Stuff we are testing
+    // Stuff we are testing
     db = require('../../server/data/db'),
     errors = require('../../server/errors'),
     models = require('../../server/models'),
@@ -204,6 +204,45 @@ describe('Migrations', function () {
         });
     });
 
+    describe('isDatabaseOutOfDate', function () {
+        var updateDatabaseSchemaStub, updateDatabaseSchemaReset, versionsSpy;
+
+        beforeEach(function () {
+            versionsSpy = sandbox.spy(schema.versioning, 'getMigrationVersions');
+
+            // For these tests, stub out the actual update task
+            updateDatabaseSchemaStub = sandbox.stub().returns(new Promise.resolve());
+            updateDatabaseSchemaReset = update.__set__('updateDatabaseSchema', updateDatabaseSchemaStub);
+        });
+
+        afterEach(function () {
+            updateDatabaseSchemaReset();
+        });
+
+        it('should throw error if versions are too old', function () {
+            var response = update.isDatabaseOutOfDate({fromVersion: '000', toVersion: '002'});
+            updateDatabaseSchemaStub.calledOnce.should.be.false();
+            (response.error instanceof errors.DatabaseVersion).should.eql(true);
+        });
+
+        it('should just return if versions are the same', function () {
+            var migrateToDatabaseVersionStub = sandbox.stub().returns(new Promise.resolve()),
+                migrateToDatabaseVersionReset = update.__set__('migrateToDatabaseVersion', migrateToDatabaseVersionStub),
+                response = update.isDatabaseOutOfDate({fromVersion: '004', toVersion: '004'});
+
+            response.migrate.should.eql(false);
+            versionsSpy.calledOnce.should.be.false();
+            migrateToDatabaseVersionStub.callCount.should.eql(0);
+            migrateToDatabaseVersionReset();
+        });
+
+        it('should throw an error if the database version is higher than the default', function () {
+            var response = update.isDatabaseOutOfDate({fromVersion: '010', toVersion: '004'});
+            updateDatabaseSchemaStub.calledOnce.should.be.false();
+            (response.error instanceof errors.DatabaseVersion).should.eql(true);
+        });
+    });
+
     describe('Update', function () {
         describe('Update function', function () {
             var resetBackup, backupStub, fixturesStub, setDbStub, versionsSpy, tasksSpy, transactionStub, transaction;
@@ -252,7 +291,7 @@ describe('Migrations', function () {
 
                 it('should attempt to run the pre & post update tasks correctly', function (done) {
                     // Execute
-                    update({fromVersion: '100', toVersion: '102'}).then(function () {
+                    update.execute({fromVersion: '100', toVersion: '102'}).then(function () {
                         // getMigrationVersions should be called with the correct versions
                         versionsSpy.calledOnce.should.be.true();
                         versionsSpy.calledWith('100', '102').should.be.true();
@@ -288,21 +327,11 @@ describe('Migrations', function () {
                     }).catch(done);
                 });
 
-                it('should throw error if versions are too old', function (done) {
-                    update({fromVersion: '000', toVersion: '002'}).then(function () {
-                        done(new Error('expected database version too old error'));
-                    }).catch(function (err) {
-                        updateDatabaseSchemaStub.calledOnce.should.be.false();
-                        (err instanceof errors.DatabaseVersion).should.eql(true);
-                        done();
-                    });
-                });
-
                 it('should upgrade from minimum version, if force migration is set', function (done) {
                     var migrateToDatabaseVersionStub = sandbox.stub().returns(new Promise.resolve()),
                         migrateToDatabaseVersionReset = update.__set__('migrateToDatabaseVersion', migrateToDatabaseVersionStub);
 
-                    update({fromVersion: '005', toVersion: '006', forceMigration: true}).then(function () {
+                    update.execute({fromVersion: '005', toVersion: '006', forceMigration: true}).then(function () {
                         // getMigrationVersions should be called with the correct versions
                         versionsSpy.calledOnce.should.be.true();
                         versionsSpy.calledWith('003', '006').should.be.true();
@@ -323,7 +352,7 @@ describe('Migrations', function () {
                     var migrateToDatabaseVersionStub = sandbox.stub().returns(new Promise.resolve()),
                         migrateToDatabaseVersionReset = update.__set__('migrateToDatabaseVersion', migrateToDatabaseVersionStub);
 
-                    update({fromVersion: '004', toVersion: '005'}).then(function () {
+                    update.execute({fromVersion: '004', toVersion: '005'}).then(function () {
                         versionsSpy.calledOnce.should.be.true();
                         versionsSpy.calledWith('004', '005').should.be.true();
                         versionsSpy.returned(['004', '005']).should.be.true();
@@ -341,7 +370,7 @@ describe('Migrations', function () {
                     var migrateToDatabaseVersionStub = sandbox.stub().returns(new Promise.resolve()),
                         migrateToDatabaseVersionReset = update.__set__('migrateToDatabaseVersion', migrateToDatabaseVersionStub);
 
-                    update({fromVersion: '004', toVersion: '010'}).then(function () {
+                    update.execute({fromVersion: '004', toVersion: '010'}).then(function () {
                         versionsSpy.calledOnce.should.be.true();
                         versionsSpy.calledWith('004', '010').should.be.true();
                         versionsSpy.returned(['004', '005', '006', '007', '008', '009', '010']).should.be.true();
@@ -356,24 +385,11 @@ describe('Migrations', function () {
                     }).catch(done);
                 });
 
-                it('should just return if versions are the same', function (done) {
-                    var migrateToDatabaseVersionStub = sandbox.stub().returns(new Promise.resolve()),
-                        migrateToDatabaseVersionReset = update.__set__('migrateToDatabaseVersion', migrateToDatabaseVersionStub);
-
-                    update({fromVersion: '004', toVersion: '004'}).then(function () {
-                        versionsSpy.calledOnce.should.be.false();
-                        migrateToDatabaseVersionStub.callCount.should.eql(0);
-                        migrateToDatabaseVersionReset();
-
-                        done();
-                    }).catch(done);
-                });
-
                 it('should do an UPDATE even if versions are the same, when FORCE_MIGRATION set', function (done) {
                     var migrateToDatabaseVersionStub = sandbox.stub().returns(new Promise.resolve()),
                         migrateToDatabaseVersionReset = update.__set__('migrateToDatabaseVersion', migrateToDatabaseVersionStub);
 
-                    update({fromVersion: '004', toVersion: '004', forceMigration: true}).then(function () {
+                    update.execute({fromVersion: '004', toVersion: '004', forceMigration: true}).then(function () {
                         versionsSpy.calledOnce.should.be.true();
                         versionsSpy.calledWith('003', '004').should.be.true();
                         versionsSpy.returned(['003', '004']).should.be.true();
@@ -384,16 +400,6 @@ describe('Migrations', function () {
 
                         done();
                     }).catch(done);
-                });
-
-                it('should throw an error if the database version is higher than the default', function (done) {
-                    update({fromVersion: '010', toVersion: '004'}).then(function () {
-                        done(new Error('expected database version too old error'));
-                    }).catch(function (err) {
-                        updateDatabaseSchemaStub.calledOnce.should.be.false();
-                        (err instanceof errors.DatabaseVersion).should.eql(true);
-                        done();
-                    });
                 });
             });
 
@@ -407,7 +413,7 @@ describe('Migrations', function () {
                     sequenceStub.returns(Promise.resolve([]));
 
                     // Execute
-                    update({fromVersion: '003', toVersion: '004'}).then(function () {
+                    update.execute({fromVersion: '003', toVersion: '004'}).then(function () {
                         versionsSpy.calledOnce.should.be.true();
                         versionsSpy.calledWith('003', '004').should.be.true();
 
@@ -888,7 +894,7 @@ describe('Migrations', function () {
                     sequenceStub.returns(Promise.resolve([]));
 
                     // Execute
-                    update({fromVersion: '004', toVersion: '005'}).then(function () {
+                    update.execute({fromVersion: '004', toVersion: '005'}).then(function () {
                         versionsSpy.calledOnce.should.be.true();
                         versionsSpy.calledWith('004', '005').should.be.true();
                         versionsSpy.returned(['004', '005']).should.be.true();
