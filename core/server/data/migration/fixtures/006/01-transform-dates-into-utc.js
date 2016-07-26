@@ -186,6 +186,13 @@ module.exports = function transformDatesIntoUTC(options, logger) {
                 });
             });
         },
+        function setActiveTimezone() {
+            var timezone = config.forceTimezoneOnMigration || moment.tz.guess();
+            return models.Settings.edit({
+                key: 'activeTimezone',
+                value: timezone
+            }, options);
+        },
         function addMigrationSettingsEntry() {
             settingsMigrations[settingsKey] = moment().format();
             return models.Settings.edit({
