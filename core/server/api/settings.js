@@ -74,7 +74,8 @@ updateConfigCache = function () {
  * @param {Object} settings
  * @returns {Settings}
  */
-updateSettingsCache = function (settings) {
+updateSettingsCache = function (settings, options) {
+    options = options || {};
     settings = settings || {};
 
     if (!_.isEmpty(settings)) {
@@ -87,7 +88,7 @@ updateSettingsCache = function (settings) {
         return Promise.resolve(settingsCache);
     }
 
-    return dataProvider.Settings.findAll()
+    return dataProvider.Settings.findAll(options)
         .then(function (result) {
             settingsCache = readSettingsResult(result.models);
 
