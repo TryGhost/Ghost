@@ -194,4 +194,35 @@ describe('Settings API', function () {
             done();
         }).catch(done);
     });
+
+    it('set activeTimezone: unknown timezone', function (done) {
+        return callApiWithContext(defaultContext, 'edit', {settings: [{key: 'activeTimezone', value: 'MFG'}]}, {})
+            .then(function () {
+                done(new Error('We expect that the activeTimezone cannot be stored'));
+            }).catch(function (errors) {
+                should.exist(errors);
+                errors.length.should.eql(1);
+                errors[0].errorType.should.eql('ValidationError');
+                done();
+            }).catch(done);
+    });
+
+    it('set activeTimezone: unknown timezone', function (done) {
+        return callApiWithContext(defaultContext, 'edit', {settings: [{key: 'activeTimezone', value: 'MFG'}]}, {})
+            .then(function () {
+                done(new Error('We expect that the activeTimezone cannot be stored'));
+            }).catch(function (errors) {
+                should.exist(errors);
+                errors.length.should.eql(1);
+                errors[0].errorType.should.eql('ValidationError');
+                done();
+            }).catch(done);
+    });
+
+    it('set activeTimezone: known timezone', function (done) {
+        return callApiWithContext(defaultContext, 'edit', {settings: [{key: 'activeTimezone', value: 'Etc/UTC'}]}, {})
+            .then(function () {
+                done();
+            }).catch(done);
+    });
 });
