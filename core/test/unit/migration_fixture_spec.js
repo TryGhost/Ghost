@@ -8,6 +8,7 @@ var should  = require('should'),
     // Stuff we are testing
     configUtils   = require('../utils/configUtils'),
     models        = require('../../server/models'),
+    api           = require('../../server/api'),
     notifications = require('../../server/api/notifications'),
     versioning    = require('../../server/data/schema/versioning'),
     update        = rewire('../../server/data/migration/fixtures/update'),
@@ -1035,6 +1036,7 @@ describe('Fixtures', function () {
                                     model.set('id', Date.now());
                                     model.set('created_at', createdAt);
                                     model.set('key', model.id.toString());
+                                    model.set('name', modelType);
 
                                     newModels[model.id] = model;
                                     return Promise.resolve({models: [model]});
@@ -1048,6 +1050,8 @@ describe('Fixtures', function () {
 
                                 sandbox.stub(models[modelType], 'edit').returns(Promise.resolve({}));
                             });
+
+                            sandbox.stub(api.settings, 'updateSettingsCache').returns(Promise.resolve({}));
                         });
 
                         it('sqlite: no UTC update, only format', function (done) {

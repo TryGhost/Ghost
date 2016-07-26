@@ -1,5 +1,6 @@
 var config = require('../../../../config'),
     models = require(config.paths.corePath + '/server/models'),
+    api = require(config.paths.corePath + '/server/api'),
     sequence = require(config.paths.corePath + '/server/utils/sequence'),
     moment = require('moment'),
     _ = require('lodash'),
@@ -199,6 +200,9 @@ module.exports = function transformDatesIntoUTC(options, logger) {
                 key: 'migrations',
                 value: JSON.stringify(settingsMigrations)
             }, options);
+        },
+        function updateSettingsCache() {
+            return api.settings.updateSettingsCache(null, options);
         }]
     ).catch(function (err) {
         if (err.message === 'skip') {
