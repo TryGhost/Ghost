@@ -69,18 +69,28 @@ function init(options) {
     }).then(function () {
         return versioning.getDatabaseVersion()
             .then(function (currentVersion) {
-                var maintenanceState = config.maintenance.enabled || false;
-                config.maintenance.enabled = true;
-
-                migrations.update({
+                var response = migrations.update.isDatabaseOutOfDate({
                     fromVersion: currentVersion,
                     toVersion: versioning.getNewestDatabaseVersion(),
                     forceMigration: process.env.FORCE_MIGRATION
-                }).then(function () {
-                    config.maintenance.enabled = maintenanceState;
-                }).catch(function (err) {
-                    errors.logErrorAndExit(err, err.context, err.help);
-                });
+                }), maintenanceState;
+
+                if (response.migrate === true) {
+                    maintenanceState = config.maintenance.enabled || false;
+                    config.maintenance.enabled = true;
+
+                    migrations.update.execute({
+                        fromVersion: currentVersion,
+                        toVersion: versioning.getNewestDatabaseVersion(),
+                        forceMigration: process.env.FORCE_MIGRATION
+                    }).then(function () {
+                        config.maintenance.enabled = maintenanceState;
+                    }).catch(function (err) {
+                        errors.logErrorAndExit(err, err.context, err.help);
+                    });
+                } else if (response.error) {
+                    return Promise.reject(response.error);
+                }
             })
             .catch(function (err) {
                 if (err instanceof errors.DatabaseNotPopulated) {

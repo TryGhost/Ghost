@@ -11,7 +11,7 @@ var Promise = require('bluebird'),
 
     updateDatabaseSchema,
     migrateToDatabaseVersion,
-    update, logger;
+    execute, logger, isDatabaseOutOfDate;
 
 // @TODO: remove me asap!
 logger = {
@@ -77,7 +77,7 @@ migrateToDatabaseVersion = function migrateToDatabaseVersion(version, logger, mo
  * ## Update
  * Does a backup, then updates the database and fixtures
  */
-update = function update(options) {
+execute = function execute(options) {
     options = options || {};
 
     var fromVersion = options.fromVersion,
@@ -90,40 +90,51 @@ update = function update(options) {
             }
         };
 
+    fromVersion = forceMigration ? versioning.canMigrateFromVersion : fromVersion;
+
+    // Figure out which versions we're updating through.
+    // This shouldn't include the from/current version (which we're already on)
+    versionsToUpdate = versioning.getMigrationVersions(fromVersion, toVersion).slice(1);
+
+    return backup(logger)
+        .then(function () {
+            return Promise.mapSeries(versionsToUpdate, function (versionToUpdate) {
+                return migrateToDatabaseVersion(versionToUpdate, logger, modelOptions);
+            });
+        })
+        .then(function () {
+            logger.info('Finished!');
+        });
+};
+
+isDatabaseOutOfDate = function isDatabaseOutOfDate(options) {
+    options = options || {};
+
+    var fromVersion = options.fromVersion,
+        toVersion = options.toVersion,
+        forceMigration = options.forceMigration;
+
     // CASE: current database version is lower then we support
     if (fromVersion < versioning.canMigrateFromVersion) {
-        return Promise.reject(new errors.DatabaseVersion(
+        return {error: new errors.DatabaseVersion(
             i18n.t('errors.data.versioning.index.cannotMigrate.error'),
             i18n.t('errors.data.versioning.index.cannotMigrate.context'),
             i18n.t('common.seeLinkForInstructions', {link: 'http://support.ghost.org/how-to-upgrade/'})
-        ));
+        )};
     }
     // CASE: the database exists but is out of date
     else if (fromVersion < toVersion || forceMigration) {
-        fromVersion = forceMigration ? versioning.canMigrateFromVersion : fromVersion;
-
-        // Figure out which versions we're updating through.
-        // This shouldn't include the from/current version (which we're already on)
-        versionsToUpdate = versioning.getMigrationVersions(fromVersion, toVersion).slice(1);
-
-        return backup(logger)
-            .then(function () {
-                return Promise.mapSeries(versionsToUpdate, function (versionToUpdate) {
-                    return migrateToDatabaseVersion(versionToUpdate, logger, modelOptions);
-                });
-            })
-            .then(function () {
-                logger.info('Finished!');
-            });
+        return {migrate: true};
     }
     // CASE: database is up-to-date
     else if (fromVersion === toVersion) {
-        return Promise.resolve();
+        return {migrate: false};
     }
     // CASE: we don't understand the version
     else {
-        return Promise.reject(new errors.DatabaseVersion(i18n.t('errors.data.versioning.index.dbVersionNotRecognized')));
+        return {error: new errors.DatabaseVersion(i18n.t('errors.data.versioning.index.dbVersionNotRecognized'))};
     }
 };
 
-module.exports = update;
+exports.execute = execute;
+exports.isDatabaseOutOfDate = isDatabaseOutOfDate;
