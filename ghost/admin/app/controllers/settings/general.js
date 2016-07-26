@@ -17,7 +17,6 @@ export default Controller.extend(SettingsSaveMixin, {
     config: injectService(),
     _scratchFacebook: null,
     _scratchTwitter: null,
-    clock: injectService(),
 
     selectedTheme: computed('model.activeTheme', 'themes', function () {
         let activeTheme = this.get('model.activeTheme');
@@ -33,27 +32,12 @@ export default Controller.extend(SettingsSaveMixin, {
         return selectedTheme;
     }),
 
-    selectedTimezone: computed('model.activeTimezone', 'availableTimezones', function () {
-        let activeTimezone = this.get('model.activeTimezone');
-        let availableTimezones = this.get('availableTimezones');
-
-        return availableTimezones
-            .filterBy('name', activeTimezone)
-            .get('firstObject');
-    }),
-
     logoImageSource: computed('model.logo', function () {
         return this.get('model.logo') || '';
     }),
 
     coverImageSource: computed('model.cover', function () {
         return this.get('model.cover') || '';
-    }),
-
-    localTime: computed('selectedTimezone', 'clock.second', function () {
-        let timezone = this.get('selectedTimezone.name');
-        this.get('clock.second');
-        return timezone ? moment().tz(timezone).format('HH:mm:ss') : moment().utc().format('HH:mm:ss');
     }),
 
     isDatedPermalinks: computed('model.permalinks', {
