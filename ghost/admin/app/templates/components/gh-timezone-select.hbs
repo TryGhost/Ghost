@@ -1,0 +1,16 @@
+<label for="activeTimezone">Timezone</label>
+<span class="gh-select" data-select-text="{{selectedTimezone.label}}" tabindex="0">
+    {{gh-select-native
+        id="activeTimezone"
+        name="general[activeTimezone]"
+        content=selectableTimezones
+        optionValuePath="name"
+        optionLabelPath="label"
+        selection=selectedTimezone
+        action="setTimezone"
+    }}
+</span>
+{{#if hasTimezoneOverride}}
+    <p>Your timezone has been automatically set to {{activeTimezone}}.</p>
+{{/if}}
+<p>The local time here is currently {{localTime}}</p>
