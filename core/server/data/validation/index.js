@@ -1,6 +1,7 @@
 var schema    = require('../schema').tables,
     _         = require('lodash'),
     validator = require('validator'),
+    moment    = require('moment'),
     assert    = require('assert'),
     Promise   = require('bluebird'),
     errors    = require('../../errors'),
@@ -35,6 +36,10 @@ validator.extend('empty', function empty(str) {
 
 validator.extend('notContains', function notContains(str, badString) {
     return !_.includes(str, badString);
+});
+
+validator.extend('isTimezone', function isTimezone(str) {
+    return moment.tz.zone(str) ? true : false;
 });
 
 validator.extend('isEmptyOrURL', function isEmptyOrURL(str) {
