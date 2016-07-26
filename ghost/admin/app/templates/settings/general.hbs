@@ -113,21 +113,10 @@
                     {{/gh-form-group}}
                 </div>
 
-                <div class="form-group for-select">
-                    <label for="activeTimezone">Timezone</label>
-                    <span class="gh-select" data-select-text="{{selectedTimezone.label}}" tabindex="0">
-                        {{gh-select-native
-                            id="activeTimezone"
-                            name="general[activeTimezone]"
-                            content=availableTimezones
-                            optionValuePath="name"
-                            optionLabelPath="label"
-                            selection=selectedTimezone
-                            action="setTimezone"
-                        }}
-                    </span>
-                    <p>The local time here is currently {{localTime}}</p>
-                </div>
+                {{gh-timezone-select
+                        activeTimezone=model.activeTimezone
+                        availableTimezones=availableTimezones
+                        update=(action "setTimezone")}}
 
                 <div class="form-group for-checkbox">
                     <label for="isPrivate">Make this blog private</label>
