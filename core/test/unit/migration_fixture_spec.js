@@ -1018,6 +1018,7 @@ describe('Fixtures', function () {
                             serverTimezoneOffset = -60;
                             migrationsSettingsValue = '{}';
 
+                            // stub for checkIfMigrationAlreadyRan
                             sandbox.stub(models.Settings.prototype, 'fetch', function () {
                                 // CASE: we update migrations settings entry
                                 if (this.get('key') === 'migrations') {
@@ -1026,14 +1027,6 @@ describe('Fixtures', function () {
                                 }
 
                                 return Promise.resolve(newModels[Number(this.get('key'))]);
-                            });
-
-                            sandbox.stub(models.Base.Model.prototype, 'save', function (data) {
-                                if (data.key !== 'migrations') {
-                                    should.exist(data.created_at);
-                                }
-
-                                return Promise.resolve({});
                             });
 
                             _.each(['Post', 'User', 'Subscriber', 'Settings', 'Role', 'Permission', 'Tag', 'App', 'AppSetting', 'AppField', 'Client'], function (modelType) {
