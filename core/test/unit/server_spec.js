@@ -51,8 +51,8 @@ describe('server bootstrap', function () {
     });
 
     describe('migrations', function () {
-        it('database does not exist', function (done) {
-            sandbox.stub(migration, 'update').returns(Promise.resolve());
+        it('database does not exist: expect database population', function (done) {
+            sandbox.stub(migration.update, 'isDatabaseOutOfDate').returns({migrate:false});
 
             sandbox.stub(versioning, 'getDatabaseVersion', function () {
                 return Promise.reject();
@@ -61,7 +61,7 @@ describe('server bootstrap', function () {
             bootstrap()
                 .then(function () {
                     migration.populate.calledOnce.should.eql(true);
-                    migration.update.calledOnce.should.eql(false);
+                    migration.update.execute.calledOnce.should.eql(false);
                     models.Settings.populateDefaults.callCount.should.eql(1);
                     config.maintenance.enabled.should.eql(false);
                     done();
@@ -71,11 +71,9 @@ describe('server bootstrap', function () {
                 });
         });
 
-        it('database does exist', function (done) {
-            sandbox.stub(migration, 'update', function () {
-                config.maintenance.enabled.should.eql(true);
-                return Promise.resolve();
-            });
+        it('database does exist: expect no update', function (done) {
+            sandbox.stub(migration.update, 'isDatabaseOutOfDate').returns({migrate:false});
+            sandbox.spy(migration.update, 'execute');
 
             sandbox.stub(versioning, 'getDatabaseVersion', function () {
                 return Promise.resolve('006');
@@ -83,8 +81,32 @@ describe('server bootstrap', function () {
 
             bootstrap()
                 .then(function () {
-                    migration.update.calledOnce.should.eql(true);
-                    migration.update.calledWith({
+                    migration.update.isDatabaseOutOfDate.calledOnce.should.eql(true);
+                    migration.update.execute.called.should.eql(false);
+                    models.Settings.populateDefaults.callCount.should.eql(1);
+                    migration.populate.calledOnce.should.eql(false);
+
+                    done();
+                })
+                .catch(function (err) {
+                    done(err);
+                });
+        });
+
+        it('database does exist: expect update', function (done) {
+            sandbox.stub(migration.update, 'isDatabaseOutOfDate').returns({migrate:true});
+            sandbox.stub(migration.update, 'execute').returns(Promise.resolve());
+
+            sandbox.stub(versioning, 'getDatabaseVersion', function () {
+                return Promise.resolve('006');
+            });
+
+            bootstrap()
+                .then(function () {
+                    migration.update.isDatabaseOutOfDate.calledOnce.should.eql(true);
+                    migration.update.execute.calledOnce.should.eql(true);
+
+                    migration.update.execute.calledWith({
                         fromVersion: '006',
                         toVersion: '006',
                         forceMigration: undefined
