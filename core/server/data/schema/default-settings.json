@@ -49,6 +49,7 @@
         "activeTimezone": {
             "defaultValue": "Etc/UTC",
             "validations": {
+                "isTimezone": true,
                 "isNull": false
             }
         },
