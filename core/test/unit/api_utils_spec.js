@@ -1,4 +1,3 @@
-/*globals describe, it, afterEach */
 var should  = require('should'),
     sinon   = require('sinon'),
     _       = require('lodash'),
@@ -156,9 +155,20 @@ describe('API Utils', function () {
             }).catch(done);
         });
 
-        it('should reject if invalid options are passed', function (done) {
+        it('should reject if limit is invalid', function (done) {
             apiUtils.validate('test', {opts: apiUtils.browseDefaultOptions})(
-                {context: 'internal', include: 'stuff', page: 1, limit: 'none'}
+                {limit: 'none'}
+            ).then(function () {
+                done(new Error('Should have thrown a validation error'));
+            }).catch(function (err) {
+                err.should.have.property('errorType', 'ValidationError');
+                done();
+            });
+        });
+
+        it('should reject if from is invalid', function (done) {
+            apiUtils.validate('test', {opts: ['from']})(
+                {from: true}
             ).then(function () {
                 done(new Error('Should have thrown a validation error'));
             }).catch(function (err) {

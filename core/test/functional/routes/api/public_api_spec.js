@@ -1,4 +1,3 @@
-/*global describe, it, before, after */
 var testUtils     = require('../../../utils'),
     should        = require('should'),
     supertest     = require('supertest'),
@@ -232,6 +231,29 @@ describe('Public API', function () {
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.errors);
                 testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
+                done();
+            });
+    });
+
+    it('throws version mismatch error when request includes a version', function (done) {
+        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available'))
+            .set('Origin', testUtils.API.getURL())
+            .set('X-Ghost-Version', '0.3')
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(400)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                var jsonResponse = res.body;
+
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.errors);
+                testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
+                jsonResponse.errors[0].errorType.should.eql('VersionMismatchError');
+
                 done();
             });
     });

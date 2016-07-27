@@ -1,4 +1,3 @@
-/*globals describe, beforeEach, afterEach, it*/
 var moment   = require('moment'),
     should   = require('should'),
     sinon    = require('sinon'),
@@ -424,16 +423,6 @@ describe('Frontend Controller', function () {
                     };
 
                     frontend.single(req, res, failTest(done));
-                });
-
-                it('will NOT render post via /YYYY/MM/DD/:slug/ with non-matching date in url', function (done) {
-                    var date = moment(mockPosts[1].published_at).subtract(1, 'days').format('YYYY/MM/DD');
-                    req.path = '/' + [date, mockPosts[1].posts[0].slug].join('/') + '/';
-
-                    frontend.single(req, res, function () {
-                        res.render.called.should.be.false();
-                        done();
-                    });
                 });
 
                 it('will NOT render post via /:slug/', function (done) {

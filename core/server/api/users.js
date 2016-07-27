@@ -9,7 +9,8 @@ var Promise         = require('bluebird'),
     utils           = require('./utils'),
     globalUtils     = require('../utils'),
     config          = require('../config'),
-    mail            = require('./mail'),
+    mail            = require('./../mail'),
+    apiMail         = require('./mail'),
     pipeline        = require('../utils/pipeline'),
     i18n            = require('../i18n'),
 
@@ -44,7 +45,7 @@ sendInviteEmail = function sendInviteEmail(user) {
 
         emailData.resetLink = baseUrl.replace(/\/$/, '') + '/ghost/signup/' + globalUtils.encodeBase64URLsafe(resetToken) + '/';
 
-        return mail.generateContent({data: emailData, template: 'invite-user'});
+        return mail.utils.generateContent({data: emailData, template: 'invite-user'});
     }).then(function (emailContent) {
         var payload = {
             mail: [{
@@ -58,7 +59,7 @@ sendInviteEmail = function sendInviteEmail(user) {
             }]
         };
 
-        return mail.send(payload, {context: {internal: true}});
+        return apiMail.send(payload, {context: {internal: true}});
     });
 };
 /**

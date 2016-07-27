@@ -105,7 +105,7 @@ get = function get(resource, options) {
         return Promise.resolve();
     }
 
-    if (!_.contains(resources, resource)) {
+    if (!_.includes(resources, resource)) {
         data.error = i18n.t('warnings.helpers.get.invalidResource');
         errors.logWarn(data.error);
         return Promise.resolve(options.inverse(self, {data: data}));

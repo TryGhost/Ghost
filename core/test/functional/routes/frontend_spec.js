@@ -1,4 +1,3 @@
-/*global describe, it, before, after */
 
 // # Frontend Route tests
 // As it stands, these tests depend on the database, and as such are integration tests.
@@ -31,7 +30,7 @@ describe('Frontend Routing', function () {
 
     function addPosts(done) {
         testUtils.initData().then(function () {
-            return testUtils.fixtures.insertPosts();
+            return testUtils.fixtures.insertPostsAndTags();
         }).then(function () {
             done();
         });
@@ -338,9 +337,9 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
-        it('http://localhost/blog should 303 to  http://localhost/blog/', function (done) {
+        it('http://localhost/blog should 301 to  http://localhost/blog/', function (done) {
             request.get('/blog')
-                .expect(303)
+                .expect(301)
                 .expect('Location', '/blog/')
                 .end(doEnd(done));
         });
@@ -382,6 +381,7 @@ describe('Frontend Routing', function () {
 
     describe('Subdirectory (with slash)', function () {
         var forkedGhost, request;
+
         before(function (done) {
             var configTest = testUtils.fork.config();
             configTest.url = 'http://localhost/blog/';
@@ -414,9 +414,9 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
-        it('/blog should 303 to /blog/', function (done) {
+        it('/blog should 301 to /blog/', function (done) {
             request.get('/blog')
-                .expect(303)
+                .expect(301)
                 .expect('Location', '/blog/')
                 .end(doEnd(done));
         });
@@ -467,6 +467,7 @@ describe('Frontend Routing', function () {
     // we'll use X-Forwarded-Proto: https to simulate an 'https://' request behind a proxy
     describe('HTTPS', function () {
         var forkedGhost, request;
+
         before(function (done) {
             var configTestHttps = testUtils.fork.config();
             configTestHttps.forceAdminSSL = {redirect: false};
@@ -516,13 +517,26 @@ describe('Frontend Routing', function () {
         });
 
         it('should load a post with date permalink', function (done) {
-            // get today's date
             var date  = moment().format('YYYY/MM/DD');
 
             request.get('/' + date + '/welcome-to-ghost/')
                 .expect(200)
                 .expect('Content-Type', /html/)
                 .end(doEnd(done));
+        });
+
+        it('expect redirect because of wrong/old permalink prefix', function (done) {
+            var date  = moment().format('YYYY/MM/DD');
+
+            request.get('/2016/04/01/welcome-to-ghost/')
+                .expect('Content-Type', /html/)
+                .end(function (err, res) {
+                    res.status.should.eql(301);
+                    request.get('/' + date + '/welcome-to-ghost/')
+                        .expect(200)
+                        .expect('Content-Type', /html/)
+                        .end(doEnd(done));
+                });
         });
 
         it('should serve RSS with date permalink', function (done) {
@@ -541,23 +555,24 @@ describe('Frontend Routing', function () {
                     should.exist(res.headers.date);
 
                     var content = res.text,
-                        today = new Date(),
-                        dd = ('0' + today.getDate()).slice(-2),
-                        mm = ('0' + (today.getMonth() + 1)).slice(-2),
-                        yyyy = today.getFullYear(),
+                        todayMoment = moment(),
+                        dd = todayMoment.format('DD'),
+                        mm = todayMoment.format('MM'),
+                        yyyy = todayMoment.format('YYYY'),
                         postLink = '/' + yyyy + '/' + mm + '/' + dd + '/welcome-to-ghost/';
 
                     content.indexOf(postLink).should.be.above(0);
-
                     done();
                 });
         });
     });
 
     describe('Site Map', function () {
+        before(testUtils.teardown);
+
         before(function (done) {
             testUtils.initData().then(function () {
-                return testUtils.fixtures.insertPosts();
+                return testUtils.fixtures.insertPostsAndTags();
             }).then(function () {
                 done();
             }).catch(done);

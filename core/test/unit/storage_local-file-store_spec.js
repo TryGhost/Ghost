@@ -1,4 +1,3 @@
-/*globals describe, before, after, beforeEach, afterEach, it*/
 var fs              = require('fs-extra'),
     moment          = require('moment'),
     path            = require('path'),
@@ -70,6 +69,15 @@ describe('Local File System Storage', function () {
         image.name = 'AN IMAGE.jpg';
         localFileStore.save(image).then(function (url) {
             url.should.equal('/content/images/2013/09/AN-IMAGE.jpg');
+
+            done();
+        }).catch(done);
+    });
+
+    it('should allow "@" symbol to image for Apple hi-res (retina) modifier', function (done) {
+        image.name = 'photo@2x.jpg';
+        localFileStore.save(image).then(function (url) {
+            url.should.equal('/content/images/2013/09/photo@2x.jpg');
 
             done();
         }).catch(done);

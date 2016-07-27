@@ -2,11 +2,12 @@ var Promise       = require('bluebird'),
     _             = require('lodash'),
     fs            = require('fs-extra'),
     path          = require('path'),
+    Module        = require('module'),
     uuid          = require('node-uuid'),
     db            = require('../../server/data/db'),
     migration     = require('../../server/data/migration/'),
     fixtureUtils  = require('../../server/data/migration/fixtures/utils'),
-    Models        = require('../../server/models'),
+    models        = require('../../server/models'),
     SettingsAPI   = require('../../server/api/settings'),
     permissions   = require('../../server/permissions'),
     sequence      = require('../../server/utils/sequence'),
@@ -14,13 +15,17 @@ var Promise       = require('bluebird'),
     filterData    = require('./fixtures/filter-param'),
     API           = require('./api'),
     fork          = require('./fork'),
+    mocks         = require('./mocks'),
     config        = require('../../server/config'),
 
     fixtures,
     getFixtureOps,
     toDoList,
+    originalRequireFn,
     postsInserted = 0,
 
+    mockNotExistingModule,
+    unmockNotExistingModule,
     teardown,
     setup,
     doAuth,
@@ -33,7 +38,11 @@ var Promise       = require('bluebird'),
 
 /** TEST FIXTURES **/
 fixtures = {
-    insertPosts: function insertPosts() {
+    insertPosts: function insertPosts(posts) {
+        return Promise.resolve(db.knex('posts').insert(posts));
+    },
+
+    insertPostsAndTags: function insertPostsAndTags() {
         return Promise.resolve(db.knex('posts').insert(DataGenerator.forKnex.posts)).then(function () {
             return db.knex('tags').insert(DataGenerator.forKnex.tags);
         }).then(function () {
@@ -56,7 +65,7 @@ fixtures = {
         }).then(function () {
             return db.knex('users').select('id');
         }).then(function (results) {
-            authors = _.pluck(results, 'id');
+            authors = _.map(results, 'id');
 
             // Let's insert posts with random authors
             for (i = 0; i < max; i += 1) {
@@ -80,8 +89,8 @@ fixtures = {
                 db.knex('tags').select('id')
             ]);
         }).then(function (results) {
-            var posts = _.pluck(results[0], 'id'),
-                tags = _.pluck(results[1], 'id'),
+            var posts = _.map(results[0], 'id'),
+                tags = _.map(results[1], 'id'),
                 promises = [],
                 i;
 
@@ -157,10 +166,10 @@ fixtures = {
             db.knex('posts').orderBy('id', 'asc').select('id'),
             db.knex('tags').select('id', 'name')
         ]).then(function (results) {
-            var posts = _.pluck(results[0], 'id'),
+            var posts = _.map(results[0], 'id'),
                 injectionTagId = _.chain(results[1])
-                    .where({name: 'injection'})
-                    .pluck('id')
+                    .filter({name: 'injection'})
+                    .map('id')
                     .value()[0],
                 promises = [],
                 i;
@@ -278,9 +287,9 @@ fixtures = {
         });
     },
 
-    insertOne: function insertOne(obj, fn) {
+    insertOne: function insertOne(obj, fn, index) {
         return db.knex(obj)
-           .insert(DataGenerator.forKnex[fn](DataGenerator.Content[obj][0]));
+           .insert(DataGenerator.forKnex[fn](DataGenerator.Content[obj][index || 0]));
     },
 
     insertApps: function insertApps() {
@@ -327,6 +336,11 @@ fixtures = {
                 Owner: 4
             };
 
+        // CASE: if empty db will throw SQLITE_MISUSE, hard to debug
+        if (_.isEmpty(permsToInsert)) {
+            return Promise.reject(new Error('no permission found:' + obj));
+        }
+
         permsToInsert = _.map(permsToInsert, function (perms) {
             actions.push(perms.action_type);
             return DataGenerator.forKnex.createBasic(perms);
@@ -347,12 +361,18 @@ fixtures = {
         });
 
         return db.knex('permissions').insert(permsToInsert).then(function () {
+            if (_.isEmpty(permissionsRoles)) {
+                return Promise.resolve();
+            }
+
             return db.knex('permissions_roles').insert(permissionsRoles);
         });
     },
+
     insertClients: function insertClients() {
         return db.knex('clients').insert(DataGenerator.forKnex.clients);
     },
+
     insertAccessToken: function insertAccessToken(override) {
         return db.knex('accesstokens').insert(DataGenerator.forKnex.createToken(override));
     }
@@ -360,7 +380,7 @@ fixtures = {
 
 /** Test Utility Functions **/
 initData = function initData() {
-    return migration.init();
+    return migration.populate();
 };
 
 clearData = function clearData() {
@@ -387,13 +407,12 @@ toDoList = {
     roles: function insertRoles() { return fixtures.insertRoles(); },
     tag: function insertTag() { return fixtures.insertOne('tags', 'createTag'); },
     subscriber: function insertSubscriber() { return fixtures.insertOne('subscribers', 'createSubscriber'); },
-
-    posts: function insertPosts() { return fixtures.insertPosts(); },
+    posts: function insertPostsAndTags() { return fixtures.insertPostsAndTags(); },
     'posts:mu': function insertMultiAuthorPosts() { return fixtures.insertMultiAuthorPosts(); },
     tags: function insertMoreTags() { return fixtures.insertMoreTags(); },
     apps: function insertApps() { return fixtures.insertApps(); },
     settings: function populateSettings() {
-        return Models.Settings.populateDefaults().then(function () { return SettingsAPI.updateSettingsCache(); });
+        return models.Settings.populateDefaults().then(function () { return SettingsAPI.updateSettingsCache(); });
     },
     'users:roles': function createUsersWithRoles() { return fixtures.createUsersWithRoles(); },
     users: function createExtraUsers() { return fixtures.createExtraUsers(); },
@@ -429,8 +448,9 @@ getFixtureOps = function getFixtureOps(toDos) {
     // Database initialisation
     if (toDos.init || toDos.default) {
         fixtureOps.push(function initDB() {
-            return migration.init(tablesOnly);
+            return migration.populate({tablesOnly: tablesOnly});
         });
+
         delete toDos.default;
         delete toDos.init;
     }
@@ -438,10 +458,15 @@ getFixtureOps = function getFixtureOps(toDos) {
     // Go through our list of things to do, and add them to an array
     _.each(toDos, function (value, toDo) {
         var tmp;
+
         if (toDo !== 'perms:init' && toDo.indexOf('perms:') !== -1) {
             tmp = toDo.split(':');
             fixtureOps.push(toDoList[tmp[0]](tmp[1]));
         } else {
+            if (!toDoList[toDo]) {
+                throw new Error('setup todo does not exist - spell mistake?');
+            }
+
             fixtureOps.push(toDoList[toDo]);
         }
     });
@@ -470,12 +495,16 @@ setup = function setup() {
     var self = this,
         args = arguments;
 
-    return function (done) {
-        Models.init();
+    return function setup(done) {
+        models.init();
 
-        return initFixtures.apply(self, args).then(function () {
-            done();
-        }).catch(done);
+        if (done) {
+            initFixtures.apply(self, args).then(function () {
+                done();
+            }).catch(done);
+        } else {
+            return initFixtures.apply(self, args);
+        }
     };
 };
 
@@ -556,9 +585,32 @@ togglePermalinks = function togglePermalinks(request, toggle) {
 };
 
 teardown = function teardown(done) {
-    migration.reset().then(function () {
-        done();
-    }).catch(done);
+    if (done) {
+        migration.reset().then(function () {
+            done();
+        }).catch(done);
+    } else {
+        return migration.reset();
+    }
+};
+
+/**
+ * offer helper functions for mocking
+ * we start with a small function set to mock non existent modules
+ */
+originalRequireFn = Module.prototype.require;
+mockNotExistingModule = function mockNotExistingModule(modulePath, module) {
+    Module.prototype.require = function (path) {
+        if (path.match(modulePath)) {
+            return module;
+        }
+
+        return originalRequireFn.apply(this, arguments);
+    };
+};
+
+unmockNotExistingModule = function unmockNotExistingModule() {
+    Module.prototype.require = originalRequireFn;
 };
 
 module.exports = {
@@ -568,9 +620,14 @@ module.exports = {
     login: login,
     togglePermalinks: togglePermalinks,
 
+    mockNotExistingModule: mockNotExistingModule,
+    unmockNotExistingModule: unmockNotExistingModule,
+
     initFixtures: initFixtures,
     initData: initData,
     clearData: clearData,
+
+    mocks: mocks,
 
     fixtures: fixtures,
 

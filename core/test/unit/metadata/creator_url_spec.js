@@ -1,4 +1,3 @@
-/*globals describe, it*/
 var getCreatorTwitterUrl = require('../../../server/data/meta/creator_url'),
     should = require('should');
 

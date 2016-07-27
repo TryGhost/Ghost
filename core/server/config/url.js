@@ -1,7 +1,7 @@
 // Contains all path information to be used throughout
 // the codebase.
 
-var moment            = require('moment'),
+var moment            = require('moment-timezone'),
     _                 = require('lodash'),
     ghostConfig = '',
     // @TODO: unify this with routes.apiBaseUrl
@@ -32,7 +32,7 @@ function getBaseUrl(secure) {
 function urlJoin() {
     var args = Array.prototype.slice.call(arguments),
         prefixDoubleSlash = false,
-        subdir = ghostConfig.paths.subdir.replace(/\//g, ''),
+        subdir = ghostConfig.paths.subdir.replace(/^\/|\/+$/, ''),
         subdirRegex,
         url;
 
@@ -95,18 +95,20 @@ function createUrl(urlPath, absolute, secure) {
     return urlJoin(base, urlPath);
 }
 
-// ## urlPathForPost
-// Always sync
-// Creates the url path for a post, given a post and a permalink
-// Parameters:
-// - post - a json object representing a post
+/**
+ * creates the url path for a post based on blog timezone and permalink pattern
+ *
+ * @param {JSON} post
+ * @returns {string}
+ */
 function urlPathForPost(post) {
     var output = '',
         permalinks = ghostConfig.theme.permalinks,
+        publishedAtMoment = moment.tz(post.published_at || Date.now(), ghostConfig.theme.timezone),
         tags = {
-            year:   function () { return moment(post.published_at).format('YYYY'); },
-            month:  function () { return moment(post.published_at).format('MM'); },
-            day:    function () { return moment(post.published_at).format('DD'); },
+            year:   function () { return publishedAtMoment.format('YYYY'); },
+            month:  function () { return publishedAtMoment.format('MM'); },
+            day:    function () { return publishedAtMoment.format('DD'); },
             author: function () { return post.author.slug; },
             slug:   function () { return post.slug; },
             id:     function () { return post.id; }
@@ -202,11 +204,13 @@ function urlFor(context, data, absolute) {
             baseUrl = getBaseUrl(secure);
             hostname = baseUrl.split('//')[1] + ghostConfig.paths.subdir;
             if (urlPath.indexOf(hostname) > -1
-                && urlPath.indexOf('.' + hostname) === -1
-                && urlPath.indexOf('mailto:') !== 0) {
+                && !urlPath.split(hostname)[0].match(/\.|mailto:/)
+                && urlPath.split(hostname)[1].substring(0,1) !== ':') {
                 // make link relative to account for possible
                 // mismatch in http/https etc, force absolute
                 // do not do so if link is a subdomain of blog url
+                // or if hostname is inside of the slug
+                // or if slug is a port
                 urlPath = urlPath.split(hostname)[1];
                 if (urlPath.substring(0, 1) !== '/') {
                     urlPath = '/' + urlPath;

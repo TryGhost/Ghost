@@ -1,4 +1,3 @@
-/*globals describe, it*/
 var getAuthorFacebookUrl = require('../../../server/data/meta/author_fb_url'),
     should = require('should');
 

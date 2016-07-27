@@ -1,4 +1,3 @@
-/*globals describe, it*/
 var getModifiedDate = require('../../../server/data/meta/modified_date'),
     should = require('should');
 

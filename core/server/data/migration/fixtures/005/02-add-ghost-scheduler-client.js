@@ -5,7 +5,7 @@ var models  = require('../../../../models'),
     message = 'Add ghost-scheduler client fixture';
 
 module.exports = function addGhostFrontendClient(options, logger) {
-    return models.Client.findOne({slug: schedulerClient.slug}).then(function (client) {
+    return models.Client.findOne({slug: schedulerClient.slug}, options).then(function (client) {
         if (!client) {
             logger.info(message);
             return models.Client.add(schedulerClient, options);

@@ -1,4 +1,3 @@
-/*globals describe, before, afterEach, beforeEach, it*/
 var should         = require('should'),
     sinon          = require('sinon'),
     _              = require('lodash'),
@@ -84,7 +83,7 @@ describe('{{ghost_head}} helper', function () {
             ).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/" \/>/);
-                rendered.string.should.match(/<meta name="referrer" content="origin" \/>/);
+                rendered.string.should.match(/<meta name="referrer" content="origin-when-cross-origin" \/>/);
                 rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
                 rendered.string.should.match(/<meta property="og:type" content="website" \/>/);
                 rendered.string.should.match(/<meta property="og:title" content="Ghost" \/>/);
@@ -95,7 +94,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<meta name="twitter:title" content="Ghost" \/>/);
                 rendered.string.should.match(/<meta name="twitter:description" content="blog description" \/>/);
                 rendered.string.should.match(/<meta name="twitter:url" content="http:\/\/testurl.com\/" \/>/);
-                rendered.string.should.match(/<meta name="twitter:image:src" content="http:\/\/testurl.com\/content\/images\/blog-cover.png" \/>/);
+                rendered.string.should.match(/<meta name="twitter:image" content="http:\/\/testurl.com\/content\/images\/blog-cover.png" \/>/);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
                 rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
@@ -136,7 +135,7 @@ describe('{{ghost_head}} helper', function () {
             ).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/about\/" \/>/);
-                rendered.string.should.match(/<meta name="referrer" content="origin" \/>/);
+                rendered.string.should.match(/<meta name="referrer" content="origin-when-cross-origin" \/>/);
                 rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
                 rendered.string.should.match(/<meta property="og:type" content="website" \/>/);
                 rendered.string.should.match(/<meta property="og:title" content="About" \/>/);
@@ -149,7 +148,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<meta name="twitter:creator" content="@testuser" \/>/);
                 rendered.string.should.match(/<meta name="twitter:description" content="all about our blog" \/>/);
                 rendered.string.should.match(/<meta name="twitter:url" content="http:\/\/testurl.com\/about\/" \/>/);
-                rendered.string.should.match(/<meta name="twitter:image:src" content="http:\/\/testurl.com\/content\/images\/test-image-about.png" \/>/);
+                rendered.string.should.match(/<meta name="twitter:image" content="http:\/\/testurl.com\/content\/images\/test-image-about.png" \/>/);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
                 rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
@@ -192,7 +191,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<meta name="twitter:title" content="tag meta title" \/>/);
                 rendered.string.should.match(/<meta name="twitter:description" content="tag meta description" \/>/);
                 rendered.string.should.match(/<meta name="twitter:url" content="http:\/\/testurl.com\/tag\/tagtitle\/" \/>/);
-                rendered.string.should.match(/<meta name="twitter:image:src" content="http:\/\/testurl.com\/content\/images\/tag-image.png" \/>/);
+                rendered.string.should.match(/<meta name="twitter:image" content="http:\/\/testurl.com\/content\/images\/tag-image.png" \/>/);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
                 rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
@@ -233,7 +232,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<meta name="twitter:title" content="tagtitle - Ghost" \/>/);
                 rendered.string.should.match(/<meta name="twitter:description" content="tag description" \/>/);
                 rendered.string.should.match(/<meta name="twitter:url" content="http:\/\/testurl.com\/tag\/tagtitle\/" \/>/);
-                rendered.string.should.match(/<meta name="twitter:image:src" content="http:\/\/testurl.com\/content\/images\/tag-image.png" \/>/);
+                rendered.string.should.match(/<meta name="twitter:image" content="http:\/\/testurl.com\/content\/images\/tag-image.png" \/>/);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
                 rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
@@ -322,7 +321,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<meta name="twitter:description" content="Author bio" \/>/);
                 rendered.string.should.match(/<meta name="twitter:url" content="http:\/\/testurl.com\/author\/AuthorName\/" \/>/);
                 rendered.string.should.match(/<meta name="twitter:creator" content="@testuser" \/>/);
-                rendered.string.should.match(/<meta name="twitter:image:src" content="http:\/\/testurl.com\/content\/images\/author-cover-image.png" \/>/);
+                rendered.string.should.match(/<meta name="twitter:image" content="http:\/\/testurl.com\/content\/images\/author-cover-image.png" \/>/);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
                 rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
@@ -424,7 +423,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<meta name="twitter:title" content="Welcome to Ghost" \/>/);
                 rendered.string.should.match(/<meta name="twitter:description" content="blog description" \/>/);
                 rendered.string.should.match(/<meta name="twitter:url" content="http:\/\/testurl.com\/post\/" \/>/);
-                rendered.string.should.match(/<meta name="twitter:image:src" content="http:\/\/testurl.com\/content\/images\/test-image.png" \/>/);
+                rendered.string.should.match(/<meta name="twitter:image" content="http:\/\/testurl.com\/content\/images\/test-image.png" \/>/);
                 rendered.string.should.match(/<meta name="twitter:creator" content="@testuser" \/>/);
                 rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
                 rendered.string.should.match(/"@type": "Article"/);
@@ -503,7 +502,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<meta name="twitter:description" content="blog &quot;test&quot; description" \/>/);
                 rendered.string.should.match(/<meta name="twitter:url" content="http:\/\/testurl.com\/post\/" \/>/);
                 rendered.string.should.match(/<meta name="twitter:creator" content="@testuser" \/>/);
-                rendered.string.should.match(/<meta name="twitter:image:src" content="http:\/\/testurl.com\/content\/images\/test-image.png" \/>/);
+                rendered.string.should.match(/<meta name="twitter:image" content="http:\/\/testurl.com\/content\/images\/test-image.png" \/>/);
                 rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
                 rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
                 rendered.string.should.match(/"@type": "Article"/);
@@ -575,7 +574,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<meta name="twitter:title" content="Welcome to Ghost" \/>/);
                 rendered.string.should.match(/<meta name="twitter:description" content="blog description" \/>/);
                 rendered.string.should.match(/<meta name="twitter:url" content="http:\/\/testurl.com\/post\/" \/>/);
-                rendered.string.should.match(/<meta name="twitter:image:src" content="http:\/\/testurl.com\/content\/images\/test-image.png" \/>/);
+                rendered.string.should.match(/<meta name="twitter:image" content="http:\/\/testurl.com\/content\/images\/test-image.png" \/>/);
                 rendered.string.should.match(/<meta name="twitter:creator" content="@testuser" \/>/);
                 rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
                 rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
@@ -651,7 +650,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<meta name="twitter:description" content="blog description" \/>/);
                 rendered.string.should.match(/<meta name="twitter:url" content="http:\/\/testurl.com\/post\/" \/>/);
                 rendered.string.should.match(/<meta name="twitter:creator" content="@testuser" \/>/);
-                rendered.string.should.not.match(/<meta name="twitter:image:src"/);
+                rendered.string.should.not.match(/<meta name="twitter:image"/);
                 rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
                 rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
                 rendered.string.should.match(/"@type": "Article"/);
@@ -801,6 +800,32 @@ describe('{{ghost_head}} helper', function () {
                     done();
                 }).catch(done);
             });
+        });
+    });
+
+    describe('with changed origin in config file', function () {
+        beforeEach(function () {
+            configUtils.set({
+                url: 'http://testurl.com/blog/',
+                theme: {
+                    title: 'Ghost',
+                    description: 'blog description',
+                    cover: '/content/images/blog-cover.png'
+                },
+                referrerPolicy: 'origin'
+            });
+        });
+
+        it('contains the changed origin', function (done) {
+            helpers.ghost_head.call(
+                {safeVersion: '0.3', context: ['paged', 'index']},
+                {data: {root: {context: []}}}
+            ).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.match(/<meta name="referrer" content="origin" \/>/);
+
+                done();
+            }).catch(done);
         });
     });
 

@@ -1,4 +1,3 @@
-/*globals describe, beforeEach, afterEach, it*/
 var sinon        = require('sinon'),
     should       = require('should'),
     uncapitalise = require('../../../server/middleware/uncapitalise');

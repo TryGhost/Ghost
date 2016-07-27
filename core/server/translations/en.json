@@ -62,6 +62,9 @@
             }
         },
         "middleware": {
+            "api": {
+                "versionMismatch": "Request for version {requestVersion} does not match current version {currentVersion}."
+            },
             "auth": {
                 "clientAuthenticationFailed": "Client Authentication Failed",
                 "clientCredentialsNotProvided": "Client credentials were not provided",
@@ -167,6 +170,7 @@
             }
         },
         "general": {
+            "maintenance": "Ghost is currently undergoing maintenance, please wait a moment then retry.",
             "moreInfo": "\nMore info: {info}",
             "requiredOnFuture": "This will be required in future. Please see {link}"
         },
@@ -203,7 +207,8 @@
             "post": {
                 "untitled": "(Untitled)",
                 "valueCannotBeBlank": "Value in {key} cannot be blank.",
-                "expectedPublishedAtInFuture": "Expected published_at to be in the future.",
+                "isAlreadyPublished": "Your post is already published, please reload your page.",
+                "expectedPublishedAtInFuture": "Date must be at least {cannotScheduleAPostBeforeInMinutes} minutes in the future.",
                 "noUserFound": "No user found",
                 "notEnoughPermission": "You do not have permission to perform this action",
                 "tagUpdates": {
@@ -263,7 +268,7 @@
         },
         "permissions": {
             "noActionsMapFound": {
-                "error": "No actions map found, please call permissions.init() before use."
+                "error": "No actions map found, ensure you have loaded permissions into database and then call permissions.init() before use."
             },
             "applyStatusRules": {
                 "error": "You do not have permission to retrieve {docName} with that status"
@@ -319,6 +324,10 @@
             },
             "posts": {
                 "postNotFound": "Post not found."
+            },
+            "job": {
+                "notFound": "Job not found.",
+                "publishInThePast": "Use the force flag to publish a post in the past."
             },
             "settings": {
                 "problemFindingSetting": "Problem finding setting: {key}",
@@ -411,10 +420,10 @@
             "versioning": {
                 "index": {
                     "dbVersionNotRecognized": "Database version is not recognized",
-                    "settingsTableDoesNotExist": "Settings table does not exist",
+                    "databaseNotPopulated": "Database is not populated.",
                     "cannotMigrate": {
-                        "error": "Unable to upgrade from version 0.4.2 or earlier",
-                        "context": "Please upgrade to 0.7.1 first"
+                        "error": "Unable to upgrade from version 0.4.2 or earlier.",
+                        "context": "Please upgrade to 0.7.1 first."
                     }
                 }
             },

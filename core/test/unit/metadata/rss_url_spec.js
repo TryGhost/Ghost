@@ -1,4 +1,3 @@
-/*globals describe, it*/
 var getRssUrl = require('../../../server/data/meta/rss_url'),
     should = require('should');
 

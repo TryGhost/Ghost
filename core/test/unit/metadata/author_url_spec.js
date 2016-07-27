@@ -1,4 +1,3 @@
-/*globals describe, it*/
 var getAuthorUrl = require('../../../server/data/meta/author_url'),
     should = require('should');
 

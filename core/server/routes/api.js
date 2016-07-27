@@ -23,6 +23,13 @@ apiRoutes = function apiRoutes(middleware) {
     // alias delete with del
     router.del = router.delete;
 
+    // send 503 json response in case of maintenance
+    router.use(middleware.api.maintenance);
+
+    // Check version matches for API requests, depends on res.locals.safeVersion being set
+    // Therefore must come after themeHandler.ghostLocals, for now
+    router.use(middleware.api.versionMatch);
+
     // ## CORS pre-flight check
     router.options('*', middleware.api.cors);
 
@@ -39,6 +46,9 @@ apiRoutes = function apiRoutes(middleware) {
     router.get('/posts/slug/:slug', authenticatePublic, api.http(api.posts.read));
     router.put('/posts/:id', authenticatePrivate, api.http(api.posts.edit));
     router.del('/posts/:id', authenticatePrivate, api.http(api.posts.destroy));
+
+    // ## Schedules
+    router.put('/schedules/posts/:id', [middleware.api.authenticateClient, middleware.api.authenticateUser], api.http(api.schedules.publishPost));
 
     // ## Settings
     router.get('/settings', authenticatePrivate, api.http(api.settings.browse));

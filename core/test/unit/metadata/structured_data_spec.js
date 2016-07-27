@@ -1,4 +1,3 @@
-/*globals describe, it*/
 var getStructuredData = require('../../../server/data/meta/structured_data'),
     should = require('should');
 
@@ -39,7 +38,7 @@ describe('getStructuredData', function () {
             'twitter:data1': 'Test User',
             'twitter:data2': ['one', 'two', 'tag'].join(', '),
             'twitter:description': 'Post meta description',
-            'twitter:image:src': 'http://mysite.com/content/image/mypostcoverimage.jpg',
+            'twitter:image': 'http://mysite.com/content/image/mypostcoverimage.jpg',
             'twitter:label1': 'Written by',
             'twitter:label2': 'Filed under',
             'twitter:title': 'Post Title',

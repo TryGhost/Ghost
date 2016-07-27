@@ -1,4 +1,3 @@
-/*globals describe, before, afterEach, it */
 var testUtils         = require('../../utils'),
     should            = require('should'),
     rewire            = require('rewire'),

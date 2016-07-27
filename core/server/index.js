@@ -2,27 +2,26 @@
 // This file needs serious love & refactoring
 
 // Module dependencies
-var express     = require('express'),
-    hbs         = require('express-hbs'),
-    compress    = require('compression'),
-    uuid        = require('node-uuid'),
-    Promise     = require('bluebird'),
-    i18n        = require('./i18n'),
-    api         = require('./api'),
-    config      = require('./config'),
-    errors      = require('./errors'),
-    helpers     = require('./helpers'),
-    middleware  = require('./middleware'),
-    migrations  = require('./data/migration'),
-    models      = require('./models'),
+var express = require('express'),
+    _ = require('lodash'),
+    uuid = require('node-uuid'),
+    Promise = require('bluebird'),
+    i18n = require('./i18n'),
+    api = require('./api'),
+    config = require('./config'),
+    errors = require('./errors'),
+    middleware = require('./middleware'),
+    migrations = require('./data/migration'),
+    versioning = require('./data/schema/versioning'),
+    models = require('./models'),
     permissions = require('./permissions'),
-    apps        = require('./apps'),
-    sitemap     = require('./data/xml/sitemap'),
-    xmlrpc      = require('./data/xml/xmlrpc'),
-    slack       = require('./data/slack'),
+    apps = require('./apps'),
+    sitemap = require('./data/xml/sitemap'),
+    xmlrpc = require('./data/xml/xmlrpc'),
+    slack = require('./data/slack'),
     GhostServer = require('./ghost-server'),
+    scheduling = require('./scheduling'),
     validateThemes = require('./utils/validate-themes'),
-
     dbHash;
 
 function initDbHashAndFirstRun() {
@@ -50,9 +49,9 @@ function initDbHashAndFirstRun() {
 // Sets up the express server instances, runs init on a bunch of stuff, configures views, helpers, routes and more
 // Finally it returns an instance of GhostServer
 function init(options) {
-    // Get reference to an express app instance.
-    var blogApp = express(),
-        adminApp = express();
+    options = options || {};
+
+    var ghostServer = null;
 
     // ### Initialisation
     // The server and its dependencies require a populated config
@@ -66,11 +65,40 @@ function init(options) {
     return config.load(options.config).then(function () {
         return config.checkDeprecated();
     }).then(function () {
-        // Initialise the models
         models.init();
     }).then(function () {
-        // Initialize migrations
-        return migrations.init();
+        return versioning.getDatabaseVersion()
+            .then(function (currentVersion) {
+                var response = migrations.update.isDatabaseOutOfDate({
+                    fromVersion: currentVersion,
+                    toVersion: versioning.getNewestDatabaseVersion(),
+                    forceMigration: process.env.FORCE_MIGRATION
+                }), maintenanceState;
+
+                if (response.migrate === true) {
+                    maintenanceState = config.maintenance.enabled || false;
+                    config.maintenance.enabled = true;
+
+                    migrations.update.execute({
+                        fromVersion: currentVersion,
+                        toVersion: versioning.getNewestDatabaseVersion(),
+                        forceMigration: process.env.FORCE_MIGRATION
+                    }).then(function () {
+                        config.maintenance.enabled = maintenanceState;
+                    }).catch(function (err) {
+                        errors.logErrorAndExit(err, err.context, err.help);
+                    });
+                } else if (response.error) {
+                    return Promise.reject(response.error);
+                }
+            })
+            .catch(function (err) {
+                if (err instanceof errors.DatabaseNotPopulated) {
+                    return migrations.populate();
+                }
+
+                return Promise.reject(err);
+            });
     }).then(function () {
         // Populate any missing default settings
         return models.Settings.populateDefaults();
@@ -90,33 +118,16 @@ function init(options) {
             // Initialize sitemaps
             sitemap.init(),
             // Initialize xmrpc ping
-            xmlrpc.init(),
+            xmlrpc.listen(),
             // Initialize slack ping
-            slack.init()
+            slack.listen()
         );
     }).then(function () {
-        var adminHbs = hbs.create();
-
-        // ##Configuration
-
-        // enabled gzip compression by default
-        if (config.server.compress !== false) {
-            blogApp.use(compress());
-        }
-
-        // ## View engine
-        // set the view engine
-        blogApp.set('view engine', 'hbs');
-
-        // Create a hbs instance for admin and init view engine
-        adminApp.set('view engine', 'hbs');
-        adminApp.engine('hbs', adminHbs.express3({}));
-
-        // Load helpers
-        helpers.loadCoreHelpers(adminHbs);
+        // Get reference to an express app instance.
+        var parentApp = express();
 
         // ## Middleware and Routing
-        middleware(blogApp, adminApp);
+        middleware(parentApp);
 
         // Log all theme errors and warnings
         validateThemes(config.paths.themePath)
@@ -131,7 +142,15 @@ function init(options) {
                 });
             });
 
-        return new GhostServer(blogApp);
+        return new GhostServer(parentApp);
+    }).then(function (_ghostServer) {
+        ghostServer = _ghostServer;
+
+        // scheduling can trigger api requests, that's why we initialize the module after the ghost server creation
+        // scheduling module can create x schedulers with different adapters
+        return scheduling.init(_.extend(config.scheduling, {apiUrl: config.url + config.urlFor('api')}));
+    }).then(function () {
+        return ghostServer;
     });
 }
 

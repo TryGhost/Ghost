@@ -1,4 +1,3 @@
-/*globals describe, beforeEach, it*/
 var should   = require('should'),
     _        = require('lodash'),
 

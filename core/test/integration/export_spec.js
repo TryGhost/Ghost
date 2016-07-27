@@ -1,4 +1,3 @@
-/*globals describe, before, beforeEach, afterEach, it*/
 var testUtils   = require('../utils/index'),
     should      = require('should'),
     sinon       = require('sinon'),
@@ -9,7 +8,7 @@ var testUtils   = require('../utils/index'),
     versioning  = require('../../server/data/schema').versioning,
     exporter    = require('../../server/data/export'),
 
-    DEF_DB_VERSION  = versioning.getDefaultDatabaseVersion(),
+    DEF_DB_VERSION  = versioning.getNewestDatabaseVersion(),
     sandbox = sinon.sandbox.create();
 
 describe('Exporter', function () {
@@ -18,7 +17,7 @@ describe('Exporter', function () {
     afterEach(function () {
         sandbox.restore();
     });
-    beforeEach(testUtils.setup('default'));
+    beforeEach(testUtils.setup('default', 'settings'));
 
     should.exist(exporter);
 
@@ -40,7 +39,7 @@ describe('Exporter', function () {
 
             exportData.meta.version.should.equal(DEF_DB_VERSION);
 
-            dbVersionSetting = _.findWhere(exportData.data.settings, {key: 'databaseVersion'});
+            dbVersionSetting = _.find(exportData.data.settings, {key: 'databaseVersion'});
 
             should.exist(dbVersionSetting);
 

@@ -1,16 +1,43 @@
- /*globals describe, before, beforeEach, afterEach, it */
-var testUtils     = require('../../utils'),
+var Promise       = require('bluebird'),
     should        = require('should'),
     _             = require('lodash'),
-
-    // Stuff we are testing
+    testUtils     = require('../../utils'),
+    configUtils   = require('../../utils/configUtils'),
+    errors        = require('../../../server/errors'),
+    db            = require('../../../server/data/db'),
+    models        = require('../../../server/models'),
     PostAPI       = require('../../../server/api/posts');
 
 describe('Post API', function () {
-    // Keep the DB clean
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
-    beforeEach(testUtils.setup('users:roles', 'perms:post', 'posts', 'perms:init'));
+    beforeEach(testUtils.setup('users:roles', 'perms:post', 'perms:init'));
+
+    // @TODO: remove when https://github.com/TryGhost/Ghost/issues/6930 is fixed
+    // we insert the posts via the model layer, because right now the test utils insert dates wrong
+    beforeEach(function (done) {
+        Promise.mapSeries(testUtils.DataGenerator.forKnex.posts, function (post) {
+            return models.Post.add(post, {context: {internal:true}});
+        }).then(function () {
+            done();
+        }).catch(done);
+    });
+
+    beforeEach(function (done) {
+        Promise.mapSeries(testUtils.DataGenerator.forKnex.tags, function (tag) {
+            return models.Tag.add(tag, {context: {internal:true}});
+        }).then(function () {
+            done();
+        }).catch(done);
+    });
+
+    beforeEach(function (done) {
+        db.knex('posts_tags').insert(testUtils.DataGenerator.forKnex.posts_tags)
+            .then(function () {
+                done();
+            })
+            .catch(done);
+    });
 
     function extractFirstPost(posts) {
         return _.filter(posts, {id: 1})[0];
@@ -19,17 +46,55 @@ describe('Post API', function () {
     should.exist(PostAPI);
 
     describe('Browse', function () {
-        it('can fetch featured posts', function (done) {
-            PostAPI.browse({context: {user: 1}, filter: 'featured:true'}).then(function (results) {
+        beforeEach(function () {
+            configUtils.set({theme: {
+                permalinks: '/:slug/'
+            }});
+        });
+
+        afterEach(function () {
+            configUtils.restore();
+        });
+
+        it('can fetch all posts with internal context in correct order', function (done) {
+            PostAPI.browse({context: {internal: true}}).then(function (results) {
                 should.exist(results.posts);
-                results.posts.length.should.eql(4);
-                results.posts[0].featured.should.eql(true);
+                results.posts.length.should.eql(8);
+
+                results.posts[0].status.should.eql('scheduled');
+
+                results.posts[1].status.should.eql('draft');
+                results.posts[2].status.should.eql('draft');
+
+                results.posts[3].status.should.eql('published');
+                results.posts[4].status.should.eql('published');
+                results.posts[5].status.should.eql('published');
+                results.posts[6].status.should.eql('published');
+                results.posts[7].status.should.eql('published');
 
                 done();
             }).catch(done);
         });
 
-        it('can exclude featured posts', function (done) {
+        it('can fetch featured posts for user 1', function (done) {
+            PostAPI.browse({context: {user: 1}, filter: 'featured:true'}).then(function (results) {
+                should.exist(results.posts);
+                results.posts.length.should.eql(4);
+                results.posts[0].featured.should.eql(true);
+                done();
+            }).catch(done);
+        });
+
+        it('can fetch featured posts for user 2', function (done) {
+            PostAPI.browse({context: {user: 2}, filter: 'featured:true'}).then(function (results) {
+                should.exist(results.posts);
+                results.posts.length.should.eql(4);
+                results.posts[0].featured.should.eql(true);
+                done();
+            }).catch(done);
+        });
+
+        it('can exclude featured posts for user 1', function (done) {
             PostAPI.browse({context: {user: 1}, status: 'all', filter: 'featured:false'}).then(function (results) {
                 should.exist(results.posts);
                 results.posts.length.should.eql(1);
@@ -111,7 +176,8 @@ describe('Post API', function () {
             PostAPI.browse({context: {user: 1}, page: 1, limit: 2, status: 'all'}).then(function (results) {
                 should.exist(results.posts);
                 results.posts.length.should.eql(2);
-                results.posts[0].slug.should.eql('unfinished');
+                results.posts[0].slug.should.eql('scheduled-post');
+                results.posts[1].slug.should.eql('unfinished');
                 results.meta.pagination.page.should.eql(1);
                 results.meta.pagination.next.should.eql(2);
 
@@ -123,7 +189,8 @@ describe('Post API', function () {
             PostAPI.browse({context: {user: 1}, page: 2, limit: 2, status: 'all'}).then(function (results) {
                 should.exist(results.posts);
                 results.posts.length.should.eql(2);
-                results.posts[0].slug.should.eql('short-and-sweet');
+                results.posts[0].slug.should.eql('not-so-short-bit-complex');
+                results.posts[1].slug.should.eql('short-and-sweet');
                 results.meta.pagination.page.should.eql(2);
                 results.meta.pagination.next.should.eql(3);
                 results.meta.pagination.prev.should.eql(1);
@@ -183,18 +250,20 @@ describe('Post API', function () {
                 should.exist(results);
                 testUtils.API.checkResponse(results, 'posts');
                 should.exist(results.posts);
-                results.posts.length.should.eql(5);
-                results.posts[0].status.should.eql('draft');
-                testUtils.API.checkResponse(results.posts[0], 'post');
 
+                // DataGenerator creates 6 posts by default + 2 static pages
+                results.posts.length.should.eql(6);
+                testUtils.API.checkResponse(results.posts[0], 'post');
                 done();
             }).catch(done);
         });
 
         it('can include tags', function (done) {
             PostAPI.browse({context: {user: 1}, status: 'all', include: 'tags'}).then(function (results) {
-                should.exist(results.posts[0].tags[0].name);
-                results.posts[0].tags[0].name.should.eql('pollo');
+                results.posts[0].tags.length.should.eql(0);
+                results.posts[1].tags.length.should.eql(1);
+
+                results.posts[1].tags[0].name.should.eql('pollo');
                 done();
             }).catch(done);
         });
@@ -214,7 +283,7 @@ describe('Post API', function () {
                 results.posts.length.should.be.eql(2);
 
                 _.each(results.posts, function (post) {
-                    var slugs = _.pluck(post.tags, 'slug');
+                    var slugs = _.map(post.tags, 'slug');
                     slugs.should.containEql('kitchen-sink');
                 });
 
@@ -245,7 +314,7 @@ describe('Post API', function () {
         it('can fetch all posts for an author', function (done) {
             PostAPI.browse({context: {user: 1}, status: 'all', filter: 'author:joe-bloggs', include: 'author'}).then(function (results) {
                 should.exist(results.posts);
-                results.posts.length.should.eql(5);
+                results.posts.length.should.eql(6);
 
                 _.each(results.posts, function (post) {
                     post.author.slug.should.eql('joe-bloggs');
@@ -301,6 +370,18 @@ describe('Post API', function () {
             }).catch(done);
         });
 
+        it('with context.user can fetch url and author fields', function (done) {
+            PostAPI.browse({context: {user: 1}, status: 'all', limit: 5}).then(function (results) {
+                should.exist(results.posts);
+
+                should.exist(results.posts[0].url);
+                should.notEqual(results.posts[0].url, 'undefined');
+                should.exist(results.posts[0].author);
+
+                done();
+            }).catch(done);
+        });
+
         it('with context.user can fetch multiple fields and be case insensitive', function (done) {
             PostAPI.browse({context: {user: 1}, status: 'all', limit: 5, fields: 'Slug,Published_At'}).then(function (results) {
                 should.exist(results.posts);
@@ -342,13 +423,13 @@ describe('Post API', function () {
         it('can order posts using asc', function (done) {
             var posts, expectedTitles;
 
-            posts = _(testUtils.DataGenerator.Content.posts).reject('page').reject({status: 'scheduled'}).value();
-            expectedTitles = _(posts).pluck('title').sortBy().value();
+            posts = _(testUtils.DataGenerator.Content.posts).reject('page').value();
+            expectedTitles = _(posts).map('title').sortBy().value();
 
             PostAPI.browse({context: {user: 1}, status: 'all', order: 'title asc', fields: 'title'}).then(function (results) {
                 should.exist(results.posts);
 
-                var titles = _.pluck(results.posts, 'title');
+                var titles = _.map(results.posts, 'title');
                 titles.should.eql(expectedTitles);
 
                 done();
@@ -358,13 +439,13 @@ describe('Post API', function () {
         it('can order posts using desc', function (done) {
             var posts, expectedTitles;
 
-            posts = _(testUtils.DataGenerator.Content.posts).reject('page').reject({status: 'scheduled'}).value();
-            expectedTitles = _(posts).pluck('title').sortBy().reverse().value();
+            posts = _(testUtils.DataGenerator.Content.posts).reject('page').value();
+            expectedTitles = _(posts).map('title').sortBy().reverse().value();
 
             PostAPI.browse({context: {user: 1}, status: 'all', order: 'title DESC', fields: 'title'}).then(function (results) {
                 should.exist(results.posts);
 
-                var titles = _.pluck(results.posts, 'title');
+                var titles = _.map(results.posts, 'title');
                 titles.should.eql(expectedTitles);
 
                 done();
@@ -374,13 +455,13 @@ describe('Post API', function () {
         it('can order posts and filter disallowed attributes', function (done) {
             var posts, expectedTitles;
 
-            posts = _(testUtils.DataGenerator.Content.posts).reject('page').reject({status: 'scheduled'}).value();
-            expectedTitles = _(posts).pluck('title').sortBy().value();
+            posts = _(testUtils.DataGenerator.Content.posts).reject('page').value();
+            expectedTitles = _(posts).map('title').sortBy().value();
 
             PostAPI.browse({context: {user: 1}, status: 'all', order: 'bunny DESC, title ASC', fields: 'title'}).then(function (results) {
                 should.exist(results.posts);
 
-                var titles = _.pluck(results.posts, 'title');
+                var titles = _.map(results.posts, 'title');
                 titles.should.eql(expectedTitles);
 
                 done();
@@ -582,6 +663,181 @@ describe('Post API', function () {
 
                 done();
             });
+        });
+    });
+
+    describe('Edit', function () {
+        it('can edit own post', function (done) {
+            PostAPI.edit({posts:[{status: 'test'}]}, {context: {user: 1}, id: 1}).then(function (results) {
+                should.exist(results.posts);
+                done();
+            }).catch(done);
+        });
+
+        it('cannot edit others post', function (done) {
+            testUtils.fixtures.insertOne('users', 'createUser', 4)
+                .then(function (result) {
+                    PostAPI.edit({posts: [{status: 'test'}]}, {context: {user: result[0]}, id: 1}).catch(function (err) {
+                        should.exist(err);
+                        (err instanceof errors.NoPermissionError).should.eql(true);
+                        done();
+                    });
+                });
+        });
+
+        // These tests are for #6920
+        it('should update post & not delete tags with `tags` not included', function (done) {
+            var options = {context: {user: 1}, id: 1},
+                includeOptions = {include: 'tags'},
+                startTags;
+
+            // Step 1, fetch a post from the API with tags
+            PostAPI.read(_.extend({}, options, includeOptions)).then(function (results) {
+                var postWithoutTags = results.posts[0];
+                should.exist(results.posts[0]);
+                should.exist(results.posts[0].tags);
+                results.posts[0].tags.should.have.lengthOf(2);
+
+                // Save the tags for testing against later
+                startTags = _.clone(results.posts[0].tags);
+
+                // Remove the tags from the object we're sending - we'll send no `tags` property at all
+                delete postWithoutTags.tags;
+
+                // Update a single property so we can see the post does get updated
+                postWithoutTags.title = 'HTML Ipsum Updated';
+
+                // Step 2, call edit but don't include tags in the response
+                return PostAPI.edit({posts: [postWithoutTags]}, options);
+            }).then(function (results) {
+                should.exist(results.posts[0]);
+                should.not.exist(results.posts[0].tags);
+                results.posts[0].title.should.eql('HTML Ipsum Updated');
+
+                // Step 3, request the post with its tags again, to check they are still present
+                return PostAPI.read(_.extend({}, options, includeOptions));
+            }).then(function (results) {
+                should.exist(results.posts[0]);
+                should.exist(results.posts[0].tags);
+                results.posts[0].tags.should.have.lengthOf(2);
+                results.posts[0].tags.should.eql(startTags);
+
+                done();
+            }).catch(done);
+        });
+
+        it('should update post & not delete tags with `tags` set to undefined', function (done) {
+            var options = {context: {user: 1}, id: 1},
+                includeOptions = {include: 'tags'},
+                startTags;
+
+            // Step 1, fetch a post from the API with tags
+            PostAPI.read(_.extend({}, options, includeOptions)).then(function (results) {
+                var postWithoutTags = results.posts[0];
+                should.exist(results.posts[0]);
+                should.exist(results.posts[0].tags);
+                results.posts[0].tags.should.have.lengthOf(2);
+
+                // Save the tags for testing against later
+                startTags = _.clone(results.posts[0].tags);
+
+                // Remove the tags from the object we're sending - we'll send no `tags` property at all
+                postWithoutTags.tags = undefined;
+
+                // Update a single property so we can see the post does get updated
+                postWithoutTags.title = 'HTML Ipsum Updated';
+
+                // Step 2, call edit but don't include tags in the response
+                return PostAPI.edit({posts: [postWithoutTags]}, options);
+            }).then(function (results) {
+                should.exist(results.posts[0]);
+                should.not.exist(results.posts[0].tags);
+                results.posts[0].title.should.eql('HTML Ipsum Updated');
+
+                // Step 3, request the post with its tags again, to check they are still present
+                return PostAPI.read(_.extend({}, options, includeOptions));
+            }).then(function (results) {
+                should.exist(results.posts[0]);
+                should.exist(results.posts[0].tags);
+                results.posts[0].tags.should.have.lengthOf(2);
+                results.posts[0].tags.should.eql(startTags);
+
+                done();
+            }).catch(done);
+        });
+
+        it('should update post & not delete tags with `tags` set to null', function (done) {
+            var options = {context: {user: 1}, id: 1},
+                includeOptions = {include: 'tags'},
+                startTags;
+
+            // Step 1, fetch a post from the API with tags
+            PostAPI.read(_.extend({}, options, includeOptions)).then(function (results) {
+                var postWithoutTags = results.posts[0];
+                should.exist(results.posts[0]);
+                should.exist(results.posts[0].tags);
+                results.posts[0].tags.should.have.lengthOf(2);
+
+                // Save the tags for testing against later
+                startTags = _.clone(results.posts[0].tags);
+
+                // Remove the tags from the object we're sending - we'll send no `tags` property at all
+                postWithoutTags.tags = null;
+
+                // Update a single property so we can see the post does get updated
+                postWithoutTags.title = 'HTML Ipsum Updated';
+
+                // Step 2, call edit but don't include tags in the response
+                return PostAPI.edit({posts: [postWithoutTags]}, options);
+            }).then(function (results) {
+                should.exist(results.posts[0]);
+                should.not.exist(results.posts[0].tags);
+                results.posts[0].title.should.eql('HTML Ipsum Updated');
+
+                // Step 3, request the post with its tags again, to check they are still present
+                return PostAPI.read(_.extend({}, options, includeOptions));
+            }).then(function (results) {
+                should.exist(results.posts[0]);
+                should.exist(results.posts[0].tags);
+                results.posts[0].tags.should.have.lengthOf(2);
+                results.posts[0].tags.should.eql(startTags);
+
+                done();
+            }).catch(done);
+        });
+
+        it('should update post & should delete tags with `tags` set to []', function (done) {
+            var options = {context: {user: 1}, id: 1},
+                includeOptions = {include: 'tags'};
+
+            // Step 1, fetch a post from the API with tags
+            PostAPI.read(_.extend({}, options, includeOptions)).then(function (results) {
+                var postWithoutTags = results.posts[0];
+                should.exist(results.posts[0]);
+                should.exist(results.posts[0].tags);
+                results.posts[0].tags.should.have.lengthOf(2);
+
+                // Remove the tags from the object we're sending - we'll send no `tags` property at all
+                postWithoutTags.tags = [];
+
+                // Update a single property so we can see the post does get updated
+                postWithoutTags.title = 'HTML Ipsum Updated';
+
+                // Step 2, call edit but don't include tags in the response
+                return PostAPI.edit({posts: [postWithoutTags]}, options);
+            }).then(function (results) {
+                should.exist(results.posts[0]);
+                should.not.exist(results.posts[0].tags);
+                results.posts[0].title.should.eql('HTML Ipsum Updated');
+
+                // Step 3, request the post with its tags again, to check they are still present
+                return PostAPI.read(_.extend({}, options, includeOptions));
+            }).then(function (results) {
+                should.exist(results.posts[0]);
+                results.posts[0].tags.should.eql([]);
+
+                done();
+            }).catch(done);
         });
     });
 });

@@ -1,80 +1,140 @@
 // # Update Database
 // Handles migrating a database between two different database versions
-var _          = require('lodash'),
-    backup     = require('./backup'),
-    fixtures   = require('./fixtures'),
-    sequence   = require('../../utils/sequence'),
+var Promise = require('bluebird'),
+    backup = require('./backup'),
+    fixtures = require('./fixtures'),
+    errors = require('../../errors'),
+    i18n = require('../../i18n'),
+    db = require('../../data/db'),
+    sequence = require('../../utils/sequence'),
     versioning = require('../schema').versioning,
 
     updateDatabaseSchema,
+    migrateToDatabaseVersion,
+    execute, logger, isDatabaseOutOfDate;
 
-    // Public
-    update;
+// @TODO: remove me asap!
+logger = {
+    info: function info(message) {
+        errors.logComponentInfo('Migrations', message);
+    },
+    warn: function warn(message) {
+        errors.logComponentWarn('Skipping Migrations', message);
+    }
+};
 
 /**
- * ### Update Database Schema
- * Fetch the update tasks for each version, and iterate through them in order
- *
- * @param {Array} versions
- * @param {{info: logger.info, warn: logger.warn}} logger
- * @returns {Promise<*>}
+ * update database schema for one single version
  */
-updateDatabaseSchema = function updateDatabaseSchema(versions, logger) {
-    var migrateOps = versions.reduce(function updateToVersion(migrateOps, version) {
-        var tasks = versioning.getUpdateDatabaseTasks(version, logger);
-
-        if (tasks && tasks.length > 0) {
-            migrateOps.push(function runVersionTasks() {
-                logger.info('Updating database to ' + version);
-                return sequence(tasks, logger);
-            });
-        }
-
-        return migrateOps;
-    }, []);
-
-    // execute the commands in sequence
-    if (!_.isEmpty(migrateOps)) {
-        logger.info('Running migrations');
+updateDatabaseSchema = function (tasks, logger, modelOptions) {
+    if (!tasks.length) {
+        return Promise.resolve();
     }
 
-    return sequence(migrateOps, logger);
+    return sequence(tasks, modelOptions, logger);
+};
+
+/**
+ * update each database version as one transaction
+ * if a version fails, rollback
+ * if a version fails, stop updating more versions
+ */
+migrateToDatabaseVersion = function migrateToDatabaseVersion(version, logger, modelOptions) {
+    return new Promise(function (resolve, reject) {
+        db.knex.transaction(function (transaction) {
+            var migrationTasks = versioning.getUpdateDatabaseTasks(version, logger),
+                fixturesTasks = versioning.getUpdateFixturesTasks(version, logger);
+
+            logger.info('###########');
+            logger.info('Updating database to ' + version);
+            logger.info('###########\n');
+
+            modelOptions.transacting = transaction;
+
+            updateDatabaseSchema(migrationTasks, logger, modelOptions)
+                .then(function () {
+                    return fixtures.update(fixturesTasks, logger, modelOptions);
+                })
+                .then(function () {
+                    return versioning.setDatabaseVersion(transaction, version);
+                })
+                .then(function () {
+                    transaction.commit();
+                    resolve();
+                })
+                .catch(function (err) {
+                    logger.warn('rolling back because of: ' + err.stack);
+
+                    transaction.rollback();
+                });
+        }).catch(function () {
+            reject();
+        });
+    });
 };
 
 /**
  * ## Update
  * Does a backup, then updates the database and fixtures
- *
- * @param {String} fromVersion
- * @param {String} toVersion
- * @param {{info: logger.info, warn: logger.warn}} logger
- * @returns {Promise<*>}
  */
-update = function update(fromVersion, toVersion, logger) {
-    // Is the current version lower than the version we can migrate from?
-    // E.g. is this blog's DB older than 003?
-    if (fromVersion < versioning.canMigrateFromVersion) {
-        return versioning.showCannotMigrateError();
-    }
+execute = function execute(options) {
+    options = options || {};
 
-    fromVersion = process.env.FORCE_MIGRATION ? versioning.canMigrateFromVersion : fromVersion;
+    var fromVersion = options.fromVersion,
+        toVersion = options.toVersion,
+        forceMigration = options.forceMigration,
+        versionsToUpdate,
+        modelOptions = {
+            context: {
+                internal: true
+            }
+        };
+
+    fromVersion = forceMigration ? versioning.canMigrateFromVersion : fromVersion;
 
     // Figure out which versions we're updating through.
     // This shouldn't include the from/current version (which we're already on)
-    var versionsToUpdate = versioning.getMigrationVersions(fromVersion, toVersion).slice(1);
+    versionsToUpdate = versioning.getMigrationVersions(fromVersion, toVersion).slice(1);
 
-    return backup(logger).then(function () {
-        return updateDatabaseSchema(versionsToUpdate, logger);
-    }).then(function () {
-        // Ensure all of the current default settings are created (these are fixtures, so should be inserted first)
-        return fixtures.ensureDefaultSettings(logger);
-    }).then(function () {
-        // Next, run any updates to the fixtures, including default settings, that are required
-        return fixtures.update(versionsToUpdate, logger);
-    }).then(function () {
-        // Finally update the database's current version
-        return versioning.setDatabaseVersion();
-    });
+    return backup(logger)
+        .then(function () {
+            return Promise.mapSeries(versionsToUpdate, function (versionToUpdate) {
+                return migrateToDatabaseVersion(versionToUpdate, logger, modelOptions);
+            });
+        })
+        .then(function () {
+            logger.info('Finished!');
+        });
 };
 
-module.exports = update;
+isDatabaseOutOfDate = function isDatabaseOutOfDate(options) {
+    options = options || {};
+
+    var fromVersion = options.fromVersion,
+        toVersion = options.toVersion,
+        forceMigration = options.forceMigration;
+
+    // CASE: current database version is lower then we support
+    if (fromVersion < versioning.canMigrateFromVersion) {
+        return {error: new errors.DatabaseVersion(
+            i18n.t('errors.data.versioning.index.cannotMigrate.error'),
+            i18n.t('errors.data.versioning.index.cannotMigrate.context'),
+            i18n.t('common.seeLinkForInstructions', {link: 'http://support.ghost.org/how-to-upgrade/'})
+        )};
+    }
+    // CASE: the database exists but is out of date
+    else if (fromVersion < toVersion || forceMigration) {
+        return {migrate: true};
+    }
+    // CASE: database is up-to-date
+    else if (fromVersion === toVersion) {
+        return {migrate: false};
+    }
+    // CASE: we don't understand the version
+    else {
+        return {error: new errors.DatabaseVersion(i18n.t('errors.data.versioning.index.dbVersionNotRecognized'))};
+    }
+};
+
+exports.execute = execute;
+exports.isDatabaseOutOfDate = isDatabaseOutOfDate;

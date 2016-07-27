@@ -7,7 +7,7 @@ var models  = require('../../../../models'),
     message = 'Updating client secret';
 
 module.exports = function updateGhostClientsSecrets(options, logger) {
-    return models.Clients.forge().query('where', 'secret', '=', 'not_available').fetch().then(function (results) {
+    return models.Clients.forge().query('where', 'secret', '=', 'not_available').fetch(options).then(function (results) {
         if (results.models.length === 0) {
             logger.warn(message);
             return;
