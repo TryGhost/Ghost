@@ -89,7 +89,7 @@
     "moment-timezone": "0.5.5",
     "password-generator": "2.0.2",
     "top-gh-contribs": "2.0.4",
-    "walk-sync": "^0.2.6"
+    "walk-sync": "^0.3.0"
   },
   "ember-addon": {
     "paths": [
