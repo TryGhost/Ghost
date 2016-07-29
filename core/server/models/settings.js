@@ -5,6 +5,7 @@ var Settings,
     errors         = require('../errors'),
     Promise        = require('bluebird'),
     validation     = require('../data/validation'),
+    db             = require('../data/db'),
     events         = require('../events'),
     internalContext = {context: {internal: true}},
     i18n           = require('../i18n'),
@@ -160,28 +161,50 @@ Settings = ghostBookshelf.Model.extend({
         });
     },
 
+    // we need to execute "find settings" and "insert settings" in one single atomic transaction
+    // this protects getting errors from the database in case of two parallel callers
     populateDefaults: function populateDefaults(options) {
         options = options || {};
-
         options = _.merge({}, options, internalContext);
 
-        return this.findAll(options).then(function then(allSettings) {
-            var usedKeys = allSettings.models.map(function mapper(setting) { return setting.get('key'); }),
-                insertOperations = [];
+        var self = this;
 
-            _.each(getDefaultSettings(), function each(defaultSetting, defaultSettingKey) {
-                var isMissingFromDB = usedKeys.indexOf(defaultSettingKey) === -1;
-                // Temporary code to deal with old databases with currentVersion settings
-                if (defaultSettingKey === 'databaseVersion' && usedKeys.indexOf('currentVersion') !== -1) {
-                    isMissingFromDB = false;
-                }
-                if (isMissingFromDB) {
-                    defaultSetting.value = defaultSetting.defaultValue;
-                    insertOperations.push(Settings.forge(defaultSetting).save(null, options));
-                }
+        return new Promise(function (resolve, reject) {
+            db.knex.transaction(function (transaction) {
+                options.transacting = transaction;
+
+                self.findAll(options).then(function then(allSettings) {
+                    var usedKeys = allSettings.models.map(function mapper(setting) {
+                            return setting.get('key');
+                        }),
+                        insertOperations = [];
+
+                    _.each(getDefaultSettings(), function each(defaultSetting, defaultSettingKey) {
+                        var isMissingFromDB = usedKeys.indexOf(defaultSettingKey) === -1;
+
+                        // Temporary code to deal with old databases with currentVersion settings
+                        if (defaultSettingKey === 'databaseVersion' && usedKeys.indexOf('currentVersion') !== -1) {
+                            isMissingFromDB = false;
+                        }
+
+                        if (isMissingFromDB) {
+                            defaultSetting.value = defaultSetting.defaultValue;
+                            insertOperations.push(Settings.forge(defaultSetting).save(null, options));
+                        }
+                    });
+
+                    Promise.all(insertOperations)
+                        .then(function () {
+                            transaction.commit();
+                            resolve();
+                        })
+                        .catch(function () {
+                            transaction.rollback(new errors.InternalServerError(i18n.t('errors.general.database')));
+                        });
+                });
+            }).catch(function (err) {
+                reject(err);
             });
-
-            return Promise.all(insertOperations);
         });
     }
 
