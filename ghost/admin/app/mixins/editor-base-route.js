@@ -9,7 +9,6 @@ import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 
 let generalShortcuts = {};
 generalShortcuts[`${ctrlOrCmd}+alt+p`] = 'publish';
-generalShortcuts['alt+shift+z'] = 'toggleZenMode';
 
 export default Mixin.create(styleBody, ShortcutsRoute, {
     classNames: ['editor'],
@@ -34,10 +33,6 @@ export default Mixin.create(styleBody, ShortcutsRoute, {
 
             controller.send('setSaveType', 'publish');
             controller.send('save');
-        },
-
-        toggleZenMode() {
-            $('body').toggleClass('zen');
         },
 
         willTransition(transition) {
