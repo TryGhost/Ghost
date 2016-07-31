@@ -13,8 +13,7 @@ import ShortcutsMixin from 'ghost-admin/mixins/shortcuts';
  *
  * ```javascript
  * shortcuts: {
- *     'ctrl+s, command+s': 'save',
- *     'ctrl+alt+z': 'toggleZenMode'
+ *     'ctrl+s, command+s': 'save'
  * }
  * ```
  * For more complex actions, shortcuts can instead have their value
