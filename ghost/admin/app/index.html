@@ -7,7 +7,7 @@
 
     <title>Ghost Admin</title>
 
-    {{content-for 'head'}}
+    {{content-for "head"}}
 
     <meta name="HandheldFriendly" content="True" />
     <meta name="MobileOptimized" content="320" />
@@ -42,12 +42,12 @@
     <link rel="stylesheet" href="{{asset "vendor.css" ghost="true" minifyInProduction="true"}}" />
     <link rel="stylesheet" href="{{asset "ghost.css" ghost="true" minifyInProduction="true"}}" />
 
-    {{content-for 'head-footer'}}
+    {{content-for "head-footer"}}
 </head>
 <body>
-{{content-for 'body'}}
+{{content-for "body"}}
 
-{{content-for 'body-footer'}}
+{{content-for "body-footer"}}
 
 {{! Dem scripts }}
 <script src="{{asset "vendor.js" ghost="true" minifyInProduction="true"}}"></script>

@@ -5,12 +5,19 @@ module.exports = function (environment) {
     var ENV = {
         modulePrefix: 'ghost-admin',
         environment: environment,
-        baseURL: '/',
+        rootURL: '/',
         locationType: 'trailing-history',
         EmberENV: {
             FEATURES: {
                 // Here you can enable experimental features on an ember canary build
                 // e.g. 'with-controller': true
+            },
+            // @TODO verify that String/Function need to be enabled
+            EXTEND_PROTOTYPES: {
+                Date: false,
+                Array: true,
+                String: true,
+                Function: true
             }
         },
 
@@ -45,7 +52,6 @@ module.exports = function (environment) {
 
     if (environment === 'test') {
         // Testem prefers this...
-        ENV.baseURL = '/';
         ENV.locationType = 'none';
 
         // keep test console output quieter
