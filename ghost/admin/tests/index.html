@@ -7,8 +7,8 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    {{content-for 'head'}}
-    {{content-for 'test-head'}}
+    {{content-for "head"}}
+    {{content-for "test-head"}}
 
     <meta name="env-fileStorage" content="true" />
     <meta name="env-apps" content="false" />
@@ -18,12 +18,12 @@
     <meta name="env-clientId" content="ghost-admin" />
     <meta name="env-clientSecret" content="5076dc643873" />
 
-    <link rel="stylesheet" href="assets/vendor.css">
-    <link rel="stylesheet" href="assets/ghost.css">
-    <link rel="stylesheet" href="assets/test-support.css">
+    <link rel="stylesheet" href="{{rootURL}}assets/vendor.css">
+    <link rel="stylesheet" href="{{rootURL}}assets/ghost.css">
+    <link rel="stylesheet" href="{{rootURL}}assets/test-support.css">
 
-    {{content-for 'head-footer'}}
-    {{content-for 'test-head-footer'}}
+    {{content-for "head-footer"}}
+    {{content-for "test-head-footer"}}
 
     <style>
         /* fix to ensure we use full viewport height when testing */
@@ -43,18 +43,17 @@
     </style>
   </head>
   <body>
+    {{content-for "body"}}
+    {{content-for "test-body"}}
 
-    {{content-for 'body'}}
-    {{content-for 'test-body'}}
+    <script src="{{rootURL}}testem.js" integrity=""></script>
+    <script src="{{rootURL}}assets/vendor.js"></script>
+    <script src="{{rootURL}}assets/test-support.js"></script>
+    <script src="{{rootURL}}assets/ghost.js"></script>
+    <script src="{{rootURL}}assets/tests.js"></script>
+    <script src="{{rootURL}}assets/test-loader.js"></script>
 
-    <script src="testem.js" integrity=""></script>
-    <script src="assets/vendor.js"></script>
-    <script src="assets/test-support.js"></script>
-    <script src="assets/ghost.js"></script>
-    <script src="assets/tests.js"></script>
-    <script src="assets/test-loader.js"></script>
-
-    {{content-for 'body-footer'}}
-    {{content-for 'test-body-footer'}}
+    {{content-for "body-footer"}}
+    {{content-for "test-body-footer"}}
   </body>
 </html>

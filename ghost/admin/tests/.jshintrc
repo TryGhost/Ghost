@@ -55,5 +55,5 @@
   "strict": false,
   "white": false,
   "eqnull": true,
-  "esnext": true
+  "esversion": 6
 }
