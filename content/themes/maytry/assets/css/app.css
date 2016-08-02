@@ -264,6 +264,41 @@
 .blog-content .read-more {
   text-align: right;
 }
+.blog-content .popular-posts-area,
+.blog-content .newly-posts-area {
+  margin-bottom: 20px;
+  border: 1px solid #e6e6e6;
+  border-radius: 5px;
+  padding: 10px 1.6em;
+}
+.blog-content .popular-posts-area h4,
+.blog-content .newly-posts-area h4 {
+  color: #787878;
+  border-bottom: 4px solid #e6e6e6;
+  padding-bottom: 4px;
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+.blog-content .popular-posts-area .simple-post,
+.blog-content .newly-posts-area .simple-post {
+  margin-bottom: 15px;
+}
+.blog-content .popular-posts-area .simple-post:last-child,
+.blog-content .newly-posts-area .simple-post:last-child {
+  margin-bottom: 0;
+}
+.blog-content .popular-posts-area .simple-post a,
+.blog-content .newly-posts-area .simple-post a {
+  font-size: 18px;
+  color: black;
+  font-weight: bold;
+  text-decoration: none;
+}
+.blog-content .popular-posts-area .simple-post a:hover,
+.blog-content .newly-posts-area .simple-post a:hover {
+  color: #EE6600;
+  font-weight: bold;
+}
 /* Overline From Center */
 .overlay-effect {
   display: inline-block;
@@ -315,20 +350,20 @@
   font-size: 30px;
   font-weight: bold;
 }
-.side-column .popular-posts-area .popular-post {
+.side-column .popular-posts-area .simple-post {
   margin-bottom: 15px;
 }
-.side-column .popular-posts-area .popular-post:last-child {
+.side-column .popular-posts-area .simple-post:last-child {
   margin-bottom: 0;
 }
-.side-column .popular-posts-area .popular-post a {
-  font-size: 20px;
-  font-weight: bold;
+.side-column .popular-posts-area .simple-post a {
+  font-size: 18px;
   color: white;
   text-decoration: none;
 }
-.side-column .popular-posts-area .popular-post a:hover {
+.side-column .popular-posts-area .simple-post a:hover {
   color: #EE6600;
+  font-weight: bold;
 }
 @media only screen and (max-width: 1200px) {
   .content-container {
@@ -1003,6 +1038,9 @@ p.year_month {
   margin-right: 0;
   margin-left: 0;
 }
+.post-tags .ui.labeled.button .ui.button:hover {
+  color: #EE6600;
+}
 .post-tags .ui.labeled.button .ui.label {
   text-decoration: none;
   padding: 3px 3px 3px 9px;
@@ -1174,10 +1212,10 @@ p.year_month {
 }
 .social-area-syncer ul.social-button-syncer {
   width: 340px;
-  margin: 0 auto;
+  margin: 0 auto 20px;
+  display: flex;
 }
 .social-area-syncer ul.social-button-syncer li {
-  float: left;
   text-align: center;
   position: relative;
   margin: 0 8px;
@@ -1206,6 +1244,7 @@ p.year_month {
   right: 91px;
   background: white;
   border-radius: 10px;
+  display: inherit;
 }
 .social-area-syncer.share-side-bar ul.social-button-syncer li {
   float: none;
@@ -1264,7 +1303,7 @@ a.newer-posts:hover {
 .prev-next {
   border: 1px solid #e6e6e6;
   border-radius: 5px;
-  padding: 5px 10px 10px;
+  padding: 5px 10px;
   font-weight: bold;
 }
 .prev-next.row {
@@ -1278,10 +1317,12 @@ a.newer-posts:hover {
   color: #787878;
   border-bottom: 4px solid #e6e6e6;
   padding-bottom: 4px;
+  margin-top: 0;
   margin-bottom: 4px;
 }
 .prev a p {
   font-size: 20px;
+  font-weight: bold;
   margin: 0;
 }
 .prev a:hover {
@@ -1289,6 +1330,7 @@ a.newer-posts:hover {
 }
 .prev a:hover p {
   color: #EE6600;
+  font-weight: bold;
 }
 .next {
   padding: 0;
@@ -1303,6 +1345,7 @@ a.newer-posts:hover {
 }
 .next a p {
   font-size: 20px;
+  font-weight: bold;
   text-align: right;
   margin: 0;
 }
@@ -1311,6 +1354,7 @@ a.newer-posts:hover {
 }
 .next a:hover p {
   color: #EE6600;
+  font-weight: bold;
 }
 @media only screen and (max-width: 767px) {
   .older-posts,

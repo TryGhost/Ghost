@@ -168,6 +168,42 @@
   .read-more {
     text-align: right;
   }
+
+  .popular-posts-area,
+  .newly-posts-area {
+    margin-bottom: 20px;
+    border: 1px solid #e6e6e6;
+    border-radius: 5px;
+    padding: 10px 1.6em;
+
+    h4 {
+      color: #787878;
+      border-bottom: 4px solid @border-color;
+      padding-bottom: 4px;
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+
+    .simple-post {
+      margin-bottom: 15px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      a {
+        font-size: 18px;
+        color: black;
+        font-weight: bold;
+        text-decoration: none;
+
+        &:hover {
+          color: @emphasis-color;
+          font-weight: bold;
+        }
+      }
+    }
+  }
 }
 
 /* Overline From Center */
@@ -228,7 +264,7 @@
   }
 
   .popular-posts-area {
-    .popular-post {
+    .simple-post {
       margin-bottom: 15px;
 
       &:last-child {
@@ -236,13 +272,13 @@
       }
 
       a {
-        font-size: 20px;
-        font-weight: bold;
+        font-size: 18px;
         color: white;
         text-decoration: none;
 
         &:hover {
           color: @emphasis-color;
+          font-weight: bold;
         }
       }
     }

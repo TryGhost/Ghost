@@ -68,6 +68,10 @@ p.year_month {
         margin-right: 0;
         margin-left: 0;
       }
+
+      &:hover {
+        color: @emphasis-color;
+      }
     }
 
     .ui.label {
@@ -270,10 +274,10 @@ p.year_month {
 
   ul.social-button-syncer {
     width: 340px;
-    margin: 0 auto;
+    margin: 0 auto 20px;
+    display: flex;
 
     li {
-      float: left;
       text-align: center;
       position: relative;
       margin: 0 8px;
@@ -307,6 +311,7 @@ p.year_month {
     right: 91px;
     background: @background-color;
     border-radius: 10px;
+    display: inherit;
 
     li {
       float: none;
