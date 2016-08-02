@@ -11,7 +11,7 @@ utils = {
         '<a class="ui button" href="<%= url %>"><%= name %></a>' +
         '<a class="ui teal tag label" href="<%= url %>"><%= count_posts %></a>' +
         '</div>'),
-    popularPostTemplate: _.template('<div class="popular-post"><a href="<%= url %>"><%= text %></a></div>'),
+    simplePostTemplate: _.template('<div class="simple-post"><a href="<%= url %>"><%= text %></a></div>'),
     // @TODO this can probably be made more generic and used in more places
     findKey: function findKey(key, object, data) {
         if (object && _.has(object, key) && !_.isEmpty(object[key])) {

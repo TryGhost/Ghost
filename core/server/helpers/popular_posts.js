@@ -1,20 +1,18 @@
 // # Tags Helper
-// Usage: `{{tag_links}}`
+// Usage: `{{popular_posts}}`
 //
 // Returns a string of the tags on the post.
 // By default, tags are separated by commas.
 
-var hbs = require('express-hbs'),
-    _ = require('lodash'),
-    config = require('../config'),
-    utils = require('./utils'),
-    api = require('../api'),
+var hbs         = require('express-hbs'),
+    _           = require('lodash'),
+    utils       = require('./utils'),
+    api         = require('../api'),
     MongoClient = require('mongodb').MongoClient,
-    assert = require('assert'),
+    assert      = require('assert'),
     db,
     col,
-    popular_posts,
-    popContents;
+    popular_posts;
 
 const MONGO_URL = 'mongodb://localhost:27017/maytry_analytics';
 const DEFAULT_MAX = 5;
@@ -54,7 +52,7 @@ popular_posts = function(options) {
       })[0];
     });
     var joined = _.map(posts, function(post) {
-      return utils.popularPostTemplate({
+      return utils.simplePostTemplate({
         url: '/' + post.slug + '/',
         text: _.escape(post.title)
       });
@@ -63,14 +61,4 @@ popular_posts = function(options) {
   });
 };
 
-popContents = function(options) {
-  errors.logWarn('');
-
-  /*jshint unused:false*/
-  var self = this;
-
-  return popular_posts.call(self, options);
-};
-
 module.exports = popular_posts;
-module.exports.deprecated = popContents;
