@@ -36,7 +36,7 @@ popular_posts = function(options) {
     // db.close();
     return api.posts.browse({
           context: {
-            internal: true
+            internal: false
           },
           limit: 'all',
           filter: contentInfos.map(function(info) {
