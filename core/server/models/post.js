@@ -393,6 +393,10 @@ Post = ghostBookshelf.Model.extend({
         return this.morphMany('AppField', 'relatable');
     },
 
+    defaultColumnsToFetch: function defaultColumnsToFetch() {
+        return ['id', 'published_at', 'slug', 'author_id'];
+    },
+
     toJSON: function toJSON(options) {
         options = options || {};
 

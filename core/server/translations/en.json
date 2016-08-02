@@ -170,6 +170,7 @@
             }
         },
         "general": {
+            "maintenance": "Ghost is currently undergoing maintenance, please wait a moment then retry.",
             "moreInfo": "\nMore info: {info}",
             "requiredOnFuture": "This will be required in future. Please see {link}"
         },
