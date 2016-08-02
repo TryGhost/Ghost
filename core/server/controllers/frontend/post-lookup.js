@@ -19,26 +19,22 @@ function postLookup(postUrl) {
         matchFuncPost,
         matchFuncPage,
         postParams,
-        pageParams,
         params;
 
     // Convert saved permalink into a path-match function
     matchFuncPost = routeMatch(getEditFormat(postPermalink));
+    matchFuncPage = routeMatch(getEditFormat(pagePermalink));
+
     postParams = matchFuncPost(postPath);
 
     // Check if the path matches the permalink structure.
     // If there are no matches found, test to see if this is a page instead
-    if (postParams === false) {
-        matchFuncPage = routeMatch(getEditFormat(pagePermalink));
-        pageParams = matchFuncPage(postPath);
-    }
+    params = postParams || matchFuncPage(postPath);
 
-    // If there are still no matches then return empty.
-    if (pageParams === false) {
+    // if there are no matches for either then return empty
+    if (params === false) {
         return Promise.resolve();
     }
-
-    params = postParams || pageParams;
 
     // If params contains edit, and it is equal to 'edit' this is an edit URL
     if (params.edit && params.edit.toLowerCase() === 'edit') {
@@ -63,6 +59,11 @@ function postLookup(postUrl) {
 
         // CASE: we originally couldn't match the post based on date permalink and we tried to check if its a page
         if (!post.page && !postParams) {
+            return Promise.resolve();
+        }
+
+        // CASE: we only support /:slug format for pages
+        if (post.page && matchFuncPage(postPath) === false) {
             return Promise.resolve();
         }
 
