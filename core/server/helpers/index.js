@@ -38,6 +38,7 @@ coreHelpers.tags = require('./tags');
 coreHelpers.tag_links = require('./tag_links');
 coreHelpers.tagLinks = require('./tag_links').deprecated;
 coreHelpers.popular_posts = require('./popular_posts');
+coreHelpers.newly_posts = require('./newly_posts');
 coreHelpers.title = require('./title');
 coreHelpers.twitter_url = require('./twitter_url');
 coreHelpers.url = require('./url');
@@ -130,6 +131,7 @@ registerHelpers = function (adminHbs) {
     registerAsyncThemeHelper('tag_links', coreHelpers.tag_links);
     registerAsyncThemeHelper('tagLinks', coreHelpers.tagLinks);
     registerAsyncThemeHelper('popular_posts', coreHelpers.popular_posts);
+    registerAsyncThemeHelper('newly_posts', coreHelpers.newly_posts);
 
     // Register admin helpers
     registerAdminHelper('asset', coreHelpers.asset);
