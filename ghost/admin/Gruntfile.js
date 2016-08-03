@@ -8,10 +8,7 @@ var _              = require('lodash'),
     getTopContribs = require('top-gh-contribs'),
     moment         = require('moment'),
     chalk          = require('chalk'),
-    Promise        = require('bluebird'),
-
-    escapeChar = process.platform.match(/^win/) ? '^' : '\\',
-    cwd        = process.cwd().replace(/( |\(|\))/g, escapeChar + '$1');
+    Promise        = require('bluebird');
 
 module.exports = function(grunt) {
 
@@ -85,21 +82,61 @@ module.exports = function(grunt) {
             }
         },
 
+        // ### grunt-bg-shell
+        // Used to run ember-cli watch in the background
+        bgShell: {
+            ember: {
+                cmd: 'npm run build -- --watch',
+                bg: true,
+                stdout: function (out) {
+                    grunt.log.writeln(chalk.cyan('Ember-cli::') + out);
+                },
+                stderror: function (error) {
+                    grunt.log.error(chalk.red('Ember-cli::' + error));
+                }
+            }
+        },
+
         shell: {
             'npm-install': {
                 command: 'npm install'
             },
 
             'bower-install': {
-                command: path.resolve(cwd + '/node_modules/.bin/bower install')
+                command: 'bower install'
+            },
+
+            ember: {
+                command: function (mode) {
+                    switch (mode) {
+                        case 'prod':
+                            return 'npm run build -- --environment=production --silent';
+
+                        case 'dev':
+                            return 'npm run build';
+                    }
+                },
+                options: {
+                    execOptions: {
+                        stdout: false
+                    }
+                }
             },
 
             csscombfix: {
-                command: path.resolve(cwd + '/node_modules/.bin/csscomb -c app/styles/csscomb.json -v app/styles')
+                command: 'csscomb -c app/styles/csscomb.json -v app/styles'
             },
 
             csscomblint: {
-                command: path.resolve(cwd + '/node_modules/.bin/csscomb -c app/styles/csscomb.json -lv app/styles')
+                command: 'csscomb -c app/styles/csscomb.json -lv app/styles'
+            },
+
+            test: {
+                command: 'npm test'
+            },
+
+            options: {
+                preferLocal: true
             }
         }
     });
