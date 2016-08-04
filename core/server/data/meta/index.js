@@ -2,6 +2,7 @@ var _ = require('lodash'),
     Promise = require('bluebird'),
     config = require('../../config'),
     getUrl = require('./url'),
+    getImageDimensions = require('./image-dimensions'),
     getCanonicalUrl = require('./canonical_url'),
     getPaginatedUrl = require('./paginated_url'),
     getAuthorUrl = require('./author_url'),
@@ -30,8 +31,12 @@ function getMetaData(data, root) {
         rssUrl: getRssUrl(data, true),
         metaTitle: getTitle(data, root),
         metaDescription: getDescription(data, root),
-        coverImage: getCoverImage(data, true),
-        authorImage: getAuthorImage(data, true),
+        coverImage: {
+            url: getCoverImage(data, true)
+        },
+        authorImage: {
+            url: getAuthorImage(data, true)
+        },
         authorFacebook: getAuthorFacebook(data),
         creatorTwitter: getCreatorTwitter(data),
         keywords: getKeywords(data),
@@ -41,8 +46,9 @@ function getMetaData(data, root) {
         blog: _.cloneDeep(config.theme)
     };
 
-    metaData.blog.logo = metaData.blog.logo ?
-        config.urlFor('image', {image: metaData.blog.logo}, true) : config.urlFor({relativeUrl: '/ghost/img/ghosticon.jpg'}, {}, true);
+    metaData.blog.logo = {};
+    metaData.blog.logo.url = config.theme.logo ?
+        config.urlFor('image', {image: config.theme.logo}, true) : config.urlFor({relativeUrl: '/ghost/img/ghosticon.jpg'}, {}, true);
 
     // TODO: cleanup these if statements
     if (data.post && data.post.html) {
@@ -53,12 +59,11 @@ function getMetaData(data, root) {
         metaData.authorName = data.post.author.name;
     }
 
-    metaData.structuredData = getStructuredData(metaData);
-    metaData.schema = getSchema(metaData, data);
+    return Promise.props(getImageDimensions(metaData)).then(function () {
+        metaData.structuredData = getStructuredData(metaData);
+        metaData.schema = getSchema(metaData, data);
 
-    // instead of Promise here, soon we'll have a call to a new function which augments the images with their image sizes
-    return new Promise(function (resolve) {
-        return resolve(metaData);
+        return metaData;
     });
 }
 

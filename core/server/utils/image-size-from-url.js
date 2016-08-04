@@ -27,7 +27,7 @@ var sizeOf       = require('image-size'),
 /**
  * @description read image dimensions from URL
  * @param {String} imagePath
- * @param {Number} timeout
+ * @param {Number} timeout (optional)
  * @returns {Promise<Object>} imageObject or error
  */
 module.exports.getImageSizeFromUrl = function getImageSizeFromUrl(imagePath, timeout) {
@@ -84,12 +84,16 @@ module.exports.getImageSizeFromUrl = function getImageSizeFromUrl(imagePath, tim
                 }
             });
         }).on('socket', function (socket) {
-            socket.setTimeout(timeout);
-            socket.on('timeout', function () {
-                request.abort();
-            });
+            // don't set timeout if no timeout give as argument
+            if (timeout) {
+                socket.setTimeout(timeout);
+                socket.on('timeout', function () {
+                    request.abort();
+                });
+            }
         }).on('error', function (err) {
             // @ToDo: add real error handling here as soon as we have error logging
+
             return reject(err);
         });
     });
