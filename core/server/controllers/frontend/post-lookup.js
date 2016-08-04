@@ -5,10 +5,10 @@ var _          = require('lodash'),
     api        = require('../../api'),
     config     = require('../../config'),
 
-    editFormat = '/:edit?';
+    optionsFormat = '/:options?';
 
-function getEditFormat(linkStructure) {
-    return linkStructure.replace(/\/$/, '') + editFormat;
+function getOptionsFormat(linkStructure) {
+    return linkStructure.replace(/\/$/, '') + optionsFormat;
 }
 
 function postLookup(postUrl) {
@@ -16,6 +16,7 @@ function postLookup(postUrl) {
         postPermalink = config.theme.permalinks,
         pagePermalink = '/:slug/',
         isEditURL = false,
+        isAmpURL = false,
         matchFuncPost,
         matchFuncPage,
         postParams,
@@ -23,13 +24,13 @@ function postLookup(postUrl) {
         params;
 
     // Convert saved permalink into a path-match function
-    matchFuncPost = routeMatch(getEditFormat(postPermalink));
+    matchFuncPost = routeMatch(getOptionsFormat(postPermalink));
     postParams = matchFuncPost(postPath);
 
     // Check if the path matches the permalink structure.
     // If there are no matches found, test to see if this is a page instead
     if (postParams === false) {
-        matchFuncPage = routeMatch(getEditFormat(pagePermalink));
+        matchFuncPage = routeMatch(getOptionsFormat(pagePermalink));
         pageParams = matchFuncPage(postPath);
     }
 
@@ -41,9 +42,11 @@ function postLookup(postUrl) {
     params = postParams || pageParams;
 
     // If params contains edit, and it is equal to 'edit' this is an edit URL
-    if (params.edit && params.edit.toLowerCase() === 'edit') {
+    if (params.options && params.options.toLowerCase() === 'edit') {
         isEditURL = true;
-    } else if (params.edit !== undefined) {
+    } else if (params.options && params.options.toLowerCase() === 'amp') {
+        isAmpURL = true;
+    } else if (params.options !== undefined) {
         // Unknown string in URL, return empty
         return Promise.resolve();
     }
@@ -68,7 +71,8 @@ function postLookup(postUrl) {
 
         return {
             post: post,
-            isEditURL: isEditURL
+            isEditURL: isEditURL,
+            isAmpURL: isAmpURL
         };
     });
 }

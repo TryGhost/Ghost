@@ -407,4 +407,20 @@ describe('Contexts', function () {
             res.locals.context[1].should.eql('rss');
         });
     });
+    describe('AMP', function () {
+        it('should correctly identify an AMP post', function () {
+            // Setup test
+            setupContext('/welcome-to-ghost/amp/');
+            data.post = {};
+
+            // Execute test
+            setResponseContext(req, res, data);
+
+            // Check context
+            should.exist(res.locals.context);
+            res.locals.context.should.be.an.Array().with.lengthOf(2);
+            res.locals.context[0].should.eql('amp');
+            res.locals.context[1].should.eql('post');
+        });
+    });
 });

@@ -16,6 +16,7 @@ var config = require('../../config'),
     // Context patterns, should eventually come from Channel configuration
     privatePattern = new RegExp('^\\/' + config.routeKeywords.private + '\\/'),
     subscribePattern = new RegExp('^\\/' + config.routeKeywords.subscribe + '\\/'),
+    ampPattern = new RegExp('\\/' + config.routeKeywords.amp + '\\/$'),
     rssPattern = new RegExp('^\\/rss\\/'),
     homePattern = new RegExp('^\\/$');
 
@@ -52,6 +53,9 @@ function setResponseContext(req, res, data) {
         res.locals.context.push('private');
     } else if (subscribePattern.test(res.locals.relativeUrl)) {
         res.locals.context.push('subscribe');
+    } else if (ampPattern.test(res.locals.relativeUrl)) {
+        res.locals.context.push('amp');
+        res.locals.context.push('post');
     } else if (data && data.post && data.post.page) {
         res.locals.context.push('page');
     } else if (data && data.post) {
