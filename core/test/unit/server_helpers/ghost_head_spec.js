@@ -100,7 +100,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
                 rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
                 rendered.string.should.match(/"@type": "Website"/);
-                rendered.string.should.match(/"publisher": "Ghost"/);
+                rendered.string.should.match(/"publisher": {\n        "@type": "Organization",\n        "name": "Ghost",/);
                 rendered.string.should.match(/"url": "http:\/\/testurl.com\/"/);
                 rendered.string.should.match(/"image": "http:\/\/testurl.com\/content\/images\/blog-cover.png"/);
                 rendered.string.should.match(/"description": "blog description"/);
@@ -197,7 +197,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
                 rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
                 rendered.string.should.match(/"@type": "Series"/);
-                rendered.string.should.match(/"publisher": "Ghost"/);
+                rendered.string.should.match(/"publisher": {\n        "@type": "Organization",\n        "name": "Ghost",/);
                 rendered.string.should.match(/"url": "http:\/\/testurl.com\/tag\/tagtitle\/"/);
                 rendered.string.should.match(/"image": "http:\/\/testurl.com\/content\/images\/tag-image.png"/);
                 rendered.string.should.match(/"name": "tagtitle"/);
@@ -238,7 +238,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
                 rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
                 rendered.string.should.match(/"@type": "Series"/);
-                rendered.string.should.match(/"publisher": "Ghost"/);
+                rendered.string.should.match(/"publisher": {\n        "@type": "Organization",\n        "name": "Ghost",/);
                 rendered.string.should.match(/"url": "http:\/\/testurl.com\/tag\/tagtitle\/"/);
                 rendered.string.should.match(/"image": "http:\/\/testurl.com\/content\/images\/tag-image.png"/);
                 rendered.string.should.match(/"name": "tagtitle"/);
