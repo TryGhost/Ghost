@@ -488,7 +488,6 @@ blockquote:not([class]) p {
 .blog-cover-container {
   position: relative;
   text-align: center;
-  background: #00002d;
 }
 .featured-image {
   position: relative;
