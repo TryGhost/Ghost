@@ -131,12 +131,14 @@ export default TextField.extend(InvokeActionMixin, {
                 url = url.replace(baseUrlParts.pathname.slice(0, -1), '');
             }
 
-            if (!url.match(/^\//)) {
-                url = `/${url}`;
-            }
+            if (url !== '') {
+                if (!url.match(/^\//)) {
+                    url = `/${url}`;
+                }
 
-            if (!url.match(/\/$/) && !url.match(/[\.#\?]/)) {
-                url = `${url}/`;
+                if (!url.match(/\/$/) && !url.match(/[\.#\?]/)) {
+                    url = `${url}/`;
+                }
             }
         }
 
