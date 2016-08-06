@@ -55,6 +55,15 @@ export default Component.extend({
         let template = document.createElement('template');
         template.innerHTML = html;
         let fragment = template.content;
+
+        if (!fragment) {
+            fragment = document.createDocumentFragment();
+
+            while (template.childNodes[0]) {
+                fragment.appendChild(template.childNodes[0]);
+            }
+        }
+
         let dropzones = fragment.querySelectorAll('.js-drop-zone');
         let components = this.get('imageUploadComponents');
 

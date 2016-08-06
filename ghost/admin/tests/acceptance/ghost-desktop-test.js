@@ -10,23 +10,27 @@ import startApp from '../helpers/start-app';
 import destroyApp from '../helpers/destroy-app';
 import { authenticateSession } from 'ghost-admin/tests/helpers/ember-simple-auth';
 
-const originalUserAgent = window.navigator.userAgent;
+const originalAgent = window.navigator.userAgent;
 
-const _setUserAgent = function (userAgent) {
-    let userAgentProp = {get() { return userAgent; }, configurable: true};
-    Object.defineProperty(window.navigator, 'userAgent', userAgentProp);
-};
+const setUserAgent = function (userAgent) {
+    let userAgentProp = {
+        get() {
+            return userAgent;
+        },
+        configurable: true
+    };
 
-const stubUserAgent = function (userAgent) {
-    if (window.navigator.userAgent !== userAgent) {
-        _setUserAgent(userAgent);
+    try {
+        Object.defineProperty(window.navigator, 'userAgent', userAgentProp);
+    } catch (e) {
+        window.navigator = Object.create(window.navigator, {
+            userAgent: userAgentProp
+        });
     }
 };
 
 const restoreUserAgent = function () {
-    if (window.navigator.userAgent !== originalUserAgent) {
-        _setUserAgent(originalUserAgent);
-    }
+    setUserAgent(originalAgent);
 };
 
 describe('Acceptance: Ghost Desktop', function() {
@@ -55,7 +59,7 @@ describe('Acceptance: Ghost Desktop', function() {
         });
 
         it('displays alert for broken version', function() {
-            stubUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) ghost-desktop/0.4.0 Chrome/51.0.2704.84 Electron/1.2.2 Safari/537.36');
+            setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) ghost-desktop/0.4.0 Chrome/51.0.2704.84 Electron/1.2.2 Safari/537.36');
 
             visit('/');
 
@@ -67,7 +71,7 @@ describe('Acceptance: Ghost Desktop', function() {
         });
 
         it('doesn\'t display alert for working version', function () {
-            stubUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) ghost-desktop/0.5.1 Chrome/51.0.2704.84 Electron/1.2.2 Safari/537.36');
+            setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) ghost-desktop/0.5.1 Chrome/51.0.2704.84 Electron/1.2.2 Safari/537.36');
 
             visit('/');
 

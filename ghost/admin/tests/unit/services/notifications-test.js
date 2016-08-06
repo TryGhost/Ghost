@@ -188,7 +188,7 @@ describeModule(
 
             run(() => { notifications.showAPIError(resp); });
 
-            expect(notifications.get('content')).to.deep.equal([
+            expect(notifications.get('content').toArray()).to.deep.equal([
                 {message: 'There was a problem on the server, please try again.', status: 'alert', type: 'error', key: 'api-error'}
             ]);
 
@@ -197,7 +197,7 @@ describeModule(
             run(() => {
                 notifications.showAPIError(resp, {defaultErrorText: 'Overridden default'});
             });
-            expect(notifications.get('content')).to.deep.equal([
+            expect(notifications.get('content').toArray()).to.deep.equal([
                 {message: 'Overridden default', status: 'alert', type: 'error', key: 'api-error'}
             ]);
         });

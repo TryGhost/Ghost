@@ -13,7 +13,7 @@ const testInvalidUrl = function (url) {
     validator.check(slackObject, 'url');
 
     expect(validator.get('passed'), `"${url}" passed`).to.be.false;
-    expect(slackObject.get('errors').errorsFor('url')).to.deep.equal([{
+    expect(slackObject.get('errors').errorsFor('url').toArray()).to.deep.equal([{
         attribute: 'url',
         message: 'The URL must be in a format like https://hooks.slack.com/services/<your personal key>'
     }]);
