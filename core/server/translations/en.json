@@ -25,6 +25,9 @@
                 "mail": {
                     "invitedByName": "{invitedByName} has invited you to join {blogName}"
                 }
+            },
+            "clients": {
+                "clientNotFound": "Client not found"
             }
         }
     },
