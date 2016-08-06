@@ -31,8 +31,8 @@ describeComponent(
                 component._selectize.setValue(['item 3', 'item 2']);
             });
 
-            expect(component.get('value'), 'component value').to.deep.equal(['item 3', 'item 2']);
-            expect(component.get('selection'), 'component selection').to.deep.equal(['item 3', 'item 2']);
+            expect(component.get('value').toArray(), 'component value').to.deep.equal(['item 3', 'item 2']);
+            expect(component.get('selection').toArray(), 'component selection').to.deep.equal(['item 3', 'item 2']);
         });
     }
 );

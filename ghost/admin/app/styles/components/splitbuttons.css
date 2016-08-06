@@ -33,6 +33,7 @@
 }
 
 .splitbtn .btn:first-child:not(:last-child):not(.dropdown-toggle) {
+    height: 31px;
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
 }

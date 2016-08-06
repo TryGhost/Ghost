@@ -13,7 +13,7 @@ const testInvalidUrl = function (url) {
     validator.check(navItem, 'url');
 
     expect(validator.get('passed'), `"${url}" passed`).to.be.false;
-    expect(navItem.get('errors').errorsFor('url')).to.deep.equal([{
+    expect(navItem.get('errors').errorsFor('url').toArray()).to.deep.equal([{
         attribute: 'url',
         message: 'You must specify a valid URL or relative path'
     }]);
@@ -36,7 +36,7 @@ describe('Unit: Validator: nav-item', function () {
         validator.check(navItem, 'label');
 
         expect(validator.get('passed')).to.be.false;
-        expect(navItem.get('errors').errorsFor('label')).to.deep.equal([{
+        expect(navItem.get('errors').errorsFor('label').toArray()).to.deep.equal([{
             attribute: 'label',
             message: 'You must specify a label'
         }]);
@@ -49,7 +49,7 @@ describe('Unit: Validator: nav-item', function () {
         validator.check(navItem, 'url');
 
         expect(validator.get('passed')).to.be.false;
-        expect(navItem.get('errors').errorsFor('url')).to.deep.equal([{
+        expect(navItem.get('errors').errorsFor('url').toArray()).to.deep.equal([{
             attribute: 'url',
             message: 'You must specify a URL or relative path'
         }]);
