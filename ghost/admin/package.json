@@ -30,7 +30,7 @@
     "broccoli-asset-rev": "2.4.5",
     "broccoli-clean-css": "1.1.0",
     "broccoli-concat": "3.0.2",
-    "broccoli-merge-trees": "1.1.2",
+    "broccoli-merge-trees": "1.1.3",
     "broccoli-uglify-js": "0.2.0",
     "chalk": "1.1.3",
     "codemirror": "5.17.0",
