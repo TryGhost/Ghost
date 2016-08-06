@@ -116,8 +116,9 @@ a.user-list-item {
     font-size: 12px;
 }
 
-.user-list-item-aside .user-list-action:not(:first-of-type) {
-    margin-left: 20px;
+.user-list-item-aside .user-list-action {
+    float: left;
+    margin-right: 20px;
 }
 
 .user-list-item-aside .role-label {
