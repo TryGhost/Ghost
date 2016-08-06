@@ -87,13 +87,14 @@ module.exports = function(grunt) {
         bgShell: {
             ember: {
                 cmd: 'npm run build -- --watch',
-                bg: true,
-                stdout: function (out) {
-                    grunt.log.writeln(chalk.cyan('Ember-cli::') + out);
-                },
-                stderror: function (error) {
-                    grunt.log.error(chalk.red('Ember-cli::' + error));
-                }
+                bg: true
+            }
+        },
+
+        watch: {
+            csscomb: {
+                files: ['app/styles/**/*.css'],
+                tasks: ['shell:csscombfix']
             }
         },
 
