@@ -52,6 +52,9 @@
                                         <a class="user-list-action" href="#" {{action "resend" target=component}}>
                                             Resend
                                         </a>
+                                        {{#each user.roles as |role|}}
+                                            <span class="role-label {{role.lowerCaseName}}">{{role.name}}</span>
+                                        {{/each}}
                                     {{/if}}
                                 </aside>
                             </div>
