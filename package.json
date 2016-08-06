@@ -53,7 +53,7 @@
     "moment": "2.14.1",
     "moment-timezone": "0.5.5",
     "morgan": "1.7.0",
-    "multer": "1.1.0",
+    "multer": "1.2.0",
     "netjet": "1.1.2",
     "node-uuid": "1.4.7",
     "nodemailer": "0.7.1",
