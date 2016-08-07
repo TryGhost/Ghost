@@ -76,7 +76,6 @@
     "pg": "4.1.1"
   },
   "devDependencies": {
-    "csscomb": "3.1.8",
     "gh-contrib-list": "0.1.2",
     "git-wrapper": "0.1.1",
     "grunt": "1.0.1",
