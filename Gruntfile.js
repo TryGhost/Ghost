@@ -16,7 +16,6 @@ var _              = require('lodash'),
     cwd            = process.cwd().replace(/( |\(|\))/g, escapeChar + '$1'),
     buildDirectory = path.resolve(cwd, '.build'),
     distDirectory  = path.resolve(cwd, '.dist'),
-    emberPath      = path.resolve(cwd + '/core/client/node_modules/.bin/ember'),
 
     // ## Grunt configuration
 
@@ -67,13 +66,6 @@ var _              = require('lodash'),
                     tasks:  ['express:dev'],
                     options: {
                         spawn: false
-                    }
-                },
-                csscomb: {
-                    files: ['core/client/app/styles/**/*.css'],
-                    tasks: ['shell:csscombfix'],
-                    options: {
-                        livereload: true
                     }
                 }
             },
@@ -215,47 +207,16 @@ var _              = require('lodash'),
                 }
             },
 
-            // ### grunt-bg-shell
-            // Used to run ember-cli watch in the background
             bgShell: {
-                ember: {
-                    cmd: emberPath + ' build --watch',
-                    execOpts: {
-                        cwd: path.resolve(cwd + '/core/client/')
-                    },
-                    bg: true,
-                    stdout: function (out) {
-                        grunt.log.writeln(chalk.cyan('Ember-cli::') + out);
-                    },
-                    stderror: function (error) {
-                        grunt.log.error(chalk.red('Ember-cli::' + error));
-                    }
+                client: {
+                    cmd: 'grunt subgrunt:watch',
+                    bg: true
                 }
             },
+
             // ### grunt-shell
             // Command line tools where it's easier to run a command directly than configure a grunt plugin
             shell: {
-                ember: {
-                    command: function (mode) {
-                        switch (mode) {
-                            case 'prod':
-                                return emberPath + ' build --environment=production --silent';
-
-                            case 'dev':
-                                return emberPath + ' build';
-
-                            case 'test':
-                                return emberPath + ' test --silent';
-                        }
-                    },
-                    options: {
-                        execOptions: {
-                            cwd: path.resolve(process.cwd() + '/core/client/'),
-                            stdout: false
-                        }
-                    }
-                },
-
                 shrinkwrap: {
                     command: 'npm shrinkwrap'
                 },
@@ -266,10 +227,6 @@ var _              = require('lodash'),
 
                 dedupe: {
                     command: 'npm dedupe'
-                },
-
-                csscombfix: {
-                    command: path.resolve(cwd + '/node_modules/.bin/csscomb -c core/client/app/styles/csscomb.json -v core/client/app/styles')
                 }
             },
 
@@ -350,12 +307,36 @@ var _              = require('lodash'),
             // ### grunt-subgrunt
             // Run grunt tasks in submodule Gruntfiles
             subgrunt: {
+                options: {
+                    npmInstall: false
+                },
                 init: {
-                    'core/client': 'init'
+                    options: {
+                        npmInstall: true
+                    },
+                    projects: {
+                        'core/client': 'init'
+                    }
+                },
+
+                dev: {
+                    'core/client': 'shell:ember:dev'
+                },
+
+                prod: {
+                    'core/client': 'shell:ember:prod'
+                },
+
+                watch: {
+                    'core/client': ['bgShell:ember', 'watch']
                 },
 
                 lint: {
                     'core/client': 'lint'
+                },
+
+                test: {
+                    'core/client': 'shell:test'
                 }
             }
         };
@@ -538,7 +519,7 @@ var _              = require('lodash'),
             ['test-routes', 'test-module', 'test-unit', 'test-integration']);
 
         grunt.registerTask('test-client', 'Run client tests',
-            ['test-ember']);
+            ['subgrunt:test']);
 
         // ### Lint
         //
@@ -634,12 +615,6 @@ var _              = require('lodash'),
             ['test-setup', 'mochacli:module']
         );
 
-        // ### Ember unit tests *(sub task)*
-        // `grunt test-ember` will run just the ember unit tests
-        grunt.registerTask('test-ember', 'Run the ember unit tests',
-            ['test-setup', 'shell:ember:test']
-        );
-
         // ### Coverage
         // `grunt coverage` will generate a report for the Unit Tests.
         //
@@ -705,19 +680,26 @@ var _              = require('lodash'),
         grunt.registerTask('init', 'Prepare the project for development',
             ['update_submodules', 'subgrunt:init', 'clean:tmp', 'default']);
 
+        // ### Build assets
+        // `grunt build` - will build client assets (without updating the submodule)
+        //
+        // This task is identical to `grunt init`, except it does not build client dependencies
+        grunt.registerTask('build', 'Build client app',
+            ['subgrunt:init', 'clean:tmp', 'default']);
+
         // ### Default asset build
         // `grunt` - default grunt task
         //
         // Build assets and dev version of the admin app.
         grunt.registerTask('default', 'Build JS & templates for development',
-            ['shell:ember:dev']);
+            ['subgrunt:dev']);
 
         // ### Production assets
         // `grunt prod` - will build the minified assets used in production.
         //
         // It is otherwise the same as running `grunt`, but is only used when running Ghost in the `production` env.
         grunt.registerTask('prod', 'Build JS & templates for production',
-            ['shell:ember:prod', 'uglify:prod', 'master-warn']);
+            ['subgrunt:prod', 'uglify:prod', 'master-warn']);
 
         // ### Live reload
         // `grunt dev` - build assets on the fly whilst developing
@@ -731,7 +713,7 @@ var _              = require('lodash'),
         //
         // Note that the current implementation of watch only works with casper, not other themes.
         grunt.registerTask('dev', 'Dev Mode; watch files and restart server on changes',
-           ['bgShell:ember', 'express:dev', 'watch']);
+           ['bgShell:client', 'express:dev', 'watch']);
 
         // ### Contributors
         // `grunt contributors:<tag-name>` - generate a comma-separated list of contributors for a Ghost release.
