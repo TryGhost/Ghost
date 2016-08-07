@@ -376,45 +376,49 @@ export default Controller.extend(SettingsMenuMixin, {
         },
 
         setMetaTitle(metaTitle) {
-            let property = 'metaTitle';
+            // Grab the model and current stored meta title
             let model = this.get('model');
-            let currentTitle = model.get(property) || '';
+            let currentTitle = model.get('metaTitle');
 
-            // Only update if the title has changed
+            // If the title entered matches the stored meta title, do nothing
             if (currentTitle === metaTitle) {
                 return;
             }
 
-            model.set(property, metaTitle);
+            // If the title entered is different, set it as the new meta title
+            model.set('metaTitle', metaTitle);
 
-            // If this is a new post.  Don't save the model.  Defer the save
-            // to the user pressing the save button
-            if (model.get('isNew')) {
-                return;
-            }
+            // Make sure the meta title is valid and if so, save it into the model
+            return model.validate({property: 'metaTitle'}).then(() => {
+                if (model.get('isNew')) {
+                    return;
+                }
 
-            model.save();
+                return model.save();
+            });
         },
 
         setMetaDescription(metaDescription) {
-            let property = 'metaDescription';
+            // Grab the model and current stored meta description
             let model = this.get('model');
-            let currentDescription = model.get(property) || '';
+            let currentDescription = model.get('metaDescription');
 
-            // Only update if the description has changed
+            // If the title entered matches the stored meta title, do nothing
             if (currentDescription === metaDescription) {
                 return;
             }
 
-            model.set(property, metaDescription);
+            // If the title entered is different, set it as the new meta title
+            model.set('metaDescription', metaDescription);
 
-            // If this is a new post.  Don't save the model.  Defer the save
-            // to the user pressing the save button
-            if (model.get('isNew')) {
-                return;
-            }
+            // Make sure the meta title is valid and if so, save it into the model
+            return model.validate({property: 'metaDescription'}).then(() => {
+                if (model.get('isNew')) {
+                    return;
+                }
 
-            model.save();
+                return model.save();
+            });
         },
 
         setCoverImage(image) {
