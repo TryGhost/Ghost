@@ -120,14 +120,14 @@
 
         <div class="settings-menu-content">
             <form {{action "discardEnter" on="submit"}}>
-            {{#gh-form-group errors=model.errors property="metaTitle"}}
+            {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="metaTitle"}}
                 <label for="meta-title">Meta Title</label>
                 {{gh-input metaTitleScratch class="post-setting-meta-title" id="meta-title" name="post-setting-meta-title" focusOut=(action "setMetaTitle" metaTitleScratch) stopEnterKeyDownPropagation="true" update=(action (mut metaTitleScratch))}}
                 <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters metaTitleScratch 70}}</p>
                 {{gh-error-message errors=model.errors property="metaTitle"}}
             {{/gh-form-group}}
 
-            {{#gh-form-group errors=model.errors property="metaDescription"}}
+            {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="metaDescription"}}
                 <label for="meta-description">Meta Description</label>
                 {{gh-textarea metaDescriptionScratch class="post-setting-meta-description" id="meta-description" name="post-setting-meta-description" focusOut=(action "setMetaDescription" metaDescriptionScratch) stopEnterKeyDownPropagation="true" update=(action (mut metaDescriptionScratch))}}
                 <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters metaDescriptionScratch 156}}</p>
