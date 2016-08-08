@@ -66,11 +66,6 @@ frontendControllers = {
                 return next();
             }
 
-            // CASE: we only support /:slug format for pages
-            if (post.page && post.url !== req.path) {
-                return next();
-            }
-
             // CASE: last param is of url is /edit, redirect to admin
             if (lookup.isEditURL) {
                 return res.redirect(config.paths.subdir + '/ghost/editor/' + post.id + '/');
