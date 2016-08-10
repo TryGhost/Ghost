@@ -31,9 +31,6 @@ frontendRoutes = function frontendRoutes() {
     // Channels
     router.use(channels.router());
 
-    // Default
-    router.get('*', frontend.single);
-
     // setup routes for internal apps
     // @TODO: refactor this to be a proper app route hook for internal & external apps
     config.internalApps.forEach(function (appName) {
@@ -42,6 +39,9 @@ frontendRoutes = function frontendRoutes() {
             app.setupRoutes(router);
         }
     });
+
+    // Default
+    router.get('*', frontend.single);
 
     return router;
 };
