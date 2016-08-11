@@ -39,7 +39,7 @@ describe('Notifications API', function () {
     it('can add, adds defaults (owner)', function (done) {
         var msg = {
             type: 'info',
-            message: 'Hello, this is dog'
+            message: 'Hello, this is another dog'
         };
 
         NotificationsAPI.add({notifications: [msg]}, testUtils.context.owner).then(function (result) {
@@ -60,7 +60,7 @@ describe('Notifications API', function () {
     it('can add, adds id and status (internal)', function (done) {
         var msg = {
             type: 'info',
-            message: 'Hello, this is dog',
+            message: 'Hello, this is dog number 3',
             id: 99
         };
 
@@ -157,7 +157,7 @@ describe('Notifications API', function () {
             custom: true,
             uuid: uuid.v4(),
             dismissible: true,
-            message: 'Hello, this is dog'
+            message: 'Hello, this is dog number 4'
         };
 
         NotificationsAPI.add({notifications: [customNotification]}, testUtils.context.internal).then(function (result) {
