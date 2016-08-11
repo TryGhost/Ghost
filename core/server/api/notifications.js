@@ -41,6 +41,9 @@ notifications = {
      *
      *
      * **takes:** a notification object of the form
+     *
+     * If notification message already exists, we return the existing notification object.
+     *
      * ```
      *  msg = { notifications: [{
          *      type: 'error', // this can be 'error', 'success', 'warn' and 'info'
@@ -84,18 +87,23 @@ notifications = {
                     location: 'bottom',
                     status: 'alert'
                 },
-                addedNotifications = [];
+                addedNotifications = [], existingNotification;
 
             _.each(options.data.notifications, function (notification) {
                 notificationCounter = notificationCounter + 1;
 
                 notification = _.assign(defaults, notification, {
                     id: notificationCounter
-                    // status: 'alert'
                 });
 
-                notificationsStore.push(notification);
-                addedNotifications.push(notification);
+                existingNotification = _.find(notificationsStore, {message:notification.message});
+
+                if (!existingNotification) {
+                    notificationsStore.push(notification);
+                    addedNotifications.push(notification);
+                } else {
+                    addedNotifications.push(existingNotification);
+                }
             });
 
             return addedNotifications;
