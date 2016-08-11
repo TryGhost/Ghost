@@ -97,7 +97,7 @@
     "grunt-update-submodules": "0.4.1",
     "istanbul": "0.4.4",
     "matchdep": "1.0.1",
-    "mocha": "2.5.3",
+    "mocha": "3.0.2",
     "nock": "8.0.0",
     "rewire": "2.5.2",
     "should": "11.0.0",
