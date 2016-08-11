@@ -347,7 +347,8 @@
             },
             "subscribers": {
                 "subscriberNotFound": "Subscriber not found.",
-                "subscriberAlreadyExists": "Email address is already subscribed."
+                "subscriberAlreadyExists": "Email address is already subscribed.",
+                "selectValidFile": "Please select a valid CSV file to import."
             },
             "tags": {
                 "tagNotFound": "Tag not found."
