@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html ⚡>
 <head>
-    <!-- Document Settings -->
+    {{!-- Document Settings --}}
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
-    <!-- Page Meta -->
+    {{!-- Page Meta --}}
     <title>{{meta_title}}</title>
     <meta name="description" content="{{meta_description}}" />
 
-    <!-- {{! Mobile Meta }} -->
+    {{!-- Mobile Meta --}}
     <meta name="HandheldFriendly" content="True" />
     <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 
-    <!-- Brand icon -->
+    {{!-- Brand icon --}}
     <link rel="shortcut icon" href="{{asset "favicon.ico"}}">
 
-    <!-- This will all go in the {{amp_head}} -->
+    {{!-- This will go in {{amp_head}} --}}
     <link rel="canonical" href="{{url}}">
 	<meta name="referrer" content="origin-when-cross-origin">
     <meta name="generator" content="Ghost 0.9">
@@ -56,7 +56,7 @@
         }
     </script>
 
-    <!-- Styles'n'Scripts -->
+    {{!-- Styles'n'Scripts --}}
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,600,400" />
     <style amp-custom>
         /* ==========================================================================
@@ -807,18 +807,18 @@
         }
     </style>
 
-    <!-- The necessary AMP boilerplate and the scripts -->
+    {{!-- The AMP boilerplate --}}
     <style amp-boilerplate>body{-webkit-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-moz-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-ms-animation:-amp-start 8s steps(1,end) 0s 1 normal both;animation:-amp-start 8s steps(1,end) 0s 1 normal both}@-webkit-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-moz-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-ms-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-o-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}</style><noscript><style amp-boilerplate>body{-webkit-animation:none;-moz-animation:none;-ms-animation:none;animation:none}</style></noscript>
     <script async src="https://cdn.ampproject.org/v0.js"></script>
 
-    <!-- This will need to be a helper {{amp_components}} -->
+    {{!-- This will go in {{amp_components}} helper --}}
     <script async custom-element="amp-iframe" src="https://cdn.ampproject.org/v0/amp-iframe-0.1.js"></script>
     <script async custom-element="amp-anim" src="https://cdn.ampproject.org/v0/amp-anim-0.1.js"></script>
     <script async custom-element="amp-form" src="https://cdn.ampproject.org/v0/amp-form-0.1.js"></script>
 </head>
 
 <body class="amp-template">
-    <!-- {{#post}} -->
+    {{#post}}
     <header class="main-header">
         <nav class="blog-title">
             <a href="{{@blog.url}}">{{@blog.title}}</a>
@@ -831,22 +831,22 @@
             <header class="post-header">
                 <h1 class="post-title">{{title}}</h1>
                 <section class="post-meta">
-                    <!-- {{#author}} -->
+                    {{#author}}
                     <p class="author">by <a href="{{url}}">{{name}}</a></p>
-                    <!-- {{/author}} -->
+                    {{/author}}
                     <time class="post-date" datetime="{{date format="YYYY-MM-DD"}}">{{date format="YYYY-MM-DD"}}</time>
                 </section>
             </header>
 
             <section class="post-content">
-                <!-- {{content starts here}} -->
+                {{!-- {{content starts here}} --}}
                 {{amp_content}}
-                <!-- {{content ends here}} -->
+                {{!-- {{content ends here}} --}}
             </section>
 
         </article>
     </main>
-    <!-- {{/post}} -->
+    {{/post}}
     <footer class="site-footer clearfix">
         <section class="copyright"><a href="{{@blog.url}}">{{@blog.title}}</a> &copy; {{date format="YYYY"}}</section>
         <section class="poweredby">Proudly published with <a href="https://ghost.org">Ghost</a></section>
