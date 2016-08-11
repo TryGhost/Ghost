@@ -51,7 +51,7 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
         },
 
         save() {
-            this.get('controller').send('save');
+            this.get('controller.save').perform();
         }
     }
 });

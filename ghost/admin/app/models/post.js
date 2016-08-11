@@ -6,6 +6,7 @@ import injectService from 'ember-service/inject';
 import Model from 'ember-data/model';
 import attr from 'ember-data/attr';
 import { belongsTo, hasMany } from 'ember-data/relationships';
+
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 
 // ember-cli-shims doesn't export these so we must get them manually

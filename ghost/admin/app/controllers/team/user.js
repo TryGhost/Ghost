@@ -1,19 +1,16 @@
 import Controller from 'ember-controller';
-import RSVP from 'rsvp';
 import computed, {alias, and, not, or, readOnly} from 'ember-computed';
 import injectService from 'ember-service/inject';
 import {htmlSafe} from 'ember-string';
 import run from 'ember-runloop';
 import {isEmberArray} from 'ember-array/utils';
 
+import {task, taskGroup} from 'ember-concurrency';
+
 import isNumber from 'ghost-admin/utils/isNumber';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
-import { invoke } from 'ember-invoke-action';
 
 export default Controller.extend({
-    submitting: false,
-    updatingPassword: false,
-    lastPromise: null,
     showDeleteUserModal: false,
     showTransferOwnerModal: false,
     showUploadCoverModal: false,
@@ -100,58 +97,95 @@ export default Controller.extend({
         this.get('notifications').showAlert('The user could not be deleted. Please try again.', {type: 'error', key: 'user.delete.failed'});
     },
 
-    actions: {
-        changeRole(newRole) {
-            this.set('model.role', newRole);
-        },
+    saveHandlers: taskGroup().enqueue(),
 
-        save() {
-            let user = this.get('user');
-            let slugValue = this.get('slugValue');
-            let afterUpdateSlug = this.get('lastPromise');
-            let promise,
-                slugChanged;
+    updateSlug: task(function* (newSlug) {
+        let slug = this.get('model.slug');
 
-            if (user.get('slug') !== slugValue) {
-                slugChanged = true;
-                user.set('slug', slugValue);
+        newSlug = newSlug || slug;
+        newSlug = newSlug.trim();
+
+        // Ignore unchanged slugs or candidate slugs that are empty
+        if (!newSlug || slug === newSlug) {
+            this.set('slugValue', slug);
+
+            return;
+        }
+
+        let serverSlug = yield this.get('slugGenerator').generateSlug('user', newSlug);
+
+        // If after getting the sanitized and unique slug back from the API
+        // we end up with a slug that matches the existing slug, abort the change
+        if (serverSlug === slug) {
+            return;
+        }
+
+        // Because the server transforms the candidate slug by stripping
+        // certain characters and appending a number onto the end of slugs
+        // to enforce uniqueness, there are cases where we can get back a
+        // candidate slug that is a duplicate of the original except for
+        // the trailing incrementor (e.g., this-is-a-slug and this-is-a-slug-2)
+
+        // get the last token out of the slug candidate and see if it's a number
+        let slugTokens = serverSlug.split('-');
+        let check = Number(slugTokens.pop());
+
+        // if the candidate slug is the same as the existing slug except
+        // for the incrementor then the existing slug should be used
+        if (isNumber(check) && check > 0) {
+            if (slug === slugTokens.join('-') && serverSlug !== newSlug) {
+                this.set('slugValue', slug);
+
+                return;
+            }
+        }
+
+        this.set('slugValue', serverSlug);
+    }).group('saveHandlers'),
+
+    save: task(function* () {
+        let user = this.get('user');
+        let slugValue = this.get('slugValue');
+        let slugChanged;
+
+        if (user.get('slug') !== slugValue) {
+            slugChanged = true;
+            user.set('slug', slugValue);
+        }
+
+        try {
+            let model = yield user.save({format: false});
+            let currentPath,
+                newPath;
+
+            // If the user's slug has changed, change the URL and replace
+            // the history so refresh and back button still work
+            if (slugChanged) {
+                currentPath = window.history.state.path;
+
+                newPath = currentPath.split('/');
+                newPath[newPath.length - 2] = model.get('slug');
+                newPath = newPath.join('/');
+
+                window.history.replaceState({path: newPath}, '', newPath);
             }
 
             this.toggleProperty('submitting');
+            this.get('notifications').closeAlerts('user.update');
 
-            promise = RSVP.resolve(afterUpdateSlug).then(() => {
-                return user.save({format: false});
-            }).then((model) => {
-                let currentPath,
-                    newPath;
+            return model;
+        } catch (error) {
+            // validation engine returns undefined so we have to check
+            // before treating the failure as an API error
+            if (error) {
+                this.get('notifications').showAPIError(error, {key: 'user.update'});
+            }
+        }
+    }).group('saveHandlers'),
 
-                // If the user's slug has changed, change the URL and replace
-                // the history so refresh and back button still work
-                if (slugChanged) {
-                    currentPath = window.history.state.path;
-
-                    newPath = currentPath.split('/');
-                    newPath[newPath.length - 2] = model.get('slug');
-                    newPath = newPath.join('/');
-
-                    window.history.replaceState({path: newPath}, '', newPath);
-                }
-
-                this.toggleProperty('submitting');
-                this.get('notifications').closeAlerts('user.update');
-
-                return model;
-            }).catch((error) => {
-                // validation engine returns undefined so we have to check
-                // before treating the failure as an API error
-                if (error) {
-                    this.get('notifications').showAPIError(error, {key: 'user.update'});
-                }
-                this.toggleProperty('submitting');
-            });
-
-            this.set('lastPromise', promise);
-            return promise;
+    actions: {
+        changeRole(newRole) {
+            this.set('model.role', newRole);
         },
 
         deleteUser() {
@@ -166,90 +200,6 @@ export default Controller.extend({
             if (this.get('deleteUserActionIsVisible')) {
                 this.toggleProperty('showDeleteUserModal');
             }
-        },
-
-        changePassword() {
-            let user = this.get('user');
-
-            if (!this.get('updatingPassword')) {
-                this.set('updatingPassword', true);
-
-                return user.saveNewPassword().then((model) => {
-                    // Clear properties from view
-                    user.setProperties({
-                        password: '',
-                        newPassword: '',
-                        ne2Password: ''
-                    });
-
-                    this.get('notifications').showNotification('Password updated.', {type: 'success', key: 'user.change-password.success'});
-
-                    // clear errors manually for ne2password because validation
-                    // engine only clears the "validated proeprty"
-                    // TODO: clean up once we have a better validations library
-                    user.get('errors').remove('ne2Password');
-
-                    return model;
-                }).catch((error) => {
-                    // error will be undefined if we have a validation error
-                    if (error) {
-                        this.get('notifications').showAPIError(error, {key: 'user.change-password'});
-                    }
-                }).finally(() => {
-                    this.set('updatingPassword', false);
-                });
-            }
-        },
-
-        updateSlug(newSlug) {
-            let afterSave = this.get('lastPromise');
-            let promise;
-
-            promise = RSVP.resolve(afterSave).then(() => {
-                let slug = this.get('model.slug');
-
-                newSlug = newSlug || slug;
-                newSlug = newSlug.trim();
-
-                // Ignore unchanged slugs or candidate slugs that are empty
-                if (!newSlug || slug === newSlug) {
-                    this.set('slugValue', slug);
-
-                    return;
-                }
-
-                return this.get('slugGenerator').generateSlug('user', newSlug).then((serverSlug) => {
-                    // If after getting the sanitized and unique slug back from the API
-                    // we end up with a slug that matches the existing slug, abort the change
-                    if (serverSlug === slug) {
-                        return;
-                    }
-
-                    // Because the server transforms the candidate slug by stripping
-                    // certain characters and appending a number onto the end of slugs
-                    // to enforce uniqueness, there are cases where we can get back a
-                    // candidate slug that is a duplicate of the original except for
-                    // the trailing incrementor (e.g., this-is-a-slug and this-is-a-slug-2)
-
-                    // get the last token out of the slug candidate and see if it's a number
-                    let slugTokens = serverSlug.split('-');
-                    let check = Number(slugTokens.pop());
-
-                    // if the candidate slug is the same as the existing slug except
-                    // for the incrementor then the existing slug should be used
-                    if (isNumber(check) && check > 0) {
-                        if (slug === slugTokens.join('-') && serverSlug !== newSlug) {
-                            this.set('slugValue', slug);
-
-                            return;
-                        }
-                    }
-
-                    this.set('slugValue', serverSlug);
-                });
-            });
-
-            this.set('lastPromise', promise);
         },
 
         validateFacebookUrl() {
@@ -305,7 +255,7 @@ export default Controller.extend({
                 this.get('user.hasValidated').pushObject('facebook');
 
                 // User input is validated
-                invoke(this, 'save').then(() => {
+                this.get('save').perform().then(() => {
                     // necessary to update the value in the input field
                     this.set('user.facebook', '');
                     run.schedule('afterRender', this, function () {
@@ -370,7 +320,7 @@ export default Controller.extend({
                 this.get('user.hasValidated').pushObject('twitter');
 
                 // User input is validated
-                invoke(this, 'save').then(() => {
+                this.get('save').perform().then(() => {
                     // necessary to update the value in the input field
                     this.set('user.twitter', '');
                     run.schedule('afterRender', this, function () {
