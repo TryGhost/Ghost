@@ -275,7 +275,10 @@ subscribers = {
                 return Promise.reject(new errors.ValidationError(i18n.t('errors.api.db.selectFileToImport')));
             }
 
-            // TODO: check for valid entries
+            // Check for valid file type
+            if (!utils.checkFileIsValid(options, ['text/csv','application/csv'], ['.csv'])) {
+                return Promise.reject(new errors.ValidationError(i18n.t('errors.api.subscribers.selectValidFile')));
+            }
 
             return options;
         }

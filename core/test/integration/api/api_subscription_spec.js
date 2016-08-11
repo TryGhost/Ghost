@@ -238,13 +238,15 @@ describe('Subscribers API', function () {
     });
 
     describe('Read CSV', function () {
-        var scope = {};
+        var scope = {},
+            stub;
 
         beforeEach(function () {
             sinon.stub(fs, 'unlink', function (path, cb) {
                 cb();
             });
             sinon.stub(apiUtils, 'checkFileExists').returns(true);
+            stub = sinon.stub(apiUtils, 'checkFileIsValid').returns(true);
             sinon.stub(serverUtils, 'readCSV', function () {
                 if (scope.csvError) {
                     return Promise.reject(new Error('csv'));
@@ -257,7 +259,9 @@ describe('Subscribers API', function () {
         afterEach(function () {
             fs.unlink.restore();
             apiUtils.checkFileExists.restore();
+            apiUtils.checkFileIsValid.restore();
             serverUtils.readCSV.restore();
+            scope.csvError = false;
         });
 
         it('check that fn works in general', function (done) {
@@ -286,7 +290,7 @@ describe('Subscribers API', function () {
                 .catch(done);
         });
 
-        it('read csv throws an error', function (done) {
+        it('read csv throws a not found error', function (done) {
             scope.csvError = true;
 
             SubscribersAPI.importCSV(_.merge(testUtils.context.internal, {path: '/somewhere'}))
@@ -295,6 +299,19 @@ describe('Subscribers API', function () {
                 })
                 .catch(function (err) {
                     err.message.should.eql('csv');
+                    done();
+                });
+        });
+
+        it('throws an invalid file error', function (done) {
+            stub.returns(false);
+
+            SubscribersAPI.importCSV(_.merge(testUtils.context.internal, {path: '/somewhere'}))
+                .then(function () {
+                    done(new Error('we expected an error here!'));
+                })
+                .catch(function (err) {
+                    err.message.should.eql('Please select a valid CSV file to import.');
                     done();
                 });
         });
