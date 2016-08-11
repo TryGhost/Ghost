@@ -42,7 +42,7 @@
                 </span>
             {{/if}}
 
-            {{#gh-spin-button class="btn btn-blue" action="save" submitting=submitting}}Save{{/gh-spin-button}}
+            {{#gh-task-button class="btn btn-blue" task=save}}Save{{/gh-task-button}}
         </section>
     </header>
 
@@ -58,7 +58,7 @@
             {{/if}}
         </figure>
 
-        <form class="user-profile" novalidate="novalidate" autocomplete="off">
+        <form class="user-profile" novalidate="novalidate" autocomplete="off" {{action (perform save) on="submit"}}>
 
             {{!-- Horrible hack to prevent Chrome from incorrectly auto-filling inputs --}}
             <input style="display:none;" type="text" name="fakeusernameremembered"/>
@@ -93,7 +93,7 @@
 
                 {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="slug"}}
                     <label for="user-slug">Slug</label>
-                    {{gh-input slugValue class="user-name" id="user-slug" name="user" focusOut=(action "updateSlug" slugValue) placeholder="Slug" selectOnClick="true" autocorrect="off" update=(action (mut slugValue))}}
+                    {{gh-input slugValue class="user-name" id="user-slug" name="user" focusOut=(action (perform updateSlug slugValue)) placeholder="Slug" selectOnClick="true" autocorrect="off" update=(action (mut slugValue))}}
                     <p>{{gh-blog-url}}/author/{{slugValue}}</p>
                     {{gh-error-message errors=user.errors property="slug"}}
                 {{/gh-form-group}}
@@ -167,34 +167,37 @@
                 <hr />
 
             </fieldset>
+
+        </form> {{! user details form }}
+        <form class="user-profile" novalidate="novalidate" autocomplete="off" {{action (perform user.saveNewPassword) on="submit"}}>
             {{!-- If an administrator is viewing Owner's profile then hide inputs for change password --}}
             {{#unless isAdminUserOnOwnerProfile}}
                 <fieldset>
                     {{#unless isNotOwnProfile}}
                         {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="password"}}
                             <label for="user-password-old">Old Password</label>
-                            {{gh-input value=user.password type="password" id="user-password-old" update=(action 'updatePassword') onenter=(action "changePassword")}}
+                            {{gh-input value=user.password type="password" id="user-password-old" update=(action 'updatePassword') onenter=(action (perform user.saveNewPassword))}}
                             {{gh-error-message errors=user.errors property="password"}}
                         {{/gh-form-group}}
                     {{/unless}}
 
                     {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="newPassword"}}
                         <label for="user-password-new">New Password</label>
-                        {{gh-input user.newPassword type="password" id="user-password-new" update=(action 'updateNewPassword') onenter=(action "changePassword")}}
+                        {{gh-input user.newPassword type="password" id="user-password-new" update=(action 'updateNewPassword') onenter=(action (perform user.saveNewPassword))}}
                         {{gh-error-message errors=user.errors property="newPassword"}}
                     {{/gh-form-group}}
 
                     {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="ne2Password"}}
                         <label for="user-new-password-verification">Verify Password</label>
-                        {{gh-input user.ne2Password type="password" id="user-new-password-verification" update=(action 'updateNe2Password') onenter=(action "changePassword")}}
+                        {{gh-input user.ne2Password type="password" id="user-new-password-verification" update=(action 'updateNe2Password') onenter=(action (perform user.saveNewPassword))}}
                         {{gh-error-message errors=user.errors property="ne2Password"}}
                     {{/gh-form-group}}
 
                     <div class="form-group">
-                        {{#gh-spin-button class="btn btn-red button-change-password" action=(action "changePassword") submitting=updatingPassword}}Change Password{{/gh-spin-button}}
+                        {{#gh-task-button class="btn btn-red button-change-password" task=user.saveNewPassword}}Change Password{{/gh-task-button}}
                     </div>
                 </fieldset>
             {{/unless}}
-        </form>
+        </form> {{! change password form }}
     </div>
 </section>
