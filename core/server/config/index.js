@@ -212,9 +212,10 @@ ConfigManager.prototype.set = function (config) {
             page: 'page',
             preview: 'p',
             private: 'private',
-            subscribe: 'subscribe'
+            subscribe: 'subscribe',
+            amp: 'amp'
         },
-        internalApps: ['private-blogging', 'subscribers'],
+        internalApps: ['private-blogging', 'subscribers', 'amp'],
         slugs: {
             // Used by generateSlug to generate slugs for posts, tags, users, ..
             // reserved slugs are reserved but can be extended/removed by apps
@@ -223,7 +224,7 @@ ConfigManager.prototype.set = function (config) {
             'category', 'dashboard', 'feed', 'ghost-admin', 'login', 'logout',
             'page', 'pages', 'post', 'posts', 'public', 'register', 'setup',
             'signin', 'signout', 'signup', 'user', 'users', 'wp-admin', 'wp-login'],
-            protected: ['ghost', 'rss']
+            protected: ['ghost', 'rss', 'amp']
         },
         // used in middleware/validation/upload.js
         // if we finish the data/importer logic, each type selects an importer
