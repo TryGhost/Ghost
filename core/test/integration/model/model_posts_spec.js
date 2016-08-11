@@ -1367,7 +1367,7 @@ describe('Post Model', function () {
                 editOptions,
                 createTag = testUtils.DataGenerator.forKnex.createTag;
 
-            beforeEach(function (done) {
+            beforeEach(function () {
                 tagJSON = [];
 
                 var post = _.cloneDeep(testUtils.DataGenerator.forModel.posts[0]),
@@ -1399,7 +1399,6 @@ describe('Post Model', function () {
 
                     // reset the eventSpy here
                     sandbox.restore();
-                    done();
                 });
             });
 
@@ -1424,7 +1423,7 @@ describe('Post Model', function () {
             });
 
             describe('Adding brand new tags', function () {
-                it('can add a single tag to the end of the tags array', function (done) {
+                it('can add a single tag to the end of the tags array', function () {
                     var newJSON = _.cloneDeep(postJSON);
 
                     // Add a single tag to the end of the array
@@ -1448,12 +1447,10 @@ describe('Post Model', function () {
                             id: postJSON.tags[2].id
                         });
                         updatedPost.tags.should.have.enumerable(3).with.property('name', 'tag4');
-
-                        done();
-                    }).catch(done);
+                    });
                 });
 
-                it('can add a single tag to the beginning of the tags array', function (done) {
+                it('can add a single tag to the beginning of the tags array', function () {
                     var newJSON = _.cloneDeep(postJSON);
 
                     // Add a single tag to the beginning of the array
@@ -1477,14 +1474,12 @@ describe('Post Model', function () {
                             name: 'tag3',
                             id: postJSON.tags[2].id
                         });
-
-                        done();
-                    }).catch(done);
+                    });
                 });
             });
 
             describe('Adding pre-existing tags', function () {
-                it('can add a single tag to the end of the tags array', function (done) {
+                it('can add a single tag to the end of the tags array', function () {
                     var newJSON = _.cloneDeep(postJSON);
 
                     // Add a single pre-existing tag to the end of the array
@@ -1511,12 +1506,10 @@ describe('Post Model', function () {
                             name: 'existing tag a',
                             id: tagJSON[0].id
                         });
-
-                        done();
-                    }).catch(done);
+                    });
                 });
 
-                it('can add a single tag to the beginning of the tags array', function (done) {
+                it('can add a single tag to the beginning of the tags array', function () {
                     var newJSON = _.cloneDeep(postJSON);
 
                     // Add an existing tag to the beginning of the array
@@ -1543,12 +1536,10 @@ describe('Post Model', function () {
                             name: 'tag3',
                             id: postJSON.tags[2].id
                         });
-
-                        done();
-                    }).catch(done);
+                    });
                 });
 
-                it('can add a single tag to the middle of the tags array', function (done) {
+                it('can add a single tag to the middle of the tags array', function () {
                     var newJSON = _.cloneDeep(postJSON);
 
                     // Add a single pre-existing tag to the middle of the array
@@ -1575,14 +1566,12 @@ describe('Post Model', function () {
                             name: 'tag3',
                             id: postJSON.tags[2].id
                         });
-
-                        done();
-                    }).catch(done);
+                    });
                 });
             });
 
             describe('Removing tags', function () {
-                it('can remove a single tag from the end of the tags array', function (done) {
+                it('can remove a single tag from the end of the tags array', function () {
                     var newJSON = _.cloneDeep(postJSON);
 
                     // Remove a single tag from the end of the array
@@ -1601,12 +1590,10 @@ describe('Post Model', function () {
                             name: 'tag2',
                             id: postJSON.tags[1].id
                         });
-
-                        done();
-                    }).catch(done);
+                    });
                 });
 
-                it('can remove a single tag from the beginning of the tags array', function (done) {
+                it('can remove a single tag from the beginning of the tags array', function () {
                     var newJSON = _.cloneDeep(postJSON);
 
                     // Remove a single tag from the beginning of the array
@@ -1625,12 +1612,10 @@ describe('Post Model', function () {
                             name: 'tag3',
                             id: postJSON.tags[2].id
                         });
-
-                        done();
-                    }).catch(done);
+                    });
                 });
 
-                it('can remove all tags', function (done) {
+                it('can remove all tags', function () {
                     var newJSON = _.cloneDeep(postJSON);
 
                     // Remove all the tags
@@ -1641,14 +1626,12 @@ describe('Post Model', function () {
                         updatedPost = updatedPost.toJSON({include: ['tags']});
 
                         updatedPost.tags.should.have.lengthOf(0);
-
-                        done();
-                    }).catch(done);
+                    });
                 });
             });
 
             describe('Reordering tags', function () {
-                it('can reorder the first tag to be the last', function (done) {
+                it('can reorder the first tag to be the last', function () {
                     var newJSON = _.cloneDeep(postJSON),
                         firstTag = [postJSON.tags[0]];
 
@@ -1672,12 +1655,10 @@ describe('Post Model', function () {
                             name: 'tag1',
                             id: postJSON.tags[0].id
                         });
-
-                        done();
-                    }).catch(done);
+                    });
                 });
 
-                it('can reorder the last tag to be the first', function (done) {
+                it('can reorder the last tag to be the first', function () {
                     var newJSON = _.cloneDeep(postJSON),
                         lastTag = [postJSON.tags[2]];
 
@@ -1701,15 +1682,13 @@ describe('Post Model', function () {
                             name: 'tag2',
                             id: postJSON.tags[1].id
                         });
-
-                        done();
-                    }).catch(done);
+                    });
                 });
             });
 
             describe('Edit post', function () {
                 // These tests are for #6920
-                it('can edit a post SAFELY when tags are not included', function (done) {
+                it('can edit a post SAFELY when tags are not included', function () {
                     var postId = postJSON.id,
                         toJSONOpts = {include: ['tags']},
                         startTags;
@@ -1739,19 +1718,17 @@ describe('Post Model', function () {
                             var post = results.toJSON(toJSONOpts);
                             post.tags.should.have.lengthOf(3);
                             post.tags.should.eql(startTags);
-
-                            done();
                         });
-                    }).catch(done);
+                    });
                 });
 
-                it('can edit a post SAFELY when tags is undefined', function (done) {
+                it('can edit a post SAFELY when tags is undefined', function () {
                     var postId = postJSON.id,
                         toJSONOpts = {include: ['tags']},
                         startTags;
 
                     // Step 1, fetch a post with its tags, just to see what tags we have
-                    PostModel.findOne({id: postId}, {withRelated: ['tags']}).then(function (results) {
+                    return PostModel.findOne({id: postId}, {withRelated: ['tags']}).then(function (results) {
                         var post = results.toJSON(toJSONOpts);
                         should.exist(results);
                         post.title.should.not.equal('new title');
@@ -1775,19 +1752,17 @@ describe('Post Model', function () {
                             var post = results.toJSON(toJSONOpts);
                             post.tags.should.have.lengthOf(3);
                             post.tags.should.eql(startTags);
-
-                            done();
                         });
-                    }).catch(done);
+                    });
                 });
 
-                it('can edit a post SAFELY when tags is null', function (done) {
+                it('can edit a post SAFELY when tags is null', function () {
                     var postId = postJSON.id,
                         toJSONOpts = {include: ['tags']},
                         startTags;
 
                     // Step 1, fetch a post with its tags, just to see what tags we have
-                    PostModel.findOne({id: postId}, {withRelated: ['tags']}).then(function (results) {
+                    return PostModel.findOne({id: postId}, {withRelated: ['tags']}).then(function (results) {
                         var post = results.toJSON(toJSONOpts);
                         should.exist(results);
                         post.title.should.not.equal('new title');
@@ -1811,18 +1786,16 @@ describe('Post Model', function () {
                             var post = results.toJSON(toJSONOpts);
                             post.tags.should.have.lengthOf(3);
                             post.tags.should.eql(startTags);
-
-                            done();
                         });
-                    }).catch(done);
+                    });
                 });
 
-                it('can remove all tags when sent an empty array', function (done) {
+                it('can remove all tags when sent an empty array', function () {
                     var postId = postJSON.id,
                         toJSONOpts = {include: ['tags']};
 
                     // Step 1, fetch a post with its tags, just to see what tags we have
-                    PostModel.findOne({id: postId}, {withRelated: ['tags']}).then(function (results) {
+                    return PostModel.findOne({id: postId}, {withRelated: ['tags']}).then(function (results) {
                         var post = results.toJSON(toJSONOpts);
                         should.exist(results);
                         post.title.should.not.equal('new title');
@@ -1843,15 +1816,13 @@ describe('Post Model', function () {
                             var post = results.toJSON(toJSONOpts);
                             // Tags should be gone
                             post.tags.should.eql([]);
-
-                            done();
                         });
-                    }).catch(done);
+                    });
                 });
             });
 
             describe('Combination updates', function () {
-                it('can add a combination of new and pre-existing tags', function (done) {
+                it('can add a combination of new and pre-existing tags', function () {
                     var newJSON = _.cloneDeep(postJSON);
 
                     // Push a bunch of new and existing tags to the end of the array
@@ -1894,12 +1865,10 @@ describe('Post Model', function () {
                             name: 'existing_tag_c',
                             id: tagJSON[2].id
                         });
-
-                        done();
-                    }).catch(done);
+                    });
                 });
 
-                it('can reorder the first tag to be the last and add a tag to the beginning', function (done) {
+                it('can reorder the first tag to be the last and add a tag to the beginning', function () {
                     var newJSON = _.cloneDeep(postJSON),
                         firstTag = [postJSON.tags[0]];
 
@@ -1927,12 +1896,10 @@ describe('Post Model', function () {
                             name: 'tag1',
                             id: postJSON.tags[0].id
                         });
-
-                        done();
-                    }).catch(done);
+                    });
                 });
 
-                it('can reorder the first tag to be the last, remove the original last tag & add a tag to the beginning', function (done) {
+                it('can reorder the first tag to be the last, remove the original last tag & add a tag to the beginning', function () {
                     var newJSON = _.cloneDeep(postJSON),
                         firstTag = [newJSON.tags[0]];
 
@@ -1956,12 +1923,10 @@ describe('Post Model', function () {
                             name: 'tag1',
                             id: postJSON.tags[0].id
                         });
-
-                        done();
-                    }).catch(done);
+                    });
                 });
 
-                it('can reorder original tags, remove one, and add new and existing tags', function (done) {
+                it('can reorder original tags, remove one, and add new and existing tags', function () {
                     var newJSON = _.cloneDeep(postJSON),
                         firstTag = [newJSON.tags[0]];
 
@@ -2006,9 +1971,7 @@ describe('Post Model', function () {
                             name: 'existing tag a',
                             id: tagJSON[0].id
                         });
-
-                        done();
-                    }).catch(done);
+                    });
                 });
             });
         });
@@ -2019,7 +1982,7 @@ describe('Post Model', function () {
                 editOptions,
                 createTag = testUtils.DataGenerator.forKnex.createTag;
 
-            beforeEach(function (done) {
+            beforeEach(function () {
                 tagJSON = [];
 
                 var post = _.cloneDeep(testUtils.DataGenerator.forModel.posts[0]),
@@ -2038,9 +2001,7 @@ describe('Post Model', function () {
                     tagJSON.push(result.tag2.toJSON());
                     tagJSON.push(result.tag3.toJSON());
                     editOptions = _.extend({}, context, {id: postJSON.id, withRelated: ['tags']});
-
-                    done();
-                }).catch(done);
+                });
             });
 
             it('should create the test data correctly', function () {
@@ -2058,7 +2019,7 @@ describe('Post Model', function () {
             });
 
             describe('Adding brand new tags', function () {
-                it('can add a single tag', function (done) {
+                it('can add a single tag', function () {
                     var newJSON = _.cloneDeep(postJSON);
 
                     // Add a single tag to the end of the array
@@ -2070,12 +2031,10 @@ describe('Post Model', function () {
 
                         updatedPost.tags.should.have.lengthOf(1);
                         updatedPost.tags.should.have.enumerable(0).with.property('name', 'tag1');
-
-                        done();
-                    }).catch(done);
+                    });
                 });
 
-                it('can add multiple tags', function (done) {
+                it('can add multiple tags', function () {
                     var newJSON = _.cloneDeep(postJSON);
 
                     // Add a bunch of tags to the end of the array
@@ -2095,12 +2054,10 @@ describe('Post Model', function () {
                         updatedPost.tags.should.have.enumerable(2).with.property('name', 'tag3');
                         updatedPost.tags.should.have.enumerable(3).with.property('name', 'tag4');
                         updatedPost.tags.should.have.enumerable(4).with.property('name', 'tag5');
-
-                        done();
-                    }).catch(done);
+                    });
                 });
 
-                it('can add multiple tags with conflicting slugs', function (done) {
+                it('can add multiple tags with conflicting slugs', function () {
                     var newJSON = _.cloneDeep(postJSON);
 
                     // Add conflicting tags to the end of the array
@@ -2116,14 +2073,12 @@ describe('Post Model', function () {
                         updatedPost.tags.should.have.enumerable(0).with.properties({name: 'C', slug: 'c'});
                         updatedPost.tags.should.have.enumerable(1).with.properties({name: 'C++', slug: 'c-2'});
                         updatedPost.tags.should.have.enumerable(2).with.properties({name: 'C#', slug: 'c-3'});
-
-                        done();
-                    }).catch(done);
+                    });
                 });
             });
 
             describe('Adding pre-existing tags', function () {
-                it('can add a single tag', function (done) {
+                it('can add a single tag', function () {
                     var newJSON = _.cloneDeep(postJSON);
 
                     // Add a single pre-existing tag
@@ -2138,12 +2093,10 @@ describe('Post Model', function () {
                             name: 'existing tag a',
                             id: tagJSON[0].id
                         });
-
-                        done();
-                    }).catch(done);
+                    });
                 });
 
-                it('can add multiple tags', function (done) {
+                it('can add multiple tags', function () {
                     var newJSON = _.cloneDeep(postJSON);
 
                     // Add many preexisting tags
@@ -2168,12 +2121,10 @@ describe('Post Model', function () {
                             name: 'existing_tag_c',
                             id: tagJSON[2].id
                         });
-
-                        done();
-                    }).catch(done);
+                    });
                 });
 
-                it('can add multiple tags in wrong order', function (done) {
+                it('can add multiple tags in wrong order', function () {
                     var newJSON = _.cloneDeep(postJSON);
 
                     // Add tags to the array
@@ -2198,14 +2149,12 @@ describe('Post Model', function () {
                             name: 'existing-tag-b',
                             id: tagJSON[1].id
                         });
-
-                        done();
-                    }).catch(done);
+                    });
                 });
             });
 
             describe('Adding combinations', function () {
-                it('can add a combination of new and pre-existing tags', function (done) {
+                it('can add a combination of new and pre-existing tags', function () {
                     var newJSON = _.cloneDeep(postJSON);
 
                     // Add a bunch of new and existing tags to the array
@@ -2236,9 +2185,7 @@ describe('Post Model', function () {
                             name: 'existing_tag_c',
                             id: tagJSON[2].id
                         });
-
-                        done();
-                    }).catch(done);
+                    });
                 });
             });
         });
