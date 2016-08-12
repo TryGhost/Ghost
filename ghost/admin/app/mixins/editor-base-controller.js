@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import Mixin from 'ember-metal/mixin';
 import RSVP from 'rsvp';
-import computed, {alias} from 'ember-computed';
+import computed, {alias, mapBy} from 'ember-computed';
 import injectService from 'ember-service/inject';
 import injectController from 'ember-controller/inject';
 import {htmlSafe} from 'ember-string';
@@ -82,9 +82,7 @@ export default Mixin.create({
     // whether the number of tags has changed for `hasDirtyAttributes`.
     previousTagNames: null,
 
-    tagNames: computed('model.tags.@each.name', function () {
-        return this.get('model.tags').mapBy('name');
-    }),
+    tagNames: mapBy('model.tags', 'name'),
 
     postOrPage: computed('model.page', function () {
         return this.get('model.page') ? 'Page' : 'Post';
@@ -130,8 +128,8 @@ export default Mixin.create({
 
     // compares previousTagNames to tagNames
     tagNamesEqual() {
-        let tagNames = this.get('tagNames');
-        let previousTagNames = this.get('previousTagNames');
+        let tagNames = this.get('tagNames') || [];
+        let previousTagNames = this.get('previousTagNames') || [];
         let hashCurrent,
             hashPrevious;
 
