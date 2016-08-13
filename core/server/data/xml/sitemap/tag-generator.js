@@ -26,6 +26,7 @@ _.extend(TagsMapGenerator.prototype, {
             context: {
                 internal: true
             },
+            filter: 'visibility:public',
             limit: 'all'
         }).then(function (resp) {
             return resp.tags;
