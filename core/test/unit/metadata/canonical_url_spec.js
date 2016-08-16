@@ -15,6 +15,20 @@ describe('getCanonicalUrl', function () {
         canonicalUrl.should.not.match(/^https:/);
     });
 
+    it('should return absolute canonical url for amp post without /amp/ in url', function () {
+        var canonicalUrl = getCanonicalUrl({
+            url: '/this-is-a-test-post/amp/',
+            html: '<h1>Test 123</h1>',
+            markdown: '# Test 123',
+            title: 'This is a test post',
+            slug: 'this-is-a-test-post',
+            secure: true
+        });
+        canonicalUrl.should.not.equal('/this-is-a-test-post/amp/');
+        canonicalUrl.should.match(/\/this-is-a-test-post\/$/);
+        canonicalUrl.should.not.match(/^https:/);
+    });
+
     it('should return absolute canonical url for tag', function () {
         var canonicalUrl = getCanonicalUrl({
             parent: null,

@@ -10,7 +10,8 @@ describe('Contexts', function () {
 
     beforeEach(function () {
         req = {
-            params: {}
+            params: {},
+            body: {}
         };
         res = {
             locals: {}

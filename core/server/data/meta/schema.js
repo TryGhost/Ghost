@@ -172,14 +172,14 @@ function getAuthorSchema(metaData, data) {
 
 function getSchema(metaData, data) {
     if (!config.isPrivacyDisabled('useStructuredData')) {
-        var context = data.context ? data.context[0] : null;
-        if (context === 'post' || context === 'page') {
+        var context = data.context ? data.context : null;
+        if (_.includes(context, 'post') || _.includes(context, 'page') || _.includes(context, 'amp')) {
             return getPostSchema(metaData, data);
-        } else if (context === 'home') {
+        } else if (_.includes(context, 'home')) {
             return getHomeSchema(metaData);
-        } else if (context === 'tag') {
+        } else if (_.includes(context, 'tag')) {
             return getTagSchema(metaData, data);
-        } else if (context === 'author') {
+        } else if (_.includes(context, 'author')) {
             return getAuthorSchema(metaData, data);
         }
     }
