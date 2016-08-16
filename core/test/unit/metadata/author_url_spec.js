@@ -29,6 +29,33 @@ describe('getAuthorUrl', function () {
         authorUrl.should.match(/\/author\/test-author\/$/);
     });
 
+    it('should return author url for AMP if context contains author',
+    function () {
+        var authorUrl = getAuthorUrl({
+            context: ['amp', 'post'],
+            post: {
+                author: {
+                    slug: 'test-author'
+                }
+            }
+        });
+        authorUrl.should.equal('/author/test-author/');
+    });
+
+    it('should return absolute author url for AMP if context contains author',
+    function () {
+        var authorUrl = getAuthorUrl({
+            context: ['amp', 'post'],
+            post: {
+                author: {
+                    slug: 'test-author'
+                }
+            }
+        }, true);
+        authorUrl.should.not.equal('/author/test-author/');
+        authorUrl.should.match(/\/author\/test-author\/$/);
+    });
+
     it('should return author url if data contains author',
     function () {
         var authorUrl = getAuthorUrl({

@@ -1,15 +1,12 @@
 var router           = require('./lib/router'),
-    ampContentHelper = require('./lib/helpers/amp_content'),
+    registerAmpHelpers  = require('./lib/helpers'),
 
     // Dirty requires
     config     = require('../../config');
 
 module.exports = {
     activate: function activate(ghost) {
-        // Correct way to register a helper from an app
-        ghost.helpers.register('amp_content', function () {
-            return ampContentHelper.apply(this, arguments);
-        });
+        registerAmpHelpers(ghost);
     },
 
     setupRoutes: function setupRoutes(blogRouter) {
