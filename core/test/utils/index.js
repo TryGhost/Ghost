@@ -549,6 +549,10 @@ login = function login(request) {
                 client_id: 'ghost-admin',
                 client_secret: 'not_available'
             }).then(function then(res) {
+                if (res.statusCode !== 200) {
+                    return reject(res.body);
+                }
+
                 resolve(res.body.access_token);
             }, reject);
     });
