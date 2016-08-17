@@ -1,0 +1,50 @@
+<header class="modal-header">
+    <h1>
+        {{#if theme}}
+            Upload successful!
+        {{else}}
+            Upload a theme
+        {{/if}}
+    </h1>
+</header>
+<a class="close icon-x" href="#" title="Close" {{action "closeModal"}}><span class="hidden">Close</span></a>
+
+<div class="modal-body">
+    {{#if theme}}
+        <p>
+            "{{themeName}}" uploaded successfully.
+            {{#if canActivateTheme}}Do you want to activate it now?{{/if}}
+        </p>
+    {{else if displayOverwriteWarning}}
+        <p>
+            "{{fileThemeName}}" will overwrite an existing theme of the same name. Are you sure?
+        </p>
+    {{else}}
+        {{gh-file-uploader
+            url=uploadUrl
+            paramName="theme"
+            accept=accept
+            labelText="Click to select or drag-and-drop your theme zip file here."
+            validate=(action "validateTheme")
+            uploadStarted=(action "uploadStarted")
+            uploadFinished=(action "uploadFinished")
+            uploadSuccess=(action "uploadSuccess")
+            listenTo="themeUploader"}}
+    {{/if}}
+</div>
+
+<div class="modal-footer">
+    <button {{action "closeModal"}} disabled={{closeDisabled}} class="btn btn-default btn-minor">
+        {{#if theme}}Close{{else}}Cancel{{/if}}
+    </button>
+    {{#if displayOverwriteWarning}}
+        <button {{action "confirmOverwrite"}} class="btn btn-red">
+            Overwrite
+        </button>
+    {{/if}}
+    {{#if canActivateTheme}}
+        <button {{action "activate"}} class="btn btn-green">
+            Activate Now
+        </button>
+    {{/if}}
+</div>

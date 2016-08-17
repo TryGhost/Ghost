@@ -1,0 +1,32 @@
+{{#if themes}}
+    <div class="theme-list">
+        {{#each themes as |theme|}}
+            <div class="theme-list-item {{if theme.active "theme-list-item--active"}}">
+                <div class="theme-list-item-body">
+                    <span class="name">{{theme.label}} {{#if theme.isDefault}}(default){{/if}}</span>
+                </div>
+                <div class="theme-list-item-aside">
+                    {{#if theme.isDeletable}}
+                        <a href="#" {{action deleteTheme theme}} disabled={{theme.active}} class="theme-list-action">
+                            Delete
+                        </a>
+                    {{/if}}
+
+                    <a href="#" {{action downloadTheme theme}} class="theme-list-action">
+                        Download
+                    </a>
+
+                    {{#if theme.active}}
+                        <span class="theme-list-action theme-list-action-activate">Active</span>
+                    {{else}}
+                        <a href="#" {{action activateTheme theme}} class="theme-list-action theme-list-action-activate">
+                            Activate
+                        </a>
+                    {{/if}}
+                </div>
+            </div>
+        {{/each}}
+    </div>
+{{else}}
+    No theme found!
+{{/if}}

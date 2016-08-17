@@ -11,6 +11,11 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
 
     config: injectService(),
 
+    // TODO: replace with a synchronous settings service
+    querySettings() {
+        return this.store.queryRecord('setting', {type: 'blog,theme,private'});
+    },
+
     beforeModel() {
         this._super(...arguments);
         return this.get('session.user')
@@ -20,7 +25,7 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
 
     model() {
         return RSVP.hash({
-            settings: this.store.queryRecord('setting', {type: 'blog,theme,private'}),
+            settings: this.querySettings(),
             availableTimezones: this.get('config.availableTimezones')
         });
     },
@@ -32,7 +37,17 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
 
     actions: {
         save() {
-            this.get('controller').send('save');
+            return this.get('controller').send('save');
+        },
+
+        reloadSettings() {
+            return this.querySettings((settings) => {
+                this.set('controller.model', settings);
+            });
+        },
+
+        activateTheme(theme) {
+            return this.get('controller').send('setTheme', theme);
         }
     }
 });
