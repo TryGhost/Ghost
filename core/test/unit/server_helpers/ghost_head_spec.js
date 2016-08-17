@@ -994,6 +994,38 @@ describe('{{ghost_head}} helper', function () {
                 done();
             }).catch(done);
         });
+
+        it('returns meta tag without injected code for amp context', function (done) {
+            var post = {
+                meta_description: 'blog description',
+                title: 'Welcome to Ghost',
+                image: 'content/images/test-image.png',
+                published_at:  moment('2008-05-31T19:18:15').toISOString(),
+                updated_at: moment('2014-10-06T15:23:54').toISOString(),
+                tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
+                author: {
+                    name: 'Author name',
+                    url: 'http//:testauthorurl.com',
+                    slug: 'Author',
+                    image: 'content/images/test-author-image.png',
+                    website: 'http://authorwebsite.com',
+                    facebook: 'testuser',
+                    twitter: '@testuser'
+                }
+            };
+            helpers.ghost_head.call(
+                {safeVersion: '0.3', context: ['amp', 'post'], post: post},
+                {data: {root: {context: []}}}
+            ).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/" \/>/);
+                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
+                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
+                rendered.string.should.not.match(/<style>body {background: red;}<\/style>/);
+
+                done();
+            }).catch(done);
+        });
     });
 
     describe('with Ajax Helper', function () {

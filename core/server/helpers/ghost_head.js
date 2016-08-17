@@ -138,7 +138,10 @@ function ghost_head(options) {
 
         return api.settings.read({key: 'ghost_head'});
     }).then(function (response) {
-        head.push(response.settings[0].value);
+        // no code injection for amp context!!!
+        if (!_.includes(context, 'amp')) {
+            head.push(response.settings[0].value);
+        }
         return filters.doFilter('ghost_head', head);
     }).then(function (head) {
         return new SafeString(head.join('\n    ').trim());
