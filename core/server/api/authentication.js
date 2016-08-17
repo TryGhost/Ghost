@@ -8,6 +8,7 @@ var _                = require('lodash'),
     globalUtils      = require('../utils'),
     utils            = require('./utils'),
     errors           = require('../errors'),
+    events           = require('../events'),
     config           = require('../config'),
     i18n             = require('../i18n'),
     authentication;
@@ -413,6 +414,8 @@ authentication = {
             var data = {
                 ownerEmail: setupUser.email
             };
+
+            events.emit('setup.completed', setupUser);
 
             return mail.utils.generateContent({data: data, template: 'welcome'})
                 .then(function then(content) {
