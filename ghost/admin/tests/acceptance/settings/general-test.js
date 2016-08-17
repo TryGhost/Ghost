@@ -11,6 +11,8 @@ import run from 'ember-runloop';
 import startApp from '../../helpers/start-app';
 import destroyApp from '../../helpers/destroy-app';
 import { invalidateSession, authenticateSession } from 'ghost-admin/tests/helpers/ember-simple-auth';
+import Mirage from 'ember-cli-mirage';
+import mockThemes from 'ghost-admin/mirage/config/themes';
 
 describe('Acceptance: Settings - General', function () {
     let application;
@@ -124,12 +126,6 @@ describe('Acceptance: Settings - General', function () {
 
             andThen(() => {
                 expect(find('.fullscreen-modal').length).to.equal(0);
-            });
-
-            // renders theme selector correctly
-            andThen(() => {
-                expect(find('#activeTheme select option').length, 'available themes').to.equal(1);
-                expect(find('#activeTheme select option').text().trim()).to.equal('Blog - 1.0');
             });
         });
 
@@ -343,5 +339,161 @@ describe('Acceptance: Settings - General', function () {
             });
         });
 
+        it('allows management of themes', function () {
+            // lists available themes + active theme is highlighted
+
+            // theme upload
+            // - displays modal
+            // - validates mime type
+            // - validates casper.zip
+            // - handles validation errors
+            // - handles upload and close
+            // - handles upload and activate
+            // - displays overwrite warning if theme already exists
+
+            // theme activation
+            // - switches theme
+
+            // theme deletion
+            // - displays modal
+            // - deletes theme and refreshes list
+
+            visit('/settings/general');
+
+            // lists available themes (themes are specified in mirage/fixtures/settings)
+            andThen(() => {
+                expect(
+                    find('.theme-list-item').length,
+                    'shows correct number of themes'
+                ).to.equal(3);
+
+                expect(
+                    find('.theme-list-item:contains("Blog")').hasClass('theme-list-item--active'),
+                    'Blog theme marked as active'
+                );
+            });
+
+            // theme upload displays modal
+            click('a:contains("Upload a theme")');
+            andThen(() => {
+                expect(
+                    find('.fullscreen-modal .modal-content:contains("Upload a theme")').length,
+                    'theme upload modal displayed after button click'
+                ).to.equal(1);
+            });
+
+            // cancelling theme upload closes modal
+            click('.fullscreen-modal button:contains("Cancel")');
+            andThen(() => {
+                expect(
+                    find('.fullscreen-modal').length === 0,
+                    'modal is closed when cancelling'
+                ).to.be.true;
+            });
+
+            // theme upload validates mime type
+            click('a:contains("Upload a theme")');
+            fileUpload('.fullscreen-modal input[type="file"]', ['test'], {type: 'text/csv'});
+            andThen(() => {
+                expect(
+                    find('.fullscreen-modal .failed').text(),
+                    'validation error is shown for invalid mime type'
+                ).to.match(/is not supported/);
+            });
+
+            // theme upload validates casper.zip
+            click('button:contains("Try Again")');
+            fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'casper.zip', type: 'application/zip'});
+            andThen(() => {
+                expect(
+                    find('.fullscreen-modal .failed').text(),
+                    'validation error is shown when uploading casper.zip'
+                ).to.match(/default Casper theme cannot be overwritten/);
+            });
+
+            // theme upload handles validation errors
+            andThen(() => {
+                server.post('/themes/upload/', function () {
+                    return new Mirage.Response(422, {}, {
+                        errors: [{
+                            message: 'Invalid theme'
+                        }]
+                    });
+                });
+            });
+            click('button:contains("Try Again")');
+            fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'error.zip', type: 'application/zip'});
+            andThen(() => {
+                expect(
+                    find('.fullscreen-modal .failed').text().trim(),
+                    'validation error is passed through from server'
+                ).to.equal('Invalid theme');
+
+                // reset to default mirage handlers
+                mockThemes(server);
+            });
+
+            // theme upload handles success then close
+            click('button:contains("Try Again")');
+            fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'theme-1.zip', type: 'application/zip'});
+            andThen(() => {
+                expect(
+                    find('.fullscreen-modal h1').text().trim(),
+                    'modal header after successful upload'
+                ).to.equal('Upload successful!');
+
+                expect(
+                    find('.modal-body').text(),
+                    'modal displays theme name after successful upload'
+                ).to.match(/"Test 1 - 0\.1" uploaded successfully/);
+
+                expect(
+                    find('.theme-list-item').length,
+                    'number of themes in list grows after upload'
+                ).to.equal(4);
+
+                expect(
+                    find('.theme-list-item:contains("Test 1 - 0.1")').hasClass('theme-list-item--active'),
+                    'newly uploaded theme is active'
+                ).to.be.false;
+            });
+            click('.fullscreen-modal button:contains("Close")');
+
+            // theme upload handles success then activate
+            click('a:contains("Upload a theme")');
+            fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'theme-2.zip', type: 'application/zip'});
+            click('button:contains("Activate Now")');
+            andThen(() => {
+                expect(
+                    find('.theme-list-item').length,
+                    'number of themes in list grows after upload and activate'
+                ).to.equal(5);
+
+                expect(
+                    find('.theme-list-item:contains("Test 2 - 0.1")').hasClass('theme-list-item--active'),
+                    'newly uploaded+activated theme is active'
+                ).to.be.true;
+            });
+
+            // theme activation switches active theme
+            click('.theme-list-item:contains("Blog") a:contains("Activate")');
+            andThen(() => {
+                expect(
+                    find('.theme-list-item:contains("Test 2 - 0.1")').hasClass('theme-list-item--active'),
+                    'previously active theme is not active'
+                ).to.be.false;
+
+                expect(
+                    find('.theme-list-item:contains("Blog")').hasClass('theme-list-item--active'),
+                    'activated theme is active'
+                ).to.be.true;
+            });
+
+            // theme deletion displays modal
+
+            // cancelling theme deletion closes modal
+
+            // confirming theme deletion closes modal and refreshes list
+        });
     });
 });
