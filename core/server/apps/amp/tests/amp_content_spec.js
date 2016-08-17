@@ -92,8 +92,7 @@ describe('{{amp_content}} helper', function () {
 
     it('sanitizes remaining and not valid tags', function (done) {
         var testData = {
-                html: '<audio src="https://ia801402.us.archive.org/16/items/EDIS-SRP-0197-06/EDIS-SRP-0197-06.mp3" controls="controls">' +
-                        '<form<input type="text" placeholder="Hi AMP tester"></form>' +
+                html: '<form<input type="text" placeholder="Hi AMP tester"></form>' +
                         '<script>some script here</script>' +
                         '<style> h1 {color:red;} p {color:blue;}</style>',
                 updated_at: 'Wed Jul 27 2016 18:17:22 GMT+0200 (CEST)',
