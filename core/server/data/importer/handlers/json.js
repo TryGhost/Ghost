@@ -8,7 +8,7 @@ var _            = require('lodash'),
 JSONHandler = {
     type: 'data',
     extensions: ['.json'],
-    types: ['application/octet-stream', 'application/json'],
+    contentTypes: ['application/octet-stream', 'application/json'],
     directories: [],
 
     loadFile: function (files, startDir) {

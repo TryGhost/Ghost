@@ -110,22 +110,4 @@ describe('DB API', function () {
             error.errorType.should.eql('NoPermissionError');
         });
     });
-
-    it('import content should fail without file & with unsupported file', function () {
-        return dbAPI.importContent(testUtils.context.admin).then(function () {
-            throw new Error('Import content is not failed without file.');
-        }, function (error) {
-            error.errorType.should.eql('ValidationError');
-
-            var context = _.extend(testUtils.context.admin, {
-                originalname: 'myFile.docx', path: '/my/path/myFile.docx', mimetype: 'application/docx'
-            });
-
-            return dbAPI.importContent(context);
-        }).then(function () {
-            throw new Error('Import content is not failed with unsupported.');
-        }, function (error) {
-            error.errorType.should.eql('UnsupportedMediaTypeError');
-        });
-    });
 });

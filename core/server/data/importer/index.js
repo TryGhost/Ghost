@@ -25,7 +25,7 @@ var _            = require('lodash'),
 
 defaults = {
     extensions: ['.zip'],
-    types: ['application/zip', 'application/x-zip-compressed'],
+    contentTypes: ['application/zip', 'application/x-zip-compressed'],
     directories: []
 };
 
@@ -55,8 +55,8 @@ _.extend(ImportManager.prototype, {
      * Get an array of all the mime types for which we have handlers
      * @returns {string[]}
      */
-    getTypes: function () {
-        return _.flatten(_.union(_.map(this.handlers, 'types'), defaults.types));
+    getContentTypes: function () {
+        return _.flatten(_.union(_.map(this.handlers, 'contentTypes'), defaults.contentTypes));
     },
     /**
      * Get an array of directories for which we have handlers

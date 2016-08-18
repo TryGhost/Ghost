@@ -82,6 +82,7 @@ apiRoutes = function apiRoutes(middleware) {
         middleware.api.labs.subscribers,
         authenticatePrivate,
         middleware.upload.single('subscribersfile'),
+        middleware.validation.upload({type: 'subscribers'}),
         api.http(api.subscribers.importCSV)
     );
     router.get('/subscribers/:id', middleware.api.labs.subscribers, authenticatePrivate, api.http(api.subscribers.read));
@@ -109,7 +110,12 @@ apiRoutes = function apiRoutes(middleware) {
 
     // ## DB
     router.get('/db', authenticatePrivate, api.http(api.db.exportContent));
-    router.post('/db', authenticatePrivate, middleware.upload.single('importfile'), api.http(api.db.importContent));
+    router.post('/db',
+        authenticatePrivate,
+        middleware.upload.single('importfile'),
+        middleware.validation.upload({type: 'db'}),
+        api.http(api.db.importContent)
+    );
     router.del('/db', authenticatePrivate, api.http(api.db.deleteAllContent));
 
     // ## Mail
@@ -138,7 +144,13 @@ apiRoutes = function apiRoutes(middleware) {
     router.post('/authentication/revoke', authenticatePrivate, api.http(api.authentication.revoke));
 
     // ## Uploads
-    router.post('/uploads', authenticatePrivate, middleware.upload.single('uploadimage'), api.http(api.uploads.add));
+    // @TODO: rename endpoint to /images/upload (or similar)
+    router.post('/uploads',
+        authenticatePrivate,
+        middleware.upload.single('uploadimage'),
+        middleware.validation.upload({type: 'images'}),
+        api.http(api.uploads.add)
+    );
 
     // API Router middleware
     router.use(middleware.api.errorHandler);

@@ -302,18 +302,5 @@ describe('Subscribers API', function () {
                     done();
                 });
         });
-
-        it('throws an invalid file error', function (done) {
-            stub.returns(false);
-
-            SubscribersAPI.importCSV(_.merge(testUtils.context.internal, {path: '/somewhere'}))
-                .then(function () {
-                    done(new Error('we expected an error here!'));
-                })
-                .catch(function (err) {
-                    err.message.should.eql('Please select a valid CSV file to import.');
-                    done();
-                });
-        });
     });
 });
