@@ -26,7 +26,7 @@
     "node": "~0.10.0 || ~0.12.0 || ^4.2.0"
   },
   "dependencies": {
-    "amperize": "https://github.com/jbhannah/amperize#98343579b3a350302c6e4a787ad9ac3faae7d143",
+    "amperize": "0.3.0",
     "bcryptjs": "2.3.0",
     "bluebird": "3.4.1",
     "body-parser": "1.15.2",

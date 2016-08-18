@@ -6,7 +6,6 @@
 //
 // Converts normal HTML into AMP HTML with Amperize module and uses a cache to return it from
 // there if available. The cacheId is a combination of `updated_at` and the `slug`.
-
 var hbs                  = require('express-hbs'),
     Promise              = require('bluebird'),
     Amperize             = require('amperize'),
@@ -14,7 +13,9 @@ var hbs                  = require('express-hbs'),
     sanitizeHtml         = require('sanitize-html'),
     amperize             = new Amperize(),
     amperizeCache        = {},
-    allowedAMPTags       = [];
+    allowedAMPTags       = [],
+    cleanHTML,
+    ampHTML;
 
 allowedAMPTags = ['html', 'body', 'article', 'section', 'nav', 'aside', 'h1', 'h2',
                 'h3', 'h4', 'h5', 'h6', 'header', 'footer', 'address', 'p', 'hr',
@@ -22,8 +23,8 @@ allowedAMPTags = ['html', 'body', 'article', 'section', 'nav', 'aside', 'h1', 'h
                 'figcaption', 'div', 'main', 'a', 'em', 'strong', 'small', 's', 'cite',
                 'q', 'dfn', 'abbr', 'data', 'time', 'code', 'var', 'samp', 'kbd', 'sub',
                 'sup', 'i', 'b', 'u', 'mark', 'ruby', 'rb', 'rt', 'rtc', 'rp', 'bdi',
-                'bdo', 'span', 'br', 'wbr', 'ins', 'del', 'source', 'svg', 'g', 'path',
-                'glyph', 'glyphref', 'marker', 'view', 'circle', 'line', 'polygon',
+                'bdo', 'span', 'br', 'wbr', 'ins', 'del', 'source', 'track', 'svg', 'g',
+                'path', 'glyph', 'glyphref', 'marker', 'view', 'circle', 'line', 'polygon',
                 'polyline', 'rect', 'text', 'textpath', 'tref', 'tspan', 'clippath',
                 'filter', 'lineargradient', 'radialgradient', 'mask', 'pattern', 'vkern',
                 'hkern', 'defs', 'use', 'symbol', 'desc', 'title', 'table', 'caption',
@@ -61,13 +62,13 @@ function ampContent() {
         };
 
     return Promise.props(amperizeHTML).then(function (result) {
-        var ampHTML = result.amperize || '',
-            cleanHTML;
+        ampHTML = result.amperize || '';
 
         // let's sanitize our html!!!
         cleanHTML = sanitizeHtml(ampHTML, {
             allowedTags: allowedAMPTags,
-            allowedAttributes: false
+            allowedAttributes: false,
+            selfClosing: ['source', 'track']
         });
 
         return new hbs.handlebars.SafeString(cleanHTML);
