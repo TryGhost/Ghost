@@ -266,23 +266,6 @@ subscribers = {
         var tasks = [];
         options = options || {};
 
-        function validate(options) {
-            options.name = options.originalname;
-            options.type = options.mimetype;
-
-            // Check if a file was provided
-            if (!utils.checkFileExists(options)) {
-                return Promise.reject(new errors.ValidationError(i18n.t('errors.api.db.selectFileToImport')));
-            }
-
-            // Check for valid file type
-            if (!utils.checkFileIsValid(options, ['text/csv','application/csv'], ['.csv'])) {
-                return Promise.reject(new errors.ValidationError(i18n.t('errors.api.subscribers.selectValidFile')));
-            }
-
-            return options;
-        }
-
         function importCSV(options) {
             var filePath = options.path,
                 fulfilled = 0,
@@ -326,7 +309,6 @@ subscribers = {
         }
 
         tasks = [
-            validate,
             utils.handlePermissions(docName, 'add'),
             importCSV
         ];
