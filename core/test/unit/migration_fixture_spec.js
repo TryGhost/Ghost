@@ -162,7 +162,7 @@ describe('Fixtures', function () {
 
                     it('tried to move jQuery AND add a privacy message if any privacy settings are on', function (done) {
                         var notificationsAddStub = sandbox.stub(notifications, 'add').returns(Promise.resolve());
-                        configUtils.set({privacy: {useGoogleFonts: false}});
+                        configUtils.set({privacy: {useGravatar: false}});
                         getObjStub.get.returns('');
 
                         moveJquery({}, loggerStub).then(function () {
