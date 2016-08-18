@@ -121,7 +121,7 @@ describe('{{amp_content}} helper', function () {
         }).catch(done);
     });
 
-    it('can transforms img tags to amp-img', function (done) {
+    it('can transform img tags to amp-img', function (done) {
         var testData = {
                 html: '<img src="https://ghost.org/images/ghost.png" alt="The Ghost Logo" />',
                 updated_at: 'Wed Jul 27 2016 18:17:22 GMT+0200 (CEST)',
@@ -136,6 +136,45 @@ describe('{{amp_content}} helper', function () {
             done();
         }).catch(done);
     });
-    // TODO: stub Amperize to test returned errors
-    it('can handle amperize error');
+
+    it('can transform audio tags to amp-audio', function (done) {
+        var testData = {
+                html: '<audio controls="controls" width="auto" height="50" autoplay="mobile">Your browser does not support the <code>audio</code> element.<source src="foo.wav" type="audio/wav"></audio>' +
+                        '<audio src="http://foo.ogg"><track kind="captions" src="http://foo.en.vtt" srclang="en" label="English"><track kind="captions" src="http://foo.sv.vtt" srclang="sv" label="Svenska"></audio>',
+                updated_at: 'Wed Jul 27 2016 18:17:22 GMT+0200 (CEST)',
+                id: 1
+            },
+            expectedResult = '<amp-audio controls="controls" width="auto" height="50" autoplay="mobile">Your browser does not support the <code>audio</code> element.<source src="foo.wav" type="audio/wav" /></amp-audio>' +
+                                '<amp-audio src="https://foo.ogg"><track kind="captions" src="https://foo.en.vtt" srclang="en" label="English" /><track kind="captions" src="https://foo.sv.vtt" srclang="sv" label="Svenska" /></amp-audio>',
+            ampResult = ampContentHelper.call(testData);
+
+        ampResult.then(function (rendered) {
+            should.exist(rendered);
+            rendered.string.should.equal(expectedResult);
+            done();
+        }).catch(done);
+    });
+
+    it('can handle incomplete HTML tags', function (done) {
+        var testData = {
+                html: '<img><///img>',
+                updated_at: 'Wed Jul 27 2016 18:17:22 GMT+0200 (CEST)',
+                id: 1
+            },
+            ampResult = ampContentHelper.call(testData),
+            sanitizedHTML,
+            ampedHTML;
+
+        ampResult.then(function (rendered) {
+            sanitizedHTML = ampContentHelper.__get__('cleanHTML');
+            ampedHTML = ampContentHelper.__get__('ampHTML');
+            should.exist(rendered);
+            rendered.string.should.equal('');
+            should.exist(ampedHTML);
+            ampedHTML.should.be.equal('<img>');
+            should.exist(sanitizedHTML);
+            sanitizedHTML.should.be.equal('');
+            done();
+        }).catch(done);
+    });
 });

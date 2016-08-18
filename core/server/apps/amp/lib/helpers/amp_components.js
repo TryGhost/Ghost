@@ -25,10 +25,9 @@ function ampComponents() {
         components.push('<script async custom-element="amp-iframe" src="https://cdn.ampproject.org/v0/amp-iframe-0.1.js"></script>');
     }
 
-    // audio will be supported soon by `amperize`
-    // if (html.indexOf('<audio') !== -1) {
-    //     components.push('<script async custom-element="amp-audio" src="https://cdn.ampproject.org/v0/amp-audio-0.1.js"></script>');
-    // }
+    if (html.indexOf('<audio') !== -1) {
+        components.push('<script async custom-element="amp-audio" src="https://cdn.ampproject.org/v0/amp-audio-0.1.js"></script>');
+    }
 
     return new hbs.handlebars.SafeString(components.join('\n'));
 }
