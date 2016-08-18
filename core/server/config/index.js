@@ -225,10 +225,21 @@ ConfigManager.prototype.set = function (config) {
             'signin', 'signout', 'signup', 'user', 'users', 'wp-admin', 'wp-login'],
             protected: ['ghost', 'rss']
         },
+        // used in middleware/validation/upload.js
+        // if we finish the data/importer logic, each type selects an importer
         uploads: {
-            // Used by the upload API to limit uploads to images
-            extensions: ['.jpg', '.jpeg', '.gif', '.png', '.svg', '.svgz'],
-            contentTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml']
+            subscribers: {
+                extensions: ['.csv'],
+                contentTypes: ['text/csv','application/csv']
+            },
+            images: {
+                extensions: ['.jpg', '.jpeg', '.gif', '.png', '.svg', '.svgz'],
+                contentTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml']
+            },
+            db: {
+                extensions: ['.json'],
+                contentTypes: ['application/octet-stream', 'application/json']
+            }
         },
         deprecatedItems: ['updateCheck', 'mail.fromaddress'],
         // create a hash for cache busting assets

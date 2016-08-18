@@ -309,10 +309,10 @@
                 "invalidKey": "Invalid key"
             },
             "db": {
+                "missingFile": "Please select a database file to import.",
+                "invalidFile": "Unsupported file. Please try any of the following formats: {extensions}",
                 "noPermissionToExportData": "You do not have permission to export data (no rights).",
-                "noPermissionToImportData": "You do not have permission to import data (no rights).",
-                "selectFileToImport": "Please select a file to import.",
-                "unsupportedFile": "Unsupported file. Please try any of the following formats: "
+                "noPermissionToImportData": "You do not have permission to import data (no rights)."
             },
             "mail": {
                 "noPermissionToSendEmail": "You do not have permission to send mail.",
@@ -346,9 +346,10 @@
                 "unknownSlugType": "Unknown slug type '{type}'."
             },
             "subscribers": {
+                "missingFile": "Please select a csv.",
+                "invalidFile": "Please select a valid CSV file to import.",
                 "subscriberNotFound": "Subscriber not found.",
-                "subscriberAlreadyExists": "Email address is already subscribed.",
-                "selectValidFile": "Please select a valid CSV file to import."
+                "subscriberAlreadyExists": "Email address is already subscribed."
             },
             "tags": {
                 "tagNotFound": "Tag not found."
@@ -359,9 +360,9 @@
                 "themeDoesNotExist": "Theme does not exist.",
                 "invalidRequest": "Invalid request."
             },
-            "upload": {
-                "pleaseSelectImage": "Please select an image.",
-                "pleaseSelectValidImage": "Please select a valid image."
+            "images": {
+                "missingFile": "Please select an image.",
+                "invalidFile": "Please select a valid image."
             },
             "users": {
                 "userNotFound": "User not found.",
