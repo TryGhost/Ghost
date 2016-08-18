@@ -16,7 +16,6 @@
     border: 0;
     background: transparent;
     color: var(--darkgrey);
-    letter-spacing: -1px;
     font-size: 2.6rem;
     font-weight: bold;
 }

@@ -15,7 +15,6 @@
     text-transform: uppercase;
     text-shadow: none;
     white-space: nowrap;
-    letter-spacing: 1px;
     font-size: 1.1rem;
     line-height: 1.428571429;
     font-weight: 300;
@@ -164,7 +163,6 @@ fieldset[disabled] .btn {
 .btn-minor {
     padding: 8px 15px;
     text-transform: none;
-    letter-spacing: 0;
     font-size: 1.2rem;
 }
 
