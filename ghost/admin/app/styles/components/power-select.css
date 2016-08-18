@@ -28,7 +28,7 @@
 }
 
 .ember-power-select-options:not([role="group"]) {
-    max-height: 200px;
+    max-height: 70vh;
 }
 
 .ember-power-select-search input {
