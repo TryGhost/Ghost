@@ -85,6 +85,7 @@
 .apps-configured > i {
     position: absolute;
     top: 2px;
+    right: 0;
     font-size: 1.1rem;
 }
 
