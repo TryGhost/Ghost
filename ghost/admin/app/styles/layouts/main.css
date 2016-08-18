@@ -49,7 +49,7 @@ body > .ember-view:not(.liquid-target-container) {
 .gh-nav {
     position: relative;
     z-index: 800;
-    flex: 0 0 235px;
+    flex: 0 0 205px;
     display: flex;
     flex-direction: column;
     min-width: 0; /* TODO: This is a bullshit Firefox hack */
@@ -93,10 +93,9 @@ body > .ember-view:not(.liquid-target-container) {
 
 .gh-nav-menu-details-blog {
     overflow: hidden;
-    margin-bottom: 1px;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     line-height: 1.3em;
     font-weight: 600;
 }
@@ -163,8 +162,8 @@ body > .ember-view:not(.liquid-target-container) {
     text-transform: uppercase;
     text-overflow: ellipsis;
     white-space: nowrap;
-    letter-spacing: 1px;
-    font-size: 1.2rem;
+    letter-spacing: 0.05em;
+    font-size: 1.1rem;
     line-height: 1.1em;
 }
 
@@ -174,17 +173,20 @@ body > .ember-view:not(.liquid-target-container) {
     padding: 5px 10px 5px 15px;
     border-radius: 0 4px 4px 0;
     color: var(--darkgrey);
+    opacity: 0.9;
     transition: none;
 }
 
 .gh-nav-list .active {
     background: color(var(--blue) lightness(+10%));
     color: #fff;
+    opacity: 1;
 }
 
 .gh-nav-list a:not(.active):hover {
     background: color(var(--blue) alpha(-85%));
     color: var(--darkgrey);
+    opacity: 1;
 }
 
 .gh-nav-list i {
@@ -307,7 +309,7 @@ body > .ember-view:not(.liquid-target-container) {
     }
 
     .gh-nav-list-h {
-        font-size: 1.4rem;
+        font-size: 1.2rem;
     }
 
     .gh-nav-list i {
@@ -370,7 +372,7 @@ body > .ember-view:not(.liquid-target-container) {
 
 .gh-nav.open .gh-autonav-toggle {
     transition: transform 0.15s;
-    transform: translate3d(-235px,0,0);
+    transform: translate3d(-205px,0,0);
 }
 
 @media (min-width: 801px) {
@@ -380,11 +382,11 @@ body > .ember-view:not(.liquid-target-container) {
         top: 0;
         left: 0;
         z-index: 1000;
-        width: 235px;
+        width: 205px;
         height: 100%;
         transition: transform 0.20s;
         /* translate3d for GPU accelerated animation - http://bit.ly/1EY1Xhx */
-        transform: translate3d(-220px,0,0);
+        transform: translate3d(-180px,0,0);
     }
 
     /* THE FUTURE: Super sexy background blur for Webkit - http://cl.ly/b1rG */
