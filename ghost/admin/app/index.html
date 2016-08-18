@@ -35,10 +35,6 @@
         <meta name="env-{{key}}" content="{{config.value}}" data-type="{{config.type}}" />
     {{/each}}
 
-    {{#if configuration.useGoogleFonts.value}}
-        <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans:400,300,700" />
-    {{/if}}
-
     <link rel="stylesheet" href="{{asset "vendor.css" ghost="true" minifyInProduction="true"}}" />
     <link rel="stylesheet" href="{{asset "ghost.css" ghost="true" minifyInProduction="true"}}" />
 
