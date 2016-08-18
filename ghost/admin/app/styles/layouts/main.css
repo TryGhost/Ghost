@@ -267,18 +267,13 @@ body > .ember-view:not(.liquid-target-container) {
         position: absolute;
         top: 0;
         left: 0;
-        width: 270px;
+        width: 205px;
         height: 100%;
         transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
-        transform: translate3d(-270px, 0px, 0px);
+        transform: translate3d(-205px, 0px, 0px);
     }
     .mobile-menu-expanded .gh-nav {
         transform: translate3d(0,0,0);
-    }
-
-    .gh-nav-list a {
-        padding: 7px 10px 7px 15px;
-        border-radius: 0 4px 4px 0;
     }
 }
 
@@ -386,7 +381,7 @@ body > .ember-view:not(.liquid-target-container) {
         height: 100%;
         transition: transform 0.20s;
         /* translate3d for GPU accelerated animation - http://bit.ly/1EY1Xhx */
-        transform: translate3d(-180px,0,0);
+        transform: translate3d(-190px,0,0);
     }
 
     /* THE FUTURE: Super sexy background blur for Webkit - http://cl.ly/b1rG */
