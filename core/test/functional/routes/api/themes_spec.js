@@ -8,7 +8,6 @@ var testUtils = require('../../../utils'),
     config = require('../../../../../core/server/config'),
     request;
 
-//@TODO: remove test/tmp?
 describe('Themes API', function () {
     var scope = {
         ownerownerAccessToken: '',
