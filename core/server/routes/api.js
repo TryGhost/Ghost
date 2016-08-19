@@ -99,10 +99,6 @@ apiRoutes = function apiRoutes(middleware) {
     // ## Slugs
     router.get('/slugs/:type/:name', authenticatePrivate, api.http(api.slugs.generate));
 
-    // ## Themes
-    router.get('/themes', authenticatePrivate, api.http(api.themes.browse));
-    router.put('/themes/:name', authenticatePrivate, api.http(api.themes.edit));
-
     // ## Notifications
     router.get('/notifications', authenticatePrivate, api.http(api.notifications.browse));
     router.post('/notifications', authenticatePrivate, api.http(api.notifications.add));
