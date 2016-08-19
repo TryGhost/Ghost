@@ -2,6 +2,10 @@ var moment = require('moment'),
     path = require('path');
 
 function StorageBase() {
+    Object.defineProperty(this, 'requiredFns', {
+        value: ['exists', 'save', 'serve'],
+        writable: false
+    });
 }
 
 StorageBase.prototype.getTargetDir = function (baseDir) {

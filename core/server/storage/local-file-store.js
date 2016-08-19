@@ -9,11 +9,12 @@ var serveStatic = require('express').static,
     errors      = require('../errors'),
     config      = require('../config'),
     utils       = require('../utils'),
-    baseStore   = require('./base');
+    BaseStore   = require('./base');
 
 function LocalFileStore() {
+    BaseStore.call(this);
 }
-util.inherits(LocalFileStore, baseStore);
+util.inherits(LocalFileStore, BaseStore);
 
 // ### Save
 // Saves the image to storage (the file system)
