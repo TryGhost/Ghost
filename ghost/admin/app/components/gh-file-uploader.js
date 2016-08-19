@@ -179,6 +179,7 @@ export default Component.extend({
             let validationResult = this._validate(file);
 
             this.set('file', file);
+            invokeAction(this, 'fileSelected', file);
 
             if (validationResult === true) {
                 run.schedule('actions', this, function () {
