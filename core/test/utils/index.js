@@ -237,6 +237,16 @@ fixtures = {
         });
     },
 
+    createUsersWithRolesWithoutOwner: function createUsersWithRolesWithoutOwner() {
+        var usersWithoutOwner = DataGenerator.forKnex.users.slice(1);
+
+        return db.knex('roles').insert(DataGenerator.forKnex.roles).then(function () {
+            return db.knex('users').insert(usersWithoutOwner);
+        }).then(function () {
+            return db.knex('roles_users').insert(DataGenerator.forKnex.roles_users);
+        });
+    },
+
     createExtraUsers: function createExtraUsers() {
         // grab 3 more users
         var extraUsers = DataGenerator.Content.users.slice(2, 5);
@@ -415,6 +425,7 @@ toDoList = {
         return models.Settings.populateDefaults().then(function () { return SettingsAPI.updateSettingsCache(); });
     },
     'users:roles': function createUsersWithRoles() { return fixtures.createUsersWithRoles(); },
+    'users:roles:no-owner': function createUsersWithRoles() { return fixtures.createUsersWithRolesWithoutOwner(); },
     users: function createExtraUsers() { return fixtures.createExtraUsers(); },
     'user:token': function createTokensForUser() { return fixtures.createTokensForUser(); },
     owner: function insertOwnerUser() { return fixtures.insertOwnerUser(); },
