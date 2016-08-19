@@ -522,6 +522,7 @@ doAuth = function doAuth() {
 
     // Remove request from this list
     delete options[0];
+
     // No DB setup, but override the owner
     options = _.merge({'owner:post': true}, _.transform(options, function (result, val) {
         if (val) {
@@ -537,7 +538,7 @@ doAuth = function doAuth() {
 };
 
 login = function login(request) {
-    var user = DataGenerator.forModel.users[0];
+    var user = DataGenerator.forModel.users[request.userIndex || 0];
 
     return new Promise(function (resolve, reject) {
         request.post('/ghost/api/v0.1/authentication/token/')
