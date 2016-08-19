@@ -16,7 +16,7 @@ describe('User API', function () {
         ghost().then(function (ghostServer) {
             request = supertest.agent(ghostServer.rootApp);
         }).then(function () {
-            return testUtils.doAuth(request);
+            return testUtils.doAuth(request, 'users:roles:no-owner');
         }).then(function (token) {
             ownerAccessToken = token;
 
@@ -38,7 +38,9 @@ describe('User API', function () {
     describe('As Owner', function () {
         describe('Browse', function () {
             it('returns dates in ISO 8601 format', function (done) {
-                request.get(testUtils.API.getApiQuery('users/'))
+                // @TODO: postgres returns for default oder (last_login DESC) something else then sqlite
+                // @TODO: maybe related to https://github.com/TryGhost/Ghost/issues/6104
+                request.get(testUtils.API.getApiQuery('users/?order=id%20ASC'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -52,12 +54,15 @@ describe('User API', function () {
                         should.exist(jsonResponse.users);
                         testUtils.API.checkResponse(jsonResponse, 'users');
 
-                        jsonResponse.users.should.have.length(1);
+                        jsonResponse.users.should.have.length(4);
                         testUtils.API.checkResponse(jsonResponse.users[0], 'user');
-
                         testUtils.API.isISO8601(jsonResponse.users[0].last_login).should.be.true();
                         testUtils.API.isISO8601(jsonResponse.users[0].created_at).should.be.true();
                         testUtils.API.isISO8601(jsonResponse.users[0].updated_at).should.be.true();
+
+                        testUtils.API.isISO8601(jsonResponse.users[2].last_login).should.be.true();
+                        testUtils.API.isISO8601(jsonResponse.users[2].created_at).should.be.true();
+                        testUtils.API.isISO8601(jsonResponse.users[2].updated_at).should.be.true();
 
                         done();
                     });
@@ -79,7 +84,7 @@ describe('User API', function () {
                         should.exist(jsonResponse.users);
                         testUtils.API.checkResponse(jsonResponse, 'users');
 
-                        jsonResponse.users.should.have.length(1);
+                        jsonResponse.users.should.have.length(4);
                         testUtils.API.checkResponse(jsonResponse.users[0], 'user');
                         done();
                     });
@@ -101,7 +106,7 @@ describe('User API', function () {
                         should.exist(jsonResponse.users);
                         testUtils.API.checkResponse(jsonResponse, 'users');
 
-                        jsonResponse.users.should.have.length(1);
+                        jsonResponse.users.should.have.length(4);
                         testUtils.API.checkResponse(jsonResponse.users[0], 'user', 'roles');
                         done();
                     });
@@ -132,7 +137,7 @@ describe('User API', function () {
             });
 
             it('can retrieve a user by id', function (done) {
-                request.get(testUtils.API.getApiQuery('users/1/'))
+                request.get(testUtils.API.getApiQuery('users/2/'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -391,19 +396,44 @@ describe('User API', function () {
     });
 
     describe('As Editor', function () {
-        it('can\'t edit a user', function (done) {
-            request.get(testUtils.API.getApiQuery('users/me/'))
-                .set('Authorization', 'Bearer ' + editorAccessToken)
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(401)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+        describe('success cases', function () {
+            it('can edit himself', function (done) {
+                request.put(testUtils.API.getApiQuery('users/3/'))
+                    .set('Authorization', 'Bearer ' + editorAccessToken)
+                    .send({
+                        users: [{id: 3, name: 'test'}]
+                    })
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .end(function (err) {
+                        if (err) {
+                            return done(err);
+                        }
 
-                    done();
-                });
+                        done();
+                    });
+            });
+        });
+
+        describe('error cases', function () {
+            it('can\'t edit the owner', function (done) {
+                request.put(testUtils.API.getApiQuery('users/1/'))
+                    .set('Authorization', 'Bearer ' + editorAccessToken)
+                    .send({
+                        users: [{id: 1}]
+                    })
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(403)
+                    .end(function (err) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        done();
+                    });
+            });
         });
     });
 });
