@@ -78,11 +78,31 @@ ConfigManager.prototype.init = function (rawConfig) {
     // just the object appropriate for this NODE_ENV
     self.set(rawConfig);
 
-    return Promise.all([readThemes(self._config.paths.themePath), readDirectory(self._config.paths.appPath)]).then(function (paths) {
-        self._config.paths.availableThemes = paths[0];
-        self._config.paths.availableApps = paths[1];
-        return self._config;
-    });
+    return self.loadThemes()
+        .then(function () {
+            return self.loadApps();
+        })
+        .then(function () {
+            return self._config;
+        });
+};
+
+ConfigManager.prototype.loadThemes = function () {
+    var self = this;
+
+    return readThemes(self._config.paths.themePath)
+        .then(function (result) {
+            self._config.paths.availableThemes = result;
+        });
+};
+
+ConfigManager.prototype.loadApps = function () {
+    var self = this;
+
+    return readDirectory(self._config.paths.appPath)
+        .then(function (result) {
+            self._config.paths.availableApps = result;
+        });
 };
 
 /**
@@ -250,7 +270,7 @@ ConfigManager.prototype.set = function (config) {
         uploads: {
             subscribers: {
                 extensions: ['.csv'],
-                contentTypes: ['text/csv','application/csv']
+                contentTypes: ['text/csv', 'application/csv']
             },
             images: {
                 extensions: ['.jpg', '.jpeg', '.gif', '.png', '.svg', '.svgz'],
@@ -259,6 +279,10 @@ ConfigManager.prototype.set = function (config) {
             db: {
                 extensions: ['.json'],
                 contentTypes: ['application/octet-stream', 'application/json']
+            },
+            themes: {
+                extensions: ['.zip'],
+                contentTypes: ['application/zip']
             }
         },
         deprecatedItems: ['updateCheck', 'mail.fromaddress'],
