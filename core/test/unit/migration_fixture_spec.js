@@ -1,24 +1,26 @@
-var should  = require('should'),
-    sinon   = require('sinon'),
-    _       = require('lodash'),
-    moment  = require('moment'),
-    rewire  = require('rewire'),
+var should = require('should'),
+    sinon = require('sinon'),
+    _ = require('lodash'),
+    moment = require('moment'),
+    rewire = require('rewire'),
     Promise = require('bluebird'),
 
     // Stuff we are testing
-    configUtils   = require('../utils/configUtils'),
-    models        = require('../../server/models'),
-    api           = require('../../server/api'),
+    configUtils = require('../utils/configUtils'),
+    models = require('../../server/models'),
+    api = require('../../server/api'),
+    permissions = require('../../server/permissions'),
     notifications = require('../../server/api/notifications'),
-    versioning    = require('../../server/data/schema/versioning'),
-    update        = rewire('../../server/data/migration/fixtures/update'),
-    populate      = rewire('../../server/data/migration/fixtures/populate'),
-    fixtureUtils  = require('../../server/data/migration/fixtures/utils'),
-    fixtures004   = require('../../server/data/migration/fixtures/004'),
-    fixtures005   = require('../../server/data/migration/fixtures/005'),
-    fixtures006   = require('../../server/data/migration/fixtures/006'),
+    versioning = require('../../server/data/schema/versioning'),
+    update = rewire('../../server/data/migration/fixtures/update'),
+    populate = rewire('../../server/data/migration/fixtures/populate'),
+    fixtureUtils = require('../../server/data/migration/fixtures/utils'),
+    fixtures004 = require('../../server/data/migration/fixtures/004'),
+    fixtures005 = require('../../server/data/migration/fixtures/005'),
+    fixtures006 = require('../../server/data/migration/fixtures/006'),
+    fixtures007 = require('../../server/data/migration/fixtures/007'),
 
-    sandbox       = sinon.sandbox.create();
+    sandbox = sinon.sandbox.create();
 
 describe('Fixtures', function () {
     var loggerStub, transactionStub;
@@ -72,7 +74,7 @@ describe('Fixtures', function () {
 
                 sequenceStub.returns(Promise.resolve([]));
 
-                update(tasks, loggerStub, {transacting:transactionStub}).then(function (result) {
+                update(tasks, loggerStub, {transacting: transactionStub}).then(function (result) {
                     should.exist(result);
 
                     loggerStub.info.calledOnce.should.be.true();
@@ -490,7 +492,7 @@ describe('Fixtures', function () {
                             loggerStub.info.calledOnce.should.be.true();
                             // gets called because we're stubbing to return an empty array
                             loggerStub.warn.calledOnce.should.be.true();
-                            sinon.assert.callOrder(loggerStub.info, postAllStub, postCollStub.mapThen,  postObjStub.load);
+                            sinon.assert.callOrder(loggerStub.info, postAllStub, postCollStub.mapThen, postObjStub.load);
 
                             done();
                         }).catch(done);
@@ -932,7 +934,7 @@ describe('Fixtures', function () {
 
                 sequenceStub.returns(Promise.resolve([]));
 
-                update(tasks, loggerStub, {transacting:transactionStub}).then(function (result) {
+                update(tasks, loggerStub, {transacting: transactionStub}).then(function (result) {
                     should.exist(result);
 
                     loggerStub.info.calledOnce.should.be.true();
@@ -1099,6 +1101,72 @@ describe('Fixtures', function () {
                 });
             });
         });
+
+        describe('Update to 007', function () {
+            it('should call all the 007 fixture upgrades', function (done) {
+                // Setup
+                // Create a new stub, this will replace sequence, so that db calls don't actually get run
+                var sequenceStub = sandbox.stub(),
+                    sequenceReset = update.__set__('sequence', sequenceStub),
+                    tasks = versioning.getUpdateFixturesTasks('007', loggerStub);
+
+                sequenceStub.returns(Promise.resolve([]));
+
+                update(tasks, loggerStub, {transacting: transactionStub}).then(function (result) {
+                    should.exist(result);
+
+                    loggerStub.info.calledOnce.should.be.true();
+                    loggerStub.warn.called.should.be.false();
+
+                    sequenceStub.calledOnce.should.be.true();
+
+                    sequenceStub.firstCall.calledWith(sinon.match.array, sinon.match.object, loggerStub).should.be.true();
+                    sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(1);
+                    sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'addThemePermissions');
+
+                    // Reset
+                    sequenceReset();
+                    done();
+                }).catch(done);
+            });
+
+            describe('Tasks:', function () {
+                it('should have tasks for 007', function () {
+                    should.exist(fixtures007);
+                    fixtures007.should.be.an.Array().with.lengthOf(1);
+                });
+
+                describe('01-addThemePermissions', function () {
+                    var updateThemePermissions = fixtures007[0];
+
+                    before(function () {
+                        sandbox.stub(models.Permission, 'findAll').returns(Promise.resolve([]));
+                        sandbox.stub(models.Permission, 'add').returns(Promise.resolve([]));
+                        sandbox.stub(models.Permission, 'findOne', function (options) {
+                            if (['Download themes', 'Upload themes'].indexOf(options.name) !== -1) {
+                                return Promise.resolve(null);
+                            }
+
+                            return Promise.resolve({found: true});
+                        });
+                        sandbox.stub(models.Role, 'findOne').returns(Promise.resolve());
+                        sandbox.stub(models.Role, 'findAll').returns(Promise.resolve([]));
+                        sandbox.spy(permissions, 'init');
+                    });
+
+                    it('ensure permissions get updates', function (done) {
+                        updateThemePermissions({context: {internal: true}}, loggerStub)
+                            .then(function () {
+                                //upload and download permission
+                                models.Permission.add.callCount.should.eql(2);
+                                permissions.init.calledOnce.should.eql(true);
+                                done();
+                            })
+                            .catch(done);
+                    });
+                });
+            });
+        });
     });
 
     describe('Populate fixtures', function () {
@@ -1111,14 +1179,14 @@ describe('Fixtures', function () {
                 clientAddStub = sandbox.stub(models.Client, 'add').returns(Promise.resolve()),
                 permsAddStub = sandbox.stub(models.Permission, 'add').returns(Promise.resolve()),
 
-            // Existence checks
+                // Existence checks
                 postOneStub = sandbox.stub(models.Post, 'findOne').returns(Promise.resolve()),
                 tagOneStub = sandbox.stub(models.Tag, 'findOne').returns(Promise.resolve()),
                 roleOneStub = sandbox.stub(models.Role, 'findOne').returns(Promise.resolve()),
                 clientOneStub = sandbox.stub(models.Client, 'findOne').returns(Promise.resolve()),
                 permOneStub = sandbox.stub(models.Permission, 'findOne').returns(Promise.resolve()),
 
-            // Relations
+                // Relations
                 fromItem = {
                     related: sandbox.stub().returnsThis(),
                     findWhere: sandbox.stub().returns({})
@@ -1130,7 +1198,7 @@ describe('Fixtures', function () {
                 postsAllStub = sandbox.stub(models.Post, 'findAll').returns(Promise.resolve(modelMethodStub)),
                 tagsAllStub = sandbox.stub(models.Tag, 'findAll').returns(Promise.resolve(modelMethodStub)),
 
-            // Create Owner
+                // Create Owner
                 userAddStub = sandbox.stub(models.User, 'add').returns(Promise.resolve({}));
             roleOneStub.onCall(4).returns(Promise.resolve({id: 1}));
 
