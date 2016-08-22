@@ -80,9 +80,9 @@ describe('Themes API', function () {
                     res.statusCode.should.eql(200);
                     should.exist(res.body.themes);
                     res.body.themes.length.should.eql(1);
-                    should.exist(res.body.themes[0].path);
-                    should.exist(res.body.themes[0].results);
-                    should.exist(res.body.themes[0].results);
+
+                    should.exist(res.body.themes[0].name);
+                    should.exist(res.body.themes[0].package);
 
                     // upload same theme again to force override
                     scope.uploadTheme({themePath: path.join(__dirname, '/../../../utils/fixtures/themes/valid.zip')})
@@ -119,7 +119,7 @@ describe('Themes API', function () {
             request.get(testUtils.API.getApiQuery('themes/casper/download/'))
                 .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
                 .expect('Content-Type', /application\/zip/ )
-                .expect('Content-Disposition', 'attachment; filename=theme.zip')
+                .expect('Content-Disposition', 'attachment; filename=casper.zip')
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
