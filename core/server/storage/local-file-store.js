@@ -57,4 +57,8 @@ LocalFileStore.prototype.serve = function () {
     return serveStatic(config.paths.imagesPath, {maxAge: utils.ONE_YEAR_MS, fallthrough: false});
 };
 
+LocalFileStore.prototype.delete = function () {
+    return Promise.reject('not implemented');
+};
+
 module.exports = LocalFileStore;
