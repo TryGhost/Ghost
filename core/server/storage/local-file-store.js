@@ -9,11 +9,12 @@ var serveStatic = require('express').static,
     errors      = require('../errors'),
     config      = require('../config'),
     utils       = require('../utils'),
-    baseStore   = require('./base');
+    BaseStore   = require('./base');
 
 function LocalFileStore() {
+    BaseStore.call(this);
 }
-util.inherits(LocalFileStore, baseStore);
+util.inherits(LocalFileStore, BaseStore);
 
 // ### Save
 // Saves the image to storage (the file system)
@@ -54,6 +55,10 @@ LocalFileStore.prototype.serve = function () {
     // For some reason send divides the max age number by 1000
     // Fallthrough: false ensures that if an image isn't found, it automatically 404s
     return serveStatic(config.paths.imagesPath, {maxAge: utils.ONE_YEAR_MS, fallthrough: false});
+};
+
+LocalFileStore.prototype.delete = function () {
+    return Promise.reject('not implemented');
 };
 
 module.exports = LocalFileStore;

@@ -1,5 +1,7 @@
 var errors = require('../errors'),
     config = require('../config'),
+    Base = require('./base'),
+    _ = require('lodash'),
     storage = {};
 
 /**
@@ -33,9 +35,19 @@ function getStorage(type) {
         }
     }
 
-    // TODO: determine if storage has all the necessary methods.
-    // Instantiate and cache the storage module instance.
     storage[storageChoice] = new storage[storageChoice](storageConfig);
+
+    if (!(storage[storageChoice] instanceof Base)) {
+        throw new errors.IncorrectUsage('Your storage adapter does not inherit from the Storage Base.');
+    }
+
+    if (!storage[storageChoice].requiredFns) {
+        throw new errors.IncorrectUsage('Your storage adapter does not provide the minimum required functions.');
+    }
+
+    if (_.xor(storage[storageChoice].requiredFns, Object.keys(_.pick(Object.getPrototypeOf(storage[storageChoice]), storage[storageChoice].requiredFns))).length) {
+        throw new errors.IncorrectUsage('Your storage adapter does not provide the minimum required functions.');
+    }
 
     return storage[storageChoice];
 }

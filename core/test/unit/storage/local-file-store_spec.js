@@ -4,10 +4,10 @@ var fs              = require('fs-extra'),
     should          = require('should'),
     sinon           = require('sinon'),
     _               = require('lodash'),
-    LocalFileStore  = require('../../server/storage/local-file-store'),
+    LocalFileStore  = require('../../../server/storage/local-file-store'),
     localFileStore,
 
-    configUtils     = require('../utils/configUtils');
+    configUtils     = require('../../utils/configUtils');
 
 // To stop jshint complaining
 should.equal(true, true);
