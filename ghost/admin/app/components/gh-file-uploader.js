@@ -9,7 +9,8 @@ import { invoke, invokeAction } from 'ember-invoke-action';
 import {
     isVersionMismatchError,
     isRequestEntityTooLargeError,
-    isUnsupportedMediaTypeError
+    isUnsupportedMediaTypeError,
+    UnsupportedMediaTypeError
 } from 'ghost-admin/services/ajax';
 
 export default Component.extend({
@@ -20,6 +21,8 @@ export default Component.extend({
     labelText: 'Select or drag-and-drop a file',
     url: null,
     paramName: 'file',
+    accept: 'text/csv',
+    validate: null,
 
     file: null,
     response: null,
@@ -148,12 +151,42 @@ export default Component.extend({
         invokeAction(this, 'uploadFailed', error);
     },
 
+    _validate(file) {
+        if (this.get('validate')) {
+            return invokeAction(this, 'validate', file);
+        } else {
+            return this._defaultValidator(file);
+        }
+    },
+
+    _defaultValidator(file) {
+        let accept = this.get('accept');
+
+        if (!isBlank(accept) && file && accept.indexOf(file.type) === -1) {
+            return new UnsupportedMediaTypeError();
+        }
+
+        return true;
+    },
+
     actions: {
         fileSelected(fileList) {
-            this.set('file', fileList[0]);
-            run.schedule('actions', this, function () {
-                this.generateRequest();
-            });
+            // can't use array destructuring here as FileList is not a strict
+            // array and fails in Safari
+            // jscs:disable requireArrayDestructuring
+            let file = fileList[0];
+            // jscs:enable requireArrayDestructuring
+            let validationResult = this._validate(file);
+
+            this.set('file', file);
+
+            if (validationResult === true) {
+                run.schedule('actions', this, function () {
+                    this.generateRequest();
+                });
+            } else {
+                this._uploadFailed(validationResult);
+            }
         },
 
         reset() {

@@ -15,7 +15,7 @@
     {{#if showUploadForm}}
         {{!-- file selection/drag-n-drop  --}}
         <div class="upload-form">
-            {{#gh-file-input multiple=false alt=description action=(action 'fileSelected') accept="image/gif,image/jpg,image/jpeg,image/png,image/svg+xml"}}
+            {{#gh-file-input multiple=false alt=description action=(action 'fileSelected') accept=accept}}
                 <div class="description">{{description}}</div>
             {{/gh-file-input}}
         </div>

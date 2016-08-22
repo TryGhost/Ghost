@@ -104,7 +104,7 @@ describe('Acceptance: Version Mismatch', function() {
 
             visit('/subscribers');
             click('.btn:contains("Import CSV")');
-            fileUpload('.fullscreen-modal input[type="file"]');
+            fileUpload('.fullscreen-modal input[type="file"]', ['test'], {type: 'text/csv'});
 
             andThen(() => {
                 // alert is shown

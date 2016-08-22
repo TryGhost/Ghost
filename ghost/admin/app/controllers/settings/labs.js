@@ -1,13 +1,17 @@
 import $ from 'jquery';
 import Controller from 'ember-controller';
 import injectService from 'ember-service/inject';
+import {isBlank} from 'ember-utils';
 import {isEmberArray} from 'ember-array/utils';
+import {UnsupportedMediaTypeError} from 'ghost-admin/services/ajax';
 
 export default Controller.extend({
     uploadButtonText: 'Import',
     importErrors: '',
     submitting: false,
     showDeleteAllModal: false,
+
+    importMimeType: 'application/json',
 
     ghostPaths: injectService(),
     notifications: injectService(),
@@ -20,9 +24,15 @@ export default Controller.extend({
             let notifications = this.get('notifications');
             let currentUserId = this.get('session.user.id');
             let dbUrl = this.get('ghostPaths.url').api('db');
+            let accept = this.get('importMimeType');
 
             this.set('uploadButtonText', 'Importing');
             this.set('importErrors', '');
+
+            if (!isBlank(accept) && file && accept.indexOf(file.type) === -1) {
+                this.set('importErrors', [new UnsupportedMediaTypeError()]);
+                return;
+            }
 
             formData.append('importfile', file);
 
