@@ -117,7 +117,7 @@ describe('Themes API', function () {
         });
 
         it('download theme uuid', function (done) {
-            request.get(testUtils.API.getApiQuery('themes/download/?themes[0][uuid]=casper'))
+            request.get(testUtils.API.getApiQuery('themes/casper/download/'))
                 .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
                 .expect('Content-Type', /application\/zip/ )
                 .expect('Content-Disposition', 'attachment; filename=theme.zip')
@@ -258,11 +258,8 @@ describe('Themes API', function () {
             });
 
             it('no permissions to download theme', function (done) {
-                request.get(testUtils.API.getApiQuery('themes/download/'))
+                request.get(testUtils.API.getApiQuery('themes/casper/download/'))
                     .set('Authorization', 'Bearer ' + scope.editorAccessToken)
-                    .send({
-                        themes: [{uuid: 'casper'}]
-                    })
                     .expect(403)
                     .end(function (err) {
                         if (err) {

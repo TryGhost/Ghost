@@ -94,11 +94,7 @@ themes = {
     },
 
     download: function download(options) {
-        if (!_.isArray(options.themes)) {
-            return Promise.reject(new errors.BadRequestError(i18n.t('errors.api.themes.invalidRequest')));
-        }
-
-        var themeName = options.themes[0].uuid,
+        var themeName = options.name,
             theme = config.paths.availableThemes[themeName],
             themePath = config.paths.themePath + '/' + themeName,
             zipName = themeName + '.zip',

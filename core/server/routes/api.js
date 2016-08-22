@@ -100,6 +100,11 @@ apiRoutes = function apiRoutes(middleware) {
     router.get('/slugs/:type/:name', authenticatePrivate, api.http(api.slugs.generate));
 
     // ## Themes
+    router.get('/themes/:name/download',
+        authenticatePrivate,
+        api.http(api.themes.download)
+    );
+
     router.post('/themes/upload',
         authenticatePrivate,
         middleware.upload.single('theme'),
@@ -107,8 +112,10 @@ apiRoutes = function apiRoutes(middleware) {
         api.http(api.themes.upload)
     );
 
-    router.get('/themes/download', authenticatePrivate, api.http(api.themes.download));
-    router.del('/themes/:name', authenticatePrivate, api.http(api.themes.destroy));
+    router.del('/themes/:name',
+        authenticatePrivate,
+        api.http(api.themes.destroy)
+    );
 
     // ## Notifications
     router.get('/notifications', authenticatePrivate, api.http(api.notifications.browse));
