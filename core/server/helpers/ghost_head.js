@@ -81,7 +81,7 @@ function ghost_head(options) {
         context = this.context ? this.context[0] : null,
         useStructuredData = !config.isPrivacyDisabled('useStructuredData'),
         safeVersion = this.safeVersion,
-        referrerPolicy = config.referrerPolicy ? config.referrerPolicy : 'origin-when-cross-origin';
+        referrerPolicy = config.referrerPolicy ? config.referrerPolicy : 'no-referrer-when-downgrade';
 
     return getClient().then(function (client) {
         if (context) {
