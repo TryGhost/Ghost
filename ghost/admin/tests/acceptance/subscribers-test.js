@@ -246,7 +246,7 @@ describe('Acceptance: Subscribers', function() {
             });
 
             click('.btn:contains("Import CSV")');
-            fileUpload('.fullscreen-modal input[type="file"]');
+            fileUpload('.fullscreen-modal input[type="file"]', ['test'], {type: 'text/csv'});
 
             andThen(function () {
                 // modal title changes

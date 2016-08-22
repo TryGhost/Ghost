@@ -19,7 +19,7 @@
                 <div class="form-group">
                     <label>Import</label>
                     {{partial "import-errors"}}
-                    {{gh-file-upload id="importfile" classNames="flex" uploadButtonText=uploadButtonText onUpload="onUpload"}}
+                    {{gh-file-upload id="importfile" classNames="flex" uploadButtonText=uploadButtonText onUpload="onUpload" acceptEncoding=importMimeType}}
                     <p>Import from another Ghost installation. If you import a user, this will replace the current user & log you out.</p>
                 </div>
             </fieldset>
