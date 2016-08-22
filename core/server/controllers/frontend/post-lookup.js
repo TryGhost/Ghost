@@ -5,10 +5,10 @@ var _          = require('lodash'),
     api        = require('../../api'),
     config     = require('../../config'),
 
-    editFormat = '/:edit?';
+    optionsFormat = '/:options?';
 
-function getEditFormat(linkStructure) {
-    return linkStructure.replace(/\/$/, '') + editFormat;
+function getOptionsFormat(linkStructure) {
+    return linkStructure.replace(/\/$/, '') + optionsFormat;
 }
 
 function postLookup(postUrl) {
@@ -16,14 +16,15 @@ function postLookup(postUrl) {
         postPermalink = config.theme.permalinks,
         pagePermalink = '/:slug/',
         isEditURL = false,
+        isAmpURL = false,
         matchFuncPost,
         matchFuncPage,
         postParams,
         params;
 
     // Convert saved permalink into a path-match function
-    matchFuncPost = routeMatch(getEditFormat(postPermalink));
-    matchFuncPage = routeMatch(getEditFormat(pagePermalink));
+    matchFuncPost = routeMatch(getOptionsFormat(postPermalink));
+    matchFuncPage = routeMatch(getOptionsFormat(pagePermalink));
 
     postParams = matchFuncPost(postPath);
 
@@ -36,10 +37,13 @@ function postLookup(postUrl) {
         return Promise.resolve();
     }
 
-    // If params contains edit, and it is equal to 'edit' this is an edit URL
-    if (params.edit && params.edit.toLowerCase() === 'edit') {
+    // If params contains options, and it is equal to 'edit', this is an edit URL
+    // If params contains options, and it is equal to 'amp', this is an amp URL
+    if (params.options && params.options.toLowerCase() === 'edit') {
         isEditURL = true;
-    } else if (params.edit !== undefined) {
+    } else if (params.options && params.options.toLowerCase() === 'amp') {
+        isAmpURL = true;
+    } else if (params.options !== undefined) {
         // Unknown string in URL, return empty
         return Promise.resolve();
     }
@@ -67,9 +71,15 @@ function postLookup(postUrl) {
             return Promise.resolve();
         }
 
+        // We don't support AMP for static pages yet
+        if (post.page && isAmpURL) {
+            return Promise.resolve();
+        }
+
         return {
             post: post,
-            isEditURL: isEditURL
+            isEditURL: isEditURL,
+            isAmpURL: isAmpURL
         };
     });
 }

@@ -180,6 +180,62 @@ describe('Frontend Routing', function () {
             });
         });
 
+        describe('AMP post', function () {
+            it('should redirect without slash', function (done) {
+                request.get('/welcome-to-ghost/amp')
+                    .expect('Location', '/welcome-to-ghost/amp/')
+                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect(301)
+                    .end(doEnd(done));
+            });
+
+            it('should redirect uppercase', function (done) {
+                request.get('/Welcome-To-Ghost/AMP/')
+                    .expect('Location', '/welcome-to-ghost/amp/')
+                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect(301)
+                    .end(doEnd(done));
+            });
+
+            it('should respond with html for valid url', function (done) {
+                request.get('/welcome-to-ghost/amp/')
+                    .expect('Content-Type', /html/)
+                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        var $ = cheerio.load(res.text);
+
+                        should.not.exist(res.headers['x-cache-invalidate']);
+                        should.not.exist(res.headers['X-CSRF-Token']);
+                        should.not.exist(res.headers['set-cookie']);
+                        should.exist(res.headers.date);
+
+                        $('title').text().should.equal('Welcome to Ghost');
+                        $('.content .post').length.should.equal(1);
+                        $('.poweredby').text().should.equal('Proudly published with Ghost');
+                        $('body.amp-template').length.should.equal(1);
+                        $('article.post').length.should.equal(1);
+
+                        done();
+                    });
+            });
+
+            it('should not work with date permalinks', function (done) {
+                // get today's date
+                var date  = moment().format('YYYY/MM/DD');
+
+                request.get('/' + date + '/welcome-to-ghost/amp/')
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(404)
+                    .expect(/Page not found/)
+                    .end(doEnd(done));
+            });
+        });
+
         describe('Static assets', function () {
             it('should retrieve theme assets', function (done) {
                 request.get('/assets/css/screen.css')
@@ -260,6 +316,16 @@ describe('Frontend Routing', function () {
 
             it('should 404 for non-edit parameter', function (done) {
                 request.get('/static-page-test/notedit/')
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(404)
+                    .expect(/Page not found/)
+                    .end(doEnd(done));
+            });
+        });
+
+        describe('amp', function () {
+            it('should 404 for amp parameter', function (done) {
+                request.get('/static-page-test/amp/')
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(404)
                     .expect(/Page not found/)
