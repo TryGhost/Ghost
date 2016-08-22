@@ -201,6 +201,11 @@
                     "object_type": "theme"
                 },
                 {
+                    "name": "Delete themes",
+                    "action_type": "destroy",
+                    "object_type": "theme"
+                },
+                {
                     "name": "Browse users",
                     "action_type": "browse",
                     "object_type": "user"

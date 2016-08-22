@@ -108,7 +108,7 @@ apiRoutes = function apiRoutes(middleware) {
     );
 
     router.get('/themes/download', authenticatePrivate, api.http(api.themes.download));
-    //router.del('/themes/:name', authenticatePrivate, api.http(api.themes.destroy));
+    router.del('/themes/:name', authenticatePrivate, api.http(api.themes.destroy));
 
     // ## Notifications
     router.get('/notifications', authenticatePrivate, api.http(api.notifications.browse));
