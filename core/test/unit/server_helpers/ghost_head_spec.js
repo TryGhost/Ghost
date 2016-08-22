@@ -83,7 +83,7 @@ describe('{{ghost_head}} helper', function () {
             ).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/" \/>/);
-                rendered.string.should.match(/<meta name="referrer" content="origin-when-cross-origin" \/>/);
+                rendered.string.should.match(/<meta name="referrer" content="no-referrer-when-downgrade" \/>/);
                 rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
                 rendered.string.should.match(/<meta property="og:type" content="website" \/>/);
                 rendered.string.should.match(/<meta property="og:title" content="Ghost" \/>/);
@@ -135,7 +135,7 @@ describe('{{ghost_head}} helper', function () {
             ).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/about\/" \/>/);
-                rendered.string.should.match(/<meta name="referrer" content="origin-when-cross-origin" \/>/);
+                rendered.string.should.match(/<meta name="referrer" content="no-referrer-when-downgrade" \/>/);
                 rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
                 rendered.string.should.match(/<meta property="og:type" content="website" \/>/);
                 rendered.string.should.match(/<meta property="og:title" content="About" \/>/);
