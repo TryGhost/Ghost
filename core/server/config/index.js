@@ -96,7 +96,6 @@ ConfigManager.prototype.set = function (config) {
         activeStorageAdapter,
         activeSchedulingAdapter,
         contentPath,
-        storagePath,
         schedulingPath,
         subdir,
         assetHash;
@@ -162,11 +161,25 @@ ConfigManager.prototype.set = function (config) {
     this._config.scheduling = this._config.scheduling || {};
     activeSchedulingAdapter = this._config.scheduling.active || defaultSchedulingAdapter;
 
-    // we support custom adapters located in content folder
-    if (activeStorageAdapter === defaultStorageAdapter) {
-        storagePath = path.join(corePath, '/server/storage/');
+    // storage.active can be an object like {images: 'my-custom-image-storage-adapter', themes: 'local-file-storage'}
+    // we ensure that passing a string to storage.active still works, but internal it's always an object
+    if (_.isString(activeStorageAdapter)) {
+        this._config.storage = _.merge(this._config.storage, {
+            active: {
+                images: activeStorageAdapter,
+                themes: defaultStorageAdapter
+            }
+        });
     } else {
-        storagePath = path.join(contentPath, 'storage');
+        // ensure there is a default image storage adapter
+        if (!this._config.storage.active.images) {
+            this._config.storage.active.images = defaultSchedulingAdapter;
+        }
+
+        // ensure there is a default theme storage adapter
+        if (!this._config.storage.active.themes) {
+            this._config.storage.active.themes = defaultSchedulingAdapter;
+        }
     }
 
     if (activeSchedulingAdapter === defaultSchedulingAdapter) {
@@ -184,7 +197,10 @@ ConfigManager.prototype.set = function (config) {
             configExample:    path.join(appRoot, 'config.example.js'),
             corePath:         corePath,
 
-            storage:          path.join(storagePath, activeStorageAdapter),
+            storagePath: {
+                default: path.join(corePath, '/server/storage/'),
+                custom:  path.join(contentPath, 'storage/')
+            },
 
             contentPath:      contentPath,
             themePath:        path.resolve(contentPath, 'themes'),
@@ -204,9 +220,6 @@ ConfigManager.prototype.set = function (config) {
         scheduling: {
             active: activeSchedulingAdapter,
             path: schedulingPath
-        },
-        storage: {
-            active: activeStorageAdapter
         },
         theme: {
             // normalise the URL by removing any trailing slash
