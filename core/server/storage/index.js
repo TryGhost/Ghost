@@ -1,26 +1,39 @@
-var errors  = require('../errors'),
-    config  = require('../config'),
+var errors = require('../errors'),
+    config = require('../config'),
     storage = {};
 
-function getStorage(storageChoice) {
-    var storagePath,
-        storageConfig;
+/**
+ * type: images|themes
+ */
+function getStorage(type) {
+    type = type || 'images';
 
-    storageChoice = config.storage.active;
-    storagePath = config.paths.storage;
-    storageConfig = config.storage[storageChoice];
+    var storageChoice = config.storage.active[type],
+        storageConfig = config.storage[storageChoice];
 
+    // CASE: type does not exist
+    if (!storageChoice) {
+        throw new errors.IncorrectUsage('No adapter found for type: ' + type);
+    }
+
+    // cache?
     if (storage[storageChoice]) {
         return storage[storageChoice];
     }
 
+    // CASE: load adapter from custom path  (.../content/storage)
+    // CASE: load adapter from default path (.../server/storage)
     try {
-        // TODO: determine if storage has all the necessary methods.
-        storage[storageChoice] = require(storagePath);
-    } catch (e) {
-        errors.logError(e);
+        storage[storageChoice] = require(config.paths.storagePath.custom + storageChoice);
+    } catch (err1) {
+        try {
+            storage[storageChoice] = require(config.paths.storagePath.default + storageChoice);
+        } catch (err2) {
+            throw err2;
+        }
     }
 
+    // TODO: determine if storage has all the necessary methods.
     // Instantiate and cache the storage module instance.
     storage[storageChoice] = new storage[storageChoice](storageConfig);
 
