@@ -36,7 +36,8 @@ describe('Config', function () {
                     title: 'casper',
                     description: 'casper',
                     logo: 'casper',
-                    cover: 'casper'
+                    cover: 'casper',
+                    timezone: 'Etc/UTC'
                 }
             });
         });
@@ -57,6 +58,35 @@ describe('Config', function () {
             themeConfig.should.have.property('description', 'casper');
             themeConfig.should.have.property('logo', 'casper');
             themeConfig.should.have.property('cover', 'casper');
+            themeConfig.should.have.property('timezone', 'Etc/UTC');
+        });
+    });
+
+    describe('Timezone default', function () {
+        it('should use timezone from settings when set', function () {
+            var themeConfig = config.theme;
+
+            // Check values are as we expect
+            themeConfig.should.have.property('timezone', 'Etc/UTC');
+            themeConfig.should.have.property('url');
+
+            configUtils.set({
+                theme: {
+                    timezone: 'Africa/Cairo'
+                }
+            });
+
+            config.theme.should.have.property('timezone', 'Africa/Cairo');
+            config.theme.should.have.property('url');
+        });
+
+        it('should set theme object with timezone by default', function () {
+            var themeConfig = configUtils.defaultConfig;
+
+            // Check values are as we expect
+            themeConfig.should.have.property('theme');
+            themeConfig.theme.should.have.property('timezone', 'Etc/UTC');
+            themeConfig.theme.should.have.property('url');
         });
     });
 

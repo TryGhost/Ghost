@@ -118,6 +118,15 @@ ConfigManager.prototype.set = function (config) {
         this._config.theme.navigation = config.theme.navigation;
     }
 
+    // Special case for theme.timezone, which should be overridden not merged
+    if (config && config.theme && config.theme.timezone) {
+        this._config.theme.timezone = config.theme.timezone;
+    } else {
+        // until we have set the timezone from settings, we use the default
+        this._config.theme = this._config.theme ? this._config.theme : {};
+        this._config.theme.timezone = 'Etc/UTC';
+    }
+
     // Protect against accessing a non-existant object.
     // This ensures there's always at least a paths object
     // because it's referenced in multiple places.
@@ -201,10 +210,7 @@ ConfigManager.prototype.set = function (config) {
         },
         theme: {
             // normalise the URL by removing any trailing slash
-            url: this._config.url ? this._config.url.replace(/\/$/, '') : '',
-
-            // default timezone
-            timezone: 'Etc/UTC'
+            url: this._config.url ? this._config.url.replace(/\/$/, '') : ''
         },
         routeKeywords: {
             tag: 'tag',
