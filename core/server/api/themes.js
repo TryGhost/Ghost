@@ -28,7 +28,7 @@ themes = {
             path: options.path,
             name: options.originalname,
             shortName: options.originalname.split('.zip')[0]
-        }, theme, store = storage.getStorage();
+        }, theme, storageAdapter = storage.getStorage('themes');
 
         // check if zip name is casper.zip
         if (zip.name === 'casper.zip') {
@@ -65,7 +65,7 @@ themes = {
                 throw validationErrors;
             })
             .then(function () {
-                return store.exists(config.paths.themePath + '/' + zip.shortName);
+                return storageAdapter.exists(config.paths.themePath + '/' + zip.shortName);
             })
             .then(function (themeExists) {
                 // delete existing theme
@@ -84,7 +84,7 @@ themes = {
             })
             .then(function () {
                 // store extracted theme
-                return store.save({
+                return storageAdapter.save({
                     name: zip.shortName,
                     path: theme.path
                 }, config.paths.themePath);
