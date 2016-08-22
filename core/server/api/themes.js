@@ -65,7 +65,6 @@ themes = {
                 throw validationErrors;
             })
             .then(function () {
-                //@TODO: what if store.exists fn is undefined?
                 return store.exists(config.paths.themePath + '/' + zip.shortName);
             })
             .then(function (themeExists) {
