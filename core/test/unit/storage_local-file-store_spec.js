@@ -149,6 +149,35 @@ describe('Local File System Storage', function () {
         }).catch(done);
     });
 
+    describe('validate extentions', function () {
+        it('name contains a .\d as extension', function (done) {
+            localFileStore.save({
+                name: 'test-1.1.1'
+            }).then(function (url) {
+                should.exist(url.match(/test-1.1.1/));
+                done();
+            }).catch(done);
+        });
+
+        it('name contains a .zip as extension', function (done) {
+            localFileStore.save({
+                name: 'test-1.1.1.zip'
+            }).then(function (url) {
+                should.exist(url.match(/test-1.1.1.zip/));
+                done();
+            }).catch(done);
+        });
+
+        it('name contains a .jpeg as extension', function (done) {
+            localFileStore.save({
+                name: 'test-1.1.1.jpeg'
+            }).then(function (url) {
+                should.exist(url.match(/test-1.1.1.jpeg/));
+                done();
+            }).catch(done);
+        });
+    });
+
     describe('when a custom content path is used', function () {
         beforeEach(function () {
             var configPaths = configUtils.defaultConfig.paths;
