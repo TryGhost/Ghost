@@ -2,11 +2,8 @@
 // RESTful API for Themes
 var Promise = require('bluebird'),
     _ = require('lodash'),
-    os = require('os'),
     gscan = require('gscan'),
-    uuid = require('uuid'),
     fs = require('fs-extra'),
-    execFileAsPromise = Promise.promisify(require('child_process').execFile),
     config = require('../config'),
     errors = require('../errors'),
     storage = require('../storage'),
@@ -124,10 +121,6 @@ themes = {
     download: function download(options) {
         var themeName = options.name,
             theme = config.paths.availableThemes[themeName],
-            zipName = themeName + '.zip',
-            zipPath = config.paths.themePath + '/' + zipName,
-            themePath = config.paths.themePath + '/' + themeName,
-            tempZipPath,
             storageAdapter = storage.getStorage('themes');
 
         if (!theme) {
@@ -136,38 +129,7 @@ themes = {
 
         return utils.handlePermissions('themes', 'read')(options)
             .then(function () {
-                return storageAdapter.exists(zipPath);
-            })
-            .then(function (zipExists) {
-                // zip theme and store in tmppath
-                if (!zipExists) {
-                    tempZipPath = os.tmpdir() + '/' + uuid.v1() + '.zip';
-                    return execFileAsPromise('zip', ['-r', '-j', tempZipPath, themePath]);
-                }
-            })
-            .then(function () {
-                // CASE: zip already exists
-                if (!tempZipPath) {
-                    return;
-                }
-
-                return storageAdapter.save({
-                    name: zipName,
-                    path: tempZipPath
-                }, config.paths.themePath);
-            })
-            .then(function () {
                 return storageAdapter.serve({isTheme: true, name: themeName});
-            })
-            .finally(function () {
-                // delete temp zip file
-                // happens in background
-                if (tempZipPath) {
-                    Promise.promisify(fs.remove)(tempZipPath)
-                        .catch(function (err) {
-                            errors.logError(err);
-                        });
-                }
             });
     },
 

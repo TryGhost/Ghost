@@ -6,6 +6,7 @@ var serveStatic = require('express').static,
     path = require('path'),
     util = require('util'),
     Promise = require('bluebird'),
+    execFileAsPromise = Promise.promisify(require('child_process').execFile),
     errors = require('../errors'),
     config = require('../config'),
     utils = require('../utils'),
@@ -53,25 +54,37 @@ LocalFileStore.prototype.exists = function (filename) {
 
 // middleware for serving the files
 LocalFileStore.prototype.serve = function (options) {
+    var self = this;
     options = options || {};
 
     // CASE: serve themes
     // serveStatic can't be used to serve themes, because
     // download files depending on the route (see `send` npm module)
     if (options.isTheme) {
-        return function downloadTheme(req, res) {
+        return function downloadTheme(req, res, next) {
             var themeName = options.name,
                 zipName = themeName + '.zip',
                 zipPath = config.paths.themePath + '/' + zipName,
                 stream;
 
-            res.set({
-                'Content-disposition': 'attachment; filename={themeName}.zip'.replace('{themeName}', themeName),
-                'Content-Type': 'application/zip'
-            });
+            self.exists(zipPath)
+                .then(function (zipExists) {
+                    if (!zipExists) {
+                        return execFileAsPromise('zip', ['-r', zipName, themeName], {cwd: config.paths.themePath});
+                    }
+                })
+                .then(function () {
+                    res.set({
+                        'Content-disposition': 'attachment; filename={themeName}.zip'.replace('{themeName}', themeName),
+                        'Content-Type': 'application/zip'
+                    });
 
-            stream = fs.createReadStream(zipPath);
-            stream.pipe(res);
+                    stream = fs.createReadStream(zipPath);
+                    stream.pipe(res);
+                })
+                .catch(function (err) {
+                    next(err);
+                });
         };
     } else {
         // CASE: serve images
