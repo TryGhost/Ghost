@@ -18,10 +18,27 @@ export default function mockSettings(server) {
     });
 
     server.put('/settings/', function (db, request) {
+        console.log('/settings/', request.requestBody);
         let newSettings = JSON.parse(request.requestBody).settings;
 
         db.settings.remove();
         db.settings.insert(newSettings);
+
+        let [activeTheme] = db.settings.where({key: 'activeTheme'});
+        let [availableThemes] = db.settings.where({key: 'availableThemes'});
+
+        console.log('activeTheme', activeTheme);
+        console.log('availableThemes', availableThemes);
+
+        availableThemes.value.forEach((theme) => {
+            if (theme.name === activeTheme.value) {
+                theme.active = true;
+            } else {
+                theme.active = false;
+            }
+        });
+
+        db.settings.update(availableThemes.id, availableThemes);
 
         return {
             meta: {},

@@ -32,6 +32,7 @@ export default Component.extend({
     uploadPercentage: 0,
 
     ajax: injectService(),
+    eventBus: injectService(),
     notifications: injectService(),
 
     formData: computed('file', function () {
@@ -56,6 +57,32 @@ export default Component.extend({
 
         return htmlSafe(`width: ${width}`);
     }),
+
+    // we can optionally listen to a named event bus channel so that the upload
+    // process can be triggered externally
+    init() {
+        this._super(...arguments);
+        let listenTo = this.get('listenTo');
+
+        if (listenTo) {
+            this.get('eventBus').subscribe(`${listenTo}:upload`, this, function (file) {
+                if (file) {
+                    this.set('file', file);
+                }
+                this.send('upload');
+            });
+        }
+    },
+
+    willDestroyElement() {
+        let listenTo = this.get('listenTo');
+
+        this._super(...arguments);
+
+        if (listenTo) {
+            this.get('eventBus').unsubscribe(`${listenTo}:upload`);
+        }
+    },
 
     dragOver(event) {
         if (!event.dataTransfer) {
@@ -142,7 +169,7 @@ export default Component.extend({
         } else if (isRequestEntityTooLargeError(error)) {
             message = 'The file you uploaded was larger than the maximum file size your server allows.';
         } else if (error.errors && !isBlank(error.errors[0].message)) {
-            message = error.errors[0].message;
+            message = htmlSafe(error.errors[0].message);
         } else {
             message = 'Something went wrong :(';
         }
@@ -179,6 +206,7 @@ export default Component.extend({
             let validationResult = this._validate(file);
 
             this.set('file', file);
+            invokeAction(this, 'fileSelected', file);
 
             if (validationResult === true) {
                 run.schedule('actions', this, function () {
@@ -186,6 +214,12 @@ export default Component.extend({
                 });
             } else {
                 this._uploadFailed(validationResult);
+            }
+        },
+
+        upload() {
+            if (this.get('file')) {
+                this.generateRequest();
             }
         },
 

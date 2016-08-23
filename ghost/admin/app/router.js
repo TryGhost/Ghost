@@ -44,7 +44,9 @@ GhostRouter.map(function () {
         this.route('user', {path: ':user_slug'});
     });
 
-    this.route('settings.general', {path: '/settings/general'});
+    this.route('settings.general', {path: '/settings/general'}, function () {
+        this.route('uploadtheme');
+    });
     this.route('settings.tags', {path: '/settings/tags'}, function () {
         this.route('tag', {path: ':tag_slug'});
         this.route('new');
