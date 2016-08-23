@@ -1,3 +1,5 @@
+import Mirage from 'ember-cli-mirage';
+
 let themeCount = 1;
 
 export default function mockThemes(server) {
@@ -23,5 +25,18 @@ export default function mockThemes(server) {
         return {
             themes: [theme]
         };
+    });
+
+    server.del('/themes/:theme/', function (db, request) {
+        let [availableThemes] = db.settings.where({key: 'availableThemes'});
+
+        availableThemes.value = availableThemes.value.filter((theme) => {
+            return theme.name !== request.params.theme;
+        });
+
+        db.settings.remove({key: 'availableThemes'});
+        db.settings.insert(availableThemes);
+
+        return new Mirage.Response(204, {}, null);
     });
 }
