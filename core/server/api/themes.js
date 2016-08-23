@@ -19,6 +19,11 @@ var Promise = require('bluebird'),
  */
 themes = {
     upload: function upload(options) {
+        options = options || {};
+
+        // consistent filename uploads
+        options.originalname = options.originalname.toLowerCase();
+
         var zip = {
             path: options.path,
             name: options.originalname,
