@@ -1137,28 +1137,33 @@ describe('Fixtures', function () {
                 });
 
                 describe('01-addThemePermissions', function () {
-                    var updateThemePermissions = fixtures007[0];
+                    var updateThemePermissions = fixtures007[0], addModelStub, relationResult, addRelationStub, modelResult;
 
                     before(function () {
-                        sandbox.stub(models.Permission, 'findAll').returns(Promise.resolve([]));
-                        sandbox.stub(models.Permission, 'add').returns(Promise.resolve([]));
-                        sandbox.stub(models.Permission, 'findOne', function (options) {
-                            if (['Download themes', 'Upload themes'].indexOf(options.name) !== -1) {
-                                return Promise.resolve(null);
-                            }
+                        modelResult = {expected: 1, done: 1};
+                        addModelStub = sandbox.stub(fixtureUtils, 'addFixturesForModel')
+                            .returns(Promise.resolve(modelResult));
 
-                            return Promise.resolve({found: true});
-                        });
-                        sandbox.stub(models.Role, 'findOne').returns(Promise.resolve());
-                        sandbox.stub(models.Role, 'findAll').returns(Promise.resolve([]));
-                        sandbox.spy(permissions, 'init');
+                        relationResult = {expected: 1, done: 1};
+                        addRelationStub = sandbox.stub(fixtureUtils, 'addFixturesForRelation')
+                            .returns(Promise.resolve(relationResult));
+
+                        sandbox.stub(permissions, 'init').returns(Promise.resolve());
                     });
 
                     it('ensure permissions get updates', function (done) {
                         updateThemePermissions({context: {internal: true}}, loggerStub)
                             .then(function () {
-                                //upload and download permission
-                                models.Permission.add.callCount.should.eql(2);
+                                addModelStub.calledOnce.should.be.true();
+                                addModelStub.calledWith(
+                                    fixtureUtils.findModelFixtures('Permission', {object_type: 'theme'})
+                                ).should.be.true();
+
+                                addRelationStub.calledOnce.should.be.true();
+                                addRelationStub.calledWith(
+                                    fixtureUtils.findPermissionRelationsForObject('theme')
+                                ).should.be.true();
+
                                 permissions.init.calledOnce.should.eql(true);
                                 done();
                             })
@@ -1215,9 +1220,9 @@ describe('Fixtures', function () {
                 clientOneStub.calledThrice.should.be.true();
                 clientAddStub.calledThrice.should.be.true();
 
-                permOneStub.callCount.should.eql(40);
+                permOneStub.callCount.should.eql(43);
                 permsAddStub.called.should.be.true();
-                permsAddStub.callCount.should.eql(40);
+                permsAddStub.callCount.should.eql(43);
 
                 permsAllStub.calledOnce.should.be.true();
                 rolesAllStub.calledOnce.should.be.true();

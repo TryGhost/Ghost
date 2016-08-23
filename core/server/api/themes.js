@@ -11,10 +11,8 @@ var Promise = require('bluebird'),
     errors = require('../errors'),
     storage = require('../storage'),
     settings = require('./settings'),
-    pipeline = require('../utils/pipeline'),
     utils = require('./utils'),
     i18n = require('../i18n'),
-    docName = 'themes',
     themes;
 
 /**
@@ -37,7 +35,7 @@ themes = {
 
         return utils.handlePermissions('themes', 'add')(options)
             .then(function () {
-                return gscan.checkZip(zip, {keepExtractedDir: true})
+                return gscan.checkZip(zip, {keepExtractedDir: true});
             })
             .then(function (_theme) {
                 theme = _theme;
@@ -120,7 +118,7 @@ themes = {
                             errors.logError(err);
                         });
                 }
-            })
+            });
     },
 
     download: function download(options) {

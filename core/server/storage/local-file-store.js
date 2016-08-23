@@ -2,14 +2,14 @@
 // The (default) module for storing images, using the local file system
 
 var serveStatic = require('express').static,
-    fs          = require('fs-extra'),
-    path        = require('path'),
-    util        = require('util'),
-    Promise     = require('bluebird'),
-    errors      = require('../errors'),
-    config      = require('../config'),
-    utils       = require('../utils'),
-    BaseStore   = require('./base');
+    fs = require('fs-extra'),
+    path = require('path'),
+    util = require('util'),
+    Promise = require('bluebird'),
+    errors = require('../errors'),
+    config = require('../config'),
+    utils = require('../utils'),
+    BaseStore = require('./base');
 
 function LocalFileStore() {
     BaseStore.call(this);
@@ -53,14 +53,13 @@ LocalFileStore.prototype.exists = function (filename) {
 
 // middleware for serving the files
 LocalFileStore.prototype.serve = function (options) {
-    var self = this;
     options = options || {};
 
     // CASE: serve themes
     // serveStatic can't be used to serve themes, because
     // download files depending on the route (see `send` npm module)
     if (options.isTheme) {
-        return function downloadTheme(req, res, next) {
+        return function downloadTheme(req, res) {
             var themeName = options.name,
                 zipName = themeName + '.zip',
                 zipPath = config.paths.themePath + '/' + zipName,
@@ -73,7 +72,7 @@ LocalFileStore.prototype.serve = function (options) {
 
             stream = fs.createReadStream(zipPath);
             stream.pipe(res);
-        }
+        };
     } else {
         // CASE: serve images
         // For some reason send divides the max age number by 1000
@@ -85,10 +84,8 @@ LocalFileStore.prototype.serve = function (options) {
 LocalFileStore.prototype.delete = function (fileName, targetDir) {
     targetDir = targetDir || this.getTargetDir(config.paths.imagesPath);
 
-    var self = this,
-        path = targetDir + '/' + fileName;
-
-    return Promise.promisify(fs.remove)(path)
+    var path = targetDir + '/' + fileName;
+    return Promise.promisify(fs.remove)(path);
 };
 
 module.exports = LocalFileStore;

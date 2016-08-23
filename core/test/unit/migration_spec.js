@@ -31,9 +31,9 @@ var should = require('should'),
 // both of which are required for migrations to work properly.
 describe('DB version integrity', function () {
     // Only these variables should need updating
-    var currentDbVersion = '006',
+    var currentDbVersion = '007',
         currentSchemaHash = 'f63f41ac97b5665a30c899409bbf9a83',
-        currentFixturesHash = '56f781fa3bba0fdbf98da5f232ec9b11';
+        currentFixturesHash = '30b0a956b04e634e7f2cddcae8d2fd20';
 
     // If this test is failing, then it is likely a change has been made that requires a DB version bump,
     // and the values above will need updating as confirmation

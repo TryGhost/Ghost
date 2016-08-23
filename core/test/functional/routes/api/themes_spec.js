@@ -86,7 +86,7 @@ describe('Themes API', function () {
 
                     // upload same theme again to force override
                     scope.uploadTheme({themePath: path.join(__dirname, '/../../../utils/fixtures/themes/valid.zip')})
-                        .end(function (err, res) {
+                        .end(function (err) {
                             if (err) {
                                 return done(err);
                             }
@@ -118,10 +118,10 @@ describe('Themes API', function () {
         it('download theme uuid', function (done) {
             request.get(testUtils.API.getApiQuery('themes/casper/download/'))
                 .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
-                .expect('Content-Type', /application\/zip/ )
+                .expect('Content-Type', /application\/zip/)
                 .expect('Content-Disposition', 'attachment; filename=casper.zip')
                 .expect(200)
-                .end(function (err, res) {
+                .end(function (err) {
                     if (err) {
                         return done(err);
                     }
@@ -134,7 +134,7 @@ describe('Themes API', function () {
             request.del(testUtils.API.getApiQuery('themes/valid'))
                 .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
                 .expect(204)
-                .end(function (err, res) {
+                .end(function (err) {
                     if (err) {
                         return done(err);
                     }
@@ -179,7 +179,7 @@ describe('Themes API', function () {
             request.del(testUtils.API.getApiQuery('themes/casper'))
                 .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
                 .expect(422)
-                .end(function (err, res) {
+                .end(function (err) {
                     if (err) {
                         return done(err);
                     }
@@ -192,7 +192,7 @@ describe('Themes API', function () {
             request.del(testUtils.API.getApiQuery('themes/not-existent'))
                 .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
                 .expect(404)
-                .end(function (err, res) {
+                .end(function (err) {
                     if (err) {
                         return done(err);
                     }
@@ -247,7 +247,7 @@ describe('Themes API', function () {
                 request.del(testUtils.API.getApiQuery('themes/test'))
                     .set('Authorization', 'Bearer ' + scope.editorAccessToken)
                     .expect(403)
-                    .end(function (err, res) {
+                    .end(function (err) {
                         if (err) {
                             return done(err);
                         }
