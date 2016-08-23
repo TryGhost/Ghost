@@ -1,36 +1,28 @@
 import Controller from 'ember-controller';
-import computed from 'ember-computed';
+import computed, {notEmpty} from 'ember-computed';
 import injectService from 'ember-service/inject';
 import observer from 'ember-metal/observer';
 import run from 'ember-runloop';
 import SettingsSaveMixin from 'ghost-admin/mixins/settings-save';
 import randomPassword from 'ghost-admin/utils/random-password';
+import $ from 'jquery';
 
 export default Controller.extend(SettingsSaveMixin, {
 
+    availableTimezones: null,
+    themeToDelete: null,
+
     showUploadLogoModal: false,
     showUploadCoverModal: false,
+    showDeleteThemeModal: notEmpty('themeToDelete'),
 
-    availableTimezones: null,
-
-    notifications: injectService(),
+    ajax: injectService(),
     config: injectService(),
+    ghostPaths: injectService(),
+    notifications: injectService(),
+    session: injectService(),
     _scratchFacebook: null,
     _scratchTwitter: null,
-
-    selectedTheme: computed('model.activeTheme', 'themes', function () {
-        let activeTheme = this.get('model.activeTheme');
-        let themes = this.get('themes');
-        let selectedTheme;
-
-        themes.forEach((theme) => {
-            if (theme.name === activeTheme) {
-                selectedTheme = theme;
-            }
-        });
-
-        return selectedTheme;
-    }),
 
     logoImageSource: computed('model.logo', function () {
         return this.get('model.logo') || '';
@@ -55,27 +47,27 @@ export default Controller.extend(SettingsSaveMixin, {
         }
     }),
 
-    themes: computed(function () {
-        return this.get('model.availableThemes').reduce(function (themes, t) {
-            let theme = {};
-
-            theme.name = t.name;
-            theme.label = t.package ? `${t.package.name} - ${t.package.version}` : t.name;
-            theme.package = t.package;
-            theme.active = !!t.active;
-
-            themes.push(theme);
-
-            return themes;
-        }, []);
-    }).readOnly(),
-
     generatePassword: observer('model.isPrivate', function () {
         this.get('model.errors').remove('password');
         if (this.get('model.isPrivate') && this.get('model.hasDirtyAttributes')) {
             this.get('model').set('password', randomPassword());
         }
     }),
+
+    _deleteTheme() {
+        let theme = this.get('themeToDelete');
+        let themeURL = `${this.get('ghostPaths.apiRoot')}/themes/${theme.name}/`;
+
+        if (!theme) {
+            return;
+        }
+
+        return this.get('ajax').del(themeURL).then(() => {
+            this.send('reloadSettings');
+        }).catch((error) => {
+            this.get('notifications').showAPIError(error);
+        });
+    },
 
     save() {
         let notifications = this.get('notifications');
@@ -107,10 +99,38 @@ export default Controller.extend(SettingsSaveMixin, {
 
         setTheme(theme) {
             this.set('model.activeTheme', theme.name);
+            this.send('save');
         },
+
+        downloadTheme(theme) {
+            let themeURL = `${this.get('ghostPaths.apiRoot')}/themes/${theme.name}`;
+            let accessToken = this.get('session.data.authenticated.access_token');
+            let downloadURL = `${themeURL}/download/?access_token=${accessToken}`;
+            let iframe = $('#iframeDownload');
+
+            if (iframe.length === 0) {
+                iframe = $('<iframe>', {id: 'iframeDownload'}).hide().appendTo('body');
+            }
+
+            iframe.attr('src', downloadURL);
+        },
+
+        deleteTheme(theme) {
+            if (theme) {
+                return this.set('themeToDelete', theme);
+            }
+
+            return this._deleteTheme();
+        },
+
+        hideDeleteThemeModal() {
+            this.set('themeToDelete', null);
+        },
+
         setTimezone(timezone) {
             this.set('model.activeTimezone', timezone.name);
         },
+
         toggleUploadCoverModal() {
             this.toggleProperty('showUploadCoverModal');
         },

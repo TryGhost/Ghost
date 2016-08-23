@@ -161,3 +161,93 @@
         margin-top: 5px;
     }
 }
+
+
+/* Themes
+/* ---------------------------------------------------------- */
+
+.settings-themes h3 {
+    margin-bottom: 1.6em;
+    font-size: 16px;
+}
+
+.theme-list-item {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    padding: 13px 15px;
+    border-top: 1px solid #dfe1e3;
+}
+
+.theme-list-item--active {
+    background: color(#dfe1e3 lightness(+10%));
+}
+
+.theme-list-item-body .name {
+    display: inline-block;
+    color: var(--darkgrey);
+    white-space: nowrap;
+    font-weight: 400;
+    user-select: all;
+}
+
+.theme-list-item:last-of-type {
+    margin-bottom: 1em;
+    border-bottom: 1px solid #dfe1e3;
+}
+
+.theme-list-item-body {
+    flex: 1 1 auto;
+    align-items: stretch;
+    line-height: 1;
+}
+
+.theme-list-action:last-child {
+    margin-right: 0;
+}
+
+.theme-list-action {
+    float: left;
+    margin-right: 20px;
+    text-transform: uppercase;
+    font-size: 11px;
+}
+
+a.theme-list-action {
+    text-decoration: underline;
+}
+
+/* account for length difference between Active and Activate */
+.theme-list-action-activate {
+    min-width: 52px;
+}
+
+.theme-list-item--active .theme-list-action-activate {
+    color: var(--green);
+}
+
+@media (max-width: 550px) {
+    .theme-list-item {
+        flex-direction: column;
+        align-items: flex-start;
+        height: auto;
+    }
+
+    .theme-list-item-body .name {
+        font-size: 15px;
+    }
+
+    .theme-list-item-aside {
+        display: flex;
+        flex-direction: row-reverse;
+    }
+
+    .theme-list-item-body {
+        margin-bottom: 0.35em;
+        width: 100%;
+    }
+
+    .theme-list-action:last-child {
+        margin-right: 20px;
+    }
+}

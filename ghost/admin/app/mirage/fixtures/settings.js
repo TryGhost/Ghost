@@ -214,6 +214,7 @@ export default [
     },
     {
         key: 'availableThemes',
+        id: 18,
         value: [
             {
                 name: 'casper',
@@ -222,6 +223,16 @@ export default [
                     version: '1.0'
                 },
                 active: true
+            },
+            {
+                name: 'foo',
+                package: {
+                    name: 'Foo',
+                    version: '0.1'
+                }
+            },
+            {
+                name: 'bar'
             }
         ],
         type: 'theme'

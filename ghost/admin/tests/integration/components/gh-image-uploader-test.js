@@ -201,6 +201,22 @@ describeComponent(
                 });
             });
 
+            it('fires fileSelected action on file selection', function (done) {
+                let fileSelected = sinon.spy();
+                this.set('fileSelected', fileSelected);
+
+                stubSuccessfulUpload(server);
+
+                this.render(hbs`{{gh-image-uploader url=image fileSelected=(action fileSelected) update=(action update)}}`);
+                fileUpload(this.$('input[type="file"]'), ['test'], {type: 'image/png'});
+
+                wait().then(() => {
+                    expect(fileSelected.calledOnce).to.be.true;
+                    expect(fileSelected.args[0]).to.not.be.blank;
+                    done();
+                });
+            });
+
             it('fires uploadStarted action on upload start', function (done) {
                 let uploadStarted = sinon.spy();
                 this.set('uploadStarted', uploadStarted);
