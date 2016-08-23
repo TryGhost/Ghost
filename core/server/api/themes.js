@@ -192,7 +192,7 @@ themes = {
                 if (!theme) {
                     throw new errors.NotFoundError(i18n.t('errors.api.themes.themeDoesNotExist'));
                 }
-                
+
                 return storageAdapter.delete(name, config.paths.themePath);
             })
             .then(function () {
