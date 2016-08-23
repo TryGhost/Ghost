@@ -23,12 +23,10 @@ describeComponent(
                 {name: 'oscar-ghost-1.1.0', package: {name: 'Lanyon', version: '1.1.0'}},
                 {name: 'foo'}
             ]);
-            this.set('activeTheme', 'Daring');
             this.set('actionHandler', sinon.spy());
 
             this.render(hbs`{{gh-theme-table
                 availableThemes=availableThemes
-                activeTheme=activeTheme
                 activateTheme=(action actionHandler)
                 downloadTheme=(action actionHandler)
                 deleteTheme=(action actionHandler)
@@ -95,13 +93,11 @@ describeComponent(
                 {name: 'Foo', active: true},
                 {name: 'Bar'}
             ]);
-            this.set('activeTheme', 'Foo');
             this.set('deleteAction', deleteAction);
             this.set('actionHandler', actionHandler);
 
             this.render(hbs`{{gh-theme-table
                 availableThemes=availableThemes
-                activeTheme=activeTheme
                 activateTheme=(action actionHandler)
                 downloadTheme=(action actionHandler)
                 deleteTheme=(action deleteAction)
@@ -123,13 +119,11 @@ describeComponent(
                 {name: 'Foo', active: true},
                 {name: 'Bar'}
             ]);
-            this.set('activeTheme', 'Foo');
             this.set('downloadAction', downloadAction);
             this.set('actionHandler', actionHandler);
 
             this.render(hbs`{{gh-theme-table
                 availableThemes=availableThemes
-                activeTheme=activeTheme
                 activateTheme=(action actionHandler)
                 downloadTheme=(action downloadAction)
                 deleteTheme=(action actionHandler)
@@ -151,13 +145,11 @@ describeComponent(
                 {name: 'Foo', active: true},
                 {name: 'Bar'}
             ]);
-            this.set('activeTheme', 'Foo');
             this.set('activateAction', activateAction);
             this.set('actionHandler', actionHandler);
 
             this.render(hbs`{{gh-theme-table
                 availableThemes=availableThemes
-                activeTheme=activeTheme
                 activateTheme=(action activateAction)
                 downloadTheme=(action actionHandler)
                 deleteTheme=(action actionHandler)
@@ -169,6 +161,43 @@ describeComponent(
 
             expect(activateAction.calledOnce).to.be.true;
             expect(activateAction.firstCall.args[0].name).to.equal('Bar');
+        });
+
+        it('displays folder names if there are duplicate package names', function () {
+            this.set('availableThemes', [
+                {name: 'daring', package: {name: 'Daring', version: '0.1.4'}, active: true},
+                {name: 'daring-0.1.5', package: {name: 'Daring', version: '0.1.4'}},
+                {name: 'casper', package: {name: 'Casper', version: '1.3.1'}},
+                {name: 'another', package: {name: 'Casper', version: '1.3.1'}},
+                {name: 'mine', package: {name: 'Casper', version: '1.3.1'}},
+                {name: 'foo'}
+            ]);
+            this.set('actionHandler', sinon.spy());
+
+            this.render(hbs`{{gh-theme-table
+                availableThemes=availableThemes
+                activateTheme=(action actionHandler)
+                downloadTheme=(action actionHandler)
+                deleteTheme=(action actionHandler)
+            }}`);
+
+            let packageNames = this.$('.theme-list-item-body .name').map((i, name) => {
+                return $(name).text().trim();
+            }).toArray();
+
+            console.log(packageNames);
+
+            expect(
+                packageNames,
+                'themes are ordered by label, folder names shown for duplicates'
+            ).to.deep.equal([
+                'Casper - 1.3.1 (another)',
+                'Casper - 1.3.1 (default)',
+                'Casper - 1.3.1 (mine)',
+                'Daring - 0.1.4 (daring)',
+                'Daring - 0.1.4 (daring-0.1.5)',
+                'foo'
+            ]);
         });
     }
 );
