@@ -113,6 +113,14 @@ describe('Frontend Routing', function () {
                     .end(doEnd(done));
             });
 
+            it('should sanitize double slashes when redirecting uppercase', function (done) {
+                request.get('///Google.com/')
+                    .expect('Location', '/google.com/')
+                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect(301)
+                    .end(doEnd(done));
+            });
+
             it('should respond with html for valid url', function (done) {
                 request.get('/welcome-to-ghost/')
                     .expect('Content-Type', /html/)
