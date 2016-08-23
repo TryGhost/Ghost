@@ -24,6 +24,11 @@ config = {
         server: {
             host: '127.0.0.1',
             port: '2368'
+        },
+        // #### Paths
+        // Specify where your content directory lives
+        paths: {
+            contentPath: path.join(__dirname, '/content/')
         }
     },
 
