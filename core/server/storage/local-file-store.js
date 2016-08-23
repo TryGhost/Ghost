@@ -6,7 +6,6 @@ var serveStatic = require('express').static,
     path        = require('path'),
     util        = require('util'),
     Promise     = require('bluebird'),
-    execFile    = require('child_process').execFile,
     errors      = require('../errors'),
     config      = require('../config'),
     utils       = require('../utils'),
@@ -15,6 +14,7 @@ var serveStatic = require('express').static,
 function LocalFileStore() {
     BaseStore.call(this);
 }
+
 util.inherits(LocalFileStore, BaseStore);
 
 // ### Save
@@ -58,8 +58,7 @@ LocalFileStore.prototype.serve = function (options) {
 
     // CASE: serve themes
     // serveStatic can't be used to serve themes, because
-    // 1. it doesn't play well with our api.http wrapper
-    // 2. it download files depending on the route (see `send` npm module)
+    // download files depending on the route (see `send` npm module)
     if (options.isTheme) {
         return function downloadTheme(req, res, next) {
             var themeName = options.name,
@@ -83,7 +82,6 @@ LocalFileStore.prototype.serve = function (options) {
     }
 };
 
-// @TODO: add to required fn's
 LocalFileStore.prototype.delete = function (fileName, targetDir) {
     targetDir = targetDir || this.getTargetDir(config.paths.imagesPath);
 
