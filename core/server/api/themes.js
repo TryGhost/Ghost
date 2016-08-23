@@ -186,7 +186,7 @@ themes = {
         return utils.handlePermissions('themes', 'destroy')(options)
             .then(function () {
                 if (name === 'casper') {
-                    throw new errors.ValidationError(i18n.t('errors.api.themes.overrideCasper'));
+                    throw new errors.ValidationError(i18n.t('errors.api.themes.destroyCasper'));
                 }
 
                 theme = config.paths.availableThemes[name];
