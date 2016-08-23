@@ -193,13 +193,13 @@ ConfigManager.prototype.set = function (config) {
     } else {
         // ensure there is a default image storage adapter
         if (!this._config.storage.active.images) {
-            this._config.storage.active.images = defaultSchedulingAdapter;
+            this._config.storage.active.images = defaultStorageAdapter;
         }
 
         // ensure there is a default theme storage adapter
-        if (!this._config.storage.active.themes) {
-            this._config.storage.active.themes = defaultSchedulingAdapter;
-        }
+        // @TODO: right now we only support theme uploads to local file storage
+        // @TODO: we need to change reading themes from disk on bootstrap (see loadThemes)
+        this._config.storage.active.themes = defaultStorageAdapter;
     }
 
     if (activeSchedulingAdapter === defaultSchedulingAdapter) {
