@@ -387,7 +387,7 @@ describe('Acceptance: Settings - General', function () {
             andThen(() => {
                 expect(
                     find('.fullscreen-modal').length === 0,
-                    'modal is closed when cancelling'
+                    'upload theme modal is closed when cancelling'
                 ).to.be.true;
             });
 
@@ -490,10 +490,76 @@ describe('Acceptance: Settings - General', function () {
             });
 
             // theme deletion displays modal
+            click('.theme-list-item:contains("Test 1") a:contains("Delete")');
+            andThen(() => {
+                expect(
+                    find('.fullscreen-modal .modal-content:contains("delete this theme")').length,
+                    'theme deletion modal displayed after button click'
+                ).to.equal(1);
+            });
 
             // cancelling theme deletion closes modal
+            click('.fullscreen-modal button:contains("Cancel")');
+            andThen(() => {
+                expect(
+                    find('.fullscreen-modal').length === 0,
+                    'delete theme modal is closed when cancelling'
+                ).to.be.true;
+            });
 
             // confirming theme deletion closes modal and refreshes list
+            click('.theme-list-item:contains("Test 1") a:contains("Delete")');
+            click('.fullscreen-modal button:contains("Delete")');
+            andThen(() => {
+                expect(
+                    find('.fullscreen-modal').length === 0,
+                    'delete theme modal closes after deletion'
+                ).to.be.true;
+            });
+
+            andThen(() => {
+                expect(
+                    find('.theme-list-item').length,
+                    'number of themes in list shrinks after delete'
+                ).to.equal(4);
+
+                expect(
+                    find('.theme-list-item .name').text(),
+                    'correct theme is removed from theme list after deletion'
+                ).to.not.match(/Test 1/);
+            });
+
+            // validation errors are handled when deleting a theme
+            andThen(() => {
+                server.del('/themes/:theme/', function () {
+                    return new Mirage.Response(422, {}, {
+                        errors: [{
+                            message: 'Can\'t delete theme'
+                        }]
+                    });
+                });
+            });
+            click('.theme-list-item:contains("Test 2") a:contains("Delete")');
+            click('.fullscreen-modal button:contains("Delete")');
+            andThen(() => {
+                expect(
+                    find('.fullscreen-modal').length === 0,
+                    'delete theme modal closes after failed deletion'
+                ).to.be.true;
+
+                expect(
+                    find('.gh-alert').length,
+                    'alert is shown when deletion fails'
+                ).to.equal(1);
+
+                expect(
+                    find('.gh-alert').text(),
+                    'failed deletion alert has correct text'
+                ).to.match(/Can't delete theme/);
+
+                // restore default mirage handlers
+                mockThemes(server);
+            });
         });
     });
 });
