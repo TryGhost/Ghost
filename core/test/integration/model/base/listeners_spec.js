@@ -33,17 +33,17 @@ describe('Models: listeners', function () {
         rewire(config.get('paths').corePath + '/server/models/base/listeners');
     });
 
-    afterEach(function (done) {
+    afterEach(function () {
         events.on.restore();
         scope.posts = [];
-        testUtils.teardown(done);
+        return testUtils.teardown();
     });
 
     describe('on timezone changed', function () {
         var posts;
 
         describe('db has scheduled posts', function () {
-            beforeEach(function (done) {
+            beforeEach(function () {
                 // will get rescheduled
                 scope.posts.push(testUtils.DataGenerator.forKnex.createPost({
                     published_at: scope.publishedAtFutureMoment1.toDate(),
@@ -68,18 +68,15 @@ describe('Models: listeners', function () {
                     slug: '3'
                 }));
 
-                Promise.all(scope.posts.map(function (post) {
+                return Promise.all(scope.posts.map(function (post) {
                     return models.Post.add(post, testUtils.context.owner);
                 })).then(function (result) {
                     result.length.should.eql(3);
                     posts = result;
-                    done();
-                }).catch(function (err) {
-                    return done(err);
                 });
             });
 
-            it('activeTimezone changes change', function (done) {
+            it('activeTimezone changes change', function () {
                 var timeout;
 
                 eventsToRemember['settings.activeTimezone.edited']({
@@ -88,7 +85,7 @@ describe('Models: listeners', function () {
                 });
 
                 (function retry() {
-                    models.Post.findAll({context: {internal: true}})
+                    return models.Post.findAll({context: {internal: true}})
                         .then(function (results) {
                             var post1 = _.find(results.models, function (post) {
                                     return post.get('title') === '1';
@@ -106,17 +103,15 @@ describe('Models: listeners', function () {
                                 post3.get('status') === 'scheduled' &&
                                 moment(post1.get('published_at')).diff(scope.publishedAtFutureMoment1.clone().add(scope.timezoneOffset, 'minutes')) === 0 &&
                                 moment(post3.get('published_at')).diff(scope.publishedAtFutureMoment3.clone().add(scope.timezoneOffset, 'minutes')) === 0) {
-                                return done();
                             }
 
                             clearTimeout(timeout);
                             timeout = setTimeout(retry, 500);
-                        })
-                        .catch(done);
+                        });
                 })();
             });
 
-            it('activeTimezone changes change: from a TZ to UTC', function (done) {
+            it('activeTimezone changes change: from a TZ to UTC', function () {
                 var timeout;
 
                 scope.timezoneOffset = -180;
@@ -129,7 +124,7 @@ describe('Models: listeners', function () {
                 });
 
                 (function retry() {
-                    models.Post.findAll({context: {internal: true}})
+                    return models.Post.findAll({context: {internal: true}})
                         .then(function (results) {
                             var post1 = _.find(results.models, function (post) {
                                     return post.get('title') === '1';
@@ -147,30 +142,26 @@ describe('Models: listeners', function () {
                                 post3.get('status') === 'scheduled' &&
                                 moment(post1.get('published_at')).diff(scope.publishedAtFutureMoment1.clone().add(scope.timezoneOffset, 'minutes')) === 0 &&
                                 moment(post3.get('published_at')).diff(scope.publishedAtFutureMoment3.clone().add(scope.timezoneOffset, 'minutes')) === 0) {
-                                return done();
                             }
 
                             clearTimeout(timeout);
                             timeout = setTimeout(retry, 500);
-                        })
-                        .catch(done);
+                        });
                 })();
             });
         });
 
         describe('db has no scheduled posts', function () {
-            it('no scheduled posts', function (done) {
+            it('no scheduled posts', function () {
                 eventsToRemember['settings.activeTimezone.edited']({
                     attributes: {value: scope.newTimezone},
                     _updatedAttributes: {value: scope.oldTimezone}
                 });
 
-                models.Post.findAll({context: {internal: true}})
+                return models.Post.findAll({context: {internal: true}})
                     .then(function (results) {
                         results.length.should.eql(0);
-                        done();
-                    })
-                    .catch(done);
+                    });
             });
         });
     });

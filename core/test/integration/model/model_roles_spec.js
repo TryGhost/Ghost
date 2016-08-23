@@ -16,27 +16,23 @@ describe('Role Model', function () {
         should.exist(RoleModel);
     });
 
-    it('can findAll', function (done) {
-        RoleModel.findAll().then(function (foundRoles) {
+    it('can findAll', function () {
+        return RoleModel.findAll().then(function (foundRoles) {
             should.exist(foundRoles);
 
             foundRoles.models.length.should.be.above(0);
-
-            done();
-        }).catch(done);
+        });
     });
 
-    it('can findOne', function (done) {
-        RoleModel.findOne({id: 1}).then(function (foundRole) {
+    it('can findOne', function () {
+        return RoleModel.findOne({id: 1}).then(function (foundRole) {
             should.exist(foundRole);
             foundRole.get('created_at').should.be.an.instanceof(Date);
-
-            done();
-        }).catch(done);
+        });
     });
 
-    it('can edit', function (done) {
-        RoleModel.findOne({id: 1}).then(function (foundRole) {
+    it('can edit', function () {
+        return RoleModel.findOne({id: 1}).then(function (foundRole) {
             should.exist(foundRole);
 
             return foundRole.set({name: 'updated'}).save(null, context);
@@ -46,31 +42,27 @@ describe('Role Model', function () {
             should.exist(updatedRole);
 
             updatedRole.get('name').should.equal('updated');
-
-            done();
-        }).catch(done);
+        });
     });
 
-    it('can add', function (done) {
+    it('can add', function () {
         var newRole = {
             name: 'test1',
             description: 'test1 description'
         };
 
-        RoleModel.add(newRole, context).then(function (createdRole) {
+        return RoleModel.add(newRole, context).then(function (createdRole) {
             should.exist(createdRole);
 
             createdRole.attributes.name.should.equal(newRole.name);
             createdRole.attributes.description.should.equal(newRole.description);
-
-            done();
-        }).catch(done);
+        });
     });
 
-    it('can destroy', function (done) {
+    it('can destroy', function () {
         var firstRole = {id: 1};
 
-        RoleModel.findOne(firstRole).then(function (foundRole) {
+        return RoleModel.findOne(firstRole).then(function (foundRole) {
             should.exist(foundRole);
             foundRole.attributes.id.should.equal(firstRole.id);
 
@@ -80,8 +72,6 @@ describe('Role Model', function () {
             return RoleModel.findOne(firstRole);
         }).then(function (newResults) {
             should.equal(newResults, null);
-
-            done();
-        }).catch(done);
+        });
     });
 });
