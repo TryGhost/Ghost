@@ -99,6 +99,24 @@ apiRoutes = function apiRoutes(middleware) {
     // ## Slugs
     router.get('/slugs/:type/:name', authenticatePrivate, api.http(api.slugs.generate));
 
+    // ## Themes
+    router.get('/themes/:name/download',
+        authenticatePrivate,
+        api.http(api.themes.download)
+    );
+
+    router.post('/themes/upload',
+        authenticatePrivate,
+        middleware.upload.single('theme'),
+        middleware.validation.upload({type: 'themes'}),
+        api.http(api.themes.upload)
+    );
+
+    router.del('/themes/:name',
+        authenticatePrivate,
+        api.http(api.themes.destroy)
+    );
+
     // ## Notifications
     router.get('/notifications', authenticatePrivate, api.http(api.notifications.browse));
     router.post('/notifications', authenticatePrivate, api.http(api.notifications.add));
