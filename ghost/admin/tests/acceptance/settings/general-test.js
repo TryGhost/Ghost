@@ -411,7 +411,7 @@ describe('Acceptance: Settings - General', function () {
                 ).to.match(/default Casper theme cannot be overwritten/);
             });
 
-            // theme upload handles validation errors
+            // theme upload handles upload errors
             andThen(() => {
                 server.post('/themes/upload/', function () {
                     return new Mirage.Response(422, {}, {
@@ -433,8 +433,90 @@ describe('Acceptance: Settings - General', function () {
                 mockThemes(server);
             });
 
-            // theme upload handles success then close
+            // theme upload handles validation errors
+            andThen(() => {
+                server.post('/themes/upload/', function () {
+                    return new Mirage.Response(422, {}, {
+                        errors: [
+                            {
+                                message: 'Theme is not compatible or contains errors.',
+                                errorType: 'ThemeValidationError',
+                                errorDetails: [
+                                    {
+                                        level: 'error',
+                                        rule: 'Templates must contain valid Handlebars.',
+                                        failures: [
+                                            {
+                                                ref: 'index.hbs',
+                                                message: 'The partial index_meta could not be found'
+                                            },
+                                            {
+                                                ref: 'tag.hbs',
+                                                message: 'The partial index_meta could not be found'
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        level: 'error',
+                                        rule: 'Assets such as CSS & JS must use the <code>{{asset}}</code> helper',
+                                        details: '<p>The listed files should be included using the <code>{{asset}}</code> helper.</p>',
+                                        failures: [
+                                            {
+                                                ref: '/assets/javascripts/ui.js'
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    });
+                });
+            });
             click('button:contains("Try Again")');
+            fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'bad-theme.zip', type: 'application/zip'});
+            andThen(() => {
+                expect(
+                    find('.fullscreen-modal h1').text().trim(),
+                    'modal title after uploading invalid theme'
+                ).to.equal('Invalid theme');
+
+                expect(
+                    find('.theme-validation-errors').text(),
+                    'top-level errors are displayed'
+                ).to.match(/Templates must contain valid Handlebars/);
+
+                expect(
+                    find('.theme-validation-errors').text(),
+                    'top-level errors do not escape HTML'
+                ).to.match(/The listed files should be included using the {{asset}} helper/);
+
+                expect(
+                    find('.theme-validation-errors').text(),
+                    'individual failures are displayed'
+                ).to.match(/index\.hbs: The partial index_meta could not be found/);
+
+                // reset to default mirage handlers
+                mockThemes(server);
+            });
+            click('button:contains("Try Again")');
+            andThen(() => {
+                expect(
+                    find('.theme-validation-errors').length,
+                    '"Try Again" resets form after theme validation error'
+                ).to.equal(0);
+
+                expect(
+                    find('.gh-image-uploader').length,
+                    '"Try Again" resets form after theme validation error'
+                ).to.equal(1);
+
+                expect(
+                    find('.fullscreen-modal h1').text().trim(),
+                    '"Try Again" resets form after theme validation error'
+                ).to.equal('Upload a theme');
+            });
+
+            // theme upload handles success then close
             fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'theme-1.zip', type: 'application/zip'});
             andThen(() => {
                 expect(
