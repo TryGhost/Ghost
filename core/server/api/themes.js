@@ -47,22 +47,10 @@ themes = {
                     return;
                 }
 
-                var validationErrors = [];
-                _.each(theme.results.error, function (error) {
-                    if (error.failures) {
-                        _.each(error.failures, function (childError) {
-                            validationErrors.push(new errors.ValidationError(i18n.t('errors.api.themes.invalidTheme', {
-                                reason: childError.ref
-                            })));
-                        });
-                    }
-
-                    validationErrors.push(new errors.ValidationError(i18n.t('errors.api.themes.invalidTheme', {
-                        reason: error.rule
-                    })));
-                });
-
-                throw validationErrors;
+                throw new errors.ThemeValidationError(
+                    i18n.t('errors.api.themes.invalidTheme'),
+                    theme.results.error
+                );
             })
             .then(function () {
                 return storageAdapter.exists(config.paths.themePath + '/' + zip.shortName);
