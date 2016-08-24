@@ -2,7 +2,10 @@ import ModalComponent from 'ghost-admin/components/modals/base';
 import computed, {mapBy, or} from 'ember-computed';
 import {invokeAction} from 'ember-invoke-action';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
-import {UnsupportedMediaTypeError} from 'ghost-admin/services/ajax';
+import {
+    UnsupportedMediaTypeError,
+    isThemeValidationError
+} from 'ghost-admin/services/ajax';
 import {isBlank} from 'ember-utils';
 import run from 'ember-runloop';
 import injectService from 'ember-service/inject';
@@ -91,6 +94,12 @@ export default ModalComponent.extend({
             invokeAction(this, 'model.uploadSuccess', this.get('theme'));
         },
 
+        uploadFailed(error) {
+            if (isThemeValidationError(error)) {
+                this.set('validationErrors', error.errors[0].errorDetails);
+            }
+        },
+
         confirm() {
             // noop - we don't want the enter key doing anything
         },
@@ -104,6 +113,10 @@ export default ModalComponent.extend({
             if (!this.get('closeDisabled')) {
                 this._super(...arguments);
             }
+        },
+
+        reset() {
+            this.set('validationErrors', null);
         }
     }
 });

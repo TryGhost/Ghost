@@ -251,3 +251,22 @@ a.theme-list-action {
         margin-right: 20px;
     }
 }
+
+.theme-validation-errors {
+    padding-left: 0;
+}
+
+.theme-validation-errors p {
+    margin-bottom: 0;
+}
+
+.theme-validation-errors > li {
+    margin-bottom: 1.2em;
+    list-style: none;
+    font-size: 15px;
+}
+
+.theme-validation-errors > li > ul {
+    margin-top: 0.2em;
+    font-size: 13px;
+}

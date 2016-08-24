@@ -88,6 +88,24 @@ export function isMaintenanceError(errorOrStatus) {
     }
 }
 
+/* Theme validation error */
+
+export function ThemeValidationError(errors) {
+    AjaxError.call(this, errors, 'Theme is not compatible or contains errors.');
+}
+
+ThemeValidationError.prototype = Object.create(AjaxError.prototype);
+
+export function isThemeValidationError(errorOrStatus, payload) {
+    if (isAjaxError(errorOrStatus)) {
+        return errorOrStatus instanceof ThemeValidationError;
+    } else if (errorOrStatus && get(errorOrStatus, 'isAdapterError')) {
+        return get(errorOrStatus, 'errors.firstObject.errorType') === 'ThemeValidationError';
+    } else {
+        return get(payload || {}, 'errors.firstObject.errorType') === 'ThemeValidationError';
+    }
+}
+
 /* end: custom error types */
 
 export default AjaxService.extend({
@@ -119,6 +137,8 @@ export default AjaxService.extend({
             return new UnsupportedMediaTypeError(payload.errors);
         } else if (this.isMaintenanceError(status, headers, payload)) {
             return new MaintenanceError(payload.errors);
+        } else if (this.isThemeValidationError(status, headers, payload)) {
+            return new ThemeValidationError(payload.errors);
         }
 
         return this._super(...arguments);
@@ -160,5 +180,9 @@ export default AjaxService.extend({
 
     isMaintenanceError(status, headers, payload) {
         return isMaintenanceError(status, payload);
+    },
+
+    isThemeValidationError(status, headers, payload) {
+        return isThemeValidationError(status, payload);
     }
 });
