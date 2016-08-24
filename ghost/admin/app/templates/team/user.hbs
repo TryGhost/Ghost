@@ -32,6 +32,7 @@
                                 </button>
                                 {{#if showDeleteUserModal}}
                                     {{gh-fullscreen-modal "delete-user"
+                                                          model=user
                                                           confirm=(action "deleteUser")
                                                           close=(action "toggleDeleteUserModal")
                                                           modifier="action wide"}}

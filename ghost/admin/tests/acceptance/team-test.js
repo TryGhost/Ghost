@@ -65,7 +65,7 @@ describe('Acceptance: Team', function () {
         let admin;
 
         beforeEach(function () {
-            let role = server.create('role', {name: 'Admininstrator'});
+            let role = server.create('role', {name: 'Administrator'});
             admin = server.create('user', {roles: [role]});
 
             server.loadFixtures();
@@ -237,6 +237,66 @@ describe('Acceptance: Team', function () {
             });
         });
 
+        it('can delete users', function () {
+            /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+            let user1 = server.create('user');
+            let user2 = server.create('user');
+            let post1 = server.create('post', {author_id: user2.id});
+            /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+
+            visit('/team');
+            click(`a.user-list-item:contains("${user1.name}")`);
+
+            // user deletion displays modal
+            click('button.delete');
+            andThen(() => {
+                expect(
+                    find('.fullscreen-modal .modal-content:contains("delete this user")').length,
+                    'user deletion modal displayed after button click'
+                ).to.equal(1);
+
+                // user has no posts so no warning about post deletion
+                expect(
+                    find('.fullscreen-modal .modal-content:contains("is the author of")').length,
+                    'deleting user with no posts has no post count'
+                ).to.equal(0);
+            });
+
+            // cancelling user deletion closes modal
+            click('.fullscreen-modal button:contains("Cancel")');
+            andThen(() => {
+                expect(
+                    find('.fullscreen-modal').length === 0,
+                    'delete user modal is closed when cancelling'
+                ).to.be.true;
+            });
+
+            // deleting a user with posts
+            visit('/team');
+            click(`a.user-list-item:contains("${user2.name}")`);
+
+            click('button.delete');
+            andThen(() => {
+                // user has  posts so should warn about post deletion
+                expect(
+                    find('.fullscreen-modal .modal-content:contains("is the author of 1 post")').length,
+                    'deleting user with posts has post count'
+                ).to.equal(1);
+            });
+
+            click('.fullscreen-modal button:contains("Delete")');
+            andThen(() => {
+                // redirected to team page
+                expect(currentURL()).to.equal('/team');
+
+                // deleted user is not in list
+                expect(
+                    find(`.user-list-item .name:contains("${user2.name}")`).length,
+                    'deleted user is not in user list after deletion'
+                ).to.equal(0);
+            });
+        });
+
         describe('existing user', function () {
             let user;
 
@@ -309,7 +369,7 @@ describe('Acceptance: Team', function () {
                 triggerEvent('#user-location', 'blur');
 
                 andThen(() => {
-                    expect(find('.user-details-bottom .form-group:nth-of-type(3)').hasClass('error'), 'location input should be in error state').to.be.true;
+                    expect(find('#user-location').closest('.form-group').hasClass('error'), 'location input should be in error state').to.be.true;
                 });
 
                 fillIn('#user-location', '');
@@ -317,7 +377,7 @@ describe('Acceptance: Team', function () {
                 triggerEvent('#user-website', 'blur');
 
                 andThen(() => {
-                    expect(find('.user-details-bottom .form-group:nth-of-type(4)').hasClass('error'), 'website input should be in error state').to.be.true;
+                    expect(find('#user-website').closest('.form-group').hasClass('error'), 'website input should be in error state').to.be.true;
                 });
 
                 // Testing Facebook input
@@ -343,7 +403,7 @@ describe('Acceptance: Team', function () {
                 triggerEvent('#user-facebook', 'blur');
 
                 andThen(() => {
-                    expect(find('.user-details-bottom .form-group:nth-of-type(5)').hasClass('error'), 'facebook input should be in error state').to.be.true;
+                    expect(find('#user-facebook').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.true;
                 });
 
                 fillIn('#user-facebook', '');
@@ -352,7 +412,7 @@ describe('Acceptance: Team', function () {
 
                 andThen(() => {
                     expect(find('#user-facebook').val()).to.be.equal('https://www.facebook.com/pages/)(*&%^%)');
-                    expect(find('.user-details-bottom .form-group:nth-of-type(5)').hasClass('error'), 'facebook input should be in error state').to.be.false;
+                    expect(find('#user-facebook').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.false;
                 });
 
                 fillIn('#user-facebook', '');
@@ -361,7 +421,7 @@ describe('Acceptance: Team', function () {
 
                 andThen(() => {
                     expect(find('#user-facebook').val()).to.be.equal('https://www.facebook.com/testing');
-                    expect(find('.user-details-bottom .form-group:nth-of-type(5)').hasClass('error'), 'facebook input should be in error state').to.be.false;
+                    expect(find('#user-facebook').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.false;
                 });
 
                 fillIn('#user-facebook', '');
@@ -370,7 +430,7 @@ describe('Acceptance: Team', function () {
 
                 andThen(() => {
                     expect(find('#user-facebook').val()).to.be.equal('https://www.facebook.com/pages/some-facebook-page/857469375913?ref=ts');
-                    expect(find('.user-details-bottom .form-group:nth-of-type(5)').hasClass('error'), 'facebook input should be in error state').to.be.false;
+                    expect(find('#user-facebook').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.false;
                 });
 
                 fillIn('#user-facebook', '');
@@ -378,7 +438,7 @@ describe('Acceptance: Team', function () {
                 triggerEvent('#user-facebook', 'blur');
 
                 andThen(() => {
-                    expect(find('.user-details-bottom .form-group:nth-of-type(5)').hasClass('error'), 'facebook input should be in error state').to.be.true;
+                    expect(find('#user-facebook').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.true;
                 });
 
                 fillIn('#user-facebook', '');
@@ -387,7 +447,7 @@ describe('Acceptance: Team', function () {
 
                 andThen(() => {
                     expect(find('#user-facebook').val()).to.be.equal('https://www.facebook.com/testuser');
-                    expect(find('.user-details-bottom .form-group:nth-of-type(5)').hasClass('error'), 'facebook input should be in error state').to.be.false;
+                    expect(find('#user-facebook').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.false;
                 });
 
                 fillIn('#user-facebook', '');
@@ -396,7 +456,7 @@ describe('Acceptance: Team', function () {
 
                 andThen(() => {
                     expect(find('#user-facebook').val()).to.be.equal('https://www.facebook.com/testing');
-                    expect(find('.user-details-bottom .form-group:nth-of-type(5)').hasClass('error'), 'facebook input should be in error state').to.be.false;
+                    expect(find('#user-facebook').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.false;
                 });
 
                 // Testing Twitter input
@@ -422,7 +482,7 @@ describe('Acceptance: Team', function () {
                 triggerEvent('#user-twitter', 'blur');
 
                 andThen(() => {
-                    expect(find('.user-details-bottom .form-group:nth-of-type(6)').hasClass('error'), 'twitter input should be in error state').to.be.true;
+                    expect(find('#user-twitter').closest('.form-group').hasClass('error'), 'twitter input should be in error state').to.be.true;
                 });
 
                 fillIn('#user-twitter', '');
@@ -431,7 +491,7 @@ describe('Acceptance: Team', function () {
 
                 andThen(() => {
                     expect(find('#user-twitter').val()).to.be.equal('https://twitter.com/name');
-                    expect(find('.user-details-bottom .form-group:nth-of-type(6)').hasClass('error'), 'twitter input should be in error state').to.be.false;
+                    expect(find('#user-twitter').closest('.form-group').hasClass('error'), 'twitter input should be in error state').to.be.false;
                 });
 
                 fillIn('#user-twitter', '');
@@ -440,7 +500,7 @@ describe('Acceptance: Team', function () {
 
                 andThen(() => {
                     expect(find('#user-twitter').val()).to.be.equal('https://twitter.com/user');
-                    expect(find('.user-details-bottom .form-group:nth-of-type(6)').hasClass('error'), 'twitter input should be in error state').to.be.false;
+                    expect(find('#user-twitter').closest('.form-group').hasClass('error'), 'twitter input should be in error state').to.be.false;
                 });
 
                 fillIn('#user-twitter', '');
@@ -449,7 +509,7 @@ describe('Acceptance: Team', function () {
 
                 andThen(() => {
                     expect(find('#user-twitter').val()).to.be.equal('https://twitter.com/user');
-                    expect(find('.user-details-bottom .form-group:nth-of-type(6)').hasClass('error'), 'twitter input should be in error state').to.be.false;
+                    expect(find('#user-twitter').closest('.form-group').hasClass('error'), 'twitter input should be in error state').to.be.false;
                 });
 
                 fillIn('#user-website', '');
@@ -457,7 +517,7 @@ describe('Acceptance: Team', function () {
                 triggerEvent('#user-bio', 'blur');
 
                 andThen(() => {
-                    expect(find('.user-details-bottom .form-group:nth-of-type(7)').hasClass('error'), 'bio input should be in error state').to.be.true;
+                    expect(find('#user-bio').closest('.form-group').hasClass('error'), 'bio input should be in error state').to.be.true;
                 });
 
                 // password reset ------
@@ -589,7 +649,7 @@ describe('Acceptance: Team', function () {
             });
         });
 
-        it('redirects to 404 when tag does not exist', function () {
+        it('redirects to 404 when user does not exist', function () {
             server.get('/users/slug/unknown/', function () {
                 return new Mirage.Response(404, {'Content-Type': 'application/json'}, {errors: [{message: 'User not found.', errorType: 'NotFoundError'}]});
             });
