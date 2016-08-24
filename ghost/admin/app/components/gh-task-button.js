@@ -18,13 +18,27 @@ import layout from 'ghost-admin/templates/components/gh-spin-button';
 export default SpinButton.extend({
     layout, // This is used to we don't have to re-implement the template
 
+    classNameBindings: ['showSpinner:appear-disabled'],
+
     task: null,
 
     submitting: reads('task.last.isRunning'),
+    disabled: false,
 
     click() {
+        let task = this.get('task');
+        let taskName = this.get('task.name');
+        let lastTaskName = this.get('task.last.task.name');
+
+        // task-buttons are never truly disabled so that clicks when a taskGroup
+        // is running don't get dropped however that means we need to check here
+        // so we don't spam actions through multiple clicks
+        if (this.get('showSpinner') && taskName === lastTaskName) {
+            return;
+        }
+
         invokeAction(this, 'action');
 
-        return this.get('task').perform();
+        return task.perform();
     }
 });
