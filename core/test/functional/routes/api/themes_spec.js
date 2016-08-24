@@ -156,7 +156,8 @@ describe('Themes API', function () {
 
                     res.statusCode.should.eql(422);
                     res.body.errors.length.should.eql(1);
-                    res.body.errors[0].message.should.eql('Theme is invalid: A template file called post.hbs must be present.');
+                    res.body.errors[0].errorType.should.eql('ThemeValidationError');
+                    res.body.errors[0].message.should.eql('Theme is not compatible or contains errors.');
                     done();
                 });
         });
@@ -170,6 +171,7 @@ describe('Themes API', function () {
 
                     res.statusCode.should.eql(422);
                     res.body.errors.length.should.eql(1);
+                    res.body.errors[0].errorType.should.eql('ValidationError');
                     res.body.errors[0].message.should.eql('Please rename your zip, it\'s not allowed to override the default casper theme.');
                     done();
                 });
