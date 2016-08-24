@@ -59,6 +59,12 @@ fieldset[disabled] .btn {
     pointer-events: none;
 }
 
+.btn.appear-disabled {
+    box-shadow: none;
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
 .btn i {
     display: inline-block;
     vertical-align: middle;
