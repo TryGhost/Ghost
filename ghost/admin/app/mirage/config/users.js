@@ -1,5 +1,12 @@
+/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import Mirage from 'ember-cli-mirage';
 import {isBlank} from 'ember-utils';
+import {assign} from 'ember-platform';
+
+const userPostsCount = function userPostsCount(user, db) {
+    let posts = db.posts.where({author_id: user.id});
+    return posts.length;
+};
 
 export default function mockUsers(server) {
     server.post('/users/', function (db, request) {
@@ -28,10 +35,15 @@ export default function mockUsers(server) {
     server.get('/users/', 'users');
 
     server.get('/users/slug/:slug/', function (db, request) {
-        let user = db.users.where({slug: request.params.slug});
+        let [user] = db.users.where({slug: request.params.slug});
+
+        if (request.queryParams.include.match(/count\.posts/)) {
+            let postCount = userPostsCount(user, db);
+            user = assign(user, {count: {posts: postCount}});
+        }
 
         return {
-            users: user
+            users: [user]
         };
     });
 
@@ -42,8 +54,15 @@ export default function mockUsers(server) {
     });
 
     server.get('/users/:id', function (db, request) {
+        let user = db.users.find(request.params.id);
+
+        if (request.queryParams.include.match(/count\.posts/)) {
+            let postCount = userPostsCount(user, db);
+            user = assign(user, {count: {posts: postCount}});
+        }
+
         return {
-            users: [db.users.find(request.params.id)]
+            users: [user]
         };
     });
 

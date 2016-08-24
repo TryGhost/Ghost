@@ -1,11 +1,12 @@
 import ModalComponent from 'ghost-admin/components/modals/base';
 import {invokeAction} from 'ember-invoke-action';
+import {alias} from 'ember-computed';
 
 export default ModalComponent.extend({
 
     submitting: false,
 
-    user: null,
+    user: alias('model'),
 
     actions: {
         confirm() {
