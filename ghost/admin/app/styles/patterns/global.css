@@ -65,7 +65,9 @@ html {
     width: 100%;
     /* Prevent elastic scrolling on the whole page */
     height: 100%;
-    font: 62.5%/1.65 var(--font-family);
+    font-family: var(--font-family);
+    font-size: 62.5%;
+    line-height: 1.65;
 
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
