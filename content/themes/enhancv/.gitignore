@@ -3,5 +3,9 @@ assets/bower_components
 .sass-cache
 .DS_Store
 assets/css/compiled_sass.css
+assets/css/bastard.css
+assets/css/bastard.min.css
+assets/js/scripts.js
+assets/js/scripts.min.js
 image_sources
 myfiles/
