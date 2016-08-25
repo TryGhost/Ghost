@@ -6,6 +6,7 @@ var Promise = require('bluebird'),
     fs = require('fs-extra'),
     config = require('../config'),
     errors = require('../errors'),
+    events = require('../events'),
     storage = require('../storage'),
     settings = require('./settings'),
     utils = require('./utils'),
@@ -62,6 +63,7 @@ themes = {
                 }
             })
             .then(function () {
+                events.emit('theme.uploaded', zip.shortName);
                 // store extracted theme
                 return storageAdapter.save({
                     name: zip.shortName,
@@ -113,6 +115,7 @@ themes = {
 
         return utils.handlePermissions('themes', 'read')(options)
             .then(function () {
+                events.emit('theme.downloaded', themeName);
                 return storageAdapter.serve({isTheme: true, name: themeName});
             });
     },
@@ -138,6 +141,7 @@ themes = {
                     throw new errors.NotFoundError(i18n.t('errors.api.themes.themeDoesNotExist'));
                 }
 
+                events.emit('theme.deleted', name);
                 return storageAdapter.delete(name, config.paths.themePath);
             })
             .then(function () {
