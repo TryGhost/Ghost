@@ -55,13 +55,18 @@ _.extend(BaseSiteMapGenerator.prototype, {
         // Create all the url elements in JSON
         var self = this,
             nodes;
-        nodes = _.map(data, function (datum) {
-            var node = self.createUrlNodeFromDatum(datum);
-            self.updateLastModified(datum);
-            self.updateLookups(datum, node);
 
-            return node;
-        });
+        nodes = _.reduce(data, function (nodeArr, datum) {
+            var node = self.createUrlNodeFromDatum(datum);
+
+            if (node) {
+                self.updateLastModified(datum);
+                self.updateLookups(datum, node);
+                nodeArr.push(node);
+            }
+
+            return nodeArr;
+        }, []);
 
         return this.generateXmlFromNodes(nodes);
     },
@@ -102,11 +107,12 @@ _.extend(BaseSiteMapGenerator.prototype, {
         var datum = model.toJSON(),
             node = this.createUrlNodeFromDatum(datum);
 
-        this.updateLastModified(datum);
-        // TODO: Check if the node values changed, and if not don't regenerate
-        this.updateLookups(datum, node);
-
-        return this.updateXmlFromNodes();
+        if (node) {
+            this.updateLastModified(datum);
+            // TODO: Check if the node values changed, and if not don't regenerate
+            this.updateLookups(datum, node);
+            this.updateXmlFromNodes();
+        }
     },
 
     removeUrl: function (model) {
@@ -119,7 +125,11 @@ _.extend(BaseSiteMapGenerator.prototype, {
 
         this.lastModified = Date.now();
 
-        return this.updateXmlFromNodes();
+        this.updateXmlFromNodes();
+    },
+
+    validateDatum: function () {
+        return true;
     },
 
     getUrlForDatum: function () {
@@ -139,6 +149,10 @@ _.extend(BaseSiteMapGenerator.prototype, {
     },
 
     createUrlNodeFromDatum: function (datum) {
+        if (!this.validateDatum(datum)) {
+            return false;
+        }
+
         var url = this.getUrlForDatum(datum),
             priority = this.getPriorityForDatum(datum),
             node,
