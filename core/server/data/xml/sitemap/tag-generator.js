@@ -33,6 +33,10 @@ _.extend(TagsMapGenerator.prototype, {
         });
     },
 
+    validateDatum: function (datum) {
+        return datum.visibility === 'public';
+    },
+
     getUrlForDatum: function (tag) {
         return config.urlFor('tag', {tag: tag}, true);
     },

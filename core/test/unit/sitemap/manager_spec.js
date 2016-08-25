@@ -1,17 +1,14 @@
-var _           = require('lodash'),
-    should      = require('should'),
+var should      = require('should'),
     sinon       = require('sinon'),
     Promise     = require('bluebird'),
-    validator   = require('validator'),
 
     // Stuff we are testing
-    events         = require('../../server/events'),
-    SiteMapManager = require('../../server/data/xml/sitemap/manager'),
-    BaseGenerator  = require('../../server/data/xml/sitemap/base-generator'),
-    PostGenerator  = require('../../server/data/xml/sitemap/post-generator'),
-    PageGenerator  = require('../../server/data/xml/sitemap/page-generator'),
-    TagGenerator   = require('../../server/data/xml/sitemap/tag-generator'),
-    UserGenerator  = require('../../server/data/xml/sitemap/user-generator'),
+    events         = require('../../../server/events'),
+    SiteMapManager = require('../../../server/data/xml/sitemap/manager'),
+    PostGenerator  = require('../../../server/data/xml/sitemap/post-generator'),
+    PageGenerator  = require('../../../server/data/xml/sitemap/page-generator'),
+    TagGenerator   = require('../../../server/data/xml/sitemap/tag-generator'),
+    UserGenerator  = require('../../../server/data/xml/sitemap/user-generator'),
 
     sandbox = sinon.sandbox.create();
 
@@ -52,17 +49,20 @@ describe('Sitemap', function () {
     });
 
     describe('SiteMapManager', function () {
+        var manager, fake;
+
         should.exist(SiteMapManager);
 
-        it('can create a SiteMapManager instance', function () {
-            var manager = makeStubManager();
+        beforeEach(function () {
+            manager = makeStubManager();
+            fake = sandbox.stub();
+        });
 
+        it('can create a SiteMapManager instance', function () {
             should.exist(manager);
         });
 
         it('can initialize', function (done) {
-            var manager = makeStubManager();
-
             manager.initialized.should.equal(false);
             manager.init().then(function () {
                 manager.posts.init.called.should.equal(true);
@@ -77,9 +77,6 @@ describe('Sitemap', function () {
         });
 
         it('updates page site map correctly', function (done) {
-            var manager = makeStubManager(),
-                fake = sandbox.stub();
-
             manager.init().then(function () {
                 events.on('page.added', function (fakeModel) {
                     fakeModel.should.eql(fake);
@@ -125,9 +122,6 @@ describe('Sitemap', function () {
         });
 
         it('updates post site map', function (done) {
-            var manager = makeStubManager(),
-                fake = sandbox.stub();
-
             manager.init().then(function () {
                 events.on('post.added', function (fakeModel) {
                     fakeModel.should.eql(fake);
@@ -173,9 +167,6 @@ describe('Sitemap', function () {
         });
 
         it('doesn\'t add posts until they are published', function (done) {
-            var manager = makeStubManager(),
-                fake = sandbox.stub();
-
             manager.init().then(function () {
                 events.on('post.added', function () {
                     manager.posts.addOrUpdateUrl.called.should.equal(false);
@@ -201,9 +192,6 @@ describe('Sitemap', function () {
         });
 
         it('deletes posts that were unpublished', function (done) {
-            var manager = makeStubManager(),
-                fake = sandbox.stub();
-
             manager.init().then(function () {
                 events.on('post.unpublished', function () {
                     manager.posts.addOrUpdateUrl.called.should.equal(false);
@@ -217,9 +205,6 @@ describe('Sitemap', function () {
         });
 
         it('updates authors site map', function (done) {
-            var manager = makeStubManager(),
-                fake = sandbox.stub();
-
             manager.init().then(function () {
                 events.on('user.added', function (fakeModel) {
                     fakeModel.should.eql(fake);
@@ -265,9 +250,6 @@ describe('Sitemap', function () {
         });
 
         it('updates tags site map', function (done) {
-            var manager = makeStubManager(),
-                fake = sandbox.stub();
-
             manager.init().then(function () {
                 events.on('tag.added', function (fakeModel) {
                     fakeModel.should.eql(fake);
@@ -289,244 +271,6 @@ describe('Sitemap', function () {
 
                 done();
             }).catch(done);
-        });
-    });
-
-    describe('Generators', function () {
-        var stubUrl = function (generator) {
-                sandbox.stub(generator, 'getUrlForDatum', function (datum) {
-                    return 'http://my-ghost-blog.com/url/' + datum.id;
-                });
-                sandbox.stub(generator, 'getUrlForImage', function (image) {
-                    return 'http://my-ghost-blog.com/images/' + image;
-                });
-
-                return generator;
-            },
-            makeFakeDatum = function (id) {
-                return {
-                    id: id,
-                    created_at: (Date.UTC(2014, 11, 22, 12) - 360000) + id
-                };
-            };
-
-        describe('BaseGenerator', function () {
-            it('can initialize with empty siteMapContent', function (done) {
-                var generator = new BaseGenerator();
-
-                generator.init().then(function () {
-                    should.exist(generator.siteMapContent);
-
-                    validator.contains(generator.siteMapContent, '<loc>').should.equal(false);
-
-                    done();
-                }).catch(done);
-            });
-
-            it('can initialize with non-empty siteMapContent', function (done) {
-                var generator = new BaseGenerator();
-
-                stubUrl(generator);
-
-                sandbox.stub(generator, 'getData', function () {
-                    return Promise.resolve([
-                        makeFakeDatum(100),
-                        makeFakeDatum(200),
-                        makeFakeDatum(300)
-                    ]);
-                });
-
-                generator.init().then(function () {
-                    var idxFirst,
-                        idxSecond,
-                        idxThird;
-
-                    should.exist(generator.siteMapContent);
-
-                    // TODO: We should validate the contents against the XSD:
-                    // xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                    // xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"
-
-                    validator.contains(generator.siteMapContent,
-                        '<loc>http://my-ghost-blog.com/url/100</loc>').should.equal(true);
-                    validator.contains(generator.siteMapContent,
-                        '<loc>http://my-ghost-blog.com/url/200</loc>').should.equal(true);
-                    validator.contains(generator.siteMapContent,
-                        '<loc>http://my-ghost-blog.com/url/300</loc>').should.equal(true);
-
-                    // Validate order newest to oldest
-                    idxFirst = generator.siteMapContent.indexOf('<loc>http://my-ghost-blog.com/url/300</loc>');
-                    idxSecond = generator.siteMapContent.indexOf('<loc>http://my-ghost-blog.com/url/200</loc>');
-                    idxThird = generator.siteMapContent.indexOf('<loc>http://my-ghost-blog.com/url/100</loc>');
-
-                    idxFirst.should.be.below(idxSecond);
-                    idxSecond.should.be.below(idxThird);
-
-                    done();
-                }).catch(done);
-            });
-        });
-
-        describe('PostGenerator', function () {
-            it('uses 0.9 priority for featured posts', function () {
-                var generator = new PostGenerator();
-
-                generator.getPriorityForDatum({
-                    featured: true
-                }).should.equal(0.9);
-            });
-
-            it('uses 0.8 priority for all other (non-featured) posts', function () {
-                var generator = new PostGenerator();
-
-                generator.getPriorityForDatum({
-                    featured: false
-                }).should.equal(0.8);
-            });
-
-            it('adds an image:image element if post has a cover image', function () {
-                var generator = new PostGenerator(),
-                    urlNode = generator.createUrlNodeFromDatum(_.extend(makeFakeDatum(100), {
-                        image: 'post-100.jpg'
-                    })),
-                    hasImage;
-
-                hasImage = _.some(urlNode.url, function (node) {
-                    return !_.isUndefined(node['image:image']);
-                });
-
-                hasImage.should.equal(true);
-            });
-
-            it('can initialize with non-empty siteMapContent', function (done) {
-                var generator = new PostGenerator();
-
-                stubUrl(generator);
-
-                sandbox.stub(generator, 'getData', function () {
-                    return Promise.resolve([
-                        _.extend(makeFakeDatum(100), {
-                            image: 'post-100.jpg'
-                        }),
-                        makeFakeDatum(200),
-                        _.extend(makeFakeDatum(300), {
-                            image: 'post-300.jpg'
-                        })
-                    ]);
-                });
-
-                generator.init().then(function () {
-                    var idxFirst,
-                        idxSecond,
-                        idxThird;
-
-                    should.exist(generator.siteMapContent);
-
-                    // TODO: We should validate the contents against the XSD:
-                    // xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                    // xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"
-
-                    validator.contains(generator.siteMapContent,
-                        '<loc>http://my-ghost-blog.com/url/100</loc>').should.equal(true);
-                    validator.contains(generator.siteMapContent,
-                        '<loc>http://my-ghost-blog.com/url/200</loc>').should.equal(true);
-                    validator.contains(generator.siteMapContent,
-                        '<loc>http://my-ghost-blog.com/url/300</loc>').should.equal(true);
-
-                    validator.contains(generator.siteMapContent,
-                        '<image:loc>http://my-ghost-blog.com/images/post-100.jpg</image:loc>')
-                        .should.equal(true);
-                    // This should NOT be present
-                    validator.contains(generator.siteMapContent,
-                        '<image:loc>http://my-ghost-blog.com/images/post-200.jpg</image:loc>')
-                        .should.equal(false);
-                    validator.contains(generator.siteMapContent,
-                        '<image:loc>http://my-ghost-blog.com/images/post-300.jpg</image:loc>')
-                        .should.equal(true);
-
-                    // Validate order newest to oldest
-                    idxFirst = generator.siteMapContent.indexOf('<loc>http://my-ghost-blog.com/url/300</loc>');
-                    idxSecond = generator.siteMapContent.indexOf('<loc>http://my-ghost-blog.com/url/200</loc>');
-                    idxThird = generator.siteMapContent.indexOf('<loc>http://my-ghost-blog.com/url/100</loc>');
-
-                    idxFirst.should.be.below(idxSecond);
-                    idxSecond.should.be.below(idxThird);
-
-                    done();
-                }).catch(done);
-            });
-        });
-
-        describe('PageGenerator', function () {
-            it('uses 1 priority for home page', function () {
-                var generator = new PageGenerator();
-
-                generator.getPriorityForDatum({
-                    name: 'home'
-                }).should.equal(1);
-            });
-            it('uses 0.8 priority for static pages', function () {
-                var generator = new PageGenerator();
-
-                generator.getPriorityForDatum({}).should.equal(0.8);
-            });
-            it('adds an image:image element if page has an image', function () {
-                var generator = new PostGenerator(),
-                    urlNode = generator.createUrlNodeFromDatum(_.extend(makeFakeDatum(100), {
-                        image: 'page-100.jpg'
-                    })),
-                    hasImage;
-
-                hasImage = _.some(urlNode.url, function (node) {
-                    return !_.isUndefined(node['image:image']);
-                });
-
-                hasImage.should.equal(true);
-            });
-        });
-
-        describe('TagGenerator', function () {
-            it('uses 0.6 priority for all tags', function () {
-                var generator = new TagGenerator();
-
-                generator.getPriorityForDatum({}).should.equal(0.6);
-            });
-
-            it('adds an image:image element if tag has an image', function () {
-                var generator = new PostGenerator(),
-                    urlNode = generator.createUrlNodeFromDatum(_.extend(makeFakeDatum(100), {
-                        image: 'tag-100.jpg'
-                    })),
-                    hasImage;
-
-                hasImage = _.some(urlNode.url, function (node) {
-                    return !_.isUndefined(node['image:image']);
-                });
-
-                hasImage.should.equal(true);
-            });
-        });
-
-        describe('UserGenerator', function () {
-            it('uses 0.6 priority for author links', function () {
-                var generator = new UserGenerator();
-
-                generator.getPriorityForDatum({}).should.equal(0.6);
-            });
-
-            it('adds an image:image element if user has a cover image', function () {
-                var generator = new PostGenerator(),
-                    urlNode = generator.createUrlNodeFromDatum(_.extend(makeFakeDatum(100), {
-                        cover: 'user-100.jpg'
-                    })),
-                    hasImage;
-
-                hasImage = _.some(urlNode.url, function (node) {
-                    return !_.isUndefined(node['image:image']);
-                });
-
-                hasImage.should.equal(true);
-            });
         });
     });
 });

@@ -69,14 +69,7 @@ _.extend(SiteMapManager.prototype, {
         }
 
         return this[type].siteMapContent;
-    },
-
-    _refreshAllPosts: _.throttle(function () {
-        this.posts.refreshAllPosts();
-    }, 3000, {
-        leading: false,
-        trailing: true
-    })
+    }
 });
 
 module.exports = SiteMapManager;
