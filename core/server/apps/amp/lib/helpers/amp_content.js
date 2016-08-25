@@ -11,6 +11,8 @@ var hbs                  = require('express-hbs'),
     Amperize             = require('amperize'),
     moment               = require('moment'),
     sanitizeHtml         = require('sanitize-html'),
+    config               = require('../../../../config'),
+    makeAbsoluteUrl      = require('../../../../utils/make-absolute-urls'),
     amperize             = new Amperize(),
     amperizeCache        = {},
     allowedAMPTags       = [],
@@ -40,6 +42,9 @@ function getAmperizeHTML(html, post) {
         return;
     }
 
+    // make relative URLs abolute
+    html = makeAbsoluteUrl(html, config.url, post.url).html();
+
     if (!amperizeCache[post.id] || moment(new Date(amperizeCache[post.id].updated_at)).diff(new Date(post.updated_at)) < 0) {
         return new Promise(function (resolve, reject) {
             amperize.parse(html, function (err, res) {
@@ -64,7 +69,7 @@ function ampContent() {
     return Promise.props(amperizeHTML).then(function (result) {
         ampHTML = result.amperize || '';
 
-        // let's sanitize our html!!!
+        // let's sanitize our HTML!!!
         cleanHTML = sanitizeHtml(ampHTML, {
             allowedTags: allowedAMPTags,
             allowedAttributes: false,
