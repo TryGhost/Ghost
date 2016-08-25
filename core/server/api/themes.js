@@ -74,15 +74,6 @@ themes = {
                 }
             })
             .then(function () {
-                return storageAdapter.exists(config.paths.themePath + '/' + zip.name);
-            })
-            .then(function (zipExists) {
-                // delete existing theme zip
-                if (zipExists) {
-                    return storageAdapter.delete(zip.name, config.paths.themePath);
-                }
-            })
-            .then(function () {
                 // store extracted theme
                 return storageAdapter.save({
                     name: zip.shortName,
@@ -144,7 +135,6 @@ themes = {
      */
     destroy: function destroy(options) {
         var name = options.name,
-            zipName = name + '.zip',
             theme,
             storageAdapter = storage.getStorage('themes');
 
@@ -161,9 +151,6 @@ themes = {
                 }
 
                 return storageAdapter.delete(name, config.paths.themePath);
-            })
-            .then(function () {
-                return storageAdapter.delete(zipName, config.paths.themePath);
             })
             .then(function () {
                 return config.loadThemes();
