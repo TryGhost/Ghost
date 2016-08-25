@@ -26,7 +26,7 @@
     "node": "~0.10.0 || ~0.12.0 || ^4.2.0"
   },
   "dependencies": {
-    "amperize": "https://github.com/aileencgn/amperize#fixed-layout-for-small-images",
+    "amperize": "https://github.com/AileenCGN/amperize/tarball/fixed-layout-for-small-images",
     "archiver": "1.0.1",
     "bcryptjs": "2.3.0",
     "bluebird": "3.4.1",
