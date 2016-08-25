@@ -3,14 +3,15 @@
 
 var serveStatic = require('express').static,
     fs = require('fs-extra'),
+    os = require('os'),
     path = require('path'),
     util = require('util'),
     Promise = require('bluebird'),
-    execFileAsPromise = Promise.promisify(require('child_process').execFile),
     errors = require('../errors'),
     config = require('../config'),
     utils = require('../utils'),
-    BaseStore = require('./base');
+    BaseStore = require('./base'),
+    remove = Promise.promisify(fs.remove);
 
 function LocalFileStore() {
     BaseStore.call(this);
@@ -54,7 +55,6 @@ LocalFileStore.prototype.exists = function (filename) {
 
 // middleware for serving the files
 LocalFileStore.prototype.serve = function (options) {
-    var self = this;
     options = options || {};
 
     // CASE: serve themes
@@ -63,20 +63,22 @@ LocalFileStore.prototype.serve = function (options) {
     if (options.isTheme) {
         return function downloadTheme(req, res, next) {
             var themeName = options.name,
+                themePath = path.join(config.paths.themePath, themeName),
                 zipName = themeName + '.zip',
-                zipPath = config.paths.themePath + '/' + zipName,
+                // store this in a unique temporary folder
+                zipBasePath = path.join(os.tmpdir(), utils.uid(10)),
+                zipPath = path.join(zipBasePath, zipName),
                 stream;
 
-            self.exists(zipPath)
-                .then(function (zipExists) {
-                    if (!zipExists) {
-                        return execFileAsPromise('zip', ['-r', zipName, themeName], {cwd: config.paths.themePath});
-                    }
-                })
+            Promise.promisify(fs.ensureDir)(zipBasePath)
                 .then(function () {
+                    return Promise.promisify(utils.zipFolder)(themePath, zipPath);
+                })
+                .then(function (length) {
                     res.set({
                         'Content-disposition': 'attachment; filename={themeName}.zip'.replace('{themeName}', themeName),
-                        'Content-Type': 'application/zip'
+                        'Content-Type': 'application/zip',
+                        'Content-Length': length
                     });
 
                     stream = fs.createReadStream(zipPath);
@@ -84,6 +86,9 @@ LocalFileStore.prototype.serve = function (options) {
                 })
                 .catch(function (err) {
                     next(err);
+                })
+                .finally(function () {
+                    remove(zipBasePath);
                 });
         };
     } else {
@@ -97,8 +102,8 @@ LocalFileStore.prototype.serve = function (options) {
 LocalFileStore.prototype.delete = function (fileName, targetDir) {
     targetDir = targetDir || this.getTargetDir(config.paths.imagesPath);
 
-    var path = targetDir + '/' + fileName;
-    return Promise.promisify(fs.remove)(path);
+    var pathToDelete = path.join(targetDir, fileName);
+    return remove(pathToDelete);
 };
 
 module.exports = LocalFileStore;
