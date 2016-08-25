@@ -3,6 +3,7 @@
    ========================================================================== */
 
 .navbar-default {
+  margin-bottom: 0;
 
   .navbar-toggle {
     border: 0 none;
@@ -95,7 +96,7 @@
   text-align: center;
   background: #fff no-repeat center 158px;
   background-size: cover;
-  overflow-x: hidden;
+  overflow: hidden;
 
   .main-nav-fixed {
     height: 100px;
@@ -120,6 +121,11 @@
     min-height: 100%;
     display: table-cell;
     vertical-align: middle;
+  }
+
+  .cover-image {
+    width: 100%;
+    margin-top: $navbar-height * 2 + 58px; // navbar-height * 2 + sub-nav-height
   }
 }
 
@@ -204,7 +210,7 @@
 }
 
 .post-head.main-header {
-  height: 65vh;
+  height: 80vh;
   min-height: 180px;
 }
 

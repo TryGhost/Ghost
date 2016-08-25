@@ -17,12 +17,7 @@
   </div>
 </div>
 
-<header {{#if image}}
-    style="background-image: url({{image}})" class="main-header post-head" role="banner"
-  {{else}}
-    class="main-header post-head no-cover"
-  {{/if}}>
-
+<header class="main-header post-head">
   <div class="main-nav-fixed">
     <nav class="navbar navbar-default">
       <div class="container-fluid">
@@ -72,4 +67,8 @@
       </div><!-- /.container-fluid -->
     </nav>
   </div>
+
+  {{#if image}}
+    <img src="{{image}}" class="cover-image" alt="Cover image for post" role="banner">
+  {{/if}}
 </header>
