@@ -136,12 +136,66 @@ describe('{{amp_content}} helper', function () {
         it('can transform audio tags to amp-audio', function (done) {
             var testData = {
                     html: '<audio controls="controls" width="auto" height="50" autoplay="mobile">Your browser does not support the <code>audio</code> element.<source src="https://audio.com/foo.wav" type="audio/wav"></audio>' +
-                            '<audio src="http://audio.com/foo.ogg"><track kind="captions" src="http://audio.com/foo.en.vtt" srclang="en" label="English"><track kind="captions" src="http://audio.com/foo.sv.vtt" srclang="sv" label="Svenska"></audio>',
+                            '<audio src="http://audio.com/foo.ogg"><track kind="captions" src="http://audio.com/foo.en.vtt" srclang="en" label="English"><source kind="captions" src="http://audio.com/foo.sv.vtt" srclang="sv" label="Svenska"></audio>',
                     updated_at: 'Wed Jul 27 2016 18:17:22 GMT+0200 (CEST)',
                     id: 1
                 },
                 expectedResult = '<amp-audio controls="controls" width="auto" height="50" autoplay="mobile">Your browser does not support the <code>audio</code> element.<source src="https://audio.com/foo.wav" type="audio/wav" /></amp-audio>' +
-                                    '<amp-audio src="https://audio.com/foo.ogg"><track kind="captions" src="https://audio.com/foo.en.vtt" srclang="en" label="English" /><track kind="captions" src="https://audio.com/foo.sv.vtt" srclang="sv" label="Svenska" /></amp-audio>',
+                                    '<amp-audio src="https://audio.com/foo.ogg"><track kind="captions" src="https://audio.com/foo.en.vtt" srclang="en" label="English" /><source kind="captions" src="https://audio.com/foo.sv.vtt" srclang="sv" label="Svenska" /></amp-audio>',
+                ampResult = ampContentHelper.call(testData);
+
+            ampResult.then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.equal(expectedResult);
+                done();
+            }).catch(done);
+        });
+
+        it('removes video tags including source children', function (done) {
+            var testData = {
+                    html: '<video width="480" controls poster="https://archive.org/download/WebmVp8Vorbis/webmvp8.gif" >' +
+                            '<source src="https://archive.org/download/WebmVp8Vorbis/webmvp8.webm" type="video/webm">' +
+                            '<source src="https://archive.org/download/WebmVp8Vorbis/webmvp8_512kb.mp4" type="video/mp4">' +
+                            'Your browser doesn\'t support HTML5 video tag.' +
+                            '</video>',
+                    updated_at: 'Wed Jul 27 2016 18:17:22 GMT+0200 (CEST)',
+                    id: 1
+                },
+                expectedResult = 'Your browser doesn\'t support HTML5 video tag.',
+                ampResult = ampContentHelper.call(testData);
+
+            ampResult.then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.equal(expectedResult);
+                done();
+            }).catch(done);
+        });
+
+        it('removes inline style', function (done) {
+            var testData = {
+                    html: '<amp-img src="/content/images/2016/08/aileen_small.jpg" style="border-radius: 50%" width="50" height="50" layout="responsive"></amp-img>',
+                    updated_at: 'Wed Jul 27 2016 18:17:22 GMT+0200 (CEST)',
+                    id: 1
+                },
+                expectedResult = '<amp-img src="https://my-awesome-blog.com/content/images/2016/08/aileen_small.jpg" width="50" height="50" layout="responsive"></amp-img>',
+                ampResult = ampContentHelper.call(testData);
+
+            ampResult.then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.equal(expectedResult);
+                done();
+            }).catch(done);
+        });
+
+        it('removes prohibited iframe attributes', function (done) {
+            var testData = {
+                    html: '<iframe src="https://player.vimeo.com/video/180069681?color=ffffff" width="640" height="267" frameborder="0" ' +
+                            'webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>',
+                    updated_at: 'Wed Jul 27 2016 18:17:22 GMT+0200 (CEST)',
+                    id: 1
+                },
+                expectedResult = '<amp-iframe src="https://player.vimeo.com/video/180069681?color=ffffff" width="640" height="267" ' +
+                                    'frameborder="0" allowfullscreen sandbox="allow-scripts allow-same-origin" layout="responsive"></amp-iframe>',
                 ampResult = ampContentHelper.call(testData);
 
             ampResult.then(function (rendered) {
