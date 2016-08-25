@@ -13,6 +13,7 @@ var hbs                  = require('express-hbs'),
     sanitizeHtml         = require('sanitize-html'),
     config               = require('../../../../config'),
     makeAbsoluteUrl      = require('../../../../utils/make-absolute-urls'),
+    cheerio              = require('cheerio'),
     amperize             = new Amperize(),
     amperizeCache        = {},
     allowedAMPTags       = [],
@@ -67,9 +68,31 @@ function ampContent() {
         };
 
     return Promise.props(amperizeHTML).then(function (result) {
+        var $;
+
+        // our Amperized HTML
         ampHTML = result.amperize || '';
 
-        // let's sanitize our HTML!!!
+        // Use cheerio to traverse through HTML and make little clean-ups
+        $ = cheerio.load(ampHTML);
+
+        // We have to remove source children in video, as source
+        // is whitelisted for audio, but causes validation
+        // errors in video, because video will be stripped out.
+        // @TODO: remove this, when Amperize support video transform
+        $('video').children('source').remove();
+
+        // Vimeo iframe e. g. come with prohibited attributes
+        // @TODO: remove this, when Amperize supports HTML sanitizing
+        $('amp-iframe').removeAttr('webkitallowfullscreen');
+        $('amp-iframe').removeAttr('mozallowfullscreen');
+
+        // No inline style allowed
+        $('*').removeAttr('style');
+
+        ampHTML = $.html();
+
+        // @TODO: remove this, when Amperize supports HTML sanitizing
         cleanHTML = sanitizeHtml(ampHTML, {
             allowedTags: allowedAMPTags,
             allowedAttributes: false,
