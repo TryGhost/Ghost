@@ -6606,7 +6606,7 @@ textarea:focus::placeholder, input:focus::placeholder {
 margin on the iframe, cause it breaks stuff. */
 /* Buttons */
 .btn {
-  padding: 8px 16px;
+  padding: 8px 22px;
   font-weight: 100;
   -webkit-transition: background-color 0.2s ease-out, border-color 0.2s ease-out, opacity 0.2s ease-out;
           transition: background-color 0.2s ease-out, border-color 0.2s ease-out, opacity 0.2s ease-out; }
@@ -6634,31 +6634,31 @@ margin on the iframe, cause it breaks stuff. */
 
 .btn-black {
   color: #fff;
-  background-color: #000;
-  border-color: #000; }
+  background-color: #333333;
+  border-color: #333333; }
 
 .btn-black:focus, .btn-black.focus {
   color: #fff;
-  background-color: black;
+  background-color: #1a1a1a;
   border-color: black; }
 
 .btn-black:hover {
   color: #fff;
-  background-color: black;
-  border-color: black; }
+  background-color: #1a1a1a;
+  border-color: #141414; }
 
 .btn-black:active, .btn-black.active,
 .open > .btn-black.dropdown-toggle {
   color: #fff;
-  background-color: black;
-  border-color: black; }
+  background-color: #1a1a1a;
+  border-color: #141414; }
 
 .btn-black:active:hover, .btn-black:active:focus, .btn-black:active.focus, .btn-black.active:hover, .btn-black.active:focus, .btn-black.active.focus,
 .open > .btn-black.dropdown-toggle:hover,
 .open > .btn-black.dropdown-toggle:focus,
 .open > .btn-black.dropdown-toggle.focus {
   color: #fff;
-  background-color: black;
+  background-color: #080808;
   border-color: black; }
 
 .btn-black:active, .btn-black.active,
@@ -6669,11 +6669,11 @@ margin on the iframe, cause it breaks stuff. */
 fieldset[disabled] .btn-black:hover,
 fieldset[disabled] .btn-black:focus,
 fieldset[disabled] .btn-black.focus {
-  background-color: #000;
-  border-color: #000; }
+  background-color: #333333;
+  border-color: #333333; }
 
 .btn-black .badge {
-  color: #000;
+  color: #333333;
   background-color: #fff; }
 
 .btn-padded {
@@ -6972,8 +6972,8 @@ fieldset[disabled] .btn-muted-link:focus {
   display: inline-block;
   width: 102px;
   border: 1px solid transparent;
-  -webkit-transition: width 0.35s, box-shadow 0.45s;
-          transition: width 0.35s, box-shadow 0.45s; }
+  -webkit-transition: width 0.35s, box-shadow 0.45s, border-color 0.45s;
+          transition: width 0.35s, box-shadow 0.45s, border-color 0.45s; }
 
 .navbar-default .navbar-form.search-form .form-group input.form-control:hover, .navbar-default .navbar-form.search-form .form-group input.form-control.hover, .navbar-default .navbar-form.search-form .form-group input.form-control:focus, .navbar-default .navbar-form.search-form .form-group input.form-control:valid {
   width: 200px;
@@ -6981,21 +6981,25 @@ fieldset[disabled] .btn-muted-link:focus {
   border-color: #e6e6e6; }
 
 .navbar-default .navbar-form.search-form .form-group input.form-control::-webkit-input-placeholder {
+  font-size: 14px;
   font-style: normal;
   color: #333333;
   opacity: 1; }
 
 .navbar-default .navbar-form.search-form .form-group input.form-control::-moz-placeholder {
+  font-size: 14px;
   font-style: normal;
   color: #333333;
   opacity: 1; }
 
 .navbar-default .navbar-form.search-form .form-group input.form-control:-ms-input-placeholder {
+  font-size: 14px;
   font-style: normal;
   color: #333333;
   opacity: 1; }
 
 .navbar-default .navbar-form.search-form .form-group input.form-control::placeholder {
+  font-size: 14px;
   font-style: normal;
   color: #333333;
   opacity: 1; }
@@ -7009,7 +7013,7 @@ fieldset[disabled] .btn-muted-link:focus {
   height: 39px;
   line-height: 39px;
   text-align: center;
-  font-size: 14px;
+  font-size: 12px;
   -webkit-transition: left 0.35s ease;
           transition: left 0.35s ease; }
 
@@ -7045,6 +7049,10 @@ fieldset[disabled] .btn-muted-link:focus {
   min-height: 100%;
   display: table-cell;
   vertical-align: middle; }
+
+.main-header .navbar .navbar-toggle {
+  margin-right: 35px;
+  padding-left: 35px; }
 
 .main-header .cover-image {
   width: 100%;
