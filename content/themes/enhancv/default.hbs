@@ -68,26 +68,25 @@
     {{{body}}}
 
     <footer class="site-footer clearfix">
-        <a class="subscribe icon-feed" href="{{@blog.url}}/rss/"><span class="tooltip">Subscribe!</span></a>
-
         <div class="container">
             <div class="row">
-                <div class="col-md-12">
-                    {{! Social Links }}
+                <div class="col-sm-4 visible-md visible-lg">
+                    <a href="https://app.enhancv.com" class="btn btn-sm btn-transparent btn-line invert-color lets-begin">
+                        Let's Begin
+                    </a> <span>It's Free</span>
+                </div>
+                <div class="col-sm-4 text-center">
                     {{> social }}
+                </div>
+                <div class="col-sm-4 visible-md visible-lg text-right">
+                    <a href="{{@blog.url}}">
+                      <img src="{{asset "images/main-logo.svg"}}" alt="Enhancv Blog Logo" class="logo">
+                    </a>
                 </div>
             </div>
         </div>
-        <div class="container">
-            <div class="row">
-                 <section class="copyright">All content copyright <a href="{{@blog.url}}/">{{@blog.title}}</a> &copy; {{date format="YYYY"}} &bull; All rights reserved.</section>
-                 <section class="poweredby">Proudly published with <a class="icon-ghost" href="http://ghost.org">Ghost</a> and the <a href="http://github.com/karloespiritu/Bastard"><strong>Bastard</strong></a> Theme</section>
-            </div>
-            <div class="row">
-                 <a id="scroll-to-top" class="pull-right" href="#top"><i class="fa fa-chevron-circle-up fa-2x"></i></a>
-            </div>
-        </div>
     </footer>
+
     {{!-- jQuery needs to come before `{{ghost_foot}}` so that jQuery can be used in code injection --}}
     <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
     {{! Ghost outputs important scripts and data with this tag }}

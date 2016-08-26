@@ -3,112 +3,28 @@
    ========================================================================== */
 
 .site-footer {
-  position: relative;
-  margin: 0;
-  padding: 4rem 0;
-  border-top: rgba(235, 242, 246, 0.29) 1px solid;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 1.3rem;
-  line-height: 1.7em;
-  color: #BBC7CC;
-  text-align: center;
-  background: $dark-black;
-  a {
-    z-index: 999;
-    color: #BBC7CC;
-    text-decoration: underline;
-    &:hover {
-      color: #50585D;
-    }
+  background: #1a1a1a;
+  height: 122px;
+  line-height: 120px;
+  padding: 0 50px;
+  position: relative; 
+  font-size: 16px;
+  color: #6A6A6A;
+  font-weight: 300;
+
+  .lets-begin {
+    margin-right: 20px; 
   }
-}
 
-.poweredby .icon-ghost {
-  font-weight: 700;
-  text-decoration: none;
-  &:hover {
-    text-decoration: none;
+  .logo {
+    width: 143px;
+    opacity: .5;
   }
-  &:before {
-    font-size: 1rem;
-    margin-right: 0.2em;
+
+  @media screen and (max-width: $screen-sm) {
+    height: auto;
+    text-align: center;
+    line-height: 60px;
+    padding: 50px 0;
   }
-}
-
-/* The subscribe icon on the footer */
-
-.subscribe {
-  width: 28px;
-  height: 28px;
-  position: absolute;
-  top: -14px;
-  left: 50%;
-  margin-left: -15px;
-  border: #444648 1px solid;
-  text-align: center;
-  line-height: 2.4rem;
-  border-radius: 50px;
-  background: $dark-black;
-  transition: box-shadow 0.5s;
-  &:before {
-    color: #666666;
-    font-size: 10px;
-    position: absolute;
-    top: 9px;
-    left: 9px;
-    font-weight: bold;
-    transition: color 0.5s ease;
-  }
-  &:hover {
-    box-shadow: rgba(0, 0, 0, 0.05) 0 0 0 3px;
-    transition: box-shadow 0.25s;
-    &:before {
-      color: #50585D;
-    }
-  }
-}
-
-/* The RSS icon, inserted via icon font */
-
-/* Add a box shadow to on hover */
-
-/* CSS tooltip saying "Subscribe!" - initially hidden */
-
-.tooltip {
-  opacity: 0;
-  display: inline-block;
-  padding: 4px 8px 5px 8px;
-  position: absolute;
-  top: -23px;
-  left: -21px;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 1.1rem;
-  line-height: 1em;
-  text-align: center;
-  background: #666666;
-  border-radius: 20px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-  transition: opacity 0.3s ease, top 0.3s ease;
-  &:after {
-    content: "";
-    border-width: 5px 5px 0 5px;
-    border-style: solid;
-    border-color: #666666 transparent;
-    display: block;
-    position: absolute;
-    bottom: -4px;
-    left: 50%;
-    margin-left: -5px;
-    z-index: 220;
-    width: 0;
-  }
-}
-
-/* The little chiclet arrow under the tooltip, pointing down */
-
-/* On hover, show the tooltip! */
-
-.subscribe:hover .tooltip {
-  opacity: 1;
-  top: -33px;
 }

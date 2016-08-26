@@ -17,12 +17,21 @@
 }
 
 .btn-social {
-  display: inline-block;
-  width: 48px;
-  height: 48px;
-  border: 1px solid $gray-light;
-  border-radius: 100%;
-  text-align: center;
-  font-size: 24px;
-  line-height: 46px;
+    display: inline-block;
+    height: 34px;
+    width: 34px;
+    line-height: 34px;
+    text-align: center;
+    margin: 0 5px;
+    border-radius: 50%;
+    background: #666;
+    text-decoration: none;
+    color: #1a1a1a;
+    transition: background-color 0.2s ease-out, border-color 0.2s ease-out, opacity 0.2s ease-out;
+
+    &:hover,
+    &:focus {
+      background: rgba(#fff, .8);
+      color: #1a1a1a;
+    }
 }

@@ -124,23 +124,6 @@ body:before {
     border-top: rgba(0, 0, 100, 0.06) 1px solid;
     border-left: none;
   }
-  .site-footer {
-    margin-top: 5rem;
-    font-size: 0.9rem;
-  }
-  .btn-social {
-    width: 38px;
-    height: 38px;
-    border: 1px solid $gray-light;
-    font-size: 18px;
-    line-height: 38px;
-  }
-  /* increase size of scroll-to-top btn for smaller screens*/
-  a#scroll-to-top {
-    font-size: 1.1rem;
-    margin-right: 20px;
-    margin-top: 15px;
-  }
 }
 
 /* ==========================================================================
@@ -300,7 +283,6 @@ body:before {
   .btn-social {
     width: 32px;
     height: 32px;
-    border: 1px solid $gray-light;
     font-size: 15px;
     line-height: 30px;
   }
