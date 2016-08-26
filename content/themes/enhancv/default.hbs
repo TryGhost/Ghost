@@ -79,15 +79,9 @@
                     {{> social }}
                 </div>
                 <div class="col-sm-4 text-right">
-                    {{#if @blog.logo}}
-                        <a href="{{@blog.url}}">
-                          <img src="{{@blog.logo}}" alt="Enhancv Blog Logo">
-                        </a>
-                    {{else}}
-                        <a href="{{@blog.url}}">
-                          {{> enhancv-logo}}
-                        </a>
-                    {{/if}}
+                    <a href="{{@blog.url}}">
+                      <img src="{{asset "images/main-logo.svg"}}" alt="Enhancv Blog Logo" class="logo">
+                    </a>
                 </div>
             </div>
         </div>
