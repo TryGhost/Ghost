@@ -20,4 +20,11 @@
     width: 143px;
     opacity: .5;
   }
+
+  @media screen and (max-width: $screen-sm) {
+    height: auto;
+    text-align: center;
+    line-height: 60px;
+    padding: 50px 0;
+  }
 }
