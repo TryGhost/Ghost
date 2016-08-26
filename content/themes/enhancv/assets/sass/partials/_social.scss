@@ -27,6 +27,7 @@
     background: #666;
     text-decoration: none;
     color: #1a1a1a;
+    transition: background-color 0.2s ease-out, border-color 0.2s ease-out, opacity 0.2s ease-out;
 
     &:hover,
     &:focus {
