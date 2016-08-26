@@ -166,6 +166,10 @@
 /* Themes
 /* ---------------------------------------------------------- */
 
+.settings-themes {
+    max-width: 500px;
+}
+
 .settings-themes h3 {
     margin-bottom: 1.6em;
     font-size: 16px;
