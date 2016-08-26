@@ -317,6 +317,22 @@ margin on the iframe, cause it breaks stuff. */
   }
 }
 
+.btn-transparent {
+  color: #fff;
+  background-color: transparent;
+
+  &.invert-color {
+    &:hover {
+        background-color: #fff;
+        color: #333;
+    }
+  }
+}
+
+.btn-line {
+  border: 1px solid #fff;
+}
+
 .btn-black {
   @include button-variant(#fff, #000, #000);
 }
