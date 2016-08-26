@@ -22,40 +22,34 @@ describe('Roles API', function () {
             testUtils.API.checkResponse(response.roles[3], 'role');
         }
 
-        it('Owner can browse', function (done) {
-            RoleAPI.browse(context.owner).then(function (response) {
+        it('Owner can browse', function () {
+            return RoleAPI.browse(context.owner).then(function (response) {
                 checkBrowseResponse(response);
-                done();
-            }).catch(done);
+            });
         });
 
-        it('Admin can browse', function (done) {
-            RoleAPI.browse(context.admin).then(function (response) {
+        it('Admin can browse', function () {
+            return RoleAPI.browse(context.admin).then(function (response) {
                 checkBrowseResponse(response);
-                done();
-            }).catch(done);
+            });
         });
 
-        it('Editor can browse', function (done) {
-            RoleAPI.browse(context.editor).then(function (response) {
+        it('Editor can browse', function () {
+            return RoleAPI.browse(context.editor).then(function (response) {
                 checkBrowseResponse(response);
-                done();
-            }).catch(done);
+            });
         });
 
-        it('Author can browse', function (done) {
-            RoleAPI.browse(context.author).then(function (response) {
+        it('Author can browse', function () {
+            return RoleAPI.browse(context.author).then(function (response) {
                 checkBrowseResponse(response);
-                done();
-            }).catch(done);
+            });
         });
 
-        it('No-auth CANNOT browse', function (done) {
-            RoleAPI.browse().then(function () {
-                done(new Error('Browse roles is not denied without authentication.'));
-            }, function () {
-                done();
-            }).catch(done);
+        it('No-auth CANNOT browse', function () {
+            return RoleAPI.browse().then(function () {
+                throw new Error('Browse roles is not denied without authentication.');
+            });
         });
     });
 
@@ -73,48 +67,42 @@ describe('Roles API', function () {
             response.roles[2].name.should.equal('Author');
         }
 
-        it('Owner can assign all', function (done) {
-            RoleAPI.browse(_.extend({}, context.owner, {permissions: 'assign'})).then(function (response) {
+        it('Owner can assign all', function () {
+            return RoleAPI.browse(_.extend({}, context.owner, {permissions: 'assign'})).then(function (response) {
                 checkBrowseResponse(response);
-                done();
-            }).catch(done);
+            });
         });
 
-        it('Admin can assign all', function (done) {
-            RoleAPI.browse(_.extend({}, context.admin, {permissions: 'assign'})).then(function (response) {
+        it('Admin can assign all', function () {
+            return RoleAPI.browse(_.extend({}, context.admin, {permissions: 'assign'})).then(function (response) {
                 checkBrowseResponse(response);
-                done();
-            }).catch(done);
+            });
         });
 
-        it('Editor can assign Author', function (done) {
-            RoleAPI.browse(_.extend({}, context.editor, {permissions: 'assign'})).then(function (response) {
+        it('Editor can assign Author', function () {
+            return RoleAPI.browse(_.extend({}, context.editor, {permissions: 'assign'})).then(function (response) {
                 should.exist(response);
                 should.exist(response.roles);
                 testUtils.API.checkResponse(response, 'roles');
                 response.roles.should.have.length(1);
                 testUtils.API.checkResponse(response.roles[0], 'role');
                 response.roles[0].name.should.equal('Author');
-                done();
-            }).catch(done);
+            });
         });
 
-        it('Author CANNOT assign any', function (done) {
-            RoleAPI.browse(_.extend({}, context.author, {permissions: 'assign'})).then(function (response) {
+        it('Author CANNOT assign any', function () {
+            return RoleAPI.browse(_.extend({}, context.author, {permissions: 'assign'})).then(function (response) {
                 should.exist(response);
                 should.exist(response.roles);
                 testUtils.API.checkResponse(response, 'roles');
                 response.roles.should.have.length(0);
-                done();
-            }).catch(done);
+            });
         });
 
-        it('No-auth CANNOT browse', function (done) {
-            RoleAPI.browse({permissions: 'assign'}).then(function () {
-                done(new Error('Browse roles is not denied without authentication.'));
-            }, function () {
-                done();
-            }).catch(done);
+        it('No-auth CANNOT browse', function () {
+            return RoleAPI.browse({permissions: 'assign'}).then(function () {
+                throw new Error('Browse roles is not denied without authentication.');
+            });
         });
     });
 });

@@ -31,46 +31,41 @@ describe('Tags API', function () {
             Promise.resolve(newTag);
         });
 
-        it('can add a tag (admin)', function (done) {
-            TagAPI.add({tags: [newTag]}, testUtils.context.admin)
-                .then(function (results) {
-                    should.exist(results);
-                    should.exist(results.tags);
-                    results.tags.length.should.be.above(0);
-                    done();
-                }).catch(done);
+        it('can add a tag (admin)', function () {
+            return TagAPI.add({tags: [newTag]}, testUtils.context.admin)
+            .then(function (results) {
+                should.exist(results);
+                should.exist(results.tags);
+                results.tags.length.should.be.above(0);
+            });
         });
 
-        it('can add a tag (editor)', function (done) {
-            TagAPI.add({tags: [newTag]}, testUtils.context.editor)
-                .then(function (results) {
-                    should.exist(results);
-                    should.exist(results.tags);
-                    results.tags.length.should.be.above(0);
-                    done();
-                }).catch(done);
+        it('can add a tag (editor)', function () {
+            return TagAPI.add({tags: [newTag]}, testUtils.context.editor)
+            .then(function (results) {
+                should.exist(results);
+                should.exist(results.tags);
+                results.tags.length.should.be.above(0);
+            });
         });
 
-        it('No-auth CANNOT add tag', function (done) {
-            TagAPI.add({tags: [newTag]}).then(function () {
-                done(new Error('Add tag is not denied without authentication.'));
-            }, function () {
-                done();
-            }).catch(done);
+        it('No-auth CANNOT add tag', function () {
+            return TagAPI.add({tags: [newTag]}).then(function () {
+                throw new Error('Add tag is not denied without authentication.');
+            });
         });
 
-        it('rejects invalid names with ValidationError', function (done) {
+        it('rejects invalid names with ValidationError', function () {
             var invalidTag = _.clone(newTag);
 
             invalidTag.name = ', starts with a comma';
 
-            TagAPI.add({tags: [invalidTag]}, testUtils.context.admin)
-                .then(function () {
-                    done(new Error('Adding a tag with an invalid name is not rejected.'));
-                }).catch(function (errors) {
-                    errors.should.have.enumerable(0).with.property('errorType', 'ValidationError');
-                    done();
-                }).catch(done);
+            return TagAPI.add({tags: [invalidTag]}, testUtils.context.admin)
+            .then(function () {
+                throw new Error('Adding a tag with an invalid name is not rejected.');
+            }).catch(function (errors) {
+                errors.should.have.enumerable(0).with.property('errorType', 'ValidationError');
+            });
         });
     });
 
@@ -78,69 +73,60 @@ describe('Tags API', function () {
         var newTagName = 'tagNameUpdated',
         firstTag = 1;
 
-        it('can edit a tag (admin)', function (done) {
-            TagAPI.edit({tags: [{name: newTagName}]}, _.extend({}, context.admin, {id: firstTag}))
-                .then(function (results) {
-                    should.exist(results);
-                    should.exist(results.tags);
-                    results.tags.length.should.be.above(0);
-                    done();
-                }).catch(done);
+        it('can edit a tag (admin)', function () {
+            return TagAPI.edit({tags: [{name: newTagName}]}, _.extend({}, context.admin, {id: firstTag}))
+            .then(function (results) {
+                should.exist(results);
+                should.exist(results.tags);
+                results.tags.length.should.be.above(0);
+            });
         });
 
-        it('can edit a tag (editor)', function (done) {
-            TagAPI.edit({tags: [{name: newTagName}]}, _.extend({}, context.editor, {id: firstTag}))
-                .then(function (results) {
-                    should.exist(results);
-                    should.exist(results.tags);
-                    results.tags.length.should.be.above(0);
-                    done();
-                }).catch(done);
+        it('can edit a tag (editor)', function () {
+            return TagAPI.edit({tags: [{name: newTagName}]}, _.extend({}, context.editor, {id: firstTag}))
+            .then(function (results) {
+                should.exist(results);
+                should.exist(results.tags);
+                results.tags.length.should.be.above(0);
+            });
         });
 
-        it('No-auth CANNOT edit tag', function (done) {
-            TagAPI.edit({tags: [{name: newTagName}]}, _.extend({}, {id: firstTag}))
+        it('No-auth CANNOT edit tag', function () {
+            return TagAPI.edit({tags: [{name: newTagName}]}, _.extend({}, {id: firstTag}))
             .then(function () {
-                done(new Error('Add tag is not denied without authentication.'));
-            }, function () {
-                done();
-            }).catch(done);
+                throw new Error('Add tag is not denied without authentication.');
+            });
         });
 
-        it('rejects invalid names with ValidationError', function (done) {
+        it('rejects invalid names with ValidationError', function () {
             var invalidTagName = ', starts with a comma';
 
-            TagAPI.edit({tags: [{name: invalidTagName}]}, _.extend({}, context.editor, {id: firstTag}))
-                .then(function () {
-                    done(new Error('Adding a tag with an invalid name is not rejected.'));
-                }).catch(function (errors) {
-                    errors.should.have.enumerable(0).with.property('errorType', 'ValidationError');
-                    done();
-                }).catch(done);
+            return TagAPI.edit({tags: [{name: invalidTagName}]}, _.extend({}, context.editor, {id: firstTag}))
+            .then(function () {
+                throw new Error('Adding a tag with an invalid name is not rejected.');
+            }).catch(function (errors) {
+                errors.should.have.enumerable(0).with.property('errorType', 'ValidationError');
+            });
         });
     });
 
     describe('Destroy', function () {
         var firstTag = 1;
-        it('can destroy Tag', function (done) {
-            TagAPI.destroy(_.extend({}, testUtils.context.admin, {id: firstTag}))
-                .then(function (results) {
-                    should.not.exist(results);
-
-                    done();
-                }).catch(done);
+        it('can destroy Tag', function () {
+            return TagAPI.destroy(_.extend({}, testUtils.context.admin, {id: firstTag}))
+            .then(function (results) {
+                should.not.exist(results);
+            });
         });
     });
 
     describe('Browse', function () {
-        beforeEach(function (done) {
-            testUtils.fixtures.insertMoreTags().then(function () {
-                done();
-            });
+        beforeEach(function () {
+            return testUtils.fixtures.insertMoreTags();
         });
 
-        it('can browse (internal)', function (done) {
-            TagAPI.browse(testUtils.context.internal).then(function (results) {
+        it('can browse (internal)', function () {
+            return TagAPI.browse(testUtils.context.internal).then(function (results) {
                 should.exist(results);
                 should.exist(results.tags);
                 results.tags.should.have.lengthOf(15);
@@ -153,13 +139,11 @@ describe('Tags API', function () {
                 results.meta.pagination.should.have.property('total', 55);
                 results.meta.pagination.should.have.property('next', 2);
                 results.meta.pagination.should.have.property('prev', null);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can browse page 2 (internal)', function (done) {
-            TagAPI.browse(_.extend({}, testUtils.context.internal, {page: 2})).then(function (results) {
+        it('can browse page 2 (internal)', function () {
+            return TagAPI.browse(_.extend({}, testUtils.context.internal, {page: 2})).then(function (results) {
                 should.exist(results);
                 should.exist(results.tags);
                 results.tags.should.have.lengthOf(15);
@@ -172,61 +156,51 @@ describe('Tags API', function () {
                 results.meta.pagination.should.have.property('total', 55);
                 results.meta.pagination.should.have.property('next', 3);
                 results.meta.pagination.should.have.property('prev', 1);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can browse (owner)', function (done) {
-            TagAPI.browse({context: {user: 1}}).then(function (results) {
+        it('can browse (owner)', function () {
+            return TagAPI.browse({context: {user: 1}}).then(function (results) {
                 should.exist(results);
                 should.exist(results.tags);
                 results.tags.length.should.be.above(0);
                 testUtils.API.checkResponse(results.tags[0], 'tag');
                 results.tags[0].created_at.should.be.an.instanceof(Date);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can browse (admin)', function (done) {
-            TagAPI.browse(testUtils.context.admin).then(function (results) {
+        it('can browse (admin)', function () {
+            return TagAPI.browse(testUtils.context.admin).then(function (results) {
                 should.exist(results);
                 should.exist(results.tags);
                 results.tags.length.should.be.above(0);
                 testUtils.API.checkResponse(results.tags[0], 'tag');
                 results.tags[0].created_at.should.be.an.instanceof(Date);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can browse (editor)', function (done) {
-            TagAPI.browse(testUtils.context.editor).then(function (results) {
+        it('can browse (editor)', function () {
+            return TagAPI.browse(testUtils.context.editor).then(function (results) {
                 should.exist(results);
                 should.exist(results.tags);
                 results.tags.length.should.be.above(0);
                 testUtils.API.checkResponse(results.tags[0], 'tag');
                 results.tags[0].created_at.should.be.an.instanceof(Date);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can browse (author)', function (done) {
-            TagAPI.browse(testUtils.context.author).then(function (results) {
+        it('can browse (author)', function () {
+            return TagAPI.browse(testUtils.context.author).then(function (results) {
                 should.exist(results);
                 should.exist(results.tags);
                 results.tags.length.should.be.above(0);
                 testUtils.API.checkResponse(results.tags[0], 'tag');
                 results.tags[0].created_at.should.be.an.instanceof(Date);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can browse with include count.posts', function (done) {
-            TagAPI.browse({context: {user: 1}, include: 'count.posts'}).then(function (results) {
+        it('can browse with include count.posts', function () {
+            return TagAPI.browse({context: {user: 1}, include: 'count.posts'}).then(function (results) {
                 should.exist(results);
                 should.exist(results.tags);
                 results.tags.should.have.lengthOf(15);
@@ -241,13 +215,11 @@ describe('Tags API', function () {
                 results.meta.pagination.should.have.property('total', 55);
                 results.meta.pagination.should.have.property('next', 2);
                 results.meta.pagination.should.have.property('prev', null);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can browse page 4 with include count.posts', function (done) {
-            TagAPI.browse({context: {user: 1}, include: 'count.posts', page: 4}).then(function (results) {
+        it('can browse page 4 with include count.posts', function () {
+            return TagAPI.browse({context: {user: 1}, include: 'count.posts', page: 4}).then(function (results) {
                 should.exist(results);
                 should.exist(results.tags);
                 results.tags.should.have.lengthOf(10);
@@ -260,55 +232,46 @@ describe('Tags API', function () {
                 results.meta.pagination.should.have.property('total', 55);
                 results.meta.pagination.should.have.property('next', null);
                 results.meta.pagination.should.have.property('prev', 3);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can browse and order by slug using asc', function (done) {
+        it('can browse and order by slug using asc', function () {
             var expectedTags;
 
-            TagAPI.browse({context: {user: 1}})
-                .then(function (results) {
-                    should.exist(results);
+            return TagAPI.browse({context: {user: 1}})
+            .then(function (results) {
+                should.exist(results);
 
-                    expectedTags = _(results.tags).map('slug').filter(onlyFixtures).sortBy().value();
+                expectedTags = _(results.tags).map('slug').filter(onlyFixtures).sortBy().value();
 
-                    return TagAPI.browse({context: {user: 1}, order: 'slug asc'});
-                })
-                .then(function (results) {
-                    var tags;
+                return TagAPI.browse({context: {user: 1}, order: 'slug asc'});
+            }).then(function (results) {
+                var tags;
 
-                    should.exist(results);
+                should.exist(results);
 
-                    tags = _(results.tags).map('slug').filter(onlyFixtures).value();
-                    tags.should.eql(expectedTags);
-                })
-                .then(done)
-                .catch(done);
+                tags = _(results.tags).map('slug').filter(onlyFixtures).value();
+                tags.should.eql(expectedTags);
+            });
         });
 
-        it('can browse and order by slug using desc', function (done) {
+        it('can browse and order by slug using desc', function () {
             var expectedTags;
 
-            TagAPI.browse({context: {user: 1}})
-                .then(function (results) {
-                    should.exist(results);
+            return TagAPI.browse({context: {user: 1}}).then(function (results) {
+                should.exist(results);
 
-                    expectedTags = _(results.tags).map('slug').filter(onlyFixtures).sortBy().reverse().value();
+                expectedTags = _(results.tags).map('slug').filter(onlyFixtures).sortBy().reverse().value();
 
-                    return TagAPI.browse({context: {user: 1}, order: 'slug desc'});
-                })
-                .then(function (results) {
-                    var tags;
+                return TagAPI.browse({context: {user: 1}, order: 'slug desc'});
+            }).then(function (results) {
+                var tags;
 
-                    should.exist(results);
+                should.exist(results);
 
-                    tags = _(results.tags).map('slug').filter(onlyFixtures).value();
-                    tags.should.eql(expectedTags);
-                })
-                .then(done)
-                .catch(done);
+                tags = _(results.tags).map('slug').filter(onlyFixtures).value();
+                tags.should.eql(expectedTags);
+            });
         });
     });
 
@@ -317,8 +280,8 @@ describe('Tags API', function () {
             return _.filter(tags, {id: 1})[0];
         }
 
-        it('returns count.posts with include count.posts', function (done) {
-            TagAPI.read({context: {user: 1}, include: 'count.posts', slug: 'kitchen-sink'}).then(function (results) {
+        it('returns count.posts with include count.posts', function () {
+            return TagAPI.read({context: {user: 1}, include: 'count.posts', slug: 'kitchen-sink'}).then(function (results) {
                 should.exist(results);
                 should.exist(results.tags);
                 results.tags.length.should.be.above(0);
@@ -326,13 +289,11 @@ describe('Tags API', function () {
                 testUtils.API.checkResponse(results.tags[0], 'tag', 'count');
                 should.exist(results.tags[0].count.posts);
                 results.tags[0].count.posts.should.equal(2);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('with slug', function (done) {
-            TagAPI.browse({context: {user: 1}}).then(function (results) {
+        it('with slug', function () {
+            return TagAPI.browse({context: {user: 1}}).then(function (results) {
                 should.exist(results);
                 should.exist(results.tags);
                 results.tags.length.should.be.above(0);
@@ -343,20 +304,16 @@ describe('Tags API', function () {
             }).then(function (found) {
                 should.exist(found);
                 testUtils.API.checkResponse(found.tags[0], 'tag');
-
-                done();
-            }).catch(done);
+            });
         });
 
         // TODO: this should be a 422?
-        it('cannot fetch a tag with an invalid slug', function (done) {
-            TagAPI.read({slug: 'invalid!'}).then(function () {
-                done(new Error('Should not return a result with invalid slug'));
+        it('cannot fetch a tag with an invalid slug', function () {
+            return TagAPI.read({slug: 'invalid!'}).then(function () {
+                throw new Error('Should not return a result with invalid slug');
             }).catch(function (err) {
                 should.exist(err);
                 err.message.should.eql('Tag not found.');
-
-                done();
             });
         });
     });

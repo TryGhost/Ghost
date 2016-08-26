@@ -26,32 +26,30 @@ describe('Mail API', function () {
         configUtils.restore();
     });
 
-    it('returns a success', function (done) {
+    it('returns a success', function () {
         configUtils.set({mail: {transport: 'stub'}});
 
         var MailAPI = require('../../../server/api/mail');
 
-        MailAPI.send(mailData, testUtils.context.internal).then(function (response) {
+        return MailAPI.send(mailData, testUtils.context.internal).then(function (response) {
             should.exist(response.mail);
             should.exist(response.mail[0].message);
             should.exist(response.mail[0].status);
 
             response.mail[0].message.subject.should.eql('testemail');
-            done();
-        }).catch(done);
+        });
     });
 
-    it('returns a boo boo', function (done) {
+    it('returns a boo boo', function () {
         configUtils.set({mail: {transport: 'stub', options: {error: 'Stub made a boo boo :('}}});
 
         var MailAPI = require('../../../server/api/mail');
 
-        MailAPI.send(mailData, testUtils.context.internal).then(function () {
-            done(new Error('Stub did not error'));
+        return MailAPI.send(mailData, testUtils.context.internal).then(function () {
+            throw new Error('Stub did not error');
         }).catch(function (error) {
             error.message.should.startWith('Error: Stub made a boo boo :(');
             error.errorType.should.eql('EmailError');
-            done();
-        }).catch(done);
+        });
     });
 });

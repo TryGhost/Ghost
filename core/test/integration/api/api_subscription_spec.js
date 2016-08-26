@@ -26,67 +26,56 @@ describe('Subscribers API', function () {
             Promise.resolve(newSubscriber);
         });
 
-        it('can add a subscriber (admin)', function (done) {
-            SubscribersAPI.add({subscribers: [newSubscriber]}, testUtils.context.admin)
-                .then(function (results) {
-                    should.exist(results);
-                    should.exist(results.subscribers);
-                    results.subscribers.length.should.be.above(0);
-                    done();
-                }).catch(done);
+        it('can add a subscriber (admin)', function () {
+            return SubscribersAPI.add({subscribers: [newSubscriber]}, testUtils.context.admin)
+            .then(function (results) {
+                should.exist(results);
+                should.exist(results.subscribers);
+                results.subscribers.length.should.be.above(0);
+            });
         });
 
-        it('can add a subscriber (editor)', function (done) {
-            SubscribersAPI.add({subscribers: [newSubscriber]}, testUtils.context.editor)
-                .then(function (results) {
-                    should.exist(results);
-                    should.exist(results.subscribers);
-                    results.subscribers.length.should.be.above(0);
-                    done();
-                }).catch(done);
+        it('can add a subscriber (editor)', function () {
+            return SubscribersAPI.add({subscribers: [newSubscriber]}, testUtils.context.editor)
+            .then(function (results) {
+                should.exist(results);
+                should.exist(results.subscribers);
+                results.subscribers.length.should.be.above(0);
+            });
         });
 
-        it('can add a subscriber (author)', function (done) {
-            SubscribersAPI.add({subscribers: [newSubscriber]}, testUtils.context.author)
-                .then(function (results) {
-                    should.exist(results);
-                    should.exist(results.subscribers);
-                    results.subscribers.length.should.be.above(0);
-                    done();
-                }).catch(done);
+        it('can add a subscriber (author)', function () {
+            return SubscribersAPI.add({subscribers: [newSubscriber]}, testUtils.context.author)
+            .then(function (results) {
+                should.exist(results);
+                should.exist(results.subscribers);
+                results.subscribers.length.should.be.above(0);
+            });
         });
 
-        it('can add a subscriber (external)', function (done) {
-            SubscribersAPI.add({subscribers: [newSubscriber]}, testUtils.context.external)
-                .then(function (results) {
-                    should.exist(results);
-                    should.exist(results.subscribers);
-                    results.subscribers.length.should.be.above(0);
-                    done();
-                }).catch(done);
+        it('can add a subscriber (external)', function () {
+            return SubscribersAPI.add({subscribers: [newSubscriber]}, testUtils.context.external)
+            .then(function (results) {
+                should.exist(results);
+                should.exist(results.subscribers);
+                results.subscribers.length.should.be.above(0);
+            });
         });
 
-        it('duplicate subscriber', function (done) {
-            SubscribersAPI.add({subscribers: [newSubscriber]}, testUtils.context.external)
-                .then(function () {
-                    SubscribersAPI.add({subscribers: [newSubscriber]}, testUtils.context.external)
-                        .then(function () {
-                            return done();
-                        })
-                        .catch(done);
-                })
-                .catch(done);
+        it('duplicate subscriber', function () {
+            return SubscribersAPI.add({subscribers: [newSubscriber]}, testUtils.context.external)
+            .then(function () {
+                return SubscribersAPI.add({subscribers: [newSubscriber]}, testUtils.context.external);
+            });
         });
 
-        it('CANNOT add subscriber without context', function (done) {
-            SubscribersAPI.add({subscribers: [newSubscriber]})
-                .then(function () {
-                    done(new Error('Add subscriber without context should have no access.'));
-                })
-                .catch(function (err) {
-                    (err instanceof errors.NoPermissionError).should.eql(true);
-                    done();
-                });
+        it('CANNOT add subscriber without context', function () {
+            return SubscribersAPI.add({subscribers: [newSubscriber]})
+            .then(function () {
+                throw new Error('Add subscriber without context should have no access.');
+            }).catch(function (err) {
+                (err instanceof errors.NoPermissionError).should.eql(true);
+            });
         });
     });
 
@@ -94,87 +83,77 @@ describe('Subscribers API', function () {
         var newSubscriberEmail = 'subscriber@updated.com',
         firstSubscriber = 1;
 
-        it('can edit a subscriber (admin)', function (done) {
-            SubscribersAPI.edit({subscribers: [{email: newSubscriberEmail}]}, _.extend({}, context.admin, {id: firstSubscriber}))
-                .then(function (results) {
-                    should.exist(results);
-                    should.exist(results.subscribers);
-                    results.subscribers.length.should.be.above(0);
-                    done();
-                }).catch(done);
+        it('can edit a subscriber (admin)', function () {
+            return SubscribersAPI.edit({subscribers: [{email: newSubscriberEmail}]}, _.extend({}, context.admin, {id: firstSubscriber}))
+            .then(function (results) {
+                should.exist(results);
+                should.exist(results.subscribers);
+                results.subscribers.length.should.be.above(0);
+            });
         });
 
-        it('can edit subscriber (external)', function (done) {
-            SubscribersAPI.edit({subscribers: [{email: newSubscriberEmail}]}, _.extend({}, context.external, {id: firstSubscriber}))
-                .then(function (results) {
-                    should.exist(results);
-                    should.exist(results.subscribers);
-                    results.subscribers.length.should.be.above(0);
-                    done();
-                }).catch(done);
+        it('can edit subscriber (external)', function () {
+            return SubscribersAPI.edit({subscribers: [{email: newSubscriberEmail}]}, _.extend({}, context.external, {id: firstSubscriber}))
+            .then(function (results) {
+                should.exist(results);
+                should.exist(results.subscribers);
+                results.subscribers.length.should.be.above(0);
+            });
         });
 
-        it('CANNOT edit a subscriber (editor)', function (done) {
-            SubscribersAPI.edit({subscribers: [{email: newSubscriberEmail}]}, _.extend({}, context.editor, {id: firstSubscriber}))
-                .then(function () {
-                    done(new Error('Edit subscriber as author should have no access.'));
-                })
-                .catch(function (err) {
-                    (err instanceof errors.NoPermissionError).should.eql(true);
-                    done();
-                });
+        it('CANNOT edit a subscriber (editor)', function () {
+            return SubscribersAPI.edit({subscribers: [{email: newSubscriberEmail}]}, _.extend({}, context.editor, {id: firstSubscriber}))
+            .then(function () {
+                throw new Error('Edit subscriber as author should have no access.');
+            }).catch(function (err) {
+                (err instanceof errors.NoPermissionError).should.eql(true);
+            });
         });
 
-        it('CANNOT edit subscriber (author)', function (done) {
-            SubscribersAPI.edit({subscribers: [{email: newSubscriberEmail}]}, _.extend({}, context.author, {id: firstSubscriber}))
-                .then(function () {
-                    done(new Error('Edit subscriber as author should have no access.'));
-                })
-                .catch(function (err) {
-                    (err instanceof errors.NoPermissionError).should.eql(true);
-                    done();
-                });
+        it('CANNOT edit subscriber (author)', function () {
+            return SubscribersAPI.edit({subscribers: [{email: newSubscriberEmail}]}, _.extend({}, context.author, {id: firstSubscriber}))
+            .then(function () {
+                throw new Error('Edit subscriber as author should have no access.');
+            }).catch(function (err) {
+                (err instanceof errors.NoPermissionError).should.eql(true);
+            });
         });
 
-        it('CANNOT edit subscriber that doesn\'t exit', function (done) {
-            SubscribersAPI.edit({subscribers: [{email: newSubscriberEmail}]}, _.extend({}, context.internal, {id: 999}))
-                .then(function () {
-                    done(new Error('Edit non-existent subscriber is possible.'));
-                }, function (err) {
-                    should.exist(err);
-                    (err instanceof errors.NotFoundError).should.eql(true);
-                    done();
-                }).catch(done);
+        it('CANNOT edit subscriber that doesn\'t exit', function () {
+            return SubscribersAPI.edit({subscribers: [{email: newSubscriberEmail}]}, _.extend({}, context.internal, {id: 999}))
+            .then(function () {
+                throw new Error('Edit non-existent subscriber is possible.');
+            }).catch(function (err) {
+                should.exist(err);
+                (err instanceof errors.NotFoundError).should.eql(true);
+            });
         });
     });
 
     describe('Destroy', function () {
         var firstSubscriber = 1;
 
-        it('can destroy subscriber as admin', function (done) {
-            SubscribersAPI.destroy(_.extend({}, testUtils.context.admin, {id: firstSubscriber}))
-                .then(function (results) {
-                    should.not.exist(results);
-
-                    done();
-                }).catch(done);
+        it('can destroy subscriber as admin', function () {
+            return SubscribersAPI.destroy(_.extend({}, testUtils.context.admin, {id: firstSubscriber}))
+            .then(function (results) {
+                should.not.exist(results);
+            });
         });
 
-        it('CANNOT destroy subscriber', function (done) {
-            SubscribersAPI.destroy(_.extend({}, testUtils.context.editor, {id: firstSubscriber}))
-                .then(function () {
-                    done(new Error('Destroy subscriber should not be possible as editor.'));
-                }, function (err) {
-                    should.exist(err);
-                    (err instanceof errors.NoPermissionError).should.eql(true);
-                    done();
-                }).catch(done);
+        it('CANNOT destroy subscriber', function () {
+            return SubscribersAPI.destroy(_.extend({}, testUtils.context.editor, {id: firstSubscriber}))
+            .then(function () {
+                throw new Error('Destroy subscriber should not be possible as editor.');
+            }).catch(function (err) {
+                should.exist(err);
+                (err instanceof errors.NoPermissionError).should.eql(true);
+            });
         });
     });
 
     describe('Browse', function () {
-        it('can browse (internal)', function (done) {
-            SubscribersAPI.browse(testUtils.context.internal).then(function (results) {
+        it('can browse (internal)', function () {
+            return SubscribersAPI.browse(testUtils.context.internal).then(function (results) {
                 should.exist(results);
                 should.exist(results.subscribers);
                 results.subscribers.should.have.lengthOf(1);
@@ -187,20 +166,16 @@ describe('Subscribers API', function () {
                 results.meta.pagination.should.have.property('total', 1);
                 results.meta.pagination.should.have.property('next', null);
                 results.meta.pagination.should.have.property('prev', null);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('CANNOT browse subscriber (external)', function (done) {
-            SubscribersAPI.browse(testUtils.context.external)
-                .then(function () {
-                    done(new Error('Browse subscriber should be denied with external context.'));
-                })
-                .catch(function (err) {
-                    (err instanceof errors.NoPermissionError).should.eql(true);
-                    done();
-                });
+        it('CANNOT browse subscriber (external)', function () {
+            return SubscribersAPI.browse(testUtils.context.external)
+            .then(function () {
+                throw new Error('Browse subscriber should be denied with external context.');
+            }).catch(function (err) {
+                (err instanceof errors.NoPermissionError).should.eql(true);
+            });
         });
     });
 
@@ -209,8 +184,8 @@ describe('Subscribers API', function () {
             return _.filter(subscribers, {id: 1})[0];
         }
 
-        it('with id', function (done) {
-            SubscribersAPI.browse({context: {user: 1}}).then(function (results) {
+        it('with id', function () {
+            return SubscribersAPI.browse({context: {user: 1}}).then(function (results) {
                 should.exist(results);
                 should.exist(results.subscribers);
                 results.subscribers.length.should.be.above(0);
@@ -221,18 +196,15 @@ describe('Subscribers API', function () {
             }).then(function (found) {
                 should.exist(found);
                 testUtils.API.checkResponse(found.subscribers[0], 'subscriber');
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('CANNOT fetch a subscriber which doesn\'t exist', function (done) {
-            SubscribersAPI.read({context: {user: 1}, id: 999}).then(function () {
-                done(new Error('Should not return a result'));
+        it('CANNOT fetch a subscriber which doesn\'t exist', function () {
+            return SubscribersAPI.read({context: {user: 1}, id: 999}).then(function () {
+                throw new Error('Should not return a result');
             }).catch(function (err) {
                 should.exist(err);
                 (err instanceof errors.NotFoundError).should.eql(true);
-                done();
             });
         });
     });
@@ -264,43 +236,37 @@ describe('Subscribers API', function () {
             scope.csvError = false;
         });
 
-        it('check that fn works in general', function (done) {
+        it('check that fn works in general', function () {
             scope.values = [{email: 'lol@hallo.de'}, {email: 'test'}, {email:'lol@hallo.de'}];
 
-            SubscribersAPI.importCSV(_.merge(testUtils.context.internal, {path: '/somewhere'}))
-                .then(function (result) {
-                    result.meta.stats.imported.should.eql(1);
-                    result.meta.stats.duplicates.should.eql(1);
-                    result.meta.stats.invalid.should.eql(1);
-                    done();
-                })
-                .catch(done);
+            return SubscribersAPI.importCSV(_.merge(testUtils.context.internal, {path: '/somewhere'}))
+            .then(function (result) {
+                result.meta.stats.imported.should.eql(1);
+                result.meta.stats.duplicates.should.eql(1);
+                result.meta.stats.invalid.should.eql(1);
+            });
         });
 
-        it('check that fn works in general', function (done) {
+        it('check that fn works in general', function () {
             scope.values = [{email: 'lol@hallo.de'}, {email: '1@kate.de'}];
 
-            SubscribersAPI.importCSV(_.merge(testUtils.context.internal, {path: '/somewhere'}))
-                .then(function (result) {
-                    result.meta.stats.imported.should.eql(2);
-                    result.meta.stats.duplicates.should.eql(0);
-                    result.meta.stats.invalid.should.eql(0);
-                    done();
-                })
-                .catch(done);
+            return SubscribersAPI.importCSV(_.merge(testUtils.context.internal, {path: '/somewhere'}))
+            .then(function (result) {
+                result.meta.stats.imported.should.eql(2);
+                result.meta.stats.duplicates.should.eql(0);
+                result.meta.stats.invalid.should.eql(0);
+            });
         });
 
-        it('read csv throws a not found error', function (done) {
+        it('read csv throws a not found error', function () {
             scope.csvError = true;
 
-            SubscribersAPI.importCSV(_.merge(testUtils.context.internal, {path: '/somewhere'}))
-                .then(function () {
-                    done(new Error('we expected an error here!'));
-                })
-                .catch(function (err) {
-                    err.message.should.eql('csv');
-                    done();
-                });
+            return SubscribersAPI.importCSV(_.merge(testUtils.context.internal, {path: '/somewhere'}))
+            .then(function () {
+                throw new Error('we expected an error here!');
+            }).catch(function (err) {
+                err.message.should.eql('csv');
+            });
         });
     });
 });
