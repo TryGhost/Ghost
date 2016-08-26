@@ -298,7 +298,7 @@ margin on the iframe, cause it breaks stuff. */
 
 /* Buttons */
 .btn {
-  padding: 8px 16px;
+  padding: 8px 22px;
   font-weight: 100;
   transition: background-color 0.2s ease-out, border-color 0.2s ease-out, opacity 0.2s ease-out;
 
@@ -334,7 +334,7 @@ margin on the iframe, cause it breaks stuff. */
 }
 
 .btn-black {
-  @include button-variant(#fff, #000, #000);
+  @include button-variant(#fff, $gray-dark, $gray-dark);
 }
 
 .btn-padded {
