@@ -607,9 +607,9 @@ Licensed under the MIT license
 
   // ______________ SHARE BAR
 
-  $('body').scrollspy({target: '.outline', offset: 1});
-  if(640 < window.innerWidth && 0 < $('.outline').size()) {
-    $('.outline').scrollChaser({
+  $('body').scrollspy({target: '.scroll-spy.side-column-right', offset: 1});
+  if(640 < window.innerWidth && 0 < $('.scroll-spy.side-column-right').size()) {
+    $('.scroll-spy.side-column-right').scrollChaser({
       wrapper: '.blog-container',
       offsetTop: window.innerWidth <= 640 ? -5 : 70,
       offsetBottom: 5,
