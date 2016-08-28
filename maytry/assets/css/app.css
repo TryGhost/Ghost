@@ -1180,8 +1180,7 @@ p.year_month {
   font-size: 12px;
 }
 .outline .navbar ul li {
-  line-height: 14px;
-  margin: 3px 0;
+  line-height: 16px;
 }
 .outline .navbar ul li a {
   width: 98%;
@@ -1201,7 +1200,7 @@ p.year_month {
     font-size: 18px;
   }
   .outline .navbar ul li {
-    margin: 10px 0;
+    line-height: inherit;
   }
 }
 .social-area-syncer {
