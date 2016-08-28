@@ -96,7 +96,8 @@ config = {
                     'PRAGMA locking_mode=EXCLUSIVE;' +
                     'BEGIN EXCLUSIVE; COMMIT;', done);
                 }
-            }
+            },
+            useNullAsDefault: true
         },
         server: {
             host: '127.0.0.1',

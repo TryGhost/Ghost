@@ -1,12 +1,13 @@
-var getContextObject = require('./context_object.js');
+var getContextObject = require('./context_object.js'),
+    _                = require('lodash');
 
 function getAuthorFacebookUrl(data) {
-    var context = data.context ? data.context[0] : null,
+    var context = data.context ? data.context : null,
         contextObject = getContextObject(data, context);
 
-    if ((context === 'post' || context === 'page') && contextObject.author && contextObject.author.facebook) {
+    if ((_.includes(context, 'post') || _.includes(context, 'page')) && contextObject.author && contextObject.author.facebook) {
         return contextObject.author.facebook;
-    } else if (context === 'author' && contextObject.facebook) {
+    } else if (_.includes(context, 'author') && contextObject.facebook) {
         return contextObject.facebook;
     }
     return null;
