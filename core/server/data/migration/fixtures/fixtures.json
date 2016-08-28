@@ -191,6 +191,21 @@
                     "object_type": "theme"
                 },
                 {
+                    "name": "Upload themes",
+                    "action_type": "add",
+                    "object_type": "theme"
+                },
+                {
+                    "name": "Download themes",
+                    "action_type": "read",
+                    "object_type": "theme"
+                },
+                {
+                    "name": "Delete themes",
+                    "action_type": "destroy",
+                    "object_type": "theme"
+                },
+                {
                     "name": "Browse users",
                     "action_type": "browse",
                     "object_type": "user"

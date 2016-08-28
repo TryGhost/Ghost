@@ -237,6 +237,16 @@ fixtures = {
         });
     },
 
+    createUsersWithRolesWithoutOwner: function createUsersWithRolesWithoutOwner() {
+        var usersWithoutOwner = DataGenerator.forKnex.users.slice(1);
+
+        return db.knex('roles').insert(DataGenerator.forKnex.roles).then(function () {
+            return db.knex('users').insert(usersWithoutOwner);
+        }).then(function () {
+            return db.knex('roles_users').insert(DataGenerator.forKnex.roles_users);
+        });
+    },
+
     createExtraUsers: function createExtraUsers() {
         // grab 3 more users
         var extraUsers = DataGenerator.Content.users.slice(2, 5);
@@ -415,6 +425,7 @@ toDoList = {
         return models.Settings.populateDefaults().then(function () { return SettingsAPI.updateSettingsCache(); });
     },
     'users:roles': function createUsersWithRoles() { return fixtures.createUsersWithRoles(); },
+    'users:roles:no-owner': function createUsersWithRoles() { return fixtures.createUsersWithRolesWithoutOwner(); },
     users: function createExtraUsers() { return fixtures.createExtraUsers(); },
     'user:token': function createTokensForUser() { return fixtures.createTokensForUser(); },
     owner: function insertOwnerUser() { return fixtures.insertOwnerUser(); },
@@ -522,6 +533,7 @@ doAuth = function doAuth() {
 
     // Remove request from this list
     delete options[0];
+
     // No DB setup, but override the owner
     options = _.merge({'owner:post': true}, _.transform(options, function (result, val) {
         if (val) {
@@ -537,7 +549,7 @@ doAuth = function doAuth() {
 };
 
 login = function login(request) {
-    var user = DataGenerator.forModel.users[0];
+    var user = DataGenerator.forModel.users[request.userIndex || 0];
 
     return new Promise(function (resolve, reject) {
         request.post('/ghost/api/v0.1/authentication/token/')

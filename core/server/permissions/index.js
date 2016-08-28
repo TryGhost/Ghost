@@ -273,9 +273,11 @@ canThis = function (context) {
     return result.beginCheck(context);
 };
 
-init = refresh = function () {
+init = refresh = function (options) {
+    options = options || {};
+
     // Load all the permissions
-    return Models.Permission.findAll().then(function (perms) {
+    return Models.Permission.findAll(options).then(function (perms) {
         var seenActions = {};
 
         exported.actionsMap = {};

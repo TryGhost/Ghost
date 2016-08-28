@@ -36,7 +36,8 @@ describe('Config', function () {
                     title: 'casper',
                     description: 'casper',
                     logo: 'casper',
-                    cover: 'casper'
+                    cover: 'casper',
+                    timezone: 'Etc/UTC'
                 }
             });
         });
@@ -57,6 +58,35 @@ describe('Config', function () {
             themeConfig.should.have.property('description', 'casper');
             themeConfig.should.have.property('logo', 'casper');
             themeConfig.should.have.property('cover', 'casper');
+            themeConfig.should.have.property('timezone', 'Etc/UTC');
+        });
+    });
+
+    describe('Timezone default', function () {
+        it('should use timezone from settings when set', function () {
+            var themeConfig = config.theme;
+
+            // Check values are as we expect
+            themeConfig.should.have.property('timezone', 'Etc/UTC');
+            themeConfig.should.have.property('url');
+
+            configUtils.set({
+                theme: {
+                    timezone: 'Africa/Cairo'
+                }
+            });
+
+            config.theme.should.have.property('timezone', 'Africa/Cairo');
+            config.theme.should.have.property('url');
+        });
+
+        it('should set theme object with timezone by default', function () {
+            var themeConfig = configUtils.defaultConfig;
+
+            // Check values are as we expect
+            themeConfig.should.have.property('theme');
+            themeConfig.theme.should.have.property('timezone', 'Etc/UTC');
+            themeConfig.theme.should.have.property('url');
         });
     });
 
@@ -70,7 +100,7 @@ describe('Config', function () {
                 'subdir',
                 'config',
                 'configExample',
-                'storage',
+                'storagePath',
                 'contentPath',
                 'corePath',
                 'themePath',
@@ -145,13 +175,18 @@ describe('Config', function () {
 
     describe('Storage', function () {
         it('should default to local-file-store', function () {
-            var storagePath = path.join(config.paths.corePath, '/server/storage/', 'local-file-store');
+            config.paths.should.have.property('storagePath', {
+                default: path.join(config.paths.corePath, '/server/storage/'),
+                custom:  path.join(config.paths.contentPath, 'storage/')
+            });
 
-            config.paths.should.have.property('storage', storagePath);
-            config.storage.should.have.property('active', 'local-file-store');
+            config.storage.should.have.property('active', {
+                images: 'local-file-store',
+                themes: 'local-file-store'
+            });
         });
 
-        it('should allow setting a custom active storage', function () {
+        it('should allow setting a custom active storage as string', function () {
             var storagePath = path.join(config.paths.contentPath, 'storage', 's3');
 
             configUtils.set({
@@ -161,9 +196,47 @@ describe('Config', function () {
                 }
             });
 
-            config.paths.should.have.property('storage', storagePath);
-            config.storage.should.have.property('active', 's3');
+            config.storage.should.have.property('active', {
+                images: 's3',
+                themes: 'local-file-store'
+            });
+
             config.storage.should.have.property('s3', {});
+        });
+
+        it('should use default theme adapter when passing an object', function () {
+            var storagePath = path.join(config.paths.contentPath, 'storage', 's3');
+
+            configUtils.set({
+                storage: {
+                    active: {
+                        themes: 's3'
+                    }
+                }
+            });
+
+            config.storage.should.have.property('active', {
+                images: 'local-file-store',
+                themes: 'local-file-store'
+            });
+        });
+
+        it('should allow setting a custom active storage as object', function () {
+            var storagePath = path.join(config.paths.contentPath, 'storage', 's3');
+
+            configUtils.set({
+                storage: {
+                    active: {
+                        images: 's2',
+                        themes: 'local-file-store'
+                    }
+                }
+            });
+
+            config.storage.should.have.property('active', {
+                images: 's2',
+                themes: 'local-file-store'
+            });
         });
     });
 

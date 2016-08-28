@@ -18,6 +18,7 @@ _.extend(PageMapGenerator.prototype, {
         var self = this;
         this.dataEvents.on('page.published', self.addOrUpdateUrl.bind(self));
         this.dataEvents.on('page.published.edited', self.addOrUpdateUrl.bind(self));
+        // Note: This is called if a published post is deleted
         this.dataEvents.on('page.unpublished', self.removeUrl.bind(self));
     },
 
@@ -26,16 +27,21 @@ _.extend(PageMapGenerator.prototype, {
             context: {
                 internal: true
             },
+            filter: 'visibility:public',
             status: 'published',
             staticPages: true,
             limit: 'all'
         }).then(function (resp) {
             var homePage = {
-                    id: 0,
-                    name: 'home'
-                };
+                id: 0,
+                name: 'home'
+            };
             return [homePage].concat(resp.posts);
         });
+    },
+
+    validateDatum: function (datum) {
+        return datum.name === 'home' || (datum.page === true && datum.visibility === 'public');
     },
 
     getUrlForDatum: function (post) {
