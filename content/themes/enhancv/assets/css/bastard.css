@@ -7407,7 +7407,11 @@ h1.post-title {
   color: #333333; }
 
 .post-content p {
-  font-size: 1.6rem; }
+  font-size: 1.6rem;
+  margin: 0 0 22px 0; }
+
+.post-content p:last-child {
+  margin: 0; }
 
 .post-content img {
   display: block;
@@ -7428,18 +7432,21 @@ h1.post-title {
 /* The author credit area after the post */
 .post-footer {
   position: relative;
-  margin: 4rem 0 0 0;
-  padding: 4rem 0 0 0;
-  border-top: rgba(235, 242, 246, 0.29) 1px solid; }
+  margin: 0;
+  padding: 0; }
 
 .post-footer h4 {
   font-size: 1.8rem;
-  margin: 0; }
+  margin: 0;
+  text-transform: capitalize;
+  color: #333333;
+  font-weight: normal; }
 
 .post-footer p {
   margin: 1rem 0;
   font-size: 1.4rem;
-  line-height: 1.6em; }
+  line-height: 1.6em;
+  color: #999999; }
 
 /* list of author links - location / url */
 .author-meta {
@@ -7479,23 +7486,52 @@ h1.post-title {
 /* disable the bullet divider for the first item in the list */
 /* Create some space to the right for the share links */
 .post-footer .author {
-  margin-right: 180px; }
+  padding: 50px;
+  border-radius: 5px;
+  background-color: #f2f2f2; }
+
+.post-footer .author .image {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%; }
+
+.post-footer .author .details {
+  display: inline-block;
+  vertical-align: top;
+  width: calc(100% - 100px - 45px);
+  margin-left: 40px; }
 
 .post-footer .share {
-  position: absolute;
-  top: 4rem;
-  right: 0;
-  width: 140px; }
+  margin: 45px 0; }
 
 .post-footer .share a {
-  font-size: 1.8rem;
+  width: calc(50% - 10px);
   display: inline-block;
-  margin: 1rem 1.6rem 1.6rem 0;
-  color: #BBC7CC;
-  text-decoration: none; }
+  font-size: 1.6rem;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 300;
+  padding: 6px 0;
+  border-radius: 30px;
+  -webkit-transition: background-color .2s ease-in-out;
+          transition: background-color .2s ease-in-out; }
 
-.post-footer .share a:hover {
-  color: #50585D; }
+.post-footer .share a .pale-text {
+  color: rgba(255, 255, 255, 0.4); }
+
+.post-footer .share a.facebook {
+  background-color: #0054a6;
+  margin: 0 5px 0 0; }
+
+.post-footer .share a.facebook:hover {
+  background-color: #004282; }
+
+.post-footer .share a.twitter {
+  background-color: #1da1f2;
+  margin: 0 0 0 5px; }
+
+.post-footer .share a.twitter:hover {
+  background-color: #0d8fdf; }
 
 /* Drop the share links in the space to the right.
    Doing it like this means it's easier for the author bio

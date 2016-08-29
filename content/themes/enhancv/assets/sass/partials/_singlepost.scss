@@ -62,6 +62,11 @@ h1.post-title {
 
   p {
     font-size: 1.6rem;
+    margin: 0 0 22px 0;
+
+    &:last-child {
+      margin: 0;
+    }
   }
 
   img {
@@ -89,17 +94,20 @@ h1.post-title {
 
 .post-footer {
   position: relative;
-  margin: 4rem 0 0 0;
-  padding: 4rem 0 0 0;
-  border-top: rgba(235, 242, 246, 0.29) 1px solid;
+  margin: 0;
+  padding: 0;
   h4 {
     font-size: 1.8rem;
     margin: 0;
+    text-transform: capitalize;
+    color: $text-color;
+    font-weight: normal;
   }
   p {
     margin: 1rem 0;
     font-size: 1.4rem;
     line-height: 1.6em;
+    color: $gray-medium;
   }
 }
 
@@ -147,22 +155,54 @@ h1.post-title {
 
 .post-footer {
   .author {
-    margin-right: 180px;
+    padding: 50px;
+    border-radius: 5px;
+    background-color: $gray-super-light;
+    .image {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+    }
+
+    .details {
+      display: inline-block;
+      vertical-align: top;
+      width: calc(100% - 100px - 45px);
+      margin-left: 40px;
+    }
   }
   .share {
-    position: absolute;
-    top: 4rem;
-    right: 0;
-    width: 140px;
+    margin: 45px 0;
     a {
-      font-size: 1.8rem;
+      width: calc(50% - 10px);
       display: inline-block;
-      margin: 1rem 1.6rem 1.6rem 0;
-      color: #BBC7CC;
+      font-size: 1.6rem;
+      color: #fff;
       text-decoration: none;
-      &:hover {
-        color: #50585D;
+      font-weight: 300;
+      padding: 6px 0;
+      border-radius: 30px;
+      transition: background-color .2s ease-in-out;
+      .pale-text {
+        color: transparentize(#fff, .6);
       }
+      &.facebook {
+        background-color: $facebook-color;
+        margin: 0 5px 0 0;
+        &:hover {
+          background-color: darken($facebook-color, 7%);
+        }
+      }
+      &.twitter {
+        background-color: $twitter-color;
+        margin: 0 0 0 5px;
+        &:hover {
+          background-color: darken($twitter-color, 7%);
+        }
+      }
+      // &.google-plus {
+      //   background-color: $google-plus-color;
+      // }
     }
   }
 }
