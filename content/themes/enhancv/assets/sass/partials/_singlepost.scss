@@ -17,8 +17,54 @@ h1.post-title {
       padding: 0;
 
       .side {
+        margin-top: 100px;
         width: 34%;
         padding: 0 50px;
+
+        .latest-posts {
+          h3 {
+            font-size: 1.6rem;
+            color: $text-color;
+          }
+
+          .media-left {
+            padding-right: 25px;
+
+            .wrapper {
+              display: block;
+              width: 50px;
+              height: 50px;
+              border-radius: 10px;
+              overflow: hidden;
+            }
+
+            a {
+              display: inline-block;
+            }
+
+            img {
+              display: block;
+              height: 50px;
+              min-width: 50px;
+              position: relative;
+              left: 50%;
+              transform: translateX(-50%);
+            }
+          }
+
+          .media-body {
+            a {
+              font-size: 1.6rem;
+              color: $text-color;
+              line-height: 1.9em;
+              display: block;
+
+              &:hover {
+                color: $enhancv-color;
+              }
+            }
+          }
+        }
       }
     }
   }

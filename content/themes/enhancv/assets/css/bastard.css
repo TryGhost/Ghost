@@ -7371,8 +7371,44 @@ h1.post-title {
   padding: 0; }
 
 .post-template .content .container .side {
+  margin-top: 100px;
   width: 34%;
   padding: 0 50px; }
+
+.post-template .content .container .side .latest-posts h3 {
+  font-size: 1.6rem;
+  color: #333333; }
+
+.post-template .content .container .side .latest-posts .media-left {
+  padding-right: 25px; }
+
+.post-template .content .container .side .latest-posts .media-left .wrapper {
+  display: block;
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  overflow: hidden; }
+
+.post-template .content .container .side .latest-posts .media-left a {
+  display: inline-block; }
+
+.post-template .content .container .side .latest-posts .media-left img {
+  display: block;
+  height: 50px;
+  min-width: 50px;
+  position: relative;
+  left: 50%;
+  -webkit-transform: translateX(-50%);
+          transform: translateX(-50%); }
+
+.post-template .content .container .side .latest-posts .media-body a {
+  font-size: 1.6rem;
+  color: #333333;
+  line-height: 1.9em;
+  display: block; }
+
+.post-template .content .container .side .latest-posts .media-body a:hover {
+  color: #00c091; }
 
 .post-template .post {
   max-width: 66%;

@@ -57,7 +57,27 @@
         </article>
 
         <div class="side pull-right">
-            some
+            {{#get "posts" limit="3" as |featured|}}
+                <section class="latest-posts">
+                  <h3>Latest posts</h3>
+                  {{#foreach featured}}
+                  <div class="media">
+                      {{#if image}}
+                          <div class="media-left media-middle">
+                            <a class="wrapper" href={{url}}>
+                              <img class="media-object" src={{image}} alt="{{title}} cover image">
+                            </a>
+                          </div>
+                      {{/if}}
+                      <div class="media-body">
+                        <a href={{url}} class="media-heading">{{title}}</a>
+                      </div>
+                  </div>
+                  {{/foreach}}
+                </section>
+            {{else}}
+                <p>No latest posts...</p>
+            {{/get}}
         </div>
     </div>
 
