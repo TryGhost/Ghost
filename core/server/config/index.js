@@ -277,8 +277,8 @@ ConfigManager.prototype.set = function (config) {
                 contentTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml']
             },
             db: {
-                extensions: ['.json'],
-                contentTypes: ['application/octet-stream', 'application/json']
+                extensions: ['.json', '.zip'],
+                contentTypes: ['application/octet-stream', 'application/json', 'application/zip']
             },
             themes: {
                 extensions: ['.zip'],
