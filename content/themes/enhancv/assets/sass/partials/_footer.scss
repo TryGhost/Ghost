@@ -21,10 +21,20 @@
     opacity: .5;
   }
 
+  [class*='col-']:last-child {
+    padding-right: 0;
+  }
+
+  [class*='col-']:first-child {
+    padding-left: 0;
+  }
+
   @media screen and (max-width: $screen-sm) {
     height: auto;
     text-align: center;
     line-height: 60px;
     padding: 50px 0;
   }
+
+
 }
