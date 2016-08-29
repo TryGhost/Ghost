@@ -7422,7 +7422,7 @@ h1.post-title {
   display: none; }
 
 .post-template .post-header {
-  padding: 60px 0;
+  padding: 100px 0 35px 0;
   text-align: center; }
 
 .post-template .post-header h1 {
@@ -7472,11 +7472,16 @@ h1.post-title {
   padding: 0; }
 
 .post-footer h4 {
-  font-size: 1.8rem;
+  font-size: 2.4rem;
   margin: 0;
   text-transform: capitalize;
-  color: #333333;
-  font-weight: normal; }
+  color: #333333; }
+
+.post-footer h4 a {
+  color: #333333; }
+
+.post-footer h4 a:hover {
+  color: #00c091; }
 
 .post-footer p {
   margin: 1rem 0;
@@ -7526,16 +7531,23 @@ h1.post-title {
   border-radius: 5px;
   background-color: #f2f2f2; }
 
-.post-footer .author .image {
+.post-footer .author .media-left {
+  padding-right: 40px; }
+
+.post-footer .author .wrapper {
   width: 100px;
   height: 100px;
-  border-radius: 50%; }
+  border-radius: 50%;
+  overflow: hidden; }
 
-.post-footer .author .details {
-  display: inline-block;
-  vertical-align: top;
-  width: calc(100% - 100px - 45px);
-  margin-left: 40px; }
+.post-footer .author .wrapper img {
+  height: 100px;
+  min-width: 100px;
+  display: block;
+  position: relative;
+  left: 50%;
+  -webkit-transform: translateX(-50%);
+          transform: translateX(-50%); }
 
 .post-footer .share {
   margin: 45px 0; }
@@ -7543,12 +7555,13 @@ h1.post-title {
 .post-footer .share a {
   width: calc(50% - 10px);
   display: inline-block;
-  font-size: 1.6rem;
+  font-size: 1.4rem;
   color: #fff;
   text-decoration: none;
   font-weight: 300;
-  padding: 6px 0;
+  padding: 11px 0;
   border-radius: 30px;
+  line-height: 1;
   -webkit-transition: background-color .2s ease-in-out;
           transition: background-color .2s ease-in-out; }
 
@@ -7563,11 +7576,11 @@ h1.post-title {
   background-color: #004282; }
 
 .post-footer .share a.twitter {
-  background-color: #1da1f2;
+  background-color: #29abe2;
   margin: 0 0 0 5px; }
 
 .post-footer .share a.twitter:hover {
-  background-color: #0d8fdf; }
+  background-color: #1c97cc; }
 
 /* Drop the share links in the space to the right.
    Doing it like this means it's easier for the author bio

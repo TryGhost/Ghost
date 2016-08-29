@@ -80,7 +80,7 @@ h1.post-title {
     }
   }
   .post-header {
-    padding: 60px 0;
+    padding: 100px 0 35px 0;
     text-align: center;
     h1 {
       color: $text-color;
@@ -143,11 +143,18 @@ h1.post-title {
   margin: 0;
   padding: 0;
   h4 {
-    font-size: 1.8rem;
+    font-size: 2.4rem;
     margin: 0;
     text-transform: capitalize;
     color: $text-color;
-    font-weight: normal;
+
+    a {
+      color: $text-color;
+
+      &:hover {
+        color: $enhancv-color;
+      }
+    }
   }
   p {
     margin: 1rem 0;
@@ -204,17 +211,25 @@ h1.post-title {
     padding: 50px;
     border-radius: 5px;
     background-color: $gray-super-light;
-    .image {
+
+    .media-left {
+      padding-right: 40px;
+    }
+
+    .wrapper {
       width: 100px;
       height: 100px;
       border-radius: 50%;
-    }
+      overflow: hidden;
 
-    .details {
-      display: inline-block;
-      vertical-align: top;
-      width: calc(100% - 100px - 45px);
-      margin-left: 40px;
+      img {
+        height: 100px;
+        min-width: 100px;
+        display: block;
+        position: relative;
+        left: 50%;
+        transform: translateX(-50%);
+      }
     }
   }
   .share {
@@ -222,12 +237,13 @@ h1.post-title {
     a {
       width: calc(50% - 10px);
       display: inline-block;
-      font-size: 1.6rem;
+      font-size: 1.4rem;
       color: #fff;
       text-decoration: none;
       font-weight: 300;
-      padding: 6px 0;
+      padding: 11px 0;
       border-radius: 30px;
+      line-height: 1;
       transition: background-color .2s ease-in-out;
       .pale-text {
         color: transparentize(#fff, .6);

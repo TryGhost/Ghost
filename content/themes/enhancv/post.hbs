@@ -40,16 +40,22 @@
                     </a> --}}
                 </section>
 
-                <section class="author">
-                    <img class="image" src={{author.image}} alt="{{author.name}} profile image">
-                    <span class="details">
-                        <h4>{{author.name}}</h4>
-                        <p>{{author.bio}}</p>
-                    </span>
+                <section class="author media">
+                  <div class="media-left media-middle">
+                    <div class="wrapper">
+                      <img class="media-object" src={{author.image}} alt="{{author.title}} cover image">
+                    </div>
+                  </div>
+                  <div class="media-body">
+                    <h4>
+                        <a href="/author/{{author.slug}}">{{author.name}}</a>
+                    </h4>
+                    <p>{{author.bio}}</p>
                     <ul class="author-meta clearfix">
                         {{#if author.location}}<li>{{author.location}}</li>{{/if}}
                         {{#if author.website}}<li><a href="{{author.website}}">{{author.website}}</a></li>{{/if}}
                     </ul>
+                  </div>
                 </section>
 
             </footer>
