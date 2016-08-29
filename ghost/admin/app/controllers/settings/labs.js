@@ -11,7 +11,7 @@ export default Controller.extend({
     submitting: false,
     showDeleteAllModal: false,
 
-    importMimeType: 'application/json',
+    importMimeType: ['application/json', 'application/zip'],
 
     ghostPaths: injectService(),
     notifications: injectService(),
