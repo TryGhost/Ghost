@@ -7367,10 +7367,20 @@ h1.post-title {
 .post-template .content {
   overflow: hidden; }
 
+.post-template .content .container {
+  padding: 0; }
+
+.post-template .content .container .side {
+  width: 34%;
+  padding: 0 50px; }
+
 .post-template .post {
+  max-width: 66%;
   margin-top: 0;
   border-bottom: none;
-  padding-bottom: 0; }
+  padding-bottom: 0;
+  padding-left: 50px;
+  padding-right: 50px; }
 
 .post-template .post:after {
   display: none; }
@@ -7378,6 +7388,9 @@ h1.post-title {
 .post-template .post-header {
   padding: 60px 0;
   text-align: center; }
+
+.post-template .post-header h1 {
+  color: #333333; }
 
 .post-template .blog-title {
   display: inline-block;
@@ -7393,6 +7406,9 @@ h1.post-title {
 .post-content {
   color: #333333; }
 
+.post-content p {
+  font-size: 1.6rem; }
+
 .post-content img {
   display: block;
   max-width: 100%;
@@ -7401,9 +7417,8 @@ h1.post-title {
   padding: 0.6em 0; }
 
 .post-content .full-img {
-  width: 126%;
-  max-width: none;
-  margin: 0 -13%; }
+  width: 100%;
+  max-width: none; }
 
 .post-content code {
   color: #993030; }

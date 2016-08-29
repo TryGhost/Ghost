@@ -13,11 +13,22 @@ h1.post-title {
 .post-template {
   .content {
     overflow: hidden;
+    .container {
+      padding: 0;
+
+      .side {
+        width: 34%;
+        padding: 0 50px;
+      }
+    }
   }
   .post {
+    max-width: 66%;
     margin-top: 0;
     border-bottom: none;
     padding-bottom: 0;
+    padding-left: 50px;
+    padding-right: 50px;
     &:after {
       display: none;
     }
@@ -25,6 +36,9 @@ h1.post-title {
   .post-header {
     padding: 60px 0;
     text-align: center;
+    h1 {
+      color: $text-color;
+    }
   }
   .blog-title {
     display: inline-block;
@@ -46,6 +60,10 @@ h1.post-title {
 .post-content {
   color: $text-color;
 
+  p {
+    font-size: 1.6rem;
+  }
+
   img {
     display: block;
     max-width: 100%;
@@ -55,9 +73,8 @@ h1.post-title {
   }
 
   .full-img {
-    width: 126%;
+    width: 100%;
     max-width: none;
-    margin: 0 -13%;
   }
 
   code {
