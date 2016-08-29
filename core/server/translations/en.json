@@ -25,6 +25,9 @@
                 "mail": {
                     "invitedByName": "{invitedByName} has invited you to join {blogName}"
                 }
+            },
+            "clients": {
+                "clientNotFound": "Client not found"
             }
         }
     },
@@ -306,10 +309,10 @@
                 "invalidKey": "Invalid key"
             },
             "db": {
+                "missingFile": "Please select a database file to import.",
+                "invalidFile": "Unsupported file. Please try any of the following formats: {extensions}",
                 "noPermissionToExportData": "You do not have permission to export data (no rights).",
-                "noPermissionToImportData": "You do not have permission to import data (no rights).",
-                "selectFileToImport": "Please select a file to import.",
-                "unsupportedFile": "Unsupported file. Please try any of the following formats: "
+                "noPermissionToImportData": "You do not have permission to import data (no rights)."
             },
             "mail": {
                 "noPermissionToSendEmail": "You do not have permission to send mail.",
@@ -343,6 +346,8 @@
                 "unknownSlugType": "Unknown slug type '{type}'."
             },
             "subscribers": {
+                "missingFile": "Please select a csv.",
+                "invalidFile": "Please select a valid CSV file to import.",
                 "subscriberNotFound": "Subscriber not found.",
                 "subscriberAlreadyExists": "Email address is already subscribed."
             },
@@ -353,11 +358,15 @@
                 "noPermissionToBrowseThemes": "You do not have permission to browse themes.",
                 "noPermissionToEditThemes": "You do not have permission to edit themes.",
                 "themeDoesNotExist": "Theme does not exist.",
-                "invalidRequest": "Invalid request."
+                "invalidTheme": "Theme is not compatible or contains errors.",
+                "missingFile": "Please select a theme.",
+                "invalidFile": "Please select a valid zip file.",
+                "overrideCasper": "Please rename your zip, it's not allowed to override the default casper theme.",
+                "destroyCasper": "Deleting the default casper theme is not allowed."
             },
-            "upload": {
-                "pleaseSelectImage": "Please select an image.",
-                "pleaseSelectValidImage": "Please select a valid image."
+            "images": {
+                "missingFile": "Please select an image.",
+                "invalidFile": "Please select a valid image."
             },
             "users": {
                 "userNotFound": "User not found.",

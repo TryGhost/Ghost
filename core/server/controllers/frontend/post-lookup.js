@@ -5,10 +5,10 @@ var _          = require('lodash'),
     api        = require('../../api'),
     config     = require('../../config'),
 
-    editFormat = '/:edit?';
+    optionsFormat = '/:options?';
 
-function getEditFormat(linkStructure) {
-    return linkStructure.replace(/\/$/, '') + editFormat;
+function getOptionsFormat(linkStructure) {
+    return linkStructure.replace(/\/$/, '') + optionsFormat;
 }
 
 function postLookup(postUrl) {
@@ -16,34 +16,34 @@ function postLookup(postUrl) {
         postPermalink = config.theme.permalinks,
         pagePermalink = '/:slug/',
         isEditURL = false,
+        isAmpURL = false,
         matchFuncPost,
         matchFuncPage,
         postParams,
-        pageParams,
         params;
 
     // Convert saved permalink into a path-match function
-    matchFuncPost = routeMatch(getEditFormat(postPermalink));
+    matchFuncPost = routeMatch(getOptionsFormat(postPermalink));
+    matchFuncPage = routeMatch(getOptionsFormat(pagePermalink));
+
     postParams = matchFuncPost(postPath);
 
     // Check if the path matches the permalink structure.
     // If there are no matches found, test to see if this is a page instead
-    if (postParams === false) {
-        matchFuncPage = routeMatch(getEditFormat(pagePermalink));
-        pageParams = matchFuncPage(postPath);
-    }
+    params = postParams || matchFuncPage(postPath);
 
-    // If there are still no matches then return empty.
-    if (pageParams === false) {
+    // if there are no matches for either then return empty
+    if (params === false) {
         return Promise.resolve();
     }
 
-    params = postParams || pageParams;
-
-    // If params contains edit, and it is equal to 'edit' this is an edit URL
-    if (params.edit && params.edit.toLowerCase() === 'edit') {
+    // If params contains options, and it is equal to 'edit', this is an edit URL
+    // If params contains options, and it is equal to 'amp', this is an amp URL
+    if (params.options && params.options.toLowerCase() === 'edit') {
         isEditURL = true;
-    } else if (params.edit !== undefined) {
+    } else if (params.options && params.options.toLowerCase() === 'amp') {
+        isAmpURL = true;
+    } else if (params.options !== undefined) {
         // Unknown string in URL, return empty
         return Promise.resolve();
     }
@@ -66,9 +66,20 @@ function postLookup(postUrl) {
             return Promise.resolve();
         }
 
+        // CASE: we only support /:slug format for pages
+        if (post.page && matchFuncPage(postPath) === false) {
+            return Promise.resolve();
+        }
+
+        // We don't support AMP for static pages yet
+        if (post.page && isAmpURL) {
+            return Promise.resolve();
+        }
+
         return {
             post: post,
-            isEditURL: isEditURL
+            isEditURL: isEditURL,
+            isAmpURL: isAmpURL
         };
     });
 }

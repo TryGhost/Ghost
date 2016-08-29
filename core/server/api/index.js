@@ -17,9 +17,9 @@ var _              = require('lodash'),
     settings       = require('./settings'),
     tags           = require('./tags'),
     clients        = require('./clients'),
-    themes         = require('./themes'),
     users          = require('./users'),
     slugs          = require('./slugs'),
+    themes         = require('./themes'),
     subscribers    = require('./subscribers'),
     authentication = require('./authentication'),
     uploads        = require('./upload'),
@@ -240,6 +240,13 @@ http = function http(apiMethod) {
             if (res.get('Content-Type') && res.get('Content-Type').indexOf('text/csv') === 0) {
                 return res.status(200).send(response);
             }
+
+            // CASE: api method response wants to handle the express response
+            // example: serve files (stream)
+            if (_.isFunction(response)) {
+                return response(req, res, next);
+            }
+
             // Send a properly formatting HTTP response containing the data with correct headers
             res.json(response || {});
         }).catch(function onAPIError(error) {
@@ -267,13 +274,13 @@ module.exports = {
     settings: settings,
     tags: tags,
     clients: clients,
-    themes: themes,
     users: users,
     slugs: slugs,
     subscribers: subscribers,
     authentication: authentication,
     uploads: uploads,
-    slack: slack
+    slack: slack,
+    themes: themes
 };
 
 /**

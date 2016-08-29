@@ -266,7 +266,7 @@ describe('User Model', function run() {
             }).catch(done);
         });
 
-        it('can findPage with limit all', function (done) {
+        it('can findPage with limit all', function () {
             return testUtils.fixtures.createExtraUsers().then(function () {
                 return UserModel.findPage({limit: 'all'});
             }).then(function (results) {
@@ -274,9 +274,7 @@ describe('User Model', function run() {
                 results.meta.pagination.limit.should.equal('all');
                 results.meta.pagination.pages.should.equal(1);
                 results.users.length.should.equal(7);
-
-                done();
-            }).catch(done);
+            });
         });
 
         it('can NOT findPage for a page that overflows the datatype', function (done) {
@@ -307,7 +305,7 @@ describe('User Model', function run() {
             }).catch(done);
         });
 
-        it('can findOne by role name', function (done) {
+        it('can findOne by role name', function () {
             return testUtils.fixtures.createExtraUsers().then(function () {
                 return Promise.join(UserModel.findOne({role: 'Owner'}), UserModel.findOne({role: 'Editor'}));
             }).then(function (results) {
@@ -325,9 +323,7 @@ describe('User Model', function run() {
 
                 owner.roles[0].name.should.equal('Owner');
                 editor.roles[0].name.should.equal('Editor');
-
-                done();
-            }).catch(done);
+            });
         });
 
         it('can invite user', function (done) {

@@ -1,13 +1,17 @@
-var moment  = require('moment'),
-    path    = require('path');
+var moment = require('moment'),
+    path = require('path');
 
 function StorageBase() {
+    Object.defineProperty(this, 'requiredFns', {
+        value: ['exists', 'save', 'serve', 'delete'],
+        writable: false
+    });
 }
 
 StorageBase.prototype.getTargetDir = function (baseDir) {
     var m = moment(),
         month = m.format('MM'),
-        year =  m.format('YYYY');
+        year = m.format('YYYY');
 
     if (baseDir) {
         return path.join(baseDir, year, month);
@@ -25,7 +29,11 @@ StorageBase.prototype.generateUnique = function (store, dir, name, ext, i) {
         append = '-' + i;
     }
 
-    filename = path.join(dir, name + append + ext);
+    if (ext) {
+        filename = path.join(dir, name + append + ext);
+    } else {
+        filename = path.join(dir, name + append);
+    }
 
     return store.exists(filename).then(function (exists) {
         if (exists) {
@@ -38,11 +46,17 @@ StorageBase.prototype.generateUnique = function (store, dir, name, ext, i) {
 };
 
 StorageBase.prototype.getUniqueFileName = function (store, image, targetDir) {
-    var ext = path.extname(image.name),
-        name = path.basename(image.name, ext).replace(/[^\w@]/gi, '-'),
-        self = this;
+    var ext = path.extname(image.name), name;
 
-    return self.generateUnique(store, targetDir, name, ext, 0);
+    // poor extension validation
+    // .1 is not a valid extension
+    if (!ext.match(/.\d/)) {
+        name = path.basename(image.name, ext).replace(/[^\w@.]/gi, '-');
+        return this.generateUnique(store, targetDir, name, ext, 0);
+    } else {
+        name = path.basename(image.name).replace(/[^\w@.]/gi, '-');
+        return this.generateUnique(store, targetDir, name, null, 0);
+    }
 };
 
 module.exports = StorageBase;
