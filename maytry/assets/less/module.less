@@ -14,7 +14,7 @@ p.year_month {
 }
 
 .mt-panel {
-  margin: 5px;
+  margin: 15px 0;
 
   .mt-panel-header {
     padding: 10px 10px 5px;
@@ -84,7 +84,7 @@ p.year_month {
       }
 
       &:after {
-        box-shadow: 0 1px 3px 1px rgba(0,0,0,.3);
+        box-shadow: 0 1px 3px 1px rgba(0, 0, 0, .3);
       }
     }
   }
@@ -149,6 +149,10 @@ p.year_month {
   }
 }
 
+.popular-posts-area {
+  padding-bottom: 10px;
+}
+
 @media only screen and (max-width: 767px) {
   p.year_month {
     text-align: left;
@@ -164,30 +168,28 @@ p.year_month {
     font-size: 17px;
     line-height: 26px;
   }
+}
 
-  #share {
-    margin: 20px 0 0 25px;
 
-    .jssocials-share {
-      float: left;
-      display: block;
-      clear: none;
-      margin: 0 3px;
-    }
-  }
+.jssocials-shares {
+  text-align: center;
 }
 
 /* Side bar */
 .share-side-bar {
-  position: absolute;
-  top: 300px;
-  z-index: -1;
+  .jssocials-shares {
+    position: absolute;
+    top: .2em;
+    left: -3em;
+    z-index: 10;
 
-  #share {
-    position: relative;
-    margin: 0;
-    padding: 0;
-    border-top: none;
+    .jssocials-share {
+      display: block;
+
+      &:first-child, &:last-child {
+        margin: .3em;
+      }
+    }
   }
 
   @media only screen and (max-width: 640px) {
@@ -200,22 +202,9 @@ p.year_month {
   }
 }
 
-#share {
-  margin: 20px 25px 0 0;
-  border-top: 1px solid @border-color;
-  padding-top: 15px;
-
-  .jssocials-share {
-    float: right;
-    display: table;
-    clear: both;
-    margin: 0;
-  }
-}
-
 .outline {
   background: @background-color;
-  margin: 0 5px 5px;
+  margin-bottom: .3rem;
   padding: 5px;
   border-radius: 10px; /* CSS3草案 */
   -webkit-border-radius: 10px; /* Safari,Google Chrome用 */
@@ -261,68 +250,6 @@ p.year_month {
         li {
           line-height: inherit;
         }
-      }
-    }
-  }
-}
-
-.social-area-syncer {
-  position: relative;
-  min-height: 80px;
-  margin-bottom: -20px;
-
-  ul.social-button-syncer {
-    width: 340px;
-    margin: 0 auto 20px;
-    display: flex;
-
-    li {
-      text-align: center;
-      position: relative;
-      margin: 0 8px;
-
-      /* [Twitter] */
-      &.sc-tw {
-        bottom: -20px;
-      }
-      /* [LINE] */
-      &.sc-li {
-        width: 45px;
-        bottom: -8px;
-      }
-    }
-  }
-}
-
-.social-area-syncer.share-side-bar {
-  position: absolute;
-  z-index: 100;
-
-  &.scroll-chase {
-    position: fixed;
-    top: -3px;
-  }
-
-  ul.social-button-syncer {
-    position: relative;
-    width: 86px;
-    top: -10px;
-    right: 91px;
-    background: @background-color;
-    border-radius: 10px;
-    display: inherit;
-
-    li {
-      float: none;
-      margin: 10px auto;
-
-      /* [Twitter] */
-      &.sc-tw {
-        bottom: -13px;
-      }
-      /* [LINE] */
-      &.sc-li {
-        display: none;
       }
     }
   }

@@ -45,9 +45,9 @@
 
   // ______________ SHARE BAR
 
-  $('body').scrollspy({target: '.outline', offset: 1});
-  if(640 < window.innerWidth && 0 < $('.outline').size()) {
-    $('.outline').scrollChaser({
+  $('body').scrollspy({target: '.scroll-spy.side-column-right', offset: 1});
+  if(640 < window.innerWidth && 0 < $('.scroll-spy.side-column-right').size()) {
+    $('.scroll-spy.side-column-right').scrollChaser({
       wrapper: '.blog-container',
       offsetTop: window.innerWidth <= 640 ? -5 : 70,
       offsetBottom: 5,
@@ -96,12 +96,6 @@
     mobile: false
   });
 
-  $("#share").jsSocials({
-    showLabel: false,
-    showCount: "inside",
-    shares: ["twitter", "facebook", "googleplus", "linkedin"]
-  });
-
   $("code").each(function() {
     var codeName = $(this).attr("class") ? $(this).attr("class").split(":")[1] : null;
     if(codeName) {
@@ -110,37 +104,7 @@
     }
   });
 
-  /* DOMの読み込み完了後に処理 */
-  if(window.addEventListener) {
-    window.addEventListener("load", shareButtonReadSyncer, false);
-  } else {
-    window.attachEvent("onload", shareButtonReadSyncer);
-  }
-
-  /* シェアボタンを読み込む関数 */
-  function shareButtonReadSyncer() {
-    $(".sc-fb div:first-child").attr("data-href", document.URL);
-    var socials = [
-      {
-        "id": "twitter-wjs",
-        "src": (/^http:/.test(document.location) ? 'http' : 'https') + '://platform.twitter.com/widgets.js'
-      },
-      //{"id": "facebook-jssdk", "src": "//connect.facebook.net/ja_JP/sdk.js#xfbml=1&version=v2.5&appId=459774450888368"},
-      {"id": "facebook-jssdk", "src": "//connect.facebook.net/ja_JP/sdk.js#xfbml=1&version=v2.5"}];
-
-    socials.forEach(function(social) {
-      (!function(d, s, social) {
-        var id = social["id"];
-        var js, fjs = d.getElementsByTagName(s)[0];
-        if(!d.getElementById(id)) {
-          js = d.createElement(s);
-          js.id = id;
-          js.type = "text/javascript";
-          js.src = social["src"];
-          js.async = true;
-          fjs.parentNode.insertBefore(js, fjs);
-        }
-      }(document, 'script', social));
-    });
-  }
+  $(".social-area-syncer").jsSocials({
+    shares: ["twitter", "facebook", "hatena", "googleplus", "linkedin", "pinterest"]
+  });
 })(jQuery);

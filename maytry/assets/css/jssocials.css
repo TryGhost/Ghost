@@ -48,6 +48,7 @@ img.jssocials-share-logo {
   display: inline-block;
   height: 1.5em;
   padding: 0 0.3em;
+  line-height: 1;
   vertical-align: middle;
   cursor: default; }
   .jssocials-share-count-box.jssocials-share-no-count {
@@ -56,3 +57,10 @@ img.jssocials-share-logo {
 .jssocials-share-count {
   line-height: 1.5em;
   vertical-align: middle; }
+
+.fa-hatena:before {
+  content: "B!";
+  font-family: Verdana;
+  font-weight: bold; }
+
+/*# sourceMappingURL=jssocials.css.map */
