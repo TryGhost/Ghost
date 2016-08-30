@@ -31,9 +31,9 @@
 
   h1 {
     position: absolute;
-    top: 60%;
+    top: 56%;
     left: 50%;
-    min-width: 640px;
+    min-width: 54rem;
     padding: 12px 12px;
     margin: 0 auto;
     z-index: 2;
@@ -67,10 +67,26 @@
   }
 }
 
+@media only screen and (max-width: 1000px) {
+  .featured-info h1 {
+    top: 50%;
+    font-size: 32px;
+    min-width: 42rem;
+  }
+}
+
 @media only screen and (min-width: 641px) and (max-width: 767px) {
   .featured-info h1 {
     top: 65%;
-    font-size: 32px;
+    font-size: 28px;
+  }
+
+  .show-for-small-only {
+    display: inherit !important;
+  }
+
+  .hide-for-small-only {
+    display: none !important;
   }
 }
 
@@ -106,10 +122,11 @@
   }
   
   .featured-info h1 {
-    top: 75%;
+    top: 70%;
     width: 100%;
     min-width: inherit;
-    font-size: 28px;
+    font-size: 1.5rem;
+    line-height: 1.3;
   }
 }
 
