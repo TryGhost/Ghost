@@ -280,7 +280,7 @@ input[type="text"], input[type="password"], input[type="datetime"], input[type="
 
   &.form-control {
     box-shadow: inset 0 1px 1px rgba(0,0,0,.035);
-    height: 37px;
+    // height: 37px;
   }
 }
 
@@ -349,6 +349,18 @@ margin on the iframe, cause it breaks stuff. */
   }
   &:active {
     box-shadow: none;
+  }
+}
+
+.btn-success {
+  background-color: $enhancv-color;
+  border-color: $enhancv-color;
+
+  &:hover,
+  &:focus,
+  &:focus:active {
+    background-color: darken($enhancv-color, 7%);
+    border-color: darken($enhancv-color, 7%);
   }
 }
 
@@ -422,6 +434,8 @@ margin on the iframe, cause it breaks stuff. */
 // forms
 .form-control::placeholder {
   font-style: italic;
+  font-size: 14px;
+  color: $gray-medium;
 }
 
 // offset
@@ -490,4 +504,19 @@ $directions: 'top' 'bottom' 'left' 'right';
 .progress {
   height: 10px;
   margin-top: 5px;
+}
+
+// separators
+.separator {
+  &.sm {
+    padding-top: 20px;
+  }
+
+  &.md {
+    padding-top: 35px;
+  }
+
+  &.lg {
+    padding-top: 50px;
+  }
 }

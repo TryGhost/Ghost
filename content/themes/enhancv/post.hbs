@@ -15,7 +15,8 @@
             <header class="post-header">
                 <h1 class="post-title text-left">{{{title}}}</h1>
                 <section class="post-meta">
-                    <time class="post-date" datetime="{{date format='YYYY-MM-DD'}}">{{date format="MMMM Do, YYYY"}}</time> {{tags prefix=" on " separator=" | "}}
+                    <span class="pull-left">Share buttons</span>
+                    <time class="post-date pull-right" datetime="{{date format='YYYY-MM-DD'}}">{{date format="DD MMMM YYYY"}}</time> {{!-- {{tags prefix=" on " separator=" | "}} --}}
                 </section>
             </header>
 
@@ -84,6 +85,20 @@
             {{else}}
                 <p>No latest posts...</p>
             {{/get}}
+
+            <div class="separator lg"></div>
+
+            <div class="subscribe">
+                <img class="image" src="http://blog.enhancv.com/wp-content/uploads/2015/12/rsz_1n6.jpg" alt="Banner CVs">
+                <div class="separator md"></div>
+
+                <h3>Super-Human Resumes.</h3>
+                <div class="separator sm"></div>
+                <p>In your inbox every week.<br>What's more to ask from life?</p>
+
+                <input type="text" name="email" class="form-control" placeholder="Email">
+                <button type="submit" class="btn btn-success">Subscribe</button>
+            </div>
         </div>
     </div>
 
