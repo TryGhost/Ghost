@@ -667,6 +667,7 @@ Licensed under the MIT license
   });
 
   $(".social-area-syncer").jsSocials({
+    showLabel: false,
     shares: ["twitter", "facebook", "hatena", "googleplus", "linkedin", "pinterest"]
   });
 })(jQuery);
