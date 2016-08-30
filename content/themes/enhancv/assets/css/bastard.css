@@ -6906,6 +6906,9 @@ fieldset[disabled] .btn-muted-link:focus {
 .separator.lg {
   padding-top: 50px; }
 
+.media {
+  margin-top: 0; }
+
 /* ==========================================================================
    3. Utilities - These things get used a lot
    ========================================================================== */
@@ -7521,7 +7524,6 @@ h1.post-title {
   color: #00c091; }
 
 .post-footer p {
-  margin: 1rem 0;
   font-size: 1.4rem;
   line-height: 1.6em;
   color: #999999; }
@@ -8174,9 +8176,7 @@ body:before {
     padding: 4rem 0;
     text-align: center; }
   .post-footer .author {
-    margin: 0 0 2rem 0;
-    padding: 0 0 1.6rem 0;
-    border-bottom: #666666 1px solid; }
+    padding: 35px; }
   .post-footer .share {
     position: static;
     width: auto; }
@@ -8206,7 +8206,19 @@ body:before {
     font-size: 15px;
     line-height: 30px; }
   .subscribe {
-    display: none; } }
+    display: none; }
+  .media .media-left {
+    display: table-row;
+    text-align: center;
+    padding: 0; }
+  .media .media-left .wrapper {
+    margin: auto; }
+  .media .media-body {
+    display: table-row; }
+  .media .media-body h4 {
+    padding-top: 20px; }
+  .media .media-body p {
+    margin: 0; } }
 
 @media only screen and (min-width: 768px) {
   .main-header .navbar-brand {

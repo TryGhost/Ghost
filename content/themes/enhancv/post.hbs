@@ -51,6 +51,7 @@
                     <h4>
                         <a href="/author/{{author.slug}}">{{author.name}}</a>
                     </h4>
+                    <div class="separator sm"></div>
                     <p>{{author.bio}}</p>
                     <ul class="author-meta clearfix">
                         {{#if author.location}}<li>{{author.location}}</li>{{/if}}
@@ -94,7 +95,7 @@
 
                 <h3>Super-Human Resumes.</h3>
                 <div class="separator sm"></div>
-                
+
                 <p>In your inbox every week.<br>What's more to ask from life?</p>
                 <div class="separator md"></div>
 
@@ -104,7 +105,7 @@
         </div>
     </div>
 
-    <div class="read-next">
+    {{!-- <div class="read-next">
         {{#next_post}}
         <a class="read-next-story {{#if image}}" style="background-image: url({{image}}){{else}}no-cover{{/if}}" href="{{url}}">
             <section class="post">
@@ -121,7 +122,7 @@
             </section>
         </a>
         {{/prev_post}}
-    </div>
+    </div> --}}
 </main>
 
 

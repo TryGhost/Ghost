@@ -291,9 +291,7 @@ body:before {
         text-align: center;
 
         .author {
-            margin: 0 0 2rem 0;
-            padding: 0 0 1.6rem 0;
-            border-bottom: $gray-darker 1px solid;
+          padding: 35px;
         }
 
         .share {
@@ -347,6 +345,30 @@ body:before {
 
     .subscribe {
         display: none;
+    }
+
+    .media {
+      .media-left {
+        display: table-row;
+        text-align: center;
+        padding: 0;
+
+        .wrapper {
+          margin: auto;
+        }
+      }
+
+      .media-body {
+        display: table-row;
+
+        h4 {
+          padding-top: 20px;
+        }
+
+        p {
+          margin: 0;
+        }
+      }
     }
 }
 
