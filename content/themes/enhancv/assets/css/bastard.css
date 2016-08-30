@@ -8163,7 +8163,8 @@ body:before {
     padding-bottom: 0;
     margin-bottom: 0; }
   .post-template .post-header {
-    padding: 30px 0; }
+    padding: 30px 0 0 0;
+    margin-bottom: 0; }
   .post-template .site-footer {
     margin-top: 0; }
   .post-content img {
@@ -8179,9 +8180,14 @@ body:before {
     padding: 35px; }
   .post-footer .share {
     position: static;
-    width: auto; }
+    width: auto;
+    margin-top: 0; }
   .post-footer .share a {
-    margin: 1.4rem 0.8rem 0 0.8rem; }
+    width: 100%; }
+  .post-footer .share a.twitter, .post-footer .share a.facebook {
+    margin: 0; }
+  .post-footer .share a.facebook {
+    margin-bottom: 20px; }
   .author-meta li {
     float: none;
     margin: 0;

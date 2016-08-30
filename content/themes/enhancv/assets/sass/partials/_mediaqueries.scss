@@ -264,7 +264,8 @@ body:before {
         }
 
         .post-header {
-            padding: 30px 0;
+            padding: 30px 0 0 0;
+            margin-bottom: 0;
         }
 
         .site-footer {
@@ -297,9 +298,19 @@ body:before {
         .share {
             position: static;
             width: auto;
+            margin-top: 0;
 
             a {
-                margin: 1.4rem 0.8rem 0 0.8rem;
+                width: 100%;
+
+                &.twitter,
+                &.facebook {
+                  margin: 0;
+                }
+
+                &.facebook {
+                  margin-bottom: 20px;
+                }
             }
         }
     }
