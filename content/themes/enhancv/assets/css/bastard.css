@@ -6584,7 +6584,11 @@ input[type="text"], input[type="password"], input[type="datetime"], input[type="
   font-size: .9em; }
 
 input[type="text"].form-control, input[type="password"].form-control, input[type="datetime"].form-control, input[type="datetime-local"].form-control, input[type="date"].form-control, input[type="month"].form-control, input[type="time"].form-control, input[type="week"].form-control, input[type="number"].form-control, input[type="email"].form-control, input[type="url"].form-control, input[type="search"].form-control, input[type="tel"].form-control {
-  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.035); }
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.035);
+  height: auto;
+  padding: 0 20px;
+  font-size: 1.4rem;
+  line-height: 3.5rem; }
 
 ::-webkit-input-placeholder {
   opacity: 1; }
@@ -7638,45 +7642,11 @@ h1.post-title {
   font-weight: normal;
   font-size: 1.4rem;
   color: #999999;
-  line-height: 1.6rem; }
+  line-height: 1.6rem;
+  margin: 0; }
 
-.subscribe .banner-btn {
-  margin-top: 15px;
-  padding: 10px 20px;
-  background-color: #00BF91 !important;
-  border-radius: 20px;
-  color: #fff;
-  font-weight: 300 !important;
-  font-size: 16px;
-  outline: 0;
-  box-shadow: none;
-  border: 0;
-  transition: all ease-in .2s;
-  -webkit-transition: all ease-in .2s;
-  -moz-transition: all ease-in .2s; }
-
-.subscribe .banner-btn:hover, .subscribe .banner-btn:focus, .subscribe .banner-btn:active {
-  background-color: #008a69 !important; }
-
-.subscribe .careerstack-custom-input {
-  width: 100%;
-  height: 35px;
-  padding: 15px;
-  font-size: 0.675em;
-  color: #999999;
-  border: 2px solid #E6E6E6;
-  box-shadow: none;
-  -webkit-box-shadow: none;
-  -moz-box-shadow: none;
-  transition: all ease-in .2s;
-  -webkit-transition: all ease-in .2s;
-  -moz-transition: all ease-in .2s; }
-
-.subscribe .careerstack-custom-input:focus, .subscribe .careerstack-custom-input:active,
-.subscribe .careerstack-custom-input:focus + span button,
-.subscribe .careerstack-custom-input:active + span button {
-  border-color: #00BF91;
-  outline: 0; }
+.subscribe .btn-success {
+  margin-top: 10px; }
 
 /* ==========================================================================
    7. Read More - Next/Prev Post Links

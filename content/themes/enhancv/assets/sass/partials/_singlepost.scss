@@ -329,50 +329,10 @@ h1.post-title {
       font-size: 1.4rem;
       color: $gray-medium;
       line-height: 1.6rem;
+      margin: 0;
     }
 
-    .banner-btn {
-        margin-top: 15px;
-        padding: 10px 20px;
-        background-color: #00BF91 !important;
-        border-radius: 20px;
-        color: #fff;
-        font-weight: 300 !important;
-        font-size: 16px;
-        outline: 0;
-        box-shadow: none;
-        border: 0;
-        transition: all ease-in .2s;
-        -webkit-transition: all ease-in .2s;
-        -moz-transition: all ease-in .2s;
-
-        &:hover,
-        &:focus,
-        &:active {
-            background-color: #008a69 !important;
-        }
-    }
-
-    .careerstack-custom-input {
-        width: 100%;
-        height: 35px;
-        padding: 15px;
-        font-size: 0.675em;
-        color: #999999;
-        border: 2px solid #E6E6E6;
-        box-shadow: none;
-        -webkit-box-shadow: none;
-        -moz-box-shadow: none;
-        transition: all ease-in .2s;
-        -webkit-transition: all ease-in .2s;
-        -moz-transition: all ease-in .2s;
-
-        &:focus,
-        &:active,
-        &:focus + span button,
-        &:active + span button {
-            border-color: #00BF91;
-            outline: 0;
-        }
+    .btn-success {
+      margin-top: 10px;
     }
 }
