@@ -9,68 +9,120 @@
 {{> main-header}}
 
 <main class="content" role="main">
+    <div class="container">
+        <article class="{{post_class}} pull-left text-left">
 
-    <article class="{{post_class}}">
+            <header class="post-header">
+                <h1 class="post-title text-left">{{{title}}}</h1>
+                <section class="post-meta">
+                    <span class="pull-left">Share buttons</span>
+                    <time class="post-date pull-right" datetime="{{date format='YYYY-MM-DD'}}">{{date format="DD MMMM YYYY"}}</time> {{!-- {{tags prefix=" on " separator=" | "}} --}}
+                </section>
+            </header>
 
-        <header class="post-header">
-            <h1 class="post-title">{{{title}}}</h1>
-            <section class="post-meta">
-                <time class="post-date" datetime="{{date format='YYYY-MM-DD'}}">{{date format="MMMM Do, YYYY"}}</time> {{tags prefix=" on " separator=" | "}}
-            </section>
-        </header>
-
-        <section class="post-content">
-            {{content}}
-        </section>
-
-        <footer class="post-footer">
-
-            <section class="author">
-                <h4>{{author.name}}</h4>
-                <p>{{author.bio}}</p>
-                <ul class="author-meta clearfix">
-                    {{#if author.location}}<li>{{author.location}}</li>{{/if}}
-                    {{#if author.website}}<li><a href="{{author.website}}">{{author.website}}</a></li>{{/if}}
-                </ul>
+            <section class="post-content">
+                {{content}}
             </section>
 
-            <section class="share">
-                <h4>Share this post</h4>
-                <a class="icon-twitter" href="https://twitter.com/intent/tweet?text={{encode title}}&amp;url={{url absolute="true"}}"
-                    onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
-                    <span class="hidden">Twitter</span>
-                </a>
-                <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u={{url absolute="true"}}"
-                    onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
-                    <span class="hidden">Facebook</span>
-                </a>
-                <a class="icon-google-plus" href="https://plus.google.com/share?url={{url absolute="true"}}"
-                   onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
-                    <span class="hidden">Google+</span>
-                </a>
+            <footer class="post-footer">
+
+                <section class="share text-center">
+                    <a class="facebook" href="https://www.facebook.com/sharer/sharer.php?u={{url absolute="true"}}"
+                        onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                        <span class="pale-text">Share on</span> Facebook
+                    </a>
+                    <a class="twitter" href="https://twitter.com/intent/tweet?text={{encode title}}&amp;url={{url absolute="true"}}"
+                        onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                        <span class="pale-text">Share on</span> Twitter
+                    </a>
+                    {{!-- <a class="col-sm-4 google-plus" href="https://plus.google.com/share?url={{url absolute="true"}}"
+                       onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                        <span class="pale-text">Share on</span> Google+
+                    </a> --}}
+                </section>
+
+                <section class="author media">
+                  <div class="media-left media-middle">
+                    <div class="wrapper">
+                      <img class="media-object" src={{author.image}} alt="{{author.title}} cover image">
+                    </div>
+                  </div>
+                  <div class="media-body">
+                    <h4>
+                        <a href="/author/{{author.slug}}">{{author.name}}</a>
+                    </h4>
+                    <div class="separator sm"></div>
+                    <p>{{author.bio}}</p>
+                    <ul class="author-meta clearfix">
+                        {{#if author.location}}<li>{{author.location}}</li>{{/if}}
+                        {{#if author.website}}<li><a href="{{author.website}}">{{author.website}}</a></li>{{/if}}
+                    </ul>
+                  </div>
+                </section>
+
+            </footer>
+
+        </article>
+
+        <div class="side pull-right">
+            {{#get "posts" limit="3" as |featured|}}
+                <section class="latest-posts">
+                  <h3>Latest posts</h3>
+                  {{#foreach featured}}
+                  <div class="media">
+                      {{#if image}}
+                          <div class="media-left media-middle">
+                            <a class="wrapper" href={{url}}>
+                              <img class="media-object" src={{image}} alt="{{title}} cover image">
+                            </a>
+                          </div>
+                      {{/if}}
+                      <div class="media-body">
+                        <a href={{url}} class="media-heading">{{title}}</a>
+                      </div>
+                  </div>
+                  {{/foreach}}
+                </section>
+            {{else}}
+                <p>No latest posts...</p>
+            {{/get}}
+
+            <div class="separator lg"></div>
+
+            <div class="subscribe">
+                <img class="image" src="http://blog.enhancv.com/wp-content/uploads/2015/12/rsz_1n6.jpg" alt="Banner CVs">
+                <div class="separator md"></div>
+
+                <h3>Super-Human Resumes.</h3>
+                <div class="separator sm"></div>
+
+                <p>In your inbox every week.<br>What's more to ask from life?</p>
+                <div class="separator md"></div>
+
+                <input type="text" name="email" class="form-control" placeholder="Email">
+                <button type="submit" class="btn btn-success">Subscribe</button>
+            </div>
+        </div>
+    </div>
+
+    {{!-- <div class="read-next">
+        {{#next_post}}
+        <a class="read-next-story {{#if image}}" style="background-image: url({{image}}){{else}}no-cover{{/if}}" href="{{url}}">
+            <section class="post">
+                <h2>{{title}}</h2>
+                <p>{{excerpt words="19"}}&hellip;</p>
             </section>
-
-        </footer>
-
-    </article>
-<div class="read-next">
-    {{#next_post}}
-    <a class="read-next-story {{#if image}}" style="background-image: url({{image}}){{else}}no-cover{{/if}}" href="{{url}}">
-        <section class="post">
-            <h2>{{title}}</h2>
-            <p>{{excerpt words="19"}}&hellip;</p>
-        </section>
-    </a>
-    {{/next_post}}
-    {{#prev_post}}
-    <a class="read-next-story prev {{#if image}}" style="background-image: url({{image}}){{else}}no-cover{{/if}}" href="{{url}}">
-        <section class="post">
-            <h2>{{title}}</h2>
-            <p>{{excerpt words="19"}}&hellip;</p>
-        </section>
-    </a>
-    {{/prev_post}}
-</div>
+        </a>
+        {{/next_post}}
+        {{#prev_post}}
+        <a class="read-next-story prev {{#if image}}" style="background-image: url({{image}}){{else}}no-cover{{/if}}" href="{{url}}">
+            <section class="post">
+                <h2>{{title}}</h2>
+                <p>{{excerpt words="19"}}&hellip;</p>
+            </section>
+        </a>
+        {{/prev_post}}
+    </div> --}}
 </main>
 
 

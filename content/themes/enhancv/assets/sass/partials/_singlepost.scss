@@ -1,38 +1,113 @@
-
 /* ==========================================================================
    6. Single Post - When you click on an individual post
    ========================================================================== */
 
 h1.post-title {
-  color: $yellow-dark;
+    color: $yellow-dark;
 }
 
 /* Stop .full-img from creating horizontal scroll - slight hack due to
    imperfections with browser width % calculations and rounding */
 
 .post-template {
-  .content {
-    overflow: hidden;
-  }
-  .post {
-    margin-top: 0;
-    border-bottom: none;
-    padding-bottom: 0;
-    &:after {
-      display: none;
+    .content {
+        overflow: hidden;
+
+        .container {
+            padding: 0;
+
+            .side {
+                margin-top: 100px;
+                width: 34%;
+                padding: 0 50px;
+
+                .latest-posts {
+                    line-height: 1;
+
+                    h3 {
+                        font-size: 1.6rem;
+                        color: $text-color;
+                    }
+
+                    .media-left {
+                        padding-right: 25px;
+
+                        .wrapper {
+                            display: block;
+                            width: 50px;
+                            height: 50px;
+                            border-radius: 10px;
+                            overflow: hidden;
+                        }
+
+                        a {
+                            display: inline-block;
+                        }
+
+                        img {
+                            display: block;
+                            height: 50px;
+                            min-width: 50px;
+                            position: relative;
+                            left: 50%;
+                            transform: translateX(-50%);
+                        }
+                    }
+
+                    .media-body {
+                        a {
+                            font-size: 1.6rem;
+                            color: $text-color;
+                            line-height: 1.4em;
+                            display: block;
+
+                            &:hover {
+                                color: $enhancv-color;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
-  }
-  .post-header {
-    padding: 60px 0;
-    text-align: center;
-  }
-  .blog-title {
-    display: inline-block;
-    padding: 2.5rem 0;
-  }
-  h2, h3, h4 {
-    color: $gray-light;
-  }
+
+    .post {
+        max-width: 66%;
+        margin-top: 0;
+        border-bottom: none;
+        padding-bottom: 0;
+        padding-left: 50px;
+        padding-right: 50px;
+
+        &:after {
+            display: none;
+        }
+    }
+
+    .post-header {
+        padding: 100px 0 0 0;
+        text-align: center;
+
+        h1 {
+            color: $text-color;
+        }
+    }
+
+    .blog-title {
+        display: inline-block;
+        padding: 2.5rem 0;
+    }
+
+    .post-meta {
+        width: 100%;
+        margin: 35px 0;
+    }
+
+    h2,
+    h3,
+    h4 {
+        color: $gray-light;
+    }
 }
 
 /* Tweak the .post wrapper style */
@@ -44,25 +119,33 @@ h1.post-title {
 /* Keep images centred and within the bounds of the post-width */
 
 .post-content {
-  color: $text-color;
+    color: $text-color;
 
-  img {
-    display: block;
-    max-width: 100%;
-    height: auto;
-    margin: 0 auto;
-    padding: 0.6em 0;
-  }
+    p {
+        font-size: 1.6rem;
+        margin: 0 0 22px 0;
 
-  .full-img {
-    width: 126%;
-    max-width: none;
-    margin: 0 -13%;
-  }
+        &:last-child {
+            margin: 0;
+        }
+    }
 
-  code {
-    color: #993030;
-  }
+    img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+        margin: 0 auto;
+        padding: 0.6em 0;
+    }
+
+    .full-img {
+        width: 100%;
+        max-width: none;
+    }
+
+    code {
+        color: #993030;
+    }
 }
 
 /* Break out larger images to be wider than the main text column
@@ -71,55 +154,72 @@ h1.post-title {
 /* The author credit area after the post */
 
 .post-footer {
-  position: relative;
-  margin: 4rem 0 0 0;
-  padding: 4rem 0 0 0;
-  border-top: rgba(235, 242, 246, 0.29) 1px solid;
-  h4 {
-    font-size: 1.8rem;
+    position: relative;
     margin: 0;
-  }
-  p {
-    margin: 1rem 0;
-    font-size: 1.4rem;
-    line-height: 1.6em;
-  }
+    padding: 0;
+
+    h4 {
+        font-size: 2.4rem;
+        margin: 0;
+        text-transform: capitalize;
+        color: $text-color;
+
+        a {
+            color: $text-color;
+
+            &:hover {
+                color: $enhancv-color;
+            }
+        }
+    }
+
+    p {
+        font-size: 1.4rem;
+        line-height: 1.6em;
+        color: $gray-medium;
+    }
 }
 
 /* list of author links - location / url */
 
 .author-meta {
-  padding: 0;
-  margin: 0;
-  list-style: none;
-  font-size: 1.4rem;
-  line-height: 1;
-  font-style: italic;
-  color: #9EABB3;
-  li {
-    float: left;
-    margin-left: 10px;
-    /* space to the left of the bullet */
-    &:before {
-      content: "•";
-      display: inline-block;
-      margin-right: 10px;
-      /* space to the right of the bullet */
-      color: #BBC7CC;
-    }
-    &:first-child {
-      margin-left: 0;
-      &:before {
-        display: none;
-      }
-    }
-  }
-  a {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    font-size: 1.4rem;
+    line-height: 1;
+    font-style: italic;
     color: #9EABB3;
-    &:hover {
-      color: #57A3E8;
+
+    li {
+        float: left;
+        margin-left: 10px;
+
+        /* space to the left of the bullet */
+        &:before {
+            content: "•";
+            display: inline-block;
+            margin-right: 10px;
+            /* space to the right of the bullet */
+            color: #BBC7CC;
+        }
+
+        &:first-child {
+            margin-left: 0;
+
+            &:before {
+                display: none;
+            }
+        }
     }
-  }
+
+    a {
+        color: #9EABB3;
+
+        &:hover {
+            color: #57A3E8;
+        }
+    }
 }
 
 /* bullet divider */
@@ -129,28 +229,108 @@ h1.post-title {
 /* Create some space to the right for the share links */
 
 .post-footer {
-  .author {
-    margin-right: 180px;
-  }
-  .share {
-    position: absolute;
-    top: 4rem;
-    right: 0;
-    width: 140px;
-    a {
-      font-size: 1.8rem;
-      display: inline-block;
-      margin: 1rem 1.6rem 1.6rem 0;
-      color: #BBC7CC;
-      text-decoration: none;
-      &:hover {
-        color: #50585D;
-      }
+    .author {
+        padding: 50px;
+        border-radius: 5px;
+        background-color: $gray-super-light;
+
+        .media-left {
+            padding-right: 40px;
+        }
+
+        .wrapper {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            overflow: hidden;
+
+            img {
+                height: 100px;
+                min-width: 100px;
+                display: block;
+                position: relative;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+        }
     }
-  }
+
+    .share {
+        margin: 45px 0;
+
+        a {
+            width: calc(50% - 10px);
+            display: inline-block;
+            font-size: 1.4rem;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 300;
+            padding: 11px 0;
+            border-radius: 30px;
+            line-height: 1;
+            transition: background-color .2s ease-in-out;
+
+            .pale-text {
+                color: transparentize(#fff, 0.6);
+            }
+
+            &.facebook {
+                background-color: $facebook-color;
+                margin: 0 5px 0 0;
+
+                &:hover {
+                    background-color: darken($facebook-color, 7%);
+                }
+            }
+
+            &.twitter {
+                background-color: $twitter-color;
+                margin: 0 0 0 5px;
+
+                &:hover {
+                    background-color: darken($twitter-color, 7%);
+                }
+            }
+
+            // &.google-plus {
+            //   background-color: $google-plus-color;
+            // }
+       
+        }
+    }
 }
 
 /* Drop the share links in the space to the right.
    Doing it like this means it's easier for the author bio
    to be flexible at smaller screen sizes while the share
    links remain at a fixed width the whole time */
+
+.subscribe {
+    padding: 50px 15px;
+    background-color: #E1E3E2;
+    text-align: center;
+    color: #4D4D4D;
+    font-size: 1.125em;
+    border-radius: 5px;
+
+    .image {
+        height: 190px;
+    }
+
+    h3 {
+      font-size: 2.1rem;
+      color: $text-color;
+    }
+
+    p {
+      font-weight: normal;
+      font-size: 1.4rem;
+      color: $gray-medium;
+      line-height: 1.6rem;
+      margin: 0;
+    }
+
+    .btn-success {
+      margin-top: 10px;
+    }
+}
