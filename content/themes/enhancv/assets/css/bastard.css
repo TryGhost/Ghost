@@ -7665,13 +7665,13 @@ h1.post-title {
   width: 80%;
   max-width: 710px;
   margin: 4rem auto;
-  font-family: 'Open Sans', sans-serif;
+  font-family: 'Roboto', sans-serif;
   font-size: 1.3rem;
-  color: #9EABB3;
+  color: #333;
   text-align: center; }
 
 .pagination a {
-  color: #9EABB3;
+  color: #333;
   -webkit-transition: all 0.2s ease;
           transition: all 0.2s ease; }
 
@@ -7679,7 +7679,7 @@ h1.post-title {
 .older-posts, .newer-posts {
   position: absolute;
   display: inline-block;
-  padding: 0 15px;
+  padding: 0 25px;
   border: #999999 1px solid;
   text-decoration: none;
   border-radius: 30px;
@@ -7687,9 +7687,9 @@ h1.post-title {
           transition: border ease 0.3s; }
 
 .older-posts:hover, .older-posts:focus, .older-posts:active, .older-posts.active, .newer-posts:hover, .newer-posts:focus, .newer-posts:active, .newer-posts.active {
-  color: #000;
-  background: #bbbbbb;
-  text-decoration: none; }
+  text-decoration: none;
+  border: 1px solid #00c091;
+  color: #00c091; }
 
 .older-posts {
   right: 0; }
