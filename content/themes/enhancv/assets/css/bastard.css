@@ -7359,133 +7359,37 @@ fieldset[disabled] .btn-muted-link:focus {
 /* ==========================================================================
    6. Single Post - When you click on an individual post
    ========================================================================== */
-h1.post-title {
-  color: #caad00; }
+.posts-wrapper {
+  margin: 0 auto; }
 
-/* Stop .full-img from creating horizontal scroll - slight hack due to
-   imperfections with browser width % calculations and rounding */
-.post-template .content {
-  overflow: hidden; }
+.posts-wrapper [class*="col-"] {
+  padding: 25px; }
 
-.post-template .post {
-  margin-top: 0;
-  border-bottom: none;
-  padding-bottom: 0; }
-
-.post-template .post:after {
-  display: none; }
-
-.post-template .post-header {
-  padding: 60px 0;
-  text-align: center; }
-
-.post-template .blog-title {
-  display: inline-block;
-  padding: 2.5rem 0; }
-
-.post-template h2, .post-template h3, .post-template h4 {
-  color: #bbbbbb; }
-
-/* Tweak the .post wrapper style */
-/* Kill that stylish little circle that was on the border, too */
-/* Insert some mad padding up in the header for better spacing */
-/* Keep images centred and within the bounds of the post-width */
-.post-content {
-  color: #333333; }
-
-.post-content img {
-  display: block;
-  max-width: 100%;
-  height: auto;
-  margin: 0 auto;
-  padding: 0.6em 0; }
-
-.post-content .full-img {
-  width: 126%;
-  max-width: none;
-  margin: 0 -13%; }
-
-.post-content code {
-  color: #993030; }
-
-/* Break out larger images to be wider than the main text column
-   the class is applied with jQuery */
-/* The author credit area after the post */
-.post-footer {
-  position: relative;
-  margin: 4rem 0 0 0;
-  padding: 4rem 0 0 0;
-  border-top: rgba(235, 242, 246, 0.29) 1px solid; }
-
-.post-footer h4 {
-  font-size: 1.8rem;
+.posts-wrapper .single-post {
   margin: 0; }
 
-.post-footer p {
-  margin: 1rem 0;
-  font-size: 1.4rem;
-  line-height: 1.6em; }
+.posts-wrapper .single-post img {
+  width: 100%; }
 
-/* list of author links - location / url */
-.author-meta {
-  padding: 0;
-  margin: 0;
-  list-style: none;
-  font-size: 1.4rem;
-  line-height: 1;
-  font-style: italic;
-  color: #9EABB3; }
+.posts-wrapper .single-post .panel-heading {
+  height: 215px;
+  background-size: cover;
+  background-position: center; }
 
-.author-meta li {
-  float: left;
-  margin-left: 10px;
-  /* space to the left of the bullet */ }
+.posts-wrapper .single-post .panel-body {
+  padding: 30px; }
 
-.author-meta li:before {
-  content: "•";
-  display: inline-block;
-  margin-right: 10px;
-  /* space to the right of the bullet */
-  color: #BBC7CC; }
+.posts-wrapper .single-post h3 {
+  font-size: 24px; }
 
-.author-meta li:first-child {
-  margin-left: 0; }
+.posts-wrapper .single-post h3 a {
+  color: #333333; }
 
-.author-meta li:first-child:before {
-  display: none; }
+.posts-wrapper .single-post p {
+  font-size: 14px;
+  color: #808080;
+  line-height: 16px; }
 
-.author-meta a {
-  color: #9EABB3; }
-
-.author-meta a:hover {
-  color: #57A3E8; }
-
-/* bullet divider */
-/* disable the bullet divider for the first item in the list */
-/* Create some space to the right for the share links */
-.post-footer .author {
-  margin-right: 180px; }
-
-.post-footer .share {
-  position: absolute;
-  top: 4rem;
-  right: 0;
-  width: 140px; }
-
-.post-footer .share a {
-  font-size: 1.8rem;
-  display: inline-block;
-  margin: 1rem 1.6rem 1.6rem 0;
-  color: #BBC7CC;
-  text-decoration: none; }
-
-.post-footer .share a:hover {
-  color: #50585D; }
-
-/* Drop the share links in the space to the right.
-   Doing it like this means it's easier for the author bio
-   to be flexible at smaller screen sizes while the share
-   links remain at a fixed width the whole time */
 /* ==========================================================================
    7. Read More - Next/Prev Post Links
    ========================================================================== */

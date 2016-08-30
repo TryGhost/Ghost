@@ -33,21 +33,19 @@
 <main class="content" role="main">
 
     {{! Each post will be output using this markup }}
-    {{#foreach posts}}
-
-      <article class="{{post_class}}">
-          <header class="post-header">
-              <span class="post-meta"><time datetime="{{date format='YYYY-MM-DD'}}">{{date format="MMMM Do, YYYY"}}</time> {{tags prefix="on "}}</span>
-              <h2 class="post-title"><a href="{{url}}">{{{title}}}</a></h2>
-
-          </header>
-
-          <section class="post-excerpt">
-              <p>{{excerpt}}&hellip;</p>
-          </section>
-      </article>
-
-    {{/foreach}}
+    <div class="row container posts-wrapper">
+      {{#foreach posts}}
+        <div class="col-md-6">
+          <div class="panel panel-default single-post">
+            <div class="panel-heading" style="background-image: url({{image}})"></div>
+            <div class="panel-body">
+              <h3><a href="{{url}}">{{{title}}}</a></h3>
+              <p>{{excerpt characters="115"}}</p>
+            </div>
+          </div>
+        </div>
+      {{/foreach}}
+    </div>
 
     {{!! After all the posts, we have the previous/next pagination links }}
     <div class="container">
