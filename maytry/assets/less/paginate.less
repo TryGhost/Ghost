@@ -56,10 +56,14 @@ a.newer-posts {
 
   &.row {
     margin: 25px 0;
+
+    > div {
+      padding: 0;
+    }
   }
 }
 
-.prev {
+.prev, .next {
   padding: 0;
   margin: 5px 0;
 
@@ -67,13 +71,12 @@ a.newer-posts {
     color: #787878;
     border-bottom: 4px solid @border-color;
     padding-bottom: 4px;
-    margin-top: 0;
     margin-bottom: 4px;
   }
 
   a {
     p {
-      font-size: 20px;
+      font-size: 1.2rem;
       font-weight: bold;
       margin: 0;
     }
@@ -89,33 +92,20 @@ a.newer-posts {
   }
 }
 
-.next {
-  padding: 0;
-  margin: 5px 0;
-
+.prev {
   h4 {
-    color: grey;
-    border-bottom: 4px solid @border-color;
+    margin-top: 0;
+  }
+}
+
+.next {
+  h4 {
     text-align: right;
-    padding-bottom: 4px;
-    margin-bottom: 4px;
   }
 
   a {
     p {
-      font-size: 20px;
-      font-weight: bold;
       text-align: right;
-      margin: 0;
-    }
-
-    &:hover {
-      text-decoration: none;
-
-      p {
-        color: @emphasis-color;
-        font-weight: bold;
-      }
     }
   }
 }
@@ -126,5 +116,13 @@ a.newer-posts {
 @media only screen and (max-width: 767px) {
   .older-posts, .newer-posts {
     padding: 8px;
+  }
+
+  .prev, .next {
+    a {
+      p {
+        font-size: 1rem;
+      }
+    }
   }
 }
