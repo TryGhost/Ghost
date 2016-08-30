@@ -4,7 +4,7 @@
   <div class="row multi-col collapse">
     <!-- ソーシャルボタン -->
     <div class="share-side-bar social-area-syncer hide-for-small-only"></div>
-    <div class="medium-9 column main-colmun">
+    <div class="medium-8 column main-colmun">
       <div class="blog-content">
         <!-- ResponsiveDisplayAd01 -->
         <div class="google-ad">
@@ -54,14 +54,14 @@
           </script>
         </div>
 
-        <div class="newly-posts-area">
-          <h4 class="newly-label">新着記事</h4>
-          <div class="newly-posts">{{newly_posts max=4}}</div>
-        </div>
-
         <div class="popular-posts-area">
           <h4 class="popular-label">人気記事</h4>
-          <div class="popular-posts">{{popular_posts max=4}}</div>
+          <div class="popular-posts">{{popular_posts max=5}}</div>
+        </div>
+
+        <div class="newly-posts-area">
+          <h4 class="newly-label">新着記事</h4>
+          <div class="newly-posts">{{newly_posts max=5}}</div>
         </div>
 
         <!-- 前後の投稿 -->
@@ -113,9 +113,21 @@
       </div>
     </div>
 
-    <div class="medium-3 column side-column-right">
+    <div class="medium-4 column side-column-right">
       <div class="scroll-spy">
         {{outline}}
+
+        <!-- ResponsiveDispTextAd01 -->
+        <div class="google-ad">
+          <ins class="adsbygoogle"
+               style="display:block"
+               data-ad-client="ca-pub-9576950957758188"
+               data-ad-slot="5533027355"
+               data-ad-format="auto"></ins>
+          <script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+          </script>
+        </div>
         <!-- ResponsiveDisplayAd02 -->
         <div class="google-ad">
           <ins class="adsbygoogle"

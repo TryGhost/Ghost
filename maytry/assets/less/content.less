@@ -7,7 +7,58 @@
   max-width: @container-width;
 
   .main-column {
-    padding-right: 5px !important;
+    @media only screen and (min-width: 641px) {
+      padding-right: 5px !important;
+    }
+  }
+
+  .side-column-right {
+    @media only screen and (min-width: 641px) {
+      padding-left: 5px !important;
+
+      .google-ad {
+        margin-bottom: 5px;
+      }
+    }
+
+    .mt-panel {
+      border-bottom: solid 1px white;
+
+      &:first-child {
+        margin-top: 0;
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    h2.mt-label {
+      margin-top: 0;
+      font-size: 30px;
+      font-weight: bold;
+    }
+
+    .popular-posts-area {
+      .simple-post {
+        margin-bottom: 15px;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        a {
+          font-size: 18px;
+          color: white;
+          text-decoration: none;
+
+          &:hover {
+            color: @emphasis-color;
+            font-weight: bold;
+          }
+        }
+      }
+    }
   }
 }
 
@@ -15,7 +66,7 @@
   width: 100%;
 
   &.full_post {
-    padding-left: 98px;
+    padding-left: 3rem;
     padding-right: 5px;
 
     .word_counts {
@@ -252,49 +303,6 @@
   }
 }
 
-.side-column-right {
-  padding-left: 5px !important;
-
-  .mt-panel {
-    border-bottom: solid 1px white;
-
-    &:first-child {
-      margin-top: 0;
-    }
-
-    &:last-child {
-      border-bottom: none;
-    }
-  }
-
-  h2.mt-label {
-    margin-top: 0;
-    font-size: 30px;
-    font-weight: bold;
-  }
-
-  .popular-posts-area {
-    .simple-post {
-      margin-bottom: 15px;
-
-      &:last-child {
-        margin-bottom: 0;
-      }
-
-      a {
-        font-size: 18px;
-        color: white;
-        text-decoration: none;
-
-        &:hover {
-          color: @emphasis-color;
-          font-weight: bold;
-        }
-      }
-    }
-  }
-}
-
 @media only screen and (max-width: 1200px) {
   .content-container {
     max-width: 920px;
@@ -379,24 +387,9 @@
 }
 
 @media only screen and (max-width: 640px) {
-  .blog-cover-container {
-    h1.post-title {
-      font-size: 1.7rem;
-      line-height: 1.3;
-    }
-  }
-
   .content-container {
     min-width: 320px; // iPhone5
     padding-top: 5px;
-
-    .main-column {
-      padding-right: 0 !important;
-    }
-
-    .side-column-right {
-      padding-left: 0 !important;
-    }
 
     &.home-container {
       .blog-content {
