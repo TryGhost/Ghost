@@ -45,9 +45,9 @@
 
   // ______________ SHARE BAR
 
-  $('body').scrollspy({target: '.scroll-spy.side-column-right', offset: 1});
-  if(640 < window.innerWidth && 0 < $('.scroll-spy.side-column-right').size()) {
-    $('.scroll-spy.side-column-right').scrollChaser({
+  $('body').scrollspy({target: '.side-column-right .scroll-spy', offset: 1});
+  if(640 < window.innerWidth && 0 < $('.side-column-right .scroll-spy').size()) {
+    $('.side-column-right .scroll-spy').scrollChaser({
       wrapper: '.blog-container',
       offsetTop: window.innerWidth <= 640 ? -5 : 70,
       offsetBottom: 5,
