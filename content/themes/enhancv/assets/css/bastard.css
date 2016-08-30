@@ -7888,6 +7888,12 @@ h1.post-title {
   width: 143px;
   opacity: .5; }
 
+.site-footer [class*='col-']:last-child {
+  padding-right: 0; }
+
+.site-footer [class*='col-']:first-child {
+  padding-left: 0; }
+
 @media screen and (max-width: 768px) {
   .site-footer {
     height: auto;
