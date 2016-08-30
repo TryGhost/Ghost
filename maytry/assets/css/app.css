@@ -96,7 +96,7 @@
     top: 0;
     left: 0;
     transform: translate(0, 0);
-    max-width: 1000px;
+    max-width: 1200px;
     z-index: 10;
     text-align: center;
   }
@@ -133,16 +133,55 @@
   margin: 0 auto;
   padding-top: 10px;
   width: 100%;
-  max-width: 1000px;
+  max-width: 1200px;
 }
-.content-container .main-column {
-  padding-right: 5px !important;
+@media only screen and (min-width: 641px) {
+  .content-container .main-column {
+    padding-right: 5px !important;
+  }
+}
+@media only screen and (min-width: 641px) {
+  .content-container .side-column-right {
+    padding-left: 5px !important;
+  }
+  .content-container .side-column-right .google-ad {
+    margin-bottom: 5px;
+  }
+}
+.content-container .side-column-right .mt-panel {
+  border-bottom: solid 1px white;
+}
+.content-container .side-column-right .mt-panel:first-child {
+  margin-top: 0;
+}
+.content-container .side-column-right .mt-panel:last-child {
+  border-bottom: none;
+}
+.content-container .side-column-right h2.mt-label {
+  margin-top: 0;
+  font-size: 30px;
+  font-weight: bold;
+}
+.content-container .side-column-right .popular-posts-area .simple-post {
+  margin-bottom: 15px;
+}
+.content-container .side-column-right .popular-posts-area .simple-post:last-child {
+  margin-bottom: 0;
+}
+.content-container .side-column-right .popular-posts-area .simple-post a {
+  font-size: 18px;
+  color: white;
+  text-decoration: none;
+}
+.content-container .side-column-right .popular-posts-area .simple-post a:hover {
+  color: #EE6600;
+  font-weight: bold;
 }
 .blog-container {
   width: 100%;
 }
 .blog-container.full_post {
-  padding-left: 98px;
+  padding-left: 3rem;
   padding-right: 5px;
 }
 .blog-container.full_post .word_counts {
@@ -342,38 +381,6 @@
   left: 0;
   right: 0;
 }
-.side-column-right {
-  padding-left: 5px !important;
-}
-.side-column-right .mt-panel {
-  border-bottom: solid 1px white;
-}
-.side-column-right .mt-panel:first-child {
-  margin-top: 0;
-}
-.side-column-right .mt-panel:last-child {
-  border-bottom: none;
-}
-.side-column-right h2.mt-label {
-  margin-top: 0;
-  font-size: 30px;
-  font-weight: bold;
-}
-.side-column-right .popular-posts-area .simple-post {
-  margin-bottom: 15px;
-}
-.side-column-right .popular-posts-area .simple-post:last-child {
-  margin-bottom: 0;
-}
-.side-column-right .popular-posts-area .simple-post a {
-  font-size: 18px;
-  color: white;
-  text-decoration: none;
-}
-.side-column-right .popular-posts-area .simple-post a:hover {
-  color: #EE6600;
-  font-weight: bold;
-}
 @media only screen and (max-width: 1200px) {
   .content-container {
     max-width: 920px;
@@ -442,19 +449,9 @@
   }
 }
 @media only screen and (max-width: 640px) {
-  .blog-cover-container h1.post-title {
-    font-size: 1.7rem;
-    line-height: 1.3;
-  }
   .content-container {
     min-width: 320px;
     padding-top: 5px;
-  }
-  .content-container .main-column {
-    padding-right: 0 !important;
-  }
-  .content-container .side-column-right {
-    padding-left: 0 !important;
   }
   .content-container.home-container .blog-content .post-title h2 {
     font-size: 1.4rem;
@@ -551,9 +548,9 @@ blockquote:not([class]) p {
 }
 .featured-info h1 {
   position: absolute;
-  top: 60%;
+  top: 56%;
   left: 50%;
-  min-width: 640px;
+  min-width: 54rem;
   padding: 12px 12px;
   margin: 0 auto;
   z-index: 2;
@@ -581,10 +578,23 @@ blockquote:not([class]) p {
 .featured-info .post-status .post-edit-history a {
   color: white;
 }
+@media only screen and (max-width: 1000px) {
+  .featured-info h1 {
+    top: 50%;
+    font-size: 32px;
+    min-width: 42rem;
+  }
+}
 @media only screen and (min-width: 641px) and (max-width: 767px) {
   .featured-info h1 {
     top: 65%;
-    font-size: 32px;
+    font-size: 28px;
+  }
+  .show-for-small-only {
+    display: inherit !important;
+  }
+  .hide-for-small-only {
+    display: none !important;
   }
 }
 @media only screen and (max-width: 640px) {
@@ -610,10 +620,11 @@ blockquote:not([class]) p {
     transform: translateX(-50%);
   }
   .featured-info h1 {
-    top: 75%;
+    top: 70%;
     width: 100%;
     min-width: inherit;
-    font-size: 28px;
+    font-size: 1.5rem;
+    line-height: 1.3;
   }
 }
 /* ------------ Description ------------ */
@@ -1424,6 +1435,7 @@ p {
   line-height: 1.3;
   margin-bottom: 17px;
   font-size: 1.1rem;
+  word-wrap: break-word;
 }
 hr {
   border: solid #e6e6e6;
