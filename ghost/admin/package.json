@@ -58,7 +58,7 @@
     "ember-data": "2.7.0",
     "ember-data-filter": "1.13.0",
     "ember-export-application-global": "1.0.5",
-    "ember-invoke-action": "1.3.1",
+    "ember-invoke-action": "1.4.0",
     "ember-light-table": "0.1.9",
     "ember-load-initializers": "0.5.1",
     "ember-myth": "0.1.1",
