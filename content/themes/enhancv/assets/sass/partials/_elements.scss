@@ -528,3 +528,29 @@ $directions: 'top' 'bottom' 'left' 'right';
 .media {
   margin-top: 0;
 }
+
+.green-overlay {
+  background-color: $enhancv-color;
+  width: 100%;
+  position: relative;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.custom-badge {
+  @extend .btn;
+  border: none;
+
+  &.custom-badge-white {
+    @extend .btn-default;
+
+    &:hover, &:focus {
+      background-color: #fff;
+    }
+  }
+}

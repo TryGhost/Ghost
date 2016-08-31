@@ -28,7 +28,6 @@
     </div>
 
 </header>
-<div id="top" class="top-ornament"></div>
 {{! The main content area on the homepage }}
 <main class="content" role="main">
 
@@ -38,7 +37,10 @@
         <a href="{{url}}">
             <div class="col-md-6">
               <div class="panel panel-default single-post">
-                <div class="panel-heading" style="background-image: url({{image}})"></div>
+                <div class="panel-heading" style="background-image: url({{image}})">
+                    <div class="green-overlay"></div>
+                    <span class="custom-badge custom-badge-white category">Career</span>
+                </div>
                 <div class="panel-body">
                   <h3>{{{title}}}</h3>
                   <p>{{excerpt characters="115"}}</p>

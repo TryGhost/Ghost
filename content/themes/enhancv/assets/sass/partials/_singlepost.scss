@@ -10,6 +10,7 @@
 
   .single-post {
     margin: 0;
+    transition: background-color 0.2s ease-out, border-color 0.2s ease-out, opacity 0.2s ease-out;
     
     img {
       width: 100%;
@@ -19,6 +20,16 @@
       height: 215px;
       background-size: cover;
       background-position: center;
+      padding: 0;
+      position: relative;
+
+      .category {
+        position: absolute;
+        bottom: 30px;
+        left: 30px;
+        border: 0;
+        opacity: 0;
+      }
     }
 
     .panel-body {
@@ -28,12 +39,30 @@
     h3 {
       font-size: $font-size-h3;
       color: $gray-dark;
+      transition: color 0.2s ease-in-out;
     }
 
     p {
       font-size: $font-size-h5;
       color: #808080;
       line-height: 16px;
+    }
+
+    &:hover,
+    &:focus {
+      border: 1px solid $enhancv-color;
+
+      h3 {
+        color: $enhancv-color;
+      }
+
+      .green-overlay {
+        opacity: 0.8;
+      }
+
+      .category {
+        opacity: 1;
+      }
     }
   }
 }
