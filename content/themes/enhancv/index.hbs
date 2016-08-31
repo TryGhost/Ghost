@@ -35,15 +35,17 @@
     {{! Each post will be output using this markup }}
     <div class="row container posts-wrapper">
       {{#foreach posts}}
-        <div class="col-md-6">
-          <div class="panel panel-default single-post">
-            <div class="panel-heading" style="background-image: url({{image}})"></div>
-            <div class="panel-body">
-              <h3><a href="{{url}}">{{{title}}}</a></h3>
-              <p>{{excerpt characters="115"}}</p>
+        <a href="{{url}}">
+            <div class="col-md-6">
+              <div class="panel panel-default single-post">
+                <div class="panel-heading" style="background-image: url({{image}})"></div>
+                <div class="panel-body">
+                  <h3>{{{title}}}</h3>
+                  <p>{{excerpt characters="115"}}</p>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+        </a>
       {{/foreach}}
     </div>
 

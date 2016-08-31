@@ -7380,9 +7380,7 @@ fieldset[disabled] .btn-muted-link:focus {
   padding: 30px; }
 
 .posts-wrapper .single-post h3 {
-  font-size: 24px; }
-
-.posts-wrapper .single-post h3 a {
+  font-size: 24px;
   color: #333333; }
 
 .posts-wrapper .single-post p {
