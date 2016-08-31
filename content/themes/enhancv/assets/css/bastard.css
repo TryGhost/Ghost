@@ -8054,6 +8054,12 @@ body:before {
   .side {
     display: none; } }
 
+@media (max-width: 480px) {
+  .main-header .navbar .navbar-toggle {
+    margin-right: 15px; }
+  .main-header .navbar .navbar-brand {
+    padding-left: 25px; } }
+
 @media only screen and (max-width: 900px) {
   blockquote {
     margin-left: 0; }

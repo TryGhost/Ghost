@@ -56,6 +56,20 @@ body:before {
     }
 }
 
+@media (max-width: $screen-xs) {
+    .main-header {
+        .navbar {
+            .navbar-toggle {
+                margin-right: 15px;
+            }
+
+            .navbar-brand {
+              padding-left: 25px;
+            }
+        }
+    }
+}
+
 @media only screen and (max-width: 900px) {
     blockquote {
         margin-left: 0;
