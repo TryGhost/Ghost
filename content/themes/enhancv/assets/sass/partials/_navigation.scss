@@ -51,7 +51,7 @@
         background: transparent;
         box-shadow: none;
         display: inline-block;
-        width: 102px;
+        width: 110px;
         border: 1px solid transparent;
         transition: width 0.35s, box-shadow 0.45s, border-color 0.45s;
 
@@ -145,6 +145,7 @@
   overflow-x: hidden;
   background: #fff;
   border-bottom: 1px solid $navbar-default-border;
+  border-radius: 0;
 
   &.absolute {
     position: absolute;

@@ -7001,7 +7001,7 @@ fieldset[disabled] .btn-muted-link:focus {
   background: transparent;
   box-shadow: none;
   display: inline-block;
-  width: 102px;
+  width: 110px;
   border: 1px solid transparent;
   -webkit-transition: width 0.35s, box-shadow 0.45s, border-color 0.45s;
           transition: width 0.35s, box-shadow 0.45s, border-color 0.45s; }
@@ -7098,7 +7098,8 @@ fieldset[disabled] .btn-muted-link:focus {
   width: 100%;
   overflow-x: hidden;
   background: #fff;
-  border-bottom: 1px solid #f3f3f3; }
+  border-bottom: 1px solid #f3f3f3;
+  border-radius: 0; }
 
 .sub-nav-main.absolute {
   position: absolute; }
