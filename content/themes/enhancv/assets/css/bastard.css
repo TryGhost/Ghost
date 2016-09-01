@@ -8119,7 +8119,9 @@ body:before {
     display: none; }
   .read-next-story.no-cover + .read-next-story.no-cover {
     border-top: rgba(0, 0, 100, 0.06) 1px solid;
-    border-left: none; } }
+    border-left: none; }
+  .sub-nav-main .navbar-collapse {
+    padding: 0; } }
 
 /* ==========================================================================
    Media Queries - Smaller than 500px

@@ -179,6 +179,12 @@ body:before {
         border-top: rgba(0, 0, 100, 0.06) 1px solid;
         border-left: none;
     }
+
+    .sub-nav-main {
+        .navbar-collapse {
+            padding: 0;
+        }
+    }
 }
 
 /* ==========================================================================
@@ -408,7 +414,7 @@ body:before {
 @media only screen and (max-width: $screen-sm) {
     .sub-nav-main {
         height: auto;
-        
+
         .nav-inline {
             display: block;
 
