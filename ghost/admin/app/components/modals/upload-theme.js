@@ -12,7 +12,7 @@ import injectService from 'ember-service/inject';
 
 export default ModalComponent.extend({
 
-    accept: 'application/zip',
+    accept: ['application/zip', 'application/x-zip-compressed'],
     availableThemes: null,
     closeDisabled: false,
     file: null,
