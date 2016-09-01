@@ -7403,16 +7403,28 @@ fieldset[disabled] .btn-muted-link:focus {
 }*/
 #wavy-footer {
   overflow: hidden;
-  height: 500px;
+  height: 400px;
   position: relative;
-  background-color: #00c091; }
+  background-color: #00c091;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center; }
 
 #wavy-footer .waves {
+  width: 100%;
   height: 10px;
   background-image: url("../images/wavy-footer.svg");
   background-size: 30px 10px;
   background-repeat: repeat-x;
-  position: relative;
+  position: absolute;
+  top: 0;
   z-index: 1; }
 
 #wavy-footer .shadow {
@@ -7422,6 +7434,18 @@ fieldset[disabled] .btn-muted-link:focus {
   z-index: 0;
   width: 100%;
   box-shadow: 0px 7px 40px 0px black; }
+
+#wavy-footer .content {
+  color: #fff; }
+
+#wavy-footer .content .blog-logo svg {
+  fill: #fff; }
+
+#wavy-footer .content .notice {
+  margin-left: 20px;
+  font-size: 1.2rem;
+  vertical-align: middle;
+  font-weight: 300; }
 
 /* ==========================================================================
    6. Single Post - When you click on an individual post
