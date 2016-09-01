@@ -62,8 +62,8 @@ function createCustomNotification(message) {
     }
 
     var notification = {
+        status: 'alert',
         type: 'info',
-        location: 'top',
         custom: true,
         uuid: message.id,
         dismissible: true,
