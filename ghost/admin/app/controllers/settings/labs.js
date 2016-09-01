@@ -1,9 +1,12 @@
 import $ from 'jquery';
+import RSVP from 'rsvp';
 import Controller from 'ember-controller';
 import injectService from 'ember-service/inject';
 import {isBlank} from 'ember-utils';
 import {isEmberArray} from 'ember-array/utils';
-import {UnsupportedMediaTypeError} from 'ghost-admin/services/ajax';
+import {UnsupportedMediaTypeError, isUnsupportedMediaTypeError} from 'ghost-admin/services/ajax';
+
+const {Promise} = RSVP;
 
 export default Controller.extend({
     uploadButtonText: 'Import',
@@ -18,30 +21,67 @@ export default Controller.extend({
     session: injectService(),
     ajax: injectService(),
 
+    // TODO: convert to ember-concurrency task
+    _validate(file) {
+        // Windows doesn't have mime-types for json files by default, so we
+        // need to have some additional checking
+        if (file.type === '') {
+            // First check file extension so we can early return
+            let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
+
+            if (!extension || extension.toLowerCase() !== 'json') {
+                return RSVP.reject(new UnsupportedMediaTypeError());
+            }
+
+            return new Promise((resolve, reject) => {
+                // Extension is correct, so check the contents of the file
+                let reader = new FileReader();
+
+                reader.onload = function () {
+                    let {result} = reader;
+
+                    try {
+                        JSON.parse(result);
+
+                        return resolve();
+                    } catch (e) {
+                        return reject(new UnsupportedMediaTypeError());
+                    }
+                };
+
+                reader.readAsText(file);
+            });
+        }
+
+        let accept = this.get('importMimeType');
+
+        if (!isBlank(accept) && file && accept.indexOf(file.type) === -1) {
+            return RSVP.reject(new UnsupportedMediaTypeError());
+        }
+
+        return RSVP.resolve();
+    },
+
     actions: {
         onUpload(file) {
             let formData = new FormData();
             let notifications = this.get('notifications');
             let currentUserId = this.get('session.user.id');
             let dbUrl = this.get('ghostPaths.url').api('db');
-            let accept = this.get('importMimeType');
 
             this.set('uploadButtonText', 'Importing');
             this.set('importErrors', '');
 
-            if (!isBlank(accept) && file && accept.indexOf(file.type) === -1) {
-                this.set('importErrors', [new UnsupportedMediaTypeError()]);
-                return;
-            }
+            return this._validate(file).then(() => {
+                formData.append('importfile', file);
 
-            formData.append('importfile', file);
-
-            this.get('ajax').post(dbUrl, {
-                data: formData,
-                dataType: 'json',
-                cache: false,
-                contentType: false,
-                processData: false
+                return this.get('ajax').post(dbUrl, {
+                    data: formData,
+                    dataType: 'json',
+                    cache: false,
+                    contentType: false,
+                    processData: false
+                });
             }).then(() => {
                 // Clear the store, so that all the new data gets fetched correctly.
                 this.store.unloadAll();
@@ -50,6 +90,11 @@ export default Controller.extend({
                 // TODO: keep as notification, add link to view content
                 notifications.showNotification('Import successful.', {key: 'import.upload.success'});
             }).catch((response) => {
+                if (isUnsupportedMediaTypeError(response)) {
+                    this.set('importErrors', [response]);
+                    return;
+                }
+
                 if (response && response.errors && isEmberArray(response.errors)) {
                     this.set('importErrors', response.errors);
                 }
