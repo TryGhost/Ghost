@@ -11,7 +11,6 @@ $slidemenu-nav-width: 280px;
   position: fixed;
   height: 100%;
   overflow-y: auto;
-  padding: 30px 0;
   z-index: 1000;
   transition: all 0.4s ease-in-out;
 }
@@ -21,8 +20,9 @@ $slidemenu-nav-width: 280px;
   color: $text-color;
   position: absolute;
   top: 0;
+  bottom: 0;
   margin: 0;
-  padding: 0;
+  padding: 30px 0;
 
   display: -webkit-box;
   display: -ms-flexbox;
@@ -54,6 +54,30 @@ $slidemenu-nav-width: 280px;
 
         a {
           padding: 0;
+
+          &.btn-close {
+            padding: 10px;
+            font-size: 1.6rem;
+            color: $text-color;
+            line-height: 1.2rem;
+            margin-top: 0;
+            transition: all .2s ease-out;
+
+            &:hover,
+            &.focus,
+            &:focus {
+              color: $gray-light;
+
+              i {
+                -webkit-transform: rotate(90deg);
+                transform: rotate(90deg);
+              }
+            }
+
+            i {
+              transition: all .4s ease-in-out;
+            }
+          }
         }
       }
 
