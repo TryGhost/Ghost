@@ -16,7 +16,7 @@ $slidemenu-nav-width: 280px;
 }
 
 .slidemenu-nav {
-  width: 280px;
+  width: 100%;
   color: $text-color;
   position: absolute;
   top: 0;
@@ -42,6 +42,9 @@ $slidemenu-nav-width: 280px;
 
     li {
       font-size: 1.4rem;
+      padding-left: 25px;
+      opacity: 0;
+      transition: padding-left .3s ease-in-out .2s, opacity .4s ease-in-out .15s;
 
       &.text {
         padding: 8px 50px;
@@ -117,6 +120,15 @@ $slidemenu-nav-width: 280px;
   right: $slidemenu-nav-width;
   width: $slidemenu-nav-width;
   transition: all 0.4s ease 0s;
+
+  li {
+    padding-left: 0;
+    opacity: 1;
+
+    &.text.top-ty {
+      padding-left: 50px;
+    }
+  }
 }
 
 .slidemenu-divider {

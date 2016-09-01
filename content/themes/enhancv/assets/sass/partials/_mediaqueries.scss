@@ -56,6 +56,25 @@ body:before {
     }
 }
 
+@media (max-width: $screen-sm) {
+    #slidemenu-wrapper {
+        margin-right: -100%;
+
+        .slidemenu-nav {
+          text-align: center;
+
+          li {
+            font-size: 1.6rem;
+          }
+        }
+
+        &.active {
+            width: 100%;
+            right: 100%;
+        }
+    }
+}
+
 @media (max-width: $screen-xs) {
     .main-header {
         .navbar {
