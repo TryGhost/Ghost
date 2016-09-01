@@ -38,6 +38,7 @@ $slidemenu-nav-width: 280px;
   ul {
     list-style: none;
     padding: 0;
+    margin: 0;
 
     li {
       font-size: 1.4rem;
@@ -46,9 +47,17 @@ $slidemenu-nav-width: 280px;
         padding: 8px 50px;
         display: inline-block;
         width: 100%;
+
+        &.top-ty {
+          margin-top: 5px;
+        }
+
+        a {
+          padding: 0;
+        }
       }
 
-      a {
+      .item {
         color: $text-color;
         padding: 8px 50px;
         color: #333;

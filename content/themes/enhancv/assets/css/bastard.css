@@ -6767,6 +6767,20 @@ fieldset[disabled] .btn-muted-link:focus {
 .btn-primary .text-muted {
   color: #cccccc; }
 
+.btn-menu-social {
+  width: 35px;
+  height: 35px;
+  line-height: 3.5rem;
+  text-align: center;
+  color: #fff;
+  background-color: #bbbbbb;
+  border-color: #bbbbbb; }
+
+.btn-menu-social:hover, .btn-menu-social.focus, .btn-menu-social:focus {
+  color: #fff;
+  background-color: #cccccc;
+  border-color: #cccccc; }
+
 .btn-xlg {
   padding: 15px 25px;
   font-size: 22px;
@@ -7973,7 +7987,8 @@ h1.post-title {
 
 .slidemenu-nav ul {
   list-style: none;
-  padding: 0; }
+  padding: 0;
+  margin: 0; }
 
 .slidemenu-nav ul li {
   font-size: 1.4rem; }
@@ -7983,21 +7998,27 @@ h1.post-title {
   display: inline-block;
   width: 100%; }
 
-.slidemenu-nav ul li a {
+.slidemenu-nav ul li.text.top-ty {
+  margin-top: 5px; }
+
+.slidemenu-nav ul li.text a {
+  padding: 0; }
+
+.slidemenu-nav ul li .item {
   color: #333333;
   padding: 8px 50px;
   color: #333;
   display: block;
   text-decoration: none; }
 
-.slidemenu-nav ul li a:hover {
+.slidemenu-nav ul li .item:hover {
   color: #bbbbbb;
   text-decoration: none; }
 
-.slidemenu-nav ul li a:active, .slidemenu-nav ul li a:focus {
+.slidemenu-nav ul li .item:active, .slidemenu-nav ul li .item:focus {
   text-decoration: none; }
 
-.slidemenu-nav ul li a i {
+.slidemenu-nav ul li .item i {
   margin-right: 10px; }
 
 #slidemenu-toggle {
