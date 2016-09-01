@@ -8041,6 +8041,9 @@ h1.post-title {
 .slidemenu-nav ul li .item i {
   margin-right: 10px; }
 
+.slidemenu-nav ul li .right-ty {
+  margin-right: 5px; }
+
 #slidemenu-toggle {
   z-index: 1; }
 
