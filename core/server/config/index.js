@@ -270,7 +270,7 @@ ConfigManager.prototype.set = function (config) {
         uploads: {
             subscribers: {
                 extensions: ['.csv'],
-                contentTypes: ['text/csv', 'application/csv']
+                contentTypes: ['text/csv', 'application/csv', 'application/octet-stream']
             },
             images: {
                 extensions: ['.jpg', '.jpeg', '.gif', '.png', '.svg', '.svgz'],
