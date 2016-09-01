@@ -141,6 +141,7 @@
     align-items: center;
     padding: 14px 15px;
     border-bottom: #dfe1e3 1px solid;
+    background-color: white;
 }
 
 .gh-alert-content {
