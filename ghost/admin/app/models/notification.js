@@ -5,5 +5,6 @@ export default Model.extend({
     dismissible: attr('boolean'),
     status: attr('string'),
     type: attr('string'),
-    message: attr('string')
+    message: attr('string'),
+    key: attr('string')
 });
