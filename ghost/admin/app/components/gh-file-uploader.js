@@ -4,6 +4,7 @@ import injectService from 'ember-service/inject';
 import computed from 'ember-computed';
 import {isBlank} from 'ember-utils';
 import run from 'ember-runloop';
+import {isEmberArray} from 'ember-array/utils';
 
 import { invoke, invokeAction } from 'ember-invoke-action';
 import {
@@ -21,7 +22,8 @@ export default Component.extend({
     labelText: 'Select or drag-and-drop a file',
     url: null,
     paramName: 'file',
-    accept: 'text/csv',
+    accept: ['text/csv'],
+    extensions: ['csv'],
     validate: null,
 
     file: null,
@@ -72,6 +74,15 @@ export default Component.extend({
                 this.send('upload');
             });
         }
+    },
+
+    didReceiveAttrs() {
+        this._super(...arguments);
+        let accept = this.get('accept');
+        let extensions = this.get('extensions');
+
+        this._accept = (!isBlank(accept) && !isEmberArray(accept)) ? accept.split(',') : accept;
+        this._extensions = (!isBlank(extensions) && !isEmberArray(extensions)) ? extensions.split(',') : extensions;
     },
 
     willDestroyElement() {
@@ -187,9 +198,16 @@ export default Component.extend({
     },
 
     _defaultValidator(file) {
-        let accept = this.get('accept');
+        let accept = this._accept;
 
-        if (!isBlank(accept) && file && accept.indexOf(file.type) === -1) {
+        if (isBlank(file.type)) {
+            let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
+            let extensions = this._extensions;
+
+            if (!extension || extensions.indexOf(extension.toLowerCase()) === -1) {
+                return new UnsupportedMediaTypeError();
+            }
+        } else if (!isBlank(file.type) && !isBlank(accept) && file && accept.indexOf(file.type) === -1) {
             return new UnsupportedMediaTypeError();
         }
 
