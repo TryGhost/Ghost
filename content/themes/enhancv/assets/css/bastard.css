@@ -6923,6 +6923,9 @@ fieldset[disabled] .btn-muted-link:focus {
 .media {
   margin-top: 0; }
 
+.modal-backdrop {
+  background-color: rgba(0, 192, 145, 0.7); }
+
 /* ==========================================================================
    3. Utilities - These things get used a lot
    ========================================================================== */
@@ -7966,6 +7969,13 @@ h1.post-title {
   -webkit-transition: all 0.4s ease-in-out;
           transition: all 0.4s ease-in-out; }
 
+#slidemenu-wrapper + .modal-backdrop {
+  opacity: 0;
+  visibility: hidden;
+  z-index: 999;
+  -webkit-transition: all .3s ease-in-out;
+          transition: all .3s ease-in-out; }
+
 .slidemenu-nav {
   width: 100%;
   color: #333333;
@@ -8063,6 +8073,10 @@ h1.post-title {
 
 #slidemenu-wrapper.active li.text.top-ty {
   padding-left: 50px; }
+
+#slidemenu-wrapper.active + .modal-backdrop {
+  opacity: 1;
+  visibility: visible; }
 
 .slidemenu-divider {
   display: block;

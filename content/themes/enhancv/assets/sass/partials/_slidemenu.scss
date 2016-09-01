@@ -13,6 +13,13 @@ $slidemenu-nav-width: 280px;
   overflow-y: auto;
   z-index: 1000;
   transition: all 0.4s ease-in-out;
+
+  & + .modal-backdrop {
+    opacity: 0;
+    visibility: hidden;
+    z-index: 999;
+    transition: all .3s ease-in-out;
+  }
 }
 
 .slidemenu-nav {
@@ -128,6 +135,11 @@ $slidemenu-nav-width: 280px;
     &.text.top-ty {
       padding-left: 50px;
     }
+  }
+
+  & + .modal-backdrop {
+    opacity: 1;
+    visibility: visible;
   }
 }
 

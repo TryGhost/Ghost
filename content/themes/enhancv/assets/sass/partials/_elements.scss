@@ -546,3 +546,8 @@ $directions: 'top' 'bottom' 'left' 'right';
 .media {
   margin-top: 0;
 }
+
+// overlay
+.modal-backdrop {
+  background-color: transparentize($enhancv-color, .3);
+}
