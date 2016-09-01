@@ -46,9 +46,10 @@ notifications = {
      *
      * ```
      *  msg = { notifications: [{
-         *      type: 'error', // this can be 'error', 'success', 'warn' and 'info'
+         *      status: 'alert', // A String. Can be 'alert' or 'notification'
+         *      type: 'error', // A String. Can be 'error', 'success', 'warn' or 'info'
          *      message: 'This is an error', // A string. Should fit in one line.
-         *      location: 'bottom', // A string where this notification should appear. can be 'bottom' or 'top'
+         *      location: '', // A String. Should be unique key to the notification, usually takes the form of "noun.verb.message", eg: "user.invite.already-invited"
          *      dismissible: true // A Boolean. Whether the notification is dismissible or not.
          *      custom: true // A Boolean. Whether the notification is a custom message intended for particular Ghost versions.
          *  }] };
