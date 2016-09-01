@@ -197,3 +197,30 @@
       font-family: 'Open Sans', sans-serif;
     }
 }*/
+
+#wavy-footer {
+  overflow: hidden;
+  height: 500px;
+  position: relative;
+  background-color: $enhancv-color;
+
+  .waves {
+    height: 10px;
+    background-image: url('../images/wavy-footer.svg');
+    background-size: 30px 10px;
+    background-repeat: repeat-x;
+    position: relative;
+    z-index: 1;
+  }
+
+  .shadow {
+    height: 5px;
+    position: absolute;
+    top: 0;
+    z-index: 0;
+    width: 100%;
+    -webkit-box-shadow: 0px 7px 40px 0px rgba(0, 0, 0, 1);
+    -moz-box-shadow: 0px 7px 40px 0px rgba(0, 0, 0, 1);
+    box-shadow: 0px 7px 40px 0px rgba(0, 0, 0, 1);
+  }
+}
