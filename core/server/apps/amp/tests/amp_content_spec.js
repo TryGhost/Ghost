@@ -154,6 +154,7 @@ describe('{{amp_content}} helper', function () {
         it('removes video tags including source children', function (done) {
             var testData = {
                     html: '<video width="480" controls poster="https://archive.org/download/WebmVp8Vorbis/webmvp8.gif" >' +
+                            '<track kind="captions" src="https://archive.org/download/WebmVp8Vorbis/webmvp8.webm" srclang="en">' +
                             '<source src="https://archive.org/download/WebmVp8Vorbis/webmvp8.webm" type="video/webm">' +
                             '<source src="https://archive.org/download/WebmVp8Vorbis/webmvp8_512kb.mp4" type="video/mp4">' +
                             'Your browser doesn\'t support HTML5 video tag.' +
@@ -173,11 +174,20 @@ describe('{{amp_content}} helper', function () {
 
         it('removes inline style', function (done) {
             var testData = {
-                    html: '<amp-img src="/content/images/2016/08/aileen_small.jpg" style="border-radius: 50%" width="50" height="50" layout="responsive"></amp-img>',
+                    html: '<amp-img src="/content/images/2016/08/aileen_small.jpg" style="border-radius: 50%"; !important' +
+                          'border="0" align="center" font="Arial" width="50" height="50" layout="responsive"></amp-img>' +
+                          '<p align="right" style="color: red; !important" bgcolor="white">Hello</p>' +
+                          '<table style="width:100%"><tr bgcolor="tomato" colspan="2"><th font="Arial">Name:</th> ' +
+                          '<td color="white" colspan="2">Bill Gates</td></tr><tr><th rowspan="2" valign="center">Telephone:</th> ' +
+                          '<td>55577854</td></tr></table>',
                     updated_at: 'Wed Jul 27 2016 18:17:22 GMT+0200 (CEST)',
                     id: 1
                 },
-                expectedResult = '<amp-img src="https://my-awesome-blog.com/content/images/2016/08/aileen_small.jpg" width="50" height="50" layout="responsive"></amp-img>',
+                expectedResult = '<amp-img src="https://my-awesome-blog.com/content/images/2016/08/aileen_small.jpg" width="50" ' +
+                                 'height="50" layout="responsive"></amp-img><p align="right">Hello</p>' +
+                                 '<table><tr bgcolor="tomato"><th>Name:</th> ' +
+                                 '<td colspan="2">Bill Gates</td></tr><tr><th rowspan="2" valign="center">Telephone:</th> ' +
+                                 '<td>55577854</td></tr></table>',
                 ampResult = ampContentHelper.call(testData);
 
             ampResult.then(function (rendered) {
