@@ -7941,64 +7941,71 @@ h1.post-title {
    13. Slider Menu
    ========================================================================== */
 #slidemenu-wrapper {
-  margin-right: -250px;
+  background-color: #fff;
+  margin-right: -280px;
   right: 0;
-  width: 250px;
-  background: #171717;
+  width: 280px;
   position: fixed;
   height: 100%;
   overflow-y: auto;
+  padding: 30px 0;
   z-index: 1000;
-  -webkit-transition: all 0.4s ease 0s;
-          transition: all 0.4s ease 0s; }
-
-#slidemenu-wrapper a {
-  color: #999999; }
-
-#slidemenu-wrapper a:active, #slidemenu-wrapper a:focus {
-  color: #caad00; }
-
-#slidemenu-wrapper a:hover {
-  color: #caad00;
-  background: #000000; }
+  -webkit-transition: all 0.4s ease-in-out;
+          transition: all 0.4s ease-in-out; }
 
 .slidemenu-nav {
-  color: #999999;
+  width: 280px;
+  color: #333333;
   position: absolute;
   top: 0;
-  width: 250px;
-  list-style: none;
   margin: 0;
+  padding: 0;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -webkit-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between; }
+
+.slidemenu-nav ul {
+  list-style: none;
   padding: 0; }
 
-.slidemenu-nav li {
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 35px;
-  text-indent: 10px; }
+.slidemenu-nav ul li {
+  font-size: 1.4rem; }
 
-.slidemenu-nav li a {
-  color: #999999;
+.slidemenu-nav ul li.text {
+  padding: 8px 50px;
+  display: inline-block;
+  width: 100%; }
+
+.slidemenu-nav ul li a {
+  color: #333333;
+  padding: 8px 50px;
+  color: #333;
   display: block;
   text-decoration: none; }
 
-.slidemenu-nav li a:hover {
-  color: #caad00;
-  background: rgba(0, 0, 0, 0.9);
+.slidemenu-nav ul li a:hover {
+  color: #bbbbbb;
   text-decoration: none; }
 
-.slidemenu-nav li a:active, .slidemenu-nav li a:focus {
+.slidemenu-nav ul li a:active, .slidemenu-nav ul li a:focus {
   text-decoration: none; }
 
-.slidemenu-nav li a i {
+.slidemenu-nav ul li a i {
   margin-right: 10px; }
 
 #slidemenu-toggle {
   z-index: 1; }
 
 #slidemenu-wrapper.active {
-  right: 250px;
-  width: 250px;
+  right: 280px;
+  width: 280px;
   -webkit-transition: all 0.4s ease 0s;
           transition: all 0.4s ease 0s; }
 

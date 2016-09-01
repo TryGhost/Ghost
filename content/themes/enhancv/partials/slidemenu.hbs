@@ -1,4 +1,4 @@
-<ul class="slidemenu-nav">
+{{!-- <ul class="slidemenu-nav">
   <a id="slidemenu-close" href="#" class="btn btn-md pull-right toggle"><i class="fa fa-chevron-circle-left fa-2x"></i></a>
   <li>
     <a href="{{@blog.url}}">
@@ -23,13 +23,61 @@
     Follow
   </li>
   <li>
-    <a href="https://twitter.com/karloespiritu" target="_blank">
+    <a href="https://twitter.com/karloespiritu">
       <i class="fa fa-twitter"></i> Twitter
     </a>
   </li>
   <li>
-    <a href="https://github.com/karloespiritu" target="_blank">
+    <a href="https://github.com/karloespiritu">
       <i class="fa fa-github"></i> Github
     </a>
   </li>
-</ul>
+</ul> --}}
+<div class="slidemenu-nav">
+  <ul class="menu-slideout-top">
+    <li class="text top">
+      <a id="slidemenu-close" href="#" class="btn btn-md pull-right toggle">
+        <i class="icon icon-close-1"></i>
+      </a>
+      <button type="button" class="pull-right btn-link-inverted btn btn-close btn-lg top-ty"><i class="icon icon-close-1"></i></button>
+    </li>
+    <li class="devider"></li>
+    <li>
+      <a href="{{@blog.url}}" class="item">Home</a>
+    </li>
+    <li>
+      <a href="{{@blog.url}}/about" class="item">About</a>
+    </li>
+    <li>
+      <a href="{{@blog.url}}/cheatsheets/" class="item">Cheatsheets</a>
+    </li>
+    <li>
+      <a href="{{@blog.url}}/rss/" class="item">Subscribe</a>
+    </li>
+  </ul>
+  <ul class="menu-slideout-bottom top-sm">
+    <li>
+      <a href="https://enhancv.com/terms.html" class="item">Terms</a>
+    </li>
+    <li>
+      <a href="https://enhancv.com/privacy.html" class="item">Privacy</a>
+    </li>
+    <li>
+      <a href="https://enhancv.com/faq.html" class="item">Faq</a>
+    </li>
+    <li class="text top-ty">
+      <a href="https://facebook.com/enhancv" class="btn btn-menu-social btn-sm btn-icon right-ty">
+        <i class="fa fa-facebook"></i>
+      </a>
+      <a href="https://twitter.com/enhancv" class="btn btn-menu-social btn-sm btn-icon right-ty">
+        <i class="fa fa-twitter"></i>
+      </a>
+      <a href="https://linkedin.com/company/enhancv" class="btn btn-menu-social btn-sm btn-icon right-ty">
+        <i class="fa fa-linkedin"></i>
+      </a>
+      <a href="https://plus.google.com/101937788764621640784" class="btn btn-menu-social btn-sm btn-icon">
+        <i class="fa fa-google-plus"></i>
+      </a>
+    </li>
+  </ul>
+</div>

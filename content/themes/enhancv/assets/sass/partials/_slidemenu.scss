@@ -1,65 +1,73 @@
   /* ==========================================================================
    13. Slider Menu
    ========================================================================== */
+$slidemenu-nav-width: 280px;
 
 #slidemenu-wrapper {
-  margin-right: -250px;
+  background-color: #fff;
+  margin-right: -$slidemenu-nav-width;
   right: 0;
-  width: 250px;
-  background: $medium-black;
+  width: $slidemenu-nav-width;
   position: fixed;
   height: 100%;
   overflow-y: auto;
+  padding: 30px 0;
   z-index: 1000;
-  transition: all 0.4s ease 0s;
-
-  a {
-    color: $gray-medium;
-
-    &:active, &:focus {
-      color: $yellow-dark;
-    }
-
-    &:hover {
-      color: $yellow-dark;
-      background: #000000;
-    }
-  }
+  transition: all 0.4s ease-in-out;
 }
 
 .slidemenu-nav {
-  color: #999999;
+  width: 280px;
+  color: $text-color;
   position: absolute;
   top: 0;
-  width: 250px;
-  list-style: none;
   margin: 0;
   padding: 0;
 
-  li {
-    font-weight: 400;
-    font-size: 14px;
-    line-height: 35px;
-    text-indent: 10px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -webkit-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
 
-    a {
-      color: #999999;
-      display: block;
-      text-decoration: none;
+  ul {
+    list-style: none;
+    padding: 0;
 
-      &:hover {
-        color: $yellow-dark;
-        background: rgba(0, 0, 0, 0.9);
-        text-decoration: none;
+    li {
+      font-size: 1.4rem;
+
+      &.text {
+        padding: 8px 50px;
+        display: inline-block;
+        width: 100%;
       }
 
-      &:active, &:focus {
+      a {
+        color: $text-color;
+        padding: 8px 50px;
+        color: #333;
+        display: block;
         text-decoration: none;
-      }
 
-      i {
-      margin-right: 10px;
-     }
+        &:hover {
+          color: $gray-light;
+          text-decoration: none;
+        }
+
+        &:active, &:focus {
+          text-decoration: none;
+        }
+
+        i {
+        margin-right: 10px;
+       }
+      }
     }
   }
 }
@@ -69,8 +77,8 @@
 }
 
 #slidemenu-wrapper.active {
-  right: 250px;
-  width: 250px;
+  right: $slidemenu-nav-width;
+  width: $slidemenu-nav-width;
   transition: all 0.4s ease 0s;
 }
 
