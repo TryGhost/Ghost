@@ -65,6 +65,10 @@ body:before {
 
           li {
             font-size: 1.6rem;
+
+            &.text {
+                padding: 8px 25px;
+            }
           }
         }
 

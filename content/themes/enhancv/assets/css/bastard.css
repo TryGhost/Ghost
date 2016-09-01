@@ -7107,7 +7107,7 @@ fieldset[disabled] .btn-muted-link:focus {
 
 .sub-nav-main {
   position: fixed;
-  z-index: 100;
+  z-index: 99;
   top: 100px;
   left: 0;
   height: 58px;
@@ -8181,6 +8181,8 @@ body:before {
     text-align: center; }
   #slidemenu-wrapper .slidemenu-nav li {
     font-size: 1.6rem; }
+  #slidemenu-wrapper .slidemenu-nav li.text {
+    padding: 8px 25px; }
   #slidemenu-wrapper.active {
     width: 100%;
     right: 100%; } }
