@@ -152,8 +152,9 @@ describe('Notifications API', function () {
 
     it('can destroy a custom notification and add its uuid to seenNotifications (owner)', function (done) {
         var customNotification = {
+            status: 'alert',
             type: 'info',
-            location: 'top',
+            location: 'test.to-be-deleted',
             custom: true,
             uuid: uuid.v4(),
             dismissible: true,

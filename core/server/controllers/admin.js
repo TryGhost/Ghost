@@ -40,10 +40,10 @@ adminControllers = {
             }
 
             var notification = {
-                type: 'upgrade',
-                location: 'settings-about-upgrade',
-                dismissible: false,
                 status: 'alert',
+                type: 'info',
+                location: 'upgrade.new-version-available',
+                dismissible: false,
                 message: i18n.t('notices.controllers.newVersionAvailable',
                                 {version: updateVersion, link: '<a href="http://support.ghost.org/how-to-upgrade/" target="_blank">Click here</a>'})};
 
