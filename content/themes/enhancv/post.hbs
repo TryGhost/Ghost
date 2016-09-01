@@ -6,7 +6,7 @@
 {{! Everything inside the #post tags pulls data from the post }}
 {{#post}}
 
-{{> main-header}}
+<div class="main-header post-head" {{#if image}} style="background-image: url('{{image}}');" {{/if}}></div>
 
 <main class="content" role="main">
     <div class="container">

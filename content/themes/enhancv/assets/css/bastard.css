@@ -7068,17 +7068,13 @@ fieldset[disabled] .btn-muted-link:focus {
 /* Big cover image on the home page */
 .main-header {
   position: relative;
+  top: 100vh;
   width: 100%;
-  height: 100vh;
+  height: 500px;
   /*margin-bottom: 5rem;*/
-  text-align: center;
-  background: #fff no-repeat center 158px;
   background-size: cover;
+  background-position: center;
   overflow: hidden; }
-
-.main-header .cover-image {
-  width: 100%;
-  margin-top: 158px; }
 
 .main-nav-fixed {
   height: 100px;
@@ -7166,8 +7162,9 @@ fieldset[disabled] .btn-muted-link:focus {
   color: rgba(0, 0, 0, 0.5); }
 
 .post-head.main-header {
-  height: 80vh;
-  min-height: 180px; }
+  height: 500px;
+  margin-top: 158px;
+  top: 0; }
 
 /* Hide when there's no cover image or on page2+ */
 .no-cover .scroll-down,
@@ -7175,10 +7172,6 @@ fieldset[disabled] .btn-muted-link:focus {
 .archive-template .scroll-down,
 .archive-template .main-header:after {
   display: none; }
-
-.post-head.main-header {
-  height: 80vh;
-  min-height: 180px; }
 
 /* Main page scroll arrow styles */
 .btn-circle {
@@ -7961,6 +7954,7 @@ h1.post-title {
    13. Slider Menu
    ========================================================================== */
 #slidemenu-wrapper {
+  top: 0;
   background-color: #fff;
   margin-right: -280px;
   right: 0;
