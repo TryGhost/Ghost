@@ -76,7 +76,7 @@ body:before {
 }
 
 @media (max-width: $screen-xs) {
-    .main-header {
+    .main-nav-fixed {
         .navbar {
             .navbar-toggle {
                 margin-right: 15px;
@@ -423,7 +423,7 @@ body:before {
 }
 
 @media only screen and (min-width: $screen-sm) {
-    .main-header {
+    .main-nav-fixed {
         .navbar-brand {
             padding: 15px 15px 15px 50px;
         }

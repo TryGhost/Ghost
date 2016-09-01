@@ -1,0 +1,49 @@
+<div class="main-nav-fixed">
+  <nav class="navbar navbar-default">
+    <div class="container-fluid">
+      <!-- Brand and toggle get grouped for better mobile display -->
+      <div class="navbar-header">
+        <a class="navbar-toggle" data-slidemenu-toggle href="{{@blog.url}}" role="button">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar icon-bar-up"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar icon-bar-down"></span>
+        </a>
+
+        <!--<a href="#" class="pull-right">
+          <span class="glyphicon glyphicon-search"></span>
+        </a>-->
+
+        {{#if @blog.logo}}
+          <a class="navbar-brand blog-logo" href="{{@blog.url}}">
+            <img src="{{@blog.logo}}" alt="Enhancv Blog Logo">
+          </a>
+        {{else}}
+          <a class="navbar-brand blog-logo" href="{{@blog.url}}">
+            {{> enhancv-logo}}
+          </a>
+        {{/if}}
+      </div>
+
+      <ul class="nav navbar-nav navbar-right nav-actions hidden-xs">
+        <li><button type="button" class="btn btn-black navbar-btn">Let's get started</button></li>
+        <li>
+          <a class="navbar-toggle" data-slidemenu-toggle href="{{@blog.url}}" role="button">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar icon-bar-up"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar icon-bar-down"></span>
+          </a>
+        </li>
+      </ul>
+
+      <form action="" class="search-form navbar-form navbar-right hidden-xs" role="search">
+        <div class="form-group pull-right">
+          <label for="search" class="sr-only">Search</label>
+          <input type="text" class="form-control pull-right" name="search" id="search" placeholder="Search" required>
+          <span class="glyphicon glyphicon-search form-control-feedback pull-right"></span>
+        </div>
+      </form>
+    </div><!-- /.container-fluid -->
+  </nav>
+</div>

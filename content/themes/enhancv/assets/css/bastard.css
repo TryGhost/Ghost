@@ -7076,7 +7076,11 @@ fieldset[disabled] .btn-muted-link:focus {
   background-size: cover;
   overflow: hidden; }
 
-.main-header .main-nav-fixed {
+.main-header .cover-image {
+  width: 100%;
+  margin-top: 158px; }
+
+.main-nav-fixed {
   height: 100px;
   width: 100%;
   position: fixed;
@@ -7086,10 +7090,10 @@ fieldset[disabled] .btn-muted-link:focus {
   display: table;
   background: #fff; }
 
-.main-header .inner {
+.main-nav-fixed .inner {
   width: 80%; }
 
-.main-header .navbar {
+.main-nav-fixed .navbar {
   border-radius: 0;
   border-left: 0;
   border-right: 0;
@@ -7098,13 +7102,12 @@ fieldset[disabled] .btn-muted-link:focus {
   display: table-cell;
   vertical-align: middle; }
 
-.main-header .navbar .navbar-toggle {
+.main-nav-fixed .navbar .navbar-btn {
+  margin: 10px 0; }
+
+.main-nav-fixed .navbar .navbar-toggle {
   margin-right: 35px;
   padding-left: 35px; }
-
-.main-header .cover-image {
-  width: 100%;
-  margin-top: 158px; }
 
 .sub-nav-main {
   position: fixed;
@@ -8143,9 +8146,9 @@ body:before {
     right: 100%; } }
 
 @media (max-width: 480px) {
-  .main-header .navbar .navbar-toggle {
+  .main-nav-fixed .navbar .navbar-toggle {
     margin-right: 15px; }
-  .main-header .navbar .navbar-brand {
+  .main-nav-fixed .navbar .navbar-brand {
     padding-left: 25px; } }
 
 @media only screen and (max-width: 900px) {
@@ -8329,7 +8332,7 @@ body:before {
     margin: 0; } }
 
 @media only screen and (min-width: 768px) {
-  .main-header .navbar-brand {
+  .main-nav-fixed .navbar-brand {
     padding: 15px 15px 15px 50px; } }
 
 @media only screen and (max-width: 768px) {

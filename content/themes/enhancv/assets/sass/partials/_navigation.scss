@@ -99,16 +99,21 @@
   background-size: cover;
   overflow: hidden;
 
-  .main-nav-fixed {
-    height: 100px;
+  .cover-image {
     width: 100%;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 100;
-    display: table;
-    background: #fff;
+    margin-top: $navbar-height * 2 + 58px; // navbar-height * 2 + sub-nav-height
   }
+}
+
+.main-nav-fixed {
+  height: 100px;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  display: table;
+  background: #fff;
 
   .inner {
     width: 80%;
@@ -123,15 +128,14 @@
     display: table-cell;
     vertical-align: middle;
 
+    .navbar-btn {
+      margin: 10px 0;
+    }
+
     .navbar-toggle {
       margin-right: 35px;
       padding-left: 35px;
     }
-  }
-
-  .cover-image {
-    width: 100%;
-    margin-top: $navbar-height * 2 + 58px; // navbar-height * 2 + sub-nav-height
   }
 }
 
