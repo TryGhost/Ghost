@@ -34,18 +34,25 @@
 
     .panel-body {
       padding: 30px;
+      font-size: $font-size-h5;
+      color: #808080;
+      line-height: 16px;
+
+      .shares-count {
+        margin-right: 15px;
+      }
+
+      .comments-count {
+        i {
+            vertical-align: top;
+        }
+      }
     }
     
     h3 {
       font-size: $font-size-h3;
       color: $gray-dark;
       transition: color 0.2s ease-in-out;
-    }
-
-    p {
-      font-size: $font-size-h5;
-      color: #808080;
-      line-height: 16px;
     }
 
     &:hover,

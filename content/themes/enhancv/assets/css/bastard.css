@@ -7493,18 +7493,22 @@ fieldset[disabled] .btn-muted-link:focus {
   opacity: 0; }
 
 .posts-wrapper .single-post .panel-body {
-  padding: 30px; }
+  padding: 30px;
+  font-size: 14px;
+  color: #808080;
+  line-height: 16px; }
+
+.posts-wrapper .single-post .panel-body .shares-count {
+  margin-right: 15px; }
+
+.posts-wrapper .single-post .panel-body .comments-count i {
+  vertical-align: top; }
 
 .posts-wrapper .single-post h3 {
   font-size: 24px;
   color: #333333;
   -webkit-transition: color 0.2s ease-in-out;
           transition: color 0.2s ease-in-out; }
-
-.posts-wrapper .single-post p {
-  font-size: 14px;
-  color: #808080;
-  line-height: 16px; }
 
 .posts-wrapper .single-post:hover, .posts-wrapper .single-post:focus {
   border: 1px solid #00c091; }
