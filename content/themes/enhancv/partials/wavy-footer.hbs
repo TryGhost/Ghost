@@ -1,0 +1,22 @@
+<div id="wavy-footer">
+	<div class="waves"></div>
+	<div class="gradient"></div>
+	<div class="content container">
+		{{#if @blog.logo}}
+          <a class="blog-logo" href="{{@blog.url}}">
+            <img src="{{@blog.logo}}" alt="Enhancv Blog Logo">
+          </a>
+        {{else}}
+          <a class="blog-logo" href="{{@blog.url}}">
+            {{> enhancv-logo}}
+          </a>
+        {{/if}}
+		
+		<div class="separator md"></div>
+		<h4>Build your resume as it should be build<br>With pleasure and satisfaction</h4>
+		<div class="separator md"></div>
+
+		<a href="https://app.enhancv.com" class="btn btn-default">Get started</a>
+		<span class="notice">FREE. No credit card required</span>
+	</div>
+</div>

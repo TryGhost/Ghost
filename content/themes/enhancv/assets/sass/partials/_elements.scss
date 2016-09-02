@@ -312,11 +312,12 @@ margin on the iframe, cause it breaks stuff. */
 }
 
 .btn-default {
-  &:focus, &.focus {
-    background-color: #fff;
-  }
-  &:focus:hover, &.focus:hover {
-    background-color: #e6e6e6;
+  &:focus, &.focus,
+  &:focus:hover, &.focus:hover,
+  &:hover,
+  &:active {
+    background-color: transparentize(#fff, .2);
+    border-color: transparentize(#fff, .2);
   }
 }
 
@@ -477,7 +478,7 @@ $directions: 'top' 'bottom' 'left' 'right';
 
 // modal
 .modal-backdrop {
-  background: rgba(0, 191, 147, .7) !important;
+  background-color: transparentize($enhancv-color, .3);
 
   .modal-dialog {
 

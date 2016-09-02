@@ -6673,11 +6673,9 @@ margin on the iframe, cause it breaks stuff. */
   outline: 0 none;
   box-shadow: none; }
 
-.btn-default:focus, .custom-badge.custom-badge-white:focus, .btn-default.focus, .focus.custom-badge.custom-badge-white {
-  background-color: #fff; }
-
-.btn-default:focus:hover, .custom-badge.custom-badge-white:focus:hover, .btn-default.focus:hover, .focus.custom-badge.custom-badge-white:hover {
-  background-color: #e6e6e6; }
+.btn-default:focus, .custom-badge.custom-badge-white:focus, .btn-default.focus, .focus.custom-badge.custom-badge-white, .btn-default:focus:hover, .custom-badge.custom-badge-white:focus:hover, .btn-default.focus:hover, .focus.custom-badge.custom-badge-white:hover, .btn-default:hover, .custom-badge.custom-badge-white:hover, .btn-default:active, .custom-badge.custom-badge-white:active {
+  background-color: rgba(255, 255, 255, 0.8);
+  border-color: rgba(255, 255, 255, 0.8); }
 
 .btn-transparent {
   color: #fff;
@@ -6928,7 +6926,7 @@ fieldset[disabled] .btn-muted-link:focus {
   margin-right: 60px; }
 
 .modal-backdrop {
-  background: rgba(0, 191, 147, 0.7) !important; }
+  background-color: rgba(0, 192, 145, 0.7); }
 
 .modal-backdrop .modal-dialog:focus {
   outline: 0 none; }
@@ -7185,7 +7183,7 @@ fieldset[disabled] .btn-muted-link:focus {
 
 .sub-nav-main {
   position: fixed;
-  z-index: 100;
+  z-index: 99;
   top: 100px;
   left: 0;
   height: 58px;
@@ -7479,6 +7477,63 @@ fieldset[disabled] .btn-muted-link:focus {
       font-family: 'Open Sans', sans-serif;
     }
 }*/
+#wavy-footer {
+  height: 400px;
+  position: relative;
+  background-color: #00c091;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center; }
+
+#wavy-footer .waves {
+  width: 100%;
+  height: 10px;
+  background-image: url("../images/wavy-footer.svg");
+  background-size: 30px 10px;
+  background-repeat: repeat-x;
+  position: absolute;
+  top: 0;
+  z-index: 1; }
+
+#wavy-footer .gradient {
+  height: 35px;
+  position: absolute;
+  top: 0;
+  z-index: 0;
+  width: 100%;
+  background: #000;
+  background: -webkit-linear-gradient(top, #000 0%, transparent 100%);
+  background: linear-gradient(to bottom, #000 0%, transparent 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#000', endColorstr='transparent',GradientType=0 );
+  opacity: .2; }
+
+#wavy-footer .content {
+  color: #fff;
+  padding: 0 50px; }
+
+#wavy-footer .content h4 {
+  color: #fff; }
+
+#wavy-footer .content .blog-logo svg {
+  fill: #fff; }
+
+#wavy-footer .content .notice {
+  margin-left: 20px;
+  font-size: 1.2rem;
+  vertical-align: middle;
+  font-weight: 300; }
+
+#wavy-footer .content .btn-default, #wavy-footer .content .custom-badge.custom-badge-white {
+  font-weight: normal;
+  padding: 8px 27px; }
+
 .posts-wrapper {
   margin: 0 auto; }
 
@@ -8275,15 +8330,22 @@ body:before {
     text-align: center; }
   #slidemenu-wrapper .slidemenu-nav li {
     font-size: 1.6rem; }
+  #slidemenu-wrapper .slidemenu-nav li.text {
+    padding: 8px 25px; }
   #slidemenu-wrapper.active {
     width: 100%;
-    right: 100%; } }
+    right: 100%; }
+  #wavy-footer {
+    text-align: center; } }
 
 @media (max-width: 480px) {
   .main-nav-fixed .navbar .navbar-toggle {
     margin-right: 15px; }
   .main-nav-fixed .navbar .navbar-brand {
-    padding-left: 25px; } }
+    padding-left: 25px; }
+  #wavy-footer .notice {
+    margin: 15px 0 0 0;
+    display: block; } }
 
 @media only screen and (max-width: 900px) {
   blockquote {

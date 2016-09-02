@@ -65,6 +65,10 @@ body:before {
 
           li {
             font-size: 1.6rem;
+
+            &.text {
+                padding: 8px 25px;
+            }
           }
         }
 
@@ -72,6 +76,10 @@ body:before {
             width: 100%;
             right: 100%;
         }
+    }
+
+    #wavy-footer {
+        text-align: center;
     }
 }
 
@@ -85,6 +93,13 @@ body:before {
             .navbar-brand {
               padding-left: 25px;
             }
+        }
+    }
+
+    #wavy-footer {
+        .notice {
+            margin: 15px 0 0 0;
+            display: block;
         }
     }
 }
