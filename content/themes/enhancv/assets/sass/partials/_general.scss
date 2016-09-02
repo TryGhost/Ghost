@@ -232,6 +232,10 @@
   .content {
     color: #fff;
 
+    h4 {
+      color: #fff;
+    }
+
     .blog-logo {
       svg {
         fill: #fff;
@@ -243,6 +247,11 @@
       font-size: 1.2rem;
       vertical-align: middle;
       font-weight: 300;
+    }
+
+    .btn-default {
+      font-weight: normal;
+      padding: 8px 27px;
     }
   }
 }

@@ -77,6 +77,10 @@ body:before {
             right: 100%;
         }
     }
+
+    #wavy-footer {
+        text-align: center;
+    }
 }
 
 @media (max-width: $screen-xs) {
@@ -89,6 +93,13 @@ body:before {
             .navbar-brand {
               padding-left: 25px;
             }
+        }
+    }
+
+    #wavy-footer {
+        .notice {
+            margin: 15px 0 0 0;
+            display: block;
         }
     }
 }

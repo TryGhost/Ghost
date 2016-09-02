@@ -6618,11 +6618,9 @@ margin on the iframe, cause it breaks stuff. */
   outline: 0 none;
   box-shadow: none; }
 
-.btn-default:focus, .btn-default.focus {
-  background-color: #fff; }
-
-.btn-default:focus:hover, .btn-default.focus:hover {
-  background-color: #e6e6e6; }
+.btn-default:focus, .btn-default.focus, .btn-default:focus:hover, .btn-default.focus:hover, .btn-default:hover, .btn-default:active {
+  background-color: rgba(255, 255, 255, 0.8);
+  border-color: rgba(255, 255, 255, 0.8); }
 
 .btn-transparent {
   color: #fff;
@@ -6873,7 +6871,7 @@ fieldset[disabled] .btn-muted-link:focus {
   margin-right: 60px; }
 
 .modal-backdrop {
-  background: rgba(0, 191, 147, 0.7) !important; }
+  background-color: rgba(0, 192, 145, 0.7); }
 
 .modal-backdrop .modal-dialog:focus {
   outline: 0 none; }
@@ -6922,9 +6920,6 @@ fieldset[disabled] .btn-muted-link:focus {
 
 .media {
   margin-top: 0; }
-
-.modal-backdrop {
-  background-color: rgba(0, 192, 145, 0.7); }
 
 /* ==========================================================================
    3. Utilities - These things get used a lot
@@ -7438,6 +7433,9 @@ fieldset[disabled] .btn-muted-link:focus {
 #wavy-footer .content {
   color: #fff; }
 
+#wavy-footer .content h4 {
+  color: #fff; }
+
 #wavy-footer .content .blog-logo svg {
   fill: #fff; }
 
@@ -7446,6 +7444,10 @@ fieldset[disabled] .btn-muted-link:focus {
   font-size: 1.2rem;
   vertical-align: middle;
   font-weight: 300; }
+
+#wavy-footer .content .btn-default {
+  font-weight: normal;
+  padding: 8px 27px; }
 
 /* ==========================================================================
    6. Single Post - When you click on an individual post
@@ -8185,13 +8187,18 @@ body:before {
     padding: 8px 25px; }
   #slidemenu-wrapper.active {
     width: 100%;
-    right: 100%; } }
+    right: 100%; }
+  #wavy-footer {
+    text-align: center; } }
 
 @media (max-width: 480px) {
   .main-nav-fixed .navbar .navbar-toggle {
     margin-right: 15px; }
   .main-nav-fixed .navbar .navbar-brand {
-    padding-left: 25px; } }
+    padding-left: 25px; }
+  #wavy-footer .notice {
+    margin: 15px 0 0 0;
+    display: block; } }
 
 @media only screen and (max-width: 900px) {
   blockquote {
