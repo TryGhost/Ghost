@@ -56,6 +56,39 @@ body:before {
     }
 }
 
+@media (max-width: $screen-sm) {
+    #slidemenu-wrapper {
+        margin-right: -100%;
+
+        .slidemenu-nav {
+          text-align: center;
+
+          li {
+            font-size: 1.6rem;
+          }
+        }
+
+        &.active {
+            width: 100%;
+            right: 100%;
+        }
+    }
+}
+
+@media (max-width: $screen-xs) {
+    .main-nav-fixed {
+        .navbar {
+            .navbar-toggle {
+                margin-right: 15px;
+            }
+
+            .navbar-brand {
+              padding-left: 25px;
+            }
+        }
+    }
+}
+
 @media only screen and (max-width: 900px) {
     blockquote {
         margin-left: 0;
@@ -164,6 +197,12 @@ body:before {
     .read-next-story.no-cover + .read-next-story.no-cover {
         border-top: rgba(0, 0, 100, 0.06) 1px solid;
         border-left: none;
+    }
+
+    .sub-nav-main {
+        .navbar-collapse {
+            padding: 0;
+        }
     }
 }
 
@@ -384,7 +423,7 @@ body:before {
 }
 
 @media only screen and (min-width: $screen-sm) {
-    .main-header {
+    .main-nav-fixed {
         .navbar-brand {
             padding: 15px 15px 15px 50px;
         }

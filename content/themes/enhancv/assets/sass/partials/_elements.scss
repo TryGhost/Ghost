@@ -406,6 +406,24 @@ margin on the iframe, cause it breaks stuff. */
   color: darken(white, 20%);
 }
 
+.btn-menu-social {
+  width: 35px;
+  height: 35px;
+  line-height: 3.5rem;
+  text-align: center;
+  color: #fff;
+  background-color: $gray-light;
+  border-color: $gray-light;
+
+  &:hover,
+  &.focus,
+  &:focus {
+    color: #fff;
+    background-color: $gray-lighter;
+    border-color: $gray-lighter;
+  }
+}
+
 // BUTTON SIZES
 .btn-xlg {
   @include button-size(15px, 25px, 22px, 25px, 40px);
@@ -553,4 +571,9 @@ $directions: 'top' 'bottom' 'left' 'right';
       background-color: #fff;
     }
   }
+}
+
+// overlay
+.modal-backdrop {
+  background-color: transparentize($enhancv-color, .3);
 }
