@@ -12,6 +12,7 @@ var hbs                  = require('express-hbs'),
     moment               = require('moment'),
     sanitizeHtml         = require('sanitize-html'),
     config               = require('../../../../config'),
+    errors               = require('../../../../errors'),
     makeAbsoluteUrl      = require('../../../../utils/make-absolute-urls'),
     cheerio              = require('cheerio'),
     amperize             = new Amperize(),
@@ -121,10 +122,20 @@ function getAmperizeHTML(html, post) {
     html = makeAbsoluteUrl(html, config.url, post.url).html();
 
     if (!amperizeCache[post.id] || moment(new Date(amperizeCache[post.id].updated_at)).diff(new Date(post.updated_at)) < 0) {
-        return new Promise(function (resolve, reject) {
+        return new Promise(function (resolve) {
             amperize.parse(html, function (err, res) {
                 if (err) {
-                    return reject(err);
+                    if (err.src) {
+                        errors.logError(err.message, 'AMP HTML couldn\'t get parsed:' + err.src);
+                    } else {
+                        errors.logError(err);
+                    }
+
+                    // save it in cache to prevent multiple calls to Amperize until
+                    // content is updated.
+                    amperizeCache[post.id] = {updated_at: post.updated_at, amp: html};
+                    // return the original html on an error
+                    return resolve(html);
                 }
 
                 amperizeCache[post.id] = {updated_at: post.updated_at, amp: res};
@@ -156,6 +167,11 @@ function ampContent() {
         // @TODO: remove this, when Amperize support video transform
         $('video').children('source').remove();
         $('video').children('track').remove();
+
+        // Case: AMP parsing failed and we returned the regular HTML,
+        // then we have to remove remaining, invalid HTML tags.
+        $('audio').children('source').remove();
+        $('audio').children('track').remove();
 
         ampHTML = $.html();
 
