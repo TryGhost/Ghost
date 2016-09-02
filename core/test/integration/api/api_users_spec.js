@@ -289,7 +289,18 @@ describe('Users API', function () {
     });
 
     describe('Edit', function () {
-        var newName = 'Jo McBlogger';
+        var newName = 'Jo McBlogger',
+            newUser;
+
+        beforeEach(function () {
+            newUser = _.clone(testUtils.DataGenerator.forKnex.createUser(testUtils.DataGenerator.Content.users[4]));
+            sandbox.stub(mail, 'send', function () {
+                return Promise.resolve();
+            });
+        });
+        afterEach(function () {
+            sandbox.restore();
+        });
 
         function checkEditResponse(response) {
             should.exist(response);
@@ -454,6 +465,23 @@ describe('Users API', function () {
                 checkEditResponse(response);
                 done();
             }).catch(done);
+        });
+
+        it('Author can not set an email that already exists', function (done) {
+            newUser.roles = [roleIdFor.author];
+            newUser.email = 'test@example.com';
+
+            UserAPI.add({users: [newUser]}, _.extend({}, context.owner, {include: 'roles'}))
+                .then(function () {
+                    UserAPI.edit(
+                        {users: [{email: 'test@example.com', id: userIdFor.author}]}, _.extend({}, context.author, {id: userIdFor.author})
+                    ).then(function () {
+                        done(new Error('Author should not be able to set and existing email address'));
+                    }).catch(function (error) {
+                        error.errorType.should.eql('ValidationError');
+                        done();
+                    });
+                }).catch(done);
         });
 
         it('Author can edit self with role set', function (done) {
