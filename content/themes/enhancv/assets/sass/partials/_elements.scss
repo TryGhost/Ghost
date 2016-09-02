@@ -563,13 +563,18 @@ $directions: 'top' 'bottom' 'left' 'right';
 .custom-badge {
   @extend .btn;
   border: none;
+  cursor: auto;
+
+  &:hover, &:focus, &:active:hover, &:active {
+    background-color: #fff;
+  } 
 
   &.custom-badge-white {
     @extend .btn-default;
 
-    &:hover, &:focus {
+    &:hover, &:focus, &:active:hover, &:active {
       background-color: #fff;
-    }
+    } 
   }
 }
 

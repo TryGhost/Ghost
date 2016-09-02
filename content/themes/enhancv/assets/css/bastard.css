@@ -6992,9 +6992,13 @@ fieldset[disabled] .btn-muted-link:focus {
           transition: opacity 0.2s ease-in-out; }
 
 .custom-badge {
-  border: none; }
+  border: none;
+  cursor: auto; }
 
-.custom-badge.custom-badge-white:hover, .custom-badge.custom-badge-white:focus {
+.custom-badge:hover, .custom-badge:focus, .custom-badge:active:hover, .custom-badge:active {
+  background-color: #fff; }
+
+.custom-badge.custom-badge-white:hover, .custom-badge.custom-badge-white:focus, .custom-badge.custom-badge-white:active:hover, .custom-badge.custom-badge-white:active {
   background-color: #fff; }
 
 .modal-backdrop {
@@ -7532,6 +7536,12 @@ fieldset[disabled] .btn-muted-link:focus {
 
 .posts-wrapper .single-post:hover .category, .posts-wrapper .single-post:focus .category {
   opacity: 1; }
+
+.top-post h1 {
+  color: #fff;
+  position: absolute;
+  bottom: 10px;
+  width: 75%; }
 
 /* ==========================================================================
    6. Single Post - When you click on an individual post
