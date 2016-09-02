@@ -7461,9 +7461,6 @@ fieldset[disabled] .btn-muted-link:focus {
       font-family: 'Open Sans', sans-serif;
     }
 }*/
-/* ==========================================================================
-   6. Single Post - When you click on an individual post
-   ========================================================================== */
 .posts-wrapper {
   margin: 0 auto; }
 
@@ -7522,11 +7519,12 @@ fieldset[disabled] .btn-muted-link:focus {
 .posts-wrapper .single-post:hover .category, .posts-wrapper .single-post:focus .category {
   opacity: 1; }
 
+/* ==========================================================================
+   6. Single Post - When you click on an individual post
+   ========================================================================== */
 h1.post-title {
   color: #caad00; }
 
-/* Stop .full-img from creating horizontal scroll - slight hack due to
-   imperfections with browser width % calculations and rounding */
 .post-template .content {
   overflow: hidden; }
 
