@@ -7397,7 +7397,6 @@ fieldset[disabled] .btn-muted-link:focus {
     }
 }*/
 #wavy-footer {
-  overflow: hidden;
   height: 400px;
   position: relative;
   background-color: #00c091;
@@ -7422,16 +7421,21 @@ fieldset[disabled] .btn-muted-link:focus {
   top: 0;
   z-index: 1; }
 
-#wavy-footer .shadow {
-  height: 5px;
+#wavy-footer .gradient {
+  height: 35px;
   position: absolute;
   top: 0;
   z-index: 0;
   width: 100%;
-  box-shadow: 0px 7px 40px 0px black; }
+  background: #000;
+  background: -webkit-linear-gradient(top, #000 0%, transparent 100%);
+  background: linear-gradient(to bottom, #000 0%, transparent 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#000', endColorstr='transparent',GradientType=0 );
+  opacity: .2; }
 
 #wavy-footer .content {
-  color: #fff; }
+  color: #fff;
+  padding: 0 50px; }
 
 #wavy-footer .content h4 {
   color: #fff; }
