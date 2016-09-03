@@ -792,9 +792,12 @@ body {
   text-rendering: optimizeLegibility;
 }
 ul,
+ol,
 li {
-  list-style-type: none;
   margin: 0;
+}
+ul {
+  list-style-type: none;
 }
 .row {
   max-width: 1170px;
