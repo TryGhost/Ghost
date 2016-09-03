@@ -16269,10 +16269,13 @@ img.jssocials-share-logo {
   margin-bottom: 1.5rem;
 }
 .blog-content .word_counts ul {
-  margin: 10px 20px;
+  margin: 10px 0 10px 30px;
 }
 .blog-content .word_counts ul li {
   list-style-type: disc;
+}
+.blog-content .word_counts ol {
+  margin: 10px 0 10px 30px;
 }
 .blog-content .word_counts h2 {
   font-size: 34px;
