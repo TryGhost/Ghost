@@ -89,6 +89,22 @@
           margin-top: -80px;
         }
       }
+
+      blockquote:not([class]) {
+        text-align: inherit;
+        padding: 20px 20px 20px 25px;
+        background-position-x: -10px;
+
+        p {
+          font-size: 1.1rem;
+          line-height: inherit;
+          border-bottom: none;
+        }
+
+        &::after {
+          right: -20px;
+        }
+      }
     }
   }
 
