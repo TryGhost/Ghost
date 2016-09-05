@@ -40,20 +40,6 @@
     }
 
     .popular-posts-area {
-      .simple-post,
-      .simple-image-post {
-        a {
-          font-size: 18px;
-          color: white;
-          text-decoration: none;
-
-          &:hover {
-            color: @emphasis-color;
-            font-weight: bold;
-          }
-        }
-      }
-
       .simple-post {
         margin-bottom: 15px;
 
@@ -277,19 +263,25 @@
     }
   }
 
-  .simple-post,
+  .simple-image-posts,
   .simple-image-post {
     border-bottom: 1px solid gainsboro;
+  }
 
-    a {
-      font-size: 1rem;
-      color: black;
-      font-weight: bold;
-      text-decoration: none;
-
-      &:hover {
-        color: @emphasis-color;
+  .simple-posts,
+  .simple-image-posts {
+    .simple-post,
+    .simple-image-post {
+      a {
+        font-size: 1rem;
+        color: black;
         font-weight: bold;
+        text-decoration: none;
+
+        &:hover {
+          color: @emphasis-color;
+          font-weight: bold;
+        }
       }
     }
   }
@@ -421,7 +413,6 @@
 
     &.home-container {
       .blog-content {
-
 
         .post-title h2 {
           font-size: 1.4rem;

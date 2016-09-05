@@ -162,17 +162,6 @@
   font-size: 30px;
   font-weight: bold;
 }
-.content-container .side-column-right .popular-posts-area .simple-post a,
-.content-container .side-column-right .popular-posts-area .simple-image-post a {
-  font-size: 18px;
-  color: white;
-  text-decoration: none;
-}
-.content-container .side-column-right .popular-posts-area .simple-post a:hover,
-.content-container .side-column-right .popular-posts-area .simple-image-post a:hover {
-  color: #EE6600;
-  font-weight: bold;
-}
 .content-container .side-column-right .popular-posts-area .simple-post {
   margin-bottom: 15px;
 }
@@ -352,19 +341,23 @@
 .blog-content .new-posts-area .simple-post:last-child {
   margin-bottom: 0;
 }
-.blog-content .simple-post,
+.blog-content .simple-image-posts,
 .blog-content .simple-image-post {
   border-bottom: 1px solid gainsboro;
 }
-.blog-content .simple-post a,
-.blog-content .simple-image-post a {
+.blog-content .simple-posts .simple-post a,
+.blog-content .simple-image-posts .simple-post a,
+.blog-content .simple-posts .simple-image-post a,
+.blog-content .simple-image-posts .simple-image-post a {
   font-size: 1rem;
   color: black;
   font-weight: bold;
   text-decoration: none;
 }
-.blog-content .simple-post a:hover,
-.blog-content .simple-image-post a:hover {
+.blog-content .simple-posts .simple-post a:hover,
+.blog-content .simple-image-posts .simple-post a:hover,
+.blog-content .simple-posts .simple-image-post a:hover,
+.blog-content .simple-image-posts .simple-image-post a:hover {
   color: #EE6600;
   font-weight: bold;
 }
@@ -1196,6 +1189,13 @@ p.year_month {
   display: flex;
   height: 100%;
   align-items: center;
+  font-size: 18px;
+  color: white;
+  text-decoration: none;
+}
+.simple-image-posts .simple-image-post a:hover {
+  color: #EE6600;
+  font-weight: bold;
 }
 @media only screen and (min-width: 920px) {
   .blog-content .simple-image-posts {
@@ -1363,6 +1363,7 @@ a.newer-posts:hover {
   color: #787878;
   border-bottom: 4px solid #e6e6e6;
   padding-bottom: 4px;
+  margin-top: 0;
   margin-bottom: 4px;
 }
 .prev a p,
@@ -1379,9 +1380,6 @@ a.newer-posts:hover {
 .next a:hover p {
   color: #EE6600;
   font-weight: bold;
-}
-.prev h4 {
-  margin-top: 0;
 }
 .next h4 {
   text-align: right;
