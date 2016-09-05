@@ -12,6 +12,12 @@ utils = {
         '<a class="ui teal tag label" href="<%= url %>"><%= count_posts %></a>' +
         '</div>'),
     simplePostTemplate: _.template('<div class="simple-post"><a href="<%= url %>"><%= text %></a></div>'),
+    simpleImagePostTemplate: _.template('<div class="simple-image-post">' +
+        '<a href="<%= url %>">' +
+        '<div class="trim"><img src="<%= imagePath %>" href="<%= url %>" /></div>' +
+        '<span><%= text %></span></span>' +
+        '</a>' +
+        '</div>'),
     // @TODO this can probably be made more generic and used in more places
     findKey: function findKey(key, object, data) {
         if (object && _.has(object, key) && !_.isEmpty(object[key])) {
