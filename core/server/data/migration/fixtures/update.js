@@ -4,7 +4,17 @@
 // E.g. if we update to version 004, all the tasks in /004/ are executed
 
 var Promise = require('bluebird'),
-    sequence = require('../../../utils/sequence'),
+    _ = require('lodash'),
+    sequence = function sequence(tasks, modelOptions, logger) {
+        // utils/sequence.js does not offer an option to pass cloned arguments
+        return Promise.reduce(tasks, function (results, task) {
+            return task(_.cloneDeep(modelOptions), logger)
+                .then(function (result) {
+                    results.push(result);
+                    return results;
+                });
+        }, []);
+    },
     update;
 
 /**
