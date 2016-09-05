@@ -153,6 +153,55 @@ p.year_month {
   padding-bottom: 10px;
 }
 
+.simple-image-posts {
+  .simple-image-post {
+    padding-right: 3px;
+
+    .trim {
+      display: flex;
+      max-width: 20%;
+      height: 4em;
+      margin-right: 3px;
+      overflow: hidden;
+      align-items: center;
+    }
+
+    a {
+      display: flex;
+      height: 100%;
+      align-items: center;
+    }
+  }
+}
+
+@media only screen and (min-width: 920px) {
+  .blog-content {
+    .simple-image-posts {
+      display: flex;
+      flex-wrap: wrap;
+
+      .simple-image-post {
+        width: 50%;
+
+        .trim {
+          max-width: 25%;
+          height: 4em;
+        }
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 919px) {
+  .simple-image-posts {
+    .simple-image-post {
+      .trim {
+        height: 4em;
+      }
+    }
+  }
+}
+
 @media only screen and (max-width: 767px) {
   p.year_month {
     text-align: left;

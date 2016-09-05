@@ -16188,20 +16188,22 @@ img.jssocials-share-logo {
   font-size: 30px;
   font-weight: bold;
 }
+.content-container .side-column-right .popular-posts-area .simple-post a,
+.content-container .side-column-right .popular-posts-area .simple-image-post a {
+  font-size: 18px;
+  color: white;
+  text-decoration: none;
+}
+.content-container .side-column-right .popular-posts-area .simple-post a:hover,
+.content-container .side-column-right .popular-posts-area .simple-image-post a:hover {
+  color: #EE6600;
+  font-weight: bold;
+}
 .content-container .side-column-right .popular-posts-area .simple-post {
   margin-bottom: 15px;
 }
 .content-container .side-column-right .popular-posts-area .simple-post:last-child {
   margin-bottom: 0;
-}
-.content-container .side-column-right .popular-posts-area .simple-post a {
-  font-size: 18px;
-  color: white;
-  text-decoration: none;
-}
-.content-container .side-column-right .popular-posts-area .simple-post a:hover {
-  color: #EE6600;
-  font-weight: bold;
 }
 .blog-container {
   width: 100%;
@@ -16376,15 +16378,19 @@ img.jssocials-share-logo {
 .blog-content .newly-posts-area .simple-post:last-child {
   margin-bottom: 0;
 }
-.blog-content .popular-posts-area .simple-post a,
-.blog-content .newly-posts-area .simple-post a {
+.blog-content .simple-post,
+.blog-content .simple-image-post {
+  border-bottom: 1px solid gainsboro;
+}
+.blog-content .simple-post a,
+.blog-content .simple-image-post a {
   font-size: 1rem;
   color: black;
   font-weight: bold;
   text-decoration: none;
 }
-.blog-content .popular-posts-area .simple-post a:hover,
-.blog-content .newly-posts-area .simple-post a:hover {
+.blog-content .simple-post a:hover,
+.blog-content .simple-image-post a:hover {
   color: #EE6600;
   font-weight: bold;
 }
@@ -17200,6 +17206,40 @@ p.year_month {
 }
 .popular-posts-area {
   padding-bottom: 10px;
+}
+.simple-image-posts .simple-image-post {
+  padding-right: 3px;
+}
+.simple-image-posts .simple-image-post .trim {
+  display: flex;
+  max-width: 20%;
+  height: 4em;
+  margin-right: 3px;
+  overflow: hidden;
+  align-items: center;
+}
+.simple-image-posts .simple-image-post a {
+  display: flex;
+  height: 100%;
+  align-items: center;
+}
+@media only screen and (min-width: 920px) {
+  .blog-content .simple-image-posts {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .blog-content .simple-image-posts .simple-image-post {
+    width: 50%;
+  }
+  .blog-content .simple-image-posts .simple-image-post .trim {
+    max-width: 25%;
+    height: 4em;
+  }
+}
+@media only screen and (max-width: 919px) {
+  .simple-image-posts .simple-image-post .trim {
+    height: 4em;
+  }
 }
 @media only screen and (max-width: 767px) {
   p.year_month {
