@@ -330,14 +330,14 @@
   text-align: right;
 }
 .blog-content .popular-posts-area,
-.blog-content .newly-posts-area {
+.blog-content .new-posts-area {
   margin: 20px 0;
   border: 1px solid #e6e6e6;
   border-radius: 5px;
   padding: 10px 0.6rem;
 }
 .blog-content .popular-posts-area h4,
-.blog-content .newly-posts-area h4 {
+.blog-content .new-posts-area h4 {
   color: #787878;
   border-bottom: 4px solid #e6e6e6;
   padding-bottom: 4px;
@@ -345,11 +345,11 @@
   margin-bottom: 8px;
 }
 .blog-content .popular-posts-area .simple-post,
-.blog-content .newly-posts-area .simple-post {
+.blog-content .new-posts-area .simple-post {
   margin-bottom: 12px;
 }
 .blog-content .popular-posts-area .simple-post:last-child,
-.blog-content .newly-posts-area .simple-post:last-child {
+.blog-content .new-posts-area .simple-post:last-child {
   margin-bottom: 0;
 }
 .blog-content .simple-post,
