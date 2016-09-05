@@ -984,8 +984,21 @@ describe('Fixtures', function () {
                             });
                         });
 
-                        it('server offset is 0', function (done) {
+                        it('server offset is 0 and mysql', function (done) {
                             migrationsSettingsValue = '{}';
+                            configUtils.config.database.client = 'mysql';
+
+                            updateClient({}, loggerStub)
+                                .then(function () {
+                                    loggerStub.warn.called.should.be.true();
+                                    done();
+                                })
+                                .catch(done);
+                        });
+
+                        it('server offset is 0 and postgresql', function (done) {
+                            migrationsSettingsValue = '{}';
+                            configUtils.config.database.client = 'pg';
 
                             updateClient({}, loggerStub)
                                 .then(function () {
@@ -1054,6 +1067,25 @@ describe('Fixtures', function () {
                             });
 
                             sandbox.stub(api.settings, 'updateSettingsCache').returns(Promise.resolve({}));
+                        });
+
+                        it('server offset is 0 and sqlite', function (done) {
+                            serverTimezoneOffset = 0;
+                            createdAt = moment(1464798678537).toDate();
+                            configUtils.config.database.client = 'sqlite3';
+
+                            moment(createdAt).format('YYYY-MM-DD HH:mm:ss').should.eql('2016-06-01 16:31:18');
+
+                            updateClient({}, loggerStub)
+                                .then(function () {
+                                    _.each(newModels, function (model) {
+                                        moment(model.get('created_at')).format('YYYY-MM-DD HH:mm:ss').should.eql('2016-06-01 16:31:18');
+                                    });
+
+                                    migrationsSettingsWasUpdated.should.eql(true);
+                                    done();
+                                })
+                                .catch(done);
                         });
 
                         it('sqlite: no UTC update, only format', function (done) {
