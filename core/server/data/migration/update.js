@@ -45,9 +45,7 @@ migrateToDatabaseVersion = function migrateToDatabaseVersion(version, logger, mo
             var migrationTasks = versioning.getUpdateDatabaseTasks(version, logger),
                 fixturesTasks = versioning.getUpdateFixturesTasks(version, logger);
 
-            logger.info('###########');
             logger.info('Updating database to ' + version);
-            logger.info('###########\n');
 
             modelOptions.transacting = transaction;
 
@@ -98,6 +96,7 @@ execute = function execute(options) {
 
     return backup(logger)
         .then(function () {
+            logger.info('Migration required from ' + fromVersion + ' to ' + toVersion);
             return Promise.mapSeries(versionsToUpdate, function (versionToUpdate) {
                 return migrateToDatabaseVersion(versionToUpdate, logger, modelOptions);
             });
