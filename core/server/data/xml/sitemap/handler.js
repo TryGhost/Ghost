@@ -24,7 +24,7 @@ module.exports = function handler(blogApp) {
         res.send(sitemap.getIndexXml());
     });
 
-    blogApp.get('/sitemap-:resource.xml', verifyResourceType, function sitemapResourceXML(req, res) {
+    blogApp.get('/sitemap-:resource.xml', verifyResourceType, function sitemapResourceXML(req, res, next) {
         var type = req.params.resource,
             page = 1,
             siteMapXml = getResourceSiteMapXml(type, page);
@@ -33,6 +33,19 @@ module.exports = function handler(blogApp) {
             'Cache-Control': 'public, max-age=' + utils.ONE_HOUR_S,
             'Content-Type': 'text/xml'
         });
-        res.send(siteMapXml);
+
+        // CASE: returns null if sitemap is not initialized
+        if (!siteMapXml) {
+            sitemap.init()
+                .then(function () {
+                    siteMapXml = getResourceSiteMapXml(type, page);
+                    res.send(siteMapXml);
+                })
+                .catch(function (err) {
+                    next(err);
+                });
+        } else {
+            res.send(siteMapXml);
+        }
     });
 };

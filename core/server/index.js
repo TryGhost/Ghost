@@ -16,7 +16,6 @@ var express = require('express'),
     models = require('./models'),
     permissions = require('./permissions'),
     apps = require('./apps'),
-    sitemap = require('./data/xml/sitemap'),
     xmlrpc = require('./data/xml/xmlrpc'),
     slack = require('./data/slack'),
     GhostServer = require('./ghost-server'),
@@ -86,6 +85,10 @@ function init(options) {
                     }).then(function () {
                         config.maintenance.enabled = maintenanceState;
                     }).catch(function (err) {
+                        if (!err) {
+                            return;
+                        }
+
                         errors.logErrorAndExit(err, err.context, err.help);
                     });
                 } else if (response.error) {
@@ -115,8 +118,6 @@ function init(options) {
             initDbHashAndFirstRun(),
             // Initialize apps
             apps.init(),
-            // Initialize sitemaps
-            sitemap.init(),
             // Initialize xmrpc ping
             xmlrpc.listen(),
             // Initialize slack ping

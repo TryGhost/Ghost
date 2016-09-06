@@ -1,14 +1,23 @@
 // # Update Database
 // Handles migrating a database between two different database versions
 var Promise = require('bluebird'),
+    _ = require('lodash'),
     backup = require('./backup'),
     fixtures = require('./fixtures'),
     errors = require('../../errors'),
     i18n = require('../../i18n'),
     db = require('../../data/db'),
-    sequence = require('../../utils/sequence'),
     versioning = require('../schema').versioning,
-
+    sequence = function sequence(tasks, modelOptions, logger) {
+        // utils/sequence.js does not offer an option to pass cloned arguments
+        return Promise.reduce(tasks, function (results, task) {
+            return task(_.cloneDeep(modelOptions), logger)
+                .then(function (result) {
+                    results.push(result);
+                    return results;
+                });
+        }, []);
+    },
     updateDatabaseSchema,
     migrateToDatabaseVersion,
     execute, logger, isDatabaseOutOfDate;

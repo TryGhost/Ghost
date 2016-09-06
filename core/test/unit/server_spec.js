@@ -11,7 +11,6 @@ var should = require('should'),
     api = require(config.paths.corePath + '/server/api'),
     apps = require(config.paths.corePath + '/server/apps'),
     i18n = require(config.paths.corePath + '/server/i18n'),
-    sitemap = require(config.paths.corePath + '/server/data/xml/sitemap'),
     xmlrpc = require(config.paths.corePath + '/server/data/xml/xmlrpc'),
     slack = require(config.paths.corePath + '/server/data/slack'),
     scheduling = require(config.paths.corePath + '/server/scheduling'),
@@ -37,7 +36,6 @@ describe('server bootstrap', function () {
         sandbox.stub(apps, 'init').returns(Promise.resolve());
         sandbox.stub(slack, 'listen').returns(Promise.resolve());
         sandbox.stub(xmlrpc, 'listen').returns(Promise.resolve());
-        sandbox.stub(sitemap, 'init').returns(Promise.resolve());
         sandbox.stub(scheduling, 'init').returns(Promise.resolve());
 
         resetMiddlewareStub = bootstrap.__set__('middleware', middlewareStub);
