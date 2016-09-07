@@ -52,12 +52,6 @@ git clone git://github.com/tryghost/ghost.git
 cd ghost
 ```
 
-Install grunt. No prizes here.
-
-```bash
-npm install -g grunt-cli
-```
-
 Install Ghost. If you're running locally, use [master](https://github.com/TryGhost/Ghost/tree/master). For production, use [stable](https://github.com/TryGhost/Ghost/tree/stable). :no_entry_sign::rocket::microscope:
 
 ```bash
@@ -67,13 +61,13 @@ npm install
 Build the things!
 
 ```bash
-grunt init
+npm run build
 ```
 
 Minify that shit for production?
 
 ```bash
-grunt prod
+npm run minify
 ```
 
 Start your engines.
