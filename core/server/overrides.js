@@ -19,9 +19,11 @@ moment.tz.setDefault('UTC');
 /**
  * lodash 4.x functions we use
  */
-_.toPairs = toPairs;
-_.fromPairs = fromPairs;
-_.toString = toString;
-_.omitBy = omitBy;
-_.uniqBy = uniqBy;
-_.pickBy = pickBy;
+_.mixin({
+  toPairs: toPairs,
+  fromPairs: fromPairs,
+  toString: toString,
+  omitBy: omitBy,
+  uniqBy: uniqBy,
+  pickBy: pickBy
+})
