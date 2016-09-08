@@ -29,7 +29,7 @@ themes = {
         zip = {
             path: options.path,
             name: options.originalname,
-            shortName: storageAdapter.getFileName(options.originalname.split('.zip')[0])
+            shortName: storageAdapter.getSanitizedFileName(options.originalname.split('.zip')[0])
         }, theme;
 
         // check if zip name is casper.zip
