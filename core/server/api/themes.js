@@ -9,7 +9,8 @@ var Promise = require('bluebird'),
     events = require('../events'),
     storage = require('../storage'),
     settings = require('./settings'),
-    utils = require('./utils'),
+    apiUtils = require('./utils'),
+    utils = require('./../utils'),
     i18n = require('../i18n'),
     themes;
 
@@ -19,6 +20,13 @@ var Promise = require('bluebird'),
  * **See:** [API Methods](index.js.html#api%20methods)
  */
 themes = {
+    loadThemes: function () {
+        return utils.readThemes(config.paths.themePath)
+            .then(function (result) {
+                config.paths.availableThemes = result;
+            });
+    },
+
     upload: function upload(options) {
         options = options || {};
 
@@ -36,7 +44,7 @@ themes = {
             throw new errors.ValidationError(i18n.t('errors.api.themes.overrideCasper'));
         }
 
-        return utils.handlePermissions('themes', 'add')(options)
+        return apiUtils.handlePermissions('themes', 'add')(options)
             .then(function () {
                 return gscan.checkZip(zip, {keepExtractedDir: true});
             })
@@ -74,7 +82,7 @@ themes = {
                 // force reload of availableThemes
                 // right now the logic is in the ConfigManager
                 // if we create a theme collection, we don't have to read them from disk
-                return config.loadThemes();
+                return themes.loadThemes();
             })
             .then(function () {
                 // the settings endpoint is used to fetch the availableThemes
@@ -113,7 +121,7 @@ themes = {
             return Promise.reject(new errors.BadRequestError(i18n.t('errors.api.themes.invalidRequest')));
         }
 
-        return utils.handlePermissions('themes', 'read')(options)
+        return apiUtils.handlePermissions('themes', 'read')(options)
             .then(function () {
                 events.emit('theme.downloaded', themeName);
                 return storageAdapter.serve({isTheme: true, name: themeName});
@@ -129,7 +137,7 @@ themes = {
             theme,
             storageAdapter = storage.getStorage('themes');
 
-        return utils.handlePermissions('themes', 'destroy')(options)
+        return apiUtils.handlePermissions('themes', 'destroy')(options)
             .then(function () {
                 if (name === 'casper') {
                     throw new errors.ValidationError(i18n.t('errors.api.themes.destroyCasper'));
@@ -145,7 +153,7 @@ themes = {
                 return storageAdapter.delete(name, config.paths.themePath);
             })
             .then(function () {
-                return config.loadThemes();
+                return themes.loadThemes();
             })
             .then(function () {
                 return settings.updateSettingsCache();
