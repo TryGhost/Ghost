@@ -2,6 +2,7 @@ var crypto      = require('crypto'),
     downsize    = require('downsize'),
     RSS         = require('rss'),
     config      = require('../../../config'),
+    utils       = require('../../../utils'),
     errors      = require('../../../errors'),
     filters     = require('../../../filters'),
     processUrls = require('../../../utils/make-absolute-urls'),
@@ -106,7 +107,7 @@ generateFeed = function generateFeed(data) {
     });
 
     data.results.posts.forEach(function forEach(post) {
-        var itemUrl = config.urlFor('post', {post: post, secure: data.secure}, true),
+        var itemUrl = utils.url.urlFor('post', {post: post, secure: data.secure}, true),
             htmlContent = processUrls(post.html, data.siteUrl, itemUrl),
             item = {
                 title: post.title,
@@ -121,7 +122,7 @@ generateFeed = function generateFeed(data) {
             imageUrl;
 
         if (post.image) {
-            imageUrl = config.urlFor('image', {image: post.image, secure: data.secure}, true);
+            imageUrl = utils.url.urlFor('image', {image: post.image, secure: data.secure}, true);
 
             // Add a media content tag
             item.custom_elements.push({
@@ -176,8 +177,8 @@ generate = function generate(req, res, next) {
         }
 
         data.version = res.locals.safeVersion;
-        data.siteUrl = config.urlFor('home', {secure: req.secure}, true);
-        data.feedUrl = config.urlFor({relativeUrl: baseUrl, secure: req.secure}, true);
+        data.siteUrl = utils.url.urlFor('home', {secure: req.secure}, true);
+        data.feedUrl = utils.url.urlFor({relativeUrl: baseUrl, secure: req.secure}, true);
         data.secure = req.secure;
 
         return getFeedXml(req.originalUrl, data).then(function then(feedXml) {

@@ -10,6 +10,7 @@ var _              = require('lodash'),
     ghostBookshelf = require('./base'),
     events         = require('../events'),
     config         = require('../config'),
+    utils          = require('../utils'),
     baseUtils      = require('./base/utils'),
     i18n           = require('../i18n'),
     Post,
@@ -419,7 +420,7 @@ Post = ghostBookshelf.Model.extend({
         }
 
         if (!options.columns || (options.columns && options.columns.indexOf('url') > -1)) {
-            attrs.url = config.urlPathForPost(attrs);
+            attrs.url = utils.url.urlPathForPost(attrs);
         }
 
         return attrs;

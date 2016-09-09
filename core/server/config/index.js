@@ -10,7 +10,6 @@ var path          = require('path'),
 
     validator     = require('validator'),
     errors        = require('../errors'),
-    configUrl     = require('./url'),
     packageInfo   = require('../../../package.json'),
     i18n          = require('../i18n'),
     appRoot       = path.resolve(__dirname, '../../../'),
@@ -25,13 +24,6 @@ function ConfigManager(config) {
      * @type {Object}
      */
     this._config = {};
-
-    // Allow other modules to be externally accessible.
-    this.urlJoin = configUrl.urlJoin;
-    this.urlFor = configUrl.urlFor;
-    this.urlPathForPost = configUrl.urlPathForPost;
-    this.apiUrl = configUrl.apiUrl;
-    this.getBaseUrl = configUrl.getBaseUrl;
 
     // If we're given an initial config object then we can set it.
     if (config && _.isObject(config)) {
@@ -263,11 +255,6 @@ ConfigManager.prototype.set = function (config) {
             publishAPostBySchedulerToleranceInMinutes: 2
         }
     });
-
-    // Also pass config object to
-    // configUrl object to maintain
-    // clean dependency tree
-    configUrl.setConfig(this._config);
 
     // For now we're going to copy the current state of this._config
     // so it's directly accessible on the instance.

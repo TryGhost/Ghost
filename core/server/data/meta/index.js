@@ -1,6 +1,7 @@
 var _ = require('lodash'),
     Promise = require('bluebird'),
     config = require('../../config'),
+    utils = require('../../utils'),
     getUrl = require('./url'),
     getImageDimensions = require('./image-dimensions'),
     getCanonicalUrl = require('./canonical_url'),
@@ -50,7 +51,7 @@ function getMetaData(data, root) {
 
     metaData.blog.logo = {};
     metaData.blog.logo.url = config.theme.logo ?
-        config.urlFor('image', {image: config.theme.logo}, true) : config.urlFor({relativeUrl: '/ghost/img/ghosticon.jpg'}, {}, true);
+        utils.url.urlFor('image', {image: config.theme.logo}, true) : utils.url.urlFor({relativeUrl: '/ghost/img/ghosticon.jpg'}, {}, true);
 
     // TODO: cleanup these if statements
     if (data.post && data.post.html) {

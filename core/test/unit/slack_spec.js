@@ -7,15 +7,15 @@ var _               = require('lodash'),
     testUtils       = require('../utils'),
     url             = require('url'),
 
-// Stuff we test
+    // Stuff we test
     slack          = rewire('../../server/data/slack'),
     events         = require('../../server/events'),
     api            = require('../../server/api/settings'),
-    config         = require('../../server/config'),
+    utils          = require('../../server/utils'),
     schema         = require('../../server/data/schema').checks,
 
     sandbox        = sinon.sandbox.create(),
-// Test data
+    // Test data
     slackObjNoUrl =
         {
             id: 17,
@@ -151,7 +151,7 @@ describe('Slack', function () {
 
         beforeEach(function () {
             isPostStub = sandbox.stub(schema, 'isPost');
-            urlForStub = sandbox.stub(config, 'urlFor');
+            urlForStub = sandbox.stub(utils.url, 'urlFor');
             urlForStub.withArgs('post').returns('http://myblog.com/post');
             urlForStub.returns('http://myblog.com/someImageurl.jpg');
             settingsObj = {settings: [], meta: {}};

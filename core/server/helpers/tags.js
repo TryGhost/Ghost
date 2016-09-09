@@ -8,9 +8,9 @@
 
 var hbs             = require('express-hbs'),
     _               = require('lodash'),
-    config          = require('../config'),
+    utils           = require('../utils'),
     labs            = require('../utils/labs'),
-    utils           = require('./utils'),
+    localUtils      = require('./utils'),
     tags;
 
 tags = function (options) {
@@ -24,7 +24,7 @@ tags = function (options) {
         limit      = options.hash.limit ? parseInt(options.hash.limit, 10) : undefined,
         from       = options.hash.from ? parseInt(options.hash.from, 10) : 1,
         to         = options.hash.to ? parseInt(options.hash.to, 10) : undefined,
-        visibility = utils.parseVisibility(options),
+        visibility = localUtils.parseVisibility(options),
         output     = '';
 
     function createTagList(tags) {
@@ -42,8 +42,8 @@ tags = function (options) {
                 }
             }
 
-            var tagOutput = autolink ? utils.linkTemplate({
-                url: config.urlFor('tag', {tag: tag}),
+            var tagOutput = autolink ? localUtils.linkTemplate({
+                url: utils.url.urlFor('tag', {tag: tag}),
                 text: _.escape(tag.name)
             }) : _.escape(tag.name);
 

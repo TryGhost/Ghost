@@ -6,6 +6,7 @@
 
 var api         = require('../../api'),
     config      = require('../../config'),
+    utils       = require('../../utils'),
     filters     = require('../../filters'),
     templates   = require('./templates'),
     handleError = require('./error'),
@@ -48,7 +49,7 @@ frontendControllers = {
             }
 
             if (post.status === 'published') {
-                return res.redirect(301, config.urlFor('post', {post: post}));
+                return res.redirect(301, utils.url.urlFor('post', {post: post}));
             }
 
             setRequestIsSecure(req, post);

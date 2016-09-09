@@ -1,4 +1,4 @@
-var config           = require('../../config'),
+var utils            = require('../../utils'),
     getContextObject = require('./context_object.js'),
     _                = require('lodash');
 
@@ -8,11 +8,11 @@ function getCoverImage(data) {
 
     if (_.includes(context, 'home') || _.includes(context, 'author')) {
         if (contextObject.cover) {
-            return config.urlFor('image', {image: contextObject.cover}, true);
+            return utils.url.urlFor('image', {image: contextObject.cover}, true);
         }
     } else {
         if (contextObject.image) {
-            return config.urlFor('image', {image: contextObject.image}, true);
+            return utils.url.urlFor('image', {image: contextObject.image}, true);
         }
     }
     return null;

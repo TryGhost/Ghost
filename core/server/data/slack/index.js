@@ -2,7 +2,7 @@ var https           = require('https'),
     errors          = require('../../errors'),
     url             = require('url'),
     Promise         = require('bluebird'),
-    config          = require('../../config'),
+    utils           = require('../../utils'),
     events          = require('../../events'),
     api             = require('../../api/settings'),
     i18n            = require('../../i18n'),
@@ -47,7 +47,7 @@ function ping(post) {
 
     // If this is a post, we want to send the link of the post
     if (schema.isPost(post)) {
-        message = config.urlFor('post', {post: post}, true);
+        message = utils.url.urlFor('post', {post: post}, true);
     } else {
         message = post.message;
     }
@@ -72,7 +72,7 @@ function ping(post) {
             slackData = {
                 text: message,
                 unfurl_links: true,
-                icon_url: config.urlFor({relativeUrl: '/ghost/img/ghosticon.jpg'}, {}, true),
+                icon_url: utils.url.urlFor({relativeUrl: '/ghost/img/ghosticon.jpg'}, {}, true),
                 username: 'Ghost'
             };
 
