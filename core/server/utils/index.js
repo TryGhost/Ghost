@@ -103,7 +103,8 @@ utils = {
     readCSV: require('./read-csv'),
     removeOpenRedirectFromUrl: require('./remove-open-redirect-from-url'),
     zipFolder: require('./zip-folder'),
-    readThemes: require('./read-themes')
+    readThemes: require('./read-themes'),
+    url: require('./url')
 };
 
 module.exports = utils;

@@ -3,7 +3,7 @@ var should = require('should'),
     rewire = require('rewire'),
     nock = require('nock'),
     sinon = require('sinon'),
-    config = require('../../../server/config'),
+    utils  = require('../../../server/utils'),
 
     // Stuff we are testing
     imageSize = rewire('../../../server/utils/image-size-from-url');
@@ -124,7 +124,7 @@ describe('Image Size', function () {
                     width: 100
                 };
 
-        urlForStub = sinon.stub(config, 'urlFor');
+        urlForStub = sinon.stub(utils.url, 'urlFor');
         urlForStub.withArgs('image').returns('http://myblog.com/content/images/cat.jpg');
 
         requestMock = nock('http://myblog.com')
