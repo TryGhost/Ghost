@@ -9,7 +9,6 @@ var path          = require('path'),
     _             = require('lodash'),
 
     validator     = require('validator'),
-    readDirectory = require('../utils/read-directory'),
     errors        = require('../errors'),
     configUrl     = require('./url'),
     packageInfo   = require('../../../package.json'),
@@ -69,27 +68,12 @@ ConfigManager.prototype.getSocket = function () {
 };
 
 ConfigManager.prototype.init = function (rawConfig) {
-    var self = this;
-
     // Cache the config.js object's environment
     // object so we can later refer to it.
     // Note: this is not the entirety of config.js,
     // just the object appropriate for this NODE_ENV
-    self.set(rawConfig);
-
-    return self.loadApps()
-        .then(function () {
-            return self._config;
-        });
-};
-
-ConfigManager.prototype.loadApps = function () {
-    var self = this;
-
-    return readDirectory(self._config.paths.appPath)
-        .then(function (result) {
-            self._config.paths.availableApps = result;
-        });
+    this.set(rawConfig);
+    return this._config;
 };
 
 /**
@@ -219,7 +203,6 @@ ConfigManager.prototype.set = function (config) {
             adminViews:       path.join(corePath, '/server/views/'),
             helperTemplates:  path.join(corePath, '/server/helpers/tpl/'),
 
-            availableApps:    this._config.paths.availableApps || {},
             clientAssets:     path.join(corePath, '/built/assets/')
         },
         maintenance: {},
