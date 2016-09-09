@@ -75,6 +75,8 @@ function init(options) {
     return config.load(options.config).then(function () {
         return config.checkDeprecated();
     }).then(function () {
+        return api.themes.loadThemes();
+    }).then(function () {
         models.init();
     }).then(function () {
         return versioning.getDatabaseVersion()

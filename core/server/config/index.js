@@ -10,7 +10,6 @@ var path          = require('path'),
 
     validator     = require('validator'),
     readDirectory = require('../utils/read-directory'),
-    readThemes    = require('../utils/read-themes'),
     errors        = require('../errors'),
     configUrl     = require('./url'),
     packageInfo   = require('../../../package.json'),
@@ -78,21 +77,9 @@ ConfigManager.prototype.init = function (rawConfig) {
     // just the object appropriate for this NODE_ENV
     self.set(rawConfig);
 
-    return self.loadThemes()
-        .then(function () {
-            return self.loadApps();
-        })
+    return self.loadApps()
         .then(function () {
             return self._config;
-        });
-};
-
-ConfigManager.prototype.loadThemes = function () {
-    var self = this;
-
-    return readThemes(self._config.paths.themePath)
-        .then(function (result) {
-            self._config.paths.availableThemes = result;
         });
 };
 
@@ -232,7 +219,6 @@ ConfigManager.prototype.set = function (config) {
             adminViews:       path.join(corePath, '/server/views/'),
             helperTemplates:  path.join(corePath, '/server/helpers/tpl/'),
 
-            availableThemes:  this._config.paths.availableThemes || {},
             availableApps:    this._config.paths.availableApps || {},
             clientAssets:     path.join(corePath, '/built/assets/')
         },
