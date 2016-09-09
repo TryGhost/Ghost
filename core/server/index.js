@@ -32,6 +32,7 @@ var express = require('express'),
     GhostServer = require('./ghost-server'),
     scheduling = require('./scheduling'),
     validateThemes = require('./utils/validate-themes'),
+    readDirectory = require('./utils/read-directory'),
     dbHash;
 
 function initDbHashAndFirstRun() {
@@ -74,6 +75,11 @@ function init(options) {
     // Load our config.js file from the local file system.
     return config.load(options.config).then(function () {
         return config.checkDeprecated();
+    }).then(function loadApps() {
+        return readDirectory(config.paths.appPath)
+            .then(function (result) {
+                config.paths.availableApps = result;
+            });
     }).then(function () {
         return api.themes.loadThemes();
     }).then(function () {

@@ -110,7 +110,6 @@ describe('Config', function () {
                 'imagesRelPath',
                 'adminViews',
                 'helperTemplates',
-                'availableApps',
                 'clientAssets'
             );
         });
