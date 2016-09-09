@@ -3,28 +3,18 @@
 
 var moment            = require('moment-timezone'),
     _                 = require('lodash'),
-    ghostConfig = '',
+    config            = require('./../config'),
     // @TODO: unify this with routes.apiBaseUrl
     apiPath = '/ghost/api/v0.1';
 
-// ## setConfig
-// Simple utility function to allow
-// passing of the ghostConfig
-// object here to be used locally
-// to ensure clean dependency graph
-// (i.e. no circular dependencies).
-function setConfig(config) {
-    ghostConfig = config;
-}
-
 function getBaseUrl(secure) {
-    if (secure && ghostConfig.urlSSL) {
-        return ghostConfig.urlSSL;
+    if (secure && config.urlSSL) {
+        return config.urlSSL;
     } else {
         if (secure) {
-            return ghostConfig.url.replace('http://', 'https://');
+            return config.url.replace('http://', 'https://');
         } else {
-            return ghostConfig.url;
+            return config.url;
         }
     }
 }
@@ -32,7 +22,7 @@ function getBaseUrl(secure) {
 function urlJoin() {
     var args = Array.prototype.slice.call(arguments),
         prefixDoubleSlash = false,
-        subdir = ghostConfig.paths.subdir.replace(/^\/|\/+$/, ''),
+        subdir = config.paths.subdir.replace(/^\/|\/+$/, ''),
         subdirRegex,
         url;
 
@@ -89,7 +79,7 @@ function createUrl(urlPath, absolute, secure) {
     if (absolute) {
         base = getBaseUrl(secure);
     } else {
-        base = ghostConfig.paths.subdir;
+        base = config.paths.subdir;
     }
 
     return urlJoin(base, urlPath);
@@ -103,8 +93,8 @@ function createUrl(urlPath, absolute, secure) {
  */
 function urlPathForPost(post) {
     var output = '',
-        permalinks = ghostConfig.theme.permalinks,
-        publishedAtMoment = moment.tz(post.published_at || Date.now(), ghostConfig.theme.timezone),
+        permalinks = config.theme.permalinks,
+        publishedAtMoment = moment.tz(post.published_at || Date.now(), config.theme.timezone),
         tags = {
             year:   function () { return publishedAtMoment.format('YYYY'); },
             month:  function () { return publishedAtMoment.format('MM'); },
@@ -179,20 +169,20 @@ function urlFor(context, data, absolute) {
             urlPath = data.post.url;
             secure = data.secure;
         } else if (context === 'tag' && data.tag) {
-            urlPath = urlJoin('/', ghostConfig.routeKeywords.tag, data.tag.slug, '/');
+            urlPath = urlJoin('/', config.routeKeywords.tag, data.tag.slug, '/');
             secure = data.tag.secure;
         } else if (context === 'author' && data.author) {
-            urlPath = urlJoin('/', ghostConfig.routeKeywords.author, data.author.slug, '/');
+            urlPath = urlJoin('/', config.routeKeywords.author, data.author.slug, '/');
             secure = data.author.secure;
         } else if (context === 'image' && data.image) {
             urlPath = data.image;
-            imagePathRe = new RegExp('^' + ghostConfig.paths.subdir + '/' + ghostConfig.paths.imagesRelPath);
+            imagePathRe = new RegExp('^' + config.paths.subdir + '/' + config.paths.imagesRelPath);
             absolute = imagePathRe.test(data.image) ? absolute : false;
             secure = data.image.secure;
 
             if (absolute) {
                 // Remove the sub-directory from the URL because ghostConfig will add it back.
-                urlPath = urlPath.replace(new RegExp('^' + ghostConfig.paths.subdir), '');
+                urlPath = urlPath.replace(new RegExp('^' + config.paths.subdir), '');
                 baseUrl = getBaseUrl(secure).replace(/\/$/, '');
                 urlPath = baseUrl + urlPath;
             }
@@ -202,7 +192,7 @@ function urlFor(context, data, absolute) {
             urlPath = data.nav.url;
             secure = data.nav.secure || secure;
             baseUrl = getBaseUrl(secure);
-            hostname = baseUrl.split('//')[1] + ghostConfig.paths.subdir;
+            hostname = baseUrl.split('//')[1] + config.paths.subdir;
             if (urlPath.indexOf(hostname) > -1
                 && !urlPath.split(hostname)[0].match(/\.|mailto:/)
                 && urlPath.split(hostname)[1].substring(0,1) !== ':') {
@@ -237,20 +227,19 @@ function apiUrl() {
     // @TODO unify this with urlFor
     var url;
 
-    if (ghostConfig.forceAdminSSL) {
-        url = (ghostConfig.urlSSL || ghostConfig.url).replace(/^.*?:\/\//g, 'https://');
-    } else if (ghostConfig.urlSSL) {
-        url = ghostConfig.urlSSL.replace(/^.*?:\/\//g, 'https://');
-    } else if (ghostConfig.url.match(/^https:/)) {
-        url = ghostConfig.url;
+    if (config.forceAdminSSL) {
+        url = (config.urlSSL || config.url).replace(/^.*?:\/\//g, 'https://');
+    } else if (config.urlSSL) {
+        url = config.urlSSL.replace(/^.*?:\/\//g, 'https://');
+    } else if (config.url.match(/^https:/)) {
+        url = config.url;
     } else {
-        url = ghostConfig.url.replace(/^.*?:\/\//g, '//');
+        url = config.url.replace(/^.*?:\/\//g, '//');
     }
 
     return url.replace(/\/$/, '') + apiPath + '/';
 }
 
-module.exports.setConfig = setConfig;
 module.exports.urlJoin = urlJoin;
 module.exports.urlFor = urlFor;
 module.exports.urlPathForPost = urlPathForPost;

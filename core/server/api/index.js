@@ -7,6 +7,7 @@
 var _              = require('lodash'),
     Promise        = require('bluebird'),
     config         = require('../config'),
+    utils          = require('../utils'),
     configuration  = require('./configuration'),
     db             = require('./db'),
     mail           = require('./mail'),
@@ -108,7 +109,7 @@ cacheInvalidationHeader = function cacheInvalidationHeader(req, result) {
  * @return {String} Resolves to header string
  */
 locationHeader = function locationHeader(req, result) {
-    var apiRoot = config.urlFor('api'),
+    var apiRoot = utils.url.urlFor('api'),
         location,
         newObject;
 

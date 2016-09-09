@@ -22,6 +22,7 @@ var express = require('express'),
     scheduling = require('./scheduling'),
     validateThemes = require('./utils/validate-themes'),
     readDirectory = require('./utils/read-directory'),
+    utils = require('./utils'),
     dbHash;
 
 function initDbHashAndFirstRun() {
@@ -69,7 +70,7 @@ function init(options) {
             .then(function (result) {
                 config.paths.availableApps = result;
             });
-    }).then(function () {
+    }).then(function loadThemes() {
         return api.themes.loadThemes();
     }).then(function () {
         models.init();
@@ -157,7 +158,7 @@ function init(options) {
 
         // scheduling can trigger api requests, that's why we initialize the module after the ghost server creation
         // scheduling module can create x schedulers with different adapters
-        return scheduling.init(_.extend(config.scheduling, {apiUrl: config.url + config.urlFor('api')}));
+        return scheduling.init(_.extend(config.scheduling, {apiUrl: config.url + utils.url.urlFor('api')}));
     }).then(function () {
         return ghostServer;
     });
