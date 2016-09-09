@@ -1,7 +1,8 @@
 var crypto = require('crypto'),
     fs     = require('fs'),
     path   = require('path'),
-    config = require('../config');
+    config = require('../config'),
+    utils  = require('../utils');
 
 // ### ServeSharedFile Middleware
 // Handles requests to robots.txt and favicon.ico (and caches them)
@@ -27,7 +28,7 @@ function serveSharedFile(file, type, maxAge) {
 
                     if (type === 'text/xsl' || type === 'text/plain' || type === 'application/javascript') {
                         buf = buf.toString().replace(blogRegex, config.url.replace(/\/$/, ''));
-                        buf = buf.toString().replace(apiRegex, config.apiUrl({cors: true}));
+                        buf = buf.toString().replace(apiRegex, utils.url.apiUrl({cors: true}));
                     }
                     content = {
                         headers: {

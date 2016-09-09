@@ -5,8 +5,8 @@ var _           = require('lodash'),
     validator   = require('validator'),
 
     // Stuff we are testing
-    config         = require('../../../server/config'),
     api            = require('../../../server/api'),
+    utils          = require('../../../server/utils'),
     BaseGenerator  = require('../../../server/data/xml/sitemap/base-generator'),
     PostGenerator  = require('../../../server/data/xml/sitemap/post-generator'),
     PageGenerator  = require('../../../server/data/xml/sitemap/page-generator'),
@@ -237,7 +237,7 @@ describe('Generators', function () {
             generator.init().then(function () {
                 should.exist(generator.siteMapContent);
 
-                generator.siteMapContent.should.containEql('<loc>' + config.urlFor('home', true) + '</loc>');
+                generator.siteMapContent.should.containEql('<loc>' + utils.url.urlFor('home', true) + '</loc>');
                 // <loc> should exist exactly one time
                 generator.siteMapContent.indexOf('<loc>').should.eql(generator.siteMapContent.lastIndexOf('<loc>'));
 
@@ -259,8 +259,8 @@ describe('Generators', function () {
             generator.init().then(function () {
                 should.exist(generator.siteMapContent);
 
-                generator.siteMapContent.should.containEql('<loc>' + config.urlFor('home', true) + '</loc>');
-                generator.siteMapContent.should.containEql('<loc>' + config.urlFor('page', {url: 'magic'}, true) + '</loc>');
+                generator.siteMapContent.should.containEql('<loc>' + utils.url.urlFor('home', true) + '</loc>');
+                generator.siteMapContent.should.containEql('<loc>' + utils.url.urlFor('page', {url: 'magic'}, true) + '</loc>');
 
                 done();
             }).catch(done);
