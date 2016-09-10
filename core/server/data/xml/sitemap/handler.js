@@ -16,7 +16,7 @@ module.exports = function handler(blogApp) {
             return sitemap.getSiteMapXml(type, page);
         };
 
-    blogApp.get('/sitemap.xml', function sitemapXML(req, res) {
+    blogApp.get('/sitemap.xml', function sitemapXML(req, res, next) {
         var siteMapXml = sitemap.getIndexXml();
 
         res.set({
@@ -24,7 +24,8 @@ module.exports = function handler(blogApp) {
             'Content-Type': 'text/xml'
         });
 
-         if (!siteMapXml) {
+        // CASE: returns null if sitemap is not initialized as below
+        if (!siteMapXml) {
             sitemap.init()
                 .then(function () {
                     siteMapXml = sitemap.getIndexXml();
@@ -36,7 +37,6 @@ module.exports = function handler(blogApp) {
         } else {
             res.send(siteMapXml);
         }
-
     });
 
     blogApp.get('/sitemap-:resource.xml', verifyResourceType, function sitemapResourceXML(req, res, next) {
