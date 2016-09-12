@@ -16,6 +16,45 @@ describe('Url', function () {
         configUtils.restore();
     });
 
+    describe('getProtectedSlugs', function () {
+        it('defaults', function () {
+            utils.url.getProtectedSlugs().should.eql(['ghost', 'rss', 'amp']);
+        });
+
+        it('url has subdir', function () {
+            configUtils.set({url: 'http://my-ghost-blog.com/blog'});
+            utils.url.getProtectedSlugs().should.eql(['ghost', 'rss', 'amp', 'blog']);
+        });
+    });
+
+    describe('getSubdir', function () {
+        it('url has no subdir', function () {
+            utils.url.getSubdir().should.eql('');
+        });
+
+        it('url has subdir', function () {
+            configUtils.set({url: 'http://my-ghost-blog.com/blog'});
+            utils.url.getSubdir().should.eql('/blog');
+
+            configUtils.set({url: 'http://my-ghost-blog.com/blog/'});
+            utils.url.getSubdir().should.eql('/blog');
+
+            configUtils.set({url: 'http://my-ghost-blog.com/my/blog'});
+            utils.url.getSubdir().should.eql('/my/blog');
+
+            configUtils.set({url: 'http://my-ghost-blog.com/my/blog/'});
+            utils.url.getSubdir().should.eql('/my/blog');
+        });
+
+        it('should not return a slash for subdir', function () {
+            configUtils.set({url: 'http://my-ghost-blog.com'});
+            utils.url.getSubdir().should.eql('');
+
+            configUtils.set({url: 'http://my-ghost-blog.com/'});
+            utils.url.getSubdir().should.eql('');
+        });
+    });
+
     describe('urlJoin', function () {
         it('should deduplicate slashes', function () {
             configUtils.set({url: 'http://my-ghost-blog.com/'});

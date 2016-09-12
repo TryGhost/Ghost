@@ -73,14 +73,12 @@ ConfigManager.prototype.init = function (rawConfig) {
  * @param {Object} config Only accepts an object at the moment.
  */
 ConfigManager.prototype.set = function (config) {
-    var localPath = '',
-        defaultStorageAdapter = 'local-file-store',
+    var defaultStorageAdapter = 'local-file-store',
         defaultSchedulingAdapter = 'SchedulingDefault',
         activeStorageAdapter,
         activeSchedulingAdapter,
         contentPath,
         schedulingPath,
-        subdir,
         assetHash;
 
     // Merge passed in config object onto our existing config object.
@@ -113,21 +111,6 @@ ConfigManager.prototype.set = function (config) {
     // This ensures there's always at least a paths object
     // because it's referenced in multiple places.
     this._config.paths = this._config.paths || {};
-
-    // Parse local path location
-    if (this._config.url) {
-        localPath = url.parse(this._config.url).path;
-        // Remove trailing slash
-        if (localPath !== '/') {
-            localPath = localPath.replace(/\/$/, '');
-        }
-    }
-
-    subdir = localPath === '/' ? '' : localPath;
-
-    if (!_.isEmpty(subdir)) {
-        this._config.slugs.protected.push(subdir.split('/').pop());
-    }
 
     // Allow contentPath to be over-written by passed in config object
     // Otherwise default to default content path location
@@ -175,7 +158,6 @@ ConfigManager.prototype.set = function (config) {
         ghostVersion: packageInfo.version,
         paths: {
             appRoot:          appRoot,
-            subdir:           subdir,
             config:           this._config.paths.config || path.join(appRoot, 'config.js'),
             configExample:    path.join(appRoot, 'config.example.js'),
             corePath:         corePath,

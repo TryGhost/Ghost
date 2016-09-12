@@ -1,4 +1,5 @@
 var config     = require('../../config'),
+    utils      = require('../../utils'),
     errors     = require('../../errors'),
     i18n       = require('../../i18n'),
     middleware = require('./lib/middleware'),
@@ -6,8 +7,8 @@ var config     = require('../../config'),
 
 module.exports = {
     activate: function activate() {
-        if (config.paths.subdir) {
-            var paths = config.paths.subdir.split('/');
+        if (utils.url.getSubdir()) {
+            var paths = utils.url.getSubdir().split('/');
 
             if (paths.pop() === config.routeKeywords.private) {
                 errors.logErrorAndExit(
