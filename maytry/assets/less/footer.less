@@ -1,0 +1,73 @@
+/* ------------ Footer ------------ */
+
+.copyright {
+  text-align: center;
+  margin-bottom: 0;
+  padding: 10px 0;
+  background: @footer-color;
+  position: relative;
+  color: grey;
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  p {
+    margin-bottom: 0;
+    font-size: 12px;
+    padding: 20px 0 10px;
+  }
+}
+
+#back-to-top {
+  position: fixed;
+  bottom: 22px;
+  right: 20px;
+  z-index: 99;
+  display: none;
+
+  img {
+    opacity: 0.5;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+/* Footer / Social Buttons ---------------------- */
+ul.social-links {
+  padding: 0;
+  display: table;
+  margin: 0 auto;
+}
+
+.social-links {
+  li {
+    list-style: none;
+    float: left;
+    position: relative;
+    margin: 0 8px;
+    padding-top: 8px;
+    height: 39px;
+    width: 39px;
+    background: @social-link-color;
+    border-radius: 100%;
+    -webkit-transition-duration: .45s;
+    -webkit-transition-property: color, border-color, background, opacity;
+    -webkit-transition-delay: 0s;
+    -webkit-transition-timing-function: ease-in-out;
+    transition-duration: .45s;
+    transition-property: color, border-color, background, opacity;
+    transition-delay: 0s;
+    transition-timing-function: ease-in-out;
+
+    &:hover {
+      background: @emphasis-color;
+    }
+
+    a {
+      color: white;
+    }
+  }
+}

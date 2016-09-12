@@ -1,0 +1,123 @@
+/* ------------ Pagination ------------ */
+
+.paging {
+  background: #32373e;
+  padding: 15px 0;
+  margin-top: 0;
+}
+
+.pagination {
+  position: relative;
+  width: 100%;
+  margin: 0 auto;
+  font-size: 13px;
+  color: grey;
+  text-align: center;
+
+  a {
+    color: grey;
+  }
+}
+
+a.older-posts,
+a.newer-posts {
+  position: absolute;
+  display: inline-block;
+  padding: 8px 15px;
+  border: 1px solid @border-color;
+  text-decoration: none;
+  border-radius: 4px;
+
+  &:hover {
+    color: white;
+    border-color: white;
+    text-decoration: none
+  }
+}
+
+.older-posts {
+  right: 0;
+}
+
+.page-number {
+  display: inline-block;
+  padding: 8px 0;
+}
+
+.newer-posts {
+  left: 0;
+}
+
+.prev-next {
+  border: 1px solid @border-color;
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-weight: bold;
+
+  &.row {
+    margin: 25px 0;
+
+    > div {
+      padding: 0;
+    }
+  }
+}
+
+.prev, .next {
+  padding: 0;
+  margin: 5px 0;
+
+  h4 {
+    color: #787878;
+    border-bottom: 4px solid @border-color;
+    padding-bottom: 4px;
+    margin-top: 0;
+    margin-bottom: 4px;
+  }
+
+  a {
+    p {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin: 0;
+    }
+
+    &:hover {
+      text-decoration: none;
+
+      p {
+        color: @emphasis-color;
+        font-weight: bold;
+      }
+    }
+  }
+}
+
+.next {
+  h4 {
+    text-align: right;
+  }
+
+  a {
+    p {
+      text-align: right;
+    }
+  }
+}
+
+@media only screen and (max-width: 1024px) {
+}
+
+@media only screen and (max-width: 767px) {
+  .older-posts, .newer-posts {
+    padding: 8px;
+  }
+
+  .prev, .next {
+    a {
+      p {
+        font-size: 1rem;
+      }
+    }
+  }
+}

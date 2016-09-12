@@ -14,6 +14,7 @@ coreHelpers.asset  = require('./asset');
 coreHelpers.author  = require('./author');
 coreHelpers.body_class  = require('./body_class');
 coreHelpers.content  = require('./content');
+coreHelpers.outline  = require('./outline');
 coreHelpers.date  = require('./date');
 coreHelpers.encode  = require('./encode');
 coreHelpers.excerpt  = require('./excerpt');
@@ -34,6 +35,10 @@ coreHelpers.post_class = require('./post_class');
 coreHelpers.prev_post = require('./prev_next');
 coreHelpers.next_post = require('./prev_next');
 coreHelpers.tags = require('./tags');
+coreHelpers.tag_links = require('./tag_links');
+coreHelpers.tagLinks = require('./tag_links').deprecated;
+coreHelpers.popular_posts = require('./popular_posts');
+coreHelpers.new_posts = require('./new_posts');
 coreHelpers.title = require('./title');
 coreHelpers.twitter_url = require('./twitter_url');
 coreHelpers.url = require('./url');
@@ -93,6 +98,7 @@ registerHelpers = function (adminHbs) {
     registerThemeHelper('author', coreHelpers.author);
     registerThemeHelper('body_class', coreHelpers.body_class);
     registerThemeHelper('content', coreHelpers.content);
+    registerThemeHelper('outline', coreHelpers.outline);
     registerThemeHelper('date', coreHelpers.date);
     registerThemeHelper('encode', coreHelpers.encode);
     registerThemeHelper('excerpt', coreHelpers.excerpt);
@@ -122,6 +128,10 @@ registerHelpers = function (adminHbs) {
     registerAsyncThemeHelper('next_post', coreHelpers.next_post);
     registerAsyncThemeHelper('prev_post', coreHelpers.prev_post);
     registerAsyncThemeHelper('get', coreHelpers.get);
+    registerAsyncThemeHelper('tag_links', coreHelpers.tag_links);
+    registerAsyncThemeHelper('tagLinks', coreHelpers.tagLinks);
+    registerAsyncThemeHelper('popular_posts', coreHelpers.popular_posts);
+    registerAsyncThemeHelper('new_posts', coreHelpers.new_posts);
 
     // Register admin helpers
     registerAdminHelper('asset', coreHelpers.asset);

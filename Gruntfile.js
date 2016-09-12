@@ -67,6 +67,68 @@ var _              = require('lodash'),
                     options: {
                         spawn: false
                     }
+                },
+                csscomb: {
+                    files: ['core/client/app/styles/**/*.css'],
+                    tasks: ['shell:csscombfix'],
+                    options: {
+                        livereload: true
+                    }
+                },
+                less: {
+                    files: 'maytry/assets/less/*.less',
+                    tasks: 'less'
+                },
+                concat: {
+                    files: 'maytry/assets/js/*.js',
+                    tasks: 'concat'
+                }
+            },
+            less: {
+                compileTheme: {
+                    options: {
+                        strictMath: true,
+                        outputSourceFiles: true
+                    },
+                    src: 'maytry/assets/less/app.less',
+                    dest: 'maytry/assets/css/app.css'
+                }
+            },
+
+            concat: {
+                js: {
+                    src: [
+                        'maytry/assets/js/vendor/highlight.pack.js',
+                        'maytry/assets/js/vendor/jquery.slicknav.min.js',
+                        'maytry/assets/js/vendor/scrollReveal.min.js',
+                        'maytry/assets/js/vendor/scrollchaser.js',
+                        'maytry/assets/js/vendor/scrollspy.js',
+                        'maytry/assets/js/vendor/readingTime.js',
+                        'maytry/assets/js/vendor/jssocials.min.js',
+                        'maytry/assets/js/custom.js'
+                    ],
+                    dest: 'maytry/assets/js/bundle.js'
+                },
+                css: {
+                    src: [
+                        'maytry/assets/css/normalize.css',
+                        'maytry/assets/css/foundation.css',
+                        'maytry/assets/css/font-awesome.css',
+                        'maytry/assets/css/semantic/custom.css',
+                        'maytry/assets/css/jssocials.css',
+                        'maytry/assets/css/jssocials-theme-flat.css',
+                        'maytry/assets/css/slicknav.css',
+                        'maytry/assets/css/tomorrow-night-bright.css',
+                        'maytry/assets/css/app.css'
+                    ],
+                    dest: 'maytry/assets/css/bundle.css'
+                }
+            },
+
+            cssmin: {
+                maytry: {
+                    src : ['maytry/assets/css/bundle.css'],
+                    dest : 'content/themes/maytry/assets/css/app.min.css'
                 }
             },
 
@@ -299,7 +361,12 @@ var _              = require('lodash'),
                         sourceMap: false
                     },
                     files: {
-                        'core/shared/ghost-url.min.js': 'core/shared/ghost-url.js'
+                      'core/shared/ghost-url.min.js': 'core/shared/ghost-url.js'
+                    }
+                },
+                maytry: {
+                    files: {
+                        'content/themes/maytry/assets/js/app.min.js': 'maytry/assets/js/bundle.js'
                     }
                 }
             },
@@ -814,6 +881,7 @@ var _              = require('lodash'),
                 grunt.task.run(['init', 'prod', 'clean:release',  'shell:dedupe', 'shell:prune', 'shell:shrinkwrap', 'copy:release', 'compress:release']);
             }
         );
+        grunt.registerTask('bundle', ['less', 'concat', 'uglify:maytry', 'cssmin:maytry']);
     };
 
 module.exports = configureGrunt;

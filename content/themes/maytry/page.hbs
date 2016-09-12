@@ -1,0 +1,27 @@
+{{!< default}}
+
+{{! The main page }}
+
+{{#post}}
+  <div class="blog-cover-container">
+    <div class="featured-image">
+      {{#if image}}
+        <img src="{{image}}" alt="{{title}}"/>
+      {{else}}
+        {{#if @blog.cover}}
+          <img src="{{@blog.cover}}" alt="{{title}}"/>
+        {{else}}
+          <img src="{{asset "images/HIRO95_ukabukuragetotokyo_resize.jpg"}}" alt="{{title}}"/>
+        {{/if}}
+      {{/if}}
+      <h1 class="hide-for-small-only page">{{title}}</h1>
+    </div>
+  </div>
+
+  <div class="blog-description show-for-small-only">
+    <h1>{{title}}</h1>
+  </div>
+
+
+  {{> full_page}}
+{{/post}}

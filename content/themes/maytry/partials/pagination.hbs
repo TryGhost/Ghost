@@ -1,0 +1,15 @@
+<div class="paging">
+  <div class="row">
+    <div class="small-12 columns">
+      <div class="pagination" role="navigation">
+        {{#if prev}}
+        <a class="newer-posts" href="{{page_url prev}}">&larr; 次の投稿</a>
+        {{/if}}
+        <span class="page-number">ページ {{page}} / {{pages}}</span>
+        {{#if next}}
+        <a class="older-posts" href="{{page_url next}}">前の投稿 &rarr;</a>
+        {{/if}}
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<!--[if IE 8]>
+<html class="no-js lt-ie9" lang="ja">
+<![endif]--><!--[if gt IE 8]>
+<html lang="ja">
+<![endif]-->
+<![if !IE]>
+<html lang="ja">
+<![endif]>
+<head>
+  {{! Document Settings }}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  {{! Page Meta }}
+  <title>{{meta_title}}</title>
+  <meta name="description" content="{{meta_description}}"/>
+  {{! Favicon }}
+  <!-- iOS Safari -->
+  <link rel="apple-touch-icon" sizes="180x180" href="{{asset "images/icons/favicon_color.png"}}">
+  <!-- iOS Safari(旧) / Android標準ブラウザ(一部) -->
+  <link rel="apple-touch-icon-precomposed" href="{{asset "images/icons/favicon_color.png"}}">
+  <!-- Android標準ブラウザ(一部) -->
+  <link rel="shortcut icon" href="{{asset "images/icons/favicon_alpha.png"}}">
+  <!-- Android Chrome -->
+  <link rel="icon" sizes="192x192" href="{{asset "images/icons/favicon_alpha.png"}}">
+  {{! Styles'n'Scripts }}
+  <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Roboto:400,100,300,700,900&amp;subset=latin,latin-ext'>
+  <link rel="stylesheet" href="{{asset "css/app.min.css"}}">
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  {{ghost_head}}
+</head>
+
+<body class="{{body_class}}">
+
+{{! Header }}
+<div class="mobile-nav">
+  {{navigation}}
+</div>
+
+{{! Logo & Menu }}
+<div class="header">
+  <div class="row topbar collapse">
+    <div class="medium-3 columns">
+      <div class="logo">
+        {{#if @blog.logo}}
+          <a href="{{@blog.url}}"><img src="{{@blog.logo}}" alt="{{@blog.title}}"/></a>
+        {{else}}
+          <h1><a href="{{@blog.url}}">{{@blog.title}}</a></h1>
+        {{/if}}
+      </div>
+    </div>
+    <div class="medium-9 columns">
+      {{navigation}}
+    </div>
+  </div>
+</div>
+
+{{{body}}}
+
+<footer>
+  <div class="copyright">
+    <div class="row">
+      <div class="small-12 columns">
+        <ul class="social-links">
+          <li><a href="#" title="Twitter"><i class="fa fa-twitter"></i></a></li>
+          <li><a href="#" title="Facebook"><i class="fa fa-facebook"></i></a></li>
+          <li><a href="#" title="Linkedin"><i class="fa fa-linkedin"></i></a></li>
+          <li><a href="#" title="Pinterest"><i class="fa fa-pinterest-p"></i></a></li>
+          <li><a href="#" title="Instagram"><i class="fa fa-instagram"></i></a></li>
+          <li><a href="#" title="Github"><i class="fa fa-github-alt"></i></a></li>
+        </ul>
+        <p class="text-center">Copyright 2015 Danzig. All Rights Reserved.</p>
+      </div>
+    </div>
+  </div>
+</footer>
+<a href="#top" id="back-to-top"><img src="{{asset "images/icons/backtop.png"}}" alt="Back to top"></a>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+{{ghost_foot}}
+<script src="{{asset "/js/app.min.js"}}" async defer></script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "Maytry",
+  "version": "0.1.0",
+  "description" : "Responsive Ghost Theme",
+  "author" : "Audemedia",
+  "homepage" : "http://audemedia.com",
+  "keywords" : [
+        "ghost",
+        "blog",
+        "masonry",
+        "responsive",
+        "infinitescroll"
+    ]
+}
