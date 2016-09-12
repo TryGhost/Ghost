@@ -98,7 +98,6 @@ describe('Config', function () {
             // This will fail if there are any extra keys
             pathConfig.should.have.keys(
                 'appRoot',
-                'subdir',
                 'config',
                 'configExample',
                 'storagePath',
@@ -120,37 +119,6 @@ describe('Config', function () {
                 appRoot = path.resolve(__dirname, '../../../');
 
             pathConfig.should.have.property('appRoot', appRoot);
-            pathConfig.should.have.property('subdir', '');
-        });
-
-        it('should not return a slash for subdir', function () {
-            configUtils.set({url: 'http://my-ghost-blog.com'});
-            config.paths.should.have.property('subdir', '');
-
-            configUtils.set({url: 'http://my-ghost-blog.com/'});
-            config.paths.should.have.property('subdir', '');
-        });
-
-        it('should handle subdirectories properly', function () {
-            configUtils.set({url: 'http://my-ghost-blog.com/blog'});
-            config.paths.should.have.property('subdir', '/blog');
-
-            configUtils.set({url: 'http://my-ghost-blog.com/blog/'});
-            config.paths.should.have.property('subdir', '/blog');
-
-            configUtils.set({url: 'http://my-ghost-blog.com/my/blog'});
-            config.paths.should.have.property('subdir', '/my/blog');
-
-            configUtils.set({url: 'http://my-ghost-blog.com/my/blog/'});
-            config.paths.should.have.property('subdir', '/my/blog');
-        });
-
-        it('should add subdir to list of protected slugs', function () {
-            configUtils.set({url: 'http://my-ghost-blog.com/blog'});
-            config.slugs.protected.should.containEql('blog');
-
-            configUtils.set({url: 'http://my-ghost-blog.com/my/blog'});
-            config.slugs.protected.should.containEql('blog');
         });
 
         it('should allow specific properties to be user defined', function () {
