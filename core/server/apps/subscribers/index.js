@@ -10,6 +10,7 @@ var _          = require('lodash'),
     labs       = require('../../utils/labs'),
     template   = require('../../helpers/template'),
     utils      = require('../../helpers/utils'),
+    globalUtils = require('../../utils'),
 
     params = ['error', 'success', 'email'],
 
@@ -38,7 +39,7 @@ function makeHidden(name, extras) {
 function subscribeFormHelper(options) {
     var root = options.data.root,
         data = _.merge({}, options.hash, _.pick(root, params), {
-            action: path.join('/', config.paths.subdir, config.routeKeywords.subscribe, '/'),
+            action: path.join('/', globalUtils.url.getSubdir(), config.routeKeywords.subscribe, '/'),
             script: new hbs.handlebars.SafeString(subscribeScript),
             hidden: new hbs.handlebars.SafeString(
                 makeHidden('confirm') +

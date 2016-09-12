@@ -48,7 +48,7 @@ rssRouter = function rssRouter(channelConfig) {
     router.get(baseRoute, stack);
     router.get(baseRoute + ':page/', stack);
     router.get('/feed/', function redirectToRSS(req, res) {
-        return utils.redirect301(res, config.paths.subdir + req.baseUrl + baseRoute);
+        return utils.redirect301(res, utils.url.getSubdir() + req.baseUrl + baseRoute);
     });
     router.param('page', handlePageParam);
 
@@ -79,7 +79,7 @@ channelRouter = function router() {
 
         if (channel.editRedirect) {
             channelRouter.get('/edit/', function redirect(req, res) {
-                res.redirect(config.paths.subdir + channel.editRedirect.replace(':slug', req.params.slug));
+                res.redirect(utils.url.getSubdir() + channel.editRedirect.replace(':slug', req.params.slug));
             });
         }
 

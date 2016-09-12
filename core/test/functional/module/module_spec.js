@@ -1,9 +1,10 @@
 // # Module tests
 // This tests using Ghost as an npm module
 var should     = require('should'),
-
     ghost      = require('../../../../core'),
+    utils      = require('../../../../core/server/utils'),
     i18n       = require('../../../../core/server/i18n');
+
 i18n.init();
 
 describe('Module', function () {
@@ -31,8 +32,8 @@ describe('Module', function () {
                 should.exist(ghostServer.config);
                 should.exist(ghostServer.config.server);
                 should.exist(ghostServer.config.paths);
-                should.exist(ghostServer.config.paths.subdir);
-                should.equal(ghostServer.config.paths.subdir, '');
+                should.exist(utils.url.getSubdir());
+                should.equal(utils.url.getSubdir(), '');
 
                 done();
             }).catch(done);

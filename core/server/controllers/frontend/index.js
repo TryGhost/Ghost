@@ -5,7 +5,6 @@
 /*global require, module */
 
 var api         = require('../../api'),
-    config      = require('../../config'),
     utils       = require('../../utils'),
     filters     = require('../../filters'),
     templates   = require('./templates'),
@@ -69,7 +68,8 @@ frontendControllers = {
 
             // CASE: last param is of url is /edit, redirect to admin
             if (lookup.isEditURL) {
-                return res.redirect(config.paths.subdir + '/ghost/editor/' + post.id + '/');
+                return res.redirect(utils.url.getSubdir()
+                    + '/ghost/editor/' + post.id + '/');
             }
 
             // CASE: permalink is not valid anymore, we redirect him permanently to the correct one

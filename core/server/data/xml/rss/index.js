@@ -53,7 +53,7 @@ function getData(channelOpts, slugParam) {
 }
 
 function getBaseUrl(req, slugParam) {
-    var baseUrl = config.paths.subdir;
+    var baseUrl = utils.url.getSubdir();
 
     if (isTag(req)) {
         baseUrl += '/' + config.routeKeywords.tag + '/' + slugParam + '/rss/';

@@ -1,9 +1,10 @@
-var config = require('../../config');
+var config = require('../../config'),
+    utils = require('../../utils');
 
 function getAssetUrl(path, isAdmin, minify) {
     var output = '';
 
-    output += config.paths.subdir + '/';
+    output += utils.url.getSubdir() + '/';
 
     if (!path.match(/^favicon\.ico$/) && !path.match(/^shared/) && !path.match(/^asset/)) {
         if (isAdmin) {

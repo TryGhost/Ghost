@@ -9,7 +9,7 @@ var express         = require('express'),
 
 frontendRoutes = function frontendRoutes() {
     var router = express.Router(),
-        subdir = config.paths.subdir,
+        subdir = utils.url.getSubdir(),
         routeKeywords = config.routeKeywords;
 
     // ### Admin routes

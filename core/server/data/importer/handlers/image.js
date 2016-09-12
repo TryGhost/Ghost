@@ -2,6 +2,7 @@ var _       = require('lodash'),
     Promise = require('bluebird'),
     path    = require('path'),
     config  = require('../../../config'),
+    utils   = require('../../../utils'),
     storage = require('../../../storage'),
 
     ImageHandler;
@@ -36,7 +37,7 @@ ImageHandler = {
 
         return Promise.map(files, function (image) {
             return store.getUniqueFileName(store, image, image.targetDir).then(function (targetFilename) {
-                image.newPath = (config.paths.subdir + '/' +
+                image.newPath = (utils.url.getSubdir() + '/' +
                     config.paths.imagesRelPath + '/' + path.relative(config.paths.imagesPath, targetFilename))
                         .replace(new RegExp('\\' + path.sep, 'g'), '/');
                 return image;

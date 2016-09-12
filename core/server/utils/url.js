@@ -3,6 +3,7 @@
 
 var moment            = require('moment-timezone'),
     _                 = require('lodash'),
+    url               = require('url'),
     config            = require('./../config'),
     // @TODO: unify this with routes.apiBaseUrl
     apiPath = '/ghost/api/v0.1';
@@ -19,10 +20,37 @@ function getBaseUrl(secure) {
     }
 }
 
+function getSubdir() {
+    var localPath, subdir;
+
+    // Parse local path location
+    if (config.url) {
+        localPath = url.parse(config.url).path;
+
+        // Remove trailing slash
+        if (localPath !== '/') {
+            localPath = localPath.replace(/\/$/, '');
+        }
+    }
+
+    subdir = localPath === '/' ? '' : localPath;
+    return subdir;
+}
+
+function getProtectedSlugs() {
+    var subdir = getSubdir();
+
+    if (!_.isEmpty(subdir)) {
+        return config.slugs.protected.concat([subdir.split('/').pop()]);
+    } else {
+        return config.slugs.protected;
+    }
+}
+
 function urlJoin() {
     var args = Array.prototype.slice.call(arguments),
         prefixDoubleSlash = false,
-        subdir = config.paths.subdir.replace(/^\/|\/+$/, ''),
+        subdir = getSubdir().replace(/^\/|\/+$/, ''),
         subdirRegex,
         url;
 
@@ -79,7 +107,7 @@ function createUrl(urlPath, absolute, secure) {
     if (absolute) {
         base = getBaseUrl(secure);
     } else {
-        base = config.paths.subdir;
+        base = getSubdir();
     }
 
     return urlJoin(base, urlPath);
@@ -176,13 +204,13 @@ function urlFor(context, data, absolute) {
             secure = data.author.secure;
         } else if (context === 'image' && data.image) {
             urlPath = data.image;
-            imagePathRe = new RegExp('^' + config.paths.subdir + '/' + config.paths.imagesRelPath);
+            imagePathRe = new RegExp('^' + getSubdir() + '/' + config.paths.imagesRelPath);
             absolute = imagePathRe.test(data.image) ? absolute : false;
             secure = data.image.secure;
 
             if (absolute) {
                 // Remove the sub-directory from the URL because ghostConfig will add it back.
-                urlPath = urlPath.replace(new RegExp('^' + config.paths.subdir), '');
+                urlPath = urlPath.replace(new RegExp('^' + getSubdir()), '');
                 baseUrl = getBaseUrl(secure).replace(/\/$/, '');
                 urlPath = baseUrl + urlPath;
             }
@@ -192,7 +220,7 @@ function urlFor(context, data, absolute) {
             urlPath = data.nav.url;
             secure = data.nav.secure || secure;
             baseUrl = getBaseUrl(secure);
-            hostname = baseUrl.split('//')[1] + config.paths.subdir;
+            hostname = baseUrl.split('//')[1] + getSubdir();
             if (urlPath.indexOf(hostname) > -1
                 && !urlPath.split(hostname)[0].match(/\.|mailto:/)
                 && urlPath.split(hostname)[1].substring(0,1) !== ':') {
@@ -252,6 +280,8 @@ function apiUrl(options) {
     return url.replace(/\/$/, '') + apiPath + '/';
 }
 
+module.exports.getProtectedSlugs = getProtectedSlugs;
+module.exports.getSubdir = getSubdir;
 module.exports.urlJoin = urlJoin;
 module.exports.urlFor = urlFor;
 module.exports.urlPathForPost = urlPathForPost;
