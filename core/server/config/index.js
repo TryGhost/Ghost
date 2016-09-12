@@ -270,19 +270,19 @@ ConfigManager.prototype.set = function (config) {
         uploads: {
             subscribers: {
                 extensions: ['.csv'],
-                contentTypes: ['text/csv', 'application/csv']
+                contentTypes: ['text/csv', 'application/csv', 'application/octet-stream']
             },
             images: {
                 extensions: ['.jpg', '.jpeg', '.gif', '.png', '.svg', '.svgz'],
                 contentTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml']
             },
             db: {
-                extensions: ['.json'],
-                contentTypes: ['application/octet-stream', 'application/json']
+                extensions: ['.json', '.zip'],
+                contentTypes: ['application/octet-stream', 'application/json', 'application/zip', 'application/x-zip-compressed']
             },
             themes: {
                 extensions: ['.zip'],
-                contentTypes: ['application/zip']
+                contentTypes: ['application/zip', 'application/x-zip-compressed']
             }
         },
         deprecatedItems: ['updateCheck', 'mail.fromaddress'],
