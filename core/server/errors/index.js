@@ -25,21 +25,11 @@ var _                          = require('lodash'),
     DatabaseNotPopulated       = require('./database-not-populated'),
     DatabaseVersion            = require('./database-version'),
     i18n                       = require('../i18n'),
-    config,
+    config                     = require('../config'),
     errors,
 
     // Paths for views
     userErrorTemplateExists   = false;
-
-// Shim right now to deal with circular dependencies.
-// @TODO(hswolff): remove circular dependency and lazy require.
-function getConfigModule() {
-    if (!config) {
-        config = require('../config');
-    }
-
-    return config;
-}
 
 function isValidErrorStatus(status) {
     return _.isNumber(status) && status >= 400 && status < 600;
@@ -69,7 +59,7 @@ function getStatusCode(error) {
  */
 errors = {
     updateActiveTheme: function (activeTheme) {
-        userErrorTemplateExists = getConfigModule().get('paths').availableThemes[activeTheme].hasOwnProperty('error.hbs');
+        userErrorTemplateExists = config.get('paths').availableThemes[activeTheme].hasOwnProperty('error.hbs');
     },
 
     throwError: function (err) {
@@ -295,7 +285,7 @@ errors = {
     renderErrorPage: function (statusCode, err, req, res, next) {
         /*jshint unused:false*/
         var self = this,
-            defaultErrorTemplatePath = path.resolve(getConfigModule().get('paths').adminViews, 'user-error.hbs');
+            defaultErrorTemplatePath = path.resolve(config.get('paths').adminViews, 'user-error.hbs');
 
         function parseStack(stack) {
             if (!_.isString(stack)) {
