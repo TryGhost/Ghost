@@ -7110,12 +7110,13 @@ fieldset[disabled] .btn-muted-link:focus {
   z-index: 99;
   top: 100px;
   left: 0;
-  height: 58px;
+  height: 60px;
   width: 100%;
   overflow-x: hidden;
   background: #fff;
-  border-bottom: 1px solid #f3f3f3;
-  border-radius: 0; }
+  border: 0;
+  border-radius: 0;
+  margin-bottom: 0; }
 
 .sub-nav-main.absolute {
   position: absolute; }
@@ -7163,7 +7164,7 @@ fieldset[disabled] .btn-muted-link:focus {
 
 .post-head.main-header {
   height: 500px;
-  margin-top: 158px;
+  margin-top: 160px;
   top: 0; }
 
 /* Hide when there's no cover image or on page2+ */
@@ -7435,7 +7436,6 @@ fieldset[disabled] .btn-muted-link:focus {
   background: #000;
   background: -webkit-linear-gradient(top, #000 0%, transparent 100%);
   background: linear-gradient(to bottom, #000 0%, transparent 100%);
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#000', endColorstr='transparent',GradientType=0 );
   opacity: .2; }
 
 #wavy-footer .content {
@@ -8175,7 +8175,7 @@ body:before {
   body:before {
     content: "wide"; } }
 
-@media only screen and (max-width: 992px) {
+@media only screen and (max-width: 1199px) {
   .post-template .post {
     padding-left: 20px;
     padding-right: 20px;
@@ -8185,7 +8185,7 @@ body:before {
   .side {
     display: none; } }
 
-@media (max-width: 768px) {
+@media (max-width: 991px) {
   #slidemenu-wrapper {
     margin-right: -100%; }
   #slidemenu-wrapper .slidemenu-nav {
@@ -8200,7 +8200,7 @@ body:before {
   #wavy-footer {
     text-align: center; } }
 
-@media (max-width: 480px) {
+@media (max-width: 767px) {
   .main-nav-fixed .navbar .navbar-toggle {
     margin-right: 15px; }
   .main-nav-fixed .navbar .navbar-brand {
@@ -8367,7 +8367,6 @@ body:before {
   .read-next .post {
     width: 100%; }
   .site-footer {
-    margin-top: 6rem;
     font-size: 0.7rem; }
   .btn-social {
     width: 32px;
@@ -8393,7 +8392,7 @@ body:before {
   .main-nav-fixed .navbar-brand {
     padding: 15px 15px 15px 50px; } }
 
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 991px) {
   .sub-nav-main {
     height: auto; }
   .sub-nav-main .nav-inline {

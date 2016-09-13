@@ -139,12 +139,13 @@
   z-index: 99;
   top: 100px;
   left: 0;
-  height: 58px;
+  height: 60px;
   width: 100%;
   overflow-x: hidden;
   background: #fff;
-  border-bottom: 1px solid $navbar-default-border;
+  border: 0;
   border-radius: 0;
+  margin-bottom: 0;
 
   &.absolute {
     position: absolute;
@@ -204,7 +205,7 @@
 
 .post-head.main-header {
   height: 500px;
-  margin-top: 158px;
+  margin-top: 160px;
   top: 0;
 }
 

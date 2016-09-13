@@ -10,25 +10,25 @@ body:before {
     /* Prevent from displaying. */
 }
 
-@media (min-width: $screen-xs) {
+@media (min-width: $screen-xs-min) {
     body:before {
         content: "smartphone_wide";
     }
 }
 
-@media (min-width: $screen-sm) {
+@media (min-width: $screen-sm-min) {
     body:before {
         content: "tablet_narrow";
     }
 }
 
-@media (min-width: $screen-md) {
+@media (min-width: $screen-md-min) {
     body:before {
         content: "tablet_wide";
     }
 }
 
-@media (min-width: $screen-lg) {
+@media (min-width: $screen-lg-min) {
     body:before {
         content: "desktop";
     }
@@ -40,7 +40,7 @@ body:before {
     }
 }
 
-@media only screen and (max-width: $screen-md) {
+@media only screen and (max-width: $screen-md-max) {
     .post-template {
         .post {
             padding-left: 20px;
@@ -56,7 +56,7 @@ body:before {
     }
 }
 
-@media (max-width: $screen-sm) {
+@media (max-width: $screen-sm-max) {
     #slidemenu-wrapper {
         margin-right: -100%;
 
@@ -83,7 +83,7 @@ body:before {
     }
 }
 
-@media (max-width: $screen-xs) {
+@media (max-width: $screen-xs-max) {
     .main-nav-fixed {
         .navbar {
             .navbar-toggle {
@@ -397,7 +397,6 @@ body:before {
     }
 
     .site-footer {
-        margin-top: 6rem;
         font-size: 0.7rem;
     }
 
@@ -437,7 +436,7 @@ body:before {
     }
 }
 
-@media only screen and (min-width: $screen-sm) {
+@media only screen and (min-width: $screen-sm-min) {
     .main-nav-fixed {
         .navbar-brand {
             padding: 15px 15px 15px 50px;
@@ -445,7 +444,7 @@ body:before {
     }
 }
 
-@media only screen and (max-width: $screen-sm) {
+@media only screen and (max-width: $screen-sm-max) {
     .sub-nav-main {
         height: auto;
 
