@@ -9,7 +9,9 @@ var request    = require('supertest'),
 
     testUtils  = require('../../utils'),
     ghost      = require('../../../../core'),
-    i18n       = require('../../../../core/server/i18n');
+    i18n       = require('../../../../core/server/i18n'),
+    config       = require('../../../../core/server/config');
+
 i18n.init();
 
 describe('Admin Routing', function () {
@@ -111,17 +113,18 @@ describe('Admin Routing', function () {
     // we'll use X-Forwarded-Proto: https to simulate an 'https://' request behind a proxy
     describe('Require HTTPS - no redirect', function () {
         var forkedGhost, request;
-        before(function (done) {
-            var configTestHttps = testUtils.fork.config();
-            configTestHttps.forceAdminSSL = {redirect: false};
-            configTestHttps.urlSSL = 'https://localhost/';
 
-            testUtils.fork.ghost(configTestHttps, 'testhttps')
+        before(function (done) {
+            testUtils.fork.ghost({
+                forceAdminSSL: {redirect: false},
+                urlSSL: 'https://localhost/'
+            }, 'testhttps')
                 .then(function (child) {
                     forkedGhost = child;
                     request = require('supertest');
-                    request = request(configTestHttps.url.replace(/\/$/, ''));
-                }).then(done)
+                    request = request(config.get('url').replace(/\/$/, ''));
+                })
+                .then(done)
                 .catch(done);
         });
 
@@ -150,15 +153,14 @@ describe('Admin Routing', function () {
     describe('Require HTTPS - redirect', function () {
         var forkedGhost, request;
         before(function (done) {
-            var configTestHttps = testUtils.fork.config();
-            configTestHttps.forceAdminSSL = {redirect: true};
-            configTestHttps.urlSSL = 'https://localhost/';
-
-            testUtils.fork.ghost(configTestHttps, 'testhttps')
+            testUtils.fork.ghost({
+                forceAdminSSL: {redirect: true},
+                urlSSL: 'https://localhost/'
+            }, 'testhttps')
                 .then(function (child) {
                     forkedGhost = child;
                     request = require('supertest');
-                    request = request(configTestHttps.url.replace(/\/$/, ''));
+                    request = request(config.get('url').replace(/\/$/, ''));
                 }).then(done)
                 .catch(done);
         });
