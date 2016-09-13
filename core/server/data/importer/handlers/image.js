@@ -31,14 +31,14 @@ ImageHandler = {
 
             file.originalPath = noBaseDir;
             file.name = noGhostDirs;
-            file.targetDir = path.join(config.get('paths').imagesPath, path.dirname(noGhostDirs));
+            file.targetDir = path.join(config.getContentPath('images'), path.dirname(noGhostDirs));
             return file;
         });
 
         return Promise.map(files, function (image) {
             return store.getUniqueFileName(store, image, image.targetDir).then(function (targetFilename) {
                 image.newPath = (utils.url.getSubdir() + '/' +
-                    config.get('paths').imagesRelPath + '/' + path.relative(config.get('paths').imagesPath, targetFilename))
+                    config.get('paths').imagesRelPath + '/' + path.relative(config.getContentPath('images'), targetFilename))
                         .replace(new RegExp('\\' + path.sep, 'g'), '/');
 
                 return image;
