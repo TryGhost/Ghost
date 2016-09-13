@@ -77,9 +77,9 @@ function init(options) {
     return config.load(options.config).then(function () {
         return config.checkDeprecated();
     }).then(function loadApps() {
-        return readDirectory(config.paths.appPath)
+        return readDirectory(config.get('paths').appPath)
             .then(function (result) {
-                config.paths.availableApps = result;
+                config.set('paths:availableApps', result);
             });
     }).then(function loadThemes() {
         return api.themes.loadThemes();
@@ -95,15 +95,15 @@ function init(options) {
                 }), maintenanceState;
 
                 if (response.migrate === true) {
-                    maintenanceState = config.maintenance.enabled || false;
-                    config.maintenance.enabled = true;
+                    maintenanceState = config.get('maintenance').enabled || false;
+                    config.set('maintenance:enabled', true);
 
                     migrations.update.execute({
                         fromVersion: currentVersion,
                         toVersion: versioning.getNewestDatabaseVersion(),
                         forceMigration: process.env.FORCE_MIGRATION
                     }).then(function () {
-                        config.maintenance.enabled = maintenanceState;
+                        config.set('maintenance:enabled', maintenanceState);
                     }).catch(function (err) {
                         if (!err) {
                             return;
@@ -151,7 +151,7 @@ function init(options) {
         middleware(parentApp);
 
         // Log all theme errors and warnings
-        validateThemes(config.paths.themePath)
+        validateThemes(config.get('paths').themePath)
             .catch(function (result) {
                 // TODO: change `result` to something better
                 result.errors.forEach(function (err) {
@@ -169,7 +169,7 @@ function init(options) {
 
         // scheduling can trigger api requests, that's why we initialize the module after the ghost server creation
         // scheduling module can create x schedulers with different adapters
-        return scheduling.init(_.extend(config.scheduling, {apiUrl: utils.url.apiUrl()}));
+        return scheduling.init(_.extend(config.get('scheduling'), {apiUrl: utils.url.apiUrl()}));
     }).then(function () {
         return ghostServer;
     });

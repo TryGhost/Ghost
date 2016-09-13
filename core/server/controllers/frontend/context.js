@@ -14,9 +14,9 @@
 var config = require('../../config'),
 
     // Context patterns, should eventually come from Channel configuration
-    privatePattern = new RegExp('^\\/' + config.routeKeywords.private + '\\/'),
-    subscribePattern = new RegExp('^\\/' + config.routeKeywords.subscribe + '\\/'),
-    ampPattern = new RegExp('\\/' + config.routeKeywords.amp + '\\/$'),
+    privatePattern = new RegExp('^\\/' + config.get('routeKeywords').private + '\\/'),
+    subscribePattern = new RegExp('^\\/' + config.get('routeKeywords').subscribe + '\\/'),
+    ampPattern = new RegExp('\\/' + config.get('routeKeywords').amp + '\\/$'),
     rssPattern = new RegExp('^\\/rss\\/'),
     homePattern = new RegExp('^\\/$');
 

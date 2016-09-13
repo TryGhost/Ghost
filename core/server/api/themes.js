@@ -21,9 +21,9 @@ var Promise = require('bluebird'),
  */
 themes = {
     loadThemes: function () {
-        return utils.readThemes(config.paths.themePath)
+        return utils.readThemes(config.get('paths').themePath)
             .then(function (result) {
-                config.paths.availableThemes = result;
+                config.set('paths:availableThemes', result);
             });
     },
 
@@ -63,12 +63,12 @@ themes = {
                 );
             })
             .then(function () {
-                return storageAdapter.exists(config.paths.themePath + '/' + zip.shortName);
+                return storageAdapter.exists(config.get('paths').themePath + '/' + zip.shortName);
             })
             .then(function (themeExists) {
                 // delete existing theme
                 if (themeExists) {
-                    return storageAdapter.delete(zip.shortName, config.paths.themePath);
+                    return storageAdapter.delete(zip.shortName, config.get('paths').themePath);
                 }
             })
             .then(function () {
@@ -77,7 +77,7 @@ themes = {
                 return storageAdapter.save({
                     name: zip.shortName,
                     path: theme.path
-                }, config.paths.themePath);
+                }, config.get('paths').themePath);
             })
             .then(function () {
                 // force reload of availableThemes
@@ -119,7 +119,7 @@ themes = {
 
     download: function download(options) {
         var themeName = options.name,
-            theme = config.paths.availableThemes[themeName],
+            theme = config.get('paths').availableThemes[themeName],
             storageAdapter = storage.getStorage('themes');
 
         if (!theme) {
@@ -148,14 +148,14 @@ themes = {
                     throw new errors.ValidationError(i18n.t('errors.api.themes.destroyCasper'));
                 }
 
-                theme = config.paths.availableThemes[name];
+                theme = config.get('paths').availableThemes[name];
 
                 if (!theme) {
                     throw new errors.NotFoundError(i18n.t('errors.api.themes.themeDoesNotExist'));
                 }
 
                 events.emit('theme.deleted', name);
-                return storageAdapter.delete(name, config.paths.themePath);
+                return storageAdapter.delete(name, config.get('paths').themePath);
             })
             .then(function () {
                 return themes.loadThemes();

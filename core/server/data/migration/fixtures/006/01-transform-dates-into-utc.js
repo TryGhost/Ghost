@@ -1,7 +1,7 @@
 var config = require('../../../../config'),
-    models = require(config.paths.corePath + '/server/models'),
-    api = require(config.paths.corePath + '/server/api'),
-    sequence = require(config.paths.corePath + '/server/utils/sequence'),
+    models = require(config.get('paths').corePath + '/server/models'),
+    api = require(config.get('paths').corePath + '/server/api'),
+    sequence = require(config.get('paths').corePath + '/server/utils/sequence'),
     moment = require('moment'),
     _ = require('lodash'),
     Promise = require('bluebird'),
@@ -43,11 +43,11 @@ module.exports = function transformDatesIntoUTC(options, logger) {
                 return Promise.reject(new Error('skip'));
             }
 
-            if (config.database.isPostgreSQL()) {
+            if (config.get('database').isPostgreSQL()) {
                 _private.noOffset = true;
-            } else if (config.database.client === 'mysql') {
+            } else if (config.get('database').client === 'mysql') {
                 _private.noOffset = false;
-            } else if (config.database.client === 'sqlite3') {
+            } else if (config.get('database').client === 'sqlite3') {
                 _private.noOffset = true;
             }
 
@@ -187,7 +187,7 @@ module.exports = function transformDatesIntoUTC(options, logger) {
             });
         },
         function setActiveTimezone() {
-            var timezone = config.forceTimezoneOnMigration || moment.tz.guess();
+            var timezone = config.get('forceTimezoneOnMigration') || moment.tz.guess();
             return models.Settings.edit({
                 key: 'activeTimezone',
                 value: timezone

@@ -19,7 +19,7 @@ describe('{{navigation}} helper', function () {
     before(function (done) {
         utils.loadHelpers();
         hbs.express3({
-            partialsDir: [configUtils.config.paths.helperTemplates]
+            partialsDir: [configUtils.config.get('paths').helperTemplates]
         });
 
         hbs.cachePartials(function () {
@@ -83,7 +83,7 @@ describe('{{navigation}} helper', function () {
 
     it('can render one item', function () {
         var singleItem = {label: 'Foo', url: '/foo'},
-            testUrl = 'href="' + configUtils.config.url + '/foo"',
+            testUrl = 'href="' + configUtils.config.get('url') + '/foo"',
             rendered;
 
         optionsData.data.blog.navigation = [singleItem];
@@ -98,8 +98,8 @@ describe('{{navigation}} helper', function () {
     it('can render multiple items', function () {
         var firstItem = {label: 'Foo', url: '/foo'},
             secondItem = {label: 'Bar Baz Qux', url: '/qux'},
-            testUrl = 'href="' + configUtils.config.url + '/foo"',
-            testUrl2 = 'href="' + configUtils.config.url + '/qux"',
+            testUrl = 'href="' + configUtils.config.get('url') + '/foo"',
+            testUrl2 = 'href="' + configUtils.config.get('url') + '/qux"',
             rendered;
 
         optionsData.data.blog.navigation = [firstItem, secondItem];
@@ -151,7 +151,7 @@ describe('{{navigation}} helper with custom template', function () {
     before(function (done) {
         utils.loadHelpers();
         hbs.express3({
-            partialsDir: [path.resolve(configUtils.config.paths.corePath, 'test/unit/server_helpers/test_tpl')]
+            partialsDir: [path.resolve(configUtils.config.get('paths').corePath, 'test/unit/server_helpers/test_tpl')]
         });
 
         hbs.cachePartials(function () {
@@ -175,7 +175,7 @@ describe('{{navigation}} helper with custom template', function () {
 
     it('can render one item and @blog title', function () {
         var singleItem = {label: 'Foo', url: '/foo'},
-            testUrl = 'href="' + configUtils.config.url + '/foo"',
+            testUrl = 'href="' + configUtils.config.get('url') + '/foo"',
             rendered;
 
         optionsData.data.blog.navigation = [singleItem];

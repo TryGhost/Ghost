@@ -18,11 +18,11 @@ var crypto      = require('crypto'),
     feedCache = {};
 
 function isTag(req) {
-    return req.originalUrl.indexOf('/' + config.routeKeywords.tag + '/') !== -1;
+    return req.originalUrl.indexOf('/' + config.get('routeKeywords').tag + '/') !== -1;
 }
 
 function isAuthor(req) {
-    return req.originalUrl.indexOf('/' + config.routeKeywords.author + '/') !== -1;
+    return req.originalUrl.indexOf('/' + config.get('routeKeywords').author + '/') !== -1;
 }
 
 function handleError(next) {
@@ -41,8 +41,8 @@ function getData(channelOpts, slugParam) {
         if (result.data && result.data.tag) { titleStart = result.data.tag[0].name + ' - ' || ''; }
         if (result.data && result.data.author) { titleStart = result.data.author[0].name + ' - ' || ''; }
 
-        response.title = titleStart + config.theme.title;
-        response.description = config.theme.description;
+        response.title = titleStart + config.get('theme').title;
+        response.description = config.get('theme').description;
         response.results = {
             posts: result.posts,
             meta: result.meta
@@ -56,9 +56,9 @@ function getBaseUrl(req, slugParam) {
     var baseUrl = utils.url.getSubdir();
 
     if (isTag(req)) {
-        baseUrl += '/' + config.routeKeywords.tag + '/' + slugParam + '/rss/';
+        baseUrl += '/' + config.get('routeKeywords').tag + '/' + slugParam + '/rss/';
     } else if (isAuthor(req)) {
-        baseUrl += '/' + config.routeKeywords.author + '/' + slugParam + '/rss/';
+        baseUrl += '/' + config.get('routeKeywords').author + '/' + slugParam + '/rss/';
     } else {
         baseUrl += '/rss/';
     }

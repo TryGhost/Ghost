@@ -9,7 +9,7 @@ var _           = require('lodash'),
     session     = require('cookie-session'),
     utils       = require('../../../utils'),
     i18n        = require('../../../i18n'),
-    privateRoute = '/' + config.routeKeywords.private + '/',
+    privateRoute = '/' + config.get('routeKeywords').private + '/',
     protectedSecurity = [],
     privateBlogging;
 

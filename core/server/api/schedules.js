@@ -2,11 +2,11 @@ var _ = require('lodash'),
     Promise = require('bluebird'),
     moment = require('moment'),
     config = require('../config'),
-    pipeline = require(config.paths.corePath + '/server/utils/pipeline'),
-    dataProvider = require(config.paths.corePath + '/server/models'),
-    i18n = require(config.paths.corePath + '/server/i18n'),
-    errors = require(config.paths.corePath + '/server/errors'),
-    apiPosts = require(config.paths.corePath + '/server/api/posts'),
+    pipeline = require(config.get('paths').corePath + '/server/utils/pipeline'),
+    dataProvider = require(config.get('paths').corePath + '/server/models'),
+    i18n = require(config.get('paths').corePath + '/server/i18n'),
+    errors = require(config.get('paths').corePath + '/server/errors'),
+    apiPosts = require(config.get('paths').corePath + '/server/api/posts'),
     utils = require('./utils');
 
 /**
@@ -21,7 +21,7 @@ exports.publishPost = function publishPost(object, options) {
     }
 
     var post, publishedAtMoment,
-        publishAPostBySchedulerToleranceInMinutes = config.times.publishAPostBySchedulerToleranceInMinutes;
+        publishAPostBySchedulerToleranceInMinutes = config.get('times').publishAPostBySchedulerToleranceInMinutes;
 
     // CASE: only the scheduler client is allowed to publish (hardcoded because of missing client permission system)
     if (!options.context || !options.context.client || options.context.client !== 'ghost-scheduler') {

@@ -11,7 +11,7 @@ channelConfig = function channelConfig() {
         },
         tag: {
             name: 'tag',
-            route: '/' + config.routeKeywords.tag + '/:slug/',
+            route: '/' + config.get('routeKeywords').tag + '/:slug/',
             postOptions: {
                 filter: 'tags:\'%s\''
             },
@@ -27,7 +27,7 @@ channelConfig = function channelConfig() {
         },
         author: {
             name: 'author',
-            route: '/' + config.routeKeywords.author + '/:slug/',
+            route: '/' + config.get('routeKeywords').author + '/:slug/',
             postOptions: {
                 filter: 'author:\'%s\''
             },

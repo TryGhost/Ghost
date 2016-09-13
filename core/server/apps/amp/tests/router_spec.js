@@ -40,7 +40,7 @@ describe('AMP Controller', function () {
             body: {}
         };
 
-        defaultPath = path.join(configUtils.config.paths.appRoot, '/core/server/apps/amp/lib/views/amp.hbs');
+        defaultPath = path.join(configUtils.config.get('paths').appRoot, '/core/server/apps/amp/lib/views/amp.hbs');
 
         configUtils.set({
             theme: {

@@ -11,7 +11,7 @@ var should         = require('should'),
 describe('{{pagination}} helper', function () {
     before(function (done) {
         utils.loadHelpers();
-        hbs.express3({partialsDir: [configUtils.config.paths.helperTemplates]});
+        hbs.express3({partialsDir: [configUtils.config.get('paths').helperTemplates]});
 
         hbs.cachePartials(function () {
             done();
@@ -126,7 +126,7 @@ describe('{{pagination}} helper', function () {
 describe('{{pagination}} helper with custom template', function () {
     before(function (done) {
         utils.loadHelpers();
-        hbs.express3({partialsDir: [path.resolve(configUtils.config.paths.corePath, 'test/unit/server_helpers/test_tpl')]});
+        hbs.express3({partialsDir: [path.resolve(configUtils.config.get('paths').corePath, 'test/unit/server_helpers/test_tpl')]});
 
         hbs.cachePartials(function () {
             done();

@@ -1,7 +1,7 @@
 var should = require('should'),
     rewire = require('rewire'),
     config = rewire('../../../server/config'),
-    api = rewire(config.paths.corePath + '/server/api');
+    api = rewire(config.get('paths').corePath + '/server/api');
 
 describe('API: index', function () {
     describe('fn: cacheInvalidationHeader', function () {

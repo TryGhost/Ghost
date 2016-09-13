@@ -48,7 +48,7 @@
         },
         "themes": {
             "extensions": [".zip"],
-            "contentTypes": ["application/zip", "application/x-zip-compressed"]
+            "contentTypes": ["application/zip", "application/x-zip-compressed", "application/octet-stream"]
         }
     },
     "storage": {

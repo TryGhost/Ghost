@@ -4,10 +4,10 @@ var should = require('should'),
     Promise = require('bluebird'),
     testUtils = require('../../utils'),
     config = require(__dirname + '/../../../server/config'),
-    sequence = require(config.paths.corePath + '/server/utils/sequence'),
-    errors = require(config.paths.corePath + '/server/errors'),
-    api = require(config.paths.corePath + '/server/api'),
-    models = require(config.paths.corePath + '/server/models');
+    sequence = require(config.get('paths').corePath + '/server/utils/sequence'),
+    errors = require(config.get('paths').corePath + '/server/errors'),
+    api = require(config.get('paths').corePath + '/server/api'),
+    models = require(config.get('paths').corePath + '/server/models');
 
 describe('Schedules API', function () {
     var scope = {posts: []};
@@ -175,10 +175,10 @@ describe('Schedules API', function () {
         var originalCannotScheduleAPostBeforeInMinutes;
 
         beforeEach(function (done) {
-            originalCannotScheduleAPostBeforeInMinutes = config.times.cannotScheduleAPostBeforeInMinutes;
+            originalCannotScheduleAPostBeforeInMinutes = config.get('times').cannotScheduleAPostBeforeInMinutes;
 
             // we can insert published_at less then 5minutes
-            config.times.cannotScheduleAPostBeforeInMinutes = -15;
+            config.set('times:cannotScheduleAPostBeforeInMinutes', -15);
 
             sequence([
                 testUtils.teardown,
@@ -189,7 +189,7 @@ describe('Schedules API', function () {
         });
 
         after(function () {
-            config.times.cannotScheduleAPostBeforeInMinutes = originalCannotScheduleAPostBeforeInMinutes;
+            config.set('times:cannotScheduleAPostBeforeInMinutes', originalCannotScheduleAPostBeforeInMinutes);
         });
 
         describe('success', function () {

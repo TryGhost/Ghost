@@ -100,7 +100,7 @@ cacheInvalidationHeader = function cacheInvalidationHeader(req, result) {
             if (hasStatusChanged || wasPublishedUpdated) {
                 return INVALIDATE_ALL;
             } else {
-                return config.urlFor({relativeUrl: '/' + config.routeKeywords.preview + '/' + post.uuid + '/'});
+                return utils.url.urlFor({relativeUrl: '/' + config.get('routeKeywords').preview + '/' + post.uuid + '/'});
             }
         }
     }

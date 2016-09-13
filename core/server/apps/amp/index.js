@@ -10,6 +10,6 @@ module.exports = {
     },
 
     setupRoutes: function setupRoutes(blogRouter) {
-        blogRouter.use('*/' + config.routeKeywords.amp + '/', router);
+        blogRouter.use('*/' + config.get('routeKeywords').amp + '/', router);
     }
 };

@@ -8,9 +8,9 @@ function getPaginatedUrl(page, data, absolute) {
         return null;
     }
 
-    var pagePath = '/' + config.routeKeywords.page + '/',
+    var pagePath = '/' + config.get('routeKeywords').page + '/',
         // Try to match the base url, as whatever precedes the pagePath
-        baseUrlPattern = new RegExp('(.+)?(/' + config.routeKeywords.page + '/\\d+/)'),
+        baseUrlPattern = new RegExp('(.+)?(/' + config.get('routeKeywords').page + '/\\d+/)'),
         baseUrlMatch = data.relativeUrl.match(baseUrlPattern),
         // If there is no match for pagePath, use the original url, without the trailing slash
         baseUrl = baseUrlMatch ? baseUrlMatch[1] : data.relativeUrl.slice(0, -1),

@@ -69,7 +69,7 @@ function getStatusCode(error) {
  */
 errors = {
     updateActiveTheme: function (activeTheme) {
-        userErrorTemplateExists = getConfigModule().paths.availableThemes[activeTheme].hasOwnProperty('error.hbs');
+        userErrorTemplateExists = getConfigModule().get('paths').availableThemes[activeTheme].hasOwnProperty('error.hbs');
     },
 
     throwError: function (err) {
@@ -295,7 +295,7 @@ errors = {
     renderErrorPage: function (statusCode, err, req, res, next) {
         /*jshint unused:false*/
         var self = this,
-            defaultErrorTemplatePath = path.resolve(getConfigModule().paths.adminViews, 'user-error.hbs');
+            defaultErrorTemplatePath = path.resolve(getConfigModule().get('paths').adminViews, 'user-error.hbs');
 
         function parseStack(stack) {
             if (!_.isString(stack)) {

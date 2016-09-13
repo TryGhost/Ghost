@@ -53,8 +53,8 @@ GhostServer.prototype.start = function (externalApp) {
             fs.chmod(socketConfig.path, socketConfig.permissions);
         } else {
             self.httpServer = rootApp.listen(
-                config.server.port,
-                config.server.host
+                config.get('server').port,
+                config.get('server').host
             );
         }
 
@@ -62,7 +62,7 @@ GhostServer.prototype.start = function (externalApp) {
             if (error.errno === 'EADDRINUSE') {
                 errors.logError(
                     i18n.t('errors.httpServer.addressInUse.error'),
-                    i18n.t('errors.httpServer.addressInUse.context', {port: config.server.port}),
+                    i18n.t('errors.httpServer.addressInUse.context', {port: config.get('server').port}),
                     i18n.t('errors.httpServer.addressInUse.help')
                 );
             } else {
@@ -169,15 +169,15 @@ GhostServer.prototype.logStartMessages = function () {
     if (process.env.NODE_ENV === 'production') {
         console.log(
             chalk.green(i18n.t('notices.httpServer.ghostIsRunningIn', {env: process.env.NODE_ENV})),
-            i18n.t('notices.httpServer.yourBlogIsAvailableOn', {url: config.url}),
+            i18n.t('notices.httpServer.yourBlogIsAvailableOn', {url: config.get('url')}),
             chalk.gray(i18n.t('notices.httpServer.ctrlCToShutDown'))
         );
     } else {
         console.log(
             chalk.green(i18n.t('notices.httpServer.ghostIsRunningIn', {env: process.env.NODE_ENV})),
             i18n.t('notices.httpServer.listeningOn'),
-            config.getSocket() || config.server.host + ':' + config.server.port,
-            i18n.t('notices.httpServer.urlConfiguredAs', {url: config.url}),
+            config.getSocket() || config.get('server').host + ':' + config.get('server').port,
+            i18n.t('notices.httpServer.urlConfiguredAs', {url: config.get('url')}),
             chalk.gray(i18n.t('notices.httpServer.ctrlCToShutDown'))
         );
     }

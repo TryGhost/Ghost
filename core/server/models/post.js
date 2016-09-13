@@ -177,10 +177,10 @@ Post = ghostBookshelf.Model.extend({
                     i18n.t('errors.models.post.valueCannotBeBlank', {key: 'published_at'})
                 ));
             // CASE: to schedule/reschedule a post, a minimum diff of x minutes is needed (default configured is 2minutes)
-            } else if (publishedAtHasChanged && moment(publishedAt).isBefore(moment().add(config.times.cannotScheduleAPostBeforeInMinutes, 'minutes'))) {
+            } else if (publishedAtHasChanged && moment(publishedAt).isBefore(moment().add(config.get('times').cannotScheduleAPostBeforeInMinutes, 'minutes'))) {
                 return Promise.reject(new errors.ValidationError(
                     i18n.t('errors.models.post.expectedPublishedAtInFuture', {
-                        cannotScheduleAPostBeforeInMinutes: config.times.cannotScheduleAPostBeforeInMinutes
+                        cannotScheduleAPostBeforeInMinutes: config.get('times').cannotScheduleAPostBeforeInMinutes
                     })
                 ));
             }

@@ -553,7 +553,7 @@ login = function login(request) {
 
     return new Promise(function (resolve, reject) {
         request.post('/ghost/api/v0.1/authentication/token/')
-            .set('Origin', config.url)
+            .set('Origin', config.get('url'))
             .send({
                 grant_type: 'password',
                 username: user.email,

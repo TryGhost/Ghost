@@ -7,9 +7,9 @@ var should = require('should'),
     rewire = require('rewire'),
     _ = require('lodash'),
     config = require('../../../../server/config'),
-    testUtils = require(config.paths.corePath + '/test/utils'),
-    events = require(config.paths.corePath + '/server/events'),
-    models = require(config.paths.corePath + '/server/models');
+    testUtils = require(config.get('paths').corePath + '/test/utils'),
+    events = require(config.get('paths').corePath + '/server/events'),
+    models = require(config.get('paths').corePath + '/server/models');
 
 describe('Models: listeners', function () {
     var eventsToRemember = {},
@@ -30,7 +30,7 @@ describe('Models: listeners', function () {
             eventsToRemember[eventName] = callback;
         });
 
-        rewire(config.paths.corePath + '/server/models/base/listeners');
+        rewire(config.get('paths').corePath + '/server/models/base/listeners');
     });
 
     afterEach(function (done) {

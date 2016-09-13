@@ -4,7 +4,7 @@ var _ = require('lodash'),
 function getTitle(data, root) {
     var title = '',
         context = root ? root.context : null,
-        blog = config.theme,
+        blog = config.get('theme'),
         pagination = root ? root.pagination : null,
         pageString = '';
 
