@@ -133,15 +133,15 @@ validateSettings = function validateSettings(defaultSettings, model) {
 validateActiveTheme = function validateActiveTheme(themeName) {
     // If Ghost is running and its availableThemes collection exists
     // give it priority.
-    if (config.paths.availableThemes && Object.keys(config.paths.availableThemes).length > 0) {
-        availableThemes = Promise.resolve(config.paths.availableThemes);
+    if (config.get('paths').availableThemes && Object.keys(config.get('paths').availableThemes).length > 0) {
+        availableThemes = Promise.resolve(config.get('paths').availableThemes);
     }
 
     if (!availableThemes) {
         // A Promise that will resolve to an object with a property for each installed theme.
         // This is necessary because certain configuration data is only available while Ghost
         // is running and at times the validations are used when it's not (e.g. tests)
-        availableThemes = readThemes(config.paths.themePath);
+        availableThemes = readThemes(config.get('paths').themePath);
     }
 
     return availableThemes.then(function then(themes) {

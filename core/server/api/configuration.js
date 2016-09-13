@@ -20,10 +20,10 @@ function fetchAvailableTimezones() {
 
 function getAboutConfig() {
     return {
-        version: config.ghostVersion,
+        version: config.get('ghostVersion'),
         environment: process.env.NODE_ENV,
-        database: config.database.client,
-        mail: _.isObject(config.mail) ? config.mail.transport : ''
+        database: config.get('database').client,
+        mail: _.isObject(config.get('mail')) ? config.get('mail').transport : ''
     };
 }
 
@@ -33,9 +33,9 @@ function getBaseConfig() {
         useGravatar:    {value: !config.isPrivacyDisabled('useGravatar'), type: 'bool'},
         publicAPI:      labsFlag('publicAPI'),
         internalTags:   labsFlag('internalTags'),
-        blogUrl:        {value: config.url.replace(/\/$/, ''), type: 'string'},
-        blogTitle:      {value: config.theme.title, type: 'string'},
-        routeKeywords:  {value: JSON.stringify(config.routeKeywords), type: 'json'}
+        blogUrl:        {value: config.get('url').replace(/\/$/, ''), type: 'string'},
+        blogTitle:      {value: config.get('theme').title, type: 'string'},
+        routeKeywords:  {value: JSON.stringify(config.get('routeKeywords')), type: 'json'}
     };
 }
 

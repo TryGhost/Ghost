@@ -10,7 +10,7 @@ module.exports = {
         if (utils.url.getSubdir()) {
             var paths = utils.url.getSubdir().split('/');
 
-            if (paths.pop() === config.routeKeywords.private) {
+            if (paths.pop() === config.get('routeKeywords').private) {
                 errors.logErrorAndExit(
                     new Error(i18n.t('errors.config.urlCannotContainPrivateSubdir.error')),
                     i18n.t('errors.config.urlCannotContainPrivateSubdir.description'),
@@ -26,6 +26,6 @@ module.exports = {
     },
 
     setupRoutes: function setupRoutes(blogRouter) {
-        blogRouter.use('/' + config.routeKeywords.private + '/', router);
+        blogRouter.use('/' + config.get('routeKeywords').private + '/', router);
     }
 };

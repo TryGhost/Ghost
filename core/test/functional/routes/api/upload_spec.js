@@ -27,7 +27,7 @@ describe('Upload API', function () {
 
     after(function (done) {
         images.forEach(function (image) {
-            fs.removeSync(config.paths.appRoot + image);
+            fs.removeSync(config.get('paths').appRoot + image);
         });
 
         testUtils.clearData().then(function () {

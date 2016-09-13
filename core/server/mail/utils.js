@@ -13,7 +13,7 @@ exports.generateContent = function generateContent(options) {
         data;
 
     defaults = {
-        siteUrl: config.forceAdminSSL ? (config.urlSSL || config.url) : config.url
+        siteUrl: config.get('forceAdminSSL') ? (config.get('urlSSL') || config.get('url')) : config.get('url')
     };
 
     data = _.defaults(defaults, options.data);

@@ -3,7 +3,7 @@ var config = require('../config'),
     errors = require('../errors');
 
 module.exports = function (req, res, next) {
-    if (config.maintenance.enabled) {
+    if (config.get('maintenance').enabled) {
         return next(new errors.Maintenance(
             i18n.t('errors.general.maintenance')
         ));
