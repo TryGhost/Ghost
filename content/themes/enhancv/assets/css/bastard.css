@@ -337,8 +337,9 @@ th {
     page-break-after: avoid; }
   .navbar {
     display: none; }
-  .btn > .caret,
-  .dropup > .btn > .caret {
+  .btn > .caret, .custom-badge > .caret,
+  .dropup > .btn > .caret,
+  .dropup > .custom-badge > .caret {
     border-top-color: #000 !important; }
   .label {
     border: 1px solid #000; }
@@ -2500,46 +2501,54 @@ input[type="search"] {
   input[type="date"].input-sm, .input-group-sm > input[type="date"].form-control,
   .input-group-sm > input[type="date"].input-group-addon,
   .input-group-sm > .input-group-btn > input[type="date"].btn,
+  .input-group-sm > .input-group-btn > input[type="date"].custom-badge,
   .input-group-sm input[type="date"],
   input[type="time"].input-sm,
   .input-group-sm > input[type="time"].form-control,
   .input-group-sm > input[type="time"].input-group-addon,
   .input-group-sm > .input-group-btn > input[type="time"].btn,
+  .input-group-sm > .input-group-btn > input[type="time"].custom-badge,
   .input-group-sm
 input[type="time"],
   input[type="datetime-local"].input-sm,
   .input-group-sm > input[type="datetime-local"].form-control,
   .input-group-sm > input[type="datetime-local"].input-group-addon,
   .input-group-sm > .input-group-btn > input[type="datetime-local"].btn,
+  .input-group-sm > .input-group-btn > input[type="datetime-local"].custom-badge,
   .input-group-sm
 input[type="datetime-local"],
   input[type="month"].input-sm,
   .input-group-sm > input[type="month"].form-control,
   .input-group-sm > input[type="month"].input-group-addon,
   .input-group-sm > .input-group-btn > input[type="month"].btn,
+  .input-group-sm > .input-group-btn > input[type="month"].custom-badge,
   .input-group-sm
 input[type="month"] {
     line-height: 30px; }
   input[type="date"].input-lg, .input-group-lg > input[type="date"].form-control,
   .input-group-lg > input[type="date"].input-group-addon,
   .input-group-lg > .input-group-btn > input[type="date"].btn,
+  .input-group-lg > .input-group-btn > input[type="date"].custom-badge,
   .input-group-lg input[type="date"],
   input[type="time"].input-lg,
   .input-group-lg > input[type="time"].form-control,
   .input-group-lg > input[type="time"].input-group-addon,
   .input-group-lg > .input-group-btn > input[type="time"].btn,
+  .input-group-lg > .input-group-btn > input[type="time"].custom-badge,
   .input-group-lg
 input[type="time"],
   input[type="datetime-local"].input-lg,
   .input-group-lg > input[type="datetime-local"].form-control,
   .input-group-lg > input[type="datetime-local"].input-group-addon,
   .input-group-lg > .input-group-btn > input[type="datetime-local"].btn,
+  .input-group-lg > .input-group-btn > input[type="datetime-local"].custom-badge,
   .input-group-lg
 input[type="datetime-local"],
   input[type="month"].input-lg,
   .input-group-lg > input[type="month"].form-control,
   .input-group-lg > input[type="month"].input-group-addon,
   .input-group-lg > .input-group-btn > input[type="month"].btn,
+  .input-group-lg > .input-group-btn > input[type="month"].custom-badge,
   .input-group-lg
 input[type="month"] {
     line-height: 46px; } }
@@ -2619,15 +2628,18 @@ fieldset[disabled]
 
 .form-control-static.input-lg, .input-group-lg > .form-control-static.form-control,
 .input-group-lg > .form-control-static.input-group-addon,
-.input-group-lg > .input-group-btn > .form-control-static.btn, .form-control-static.input-sm, .input-group-sm > .form-control-static.form-control,
+.input-group-lg > .input-group-btn > .form-control-static.btn,
+.input-group-lg > .input-group-btn > .form-control-static.custom-badge, .form-control-static.input-sm, .input-group-sm > .form-control-static.form-control,
 .input-group-sm > .form-control-static.input-group-addon,
-.input-group-sm > .input-group-btn > .form-control-static.btn {
+.input-group-sm > .input-group-btn > .form-control-static.btn,
+.input-group-sm > .input-group-btn > .form-control-static.custom-badge {
   padding-left: 0;
   padding-right: 0; }
 
 .input-sm, .input-group-sm > .form-control,
 .input-group-sm > .input-group-addon,
-.input-group-sm > .input-group-btn > .btn {
+.input-group-sm > .input-group-btn > .btn,
+.input-group-sm > .input-group-btn > .custom-badge {
   height: 30px;
   padding: 5px 10px;
   font-size: 12px;
@@ -2636,17 +2648,20 @@ fieldset[disabled]
 
 select.input-sm, .input-group-sm > select.form-control,
 .input-group-sm > select.input-group-addon,
-.input-group-sm > .input-group-btn > select.btn {
+.input-group-sm > .input-group-btn > select.btn,
+.input-group-sm > .input-group-btn > select.custom-badge {
   height: 30px;
   line-height: 30px; }
 
 textarea.input-sm, .input-group-sm > textarea.form-control,
 .input-group-sm > textarea.input-group-addon,
 .input-group-sm > .input-group-btn > textarea.btn,
+.input-group-sm > .input-group-btn > textarea.custom-badge,
 select[multiple].input-sm,
 .input-group-sm > select[multiple].form-control,
 .input-group-sm > select[multiple].input-group-addon,
-.input-group-sm > .input-group-btn > select[multiple].btn {
+.input-group-sm > .input-group-btn > select[multiple].btn,
+.input-group-sm > .input-group-btn > select[multiple].custom-badge {
   height: auto; }
 
 .form-group-sm .form-control {
@@ -2673,7 +2688,8 @@ select[multiple].input-sm,
 
 .input-lg, .input-group-lg > .form-control,
 .input-group-lg > .input-group-addon,
-.input-group-lg > .input-group-btn > .btn {
+.input-group-lg > .input-group-btn > .btn,
+.input-group-lg > .input-group-btn > .custom-badge {
   height: 46px;
   padding: 10px 16px;
   font-size: 18px;
@@ -2682,17 +2698,20 @@ select[multiple].input-sm,
 
 select.input-lg, .input-group-lg > select.form-control,
 .input-group-lg > select.input-group-addon,
-.input-group-lg > .input-group-btn > select.btn {
+.input-group-lg > .input-group-btn > select.btn,
+.input-group-lg > .input-group-btn > select.custom-badge {
   height: 46px;
   line-height: 46px; }
 
 textarea.input-lg, .input-group-lg > textarea.form-control,
 .input-group-lg > textarea.input-group-addon,
 .input-group-lg > .input-group-btn > textarea.btn,
+.input-group-lg > .input-group-btn > textarea.custom-badge,
 select[multiple].input-lg,
 .input-group-lg > select[multiple].form-control,
 .input-group-lg > select[multiple].input-group-addon,
-.input-group-lg > .input-group-btn > select[multiple].btn {
+.input-group-lg > .input-group-btn > select[multiple].btn,
+.input-group-lg > .input-group-btn > select[multiple].custom-badge {
   height: auto; }
 
 .form-group-lg .form-control {
@@ -2738,6 +2757,7 @@ select[multiple].input-lg,
 .input-lg + .form-control-feedback, .input-group-lg > .form-control + .form-control-feedback,
 .input-group-lg > .input-group-addon + .form-control-feedback,
 .input-group-lg > .input-group-btn > .btn + .form-control-feedback,
+.input-group-lg > .input-group-btn > .custom-badge + .form-control-feedback,
 .input-group-lg + .form-control-feedback,
 .form-group-lg .form-control + .form-control-feedback {
   width: 46px;
@@ -2747,6 +2767,7 @@ select[multiple].input-lg,
 .input-sm + .form-control-feedback, .input-group-sm > .form-control + .form-control-feedback,
 .input-group-sm > .input-group-addon + .form-control-feedback,
 .input-group-sm > .input-group-btn > .btn + .form-control-feedback,
+.input-group-sm > .input-group-btn > .custom-badge + .form-control-feedback,
 .input-group-sm + .form-control-feedback,
 .form-group-sm .form-control + .form-control-feedback {
   width: 30px;
@@ -2930,7 +2951,7 @@ select[multiple].input-lg,
     padding-top: 6px;
     font-size: 12px; } }
 
-.btn {
+.btn, .custom-badge {
   display: inline-block;
   margin-bottom: 0;
   font-weight: normal;
@@ -2951,71 +2972,81 @@ select[multiple].input-lg,
   -ms-user-select: none;
   user-select: none; }
 
-.btn:focus, .btn.focus, .btn:active:focus, .btn:active.focus, .btn.active:focus, .btn.active.focus {
+.btn:focus, .custom-badge:focus, .btn.focus, .focus.custom-badge, .btn:active:focus, .custom-badge:active:focus, .btn:active.focus, .custom-badge:active.focus, .btn.active:focus, .active.custom-badge:focus, .btn.active.focus, .active.focus.custom-badge {
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px; }
 
-.btn:hover, .btn:focus, .btn.focus {
+.btn:hover, .custom-badge:hover, .btn:focus, .custom-badge:focus, .btn.focus, .focus.custom-badge {
   color: #333;
   text-decoration: none; }
 
-.btn:active, .btn.active {
+.btn:active, .custom-badge:active, .btn.active, .active.custom-badge {
   outline: 0;
   background-image: none;
   box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125); }
 
-.btn.disabled, .btn[disabled],
-fieldset[disabled] .btn {
+.btn.disabled, .disabled.custom-badge, .btn[disabled], [disabled].custom-badge,
+fieldset[disabled] .btn,
+fieldset[disabled] .custom-badge {
   cursor: not-allowed;
   opacity: 0.65;
   filter: alpha(opacity=65);
   box-shadow: none; }
 
-a.btn.disabled,
-fieldset[disabled] a.btn {
+a.btn.disabled, a.disabled.custom-badge,
+fieldset[disabled] a.btn,
+fieldset[disabled] a.custom-badge {
   pointer-events: none; }
 
-.btn-default {
+.btn-default, .custom-badge.custom-badge-white {
   color: #333;
   background-color: #fff;
   border-color: #e6e6e6; }
 
-.btn-default:focus, .btn-default.focus {
+.btn-default:focus, .custom-badge.custom-badge-white:focus, .btn-default.focus, .focus.custom-badge.custom-badge-white {
   color: #333;
   background-color: #e6e6e6;
   border-color: #a6a6a6; }
 
-.btn-default:hover {
+.btn-default:hover, .custom-badge.custom-badge-white:hover {
   color: #333;
   background-color: #e6e6e6;
   border-color: #c7c7c7; }
 
-.btn-default:active, .btn-default.active,
-.open > .btn-default.dropdown-toggle {
+.btn-default:active, .custom-badge.custom-badge-white:active, .btn-default.active, .active.custom-badge.custom-badge-white,
+.open > .btn-default.dropdown-toggle,
+.open > .dropdown-toggle.custom-badge.custom-badge-white {
   color: #333;
   background-color: #e6e6e6;
   border-color: #c7c7c7; }
 
-.btn-default:active:hover, .btn-default:active:focus, .btn-default:active.focus, .btn-default.active:hover, .btn-default.active:focus, .btn-default.active.focus,
+.btn-default:active:hover, .custom-badge.custom-badge-white:active:hover, .btn-default:active:focus, .custom-badge.custom-badge-white:active:focus, .btn-default:active.focus, .custom-badge.custom-badge-white:active.focus, .btn-default.active:hover, .active.custom-badge.custom-badge-white:hover, .btn-default.active:focus, .active.custom-badge.custom-badge-white:focus, .btn-default.active.focus, .active.focus.custom-badge.custom-badge-white,
 .open > .btn-default.dropdown-toggle:hover,
+.open > .dropdown-toggle.custom-badge.custom-badge-white:hover,
 .open > .btn-default.dropdown-toggle:focus,
-.open > .btn-default.dropdown-toggle.focus {
+.open > .dropdown-toggle.custom-badge.custom-badge-white:focus,
+.open > .btn-default.dropdown-toggle.focus,
+.open > .dropdown-toggle.focus.custom-badge.custom-badge-white {
   color: #333;
   background-color: #d4d4d4;
   border-color: #a6a6a6; }
 
-.btn-default:active, .btn-default.active,
-.open > .btn-default.dropdown-toggle {
+.btn-default:active, .custom-badge.custom-badge-white:active, .btn-default.active, .active.custom-badge.custom-badge-white,
+.open > .btn-default.dropdown-toggle,
+.open > .dropdown-toggle.custom-badge.custom-badge-white {
   background-image: none; }
 
-.btn-default.disabled:hover, .btn-default.disabled:focus, .btn-default.disabled.focus, .btn-default[disabled]:hover, .btn-default[disabled]:focus, .btn-default[disabled].focus,
+.btn-default.disabled:hover, .disabled.custom-badge.custom-badge-white:hover, .btn-default.disabled:focus, .disabled.custom-badge.custom-badge-white:focus, .btn-default.disabled.focus, .disabled.focus.custom-badge.custom-badge-white, .btn-default[disabled]:hover, [disabled].custom-badge.custom-badge-white:hover, .btn-default[disabled]:focus, [disabled].custom-badge.custom-badge-white:focus, .btn-default[disabled].focus, [disabled].focus.custom-badge.custom-badge-white,
 fieldset[disabled] .btn-default:hover,
+fieldset[disabled] .custom-badge.custom-badge-white:hover,
 fieldset[disabled] .btn-default:focus,
-fieldset[disabled] .btn-default.focus {
+fieldset[disabled] .custom-badge.custom-badge-white:focus,
+fieldset[disabled] .btn-default.focus,
+fieldset[disabled] .focus.custom-badge.custom-badge-white {
   background-color: #fff;
   border-color: #e6e6e6; }
 
-.btn-default .badge {
+.btn-default .badge, .custom-badge.custom-badge-white .badge {
   color: #fff;
   background-color: #333; }
 
@@ -3263,19 +3294,19 @@ fieldset[disabled] .btn-link:focus {
   color: #777777;
   text-decoration: none; }
 
-.btn-lg, .btn-group-lg > .btn {
+.btn-lg, .btn-group-lg > .btn, .btn-group-lg > .custom-badge {
   padding: 10px 16px;
   font-size: 18px;
   line-height: 1.33333;
   border-radius: 35px; }
 
-.btn-sm, .btn-group-sm > .btn {
+.btn-sm, .btn-group-sm > .btn, .btn-group-sm > .custom-badge {
   padding: 5px 10px;
   font-size: 12px;
   line-height: 1.5;
   border-radius: 35px; }
 
-.btn-xs, .btn-group-xs > .btn {
+.btn-xs, .btn-group-xs > .btn, .btn-group-xs > .custom-badge {
   padding: 1px 5px;
   font-size: 12px;
   line-height: 1.5;
@@ -3463,21 +3494,28 @@ tbody.collapse.in {
   display: inline-block;
   vertical-align: middle; }
 
-.btn-group > .btn,
-.btn-group-vertical > .btn {
+.btn-group > .btn, .btn-group > .custom-badge,
+.btn-group-vertical > .btn,
+.btn-group-vertical > .custom-badge {
   position: relative;
   float: left; }
 
-.btn-group > .btn:hover, .btn-group > .btn:focus, .btn-group > .btn:active, .btn-group > .btn.active,
+.btn-group > .btn:hover, .btn-group > .custom-badge:hover, .btn-group > .btn:focus, .btn-group > .custom-badge:focus, .btn-group > .btn:active, .btn-group > .custom-badge:active, .btn-group > .btn.active, .btn-group > .active.custom-badge,
 .btn-group-vertical > .btn:hover,
+.btn-group-vertical > .custom-badge:hover,
 .btn-group-vertical > .btn:focus,
+.btn-group-vertical > .custom-badge:focus,
 .btn-group-vertical > .btn:active,
-.btn-group-vertical > .btn.active {
+.btn-group-vertical > .custom-badge:active,
+.btn-group-vertical > .btn.active,
+.btn-group-vertical > .active.custom-badge {
   z-index: 2; }
 
-.btn-group .btn + .btn,
+.btn-group .btn + .btn, .btn-group .custom-badge + .btn, .btn-group .btn + .custom-badge, .btn-group .custom-badge + .custom-badge,
 .btn-group .btn + .btn-group,
+.btn-group .custom-badge + .btn-group,
 .btn-group .btn-group + .btn,
+.btn-group .btn-group + .custom-badge,
 .btn-group .btn-group + .btn-group {
   margin-left: -1px; }
 
@@ -3491,27 +3529,27 @@ tbody.collapse.in {
 .btn-toolbar:after {
   clear: both; }
 
-.btn-toolbar .btn,
+.btn-toolbar .btn, .btn-toolbar .custom-badge,
 .btn-toolbar .btn-group,
 .btn-toolbar .input-group {
   float: left; }
 
-.btn-toolbar > .btn,
+.btn-toolbar > .btn, .btn-toolbar > .custom-badge,
 .btn-toolbar > .btn-group,
 .btn-toolbar > .input-group {
   margin-left: 5px; }
 
-.btn-group > .btn:not(:first-child):not(:last-child):not(.dropdown-toggle) {
+.btn-group > .btn:not(:first-child):not(:last-child):not(.dropdown-toggle), .btn-group > .custom-badge:not(:first-child):not(:last-child):not(.dropdown-toggle) {
   border-radius: 0; }
 
-.btn-group > .btn:first-child {
+.btn-group > .btn:first-child, .btn-group > .custom-badge:first-child {
   margin-left: 0; }
 
-.btn-group > .btn:first-child:not(:last-child):not(.dropdown-toggle) {
+.btn-group > .btn:first-child:not(:last-child):not(.dropdown-toggle), .btn-group > .custom-badge:first-child:not(:last-child):not(.dropdown-toggle) {
   border-bottom-right-radius: 0;
   border-top-right-radius: 0; }
 
-.btn-group > .btn:last-child:not(:first-child),
+.btn-group > .btn:last-child:not(:first-child), .btn-group > .custom-badge:last-child:not(:first-child),
 .btn-group > .dropdown-toggle:not(:first-child) {
   border-bottom-left-radius: 0;
   border-top-left-radius: 0; }
@@ -3519,15 +3557,15 @@ tbody.collapse.in {
 .btn-group > .btn-group {
   float: left; }
 
-.btn-group > .btn-group:not(:first-child):not(:last-child) > .btn {
+.btn-group > .btn-group:not(:first-child):not(:last-child) > .btn, .btn-group > .btn-group:not(:first-child):not(:last-child) > .custom-badge {
   border-radius: 0; }
 
-.btn-group > .btn-group:first-child:not(:last-child) > .btn:last-child,
+.btn-group > .btn-group:first-child:not(:last-child) > .btn:last-child, .btn-group > .btn-group:first-child:not(:last-child) > .custom-badge:last-child,
 .btn-group > .btn-group:first-child:not(:last-child) > .dropdown-toggle {
   border-bottom-right-radius: 0;
   border-top-right-radius: 0; }
 
-.btn-group > .btn-group:last-child:not(:first-child) > .btn:first-child {
+.btn-group > .btn-group:last-child:not(:first-child) > .btn:first-child, .btn-group > .btn-group:last-child:not(:first-child) > .custom-badge:first-child {
   border-bottom-left-radius: 0;
   border-top-left-radius: 0; }
 
@@ -3535,11 +3573,11 @@ tbody.collapse.in {
 .btn-group.open .dropdown-toggle {
   outline: 0; }
 
-.btn-group > .btn + .dropdown-toggle {
+.btn-group > .btn + .dropdown-toggle, .btn-group > .custom-badge + .dropdown-toggle {
   padding-left: 8px;
   padding-right: 8px; }
 
-.btn-group > .btn-lg + .dropdown-toggle, .btn-group-lg.btn-group > .btn + .dropdown-toggle {
+.btn-group > .btn-lg + .dropdown-toggle, .btn-group-lg.btn-group > .btn + .dropdown-toggle, .btn-group-lg.btn-group > .custom-badge + .dropdown-toggle {
   padding-left: 12px;
   padding-right: 12px; }
 
@@ -3549,19 +3587,20 @@ tbody.collapse.in {
 .btn-group.open .dropdown-toggle.btn-link {
   box-shadow: none; }
 
-.btn .caret {
+.btn .caret, .custom-badge .caret {
   margin-left: 0; }
 
-.btn-lg .caret, .btn-group-lg > .btn .caret {
+.btn-lg .caret, .btn-group-lg > .btn .caret, .btn-group-lg > .custom-badge .caret {
   border-width: 5px 5px 0;
   border-bottom-width: 0; }
 
-.dropup .btn-lg .caret, .dropup .btn-group-lg > .btn .caret {
+.dropup .btn-lg .caret, .dropup .btn-group-lg > .btn .caret, .dropup .btn-group-lg > .custom-badge .caret {
   border-width: 0 5px 5px; }
 
-.btn-group-vertical > .btn,
+.btn-group-vertical > .btn, .btn-group-vertical > .custom-badge,
 .btn-group-vertical > .btn-group,
-.btn-group-vertical > .btn-group > .btn {
+.btn-group-vertical > .btn-group > .btn,
+.btn-group-vertical > .btn-group > .custom-badge {
   display: block;
   float: none;
   width: 100%;
@@ -3574,40 +3613,42 @@ tbody.collapse.in {
 .btn-group-vertical > .btn-group:after {
   clear: both; }
 
-.btn-group-vertical > .btn-group > .btn {
+.btn-group-vertical > .btn-group > .btn, .btn-group-vertical > .btn-group > .custom-badge {
   float: none; }
 
-.btn-group-vertical > .btn + .btn,
+.btn-group-vertical > .btn + .btn, .btn-group-vertical > .custom-badge + .btn, .btn-group-vertical > .btn + .custom-badge, .btn-group-vertical > .custom-badge + .custom-badge,
 .btn-group-vertical > .btn + .btn-group,
+.btn-group-vertical > .custom-badge + .btn-group,
 .btn-group-vertical > .btn-group + .btn,
+.btn-group-vertical > .btn-group + .custom-badge,
 .btn-group-vertical > .btn-group + .btn-group {
   margin-top: -1px;
   margin-left: 0; }
 
-.btn-group-vertical > .btn:not(:first-child):not(:last-child) {
+.btn-group-vertical > .btn:not(:first-child):not(:last-child), .btn-group-vertical > .custom-badge:not(:first-child):not(:last-child) {
   border-radius: 0; }
 
-.btn-group-vertical > .btn:first-child:not(:last-child) {
+.btn-group-vertical > .btn:first-child:not(:last-child), .btn-group-vertical > .custom-badge:first-child:not(:last-child) {
   border-top-right-radius: 35px;
   border-top-left-radius: 35px;
   border-bottom-right-radius: 0;
   border-bottom-left-radius: 0; }
 
-.btn-group-vertical > .btn:last-child:not(:first-child) {
+.btn-group-vertical > .btn:last-child:not(:first-child), .btn-group-vertical > .custom-badge:last-child:not(:first-child) {
   border-top-right-radius: 0;
   border-top-left-radius: 0;
   border-bottom-right-radius: 35px;
   border-bottom-left-radius: 35px; }
 
-.btn-group-vertical > .btn-group:not(:first-child):not(:last-child) > .btn {
+.btn-group-vertical > .btn-group:not(:first-child):not(:last-child) > .btn, .btn-group-vertical > .btn-group:not(:first-child):not(:last-child) > .custom-badge {
   border-radius: 0; }
 
-.btn-group-vertical > .btn-group:first-child:not(:last-child) > .btn:last-child,
+.btn-group-vertical > .btn-group:first-child:not(:last-child) > .btn:last-child, .btn-group-vertical > .btn-group:first-child:not(:last-child) > .custom-badge:last-child,
 .btn-group-vertical > .btn-group:first-child:not(:last-child) > .dropdown-toggle {
   border-bottom-right-radius: 0;
   border-bottom-left-radius: 0; }
 
-.btn-group-vertical > .btn-group:last-child:not(:first-child) > .btn:first-child {
+.btn-group-vertical > .btn-group:last-child:not(:first-child) > .btn:first-child, .btn-group-vertical > .btn-group:last-child:not(:first-child) > .custom-badge:first-child {
   border-top-right-radius: 0;
   border-top-left-radius: 0; }
 
@@ -3617,22 +3658,25 @@ tbody.collapse.in {
   table-layout: fixed;
   border-collapse: separate; }
 
-.btn-group-justified > .btn,
+.btn-group-justified > .btn, .btn-group-justified > .custom-badge,
 .btn-group-justified > .btn-group {
   float: none;
   display: table-cell;
   width: 1%; }
 
-.btn-group-justified > .btn-group .btn {
+.btn-group-justified > .btn-group .btn, .btn-group-justified > .btn-group .custom-badge {
   width: 100%; }
 
 .btn-group-justified > .btn-group .dropdown-menu {
   left: auto; }
 
-[data-toggle="buttons"] > .btn input[type="radio"],
+[data-toggle="buttons"] > .btn input[type="radio"], [data-toggle="buttons"] > .custom-badge input[type="radio"],
 [data-toggle="buttons"] > .btn input[type="checkbox"],
+[data-toggle="buttons"] > .custom-badge input[type="checkbox"],
 [data-toggle="buttons"] > .btn-group > .btn input[type="radio"],
-[data-toggle="buttons"] > .btn-group > .btn input[type="checkbox"] {
+[data-toggle="buttons"] > .btn-group > .custom-badge input[type="radio"],
+[data-toggle="buttons"] > .btn-group > .btn input[type="checkbox"],
+[data-toggle="buttons"] > .btn-group > .custom-badge input[type="checkbox"] {
   position: absolute;
   clip: rect(0, 0, 0, 0);
   pointer-events: none; }
@@ -3686,14 +3730,16 @@ tbody.collapse.in {
 
 .input-group-addon.input-sm,
 .input-group-sm > .input-group-addon,
-.input-group-sm > .input-group-btn > .input-group-addon.btn {
+.input-group-sm > .input-group-btn > .input-group-addon.btn,
+.input-group-sm > .input-group-btn > .input-group-addon.custom-badge {
   padding: 5px 10px;
   font-size: 12px;
   border-radius: 35px; }
 
 .input-group-addon.input-lg,
 .input-group-lg > .input-group-addon,
-.input-group-lg > .input-group-btn > .input-group-addon.btn {
+.input-group-lg > .input-group-btn > .input-group-addon.btn,
+.input-group-lg > .input-group-btn > .input-group-addon.custom-badge {
   padding: 10px 16px;
   font-size: 18px;
   border-radius: 35px; }
@@ -3705,10 +3751,14 @@ tbody.collapse.in {
 .input-group .form-control:first-child,
 .input-group-addon:first-child,
 .input-group-btn:first-child > .btn,
+.input-group-btn:first-child > .custom-badge,
 .input-group-btn:first-child > .btn-group > .btn,
+.input-group-btn:first-child > .btn-group > .custom-badge,
 .input-group-btn:first-child > .dropdown-toggle,
 .input-group-btn:last-child > .btn:not(:last-child):not(.dropdown-toggle),
-.input-group-btn:last-child > .btn-group:not(:last-child) > .btn {
+.input-group-btn:last-child > .custom-badge:not(:last-child):not(.dropdown-toggle),
+.input-group-btn:last-child > .btn-group:not(:last-child) > .btn,
+.input-group-btn:last-child > .btn-group:not(:last-child) > .custom-badge {
   border-bottom-right-radius: 0;
   border-top-right-radius: 0; }
 
@@ -3718,10 +3768,14 @@ tbody.collapse.in {
 .input-group .form-control:last-child,
 .input-group-addon:last-child,
 .input-group-btn:last-child > .btn,
+.input-group-btn:last-child > .custom-badge,
 .input-group-btn:last-child > .btn-group > .btn,
+.input-group-btn:last-child > .btn-group > .custom-badge,
 .input-group-btn:last-child > .dropdown-toggle,
 .input-group-btn:first-child > .btn:not(:first-child),
-.input-group-btn:first-child > .btn-group:not(:first-child) > .btn {
+.input-group-btn:first-child > .custom-badge:not(:first-child),
+.input-group-btn:first-child > .btn-group:not(:first-child) > .btn,
+.input-group-btn:first-child > .btn-group:not(:first-child) > .custom-badge {
   border-bottom-left-radius: 0;
   border-top-left-radius: 0; }
 
@@ -3733,20 +3787,20 @@ tbody.collapse.in {
   font-size: 0;
   white-space: nowrap; }
 
-.input-group-btn > .btn {
+.input-group-btn > .btn, .input-group-btn > .custom-badge {
   position: relative; }
 
-.input-group-btn > .btn + .btn {
+.input-group-btn > .btn + .btn, .input-group-btn > .custom-badge + .btn, .input-group-btn > .btn + .custom-badge, .input-group-btn > .custom-badge + .custom-badge {
   margin-left: -1px; }
 
-.input-group-btn > .btn:hover, .input-group-btn > .btn:focus, .input-group-btn > .btn:active {
+.input-group-btn > .btn:hover, .input-group-btn > .custom-badge:hover, .input-group-btn > .btn:focus, .input-group-btn > .custom-badge:focus, .input-group-btn > .btn:active, .input-group-btn > .custom-badge:active {
   z-index: 2; }
 
-.input-group-btn:first-child > .btn,
+.input-group-btn:first-child > .btn, .input-group-btn:first-child > .custom-badge,
 .input-group-btn:first-child > .btn-group {
   margin-right: -1px; }
 
-.input-group-btn:last-child > .btn,
+.input-group-btn:last-child > .btn, .input-group-btn:last-child > .custom-badge,
 .input-group-btn:last-child > .btn-group {
   z-index: 2;
   margin-left: -1px; }
@@ -4173,11 +4227,11 @@ tbody.collapse.in {
   margin-top: 8px;
   margin-bottom: 8px; }
 
-.navbar-btn.btn-sm, .btn-group-sm > .navbar-btn.btn {
+.navbar-btn.btn-sm, .btn-group-sm > .navbar-btn.btn, .btn-group-sm > .navbar-btn.custom-badge {
   margin-top: 10px;
   margin-bottom: 10px; }
 
-.navbar-btn.btn-xs, .btn-group-xs > .navbar-btn.btn {
+.navbar-btn.btn-xs, .btn-group-xs > .navbar-btn.btn, .btn-group-xs > .navbar-btn.custom-badge {
   margin-top: 14px;
   margin-bottom: 14px; }
 
@@ -4527,7 +4581,7 @@ fieldset[disabled] .navbar-inverse .btn-link:focus {
 .label:empty {
   display: none; }
 
-.btn .label {
+.btn .label, .custom-badge .label {
   position: relative;
   top: -1px; }
 
@@ -4589,12 +4643,13 @@ a.label:hover, a.label:focus {
 .badge:empty {
   display: none; }
 
-.btn .badge {
+.btn .badge, .custom-badge .badge {
   position: relative;
   top: -1px; }
 
-.btn-xs .badge, .btn-group-xs > .btn .badge,
-.btn-group-xs > .btn .badge {
+.btn-xs .badge, .btn-group-xs > .btn .badge, .btn-group-xs > .custom-badge .badge,
+.btn-group-xs > .btn .badge,
+.btn-group-xs > .custom-badge .badge {
   top: 0;
   padding: 1px 5px; }
 
@@ -5576,11 +5631,11 @@ button.close {
 .modal-footer:after {
   clear: both; }
 
-.modal-footer .btn + .btn {
+.modal-footer .btn + .btn, .modal-footer .custom-badge + .btn, .modal-footer .btn + .custom-badge, .modal-footer .custom-badge + .custom-badge {
   margin-left: 5px;
   margin-bottom: 0; }
 
-.modal-footer .btn-group .btn + .btn {
+.modal-footer .btn-group .btn + .btn, .modal-footer .btn-group .custom-badge + .btn, .modal-footer .btn-group .btn + .custom-badge, .modal-footer .btn-group .custom-badge + .custom-badge {
   margin-left: -1px; }
 
 .modal-footer .btn-block + .btn-block {
@@ -6030,7 +6085,7 @@ button.close {
   text-align: center;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6); }
 
-.carousel-caption .btn {
+.carousel-caption .btn, .carousel-caption .custom-badge {
   text-shadow: none; }
 
 @media screen and (min-width: 768px) {
@@ -6609,21 +6664,21 @@ textarea:focus::placeholder, input:focus::placeholder {
 /* When a video is inside the fitvids wrapper, drop the
 margin on the iframe, cause it breaks stuff. */
 /* Buttons */
-.btn {
+.btn, .custom-badge {
   padding: 8px 22px;
   font-weight: 100;
   -webkit-transition: background-color 0.2s ease-out, border-color 0.2s ease-out, opacity 0.2s ease-out;
           transition: background-color 0.2s ease-out, border-color 0.2s ease-out, opacity 0.2s ease-out; }
 
-.btn:focus, .btn.focus, .btn:active:focus, .btn:active.focus, .btn.active:focus, .btn.active.focus {
+.btn:focus, .custom-badge:focus, .btn.focus, .focus.custom-badge, .btn:active:focus, .custom-badge:active:focus, .btn:active.focus, .custom-badge:active.focus, .btn.active:focus, .active.custom-badge:focus, .btn.active.focus, .active.focus.custom-badge {
   outline: 0 none;
   box-shadow: none; }
 
-.btn-default {
+.btn-default, .custom-badge.custom-badge-white {
   background-color: #fff;
   border-color: #fff; }
 
-.btn-default:focus, .btn-default.focus, .btn-default:focus:hover, .btn-default.focus:hover, .btn-default:hover, .btn-default:active {
+.btn-default:focus, .custom-badge.custom-badge-white:focus, .btn-default.focus, .focus.custom-badge.custom-badge-white, .btn-default:focus:hover, .custom-badge.custom-badge-white:focus:hover, .btn-default.focus:hover, .focus.custom-badge.custom-badge-white:hover, .btn-default:hover, .custom-badge.custom-badge-white:hover, .btn-default:active, .custom-badge.custom-badge-white:active {
   background-color: #333333;
   border-color: #333333;
   color: #fff; }
@@ -6636,7 +6691,7 @@ margin on the iframe, cause it breaks stuff. */
   background-color: #fff;
   color: #333; }
 
-.btn-line {
+.btn-line, .custom-badge.custom-badge-line {
   border: 1px solid #fff; }
 
 .btn-black {
@@ -6791,7 +6846,7 @@ fieldset[disabled] .btn-muted-link:focus {
   line-height: 25px;
   border-radius: 40px; }
 
-.btn-lg, .btn-group-lg > .btn {
+.btn-lg, .btn-group-lg > .btn, .btn-group-lg > .custom-badge {
   min-width: 160px;
   padding: 14px 25px;
   font-size: inherit;
@@ -6805,13 +6860,13 @@ fieldset[disabled] .btn-muted-link:focus {
   line-height: normal;
   border-radius: 35px; }
 
-.btn-sm, .btn-group-sm > .btn {
+.btn-sm, .btn-group-sm > .btn, .btn-group-sm > .custom-badge {
   padding: 10px 18px;
   font-size: inherit;
   line-height: normal;
   border-radius: 35px; }
 
-.btn-xs, .btn-group-xs > .btn {
+.btn-xs, .btn-group-xs > .btn, .btn-group-xs > .custom-badge {
   padding: 8px 15px;
   font-size: inherit;
   line-height: normal;
@@ -6926,6 +6981,39 @@ fieldset[disabled] .btn-muted-link:focus {
 
 .media {
   margin-top: 0; }
+
+.green-overlay {
+  background-color: #00c091;
+  width: 100%;
+  position: relative;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  opacity: 0;
+  -webkit-transition: opacity 0.2s ease-in-out;
+          transition: opacity 0.2s ease-in-out; }
+
+.custom-badge {
+  border: none;
+  cursor: auto; }
+
+.custom-badge:hover, .custom-badge:focus, .custom-badge:active:hover, .custom-badge:active {
+  background-color: #fff; }
+
+.custom-badge.custom-badge-white:hover, .custom-badge.custom-badge-white:focus, .custom-badge.custom-badge-white:active:hover, .custom-badge.custom-badge-white:active {
+  background-color: #fff; }
+
+.custom-badge.custom-badge-line {
+  color: #fff; }
+
+.custom-badge.custom-badge-line:hover, .custom-badge.custom-badge-line:focus, .custom-badge.custom-badge-line:active:hover, .custom-badge.custom-badge-line:active {
+  color: #fff;
+  background: transparent; }
+
+.modal-backdrop {
+  background-color: rgba(0, 192, 145, 0.7); }
 
 /* ==========================================================================
    3. Utilities - These things get used a lot
@@ -7455,9 +7543,111 @@ fieldset[disabled] .btn-muted-link:focus {
   vertical-align: middle;
   font-weight: 300; }
 
-#wavy-footer .content .btn-default {
+#wavy-footer .content .btn-default, #wavy-footer .content .custom-badge.custom-badge-white {
   font-weight: normal;
   padding: 8px 27px; }
+
+.posts-wrapper {
+  margin: 0 auto; }
+
+.posts-wrapper .posts-header {
+  font-size: 16px;
+  color: #333333;
+  font-weight: lighter; }
+
+.posts-wrapper .posts-header .posts-filters a {
+  margin-right: 20px;
+  color: #333333; }
+
+.posts-wrapper [class*="col-"] {
+  padding: 25px; }
+
+.posts-wrapper .single-post {
+  margin: 0;
+  -webkit-transition: background-color 0.2s ease-out, border-color 0.2s ease-out, opacity 0.2s ease-out;
+          transition: background-color 0.2s ease-out, border-color 0.2s ease-out, opacity 0.2s ease-out; }
+
+.posts-wrapper .single-post img {
+  width: 100%; }
+
+.posts-wrapper .single-post .panel-heading {
+  height: 215px;
+  background-size: cover;
+  background-position: center;
+  padding: 0;
+  position: relative; }
+
+.posts-wrapper .single-post .panel-heading .category {
+  position: absolute;
+  bottom: 30px;
+  left: 30px;
+  border: 0;
+  opacity: 0; }
+
+.posts-wrapper .single-post .panel-body {
+  padding: 30px;
+  font-size: 14px;
+  color: #808080;
+  line-height: 16px; }
+
+.posts-wrapper .single-post .panel-body .shares-count {
+  margin-right: 15px; }
+
+.posts-wrapper .single-post .panel-body .comments-count i {
+  vertical-align: top; }
+
+.posts-wrapper .single-post h3 {
+  font-size: 24px;
+  color: #333333;
+  -webkit-transition: color 0.2s ease-in-out;
+          transition: color 0.2s ease-in-out; }
+
+.posts-wrapper .single-post:hover, .posts-wrapper .single-post:focus {
+  border: 1px solid #00c091; }
+
+.posts-wrapper .single-post:hover h3, .posts-wrapper .single-post:focus h3 {
+  color: #00c091; }
+
+.posts-wrapper .single-post:hover .green-overlay, .posts-wrapper .single-post:focus .green-overlay {
+  opacity: 0.8; }
+
+.posts-wrapper .single-post:hover .category, .posts-wrapper .single-post:focus .category {
+  opacity: 1; }
+
+.top-post {
+  cursor: pointer;
+  position: relative; }
+
+.top-post .container {
+  position: relative;
+  height: 100%; }
+
+.top-post .container h1 {
+  color: #fff;
+  position: absolute;
+  bottom: 10px;
+  width: 75%;
+  text-align: left; }
+
+.top-post .container .shares {
+  position: absolute;
+  bottom: 55px;
+  right: 0; }
+
+.top-post .hover-gradient {
+  opacity: 0;
+  background: rgba(45, 192, 141, 0);
+  background: -webkit-linear-gradient(top, rgba(45, 192, 141, 0) 0%, #2dc08d 100%);
+  background: linear-gradient(to bottom, rgba(45, 192, 141, 0) 0%, #2dc08d 100%);
+  height: 60%;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  -webkit-transition: opacity .3s ease-in-out;
+          transition: opacity .3s ease-in-out; }
+
+.top-post:hover .hover-gradient, .top-post:focus .hover-gradient {
+  opacity: .9; }
 
 /* ==========================================================================
    6. Single Post - When you click on an individual post
@@ -7465,8 +7655,6 @@ fieldset[disabled] .btn-muted-link:focus {
 h1.post-title {
   color: #caad00; }
 
-/* Stop .full-img from creating horizontal scroll - slight hack due to
-   imperfections with browser width % calculations and rounding */
 .post-template .content {
   overflow: hidden; }
 
@@ -7901,13 +8089,13 @@ h1.post-title {
   width: 80%;
   max-width: 710px;
   margin: 4rem auto;
-  font-family: 'Open Sans', sans-serif;
+  font-family: 'Roboto', sans-serif;
   font-size: 1.3rem;
-  color: #9EABB3;
+  color: #333;
   text-align: center; }
 
 .pagination a {
-  color: #9EABB3;
+  color: #333;
   -webkit-transition: all 0.2s ease;
           transition: all 0.2s ease; }
 
@@ -7915,7 +8103,7 @@ h1.post-title {
 .older-posts, .newer-posts {
   position: absolute;
   display: inline-block;
-  padding: 0 15px;
+  padding: 0 25px;
   border: #999999 1px solid;
   text-decoration: none;
   border-radius: 30px;
@@ -7923,9 +8111,9 @@ h1.post-title {
           transition: border ease 0.3s; }
 
 .older-posts:hover, .older-posts:focus, .older-posts:active, .older-posts.active, .newer-posts:hover, .newer-posts:focus, .newer-posts:active, .newer-posts.active {
-  color: #000;
-  background: #bbbbbb;
-  text-decoration: none; }
+  text-decoration: none;
+  border: 1px solid #00c091;
+  color: #00c091; }
 
 .older-posts {
   right: 0; }
@@ -8206,7 +8394,9 @@ body:before {
     width: 100%;
     right: 100%; }
   #wavy-footer {
-    text-align: center; } }
+    text-align: center; }
+  .top-post .container h1 {
+    width: 100%; } }
 
 @media (max-width: 767px) {
   .main-nav-fixed .navbar .navbar-toggle {
