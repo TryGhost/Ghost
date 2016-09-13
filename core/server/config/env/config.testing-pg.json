@@ -1,0 +1,17 @@
+{
+    "url": "http://127.0.0.1:2369",
+    "server": {
+        "port": 2369
+    },
+    "database": {
+        "client": "pg",
+        "connection": {
+            "host"     : "127.0.0.1",
+            "user"     : "postgres",
+            "password" : "",
+            "database" : "ghost_testing",
+            "charset"  : "utf8"
+        }
+    },
+    "logging": false
+}
