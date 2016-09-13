@@ -1,8 +1,8 @@
 var config = require('../../config'),
-    events = require(config.paths.corePath + '/server/events'),
-    models = require(config.paths.corePath + '/server/models'),
-    errors = require(config.paths.corePath + '/server/errors'),
-    sequence = require(config.paths.corePath + '/server/utils/sequence'),
+    events = require(config.get('paths:corePath') + '/server/events'),
+    models = require(config.get('paths:corePath') + '/server/models'),
+    errors = require(config.get('paths:corePath') + '/server/errors'),
+    sequence = require(config.get('paths:corePath') + '/server/utils/sequence'),
     moment = require('moment-timezone');
 
 /**

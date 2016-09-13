@@ -25,7 +25,7 @@ function getAssetUrl(path, isAdmin, minify) {
     output += path;
 
     if (!path.match(/^favicon\.ico$/)) {
-        output = output + '?v=' + config.assetHash;
+        output = output + '?v=' + config.get('assetHash');
     }
 
     return output;

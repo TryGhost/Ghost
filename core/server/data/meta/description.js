@@ -10,7 +10,7 @@ function getDescription(data, root) {
     } else if (_.includes(context, 'paged')) {
         description = '';
     } else if (_.includes(context, 'home')) {
-        description = config.theme.description;
+        description = config.get('theme').description;
     } else if (_.includes(context, 'author') && data.author) {
         description = data.author.meta_description || data.author.bio;
     } else if (_.includes(context, 'tag') && data.tag) {

@@ -4,8 +4,8 @@ var _               = require('lodash'),
     config          = require('../../server/config'),
     schema          = require('../../server/data/schema').tables,
     ApiRouteBase    = '/ghost/api/v0.1/',
-    host            = config.server.host,
-    port            = config.server.port,
+    host            = config.get('server').host,
+    port            = config.get('server').port,
     protocol        = 'http://',
     expectedProperties = {
         // API top level
