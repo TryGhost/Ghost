@@ -1,5 +1,4 @@
 {
-    "ghostVersion": "0.10.1",
     "paths": {
         "appRoot": ".",
         "corePath": "core/",
