@@ -9,6 +9,7 @@ var should = require('should'),
     configUtils = require('../utils/configUtils'),
     models = require('../../server/models'),
     api = require('../../server/api'),
+    db = require('../../server/data/db/connection'),
     permissions = require('../../server/permissions'),
     notifications = require('../../server/api/notifications'),
     versioning = require('../../server/data/schema/versioning'),
@@ -967,9 +968,9 @@ describe('Fixtures', function () {
                         migrationsSettingsValue;
 
                     beforeEach(function () {
-                        configUtils.config.database.isPostgreSQL = function () {
+                        sandbox.stub(db, 'isPostgreSQL', function isPostgreSQL() {
                             return isPostgres;
-                        };
+                        });
 
                         sandbox.stub(Date.prototype, 'getTimezoneOffset', function () {
                             return serverTimezoneOffset;
