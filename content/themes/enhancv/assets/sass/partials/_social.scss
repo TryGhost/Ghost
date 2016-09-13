@@ -34,4 +34,15 @@
       background: rgba(#fff, .8);
       color: #1a1a1a;
     }
+
+    &.btn-invert {
+      color: #fff;
+      background-color: #4d4d4d;
+
+      &:hover,
+      &:active,
+      &:focus {
+        background-color: $text-color;
+      }
+    }
 }

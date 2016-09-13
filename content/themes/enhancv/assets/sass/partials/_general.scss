@@ -225,10 +225,7 @@
     width: 100%;
     
     background: #000;
-    background: -moz-linear-gradient(top,  #000 0%, transparent 100%);
-    background: -webkit-linear-gradient(top,  #000 0%, transparent 100%);
     background: linear-gradient(to bottom,  #000 0%, transparent 100%);
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#000', endColorstr='transparent',GradientType=0 );
     opacity: .2;
   }
 
