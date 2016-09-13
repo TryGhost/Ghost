@@ -33,24 +33,24 @@ function getStorage(type) {
 
     // CASE: load adapter from custom path  (.../content/storage)
     try {
-        storage[storageChoice] = require(config.get('paths').storagePath.custom + storageChoice);
+        storage[storageChoice] = require(config.getContentPath('storage') + storageChoice);
     } catch (err) {
         // CASE: only throw error if module does exist
         if (err.code !== 'MODULE_NOT_FOUND') {
             throw new errors.IncorrectUsage(err.message);
         }
         // CASE: if module not found it can be an error within the adapter (cannot find bluebird for example)
-        else if (err.code === 'MODULE_NOT_FOUND' && err.message.indexOf(config.get('paths').storagePath.custom + storageChoice) === -1) {
+        else if (err.code === 'MODULE_NOT_FOUND' && err.message.indexOf(config.getContentPath('storage') + storageChoice) === -1) {
             throw new errors.IncorrectUsage(err.message);
         }
     }
 
     // CASE: either storage[storageChoice] is already set or why check for in the default storage path
     try {
-        storage[storageChoice] = storage[storageChoice] || require(config.get('paths').storagePath.default + storageChoice);
+        storage[storageChoice] = storage[storageChoice] || require(config.get('paths').internalStoragePath + storageChoice);
     } catch (err) {
         if (err.code === 'MODULE_NOT_FOUND') {
-            throw new errors.IncorrectUsage('We cannot find your adpter in: ' + config.get('paths').storagePath.custom + ' or: ' + config.get('paths').storagePath.default);
+            throw new errors.IncorrectUsage('We cannot find your adapter in: ' + config.getContentPath('storage') + ' or: ' + config.get('paths').internalStoragePath);
         } else {
             throw new errors.IncorrectUsage(err.message);
         }
