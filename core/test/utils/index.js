@@ -218,8 +218,8 @@ fixtures = {
 
     overrideOwnerUser: function overrideOwnerUser(slug) {
         var user;
-
         user = DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]);
+
         if (slug) {
             user.slug = slug;
         }
@@ -588,6 +588,10 @@ togglePermalinks = function togglePermalinks(request, toggle) {
                 .end(function (err, res) {
                     if (err) {
                         return reject(err);
+                    }
+
+                    if (res.statusCode !== 200) {
+                        return reject(res.body);
                     }
 
                     resolve(res.body);
