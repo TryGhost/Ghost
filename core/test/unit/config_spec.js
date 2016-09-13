@@ -47,14 +47,13 @@ describe('Config', function () {
             var themeConfig = config.get('theme');
 
             // This will fail if there are any extra keys
-            themeConfig.should.have.keys('url', 'title', 'description', 'logo', 'cover', 'timezone');
+            themeConfig.should.have.keys('title', 'description', 'logo', 'cover', 'timezone');
         });
 
         it('should have the correct values for each key', function () {
             var themeConfig = config.get('theme');
 
             // Check values are as we expect
-            themeConfig.should.have.property('url', 'http://my-ghost-blog.com');
             themeConfig.should.have.property('title', 'casper');
             themeConfig.should.have.property('description', 'casper');
             themeConfig.should.have.property('logo', 'casper');
@@ -69,7 +68,6 @@ describe('Config', function () {
 
             // Check values are as we expect
             themeConfig.should.have.property('timezone', 'Etc/UTC');
-            themeConfig.should.have.property('url');
 
             configUtils.set({
                 theme: {
@@ -77,8 +75,7 @@ describe('Config', function () {
                 }
             });
 
-            config.theme.should.have.property('timezone', 'Africa/Cairo');
-            config.theme.should.have.property('url');
+            config.get('theme').should.have.property('timezone', 'Africa/Cairo');
         });
 
         it('should set theme object with timezone by default', function () {
@@ -87,7 +84,6 @@ describe('Config', function () {
             // Check values are as we expect
             themeConfig.should.have.property('theme');
             themeConfig.theme.should.have.property('timezone', 'Etc/UTC');
-            themeConfig.theme.should.have.property('url');
         });
     });
 
