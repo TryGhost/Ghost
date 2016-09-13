@@ -1,6 +1,6 @@
 var testUtils       = require('../../utils'),
+    configUtils     = require('../../utils/configUtils'),
     should          = require('should'),
-    config          = require('../../../server/config'),
     i18n            = require('../../../../core/server/i18n'),
 
     // test data
@@ -14,6 +14,7 @@ var testUtils       = require('../../utils'),
             options: {}
         }]
     };
+
 i18n.init();
 
 describe('Mail API', function () {
@@ -21,8 +22,12 @@ describe('Mail API', function () {
     afterEach(testUtils.teardown);
     beforeEach(testUtils.setup('perms:mail', 'perms:init'));
 
+    afterEach(function () {
+        configUtils.restore();
+    });
+
     it('returns a success', function (done) {
-        config.set({mail: {transport: 'stub'}});
+        configUtils.set({mail: {transport: 'stub'}});
 
         var MailAPI = require('../../../server/api/mail');
 
@@ -37,7 +42,7 @@ describe('Mail API', function () {
     });
 
     it('returns a boo boo', function (done) {
-        config.set({mail: {transport: 'stub', options: {error: 'Stub made a boo boo :('}}});
+        configUtils.set({mail: {transport: 'stub', options: {error: 'Stub made a boo boo :('}}});
 
         var MailAPI = require('../../../server/api/mail');
 
