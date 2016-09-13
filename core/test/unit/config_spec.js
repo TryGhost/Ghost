@@ -133,21 +133,21 @@ describe('Config', function () {
             });
 
             config.should.have.property('config', configFile);
-            config.paths.should.have.property('contentPath', contentPath);
-            config.paths.should.have.property('themePath', contentPath + 'themes');
-            config.paths.should.have.property('appPath', contentPath + 'apps');
-            config.paths.should.have.property('imagesPath', contentPath + 'images');
+            config.get('paths').should.have.property('contentPath', contentPath);
+            config.get('paths').should.have.property('themePath', contentPath + 'themes');
+            config.get('paths').should.have.property('appPath', contentPath + 'apps');
+            config.get('paths').should.have.property('imagesPath', contentPath + 'images');
         });
     });
 
     describe('Storage', function () {
         it('should default to local-file-store', function () {
-            config.paths.should.have.property('storagePath', {
+            config.get('paths').should.have.property('storagePath', {
                 default: path.join(config.get('paths').corePath, '/server/storage/'),
                 custom:  path.join(config.get('paths').contentPath, 'storage/')
             });
 
-            config.storage.should.have.property('active', {
+            config.get('storage').should.have.property('active', {
                 images: 'local-file-store',
                 themes: 'local-file-store'
             });
@@ -163,12 +163,12 @@ describe('Config', function () {
                 }
             });
 
-            config.storage.should.have.property('active', {
+            config.get('storage').should.have.property('active', {
                 images: 's3',
                 themes: 'local-file-store'
             });
 
-            config.storage.should.have.property('s3', {});
+            config.get('storage').should.have.property('s3', {});
         });
 
         it('should use default theme adapter when passing an object', function () {
