@@ -1125,7 +1125,12 @@ describe('Fixtures', function () {
 
                         it('sqlite: no UTC update, only format', function (done) {
                             createdAt = moment(1464798678537).toDate();
-                            configUtils.config.database.client = 'sqlite3';
+
+                            configUtils.set({
+                                database: {
+                                    client: 'sqlite3'
+                                }
+                            });
 
                             moment(createdAt).format('YYYY-MM-DD HH:mm:ss').should.eql('2016-06-01 16:31:18');
 
@@ -1149,7 +1154,12 @@ describe('Fixtures', function () {
                              * we expect 2016-06-01 05:00:00
                              */
                             createdAt = moment('2016-06-01 06:00:00').toDate();
-                            configUtils.config.database.client = 'mysql';
+
+                            configUtils.set({
+                                database: {
+                                    client: 'mysql'
+                                }
+                            });
 
                             moment(createdAt).format('YYYY-MM-DD HH:mm:ss').should.eql('2016-06-01 06:00:00');
 
