@@ -407,25 +407,6 @@ var overrides      = require('./core/server/overrides'),
                 cfg.express.test.options.node_env = process.env.NODE_ENV;
             });
 
-        // #### Ensure Config *(Utility Task)*
-        // Make sure that we have a `config.js` file when running tests
-        // Ghost requires a `config.js` file to specify the database settings etc. Ghost comes with an example file:
-        // `config.example.js` which is copied and renamed to `config.js` by the bootstrap process
-        grunt.registerTask('ensureConfig', function () {
-            var config = require('./core/server/config'),
-                done = this.async();
-
-            if (!process.env.TEST_SUITE || process.env.TEST_SUITE !== 'client') {
-                config.load().then(function () {
-                    done();
-                }).catch(function (err) {
-                    grunt.fail.fatal(err.stack);
-                });
-            } else {
-                done();
-            }
-        });
-
         // #### Reset Database to "New" state *(Utility Task)*
         // Drops all database tables and then runs the migration process to put the database
         // in a "new" state.
@@ -538,7 +519,7 @@ var overrides      = require('./core/server/overrides'),
         // ### test-setup *(utility)(
         // `grunt test-setup` will run all the setup tasks required for running tests
         grunt.registerTask('test-setup', 'Setup ready to run tests',
-            ['clean:test', 'setTestEnv', 'ensureConfig']
+            ['clean:test', 'setTestEnv']
         );
 
         // ### Unit Tests *(sub task)*
