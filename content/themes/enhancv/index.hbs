@@ -2,16 +2,27 @@
 
 <div class="main-header post-head top-post" {{#if posts.0.image}} 
  style="background-image: url('{{posts.0.image}}');" {{/if}}>
-  <div class="container separator lg">
-    <span class="custom-badge custom-badge-white">Top Post</span>
-    <h1>{{posts.0.title}}</h1>
-  </div>
+  <a href="{{posts.0.url}}">
+    <div class="hover-gradient"></div>
+    <div class="container separator lg">
+      <span class="custom-badge custom-badge-white">Top Post</span>
+      <h1>{{posts.0.title}}</h1>
+      <span class="custom-badge custom-badge-line shares visible-md visible-lg">10.7k shares</span>
+    </div>
+  </a>
 </div>
 
-<main class="content" role="main">
-
-    {{! Each post will be output using this markup }}
-    <div class="row container posts-wrapper">
+<main class="content container posts-wrapper" role="main">
+    <div class="row posts-header">
+      <div class="col-md-9 posts-filters">
+        <a href="#">Recent posts</a>
+        <a href="#">Most popular</a>
+      </div>
+      <div class="col-md-3 visible-md visible-lg">
+        <span>Follow us</span>
+      </div>
+    </div>
+    <div class="row">
       {{#foreach posts}}
         <a href="{{url}}">
             <div class="col-md-6">
@@ -31,14 +42,9 @@
         </a>
       {{/foreach}}
     </div>
-
-    {{!! After all the posts, we have the previous/next pagination links }}
-    <div class="container">
-        <div class="row">
-          <div class="col-xs-12 text-center">
-            {{pagination}}
-          </div>
-        </div>
+    <div class="row posts-footer">
+      <div class="col-xs-12 text-center">
+        {{pagination}}
+      </div>
     </div>
-
 </main>

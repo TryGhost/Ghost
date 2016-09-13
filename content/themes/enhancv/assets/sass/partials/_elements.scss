@@ -577,6 +577,16 @@ $directions: 'top' 'bottom' 'left' 'right';
       background-color: #fff;
     } 
   }
+
+  &.custom-badge-line {
+    @extend .btn-line;
+    color: #fff;
+
+    &:hover, &:focus, &:active:hover, &:active {
+      color: #fff;
+      background: transparent;
+    } 
+  }
 }
 
 // overlay

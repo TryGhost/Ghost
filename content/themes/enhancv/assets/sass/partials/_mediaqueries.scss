@@ -81,6 +81,14 @@ body:before {
     #wavy-footer {
         text-align: center;
     }
+
+    .top-post {
+        .container {
+            h1 {
+                width: 100%;
+            } 
+        }
+    }
 }
 
 @media (max-width: $screen-xs) {

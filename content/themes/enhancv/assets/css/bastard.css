@@ -6685,7 +6685,7 @@ margin on the iframe, cause it breaks stuff. */
   background-color: #fff;
   color: #333; }
 
-.btn-line {
+.btn-line, .custom-badge.custom-badge-line {
   border: 1px solid #fff; }
 
 .btn-black {
@@ -6998,6 +6998,13 @@ fieldset[disabled] .btn-muted-link:focus {
 
 .custom-badge.custom-badge-white:hover, .custom-badge.custom-badge-white:focus, .custom-badge.custom-badge-white:active:hover, .custom-badge.custom-badge-white:active {
   background-color: #fff; }
+
+.custom-badge.custom-badge-line {
+  color: #fff; }
+
+.custom-badge.custom-badge-line:hover, .custom-badge.custom-badge-line:focus, .custom-badge.custom-badge-line:active:hover, .custom-badge.custom-badge-line:active {
+  color: #fff;
+  background: transparent; }
 
 .modal-backdrop {
   background-color: rgba(0, 192, 145, 0.7); }
@@ -7537,6 +7544,15 @@ fieldset[disabled] .btn-muted-link:focus {
 .posts-wrapper {
   margin: 0 auto; }
 
+.posts-wrapper .posts-header {
+  font-size: 16px;
+  color: #333333;
+  font-weight: lighter; }
+
+.posts-wrapper .posts-header .posts-filters a {
+  margin-right: 20px;
+  color: #333333; }
+
 .posts-wrapper [class*="col-"] {
   padding: 25px; }
 
@@ -7592,11 +7608,40 @@ fieldset[disabled] .btn-muted-link:focus {
 .posts-wrapper .single-post:hover .category, .posts-wrapper .single-post:focus .category {
   opacity: 1; }
 
-.top-post h1 {
+.top-post {
+  cursor: pointer;
+  position: relative; }
+
+.top-post .container {
+  position: relative;
+  height: 100%; }
+
+.top-post .container h1 {
   color: #fff;
   position: absolute;
   bottom: 10px;
-  width: 75%; }
+  width: 75%;
+  text-align: left; }
+
+.top-post .container .shares {
+  position: absolute;
+  bottom: 55px;
+  right: 0; }
+
+.top-post .hover-gradient {
+  opacity: 0;
+  background: rgba(45, 192, 141, 0);
+  background: -webkit-linear-gradient(top, rgba(45, 192, 141, 0) 0%, #2dc08d 100%);
+  background: linear-gradient(to bottom, rgba(45, 192, 141, 0) 0%, #2dc08d 100%);
+  height: 60%;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  -webkit-transition: opacity .3s ease-in-out;
+          transition: opacity .3s ease-in-out; }
+
+.top-post:hover .hover-gradient, .top-post:focus .hover-gradient {
+  opacity: .9; }
 
 /* ==========================================================================
    6. Single Post - When you click on an individual post
@@ -8336,7 +8381,9 @@ body:before {
     width: 100%;
     right: 100%; }
   #wavy-footer {
-    text-align: center; } }
+    text-align: center; }
+  .top-post .container h1 {
+    width: 100%; } }
 
 @media (max-width: 480px) {
   .main-nav-fixed .navbar .navbar-toggle {
