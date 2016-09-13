@@ -38,29 +38,29 @@ function findFreePort(port) {
     });
 }
 
-// Get a copy of current config object from file, to be modified before
-// passing to forkGhost() method
-function forkConfig() {
-    // require caches values, and we want to read it fresh from the file
-    delete require.cache[config.paths.config];
-    return _.cloneDeep(require(config.paths.config)[process.env.NODE_ENV]);
-}
-
 // Creates a new fork of Ghost process with a given config
 // Useful for tests that want to verify certain config options
 function forkGhost(newConfig, envName) {
     envName = envName || 'forked';
 
-    return findFreePort(newConfig.server ? newConfig.server.port : undefined)
+    return findFreePort()
         .then(function (port) {
-            newConfig.server = newConfig.server || {};
-            newConfig.server.port = port;
-            newConfig.url = url.format(_.extend({}, url.parse(newConfig.url), {port: port, host: null}));
+            newConfig.server = _.merge({}, {
+                port: port
+            }, (newConfig.server || {}));
 
-            var newConfigFile = path.join(config.paths.appRoot, 'config.test.' + envName + '.js');
+            if (newConfig.url) {
+                newConfig.url = url.format(_.extend({}, url.parse(newConfig.url), {port: newConfig.server.port, host: null}));
+            } else {
+                newConfig.url = url.format(_.extend({}, url.parse(config.get('url')), {port: newConfig.server.port, host: null}));
+            }
+
+            newConfig.logging = false;
+
+            var newConfigFile = path.join(config.get('paths').appRoot, 'config.test.' + envName + '.json');
 
             return new Promise(function (resolve, reject) {
-                fs.writeFile(newConfigFile, 'module.exports = {"' + process.env.NODE_ENV + '": ' + JSON.stringify(newConfig) + '}', function (err) {
+                fs.writeFile(newConfigFile, JSON.stringify(newConfig), function (err) {
                     if (err) {
                         return reject(err);
                     }
@@ -80,13 +80,16 @@ function forkGhost(newConfig, envName) {
                             return false;
                         };
 
-                    env.GHOST_CONFIG = newConfigFile;
-                    child = cp.fork(path.join(config.paths.appRoot, 'index.js'), {env: env});
+                    env.NODE_ENV = 'test.' + envName;
+
+                    child = cp.fork(path.join(config.get('paths').appRoot, 'index.js'), {env: env});
+
                     // return the port to make it easier to do requests
-                    child.port = port;
+                    child.port = newConfig.server.port;
+
                     // periodic check until forked Ghost is running and is listening on the port
                     pingCheck = setInterval(function () {
-                        var socket = net.connect(port);
+                        var socket = net.connect(newConfig.server.port);
                         socket.on('connect', function () {
                             socket.end();
                             if (pingStop()) {
@@ -143,4 +146,3 @@ function forkGhost(newConfig, envName) {
 }
 
 module.exports.ghost = forkGhost;
-module.exports.config = forkConfig;
