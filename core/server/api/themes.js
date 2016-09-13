@@ -21,7 +21,7 @@ var Promise = require('bluebird'),
  */
 themes = {
     loadThemes: function () {
-        return utils.readThemes(config.get('paths').themePath)
+        return utils.readThemes(config.getContentPath('themes'))
             .then(function (result) {
                 config.set('paths:availableThemes', result);
             });
@@ -63,12 +63,12 @@ themes = {
                 );
             })
             .then(function () {
-                return storageAdapter.exists(config.get('paths').themePath + '/' + zip.shortName);
+                return storageAdapter.exists(config.getContentPath('themes') + '/' + zip.shortName);
             })
             .then(function (themeExists) {
                 // delete existing theme
                 if (themeExists) {
-                    return storageAdapter.delete(zip.shortName, config.get('paths').themePath);
+                    return storageAdapter.delete(zip.shortName, config.getContentPath('themes'));
                 }
             })
             .then(function () {
@@ -77,7 +77,7 @@ themes = {
                 return storageAdapter.save({
                     name: zip.shortName,
                     path: theme.path
-                }, config.get('paths').themePath);
+                }, config.getContentPath('themes'));
             })
             .then(function () {
                 // force reload of availableThemes
@@ -155,7 +155,7 @@ themes = {
                 }
 
                 events.emit('theme.deleted', name);
-                return storageAdapter.delete(name, config.get('paths').themePath);
+                return storageAdapter.delete(name, config.getContentPath('themes'));
             })
             .then(function () {
                 return themes.loadThemes();

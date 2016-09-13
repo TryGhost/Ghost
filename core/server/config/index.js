@@ -37,3 +37,4 @@ nconf.set('ghostVersion', packageInfo.version);
 
 module.exports = nconf;
 module.exports.isPrivacyDisabled = localUtils.isPrivacyDisabled.bind(nconf);
+module.exports.getContentPath = localUtils.getContentPath.bind(nconf);

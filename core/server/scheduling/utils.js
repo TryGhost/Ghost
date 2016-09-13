@@ -8,7 +8,8 @@ exports.createAdapter = function (options) {
 
     var adapter = null,
         activeAdapter = options.active,
-        path = options.path;
+        internalPath = options.internalPath,
+        contentPath = options.contentPath;
 
     if (!activeAdapter) {
         return Promise.reject(new errors.IncorrectUsage('Please provide an active adapter.'));
@@ -29,10 +30,27 @@ exports.createAdapter = function (options) {
      * CASE: active adapter is located in specific ghost path
      */
     try {
-        adapter = adapter || new (require(path + activeAdapter))(options);
+        adapter = adapter || new (require(contentPath + activeAdapter))(options);
     } catch (err) {
+        // CASE: only throw error if module does exist
+        if (err.code !== 'MODULE_NOT_FOUND') {
+            return Promise.reject(new errors.IncorrectUsage(err.message));
+        }
+        // CASE: if module not found it can be an error within the adapter (cannot find bluebird for example)
+        else if (err.code === 'MODULE_NOT_FOUND' && err.message.indexOf(contentPath + activeAdapter) === -1) {
+            return Promise.reject(new errors.IncorrectUsage(err.message));
+        }
+    }
+
+    /**
+     * CASE: active adapter is located in internal ghost path
+     */
+    try {
+        adapter = adapter || new (require(internalPath + activeAdapter))(options);
+    } catch (err) {
+        // CASE: only throw error if module does exist
         if (err.code === 'MODULE_NOT_FOUND') {
-            return Promise.reject(new errors.IncorrectUsage('MODULE_NOT_FOUND', activeAdapter));
+            return Promise.reject(new errors.IncorrectUsage('We cannot find your adapter in: ' + contentPath + ' or: ' + internalPath));
         }
 
         return Promise.reject(new errors.IncorrectUsage(err.message));

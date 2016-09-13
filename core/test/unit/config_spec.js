@@ -94,13 +94,11 @@ describe('Config', function () {
             // This will fail if there are any extra keys
             pathConfig.should.have.keys(
                 'appRoot',
-                'storagePath',
+                'internalStoragePath',
+                'internalSchedulingPath',
                 'contentPath',
                 'corePath',
-                'themePath',
-                'appPath',
                 'internalAppPath',
-                'imagesPath',
                 'imagesRelPath',
                 'adminViews',
                 'helperTemplates',
@@ -118,25 +116,15 @@ describe('Config', function () {
         it('should allow specific properties to be user defined', function () {
             var contentPath = path.join(config.get('paths').appRoot, 'otherContent', '/');
 
-            configUtils.set({
-                paths: {
-                    contentPath: contentPath
-                }
-            });
-
+            configUtils.set('paths:contentPath', contentPath);
             config.get('paths').should.have.property('contentPath', contentPath);
-            config.get('paths').should.have.property('themePath', contentPath + 'themes');
-            config.get('paths').should.have.property('appPath', contentPath + 'apps');
-            config.get('paths').should.have.property('imagesPath', contentPath + 'images');
+            config.getContentPath('images').should.eql(contentPath + 'images/');
         });
     });
 
     describe('Storage', function () {
         it('should default to local-file-store', function () {
-            config.get('paths').should.have.property('storagePath', {
-                default: path.join(config.get('paths').corePath, '/server/storage/'),
-                custom:  path.join(config.get('paths').contentPath, 'storage/')
-            });
+            config.get('paths').should.have.property('internalStoragePath', path.join(config.get('paths').corePath, '/server/storage/'));
 
             config.get('storage').should.have.property('active', {
                 images: 'local-file-store',

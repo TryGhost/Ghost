@@ -41,8 +41,8 @@ themeHandler = {
 
         hbs.updateTemplateOptions({data: {blog: themeData, labs: labsData}});
 
-        if (config.get('paths').themePath && blogApp.get('activeTheme')) {
-            blogApp.set('views', path.join(config.get('paths').themePath, blogApp.get('activeTheme')));
+        if (config.getContentPath('themes') && blogApp.get('activeTheme')) {
+            blogApp.set('views', path.join(config.getContentPath('themes'), blogApp.get('activeTheme')));
         }
 
         // Pass 'secure' flag to the view engine
@@ -56,7 +56,7 @@ themeHandler = {
     // Helper for updateActiveTheme
     activateTheme: function activateTheme(blogApp, activeTheme) {
         var hbsOptions,
-            themePartials = path.join(config.get('paths').themePath, activeTheme, 'partials');
+            themePartials = path.join(config.getContentPath('themes'), activeTheme, 'partials');
 
         // clear the view cache
         blogApp.cache = {};

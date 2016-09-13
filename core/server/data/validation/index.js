@@ -141,7 +141,7 @@ validateActiveTheme = function validateActiveTheme(themeName) {
         // A Promise that will resolve to an object with a property for each installed theme.
         // This is necessary because certain configuration data is only available while Ghost
         // is running and at times the validations are used when it's not (e.g. tests)
-        availableThemes = readThemes(config.get('paths').themePath);
+        availableThemes = readThemes(config.getContentPath('themes'));
     }
 
     return availableThemes.then(function then(themes) {

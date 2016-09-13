@@ -12,8 +12,8 @@ describe('storage: index_spec', function () {
     var scope = {adapter: null};
 
     before(function () {
-        if (!fs.existsSync(configUtils.config.get('paths').storagePath.custom)) {
-            fs.mkdirSync(configUtils.config.get('paths').storagePath.custom);
+        if (!fs.existsSync(configUtils.config.getContentPath('storage'))) {
+            fs.mkdirSync(configUtils.config.getContentPath('storage'));
         }
     });
 
@@ -48,7 +48,7 @@ describe('storage: index_spec', function () {
 
     describe('custom ghost storage config', function () {
         it('images storage adapter is custom, themes is default', function () {
-            scope.adapter = configUtils.config.get('paths').storagePath.custom + 'custom-adapter.js';
+            scope.adapter = configUtils.config.getContentPath('storage') + 'custom-adapter.js';
 
             configUtils.set({
                 storage: {
@@ -81,7 +81,7 @@ describe('storage: index_spec', function () {
 
     describe('adapter validation', function () {
         it('create good adapter', function () {
-            scope.adapter = configUtils.config.get('paths').storagePath.custom + 'another-storage.js';
+            scope.adapter = configUtils.config.getContentPath('storage') + 'another-storage.js';
 
             configUtils.set({
                 storage: {
@@ -113,7 +113,7 @@ describe('storage: index_spec', function () {
         });
 
         it('create bad adapter: exists fn is missing', function () {
-            scope.adapter = configUtils.config.get('paths').storagePath.custom + 'broken-storage.js';
+            scope.adapter = configUtils.config.getContentPath('storage') + 'broken-storage.js';
 
             configUtils.set({
                 storage: {

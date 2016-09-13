@@ -20,7 +20,7 @@ function getAppAbsolutePath(name) {
         return path.join(config.get('paths').internalAppPath, name);
     }
 
-    return path.join(config.get('paths').appPath, name);
+    return path.join(config.getContentPath('apps'), name);
 }
 
 // Get a relative path to the given apps root, defaults
