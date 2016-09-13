@@ -153,7 +153,7 @@ describe('Config', function () {
             });
         });
 
-        it('should allow setting a custom active storage as string', function () {
+        it('no effect: setting a custom active storage as string', function () {
             var storagePath = path.join(config.get('paths').contentPath, 'storage', 's3');
 
             configUtils.set({
@@ -163,20 +163,15 @@ describe('Config', function () {
                 }
             });
 
-            config.get('storage').should.have.property('active', {
-                images: 's3',
-                themes: 'local-file-store'
-            });
-
+            config.get('storage').should.have.property('active', 's3');
             config.get('storage').should.have.property('s3', {});
         });
 
-        it('should use default theme adapter when passing an object', function () {
-            var storagePath = path.join(config.get('paths').contentPath, 'storage', 's3');
-
+        it('able to set storage for themes (but not officially supported!)', function () {
             configUtils.set({
                 storage: {
                     active: {
+                        images: 'local-file-store',
                         themes: 's3'
                     }
                 }
@@ -184,7 +179,7 @@ describe('Config', function () {
 
             config.get('storage').should.have.property('active', {
                 images: 'local-file-store',
-                themes: 'local-file-store'
+                themes: 's3'
             });
         });
 
