@@ -85,7 +85,9 @@ describe('storage: index_spec', function () {
 
             configUtils.set({
                 storage: {
-                    active: 'another-storage'
+                    active: {
+                        images: 'another-storage'
+                    }
                 },
                 paths: {
                     storage: __dirname + '/another-storage.js'
