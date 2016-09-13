@@ -61,15 +61,15 @@ middleware = {
 };
 
 setupMiddleware = function setupMiddleware(blogApp) {
-    var logging = config.logging,
-        corePath = config.paths.corePath,
+    var logging = config.get('logging'),
+        corePath = config.get('paths').corePath,
         adminApp = express(),
         adminHbs = hbs.create();
 
     // ##Configuration
 
     // enabled gzip compression by default
-    if (config.server.compress !== false) {
+    if (config.get('server').compress !== false) {
         blogApp.use(compress());
     }
 
@@ -103,10 +103,10 @@ setupMiddleware = function setupMiddleware(blogApp) {
     }
 
     // Preload link headers
-    if (config.preloadHeaders) {
+    if (config.get('preloadHeaders')) {
         blogApp.use(netjet({
             cache: {
-                max: config.preloadHeaders
+                max: config.get('preloadHeaders')
             }
         }));
     }
@@ -136,7 +136,7 @@ setupMiddleware = function setupMiddleware(blogApp) {
 
     // Admin only config
     blogApp.use('/ghost', serveStatic(
-        config.paths.clientAssets,
+        config.get('paths').clientAssets,
         {maxAge: utils.ONE_YEAR_MS}
     ));
 
@@ -145,15 +145,15 @@ setupMiddleware = function setupMiddleware(blogApp) {
     //       which do not need HTTPS. In fact, if HTTPS is forced on them, then 404 page might
     //       not display properly when HTTPS is not available!
     blogApp.use(checkSSL);
-    adminApp.set('views', config.paths.adminViews);
+    adminApp.set('views', config.get('paths').adminViews);
 
     // Theme only config
     blogApp.use(staticTheme());
 
     // setup middleware for internal apps
     // @TODO: refactor this to be a proper app middleware hook for internal & external apps
-    config.internalApps.forEach(function (appName) {
-        var app = require(path.join(config.paths.internalAppPath, appName));
+    config.get('internalApps').forEach(function (appName) {
+        var app = require(path.join(config.get('paths').internalAppPath, appName));
         if (app.hasOwnProperty('setupMiddleware')) {
             app.setupMiddleware(blogApp);
         }

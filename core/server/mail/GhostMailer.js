@@ -8,8 +8,8 @@ var _          = require('lodash'),
     i18n       = require('../i18n');
 
 function GhostMailer() {
-    var transport = config.mail && config.mail.transport || 'direct',
-        options = config.mail && _.clone(config.mail.options) || {};
+    var transport = config.get('mail') && config.get('mail').transport || 'direct',
+        options = config.get('mail') && _.clone(config.get('mail').options) || {};
 
     this.state = {};
 
@@ -19,7 +19,7 @@ function GhostMailer() {
 }
 
 GhostMailer.prototype.from = function () {
-    var from = config.mail && (config.mail.from || config.mail.fromaddress),
+    var from = config.get('mail') && (config.get('mail').from || config.get('mail').fromaddress),
         defaultBlogTitle;
 
     // If we don't have a from address at all
@@ -30,7 +30,7 @@ GhostMailer.prototype.from = function () {
 
     // If we do have a from address, and it's just an email
     if (validator.isEmail(from)) {
-        defaultBlogTitle = config.theme.title ? config.theme.title : i18n.t('common.mail.title', {domain: this.getDomain()});
+        defaultBlogTitle = config.get('theme').title ? config.get('theme').title : i18n.t('common.mail.title', {domain: this.getDomain()});
 
         from = '"' + defaultBlogTitle + '" <' + from + '>';
     }
@@ -40,7 +40,7 @@ GhostMailer.prototype.from = function () {
 
 // Moved it to its own module
 GhostMailer.prototype.getDomain = function () {
-    var domain = config.url.match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
+    var domain = config.get('url').match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
     return domain && domain[1];
 };
 

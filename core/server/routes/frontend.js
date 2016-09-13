@@ -10,7 +10,7 @@ var express         = require('express'),
 frontendRoutes = function frontendRoutes() {
     var router = express.Router(),
         subdir = utils.url.getSubdir(),
-        routeKeywords = config.routeKeywords;
+        routeKeywords = config.get('routeKeywords');
 
     // ### Admin routes
     router.get(/^\/(logout|signout)\/$/, function redirectToSignout(req, res) {
@@ -33,8 +33,8 @@ frontendRoutes = function frontendRoutes() {
 
     // setup routes for internal apps
     // @TODO: refactor this to be a proper app route hook for internal & external apps
-    config.internalApps.forEach(function (appName) {
-        var app = require(path.join(config.paths.internalAppPath, appName));
+    config.get('internalApps').forEach(function (appName) {
+        var app = require(path.join(config.get('paths').internalAppPath, appName));
         if (app.hasOwnProperty('setupRoutes')) {
             app.setupRoutes(router);
         }

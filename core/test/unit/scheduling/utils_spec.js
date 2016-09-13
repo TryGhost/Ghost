@@ -2,8 +2,8 @@
 var should = require('should'),
     fs = require('fs'),
     config = require(__dirname + '/../../../server/config'),
-    errors = require(config.paths.corePath + '/server/errors'),
-    schedulingUtils = require(config.paths.corePath + '/server/scheduling/utils');
+    errors = require(config.get('paths').corePath + '/server/errors'),
+    schedulingUtils = require(config.get('paths').corePath + '/server/scheduling/utils');
 
 describe('Scheduling: utils', function () {
     describe('success', function () {
