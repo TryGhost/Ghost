@@ -3,6 +3,8 @@
 var Promise = require('bluebird'),
     chalk = require('chalk'),
     fs = require('fs'),
+    path = require('path'),
+    _ = require('lodash'),
     errors = require('./errors'),
     config = require('./config'),
     i18n   = require('./i18n'),
@@ -35,22 +37,33 @@ function GhostServer(rootApp) {
  */
 GhostServer.prototype.start = function (externalApp) {
     var self = this,
-        rootApp = externalApp ? externalApp : self.rootApp;
+        rootApp = externalApp ? externalApp : self.rootApp,
+        socketConfig, socketValues = {
+            path: path.join(config.get('paths').contentPath, process.env.NODE_ENV + '.socket'),
+            permissions: '660'
+        };
 
     return new Promise(function (resolve) {
-        var socketConfig = config.getSocket();
+        if (config.get('server').hasOwnProperty('socket')) {
+            socketConfig = config.get('server').socket;
 
-        if (socketConfig) {
+            if (_.isString(socketConfig)) {
+                socketValues.path = socketConfig;
+            } else if (_.isObject(socketConfig)) {
+                socketValues.path = socketConfig.path || socketValues.path;
+                socketValues.permissions = socketConfig.permissions || socketValues.permissions;
+            }
+
             // Make sure the socket is gone before trying to create another
             try {
-                fs.unlinkSync(socketConfig.path);
+                fs.unlinkSync(socketValues.path);
             } catch (e) {
                 // We can ignore this.
             }
 
-            self.httpServer = rootApp.listen(socketConfig.path);
-
-            fs.chmod(socketConfig.path, socketConfig.permissions);
+            self.httpServer = rootApp.listen(socketValues.path);
+            fs.chmod(socketValues.path, socketValues.permissions);
+            config.set('server:socket', socketValues);
         } else {
             self.httpServer = rootApp.listen(
                 config.get('server').port,
@@ -176,7 +189,7 @@ GhostServer.prototype.logStartMessages = function () {
         console.log(
             chalk.green(i18n.t('notices.httpServer.ghostIsRunningIn', {env: process.env.NODE_ENV})),
             i18n.t('notices.httpServer.listeningOn'),
-            config.getSocket() || config.get('server').host + ':' + config.get('server').port,
+            config.get('server').socket || config.get('server').host + ':' + config.get('server').port,
             i18n.t('notices.httpServer.urlConfiguredAs', {url: config.get('url')}),
             chalk.gray(i18n.t('notices.httpServer.ctrlCToShutDown'))
         );
