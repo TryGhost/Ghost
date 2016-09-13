@@ -6673,9 +6673,14 @@ margin on the iframe, cause it breaks stuff. */
   outline: 0 none;
   box-shadow: none; }
 
+.btn-default, .custom-badge.custom-badge-white {
+  background-color: #fff;
+  border-color: #fff; }
+
 .btn-default:focus, .custom-badge.custom-badge-white:focus, .btn-default.focus, .focus.custom-badge.custom-badge-white, .btn-default:focus:hover, .custom-badge.custom-badge-white:focus:hover, .btn-default.focus:hover, .focus.custom-badge.custom-badge-white:hover, .btn-default:hover, .custom-badge.custom-badge-white:hover, .btn-default:active, .custom-badge.custom-badge-white:active {
-  background-color: rgba(255, 255, 255, 0.8);
-  border-color: rgba(255, 255, 255, 0.8); }
+  background-color: #333333;
+  border-color: #333333;
+  color: #fff; }
 
 .btn-transparent {
   color: #fff;

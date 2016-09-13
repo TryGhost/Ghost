@@ -312,12 +312,16 @@ margin on the iframe, cause it breaks stuff. */
 }
 
 .btn-default {
+  background-color: #fff;
+  border-color: #fff;
+
   &:focus, &.focus,
   &:focus:hover, &.focus:hover,
   &:hover,
   &:active {
-    background-color: transparentize(#fff, .2);
-    border-color: transparentize(#fff, .2);
+    background-color: $text-color;
+    border-color: $text-color;
+    color: #fff;
   }
 }
 
