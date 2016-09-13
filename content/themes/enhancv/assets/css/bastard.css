@@ -7115,7 +7115,7 @@ fieldset[disabled] .btn-muted-link:focus {
   width: 100%;
   overflow-x: hidden;
   background: #fff;
-  border: 0;
+  border-bottom: 1px solid #f3f3f3;
   border-radius: 0;
   margin-bottom: 0; }
 
