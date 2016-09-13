@@ -1,0 +1,45 @@
+/* ==========================================================================
+  17.  Author
+       Add styling for the author page
+   ========================================================================== */
+
+.author-profile {
+	margin-top: 160px;
+	padding: 50px 0;
+
+	.author-image {
+		width: 150px;
+		height: 150px;
+		margin: auto;
+
+		.img {
+			width: 100%;
+			height: 100%;
+			background-size: cover;
+			background-position: center;
+			border-radius: 50%;
+		}
+	}
+
+	.author-title {
+		margin-top: 35px;
+		margin-bottom: 0;
+		text-align: center;
+		font-size: 3.6rem;
+	}
+
+	.author-bio {
+		font-size: 1.4rem;
+		color: #808080;
+		font-weight: normal;
+		text-align: center;
+		line-height: 1.6rem;
+		margin-top: 20px;
+		margin-bottom: 0;
+	}
+
+	.social {
+		text-align: center;
+		margin-top: 30px;
+	}
+}

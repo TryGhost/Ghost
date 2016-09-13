@@ -6294,6 +6294,7 @@ button.close {
     16. HighlightJs
     17. Media Queries
     18. Animations
+    19. Author
  */
 /* ==========================================================================
    Theme colors
@@ -8007,6 +8008,13 @@ h1.post-title {
   background: rgba(255, 255, 255, 0.8);
   color: #1a1a1a; }
 
+.btn-social.btn-invert {
+  color: #fff;
+  background-color: #4d4d4d; }
+
+.btn-social.btn-invert:hover, .btn-social.btn-invert:active, .btn-social.btn-invert:focus {
+  background-color: #333333; }
+
 /* ==========================================================================
    13. Slider Menu
    ========================================================================== */
@@ -8481,3 +8489,41 @@ body:before {
    End of file. Animations should be the last thing here. Do not add stuff
    below this point, or it will probably fuck everything up.
    ========================================================================== */
+/* ==========================================================================
+  17.  Author
+       Add styling for the author page
+   ========================================================================== */
+.author-profile {
+  margin-top: 160px;
+  padding: 50px 0; }
+
+.author-profile .author-image {
+  width: 150px;
+  height: 150px;
+  margin: auto; }
+
+.author-profile .author-image .img {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  border-radius: 50%; }
+
+.author-profile .author-title {
+  margin-top: 35px;
+  margin-bottom: 0;
+  text-align: center;
+  font-size: 3.6rem; }
+
+.author-profile .author-bio {
+  font-size: 1.4rem;
+  color: #808080;
+  font-weight: normal;
+  text-align: center;
+  line-height: 1.6rem;
+  margin-top: 20px;
+  margin-bottom: 0; }
+
+.author-profile .social {
+  text-align: center;
+  margin-top: 30px; }
