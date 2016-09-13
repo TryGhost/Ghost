@@ -1,6 +1,7 @@
 var config = require('../../../../config'),
     models = require(config.get('paths').corePath + '/server/models'),
     api = require(config.get('paths').corePath + '/server/api'),
+    db = require(config.get('paths').corePath + '/server/data/db/connection'),
     sequence = require(config.get('paths').corePath + '/server/utils/sequence'),
     moment = require('moment'),
     _ = require('lodash'),
@@ -43,7 +44,7 @@ module.exports = function transformDatesIntoUTC(options, logger) {
                 return Promise.reject(new Error('skip'));
             }
 
-            if (config.get('database').isPostgreSQL()) {
+            if (db.isPostgreSQL()) {
                 _private.noOffset = true;
             } else if (config.get('database').client === 'mysql') {
                 _private.noOffset = false;
