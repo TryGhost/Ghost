@@ -1,6 +1,7 @@
 var nconf = require('nconf'),
     path = require('path'),
     localUtils = require('./utils'),
+    packageInfo = require('../../../package.json'),
     env = process.env.NODE_ENV || 'development';
 
 nconf.set('NODE_ENV', env);
@@ -27,6 +28,12 @@ nconf.file('4', __dirname + '/defaults.json');
  * transform all relative paths to absolute paths
  */
 localUtils.makePathsAbsolute.bind(nconf)();
+
+/**
+ * values we have to set manual
+ * @TODO: ghost-cli?
+ */
+nconf.set('ghostVersion', packageInfo.version);
 
 module.exports = nconf;
 module.exports.isPrivacyDisabled = localUtils.isPrivacyDisabled.bind(nconf);
