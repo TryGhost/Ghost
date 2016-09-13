@@ -29,9 +29,10 @@ describe('Scheduling: utils', function () {
                 'module.exports = AnotherAdapter';
 
             fs.writeFileSync(__dirname + '/another-scheduler.js', jsFile);
+
             schedulingUtils.createAdapter({
                 active: 'another-scheduler',
-                path: __dirname + '/'
+                contentPath: __dirname + '/'
             }).then(function (adapter) {
                 should.exist(adapter);
                 done();
