@@ -13,7 +13,7 @@ function getOptionsFormat(linkStructure) {
 
 function postLookup(postUrl) {
     var postPath = url.parse(postUrl).path,
-        postPermalink = config.theme.permalinks,
+        postPermalink = config.get('theme').permalinks,
         pagePermalink = '/:slug/',
         isEditURL = false,
         isAmpURL = false,

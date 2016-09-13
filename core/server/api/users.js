@@ -41,7 +41,7 @@ sendInviteEmail = function sendInviteEmail(user) {
 
         return dataProvider.User.generateResetToken(user.email, expires, dbHash);
     }).then(function (resetToken) {
-        var baseUrl = config.forceAdminSSL ? (config.urlSSL || config.url) : config.url;
+        var baseUrl = config.get('forceAdminSSL') ? (config.get('urlSSL') || config.get('url')) : config.get('url');
 
         emailData.resetLink = baseUrl.replace(/\/$/, '') + '/ghost/signup/' + globalUtils.encodeBase64URLsafe(resetToken) + '/';
 

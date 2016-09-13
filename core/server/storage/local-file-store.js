@@ -24,7 +24,7 @@ util.inherits(LocalFileStore, BaseStore);
 // - image is the express image object
 // - returns a promise which ultimately returns the full url to the uploaded image
 LocalFileStore.prototype.save = function (image, targetDir) {
-    targetDir = targetDir || this.getTargetDir(config.paths.imagesPath);
+    targetDir = targetDir || this.getTargetDir(config.get('paths').imagesPath);
     var targetFilename;
 
     return this.getUniqueFileName(this, image, targetDir).then(function (filename) {
@@ -35,8 +35,8 @@ LocalFileStore.prototype.save = function (image, targetDir) {
     }).then(function () {
         // The src for the image must be in URI format, not a file system path, which in Windows uses \
         // For local file system storage can use relative path so add a slash
-        var fullUrl = (utils.url.getSubdir() + '/' + config.paths.imagesRelPath + '/' +
-        path.relative(config.paths.imagesPath, targetFilename)).replace(new RegExp('\\' + path.sep, 'g'), '/');
+        var fullUrl = (utils.url.getSubdir() + '/' + config.get('paths').imagesRelPath + '/' +
+        path.relative(config.get('paths').imagesPath, targetFilename)).replace(new RegExp('\\' + path.sep, 'g'), '/');
         return fullUrl;
     }).catch(function (e) {
         errors.logError(e);
@@ -63,7 +63,7 @@ LocalFileStore.prototype.serve = function (options) {
     if (options.isTheme) {
         return function downloadTheme(req, res, next) {
             var themeName = options.name,
-                themePath = path.join(config.paths.themePath, themeName),
+                themePath = path.join(config.get('paths').themePath, themeName),
                 zipName = themeName + '.zip',
                 // store this in a unique temporary folder
                 zipBasePath = path.join(os.tmpdir(), utils.uid(10)),
@@ -95,12 +95,12 @@ LocalFileStore.prototype.serve = function (options) {
         // CASE: serve images
         // For some reason send divides the max age number by 1000
         // Fallthrough: false ensures that if an image isn't found, it automatically 404s
-        return serveStatic(config.paths.imagesPath, {maxAge: utils.ONE_YEAR_MS, fallthrough: false});
+        return serveStatic(config.get('paths').imagesPath, {maxAge: utils.ONE_YEAR_MS, fallthrough: false});
     }
 };
 
 LocalFileStore.prototype.delete = function (fileName, targetDir) {
-    targetDir = targetDir || this.getTargetDir(config.paths.imagesPath);
+    targetDir = targetDir || this.getTargetDir(config.get('paths').imagesPath);
 
     var pathToDelete = path.join(targetDir, fileName);
     return remove(pathToDelete);
