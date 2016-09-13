@@ -94,8 +94,6 @@ describe('Config', function () {
             // This will fail if there are any extra keys
             pathConfig.should.have.keys(
                 'appRoot',
-                'config',
-                'configExample',
                 'storagePath',
                 'contentPath',
                 'corePath',
@@ -118,17 +116,14 @@ describe('Config', function () {
         });
 
         it('should allow specific properties to be user defined', function () {
-            var contentPath = path.join(config.get('paths').appRoot, 'otherContent', '/'),
-                configFile = 'configFileDanceParty.js';
+            var contentPath = path.join(config.get('paths').appRoot, 'otherContent', '/');
 
             configUtils.set({
-                config: configFile,
                 paths: {
                     contentPath: contentPath
                 }
             });
 
-            config.should.have.property('config', configFile);
             config.get('paths').should.have.property('contentPath', contentPath);
             config.get('paths').should.have.property('themePath', contentPath + 'themes');
             config.get('paths').should.have.property('appPath', contentPath + 'apps');
