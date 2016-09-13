@@ -2,6 +2,14 @@ var knex = require('knex'),
     config = require('../../config'),
     knexInstance;
 
+function isPostgreSQL(client) {
+    if (!client) {
+        return false;
+    }
+
+    return client === 'pg' || client === 'postgres' || client === 'postgresql';
+}
+
 // @TODO:
 // - if you require this file before config file was loaded,
 // - then this file is cached and you have no chance to connect to the db anymore
@@ -10,11 +18,7 @@ function configure(dbConfig) {
     var client = dbConfig.client,
         pg;
 
-    dbConfig.isPostgreSQL = function () {
-        return client === 'pg' || client === 'postgres' || client === 'postgresql';
-    };
-
-    if (dbConfig.isPostgreSQL()) {
+    if (isPostgreSQL(client)) {
         try {
             pg = require('pg');
         } catch (e) {
@@ -55,3 +59,4 @@ if (!knexInstance && config.get('database') && config.get('database').client) {
 }
 
 module.exports = knexInstance;
+module.exports.isPostgreSQL = isPostgreSQL;
