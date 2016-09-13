@@ -1,0 +1,13 @@
+{
+    "url": "http://127.0.0.1:2369",
+    "database": {
+        "connection": {
+            "filename": "content/data/ghost-test.db"
+        },
+        "useNullAsDefault": true
+    },
+    "server": {
+        "port": 2369
+    },
+    "logging": false
+}
