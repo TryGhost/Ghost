@@ -7110,12 +7110,13 @@ fieldset[disabled] .btn-muted-link:focus {
   z-index: 99;
   top: 100px;
   left: 0;
-  height: 58px;
+  height: 60px;
   width: 100%;
   overflow-x: hidden;
   background: #fff;
-  border-bottom: 1px solid #f3f3f3;
-  border-radius: 0; }
+  border: 0;
+  border-radius: 0;
+  margin-bottom: 0; }
 
 .sub-nav-main.absolute {
   position: absolute; }
