@@ -12,7 +12,7 @@ describe('Scheduling', function () {
 
     before(function () {
         sinon.stub(postScheduling, 'init').returns(Promise.resolve());
-        scope.scheduling = rewire(config.paths.corePath + '/server/scheduling');
+        scope.scheduling = rewire(config.get('paths').corePath + '/server/scheduling');
     });
 
     after(function () {

@@ -9,13 +9,13 @@ var moment            = require('moment-timezone'),
     apiPath = '/ghost/api/v0.1';
 
 function getBaseUrl(secure) {
-    if (secure && config.urlSSL) {
-        return config.urlSSL;
+    if (secure && config.get('urlSSL')) {
+        return config.get('urlSSL');
     } else {
         if (secure) {
-            return config.url.replace('http://', 'https://');
+            return config.get('url').replace('http://', 'https://');
         } else {
-            return config.url;
+            return config.get('url');
         }
     }
 }
@@ -24,8 +24,8 @@ function getSubdir() {
     var localPath, subdir;
 
     // Parse local path location
-    if (config.url) {
-        localPath = url.parse(config.url).path;
+    if (config.get('url')) {
+        localPath = url.parse(config.get('url')).path;
 
         // Remove trailing slash
         if (localPath !== '/') {
@@ -41,9 +41,9 @@ function getProtectedSlugs() {
     var subdir = getSubdir();
 
     if (!_.isEmpty(subdir)) {
-        return config.slugs.protected.concat([subdir.split('/').pop()]);
+        return config.get('slugs').protected.concat([subdir.split('/').pop()]);
     } else {
-        return config.slugs.protected;
+        return config.get('slugs').protected;
     }
 }
 
@@ -121,8 +121,8 @@ function createUrl(urlPath, absolute, secure) {
  */
 function urlPathForPost(post) {
     var output = '',
-        permalinks = config.theme.permalinks,
-        publishedAtMoment = moment.tz(post.published_at || Date.now(), config.theme.timezone),
+        permalinks = config.get('theme').permalinks,
+        publishedAtMoment = moment.tz(post.published_at || Date.now(), config.get('theme').timezone),
         tags = {
             year:   function () { return publishedAtMoment.format('YYYY'); },
             month:  function () { return publishedAtMoment.format('MM'); },
@@ -197,14 +197,14 @@ function urlFor(context, data, absolute) {
             urlPath = data.post.url;
             secure = data.secure;
         } else if (context === 'tag' && data.tag) {
-            urlPath = urlJoin('/', config.routeKeywords.tag, data.tag.slug, '/');
+            urlPath = urlJoin('/', config.get('routeKeywords').tag, data.tag.slug, '/');
             secure = data.tag.secure;
         } else if (context === 'author' && data.author) {
-            urlPath = urlJoin('/', config.routeKeywords.author, data.author.slug, '/');
+            urlPath = urlJoin('/', config.get('routeKeywords').author, data.author.slug, '/');
             secure = data.author.secure;
         } else if (context === 'image' && data.image) {
             urlPath = data.image;
-            imagePathRe = new RegExp('^' + getSubdir() + '/' + config.paths.imagesRelPath);
+            imagePathRe = new RegExp('^' + getSubdir() + '/' + config.get('paths').imagesRelPath);
             absolute = imagePathRe.test(data.image) ? absolute : false;
             secure = data.image.secure;
 
@@ -221,6 +221,7 @@ function urlFor(context, data, absolute) {
             secure = data.nav.secure || secure;
             baseUrl = getBaseUrl(secure);
             hostname = baseUrl.split('//')[1] + getSubdir();
+
             if (urlPath.indexOf(hostname) > -1
                 && !urlPath.split(hostname)[0].match(/\.|mailto:/)
                 && urlPath.split(hostname)[1].substring(0,1) !== ':') {
@@ -263,17 +264,17 @@ function apiUrl(options) {
     // @TODO unify this with urlFor
     var url;
 
-    if (config.forceAdminSSL) {
-        url = (config.urlSSL || config.url).replace(/^.*?:\/\//g, 'https://');
-    } else if (config.urlSSL) {
-        url = config.urlSSL.replace(/^.*?:\/\//g, 'https://');
-    } else if (config.url.match(/^https:/)) {
-        url = config.url;
+    if (config.get('forceAdminSSL')) {
+        url = (config.get('urlSSL') || config.get('url')).replace(/^.*?:\/\//g, 'https://');
+    } else if (config.get('urlSSL')) {
+        url = config.get('urlSSL').replace(/^.*?:\/\//g, 'https://');
+    } else if (config.get('url').match(/^https:/)) {
+        url = config.get('url');
     } else {
         if (options.cors === false) {
-            url = config.url;
+            url = config.get('url');
         } else {
-            url = config.url.replace(/^.*?:\/\//g, '//');
+            url = config.get('url').replace(/^.*?:\/\//g, '//');
         }
     }
 

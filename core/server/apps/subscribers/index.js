@@ -39,7 +39,7 @@ function makeHidden(name, extras) {
 function subscribeFormHelper(options) {
     var root = options.data.root,
         data = _.merge({}, options.hash, _.pick(root, params), {
-            action: path.join('/', globalUtils.url.getSubdir(), config.routeKeywords.subscribe, '/'),
+            action: path.join('/', globalUtils.url.getSubdir(), config.get('routeKeywords').subscribe, '/'),
             script: new hbs.handlebars.SafeString(subscribeScript),
             hidden: new hbs.handlebars.SafeString(
                 makeHidden('confirm') +
@@ -71,7 +71,7 @@ module.exports = {
     },
 
     setupRoutes: function setupRoutes(blogRouter) {
-        blogRouter.use('/' + config.routeKeywords.subscribe + '/', function labsEnabledRouter(req, res, next) {
+        blogRouter.use('/' + config.get('routeKeywords').subscribe + '/', function labsEnabledRouter(req, res, next) {
             if (labs.isSet('subscribers') === true) {
                 return router.apply(this, arguments);
             }

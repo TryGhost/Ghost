@@ -44,14 +44,14 @@ describe('Config', function () {
         });
 
         it('should have exactly the right keys', function () {
-            var themeConfig = config.theme;
+            var themeConfig = config.get('theme');
 
             // This will fail if there are any extra keys
             themeConfig.should.have.keys('url', 'title', 'description', 'logo', 'cover', 'timezone');
         });
 
         it('should have the correct values for each key', function () {
-            var themeConfig = config.theme;
+            var themeConfig = config.get('theme');
 
             // Check values are as we expect
             themeConfig.should.have.property('url', 'http://my-ghost-blog.com');
@@ -65,7 +65,7 @@ describe('Config', function () {
 
     describe('Timezone default', function () {
         it('should use timezone from settings when set', function () {
-            var themeConfig = config.theme;
+            var themeConfig = config.get('theme');
 
             // Check values are as we expect
             themeConfig.should.have.property('timezone', 'Etc/UTC');
@@ -93,7 +93,7 @@ describe('Config', function () {
 
     describe('Index', function () {
         it('should have exactly the right keys', function () {
-            var pathConfig = config.paths;
+            var pathConfig = config.get('paths');
 
             // This will fail if there are any extra keys
             pathConfig.should.have.keys(
@@ -115,14 +115,14 @@ describe('Config', function () {
         });
 
         it('should have the correct values for each key', function () {
-            var pathConfig = config.paths,
+            var pathConfig = config.get('paths'),
                 appRoot = path.resolve(__dirname, '../../../');
 
             pathConfig.should.have.property('appRoot', appRoot);
         });
 
         it('should allow specific properties to be user defined', function () {
-            var contentPath = path.join(config.paths.appRoot, 'otherContent', '/'),
+            var contentPath = path.join(config.get('paths').appRoot, 'otherContent', '/'),
                 configFile = 'configFileDanceParty.js';
 
             configUtils.set({
@@ -143,8 +143,8 @@ describe('Config', function () {
     describe('Storage', function () {
         it('should default to local-file-store', function () {
             config.paths.should.have.property('storagePath', {
-                default: path.join(config.paths.corePath, '/server/storage/'),
-                custom:  path.join(config.paths.contentPath, 'storage/')
+                default: path.join(config.get('paths').corePath, '/server/storage/'),
+                custom:  path.join(config.get('paths').contentPath, 'storage/')
             });
 
             config.storage.should.have.property('active', {
@@ -154,7 +154,7 @@ describe('Config', function () {
         });
 
         it('should allow setting a custom active storage as string', function () {
-            var storagePath = path.join(config.paths.contentPath, 'storage', 's3');
+            var storagePath = path.join(config.get('paths').contentPath, 'storage', 's3');
 
             configUtils.set({
                 storage: {
@@ -172,7 +172,7 @@ describe('Config', function () {
         });
 
         it('should use default theme adapter when passing an object', function () {
-            var storagePath = path.join(config.paths.contentPath, 'storage', 's3');
+            var storagePath = path.join(config.get('paths').contentPath, 'storage', 's3');
 
             configUtils.set({
                 storage: {
@@ -182,14 +182,14 @@ describe('Config', function () {
                 }
             });
 
-            config.storage.should.have.property('active', {
+            config.get('storage').should.have.property('active', {
                 images: 'local-file-store',
                 themes: 'local-file-store'
             });
         });
 
         it('should allow setting a custom active storage as object', function () {
-            var storagePath = path.join(config.paths.contentPath, 'storage', 's3');
+            var storagePath = path.join(config.get('paths').contentPath, 'storage', 's3');
 
             configUtils.set({
                 storage: {
@@ -200,7 +200,7 @@ describe('Config', function () {
                 }
             });
 
-            config.storage.should.have.property('active', {
+            config.get('storage').should.have.property('active', {
                 images: 's2',
                 themes: 'local-file-store'
             });
@@ -245,21 +245,21 @@ describe('Config', function () {
             });
 
             config.load().then(function (config) {
-                config.url.should.equal(configUtils.defaultConfig.url);
-                config.database.client.should.equal(configUtils.defaultConfig.database.client);
+                config.get('url').should.equal(configUtils.defaultConfig.url);
+                config.get('database').client.should.equal(configUtils.defaultConfig.database.client);
 
-                if (config.database.client === 'sqlite3') {
-                    config.database.connection.filename.should.eql(configUtils.defaultConfig.database.connection.filename);
+                if (config.get('database').client === 'sqlite3') {
+                    config.get('database').connection.filename.should.eql(configUtils.defaultConfig.database.connection.filename);
                 } else {
-                    config.database.connection.charset.should.eql(configUtils.defaultConfig.database.connection.charset);
-                    config.database.connection.database.should.eql(configUtils.defaultConfig.database.connection.database);
-                    config.database.connection.host.should.eql(configUtils.defaultConfig.database.connection.host);
-                    config.database.connection.password.should.eql(configUtils.defaultConfig.database.connection.password);
-                    config.database.connection.user.should.eql(configUtils.defaultConfig.database.connection.user);
+                    config.get('database').connection.charset.should.eql(configUtils.defaultConfig.database.connection.charset);
+                    config.get('database').connection.database.should.eql(configUtils.defaultConfig.database.connection.database);
+                    config.get('database').connection.host.should.eql(configUtils.defaultConfig.database.connection.host);
+                    config.get('database').connection.password.should.eql(configUtils.defaultConfig.database.connection.password);
+                    config.get('database').connection.user.should.eql(configUtils.defaultConfig.database.connection.user);
                 }
 
-                config.server.host.should.equal(configUtils.defaultConfig.server.host);
-                config.server.port.should.equal(configUtils.defaultConfig.server.port);
+                config.get('server').host.should.equal(configUtils.defaultConfig.server.host);
+                config.get('server').port.should.equal(configUtils.defaultConfig.server.port);
 
                 done();
             }).catch(done);
@@ -270,20 +270,20 @@ describe('Config', function () {
             readFileStub.restore();
 
             config.load(path.join(configUtils.defaultConfig.paths.appRoot, 'config.example.js')).then(function (config) {
-                config.url.should.equal(configUtils.defaultConfig.url);
-                config.database.client.should.equal(configUtils.defaultConfig.database.client);
+                config.get('url').should.equal(configUtils.defaultConfig.url);
+                config.get('database').client.should.equal(configUtils.defaultConfig.database.client);
 
-                if (config.database.client === 'sqlite3') {
-                    config.database.connection.filename.should.eql(configUtils.defaultConfig.database.connection.filename);
+                if (config.get('database').client === 'sqlite3') {
+                    config.get('database').connection.filename.should.eql(configUtils.defaultConfig.database.connection.filename);
                 } else {
-                    config.database.connection.charset.should.eql(configUtils.defaultConfig.database.connection.charset);
-                    config.database.connection.database.should.eql(configUtils.defaultConfig.database.connection.database);
-                    config.database.connection.host.should.eql(configUtils.defaultConfig.database.connection.host);
-                    config.database.connection.password.should.eql(configUtils.defaultConfig.database.connection.password);
-                    config.database.connection.user.should.eql(configUtils.defaultConfig.database.connection.user);
+                    config.get('database').connection.charset.should.eql(configUtils.defaultConfig.database.connection.charset);
+                    config.get('database').connection.database.should.eql(configUtils.defaultConfig.database.connection.database);
+                    config.get('database').connection.host.should.eql(configUtils.defaultConfig.database.connection.host);
+                    config.get('database').connection.password.should.eql(configUtils.defaultConfig.database.connection.password);
+                    config.get('database').connection.user.should.eql(configUtils.defaultConfig.database.connection.user);
                 }
-                config.server.host.should.equal(configUtils.defaultConfig.server.host);
-                config.server.port.should.equal(configUtils.defaultConfig.server.port);
+                config.get('server').host.should.equal(configUtils.defaultConfig.server.host);
+                config.get('server').port.should.equal(configUtils.defaultConfig.server.port);
 
                 done();
             }).catch(done);
@@ -309,25 +309,25 @@ describe('Config', function () {
             overrideReadFileConfig({url: 'http://testurl.com'});
 
             config.load().then(function (localConfig) {
-                localConfig.url.should.equal('http://testurl.com');
+                localConfig.get('url').should.equal('http://testurl.com');
 
                 // Next test
                 overrideReadFileConfig({url: 'https://testurl.com'});
                 return config.load();
             }).then(function (localConfig) {
-                localConfig.url.should.equal('https://testurl.com');
+                localConfig.get('url').should.equal('https://testurl.com');
 
                 // Next test
                 overrideReadFileConfig({url: 'http://testurl.com/blog/'});
                 return config.load();
             }).then(function (localConfig) {
-                localConfig.url.should.equal('http://testurl.com/blog/');
+                localConfig.get('url').should.equal('http://testurl.com/blog/');
 
                 // Next test
                 overrideReadFileConfig({url: 'http://testurl.com/ghostly/'});
                 return config.load();
             }).then(function (localConfig) {
-                localConfig.url.should.equal('http://testurl.com/ghostly/');
+                localConfig.get('url').should.equal('http://testurl.com/ghostly/');
 
                 done();
             }).catch(done);

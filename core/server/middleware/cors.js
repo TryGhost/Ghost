@@ -32,10 +32,10 @@ function getIPs() {
 }
 
 function getUrls() {
-    var urls = [url.parse(config.url).hostname];
+    var urls = [url.parse(config.get('url')).hostname];
 
-    if (config.urlSSL) {
-        urls.push(url.parse(config.urlSSL).hostname);
+    if (config.get('urlSSL')) {
+        urls.push(url.parse(config.get('urlSSL')).hostname);
     }
 
     return urls;

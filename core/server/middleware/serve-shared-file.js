@@ -8,7 +8,7 @@ var crypto = require('crypto'),
 // Handles requests to robots.txt and favicon.ico (and caches them)
 function serveSharedFile(file, type, maxAge) {
     var content,
-        corePath = config.paths.corePath,
+        corePath = config.get('paths').corePath,
         filePath,
         blogRegex = /(\{\{blog-url\}\})/g,
         apiRegex = /(\{\{api-url\}\})/g;
@@ -27,7 +27,7 @@ function serveSharedFile(file, type, maxAge) {
                     }
 
                     if (type === 'text/xsl' || type === 'text/plain' || type === 'application/javascript') {
-                        buf = buf.toString().replace(blogRegex, config.url.replace(/\/$/, ''));
+                        buf = buf.toString().replace(blogRegex, config.get('url').replace(/\/$/, ''));
                         buf = buf.toString().replace(apiRegex, utils.url.apiUrl({cors: true}));
                     }
                     content = {
