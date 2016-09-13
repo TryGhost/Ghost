@@ -72,7 +72,7 @@ function init(options) {
     // Initialize Internationalization
     i18n.init();
 
-    return readDirectory(config.get('paths').appPath).then(function loadThemes(result) {
+    return readDirectory(config.getContentPath('apps')).then(function loadThemes(result) {
         config.set('paths:availableApps', result);
         return api.themes.loadThemes();
     }).then(function () {
@@ -143,7 +143,7 @@ function init(options) {
         middleware(parentApp);
 
         // Log all theme errors and warnings
-        validateThemes(config.get('paths').themePath)
+        validateThemes(config.getContentPath('themes'))
             .catch(function (result) {
                 // TODO: change `result` to something better
                 result.errors.forEach(function (err) {
@@ -163,8 +163,9 @@ function init(options) {
         // scheduling module can create x schedulers with different adapters
         return scheduling.init({
             active: config.get('scheduling').active,
-            path: config.get('paths').schedulingPath,
-            apiUrl: utils.url.apiUrl()
+            apiUrl: utils.url.apiUrl(),
+            internalPath: config.get('paths').internalSchedulingPath,
+            contentPath: config.getContentPath('scheduling')
         });
     }).then(function () {
         return ghostServer;
