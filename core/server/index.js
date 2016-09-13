@@ -14,7 +14,6 @@ require('./overrides');
 
 // Module dependencies
 var express = require('express'),
-    _ = require('lodash'),
     uuid = require('node-uuid'),
     Promise = require('bluebird'),
     i18n = require('./i18n'),
@@ -73,15 +72,8 @@ function init(options) {
     // Initialize Internationalization
     i18n.init();
 
-    // Load our config.js file from the local file system.
-    return config.load(options.config).then(function () {
-        return config.checkDeprecated();
-    }).then(function loadApps() {
-        return readDirectory(config.get('paths').appPath)
-            .then(function (result) {
-                config.set('paths:availableApps', result);
-            });
-    }).then(function loadThemes() {
+    return readDirectory(config.get('paths').appPath).then(function loadThemes(result) {
+        config.set('paths:availableApps', result);
         return api.themes.loadThemes();
     }).then(function () {
         models.init();
@@ -169,7 +161,11 @@ function init(options) {
 
         // scheduling can trigger api requests, that's why we initialize the module after the ghost server creation
         // scheduling module can create x schedulers with different adapters
-        return scheduling.init(_.extend(config.get('scheduling'), {apiUrl: utils.url.apiUrl()}));
+        return scheduling.init({
+            active: config.get('scheduling').active,
+            path: config.get('paths').schedulingPath,
+            apiUrl: utils.url.apiUrl()
+        });
     }).then(function () {
         return ghostServer;
     });
