@@ -20,8 +20,12 @@
             {{#if website}}<span class="author-link icon-link"><a href="{{website}}">{{website}}</a></span>{{/if}}
         </div>
         <div class="social">
-            <a href="{{facebook}}" target="_blank" class="fa fa-facebook btn-social btn-invert"></a>
-            <a href="{{twitter}}" target="_blank" class="fa fa-twitter btn-social btn-invert"></a>
+            {{#if facebook}}
+                <a href="{{facebook}}" target="_blank" class="fa fa-facebook btn-social btn-invert"></a>
+            {{/if}}
+            {{#if twitter}}
+                <a href="{{twitter}}" target="_blank" class="fa fa-twitter btn-social btn-invert"></a>
+            {{/if}}
         </div>
     </section>
 {{/author}}
