@@ -1,15 +1,10 @@
 var should   = require('should'),
     sinon    = require('sinon'),
     Promise  = require('bluebird'),
-    _        = require('lodash'),
-
     // Stuff we are testing
     api      = require('../../../../server/api'),
     fetchData = require('../../../../server/controllers/frontend/fetch-data'),
-
-    config   = require('../../../../server/config'),
-    origConfig = _.cloneDeep(config),
-
+    configUtils = require('../../../utils/configUtils'),
     sandbox = sinon.sandbox.create();
 
 describe('fetchData', function () {
@@ -25,13 +20,13 @@ describe('fetchData', function () {
     });
 
     afterEach(function () {
-        config.set(origConfig);
+        configUtils.restore();
         sandbox.restore();
     });
 
     describe('channel config', function () {
         beforeEach(function () {
-            config.set({theme: {postsPerPage: 10}});
+            configUtils.set({theme: {postsPerPage: 10}});
         });
 
         it('should handle no post options', function (done) {
@@ -75,6 +70,7 @@ describe('fetchData', function () {
                     }
                 }
             };
+
             fetchData(channelOpts).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object().with.properties('posts', 'meta', 'data');
@@ -102,6 +98,7 @@ describe('fetchData', function () {
                     }
                 }
             };
+
             fetchData(channelOpts).then(function (result) {
                 should.exist(result);
 
@@ -151,7 +148,7 @@ describe('fetchData', function () {
 
     describe('valid postsPerPage', function () {
         beforeEach(function () {
-            config.set({theme: {postsPerPage: 10}});
+            configUtils.set({theme: {postsPerPage: 10}});
         });
 
         it('Adds limit & includes to options by default', function (done) {
@@ -167,7 +164,7 @@ describe('fetchData', function () {
 
     describe('invalid postsPerPage', function () {
         beforeEach(function () {
-            config.set({theme: {postsPerPage: '-1'}});
+            configUtils.set({theme: {postsPerPage: '-1'}});
         });
 
         it('Will not add limit if postsPerPage is not valid', function (done) {
