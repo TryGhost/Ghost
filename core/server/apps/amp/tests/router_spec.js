@@ -141,10 +141,13 @@ describe('AMP getPostData', function () {
     var res, req, postLookupStub, next;
 
     beforeEach(function () {
-        res = {};
+        res = {
+            locals: {
+                relativeUrl: '/welcome-to-ghost/amp/'
+            }
+        };
 
         req = {
-            originalUrl: '/welcome-to-ghost/amp/',
             body: {
                 post: {}
             }
