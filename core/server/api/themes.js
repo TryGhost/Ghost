@@ -25,11 +25,12 @@ themes = {
         // consistent filename uploads
         options.originalname = options.originalname.toLowerCase();
 
-        var zip = {
+        var storageAdapter = storage.getStorage('themes'),
+        zip = {
             path: options.path,
             name: options.originalname,
-            shortName: options.originalname.split('.zip')[0]
-        }, theme, storageAdapter = storage.getStorage('themes');
+            shortName: storageAdapter.getSanitizedFileName(options.originalname.split('.zip')[0])
+        }, theme;
 
         // check if zip name is casper.zip
         if (zip.name === 'casper.zip') {
