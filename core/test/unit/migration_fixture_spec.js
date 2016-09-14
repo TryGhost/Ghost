@@ -1377,8 +1377,9 @@ describe('Fixtures', function () {
 
                         it('skip sqlite and non UTC server timezone', function (done) {
                             configUtils.config.database.client = 'sqlite3';
+                            rawStub = sandbox.stub().returns(Promise.resolve([{created_at: moment().format('YYYY-MM-DD HH:mm:ss')}]));
 
-                            updateClient({}, loggerStub)
+                            updateClient({transacting: {raw:rawStub}}, loggerStub)
                                 .then(function () {
                                     loggerStub.warn.called.should.be.true();
                                     done();

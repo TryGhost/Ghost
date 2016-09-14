@@ -3,12 +3,8 @@ var config = require('../../../../config'),
     models = require(config.paths.corePath + '/server/models'),
     transfomDatesIntoUTC = require(config.paths.corePath + '/server/data/migration/fixtures/006/01-transform-dates-into-utc'),
     Promise = require('bluebird'),
-    messagePrefix = 'Fix sqlite format: ',
+    messagePrefix = 'Fix sqlite/pg format: ',
     _private = {};
-
-_private.getTZOffsetMax = function getTZOffsetMax() {
-    return Math.max(Math.abs(new Date('2015-07-01').getTimezoneOffset()), Math.abs(new Date('2015-01-01').getTimezoneOffset()));
-};
 
 _private.rerunDateMigration = function rerunDateMigration(options, logger) {
     var settingsMigrations, settingsKey = '006/01';
@@ -41,17 +37,9 @@ _private.rerunDateMigration = function rerunDateMigration(options, logger) {
  * 006/01-transform-dates-into-utc had a bug for this case, see what happen because of this bug https://github.com/TryGhost/Ghost/issues/7192
  */
 module.exports = function fixSqliteFormat(options, logger) {
-    var ServerTimezoneOffset = _private.getTZOffsetMax();
-
     // CASE: skip this script when using mysql
     if (config.database.client === 'mysql') {
         logger.warn(messagePrefix + 'This script only runs, when using sqlite/postgres as database.');
-        return Promise.resolve();
-    }
-
-    // CASE: skip this script if using sqlite, but server is not UTC
-    if (ServerTimezoneOffset !== 0 && config.database.client === 'sqlite3') {
-        logger.warn(messagePrefix + 'This script only runs, when your server runs in UTC and you are using sqlite.');
         return Promise.resolve();
     }
 
