@@ -55,19 +55,19 @@ themes = {
                 );
             })
             .then(function () {
-                return storageAdapter.exists(config.paths.themePath + '/' + storageAdapter.getFileName(zip.shortName));
+                return storageAdapter.exists(config.paths.themePath + '/' + zip.shortName);
             })
             .then(function (themeExists) {
                 // delete existing theme
                 if (themeExists) {
-                    return storageAdapter.delete(storageAdapter.getFileName(zip.shortName), config.paths.themePath);
+                    return storageAdapter.delete(zip.shortName, config.paths.themePath);
                 }
             })
             .then(function () {
-                events.emit('theme.uploaded', storageAdapter.getFileName(zip.shortName));
+                events.emit('theme.uploaded', zip.shortName);
                 // store extracted theme
                 return storageAdapter.save({
-                    name: storageAdapter.getFileName(zip.shortName),
+                    name: zip.shortName,
                     path: theme.path
                 }, config.paths.themePath);
             })
@@ -84,7 +84,7 @@ themes = {
             })
             .then(function (settings) {
                 // gscan theme structure !== ghost theme structure
-                return {themes: [_.find(settings.availableThemes.value, {name: storageAdapter.getFileName(zip.shortName)})]};
+                return {themes: [_.find(settings.availableThemes.value, {name: zip.shortName})]};
             })
             .finally(function () {
                 // remove zip upload from multer
