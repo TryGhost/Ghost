@@ -683,7 +683,10 @@ describe('Frontend Routing', function () {
                 .expect(200)
                 .expect('Cache-Control', testUtils.cacheRules.hour)
                 .expect('Content-Type', 'text/xml; charset=utf-8')
-                .end(doEnd(done));
+                .end(function (err, res) {
+                    res.text.should.match(/sitemapindex/);
+                    doEnd(done)(err, res);
+                });
         });
 
         it('should serve sitemap-posts.xml', function (done) {
@@ -691,7 +694,10 @@ describe('Frontend Routing', function () {
                 .expect(200)
                 .expect('Cache-Control', testUtils.cacheRules.hour)
                 .expect('Content-Type', 'text/xml; charset=utf-8')
-                .end(doEnd(done));
+                .end(function (err, res) {
+                    res.text.should.match(/urlset/);
+                    doEnd(done)(err, res);
+                });
         });
 
         it('should serve sitemap-pages.xml', function (done) {
@@ -699,7 +705,10 @@ describe('Frontend Routing', function () {
                 .expect(200)
                 .expect('Cache-Control', testUtils.cacheRules.hour)
                 .expect('Content-Type', 'text/xml; charset=utf-8')
-                .end(doEnd(done));
+                .end(function (err, res) {
+                    res.text.should.match(/urlset/);
+                    doEnd(done)(err, res);
+                });
         });
 
         // TODO: Other pages and verify content
