@@ -7,6 +7,7 @@ module.exports = {
         markdown: {type: 'text', maxlength: 16777215, fieldtype: 'medium', nullable: true},
         mobiledoc: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         html: {type: 'text', maxlength: 16777215, fieldtype: 'medium', nullable: true},
+        amp: {type: 'text', maxlength: 16777215, fieldtype: 'medium', nullable: true},
         image: {type: 'text', maxlength: 2000, nullable: true},
         featured: {type: 'bool', nullable: false, defaultTo: false},
         page: {type: 'bool', nullable: false, defaultTo: false},

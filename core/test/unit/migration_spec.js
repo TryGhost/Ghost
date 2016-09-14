@@ -19,6 +19,7 @@ var should = require('should'),
     update = rewire('../../server/data/migration/update'),
     updates004 = require('../../server/data/migration/004'),
     updates005 = require('../../server/data/migration/005'),
+    updates008 = require('../../server/data/migration/008'),
 
     defaultSettings = schema.defaultSettings,
     schemaTables = Object.keys(schema.tables),
@@ -31,8 +32,8 @@ var should = require('should'),
 // both of which are required for migrations to work properly.
 describe('DB version integrity', function () {
     // Only these variables should need updating
-    var currentDbVersion = '007',
-        currentSchemaHash = 'f63f41ac97b5665a30c899409bbf9a83',
+    var currentDbVersion = '008',
+        currentSchemaHash = 'b3bdae210526b2d4393359c3e45d7f83',
         currentFixturesHash = '30b0a956b04e634e7f2cddcae8d2fd20';
 
     // If this test is failing, then it is likely a change has been made that requires a DB version bump,
@@ -1370,6 +1371,149 @@ describe('Migrations', function () {
 
                                 createTableStub.calledOnce.should.be.true();
                                 createTableStub.calledWith('subscribers').should.be.true();
+
+                                loggerStub.info.calledOnce.should.be.true();
+                                loggerStub.warn.called.should.be.false();
+
+                                done();
+                            }).catch(done);
+                        });
+                    });
+                });
+            });
+            describe('Update to 008', function () {
+                it('should call all the 008 database upgrade tasks', function (done) {
+                    // Setup
+                    // Create a new stub, this will replace sequence, so that db calls don't actually get run
+                    var sequenceStub = sandbox.stub(),
+                        sequenceReset = update.__set__('sequence', sequenceStub);
+
+                    sequenceStub.returns(Promise.resolve([]));
+
+                    // Execute
+                    update.execute({fromVersion: '007', toVersion: '008'}).then(function () {
+                        versionsSpy.calledOnce.should.be.true();
+                        versionsSpy.calledWith('007', '008').should.be.true();
+                        versionsSpy.returned(['007', '008']).should.be.true();
+
+                        tasksSpy.calledOnce.should.be.true();
+                        tasksSpy.calledWith('008', loggerStub).should.be.true();
+                        tasksSpy.firstCall.returnValue.should.be.an.Array().with.lengthOf(1);
+
+                        sequenceStub.calledOnce.should.be.true();
+
+                        sequenceStub.firstCall.calledWith(sinon.match.array, {
+                            transacting: transaction,
+                            context: {
+                                internal: true
+                            }
+                        }, loggerStub).should.be.true();
+
+                        sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(1);
+                        sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'addAmpColumnToPosts');
+
+                        // Reset sequence
+                        sequenceReset();
+                        done();
+                    }).catch(done);
+                });
+
+                describe('Tasks:', function () {
+                    var dropColumnStub, addColumnStub, createTableStub,
+                        knexStub, knexMock;
+
+                    beforeEach(function () {
+                        knexMock = sandbox.stub().returns({});
+                        knexMock.schema = {
+                            hasTable: sandbox.stub(),
+                            hasColumn: sandbox.stub()
+                        };
+                        // this MUST use sinon, not sandbox, see sinonjs/sinon#781
+                        knexStub = sinon.stub(db, 'knex', {
+                            get: function () {
+                                return knexMock;
+                            }
+                        });
+
+                        dropColumnStub = sandbox.stub(schema.commands, 'dropColumn');
+                        addColumnStub = sandbox.stub(schema.commands, 'addColumn');
+                        createTableStub = sandbox.stub(schema.commands, 'createTable');
+                    });
+
+                    afterEach(function () {
+                        knexStub.restore();
+                    });
+
+                    it('should have tasks for 008', function () {
+                        should.exist(updates008);
+                        updates008.should.be.an.Array().with.lengthOf(1);
+                    });
+
+                    describe('01-add-amp-column-to-posts', function () {
+                        var addAmpColumn = updates008[0];
+
+                        it('does not try to add a new column if the table does not exist', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('posts').returns(Promise.resolve(false));
+
+                            // Execute
+                            addAmpColumn({transacting: knexMock}, loggerStub)
+                                .then(function () {
+                                    done(new Error('expected table not found error'));
+                                })
+                                .catch(function (err) {
+                                    should.exist(err);
+                                    err.message.should.eql('Table does not exist!');
+                                    knexMock.schema.hasTable.calledOnce.should.be.true();
+                                    knexMock.schema.hasTable.firstCall.calledWith('posts').should.be.true();
+
+                                    knexMock.schema.hasColumn.called.should.be.false();
+
+                                    addColumnStub.called.should.be.false();
+
+                                    loggerStub.info.called.should.be.false();
+                                    loggerStub.warn.calledOnce.should.be.false();
+                                    done();
+                                });
+                        });
+
+                        it('does not try to add a new column if the column already exists', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('posts').returns(new Promise.resolve(true));
+                            knexMock.schema.hasColumn.withArgs('posts', 'amp').returns(Promise.resolve(true));
+
+                            // Execute
+                            addAmpColumn({transacting: knexMock}, loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledOnce.should.be.true();
+                                knexMock.schema.hasTable.calledWith('posts').should.be.true();
+
+                                knexMock.schema.hasColumn.calledOnce.should.be.true();
+                                knexMock.schema.hasColumn.calledWith('posts', 'amp').should.be.true();
+
+                                addColumnStub.called.should.be.false();
+
+                                loggerStub.info.called.should.be.false();
+                                loggerStub.warn.calledOnce.should.be.true();
+
+                                done();
+                            }).catch(done);
+                        });
+
+                        it('tries to add a new column if table is present but column is not', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('posts').returns(Promise.resolve(true));
+                            knexMock.schema.hasColumn.withArgs('posts', 'amp').returns(Promise.resolve(false));
+
+                            // Execute
+                            addAmpColumn({transacting: knexMock}, loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledOnce.should.be.true();
+                                knexMock.schema.hasTable.calledWith('posts').should.be.true();
+
+                                knexMock.schema.hasColumn.calledOnce.should.be.true();
+                                knexMock.schema.hasColumn.calledWith('posts', 'amp').should.be.true();
+
+                                addColumnStub.calledOnce.should.be.true();
+                                addColumnStub.calledWith('posts', 'amp').should.be.true();
 
                                 loggerStub.info.calledOnce.should.be.true();
                                 loggerStub.warn.called.should.be.false();

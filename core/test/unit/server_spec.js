@@ -106,7 +106,7 @@ describe('server bootstrap', function () {
 
                     migration.update.execute.calledWith({
                         fromVersion: '006',
-                        toVersion: '007',
+                        toVersion: '008',
                         forceMigration: undefined
                     }).should.eql(true);
 
