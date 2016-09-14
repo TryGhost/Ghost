@@ -120,6 +120,9 @@
   },
   "greenkeeper": {
     "ignore": [
+      "bookshelf",
+      "knex",
+      "lodash",
       "glob",
       "mysql",
       "nodemailer",
