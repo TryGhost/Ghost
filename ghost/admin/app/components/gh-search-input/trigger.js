@@ -35,7 +35,9 @@ export default Component.extend({
 
         handleKeydown(e) {
             let select = this.get('select');
-            if (!select.isOpen) {
+
+            // TODO: remove keycode check once EPS is updated to 1.0
+            if (!select.isOpen || e.keyCode === 32) {
                 e.stopPropagation();
             }
         }
