@@ -954,6 +954,8 @@ describe('Fixtures', function () {
             });
 
             describe('Tasks:', function () {
+                var isPostgres = false;
+
                 it('should have tasks for 006', function () {
                     should.exist(fixtures006);
                     fixtures006.should.be.an.Array().with.lengthOf(1);
@@ -966,12 +968,16 @@ describe('Fixtures', function () {
 
                     beforeEach(function () {
                         configUtils.config.database.isPostgreSQL = function () {
-                            return false;
+                            return isPostgres;
                         };
 
                         sandbox.stub(Date.prototype, 'getTimezoneOffset', function () {
                             return serverTimezoneOffset;
                         });
+                    });
+
+                    afterEach(function () {
+                        isPostgres = false;
                     });
 
                     describe('error cases', function () {
@@ -988,18 +994,6 @@ describe('Fixtures', function () {
                         it('server offset is 0 and mysql', function (done) {
                             migrationsSettingsValue = '{}';
                             configUtils.config.database.client = 'mysql';
-
-                            updateClient({}, loggerStub)
-                                .then(function () {
-                                    loggerStub.warn.called.should.be.true();
-                                    done();
-                                })
-                                .catch(done);
-                        });
-
-                        it('server offset is 0 and postgresql', function (done) {
-                            migrationsSettingsValue = '{}';
-                            configUtils.config.database.client = 'pg';
 
                             updateClient({}, loggerStub)
                                 .then(function () {
@@ -1068,6 +1062,45 @@ describe('Fixtures', function () {
                             });
 
                             sandbox.stub(api.settings, 'updateSettingsCache').returns(Promise.resolve({}));
+                        });
+
+                        it('pg: server TZ is UTC, only format is changing', function (done) {
+                            createdAt = moment(1464798678537).toDate();
+                            configUtils.config.database.client = 'pg';
+                            isPostgres = true;
+                            serverTimezoneOffset = 0;
+
+                            moment(createdAt).format('YYYY-MM-DD HH:mm:ss').should.eql('2016-06-01 16:31:18');
+
+                            updateClient({}, loggerStub)
+                                .then(function () {
+                                    _.each(newModels, function (model) {
+                                        moment(model.get('created_at')).format('YYYY-MM-DD HH:mm:ss').should.eql('2016-06-01 16:31:18');
+                                    });
+
+                                    migrationsSettingsWasUpdated.should.eql(true);
+                                    done();
+                                })
+                                .catch(done);
+                        });
+
+                        it('pg: server TZ is non UTC, only format is changing', function (done) {
+                            createdAt = moment(1464798678537).toDate();
+                            configUtils.config.database.client = 'pg';
+                            isPostgres = true;
+
+                            moment(createdAt).format('YYYY-MM-DD HH:mm:ss').should.eql('2016-06-01 16:31:18');
+
+                            updateClient({}, loggerStub)
+                                .then(function () {
+                                    _.each(newModels, function (model) {
+                                        moment(model.get('created_at')).format('YYYY-MM-DD HH:mm:ss').should.eql('2016-06-01 16:31:18');
+                                    });
+
+                                    migrationsSettingsWasUpdated.should.eql(true);
+                                    done();
+                                })
+                                .catch(done);
                         });
 
                         it('server offset is 0 and sqlite', function (done) {
