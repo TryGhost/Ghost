@@ -41,7 +41,7 @@
     "csv-parser": "1.9.3",
     "downsize": "0.0.8",
     "express": "4.14.0",
-    "express-hbs": "1.0.2",
+    "express-hbs": "1.0.3",
     "extract-zip": "https://github.com/ErisDS/extract-zip/tarball/issue-30",
     "fs-extra": "0.30.0",
     "ghost-gql": "0.0.5",
