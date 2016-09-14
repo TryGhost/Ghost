@@ -555,6 +555,12 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
+        it('/blog/welcome-to-ghost/amp/ should 200', function (done) {
+            request.get('/blog/welcome-to-ghost/amp/')
+                .expect(200)
+                .end(doEnd(done));
+        });
+
         it('should uncapitalise correctly with 301 to subdir', function (done) {
             request.get('/blog/AAA/')
                 .expect('Location', '/blog/aaa/')
