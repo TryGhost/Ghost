@@ -5,7 +5,10 @@
 // **Usage instructions:** can be found in the [Custom Tasks](#custom%20tasks) section or by running `grunt --help`.
 //
 // **Debug tip:** If you have any problems with any Grunt tasks, try running them with the `--verbose` command
-var _              = require('lodash'),
+
+// jshint unused: false
+var overrides      = require('./core/server/overrides'),
+    _              = require('lodash'),
     chalk          = require('chalk'),
     fs             = require('fs-extra'),
     path           = require('path'),

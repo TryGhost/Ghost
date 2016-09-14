@@ -56,6 +56,7 @@
     "lodash": "3.10.1",
     "lodash.frompairs": "4.0.1",
     "lodash.omitby": "4.6.0",
+    "lodash.orderby": "4.6.0",
     "lodash.pickby": "4.6.0",
     "lodash.topairs": "4.3.0",
     "lodash.tostring": "4.1.4",

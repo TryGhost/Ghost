@@ -5,6 +5,7 @@ var moment = require('moment-timezone'),
     toString = require('lodash.tostring'),
     pickBy = require('lodash.pickby'),
     uniqBy = require('lodash.uniqby'),
+    orderBy = require('lodash.orderby'),
     omitBy = require('lodash.omitby');
 
 /**
@@ -25,3 +26,4 @@ _.toString = toString;
 _.omitBy = omitBy;
 _.uniqBy = uniqBy;
 _.pickBy = pickBy;
+_.orderBy = orderBy;
