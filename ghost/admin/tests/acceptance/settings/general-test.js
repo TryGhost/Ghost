@@ -516,7 +516,68 @@ describe('Acceptance: Settings - General', function () {
                 ).to.equal('Upload a theme');
             });
 
+            // theme upload handles validation warnings
+            andThen(() => {
+                server.post('/themes/upload/', function () {
+                    return new Mirage.Response(200, {}, {
+                        themes: [
+                            {
+                                name: 'blackpalm',
+                                package: {
+                                    name: 'BlackPalm',
+                                    version: '1.0.0'
+                                },
+                                warnings: [
+                                    {
+                                        level: 'warning',
+                                        rule: 'Assets such as CSS & JS must use the <code>{{asset}}</code> helper',
+                                        details: '<p>The listed files should be included using the <code>{{asset}}</code> helper.  For more information, please see the <a href="http://themes.ghost.org/docs/asset">asset helper documentation</a>.</p>',
+                                        failures: [
+                                            {
+                                                ref: '/assets/dist/img/apple-touch-icon.png'
+                                            },
+                                            {
+                                                ref: '/assets/dist/img/favicon.ico'
+                                            },
+                                            {
+                                                ref: '/assets/dist/css/blackpalm.min.css'
+                                            },
+                                            {
+                                                ref: '/assets/dist/js/blackpalm.min.js'
+                                            }
+                                        ],
+                                        code: 'GS030-ASSET-REQ'
+                                    }
+                                ]
+                            }
+                        ]
+                    });
+                });
+            });
+            fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'warning-theme.zip', type: 'application/zip'});
+            andThen(() => {
+                expect(
+                    find('.fullscreen-modal h1').text().trim(),
+                    'modal title after uploading theme with warnings'
+                ).to.equal('Uploaded with warnings');
+
+                expect(
+                    find('.theme-validation-errors').text(),
+                    'top-level warnings are displayed'
+                ).to.match(/The listed files should be included using the {{asset}} helper/);
+
+                expect(
+                    find('.theme-validation-errors').text(),
+                    'individual warning failures are displayed'
+                ).to.match(/\/assets\/dist\/img\/apple-touch-icon\.png/);
+
+                // reset to default mirage handlers
+                mockThemes(server);
+            });
+            click('button:contains("Close")');
+
             // theme upload handles success then close
+            click('a:contains("Upload a theme")');
             fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'theme-1.zip', type: 'application/zip'});
             andThen(() => {
                 expect(
