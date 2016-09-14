@@ -137,7 +137,7 @@ var overrides      = require('./core/server/overrides'),
                 options: {
                     ui: 'bdd',
                     reporter: grunt.option('reporter') || 'spec',
-                    timeout: '15000',
+                    timeout: '30000',
                     save: grunt.option('reporter-output'),
                     require: ['core/server/overrides']
                 },
