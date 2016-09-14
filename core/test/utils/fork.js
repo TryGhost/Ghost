@@ -97,7 +97,7 @@ function forkGhost(newConfig, envName) {
                             /*jshint unused:false*/
                             pingTries = pingTries + 1;
                             // continue checking
-                            if (pingTries >= 50 && pingStop()) {
+                            if (pingTries >= 100 && pingStop()) {
                                 child.kill();
                                 reject(new Error('Timed out waiting for child process'));
                             }
