@@ -37,11 +37,6 @@ describe('storage: index_spec', function () {
             (chosenStorage instanceof localFileStorage).should.eql(true);
         });
 
-        it('escape non accepted characters in filenames', function () {
-            var chosenStorage = storage.getStorage('themes');
-            chosenStorage.getFileName('(abc*@#123).zip').should.eql('-abc-@-123-.zip');
-        });
-
         it('load with unknown type', function () {
             try {
                 storage.getStorage('theme');
