@@ -74,7 +74,7 @@
     "ember-wormhole": "0.3.6",
     "emberx-file-input": "1.0.0",
     "fs-extra": "0.30.0",
-    "glob": "7.0.5",
+    "glob": "7.0.6",
     "grunt": "1.0.1",
     "grunt-bg-shell": "2.3.3",
     "grunt-contrib-clean": "1.0.0",
