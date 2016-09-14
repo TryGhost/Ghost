@@ -91,7 +91,7 @@ describeComponent(
             stubSuccessfulUpload(server);
 
             this.render(hbs`{{gh-file-uploader url=uploadUrl}}`);
-            fileUpload(this.$('input[type="file"]'), ['test'], {type: 'text/csv'});
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.csv'});
 
             wait().then(() => {
                 expect(server.handledRequests.length).to.equal(1);
@@ -107,7 +107,7 @@ describeComponent(
             stubSuccessfulUpload(server);
 
             this.render(hbs`{{gh-file-uploader url=uploadUrl uploadSuccess=(action uploadSuccess)}}`);
-            fileUpload(this.$('input[type="file"]'), ['test'], {type: 'text/csv'});
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.csv'});
 
             wait().then(() => {
                 expect(uploadSuccess.calledOnce).to.be.true;
@@ -123,7 +123,7 @@ describeComponent(
             stubFailedUpload(server, 500);
 
             this.render(hbs`{{gh-file-uploader url=uploadUrl uploadSuccess=(action uploadSuccess)}}`);
-            fileUpload(this.$('input[type="file"]'), ['test'], {type: 'text/csv'});
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.csv'});
 
             wait().then(() => {
                 expect(uploadSuccess.calledOnce).to.be.false;
@@ -138,7 +138,7 @@ describeComponent(
             stubSuccessfulUpload(server);
 
             this.render(hbs`{{gh-file-uploader url=uploadUrl fileSelected=(action fileSelected)}}`);
-            fileUpload(this.$('input[type="file"]'), ['test'], {type: 'text/csv'});
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.csv'});
 
             wait().then(() => {
                 expect(fileSelected.calledOnce).to.be.true;
@@ -154,7 +154,7 @@ describeComponent(
             stubSuccessfulUpload(server);
 
             this.render(hbs`{{gh-file-uploader url=uploadUrl uploadStarted=(action uploadStarted)}}`);
-            fileUpload(this.$('input[type="file"]'), ['test'], {type: 'text/csv'});
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.csv'});
 
             wait().then(() => {
                 expect(uploadStarted.calledOnce).to.be.true;
@@ -169,7 +169,7 @@ describeComponent(
             stubSuccessfulUpload(server);
 
             this.render(hbs`{{gh-file-uploader url=uploadUrl uploadFinished=(action uploadFinished)}}`);
-            fileUpload(this.$('input[type="file"]'), ['test'], {type: 'text/csv'});
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.csv'});
 
             wait().then(() => {
                 expect(uploadFinished.calledOnce).to.be.true;
@@ -184,7 +184,7 @@ describeComponent(
             stubFailedUpload(server);
 
             this.render(hbs`{{gh-file-uploader url=uploadUrl uploadFinished=(action uploadFinished)}}`);
-            fileUpload(this.$('input[type="file"]'), ['test'], {type: 'text/csv'});
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.csv'});
 
             wait().then(() => {
                 expect(uploadFinished.calledOnce).to.be.true;
@@ -195,7 +195,7 @@ describeComponent(
         it('displays invalid file type error', function (done) {
             stubFailedUpload(server, 415, 'UnsupportedMediaTypeError');
             this.render(hbs`{{gh-file-uploader url=uploadUrl}}`);
-            fileUpload(this.$('input[type="file"]'), ['test'], {type: 'text/csv'});
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.csv'});
 
             wait().then(() => {
                 expect(this.$('.failed').length, 'error message is displayed').to.equal(1);
@@ -209,7 +209,7 @@ describeComponent(
         it('displays file too large for server error', function (done) {
             stubFailedUpload(server, 413, 'RequestEntityTooLargeError');
             this.render(hbs`{{gh-file-uploader url=uploadUrl}}`);
-            fileUpload(this.$('input[type="file"]'), ['test'], {type: 'text/csv'});
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.csv'});
 
             wait().then(() => {
                 expect(this.$('.failed').length, 'error message is displayed').to.equal(1);
@@ -223,7 +223,7 @@ describeComponent(
                 return [413, {}, ''];
             });
             this.render(hbs`{{gh-file-uploader url=uploadUrl}}`);
-            fileUpload(this.$('input[type="file"]'), ['test'], {type: 'text/csv'});
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.csv'});
 
             wait().then(() => {
                 expect(this.$('.failed').length, 'error message is displayed').to.equal(1);
@@ -235,7 +235,7 @@ describeComponent(
         it('displays other server-side error with message', function (done) {
             stubFailedUpload(server, 400, 'UnknownError');
             this.render(hbs`{{gh-file-uploader url=uploadUrl}}`);
-            fileUpload(this.$('input[type="file"]'), ['test'], {type: 'text/csv'});
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.csv'});
 
             wait().then(() => {
                 expect(this.$('.failed').length, 'error message is displayed').to.equal(1);
@@ -249,7 +249,7 @@ describeComponent(
                 return [500, {'Content-Type': 'application/json'}, ''];
             });
             this.render(hbs`{{gh-file-uploader url=uploadUrl}}`);
-            fileUpload(this.$('input[type="file"]'), ['test'], {type: 'text/csv'});
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.csv'});
 
             wait().then(() => {
                 expect(this.$('.failed').length, 'error message is displayed').to.equal(1);
@@ -265,7 +265,7 @@ describeComponent(
             stubFailedUpload(server, 400, 'VersionMismatchError');
 
             this.render(hbs`{{gh-file-uploader url=uploadUrl}}`);
-            fileUpload(this.$('input[type="file"]'), ['test'], {type: 'text/csv'});
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.csv'});
 
             wait().then(() => {
                 expect(showAPIError.calledOnce).to.be.true;
@@ -279,7 +279,7 @@ describeComponent(
 
             stubFailedUpload(server, 400, 'UnknownError');
             this.render(hbs`{{gh-file-uploader url=uploadUrl}}`);
-            fileUpload(this.$('input[type="file"]'), ['test'], {type: 'text/csv'});
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.csv'});
 
             wait().then(() => {
                 expect(showAPIError.called).to.be.false;
@@ -290,7 +290,7 @@ describeComponent(
         it('can be reset after a failed upload', function (done) {
             stubFailedUpload(server, 400, 'UnknownError');
             this.render(hbs`{{gh-file-uploader url=uploadUrl}}`);
-            fileUpload(this.$('input[type="file"]'), ['test'], {type: 'text/csv'});
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.csv'});
 
             wait().then(() => {
                 run(() => {
@@ -311,7 +311,7 @@ describeComponent(
             stubSuccessfulUpload(server, 150);
 
             this.render(hbs`{{gh-file-uploader url=uploadUrl uploadFinished=(action done)}}`);
-            fileUpload(this.$('input[type="file"]'), ['test'], {type: 'text/csv'});
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.csv'});
 
             // after 75ms we should have had one progress event
             run.later(this, function () {
@@ -347,7 +347,7 @@ describeComponent(
             let uploadSuccess = sinon.spy();
             let drop = $.Event('drop', {
                 dataTransfer: {
-                    files: [createFile(['test'], {type: 'text/csv'})]
+                    files: [createFile(['test'], {name: 'test.csv'})]
                 }
             });
 
@@ -367,7 +367,7 @@ describeComponent(
             });
         });
 
-        it('validates "accept" mime type by default', function (done) {
+        it('validates extension by default', function (done) {
             let uploadSuccess = sinon.spy();
             let uploadFailed = sinon.spy();
 
@@ -381,7 +381,7 @@ describeComponent(
                 uploadSuccess=(action uploadSuccess)
                 uploadFailed=(action uploadFailed)}}`);
 
-            fileUpload(this.$('input[type="file"]'), ['test'], {type: 'application/plain'});
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.txt'});
 
             wait().then(() => {
                 expect(uploadSuccess.called).to.be.false;
@@ -406,7 +406,7 @@ describeComponent(
                 uploadSuccess=(action uploadSuccess)
                 validate=(action validate)}}`);
 
-            fileUpload(this.$('input[type="file"]'), ['test'], {type: 'text/csv'});
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.csv'});
 
             wait().then(() => {
                 expect(validate.calledOnce).to.be.true;
@@ -432,7 +432,7 @@ describeComponent(
                 uploadFailed=(action uploadFailed)
                 validate=(action validate)}}`);
 
-            fileUpload(this.$('input[type="file"]'), ['test'], {type: 'text/csv'});
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.csv'});
 
             wait().then(() => {
                 expect(validate.calledOnce).to.be.true;

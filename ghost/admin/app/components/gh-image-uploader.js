@@ -3,6 +3,7 @@ import computed from 'ember-computed';
 import injectService from 'ember-service/inject';
 import {htmlSafe} from 'ember-string';
 import {isBlank} from 'ember-utils';
+import {isEmberArray} from 'ember-array/utils';
 import run from 'ember-runloop';
 
 import {invokeAction} from 'ember-invoke-action';
@@ -24,6 +25,7 @@ export default Component.extend({
     altText: '',
     saveButton: true,
     accept: 'image/gif,image/jpg,image/jpeg,image/png,image/svg+xml',
+    extensions: ['gif', 'jpg', 'jpeg', 'png', 'svg'],
     validate: null,
 
     dragClass: null,
@@ -212,9 +214,14 @@ export default Component.extend({
     },
 
     _defaultValidator(file) {
-        let accept = this.get('accept');
+        let extensions = this.get('extensions');
+        let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
 
-        if (!isBlank(accept) && file && accept.indexOf(file.type) === -1) {
+        if (!isEmberArray(extensions)) {
+            extensions = extensions.split(',');
+        }
+
+        if (!extension || extensions.indexOf(extension.toLowerCase()) === -1) {
             return new UnsupportedMediaTypeError();
         }
 
