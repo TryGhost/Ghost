@@ -1273,8 +1273,8 @@ describe('Fixtures', function () {
                     fixtures008.should.be.an.Array().with.lengthOf(1);
                 });
 
-                describe('01-fix-sqlite-format', function () {
-                    var updateClient = rewire('../../server/data/migration/fixtures/008/01-fix-sqlite-format'),
+                describe('01-fix-sqlite-pg-format', function () {
+                    var updateClient = rewire('../../server/data/migration/fixtures/008/01-fix-sqlite-pg-format'),
                         serverTimezoneOffset = 60,
                         transfomDatesIntoUTCStub, rawStub, isPostgres = false, isPostgreSQLWasCalled = false;
 

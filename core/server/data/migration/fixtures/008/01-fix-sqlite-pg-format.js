@@ -38,7 +38,7 @@ _private.rerunDateMigration = function rerunDateMigration(options, logger) {
 
 /**
  * this migration script is a very special one for people who run their server in UTC and use sqlite3 or run their server in any TZ and use postgres
- * 006/01-transform-dates-into-utc had a bug for this case, see what happen because this bug https://github.com/TryGhost/Ghost/issues/7192
+ * 006/01-transform-dates-into-utc had a bug for this case, see what happen because of this bug https://github.com/TryGhost/Ghost/issues/7192
  */
 module.exports = function fixSqliteFormat(options, logger) {
     var ServerTimezoneOffset = _private.getTZOffsetMax();
