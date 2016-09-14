@@ -84,7 +84,11 @@ themes = {
             })
             .then(function (settings) {
                 // gscan theme structure !== ghost theme structure
-                return {themes: [_.find(settings.availableThemes.value, {name: zip.shortName})]};
+                var themeObject = _.find(settings.availableThemes.value, {name: zip.shortName}) || {};
+                if (theme.results.warning.length > 0) {
+                    themeObject.warnings = _.cloneDeep(theme.results.warning);
+                }
+                return {themes: [themeObject]};
             })
             .finally(function () {
                 // remove zip upload from multer
