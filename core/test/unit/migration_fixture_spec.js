@@ -1243,9 +1243,14 @@ describe('Fixtures', function () {
                 describe('01-fix-sqlite-format', function () {
                     var updateClient = rewire('../../server/data/migration/fixtures/008/01-fix-sqlite-format'),
                         serverTimezoneOffset = 60,
-                        transfomDatesIntoUTCStub;
+                        transfomDatesIntoUTCStub, rawStub, isPostgres = false, isPostgreSQLWasCalled = false;
 
                     beforeEach(function () {
+                        configUtils.config.database.isPostgreSQL = function () {
+                            isPostgreSQLWasCalled = true;
+                            return isPostgres;
+                        };
+
                         sandbox.stub(Date.prototype, 'getTimezoneOffset', function () {
                             return serverTimezoneOffset;
                         });
@@ -1253,6 +1258,8 @@ describe('Fixtures', function () {
 
                     afterEach(function () {
                         serverTimezoneOffset = 60;
+                        isPostgres = false;
+                        isPostgreSQLWasCalled = false;
                     });
 
                     describe('success', function () {
@@ -1275,11 +1282,13 @@ describe('Fixtures', function () {
                             updateClient.__set__('transfomDatesIntoUTC', transfomDatesIntoUTCStub);
                         });
 
-                        it('sqlite and server TZ is UTC', function (done) {
+                        it('sqlite and server TZ is UTC: date format is integer', function (done) {
                             serverTimezoneOffset = 0;
                             configUtils.config.database.client = 'sqlite3';
 
-                            updateClient({}, loggerStub)
+                            rawStub = sandbox.stub().returns(Promise.resolve([{created_at: Date.now()}]));
+
+                            updateClient({transacting: {raw: rawStub}}, loggerStub)
                                 .then(function () {
                                     models.Settings.edit.callCount.should.eql(1);
                                     models.Settings.findOne.callCount.should.eql(1);
@@ -1292,9 +1301,11 @@ describe('Fixtures', function () {
                         it('postgres and server TZ is UTC', function (done) {
                             serverTimezoneOffset = 0;
                             configUtils.config.database.client = 'pg';
+                            isPostgres = true;
 
                             updateClient({}, loggerStub)
                                 .then(function () {
+                                    isPostgreSQLWasCalled.should.eql(true);
                                     models.Settings.edit.callCount.should.eql(1);
                                     models.Settings.findOne.callCount.should.eql(1);
                                     transfomDatesIntoUTCStub.callCount.should.eql(1);
@@ -1305,9 +1316,11 @@ describe('Fixtures', function () {
 
                         it('postgres and server TZ is not UTC', function (done) {
                             configUtils.config.database.client = 'pg';
+                            isPostgres = true;
 
                             updateClient({}, loggerStub)
                                 .then(function () {
+                                    isPostgreSQLWasCalled.should.eql(true);
                                     models.Settings.edit.callCount.should.eql(1);
                                     models.Settings.findOne.callCount.should.eql(1);
                                     transfomDatesIntoUTCStub.callCount.should.eql(1);
@@ -1333,6 +1346,20 @@ describe('Fixtures', function () {
                             configUtils.config.database.client = 'sqlite3';
 
                             updateClient({}, loggerStub)
+                                .then(function () {
+                                    loggerStub.warn.called.should.be.true();
+                                    done();
+                                })
+                                .catch(done);
+                        });
+
+                        it('skip sqlite with UTC server timezone, but correct format', function (done) {
+                            configUtils.config.database.client = 'sqlite3';
+                            serverTimezoneOffset = 0;
+
+                            rawStub = sandbox.stub().returns(Promise.resolve([{created_at: moment().format('YYYY-MM-DD HH:mm:ss')}]));
+
+                            updateClient({transacting: {raw: rawStub}}, loggerStub)
                                 .then(function () {
                                     loggerStub.warn.called.should.be.true();
                                     done();
