@@ -198,16 +198,10 @@ export default Component.extend({
     },
 
     _defaultValidator(file) {
-        let accept = this._accept;
+        let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
+        let extensions = this._extensions;
 
-        if (isBlank(file.type)) {
-            let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
-            let extensions = this._extensions;
-
-            if (!extension || extensions.indexOf(extension.toLowerCase()) === -1) {
-                return new UnsupportedMediaTypeError();
-            }
-        } else if (!isBlank(file.type) && !isBlank(accept) && file && accept.indexOf(file.type) === -1) {
+        if (!extension || extensions.indexOf(extension.toLowerCase()) === -1) {
             return new UnsupportedMediaTypeError();
         }
 

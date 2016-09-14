@@ -6,13 +6,13 @@ import {
     UnsupportedMediaTypeError,
     isThemeValidationError
 } from 'ghost-admin/services/ajax';
-import {isBlank} from 'ember-utils';
 import run from 'ember-runloop';
 import injectService from 'ember-service/inject';
 
 export default ModalComponent.extend({
 
     accept: ['application/zip', 'application/x-zip-compressed'],
+    extensions: ['zip'],
     availableThemes: null,
     closeDisabled: false,
     file: null,
@@ -47,13 +47,15 @@ export default ModalComponent.extend({
 
     actions: {
         validateTheme(file) {
-            let accept = this.get('accept');
             let themeName = file.name.replace(/\.zip$/, '');
             let availableThemeNames = this.get('availableThemeNames');
 
             this.set('file', file);
 
-            if (!isBlank(accept) && file && accept.indexOf(file.type) === -1) {
+            let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
+            let extensions = this.get('extensions');
+
+            if (!extension || extensions.indexOf(extension.toLowerCase()) === -1) {
                 return new UnsupportedMediaTypeError();
             }
 
