@@ -126,7 +126,7 @@ function getAmperizeHTML(html, post) {
             amperize.parse(html, function (err, res) {
                 if (err) {
                     if (err.src) {
-                        errors.logError(err.message, 'AMP HTML couldn\'t get parsed:' + err.src);
+                        errors.logError(err.message, 'AMP HTML couldn\'t get parsed: ' + err.src);
                     } else {
                         errors.logError(err);
                     }
