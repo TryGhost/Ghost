@@ -1,7 +1,11 @@
 <header class="modal-header">
     <h1>
         {{#if theme}}
-            Upload successful!
+            {{#if validationWarnings}}
+                Uploaded with warnings
+            {{else}}
+                Upload successful!
+            {{/if}}
         {{else if validationErrors}}
             Invalid theme
         {{else}}
@@ -13,10 +17,35 @@
 
 <div class="modal-body">
     {{#if theme}}
-        <p>
-            "{{themeName}}" uploaded successfully.
-            {{#if canActivateTheme}}Do you want to activate it now?{{/if}}
-        </p>
+        {{#if validationWarnings}}
+            <ul class="theme-validation-errors">
+                <li>
+                    <p>
+                        "{{themeName}}" uploaded successfully but some warnings were generated...
+                    </p>
+                </li>
+                {{#each validationWarnings as |error|}}
+                    <li>
+                        {{#if error.details}}
+                            {{{error.details}}}
+                        {{else}}
+                            {{{error.rule}}}
+                        {{/if}}
+
+                        <ul>
+                            {{#each error.failures as |failure|}}
+                                <li><code>{{failure.ref}}</code>{{#if failure.message}}: {{failure.message}}{{/if}}</li>
+                            {{/each}}
+                        </ul>
+                    </li>
+                {{/each}}
+            </ul>
+        {{else}}
+            <p>
+                "{{themeName}}" uploaded successfully.
+                {{#if canActivateTheme}}Do you want to activate it now?{{/if}}
+            </p>
+        {{/if}}
     {{else if displayOverwriteWarning}}
         <p>
             "{{fileThemeName}}" will overwrite an existing theme of the same name. Are you sure?

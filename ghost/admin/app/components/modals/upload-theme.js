@@ -8,6 +8,7 @@ import {
 } from 'ghost-admin/services/ajax';
 import run from 'ember-runloop';
 import injectService from 'ember-service/inject';
+import get from 'ember-metal/get';
 
 export default ModalComponent.extend({
 
@@ -92,7 +93,14 @@ export default ModalComponent.extend({
         },
 
         uploadSuccess(response) {
-            this.set('theme', response.themes[0]);
+            let [theme] = response.themes;
+
+            this.set('theme', theme);
+
+            if (get(theme, 'warnings.length') > 0) {
+                this.set('validationWarnings', theme.warnings);
+            }
+
             // invoke the passed in confirm action
             invokeAction(this, 'model.uploadSuccess', this.get('theme'));
         },
