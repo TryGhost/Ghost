@@ -43,6 +43,10 @@ init = function init() {
     return settings.updateSettingsCache();
 };
 
+function isActiveThemeOverride(method, endpoint, result) {
+    return method === 'POST' && endpoint === 'themes' && result.themes && result.themes[0] && result.themes[0].active === true;
+}
+
 /**
  * ### Cache Invalidation Header
  * Calculate the header string for the X-Cache-Invalidate: header.
@@ -67,7 +71,12 @@ cacheInvalidationHeader = function cacheInvalidationHeader(req, result) {
         hasStatusChanged,
         wasPublishedUpdated;
 
-    if (['POST', 'PUT', 'DELETE'].indexOf(method) > -1) {
+    if (isActiveThemeOverride(method, endpoint, result)) {
+        // Special case for if we're overwriting an active theme
+        // @TODO: remove this crazy DIRTY HORRIBLE HACK
+        req.app.set('activeTheme', null);
+        return INVALIDATE_ALL;
+    } else if (['POST', 'PUT', 'DELETE'].indexOf(method) > -1) {
         if (endpoint === 'schedules' && subdir === 'posts') {
             return INVALIDATE_ALL;
         }
@@ -90,7 +99,7 @@ cacheInvalidationHeader = function cacheInvalidationHeader(req, result) {
             if (hasStatusChanged || wasPublishedUpdated) {
                 return INVALIDATE_ALL;
             } else {
-                return '/' + config.routeKeywords.preview + '/' + post.uuid + '/';
+                return config.urlFor({relativeUrl: '/' + config.routeKeywords.preview + '/' + post.uuid + '/'});
             }
         }
     }

@@ -51,12 +51,18 @@ StorageBase.prototype.getUniqueFileName = function (store, image, targetDir) {
     // poor extension validation
     // .1 is not a valid extension
     if (!ext.match(/.\d/)) {
-        name = path.basename(image.name, ext).replace(/[^\w@.]/gi, '-');
+        name = this.getSanitizedFileName(path.basename(image.name, ext));
         return this.generateUnique(store, targetDir, name, ext, 0);
     } else {
-        name = path.basename(image.name).replace(/[^\w@.]/gi, '-');
+        name = this.getSanitizedFileName(path.basename(image.name));
         return this.generateUnique(store, targetDir, name, null, 0);
     }
+};
+
+StorageBase.prototype.getSanitizedFileName = function getSanitizedFileName(fileName) {
+    // below only matches ascii characters, @, and .
+    // unicode filenames like город.zip would therefore resolve to ----.zip
+    return fileName.replace(/[^\w@.]/gi, '-');
 };
 
 module.exports = StorageBase;

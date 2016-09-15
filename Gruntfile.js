@@ -5,7 +5,10 @@
 // **Usage instructions:** can be found in the [Custom Tasks](#custom%20tasks) section or by running `grunt --help`.
 //
 // **Debug tip:** If you have any problems with any Grunt tasks, try running them with the `--verbose` command
-var _              = require('lodash'),
+
+// jshint unused: false
+var overrides      = require('./core/server/overrides'),
+    _              = require('lodash'),
     chalk          = require('chalk'),
     fs             = require('fs-extra'),
     path           = require('path'),
@@ -134,7 +137,7 @@ var _              = require('lodash'),
                 options: {
                     ui: 'bdd',
                     reporter: grunt.option('reporter') || 'spec',
-                    timeout: '15000',
+                    timeout: '30000',
                     save: grunt.option('reporter-output'),
                     require: ['core/server/overrides']
                 },
@@ -701,6 +704,10 @@ var _              = require('lodash'),
         grunt.registerTask('prod', 'Build JS & templates for production',
             ['subgrunt:prod', 'uglify:prod', 'master-warn']);
 
+        grunt.registerTask('deps', 'Prepare dependencies',
+            ['shell:dedupe', 'shell:prune', 'shell:shrinkwrap']
+        );
+
         // ### Live reload
         // `grunt dev` - build assets on the fly whilst developing
         //
@@ -811,7 +818,7 @@ var _              = require('lodash'),
                     dest: '<%= paths.releaseBuild %>/'
                 });
 
-                grunt.task.run(['init', 'prod', 'clean:release',  'shell:dedupe', 'shell:prune', 'shell:shrinkwrap', 'copy:release', 'compress:release']);
+                grunt.task.run(['init', 'prod', 'clean:release', 'deps', 'copy:release', 'compress:release']);
             }
         );
     };

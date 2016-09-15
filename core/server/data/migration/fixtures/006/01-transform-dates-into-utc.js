@@ -38,18 +38,17 @@ module.exports = function transformDatesIntoUTC(options, logger) {
 
     return sequence([
         function databaseCheck() {
-            if (ServerTimezoneOffset === 0) {
+            // we have to change the sqlite format, because it stores dates as integer
+            if (ServerTimezoneOffset === 0 && config.database.client === 'mysql') {
                 return Promise.reject(new Error('skip'));
             }
 
             if (config.database.isPostgreSQL()) {
-                return Promise.reject(new Error('skip'));
-            }
-
-            if (config.database.client === 'sqlite3') {
                 _private.noOffset = true;
-            } else {
+            } else if (config.database.client === 'mysql') {
                 _private.noOffset = false;
+            } else if (config.database.client === 'sqlite3') {
+                _private.noOffset = true;
             }
 
             logger.info(messagePrefix + '(could take a while)...');
