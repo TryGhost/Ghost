@@ -1,7 +1,8 @@
 var config = require('../../../../config'),
     _ = require('lodash'),
-    models = require(config.paths.corePath + '/server/models'),
-    transfomDatesIntoUTC = require(config.paths.corePath + '/server/data/migration/fixtures/006/01-transform-dates-into-utc'),
+    models = require(config.get('paths').corePath + '/server/models'),
+    db = require(config.get('paths').corePath + '/server/data/db/connection'),
+    transfomDatesIntoUTC = require(config.get('paths').corePath + '/server/data/migration/fixtures/006/01-transform-dates-into-utc'),
     Promise = require('bluebird'),
     messagePrefix = 'Fix sqlite/pg format: ',
     _private = {};
@@ -38,14 +39,14 @@ _private.rerunDateMigration = function rerunDateMigration(options, logger) {
  */
 module.exports = function fixSqliteFormat(options, logger) {
     // CASE: skip this script when using mysql
-    if (config.database.client === 'mysql') {
+    if (config.get('database').client === 'mysql') {
         logger.warn(messagePrefix + 'This script only runs, when using sqlite/postgres as database.');
         return Promise.resolve();
     }
 
     // CASE: database is postgres, server is in ANY TZ, run 006/001 again
     // we can't check the format for PG somehow, so we just run the migration again
-    if (config.database.isPostgreSQL()) {
+    if (db.isPostgreSQL()) {
         return _private.rerunDateMigration(options, logger);
     }
 
