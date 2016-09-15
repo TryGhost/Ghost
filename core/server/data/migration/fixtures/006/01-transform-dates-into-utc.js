@@ -40,7 +40,7 @@ module.exports = function transformDatesIntoUTC(options, logger) {
     return sequence([
         function databaseCheck() {
             // we have to change the sqlite format, because it stores dates as integer
-            if (ServerTimezoneOffset === 0 && config.database.client === 'mysql') {
+            if (ServerTimezoneOffset === 0 && config.get('database').client === 'mysql') {
                 return Promise.reject(new Error('skip'));
             }
 
