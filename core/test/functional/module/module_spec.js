@@ -1,12 +1,15 @@
 // # Module tests
 // This tests using Ghost as an npm module
 var should     = require('should'),
+    testUtils  = require('../../utils'),
     ghost      = require('../../../../core'),
     i18n       = require('../../../../core/server/i18n');
 
 i18n.init();
 
 describe('Module', function () {
+    before(testUtils.teardown);
+
     describe('Setup', function () {
         it('should resolve with a ghost-server instance', function (done) {
             ghost().then(function (ghostServer) {
