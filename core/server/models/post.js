@@ -5,8 +5,8 @@ var _              = require('lodash'),
     Promise        = require('bluebird'),
     sequence       = require('../utils/sequence'),
     errors         = require('../errors'),
-    Showdown       = require('showdown-ghost'),
-    converter      = new Showdown.converter({extensions: ['ghostgfm', 'footnotes', 'highlight']}),
+    Mobiledoc      = require('mobiledoc-html-renderer').default,
+    converter      = new Mobiledoc(),
     ghostBookshelf = require('./base'),
     events         = require('../events'),
     config         = require('../config'),
@@ -144,6 +144,7 @@ Post = ghostBookshelf.Model.extend({
             tagsToCheck = this.get('tags'),
             publishedAt = this.get('published_at'),
             publishedAtHasChanged = this.hasDateChanged('published_at'),
+            mobiledoc   = this.get('mobiledoc'),
             tags = [];
 
         // CASE: disallow published -> scheduled
@@ -193,7 +194,16 @@ Post = ghostBookshelf.Model.extend({
 
         ghostBookshelf.Model.prototype.saving.call(this, model, attr, options);
 
-        this.set('html', converter.makeHtml(_.toString(this.get('markdown'))));
+        if (!mobiledoc) {
+            mobiledoc = JSON.stringify({
+                version: '0.3.0',
+                markups: [],
+                atoms: [],
+                cards: [],
+                sections: []
+            });
+        }
+        this.set('html', converter.render(JSON.parse(mobiledoc)).result);
 
         // disabling sanitization until we can implement a better version
         title = this.get('title') || i18n.t('errors.models.post.untitled');

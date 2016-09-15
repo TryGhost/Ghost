@@ -61,6 +61,7 @@
     "lodash.topairs": "4.3.0",
     "lodash.tostring": "4.1.4",
     "lodash.uniqby": "4.7.0",
+    "mobiledoc-html-renderer": "0.3.0",
     "moment": "2.15.0",
     "moment-timezone": "0.5.5",
     "morgan": "1.7.0",
