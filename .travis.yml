@@ -3,7 +3,6 @@ language: node_js
 node_js:
   - "4"
   - "0.12"
-  - "0.10"
   - "6"
 sudo: false
 cache:
@@ -26,8 +25,6 @@ matrix:
   include:
     - node_js: "4"
       env: TEST_SUITE=lint
-  allow_failures:
-    - node_js: "6"
   fast_finish: true
 branches:
   except:
