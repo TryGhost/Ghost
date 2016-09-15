@@ -6,7 +6,6 @@
 
 var request    = require('supertest'),
     should     = require('should'),
-
     testUtils  = require('../../utils'),
     ghost      = require('../../../../core'),
     i18n       = require('../../../../core/server/i18n'),
@@ -40,6 +39,8 @@ describe('Admin Routing', function () {
             done();
         };
     }
+
+    before(testUtils.teardown);
 
     before(function (done) {
         ghost().then(function (ghostServer) {
