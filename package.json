@@ -85,8 +85,7 @@
     "xml": "1.0.1"
   },
   "optionalDependencies": {
-    "mysql": "2.1.1",
-    "pg": "4.1.1"
+    "mysql": "2.1.1"
   },
   "devDependencies": {
     "gh-contrib-list": "0.1.2",
@@ -127,7 +126,6 @@
       "glob",
       "mysql",
       "nodemailer",
-      "pg",
       "showdown-ghost"
     ]
   }
