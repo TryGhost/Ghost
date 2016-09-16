@@ -561,8 +561,8 @@ var overrides      = require('./core/server/overrides'),
         // `grunt test:integration/api/api_tags_spec.js`
         //
         // Their purpose is to test that both the api and models behave as expected when the database layer is involved.
-        // These tests are run against sqlite3, mysql and pg on travis and ensure that differences between the databases
-        // don't cause bugs. At present, pg often fails and is not officially supported.
+        // These tests are run against sqlite3 and mysql on travis and ensure that differences between the databases
+        // don't cause bugs.
         //
         // A coverage report can be generated for these tests using the `grunt test-coverage` task.
         grunt.registerTask('test-integration', 'Run integration tests (mocha + db access)',
