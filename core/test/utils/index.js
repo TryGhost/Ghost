@@ -84,7 +84,6 @@ fixtures = {
             }));
         }).then(function () {
             return Promise.all([
-                // PostgreSQL can return results in any order
                 db.knex('posts').orderBy('id', 'asc').select('id'),
                 db.knex('tags').select('id')
             ]);
@@ -162,7 +161,6 @@ fixtures = {
         max = max || 50;
 
         return Promise.all([
-            // PostgreSQL can return results in any order
             db.knex('posts').orderBy('id', 'asc').select('id'),
             db.knex('tags').select('id', 'name')
         ]).then(function (results) {
