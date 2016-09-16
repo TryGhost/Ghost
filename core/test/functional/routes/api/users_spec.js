@@ -38,8 +38,6 @@ describe('User API', function () {
     describe('As Owner', function () {
         describe('Browse', function () {
             it('returns dates in ISO 8601 format', function (done) {
-                // @TODO: postgres returns for default oder (last_login DESC) something else then sqlite
-                // @TODO: maybe related to https://github.com/TryGhost/Ghost/issues/6104
                 request.get(testUtils.API.getApiQuery('users/?order=id%20ASC'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)

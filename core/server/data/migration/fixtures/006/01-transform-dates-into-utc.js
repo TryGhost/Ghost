@@ -1,7 +1,6 @@
 var config = require('../../../../config'),
     models = require(config.get('paths').corePath + '/server/models'),
     api = require(config.get('paths').corePath + '/server/api'),
-    db = require(config.get('paths').corePath + '/server/data/db/connection'),
     sequence = require(config.get('paths').corePath + '/server/utils/sequence'),
     moment = require('moment'),
     _ = require('lodash'),
@@ -27,7 +26,6 @@ _private.addOffset = function addOffset(date) {
 };
 
 /**
- * postgres: stores dates with offset, so it's enough to force timezone UTC in the db connection (see data/db/connection.js)
  * sqlite: stores UTC timestamps, but we will normalize the format to YYYY-MM-DD HH:mm:ss
  */
 module.exports = function transformDatesIntoUTC(options, logger) {
@@ -44,9 +42,7 @@ module.exports = function transformDatesIntoUTC(options, logger) {
                 return Promise.reject(new Error('skip'));
             }
 
-            if (db.isPostgreSQL()) {
-                _private.noOffset = true;
-            } else if (config.get('database').client === 'mysql') {
+            if (config.get('database').client === 'mysql') {
                 _private.noOffset = false;
             } else if (config.get('database').client === 'sqlite3') {
                 _private.noOffset = true;
