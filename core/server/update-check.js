@@ -12,7 +12,7 @@
 // - node version
 // - npm version
 // - env - production or development
-// - database type - SQLite, MySQL, PostgreSQL
+// - database type - SQLite, MySQL
 // - email transport - mail.options.service, or otherwise mail.transport
 // - created date - database creation date
 // - post count - total number of posts

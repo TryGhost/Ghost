@@ -9,7 +9,6 @@ var should = require('should'),
     configUtils = require('../utils/configUtils'),
     models = require('../../server/models'),
     api = require('../../server/api'),
-    db = require('../../server/data/db/connection'),
     permissions = require('../../server/permissions'),
     notifications = require('../../server/api/notifications'),
     versioning = require('../../server/data/schema/versioning'),
@@ -955,8 +954,6 @@ describe('Fixtures', function () {
             });
 
             describe('Tasks:', function () {
-                var isPostgres = false;
-
                 it('should have tasks for 006', function () {
                     should.exist(fixtures006);
                     fixtures006.should.be.an.Array().with.lengthOf(1);
@@ -968,17 +965,9 @@ describe('Fixtures', function () {
                         migrationsSettingsValue;
 
                     beforeEach(function () {
-                        sandbox.stub(db, 'isPostgreSQL', function isPostgreSQL() {
-                            return isPostgres;
-                        });
-
                         sandbox.stub(Date.prototype, 'getTimezoneOffset', function () {
                             return serverTimezoneOffset;
                         });
-                    });
-
-                    afterEach(function () {
-                        isPostgres = false;
                     });
 
                     describe('error cases', function () {
@@ -1063,46 +1052,6 @@ describe('Fixtures', function () {
                             });
 
                             sandbox.stub(api.settings, 'updateSettingsCache').returns(Promise.resolve({}));
-                        });
-
-                        it('pg: server TZ is UTC, only format is changing', function (done) {
-                            createdAt = moment(1464798678537).toDate();
-                            configUtils.set('database:client', 'pg');
-
-                            isPostgres = true;
-                            serverTimezoneOffset = 0;
-
-                            moment(createdAt).format('YYYY-MM-DD HH:mm:ss').should.eql('2016-06-01 16:31:18');
-
-                            updateClient({}, loggerStub)
-                                .then(function () {
-                                    _.each(newModels, function (model) {
-                                        moment(model.get('created_at')).format('YYYY-MM-DD HH:mm:ss').should.eql('2016-06-01 16:31:18');
-                                    });
-
-                                    migrationsSettingsWasUpdated.should.eql(true);
-                                    done();
-                                })
-                                .catch(done);
-                        });
-
-                        it('pg: server TZ is non UTC, only format is changing', function (done) {
-                            createdAt = moment(1464798678537).toDate();
-                            configUtils.set('database:client', 'pg');
-                            isPostgres = true;
-
-                            moment(createdAt).format('YYYY-MM-DD HH:mm:ss').should.eql('2016-06-01 16:31:18');
-
-                            updateClient({}, loggerStub)
-                                .then(function () {
-                                    _.each(newModels, function (model) {
-                                        moment(model.get('created_at')).format('YYYY-MM-DD HH:mm:ss').should.eql('2016-06-01 16:31:18');
-                                    });
-
-                                    migrationsSettingsWasUpdated.should.eql(true);
-                                    done();
-                                })
-                                .catch(done);
                         });
 
                         it('server offset is 0 and sqlite', function (done) {
@@ -1276,14 +1225,9 @@ describe('Fixtures', function () {
                 describe('01-fix-sqlite-pg-format', function () {
                     var updateClient = rewire('../../server/data/migration/fixtures/008/01-fix-sqlite-pg-format'),
                         serverTimezoneOffset = 60,
-                        transfomDatesIntoUTCStub, rawStub, isPostgres = false, isPostgreSQLWasCalled = false;
+                        transfomDatesIntoUTCStub, rawStub;
 
                     beforeEach(function () {
-                        sandbox.stub(db, 'isPostgreSQL', function isPostgreSQL() {
-                            isPostgreSQLWasCalled = true;
-                            return isPostgres;
-                        });
-
                         sandbox.stub(Date.prototype, 'getTimezoneOffset', function () {
                             return serverTimezoneOffset;
                         });
@@ -1291,8 +1235,6 @@ describe('Fixtures', function () {
 
                     afterEach(function () {
                         serverTimezoneOffset = 60;
-                        isPostgres = false;
-                        isPostgreSQLWasCalled = false;
                     });
 
                     describe('success', function () {
@@ -1323,38 +1265,6 @@ describe('Fixtures', function () {
 
                             updateClient({transacting: {raw: rawStub}}, loggerStub)
                                 .then(function () {
-                                    models.Settings.edit.callCount.should.eql(1);
-                                    models.Settings.findOne.callCount.should.eql(1);
-                                    transfomDatesIntoUTCStub.callCount.should.eql(1);
-                                    done();
-                                })
-                                .catch(done);
-                        });
-
-                        it('postgres and server TZ is UTC', function (done) {
-                            serverTimezoneOffset = 0;
-                            configUtils.set('database:client', 'pg');
-
-                            isPostgres = true;
-
-                            updateClient({}, loggerStub)
-                                .then(function () {
-                                    isPostgreSQLWasCalled.should.eql(true);
-                                    models.Settings.edit.callCount.should.eql(1);
-                                    models.Settings.findOne.callCount.should.eql(1);
-                                    transfomDatesIntoUTCStub.callCount.should.eql(1);
-                                    done();
-                                })
-                                .catch(done);
-                        });
-
-                        it('postgres and server TZ is not UTC', function (done) {
-                            configUtils.set('database:client', 'pg');
-                            isPostgres = true;
-
-                            updateClient({}, loggerStub)
-                                .then(function () {
-                                    isPostgreSQLWasCalled.should.eql(true);
                                     models.Settings.edit.callCount.should.eql(1);
                                     models.Settings.findOne.callCount.should.eql(1);
                                     transfomDatesIntoUTCStub.callCount.should.eql(1);
