@@ -143,26 +143,38 @@ checks = {
         }
 
         // Check each of the content path subdirectories
-        try {
-            contentSubPaths.forEach(function (sub) {
-                var dir = path.join(contentPath, sub),
-                    randomFile = path.join(dir, crypto.randomBytes(8).toString('hex'));
+        contentSubPaths.forEach(function (sub) {
+            var dir = path.join(contentPath, sub),
+                randomFile = path.join(dir, crypto.randomBytes(8).toString('hex'));
 
+            // Check subdirectory is accessible
+            try {
                 fd = fs.openSync(dir, 'r');
                 fs.closeSync(fd);
+            } catch (e) {
+                console.error(errorHeader);
+                console.error('  ' + e.message);
+                console.error('\n' + errorHelp);
 
-                // Check write access to directory by attempting to create a random file
-                fd = fs.openSync(randomFile, 'wx+');
-                fs.closeSync(fd);
-                fs.unlinkSync(randomFile);
-            });
-        } catch (e) {
-            console.error(errorHeader);
-            console.error('  ' + e.message);
-            console.error('\n' + errorHelp);
+                process.exit(exitCodes.CONTENT_PATH_NOT_ACCESSIBLE);
+            }
 
-            process.exit(exitCodes.CONTENT_PATH_NOT_WRITABLE);
-        }
+            // Check subdirectory is writable
+            if (config.contentWritable !== false) {
+                try {
+                    // Check write access to directory by attempting to create a random file
+                    fd = fs.openSync(randomFile, 'wx+');
+                    fs.closeSync(fd);
+                    fs.unlinkSync(randomFile);
+                } catch (e) {
+                    console.error(errorHeader);
+                    console.error('  ' + e.message);
+                    console.error('\n' + errorHelp);
+
+                    process.exit(exitCodes.CONTENT_PATH_NOT_WRITABLE);
+                }
+            }
+        });
     },
 
     // Make sure sqlite3 database is available for read/write
