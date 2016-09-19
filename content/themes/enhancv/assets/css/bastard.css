@@ -6697,7 +6697,8 @@ margin on the iframe, cause it breaks stuff. */
 .btn-black {
   color: #fff;
   background-color: #333333;
-  border-color: #333333; }
+  border-color: #333333;
+  color: #fff; }
 
 .btn-black:focus, .btn-black.focus {
   color: #fff;
@@ -7189,7 +7190,14 @@ fieldset[disabled] .btn-muted-link:focus {
   vertical-align: middle; }
 
 .main-nav-fixed .navbar .navbar-btn {
-  margin: 10px 0; }
+  margin: 10px 0;
+  color: #fff;
+  padding: 8px 22px; }
+
+.main-nav-fixed .navbar .navbar-btn:hover, .main-nav-fixed .navbar .navbar-btn:active, .main-nav-fixed .navbar .navbar-btn:focus, .main-nav-fixed .navbar .navbar-btn.focus {
+  color: #fff;
+  background-color: #1a1a1a;
+  border-color: #141414; }
 
 .main-nav-fixed .navbar .navbar-toggle {
   margin-right: 35px;

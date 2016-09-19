@@ -125,6 +125,17 @@
 
     .navbar-btn {
       margin: 10px 0;
+      color: #fff;
+      padding: 8px 22px;
+
+      &:hover,
+      &:active,
+      &:focus,
+      &.focus {
+        color: #fff;
+        background-color: #1a1a1a;
+        border-color: #141414;
+      }
     }
 
     .navbar-toggle {

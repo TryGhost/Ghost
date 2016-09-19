@@ -343,6 +343,7 @@ margin on the iframe, cause it breaks stuff. */
 
 .btn-black {
   @include button-variant(#fff, $gray-dark, $gray-dark);
+  color: #fff;
 }
 
 .btn-padded {
