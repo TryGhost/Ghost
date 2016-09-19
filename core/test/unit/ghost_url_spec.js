@@ -6,6 +6,7 @@ var should     = require('should'),
 
 should.equal(true, true);
 
+// @TODO: ghostUrl.init was obviously written for this test, get rid of it! (write a route test instead)
 describe('Ghost Ajax Helper', function () {
     beforeEach(function () {
         configUtils.set({
@@ -30,7 +31,7 @@ describe('Ghost Ajax Helper', function () {
         ghostUrl.init({
             clientId: '',
             clientSecret: '',
-            url: configUtils.config.apiUrl()
+            url: configUtils.config.apiUrl({cors: true})
         });
 
         ghostUrl.url.api().should.equal('//testblog.com/ghost/api/v0.1/');
@@ -40,7 +41,7 @@ describe('Ghost Ajax Helper', function () {
         ghostUrl.init({
             clientId: '',
             clientSecret: '',
-            url: configUtils.config.apiUrl()
+            url: configUtils.config.apiUrl({cors: true})
         });
 
         ghostUrl.url.api('a/', '/b', '/c/').should.equal('//testblog.com/ghost/api/v0.1/a/b/c/');
@@ -50,7 +51,7 @@ describe('Ghost Ajax Helper', function () {
         ghostUrl.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
-            url: configUtils.config.apiUrl()
+            url: configUtils.config.apiUrl({cors: true})
         });
 
         ghostUrl.url.api().should.equal('//testblog.com/ghost/api/v0.1/?client_id=ghost-frontend&client_secret=notasecret');
@@ -60,7 +61,7 @@ describe('Ghost Ajax Helper', function () {
         ghostUrl.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
-            url: configUtils.config.apiUrl()
+            url: configUtils.config.apiUrl({cors: true})
         });
 
         var rendered = ghostUrl.url.api({a: 'string', b: 5, c: 'en coded'});
@@ -98,7 +99,7 @@ describe('Ghost Ajax Helper', function () {
         ghostUrl.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
-            url: configUtils.config.apiUrl()
+            url: configUtils.config.apiUrl({cors: true})
         });
 
         var rendered = ghostUrl.url.api('posts/', '/tags/', '/count', {include: 'tags,tests', page: 2});
@@ -117,7 +118,7 @@ describe('Ghost Ajax Helper', function () {
         ghostUrl.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
-            url: configUtils.config.apiUrl()
+            url: configUtils.config.apiUrl({cors: true})
         });
 
         var rendered = ghostUrl.url.api('posts/', '/tags/', '/count', {include: 'tags,tests', page: 2});
@@ -136,7 +137,7 @@ describe('Ghost Ajax Helper', function () {
         ghostUrl.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
-            url: configUtils.config.apiUrl()
+            url: configUtils.config.apiUrl({cors: true})
         });
 
         var rendered = ghostUrl.url.api('posts/', '/tags/', '/count', {include: 'tags,tests', page: 2});
@@ -155,7 +156,7 @@ describe('Ghost Ajax Helper', function () {
         ghostUrl.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
-            url: configUtils.config.apiUrl()
+            url: configUtils.config.apiUrl({cors: true})
         });
 
         var rendered = ghostUrl.url.api('posts', {limit: 3}),

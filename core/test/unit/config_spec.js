@@ -609,12 +609,20 @@ describe('Config', function () {
                 config.apiUrl().should.eql('https://my-ghost-blog.com/ghost/api/v0.1/');
             });
 
-            it('should return no protocol config.url if config.url is NOT https & forceAdminSSL/urlSSL is NOT set', function () {
+            it('CORS: should return no protocol config.url if config.url is NOT https & forceAdminSSL/urlSSL is NOT set', function () {
                 configUtils.set({
                     url: 'http://my-ghost-blog.com'
                 });
 
-                config.apiUrl().should.eql('//my-ghost-blog.com/ghost/api/v0.1/');
+                config.apiUrl({cors: true}).should.eql('//my-ghost-blog.com/ghost/api/v0.1/');
+            });
+
+            it('should return protocol config.url if config.url is NOT https & forceAdminSSL/urlSSL is NOT set', function () {
+                configUtils.set({
+                    url: 'http://my-ghost-blog.com'
+                });
+
+                config.apiUrl().should.eql('http://my-ghost-blog.com/ghost/api/v0.1/');
             });
         });
     });

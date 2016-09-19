@@ -233,7 +233,15 @@ function urlFor(context, data, absolute) {
     return createUrl(urlPath, absolute, secure);
 }
 
-function apiUrl() {
+/**
+ * CASE: generate api url for CORS
+ *   - we delete the http protocol if your blog runs with http and https (configured by nginx)
+ *   - in that case your config.js configures Ghost with http and no admin ssl force
+ *   - the browser then reads the protocol dynamically
+ */
+function apiUrl(options) {
+    options = options || {cors: false};
+
     // @TODO unify this with urlFor
     var url;
 
@@ -244,7 +252,11 @@ function apiUrl() {
     } else if (ghostConfig.url.match(/^https:/)) {
         url = ghostConfig.url;
     } else {
-        url = ghostConfig.url.replace(/^.*?:\/\//g, '//');
+        if (options.cors === false) {
+            url = ghostConfig.url;
+        } else {
+            url = ghostConfig.url.replace(/^.*?:\/\//g, '//');
+        }
     }
 
     return url.replace(/\/$/, '') + apiPath + '/';
