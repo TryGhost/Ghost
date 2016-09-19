@@ -7003,7 +7003,8 @@ fieldset[disabled] .btn-muted-link:focus {
   background-color: #fff; }
 
 .custom-badge.custom-badge-white:hover, .custom-badge.custom-badge-white:focus, .custom-badge.custom-badge-white:active:hover, .custom-badge.custom-badge-white:active {
-  background-color: #fff; }
+  background-color: #fff;
+  color: #333333; }
 
 .custom-badge.custom-badge-line {
   color: #fff; }
@@ -8250,9 +8251,17 @@ h1.post-title {
   padding: 0;
   margin: 0; }
 
-.slidemenu-nav ul li {
+.slidemenu-nav ul.menu-slideout-bottom li {
   font-size: 1.4rem;
+  font-weight: normal; }
+
+.slidemenu-nav ul.menu-slideout-bottom li a.item {
+  line-height: 2rem; }
+
+.slidemenu-nav ul li {
+  font-size: 1.9rem;
   padding-left: 25px;
+  font-weight: 300;
   opacity: 0;
   -webkit-transition: padding-left .3s ease-in-out .2s, opacity .4s ease-in-out .15s;
           transition: padding-left .3s ease-in-out .2s, opacity .4s ease-in-out .15s; }
