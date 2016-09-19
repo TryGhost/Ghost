@@ -662,4 +662,45 @@ describe('User Model', function run() {
             });
         });
     });
+
+    describe('User Login', function () {
+        beforeEach(testUtils.setup('owner'));
+
+        it('gets the correct validations when entering an invalid password', function () {
+            var object = {email: 'jbloggs@example.com', password: 'wrong'};
+
+            function userWasLoggedIn() {
+                throw new Error('User should not have been logged in.');
+            }
+
+            function checkAttemptsError(number) {
+                return function (error) {
+                    should.exist(error);
+
+                    error.errorType.should.equal('UnauthorizedError');
+                    error.message.should.match(new RegExp(number + ' attempt'));
+
+                    return UserModel.check(object);
+                };
+            }
+
+            function checkLockedError(error) {
+                should.exist(error);
+
+                error.errorType.should.equal('NoPermissionError');
+                error.message.should.match(/^Your account is locked/);
+            }
+
+            return UserModel.check(object).then(userWasLoggedIn)
+                .catch(checkAttemptsError(4))
+                .then(userWasLoggedIn)
+                .catch(checkAttemptsError(3))
+                .then(userWasLoggedIn)
+                .catch(checkAttemptsError(2))
+                .then(userWasLoggedIn)
+                .catch(checkAttemptsError(1))
+                .then(userWasLoggedIn)
+                .catch(checkLockedError);
+        });
+    });
 });
