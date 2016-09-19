@@ -52,7 +52,7 @@
     "intl": "1.2.4",
     "intl-messageformat": "1.3.0",
     "jsonpath": "0.2.6",
-    "knex": "0.10.0",
+    "knex": "0.12.0",
     "lodash": "3.10.1",
     "lodash.frompairs": "4.0.1",
     "lodash.omitby": "4.6.0",
