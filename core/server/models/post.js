@@ -119,13 +119,24 @@ Post = ghostBookshelf.Model.extend({
             }
         });
 
-        this.on('destroying', function (model/*, attr, options*/) {
-            return model.load('tags').call('related', 'tags').call('detach').then(function then() {
-                if (model.previous('status') === 'published') {
-                    model.emitChange('unpublished');
-                }
-                model.emitChange('deleted');
-            });
+        this.on('destroying', function (model, options) {
+            return model.load('tags', options)
+                .then(function (response) {
+                    if (!response.related || !response.related('tags') || !response.related('tags').length) {
+                        return;
+                    }
+
+                    return Promise.mapSeries(response.related('tags').models, function (tag) {
+                        return baseUtils.tagUpdate.detachTagFromPost(model, tag, options)();
+                    });
+                })
+                .then(function () {
+                    if (model.previous('status') === 'published') {
+                        model.emitChange('unpublished');
+                    }
+
+                    model.emitChange('deleted');
+                });
         });
     },
 
@@ -654,7 +665,8 @@ Post = ghostBookshelf.Model.extend({
             throw new errors.NotFoundError(i18n.t('errors.models.post.noUserFound'));
         }
 
-        return postCollection.query('where', 'author_id', '=', authorId)
+        return postCollection
+            .query('where', 'author_id', '=', authorId)
             .fetch(options)
             .call('invokeThen', 'destroy', options)
             .catch(function (error) {
