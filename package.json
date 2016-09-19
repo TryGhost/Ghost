@@ -29,7 +29,7 @@
     "amperize": "0.3.1",
     "archiver": "1.0.1",
     "bcryptjs": "2.3.0",
-    "bluebird": "3.4.1",
+    "bluebird": "3.4.6",
     "body-parser": "1.15.2",
     "bookshelf": "0.9.4",
     "chalk": "1.1.3",
