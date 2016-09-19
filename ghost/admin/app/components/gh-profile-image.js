@@ -24,7 +24,7 @@ import {isNotFoundError} from 'ember-ajax/errors';
  */
 export default Component.extend({
     email: '',
-    size: 90,
+    size: 180,
     debounce: 300,
 
     validEmail: '',
