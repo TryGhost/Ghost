@@ -4,10 +4,11 @@ var testUtils       = require('../../utils'),
     Promise         = require('bluebird'),
     _               = require('lodash'),
 
-// Stuff we are testing
+    // Stuff we are testing
     models          = require('../../../server/models'),
     UserAPI         = require('../../../server/api/users'),
     mail            = require('../../../server/api/mail'),
+    db              = require('../../../server/data/db'),
 
     context         = testUtils.context,
     userIdFor       = testUtils.users.ids,
@@ -21,6 +22,7 @@ describe('Users API', function () {
     beforeEach(testUtils.setup(
         'users:roles', 'users', 'user:token', 'perms:user', 'perms:role', 'perms:setting', 'perms:init', 'posts'
     ));
+
     afterEach(testUtils.teardown);
 
     function checkForErrorType(type, done) {
@@ -692,6 +694,96 @@ describe('Users API', function () {
     });
 
     describe('Destroy', function () {
+        describe('General Tests', function () {
+            it('ensure posts get deleted', function (done) {
+                var postIdsToDelete = [], postIsToKeep = [], options = {};
+
+                Promise.mapSeries(testUtils.DataGenerator.forKnex.posts, function (post, i) {
+                    post = _.cloneDeep(post);
+
+                    if (i % 2) {
+                        post.author_id = userIdFor.editor;
+                        post.status = 'published';
+                        post.tags = testUtils.DataGenerator.forKnex.tags.slice(0, 1);
+                        return models.Post.add(post, _.merge({}, options, context.editor));
+                    } else {
+                        post.author_id = userIdFor.author;
+                        post.status = 'published';
+                        post.tags = testUtils.DataGenerator.forKnex.tags.slice(2, 4);
+                        return models.Post.add(post, _.merge({}, options, context.author));
+                    }
+                }).then(function () {
+                    return models.Post.findAll(_.merge({}, {
+                        context: context.editor.context,
+                        filter: 'author_id:' + userIdFor.editor,
+                        include: ['tags']
+                    }, options));
+                }).then(function (posts) {
+                    posts.models.length.should.eql(3);
+                    posts.models[0].relations.tags.length.should.eql(1);
+
+                    _.each(posts.models, function (post) {
+                        postIdsToDelete.push(post.get('id'));
+                    });
+
+                    return models.Post.findAll(_.merge({
+                        context: context.author.context,
+                        filter: 'author_id:' + userIdFor.author,
+                        include: ['tags']
+                    }, options));
+                }).then(function (posts) {
+                    posts.models.length.should.eql(3);
+                    posts.models[0].relations.tags.length.should.eql(2);
+
+                    _.each(posts.models, function (post) {
+                        postIsToKeep.push(post.get('id'));
+                    });
+
+                    return Promise.mapSeries(postIdsToDelete, function (id) {
+                        return db.knex('posts_tags').where('post_id', id);
+                    });
+                }).then(function (result) {
+                    _.flatten(result).length.should.eql(3);
+
+                    return db.knex('tags');
+                }).then(function (allTags) {
+                    allTags.length.should.eql(5);
+
+                    return UserAPI.destroy(_.extend({}, context.owner, _.merge({}, options, {id: userIdFor.editor})));
+                }).then(function () {
+                    return models.User.findOne(_.merge({}, options, {id: userIdFor.editor}));
+                }).then(function (user) {
+                    should.not.exist(user);
+                    return models.User.findOne(_.merge({}, options, {id: userIdFor.author}));
+                }).then(function (user) {
+                    should.exist(user);
+                    return models.Post.findAll(_.merge({}, options, {filter: 'author_id:' + userIdFor.editor}));
+                }).then(function (posts) {
+                    posts.models.length.should.eql(0);
+
+                    return models.Post.findAll(_.merge({}, options, {filter: 'author_id:' + userIdFor.author}));
+                }).then(function (posts) {
+                    posts.models.length.should.eql(3);
+
+                    return Promise.mapSeries(postIdsToDelete, function (id) {
+                        return db.knex('posts_tags').where('post_id', id);
+                    });
+                }).then(function (result) {
+                    _.flatten(result).length.should.eql(0);
+
+                    return Promise.mapSeries(postIsToKeep, function (id) {
+                        return db.knex('posts_tags').where('post_id', id);
+                    });
+                }).then(function (result) {
+                    _.flatten(result).length.should.eql(6);
+                    return db.knex('tags');
+                }).then(function (allTags) {
+                    allTags.length.should.eql(5);
+                    done();
+                }).catch(done);
+            });
+        });
+
         describe('Owner', function () {
             it('CANNOT destroy self', function (done) {
                 UserAPI.destroy(_.extend({}, context.owner, {id: userIdFor.owner}))

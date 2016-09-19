@@ -36,7 +36,7 @@ Basetoken = ghostBookshelf.Model.extend({
             .query('where', 'expires', '<', Date.now())
             .fetch(options)
             .then(function then(collection) {
-                collection.invokeThen('destroy', options);
+                return collection.invokeThen('destroy', options);
             });
     },
     /**
@@ -53,7 +53,7 @@ Basetoken = ghostBookshelf.Model.extend({
                 .query('where', 'user_id', '=', userId)
                 .fetch(options)
                 .then(function then(collection) {
-                    collection.invokeThen('destroy', options);
+                    return collection.invokeThen('destroy', options);
                 });
         }
 
