@@ -3,36 +3,12 @@
 {{! The comment above "< default" means - insert everything in this file into
     the {body} of the default.hbs template, which contains our header/footer. }}
 
-{{! The big featured header on the homepage, with the site logo and description }}
-<header class="site-head" {{#if @blog.cover}}style="background-image: url({{@blog.cover}})"{{/if}}>
-
-    <div class="panel-cover-overlay"></div>
-    <div class="vertical">
-        <div class="site-head-content inner">
-            {{#if @blog.logo}}
-                <a class="blog-logo" href="{{@blog.url}}"><img src="{{@blog.logo}}" alt="Blog Logo" /></a>
-            {{else}}
-                <h1 class="blog-title">{{@blog.title}}</h1>
-            {{/if}}    
-            <h2 class="blog-description">{{@blog.description}}</h2>
-            {{! Social Links }}
-            {{> social }}
-
-            <div class="page-scroll">
-                <a href="#top" class="btn btn-circle">
-                    <i class="fa fa-angle-down fa-2x animated"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-
-</header>
-<div id="top" class="top-ornament"></div>
 {{! The main content area on the homepage }}
 <main class="content" role="main">
 
         <header class="tag-archive-header">
             <h1>{{tag.name}}</h1>
+            <p>{{posts.length}} posts</p>
         </header>
 
     {{! Each post will be output using this markup }}
