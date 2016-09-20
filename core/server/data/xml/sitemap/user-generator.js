@@ -1,6 +1,6 @@
 var _      = require('lodash'),
     api    = require('../../../api'),
-    config = require('../../../config'),
+    utils  = require('../../../utils'),
     validator        = require('validator'),
     BaseMapGenerator = require('./base-generator'),
     // @TODO: figure out a way to get rid of this
@@ -42,7 +42,7 @@ _.extend(UserMapGenerator.prototype, {
     },
 
     getUrlForDatum: function (user) {
-        return config.urlFor('author', {author: user}, true);
+        return utils.url.urlFor('author', {author: user}, true);
     },
 
     getPriorityForDatum: function () {

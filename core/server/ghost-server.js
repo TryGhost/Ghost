@@ -3,6 +3,8 @@
 var Promise = require('bluebird'),
     chalk = require('chalk'),
     fs = require('fs'),
+    path = require('path'),
+    _ = require('lodash'),
     errors = require('./errors'),
     config = require('./config'),
     i18n   = require('./i18n'),
@@ -35,26 +37,37 @@ function GhostServer(rootApp) {
  */
 GhostServer.prototype.start = function (externalApp) {
     var self = this,
-        rootApp = externalApp ? externalApp : self.rootApp;
+        rootApp = externalApp ? externalApp : self.rootApp,
+        socketConfig, socketValues = {
+            path: path.join(config.get('paths').contentPath, process.env.NODE_ENV + '.socket'),
+            permissions: '660'
+        };
 
     return new Promise(function (resolve) {
-        var socketConfig = config.getSocket();
+        if (config.get('server').hasOwnProperty('socket')) {
+            socketConfig = config.get('server').socket;
 
-        if (socketConfig) {
+            if (_.isString(socketConfig)) {
+                socketValues.path = socketConfig;
+            } else if (_.isObject(socketConfig)) {
+                socketValues.path = socketConfig.path || socketValues.path;
+                socketValues.permissions = socketConfig.permissions || socketValues.permissions;
+            }
+
             // Make sure the socket is gone before trying to create another
             try {
-                fs.unlinkSync(socketConfig.path);
+                fs.unlinkSync(socketValues.path);
             } catch (e) {
                 // We can ignore this.
             }
 
-            self.httpServer = rootApp.listen(socketConfig.path);
-
-            fs.chmod(socketConfig.path, socketConfig.permissions);
+            self.httpServer = rootApp.listen(socketValues.path);
+            fs.chmod(socketValues.path, socketValues.permissions);
+            config.set('server:socket', socketValues);
         } else {
             self.httpServer = rootApp.listen(
-                config.server.port,
-                config.server.host
+                config.get('server').port,
+                config.get('server').host
             );
         }
 
@@ -62,7 +75,7 @@ GhostServer.prototype.start = function (externalApp) {
             if (error.errno === 'EADDRINUSE') {
                 errors.logError(
                     i18n.t('errors.httpServer.addressInUse.error'),
-                    i18n.t('errors.httpServer.addressInUse.context', {port: config.server.port}),
+                    i18n.t('errors.httpServer.addressInUse.context', {port: config.get('server').port}),
                     i18n.t('errors.httpServer.addressInUse.help')
                 );
             } else {
@@ -168,16 +181,20 @@ GhostServer.prototype.logStartMessages = function () {
     // Startup & Shutdown messages
     if (process.env.NODE_ENV === 'production') {
         console.log(
-            chalk.green(i18n.t('notices.httpServer.ghostIsRunningIn', {env: process.env.NODE_ENV})),
-            i18n.t('notices.httpServer.yourBlogIsAvailableOn', {url: config.url}),
+            chalk.red('Currently running Ghost 1.0.0 Alpha, this is NOT suitable for production! \n'),
+            chalk.white('Please switch to the stable branch. \n'),
+            chalk.white('More information on the Ghost 1.0.0 Alpha at: ') + chalk.cyan('https://support.ghost.org/v1-0-alpha') + '\n',
             chalk.gray(i18n.t('notices.httpServer.ctrlCToShutDown'))
         );
     } else {
         console.log(
+            chalk.blue('Welcome to the Ghost 1.0.0 Alpha - this version of Ghost is for development only.')
+        );
+        console.log(
             chalk.green(i18n.t('notices.httpServer.ghostIsRunningIn', {env: process.env.NODE_ENV})),
             i18n.t('notices.httpServer.listeningOn'),
-            config.getSocket() || config.server.host + ':' + config.server.port,
-            i18n.t('notices.httpServer.urlConfiguredAs', {url: config.url}),
+            config.get('server').socket || config.get('server').host + ':' + config.get('server').port,
+            i18n.t('notices.httpServer.urlConfiguredAs', {url: config.get('url')}),
             chalk.gray(i18n.t('notices.httpServer.ctrlCToShutDown'))
         );
     }

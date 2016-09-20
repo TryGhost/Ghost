@@ -525,9 +525,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
 
         // Check the filtered slug doesn't match any of the reserved keywords
-        return filters.doFilter('slug.reservedSlugs', config.slugs.reserved).then(function then(slugList) {
+        return filters.doFilter('slug.reservedSlugs', config.get('slugs').reserved).then(function then(slugList) {
             // Some keywords cannot be changed
-            slugList = _.union(slugList, config.slugs.protected);
+            slugList = _.union(slugList, utils.url.getProtectedSlugs());
 
             return _.includes(slugList, slug) ? slug + '-' + baseName : slug;
         }).then(function then(slug) {

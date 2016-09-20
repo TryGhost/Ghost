@@ -1,0 +1,67 @@
+{
+    "paths": {
+        "appRoot": ".",
+        "corePath": "core/",
+        "clientAssets": "core/built/assets",
+        "imagesRelPath": "content/images",
+        "helperTemplates": "core/server/helpers/tpl/",
+        "adminViews": "core/server/views/",
+        "internalAppPath": "core/server/apps/",
+        "internalStoragePath": "core/server/storage/",
+        "internalSchedulingPath": "core/server/scheduling/"
+    },
+    "internalApps": [
+        "private-blogging",
+        "subscribers",
+        "amp"
+    ],
+    "routeKeywords": {
+        "tag": "tag",
+        "author": "author",
+        "page": "page",
+        "preview": "p",
+        "private": "private",
+        "subscribe": "subscribe",
+        "amp": "amp"
+    },
+    "slugs": {
+        "reserved": ["admin", "app", "apps", "archive", "archives", "categories",
+            "category", "dashboard", "feed", "ghost-admin", "login", "logout",
+            "page", "pages", "post", "posts", "public", "register", "setup",
+            "signin", "signout", "signup", "user", "users", "wp-admin", "wp-login"],
+        "protected": ["ghost", "rss", "amp"]
+    },
+    "uploads": {
+        "subscribers": {
+            "extensions": [".csv"],
+            "contentTypes": ["text/csv", "application/csv", "application/octet-stream"]
+        },
+        "images": {
+            "extensions": [".jpg", ".jpeg", ".gif", ".png", ".svg", ".svgz"],
+            "contentTypes": ["image/jpeg", "image/png", "image/gif", "image/svg+xml"]
+        },
+        "db": {
+            "extensions": [".json", ".zip"],
+            "contentTypes": ["application/octet-stream", "application/json", "application/zip", "application/x-zip-compressed"]
+        },
+        "themes": {
+            "extensions": [".zip"],
+            "contentTypes": ["application/zip", "application/x-zip-compressed", "application/octet-stream"]
+        }
+    },
+    "storage": {
+        "active": {
+            "themes": "local-file-store"
+        }
+    },
+    "times": {
+        "cannotScheduleAPostBeforeInMinutes": 2,
+        "publishAPostBySchedulerToleranceInMinutes": 2
+    },
+    "theme": {
+        "timezone": "Etc/UTC"
+    },
+    "maintenance": {
+        "enabled": false
+    }
+}

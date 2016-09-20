@@ -9,7 +9,7 @@ var _           = require('lodash'),
     session     = require('cookie-session'),
     utils       = require('../../../utils'),
     i18n        = require('../../../i18n'),
-    privateRoute = '/' + config.routeKeywords.private + '/',
+    privateRoute = '/' + config.get('routeKeywords').private + '/',
     protectedSecurity = [],
     privateBlogging;
 
@@ -82,7 +82,7 @@ privateBlogging = {
             if (isVerified) {
                 return next();
             } else {
-                url = config.urlFor({relativeUrl: privateRoute});
+                url = utils.url.urlFor({relativeUrl: privateRoute});
                 url += req.url === '/' ? '' : '?r=' + encodeURIComponent(req.url);
                 return res.redirect(url);
             }
@@ -92,7 +92,7 @@ privateBlogging = {
     // This is here so a call to /private/ after a session is verified will redirect to home;
     isPrivateSessionAuth: function isPrivateSessionAuth(req, res, next) {
         if (!res.isPrivateBlog) {
-            return res.redirect(config.urlFor('home', true));
+            return res.redirect(utils.url.urlFor('home', true));
         }
 
         var hash = req.session.token || '',
@@ -101,7 +101,7 @@ privateBlogging = {
         return verifySessionHash(salt, hash).then(function then(isVerified) {
             if (isVerified) {
                 // redirect to home if user is already authenticated
-                return res.redirect(config.urlFor('home', true));
+                return res.redirect(utils.url.urlFor('home', true));
             } else {
                 return next();
             }
@@ -127,7 +127,7 @@ privateBlogging = {
                 req.session.token = hasher.digest('hex');
                 req.session.salt = salt;
 
-                return res.redirect(config.urlFor({relativeUrl: decodeURIComponent(forward)}));
+                return res.redirect(utils.url.urlFor({relativeUrl: decodeURIComponent(forward)}));
             } else {
                 res.error = {
                     message: i18n.t('errors.middleware.privateblogging.wrongPassword')
