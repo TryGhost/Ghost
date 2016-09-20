@@ -64,7 +64,7 @@
     "ember-myth": "0.1.1",
     "ember-one-way-controls": "0.9.2",
     "ember-power-select": "0.10.11",
-    "ember-resolver": "2.0.3",
+    "ember-resolver": "2.1.0",
     "ember-route-action-helper": "1.0.0",
     "ember-simple-auth": "1.1.0",
     "ember-sinon": "0.5.1",
