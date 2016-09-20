@@ -12,17 +12,6 @@
         </header>
 
     {{! Each post will be output using this markup }}
-
-    {{!-- <article class="{{post_class}}">
-        <header class="post-header">
-            <span class="post-meta"><time datetime="{{date format='YYYY-MM-DD'}}">{{date format="MMMM Do, YYYY"}}</time> {{tags prefix="on "}}</span>
-            <h2 class="post-title"><a href="{{url}}">{{{title}}}</a></h2>
-
-        </header>
-        <section class="post-excerpt">
-            <p>{{excerpt}}&hellip;</p>
-        </section>
-    </article> --}}
     <div class="row">
         {{#foreach posts}}
         <a href="{{url}}">
