@@ -21,8 +21,7 @@ var express = require('express'),
     config = require('./config'),
     errors = require('./errors'),
     middleware = require('./middleware'),
-    migrations = require('./data/migration'),
-    versioning = require('./data/schema/versioning'),
+    db = require('./data/schema'),
     models = require('./models'),
     permissions = require('./permissions'),
     apps = require('./apps'),
@@ -77,43 +76,8 @@ function init(options) {
         return api.themes.loadThemes();
     }).then(function () {
         models.init();
-    }).then(function () {
-        return versioning.getDatabaseVersion()
-            .then(function (currentVersion) {
-                var response = migrations.update.isDatabaseOutOfDate({
-                    fromVersion: currentVersion,
-                    toVersion: versioning.getNewestDatabaseVersion(),
-                    forceMigration: process.env.FORCE_MIGRATION
-                }), maintenanceState;
-
-                if (response.migrate === true) {
-                    maintenanceState = config.get('maintenance').enabled || false;
-                    config.set('maintenance:enabled', true);
-
-                    migrations.update.execute({
-                        fromVersion: currentVersion,
-                        toVersion: versioning.getNewestDatabaseVersion(),
-                        forceMigration: process.env.FORCE_MIGRATION
-                    }).then(function () {
-                        config.set('maintenance:enabled', maintenanceState);
-                    }).catch(function (err) {
-                        if (!err) {
-                            return;
-                        }
-
-                        errors.logErrorAndExit(err, err.context, err.help);
-                    });
-                } else if (response.error) {
-                    return Promise.reject(response.error);
-                }
-            })
-            .catch(function (err) {
-                if (err instanceof errors.DatabaseNotPopulated) {
-                    return migrations.populate();
-                }
-
-                return Promise.reject(err);
-            });
+        // @TODO: this is temporary, replace migrations with a warning if a DB exists
+        return db.bootUp();
     }).then(function () {
         // Populate any missing default settings
         return models.Settings.populateDefaults();

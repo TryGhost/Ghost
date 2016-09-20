@@ -31,10 +31,6 @@ function getDatabaseVersion() {
                 .where('key', 'databaseVersion')
                 .first('value')
                 .then(function (version) {
-                    if (!version || isNaN(version.value)) {
-                        return Promise.reject(new errors.DatabaseVersion(i18n.t('errors.data.versioning.index.dbVersionNotRecognized')));
-                    }
-
                     return version.value;
                 });
         }

@@ -32,7 +32,7 @@ var should = require('should'),
 // both of which are required for migrations to work properly.
 describe('DB version integrity', function () {
     // Only these variables should need updating
-    var currentDbVersion = '008',
+    var currentDbVersion = 'alpha.1',
         currentSchemaHash = 'b3bdae210526b2d4393359c3e45d7f83',
         currentFixturesHash = '30b0a956b04e634e7f2cddcae8d2fd20';
 
