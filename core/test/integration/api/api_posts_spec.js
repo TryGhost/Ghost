@@ -47,9 +47,7 @@ describe('Post API', function () {
 
     describe('Browse', function () {
         beforeEach(function () {
-            configUtils.set({theme: {
-                permalinks: '/:slug/'
-            }});
+            configUtils.set('theme:permalinks', '/:slug/');
         });
 
         afterEach(function () {

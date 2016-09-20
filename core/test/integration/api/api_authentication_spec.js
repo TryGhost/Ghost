@@ -293,7 +293,7 @@ describe('Authentication API', function () {
             });
 
             it('should allow an access token to be revoked', function (done) {
-                var id = uid(256);
+                var id = uid(191);
 
                 Accesstoken.add({
                     token: id,
@@ -372,7 +372,7 @@ describe('Authentication API', function () {
             });
 
             it('should allow a refresh token to be revoked', function (done) {
-                var id = uid(256);
+                var id = uid(191);
 
                 Refreshtoken.add({
                     token: id,
@@ -400,7 +400,7 @@ describe('Authentication API', function () {
             });
 
             it('should return success when attempting to revoke an invalid token', function (done) {
-                var id = uid(256);
+                var id = uid(191);
 
                 Accesstoken.add({
                     token: id,

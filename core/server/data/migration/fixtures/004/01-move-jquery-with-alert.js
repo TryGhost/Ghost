@@ -41,7 +41,7 @@ module.exports = function moveJQuery(options, logger) {
             }
         })
         .then(function () {
-            if (_.isEmpty(config.privacy)) {
+            if (_.isEmpty(config.get('privacy'))) {
                 return Promise.resolve();
             }
 

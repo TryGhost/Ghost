@@ -4,14 +4,14 @@ var should = require('should'),
     Promise = require('bluebird'),
     moment = require('moment'),
     config = require(__dirname + '/../../../../server/config'),
-    testUtils = require(config.paths.corePath + '/test/utils'),
-    errors = require(config.paths.corePath + '/server/errors'),
-    events = require(config.paths.corePath + '/server/events'),
-    models = require(config.paths.corePath + '/server/models'),
-    api = require(config.paths.corePath + '/server/api'),
-    schedulingUtils = require(config.paths.corePath + '/server/scheduling/utils'),
-    SchedulingDefault = require(config.paths.corePath + '/server/scheduling/SchedulingDefault'),
-    postScheduling = require(config.paths.corePath + '/server/scheduling/post-scheduling');
+    testUtils = require(config.get('paths').corePath + '/test/utils'),
+    errors = require(config.get('paths').corePath + '/server/errors'),
+    events = require(config.get('paths').corePath + '/server/events'),
+    models = require(config.get('paths').corePath + '/server/models'),
+    api = require(config.get('paths').corePath + '/server/api'),
+    schedulingUtils = require(config.get('paths').corePath + '/server/scheduling/utils'),
+    SchedulingDefault = require(config.get('paths').corePath + '/server/scheduling/SchedulingDefault'),
+    postScheduling = require(config.get('paths').corePath + '/server/scheduling/post-scheduling');
 
 describe('Scheduling: Post Scheduling', function () {
     var scope = {

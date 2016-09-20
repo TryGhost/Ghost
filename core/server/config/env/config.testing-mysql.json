@@ -1,0 +1,16 @@
+{
+    "url": "http://127.0.0.1:2369",
+    "server": {
+        "port": 2369
+    },
+    "database": {
+        "client": "mysql",
+        "connection": {
+            "host"     : "127.0.0.1",
+            "user"     : "root",
+            "password" : "",
+            "database" : "ghost_testing"
+        }
+    },
+    "logging": false
+}
