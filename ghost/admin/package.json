@@ -45,7 +45,7 @@
     "ember-cli-fastclick": "1.3.0",
     "ember-cli-htmlbars": "1.1.0",
     "ember-cli-htmlbars-inline-precompile": "0.3.5",
-    "ember-cli-jshint": "1.0.5",
+    "ember-cli-jshint": "2.0.1",
     "ember-cli-mirage": "0.1.13",
     "ember-cli-mocha": "0.10.4",
     "ember-cli-node-assets": "0.1.4",
