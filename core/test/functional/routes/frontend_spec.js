@@ -1,4 +1,3 @@
-/*global describe, it, before, after */
 
 // # Frontend Route tests
 // As it stands, these tests depend on the database, and as such are integration tests.
@@ -31,7 +30,7 @@ describe('Frontend Routing', function () {
 
     function addPosts(done) {
         testUtils.initData().then(function () {
-            return testUtils.fixtures.insertPosts();
+            return testUtils.fixtures.insertPostsAndTags();
         }).then(function () {
             done();
         });
@@ -46,6 +45,7 @@ describe('Frontend Routing', function () {
         }).catch(function (e) {
             console.log('Ghost Error: ', e);
             console.log(e.stack);
+            done(e);
         });
     });
 
@@ -57,7 +57,15 @@ describe('Frontend Routing', function () {
         describe('Error', function () {
             it('should 404 for unknown post', function (done) {
                 request.get('/spectacular/')
-                    .expect('Cache-Control', testUtils.cacheRules['private'])
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(404)
+                    .expect(/Page not found/)
+                    .end(doEnd(done));
+            });
+
+            it('should 404 for unknown post with invalid characters', function (done) {
+                request.get('/$pec+acular~/')
+                    .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(404)
                     .expect(/Page not found/)
                     .end(doEnd(done));
@@ -65,63 +73,25 @@ describe('Frontend Routing', function () {
 
             it('should 404 for unknown frontend route', function (done) {
                 request.get('/spectacular/marvellous/')
-                    .expect('Cache-Control', testUtils.cacheRules['private'])
+                    .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(404)
                     .expect(/Page not found/)
                     .end(doEnd(done));
             });
 
-            it('should 404 for unknown tag', function (done) {
-                request.get('/tag/spectacular/')
-                    .expect('Cache-Control', testUtils.cacheRules['private'])
+            it('should 404 for encoded char not 301 from uncapitalise', function (done) {
+                request.get('/|/')
+                    .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(404)
                     .expect(/Page not found/)
                     .end(doEnd(done));
             });
 
-            it('should 404 for unknown author', function (done) {
-                request.get('/author/spectacular/')
+            it('should 404 for unknown file', function (done) {
+                request.get('/content/images/some/file/that/doesnt-exist.jpg')
                     .expect('Cache-Control', testUtils.cacheRules['private'])
                     .expect(404)
                     .expect(/Page not found/)
-                    .end(doEnd(done));
-            });
-        });
-
-        describe('Home', function () {
-            it('should respond with html', function (done) {
-                request.get('/')
-                    .expect('Content-Type', /html/)
-                    .expect('Cache-Control', testUtils.cacheRules['public'])
-                    .expect(200)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        var $ = cheerio.load(res.text);
-
-                        should.not.exist(res.headers['x-cache-invalidate']);
-                        should.not.exist(res.headers['X-CSRF-Token']);
-                        should.not.exist(res.headers['set-cookie']);
-                        should.exist(res.headers.date);
-
-                        $('title').text().should.equal('Ghost');
-                        $('.content .post').length.should.equal(1);
-                        $('.poweredby').text().should.equal('Proudly published with Ghost');
-                        $('body.home-template').length.should.equal(1);
-                        $('article.post').length.should.equal(1);
-                        $('article.tag-getting-started').length.should.equal(1);
-
-                        done();
-                    });
-            });
-
-            it('should not have as second page', function (done) {
-                request.get('/page/2/')
-                    .expect('Location', '/')
-                    .expect('Cache-Control', testUtils.cacheRules['public'])
-                    .expect(302)
                     .end(doEnd(done));
             });
         });
@@ -138,6 +108,15 @@ describe('Frontend Routing', function () {
             it('should redirect uppercase', function (done) {
                 request.get('/Welcome-To-Ghost/')
                     .expect('Location', '/welcome-to-ghost/')
+                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect(301)
+                    .end(doEnd(done));
+            });
+
+            it('should sanitize double slashes when redirecting uppercase', function (done) {
+                request.get('///Google.com/')
+                    .expect('Location', '/google.com/')
+                    .expect('Cache-Control', testUtils.cacheRules.year)
                     .expect(301)
                     .end(doEnd(done));
             });
@@ -145,7 +124,7 @@ describe('Frontend Routing', function () {
             it('should respond with html for valid url', function (done) {
                 request.get('/welcome-to-ghost/')
                     .expect('Content-Type', /html/)
-                    .expect('Cache-Control', testUtils.cacheRules['public'])
+                    .expect('Cache-Control', testUtils.cacheRules.public)
                     .expect(200)
                     .end(function (err, res) {
                         if (err) {
@@ -176,7 +155,7 @@ describe('Frontend Routing', function () {
                 var date  = moment().format('YYYY/MM/DD');
 
                 request.get('/' + date + '/welcome-to-ghost/')
-                    .expect('Cache-Control', testUtils.cacheRules['private'])
+                    .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(404)
                     .expect(/Page not found/)
                     .end(doEnd(done));
@@ -195,14 +174,70 @@ describe('Frontend Routing', function () {
             it('should redirect to editor', function (done) {
                 request.get('/welcome-to-ghost/edit/')
                     .expect('Location', '/ghost/editor/1/')
-                    .expect('Cache-Control', testUtils.cacheRules['public'])
+                    .expect('Cache-Control', testUtils.cacheRules.public)
                     .expect(302)
                     .end(doEnd(done));
             });
 
             it('should 404 for non-edit parameter', function (done) {
                 request.get('/welcome-to-ghost/notedit/')
-                    .expect('Cache-Control', testUtils.cacheRules['private'])
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(404)
+                    .expect(/Page not found/)
+                    .end(doEnd(done));
+            });
+        });
+
+        describe('AMP post', function () {
+            it('should redirect without slash', function (done) {
+                request.get('/welcome-to-ghost/amp')
+                    .expect('Location', '/welcome-to-ghost/amp/')
+                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect(301)
+                    .end(doEnd(done));
+            });
+
+            it('should redirect uppercase', function (done) {
+                request.get('/Welcome-To-Ghost/AMP/')
+                    .expect('Location', '/welcome-to-ghost/amp/')
+                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect(301)
+                    .end(doEnd(done));
+            });
+
+            it('should respond with html for valid url', function (done) {
+                request.get('/welcome-to-ghost/amp/')
+                    .expect('Content-Type', /html/)
+                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        var $ = cheerio.load(res.text);
+
+                        should.not.exist(res.headers['x-cache-invalidate']);
+                        should.not.exist(res.headers['X-CSRF-Token']);
+                        should.not.exist(res.headers['set-cookie']);
+                        should.exist(res.headers.date);
+
+                        $('title').text().should.equal('Welcome to Ghost');
+                        $('.content .post').length.should.equal(1);
+                        $('.poweredby').text().should.equal('Proudly published with Ghost');
+                        $('body.amp-template').length.should.equal(1);
+                        $('article.post').length.should.equal(1);
+
+                        done();
+                    });
+            });
+
+            it('should not work with date permalinks', function (done) {
+                // get today's date
+                var date  = moment().format('YYYY/MM/DD');
+
+                request.get('/' + date + '/welcome-to-ghost/amp/')
+                    .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(404)
                     .expect(/Page not found/)
                     .end(doEnd(done));
@@ -210,13 +245,6 @@ describe('Frontend Routing', function () {
         });
 
         describe('Static assets', function () {
-            it('should retrieve shared assets', function (done) {
-                request.get('/shared/img/user-image.png')
-                    .expect('Cache-Control', testUtils.cacheRules.hour)
-                    .expect(200)
-                    .end(doEnd(done));
-            });
-
             it('should retrieve theme assets', function (done) {
                 request.get('/assets/css/screen.css')
                     .expect('Cache-Control', testUtils.cacheRules.year)
@@ -272,9 +300,45 @@ describe('Frontend Routing', function () {
         it('should respond with xml', function (done) {
             request.get('/static-page-test/')
                 .expect('Content-Type', /html/)
-                .expect('Cache-Control', testUtils.cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules.public)
                 .expect(200)
                 .end(doEnd(done));
+        });
+
+        describe('edit', function () {
+            it('should redirect without slash', function (done) {
+                request.get('/static-page-test/edit')
+                    .expect('Location', '/static-page-test/edit/')
+                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect(301)
+                    .end(doEnd(done));
+            });
+
+            it('should redirect to editor', function (done) {
+                request.get('/static-page-test/edit/')
+                    .expect('Location', /^\/ghost\/editor\/[0-9]\/$/)
+                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .expect(302)
+                    .end(doEnd(done));
+            });
+
+            it('should 404 for non-edit parameter', function (done) {
+                request.get('/static-page-test/notedit/')
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(404)
+                    .expect(/Page not found/)
+                    .end(doEnd(done));
+            });
+        });
+
+        describe('amp', function () {
+            it('should 404 for amp parameter', function (done) {
+                request.get('/static-page-test/amp/')
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(404)
+                    .expect(/Page not found/)
+                    .end(doEnd(done));
+            });
         });
     });
 
@@ -313,6 +377,7 @@ describe('Frontend Routing', function () {
             request.get('/p/2ac6b4f6-e1f3-406c-9247-c94a0496d39d/')
                 .expect(301)
                 .expect('Location', '/short-and-sweet/')
+                .expect('Cache-Control', testUtils.cacheRules.public)
                 .end(doEnd(done));
         });
 
@@ -332,440 +397,9 @@ describe('Frontend Routing', function () {
         // Badly formed regexs can cause breakage if a post slug starts with the 5 letters ghost
         it('should retrieve a blog post with ghost at the start of the url', function (done) {
             request.get('/ghostly-kitchen-sink/')
-                .expect('Cache-Control', testUtils.cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules.public)
                 .expect(200)
                 .end(doEnd(done));
-        });
-    });
-
-    describe('Archive pages', function () {
-        // Add enough posts to trigger pages for both the archive (5 pp) and rss (15 pp)
-        // insertPosts adds 5 published posts, 1 draft post, 1 published static page and one draft page
-        // we then insert with max 11 which ensures we have 16 published posts
-        before(function (done) {
-            testUtils.initData().then(function () {
-                return testUtils.fixtures.insertPosts();
-            }).then(function () {
-                return testUtils.fixtures.insertMorePosts(9);
-            }).then(function () {
-                done();
-            }).catch(done);
-        });
-
-        after(testUtils.teardown);
-
-        it('should redirect without slash', function (done) {
-            request.get('/page/2')
-                .expect('Location', '/page/2/')
-                .expect('Cache-Control', testUtils.cacheRules.year)
-                .expect(301)
-                .end(doEnd(done));
-        });
-
-        it('should respond with html', function (done) {
-            request.get('/page/2/')
-                .expect('Content-Type', /html/)
-                .expect('Cache-Control', testUtils.cacheRules['public'])
-                .expect(200)
-                .end(doEnd(done));
-        });
-
-        it('should redirect page 1', function (done) {
-            request.get('/page/1/')
-                .expect('Location', '/')
-                .expect('Cache-Control', testUtils.cacheRules['public'])
-                // TODO: This should probably be a 301?
-                .expect(302)
-                .end(doEnd(done));
-        });
-
-        it('should redirect to last page if page too high', function (done) {
-            request.get('/page/4/')
-                .expect('Location', '/page/3/')
-                .expect('Cache-Control', testUtils.cacheRules['public'])
-                .expect(302)
-                .end(doEnd(done));
-        });
-
-        it('should redirect to first page if page too low', function (done) {
-            request.get('/page/0/')
-                .expect('Location', '/')
-                .expect('Cache-Control', testUtils.cacheRules['public'])
-                .expect(302)
-                .end(doEnd(done));
-        });
-    });
-
-    describe('RSS', function () {
-        before(function (done) {
-            testUtils.initData().then(function () {
-                return testUtils.fixtures.overrideOwnerUser();
-            }).then(function () {
-                done();
-            });
-        });
-
-        after(testUtils.teardown);
-
-        it('should redirect without slash', function (done) {
-            request.get('/rss')
-                .expect('Location', '/rss/')
-                .expect('Cache-Control', testUtils.cacheRules.year)
-                .expect(301)
-                .end(doEnd(done));
-        });
-
-        it('should respond with xml', function (done) {
-            request.get('/rss/')
-                .expect('Content-Type', 'text/xml; charset=utf-8')
-                .expect('Cache-Control', testUtils.cacheRules['public'])
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    should.not.exist(res.headers['x-cache-invalidate']);
-                    should.not.exist(res.headers['X-CSRF-Token']);
-                    should.not.exist(res.headers['set-cookie']);
-                    should.exist(res.headers.date);
-
-                    var content = res.text,
-                        siteTitle = '<title><![CDATA[Ghost]]></title>',
-                        siteDescription = '<description><![CDATA[Just a blogging platform.]]></description>',
-                        siteUrl = '<link>http://127.0.0.1:2369/</link>',
-                        postTitle = '<![CDATA[Welcome to Ghost]]>',
-                        descStart = '<description><![CDATA[<p>You\'re live!',
-                        postStart = '<content:encoded><![CDATA[<p>You\'re live!',
-                        postEnd = 'you think :)</p>]]></content:encoded>',
-                        postLink = '<link>http://127.0.0.1:2369/welcome-to-ghost/</link>',
-                        postCreator = '<dc:creator><![CDATA[Joe Bloggs]]>',
-                        author = '<author>';
-
-                    content.indexOf('<rss').should.be.above(0);
-                    content.indexOf(siteTitle).should.be.above(0);
-                    content.indexOf(siteDescription).should.be.above(0);
-                    content.indexOf(siteUrl).should.be.above(0);
-                    content.indexOf(postTitle).should.be.above(0);
-                    content.indexOf(descStart).should.be.above(0);
-                    content.indexOf(postStart).should.be.above(0);
-                    content.indexOf(postEnd).should.be.above(0);
-                    content.indexOf(postLink).should.be.above(0);
-                    content.indexOf(postCreator).should.be.above(0);
-                    content.indexOf('</rss>').should.be.above(0);
-                    content.indexOf(author).should.be.below(0);
-                    content.indexOf(postCreator).should.be.above(0);
-
-                    done();
-                });
-        });
-
-        it('should not have as second page', function (done) {
-            request.get('/rss/2/')
-                // TODO this should probably redirect straight to /rss/ with 301?
-                .expect('Location', '/rss/1/')
-                .expect('Cache-Control', testUtils.cacheRules['public'])
-                .expect(302)
-                .end(doEnd(done));
-        });
-
-        it('should get redirected to /rss/ from /feed/', function (done) {
-            request.get('/feed/')
-                .expect('Location', '/rss/')
-                .expect('Cache-Control', testUtils.cacheRules.year)
-                .expect(301)
-                .end(doEnd(done));
-        });
-
-        describe('More RSS', function () {
-            before(function (done) {
-                testUtils.fixtures.insertPosts().then(function () {
-                    done();
-                }).catch(done);
-            });
-
-            it('should use meta_description and image where available', function (done) {
-                var post1End = 'you think :)</p>]]></content:encoded>',
-                    post3Title = '<title><![CDATA[Short and Sweet]]>',
-                    post3DescStart = '<description><![CDATA[test stuff',
-                    post3ContentStart = '<content:encoded><![CDATA[<h2 id=\"testing\">testing</h2>\n\n' +
-                        '<img src=\"http:\/\/placekitten.com\/500\/200\"',
-                    post3Image = '<media:content url=\"http:\/\/placekitten.com\/500\/200\" medium=\"image\"\/>';
-
-                request.get('/rss/')
-                    .expect('Content-Type', 'text/xml; charset=utf-8')
-                    .expect('Cache-Control', testUtils.cacheRules['public'])
-                    .expect(200)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        var content = res.text,
-                            endIndex = content.indexOf(post1End);
-
-                        content.indexOf('<rss').should.be.above(0);
-                        content.indexOf(post1End).should.be.above(0);
-                        content.indexOf(post3Title).should.be.above(endIndex);
-                        content.indexOf(post3DescStart).should.be.above(endIndex);
-                        content.indexOf(post3ContentStart).should.be.above(endIndex);
-                        content.indexOf(post3Image).should.be.above(endIndex);
-                        content.indexOf('</rss>').should.be.above(0);
-
-                        done();
-                    });
-            });
-        });
-
-        describe('RSS pages', function () {
-            before(function (done) {
-                testUtils.fixtures.insertMorePosts(11).then(function () {
-                    done();
-                }).catch(done);
-            });
-            it('should redirect without slash', function (done) {
-                request.get('/rss/2')
-                    .expect('Location', '/rss/2/')
-                    .expect('Cache-Control', testUtils.cacheRules.year)
-                    .expect(301)
-                    .end(doEnd(done));
-            });
-
-            it('should respond with xml', function (done) {
-                request.get('/rss/2/')
-                    .expect('Content-Type', /xml/)
-                    .expect('Cache-Control', testUtils.cacheRules['public'])
-                    .expect(200)
-                    .end(doEnd(done));
-            });
-
-            it('should redirect page 1', function (done) {
-                request.get('/rss/1/')
-                    .expect('Location', '/rss/')
-                    .expect('Cache-Control', testUtils.cacheRules['public'])
-                    // TODO: This should probably be a 301?
-                    .expect(302)
-                    .end(doEnd(done));
-            });
-
-            it('should redirect to last page if page too high', function (done) {
-                request.get('/rss/3/')
-                    .expect('Location', '/rss/2/')
-                    .expect('Cache-Control', testUtils.cacheRules['public'])
-                    .expect(302)
-                    .end(doEnd(done));
-            });
-
-            it('should redirect to first page if page too low', function (done) {
-                request.get('/rss/0/')
-                    .expect('Location', '/rss/')
-                    .expect('Cache-Control', testUtils.cacheRules['public'])
-                    .expect(302)
-                    .end(doEnd(done));
-            });
-        });
-    });
-
-    describe('Author pages', function () {
-        // Add enough posts to trigger tag pages
-        before(function (done) {
-            testUtils.clearData().then(function () {
-                // we initialise data, but not a user. No user should be required for navigating the frontend
-                return testUtils.initData();
-            }).then(function () {
-                return testUtils.fixtures.insertPosts();
-            }).then(function () {
-                return testUtils.fixtures.insertMorePosts(9);
-            }).then(function () {
-                done();
-            }).catch(done);
-        });
-
-        after(testUtils.teardown);
-
-        it('should redirect without slash', function (done) {
-            request.get('/author/ghost-owner/page/2')
-                .expect('Location', '/author/ghost-owner/page/2/')
-                .expect('Cache-Control', testUtils.cacheRules.year)
-                .expect(301)
-                .end(doEnd(done));
-        });
-
-        it('should respond with html', function (done) {
-            request.get('/author/ghost-owner/page/2/')
-                .expect('Content-Type', /html/)
-                .expect('Cache-Control', testUtils.cacheRules['public'])
-                .expect(200)
-                .end(doEnd(done));
-        });
-
-        it('should redirect page 1', function (done) {
-            request.get('/author/ghost-owner/page/1/')
-                .expect('Location', '/author/ghost-owner/')
-                .expect('Cache-Control', testUtils.cacheRules['public'])
-                // TODO: This should probably be a 301?
-                .expect(302)
-                .end(doEnd(done));
-        });
-
-        it('should redirect to last page if page too high', function (done) {
-            request.get('/author/ghost-owner/page/4/')
-                .expect('Location', '/author/ghost-owner/page/3/')
-                .expect('Cache-Control', testUtils.cacheRules['public'])
-                .expect(302)
-                .end(doEnd(done));
-        });
-
-        it('should redirect to first page if page too low', function (done) {
-            request.get('/author/ghost-owner/page/0/')
-                .expect('Location', '/author/ghost-owner/')
-                .expect('Cache-Control', testUtils.cacheRules['public'])
-                .expect(302)
-                .end(doEnd(done));
-        });
-
-        describe('Author based RSS pages', function () {
-            it('should redirect without slash', function (done) {
-                request.get('/author/ghost-owner/rss')
-                    .expect('Location', '/author/ghost-owner/rss/')
-                    .expect('Cache-Control', testUtils.cacheRules.year)
-                    .expect(301)
-                    .end(doEnd(done));
-            });
-
-            it('should respond with xml', function (done) {
-                request.get('/author/ghost-owner/rss/')
-                    .expect('Content-Type', /xml/)
-                    .expect('Cache-Control', testUtils.cacheRules['public'])
-                    .expect(200)
-                    .end(doEnd(done));
-            });
-
-            it('should redirect page 1', function (done) {
-                request.get('/author/ghost-owner/rss/1/')
-                    .expect('Location', '/author/ghost-owner/rss/')
-                    .expect('Cache-Control', testUtils.cacheRules['public'])
-                    // TODO: This should probably be a 301?
-                    .expect(302)
-                    .end(doEnd(done));
-            });
-
-            it('should redirect to last page if page too high', function (done) {
-                request.get('/author/ghost-owner/rss/2/')
-                    .expect('Location', '/author/ghost-owner/rss/1/')
-                    .expect('Cache-Control', testUtils.cacheRules['public'])
-                    .expect(302)
-                    .end(doEnd(done));
-            });
-
-            it('should redirect to first page if page too low', function (done) {
-                request.get('/author/ghost-owner/rss/0/')
-                    .expect('Location', '/author/ghost-owner/rss/')
-                    .expect('Cache-Control', testUtils.cacheRules['public'])
-                    .expect(302)
-                    .end(doEnd(done));
-            });
-        });
-    });
-
-    describe('Tag pages', function () {
-        // Add enough posts to trigger tag pages
-        before(function (done) {
-            testUtils.initData().then(function () {
-                return testUtils.fixtures.insertPosts();
-            }).then(function () {
-                return testUtils.fixtures.insertMorePosts(22);
-            }).then(function () {
-                return testUtils.fixtures.insertMorePostsTags(22);
-            }).then(function () {
-                done();
-            }).catch(done);
-        });
-
-        after(testUtils.teardown);
-
-        it('should redirect without slash', function (done) {
-            request.get('/tag/injection/page/2')
-                .expect('Location', '/tag/injection/page/2/')
-                .expect('Cache-Control', testUtils.cacheRules.year)
-                .expect(301)
-                .end(doEnd(done));
-        });
-
-        it('should respond with html', function (done) {
-            request.get('/tag/injection/page/2/')
-                .expect('Content-Type', /html/)
-                .expect('Cache-Control', testUtils.cacheRules['public'])
-                .expect(200)
-                .end(doEnd(done));
-        });
-
-        it('should redirect page 1', function (done) {
-            request.get('/tag/injection/page/1/')
-                .expect('Location', '/tag/injection/')
-                .expect('Cache-Control', testUtils.cacheRules['public'])
-                // TODO: This should probably be a 301?
-                .expect(302)
-                .end(doEnd(done));
-        });
-
-        it('should redirect to last page if page too high', function (done) {
-            request.get('/tag/injection/page/4/')
-                .expect('Location', '/tag/injection/page/3/')
-                .expect('Cache-Control', testUtils.cacheRules['public'])
-                .expect(302)
-                .end(doEnd(done));
-        });
-
-        it('should redirect to first page if page too low', function (done) {
-            request.get('/tag/injection/page/0/')
-                .expect('Location', '/tag/injection/')
-                .expect('Cache-Control', testUtils.cacheRules['public'])
-                .expect(302)
-                .end(doEnd(done));
-        });
-
-        describe('Tag based RSS pages', function () {
-            it('should redirect without slash', function (done) {
-                request.get('/tag/getting-started/rss')
-                    .expect('Location', '/tag/getting-started/rss/')
-                    .expect('Cache-Control', testUtils.cacheRules.year)
-                    .expect(301)
-                    .end(doEnd(done));
-            });
-
-            it('should respond with xml', function (done) {
-                request.get('/tag/getting-started/rss/')
-                    .expect('Content-Type', /xml/)
-                    .expect('Cache-Control', testUtils.cacheRules['public'])
-                    .expect(200)
-                    .end(doEnd(done));
-            });
-
-            it('should redirect page 1', function (done) {
-                request.get('/tag/getting-started/rss/1/')
-                    .expect('Location', '/tag/getting-started/rss/')
-                    .expect('Cache-Control', testUtils.cacheRules['public'])
-                    // TODO: This should probably be a 301?
-                    .expect(302)
-                    .end(doEnd(done));
-            });
-
-            it('should redirect to last page if page too high', function (done) {
-                request.get('/tag/getting-started/rss/2/')
-                    .expect('Location', '/tag/getting-started/rss/1/')
-                    .expect('Cache-Control', testUtils.cacheRules['public'])
-                    .expect(302)
-                    .end(doEnd(done));
-            });
-
-            it('should redirect to first page if page too low', function (done) {
-                request.get('/tag/getting-started/rss/0/')
-                    .expect('Location', '/tag/getting-started/rss/')
-                    .expect('Cache-Control', testUtils.cacheRules['public'])
-                    .expect(302)
-                    .end(doEnd(done));
-            });
         });
     });
 
@@ -803,9 +437,9 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
-        it('http://localhost/blog should 303 to  http://localhost/blog/', function (done) {
+        it('http://localhost/blog should 301 to  http://localhost/blog/', function (done) {
             request.get('/blog')
-                .expect(303)
+                .expect(301)
                 .expect('Location', '/blog/')
                 .end(doEnd(done));
         });
@@ -820,6 +454,7 @@ describe('Frontend Routing', function () {
             request.get('/blog/welcome-to-ghost')
                 .expect(301)
                 .expect('Location', '/blog/welcome-to-ghost/')
+                .expect('Cache-Control', testUtils.cacheRules.year)
                 .end(doEnd(done));
         });
 
@@ -833,6 +468,7 @@ describe('Frontend Routing', function () {
             request.get('/blog/tag/getting-started')
                 .expect(301)
                 .expect('Location', '/blog/tag/getting-started/')
+                .expect('Cache-Control', testUtils.cacheRules.year)
                 .end(doEnd(done));
         });
 
@@ -845,6 +481,7 @@ describe('Frontend Routing', function () {
 
     describe('Subdirectory (with slash)', function () {
         var forkedGhost, request;
+
         before(function (done) {
             var configTest = testUtils.fork.config();
             configTest.url = 'http://localhost/blog/';
@@ -877,9 +514,9 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
-        it('/blog should 303 to /blog/', function (done) {
+        it('/blog should 301 to /blog/', function (done) {
             request.get('/blog')
-                .expect(303)
+                .expect(301)
                 .expect('Location', '/blog/')
                 .end(doEnd(done));
         });
@@ -894,6 +531,7 @@ describe('Frontend Routing', function () {
             request.get('/blog/welcome-to-ghost')
                 .expect(301)
                 .expect('Location', '/blog/welcome-to-ghost/')
+                .expect('Cache-Control', testUtils.cacheRules.year)
                 .end(doEnd(done));
         });
 
@@ -907,6 +545,7 @@ describe('Frontend Routing', function () {
             request.get('/blog/tag/getting-started')
                 .expect(301)
                 .expect('Location', '/blog/tag/getting-started/')
+                .expect('Cache-Control', testUtils.cacheRules.year)
                 .end(doEnd(done));
         });
 
@@ -915,11 +554,26 @@ describe('Frontend Routing', function () {
                 .expect(200)
                 .end(doEnd(done));
         });
+
+        it('/blog/welcome-to-ghost/amp/ should 200', function (done) {
+            request.get('/blog/welcome-to-ghost/amp/')
+                .expect(200)
+                .end(doEnd(done));
+        });
+
+        it('should uncapitalise correctly with 301 to subdir', function (done) {
+            request.get('/blog/AAA/')
+                .expect('Location', '/blog/aaa/')
+                .expect('Cache-Control', testUtils.cacheRules.year)
+                .expect(301)
+                .end(doEnd(done));
+        });
     });
 
     // we'll use X-Forwarded-Proto: https to simulate an 'https://' request behind a proxy
     describe('HTTPS', function () {
         var forkedGhost, request;
+
         before(function (done) {
             var configTestHttps = testUtils.fork.config();
             configTestHttps.forceAdminSSL = {redirect: false};
@@ -949,11 +603,11 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
-        it('should set links to urlSSL over HTTPS', function (done) {
+        it('should set links to urlSSL over HTTPS besides canonical', function (done) {
             request.get('/')
                 .set('X-Forwarded-Proto', 'https')
                 .expect(200)
-                .expect(/<link rel="canonical" href="https:\/\/localhost\/" \/\>/)
+                .expect(/<link rel="canonical" href="http:\/\/127.0.0.1:2370\/" \/\>/)
                 .expect(/<a href="https:\/\/localhost">Ghost<\/a\>/)
                 .end(doEnd(done));
         });
@@ -969,7 +623,6 @@ describe('Frontend Routing', function () {
         });
 
         it('should load a post with date permalink', function (done) {
-            // get today's date
             var date  = moment().format('YYYY/MM/DD');
 
             request.get('/' + date + '/welcome-to-ghost/')
@@ -978,10 +631,24 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
+        it('expect redirect because of wrong/old permalink prefix', function (done) {
+            var date  = moment().format('YYYY/MM/DD');
+
+            request.get('/2016/04/01/welcome-to-ghost/')
+                .expect('Content-Type', /html/)
+                .end(function (err, res) {
+                    res.status.should.eql(301);
+                    request.get('/' + date + '/welcome-to-ghost/')
+                        .expect(200)
+                        .expect('Content-Type', /html/)
+                        .end(doEnd(done));
+                });
+        });
+
         it('should serve RSS with date permalink', function (done) {
             request.get('/rss/')
                 .expect('Content-Type', 'text/xml; charset=utf-8')
-                .expect('Cache-Control', testUtils.cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules.public)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -994,23 +661,24 @@ describe('Frontend Routing', function () {
                     should.exist(res.headers.date);
 
                     var content = res.text,
-                        today = new Date(),
-                        dd = ('0' + today.getDate()).slice(-2),
-                        mm = ('0' + (today.getMonth() + 1)).slice(-2),
-                        yyyy = today.getFullYear(),
+                        todayMoment = moment(),
+                        dd = todayMoment.format('DD'),
+                        mm = todayMoment.format('MM'),
+                        yyyy = todayMoment.format('YYYY'),
                         postLink = '/' + yyyy + '/' + mm + '/' + dd + '/welcome-to-ghost/';
 
                     content.indexOf(postLink).should.be.above(0);
-
                     done();
                 });
         });
     });
 
     describe('Site Map', function () {
+        before(testUtils.teardown);
+
         before(function (done) {
             testUtils.initData().then(function () {
-                return testUtils.fixtures.insertPosts();
+                return testUtils.fixtures.insertPostsAndTags();
             }).then(function () {
                 done();
             }).catch(done);
@@ -1019,22 +687,34 @@ describe('Frontend Routing', function () {
         it('should serve sitemap.xml', function (done) {
             request.get('/sitemap.xml')
                 .expect(200)
+                .expect('Cache-Control', testUtils.cacheRules.hour)
                 .expect('Content-Type', 'text/xml; charset=utf-8')
-                .end(doEnd(done));
+                .end(function (err, res) {
+                    res.text.should.match(/sitemapindex/);
+                    doEnd(done)(err, res);
+                });
         });
 
         it('should serve sitemap-posts.xml', function (done) {
             request.get('/sitemap-posts.xml')
                 .expect(200)
+                .expect('Cache-Control', testUtils.cacheRules.hour)
                 .expect('Content-Type', 'text/xml; charset=utf-8')
-                .end(doEnd(done));
+                .end(function (err, res) {
+                    res.text.should.match(/urlset/);
+                    doEnd(done)(err, res);
+                });
         });
 
         it('should serve sitemap-pages.xml', function (done) {
             request.get('/sitemap-posts.xml')
                 .expect(200)
+                .expect('Cache-Control', testUtils.cacheRules.hour)
                 .expect('Content-Type', 'text/xml; charset=utf-8')
-                .end(doEnd(done));
+                .end(function (err, res) {
+                    res.text.should.match(/urlset/);
+                    doEnd(done)(err, res);
+                });
         });
 
         // TODO: Other pages and verify content

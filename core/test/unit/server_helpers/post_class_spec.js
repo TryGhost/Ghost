@@ -1,5 +1,3 @@
-/*globals describe, before, it*/
-/*jshint expr:true*/
 var should         = require('should'),
     hbs            = require('express-hbs'),
     utils          = require('./utils'),
@@ -17,33 +15,26 @@ describe('{{post_class}} helper', function () {
         should.exist(handlebars.helpers.post_class);
     });
 
-    it('can render class string', function (done) {
-        helpers.post_class.call({}).then(function (rendered) {
-            should.exist(rendered);
-            rendered.string.should.equal('post');
-            done();
-        }).catch(done);
+    it('can render class string', function () {
+        var rendered = helpers.post_class.call({});
+
+        should.exist(rendered);
+        rendered.string.should.equal('post');
     });
 
-    it('can render featured class', function (done) {
-        var post = {featured: true};
+    it('can render featured class', function () {
+        var post = {featured: true},
+            rendered = helpers.post_class.call(post);
 
-        helpers.post_class.call(post).then(function (rendered) {
-            should.exist(rendered);
-            rendered.string.should.equal('post featured');
-
-            done();
-        }).catch(done);
+        should.exist(rendered);
+        rendered.string.should.equal('post featured');
     });
 
-    it('can render page class', function (done) {
-        var post = {page: true};
+    it('can render page class', function () {
+        var post = {page: true},
+            rendered = helpers.post_class.call(post);
 
-        helpers.post_class.call(post).then(function (rendered) {
-            should.exist(rendered);
-            rendered.string.should.equal('post page');
-
-            done();
-        }).catch(done);
+        should.exist(rendered);
+        rendered.string.should.equal('post page');
     });
 });

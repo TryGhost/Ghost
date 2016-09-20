@@ -1,8 +1,7 @@
-/*globals describe, before, after, it */
-/*jshint expr:true*/
 var should         = require('should'),
     hbs            = require('express-hbs'),
     utils          = require('./utils'),
+    configUtils    = require('../../utils/configUtils'),
 
 // Stuff we are testing
     handlebars     = hbs.handlebars,
@@ -13,11 +12,11 @@ describe('{{asset}} helper', function () {
 
     before(function () {
         utils.loadHelpers();
-        utils.overrideConfig({assetHash: 'abc'});
+        configUtils.set({assetHash: 'abc'});
     });
 
     after(function () {
-        utils.restoreConfig();
+        configUtils.restore();
     });
 
     it('has loaded asset helper', function () {
@@ -66,7 +65,7 @@ describe('{{asset}} helper', function () {
 
     describe('with /blog subdirectory', function () {
         before(function () {
-            utils.overrideConfig({url: 'http://testurl.com/blog'});
+            configUtils.set({url: 'http://testurl.com/blog'});
         });
 
         it('handles favicon correctly', function () {

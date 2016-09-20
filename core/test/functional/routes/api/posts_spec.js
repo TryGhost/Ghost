@@ -1,5 +1,3 @@
-/*global describe, it, before, after */
-/*jshint expr:true*/
 var testUtils     = require('../../../utils'),
     should        = require('should'),
     supertest     = require('supertest'),
@@ -36,7 +34,7 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('posts/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -45,7 +43,7 @@ describe('Post API', function () {
 
                     should.not.exist(res.headers['x-cache-invalidate']);
                     var jsonResponse = res.body;
-                    jsonResponse.posts.should.exist;
+                    should.exist(jsonResponse.posts);
                     testUtils.API.checkResponse(jsonResponse, 'posts');
                     jsonResponse.posts.should.have.length(5);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
@@ -60,7 +58,7 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('posts/?staticPages=all'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -69,7 +67,7 @@ describe('Post API', function () {
 
                     should.not.exist(res.headers['x-cache-invalidate']);
                     var jsonResponse = res.body;
-                    jsonResponse.posts.should.exist;
+                    should.exist(jsonResponse.posts);
                     testUtils.API.checkResponse(jsonResponse, 'posts');
                     jsonResponse.posts.should.have.length(6);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
@@ -84,7 +82,7 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('posts/?staticPages=all&status=all'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -93,9 +91,9 @@ describe('Post API', function () {
 
                     should.not.exist(res.headers['x-cache-invalidate']);
                     var jsonResponse = res.body;
-                    jsonResponse.posts.should.exist;
+                    should.exist(jsonResponse.posts);
                     testUtils.API.checkResponse(jsonResponse, 'posts');
-                    jsonResponse.posts.should.have.length(8);
+                    jsonResponse.posts.should.have.length(9);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                     testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                     done();
@@ -106,7 +104,7 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('posts/?staticPages=true'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -115,7 +113,7 @@ describe('Post API', function () {
 
                     should.not.exist(res.headers['x-cache-invalidate']);
                     var jsonResponse = res.body;
-                    jsonResponse.posts.should.exist;
+                    should.exist(jsonResponse.posts);
                     testUtils.API.checkResponse(jsonResponse, 'posts');
                     jsonResponse.posts.should.have.length(1);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
@@ -125,10 +123,10 @@ describe('Post API', function () {
         });
 
         it('can retrieve just featured posts', function (done) {
-            request.get(testUtils.API.getApiQuery('posts/?featured=true'))
+            request.get(testUtils.API.getApiQuery('posts/?filter=featured:true'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -137,7 +135,7 @@ describe('Post API', function () {
 
                     should.not.exist(res.headers['x-cache-invalidate']);
                     var jsonResponse = res.body;
-                    jsonResponse.posts.should.exist;
+                    should.exist(jsonResponse.posts);
                     testUtils.API.checkResponse(jsonResponse, 'posts');
                     jsonResponse.posts.should.have.length(4);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
@@ -150,7 +148,7 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('posts/?status=draft'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -159,7 +157,29 @@ describe('Post API', function () {
 
                     should.not.exist(res.headers['x-cache-invalidate']);
                     var jsonResponse = res.body;
-                    jsonResponse.posts.should.exist;
+                    should.exist(jsonResponse.posts);
+                    testUtils.API.checkResponse(jsonResponse, 'posts');
+                    jsonResponse.posts.should.have.length(1);
+                    testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                    testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                    done();
+                });
+        });
+
+        it('can retrieve just scheduled posts', function (done) {
+            request.get(testUtils.API.getApiQuery('posts/?status=scheduled'))
+                .set('Authorization', 'Bearer ' + accesstoken)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    var jsonResponse = res.body;
+                    should.exist(jsonResponse.posts);
                     testUtils.API.checkResponse(jsonResponse, 'posts');
                     jsonResponse.posts.should.have.length(1);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
@@ -175,7 +195,7 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('posts/1/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -184,16 +204,16 @@ describe('Post API', function () {
 
                     should.not.exist(res.headers['x-cache-invalidate']);
                     var jsonResponse = res.body;
-                    jsonResponse.should.exist;
-                    jsonResponse.posts.should.exist;
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.posts);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                     jsonResponse.posts[0].id.should.equal(1);
-                    jsonResponse.posts[0].page.should.not.be.ok;
+                    jsonResponse.posts[0].page.should.not.be.ok();
                     _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                     _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
-                    jsonResponse.posts[0].author.should.be.a.Number;
-                    testUtils.API.isISO8601(jsonResponse.posts[0].created_at).should.be.true;
-                    jsonResponse.posts[0].created_by.should.be.a.Number;
+                    jsonResponse.posts[0].author.should.be.a.Number();
+                    testUtils.API.isISO8601(jsonResponse.posts[0].created_at).should.be.true();
+                    jsonResponse.posts[0].created_by.should.be.a.Number();
                     // Tags aren't included by default
                     should.not.exist(jsonResponse.posts[0].tags);
                     done();
@@ -204,7 +224,7 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('posts/slug/welcome-to-ghost/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -213,15 +233,15 @@ describe('Post API', function () {
 
                     should.not.exist(res.headers['x-cache-invalidate']);
                     var jsonResponse = res.body;
-                    jsonResponse.should.exist;
-                    jsonResponse.posts.should.exist;
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.posts);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                     jsonResponse.posts[0].slug.should.equal('welcome-to-ghost');
-                    jsonResponse.posts[0].page.should.not.be.ok;
+                    jsonResponse.posts[0].page.should.not.be.ok();
                     _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                     _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
-                    jsonResponse.posts[0].author.should.be.a.Number;
-                    jsonResponse.posts[0].created_by.should.be.a.Number;
+                    jsonResponse.posts[0].author.should.be.a.Number();
+                    jsonResponse.posts[0].created_by.should.be.a.Number();
                     // Tags aren't included by default
                     should.not.exist(jsonResponse.posts[0].tags);
                     done();
@@ -232,7 +252,7 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('posts/1/?include=author,tags,created_by'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -241,14 +261,14 @@ describe('Post API', function () {
 
                     should.not.exist(res.headers['x-cache-invalidate']);
                     var jsonResponse = res.body;
-                    jsonResponse.should.exist;
-                    jsonResponse.posts.should.exist;
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.posts);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post', 'tags');
-                    jsonResponse.posts[0].page.should.not.be.ok;
+                    jsonResponse.posts[0].page.should.not.be.ok();
 
-                    jsonResponse.posts[0].author.should.be.an.Object;
+                    jsonResponse.posts[0].author.should.be.an.Object();
                     testUtils.API.checkResponse(jsonResponse.posts[0].author, 'user');
-                    jsonResponse.posts[0].tags[0].should.be.an.Object;
+                    jsonResponse.posts[0].tags[0].should.be.an.Object();
                     testUtils.API.checkResponse(jsonResponse.posts[0].tags[0], 'tag');
                     done();
                 });
@@ -258,7 +278,7 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('posts/3/?include=next,previous'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -267,14 +287,14 @@ describe('Post API', function () {
 
                     should.not.exist(res.headers['x-cache-invalidate']);
                     var jsonResponse = res.body;
-                    jsonResponse.should.exist;
-                    jsonResponse.posts.should.exist;
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.posts);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['next', 'previous']);
-                    jsonResponse.posts[0].page.should.not.be.ok;
+                    jsonResponse.posts[0].page.should.not.be.ok();
 
-                    jsonResponse.posts[0].next.should.be.an.Object;
+                    jsonResponse.posts[0].next.should.be.an.Object();
                     testUtils.API.checkResponse(jsonResponse.posts[0].next, 'post');
-                    jsonResponse.posts[0].previous.should.be.an.Object;
+                    jsonResponse.posts[0].previous.should.be.an.Object();
                     testUtils.API.checkResponse(jsonResponse.posts[0].previous, 'post');
                     done();
                 });
@@ -284,7 +304,7 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('posts/7/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -293,10 +313,10 @@ describe('Post API', function () {
 
                     should.not.exist(res.headers['x-cache-invalidate']);
                     var jsonResponse = res.body;
-                    jsonResponse.should.exist;
-                    jsonResponse.posts.should.exist;
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.posts);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                    jsonResponse.posts[0].page.should.be.ok;
+                    jsonResponse.posts[0].page.should.be.ok();
                     _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
                     done();
                 });
@@ -306,7 +326,7 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('posts/99/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(404)
                 .end(function (err, res) {
                     if (err) {
@@ -315,8 +335,8 @@ describe('Post API', function () {
 
                     should.not.exist(res.headers['x-cache-invalidate']);
                     var jsonResponse = res.body;
-                    jsonResponse.should.exist;
-                    jsonResponse.errors.should.exist;
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.errors);
                     testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
                     done();
                 });
@@ -326,7 +346,7 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('posts/5/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(404)
                 .end(function (err, res) {
                     if (err) {
@@ -335,8 +355,8 @@ describe('Post API', function () {
 
                     should.not.exist(res.headers['x-cache-invalidate']);
                     var jsonResponse = res.body;
-                    jsonResponse.should.exist;
-                    jsonResponse.errors.should.exist;
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.errors);
                     testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
                     done();
                 });
@@ -346,7 +366,7 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('posts/8/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(404)
                 .end(function (err, res) {
                     if (err) {
@@ -355,8 +375,8 @@ describe('Post API', function () {
 
                     should.not.exist(res.headers['x-cache-invalidate']);
                     var jsonResponse = res.body;
-                    jsonResponse.should.exist;
-                    jsonResponse.errors.should.exist;
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.errors);
                     testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
                     done();
                 });
@@ -365,6 +385,53 @@ describe('Post API', function () {
 
     // ## Add
     describe('Add', function () {
+        it('create and ensure dates are correct', function (done) {
+            var newPost = {posts: [{status: 'published', published_at: '2016-05-30T07:00:00.000Z'}]};
+
+            request.post(testUtils.API.getApiQuery('posts'))
+                .set('Authorization', 'Bearer ' + accesstoken)
+                .send(newPost)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    res.body.posts[0].published_at.should.eql('2016-05-30T07:00:00.000Z');
+                    res.body.posts[0].published_at = '2016-05-30T09:00:00.000Z';
+
+                    request.put(testUtils.API.getApiQuery('posts/' + res.body.posts[0].id + '/'))
+                        .set('Authorization', 'Bearer ' + accesstoken)
+                        .send(res.body)
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(200)
+                        .end(function (err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            res.body.posts[0].published_at.should.eql('2016-05-30T09:00:00.000Z');
+
+                            request.get(testUtils.API.getApiQuery('posts/' + res.body.posts[0].id + '/'))
+                                .set('Authorization', 'Bearer ' + accesstoken)
+                                .expect('Content-Type', /json/)
+                                .expect('Cache-Control', testUtils.cacheRules.private)
+                                .expect(200)
+                                .end(function (err, res) {
+                                    if (err) {
+                                        return done(err);
+                                    }
+
+                                    res.body.posts[0].published_at.should.eql('2016-05-30T09:00:00.000Z');
+                                    done();
+                                });
+                        });
+                });
+        });
+
         it('can create a new draft, publish post, update post', function (done) {
             var newTitle = 'My Post',
                 newTagName = 'My Tag',
@@ -376,7 +443,7 @@ describe('Post API', function () {
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .send(newPost)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201)
                 .end(function (err, res) {
                     if (err) {
@@ -385,13 +452,13 @@ describe('Post API', function () {
 
                     var draftPost = res.body;
                     res.headers.location.should.equal('/ghost/api/v0.1/posts/' + draftPost.posts[0].id + '/?status=draft');
-                    draftPost.posts.should.exist;
+                    should.exist(draftPost.posts);
                     draftPost.posts.length.should.be.above(0);
                     draftPost.posts[0].title.should.eql(newTitle);
                     draftPost.posts[0].status = publishedState;
                     testUtils.API.checkResponse(draftPost.posts[0], 'post', 'tags');
 
-                    draftPost.posts[0].tags.should.exist;
+                    should.exist(draftPost.posts[0].tags);
                     draftPost.posts[0].tags.length.should.be.above(0);
                     draftPost.posts[0].tags[0].name.should.eql(newTagName);
                     testUtils.API.checkResponse(draftPost.posts[0].tags[0], 'tag');
@@ -400,7 +467,7 @@ describe('Post API', function () {
                         .set('Authorization', 'Bearer ' + accesstoken)
                         .send(draftPost)
                         .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules['private'])
+                        .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(200)
                         .end(function (err, res) {
                             if (err) {
@@ -411,14 +478,14 @@ describe('Post API', function () {
                             _.has(res.headers, 'x-cache-invalidate').should.equal(true);
                             res.headers['x-cache-invalidate'].should.eql('/*');
 
-                            publishedPost.should.exist;
-                            publishedPost.posts.should.exist;
+                            should.exist(publishedPost);
+                            should.exist(publishedPost.posts);
                             publishedPost.posts.length.should.be.above(0);
                             publishedPost.posts[0].title.should.eql(newTitle);
                             publishedPost.posts[0].status.should.eql(publishedState);
                             testUtils.API.checkResponse(publishedPost.posts[0], 'post', 'tags');
 
-                            publishedPost.posts[0].tags.should.exist;
+                            should.exist(publishedPost.posts[0].tags);
                             publishedPost.posts[0].tags.length.should.be.above(0);
                             publishedPost.posts[0].tags[0].name.should.eql(newTagName);
                             testUtils.API.checkResponse(publishedPost.posts[0].tags[0], 'tag');
@@ -427,7 +494,7 @@ describe('Post API', function () {
                                 .set('Authorization', 'Bearer ' + accesstoken)
                                 .send(publishedPost)
                                 .expect('Content-Type', /json/)
-                                .expect('Cache-Control', testUtils.cacheRules['private'])
+                                .expect('Cache-Control', testUtils.cacheRules.private)
                                 .expect(200)
                                 .end(function (err, res) {
                                     if (err) {
@@ -438,15 +505,15 @@ describe('Post API', function () {
                                     // Require cache invalidation when post was updated and published
                                     res.headers['x-cache-invalidate'].should.eql('/*');
 
-                                    updatedPost.should.exist;
-                                    updatedPost.posts.should.exist;
+                                    should.exist(updatedPost);
+                                    should.exist(updatedPost.posts);
                                     updatedPost.posts.length.should.be.above(0);
                                     updatedPost.posts[0].title.should.eql(newTitle);
-                                    testUtils.API.isISO8601(updatedPost.posts[0].created_at).should.be.true;
-                                    testUtils.API.isISO8601(updatedPost.posts[0].updated_at).should.be.true;
+                                    testUtils.API.isISO8601(updatedPost.posts[0].created_at).should.be.true();
+                                    testUtils.API.isISO8601(updatedPost.posts[0].updated_at).should.be.true();
                                     testUtils.API.checkResponse(updatedPost.posts[0], 'post', 'tags');
 
-                                    updatedPost.posts[0].tags.should.exist;
+                                    should.exist(updatedPost.posts[0].tags);
                                     updatedPost.posts[0].tags.length.should.be.above(0);
                                     updatedPost.posts[0].tags[0].name.should.eql(newTagName);
                                     testUtils.API.checkResponse(updatedPost.posts[0].tags[0], 'tag');
@@ -464,7 +531,7 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('posts/1/?include=tags'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -473,7 +540,7 @@ describe('Post API', function () {
                     var jsonResponse = res.body,
                         changedTitle = 'My new Title',
                         changedAuthor = 2;
-                    jsonResponse.posts[0].should.exist;
+                    should.exist(jsonResponse.posts[0]);
                     jsonResponse.posts[0].title = changedTitle;
                     jsonResponse.posts[0].author = changedAuthor;
 
@@ -481,7 +548,7 @@ describe('Post API', function () {
                         .set('Authorization', 'Bearer ' + accesstoken)
                         .send(jsonResponse)
                         .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules['private'])
+                        .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(200)
                         .end(function (err, res) {
                             if (err) {
@@ -490,7 +557,7 @@ describe('Post API', function () {
 
                             var putBody = res.body;
                             res.headers['x-cache-invalidate'].should.eql('/*');
-                            putBody.should.exist;
+                            should.exist(putBody);
                             putBody.posts[0].title.should.eql(changedTitle);
                             putBody.posts[0].author.should.eql(changedAuthor);
 
@@ -510,7 +577,7 @@ describe('Post API', function () {
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .send(newPost)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201)
                 .end(function (err, res) {
                     if (err) {
@@ -519,7 +586,7 @@ describe('Post API', function () {
 
                     var draftPost = res.body;
                     res.headers.location.should.equal('/ghost/api/v0.1/posts/' + draftPost.posts[0].id + '/?status=draft');
-                    draftPost.posts.should.exist;
+                    should.exist(draftPost.posts);
                     draftPost.posts.length.should.be.above(0);
                     draftPost.posts[0].title.should.eql(newTitle);
                     testUtils.API.checkResponse(draftPost.posts[0], 'post', 'tags');
@@ -530,7 +597,7 @@ describe('Post API', function () {
                         .set('Authorization', 'Bearer ' + accesstoken)
                         .send(draftPost)
                         .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules['private'])
+                        .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(200)
                         .end(function (err, res) {
                             if (err) {
@@ -555,7 +622,7 @@ describe('Post API', function () {
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .send(newPost)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201)
                 .end(function (err, res) {
                     if (err) {
@@ -564,7 +631,7 @@ describe('Post API', function () {
 
                     var draftPost = res.body;
                     res.headers.location.should.equal('/ghost/api/v0.1/posts/' + draftPost.posts[0].id + '/?status=published');
-                    draftPost.posts.should.exist;
+                    should.exist(draftPost.posts);
                     draftPost.posts.length.should.be.above(0);
                     draftPost.posts[0].title.should.eql(newTitle);
                     testUtils.API.checkResponse(draftPost.posts[0], 'post', 'tags');
@@ -576,7 +643,7 @@ describe('Post API', function () {
                         .set('Authorization', 'Bearer ' + accesstoken)
                         .send(draftPost)
                         .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules['private'])
+                        .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(200)
                         .end(function (err, res) {
                             if (err) {
@@ -594,7 +661,7 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('posts/1/?include=tags'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -602,15 +669,15 @@ describe('Post API', function () {
 
                     var jsonResponse = res.body;
 
-                    jsonResponse.should.exist;
-                    jsonResponse.posts[0].page.should.not.be.ok;
+                    should.exist(jsonResponse);
+                    jsonResponse.posts[0].page.should.not.be.ok();
                     jsonResponse.posts[0].page = true;
 
                     request.put(testUtils.API.getApiQuery('posts/1/'))
                         .set('Authorization', 'Bearer ' + accesstoken)
                         .send(jsonResponse)
                         .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules['private'])
+                        .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(200)
                         .end(function (err, res) {
                             if (err) {
@@ -619,8 +686,8 @@ describe('Post API', function () {
 
                             var putBody = res.body;
                             res.headers['x-cache-invalidate'].should.eql('/*');
-                            putBody.should.exist;
-                            putBody.posts[0].page.should.be.ok;
+                            should.exist(putBody);
+                            putBody.posts[0].page.should.be.ok();
 
                             testUtils.API.checkResponse(putBody.posts[0], 'post');
                             done();
@@ -632,7 +699,7 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('posts/7/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -640,15 +707,15 @@ describe('Post API', function () {
 
                     var jsonResponse = res.body;
 
-                    jsonResponse.should.exist;
-                    jsonResponse.posts[0].page.should.be.ok;
+                    should.exist(jsonResponse);
+                    jsonResponse.posts[0].page.should.be.ok();
                     jsonResponse.posts[0].page = false;
 
                     request.put(testUtils.API.getApiQuery('posts/7/'))
                         .set('Authorization', 'Bearer ' + accesstoken)
                         .send(jsonResponse)
                         .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules['private'])
+                        .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(200)
                         .end(function (err, res) {
                             if (err) {
@@ -658,8 +725,8 @@ describe('Post API', function () {
                             var putBody = res.body;
 
                             res.headers['x-cache-invalidate'].should.eql('/*');
-                            putBody.should.exist;
-                            putBody.posts[0].page.should.not.be.ok;
+                            should.exist(putBody);
+                            putBody.posts[0].page.should.not.be.ok();
                             testUtils.API.checkResponse(putBody.posts[0], 'post');
                             done();
                         });
@@ -670,7 +737,7 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('posts/7/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -678,7 +745,7 @@ describe('Post API', function () {
 
                     var jsonResponse = res.body,
                         changedValue = 'invalid';
-                    jsonResponse.should.exist;
+                    should.exist(jsonResponse);
                     jsonResponse.posts[0].page.should.eql(false);
                     jsonResponse.posts[0].page = changedValue;
 
@@ -686,7 +753,7 @@ describe('Post API', function () {
                         .set('Authorization', 'Bearer ' + accesstoken)
                         .send(jsonResponse)
                         .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules['private'])
+                        .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(422)
                         .end(function (err, res) {
                             if (err) {
@@ -695,7 +762,7 @@ describe('Post API', function () {
 
                             should.not.exist(res.headers['x-cache-invalidate']);
                             jsonResponse = res.body;
-                            jsonResponse.errors.should.exist;
+                            should.exist(jsonResponse.errors);
                             testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
                             done();
                         });
@@ -706,7 +773,7 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('posts/1/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .end(function (err, res) {
                     /*jshint unused:false*/
                     if (err) {
@@ -718,7 +785,7 @@ describe('Post API', function () {
                         .set('Authorization', 'Bearer ' + 'invalidtoken')
                         .send(jsonResponse)
                         .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules['private'])
+                        .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(401)
                         .end(function (err, res) {
                             /*jshint unused:false*/
@@ -735,20 +802,20 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('posts/1/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
 
                     var jsonResponse = res.body;
-                    jsonResponse.should.exist;
+                    should.exist(jsonResponse);
 
                     request.put(testUtils.API.getApiQuery('posts/2/'))
                         .set('Authorization', 'Bearer ' + accesstoken)
                         .send(jsonResponse)
                         .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules['private'])
+                        .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(400)
                         .end(function (err, res) {
                             /*jshint unused:false*/
@@ -765,7 +832,7 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('posts/1/?include=tags'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -773,7 +840,7 @@ describe('Post API', function () {
 
                     var jsonResponse = res.body,
                         changedValue = 'My new Title';
-                    jsonResponse.should.exist;
+                    should.exist(jsonResponse);
                     jsonResponse.title = changedValue;
                     jsonResponse.published_at = null;
 
@@ -781,7 +848,7 @@ describe('Post API', function () {
                         .set('Authorization', 'Bearer ' + accesstoken)
                         .send(jsonResponse)
                         .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules['private'])
+                        .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(200)
                         .end(function (err, res) {
                             if (err) {
@@ -790,8 +857,8 @@ describe('Post API', function () {
 
                             var putBody = res.body;
                             res.headers['x-cache-invalidate'].should.eql('/*');
-                            putBody.should.exist;
-                            putBody.posts.should.exist;
+                            should.exist(putBody);
+                            should.exist(putBody.posts);
                             putBody.posts[0].title.should.eql(changedValue);
                             if (_.isEmpty(putBody.posts[0].published_at)) {
                                 should.fail('null', 'valid date', 'publish_at should not be empty');
@@ -807,7 +874,7 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('posts/1/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -815,14 +882,14 @@ describe('Post API', function () {
 
                     var jsonResponse = res.body,
                         changedValue = 'My new Title';
-                    jsonResponse.posts[0].title.exist;
+                    should.exist(jsonResponse.posts[0].title);
                     jsonResponse.posts[0].testvalue = changedValue;
                     jsonResponse.posts[0].id = 99;
                     request.put(testUtils.API.getApiQuery('posts/99/'))
                         .set('Authorization', 'Bearer ' + accesstoken)
                         .send(jsonResponse)
                         .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules['private'])
+                        .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(404)
                         .end(function (err, res) {
                             if (err) {
@@ -831,7 +898,7 @@ describe('Post API', function () {
 
                             should.not.exist(res.headers['x-cache-invalidate']);
                             jsonResponse = res.body;
-                            jsonResponse.errors.should.exist;
+                            should.exist(jsonResponse.errors);
                             testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
                             done();
                         });
@@ -845,20 +912,16 @@ describe('Post API', function () {
             var deletePostId = 1;
             request.del(testUtils.API.getApiQuery('posts/' + deletePostId + '/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
-                .expect(200)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(204)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
 
-                    var jsonResponse = res.body;
-                    jsonResponse.should.exist;
-                    jsonResponse.posts.should.exist;
+                    res.body.should.be.empty();
                     res.headers['x-cache-invalidate'].should.eql('/*');
-                    testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                    jsonResponse.posts[0].id.should.eql(deletePostId);
+
                     done();
                 });
         });
@@ -867,7 +930,7 @@ describe('Post API', function () {
             request.del(testUtils.API.getApiQuery('posts/99/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(404)
                 .end(function (err, res) {
                     if (err) {
@@ -876,8 +939,8 @@ describe('Post API', function () {
 
                     should.not.exist(res.headers['x-cache-invalidate']);
                     var jsonResponse = res.body;
-                    jsonResponse.should.exist;
-                    jsonResponse.errors.should.exist;
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.errors);
                     testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
                     done();
                 });
@@ -892,7 +955,7 @@ describe('Post API', function () {
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .send(newPost)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201)
                 .end(function (err, res) {
                     if (err) {
@@ -901,25 +964,22 @@ describe('Post API', function () {
 
                     var draftPost = res.body;
 
-                    draftPost.should.exist;
+                    should.exist(draftPost);
                     draftPost.posts[0].title.should.eql(newTitle);
                     draftPost.posts[0].status = publishedState;
                     testUtils.API.checkResponse(draftPost.posts[0], 'post');
 
                     request.del(testUtils.API.getApiQuery('posts/' + draftPost.posts[0].id + '/'))
                         .set('Authorization', 'Bearer ' + accesstoken)
-                        .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules['private'])
-                        .expect(200)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(204)
                         .end(function (err, res) {
                             if (err) {
                                 return done(err);
                             }
 
-                            var jsonResponse = res.body;
-                            jsonResponse.should.exist;
-                            jsonResponse.posts.should.exist;
-                            testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                            res.body.should.be.empty();
+
                             done();
                         });
                 });
@@ -931,7 +991,7 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('settings/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -944,7 +1004,7 @@ describe('Post API', function () {
                         .set('Authorization', 'Bearer ' + accesstoken)
                         .send(jsonResponse)
                         .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules['private'])
+                        .expect('Cache-Control', testUtils.cacheRules.private)
                         .end(function (err, res) {
                             /*jshint unused:false*/
                             if (err) {
@@ -959,7 +1019,7 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('settings/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -971,7 +1031,7 @@ describe('Post API', function () {
                     request.put(testUtils.API.getApiQuery('settings/'))
                         .set('Authorization', 'Bearer ' + accesstoken)
                         .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules['private'])
+                        .expect('Cache-Control', testUtils.cacheRules.private)
                         .send(jsonResponse)
                         .end(function (err, res) {
                             /*jshint unused:false*/
@@ -989,7 +1049,7 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('posts/2/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -999,11 +1059,11 @@ describe('Post API', function () {
                     should.not.exist(res.headers['x-cache-invalidate']);
 
                     var jsonResponse = res.body;
-                    jsonResponse.should.exist;
-                    jsonResponse.posts.should.exist;
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.posts);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                     jsonResponse.posts[0].slug.should.not.match(/^\/[0-9]{4}\/[0-9]{2}\/[0-9]{2}/);
-                    jsonResponse.posts[0].page.should.not.be.ok;
+                    jsonResponse.posts[0].page.should.not.be.ok();
                     done();
                 });
         });
@@ -1012,7 +1072,7 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('posts/2/?include=tags'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -1020,14 +1080,14 @@ describe('Post API', function () {
 
                     var jsonResponse = res.body,
                         changedValue = 'My new Title';
-                    jsonResponse.should.exist;
-                    jsonResponse.posts.should.exist;
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.posts);
                     jsonResponse.posts[0].title = changedValue;
 
                     request.put(testUtils.API.getApiQuery('posts/2/'))
                         .set('Authorization', 'Bearer ' + accesstoken)
                         .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules['private'])
+                        .expect('Cache-Control', testUtils.cacheRules.private)
                         .send(jsonResponse)
                         .expect(200)
                         .end(function (err, res) {
@@ -1037,7 +1097,7 @@ describe('Post API', function () {
                             var putBody = res.body;
 
                             res.headers['x-cache-invalidate'].should.eql('/*');
-                            putBody.should.exist;
+                            should.exist(putBody);
                             putBody.posts[0].title.should.eql(changedValue);
 
                             testUtils.API.checkResponse(putBody.posts[0], 'post');

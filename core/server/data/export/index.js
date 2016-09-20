@@ -1,21 +1,29 @@
 var _           = require('lodash'),
     Promise     = require('bluebird'),
-    versioning  = require('../versioning'),
-    config      = require('../../config'),
-    utils       = require('../utils'),
+    db          = require('../../data/db'),
+    commands    = require('../schema').commands,
+    versioning  = require('../schema').versioning,
     serverUtils = require('../../utils'),
     errors      = require('../../errors'),
     settings    = require('../../api/settings'),
+    i18n        = require('../../i18n'),
 
-    excludedTables = ['accesstokens', 'refreshtokens', 'clients'],
-    exporter,
+    excludedTables = ['accesstokens', 'refreshtokens', 'clients', 'client_trusted_domains'],
+    modelOptions = {context: {internal: true}},
+
+    // private
+    getVersionAndTables,
+    exportTable,
+
+    // public
+    doExport,
     exportFileName;
 
-exportFileName = function () {
+exportFileName = function exportFileName() {
     var datetime = (new Date()).toJSON().substring(0, 10),
         title = '';
 
-    return settings.read({key: 'title', context: {internal: true}}).then(function (result) {
+    return settings.read(_.extend({}, {key: 'title'}, modelOptions)).then(function (result) {
         if (result) {
             title = serverUtils.safeString(result.settings[0].value) + '.';
         }
@@ -26,37 +34,51 @@ exportFileName = function () {
     });
 };
 
-exporter = function () {
-    return Promise.join(versioning.getDatabaseVersion(), utils.getTables()).then(function (results) {
-        var version = results[0],
-            tables = results[1],
-            selectOps = _.map(tables, function (name) {
-                if (excludedTables.indexOf(name) < 0) {
-                    return config.database.knex(name).select();
-                }
-            });
+getVersionAndTables = function getVersionAndTables() {
+    var props = {
+        version: versioning.getDatabaseVersion(),
+        tables:  commands.getTables()
+    };
 
-        return Promise.all(selectOps).then(function (tableData) {
-            var exportData = {
-                meta: {
-                    exported_on: new Date().getTime(),
-                    version: version
-                },
-                data: {
-                    // Filled below
-                }
-            };
+    return Promise.props(props);
+};
 
-            _.each(tables, function (name, i) {
-                exportData.data[name] = tableData[i];
-            });
+exportTable = function exportTable(tableName) {
+    if (excludedTables.indexOf(tableName) < 0) {
+        return db.knex(tableName).select();
+    }
+};
 
-            return exportData;
-        }).catch(function (err) {
-            errors.logAndThrowError(err, 'Error exporting data', '');
+doExport = function doExport() {
+    var tables, version;
+
+    return getVersionAndTables().then(function exportAllTables(result) {
+        tables = result.tables;
+        version = result.version;
+
+        return Promise.mapSeries(tables, exportTable);
+    }).then(function formatData(tableData) {
+        var exportData = {
+            meta: {
+                exported_on: new Date().getTime(),
+                version: version
+            },
+            data: {
+                // Filled below
+            }
+        };
+
+        _.each(tables, function (name, i) {
+            exportData.data[name] = tableData[i];
         });
+
+        return exportData;
+    }).catch(function (err) {
+        errors.logAndThrowError(err, i18n.t('errors.data.export.errorExportingData'), '');
     });
 };
 
-module.exports = exporter;
-module.exports.fileName = exportFileName;
+module.exports = {
+    doExport: doExport,
+    fileName: exportFileName
+};

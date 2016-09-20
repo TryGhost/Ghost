@@ -25,11 +25,11 @@ fetch = function (apiOptions, options) {
 // If prevNext method is called without valid post data then we must return a promise, if there is valid post data
 // then the promise is handled in the api call.
 
-prevNext =  function (options) {
+prevNext = function (options) {
     options = options || {};
 
     var apiOptions = {
-        include: options.name === 'prev_post' ? 'previous' : 'next'
+        include: options.name === 'prev_post' ? 'previous,previous.author,previous.tags' : 'next,next.author,next.tags'
     };
 
     if (schema.isPost(this) && this.status === 'published') {

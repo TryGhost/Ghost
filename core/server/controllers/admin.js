@@ -1,8 +1,9 @@
 var _             = require('lodash'),
+    Promise       = require('bluebird'),
     api           = require('../api'),
     errors        = require('../errors'),
     updateCheck   = require('../update-check'),
-    config        = require('../config'),
+    i18n          = require('../i18n'),
     adminControllers;
 
 adminControllers = {
@@ -13,14 +14,20 @@ adminControllers = {
         /*jslint unparam:true*/
 
         function renderIndex() {
-            return api.configuration.browse().then(function then(data) {
-                var apiConfig = _.omit(data.configuration, function omit(value) {
-                    return _.contains(['environment', 'database', 'mail', 'version'], value.key);
-                });
+            var configuration,
+                fetch = {
+                    configuration: api.configuration.read().then(function (res) { return res.configuration[0]; }),
+                    client: api.clients.read({slug: 'ghost-admin'}).then(function (res) { return res.clients[0]; })
+                };
+
+            return Promise.props(fetch).then(function renderIndex(result) {
+                configuration = result.configuration;
+
+                configuration.clientId = {value: result.client.slug, type: 'string'};
+                configuration.clientSecret = {value: result.client.secret, type: 'string'};
 
                 res.render('default', {
-                    skip_google_fonts: config.isPrivacyDisabled('useGoogleFonts'),
-                    configuration: apiConfig
+                    configuration: configuration
                 });
             });
         }
@@ -33,12 +40,12 @@ adminControllers = {
             }
 
             var notification = {
-                type: 'upgrade',
-                location: 'settings-about-upgrade',
+                status: 'alert',
+                type: 'info',
+                location: 'upgrade.new-version-available',
                 dismissible: false,
-                status: 'persistent',
-                message: 'Ghost ' + updateVersion + ' is available! Hot Damn. <a href="http://support.ghost.org/how-to-upgrade/" target="_blank">Click here</a> to upgrade.'
-            };
+                message: i18n.t('notices.controllers.newVersionAvailable',
+                                {version: updateVersion, link: '<a href="http://support.ghost.org/how-to-upgrade/" target="_blank">Click here</a>'})};
 
             return api.notifications.browse({context: {internal: true}}).then(function then(results) {
                 if (!_.some(results.notifications, {message: notification.message})) {

@@ -1,5 +1,3 @@
-/*global describe, it, before, after */
-/*jshint expr:true*/
 // # Api Route tests
 // As it stands, these tests depend on the database, and as such are integration tests.
 // Mocking out the models to not touch the DB would turn these into unit tests, and should probably be done in future,
@@ -11,6 +9,8 @@ var supertest     = require('supertest'),
 
     ghost         = require('../../../../../core'),
     request;
+
+require('should-http');
 
 describe('Unauthorized', function () {
     before(function (done) {
@@ -30,7 +30,7 @@ describe('Unauthorized', function () {
     describe('Unauthorized API', function () {
         it('can\'t retrieve posts', function (done) {
             request.get(testUtils.API.getApiQuery('posts/'))
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(401)
                 .end(function firstRequest(err, res) {
                     if (err) {
@@ -38,9 +38,9 @@ describe('Unauthorized', function () {
                     }
 
                     should.not.exist(res.headers['x-cache-invalidate']);
-                    res.should.be.json;
+                    res.should.be.json();
                     var jsonResponse = res.body;
-                    jsonResponse.should.exist;
+                    should.exist(jsonResponse);
                     // TODO: testUtils.API.checkResponseValue(jsonResponse, ['error']);
                     done();
                 });

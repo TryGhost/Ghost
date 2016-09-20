@@ -1,0 +1,360 @@
+{
+    "models": [
+        {
+            "name": "Post",
+            "entries": [
+                {
+                    "title": "Welcome to Ghost",
+                    "slug": "welcome-to-ghost",
+                    "markdown": "You're live! Nice. We've put together a little post to introduce you to the Ghost editor and get you started. You can manage your content by signing in to the admin area at `<your blog URL>/ghost/`. When you arrive, you can select this post from a list on the left and see a preview of it on the right. Click the little pencil icon at the top of the preview to edit this post and read the next section!\n\n## Getting Started\n\nGhost uses something called Markdown for writing. Essentially, it's a shorthand way to manage your post formatting as you write!\n\nWriting in Markdown is really easy. In the left hand panel of Ghost, you simply write as you normally would. Where appropriate, you can use *shortcuts* to **style** your content. For example, a list:\n\n* Item number one\n* Item number two\n    * A nested item\n* A final item\n\nor with numbers!\n\n1. Remember to buy some milk\n2. Drink the milk\n3. Tweet that I remembered to buy the milk, and drank it\n\n### Links\n\nWant to link to a source? No problem. If you paste in a URL, like http://ghost.org - it'll automatically be linked up. But if you want to customise your anchor text, you can do that too! Here's a link to [the Ghost website](http://ghost.org). Neat.\n\n### What about Images?\n\nImages work too! Already know the URL of the image you want to include in your article? Simply paste it in like this to make it show up:\n\n![The Ghost Logo](https://ghost.org/images/ghost.png)\n\nNot sure which image you want to use yet? That's ok too. Leave yourself a descriptive placeholder and keep writing. Come back later and drag and drop the image in to upload:\n\n![A bowl of bananas]\n\n\n### Quoting\n\nSometimes a link isn't enough, you want to quote someone on what they've said. Perhaps you've started using a new blogging platform and feel the sudden urge to share their slogan? A quote might be just the way to do it!\n\n> Ghost - Just a blogging platform\n\n### Working with Code\n\nGot a streak of geek? We've got you covered there, too. You can write inline `<code>` blocks really easily with back ticks. Want to show off something more comprehensive? 4 spaces of indentation gets you there.\n\n    .awesome-thing {\n        display: block;\n        width: 100%;\n    }\n\n### Ready for a Break? \n\nThrow 3 or more dashes down on any new line and you've got yourself a fancy new divider. Aw yeah.\n\n---\n\n### Advanced Usage\n\nThere's one fantastic secret about Markdown. If you want, you can write plain old HTML and it'll still work! Very flexible.\n\n<input type=\"text\" placeholder=\"I'm an input field!\" />\n\nThat should be enough to get you started. Have fun - and let us know what you think :)",
+                    "image": null,
+                    "featured": false,
+                    "page": false,
+                    "status": "published",
+                    "language": "en_US",
+                    "meta_title": null,
+                    "meta_description": null
+                }
+            ]
+        },
+        {
+            "name": "Tag",
+            "entries": [
+                {
+                    "name":             "Getting Started",
+                    "slug":             "getting-started",
+                    "description":      null,
+                    "parent_id":        null,
+                    "meta_title":       null,
+                    "meta_description": null
+                }
+            ]
+        },
+        {
+            "name": "Client",
+            "entries": [
+                {
+                    "name":             "Ghost Admin",
+                    "slug":             "ghost-admin",
+                    "status":           "enabled"
+                },
+                {
+                    "name":             "Ghost Frontend",
+                    "slug":             "ghost-frontend",
+                    "status":           "enabled"
+                },
+                {
+                    "name":             "Ghost Scheduler",
+                    "slug":             "ghost-scheduler",
+                    "status":           "enabled",
+                    "type":             "web"
+                }
+            ]
+        },
+        {
+            "name": "Role",
+            "entries": [
+                {
+                    "name":             "Administrator",
+                    "description":      "Administrators"
+                },
+                {
+                    "name":             "Editor",
+                    "description":      "Editors"
+                },
+                {
+                    "name":             "Author",
+                    "description":      "Authors"
+                },
+                {
+                    "name":             "Owner",
+                    "description":      "Blog Owner"
+                }
+            ]
+        },
+        {
+            "name": "Permission",
+            "entries": [
+                {
+                    "name": "Export database",
+                    "action_type": "exportContent",
+                    "object_type": "db"
+                },
+                {
+                    "name": "Import database",
+                    "action_type": "importContent",
+                    "object_type": "db"
+                },
+                {
+                    "name": "Delete all content",
+                    "action_type": "deleteAllContent",
+                    "object_type": "db"
+                },
+                {
+                    "name": "Send mail",
+                    "action_type": "send",
+                    "object_type": "mail"
+                },
+                {
+                    "name": "Browse notifications",
+                    "action_type": "browse",
+                    "object_type": "notification"
+                },
+                {
+                    "name": "Add notifications",
+                    "action_type": "add",
+                    "object_type": "notification"
+                },
+                {
+                    "name": "Delete notifications",
+                    "action_type": "destroy",
+                    "object_type": "notification"
+                },
+                {
+                    "name": "Browse posts",
+                    "action_type": "browse",
+                    "object_type": "post"
+                },
+                {
+                    "name": "Read posts",
+                    "action_type": "read",
+                    "object_type": "post"
+                },
+                {
+                    "name": "Edit posts",
+                    "action_type": "edit",
+                    "object_type": "post"
+                },
+                {
+                    "name": "Add posts",
+                    "action_type": "add",
+                    "object_type": "post"
+                },
+                {
+                    "name": "Delete posts",
+                    "action_type": "destroy",
+                    "object_type": "post"
+                },
+                {
+                    "name": "Browse settings",
+                    "action_type": "browse",
+                    "object_type": "setting"
+                },
+                {
+                    "name": "Read settings",
+                    "action_type": "read",
+                    "object_type": "setting"
+                },
+                {
+                    "name": "Edit settings",
+                    "action_type": "edit",
+                    "object_type": "setting"
+                },
+                {
+                    "name": "Generate slugs",
+                    "action_type": "generate",
+                    "object_type": "slug"
+                },
+                {
+                    "name": "Browse tags",
+                    "action_type": "browse",
+                    "object_type": "tag"
+                },
+                {
+                    "name": "Read tags",
+                    "action_type": "read",
+                    "object_type": "tag"
+                },
+                {
+                    "name": "Edit tags",
+                    "action_type": "edit",
+                    "object_type": "tag"
+                },
+                {
+                    "name": "Add tags",
+                    "action_type": "add",
+                    "object_type": "tag"
+                },
+                {
+                    "name": "Delete tags",
+                    "action_type": "destroy",
+                    "object_type": "tag"
+                },
+                {
+                    "name": "Browse themes",
+                    "action_type": "browse",
+                    "object_type": "theme"
+                },
+                {
+                    "name": "Edit themes",
+                    "action_type": "edit",
+                    "object_type": "theme"
+                },
+                {
+                    "name": "Upload themes",
+                    "action_type": "add",
+                    "object_type": "theme"
+                },
+                {
+                    "name": "Download themes",
+                    "action_type": "read",
+                    "object_type": "theme"
+                },
+                {
+                    "name": "Delete themes",
+                    "action_type": "destroy",
+                    "object_type": "theme"
+                },
+                {
+                    "name": "Browse users",
+                    "action_type": "browse",
+                    "object_type": "user"
+                },
+                {
+                    "name": "Read users",
+                    "action_type": "read",
+                    "object_type": "user"
+                },
+                {
+                    "name": "Edit users",
+                    "action_type": "edit",
+                    "object_type": "user"
+                },
+                {
+                    "name": "Add users",
+                    "action_type": "add",
+                    "object_type": "user"
+                },
+                {
+                    "name": "Delete users",
+                    "action_type": "destroy",
+                    "object_type": "user"
+                },
+                {
+                    "name": "Assign a role",
+                    "action_type": "assign",
+                    "object_type": "role"
+                },
+                {
+                    "name": "Browse roles",
+                    "action_type": "browse",
+                    "object_type": "role"
+                },
+                {
+                    "name": "Browse clients",
+                    "action_type": "browse",
+                    "object_type": "client"
+                },
+                {
+                    "name": "Read clients",
+                    "action_type": "read",
+                    "object_type": "client"
+                },
+                {
+                    "name": "Edit clients",
+                    "action_type": "edit",
+                    "object_type": "client"
+                },
+                {
+                    "name": "Add clients",
+                    "action_type": "add",
+                    "object_type": "client"
+                },
+                {
+                    "name": "Delete clients",
+                    "action_type": "destroy",
+                    "object_type": "client"
+                },
+                {
+                    "name": "Browse subscribers",
+                    "action_type": "browse",
+                    "object_type": "subscriber"
+                },
+                {
+                    "name": "Read subscribers",
+                    "action_type": "read",
+                    "object_type": "subscriber"
+                },
+                {
+                    "name": "Edit subscribers",
+                    "action_type": "edit",
+                    "object_type": "subscriber"
+                },
+                {
+                    "name": "Add subscribers",
+                    "action_type": "add",
+                    "object_type": "subscriber"
+                },
+                {
+                    "name": "Delete subscribers",
+                    "action_type": "destroy",
+                    "object_type": "subscriber"
+                }
+            ]
+        }
+
+    ],
+    "relations": [
+        {
+            "from": {
+                "model": "Role",
+                "match": "name",
+                "relation": "permissions"
+            },
+            "to": {
+                "model": "Permission",
+                "match": ["object_type", "action_type"]
+            },
+            "entries": {
+                "Administrator": {
+                    "db": "all",
+                    "mail": "all",
+                    "notification": "all",
+                    "post": "all",
+                    "setting": "all",
+                    "slug": "all",
+                    "tag": "all",
+                    "theme": "all",
+                    "user": "all",
+                    "role": "all",
+                    "client": "all",
+                    "subscriber": "all"
+                },
+                "Editor": {
+                    "post": "all",
+                    "setting": ["browse", "read"],
+                    "slug": "all",
+                    "tag": "all",
+                    "user": "all",
+                    "role": "all",
+                    "client": "all",
+                    "subscriber": ["add"]
+                },
+                "Author": {
+                    "post": ["browse", "read", "add"],
+                    "setting": ["browse", "read"],
+                    "slug": "all",
+                    "tag": ["browse", "read", "add"],
+                    "user": ["browse", "read"],
+                    "role": ["browse"],
+                    "client": "all",
+                    "subscriber": ["add"]
+                }
+            }
+        },
+        {
+            "from": {
+                "model": "Post",
+                "match": "title",
+                "relation": "tags"
+            },
+            "to": {
+                "model": "Tag",
+                "match": "name"
+            },
+            "entries": {
+                "Welcome to Ghost": ["Getting Started"]
+            }
+        }
+    ]
+}

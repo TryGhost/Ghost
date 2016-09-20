@@ -1,5 +1,3 @@
-/*globals describe, beforeEach, it*/
-/*jshint expr:true*/
 // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 var should         = require('should'),
     rewire         = require('rewire'),

@@ -1,0 +1,114 @@
+{
+    "core": {
+        "databaseVersion": {
+            "defaultValue": "008"
+        },
+        "dbHash": {
+            "defaultValue": null
+        },
+        "nextUpdateCheck": {
+            "defaultValue": null
+        },
+        "displayUpdateNotification": {
+            "defaultValue": null
+        },
+        "seenNotifications": {
+            "defaultValue": "[]"
+        },
+        "migrations": {
+            "defaultValue": "{}"
+        }
+    },
+    "blog": {
+        "title": {
+            "defaultValue": "Ghost"
+        },
+        "description": {
+            "defaultValue": "Just a blogging platform."
+        },
+        "logo": {
+            "defaultValue": ""
+        },
+        "cover": {
+            "defaultValue": ""
+        },
+        "defaultLang": {
+            "defaultValue": "en_US",
+            "validations": {
+                "isNull": false
+            }
+        },
+        "postsPerPage": {
+            "defaultValue": "5",
+            "validations": {
+                "isNull": false,
+                "isInt": true,
+                "isLength": [1, 1000]
+            }
+        },
+        "activeTimezone": {
+            "defaultValue": "Etc/UTC",
+            "validations": {
+                "isTimezone": true,
+                "isNull": false
+            }
+        },
+        "forceI18n": {
+            "defaultValue": "true",
+            "validations": {
+                "isNull": false,
+                "isIn": [["true", "false"]]
+            }
+        },
+        "permalinks": {
+            "defaultValue": "/:slug/",
+            "validations": {
+                "matches": "^(\/:?[a-z0-9_-]+){1,5}\/$",
+                "matches": "(:id|:slug|:year|:month|:day|:author)",
+                "notContains": "/ghost/"
+            }
+        },
+        "ghost_head": {
+            "defaultValue" : ""
+        },
+        "ghost_foot": {
+            "defaultValue" : ""
+        },
+        "facebook": {
+            "defaultValue" : ""
+        },
+        "twitter": {
+            "defaultValue" : ""
+        },
+        "labs": {
+            "defaultValue": "{}"
+        },
+        "navigation": {
+            "defaultValue": "[{\"label\":\"Home\", \"url\":\"/\"}]"
+        },
+        "slack": {
+            "defaultValue": "[{\"url\":\"\"}]"
+        }
+    },
+    "theme": {
+        "activeTheme": {
+            "defaultValue": "casper"
+        }
+    },
+    "app": {
+        "activeApps": {
+            "defaultValue": "[]"
+        },
+        "installedApps": {
+            "defaultValue": "[]"
+        }
+    },
+    "private": {
+        "isPrivate": {
+            "defaultValue": "false"
+        },
+        "password": {
+            "defaultValue": ""
+        }
+    }
+}

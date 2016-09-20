@@ -1,9 +1,11 @@
 // Contains all path information to be used throughout
 // the codebase.
 
-var moment            = require('moment'),
+var moment            = require('moment-timezone'),
     _                 = require('lodash'),
-    ghostConfig = '';
+    ghostConfig = '',
+    // @TODO: unify this with routes.apiBaseUrl
+    apiPath = '/ghost/api/v0.1';
 
 // ## setConfig
 // Simple utility function to allow
@@ -16,13 +18,21 @@ function setConfig(config) {
 }
 
 function getBaseUrl(secure) {
-    return (secure && ghostConfig.urlSSL) ? ghostConfig.urlSSL : ghostConfig.url;
+    if (secure && ghostConfig.urlSSL) {
+        return ghostConfig.urlSSL;
+    } else {
+        if (secure) {
+            return ghostConfig.url.replace('http://', 'https://');
+        } else {
+            return ghostConfig.url;
+        }
+    }
 }
 
 function urlJoin() {
     var args = Array.prototype.slice.call(arguments),
         prefixDoubleSlash = false,
-        subdir = ghostConfig.paths.subdir.replace(/\//g, ''),
+        subdir = ghostConfig.paths.subdir.replace(/^\/|\/+$/, ''),
         subdirRegex,
         url;
 
@@ -49,8 +59,8 @@ function urlJoin() {
 
     // Deduplicate subdirectory
     if (subdir) {
-        subdirRegex = new RegExp(subdir + '\/' + subdir);
-        url = url.replace(subdirRegex, subdir);
+        subdirRegex = new RegExp(subdir + '\/' + subdir + '\/');
+        url = url.replace(subdirRegex, subdir + '/');
     }
 
     return url;
@@ -85,18 +95,20 @@ function createUrl(urlPath, absolute, secure) {
     return urlJoin(base, urlPath);
 }
 
-// ## urlPathForPost
-// Always sync
-// Creates the url path for a post, given a post and a permalink
-// Parameters:
-// - post - a json object representing a post
-// - permalinks - a string containing the permalinks setting
-function urlPathForPost(post, permalinks) {
+/**
+ * creates the url path for a post based on blog timezone and permalink pattern
+ *
+ * @param {JSON} post
+ * @returns {string}
+ */
+function urlPathForPost(post) {
     var output = '',
+        permalinks = ghostConfig.theme.permalinks,
+        publishedAtMoment = moment.tz(post.published_at || Date.now(), ghostConfig.theme.timezone),
         tags = {
-            year:   function () { return moment(post.published_at).format('YYYY'); },
-            month:  function () { return moment(post.published_at).format('MM'); },
-            day:    function () { return moment(post.published_at).format('DD'); },
+            year:   function () { return publishedAtMoment.format('YYYY'); },
+            month:  function () { return publishedAtMoment.format('MM'); },
+            day:    function () { return publishedAtMoment.format('DD'); },
             author: function () { return post.author.slug; },
             slug:   function () { return post.slug; },
             id:     function () { return post.id; }
@@ -146,7 +158,7 @@ function urlFor(context, data, absolute) {
     knownPaths = {
         home: '/',
         rss: '/rss/',
-        api: '/ghost/api/v0.1',
+        api: apiPath,
         sitemap_xsl: '/sitemap.xsl'
     };
 
@@ -188,12 +200,17 @@ function urlFor(context, data, absolute) {
             return urlPath;
         } else if (context === 'nav' && data.nav) {
             urlPath = data.nav.url;
+            secure = data.nav.secure || secure;
             baseUrl = getBaseUrl(secure);
             hostname = baseUrl.split('//')[1] + ghostConfig.paths.subdir;
-            if (urlPath.indexOf(hostname) > -1 && urlPath.indexOf('.' + hostname) === -1) {
+            if (urlPath.indexOf(hostname) > -1
+                && !urlPath.split(hostname)[0].match(/\.|mailto:/)
+                && urlPath.split(hostname)[1].substring(0,1) !== ':') {
                 // make link relative to account for possible
                 // mismatch in http/https etc, force absolute
                 // do not do so if link is a subdomain of blog url
+                // or if hostname is inside of the slug
+                // or if slug is a port
                 urlPath = urlPath.split(hostname)[1];
                 if (urlPath.substring(0, 1) !== '/') {
                     urlPath = '/' + urlPath;
@@ -208,14 +225,46 @@ function urlFor(context, data, absolute) {
     }
 
     // This url already has a protocol so is likely an external url to be returned
-    if (urlPath && (urlPath.indexOf('://') !== -1 || urlPath.indexOf('mailto:') === 0)) {
+    // or it is an alternative scheme, protocol-less, or an anchor-only path
+    if (urlPath && (urlPath.indexOf('://') !== -1 || urlPath.match(/^(\/\/|#|[a-zA-Z0-9\-]+:)/))) {
         return urlPath;
     }
 
     return createUrl(urlPath, absolute, secure);
 }
 
+/**
+ * CASE: generate api url for CORS
+ *   - we delete the http protocol if your blog runs with http and https (configured by nginx)
+ *   - in that case your config.js configures Ghost with http and no admin ssl force
+ *   - the browser then reads the protocol dynamically
+ */
+function apiUrl(options) {
+    options = options || {cors: false};
+
+    // @TODO unify this with urlFor
+    var url;
+
+    if (ghostConfig.forceAdminSSL) {
+        url = (ghostConfig.urlSSL || ghostConfig.url).replace(/^.*?:\/\//g, 'https://');
+    } else if (ghostConfig.urlSSL) {
+        url = ghostConfig.urlSSL.replace(/^.*?:\/\//g, 'https://');
+    } else if (ghostConfig.url.match(/^https:/)) {
+        url = ghostConfig.url;
+    } else {
+        if (options.cors === false) {
+            url = ghostConfig.url;
+        } else {
+            url = ghostConfig.url.replace(/^.*?:\/\//g, '//');
+        }
+    }
+
+    return url.replace(/\/$/, '') + apiPath + '/';
+}
+
 module.exports.setConfig = setConfig;
 module.exports.urlJoin = urlJoin;
 module.exports.urlFor = urlFor;
 module.exports.urlPathForPost = urlPathForPost;
+module.exports.apiUrl = apiUrl;
+module.exports.getBaseUrl = getBaseUrl;

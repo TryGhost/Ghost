@@ -24,7 +24,7 @@ cacheControl = function cacheControl(options) {
     return function cacheControlHeaders(req, res, next) {
         if (output) {
             if (res.isPrivateBlog) {
-                res.set({'Cache-Control': profiles['private']});
+                res.set({'Cache-Control': profiles.private});
             } else {
                 res.set({'Cache-Control': output});
             }

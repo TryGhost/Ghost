@@ -1,5 +1,5 @@
 var unidecode  = require('unidecode'),
-
+    _          = require('lodash'),
     utils,
     getRandomInt;
 
@@ -50,27 +50,31 @@ utils = {
 
         return buf.join('');
     },
-    safeString: function (string) {
-        // Handle the £ symbol seperately, since it needs to be removed before
-        // the unicode conversion.
+    safeString: function (string, options) {
+        options = options || {};
+
+        // Handle the £ symbol separately, since it needs to be removed before the unicode conversion.
         string = string.replace(/£/g, '-');
 
         // Remove non ascii characters
         string = unidecode(string);
 
-        // Replace URL reserved chars: `:/?#[]!$&()*+,;=` as well as `\%<>|^~£"`
-        string = string.replace(/(\s|\.|@|:|\/|\?|#|\[|\]|!|\$|&|\(|\)|\*|\+|,|;|=|\\|%|<|>|\||\^|~|"|–|—)/g, '-')
+        // Replace URL reserved chars: `@:/?#[]!$&()*+,;=` as well as `\%<>|^~£"{}` and \`
+        string = string.replace(/(\s|\.|@|:|\/|\?|#|\[|\]|!|\$|&|\(|\)|\*|\+|,|;|=|\\|%|<|>|\||\^|~|"|\{|\}|`|–|—)/g, '-')
             // Remove apostrophes
             .replace(/'/g, '')
-            // Convert 2 or more dashes into a single dash
-            .replace(/-+/g, '-')
-            // Remove any dashes at the beginning
-            .replace(/^-/, '')
             // Make the whole thing lowercase
             .toLowerCase();
 
-        // Remove trailing dash if needed
-        string = string.charAt(string.length - 1) === '-' ? string.substr(0, string.length - 1) : string;
+        // We do not need to make the following changes when importing data
+        if (!_.has(options, 'importing') || !options.importing) {
+            // Convert 2 or more dashes into a single dash
+            string = string.replace(/-+/g, '-')
+                // Remove trailing dash
+                .replace(/-$/, '')
+                // Remove any dashes at the beginning
+                .replace(/^-/, '');
+        }
 
         // Handle whitespace at the beginning or end.
         string = string.trim();
@@ -89,7 +93,16 @@ utils = {
             base64String += '=';
         }
         return base64String;
-    }
+    },
+    redirect301: function redirect301(res, path) {
+        /*jslint unparam:true*/
+        res.set({'Cache-Control': 'public, max-age=' + utils.ONE_YEAR_S});
+        res.redirect(301, path);
+    },
+
+    readCSV: require('./read-csv'),
+    removeOpenRedirectFromUrl: require('./remove-open-redirect-from-url'),
+    zipFolder: require('./zip-folder')
 };
 
 module.exports = utils;

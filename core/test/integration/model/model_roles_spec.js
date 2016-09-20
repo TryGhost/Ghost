@@ -1,5 +1,3 @@
-/*globals describe, it, before, beforeEach, afterEach */
-/*jshint expr:true*/
 var testUtils   = require('../../utils'),
     should      = require('should'),
 
@@ -78,7 +76,7 @@ describe('Role Model', function () {
 
             return RoleModel.destroy(firstRole);
         }).then(function (response) {
-            response.toJSON().should.be.empty;
+            response.toJSON().should.be.empty();
             return RoleModel.findOne(firstRole);
         }).then(function (newResults) {
             should.equal(newResults, null);

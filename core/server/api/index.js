@@ -5,30 +5,33 @@
 // from a theme, an app, or from an external app, you'll use the Ghost JSON API to do so.
 
 var _              = require('lodash'),
+    Promise        = require('bluebird'),
     config         = require('../config'),
-    // Include Endpoints
     configuration  = require('./configuration'),
     db             = require('./db'),
     mail           = require('./mail'),
     notifications  = require('./notifications'),
     posts          = require('./posts'),
+    schedules      = require('./schedules'),
     roles          = require('./roles'),
     settings       = require('./settings'),
     tags           = require('./tags'),
-    themes         = require('./themes'),
+    clients        = require('./clients'),
     users          = require('./users'),
     slugs          = require('./slugs'),
+    themes         = require('./themes'),
+    subscribers    = require('./subscribers'),
     authentication = require('./authentication'),
     uploads        = require('./upload'),
-    dataExport     = require('../data/export'),
-    errors         = require('../errors'),
+    exporter       = require('../data/export'),
+    slack          = require('./slack'),
 
     http,
-    formatHttpErrors,
     addHeaders,
     cacheInvalidationHeader,
     locationHeader,
-    contentDispositionHeader,
+    contentDispositionHeaderExport,
+    contentDispositionHeaderSubscribers,
     init;
 
 /**
@@ -39,6 +42,10 @@ var _              = require('lodash'),
 init = function init() {
     return settings.updateSettingsCache();
 };
+
+function isActiveThemeOverride(method, endpoint, result) {
+    return method === 'POST' && endpoint === 'themes' && result.themes && result.themes[0] && result.themes[0].active === true;
+}
 
 /**
  * ### Cache Invalidation Header
@@ -57,20 +64,31 @@ cacheInvalidationHeader = function cacheInvalidationHeader(req, result) {
     var parsedUrl = req._parsedUrl.pathname.replace(/^\/|\/$/g, '').split('/'),
         method = req.method,
         endpoint = parsedUrl[0],
-        cacheInvalidate,
+        subdir = parsedUrl[1],
         jsonResult = result.toJSON ? result.toJSON() : result,
+        INVALIDATE_ALL = '/*',
         post,
         hasStatusChanged,
-        wasDeleted,
         wasPublishedUpdated;
 
-    if (method === 'POST' || method === 'PUT' || method === 'DELETE') {
-        if (endpoint === 'settings' || endpoint === 'users' || endpoint === 'db' || endpoint === 'tags') {
-            cacheInvalidate = '/*';
+    if (isActiveThemeOverride(method, endpoint, result)) {
+        // Special case for if we're overwriting an active theme
+        // @TODO: remove this crazy DIRTY HORRIBLE HACK
+        req.app.set('activeTheme', null);
+        return INVALIDATE_ALL;
+    } else if (['POST', 'PUT', 'DELETE'].indexOf(method) > -1) {
+        if (endpoint === 'schedules' && subdir === 'posts') {
+            return INVALIDATE_ALL;
+        }
+        if (['settings', 'users', 'db', 'tags'].indexOf(endpoint) > -1) {
+            return INVALIDATE_ALL;
         } else if (endpoint === 'posts') {
+            if (method === 'DELETE') {
+                return INVALIDATE_ALL;
+            }
+
             post = jsonResult.posts[0];
             hasStatusChanged = post.statusChanged;
-            wasDeleted = method === 'DELETE';
             // Invalidate cache when post was updated but not when post is draft
             wasPublishedUpdated = method === 'PUT' && post.status === 'published';
 
@@ -78,15 +96,13 @@ cacheInvalidationHeader = function cacheInvalidationHeader(req, result) {
             delete post.statusChanged;
 
             // Don't set x-cache-invalidate header for drafts
-            if (hasStatusChanged || wasDeleted || wasPublishedUpdated) {
-                cacheInvalidate = '/*';
+            if (hasStatusChanged || wasPublishedUpdated) {
+                return INVALIDATE_ALL;
             } else {
-                cacheInvalidate = '/' + config.routeKeywords.preview + '/' + post.uuid + '/';
+                return config.urlFor({relativeUrl: '/' + config.routeKeywords.preview + '/' + post.uuid + '/'});
             }
         }
     }
-
-    return cacheInvalidate;
 };
 
 /**
@@ -138,41 +154,16 @@ locationHeader = function locationHeader(req, result) {
  * @see http://tools.ietf.org/html/rfc598
  * @return {string}
  */
-contentDispositionHeader = function contentDispositionHeader() {
-    return dataExport.fileName().then(function then(filename) {
+
+contentDispositionHeaderExport = function contentDispositionHeaderExport() {
+    return exporter.fileName().then(function then(filename) {
         return 'Attachment; filename="' + filename + '"';
     });
 };
 
-/**
- * ### Format HTTP Errors
- * Converts the error response from the API into a format which can be returned over HTTP
- *
- * @private
- * @param {Array} error
- * @return {{errors: Array, statusCode: number}}
- */
-formatHttpErrors = function formatHttpErrors(error) {
-    var statusCode = 500,
-        errors = [];
-
-    if (!_.isArray(error)) {
-        error = [].concat(error);
-    }
-
-    _.each(error, function each(errorItem) {
-        var errorContent = {};
-
-        // TODO: add logic to set the correct status code
-        statusCode = errorItem.code || 500;
-
-        errorContent.message = _.isString(errorItem) ? errorItem :
-            (_.isObject(errorItem) ? errorItem.message : 'Unknown API Error');
-        errorContent.errorType = errorItem.errorType || 'InternalServerError';
-        errors.push(errorContent);
-    });
-
-    return {errors: errors, statusCode: statusCode};
+contentDispositionHeaderSubscribers = function contentDispositionHeaderSubscribers() {
+    var datetime = (new Date()).toJSON().substring(0, 10);
+    return Promise.resolve('Attachment; filename="subscribers.' + datetime + '.csv"');
 };
 
 addHeaders = function addHeaders(apiMethod, req, res, result) {
@@ -195,15 +186,24 @@ addHeaders = function addHeaders(apiMethod, req, res, result) {
         }
     }
 
+    // Add Export Content-Disposition Header
     if (apiMethod === db.exportContent) {
-        contentDisposition = contentDispositionHeader()
-            .then(function addContentDispositionHeader(header) {
-                // Add Content-Disposition Header
-                if (apiMethod === db.exportContent) {
-                    res.set({
-                        'Content-Disposition': header
-                    });
-                }
+        contentDisposition = contentDispositionHeaderExport()
+            .then(function addContentDispositionHeaderExport(header) {
+                res.set({
+                    'Content-Disposition': header
+                });
+            });
+    }
+
+    // Add Subscribers Content-Disposition Header
+    if (apiMethod === subscribers.exportCSV) {
+        contentDisposition = contentDispositionHeaderSubscribers()
+            .then(function addContentDispositionHeaderSubscribers(header) {
+                res.set({
+                    'Content-Disposition': header,
+                    'Content-Type': 'text/csv'
+                });
             });
     }
 
@@ -221,12 +221,13 @@ addHeaders = function addHeaders(apiMethod, req, res, result) {
  * @return {Function} middleware format function to be called by the route when a matching request is made
  */
 http = function http(apiMethod) {
-    return function apiHandler(req, res) {
+    return function apiHandler(req, res, next) {
         // We define 2 properties for using as arguments in API calls:
         var object = req.body,
-            options = _.extend({}, req.files, req.query, req.params, {
+            options = _.extend({}, req.file, req.query, req.params, {
                 context: {
-                    user: (req.user && req.user.id) ? req.user.id : null
+                    user: ((req.user && req.user.id) || (req.user && req.user.id === 0)) ? req.user.id : null,
+                    client: (req.client && req.client.slug) ? req.client.slug : null
                 }
             });
 
@@ -241,13 +242,25 @@ http = function http(apiMethod) {
             // Add X-Cache-Invalidate, Location, and Content-Disposition headers
             return addHeaders(apiMethod, req, res, (response || {}));
         }).then(function then(response) {
+            if (req.method === 'DELETE') {
+                return res.status(204).end();
+            }
+            // Keep CSV header and formatting
+            if (res.get('Content-Type') && res.get('Content-Type').indexOf('text/csv') === 0) {
+                return res.status(200).send(response);
+            }
+
+            // CASE: api method response wants to handle the express response
+            // example: serve files (stream)
+            if (_.isFunction(response)) {
+                return response(req, res, next);
+            }
+
             // Send a properly formatting HTTP response containing the data with correct headers
             res.json(response || {});
-        }).catch(function onError(error) {
-            errors.logError(error);
-            var httpErrors = formatHttpErrors(error);
-            // Send a properly formatted HTTP response containing the errors
-            res.status(httpErrors.statusCode).json({errors: httpErrors.errors});
+        }).catch(function onAPIError(error) {
+            // To be handled by the API middleware
+            next(error);
         });
     };
 };
@@ -265,14 +278,18 @@ module.exports = {
     mail: mail,
     notifications: notifications,
     posts: posts,
+    schedules: schedules,
     roles: roles,
     settings: settings,
     tags: tags,
-    themes: themes,
+    clients: clients,
     users: users,
     slugs: slugs,
+    subscribers: subscribers,
     authentication: authentication,
-    uploads: uploads
+    uploads: uploads,
+    slack: slack,
+    themes: themes
 };
 
 /**

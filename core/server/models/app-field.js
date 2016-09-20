@@ -5,7 +5,7 @@ var ghostBookshelf = require('./base'),
 AppField = ghostBookshelf.Model.extend({
     tableName: 'app_fields',
 
-    post: function () {
+    post: function post() {
         return this.morphOne('Post', 'relatable');
     }
 });

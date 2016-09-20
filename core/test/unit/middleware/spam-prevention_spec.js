@@ -1,7 +1,6 @@
-/*globals describe, beforeEach, afterEach, it*/
-/*jshint expr:true*/
 var should      = require('should'),
     sinon       = require('sinon'),
+    rewire      = require('rewire'),
     middleware  = require('../../../server/middleware').middleware;
 
 describe('Middleware: spamPrevention', function () {
@@ -20,6 +19,7 @@ describe('Middleware: spamPrevention', function () {
         spyNext = sinon.spy(function (param) {
             error = param;
         });
+        middleware.spamPrevention = rewire('../../../server/middleware/spam-prevention');
     });
 
     afterEach(function () {
@@ -43,7 +43,7 @@ describe('Middleware: spamPrevention', function () {
             req.body.grant_type = 'refresh_token';
             middleware.spamPrevention.signin(req, null, next);
 
-            next.calledOnce.should.be.true;
+            next.calledOnce.should.be.true();
             done();
         });
 
@@ -53,7 +53,7 @@ describe('Middleware: spamPrevention', function () {
             middleware.spamPrevention.signin(req, null, spyNext);
 
             should.exist(error);
-            error.should.be.a.BadRequestError;
+            error.errorType.should.eql('BadRequestError');
             done();
         });
 
@@ -64,7 +64,7 @@ describe('Middleware: spamPrevention', function () {
 
             middleware.spamPrevention.signin(req, null, spyNext);
             should.exist(error);
-            error.should.be.a.UnauthorizedError;
+            error.errorType.should.eql('TooManyRequestsError');
 
             done();
         });
@@ -80,18 +80,18 @@ describe('Middleware: spamPrevention', function () {
             }
 
             middleware.spamPrevention.signin(req, null, spyNext);
-            error.should.be.a.UnauthorizedError;
+            error.errorType.should.eql('TooManyRequestsError');
             error = null;
 
             // fast forward 1 hour
             process.hrtime.restore();
             stub = sinon.stub(process, 'hrtime', function () {
-                return [3700000, 10];
+                return [3610, 10];
             });
 
             middleware.spamPrevention.signin(req, null, spyNext);
             should(error).equal(undefined);
-            spyNext.should.be.calledOnce;
+            spyNext.called.should.be.true();
 
             process.hrtime.restore();
             done();
@@ -118,7 +118,7 @@ describe('Middleware: spamPrevention', function () {
             };
 
             middleware.spamPrevention.forgotten(req, null, spyNext);
-            error.should.be.a.BadRequestError;
+            error.errorType.should.eql('BadRequestError');
 
             done();
         });
@@ -129,7 +129,7 @@ describe('Middleware: spamPrevention', function () {
             }
 
             middleware.spamPrevention.forgotten(req, null, spyNext);
-            error.should.be.a.UnauthorizedError;
+            error.errorType.should.eql('TooManyRequestsError');
 
             done();
         });
@@ -147,74 +147,8 @@ describe('Middleware: spamPrevention', function () {
             }
 
             middleware.spamPrevention.forgotten(req, null, spyNext);
-            error.should.be.a.UnauthorizedError;
+            error.errorType.should.eql('TooManyRequestsError');
 
-            done();
-        });
-    });
-
-    describe('protected', function () {
-        var res;
-
-        beforeEach(function () {
-            res = sinon.spy();
-            req = {
-                connection: {
-                    remoteAddress: '10.0.0.0'
-                },
-                body: {
-                    password: 'password'
-                }
-            };
-        });
-
-        it ('sets an error when there is no password', function (done) {
-            req.body = {};
-
-            middleware.spamPrevention.protected(req, res, spyNext);
-            res.error.message.should.equal('No password entered');
-            spyNext.should.be.calledOnce;
-
-            done();
-        });
-
-        it ('sets and error message after 10 tries', function (done) {
-            var ndx;
-
-            for (ndx = 0; ndx < 10; ndx = ndx + 1) {
-                middleware.spamPrevention.protected(req, res, spyNext);
-            }
-
-            should.not.exist(res.error);
-            middleware.spamPrevention.protected(req, res, spyNext);
-            should.exist(res.error);
-            should.exist(res.error.message);
-
-            done();
-        });
-
-        it ('allows more tries after an hour', function (done) {
-            var ndx,
-                stub = sinon.stub(process, 'hrtime', function () {
-                    return [10, 10];
-                });
-
-            for (ndx = 0; ndx < 11; ndx = ndx + 1) {
-                middleware.spamPrevention.protected(req, res, spyNext);
-            }
-
-            should.exist(res.error);
-            process.hrtime.restore();
-            stub = sinon.stub(process, 'hrtime', function () {
-                return [3610000, 10];
-            });
-
-            res = sinon.spy();
-
-            middleware.spamPrevention.protected(req, res, spyNext);
-            should.not.exist(res.error);
-
-            process.hrtime.restore();
             done();
         });
     });

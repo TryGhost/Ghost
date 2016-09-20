@@ -7,10 +7,19 @@ var path = require('path'),
     AppSandbox = require('./sandbox'),
     AppDependencies = require('./dependencies'),
     AppPermissions = require('./permissions'),
+    i18n = require('../i18n'),
     loader;
+
+function isInternalApp(name) {
+    return _.includes(config.internalApps, name);
+}
 
 // Get the full path to an app by name
 function getAppAbsolutePath(name) {
+    if (isInternalApp(name)) {
+        return path.join(config.paths.internalAppPath, name);
+    }
+
     return path.join(config.paths.appPath, name);
 }
 
@@ -19,22 +28,29 @@ function getAppAbsolutePath(name) {
 function getAppRelativePath(name, relativeTo) {
     relativeTo = relativeTo || __dirname;
 
-    return path.relative(relativeTo, getAppAbsolutePath(name));
+    var relativePath = path.relative(relativeTo, getAppAbsolutePath(name));
+
+    if (relativePath.charAt(0) !== '.') {
+        relativePath = './' + relativePath;
+    }
+
+    return relativePath;
 }
 
 // Load apps through a pseudo sandbox
-function loadApp(appPath) {
-    var sandbox = new AppSandbox();
+function loadApp(appPath, isInternal) {
+    var sandbox = new AppSandbox({internal: isInternal});
 
     return sandbox.loadApp(appPath);
 }
 
 function getAppByName(name, permissions) {
     // Grab the app class to instantiate
-    var AppClass = loadApp(getAppRelativePath(name)),
+    var AppClass = loadApp(getAppRelativePath(name), isInternalApp(name)),
         appProxy = new AppProxy({
             name: name,
-            permissions: permissions
+            permissions: permissions,
+            internal: isInternalApp(name)
         }),
         app;
 
@@ -66,7 +82,7 @@ loader = {
 
                 return perms.read().catch(function (err) {
                     // Provide a helpful error about which app
-                    return Promise.reject(new Error('Error loading app named ' + name + '; problem reading permissions: ' + err.message));
+                    return Promise.reject(new Error(i18n.t('errors.apps.permissionsErrorLoadingApp.error', {name: name, message: err.message})));
                 });
             })
             .then(function (appPerms) {
@@ -76,7 +92,7 @@ loader = {
 
                 // Check for an install() method on the app.
                 if (!_.isFunction(app.install)) {
-                    return Promise.reject(new Error('Error loading app named ' + name + '; no install() method defined.'));
+                    return Promise.reject(new Error(i18n.t('errors.apps.noInstallMethodLoadingApp.error', {name: name})));
                 }
 
                 // Run the app.install() method
@@ -97,7 +113,7 @@ loader = {
 
             // Check for an activate() method on the app.
             if (!_.isFunction(app.activate)) {
-                return Promise.reject(new Error('Error loading app named ' + name + '; no activate() method defined.'));
+                return Promise.reject(new Error(i18n.t('errors.apps.noActivateMethodLoadingApp.error', {name: name})));
             }
 
             // Wrapping the activate() with a when because it's possible

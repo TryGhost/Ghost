@@ -2,25 +2,41 @@
 // RESTful API for browsing the configuration
 var _                  = require('lodash'),
     config             = require('../config'),
-    errors             = require('../errors'),
     Promise            = require('bluebird'),
 
     configuration;
 
-function getValidKeys() {
-    var validKeys = {
-            fileStorage: config.fileStorage === false ? false : true,
-            apps: config.apps === true ? true : false,
-            version: config.ghostVersion,
-            environment: process.env.NODE_ENV,
-            database: config.database.client,
-            mail: _.isObject(config.mail) ? config.mail.transport : '',
-            blogUrl: config.url.replace(/\/$/, ''),
-            blogTitle: config.theme.title,
-            routeKeywords: JSON.stringify(config.routeKeywords)
-        };
+function labsFlag(key) {
+    return {
+        value: (config[key] === true),
+        type: 'bool'
+    };
+}
 
-    return validKeys;
+function fetchAvailableTimezones() {
+    var timezones = require('../data/timezones.json');
+    return timezones;
+}
+
+function getAboutConfig() {
+    return {
+        version: config.ghostVersion,
+        environment: process.env.NODE_ENV,
+        database: config.database.client,
+        mail: _.isObject(config.mail) ? config.mail.transport : ''
+    };
+}
+
+function getBaseConfig() {
+    return {
+        fileStorage:    {value: (config.fileStorage !== false), type: 'bool'},
+        useGravatar:    {value: !config.isPrivacyDisabled('useGravatar'), type: 'bool'},
+        publicAPI:      labsFlag('publicAPI'),
+        internalTags:   labsFlag('internalTags'),
+        blogUrl:        {value: config.url.replace(/\/$/, ''), type: 'string'},
+        blogTitle:      {value: config.theme.title, type: 'string'},
+        routeKeywords:  {value: JSON.stringify(config.routeKeywords), type: 'json'}
+    };
 }
 
 /**
@@ -31,34 +47,28 @@ function getValidKeys() {
 configuration = {
 
     /**
-     * ### Browse
-     * Fetch all configuration keys
-     * @returns {Promise(Configurations)}
-     */
-    browse: function browse() {
-        return Promise.resolve({configuration: _.map(getValidKeys(), function (value, key) {
-            return {
-                key: key,
-                value: value
-            };
-        })});
-    },
-
-    /**
-     * ### Read
-     *
+     * Always returns {configuration: []}
+     * Sometimes the array contains configuration items
+     * @param {Object} options
+     * @returns {Promise<Object>}
      */
     read: function read(options) {
-        var data = getValidKeys();
+        options = options || {};
 
-        if (_.has(data, options.key)) {
-            return Promise.resolve({configuration: [{
-                key: options.key,
-                value: data[options.key]
-            }]});
-        } else {
-            return Promise.reject(new errors.NotFoundError('Invalid key'));
+        if (!options.key) {
+            return Promise.resolve({configuration: [getBaseConfig()]});
         }
+
+        if (options.key === 'about') {
+            return Promise.resolve({configuration: [getAboutConfig()]});
+        }
+
+        // Timezone endpoint
+        if (options.key === 'timezones') {
+            return Promise.resolve({configuration: [fetchAvailableTimezones()]});
+        }
+
+        return Promise.resolve({configuration: []});
     }
 };
 

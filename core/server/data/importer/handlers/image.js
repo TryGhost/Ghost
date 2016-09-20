@@ -8,8 +8,8 @@ var _       = require('lodash'),
 
 ImageHandler = {
     type: 'images',
-    extensions: config.uploads.extensions,
-    types: config.uploads.contentTypes,
+    extensions: config.uploads.images.extensions,
+    contentTypes: config.uploads.images.contentTypes,
     directories: ['images', 'content'],
 
     loadFile: function (files, baseDir) {

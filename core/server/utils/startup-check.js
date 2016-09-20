@@ -5,13 +5,68 @@ var packages = require('../../../package.json'),
     mode = process.env.NODE_ENV === undefined ? 'development' : process.env.NODE_ENV,
     appRoot = path.resolve(__dirname, '../../../'),
     configFilePath = process.env.GHOST_CONFIG || path.join(appRoot, 'config.js'),
-    checks;
+    checks,
+    exitCodes = {
+        NODE_VERSION_UNSUPPORTED: 231,
+        NODE_ENV_CONFIG_MISSING: 232,
+        DEPENDENCIES_MISSING: 233,
+        CONTENT_PATH_NOT_ACCESSIBLE: 234,
+        CONTENT_PATH_NOT_WRITABLE: 235,
+        SQLITE_DB_NOT_WRITABLE: 236,
+        BUILT_FILES_DO_NOT_EXIST: 237
+    };
 
 checks = {
     check: function check() {
+        this.nodeVersion();
+        this.nodeEnv();
         this.packages();
         this.contentPath();
+        this.mail();
         this.sqlite();
+        this.builtFilesExist();
+    },
+
+    // Make sure the node version is supported
+    nodeVersion: function checkNodeVersion() {
+        // Tell users if their node version is not supported, and exit
+        var semver = require('semver');
+
+        if (process.env.GHOST_NODE_VERSION_CHECK !== 'false' &&
+            !semver.satisfies(process.versions.node, packages.engines.node)) {
+            console.error('\x1B[31mERROR: Unsupported version of Node');
+            console.error('\x1B[31mGhost needs Node version ' + packages.engines.node +
+                          ' you are using version ' + process.versions.node + '\033[0m\n');
+            console.error('\x1B[32mPlease see http://support.ghost.org/supported-node-versions/ for more information\033[0m');
+
+            process.exit(exitCodes.NODE_VERSION_UNSUPPORTED);
+        }
+    },
+
+    nodeEnv: function checkNodeEnvState() {
+        // Check if config path resolves, if not check for NODE_ENV in config.example.js prior to copy
+        var fd,
+            configFile,
+            config;
+
+        try {
+            fd = fs.openSync(configFilePath, 'r');
+            fs.closeSync(fd);
+        } catch (e) {
+            configFilePath = path.join(appRoot, 'config.example.js');
+        }
+
+        configFile = require(configFilePath);
+        config = configFile[mode];
+
+        if (!config) {
+            console.error('\x1B[31mERROR: Cannot find the configuration for the current NODE_ENV: ' +
+                            process.env.NODE_ENV + '\033[0m\n');
+            console.error('\x1B[32mEnsure your config.js has a section for the current NODE_ENV value' +
+                            ' and is formatted properly.\033[0m');
+
+            process.exit(exitCodes.NODE_ENV_CONFIG_MISSING);
+        }
     },
 
     // Make sure package.json dependencies have been installed.
@@ -40,7 +95,7 @@ checks = {
         console.error('\x1B[32m\nPlease run `npm install --production` and try starting Ghost again.');
         console.error('\x1B[32mHelp and documentation can be found at http://support.ghost.org.\033[0m\n');
 
-        process.exit(0);
+        process.exit(exitCodes.DEPENDENCIES_MISSING);
     },
 
     // Check content path permissions
@@ -84,7 +139,7 @@ checks = {
             console.error('  ' + e.message);
             console.error('\n' + errorHelp);
 
-            process.exit(0);
+            process.exit(exitCodes.CONTENT_PATH_NOT_ACCESSIBLE);
         }
 
         // Check each of the content path subdirectories
@@ -106,7 +161,7 @@ checks = {
             console.error('  ' + e.message);
             console.error('\n' + errorHelp);
 
-            process.exit(0);
+            process.exit(exitCodes.CONTENT_PATH_NOT_WRITABLE);
         }
     },
 
@@ -154,8 +209,67 @@ checks = {
             console.error('\n\x1B[32mCheck that the sqlite3 database file permissions allow read and write access.');
             console.error('Help and documentation can be found at http://support.ghost.org.\033[0m');
 
-            process.exit(0);
+            process.exit(exitCodes.SQLITE_DB_NOT_WRITABLE);
         }
+    },
+
+    mail: function checkMail() {
+        var configFile,
+            config;
+
+        try {
+            configFile = require(configFilePath);
+            config = configFile[mode];
+        } catch (e) {
+            configFilePath = path.join(appRoot, 'config.example.js');
+        }
+
+        if (!config.mail || !config.mail.transport) {
+            console.error('\x1B[31mWARNING: Ghost is attempting to use a direct method to send email. \nIt is recommended that you explicitly configure an email service.\033[0m');
+            console.error('\x1B[32mHelp and documentation can be found at http://support.ghost.org/mail.\033[0m\n');
+        }
+    },
+
+    builtFilesExist: function builtFilesExist() {
+        var configFile,
+            config,
+            location,
+            fileNames = ['ghost.js', 'vendor.js', 'ghost.css', 'vendor.css'];
+
+        try {
+            configFile = require(configFilePath);
+            config = configFile[mode];
+
+            if (config.paths && config.paths.clientAssets) {
+                location = config.paths.clientAssets;
+            } else {
+                location = path.join(appRoot, '/core/built/assets/');
+            }
+        } catch (e) {
+            location = path.join(appRoot, '/core/built/assets/');
+        }
+
+        if (process.env.NODE_ENV === 'production') {
+            // Production uses `.min` files
+            fileNames = fileNames.map(function (file) {
+                return file.replace('.', '.min.');
+            });
+        }
+
+        function checkExist(fileName) {
+            try {
+                fs.statSync(fileName);
+            } catch (e) {
+                console.error('\x1B[31mERROR: Javascript files have not been built.\033[0m');
+                console.error('\n\x1B[32mPlease read the getting started instructions at:');
+                console.error('https://github.com/TryGhost/Ghost#getting-started\033[0m');
+                process.exit(exitCodes.BUILT_FILES_DO_NOT_EXIST);
+            }
+        }
+
+        fileNames.forEach(function (fileName) {
+            checkExist(location + fileName);
+        });
     }
 };
 

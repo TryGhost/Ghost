@@ -1,5 +1,3 @@
-/*globals describe, before, it*/
-/*jshint expr:true*/
 var should         = require('should'),
     hbs            = require('express-hbs'),
     utils          = require('./utils'),
@@ -22,6 +20,20 @@ describe('{{plural}} helper', function () {
             rendered = helpers.plural.call({}, 0, {
                 hash: {
                     empty: 'No Posts',
+                    singular: '% Post',
+                    plural: '% Posts'
+                }
+            });
+
+        should.exist(rendered);
+        rendered.string.should.equal(expected);
+    });
+
+    it('will show no-value string with placement', function () {
+        var expected = '0 Posts',
+            rendered = helpers.plural.call({}, 0, {
+                hash: {
+                    empty: '% Posts',
                     singular: '% Post',
                     plural: '% Posts'
                 }

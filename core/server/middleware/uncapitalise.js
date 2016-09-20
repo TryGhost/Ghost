@@ -13,7 +13,8 @@ uncapitalise = function uncapitalise(req, res, next) {
     /*jslint unparam:true*/
     var pathToTest = req.path,
         isSignupOrReset = req.path.match(/(\/ghost\/(signup|reset)\/)/i),
-        isAPI = req.path.match(/(\/ghost\/api\/v[\d\.]+\/.*?\/)/i);
+        isAPI = req.path.match(/(\/ghost\/api\/v[\d\.]+\/.*?\/)/i),
+        redirectPath;
 
     if (isSignupOrReset) {
         pathToTest = isSignupOrReset[1];
@@ -24,9 +25,19 @@ uncapitalise = function uncapitalise(req, res, next) {
         pathToTest = isAPI[1];
     }
 
-    if (/[A-Z]/.test(pathToTest)) {
+    /**
+     * In node < 0.11.1 req.path is not encoded, afterwards, it is always encoded such that | becomes %7C etc.
+     * That encoding isn't useful here, as it triggers an extra uncapitalise redirect, so we decode the path first
+     */
+    if (/[A-Z]/.test(decodeURIComponent(pathToTest))) {
+        // Adding baseUrl ensures subdirectories are kept
+        redirectPath = (
+          (req.baseUrl ? req.baseUrl : '') +
+          utils.removeOpenRedirectFromUrl(req.url.replace(pathToTest, pathToTest.toLowerCase()))
+        );
+
         res.set('Cache-Control', 'public, max-age=' + utils.ONE_YEAR_S);
-        res.redirect(301, req.url.replace(pathToTest, pathToTest.toLowerCase()));
+        res.redirect(301, redirectPath);
     } else {
         next();
     }

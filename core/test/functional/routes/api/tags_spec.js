@@ -1,5 +1,3 @@
-/*global describe, it, before, after */
-/*jshint expr:true*/
 var testUtils     = require('../../../utils'),
     should        = require('should'),
     supertest     = require('supertest'),
@@ -34,7 +32,7 @@ describe('Tag API', function () {
         request.get(testUtils.API.getApiQuery('tags/'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules['private'])
+            .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -43,11 +41,11 @@ describe('Tag API', function () {
 
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
-                jsonResponse.should.exist;
-                jsonResponse.tags.should.exist;
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.tags);
                 jsonResponse.tags.should.have.length(6);
                 testUtils.API.checkResponse(jsonResponse.tags[0], 'tag');
-                testUtils.API.isISO8601(jsonResponse.tags[0].created_at).should.be.true;
+                testUtils.API.isISO8601(jsonResponse.tags[0].created_at).should.be.true();
 
                 done();
             });

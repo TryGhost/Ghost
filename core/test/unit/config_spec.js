@@ -1,56 +1,52 @@
-/*globals describe, it, before, beforeEach, afterEach, after */
-/*jshint expr:true*/
 var should         = require('should'),
     sinon          = require('sinon'),
     Promise        = require('bluebird'),
+    moment         = require('moment'),
     path           = require('path'),
     fs             = require('fs'),
     _              = require('lodash'),
-    rewire         = require('rewire'),
 
     testUtils      = require('../utils'),
+    i18n           = require('../../server/i18n'),
+    /*jshint unused:false*/
+    db             = require('../../server/data/db/connection'),
 
     // Thing we are testing
-    defaultConfig  = require('../../../config.example')[process.env.NODE_ENV],
-    config         = require('../../server/config'),
-    origConfig     = _.cloneDeep(config),
+    configUtils    = require('../utils/configUtils'),
+    config         = configUtils.config,
     // storing current environment
     currentEnv     = process.env.NODE_ENV;
 
-// To stop jshint complaining
-should.equal(true, true);
-
-function resetConfig() {
-    config.set(_.merge({}, origConfig, defaultConfig));
-}
+i18n.init();
 
 describe('Config', function () {
-    after(function () {
-        resetConfig();
+    before(function () {
+        configUtils.restore();
+    });
+
+    afterEach(function () {
+        configUtils.restore();
     });
 
     describe('Theme', function () {
         beforeEach(function () {
-            config.set({
+            configUtils.set({
                 url: 'http://my-ghost-blog.com',
                 theme: {
                     title: 'casper',
                     description: 'casper',
                     logo: 'casper',
-                    cover: 'casper'
+                    cover: 'casper',
+                    timezone: 'Etc/UTC'
                 }
             });
-        });
-
-        afterEach(function () {
-            resetConfig();
         });
 
         it('should have exactly the right keys', function () {
             var themeConfig = config.theme;
 
             // This will fail if there are any extra keys
-            themeConfig.should.have.keys('url', 'title', 'description', 'logo', 'cover');
+            themeConfig.should.have.keys('url', 'title', 'description', 'logo', 'cover', 'timezone');
         });
 
         it('should have the correct values for each key', function () {
@@ -62,17 +58,39 @@ describe('Config', function () {
             themeConfig.should.have.property('description', 'casper');
             themeConfig.should.have.property('logo', 'casper');
             themeConfig.should.have.property('cover', 'casper');
+            themeConfig.should.have.property('timezone', 'Etc/UTC');
+        });
+    });
+
+    describe('Timezone default', function () {
+        it('should use timezone from settings when set', function () {
+            var themeConfig = config.theme;
+
+            // Check values are as we expect
+            themeConfig.should.have.property('timezone', 'Etc/UTC');
+            themeConfig.should.have.property('url');
+
+            configUtils.set({
+                theme: {
+                    timezone: 'Africa/Cairo'
+                }
+            });
+
+            config.theme.should.have.property('timezone', 'Africa/Cairo');
+            config.theme.should.have.property('url');
+        });
+
+        it('should set theme object with timezone by default', function () {
+            var themeConfig = configUtils.defaultConfig;
+
+            // Check values are as we expect
+            themeConfig.should.have.property('theme');
+            themeConfig.theme.should.have.property('timezone', 'Etc/UTC');
+            themeConfig.theme.should.have.property('url');
         });
     });
 
     describe('Index', function () {
-        afterEach(function () {
-            // Make a copy of the default config file
-            // so we can restore it after every test.
-            // Using _.merge to recursively apply every property.
-            resetConfig();
-        });
-
         it('should have exactly the right keys', function () {
             var pathConfig = config.paths;
 
@@ -82,17 +100,16 @@ describe('Config', function () {
                 'subdir',
                 'config',
                 'configExample',
-                'storage',
+                'storagePath',
                 'contentPath',
                 'corePath',
                 'themePath',
                 'appPath',
+                'internalAppPath',
                 'imagesPath',
                 'imagesRelPath',
                 'adminViews',
                 'helperTemplates',
-                'exportPath',
-                'lang',
                 'availableThemes',
                 'availableApps',
                 'clientAssets'
@@ -108,32 +125,40 @@ describe('Config', function () {
         });
 
         it('should not return a slash for subdir', function () {
-            config.set({url: 'http://my-ghost-blog.com'});
+            configUtils.set({url: 'http://my-ghost-blog.com'});
             config.paths.should.have.property('subdir', '');
 
-            config.set({url: 'http://my-ghost-blog.com/'});
+            configUtils.set({url: 'http://my-ghost-blog.com/'});
             config.paths.should.have.property('subdir', '');
         });
 
         it('should handle subdirectories properly', function () {
-            config.set({url: 'http://my-ghost-blog.com/blog'});
+            configUtils.set({url: 'http://my-ghost-blog.com/blog'});
             config.paths.should.have.property('subdir', '/blog');
 
-            config.set({url: 'http://my-ghost-blog.com/blog/'});
+            configUtils.set({url: 'http://my-ghost-blog.com/blog/'});
             config.paths.should.have.property('subdir', '/blog');
 
-            config.set({url: 'http://my-ghost-blog.com/my/blog'});
+            configUtils.set({url: 'http://my-ghost-blog.com/my/blog'});
             config.paths.should.have.property('subdir', '/my/blog');
 
-            config.set({url: 'http://my-ghost-blog.com/my/blog/'});
+            configUtils.set({url: 'http://my-ghost-blog.com/my/blog/'});
             config.paths.should.have.property('subdir', '/my/blog');
+        });
+
+        it('should add subdir to list of protected slugs', function () {
+            configUtils.set({url: 'http://my-ghost-blog.com/blog'});
+            config.slugs.protected.should.containEql('blog');
+
+            configUtils.set({url: 'http://my-ghost-blog.com/my/blog'});
+            config.slugs.protected.should.containEql('blog');
         });
 
         it('should allow specific properties to be user defined', function () {
             var contentPath = path.join(config.paths.appRoot, 'otherContent', '/'),
                 configFile = 'configFileDanceParty.js';
 
-            config.set({
+            configUtils.set({
                 config: configFile,
                 paths: {
                     contentPath: contentPath
@@ -149,58 +174,89 @@ describe('Config', function () {
     });
 
     describe('Storage', function () {
-        afterEach(function () {
-            resetConfig();
-        });
-
         it('should default to local-file-store', function () {
-            var storagePath = path.join(config.paths.corePath, '/server/storage/', 'local-file-store');
+            config.paths.should.have.property('storagePath', {
+                default: path.join(config.paths.corePath, '/server/storage/'),
+                custom:  path.join(config.paths.contentPath, 'storage/')
+            });
 
-            config.paths.should.have.property('storage', storagePath);
-            config.storage.should.have.property('active', 'local-file-store');
+            config.storage.should.have.property('active', {
+                images: 'local-file-store',
+                themes: 'local-file-store'
+            });
         });
 
-        it('should allow setting a custom active storage', function () {
+        it('should allow setting a custom active storage as string', function () {
             var storagePath = path.join(config.paths.contentPath, 'storage', 's3');
 
-            config.set({
+            configUtils.set({
                 storage: {
                     active: 's3',
                     s3: {}
                 }
             });
 
-            config.paths.should.have.property('storage', storagePath);
-            config.storage.should.have.property('active', 's3');
+            config.storage.should.have.property('active', {
+                images: 's3',
+                themes: 'local-file-store'
+            });
+
             config.storage.should.have.property('s3', {});
+        });
+
+        it('should use default theme adapter when passing an object', function () {
+            var storagePath = path.join(config.paths.contentPath, 'storage', 's3');
+
+            configUtils.set({
+                storage: {
+                    active: {
+                        themes: 's3'
+                    }
+                }
+            });
+
+            config.storage.should.have.property('active', {
+                images: 'local-file-store',
+                themes: 'local-file-store'
+            });
+        });
+
+        it('should allow setting a custom active storage as object', function () {
+            var storagePath = path.join(config.paths.contentPath, 'storage', 's3');
+
+            configUtils.set({
+                storage: {
+                    active: {
+                        images: 's2',
+                        themes: 'local-file-store'
+                    }
+                }
+            });
+
+            config.storage.should.have.property('active', {
+                images: 's2',
+                themes: 'local-file-store'
+            });
         });
     });
 
     describe('Url', function () {
         describe('urlJoin', function () {
-            before(function () {
-                resetConfig();
-            });
-
-            afterEach(function () {
-                resetConfig();
-            });
-
             it('should deduplicate slashes', function () {
-                config.set({url: 'http://my-ghost-blog.com/'});
+                configUtils.set({url: 'http://my-ghost-blog.com/'});
                 config.urlJoin('/', '/my/', '/blog/').should.equal('/my/blog/');
                 config.urlJoin('/', '//my/', '/blog/').should.equal('/my/blog/');
                 config.urlJoin('/', '/', '/').should.equal('/');
             });
 
             it('should not deduplicate slashes in protocol', function () {
-                config.set({url: 'http://my-ghost-blog.com/'});
+                configUtils.set({url: 'http://my-ghost-blog.com/'});
                 config.urlJoin('http://myurl.com', '/rss').should.equal('http://myurl.com/rss');
                 config.urlJoin('https://myurl.com/', '/rss').should.equal('https://myurl.com/rss');
             });
 
             it('should permit schemeless protocol', function () {
-                config.set({url: 'http://my-ghost-blog.com/'});
+                configUtils.set({url: 'http://my-ghost-blog.com/'});
                 config.urlJoin('/', '/').should.equal('/');
                 config.urlJoin('//myurl.com', '/rss').should.equal('//myurl.com/rss');
                 config.urlJoin('//myurl.com/', '/rss').should.equal('//myurl.com/rss');
@@ -209,45 +265,40 @@ describe('Config', function () {
             });
 
             it('should deduplicate subdir', function () {
-                config.set({url: 'http://my-ghost-blog.com/blog'});
+                configUtils.set({url: 'http://my-ghost-blog.com/blog'});
                 config.urlJoin('blog', 'blog/about').should.equal('blog/about');
                 config.urlJoin('blog/', 'blog/about').should.equal('blog/about');
+                configUtils.set({url: 'http://my-ghost-blog.com/my/blog'});
+                config.urlJoin('my/blog', 'my/blog/about').should.equal('my/blog/about');
+                config.urlJoin('my/blog/', 'my/blog/about').should.equal('my/blog/about');
             });
         });
 
         describe('urlFor', function () {
-            before(function () {
-                resetConfig();
-            });
-
-            afterEach(function () {
-                resetConfig();
-            });
-
             it('should return the home url with no options', function () {
                 config.urlFor().should.equal('/');
-                config.set({url: 'http://my-ghost-blog.com/blog'});
+                configUtils.set({url: 'http://my-ghost-blog.com/blog'});
                 config.urlFor().should.equal('/blog/');
-                config.set({url: 'http://my-ghost-blog.com/blog/'});
+                configUtils.set({url: 'http://my-ghost-blog.com/blog/'});
                 config.urlFor().should.equal('/blog/');
             });
 
             it('should return home url when asked for', function () {
                 var testContext = 'home';
 
-                config.set({url: 'http://my-ghost-blog.com'});
+                configUtils.set({url: 'http://my-ghost-blog.com'});
                 config.urlFor(testContext).should.equal('/');
                 config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/');
 
-                config.set({url: 'http://my-ghost-blog.com/'});
+                configUtils.set({url: 'http://my-ghost-blog.com/'});
                 config.urlFor(testContext).should.equal('/');
                 config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/');
 
-                config.set({url: 'http://my-ghost-blog.com/blog'});
+                configUtils.set({url: 'http://my-ghost-blog.com/blog'});
                 config.urlFor(testContext).should.equal('/blog/');
                 config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/');
 
-                config.set({url: 'http://my-ghost-blog.com/blog/'});
+                configUtils.set({url: 'http://my-ghost-blog.com/blog/'});
                 config.urlFor(testContext).should.equal('/blog/');
                 config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/');
             });
@@ -255,11 +306,11 @@ describe('Config', function () {
             it('should return rss url when asked for', function () {
                 var testContext = 'rss';
 
-                config.set({url: 'http://my-ghost-blog.com'});
+                configUtils.set({url: 'http://my-ghost-blog.com'});
                 config.urlFor(testContext).should.equal('/rss/');
                 config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/rss/');
 
-                config.set({url: 'http://my-ghost-blog.com/blog'});
+                configUtils.set({url: 'http://my-ghost-blog.com/blog'});
                 config.urlFor(testContext).should.equal('/blog/rss/');
                 config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/rss/');
             });
@@ -267,11 +318,11 @@ describe('Config', function () {
             it('should return url for a random path when asked for', function () {
                 var testContext = {relativeUrl: '/about/'};
 
-                config.set({url: 'http://my-ghost-blog.com'});
+                configUtils.set({url: 'http://my-ghost-blog.com'});
                 config.urlFor(testContext).should.equal('/about/');
                 config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/about/');
 
-                config.set({url: 'http://my-ghost-blog.com/blog'});
+                configUtils.set({url: 'http://my-ghost-blog.com/blog'});
                 config.urlFor(testContext).should.equal('/blog/about/');
                 config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/about/');
             });
@@ -279,43 +330,47 @@ describe('Config', function () {
             it('should deduplicate subdirectories in paths', function () {
                 var testContext = {relativeUrl: '/blog/about/'};
 
-                config.set({url: 'http://my-ghost-blog.com'});
+                configUtils.set({url: 'http://my-ghost-blog.com'});
                 config.urlFor(testContext).should.equal('/blog/about/');
                 config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/about/');
 
-                config.set({url: 'http://my-ghost-blog.com/blog'});
+                configUtils.set({url: 'http://my-ghost-blog.com/blog'});
                 config.urlFor(testContext).should.equal('/blog/about/');
                 config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/about/');
 
-                config.set({url: 'http://my-ghost-blog.com/blog/'});
+                configUtils.set({url: 'http://my-ghost-blog.com/blog/'});
                 config.urlFor(testContext).should.equal('/blog/about/');
                 config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/about/');
             });
 
             it('should return url for a post from post object', function () {
                 var testContext = 'post',
-                    testData = {post: testUtils.DataGenerator.Content.posts[2]};
+                    testData = {post: _.cloneDeep(testUtils.DataGenerator.Content.posts[2])};
 
                 // url is now provided on the postmodel, permalinkSetting tests are in the model_post_spec.js test
                 testData.post.url = '/short-and-sweet/';
-                config.set({url: 'http://my-ghost-blog.com'});
+                configUtils.set({url: 'http://my-ghost-blog.com'});
                 config.urlFor(testContext, testData).should.equal('/short-and-sweet/');
                 config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/short-and-sweet/');
 
-                config.set({url: 'http://my-ghost-blog.com/blog'});
+                configUtils.set({url: 'http://my-ghost-blog.com/blog'});
                 config.urlFor(testContext, testData).should.equal('/blog/short-and-sweet/');
                 config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog/short-and-sweet/');
+
+                testData.post.url = '/blog-one/';
+                config.urlFor(testContext, testData).should.equal('/blog/blog-one/');
+                config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog/blog-one/');
             });
 
             it('should return url for a tag when asked for', function () {
                 var testContext = 'tag',
                     testData = {tag: testUtils.DataGenerator.Content.tags[0]};
 
-                config.set({url: 'http://my-ghost-blog.com'});
+                configUtils.set({url: 'http://my-ghost-blog.com'});
                 config.urlFor(testContext, testData).should.equal('/tag/kitchen-sink/');
                 config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/tag/kitchen-sink/');
 
-                config.set({url: 'http://my-ghost-blog.com/blog'});
+                configUtils.set({url: 'http://my-ghost-blog.com/blog'});
                 config.urlFor(testContext, testData).should.equal('/blog/tag/kitchen-sink/');
                 config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog/tag/kitchen-sink/');
             });
@@ -324,11 +379,11 @@ describe('Config', function () {
                 var testContext = 'author',
                     testData = {author: testUtils.DataGenerator.Content.users[0]};
 
-                config.set({url: 'http://my-ghost-blog.com'});
+                configUtils.set({url: 'http://my-ghost-blog.com'});
                 config.urlFor(testContext, testData).should.equal('/author/joe-bloggs/');
                 config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/author/joe-bloggs/');
 
-                config.set({url: 'http://my-ghost-blog.com/blog'});
+                configUtils.set({url: 'http://my-ghost-blog.com/blog'});
                 config.urlFor(testContext, testData).should.equal('/blog/author/joe-bloggs/');
                 config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog/author/joe-bloggs/');
             });
@@ -337,7 +392,7 @@ describe('Config', function () {
                 var testContext = 'image',
                     testData;
 
-                config.set({url: 'http://my-ghost-blog.com'});
+                configUtils.set({url: 'http://my-ghost-blog.com'});
 
                 testData = {image: '/content/images/my-image.jpg'};
                 config.urlFor(testContext, testData).should.equal('/content/images/my-image.jpg');
@@ -352,7 +407,7 @@ describe('Config', function () {
                 // We don't make image urls absolute if they don't look like images relative to the image path
                 config.urlFor(testContext, testData, true).should.equal('/blog/content/images/my-image2.jpg');
 
-                config.set({url: 'http://my-ghost-blog.com/blog/'});
+                configUtils.set({url: 'http://my-ghost-blog.com/blog/'});
 
                 testData = {image: '/content/images/my-image3.jpg'};
                 config.urlFor(testContext, testData).should.equal('/content/images/my-image3.jpg');
@@ -368,7 +423,7 @@ describe('Config', function () {
                 var testContext = 'nav',
                     testData;
 
-                config.set({url: 'http://my-ghost-blog.com', urlSSL: 'https://my-ghost-blog.com'});
+                configUtils.set({url: 'http://my-ghost-blog.com', urlSSL: 'https://my-ghost-blog.com'});
 
                 testData = {nav: {url: 'http://my-ghost-blog.com/short-and-sweet/'}};
                 config.urlFor(testContext, testData).should.equal('http://my-ghost-blog.com/short-and-sweet/');
@@ -376,16 +431,41 @@ describe('Config', function () {
                 testData = {nav: {url: 'http://my-ghost-blog.com/short-and-sweet/'}, secure: true};
                 config.urlFor(testContext, testData).should.equal('https://my-ghost-blog.com/short-and-sweet/');
 
+                testData = {nav: {url: 'http://my-ghost-blog.com:3000/'}};
+                config.urlFor(testContext, testData).should.equal('http://my-ghost-blog.com:3000/');
+
+                testData = {nav: {url: 'http://my-ghost-blog.com:3000/short-and-sweet/'}};
+                config.urlFor(testContext, testData).should.equal('http://my-ghost-blog.com:3000/short-and-sweet/');
+
                 testData = {nav: {url: 'http://sub.my-ghost-blog.com/'}};
                 config.urlFor(testContext, testData).should.equal('http://sub.my-ghost-blog.com/');
 
-                config.set({url: 'http://my-ghost-blog.com/blog'});
+                testData = {nav: {url: '//sub.my-ghost-blog.com/'}};
+                config.urlFor(testContext, testData).should.equal('//sub.my-ghost-blog.com/');
+
+                testData = {nav: {url: 'mailto:sub@my-ghost-blog.com/'}};
+                config.urlFor(testContext, testData).should.equal('mailto:sub@my-ghost-blog.com/');
+
+                testData = {nav: {url: '#this-anchor'}};
+                config.urlFor(testContext, testData).should.equal('#this-anchor');
+
+                testData = {nav: {url: 'http://some-external-page.com/my-ghost-blog.com'}};
+                config.urlFor(testContext, testData).should.equal('http://some-external-page.com/my-ghost-blog.com');
+
+                testData = {nav: {url: 'http://some-external-page.com/stuff-my-ghost-blog.com-around'}};
+                config.urlFor(testContext, testData).should.equal('http://some-external-page.com/stuff-my-ghost-blog.com-around');
+
+                configUtils.set({url: 'http://my-ghost-blog.com/blog'});
                 testData = {nav: {url: 'http://my-ghost-blog.com/blog/short-and-sweet/'}};
                 config.urlFor(testContext, testData).should.equal('http://my-ghost-blog.com/blog/short-and-sweet/');
+
+                configUtils.set({url: 'http://my-ghost-blog.com/'});
+                testData = {nav: {url: 'mailto:marshmallow@my-ghost-blog.com'}};
+                config.urlFor(testContext, testData).should.equal('mailto:marshmallow@my-ghost-blog.com');
             });
 
             it('should return other known paths when requested', function () {
-                config.set({url: 'http://my-ghost-blog.com'});
+                configUtils.set({url: 'http://my-ghost-blog.com'});
                 config.urlFor('sitemap_xsl').should.equal('/sitemap.xsl');
                 config.urlFor('sitemap_xsl', true).should.equal('http://my-ghost-blog.com/sitemap.xsl');
 
@@ -395,66 +475,171 @@ describe('Config', function () {
         });
 
         describe('urlPathForPost', function () {
-            it('should output correct url for post', function () {
-                var permalinkSetting = '/:slug/',
-                /*jshint unused:false*/
-                    testData = testUtils.DataGenerator.Content.posts[2],
+            it('permalink is /:slug/, timezone is default', function () {
+                config.theme.permalinks = '/:slug/';
+
+                var testData = testUtils.DataGenerator.Content.posts[2],
                     postLink = '/short-and-sweet/';
 
-                // next test
-                config.urlPathForPost(testData, permalinkSetting).should.equal(postLink);
+                config.urlPathForPost(testData).should.equal(postLink);
             });
 
-            it('should output correct url for post with date permalink', function () {
-                var permalinkSetting = '/:year/:month/:day/:slug/',
-                /*jshint unused:false*/
-                    testData = testUtils.DataGenerator.Content.posts[2],
-                    today = testData.published_at,
-                    dd = ('0' + today.getDate()).slice(-2),
-                    mm = ('0' + (today.getMonth() + 1)).slice(-2),
-                    yyyy = today.getFullYear(),
-                    postLink = '/' + yyyy + '/' + mm + '/' + dd + '/short-and-sweet/';
-                // next test
-                config.urlPathForPost(testData, permalinkSetting).should.equal(postLink);
+            it('permalink is /:year/:month/:day/:slug, blog timezone is Los Angeles', function () {
+                config.theme.timezone = 'America/Los_Angeles';
+                config.theme.permalinks = '/:year/:month/:day/:slug/';
+
+                var testData = testUtils.DataGenerator.Content.posts[2],
+                    postLink = '/2016/05/17/short-and-sweet/';
+
+                testData.published_at = new Date('2016-05-18T06:30:00.000Z');
+                config.urlPathForPost(testData).should.equal(postLink);
             });
 
-            it('should output correct url for page with date permalink', function () {
-                var permalinkSetting = '/:year/:month/:day/:slug/',
-                /*jshint unused:false*/
-                    testData = testUtils.DataGenerator.Content.posts[5],
+            it('permalink is /:year/:month/:day/:slug, blog timezone is Asia Tokyo', function () {
+                config.theme.timezone = 'Asia/Tokyo';
+                config.theme.permalinks = '/:year/:month/:day/:slug/';
+
+                var testData = testUtils.DataGenerator.Content.posts[2],
+                    postLink = '/2016/05/18/short-and-sweet/';
+
+                testData.published_at = new Date('2016-05-18T06:30:00.000Z');
+                config.urlPathForPost(testData).should.equal(postLink);
+            });
+
+            it('post is page, no permalink usage allowed at all', function () {
+                config.theme.timezone = 'America/Los_Angeles';
+                config.theme.permalinks = '/:year/:month/:day/:slug/';
+
+                var testData = testUtils.DataGenerator.Content.posts[5],
                     postLink = '/static-page-test/';
-                // next test
-                config.urlPathForPost(testData, permalinkSetting).should.equal(postLink);
+
+                config.urlPathForPost(testData).should.equal(postLink);
             });
 
-            it('should output correct url for post with complex permalink', function () {
-                var permalinkSetting = '/:year/:id/:author/',
-                /*jshint unused:false*/
-                    testData = _.extend(
-                        {}, testUtils.DataGenerator.Content.posts[2], {id: 3}, {author: {slug: 'joe-bloggs'}}
-                    ),
-                    today = testData.published_at,
-                    yyyy = today.getFullYear(),
-                    postLink = '/' + yyyy + '/3/joe-bloggs/';
-                // next test
-                config.urlPathForPost(testData, permalinkSetting).should.equal(postLink);
+            it('permalink is /:year/:id:/:author', function () {
+                config.theme.timezone = 'America/Los_Angeles';
+                config.theme.permalinks = '/:year/:id/:author/';
+
+                var testData = _.merge(testUtils.DataGenerator.Content.posts[2], {id: 3}, {author: {slug: 'joe-blog'}}),
+                    postLink = '/2015/3/joe-blog/';
+
+                testData.published_at = new Date('2016-01-01T00:00:00.000Z');
+                config.urlPathForPost(testData).should.equal(postLink);
+            });
+
+            it('permalink is /:year/:id:/:author', function () {
+                config.theme.timezone = 'Europe/Berlin';
+                config.theme.permalinks = '/:year/:id/:author/';
+
+                var testData = _.merge(testUtils.DataGenerator.Content.posts[2], {id: 3}, {author: {slug: 'joe-blog'}}),
+                    postLink = '/2016/3/joe-blog/';
+
+                testData.published_at = new Date('2016-01-01T00:00:00.000Z');
+                config.urlPathForPost(testData).should.equal(postLink);
+            });
+
+            it('post is not published yet', function () {
+                config.theme.permalinks = '/:year/:month/:day/:slug/';
+
+                var testData = _.merge(testUtils.DataGenerator.Content.posts[2], {id: 3, published_at: null}),
+                    nowMoment = moment(),
+                    postLink = '/YYYY/MM/DD/short-and-sweet/';
+
+                postLink = postLink.replace('YYYY', nowMoment.format('YYYY'));
+                postLink = postLink.replace('MM', nowMoment.format('MM'));
+                postLink = postLink.replace('DD', nowMoment.format('DD'));
+
+                config.urlPathForPost(testData).should.equal(postLink);
+            });
+        });
+
+        describe('apiUrl', function () {
+            it('should return https config.url if forceAdminSSL set', function () {
+                configUtils.set({
+                    url: 'http://my-ghost-blog.com',
+                    forceAdminSSL: true
+                });
+
+                config.apiUrl().should.eql('https://my-ghost-blog.com/ghost/api/v0.1/');
+            });
+
+            it('should return https config.urlSSL if forceAdminSSL set and urlSSL is misconfigured', function () {
+                configUtils.set({
+                    url: 'http://my-ghost-blog.com',
+                    urlSSL: 'http://other-ghost-blog.com',
+                    forceAdminSSL: true
+                });
+
+                config.apiUrl().should.eql('https://other-ghost-blog.com/ghost/api/v0.1/');
+            });
+
+            it('should return https config.urlSSL if forceAdminSSL set', function () {
+                configUtils.set({
+                    url: 'http://my-ghost-blog.com',
+                    urlSSL: 'https://other-ghost-blog.com',
+                    forceAdminSSL: true
+                });
+
+                config.apiUrl().should.eql('https://other-ghost-blog.com/ghost/api/v0.1/');
+            });
+
+            it('should return https config.urlSSL if set and misconfigured & forceAdminSSL is NOT set', function () {
+                configUtils.set({
+                    url: 'http://my-ghost-blog.com',
+                    urlSSL: 'http://other-ghost-blog.com'
+                });
+
+                config.apiUrl().should.eql('https://other-ghost-blog.com/ghost/api/v0.1/');
+            });
+
+            it('should return https config.urlSSL if set & forceAdminSSL is NOT set', function () {
+                configUtils.set({
+                    url: 'http://my-ghost-blog.com',
+                    urlSSL: 'https://other-ghost-blog.com'
+                });
+
+                config.apiUrl().should.eql('https://other-ghost-blog.com/ghost/api/v0.1/');
+            });
+
+            it('should return https config.url if config.url is https & forceAdminSSL is NOT set', function () {
+                configUtils.set({
+                    url: 'https://my-ghost-blog.com'
+                });
+
+                config.apiUrl().should.eql('https://my-ghost-blog.com/ghost/api/v0.1/');
+            });
+
+            it('CORS: should return no protocol config.url if config.url is NOT https & forceAdminSSL/urlSSL is NOT set', function () {
+                configUtils.set({
+                    url: 'http://my-ghost-blog.com'
+                });
+
+                config.apiUrl({cors: true}).should.eql('//my-ghost-blog.com/ghost/api/v0.1/');
+            });
+
+            it('should return protocol config.url if config.url is NOT https & forceAdminSSL/urlSSL is NOT set', function () {
+                configUtils.set({
+                    url: 'http://my-ghost-blog.com'
+                });
+
+                config.apiUrl().should.eql('http://my-ghost-blog.com/ghost/api/v0.1/');
             });
         });
     });
 
     describe('File', function () {
         var sandbox,
-            originalConfig,
             readFileStub,
-            overrideConfig = function (newConfig) {
-                readFileStub.returns(
-                    _.extend({}, defaultConfig, newConfig)
-                );
-            },
+            overrideReadFileConfig,
             expectedError = new Error('expected bootstrap() to throw error but none thrown');
 
         before(function () {
-            originalConfig = _.cloneDeep(rewire('../../server/config')._config);
+            // Create a function to override what reading the config file returns
+            overrideReadFileConfig = function (newConfig) {
+                readFileStub.returns(
+                    _.extend({}, configUtils.defaultConfig, newConfig)
+                );
+            };
         });
 
         beforeEach(function () {
@@ -463,8 +648,6 @@ describe('Config', function () {
         });
 
         afterEach(function () {
-            config = rewire('../../server/config');
-            resetConfig();
             sandbox.restore();
         });
 
@@ -475,18 +658,28 @@ describe('Config', function () {
             // the test infrastructure is setup so that there is always config present,
             // but we want to overwrite the test to actually load config.example.js, so that any local changes
             // don't break the tests
-            config.set({
+            configUtils.set({
                 paths: {
-                    appRoot: path.join(originalConfig.paths.appRoot, 'config.example.js')
+                    appRoot: path.join(configUtils.defaultConfig.paths.appRoot, 'config.example.js')
                 }
             });
 
             config.load().then(function (config) {
-                config.url.should.equal(defaultConfig.url);
-                config.database.client.should.equal(defaultConfig.database.client);
-                config.database.connection.should.eql(defaultConfig.database.connection);
-                config.server.host.should.equal(defaultConfig.server.host);
-                config.server.port.should.equal(defaultConfig.server.port);
+                config.url.should.equal(configUtils.defaultConfig.url);
+                config.database.client.should.equal(configUtils.defaultConfig.database.client);
+
+                if (config.database.client === 'sqlite3') {
+                    config.database.connection.filename.should.eql(configUtils.defaultConfig.database.connection.filename);
+                } else {
+                    config.database.connection.charset.should.eql(configUtils.defaultConfig.database.connection.charset);
+                    config.database.connection.database.should.eql(configUtils.defaultConfig.database.connection.database);
+                    config.database.connection.host.should.eql(configUtils.defaultConfig.database.connection.host);
+                    config.database.connection.password.should.eql(configUtils.defaultConfig.database.connection.password);
+                    config.database.connection.user.should.eql(configUtils.defaultConfig.database.connection.user);
+                }
+
+                config.server.host.should.equal(configUtils.defaultConfig.server.host);
+                config.server.port.should.equal(configUtils.defaultConfig.server.port);
 
                 done();
             }).catch(done);
@@ -496,12 +689,21 @@ describe('Config', function () {
             // We actually want the real method here.
             readFileStub.restore();
 
-            config.load(path.join(originalConfig.paths.appRoot, 'config.example.js')).then(function (config) {
-                config.url.should.equal(defaultConfig.url);
-                config.database.client.should.equal(defaultConfig.database.client);
-                config.database.connection.should.eql(defaultConfig.database.connection);
-                config.server.host.should.equal(defaultConfig.server.host);
-                config.server.port.should.equal(defaultConfig.server.port);
+            config.load(path.join(configUtils.defaultConfig.paths.appRoot, 'config.example.js')).then(function (config) {
+                config.url.should.equal(configUtils.defaultConfig.url);
+                config.database.client.should.equal(configUtils.defaultConfig.database.client);
+
+                if (config.database.client === 'sqlite3') {
+                    config.database.connection.filename.should.eql(configUtils.defaultConfig.database.connection.filename);
+                } else {
+                    config.database.connection.charset.should.eql(configUtils.defaultConfig.database.connection.charset);
+                    config.database.connection.database.should.eql(configUtils.defaultConfig.database.connection.database);
+                    config.database.connection.host.should.eql(configUtils.defaultConfig.database.connection.host);
+                    config.database.connection.password.should.eql(configUtils.defaultConfig.database.connection.password);
+                    config.database.connection.user.should.eql(configUtils.defaultConfig.database.connection.user);
+                }
+                config.server.host.should.equal(configUtils.defaultConfig.server.host);
+                config.server.port.should.equal(configUtils.defaultConfig.server.port);
 
                 done();
             }).catch(done);
@@ -515,34 +717,34 @@ describe('Config', function () {
                 validateStub = sandbox.stub(config, 'validate').returns(Promise.resolve());
 
             config.load().then(function () {
-                existsStub.calledOnce.should.be.true;
-                writeFileStub.calledOnce.should.be.true;
-                validateStub.calledOnce.should.be.true;
+                existsStub.calledOnce.should.be.true();
+                writeFileStub.calledOnce.should.be.true();
+                validateStub.calledOnce.should.be.true();
                 done();
             }).catch(done);
         });
 
         it('accepts urls with a valid scheme', function (done) {
             // replace the config file with invalid data
-            overrideConfig({url: 'http://testurl.com'});
+            overrideReadFileConfig({url: 'http://testurl.com'});
 
             config.load().then(function (localConfig) {
                 localConfig.url.should.equal('http://testurl.com');
 
                 // Next test
-                overrideConfig({url: 'https://testurl.com'});
+                overrideReadFileConfig({url: 'https://testurl.com'});
                 return config.load();
             }).then(function (localConfig) {
                 localConfig.url.should.equal('https://testurl.com');
 
                 // Next test
-                overrideConfig({url: 'http://testurl.com/blog/'});
+                overrideReadFileConfig({url: 'http://testurl.com/blog/'});
                 return config.load();
             }).then(function (localConfig) {
                 localConfig.url.should.equal('http://testurl.com/blog/');
 
                 // Next test
-                overrideConfig({url: 'http://testurl.com/ghostly/'});
+                overrideReadFileConfig({url: 'http://testurl.com/ghostly/'});
                 return config.load();
             }).then(function (localConfig) {
                 localConfig.url.should.equal('http://testurl.com/ghostly/');
@@ -552,104 +754,104 @@ describe('Config', function () {
         });
 
         it('rejects a fqdn without a scheme', function (done) {
-            overrideConfig({url: 'example.com'});
+            overrideReadFileConfig({url: 'example.com'});
 
             config.load().then(function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
         });
 
         it('rejects a hostname without a scheme', function (done) {
-            overrideConfig({url: 'example'});
+            overrideReadFileConfig({url: 'example'});
 
             config.load().then(function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
         });
 
         it('rejects a hostname with a scheme', function (done) {
-            overrideConfig({url: 'https://example'});
+            overrideReadFileConfig({url: 'https://example'});
 
             config.load().then(function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
         });
 
         it('rejects a url with an unsupported scheme', function (done) {
-            overrideConfig({url: 'ftp://example.com'});
+            overrideReadFileConfig({url: 'ftp://example.com'});
 
             config.load().then(function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
         });
 
         it('rejects a url with a protocol relative scheme', function (done) {
-            overrideConfig({url: '//example.com'});
+            overrideReadFileConfig({url: '//example.com'});
 
             config.load().then(function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
         });
 
         it('does not permit the word ghost as a url path', function (done) {
-            overrideConfig({url: 'http://example.com/ghost/'});
+            overrideReadFileConfig({url: 'http://example.com/ghost/'});
 
             config.load().then(function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
         });
 
         it('does not permit the word ghost to be a component in a url path', function (done) {
-            overrideConfig({url: 'http://example.com/blog/ghost/'});
+            overrideReadFileConfig({url: 'http://example.com/blog/ghost/'});
 
             config.load().then(function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
         });
 
         it('does not permit the word ghost to be a component in a url path', function (done) {
-            overrideConfig({url: 'http://example.com/ghost/blog/'});
+            overrideReadFileConfig({url: 'http://example.com/ghost/blog/'});
 
             config.load().then(function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
@@ -657,13 +859,13 @@ describe('Config', function () {
 
         it('does not permit database config to be falsy', function (done) {
             // replace the config file with invalid data
-            overrideConfig({database: false});
+            overrideReadFileConfig({database: false});
 
             config.load().then(function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
@@ -671,39 +873,39 @@ describe('Config', function () {
 
         it('does not permit database config to be empty', function (done) {
             // replace the config file with invalid data
-            overrideConfig({database: {}});
+            overrideReadFileConfig({database: {}});
 
             config.load().then(function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
         });
 
         it('requires server to be present', function (done) {
-            overrideConfig({server: false});
+            overrideReadFileConfig({server: false});
 
             config.load().then(function (localConfig) {
                 /*jshint unused:false*/
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
         });
 
         it('allows server to use a socket', function (done) {
-            overrideConfig({server: {socket: 'test'}});
+            overrideReadFileConfig({server: {socket: 'test'}});
 
             config.load().then(function () {
                 var socketConfig = config.getSocket();
 
-                socketConfig.should.be.an.Object;
+                socketConfig.should.be.an.Object();
                 socketConfig.path.should.equal('test');
                 socketConfig.permissions.should.equal('660');
 
@@ -712,7 +914,7 @@ describe('Config', function () {
         });
 
         it('allows server to use a socket and user-defined permissions', function (done) {
-            overrideConfig({
+            overrideReadFileConfig({
                 server: {
                     socket: {
                         path: 'test',
@@ -724,7 +926,7 @@ describe('Config', function () {
             config.load().then(function () {
                 var socketConfig = config.getSocket();
 
-                socketConfig.should.be.an.Object;
+                socketConfig.should.be.an.Object();
                 socketConfig.path.should.equal('test');
                 socketConfig.permissions.should.equal('666');
 
@@ -733,7 +935,7 @@ describe('Config', function () {
         });
 
         it('allows server to have a host and a port', function (done) {
-            overrideConfig({server: {host: '127.0.0.1', port: '2368'}});
+            overrideReadFileConfig({server: {host: '127.0.0.1', port: '2368'}});
 
             config.load().then(function (localConfig) {
                 should.exist(localConfig);
@@ -745,39 +947,39 @@ describe('Config', function () {
         });
 
         it('rejects server if there is a host but no port', function (done) {
-            overrideConfig({server: {host: '127.0.0.1'}});
+            overrideReadFileConfig({server: {host: '127.0.0.1'}});
 
             config.load().then(function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
         });
 
         it('rejects server if there is a port but no host', function (done) {
-            overrideConfig({server: {port: '2368'}});
+            overrideReadFileConfig({server: {port: '2368'}});
 
             config.load().then(function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
         });
 
         it('rejects server if configuration is empty', function (done) {
-            overrideConfig({server: {}});
+            overrideReadFileConfig({server: {}});
 
             config.load().then(function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
@@ -789,112 +991,93 @@ describe('Config', function () {
             // Can't use afterEach here, because mocha uses console.log to output the checkboxes
             // which we've just stubbed, so we need to restore it before the test ends to see ticks.
             resetEnvironment = function () {
-                logStub.restore();
                 process.env.NODE_ENV = currentEnv;
             };
 
         beforeEach(function () {
-            logStub = sinon.stub(console, 'log');
+            logStub = sinon.spy(console, 'log');
             process.env.NODE_ENV = 'development';
         });
 
         afterEach(function () {
             logStub.restore();
-            config = rewire('../../server/config');
+            resetEnvironment();
         });
 
         it('doesn\'t display warning when deprecated options not set', function () {
-            config.checkDeprecated();
-            logStub.calledOnce.should.be.false;
-
-            // Future tests: This is important here!
-            resetEnvironment();
+            configUtils.config.checkDeprecated();
+            logStub.calledOnce.should.be.false();
         });
 
         it('displays warning when updateCheck exists and is truthy', function () {
-            config.set({
+            configUtils.set({
                 updateCheck: 'foo'
             });
             // Run the test code
-            config.checkDeprecated();
+            configUtils.config.checkDeprecated();
 
-            logStub.calledOnce.should.be.true;
+            logStub.calledOnce.should.be.true();
 
-            logStub.calledWithMatch('updateCheck').should.be.true;
-
-            // Future tests: This is important here!
-            resetEnvironment();
+            logStub.calledWithMatch('updateCheck').should.be.true();
         });
 
         it('displays warning when updateCheck exists and is falsy', function () {
-            config.set({
-                updateCheck: undefined
+            configUtils.set({
+                updateCheck: false
             });
             // Run the test code
-            config.checkDeprecated();
+            configUtils.config.checkDeprecated();
 
-            logStub.calledOnce.should.be.true;
+            logStub.calledOnce.should.be.true();
 
-            logStub.calledWithMatch('updateCheck').should.be.true;
-
-            // Future tests: This is important here!
-            resetEnvironment();
+            logStub.calledWithMatch('updateCheck').should.be.true();
         });
 
         it('displays warning when mail.fromaddress exists and is truthy', function () {
-            config.set({
+            configUtils.set({
                 mail: {
                     fromaddress: 'foo'
                 }
             });
             // Run the test code
-            config.checkDeprecated();
+            configUtils.config.checkDeprecated();
 
-            logStub.calledOnce.should.be.true;
+            logStub.calledOnce.should.be.true();
 
-            logStub.calledWithMatch('mail.fromaddress').should.be.true;
-
-            // Future tests: This is important here!
-            resetEnvironment();
+            logStub.calledWithMatch('mail.fromaddress').should.be.true();
         });
 
         it('displays warning when mail.fromaddress exists and is falsy', function () {
-            config.set({
+            configUtils.set({
                 mail: {
-                    fromaddress: undefined
+                    fromaddress: false
                 }
             });
             // Run the test code
-            config.checkDeprecated();
+            configUtils.config.checkDeprecated();
 
-            logStub.calledOnce.should.be.true;
-            logStub.calledWithMatch('mail.fromaddress').should.be.true;
+            logStub.calledOnce.should.be.true();
 
-            // Future tests: This is important here!
-            resetEnvironment();
+            logStub.calledWithMatch('mail.fromaddress').should.be.true();
         });
 
         it('doesn\'t display warning when only part of a deprecated option is set', function () {
-            config.set({
+            configUtils.set({
                 mail: {
                     notfromaddress: 'foo'
                 }
             });
 
-            config.checkDeprecated();
-            logStub.calledOnce.should.be.false;
-
-            // Future tests: This is important here!
-            resetEnvironment();
+            configUtils.config.checkDeprecated();
+            logStub.calledOnce.should.be.false();
         });
 
         it('can not modify the deprecatedItems on the config object', function () {
-            config.set({
+            configUtils.set({
                 deprecatedItems: ['foo']
             });
 
-            config.deprecatedItems.should.not.equal(['foo']);
-            resetEnvironment();
+            configUtils.config.deprecatedItems.should.not.equal(['foo']);
         });
     });
 });

@@ -3,6 +3,7 @@ var Promise     = require('bluebird'),
     models      = require('../../models'),
     errors      = require('../../errors'),
     globalUtils = require('../../utils'),
+    i18n        = require('../../i18n'),
 
     internal    = {context: {internal: true}},
     utils,
@@ -17,7 +18,7 @@ updatedSettingKeys = {
 
 areEmpty = function (object) {
     var fields = _.toArray(arguments).slice(1),
-        areEmpty = _.all(fields, function (field) {
+        areEmpty = _.every(fields, function (field) {
             return _.isEmpty(object[field]);
         });
 
@@ -25,7 +26,7 @@ areEmpty = function (object) {
 };
 
 stripProperties = function stripProperties(properties, data) {
-    data = _.clone(data, true);
+    data = _.cloneDeep(data);
     _.each(data, function (obj) {
         _.each(properties, function (property) {
             delete obj[property];
@@ -76,9 +77,12 @@ utils = {
                 // if we don't have user data and the id is 1, we assume this means the owner
                 existingUsers[owner.email].importId = userToMap;
                 userMap[userToMap] = existingUsers[owner.email].realId;
+            } else if (userToMap === 0) {
+                // CASE: external context
+                userMap[userToMap] = '0';
             } else {
                 throw new errors.DataImportError(
-                    'Attempting to import data linked to unknown user id ' + userToMap, 'user.id', userToMap
+                    i18n.t('errors.data.import.utils.dataLinkedToUnknownUser', {userToMap: userToMap}), 'user.id', userToMap
                 );
             }
         });
@@ -135,7 +139,7 @@ utils = {
     },
 
     preProcessRolesUsers: function preProcessRolesUsers(tableData, owner, roles) {
-        var validRoles = _.pluck(roles, 'name');
+        var validRoles = _.map(roles, 'name');
         if (!tableData.roles || !tableData.roles.length) {
             tableData.roles = roles;
         }
@@ -203,10 +207,10 @@ utils = {
                 }
 
                 return _tag;
-            }));
+            }).reflect());
         });
 
-        return Promise.settle(ops);
+        return Promise.all(ops);
     },
 
     importPosts: function importPosts(tableData, transaction) {
@@ -231,11 +235,11 @@ utils = {
             ops.push(models.Post.add(post, _.extend({}, internal, {transacting: transaction, importing: true}))
                     .catch(function (error) {
                         return Promise.reject({raw: error, model: 'post', data: post});
-                    })
+                    }).reflect()
             );
         });
 
-        return Promise.settle(ops);
+        return Promise.all(ops);
     },
 
     importUsers: function importUsers(tableData, existingUsers, transaction) {
@@ -291,9 +295,9 @@ utils = {
             if (!(error instanceof errors.NotFoundError)) {
                 return Promise.reject({raw: error, model: 'setting', data: tableData});
             }
-        }));
+        }).reflect());
 
-        return Promise.settle(ops);
+        return Promise.all(ops);
     },
 
     /** For later **/
@@ -316,10 +320,10 @@ utils = {
                 }
 
                 return _app;
-            }));
+            }).reflect());
         });
 
-        return Promise.settle(ops);
+        return Promise.all(ops);
     }
 };
 

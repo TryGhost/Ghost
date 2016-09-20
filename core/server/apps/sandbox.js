@@ -1,6 +1,7 @@
 
 var path    = require('path'),
     Module  = require('module'),
+    i18n    = require('../i18n'),
     _       = require('lodash');
 
 function AppSandbox(opts) {
@@ -31,14 +32,20 @@ AppSandbox.prototype.loadModule = function loadModuleSandboxed(modulePath) {
     // Instantiate a Node Module class
     currentModule = new Module(modulePath, parentModulePath);
 
+    if (this.opts.internal) {
+        currentModule.load(currentModule.id);
+
+        return currentModule.exports;
+    }
+
     // Grab the original modules require function
     nodeRequire = currentModule.require;
 
     // Set a new proxy require function
     currentModule.require = function requireProxy(module) {
         // check whitelist, plugin config, etc.
-        if (_.contains(self.opts.blacklist, module)) {
-            throw new Error('Unsafe App require: ' + module);
+        if (_.includes(self.opts.blacklist, module)) {
+            throw new Error(i18n.t('errors.apps.unsafeAppRequire.error', {msg: module}));
         }
 
         var firstTwo = module.slice(0, 2),
@@ -55,7 +62,7 @@ AppSandbox.prototype.loadModule = function loadModuleSandboxed(modulePath) {
             // Check relative path from the appRoot for outside requires
             relPath = path.relative(appRoot, resolvedPath);
             if (relPath.slice(0, 2) === '..') {
-                throw new Error('Unsafe App require: ' + relPath);
+                throw new Error(i18n.t('errors.apps.unsafeAppRequire.error', {msg: relPath}));
             }
 
             // Assign as new module path

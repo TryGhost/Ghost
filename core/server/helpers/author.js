@@ -16,13 +16,9 @@ var hbs             = require('express-hbs'),
     utils           = require('./utils'),
     author;
 
-author = function (context, options) {
-    if (_.isUndefined(options)) {
-        options = context;
-    }
-
+author = function (options) {
     if (options.fn) {
-        return hbs.handlebars.helpers['with'].call(this, this.author, options);
+        return hbs.handlebars.helpers.with.call(this, this.author, options);
     }
 
     var autolink = _.isString(options.hash.autolink) && options.hash.autolink === 'false' ? false : true,

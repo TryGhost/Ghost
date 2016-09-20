@@ -1,5 +1,4 @@
 {
-    "additionalRules": [ "core/test/utils/jscs-rules/*.js" ],
     "requireCurlyBraces": [
         "if",
         "else",
@@ -66,7 +65,7 @@
     "safeContextKeyword": ["self"],
     "requireDotNotation": true,
     "disallowYodaConditions": true,
-    "validateJSDoc": {
+    "jsDoc": {
         "checkParamNames": true,
         "checkRedundantParams": true,
         "requireParamTypes": true

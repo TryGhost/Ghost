@@ -1,5 +1,3 @@
-/*globals describe, before, it*/
-/*jshint expr:true*/
 var should         = require('should'),
     sinon          = require('sinon'),
     hbs            = require('express-hbs'),
@@ -30,8 +28,8 @@ describe('{{#is}} helper', function () {
             {fn: fn, inverse: inverse, data: {root: {context: ['home', 'index']}}}
         );
 
-        fn.called.should.be.true;
-        inverse.called.should.be.false;
+        fn.called.should.be.true();
+        inverse.called.should.be.false();
     });
 
     it('should match OR context "index, paged"', function () {
@@ -44,8 +42,8 @@ describe('{{#is}} helper', function () {
             {fn: fn, inverse: inverse, data: {root: {context: ['tag', 'paged']}}}
         );
 
-        fn.called.should.be.true;
-        inverse.called.should.be.false;
+        fn.called.should.be.true();
+        inverse.called.should.be.false();
     });
 
     it('should not match "paged"', function () {
@@ -58,8 +56,8 @@ describe('{{#is}} helper', function () {
             {fn: fn, inverse: inverse, data: {root: {context: ['index', 'home']}}}
         );
 
-        fn.called.should.be.false;
-        inverse.called.should.be.true;
+        fn.called.should.be.false();
+        inverse.called.should.be.true();
     });
 
     it('should log warning with no args', function () {
@@ -73,8 +71,8 @@ describe('{{#is}} helper', function () {
             {fn: fn, inverse: inverse, data: {root: {context: ['index', 'home']}}}
         );
 
-        logWarn.called.should.be.true;
-        fn.called.should.be.false;
-        inverse.called.should.be.false;
+        logWarn.called.should.be.true();
+        fn.called.should.be.false();
+        inverse.called.should.be.false();
     });
 });

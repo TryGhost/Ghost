@@ -1,8 +1,7 @@
-/*globals describe, before, beforeEach, it*/
-/*jshint expr:true*/
 var should         = require('should'),
     hbs            = require('express-hbs'),
     utils          = require('./utils'),
+    configUtils    = require('../../utils/configUtils'),
     path           = require('path'),
 
 // Stuff we are testing
@@ -20,7 +19,7 @@ describe('{{navigation}} helper', function () {
     before(function (done) {
         utils.loadHelpers();
         hbs.express3({
-            partialsDir: [utils.config.paths.helperTemplates]
+            partialsDir: [configUtils.config.paths.helperTemplates]
         });
 
         hbs.cachePartials(function () {
@@ -70,9 +69,21 @@ describe('{{navigation}} helper', function () {
         rendered.string.should.be.equal('');
     });
 
+    it('can handle relativeUrl not being set (e.g. for images/assets)', function () {
+        var singleItem = {label: 'Foo', url: '/foo'},
+            rendered;
+        delete optionsData.data.root.relativeUrl;
+
+        optionsData.data.blog.navigation = [singleItem];
+        rendered = helpers.navigation(optionsData);
+        rendered.string.should.containEql('li');
+        rendered.string.should.containEql('nav-foo');
+        rendered.string.should.containEql('/foo');
+    });
+
     it('can render one item', function () {
         var singleItem = {label: 'Foo', url: '/foo'},
-            testUrl = 'href="' + utils.config.url + '/foo"',
+            testUrl = 'href="' + configUtils.config.url + '/foo"',
             rendered;
 
         optionsData.data.blog.navigation = [singleItem];
@@ -87,8 +98,8 @@ describe('{{navigation}} helper', function () {
     it('can render multiple items', function () {
         var firstItem = {label: 'Foo', url: '/foo'},
             secondItem = {label: 'Bar Baz Qux', url: '/qux'},
-            testUrl = 'href="' + utils.config.url + '/foo"',
-            testUrl2 = 'href="' + utils.config.url + '/qux"',
+            testUrl = 'href="' + configUtils.config.url + '/foo"',
+            testUrl2 = 'href="' + configUtils.config.url + '/qux"',
             rendered;
 
         optionsData.data.blog.navigation = [firstItem, secondItem];
@@ -116,6 +127,22 @@ describe('{{navigation}} helper', function () {
         rendered.string.should.containEql('nav-foo nav-current');
         rendered.string.should.containEql('nav-bar"');
     });
+
+    it('can annotate current url with trailing slash', function () {
+        var firstItem = {label: 'Foo', url: '/foo'},
+            secondItem = {label: 'Bar', url: '/qux'},
+            rendered;
+
+        optionsData.data.blog.navigation = [firstItem, secondItem];
+        optionsData.data.root.relativeUrl = '/foo/';
+        rendered = helpers.navigation(optionsData);
+
+        should.exist(rendered);
+        rendered.string.should.containEql('nav-foo');
+        rendered.string.should.containEql('nav-current');
+        rendered.string.should.containEql('nav-foo nav-current');
+        rendered.string.should.containEql('nav-bar"');
+    });
 });
 
 describe('{{navigation}} helper with custom template', function () {
@@ -124,7 +151,7 @@ describe('{{navigation}} helper with custom template', function () {
     before(function (done) {
         utils.loadHelpers();
         hbs.express3({
-            partialsDir: [path.resolve(utils.config.paths.corePath, 'test/unit/server_helpers/test_tpl')]
+            partialsDir: [path.resolve(configUtils.config.paths.corePath, 'test/unit/server_helpers/test_tpl')]
         });
 
         hbs.cachePartials(function () {
@@ -148,7 +175,7 @@ describe('{{navigation}} helper with custom template', function () {
 
     it('can render one item and @blog title', function () {
         var singleItem = {label: 'Foo', url: '/foo'},
-            testUrl = 'href="' + utils.config.url + '/foo"',
+            testUrl = 'href="' + configUtils.config.url + '/foo"',
             rendered;
 
         optionsData.data.blog.navigation = [singleItem];
