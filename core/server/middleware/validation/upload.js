@@ -8,8 +8,8 @@ module.exports = function upload(options) {
 
     // if we finish the data/importer logic, we forward the request to the specified importer
     return function (req, res, next) {
-        var extensions = (config.uploads[type] && config.uploads[type].extensions) || [],
-            contentTypes = (config.uploads[type] && config.uploads[type].contentTypes) || [];
+        var extensions = (config.get('uploads')[type] && config.get('uploads')[type].extensions) || [],
+            contentTypes = (config.get('uploads')[type] && config.get('uploads')[type].contentTypes) || [];
 
         req.file = req.file || {};
         req.file.name = req.file.originalname;

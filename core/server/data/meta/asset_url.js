@@ -1,9 +1,11 @@
-var config = require('../../config');
+var config = require('../../config'),
+    utils = require('../../utils'),
+    crypto = require('crypto');
 
 function getAssetUrl(path, isAdmin, minify) {
     var output = '';
 
-    output += config.paths.subdir + '/';
+    output += utils.url.getSubdir() + '/';
 
     if (!path.match(/^favicon\.ico$/) && !path.match(/^shared/) && !path.match(/^asset/)) {
         if (isAdmin) {
@@ -24,7 +26,11 @@ function getAssetUrl(path, isAdmin, minify) {
     output += path;
 
     if (!path.match(/^favicon\.ico$/)) {
-        output = output + '?v=' + config.assetHash;
+        if (!config.get('assetHash')) {
+            config.set('assetHash', (crypto.createHash('md5').update(config.get('ghostVersion') + Date.now()).digest('hex')).substring(0, 10));
+        }
+
+        output = output + '?v=' + config.get('assetHash');
     }
 
     return output;

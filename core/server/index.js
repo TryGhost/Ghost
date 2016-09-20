@@ -14,7 +14,6 @@ require('./overrides');
 
 // Module dependencies
 var express = require('express'),
-    _ = require('lodash'),
     uuid = require('node-uuid'),
     Promise = require('bluebird'),
     i18n = require('./i18n'),
@@ -32,6 +31,8 @@ var express = require('express'),
     GhostServer = require('./ghost-server'),
     scheduling = require('./scheduling'),
     validateThemes = require('./utils/validate-themes'),
+    readDirectory = require('./utils/read-directory'),
+    utils = require('./utils'),
     dbHash;
 
 function initDbHashAndFirstRun() {
@@ -71,9 +72,9 @@ function init(options) {
     // Initialize Internationalization
     i18n.init();
 
-    // Load our config.js file from the local file system.
-    return config.load(options.config).then(function () {
-        return config.checkDeprecated();
+    return readDirectory(config.getContentPath('apps')).then(function loadThemes(result) {
+        config.set('paths:availableApps', result);
+        return api.themes.loadThemes();
     }).then(function () {
         models.init();
     }).then(function () {
@@ -86,15 +87,15 @@ function init(options) {
                 }), maintenanceState;
 
                 if (response.migrate === true) {
-                    maintenanceState = config.maintenance.enabled || false;
-                    config.maintenance.enabled = true;
+                    maintenanceState = config.get('maintenance').enabled || false;
+                    config.set('maintenance:enabled', true);
 
                     migrations.update.execute({
                         fromVersion: currentVersion,
                         toVersion: versioning.getNewestDatabaseVersion(),
                         forceMigration: process.env.FORCE_MIGRATION
                     }).then(function () {
-                        config.maintenance.enabled = maintenanceState;
+                        config.set('maintenance:enabled', maintenanceState);
                     }).catch(function (err) {
                         if (!err) {
                             return;
@@ -142,7 +143,7 @@ function init(options) {
         middleware(parentApp);
 
         // Log all theme errors and warnings
-        validateThemes(config.paths.themePath)
+        validateThemes(config.getContentPath('themes'))
             .catch(function (result) {
                 // TODO: change `result` to something better
                 result.errors.forEach(function (err) {
@@ -160,7 +161,12 @@ function init(options) {
 
         // scheduling can trigger api requests, that's why we initialize the module after the ghost server creation
         // scheduling module can create x schedulers with different adapters
-        return scheduling.init(_.extend(config.scheduling, {apiUrl: config.apiUrl()}));
+        return scheduling.init({
+            active: config.get('scheduling').active,
+            apiUrl: utils.url.apiUrl(),
+            internalPath: config.get('paths').internalSchedulingPath,
+            contentPath: config.getContentPath('scheduling')
+        });
     }).then(function () {
         return ghostServer;
     });

@@ -11,7 +11,7 @@ var _        = require('lodash'),
     backup;
 
 writeExportFile = function writeExportFile(exportResult) {
-    var filename = path.resolve(config.paths.contentPath + '/data/' + exportResult.filename);
+    var filename = path.resolve(config.get('paths').contentPath + '/data/' + exportResult.filename);
 
     return Promise.promisify(fs.writeFile)(filename, JSON.stringify(exportResult.data)).return(filename);
 };

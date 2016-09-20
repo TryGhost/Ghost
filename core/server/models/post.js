@@ -10,6 +10,7 @@ var _              = require('lodash'),
     ghostBookshelf = require('./base'),
     events         = require('../events'),
     config         = require('../config'),
+    utils          = require('../utils'),
     baseUtils      = require('./base/utils'),
     i18n           = require('../i18n'),
     Post,
@@ -176,10 +177,10 @@ Post = ghostBookshelf.Model.extend({
                     i18n.t('errors.models.post.valueCannotBeBlank', {key: 'published_at'})
                 ));
             // CASE: to schedule/reschedule a post, a minimum diff of x minutes is needed (default configured is 2minutes)
-            } else if (publishedAtHasChanged && moment(publishedAt).isBefore(moment().add(config.times.cannotScheduleAPostBeforeInMinutes, 'minutes'))) {
+            } else if (publishedAtHasChanged && moment(publishedAt).isBefore(moment().add(config.get('times').cannotScheduleAPostBeforeInMinutes, 'minutes'))) {
                 return Promise.reject(new errors.ValidationError(
                     i18n.t('errors.models.post.expectedPublishedAtInFuture', {
-                        cannotScheduleAPostBeforeInMinutes: config.times.cannotScheduleAPostBeforeInMinutes
+                        cannotScheduleAPostBeforeInMinutes: config.get('times').cannotScheduleAPostBeforeInMinutes
                     })
                 ));
             }
@@ -419,7 +420,7 @@ Post = ghostBookshelf.Model.extend({
         }
 
         if (!options.columns || (options.columns && options.columns.indexOf('url') > -1)) {
-            attrs.url = config.urlPathForPost(attrs);
+            attrs.url = utils.url.urlPathForPost(attrs);
         }
 
         return attrs;

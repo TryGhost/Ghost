@@ -30,7 +30,7 @@ describe('Private Controller', function () {
             params: {}
         };
 
-        defaultPath = path.join(configUtils.config.paths.appRoot, '/core/server/apps/private-blogging/lib/views/private.hbs');
+        defaultPath = path.join(configUtils.config.get('paths').appRoot, '/core/server/apps/private-blogging/lib/views/private.hbs');
 
         configUtils.set({
             theme: {

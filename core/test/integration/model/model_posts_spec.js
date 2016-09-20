@@ -14,9 +14,7 @@ var testUtils       = require('../../utils'),
     errors          = require('../../../server/errors'),
     DataGenerator   = testUtils.DataGenerator,
     context         = testUtils.context.owner,
-
     configUtils = require('../../utils/configUtils'),
-
     sandbox         = sinon.sandbox.create();
 
 describe('Post Model', function () {
@@ -68,9 +66,7 @@ describe('Post Model', function () {
 
         describe('findAll', function () {
             beforeEach(function () {
-                configUtils.set({theme: {
-                    permalinks: '/:slug/'
-                }});
+                configUtils.set('theme:permalinks', '/:slug/');
             });
 
             it('can findAll', function (done) {
@@ -293,9 +289,7 @@ describe('Post Model', function () {
 
         describe('findOne', function () {
             beforeEach(function () {
-                configUtils.set({theme: {
-                    permalinks: '/:slug/'
-                }});
+                configUtils.set('theme:permalinks', '/:slug/');
             });
 
             it('can findOne', function (done) {
@@ -346,9 +340,7 @@ describe('Post Model', function () {
             it('can findOne, returning a dated permalink', function (done) {
                 var firstPost = 1;
 
-                configUtils.set({theme: {
-                    permalinks: '/:year/:month/:day/:slug/'
-                }});
+                configUtils.set('theme:permalinks', '/:year/:month/:day/:slug/');
 
                 PostModel.findOne({id: firstPost})
                     .then(function (result) {

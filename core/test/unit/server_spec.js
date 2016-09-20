@@ -4,17 +4,17 @@ var should = require('should'),
     Promise = require('bluebird'),
     rewire = require('rewire'),
     config = require('../../server/config'),
-    versioning = require(config.paths.corePath + '/server/data/schema/versioning'),
-    migration = require(config.paths.corePath + '/server/data/migration'),
-    models = require(config.paths.corePath + '/server/models'),
-    permissions = require(config.paths.corePath + '/server/permissions'),
-    api = require(config.paths.corePath + '/server/api'),
-    apps = require(config.paths.corePath + '/server/apps'),
-    i18n = require(config.paths.corePath + '/server/i18n'),
-    xmlrpc = require(config.paths.corePath + '/server/data/xml/xmlrpc'),
-    slack = require(config.paths.corePath + '/server/data/slack'),
-    scheduling = require(config.paths.corePath + '/server/scheduling'),
-    bootstrap = rewire(config.paths.corePath + '/server'),
+    versioning = require(config.get('paths').corePath + '/server/data/schema/versioning'),
+    migration = require(config.get('paths').corePath + '/server/data/migration'),
+    models = require(config.get('paths').corePath + '/server/models'),
+    permissions = require(config.get('paths').corePath + '/server/permissions'),
+    api = require(config.get('paths').corePath + '/server/api'),
+    apps = require(config.get('paths').corePath + '/server/apps'),
+    i18n = require(config.get('paths').corePath + '/server/i18n'),
+    xmlrpc = require(config.get('paths').corePath + '/server/data/xml/xmlrpc'),
+    slack = require(config.get('paths').corePath + '/server/data/slack'),
+    scheduling = require(config.get('paths').corePath + '/server/scheduling'),
+    bootstrap = rewire(config.get('paths').corePath + '/server'),
     sandbox = sinon.sandbox.create();
 
 describe('server bootstrap', function () {
@@ -61,7 +61,7 @@ describe('server bootstrap', function () {
                     migration.populate.calledOnce.should.eql(true);
                     migration.update.execute.calledOnce.should.eql(false);
                     models.Settings.populateDefaults.callCount.should.eql(1);
-                    config.maintenance.enabled.should.eql(false);
+                    config.get('maintenance').enabled.should.eql(false);
                     done();
                 })
                 .catch(function (err) {
@@ -112,7 +112,7 @@ describe('server bootstrap', function () {
 
                     models.Settings.populateDefaults.callCount.should.eql(1);
                     migration.populate.calledOnce.should.eql(false);
-                    config.maintenance.enabled.should.eql(false);
+                    config.get('maintenance').enabled.should.eql(false);
 
                     done();
                 })
