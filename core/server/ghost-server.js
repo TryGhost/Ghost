@@ -181,11 +181,15 @@ GhostServer.prototype.logStartMessages = function () {
     // Startup & Shutdown messages
     if (process.env.NODE_ENV === 'production') {
         console.log(
-            chalk.green(i18n.t('notices.httpServer.ghostIsRunningIn', {env: process.env.NODE_ENV})),
-            i18n.t('notices.httpServer.yourBlogIsAvailableOn', {url: config.get('url')}),
+            chalk.red('Currently running Ghost 1.0.0 Alpha, this is NOT suitable for production! \n'),
+            chalk.white('Please switch to the stable branch. \n'),
+            chalk.white('More information on the Ghost 1.0.0 Alpha at: ') + chalk.cyan('https://support.ghost.org/v1-0-alpha') + '\n',
             chalk.gray(i18n.t('notices.httpServer.ctrlCToShutDown'))
         );
     } else {
+        console.log(
+            chalk.blue('Welcome to the Ghost 1.0.0 Alpha - this version of Ghost is for development only.')
+        );
         console.log(
             chalk.green(i18n.t('notices.httpServer.ghostIsRunningIn', {env: process.env.NODE_ENV})),
             i18n.t('notices.httpServer.listeningOn'),
