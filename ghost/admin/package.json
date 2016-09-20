@@ -83,7 +83,7 @@
     "grunt-jscs": "3.0.1",
     "grunt-shell": "1.3.1",
     "jquery-deparam": "0.5.2",
-    "liquid-fire": "0.24.1",
+    "liquid-fire": "0.26.1",
     "liquid-tether": "1.1.1",
     "loader.js": "4.0.11",
     "lodash": "4.15.0",
