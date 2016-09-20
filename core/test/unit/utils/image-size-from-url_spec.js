@@ -3,7 +3,8 @@ var should = require('should'),
     rewire = require('rewire'),
     nock = require('nock'),
     sinon = require('sinon'),
-    config = require('../../../server/config'),
+    sandbox = sinon.sandbox.create(),
+    utils  = require('../../../server/utils'),
 
     // Stuff we are testing
     imageSize = rewire('../../../server/utils/image-size-from-url');
@@ -14,11 +15,11 @@ describe('Image Size', function () {
         requestMock;
 
     beforeEach(function () {
-        sizeOfStub = sinon.stub();
+        sizeOfStub = sandbox.stub();
     });
 
     afterEach(function () {
-        sinon.restore();
+        sandbox.restore();
     });
 
     it('should have an image size function', function () {
@@ -124,7 +125,7 @@ describe('Image Size', function () {
                     width: 100
                 };
 
-        urlForStub = sinon.stub(config, 'urlFor');
+        urlForStub = sandbox.stub(utils.url, 'urlFor');
         urlForStub.withArgs('image').returns('http://myblog.com/content/images/cat.jpg');
 
         requestMock = nock('http://myblog.com')

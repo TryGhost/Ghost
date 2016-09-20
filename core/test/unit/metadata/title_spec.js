@@ -1,26 +1,32 @@
 var getTitle = require('../../../server/data/meta/title'),
-    config = require('../../../server/config');
+    configUtils = require('../../utils/configUtils');
 
 describe('getTitle', function () {
+    afterEach(function () {
+        configUtils.restore();
+    });
+
     it('should return meta_title if on data root', function () {
         var title = getTitle({
             meta_title: 'My test title'
         });
+
         title.should.equal('My test title');
     });
 
     it('should return blog title if on home', function () {
-        config.set({
+        configUtils.set({
             theme: {
                 title: 'My blog title'
             }
         });
+
         var title = getTitle({}, {context: 'home'});
         title.should.equal('My blog title');
     });
 
     it('should return author name - blog title if on data author page', function () {
-        config.set({
+        configUtils.set({
             theme: {
                 title: 'My blog title 2'
             }
@@ -34,11 +40,12 @@ describe('getTitle', function () {
     });
 
     it('should return author page title if on data author page with more then one page', function () {
-        config.set({
+        configUtils.set({
             theme: {
                 title: 'My blog title 2'
             }
         });
+
         var title = getTitle({
             author: {
                 name: 'Author Name'
@@ -50,29 +57,33 @@ describe('getTitle', function () {
                 page: 3
             }
         });
+
         title.should.equal('Author Name - Page 3 - My blog title 2');
     });
 
     it('should return tag name - blog title if on data tag page no meta_title', function () {
-        config.set({
+        configUtils.set({
             theme: {
                 title: 'My blog title 3'
             }
         });
+
         var title = getTitle({
             tag: {
                 name: 'Tag Name'
             }
         }, {context: ['tag']});
+
         title.should.equal('Tag Name - My blog title 3');
     });
 
     it('should return tag name - page - blog title if on data tag page no meta_title', function () {
-        config.set({
+        configUtils.set({
             theme: {
                 title: 'My blog title 3'
             }
         });
+
         var title = getTitle({
             tag: {
                 name: 'Tag Name'
@@ -84,6 +95,7 @@ describe('getTitle', function () {
                 page: 39
             }
         });
+
         title.should.equal('Tag Name - Page 39 - My blog title 3');
     });
 
@@ -94,6 +106,7 @@ describe('getTitle', function () {
                 meta_title: 'My Tag Meta Title!'
             }
         }, {context: ['tag']});
+
         title.should.equal('My Tag Meta Title!');
     });
 
@@ -103,6 +116,7 @@ describe('getTitle', function () {
                 title: 'My awesome post!'
             }
         }, {context: ['post']});
+
         title.should.equal('My awesome post!');
     });
 
@@ -154,11 +168,12 @@ describe('getTitle', function () {
     });
 
     it('should return blog title with page if unknown type', function () {
-        config.set({
+        configUtils.set({
             theme: {
                 title: 'My blog title 4'
             }
         });
+
         var title = getTitle({}, {
             context: ['paged'],
             pagination: {
@@ -166,6 +181,7 @@ describe('getTitle', function () {
                 page: 35
             }
         });
+
         title.should.equal('My blog title 4 - Page 35');
     });
 });

@@ -25,21 +25,11 @@ var _                          = require('lodash'),
     DatabaseNotPopulated       = require('./database-not-populated'),
     DatabaseVersion            = require('./database-version'),
     i18n                       = require('../i18n'),
-    config,
+    config                     = require('../config'),
     errors,
 
     // Paths for views
     userErrorTemplateExists   = false;
-
-// Shim right now to deal with circular dependencies.
-// @TODO(hswolff): remove circular dependency and lazy require.
-function getConfigModule() {
-    if (!config) {
-        config = require('../config');
-    }
-
-    return config;
-}
 
 function isValidErrorStatus(status) {
     return _.isNumber(status) && status >= 400 && status < 600;
@@ -69,7 +59,7 @@ function getStatusCode(error) {
  */
 errors = {
     updateActiveTheme: function (activeTheme) {
-        userErrorTemplateExists = getConfigModule().paths.availableThemes[activeTheme].hasOwnProperty('error.hbs');
+        userErrorTemplateExists = config.get('paths').availableThemes[activeTheme].hasOwnProperty('error.hbs');
     },
 
     throwError: function (err) {
@@ -135,7 +125,14 @@ errors = {
         var self = this,
             origArgs = _.toArray(arguments).slice(1),
             stack,
-            msgs;
+            msgs,
+            hideStack = false;
+
+        // DatabaseVersion errors are usually fatal, we output a nice message
+        // And the stack is not at all useful in this case
+        if (err instanceof DatabaseVersion) {
+            hideStack = true;
+        }
 
         if (_.isArray(err)) {
             _.each(err, function (e) {
@@ -182,7 +179,7 @@ errors = {
             // add a new line
             msgs.push('\n');
 
-            if (stack) {
+            if (stack && !hideStack) {
                 msgs.push(stack, '\n');
             }
 
@@ -295,7 +292,7 @@ errors = {
     renderErrorPage: function (statusCode, err, req, res, next) {
         /*jshint unused:false*/
         var self = this,
-            defaultErrorTemplatePath = path.resolve(getConfigModule().paths.adminViews, 'user-error.hbs');
+            defaultErrorTemplatePath = path.resolve(config.get('paths').adminViews, 'user-error.hbs');
 
         function parseStack(stack) {
             if (!_.isString(stack)) {

@@ -1,6 +1,6 @@
 var cheerio  = require('cheerio'),
     url      = require('url'),
-    config   = require('../config');
+    utils  = require('../utils');
 
 /**
  * Make absolute URLs
@@ -46,7 +46,7 @@ function makeAbsoluteUrls(html, siteUrl, itemUrl) {
             // if the relative URL begins with a '/' use the blog URL (including sub-directory)
             // as the base URL, otherwise use the post's URL.
             baseUrl = attributeValue[0] === '/' ? siteUrl : itemUrl;
-            attributeValue = config.urlJoin(baseUrl, attributeValue);
+            attributeValue = utils.url.urlJoin(baseUrl, attributeValue);
             el.attr(attributeName, attributeValue);
         });
     });
