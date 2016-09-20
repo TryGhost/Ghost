@@ -30,7 +30,7 @@ module.exports = {
         name: {type: 'string', maxlength: 150, nullable: false},
         slug: {type: 'string', maxlength: 150, nullable: false, unique: true},
         password: {type: 'string', maxlength: 60, nullable: false},
-        email: {type: 'string', maxlength: 254, nullable: false, unique: true, validations: {isEmail: true}},
+        email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
         image: {type: 'text', maxlength: 2000, nullable: true},
         cover: {type: 'text', maxlength: 2000, nullable: true},
         bio: {type: 'string', maxlength: 200, nullable: true},
@@ -188,14 +188,14 @@ module.exports = {
     },
     accesstokens: {
         id: {type: 'increments', nullable: false, primary: true},
-        token: {type: 'string', nullable: false, unique: true},
+        token: {type: 'string', maxlength: 191, nullable: false, unique: true},
         user_id: {type: 'integer', nullable: false, unsigned: true, references: 'users.id'},
         client_id: {type: 'integer', nullable: false, unsigned: true, references: 'clients.id'},
         expires: {type: 'bigInteger', nullable: false}
     },
     refreshtokens: {
         id: {type: 'increments', nullable: false, primary: true},
-        token: {type: 'string', nullable: false, unique: true},
+        token: {type: 'string', maxlength: 191, nullable: false, unique: true},
         user_id: {type: 'integer', nullable: false, unsigned: true, references: 'users.id'},
         client_id: {type: 'integer', nullable: false, unsigned: true, references: 'clients.id'},
         expires: {type: 'bigInteger', nullable: false}
@@ -204,7 +204,7 @@ module.exports = {
         id: {type: 'increments', nullable: false, primary: true},
         uuid: {type: 'string', maxlength: 36, nullable: false, validations: {isUUID: true}},
         name: {type: 'string', maxlength: 150, nullable: true},
-        email: {type: 'string', maxlength: 254, nullable: false, unique: true, validations: {isEmail: true}},
+        email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
         status: {type: 'string', maxlength: 150, nullable: false, defaultTo: 'pending', validations: {isIn: [['subscribed', 'pending', 'unsubscribed']]}},
         post_id: {type: 'integer', nullable: true, unsigned: true, references: 'posts.id'},
         subscribed_url: {type: 'text', maxlength: 2000, nullable: true, validations: {isEmptyOrURL: true}},
