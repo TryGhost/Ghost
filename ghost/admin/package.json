@@ -72,7 +72,7 @@
     "ember-suave": "4.0.0",
     "ember-watson": "0.8.2",
     "ember-wormhole": "0.3.6",
-    "emberx-file-input": "1.0.0",
+    "emberx-file-input": "1.1.0",
     "fs-extra": "0.30.0",
     "glob": "7.0.6",
     "grunt": "1.0.1",
