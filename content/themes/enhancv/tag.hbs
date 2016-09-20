@@ -4,7 +4,7 @@
     the {body} of the default.hbs template, which contains our header/footer. }}
 
 {{! The main content area on the homepage }}
-<main class="content" role="main">
+<main class="content container posts-wrapper" role="main">
 
         <header class="tag-archive-header">
             <h1>{{tag.name}}</h1>
@@ -12,9 +12,8 @@
         </header>
 
     {{! Each post will be output using this markup }}
-    {{#foreach posts}}
 
-    <article class="{{post_class}}">
+    {{!-- <article class="{{post_class}}">
         <header class="post-header">
             <span class="post-meta"><time datetime="{{date format='YYYY-MM-DD'}}">{{date format="MMMM Do, YYYY"}}</time> {{tags prefix="on "}}</span>
             <h2 class="post-title"><a href="{{url}}">{{{title}}}</a></h2>
@@ -23,9 +22,27 @@
         <section class="post-excerpt">
             <p>{{excerpt}}&hellip;</p>
         </section>
-    </article>
-
-    {{/foreach}}
+    </article> --}}
+    <div class="row">
+        {{#foreach posts}}
+        <a href="{{url}}">
+            <div class="col-md-6">
+              <div class="panel panel-default single-post">
+                <div class="panel-heading" style="background-image: url({{image}})">
+                    <div class="green-overlay"></div>
+                    <span class="custom-badge custom-badge-white category">{{this.tags.1.name}}</span>
+                </div>
+                <div class="panel-body">
+                  <h3>{{{title}}}</h3>
+                  <p>{{excerpt characters="115"}}</p>
+                  <span class="shares-count">3.5k shares</span>
+                  <span class="comments-count"><i class="fa fa-comment"></i> 25</span>
+                </div>
+              </div>
+            </div>
+        </a>
+        {{/foreach}}
+    </div>
 
     {{!! After all the posts, we have the previous/next pagination links }}
     <div class="container">
