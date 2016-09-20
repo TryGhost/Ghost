@@ -62,7 +62,7 @@
     "ember-light-table": "0.1.9",
     "ember-load-initializers": "0.5.1",
     "ember-myth": "0.1.1",
-    "ember-one-way-controls": "1.1.1",
+    "ember-one-way-controls": "0.9.2",
     "ember-power-select": "0.10.11",
     "ember-resolver": "2.1.0",
     "ember-route-action-helper": "1.0.0",
