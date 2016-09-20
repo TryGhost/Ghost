@@ -14,7 +14,7 @@ function exchangeRefreshToken(client, refreshToken, scope, done) {
             return done(new errors.NoPermissionError(i18n.t('errors.middleware.oauth.invalidRefreshToken')), false);
         } else {
             var token = model.toJSON(),
-                accessToken = utils.uid(256),
+                accessToken = utils.uid(191),
                 accessExpires = Date.now() + utils.ONE_HOUR_MS,
                 refreshExpires = Date.now() + utils.ONE_WEEK_MS;
 
@@ -47,8 +47,8 @@ function exchangePassword(client, username, password, scope, done) {
         // Validate the user
         return models.User.check({email: username, password: password}).then(function then(user) {
             // Everything validated, return the access- and refreshtoken
-            var accessToken = utils.uid(256),
-                refreshToken = utils.uid(256),
+            var accessToken = utils.uid(191),
+                refreshToken = utils.uid(191),
                 accessExpires = Date.now() + utils.ONE_HOUR_MS,
                 refreshExpires = Date.now() + utils.ONE_WEEK_MS;
 
