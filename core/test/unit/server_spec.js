@@ -18,7 +18,8 @@ var should = require('should'),
     sandbox = sinon.sandbox.create();
 
 describe('server bootstrap', function () {
-    var middlewareStub, resetMiddlewareStub, initDbHashAndFirstRunStub, resetInitDbHashAndFirstRunStub;
+    var middlewareStub, resetMiddlewareStub, initDbHashAndFirstRunStub, resetInitDbHashAndFirstRunStub,
+        populateStub;
 
     before(function () {
         models.init();
@@ -28,7 +29,7 @@ describe('server bootstrap', function () {
         middlewareStub = sandbox.stub();
         initDbHashAndFirstRunStub = sandbox.stub();
 
-        sandbox.stub(migration, 'populate').returns(Promise.resolve());
+        populateStub = sandbox.stub(migration, 'populate').returns(Promise.resolve());
         sandbox.stub(models.Settings, 'populateDefaults').returns(Promise.resolve());
         sandbox.stub(permissions, 'init').returns(Promise.resolve());
         sandbox.stub(api, 'init').returns(Promise.resolve());
@@ -69,7 +70,11 @@ describe('server bootstrap', function () {
                 });
         });
 
-        it('database does exist: expect no update', function (done) {
+        // @TODO fix these two tests once we've decided on a new migration
+        // versioning scheme
+        // the tests do not work right now because if the version isn't an
+        // alpha version, we error. I've added two temporary tests to show this.
+        it.skip('database does exist: expect no update', function (done) {
             sandbox.stub(migration.update, 'isDatabaseOutOfDate').returns({migrate:false});
             sandbox.spy(migration.update, 'execute');
 
@@ -91,7 +96,7 @@ describe('server bootstrap', function () {
                 });
         });
 
-        it('database does exist: expect update', function (done) {
+        it.skip('database does exist: expect update', function (done) {
             sandbox.stub(migration.update, 'isDatabaseOutOfDate').returns({migrate:true});
             sandbox.stub(migration.update, 'execute').returns(Promise.resolve());
 
@@ -118,6 +123,45 @@ describe('server bootstrap', function () {
                 })
                 .catch(function (err) {
                     done(err);
+                });
+        });
+
+        // @TODO remove these temporary tests ;)
+        it('TEMP: database does exist: expect alpha error', function (done) {
+            sandbox.stub(migration.update, 'isDatabaseOutOfDate').returns({migrate:false});
+            sandbox.spy(migration.update, 'execute');
+
+            sandbox.stub(versioning, 'getDatabaseVersion', function () {
+                return Promise.resolve('006');
+            });
+
+            bootstrap()
+                .then(function () {
+                    done('This should not be called');
+                })
+                .catch(function (err) {
+                    err.errorType.should.eql('DatabaseVersion');
+                    err.message.should.eql('Your database version is not compatible with Ghost 1.0.0 Alpha (master branch)');
+                    done();
+                });
+        });
+
+        it('TEMP: database does exist: expect alpha error', function (done) {
+            sandbox.stub(migration.update, 'isDatabaseOutOfDate').returns({migrate:true});
+            sandbox.stub(migration.update, 'execute').returns(Promise.resolve());
+
+            sandbox.stub(versioning, 'getDatabaseVersion', function () {
+                return Promise.resolve('006');
+            });
+
+            bootstrap()
+                .then(function () {
+                    done('This should not be called');
+                })
+                .catch(function (err) {
+                    err.errorType.should.eql('DatabaseVersion');
+                    err.message.should.eql('Your database version is not compatible with Ghost 1.0.0 Alpha (master branch)');
+                    done();
                 });
         });
     });
