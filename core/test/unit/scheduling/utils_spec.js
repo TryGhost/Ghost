@@ -2,8 +2,8 @@
 var should = require('should'),
     fs = require('fs'),
     config = require(__dirname + '/../../../server/config'),
-    errors = require(config.paths.corePath + '/server/errors'),
-    schedulingUtils = require(config.paths.corePath + '/server/scheduling/utils');
+    errors = require(config.get('paths').corePath + '/server/errors'),
+    schedulingUtils = require(config.get('paths').corePath + '/server/scheduling/utils');
 
 describe('Scheduling: utils', function () {
     describe('success', function () {
@@ -29,9 +29,10 @@ describe('Scheduling: utils', function () {
                 'module.exports = AnotherAdapter';
 
             fs.writeFileSync(__dirname + '/another-scheduler.js', jsFile);
+
             schedulingUtils.createAdapter({
                 active: 'another-scheduler',
-                path: __dirname + '/'
+                contentPath: __dirname + '/'
             }).then(function (adapter) {
                 should.exist(adapter);
                 done();

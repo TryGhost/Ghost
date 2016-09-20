@@ -2,6 +2,7 @@ var crypto      = require('crypto'),
     downsize    = require('downsize'),
     RSS         = require('rss'),
     config      = require('../../../config'),
+    utils       = require('../../../utils'),
     errors      = require('../../../errors'),
     filters     = require('../../../filters'),
     processUrls = require('../../../utils/make-absolute-urls'),
@@ -17,11 +18,11 @@ var crypto      = require('crypto'),
     feedCache = {};
 
 function isTag(req) {
-    return req.originalUrl.indexOf('/' + config.routeKeywords.tag + '/') !== -1;
+    return req.originalUrl.indexOf('/' + config.get('routeKeywords').tag + '/') !== -1;
 }
 
 function isAuthor(req) {
-    return req.originalUrl.indexOf('/' + config.routeKeywords.author + '/') !== -1;
+    return req.originalUrl.indexOf('/' + config.get('routeKeywords').author + '/') !== -1;
 }
 
 function handleError(next) {
@@ -40,8 +41,8 @@ function getData(channelOpts, slugParam) {
         if (result.data && result.data.tag) { titleStart = result.data.tag[0].name + ' - ' || ''; }
         if (result.data && result.data.author) { titleStart = result.data.author[0].name + ' - ' || ''; }
 
-        response.title = titleStart + config.theme.title;
-        response.description = config.theme.description;
+        response.title = titleStart + config.get('theme').title;
+        response.description = config.get('theme').description;
         response.results = {
             posts: result.posts,
             meta: result.meta
@@ -52,12 +53,12 @@ function getData(channelOpts, slugParam) {
 }
 
 function getBaseUrl(req, slugParam) {
-    var baseUrl = config.paths.subdir;
+    var baseUrl = utils.url.getSubdir();
 
     if (isTag(req)) {
-        baseUrl += '/' + config.routeKeywords.tag + '/' + slugParam + '/rss/';
+        baseUrl += '/' + config.get('routeKeywords').tag + '/' + slugParam + '/rss/';
     } else if (isAuthor(req)) {
-        baseUrl += '/' + config.routeKeywords.author + '/' + slugParam + '/rss/';
+        baseUrl += '/' + config.get('routeKeywords').author + '/' + slugParam + '/rss/';
     } else {
         baseUrl += '/rss/';
     }
@@ -106,7 +107,7 @@ generateFeed = function generateFeed(data) {
     });
 
     data.results.posts.forEach(function forEach(post) {
-        var itemUrl = config.urlFor('post', {post: post, secure: data.secure}, true),
+        var itemUrl = utils.url.urlFor('post', {post: post, secure: data.secure}, true),
             htmlContent = processUrls(post.html, data.siteUrl, itemUrl),
             item = {
                 title: post.title,
@@ -121,7 +122,7 @@ generateFeed = function generateFeed(data) {
             imageUrl;
 
         if (post.image) {
-            imageUrl = config.urlFor('image', {image: post.image, secure: data.secure}, true);
+            imageUrl = utils.url.urlFor('image', {image: post.image, secure: data.secure}, true);
 
             // Add a media content tag
             item.custom_elements.push({
@@ -176,8 +177,8 @@ generate = function generate(req, res, next) {
         }
 
         data.version = res.locals.safeVersion;
-        data.siteUrl = config.urlFor('home', {secure: req.secure}, true);
-        data.feedUrl = config.urlFor({relativeUrl: baseUrl, secure: req.secure}, true);
+        data.siteUrl = utils.url.urlFor('home', {secure: req.secure}, true);
+        data.feedUrl = utils.url.urlFor({relativeUrl: baseUrl, secure: req.secure}, true);
         data.secure = req.secure;
 
         return getFeedXml(req.originalUrl, data).then(function then(feedXml) {

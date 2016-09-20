@@ -1,6 +1,6 @@
 var Promise = require('bluebird'),
     moment = require('moment'),
-    utils = require(__dirname + '/../utils'),
+    localUtils = require(__dirname + '/../utils'),
     events = require(__dirname + '/../../events'),
     errors = require(__dirname + '/../../errors'),
     models = require(__dirname + '/../../models'),
@@ -53,7 +53,7 @@ exports.init = function init(options) {
         .then(function (_client) {
             client = _client;
 
-            return utils.createAdapter(config);
+            return localUtils.createAdapter(config);
         })
         .then(function (_adapter) {
             adapter = _adapter;

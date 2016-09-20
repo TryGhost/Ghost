@@ -21,7 +21,7 @@ function forwardToExpressStatic(req, res, next) {
         next();
     } else {
         express.static(
-            path.join(config.paths.themePath, req.app.get('activeTheme')),
+            path.join(config.getContentPath('themes'), req.app.get('activeTheme')),
             {maxAge: utils.ONE_YEAR_MS}
         )(req, res, next);
     }

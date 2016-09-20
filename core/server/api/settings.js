@@ -50,20 +50,20 @@ updateConfigCache = function () {
         }
     }
 
-    config.set({
-        theme: {
-            title: (settingsCache.title && settingsCache.title.value) || '',
-            description: (settingsCache.description && settingsCache.description.value) || '',
-            logo: (settingsCache.logo && settingsCache.logo.value) || '',
-            cover: (settingsCache.cover && settingsCache.cover.value) || '',
-            navigation: (settingsCache.navigation && JSON.parse(settingsCache.navigation.value)) || [],
-            postsPerPage: (settingsCache.postsPerPage && settingsCache.postsPerPage.value) || 5,
-            permalinks: (settingsCache.permalinks && settingsCache.permalinks.value) || '/:slug/',
-            twitter: (settingsCache.twitter && settingsCache.twitter.value) || '',
-            facebook: (settingsCache.facebook && settingsCache.facebook.value) || '',
-            timezone: (settingsCache.activeTimezone && settingsCache.activeTimezone.value) || config.theme.timezone
-        },
-        labs: labsValue
+    config.set('theme:title', (settingsCache.title && settingsCache.title.value) || '');
+    config.set('theme:description', (settingsCache.description && settingsCache.description.value) || '');
+    config.set('theme:logo', (settingsCache.logo && settingsCache.logo.value) || '');
+    config.set('theme:cover', (settingsCache.cover && settingsCache.cover.value) || '');
+    config.set('theme:navigation', (settingsCache.navigation && JSON.parse(settingsCache.navigation.value)) || []);
+    config.set('theme:postsPerPage', (settingsCache.postsPerPage && settingsCache.postsPerPage.value) || config.get('theme').postsPerPage);
+    config.set('theme:permalinks', (settingsCache.permalinks && settingsCache.permalinks.value) || config.get('theme').permalinks);
+    config.set('theme:twitter', (settingsCache.twitter && settingsCache.twitter.value) || '');
+    config.set('theme:facebook', (settingsCache.facebook && settingsCache.facebook.value) || '');
+    config.set('theme:timezone', (settingsCache.activeTimezone && settingsCache.activeTimezone.value) || config.get('theme').timezone);
+    config.set('theme:url', config.get('url') ? config.get('url').replace(/\/$/, '') : '');
+
+    _.each(labsValue, function (value, key) {
+        config.set('labs:' + key, value);
     });
 };
 
@@ -177,8 +177,8 @@ readSettingsResult = function (settingsModels) {
 
             return memo;
         }, {}),
-        themes = config.paths.availableThemes,
-        apps = config.paths.availableApps,
+        themes = config.get('paths').availableThemes,
+        apps = config.get('paths').availableApps,
         res;
 
     if (settings.activeTheme && themes) {

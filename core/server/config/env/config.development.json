@@ -1,0 +1,12 @@
+{
+    "url": "http://localhost:2368",
+    "database": {
+        "connection": {
+            "filename": "content/data/ghost-dev.db"
+        },
+        "debug": false
+    },
+    "paths": {
+        "contentPath": "content/"
+    }
+}

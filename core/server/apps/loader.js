@@ -11,16 +11,16 @@ var path = require('path'),
     loader;
 
 function isInternalApp(name) {
-    return _.includes(config.internalApps, name);
+    return _.includes(config.get('internalApps'), name);
 }
 
 // Get the full path to an app by name
 function getAppAbsolutePath(name) {
     if (isInternalApp(name)) {
-        return path.join(config.paths.internalAppPath, name);
+        return path.join(config.get('paths').internalAppPath, name);
     }
 
-    return path.join(config.paths.appPath, name);
+    return path.join(config.getContentPath('apps'), name);
 }
 
 // Get a relative path to the given apps root, defaults

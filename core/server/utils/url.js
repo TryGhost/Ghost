@@ -3,36 +3,54 @@
 
 var moment            = require('moment-timezone'),
     _                 = require('lodash'),
-    ghostConfig = '',
+    url               = require('url'),
+    config            = require('./../config'),
     // @TODO: unify this with routes.apiBaseUrl
     apiPath = '/ghost/api/v0.1';
 
-// ## setConfig
-// Simple utility function to allow
-// passing of the ghostConfig
-// object here to be used locally
-// to ensure clean dependency graph
-// (i.e. no circular dependencies).
-function setConfig(config) {
-    ghostConfig = config;
-}
-
 function getBaseUrl(secure) {
-    if (secure && ghostConfig.urlSSL) {
-        return ghostConfig.urlSSL;
+    if (secure && config.get('urlSSL')) {
+        return config.get('urlSSL');
     } else {
         if (secure) {
-            return ghostConfig.url.replace('http://', 'https://');
+            return config.get('url').replace('http://', 'https://');
         } else {
-            return ghostConfig.url;
+            return config.get('url');
         }
+    }
+}
+
+function getSubdir() {
+    var localPath, subdir;
+
+    // Parse local path location
+    if (config.get('url')) {
+        localPath = url.parse(config.get('url')).path;
+
+        // Remove trailing slash
+        if (localPath !== '/') {
+            localPath = localPath.replace(/\/$/, '');
+        }
+    }
+
+    subdir = localPath === '/' ? '' : localPath;
+    return subdir;
+}
+
+function getProtectedSlugs() {
+    var subdir = getSubdir();
+
+    if (!_.isEmpty(subdir)) {
+        return config.get('slugs').protected.concat([subdir.split('/').pop()]);
+    } else {
+        return config.get('slugs').protected;
     }
 }
 
 function urlJoin() {
     var args = Array.prototype.slice.call(arguments),
         prefixDoubleSlash = false,
-        subdir = ghostConfig.paths.subdir.replace(/^\/|\/+$/, ''),
+        subdir = getSubdir().replace(/^\/|\/+$/, ''),
         subdirRegex,
         url;
 
@@ -89,7 +107,7 @@ function createUrl(urlPath, absolute, secure) {
     if (absolute) {
         base = getBaseUrl(secure);
     } else {
-        base = ghostConfig.paths.subdir;
+        base = getSubdir();
     }
 
     return urlJoin(base, urlPath);
@@ -103,8 +121,8 @@ function createUrl(urlPath, absolute, secure) {
  */
 function urlPathForPost(post) {
     var output = '',
-        permalinks = ghostConfig.theme.permalinks,
-        publishedAtMoment = moment.tz(post.published_at || Date.now(), ghostConfig.theme.timezone),
+        permalinks = config.get('theme').permalinks,
+        publishedAtMoment = moment.tz(post.published_at || Date.now(), config.get('theme').timezone),
         tags = {
             year:   function () { return publishedAtMoment.format('YYYY'); },
             month:  function () { return publishedAtMoment.format('MM'); },
@@ -179,20 +197,20 @@ function urlFor(context, data, absolute) {
             urlPath = data.post.url;
             secure = data.secure;
         } else if (context === 'tag' && data.tag) {
-            urlPath = urlJoin('/', ghostConfig.routeKeywords.tag, data.tag.slug, '/');
+            urlPath = urlJoin('/', config.get('routeKeywords').tag, data.tag.slug, '/');
             secure = data.tag.secure;
         } else if (context === 'author' && data.author) {
-            urlPath = urlJoin('/', ghostConfig.routeKeywords.author, data.author.slug, '/');
+            urlPath = urlJoin('/', config.get('routeKeywords').author, data.author.slug, '/');
             secure = data.author.secure;
         } else if (context === 'image' && data.image) {
             urlPath = data.image;
-            imagePathRe = new RegExp('^' + ghostConfig.paths.subdir + '/' + ghostConfig.paths.imagesRelPath);
+            imagePathRe = new RegExp('^' + getSubdir() + '/' + config.get('paths').imagesRelPath);
             absolute = imagePathRe.test(data.image) ? absolute : false;
             secure = data.image.secure;
 
             if (absolute) {
                 // Remove the sub-directory from the URL because ghostConfig will add it back.
-                urlPath = urlPath.replace(new RegExp('^' + ghostConfig.paths.subdir), '');
+                urlPath = urlPath.replace(new RegExp('^' + getSubdir()), '');
                 baseUrl = getBaseUrl(secure).replace(/\/$/, '');
                 urlPath = baseUrl + urlPath;
             }
@@ -202,7 +220,8 @@ function urlFor(context, data, absolute) {
             urlPath = data.nav.url;
             secure = data.nav.secure || secure;
             baseUrl = getBaseUrl(secure);
-            hostname = baseUrl.split('//')[1] + ghostConfig.paths.subdir;
+            hostname = baseUrl.split('//')[1] + getSubdir();
+
             if (urlPath.indexOf(hostname) > -1
                 && !urlPath.split(hostname)[0].match(/\.|mailto:/)
                 && urlPath.split(hostname)[1].substring(0,1) !== ':') {
@@ -245,24 +264,25 @@ function apiUrl(options) {
     // @TODO unify this with urlFor
     var url;
 
-    if (ghostConfig.forceAdminSSL) {
-        url = (ghostConfig.urlSSL || ghostConfig.url).replace(/^.*?:\/\//g, 'https://');
-    } else if (ghostConfig.urlSSL) {
-        url = ghostConfig.urlSSL.replace(/^.*?:\/\//g, 'https://');
-    } else if (ghostConfig.url.match(/^https:/)) {
-        url = ghostConfig.url;
+    if (config.get('forceAdminSSL')) {
+        url = (config.get('urlSSL') || config.get('url')).replace(/^.*?:\/\//g, 'https://');
+    } else if (config.get('urlSSL')) {
+        url = config.get('urlSSL').replace(/^.*?:\/\//g, 'https://');
+    } else if (config.get('url').match(/^https:/)) {
+        url = config.get('url');
     } else {
         if (options.cors === false) {
-            url = ghostConfig.url;
+            url = config.get('url');
         } else {
-            url = ghostConfig.url.replace(/^.*?:\/\//g, '//');
+            url = config.get('url').replace(/^.*?:\/\//g, '//');
         }
     }
 
     return url.replace(/\/$/, '') + apiPath + '/';
 }
 
-module.exports.setConfig = setConfig;
+module.exports.getProtectedSlugs = getProtectedSlugs;
+module.exports.getSubdir = getSubdir;
 module.exports.urlJoin = urlJoin;
 module.exports.urlFor = urlFor;
 module.exports.urlPathForPost = urlPathForPost;

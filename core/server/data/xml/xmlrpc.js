@@ -2,6 +2,7 @@ var _               = require('lodash'),
     http            = require('http'),
     xml             = require('xml'),
     config          = require('../../config'),
+    utils           = require('../../utils'),
     errors          = require('../../errors'),
     events          = require('../../events'),
     i18n            = require('../../i18n'),
@@ -19,7 +20,7 @@ pingList = [{
 function ping(post) {
     var pingXML,
         title = post.title,
-        url = config.urlFor('post', {post: post}, true);
+        url = utils.url.urlFor('post', {post: post}, true);
 
     // Only ping when in production and not a page
     if (process.env.NODE_ENV !== 'production' || post.page || config.isPrivacyDisabled('useRpcPing')) {

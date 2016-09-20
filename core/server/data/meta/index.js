@@ -1,6 +1,7 @@
 var _ = require('lodash'),
     Promise = require('bluebird'),
     config = require('../../config'),
+    utils = require('../../utils'),
     getUrl = require('./url'),
     getImageDimensions = require('./image-dimensions'),
     getCanonicalUrl = require('./canonical_url'),
@@ -45,12 +46,12 @@ function getMetaData(data, root) {
         publishedDate: getPublishedDate(data),
         modifiedDate: getModifiedDate(data),
         ogType: getOgType(data),
-        blog: _.cloneDeep(config.theme)
+        blog: _.cloneDeep(config.get('theme'))
     };
 
     metaData.blog.logo = {};
-    metaData.blog.logo.url = config.theme.logo ?
-        config.urlFor('image', {image: config.theme.logo}, true) : config.urlFor({relativeUrl: '/ghost/img/ghosticon.jpg'}, {}, true);
+    metaData.blog.logo.url = config.get('theme').logo ?
+        utils.url.urlFor('image', {image: config.get('theme').logo}, true) : utils.url.urlFor({relativeUrl: '/ghost/img/ghosticon.jpg'}, {}, true);
 
     // TODO: cleanup these if statements
     if (data.post && data.post.html) {

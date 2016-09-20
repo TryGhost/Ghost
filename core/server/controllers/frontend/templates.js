@@ -6,7 +6,7 @@ var _      = require('lodash'),
     config = require('../../config');
 
 function getActiveThemePaths(activeTheme) {
-    return config.paths.availableThemes[activeTheme];
+    return config.get('paths').availableThemes[activeTheme];
 }
 
 /**

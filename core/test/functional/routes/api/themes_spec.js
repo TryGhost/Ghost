@@ -42,11 +42,11 @@ describe('Themes API', function () {
 
     after(function (done) {
         // clean successful uploaded themes
-        fs.removeSync(config.paths.themePath + '/valid');
-        fs.removeSync(config.paths.themePath + '/casper.zip');
+        fs.removeSync(config.getContentPath('themes') + '/valid');
+        fs.removeSync(config.getContentPath('themes') + '/casper.zip');
 
         // gscan creates /test/tmp in test mode
-        fs.removeSync(config.paths.appRoot + '/test');
+        fs.removeSync(config.get('paths').appRoot + '/test');
 
         testUtils.clearData()
             .then(function () {
@@ -92,7 +92,7 @@ describe('Themes API', function () {
                             }
 
                             // ensure contains two files (zip and extracted theme)
-                            fs.readdirSync(config.paths.themePath).join().match(/valid/gi).length.should.eql(1);
+                            fs.readdirSync(config.getContentPath('themes')).join().match(/valid/gi).length.should.eql(1);
                             done();
                         });
                 });
@@ -139,8 +139,8 @@ describe('Themes API', function () {
                         return done(err);
                     }
 
-                    fs.existsSync(config.paths.themePath + '/valid').should.eql(false);
-                    fs.existsSync(config.paths.themePath + '/valid.zip').should.eql(false);
+                    fs.existsSync(config.getContentPath('themes') + '/valid').should.eql(false);
+                    fs.existsSync(config.getContentPath('themes') + '/valid.zip').should.eql(false);
                     done();
                 });
         });

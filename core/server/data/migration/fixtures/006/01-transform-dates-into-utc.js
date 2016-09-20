@@ -1,7 +1,7 @@
 var config = require('../../../../config'),
-    models = require(config.paths.corePath + '/server/models'),
-    api = require(config.paths.corePath + '/server/api'),
-    sequence = require(config.paths.corePath + '/server/utils/sequence'),
+    models = require(config.get('paths').corePath + '/server/models'),
+    api = require(config.get('paths').corePath + '/server/api'),
+    sequence = require(config.get('paths').corePath + '/server/utils/sequence'),
     moment = require('moment'),
     _ = require('lodash'),
     Promise = require('bluebird'),
@@ -26,7 +26,6 @@ _private.addOffset = function addOffset(date) {
 };
 
 /**
- * postgres: stores dates with offset, so it's enough to force timezone UTC in the db connection (see data/db/connection.js)
  * sqlite: stores UTC timestamps, but we will normalize the format to YYYY-MM-DD HH:mm:ss
  */
 module.exports = function transformDatesIntoUTC(options, logger) {
@@ -39,15 +38,13 @@ module.exports = function transformDatesIntoUTC(options, logger) {
     return sequence([
         function databaseCheck() {
             // we have to change the sqlite format, because it stores dates as integer
-            if (ServerTimezoneOffset === 0 && config.database.client === 'mysql') {
+            if (ServerTimezoneOffset === 0 && config.get('database').client === 'mysql') {
                 return Promise.reject(new Error('skip'));
             }
 
-            if (config.database.isPostgreSQL()) {
-                _private.noOffset = true;
-            } else if (config.database.client === 'mysql') {
+            if (config.get('database').client === 'mysql') {
                 _private.noOffset = false;
-            } else if (config.database.client === 'sqlite3') {
+            } else if (config.get('database').client === 'sqlite3') {
                 _private.noOffset = true;
             }
 
@@ -187,7 +184,7 @@ module.exports = function transformDatesIntoUTC(options, logger) {
             });
         },
         function setActiveTimezone() {
-            var timezone = config.forceTimezoneOnMigration || moment.tz.guess();
+            var timezone = config.get('forceTimezoneOnMigration') || moment.tz.guess();
             return models.Settings.edit({
                 key: 'activeTimezone',
                 value: timezone

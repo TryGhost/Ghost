@@ -91,7 +91,7 @@ AppSandbox.prototype.loadModule = function loadModuleSandboxed(modulePath) {
 };
 
 AppSandbox.defaults = {
-    blacklist: ['knex', 'fs', 'http', 'sqlite3', 'pg', 'mysql', 'ghost']
+    blacklist: ['knex', 'fs', 'http', 'sqlite3', 'mysql', 'ghost']
 };
 
 module.exports = AppSandbox;

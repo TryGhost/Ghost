@@ -84,7 +84,6 @@ fixtures = {
             }));
         }).then(function () {
             return Promise.all([
-                // PostgreSQL can return results in any order
                 db.knex('posts').orderBy('id', 'asc').select('id'),
                 db.knex('tags').select('id')
             ]);
@@ -162,7 +161,6 @@ fixtures = {
         max = max || 50;
 
         return Promise.all([
-            // PostgreSQL can return results in any order
             db.knex('posts').orderBy('id', 'asc').select('id'),
             db.knex('tags').select('id', 'name')
         ]).then(function (results) {
@@ -218,8 +216,8 @@ fixtures = {
 
     overrideOwnerUser: function overrideOwnerUser(slug) {
         var user;
-
         user = DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]);
+
         if (slug) {
             user.slug = slug;
         }
@@ -553,7 +551,7 @@ login = function login(request) {
 
     return new Promise(function (resolve, reject) {
         request.post('/ghost/api/v0.1/authentication/token/')
-            .set('Origin', config.url)
+            .set('Origin', config.get('url'))
             .send({
                 grant_type: 'password',
                 username: user.email,
@@ -588,6 +586,10 @@ togglePermalinks = function togglePermalinks(request, toggle) {
                 .end(function (err, res) {
                     if (err) {
                         return reject(err);
+                    }
+
+                    if (res.statusCode !== 200) {
+                        return reject(res.body);
                     }
 
                     resolve(res.body);

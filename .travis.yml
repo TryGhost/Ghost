@@ -3,7 +3,6 @@ language: node_js
 node_js:
   - "4"
   - "0.12"
-  - "0.10"
   - "6"
 sudo: false
 cache:
@@ -11,8 +10,6 @@ cache:
     - node_modules
     - core/client/node_modules
     - core/client/bower_components
-addons:
-  postgresql: "9.3"
 env:
   global:
     - GITHUB_OAUTH_KEY=003a44d58f12089d0c0261338298af3813330949
@@ -21,20 +18,16 @@ env:
   matrix:
     - DB=sqlite3 NODE_ENV=testing
     - DB=mysql NODE_ENV=testing-mysql
-    - DB=pg NODE_ENV=testing-pg
 matrix:
   include:
     - node_js: "4"
       env: TEST_SUITE=lint
-  allow_failures:
-    - node_js: "6"
   fast_finish: true
 branches:
   except:
     - /^greenkeeper-.+$/
 before_install:
   - if [ $DB == "mysql" ]; then mysql -e 'create database ghost_testing'; fi
-  - if [ $DB == "pg" ]; then psql -c 'create database ghost_testing;' -U postgres; fi
 after_success:
   - |
       if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then

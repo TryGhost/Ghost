@@ -34,7 +34,7 @@ describe('Update Check', function () {
                 data.ghost_version.should.equal(packageInfo.version);
                 data.node_version.should.equal(process.versions.node);
                 data.env.should.equal(process.env.NODE_ENV);
-                data.database_type.should.match(/sqlite3|pg|mysql/);
+                data.database_type.should.match(/sqlite3|mysql/);
                 data.blog_id.should.be.a.String();
                 data.blog_id.should.not.be.empty();
                 data.theme.should.be.equal('casper');

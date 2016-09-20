@@ -3,7 +3,6 @@ var fs              = require('fs-extra'),
     path            = require('path'),
     should          = require('should'),
     sinon           = require('sinon'),
-    _               = require('lodash'),
     LocalFileStore  = require('../../../server/storage/local-file-store'),
     localFileStore,
 
@@ -181,13 +180,7 @@ describe('Local File System Storage', function () {
     describe('when a custom content path is used', function () {
         beforeEach(function () {
             var configPaths = configUtils.defaultConfig.paths;
-
-            configUtils.set({
-                paths: _.merge({}, configPaths, {
-                    contentPath: configPaths.appRoot + '/var/ghostcms',
-                    imagesPath: configPaths.appRoot + '/var/ghostcms/' + configPaths.imagesRelPath
-                })
-            });
+            configUtils.set('paths:contentPath', configPaths.appRoot + '/var/ghostcms');
         });
 
         it('should send the correct path to image', function (done) {
@@ -199,21 +192,26 @@ describe('Local File System Storage', function () {
         });
     });
 
+    // @TODO: remove path.join mock...
     describe('on Windows', function () {
         var truePathSep = path.sep;
 
         beforeEach(function () {
             sinon.stub(path, 'join');
+            sinon.stub(configUtils.config, 'getContentPath').returns('content/images/');
         });
 
         afterEach(function () {
             path.join.restore();
+            configUtils.config.getContentPath.restore();
+
             path.sep = truePathSep;
         });
 
         it('should return url in proper format for windows', function (done) {
             path.sep = '\\';
             path.join.returns('content\\images\\2013\\09\\IMAGE.jpg');
+
             localFileStore.save(image).then(function (url) {
                 if (truePathSep === '\\') {
                     url.should.equal('/content/images/2013/09/IMAGE.jpg');

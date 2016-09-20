@@ -407,25 +407,6 @@ var overrides      = require('./core/server/overrides'),
                 cfg.express.test.options.node_env = process.env.NODE_ENV;
             });
 
-        // #### Ensure Config *(Utility Task)*
-        // Make sure that we have a `config.js` file when running tests
-        // Ghost requires a `config.js` file to specify the database settings etc. Ghost comes with an example file:
-        // `config.example.js` which is copied and renamed to `config.js` by the bootstrap process
-        grunt.registerTask('ensureConfig', function () {
-            var config = require('./core/server/config'),
-                done = this.async();
-
-            if (!process.env.TEST_SUITE || process.env.TEST_SUITE !== 'client') {
-                config.load().then(function () {
-                    done();
-                }).catch(function (err) {
-                    grunt.fail.fatal(err.stack);
-                });
-            } else {
-                done();
-            }
-        });
-
         // #### Reset Database to "New" state *(Utility Task)*
         // Drops all database tables and then runs the migration process to put the database
         // in a "new" state.
@@ -538,7 +519,7 @@ var overrides      = require('./core/server/overrides'),
         // ### test-setup *(utility)(
         // `grunt test-setup` will run all the setup tasks required for running tests
         grunt.registerTask('test-setup', 'Setup ready to run tests',
-            ['clean:test', 'setTestEnv', 'ensureConfig']
+            ['clean:test', 'setTestEnv']
         );
 
         // ### Unit Tests *(sub task)*
@@ -580,8 +561,8 @@ var overrides      = require('./core/server/overrides'),
         // `grunt test:integration/api/api_tags_spec.js`
         //
         // Their purpose is to test that both the api and models behave as expected when the database layer is involved.
-        // These tests are run against sqlite3, mysql and pg on travis and ensure that differences between the databases
-        // don't cause bugs. At present, pg often fails and is not officially supported.
+        // These tests are run against sqlite3 and mysql on travis and ensure that differences between the databases
+        // don't cause bugs.
         //
         // A coverage report can be generated for these tests using the `grunt test-coverage` task.
         grunt.registerTask('test-integration', 'Run integration tests (mocha + db access)',

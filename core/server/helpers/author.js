@@ -12,8 +12,8 @@
 
 var hbs             = require('express-hbs'),
     _               = require('lodash'),
-    config          = require('../config'),
-    utils           = require('./utils'),
+    utils          = require('../utils'),
+    localUtils     = require('./utils'),
     author;
 
 author = function (options) {
@@ -26,8 +26,8 @@ author = function (options) {
 
     if (this.author && this.author.name) {
         if (autolink) {
-            output = utils.linkTemplate({
-                url: config.urlFor('author', {author: this.author}),
+            output = localUtils.linkTemplate({
+                url: utils.url.urlFor('author', {author: this.author}),
                 text: _.escape(this.author.name)
             });
         } else {

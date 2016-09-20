@@ -1,0 +1,12 @@
+{
+    "url": "http://my-ghost-blog.com",
+    "database": {
+        "connection": {
+            "filename": "content/data/ghost.db"
+        },
+        "debug": false
+    },
+    "paths": {
+        "contentPath": "content/"
+    }
+}

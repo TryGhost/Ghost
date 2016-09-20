@@ -60,7 +60,8 @@ CHANGELOG.md
 /core/test/functional/*.png
 /core/test/coverage
 
-/config.js
+# ignore all custom json files for config
+config.*.json
 
 # Built asset files
 /core/built

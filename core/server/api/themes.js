@@ -9,7 +9,8 @@ var Promise = require('bluebird'),
     events = require('../events'),
     storage = require('../storage'),
     settings = require('./settings'),
-    utils = require('./utils'),
+    apiUtils = require('./utils'),
+    utils = require('./../utils'),
     i18n = require('../i18n'),
     themes;
 
@@ -19,6 +20,13 @@ var Promise = require('bluebird'),
  * **See:** [API Methods](index.js.html#api%20methods)
  */
 themes = {
+    loadThemes: function () {
+        return utils.readThemes(config.getContentPath('themes'))
+            .then(function (result) {
+                config.set('paths:availableThemes', result);
+            });
+    },
+
     upload: function upload(options) {
         options = options || {};
 
@@ -37,7 +45,7 @@ themes = {
             throw new errors.ValidationError(i18n.t('errors.api.themes.overrideCasper'));
         }
 
-        return utils.handlePermissions('themes', 'add')(options)
+        return apiUtils.handlePermissions('themes', 'add')(options)
             .then(function () {
                 return gscan.checkZip(zip, {keepExtractedDir: true});
             })
@@ -55,12 +63,12 @@ themes = {
                 );
             })
             .then(function () {
-                return storageAdapter.exists(config.paths.themePath + '/' + zip.shortName);
+                return storageAdapter.exists(config.getContentPath('themes') + '/' + zip.shortName);
             })
             .then(function (themeExists) {
                 // delete existing theme
                 if (themeExists) {
-                    return storageAdapter.delete(zip.shortName, config.paths.themePath);
+                    return storageAdapter.delete(zip.shortName, config.getContentPath('themes'));
                 }
             })
             .then(function () {
@@ -69,13 +77,13 @@ themes = {
                 return storageAdapter.save({
                     name: zip.shortName,
                     path: theme.path
-                }, config.paths.themePath);
+                }, config.getContentPath('themes'));
             })
             .then(function () {
                 // force reload of availableThemes
                 // right now the logic is in the ConfigManager
                 // if we create a theme collection, we don't have to read them from disk
-                return config.loadThemes();
+                return themes.loadThemes();
             })
             .then(function () {
                 // the settings endpoint is used to fetch the availableThemes
@@ -111,14 +119,14 @@ themes = {
 
     download: function download(options) {
         var themeName = options.name,
-            theme = config.paths.availableThemes[themeName],
+            theme = config.get('paths').availableThemes[themeName],
             storageAdapter = storage.getStorage('themes');
 
         if (!theme) {
             return Promise.reject(new errors.BadRequestError(i18n.t('errors.api.themes.invalidRequest')));
         }
 
-        return utils.handlePermissions('themes', 'read')(options)
+        return apiUtils.handlePermissions('themes', 'read')(options)
             .then(function () {
                 events.emit('theme.downloaded', themeName);
                 return storageAdapter.serve({isTheme: true, name: themeName});
@@ -134,23 +142,23 @@ themes = {
             theme,
             storageAdapter = storage.getStorage('themes');
 
-        return utils.handlePermissions('themes', 'destroy')(options)
+        return apiUtils.handlePermissions('themes', 'destroy')(options)
             .then(function () {
                 if (name === 'casper') {
                     throw new errors.ValidationError(i18n.t('errors.api.themes.destroyCasper'));
                 }
 
-                theme = config.paths.availableThemes[name];
+                theme = config.get('paths').availableThemes[name];
 
                 if (!theme) {
                     throw new errors.NotFoundError(i18n.t('errors.api.themes.themeDoesNotExist'));
                 }
 
                 events.emit('theme.deleted', name);
-                return storageAdapter.delete(name, config.paths.themePath);
+                return storageAdapter.delete(name, config.getContentPath('themes'));
             })
             .then(function () {
-                return config.loadThemes();
+                return themes.loadThemes();
             })
             .then(function () {
                 return settings.updateSettingsCache();

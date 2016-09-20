@@ -15,8 +15,8 @@ themeHandler = {
     ghostLocals: function ghostLocals(req, res, next) {
         // Make sure we have a locals value.
         res.locals = res.locals || {};
-        res.locals.version = config.ghostVersion;
-        res.locals.safeVersion = config.ghostVersion.match(/^(\d+\.)?(\d+)/)[0];
+        res.locals.version = config.get('ghostVersion');
+        res.locals.safeVersion = config.get('ghostVersion').match(/^(\d+\.)?(\d+)/)[0];
         // relative path from the URL
         res.locals.relativeUrl = req.path;
 
@@ -26,13 +26,13 @@ themeHandler = {
     // ### configHbsForContext Middleware
     // Setup handlebars for the current context (admin or theme)
     configHbsForContext: function configHbsForContext(req, res, next) {
-        var themeData = _.cloneDeep(config.theme),
-            labsData = _.cloneDeep(config.labs),
+        var themeData = _.cloneDeep(config.get('theme')),
+            labsData = _.cloneDeep(config.get('labs')),
             blogApp = req.app;
 
-        if (req.secure && config.urlSSL) {
+        if (req.secure && config.get('urlSSL')) {
             // For secure requests override .url property with the SSL version
-            themeData.url = config.urlSSL.replace(/\/$/, '');
+            themeData.url = config.get('urlSSL').replace(/\/$/, '');
         }
 
         // Change camelCase to snake_case
@@ -41,8 +41,8 @@ themeHandler = {
 
         hbs.updateTemplateOptions({data: {blog: themeData, labs: labsData}});
 
-        if (config.paths.themePath && blogApp.get('activeTheme')) {
-            blogApp.set('views', path.join(config.paths.themePath, blogApp.get('activeTheme')));
+        if (config.getContentPath('themes') && blogApp.get('activeTheme')) {
+            blogApp.set('views', path.join(config.getContentPath('themes'), blogApp.get('activeTheme')));
         }
 
         // Pass 'secure' flag to the view engine
@@ -56,14 +56,14 @@ themeHandler = {
     // Helper for updateActiveTheme
     activateTheme: function activateTheme(blogApp, activeTheme) {
         var hbsOptions,
-            themePartials = path.join(config.paths.themePath, activeTheme, 'partials');
+            themePartials = path.join(config.getContentPath('themes'), activeTheme, 'partials');
 
         // clear the view cache
         blogApp.cache = {};
 
         // set view engine
         hbsOptions = {
-            partialsDir: [config.paths.helperTemplates],
+            partialsDir: [config.get('paths').helperTemplates],
             onCompile: function onCompile(exhbs, source) {
                 return exhbs.handlebars.compile(source, {preventIndent: true});
             }
@@ -98,7 +98,7 @@ themeHandler = {
             // Check if the theme changed
             if (activeTheme.value !== blogApp.get('activeTheme')) {
                 // Change theme
-                if (!config.paths.availableThemes.hasOwnProperty(activeTheme.value)) {
+                if (!config.get('paths').availableThemes.hasOwnProperty(activeTheme.value)) {
                     if (!res.isAdmin) {
                         // Throw an error if the theme is not available, but not on the admin UI
                         return errors.throwError(i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeTheme.value}));
