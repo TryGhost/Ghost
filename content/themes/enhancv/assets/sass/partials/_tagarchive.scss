@@ -12,26 +12,23 @@
   }
   .blog-logo {
     display: block;
-    margin-top: 5rem;
   }
 }
 
 .tag-archive-header {
   text-align: center;
-  max-width: 700px;
-  margin: 4rem auto;
+  margin-top: 160px;
+  padding: 125px 0;
   position: relative;
   h1 {
-    font-family: Georgia, Times, "Times New Roman", serif;
     letter-spacing: 0.1em;
+    font-size: 3.6rem;
+    margin-bottom: 0;
   }
-  &:after {
-    display: block;
-    content: "";
-    height: 70px;
-    bottom: -15px;
-    background: url(../images/tag-divider.svg) no-repeat top center;
-    background-size: 700px 20px;
+  p {
+    font-size: 1.4rem;
+    margin: 0;
+    color: #808080;
   }
 }
 

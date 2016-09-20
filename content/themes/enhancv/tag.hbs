@@ -3,53 +3,35 @@
 {{! The comment above "< default" means - insert everything in this file into
     the {body} of the default.hbs template, which contains our header/footer. }}
 
-{{! The big featured header on the homepage, with the site logo and description }}
-<header class="site-head" {{#if @blog.cover}}style="background-image: url({{@blog.cover}})"{{/if}}>
-
-    <div class="panel-cover-overlay"></div>
-    <div class="vertical">
-        <div class="site-head-content inner">
-            {{#if @blog.logo}}
-                <a class="blog-logo" href="{{@blog.url}}"><img src="{{@blog.logo}}" alt="Blog Logo" /></a>
-            {{else}}
-                <h1 class="blog-title">{{@blog.title}}</h1>
-            {{/if}}    
-            <h2 class="blog-description">{{@blog.description}}</h2>
-            {{! Social Links }}
-            {{> social }}
-
-            <div class="page-scroll">
-                <a href="#top" class="btn btn-circle">
-                    <i class="fa fa-angle-down fa-2x animated"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-
-</header>
-<div id="top" class="top-ornament"></div>
 {{! The main content area on the homepage }}
-<main class="content" role="main">
+<main class="content container posts-wrapper" role="main">
 
         <header class="tag-archive-header">
             <h1>{{tag.name}}</h1>
+            <p>{{posts.length}} posts</p>
         </header>
 
     {{! Each post will be output using this markup }}
-    {{#foreach posts}}
-
-    <article class="{{post_class}}">
-        <header class="post-header">
-            <span class="post-meta"><time datetime="{{date format='YYYY-MM-DD'}}">{{date format="MMMM Do, YYYY"}}</time> {{tags prefix="on "}}</span>
-            <h2 class="post-title"><a href="{{url}}">{{{title}}}</a></h2>
-
-        </header>
-        <section class="post-excerpt">
-            <p>{{excerpt}}&hellip;</p>
-        </section>
-    </article>
-
-    {{/foreach}}
+    <div class="row">
+        {{#foreach posts}}
+        <a href="{{url}}">
+            <div class="col-md-6">
+              <div class="panel panel-default single-post">
+                <div class="panel-heading" style="background-image: url({{image}})">
+                    <div class="green-overlay"></div>
+                    <span class="custom-badge custom-badge-white category">{{this.tags.1.name}}</span>
+                </div>
+                <div class="panel-body">
+                  <h3>{{{title}}}</h3>
+                  <p>{{excerpt characters="115"}}</p>
+                  <span class="shares-count">3.5k shares</span>
+                  <span class="comments-count"><i class="fa fa-comment"></i> 25</span>
+                </div>
+              </div>
+            </div>
+        </a>
+        {{/foreach}}
+    </div>
 
     {{!! After all the posts, we have the previous/next pagination links }}
     <div class="container">
