@@ -24,7 +24,7 @@
     "node": "~0.10.0 || ~0.12.0 || ^4.2.0"
   },
   "devDependencies": {
-    "bluebird": "3.4.1",
+    "bluebird": "3.4.6",
     "blueimp-md5": "2.3.1",
     "bower": "1.7.9",
     "broccoli-asset-rev": "2.4.6",
