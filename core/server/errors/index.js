@@ -125,7 +125,14 @@ errors = {
         var self = this,
             origArgs = _.toArray(arguments).slice(1),
             stack,
-            msgs;
+            msgs,
+            hideStack = false;
+
+        // DatabaseVersion errors are usually fatal, we output a nice message
+        // And the stack is not at all useful in this case
+        if (err instanceof DatabaseVersion) {
+            hideStack = true;
+        }
 
         if (_.isArray(err)) {
             _.each(err, function (e) {
@@ -172,7 +179,7 @@ errors = {
             // add a new line
             msgs.push('\n');
 
-            if (stack) {
+            if (stack && !hideStack) {
                 msgs.push(stack, '\n');
             }
 
