@@ -9,8 +9,7 @@
             "host"     : "127.0.0.1",
             "user"     : "root",
             "password" : "",
-            "database" : "ghost_testing",
-            "charset"  : "utf8"
+            "database" : "ghost_testing"
         }
     },
     "logging": false
