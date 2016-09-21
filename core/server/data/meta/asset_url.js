@@ -1,4 +1,5 @@
-var config = require('../../config');
+var config = require('../../config'),
+    generateAssetHash = require('../../utils/asset-hash');
 
 function getAssetUrl(path, isAdmin, minify) {
     var output = '';
@@ -24,6 +25,10 @@ function getAssetUrl(path, isAdmin, minify) {
     output += path;
 
     if (!path.match(/^favicon\.ico$/)) {
+        if (!config.assetHash) {
+            config.set({assetHash: generateAssetHash()});
+        }
+
         output = output + '?v=' + config.assetHash;
     }
 
