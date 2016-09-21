@@ -9038,6 +9038,8 @@ body:before {
     margin-right: 15px; }
   .main-nav-fixed .navbar .navbar-brand {
     padding-left: 25px; }
+  .main-nav-fixed .navbar .navbar-brand svg {
+    width: 120px; }
   #wavy-footer .notice {
     margin: 15px 0 0 0;
     display: block; } }
