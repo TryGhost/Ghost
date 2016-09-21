@@ -64,7 +64,6 @@ apiRoutes = function apiRoutes(middleware) {
     router.put('/users/password', authenticatePrivate, api.http(api.users.changePassword));
     router.put('/users/owner', authenticatePrivate, api.http(api.users.transferOwnership));
     router.put('/users/:id', authenticatePrivate, api.http(api.users.edit));
-    router.post('/users', authenticatePrivate, api.http(api.users.add));
     router.del('/users/:id', authenticatePrivate, api.http(api.users.destroy));
 
     // ## Tags
@@ -165,6 +164,12 @@ apiRoutes = function apiRoutes(middleware) {
         middleware.validation.upload({type: 'images'}),
         api.http(api.uploads.add)
     );
+
+    // ## Invites
+    router.get('/invites', authenticatePrivate, api.http(api.invites.browse));
+    router.get('/invites/:id', authenticatePrivate, api.http(api.invites.read));
+    router.post('/invites', authenticatePrivate, api.http(api.invites.add));
+    router.del('/invites/:id', authenticatePrivate, api.http(api.invites.destroy));
 
     // API Router middleware
     router.use(middleware.api.errorHandler);
