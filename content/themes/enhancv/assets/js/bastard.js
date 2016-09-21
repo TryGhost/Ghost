@@ -73,9 +73,7 @@
         if ($subNav.length > 0) {
             var subNavPosTop = $subNav.position().top;
             var handleSubNav = function () {
-                console.log(breakpoint.value);
                 if ($.inArray(breakpoint.value, ['smartphone', 'smartphone_wide']) === -1) {
-                    console.log('baaaaa');
                     if ($(document).scrollTop() > 200) {
                         $subNav.animate({
                             top: (subNavPosTop - 50) + 'px'

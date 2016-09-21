@@ -4,6 +4,7 @@
   "dependencies": {
     "bootstrap-sass": "^3.3.6",
     "highlightjs": "^9.4.0",
-    "js-throttle-debounce": "latest"
+    "js-throttle-debounce": "latest",
+    "open-share": "latest"
   }
 }

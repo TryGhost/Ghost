@@ -15,7 +15,38 @@
             <header class="post-header">
                 <h1 class="post-title text-left">{{{title}}}</h1>
                 <section class="post-meta">
-                    <span class="pull-left">Share buttons</span>
+                    <span class="pull-left">
+                      <a
+                       data-open-share="facebook"
+                       data-open-share-link="{{url absolute="true"}}"
+                       data-open-share-caption="{{encode title}}"
+                       data-open-share-description="Forward Obsessed">
+                        Facebook Share
+                        <span
+                         data-open-share-count="facebook"
+                         data-open-share-count-url="{{url absolute="true"}}"></span>
+                      </a>
+                      <a
+                       data-open-share="twitter"
+                       data-open-share-url="{{url absolute="true"}}"
+                       data-open-share-text="{{encode title}}"
+                       data-open-share-hashtags="resumes,fun,test"
+                       data-open-share-ios="true">
+                        Twitter
+                        <span
+                         data-open-share-count="twitter"
+                         data-open-share-count-url="{{url absolute="true"}}"></span>
+                      </a>
+                      <a
+                        data-open-share="linkedin"
+                        data-open-share-url="{{url absolute="true"}}"
+                        data-open-share-title="{{encode title}}">
+                        Linkedin
+                        <span
+                         data-open-share-count="linkedin"
+                         data-open-share-count-url="{{url absolute="true"}}"></span>
+                      </a>
+                    </span>
                     <time class="post-date pull-right" datetime="{{date format='YYYY-MM-DD'}}">{{date format="DD MMMM YYYY"}}</time> {{!-- {{tags prefix=" on " separator=" | "}} --}}
                 </section>
             </header>
