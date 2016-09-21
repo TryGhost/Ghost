@@ -43,10 +43,22 @@ git clone git://github.com/tryghost/ghost.git
 cd ghost
 ```
 
-Install grunt
+Install Grunt
 
 ```bash
 npm install -g grunt-cli
+```
+
+Install Bower
+
+```bash
+npm install -g bower
+```
+
+Install Ember
+
+```bash
+npm install -g ember-cli
 ```
 
 Install Ghost
