@@ -35,10 +35,6 @@
                         onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
                         <span class="pale-text">Share on</span> Twitter
                     </a>
-                    {{!-- <a class="col-sm-4 google-plus" href="https://plus.google.com/share?url={{url absolute="true"}}"
-                       onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
-                        <span class="pale-text">Share on</span> Google+
-                    </a> --}}
                 </section>
 
                 <section class="author media">
@@ -52,7 +48,7 @@
                         <a href="/author/{{author.slug}}">{{author.name}}</a>
                     </h4>
                     <div class="separator sm"></div>
-                    <p>{{author.bio}}</p>
+                    <p>{{{author.bio}}}</p>
                     <ul class="author-meta clearfix">
                         {{#if author.location}}<li>{{author.location}}</li>{{/if}}
                         {{#if author.website}}<li><a href="{{author.website}}">{{author.website}}</a></li>{{/if}}
@@ -123,25 +119,6 @@
             </div>
         </div>
     </div>
-
-    {{!-- <div class="read-next">
-        {{#next_post}}
-        <a class="read-next-story {{#if image}}" style="background-image: url({{image}}){{else}}no-cover{{/if}}" href="{{url}}">
-            <section class="post">
-                <h2>{{title}}</h2>
-                <p>{{excerpt words="19"}}&hellip;</p>
-            </section>
-        </a>
-        {{/next_post}}
-        {{#prev_post}}
-        <a class="read-next-story prev {{#if image}}" style="background-image: url({{image}}){{else}}no-cover{{/if}}" href="{{url}}">
-            <section class="post">
-                <h2>{{title}}</h2>
-                <p>{{excerpt words="19"}}&hellip;</p>
-            </section>
-        </a>
-        {{/prev_post}}
-    </div> --}}
 </main>
 
 
