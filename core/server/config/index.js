@@ -3,12 +3,12 @@
 var path          = require('path'),
     Promise       = require('bluebird'),
     chalk         = require('chalk'),
-    crypto        = require('crypto'),
     fs            = require('fs'),
     url           = require('url'),
     _             = require('lodash'),
 
     validator     = require('validator'),
+    generateAssetHash = require('../utils/asset-hash'),
     readDirectory = require('../utils/read-directory'),
     readThemes    = require('../utils/read-themes'),
     errors        = require('../errors'),
@@ -170,8 +170,7 @@ ConfigManager.prototype.set = function (config) {
     // Otherwise default to default content path location
     contentPath = this._config.paths.contentPath || path.resolve(appRoot, 'content');
 
-    assetHash = this._config.assetHash ||
-        (crypto.createHash('md5').update(packageInfo.version + Date.now()).digest('hex')).substring(0, 10);
+    assetHash = this._config.assetHash || generateAssetHash();
 
     // read storage adapter from config file or attach default adapter
     this._config.storage = this._config.storage || {};
