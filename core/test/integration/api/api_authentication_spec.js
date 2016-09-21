@@ -1,19 +1,18 @@
 var testUtils   = require('../../utils'),
     should      = require('should'),
+    _           = require('lodash'),
     sinon       = require('sinon'),
     Promise     = require('bluebird'),
     uid         = require('../../../server/utils').uid,
-    Accesstoken,
-    Refreshtoken,
-    User,
-
-    // Stuff we are testing
-
     AuthAPI     = require('../../../server/api/authentication'),
     mail        = require('../../../server/api/mail'),
+    models      = require('../../../server/models'),
+    errors      = require('../../../server/errors'),
+    sandbox     = sinon.sandbox.create(),
     context     = testUtils.context,
-
-    sandbox     = sinon.sandbox.create();
+    Accesstoken,
+    Refreshtoken,
+    User;
 
 describe('Authentication API', function () {
     var testInvite = {
@@ -207,7 +206,7 @@ describe('Authentication API', function () {
                 User = require('../../../server/models/user').User;
             });
 
-            beforeEach(testUtils.setup('roles', 'owner', 'clients', 'settings', 'perms:setting', 'perms:mail', 'perms:init'));
+            beforeEach(testUtils.setup('invites', 'roles', 'owner', 'clients', 'settings', 'perms:setting', 'perms:mail', 'perms:init'));
 
             it('should report that setup has been completed', function (done) {
                 AuthAPI.isSetup().then(function (result) {
@@ -244,12 +243,82 @@ describe('Authentication API', function () {
                 }).catch(function (err) {
                     should.exist(err);
 
-                    err.name.should.equal('UnauthorizedError');
-                    err.statusCode.should.equal(401);
-                    err.message.should.equal('Invalid token structure');
+                    err.name.should.equal('NotFoundError');
+                    err.statusCode.should.equal(404);
+                    err.message.should.equal('Invite not found.');
 
                     done();
                 }).catch(done);
+            });
+
+            it('should allow an invitation to be accepted', function () {
+                var invite;
+
+                return models.Invite.add({email: '123@meins.de', roles: [1]}, _.merge({}, {include: ['roles']}, context.internal))
+                    .then(function (_invite) {
+                        invite = _invite;
+                        invite.toJSON().roles.length.should.eql(1);
+
+                        return models.Invite.edit({status: 'sent'}, _.merge({}, {id: invite.id}, context.internal));
+                    })
+                    .then(function () {
+                        return AuthAPI.acceptInvitation({
+                            invitation: [
+                                {
+                                    token: invite.get('token'),
+                                    email: invite.get('email'),
+                                    name: invite.get('email'),
+                                    password: 'eightcharacterslong'
+                                }
+                            ]
+                        });
+                    })
+                    .then(function (res) {
+                        should.exist(res.invitation[0].message);
+                        return models.Invite.findOne({id: invite.id}, context.internal);
+                    })
+                    .then(function (_invite) {
+                        should.not.exist(_invite);
+                        return models.User.findOne({
+                            email: invite.get('email')
+                        }, _.merge({include: ['roles']}, context.internal));
+                    })
+                    .then(function (user) {
+                        user.toJSON().roles.length.should.eql(1);
+                    });
+            });
+
+            it('should not allow an invitation to be accepted: expired', function () {
+                var invite;
+
+                return models.Invite.add({email: '123@meins.de'}, context.internal)
+                    .then(function (_invite) {
+                        invite = _invite;
+
+                        return models.Invite.edit({
+                            status: 'sent',
+                            expires: Date.now() - 10000}, _.merge({}, {id: invite.id}, context.internal));
+                    })
+                    .then(function () {
+                        return AuthAPI.acceptInvitation({
+                            invitation: [
+                                {
+                                    token: invite.get('token'),
+                                    email: invite.get('email'),
+                                    name: invite.get('email'),
+                                    password: 'eightcharacterslong'
+                                }
+                            ]
+                        });
+                    })
+                    .then(function () {
+                        throw new Error('should not pass the test: expected expired invitation');
+                    })
+                    .catch(function (err) {
+                        should.exist(err);
+                        (err instanceof errors.NotFoundError).should.eql(true);
+                        err.message.should.eql('Invite is expired.');
+                    });
             });
 
             it('should generate a password reset token', function (done) {
@@ -320,25 +389,12 @@ describe('Authentication API', function () {
                 }).catch(done);
             });
 
-            it('should know an email address has an active invitation', function (done) {
-                var user = {
-                        name: 'test user',
-                        email: 'invited@example.com',
-                        password: '12345678',
-                        status: 'invited'
-                    },
-                    options = {
-                        context: {internal: true}
-                    };
-
-                User.add(user, options).then(function (user) {
-                    return AuthAPI.isInvitation({email: user.get('email')});
-                }).then(function (response) {
-                    should.exist(response);
-                    response.invitation[0].valid.should.be.true();
-
-                    done();
-                }).catch(done);
+            it('should know an email address has an active invitation', function () {
+                return AuthAPI.isInvitation({email: testUtils.DataGenerator.forKnex.invites[0].email})
+                    .then(function (response) {
+                        should.exist(response);
+                        response.invitation[0].valid.should.be.true();
+                    });
             });
 
             it('should know an email address does not have an active invitation', function (done) {
