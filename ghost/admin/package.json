@@ -88,7 +88,7 @@
     "loader.js": "4.0.11",
     "lodash": "4.16.1",
     "matchdep": "1.0.1",
-    "moment": "2.15.0",
+    "moment": "2.15.1",
     "moment-timezone": "0.5.5",
     "password-generator": "2.0.2",
     "top-gh-contribs": "2.0.4",
