@@ -9025,6 +9025,10 @@ body:before {
     font-size: 1.6rem; }
   #slidemenu-wrapper .slidemenu-nav li.text {
     padding: 8px 25px; }
+  #slidemenu-wrapper .slidemenu-nav li.text.top {
+    padding: 0 15px; }
+  #slidemenu-wrapper .slidemenu-nav li.text.top-ty {
+    padding-left: 25px; }
   #slidemenu-wrapper.active {
     width: 100%;
     right: 100%; }

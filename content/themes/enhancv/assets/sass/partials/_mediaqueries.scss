@@ -68,6 +68,14 @@ body:before {
 
             &.text {
                 padding: 8px 25px;
+
+                &.top {
+                    padding: 0 15px;
+                }
+
+                &.top-ty {
+                    padding-left: 25px;
+                }
             }
           }
         }
