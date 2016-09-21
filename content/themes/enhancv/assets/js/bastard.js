@@ -93,6 +93,10 @@
 
             $(window).on('scroll', handleSubNav.debounce(100));
         }
+
+        $('.modal-backdrop').click(function () {
+          $('#slidemenu-wrapper').removeClass('active');
+        });
     });
 
 }(jQuery));
