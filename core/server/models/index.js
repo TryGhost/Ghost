@@ -28,7 +28,8 @@ models = [
     'settings',
     'subscriber',
     'tag',
-    'user'
+    'user',
+    'invite'
 ];
 
 function init() {

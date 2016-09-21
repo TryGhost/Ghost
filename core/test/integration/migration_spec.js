@@ -212,7 +212,7 @@ describe('Database Migration (special functions)', function () {
                         result.roles.at(3).get('name').should.eql('Owner');
 
                         // Permissions
-                        result.permissions.length.should.eql(43);
+                        result.permissions.length.should.eql(48);
                         result.permissions.toJSON().should.be.CompletePermissions();
 
                         done();
