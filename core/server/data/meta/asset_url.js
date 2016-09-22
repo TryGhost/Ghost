@@ -1,6 +1,5 @@
 var config = require('../../config'),
-    utils = require('../../utils'),
-    crypto = require('crypto');
+    utils = require('../../utils');
 
 function getAssetUrl(path, isAdmin, minify) {
     var output = '';
@@ -27,7 +26,7 @@ function getAssetUrl(path, isAdmin, minify) {
 
     if (!path.match(/^favicon\.ico$/)) {
         if (!config.get('assetHash')) {
-            config.set('assetHash', (crypto.createHash('md5').update(config.get('ghostVersion') + Date.now()).digest('hex')).substring(0, 10));
+            config.set('assetHash', utils.generateAssetHash());
         }
 
         output = output + '?v=' + config.get('assetHash');
