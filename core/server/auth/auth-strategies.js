@@ -86,11 +86,11 @@ strategies = {
                     invite = _invite;
 
                     if (!invite) {
-                        throw new errors.NotFoundError(i18n.t('errors.api.invites.inviteNotFound'));
+                        throw new errors.NotFoundError({message: i18n.t('errors.api.invites.inviteNotFound')});
                     }
 
                     if (invite.get('expires') < Date.now()) {
-                        throw new errors.NotFoundError(i18n.t('errors.api.invites.inviteExpired'));
+                        throw new errors.NotFoundError({message: i18n.t('errors.api.invites.inviteExpired')});
                     }
 
                     return models.User.add({
@@ -113,7 +113,7 @@ strategies = {
             return models.User.findOne({slug: 'ghost-owner', status: 'all'}, options)
                 .then(function fetchedOwner(owner) {
                     if (!owner) {
-                        throw new errors.NotFoundError(i18n.t('errors.models.user.userNotFound'));
+                        throw new errors.NotFoundError({message: i18n.t('errors.models.user.userNotFound')});
                     }
 
                     return models.User.edit({

@@ -81,9 +81,11 @@ utils = {
                 // CASE: external context
                 userMap[userToMap] = '0';
             } else {
-                throw new errors.DataImportError(
-                    i18n.t('errors.data.import.utils.dataLinkedToUnknownUser', {userToMap: userToMap}), 'user.id', userToMap
-                );
+                throw new errors.DataImportError({
+                    message: i18n.t('errors.data.import.utils.dataLinkedToUnknownUser', {userToMap: userToMap}),
+                    property: 'user.id',
+                    value: userToMap
+                });
             }
         });
 

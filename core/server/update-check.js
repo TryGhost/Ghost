@@ -31,21 +31,24 @@ var crypto   = require('crypto'),
     api      = require('./api'),
     config   = require('./config'),
     logging   = require('./logging'),
+    errors   = require('./errors'),
     i18n     = require('./i18n'),
     internal = {context: {internal: true}},
     allowedCheckEnvironments = ['development', 'production'],
     checkEndpoint = 'updates.ghost.org',
     currentVersion = config.get('ghostVersion');
 
-function updateCheckError(error) {
+function updateCheckError(err) {
     api.settings.edit(
         {settings: [{key: 'nextUpdateCheck', value: Math.round(Date.now() / 1000 + 24 * 3600)}]},
         internal
     );
 
-    error.context = i18n.t('errors.update-check.checkingForUpdatesFailed.error');
-    error.help = i18n.t('errors.update-check.checkingForUpdatesFailed.help', {url: 'http://support.ghost.org'});
-    logging.error(error);
+    logging.error(new errors.GhostError({
+        err: err,
+        context: i18n.t('errors.update-check.checkingForUpdatesFailed.error'),
+        help: i18n.t('errors.update-check.checkingForUpdatesFailed.help', {url: 'http://support.ghost.org'})
+    }));
 }
 
 /**

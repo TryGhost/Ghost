@@ -210,7 +210,7 @@ describe('Migrations', function () {
                 })
                 .catch(function (err) {
                     should.exist(err);
-                    (err instanceof errors.InternalServerError).should.eql(true);
+                    (err instanceof errors.GhostError).should.eql(true);
                     createStub.callCount.should.eql(11);
                     done();
                 });
@@ -235,7 +235,7 @@ describe('Migrations', function () {
         it('should throw error if versions are too old', function () {
             var response = update.isDatabaseOutOfDate({fromVersion: '000', toVersion: '002'});
             updateDatabaseSchemaStub.calledOnce.should.be.false();
-            (response.error instanceof errors.DatabaseVersion).should.eql(true);
+            (response.error instanceof errors.DatabaseVersionError).should.eql(true);
         });
 
         it('should just return if versions are the same', function () {
@@ -252,7 +252,7 @@ describe('Migrations', function () {
         it('should throw an error if the database version is higher than the default', function () {
             var response = update.isDatabaseOutOfDate({fromVersion: '010', toVersion: '004'});
             updateDatabaseSchemaStub.calledOnce.should.be.false();
-            (response.error instanceof errors.DatabaseVersion).should.eql(true);
+            (response.error instanceof errors.DatabaseVersionError).should.eql(true);
         });
     });
 

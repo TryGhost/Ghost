@@ -141,6 +141,13 @@ var errors = {
             statusCode: 503,
             errorType: 'MaintenanceError'
         }, options));
+    },
+    ThemeValidationError: function ThemeValidationError(options) {
+        GhostError.call(this, _.merge({
+            statusCode: 422,
+            errorType: 'ThemeValidationError',
+            errorDetails: {}
+        }, options));
     }
 };
 

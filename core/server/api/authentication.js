@@ -8,8 +8,8 @@ var _                = require('lodash'),
     globalUtils      = require('../utils'),
     utils            = require('./utils'),
     errors           = require('../errors'),
-    logging          = require('../logging'),
     models           = require('../models'),
+    logging          = require('../logging'),
     events           = require('../events'),
     config           = require('../config'),
     i18n             = require('../i18n'),
@@ -43,7 +43,7 @@ function assertSetupCompleted(status) {
                 notCompleted = i18n.t('errors.api.authentication.setupMustBeCompleted');
 
             function throwReason(reason) {
-                throw new errors.NoPermissionError(reason);
+                throw new errors.NoPermissionError({message: reason});
             }
 
             if (isSetup) {
@@ -78,9 +78,9 @@ function setupTasks(setupData) {
 
         return User.findOne({role: 'Owner', status: 'all'}).then(function then(owner) {
             if (!owner) {
-                throw new errors.InternalServerError(
-                    i18n.t('errors.api.authentication.setupUnableToRun')
-                );
+                throw new errors.GhostError({
+                    message: i18n.t('errors.api.authentication.setupUnableToRun')
+                });
             }
 
             return User.setup(userData, _.extend({id: owner.id}, context));
@@ -175,9 +175,9 @@ authentication = {
                 var email = data.passwordreset[0].email;
 
                 if (typeof email !== 'string' || !validator.isEmail(email)) {
-                    throw new errors.BadRequestError(
-                        i18n.t('errors.api.authentication.noEmailProvided')
-                    );
+                    throw new errors.BadRequestError({
+                        message: i18n.t('errors.api.authentication.noEmailProvided')
+                    });
                 }
 
                 return email;
@@ -274,8 +274,8 @@ authentication = {
                     ne2Password: ne2Password,
                     dbHash: response.settings[0].value
                 });
-            }).catch(function (error) {
-                throw new errors.UnauthorizedError(error.message);
+            }).catch(function (err) {
+                throw new errors.UnauthorizedError({err: err});
             });
         }
 
@@ -309,19 +309,19 @@ authentication = {
             return utils.checkObject(invitation, 'invitation')
                 .then(function () {
                     if (!invitation.invitation[0].token) {
-                        return Promise.reject(new errors.ValidationError(i18n.t('errors.api.authentication.noTokenProvided')));
+                        return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.authentication.noTokenProvided')}));
                     }
 
                     if (!invitation.invitation[0].email) {
-                        return Promise.reject(new errors.ValidationError(i18n.t('errors.api.authentication.noEmailProvided')));
+                        return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.authentication.noEmailProvided')}));
                     }
 
                     if (!invitation.invitation[0].password) {
-                        return Promise.reject(new errors.ValidationError(i18n.t('errors.api.authentication.noPasswordProvided')));
+                        return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.authentication.noPasswordProvided')}));
                     }
 
                     if (!invitation.invitation[0].name) {
-                        return Promise.reject(new errors.ValidationError(i18n.t('errors.api.authentication.noNameProvided')));
+                        return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.authentication.noNameProvided')}));
                     }
 
                     return invitation;
@@ -336,11 +336,11 @@ authentication = {
                     invite = _invite;
 
                     if (!invite) {
-                        throw new errors.NotFoundError(i18n.t('errors.api.invites.inviteNotFound'));
+                        throw new errors.NotFoundError({message: i18n.t('errors.api.invites.inviteNotFound')});
                     }
 
                     if (invite.get('expires') < Date.now()) {
-                        throw new errors.NotFoundError(i18n.t('errors.api.invites.inviteExpired'));
+                        throw new errors.NotFoundError({message: i18n.t('errors.api.invites.inviteExpired')});
                     }
 
                     return models.User.add({
@@ -386,9 +386,9 @@ authentication = {
             var email = options.email;
 
             if (typeof email !== 'string' || !validator.isEmail(email)) {
-                throw new errors.BadRequestError(
-                    i18n.t('errors.api.authentication.invalidEmailReceived')
-                );
+                throw new errors.BadRequestError({
+                    message: i18n.t('errors.api.authentication.invalidEmailReceived')
+                });
             }
 
             return email;
@@ -489,10 +489,12 @@ authentication = {
                             }]
                         };
 
-                    apiMail.send(payload, {context: {internal: true}}).catch(function (err) {
-                        err.context = i18n.t('errors.api.authentication.unableToSendWelcomeEmail');
-                        err.help = i18n.t('errors.api.authentication.checkEmailConfigInstructions', {url: 'http://support.ghost.org/mail/'});
-                        logging.error(err);
+                    apiMail.send(payload, {context: {internal: true}}).catch(function (error) {
+                        logging.error(new errors.EmailError({
+                            err: error,
+                            context: i18n.t('errors.api.authentication.unableToSendWelcomeEmail'),
+                            help: i18n.t('errors.api.authentication.checkEmailConfigInstructions', {url: 'http://support.ghost.org/mail/'})
+                        }));
                     });
                 })
                 .return(setupUser);
@@ -524,7 +526,7 @@ authentication = {
 
         function processArgs(setupDetails, options) {
             if (!options.context || !options.context.user) {
-                throw new errors.NoPermissionError(i18n.t('errors.api.authentication.notTheBlogOwner'));
+                throw new errors.NoPermissionError({message: i18n.t('errors.api.authentication.notTheBlogOwner')});
             }
 
             return _.assign({setupDetails: setupDetails}, options);
@@ -534,7 +536,7 @@ authentication = {
             return models.User.findOne({role: 'Owner', status: 'all'})
                 .then(function (owner) {
                     if (owner.id !== options.context.user) {
-                        throw new errors.NoPermissionError(i18n.t('errors.api.authentication.notTheBlogOwner'));
+                        throw new errors.NoPermissionError({message: i18n.t('errors.api.authentication.notTheBlogOwner')});
                     }
 
                     return options.setupDetails;
@@ -591,9 +593,9 @@ authentication = {
                         return destroyToken(providers.pop(), options, providers);
                     })
                     .catch(function () {
-                        throw new errors.TokenRevocationError(
-                            i18n.t('errors.api.authentication.tokenRevocationFailed')
-                        );
+                        throw new errors.TokenRevocationError({
+                            message: i18n.t('errors.api.authentication.tokenRevocationFailed')
+                        });
                     });
             }
 
