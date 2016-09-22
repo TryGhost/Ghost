@@ -1,0 +1,28 @@
+{
+    "url": "http://localhost:2368",
+    "urlSSL": false,
+    "forceAdminSSL": false,
+    "server": {
+        "host": "127.0.0.1",
+        "port": 2368
+    },
+    "database": {
+        "client": "sqlite3",
+        "debug": false,
+        "connection": {
+            "filename": "content/data/ghost.db"
+        }
+    },
+    "privacy": false,
+    "paths": {
+        "contentPath": "content/"
+    },
+    "storage": {
+        "active": {
+            "images": "local-file-store"
+        }
+    },
+    "scheduling": {
+        "active": "SchedulingDefault"
+    }
+}

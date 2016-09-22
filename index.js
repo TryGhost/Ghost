@@ -1,13 +1,18 @@
-// # Ghost bootloader
-// Orchestrates the loading of Ghost
+// # Ghost Startup
+// Orchestrates the startup of Ghost when run from command line.
 
-var configLoader = require('./core/config-loader.js'),
-    error        = require('./core/server/errorHandling');
+var ghost = require('./core'),
+    express = require('express'),
+    errors = require('./core/server/errors'),
+    utils = require('./core/server/utils'),
+    parentApp = express();
 
-// If no env is set, default to development
-process.env.NODE_ENV = process.env.NODE_ENV || 'development';
+ghost().then(function (ghostServer) {
+    // Mount our Ghost instance on our desired subdirectory path if it exists.
+    parentApp.use(utils.url.getSubdir(), ghostServer.rootApp);
 
-configLoader.loadConfig().then(function () {
-    // The server and its dependencies require a populated config
-    require('./core/server');
-}).otherwise(error.logAndThrowError);
+    // Let Ghost handle starting our server instance.
+    ghostServer.start(parentApp);
+}).catch(function (err) {
+    errors.logErrorAndExit(err, err.context, err.help);
+});

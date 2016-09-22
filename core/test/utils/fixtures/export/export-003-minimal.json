@@ -1,0 +1,15 @@
+{
+    "meta": {
+        "exported_on": 1388318311015,
+        "version": "003"
+    },
+    "data": {
+        "posts": [
+            {
+                "title": "Welcome to Ghost",
+                "slug": "welcome-to-ghost",
+                "markdown": "You're live! Nice."
+            }
+        ]
+    }
+}

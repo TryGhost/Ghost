@@ -1,22 +1,46 @@
-var migrations = require('../data/migration');
+/**
+ * Dependencies
+ */
 
-module.exports = {
-    Post: require('./post').Post,
-    User: require('./user').User,
-    Role: require('./role').Role,
-    Permission: require('./permission').Permission,
-    Settings: require('./settings').Settings,
-    Tag: require('./tag').Tag,
-    init: function () {
-        return migrations.init();
-    },
-    reset: function () {
-        return migrations.reset().then(function () {
-            return migrations.init();
-        });
-    },
-    isPost: function (jsonData) {
-        return jsonData.hasOwnProperty('html') && jsonData.hasOwnProperty('markdown')
-            && jsonData.hasOwnProperty('title') && jsonData.hasOwnProperty('slug');
-    }
-};
+var _ = require('lodash'),
+    exports,
+    models;
+
+// enable event listeners
+require('./base/listeners');
+
+/**
+ * Expose all models
+ */
+exports = module.exports;
+
+models = [
+    'accesstoken',
+    'app-field',
+    'app-setting',
+    'app',
+    'client-trusted-domain',
+    'client',
+    'permission',
+    'post',
+    'refreshtoken',
+    'role',
+    'settings',
+    'subscriber',
+    'tag',
+    'user'
+];
+
+function init() {
+    exports.Base = require('./base');
+
+    models.forEach(function (name) {
+        _.extend(exports, require('./' + name));
+    });
+}
+
+/**
+ * Expose `init`
+ */
+
+exports.init = init;

@@ -1,19 +1,44 @@
 language: node_js
+# When changing node version also update it on lines 34, 36 and 46.
 node_js:
-  - "0.11"
-  - "0.10"
-git:
-  submodules: false
+  - "4"
+  - "0.12"
+  - "6"
+sudo: false
+cache:
+  directories:
+    - node_modules
+    - core/client/node_modules
+    - core/client/bower_components
+env:
+  global:
+    - GITHUB_OAUTH_KEY=003a44d58f12089d0c0261338298af3813330949
+    - GHOST_NODE_VERSION_CHECK=false
+    - TEST_SUITE=server
+  matrix:
+    - DB=sqlite3 NODE_ENV=testing
+    - DB=mysql NODE_ENV=testing-mysql
+matrix:
+  include:
+    - node_js: "4"
+      env: TEST_SUITE=lint
+  fast_finish: true
+branches:
+  except:
+    - /^greenkeeper-.+$/
 before_install:
-  - gem update --system
-  - gem install sass bourbon
-  - npm install -g grunt-cli
-  - git clone git://github.com/n1k0/casperjs.git ~/casperjs
-  - cd ~/casperjs
-  - git checkout tags/1.1-beta1
-  - export PATH=$PATH:`pwd`/bin
-  - cd -
-before_script:
-  - phantomjs --version
-  - casperjs --version
-  - grunt init
+  - if [ $DB == "mysql" ]; then mysql -e 'create database ghost_testing'; fi
+after_success:
+  - |
+      if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
+        if [[ "$DB" = "sqlite3" && "$TRAVIS_NODE_VERSION" = "4" ]]; then
+          echo "Generate coverage..."
+          grunt coverage
+          npm install -g codeclimate-test-reporter
+          codeclimate-test-reporter < core/test/coverage/unit/lcov.info
+        else
+          echo "False DB and NODE_VERSION. No coverage generated."
+        fi
+      else
+        echo "This is a PR. No coverage generated."
+      fi

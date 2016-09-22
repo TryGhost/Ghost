@@ -1,0 +1,82 @@
+{
+    "images": [
+        {
+            "name": "my-image.png",
+            "path": "/tmp/test/path/images/my-image.png",
+            "originalPath": "images/my-image.png",
+            "targetDir": "/test/content/images",
+            "newPath": "/content/images/my-image.png"
+        },
+        {
+            "name": "photos/cat.jpg",
+            "path": "/tmp/test/path/images/photos/cat.jpg",
+            "originalPath": "images/photos/cat.jpg",
+            "targetDir": "/test/content/images/photos",
+            "newPath": "/content/images/photos/cat.jpg"
+        }
+    ],
+    "data": {
+        "meta": {
+            "exported_on": 1388318311015,
+            "version": "000"
+        },
+        "data": {
+            "posts": [
+                {
+                    "id": 1,
+                    "uuid": "8492fbba-1102-4b53-8e3e-abe207952f0c",
+                    "title": "Welcome to Ghost",
+                    "slug": "welcome-to-ghost",
+                    "markdown": "You're live! Nice. \n![Cat Photo](/images/photos/cat.jpg)\n\n![Cat Photo](/images/photos/cat.jpg)\n![My pic](/images/my-image.png)",
+                    "html": "<p>You're live! Nice. <br>\n<img src=\"/images/photos/cat.jpg\" alt=\"Cat Photo\"></p>\n\n<p><img src=\"/images/photos/cat.jpg\" alt=\"Cat Photo\">\n<img src=\"/images/my-image.png\" alt=\"My pic\"></p>",
+                    "image": "/images/my-image.png",
+                    "featured": 0,
+                    "page": 0,
+                    "status": "published",
+                    "language": "en_US",
+                    "meta_title": null,
+                    "meta_description": null,
+                    "author_id": 1,
+                    "created_at": 1388318310782,
+                    "created_by": 1,
+                    "updated_at": 1388318310782,
+                    "updated_by": 1,
+                    "published_at": 1388318310783,
+                    "published_by": 1
+                }
+            ],
+            "tags": [
+                {
+                    "id": 1,
+                    "uuid": "a950117a-9735-4584-931d-25a28015a80d",
+                    "name": "Getting Started",
+                    "slug": "getting-started",
+                    "description": null,
+                    "image": "/images/my-image.png",
+                    "parent_id": null,
+                    "meta_title": null,
+                    "meta_description": null,
+                    "created_at": 1388318310790,
+                    "created_by": 1,
+                    "updated_at": 1388318310790,
+                    "updated_by": 1
+                }
+            ],
+            "users": [
+                {
+                    "name": "test user",
+                    "email": "test@ghost.org",
+                    "image": "/images/my-image.png",
+                    "cover": "/images/photos/cat.jpg"
+                }
+            ],
+            "posts_tags": [
+                {
+                    "id": 1,
+                    "post_id": 1,
+                    "tag_id": 1
+                }
+            ]
+        }
+    }
+}

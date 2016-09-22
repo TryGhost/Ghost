@@ -1,0 +1,87 @@
+{
+    "meta": {
+        "exported_on": 1388318311015,
+        "version": "003"
+    },
+    "data": {
+        "posts": [
+            {
+                "id": 1,
+                "title": "Welcome to Ghost",
+                "slug": "welcome-to-ghost",
+                "markdown": "You're live! Nice.",
+                "html": "<p>You're live! Nice.</p>",
+                "image": null,
+                "featured": 0,
+                "page": 0,
+                "status": "published",
+                "language": "en_US",
+                "meta_title": null,
+                "meta_description": null,
+                "author_id": 2,
+                "created_at": 1388318310782,
+                "created_by": 1,
+                "updated_at": 1388318310782,
+                "updated_by": 1,
+                "published_at": 1388318310783,
+                "published_by": 2
+            }
+        ],
+        "users": [
+            {
+                "id": 1,
+                "name": "Joe Bloggs",
+                "slug": "joe-blogs",
+                "email": "jbloggs@example.com",
+                "password": "$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6",
+                "image": null,
+                "cover": null,
+                "bio": "A blogger",
+                "website": null,
+                "location": null,
+                "accessibility": null,
+                "status": "active",
+                "language": "en_US",
+                "meta_title": null,
+                "meta_description": null,
+                "last_login": null,
+                "created_at": 1388319432895,
+                "created_by": 1,
+                "updated_at": null,
+                "updated_by": null
+            }
+        ],
+        "roles": [
+            {
+                "id": 1,
+                "uuid": "d2ea9c7f-7e6b-4cae-b009-35c298206852",
+                "name": "Administrator",
+                "description": "Administrators",
+                "created_at": 1388318310794,
+                "created_by": 1,
+                "updated_at": 1388318310794,
+                "updated_by": 1
+            },
+            {
+                "id": 2,
+                "uuid": "b0d7d6b0-5b88-45b5-b0e5-a487741b843d",
+                "name": "Editor",
+                "description": "Editors",
+                "created_at": 1388318310796,
+                "created_by": 1,
+                "updated_at": 1388318310796,
+                "updated_by": 1
+            },
+            {
+                "id": 3,
+                "uuid": "9f72e817-5490-4ccf-bc78-c557dc9613ca",
+                "name": "Author",
+                "description": "Authors",
+                "created_at": 1388318310799,
+                "created_by": 1,
+                "updated_at": 1388318310799,
+                "updated_by": 1
+            }
+        ]
+    }
+}

@@ -1,0 +1,107 @@
+{
+    "meta": {
+        "exported_on": 1388318311015,
+        "version": "003"
+    },
+    "data": {
+        "posts": [
+            {
+                "id": 1,
+                "uuid": "8492fbba-1102-4b53-8e3e-abe207952f0c",
+                "title": "Welcome to Ghost",
+                "slug": "welcome-to-ghost",
+                "markdown": "You're live! Nice.",
+                "html": "<p>You're live! Nice.</p>",
+                "image": null,
+                "featured": 0,
+                "page": 0,
+                "status": "published",
+                "language": "en_US",
+                "meta_title": null,
+                "meta_description": null,
+                "author_id": 1,
+                "created_at": 1388318310782,
+                "created_by": 1,
+                "updated_at": 1388318310782,
+                "updated_by": 1,
+                "published_at": 1388318310783,
+                "published_by": 1
+            },
+            {
+                "id": null,
+                "uuid": null,
+                "title": null,
+                "slug": null,
+                "markdown": null,
+                "html": null,
+                "image": null,
+                "featured": 0,
+                "page": 0,
+                "status": null,
+                "language": null,
+                "meta_title": null,
+                "meta_description": null,
+                "author_id": 1,
+                "created_at": 1388318310782,
+                "created_by": 1,
+                "updated_at": 1388318310782,
+                "updated_by": 1,
+                "published_at": 1388318310783,
+                "published_by": 1
+            }
+        ],
+        "users": [
+            {
+                "id": 1,
+                "uuid": "e5188224-4742-4c32-a2d6-e9c5c5d4c123",
+                "name": "Josephine Bloggs",
+                "slug": "josephine-blogs",
+                "password": "$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKABC",
+                "email": "josephinebloggs@example.com",
+                "image": null,
+                "cover": null,
+                "bio": "A blogger",
+                "website": null,
+                "location": null,
+                "accessibility": null,
+                "status": "active",
+                "language": "en_US",
+                "meta_title": null,
+                "meta_description": null,
+                "last_login": null,
+                "created_at": 1388319501897,
+                "created_by": 1,
+                "updated_at": null,
+                "updated_by": null
+            }
+        ],
+        "tags": [
+            {
+                "id": 1,
+                "uuid": "a950117a-9735-4584-931d-25a28015a80d",
+                "name": "Getting Started",
+                "slug": "getting-started",
+                "description": null,
+                "parent_id": null,
+                "meta_title": null,
+                "meta_description": null,
+                "created_at": 1388318310790,
+                "created_by": 1,
+                "updated_at": 1388318310790,
+                "updated_by": 1
+            }
+        ],
+        "posts_tags": [
+            {
+                "id": 1,
+                "post_id": 1,
+                "tag_id": 1
+            },
+            {
+                "id": 2,
+                "post_id": 1,
+                "tag_id": 2
+            }
+        ]
+    }
+}
