@@ -85,6 +85,7 @@
   padding-bottom: 4rem;
   word-break: break-word;
   hyphens: auto;
+
   &:after {
     position: absolute;
     bottom-margin: 10px;
@@ -223,7 +224,7 @@
     top: 0;
     z-index: 0;
     width: 100%;
-    
+
     background: #000;
     background: linear-gradient(to bottom,  #000 0%, transparent 100%);
     opacity: .2;

@@ -9,6 +9,7 @@
   color: $gray-light;
   background: 0 0;
   transition: all .3s ease-in-out;
+
   &:hover, &:focus, &:active, &.active {
     border: solid 1px $gray-light;
     color: #000;
@@ -44,5 +45,91 @@
       &:focus {
         background-color: $text-color;
       }
+    }
+}
+
+.btn-social-share {
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    padding: 0px;
+    text-decoration: none;
+    text-align: center;
+    color: #fff !important;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 2em;
+    border-radius: 50%;
+
+    &.facebook {
+        background: $facebook-color;
+
+        &:hover,
+        &:active,
+        &:focus {
+            background: darken($facebook-color, 7%);
+        }
+    }
+
+    &.twitter {
+        background: $twitter-color;
+
+        &:hover,
+        &:active,
+        &:focus {
+            background: darken($twitter-color, 7%);
+        }
+    }
+
+    &.google {
+        background: $google-plus-color;
+
+        &:hover,
+        &:active,
+        &:focus {
+            background: darken($google-plus-color, 7%);
+        }
+    }
+
+    &.linkedin {
+        background: $linkedin-color;
+
+        &:hover,
+        &:active,
+        &:focus {
+            background: darken($linkedin-color, 7%);
+        }
+    }
+
+    &.pinterest {
+        background: $pinterest-color;
+
+        &:hover,
+        &:active,
+        &:focus {
+            background: darken($pinterest-color, 7%);
+        }
+    }
+
+    &.tumblr {
+        background: $tumblr-color;
+
+        &:hover,
+        &:active,
+        &:focus {
+            background: darken($tumblr-color, 7%);
+        }
+    }
+
+    &.reddit {
+        background: $reddit-color;
+
+        &:hover,
+        &:active,
+        &:focus {
+            background: darken($reddit-color, 7%);
+        }
     }
 }

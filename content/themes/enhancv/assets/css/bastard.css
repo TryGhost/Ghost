@@ -115,8 +115,8 @@ Railscasts-like style (c) Visoft, Inc. (Damien White)
 
 @charset "UTF-8";
 /*!
- * Bootstrap v3.3.6 (http://getbootstrap.com)
- * Copyright 2011-2015 Twitter, Inc.
+ * Bootstrap v3.3.7 (http://getbootstrap.com)
+ * Copyright 2011-2016 Twitter, Inc.
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
  */
 /*! normalize.css v3.0.3 | MIT License | github.com/necolas/normalize.css */
@@ -1190,7 +1190,6 @@ a:hover, a:focus {
   text-decoration: none; }
 
 a:focus {
-  outline: thin dotted;
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px; }
 
@@ -2433,7 +2432,6 @@ select[size] {
 input[type="file"]:focus,
 input[type="radio"]:focus,
 input[type="checkbox"]:focus {
-  outline: thin dotted;
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px; }
 
@@ -2975,7 +2973,6 @@ select[multiple].input-lg,
   user-select: none; }
 
 .btn:focus, .custom-badge:focus, .btn.focus, .focus.custom-badge, .btn:active:focus, .custom-badge:active:focus, .btn:active.focus, .custom-badge:active.focus, .btn.active:focus, .active.custom-badge:focus, .btn.active.focus, .active.focus.custom-badge {
-  outline: thin dotted;
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px; }
 
@@ -6361,15 +6358,100 @@ button.close {
    1. Icons - Sets up the icon font and respective classes
    ========================================================================== */
 /* Import the font file with the icons in it */
-@font-face {
+/*@font-face {
   font-family: 'icons';
-  src: url("../fonts/icons.eot");
-  src: url("../fonts/icons.eot?#iefix") format("embedded-opentype"), url("../fonts/icons.woff") format("woff"), url("../fonts/icons.ttf") format("truetype"), url("../fonts/icons.svg#icons") format("svg");
+  src: url('../fonts/icons.eot');
+  src: url('../fonts/icons.eot?#iefix') format("embedded-opentype"), url('../fonts/icons.woff') format("woff"), url('../fonts/icons.ttf') format("truetype"), url('../fonts/icons.svg#icons') format("svg");
+  font-weight: normal;
+  font-style: normal;
+}*/
+@font-face {
+  font-family: 'FontAwesome';
+  src: url("../fonts/fontawesome-webfont.eot?v=4.6.3");
+  src: url("../fonts/fontawesome-webfont.eot?#iefix&v=4.6.3") format("embedded-opentype"), url("../fonts/fontawesome-webfont.woff2?v=4.6.3") format("woff2"), url("../fonts/fontawesome-webfont.woff?v=4.6.3") format("woff"), url("../fonts/fontawesome-webfont.ttf?v=4.6.3") format("truetype"), url("../fonts/fontawesome-webfont.svg?v=4.6.3#fontawesomeregular") format("svg");
   font-weight: normal;
   font-style: normal; }
 
+.fa {
+  display: inline-block;
+  font: normal normal normal 14px/1 FontAwesome;
+  font-size: inherit;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale; }
+
+/* makes the font 33% larger relative to the icon container */
+.fa-lg {
+  font-size: 1.33333333em;
+  line-height: 0.75em;
+  vertical-align: -15%; }
+
+.fa-2x {
+  font-size: 2em; }
+
+.fa-3x {
+  font-size: 3em; }
+
+.fa-4x {
+  font-size: 4em; }
+
+.fa-5x {
+  font-size: 5em; }
+
+.fa-fw {
+  width: 1.28571429em;
+  text-align: center; }
+
+.fa-ul {
+  padding-left: 0;
+  margin-left: 2.14285714em;
+  list-style-type: none; }
+
+.fa-ul > li {
+  position: relative; }
+
+.fa-li {
+  position: absolute;
+  left: -2.14285714em;
+  width: 2.14285714em;
+  top: 0.14285714em;
+  text-align: center; }
+
+.fa-li.fa-lg {
+  left: -1.85714286em; }
+
+.fa-border {
+  padding: .2em .25em .15em;
+  border: solid 0.08em #eeeeee;
+  border-radius: .1em; }
+
+.fa-inverse {
+  color: #ffffff; }
+
+.fa-reddit:before {
+  content: "\f1a1"; }
+
+.fa-pinterest:before {
+  content: "\f0d2"; }
+
+.fa-tumblr:before {
+  content: "\f173"; }
+
+.fa-linkedin:before {
+  content: "\f0e1"; }
+
+.fa-twitter:before {
+  content: "\f099"; }
+
+.fa-facebook-f:before,
+.fa-facebook:before {
+  content: "\f09a"; }
+
+.fa-google-plus:before {
+  content: "\f0d5"; }
+
 /* Apply these base styles to all icons */
-.icon-ghost:before, .icon-feed:before, .icon-twitter:before, .icon-google-plus:before, .icon-facebook:before {
+/*.icon-ghost:before, .icon-feed:before, .icon-twitter:before, .icon-google-plus:before, .icon-facebook:before {
   font-family: 'icons';
   speak: none;
   font-style: normal;
@@ -6379,26 +6461,30 @@ button.close {
   line-height: 1;
   text-decoration: none;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale; }
-
+  -moz-osx-font-smoothing: grayscale;
+}*/
 /* Each icon is created by inserting the corret character into the
    content of the :before pseudo element. Like a boss. */
-.icon-ghost:before {
-  content: "\e000"; }
+/*.icon-ghost:before {
+  content: "\e000";
+}
 
 .icon-feed:before {
-  content: "\e001"; }
+  content: "\e001";
+}
 
 .icon-twitter:before {
   content: "\e002";
-  font-size: 1.1em; }
+  font-size: 1.1em;
+}
 
 .icon-google-plus:before {
-  content: "\e003"; }
+  content: "\e003";
+}
 
 .icon-facebook:before {
-  content: "\e004"; }
-
+  content: "\e004";
+}*/
 /* ==========================================================================
    2. General - Setting up some base styles
    ========================================================================== */
@@ -8202,6 +8288,63 @@ h1.post-title {
 
 .btn-social.btn-invert:hover, .btn-social.btn-invert:active, .btn-social.btn-invert:focus {
   background-color: #333333; }
+
+.btn-social-share {
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  padding: 0px;
+  text-decoration: none;
+  text-align: center;
+  color: #fff !important;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 2em;
+  border-radius: 50%; }
+
+.btn-social-share.facebook {
+  background: #0054a6; }
+
+.btn-social-share.facebook:hover, .btn-social-share.facebook:active, .btn-social-share.facebook:focus {
+  background: #004282; }
+
+.btn-social-share.twitter {
+  background: #29abe2; }
+
+.btn-social-share.twitter:hover, .btn-social-share.twitter:active, .btn-social-share.twitter:focus {
+  background: #1c97cc; }
+
+.btn-social-share.google {
+  background: #e74133; }
+
+.btn-social-share.google:hover, .btn-social-share.google:active, .btn-social-share.google:focus {
+  background: #dc291a; }
+
+.btn-social-share.linkedin {
+  background: #0094bc; }
+
+.btn-social-share.linkedin:hover, .btn-social-share.linkedin:active, .btn-social-share.linkedin:focus {
+  background: #007898; }
+
+.btn-social-share.pinterest {
+  background: #cb2027; }
+
+.btn-social-share.pinterest:hover, .btn-social-share.pinterest:active, .btn-social-share.pinterest:focus {
+  background: #ac1b21; }
+
+.btn-social-share.tumblr {
+  background: #3a5876; }
+
+.btn-social-share.tumblr:hover, .btn-social-share.tumblr:active, .btn-social-share.tumblr:focus {
+  background: #2e465e; }
+
+.btn-social-share.reddit {
+  background: #333; }
+
+.btn-social-share.reddit:hover, .btn-social-share.reddit:active, .btn-social-share.reddit:focus {
+  background: #212121; }
 
 /* ==========================================================================
    13. Slider Menu

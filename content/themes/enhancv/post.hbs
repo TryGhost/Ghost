@@ -17,36 +17,94 @@
                 <section class="post-meta">
                     <span class="pull-left">
                       <a
+                       class="btn-social-share facebook"
                        data-open-share="facebook"
                        data-open-share-link="{{url absolute="true"}}"
                        data-open-share-caption="{{encode title}}"
                        data-open-share-description="Forward Obsessed">
-                        Facebook Share
-                        <span
-                         data-open-share-count="facebook"
-                         data-open-share-count-url="{{url absolute="true"}}"></span>
+                        <span class="fa fa-facebook"></span>
                       </a>
+                      <span
+                      data-open-share-count="facebook"
+                      data-open-share-count-url="{{url absolute="true"}}"></span>
+
+
                       <a
+                       class="btn-social-share twitter"
                        data-open-share="twitter"
                        data-open-share-url="{{url absolute="true"}}"
                        data-open-share-text="{{encode title}}"
                        data-open-share-hashtags="resumes,fun,test"
                        data-open-share-ios="true">
-                        Twitter
-                        <span
-                         data-open-share-count="twitter"
-                         data-open-share-count-url="{{url absolute="true"}}"></span>
+                        <span class="fa fa-twitter"></span>
                       </a>
+                      <span
+                       data-open-share-count="twitter"
+                       data-open-share-count-url="{{url absolute="true"}}"></span>
+
+
                       <a
-                        data-open-share="linkedin"
-                        data-open-share-url="{{url absolute="true"}}"
-                        data-open-share-title="{{encode title}}">
-                        Linkedin
-                        <span
-                         data-open-share-count="linkedin"
-                         data-open-share-count-url="{{url absolute="true"}}"></span>
+                       class="btn-social-share linkedin"
+                       data-open-share="linkedin"
+                       data-open-share-url="{{url absolute="true"}}"
+                       data-open-share-title="{{encode title}}">
+                        <span class="fa fa-linkedin"></span>
                       </a>
+                      <span
+                       data-open-share-count="linkedin"
+                       data-open-share-count-url="{{url absolute="true"}}"></span>
+
+
+                       <a
+                        class="btn-social-share google"
+                        data-open-share="google"
+                        data-open-share-url="{{url absolute="true"}}">
+                         <span class="fa fa-google-plus"></span>
+                        </a>
+                        <span
+                         data-open-share-count="google"
+                         data-open-share-count-url="{{url absolute="true"}}"></span>
+
+
+                        <a
+                         class="btn-social-share pinterest"
+                         data-open-share="pinterest"
+                         data-open-share-media="{{image}}"
+                         data-open-share-url="{{url absolute="true"}}"
+                         data-open-share-description="{{encode title}}">
+                          <span class="fa fa-pinterest"></span>
+                        </a>
+                        <span
+                         data-open-share-count="pinterest"
+                         data-open-share-count-url="{{url absolute="true"}}"></span>
+
+
+                        <a
+                         class="btn-social-share tumblr"
+                         data-open-share="tumblr"
+                         data-open-share-link="{{url absolute="true"}}">
+                          <span class="fa fa-tumblr"></span>
+                        </a>
+
+
+                        <a
+                         class="btn-social-share reddit"
+                         data-open-share="reddit"
+                         data-open-share-url="{{url absolute="true"}}"
+                         data-open-share-title="{{encode title}}">
+                          <span class="fa fa-reddit"></span>
+                        </a>
+                        <span
+                         data-open-share-count="reddit"
+                         data-open-share-count-url="{{url absolute="true"}}"></span>
                     </span>
+
+                    <span
+                     data-open-share-count="reddit,facebook,linkedin,google,pinterest"
+                     data-open-share-count-url="{{url absolute="true"}}"></span>Shares
+
+                    <a href="{{url absolute="true"}}#disqus_thread" data-disqus-identifier="{{post.id}}">Comments</a>
+
                     <time class="post-date pull-right" datetime="{{date format='YYYY-MM-DD'}}">{{date format="DD MMMM YYYY"}}</time> {{!-- {{tags prefix=" on " separator=" | "}} --}}
                 </section>
             </header>
