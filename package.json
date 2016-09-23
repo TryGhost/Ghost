@@ -78,7 +78,7 @@
     "semver": "5.3.0",
     "showdown-ghost": "0.3.6",
     "sqlite3": "3.1.4",
-    "superagent": "2.2.0",
+    "superagent": "2.3.0",
     "unidecode": "0.1.8",
     "validator": "5.7.0",
     "xml": "1.0.1"
