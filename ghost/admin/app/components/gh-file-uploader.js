@@ -108,7 +108,7 @@ export default Component.extend({
         event.stopPropagation();
         event.preventDefault();
 
-        this.set('dragClass', '--drag-over');
+        this.set('dragClass', '-drag-over');
     },
 
     dragLeave(event) {

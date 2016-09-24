@@ -16,11 +16,11 @@
     text-align: center;
 }
 
-.gh-image-uploader.--drag-over {
+.gh-image-uploader.-drag-over {
     border: 2px solid;
 }
 
-.gh-image-uploader.--with-image {
+.gh-image-uploader.-with-image {
     background: rgba(0, 0, 0, 0.1);
     border-radius: 2px;
 }
