@@ -1,4 +1,5 @@
 .ember-power-select-trigger {
+    padding: 0 16px 0 8px;
     border: 1px solid #dfe1e3;
     border-radius: var(--border-radius);
     color: #666;
