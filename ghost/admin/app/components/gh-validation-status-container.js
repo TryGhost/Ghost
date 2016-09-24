@@ -16,7 +16,7 @@ export default Component.extend(ValidationStateMixin, {
         let hasValidated = this.get('hasValidated');
         let property = this.get('property');
 
-        if (hasValidated && hasValidated.contains(property)) {
+        if (hasValidated && hasValidated.includes(property)) {
             return this.get('hasError') ? 'error' : 'success';
         } else {
             return '';

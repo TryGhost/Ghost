@@ -20,7 +20,7 @@ export default Mixin.create({
         }
 
         // If we haven't yet validated this field, there is no validation class needed
-        if (!hasValidated || !hasValidated.contains(property)) {
+        if (!hasValidated || !hasValidated.includes(property)) {
             return false;
         }
 

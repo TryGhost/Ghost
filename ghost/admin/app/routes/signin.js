@@ -5,7 +5,6 @@ import styleBody from 'ghost-admin/mixins/style-body';
 import Configuration from 'ember-simple-auth/configuration';
 import DS from 'ember-data';
 import {
-    VersionMismatchError,
     isVersionMismatchError
 } from 'ghost-admin/services/ajax';
 
@@ -53,7 +52,7 @@ export default Route.extend(styleBody, {
             this.toggleProperty('controller.loggingIn');
             this.set('controller.flowErrors', '');
 
-            this.get('torii')
+            return this.get('torii')
                 .open('ghost-oauth2', {type: 'signin'})
                 .then((authentication) => {
                     this.send('authenticate', authStrategy, [authentication]);
@@ -66,7 +65,7 @@ export default Route.extend(styleBody, {
 
         authenticate(strategy, authentication) {
             // Authentication transitions to posts.index, we can leave spinner running unless there is an error
-            this.get('session')
+            return this.get('session')
                 .authenticate(strategy, ...authentication)
                 .catch((error) => {
                     this.toggleProperty('controller.loggingIn');
@@ -75,9 +74,8 @@ export default Route.extend(styleBody, {
                         // we don't get back an ember-data/ember-ajax error object
                         // back so we need to pass in a null status in order to
                         // test against the payload
-                        if (isVersionMismatchError(null, error)) {
-                            let versionMismatchError = new VersionMismatchError(error);
-                            return this.get('notifications').showAPIError(versionMismatchError);
+                        if (isVersionMismatchError(error)) {
+                            return this.get('notifications').showAPIError(error);
                         }
 
                         error.errors.forEach((err) => {
