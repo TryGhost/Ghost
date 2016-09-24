@@ -101,7 +101,7 @@ export default Component.extend({
         event.preventDefault();
 
         if (showUploadForm) {
-            this.set('dragClass', '--drag-over');
+            this.set('dragClass', '-drag-over');
         }
     },
 

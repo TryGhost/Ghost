@@ -20,7 +20,7 @@ describeComponent(
 
             this.render(hbs`{{gh-image-uploader-with-preview image=image}}`);
 
-            expect(this.$('.gh-image-uploader.--with-image').length).to.equal(1);
+            expect(this.$('.gh-image-uploader.-with-image').length).to.equal(1);
             expect(this.$('img').attr('src')).to.equal('http://example.com/test.png');
         });
 

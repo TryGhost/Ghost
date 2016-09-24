@@ -406,13 +406,13 @@ describeComponent(
                     this.$('.gh-image-uploader').trigger(dragover);
                 });
 
-                expect(this.$('.gh-image-uploader').hasClass('--drag-over'), 'has drag-over class').to.be.true;
+                expect(this.$('.gh-image-uploader').hasClass('-drag-over'), 'has drag-over class').to.be.true;
 
                 run(() => {
                     this.$('.gh-image-uploader').trigger('dragleave');
                 });
 
-                expect(this.$('.gh-image-uploader').hasClass('--drag-over'), 'has drag-over class').to.be.false;
+                expect(this.$('.gh-image-uploader').hasClass('-drag-over'), 'has drag-over class').to.be.false;
             });
 
             it('triggers file upload on file drop', function (done) {

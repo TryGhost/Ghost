@@ -114,7 +114,7 @@
     padding: 35px 45px;
 }
 
-.settings-menu-content .gh-image-uploader.--with-image {
+.settings-menu-content .gh-image-uploader.-with-image {
     margin-top: 0;
     min-height: 50px;
     max-height: 250px;
