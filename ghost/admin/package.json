@@ -55,7 +55,7 @@
     "ember-cli-test-loader": "1.1.0",
     "ember-cli-uglify": "1.2.0",
     "ember-concurrency": "0.7.9",
-    "ember-data": "2.8.0",
+    "ember-data": "2.8.1",
     "ember-data-filter": "1.13.0",
     "ember-export-application-global": "1.0.5",
     "ember-invoke-action": "1.4.0",
