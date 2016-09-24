@@ -430,7 +430,8 @@ describe('Acceptance: Setup', function () {
             // simulate active oauth config
             $('head').append('<meta name="env-ghostAuthId" content="6e0704b3-c653-4c12-8da7-584232b5c629" />');
 
-            // ensure we have roles available
+            // ensure we have settings (to pass validation) and roles available
+            server.loadFixtures('settings');
             server.loadFixtures('roles');
         });
 

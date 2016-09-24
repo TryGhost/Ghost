@@ -1,7 +1,6 @@
 import Route from 'ember-route';
 import injectService from 'ember-service/inject';
 import {
-    VersionMismatchError,
     isVersionMismatchError
 } from 'ghost-admin/services/ajax';
 
@@ -18,10 +17,10 @@ export default Route.extend({
             this.toggleProperty('controller.loggingIn');
             this.set('controller.flowErrors', '');
 
-            this.get('torii')
+            return this.get('torii')
                 .open('ghost-oauth2', {type: 'setup'})
                 .then((authentication) => {
-                    this.send('authenticate', authStrategy, [authentication]);
+                    return this.send('authenticate', authStrategy, [authentication]);
                 })
                 .catch(() => {
                     this.toggleProperty('controller.loggingIn');
@@ -34,19 +33,15 @@ export default Route.extend({
             this.set('session.skipAuthSuccessHandler', true);
 
             // Authentication transitions to posts.index, we can leave spinner running unless there is an error
-            this.get('session')
+            return this.get('session')
                 .authenticate(strategy, ...authentication)
                 .then(() => {
                     this.get('controller.errors').remove('session');
                 })
                 .catch((error) => {
                     if (error && error.errors) {
-                        // we don't get back an ember-data/ember-ajax error object
-                        // back so we need to pass in a null status in order to
-                        // test against the payload
-                        if (isVersionMismatchError(null, error)) {
-                            let versionMismatchError = new VersionMismatchError(error);
-                            return this.get('notifications').showAPIError(versionMismatchError);
+                        if (isVersionMismatchError(error)) {
+                            return this.get('notifications').showAPIError(error);
                         }
 
                         error.errors.forEach((err) => {

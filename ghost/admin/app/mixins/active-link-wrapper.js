@@ -3,6 +3,7 @@ import Mixin from 'ember-metal/mixin';
 import run from 'ember-runloop';
 import computed from 'ember-computed';
 import {A as emberA} from 'ember-array/utils';
+import getOwner from 'ember-owner/get';
 
 export default Mixin.create({
 
@@ -17,11 +18,13 @@ export default Mixin.create({
     didRender() {
         this._super(...arguments);
 
-        run.schedule('afterRender', this, function () {
+        run.scheduleOnce('afterRender', this, function () {
             let childLinkElements = this.$('a.ember-view');
+            let applicationContainer = getOwner(this).application.__container__;
+            let viewRegistry = applicationContainer.lookup('-view-registry:main');
 
-            let childLinkViews = childLinkElements.toArray().map((view) =>
-                this._viewRegistry[view.id]
+            let childLinkViews = childLinkElements.toArray().map(
+                (view) => viewRegistry[view.id]
             );
 
             this.set('childLinkViews', childLinkViews);
