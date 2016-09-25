@@ -49,6 +49,7 @@ var files = {
         'assets/js/jquery.fitvids.js',
         'assets/js/jquery.parallax-1.1.3.js',
         'assets/js/jquery.easing.1.3.js',
+        'assets/js/jquery.ghostHunter.min.js',
         'assets/js/bastard.js'
     ],
     images: [

@@ -6450,6 +6450,9 @@ button.close {
 .fa-google-plus:before {
   content: "\f0d5"; }
 
+.fa-comment:before {
+  content: "\f075"; }
+
 /* Apply these base styles to all icons */
 /*.icon-ghost:before, .icon-feed:before, .icon-twitter:before, .icon-google-plus:before, .icon-facebook:before {
   font-family: 'icons';
@@ -7648,6 +7651,12 @@ fieldset[disabled] .btn-muted-link:focus {
   margin-right: 20px;
   color: #333333; }
 
+.posts-wrapper .posts-header .post-meta .post-header-pill {
+  padding: 0 8px;
+  border-radius: 30px;
+  background: #ccc;
+  margin: 0 5px; }
+
 .posts-wrapper [class*="col-"] {
   padding: 25px; }
 
@@ -7809,6 +7818,16 @@ h1.post-title {
   text-align: center; }
 
 .post-template .post-header h1 {
+  color: #333333; }
+
+.post-template .post-header .post-meta .post-header-pill {
+  padding: 5px 12px;
+  border-radius: 30px;
+  background: #e1e3e2;
+  margin: 0 5px;
+  color: #333333; }
+
+.post-template .post-header .post-meta .post-header-pill > a {
   color: #333333; }
 
 .post-template .blog-title {

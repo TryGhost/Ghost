@@ -91,6 +91,18 @@
 
             $(window).on('scroll', handleSubNav.debounce(100));
         }
+
+        //Ghost posts search functionality start
+        $(".search-results").addClass("hidden");
+        $("#search-field").ghostHunter({
+            results: "#search-results",
+            onKeyUp: true,
+            displaySearchInfo: false,
+            result_template : "<a href='{{link}}'><li class='list-group-item'>{{title}}</li></a>",
+            before: function() {
+                $(".search-results").removeClass("hidden");
+            }
+        });
     });
 
 }(jQuery));

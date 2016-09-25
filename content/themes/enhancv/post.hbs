@@ -99,11 +99,17 @@
                          data-open-share-count-url="{{url absolute="true"}}"></span>
                     </span>
 
-                    <span
-                     data-open-share-count="reddit,facebook,linkedin,google,pinterest"
-                     data-open-share-count-url="{{url absolute="true"}}"></span>Shares
+                    <span class="post-header-pill">
+                        <span
+                         data-open-share-count="reddit,facebook,linkedin,google,pinterest"
+                         data-open-share-count-url="{{url absolute="true"}}"></span>
+                        Shares
+                    </span>
 
-                    <a href="{{url absolute="true"}}#disqus_thread" data-disqus-identifier="{{post.id}}">Comments</a>
+                    <span class="post-header-pill">
+                        <span class="fa fa-comment"></span>
+                        <a href="{{url absolute="true"}}#disqus_thread" data-disqus-identifier="{{id}}">Comments</a>
+                    </span>
 
                     <time class="post-date pull-right" datetime="{{date format='YYYY-MM-DD'}}">{{date format="DD MMMM YYYY"}}</time> {{!-- {{tags prefix=" on " separator=" | "}} --}}
                 </section>
@@ -154,7 +160,7 @@
                   <script>
                     var disqus_config = function () {
                         this.page.url = '{{url absolute="true"}}';
-                        this.page.identifier = '{{post.id}}';
+                        this.page.identifier = '{{id}}';
                     };
                     (function() { // DON'T EDIT BELOW THIS LINE
                       var d = document, s = d.createElement('script');
@@ -171,23 +177,23 @@
         </article>
 
         <div class="side pull-right">
-            {{#get "posts" limit="3" as |featured|}}
+            {{#get "posts" filter="id:-{{id}}" limit="3" as |recent|}}
                 <section class="latest-posts">
                   <h3>Latest posts</h3>
                   <div class="separator md"></div>
-                  {{#foreach featured}}
-                  <div class="media">
-                      {{#if image}}
-                          <div class="media-left media-middle">
-                            <a class="wrapper" href={{url}}>
-                              <img class="media-object" src={{image}} alt="{{title}} cover image">
-                            </a>
+                  {{#foreach recent}}
+                      <div class="media">
+                          {{#if image}}
+                              <div class="media-left media-middle">
+                                <a class="wrapper" href={{url}}>
+                                  <img class="media-object" src={{image}} alt="{{title}} cover image">
+                                </a>
+                              </div>
+                          {{/if}}
+                          <div class="media-body">
+                            <a href={{url}} class="media-heading">{{title}}</a>
                           </div>
-                      {{/if}}
-                      <div class="media-body">
-                        <a href={{url}} class="media-heading">{{title}}</a>
                       </div>
-                  </div>
                   {{/foreach}}
                 </section>
             {{else}}
@@ -206,8 +212,18 @@
                 <p>In your inbox every week.<br>What's more to ask from life?</p>
                 <div class="separator md"></div>
 
-                <input type="text" name="email" class="form-control" placeholder="Email">
-                <button type="submit" class="btn btn-success">Subscribe</button>
+                <!-- Begin MailChimp Signup Form -->
+                <div id="mc_embed_signup">
+                    <form action="//enhancv.us3.list-manage.com/subscribe/post?u=e9f971ca5567251cc71a5e56e&amp;id=25c27d778b" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+                        <div id="mc_embed_signup_scroll">
+                            <input type="email" value="" name="EMAIL" class="email form-control" id="mce-EMAIL" placeholder="Your email" required>
+                            <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
+                            <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_e9f971ca5567251cc71a5e56e_55ae08484a" tabindex="-1" value=""></div>
+                            <div class="clear"><input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="btn btn-success"></div>
+                        </div>
+                    </form>
+                </div>
+                <!--End mc_embed_signup-->
             </div>
         </div>
     </div>
