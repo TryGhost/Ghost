@@ -115,12 +115,13 @@
                     <div class="form-group">
                         <label for="user-role">Role</label>
                         <span class="gh-select" tabindex="0">
-                            {{gh-select-native id="new-user-role"
-                                content=roles
+                            {{one-way-select
+                                id="new-user-role"
+                                options=roles
                                 optionValuePath="id"
                                 optionLabelPath="name"
-                                selection=model.role
-                                action="changeRole"
+                                value=model.role
+                                update=(action "changeRole")
                             }}
                         </span>
                         <p>What permissions should this user have?</p>
