@@ -54,6 +54,7 @@
     "knex": "0.12.1",
     "lodash": "4.16.0",
     "moment": "2.15.1",
+    "mobiledoc-html-renderer": "0.3.0",
     "moment-timezone": "0.5.5",
     "morgan": "1.7.0",
     "multer": "1.2.0",

@@ -1,18 +1,20 @@
 // # Post Model
-var _              = require('lodash'),
-    uuid           = require('node-uuid'),
-    moment         = require('moment'),
-    Promise        = require('bluebird'),
-    sequence       = require('../utils/sequence'),
-    errors         = require('../errors'),
-    Showdown       = require('showdown-ghost'),
-    converter      = new Showdown.converter({extensions: ['ghostgfm', 'footnotes', 'highlight']}),
-    ghostBookshelf = require('./base'),
-    events         = require('../events'),
-    config         = require('../config'),
-    utils          = require('../utils'),
-    baseUtils      = require('./base/utils'),
-    i18n           = require('../i18n'),
+var _               = require('lodash'),
+    uuid            = require('node-uuid'),
+    moment          = require('moment'),
+    Promise         = require('bluebird'),
+    sequence        = require('../utils/sequence'),
+    errors          = require('../errors'),
+    Showdown        = require('showdown-ghost'),
+    legacyConverter = new Showdown.converter({extensions: ['ghostgfm', 'footnotes', 'highlight']}),
+    Mobiledoc       = require('mobiledoc-html-renderer').default,
+    converter       = new Mobiledoc(),
+    ghostBookshelf  = require('./base'),
+    events          = require('../events'),
+    config          = require('../config'),
+    utils           = require('../utils'),
+    baseUtils       = require('./base/utils'),
+    i18n            = require('../i18n'),
     Post,
     Posts;
 
@@ -156,6 +158,7 @@ Post = ghostBookshelf.Model.extend({
             tagsToCheck = this.get('tags'),
             publishedAt = this.get('published_at'),
             publishedAtHasChanged = this.hasDateChanged('published_at'),
+            mobiledoc   = this.get('mobiledoc'),
             tags = [];
 
         // CASE: disallow published -> scheduled
@@ -205,7 +208,12 @@ Post = ghostBookshelf.Model.extend({
 
         ghostBookshelf.Model.prototype.saving.call(this, model, attr, options);
 
-        this.set('html', converter.makeHtml(_.toString(this.get('markdown'))));
+        if (mobiledoc) {
+            this.set('html', converter.render(JSON.parse(mobiledoc)).result);
+        } else {
+            // legacy showdown mode
+            this.set('html', legacyConverter.makeHtml(_.toString(this.get('markdown'))));
+        }
 
         // disabling sanitization until we can implement a better version
         title = this.get('title') || i18n.t('errors.models.post.untitled');
