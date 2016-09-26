@@ -67,14 +67,14 @@
                 <label for="author-list">Author</label>
                 <span class="input-icon icon-user">
                     <span class="gh-select" tabindex="0">
-                    {{gh-select-native
-                        name="post-setting-author"
+                    {{one-way-select
                         id="author-list"
-                        content=authors
+                        name="post-setting-author"
+                        options=authors
                         optionValuePath="id"
                         optionLabelPath="name"
-                        selection=selectedAuthor
-                        action="changeAuthor"
+                        value=selectedAuthor
+                        update=(action "changeAuthor")
                     }}
                     </span>
                 </span>

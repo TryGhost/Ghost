@@ -135,12 +135,12 @@ describe('Acceptance: Settings - General', function () {
             andThen(() => {
                 expect(currentURL(), 'currentURL').to.equal('/settings/general');
 
-                expect(find('#activeTimezone select option').length, 'available timezones').to.equal(66);
+                expect(find('#activeTimezone option').length, 'available timezones').to.equal(66);
                 expect(find('#activeTimezone option:selected').text().trim()).to.equal('(GMT) UTC');
                 find('#activeTimezone option[value="Africa/Cairo"]').prop('selected', true);
             });
 
-            triggerEvent('#activeTimezone select', 'change');
+            triggerEvent('#activeTimezone', 'change');
             click('.view-header .btn.btn-blue');
 
             andThen(() => {
