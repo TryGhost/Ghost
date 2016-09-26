@@ -35,7 +35,7 @@
     "chalk": "1.1.3",
     "codemirror": "5.18.2",
     "csscomb": "3.1.8",
-    "ember-ajax": "2.4.1",
+    "ember-ajax": "2.5.1",
     "ember-cli": "2.7.0",
     "ember-cli-app-version": "2.0.0",
     "ember-cli-babel": "5.1.10",

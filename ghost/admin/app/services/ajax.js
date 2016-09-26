@@ -148,15 +148,17 @@ export default AjaxService.extend({
         if (payload && typeof payload === 'object') {
             payload.errors = payload.error || payload.errors || payload.message || undefined;
 
-            if (isEmberArray(payload.errors)) {
-                payload.errors = payload.errors.map(function(error) {
-                    if (typeof error === 'string') {
-                        return {message: error};
-                    } else {
-                        return error;
-                    }
-                });
+            if (!isEmberArray(payload.errors)) {
+                payload.errors = [payload.errors];
             }
+
+            payload.errors = payload.errors.map(function(error) {
+                if (typeof error === 'string') {
+                    return {message: error};
+                } else {
+                    return error;
+                }
+            });
         }
 
         return this._super(status, headers, payload);
