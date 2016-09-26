@@ -64,7 +64,8 @@ describeModule(
             ajax.request('/test/').then(() => {
                 expect(false).to.be.true();
             }).catch((error) => {
-                expect(error.errors).to.equal('Test Error');
+                expect(error.errors.length).to.equal(1);
+                expect(error.errors[0].message).to.equal('Test Error');
                 done();
             });
         });
@@ -78,7 +79,8 @@ describeModule(
             ajax.request('/test/').then(() => {
                 expect(false).to.be.true();
             }).catch((error) => {
-                expect(error.errors).to.equal('Test Error');
+                expect(error.errors.length).to.equal(1);
+                expect(error.errors[0].message).to.equal('Test Error');
                 done();
             });
         });
@@ -92,10 +94,9 @@ describeModule(
             ajax.request('/test/').then(() => {
                 expect(false).to.be.true();
             }).catch((error) => {
-                expect(error.errors).to.deep.equal([
-                    {message: 'First Error'},
-                    {message: 'Second Error'}
-                ]);
+                expect(error.errors.length).to.equal(2);
+                expect(error.errors[0].message).to.equal('First Error');
+                expect(error.errors[1].message).to.equal('Second Error');
                 done();
             });
         });
