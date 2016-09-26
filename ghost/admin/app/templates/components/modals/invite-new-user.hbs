@@ -27,12 +27,14 @@
         <div class="form-group for-select">
             <label for="new-user-role">Role</label>
             <span class="gh-select" tabindex="0">
-                {{gh-select-native id="new-user-role"
-                    content=roles
+                {{one-way-select
+                    id="new-user-role"
+                    name="role"
+                    options=roles
                     optionValuePath="id"
                     optionLabelPath="name"
-                    selection=role
-                    action="setRole"
+                    value=role
+                    update=(action "setRole")
                 }}
             </span>
         </div>

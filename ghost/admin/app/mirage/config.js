@@ -1,4 +1,5 @@
 import mockAuthentication from './config/authentication';
+import mockInvites from './config/invites';
 import mockPosts from './config/posts';
 import mockRoles from './config/roles';
 import mockSettings from './config/settings';
@@ -19,6 +20,7 @@ export default function () {
     // this.put('/posts/:id/', versionMismatchResponse);
     // mockSubscribers(this);
     this.loadFixtures('settings');
+    mockInvites(this);
     mockSettings(this);
     mockThemes(this);
 
@@ -38,6 +40,7 @@ export function testConfig() {
     // this.logging = true;
 
     mockAuthentication(this);
+    mockInvites(this);
     mockPosts(this);
     mockRoles(this);
     mockSettings(this);
