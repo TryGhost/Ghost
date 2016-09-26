@@ -54,6 +54,9 @@ export default AuthenticatedRoute.extend(base, {
         this._super(...arguments);
 
         controller.set('shouldFocusEditor', this.get('_transitionedFromNew'));
+        controller.set('cards' , []);
+        controller.set('atoms' , []);
+        controller.set('toolbar' , []);
     },
 
     actions: {

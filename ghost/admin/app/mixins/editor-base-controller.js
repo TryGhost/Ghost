@@ -164,7 +164,7 @@ export default Mixin.create({
         // if the two "scratch" properties (title and content) match the model, then
         // it's ok to set hasDirtyAttributes to false
         if (model.get('titleScratch') === model.get('title') &&
-            model.get('scratch') === model.get('markdown')) {
+            JSON.stringify(model.get('scratch')) === JSON.stringify(model.get('mobiledoc'))) {
             this.set('hasDirtyAttributes', false);
         }
     },
@@ -179,7 +179,8 @@ export default Mixin.create({
                 return false;
             }
 
-            let markdown = model.get('markdown');
+            // let markdown = model.get('markdown');
+            let mobiledoc = model.get('mobiledoc');
             let title = model.get('title');
             let titleScratch = model.get('titleScratch');
             let scratch = this.get('model.scratch');
@@ -194,8 +195,9 @@ export default Mixin.create({
             }
 
             // since `scratch` is not model property, we need to check
-            // it explicitly against the model's markdown attribute
-            if (markdown !== scratch) {
+            // it explicitly against the model's mobiledoc attribute
+            // TODO either deep equals or compare the serialised version - RYAN
+            if (mobiledoc !== scratch) {
                 return true;
             }
 
@@ -412,8 +414,8 @@ export default Mixin.create({
             this.send('cancelTimers');
 
             // Set the properties that are indirected
-            // set markdown equal to what's in the editor, minus the image markers.
-            this.set('model.markdown', this.get('model.scratch'));
+            // set mobiledoc equal to what's in the editor, minus the image markers.
+            this.set('model.mobiledoc', this.get('model.scratch'));
             this.set('model.status', status);
 
             // Set a default title

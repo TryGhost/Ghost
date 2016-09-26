@@ -29,12 +29,13 @@
             }}
         </section>
     </header>
-
-    {{gh-editor value=model.scratch
-                shouldFocusEditor=shouldFocusEditor
-                previewUrl=model.previewUrl
-                editorFocused=(action "autoSaveNew")
-                onTeardown=(action "cancelTimers")}}
+    {{ghost-editor
+        value=(readonly model.scratch)
+        onChange=(action (mut model.scratch))
+        onFirstChange=(action "autoSaveNew")
+        onTeardown=(action "cancelTimers")
+        shouldFocusEditor=shouldFocusEditor
+    }}
 </section>
 
 {{#if showDeletePostModal}}

@@ -7,7 +7,7 @@ describeModel(
     'Unit:Serializer: post',
     {
         // Specify the other units that are required for this test.
-        needs: ['transform:moment-utc', 'model:user', 'model:tag']
+        needs: ['transform:moment-utc', 'transform:json-string', 'model:user', 'model:tag']
     },
 
     function() {
