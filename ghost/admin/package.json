@@ -74,7 +74,7 @@
     "ember-wormhole": "0.3.6",
     "emberx-file-input": "1.1.0",
     "fs-extra": "0.30.0",
-    "ghost-editor": "0.0.6",
+    "ghost-editor": "git://github.com/TryGhost/Ghost-Editor.git#0.0.7",
     "glob": "7.1.0",
     "grunt": "1.0.1",
     "grunt-bg-shell": "2.3.3",
