@@ -2,9 +2,19 @@ import get from 'ember-metal/get';
 import computed from 'ember-computed';
 import injectService from 'ember-service/inject';
 import {isEmberArray} from 'ember-array/utils';
+import {isNone} from 'ember-utils';
 import AjaxService from 'ember-ajax/services/ajax';
 import {AjaxError, isAjaxError} from 'ember-ajax/errors';
 import config from 'ghost-admin/config/environment';
+
+const JSONContentType = 'application/json';
+
+function isJSONContentType(header) {
+    if (isNone(header)) {
+        return false;
+    }
+    return header.indexOf(JSONContentType) === 0;
+}
 
 /* Version mismatch error */
 
@@ -17,8 +27,6 @@ VersionMismatchError.prototype = Object.create(AjaxError.prototype);
 export function isVersionMismatchError(errorOrStatus, payload) {
     if (isAjaxError(errorOrStatus)) {
         return errorOrStatus instanceof VersionMismatchError;
-    } else if (errorOrStatus && get(errorOrStatus, 'isAdapterError')) {
-        return get(errorOrStatus, 'errors.firstObject.errorType') === 'VersionMismatchError';
     } else {
         return get(payload || {}, 'errors.firstObject.errorType') === 'VersionMismatchError';
     }
@@ -81,8 +89,6 @@ MaintenanceError.prototype = Object.create(AjaxError.prototype);
 export function isMaintenanceError(errorOrStatus) {
     if (isAjaxError(errorOrStatus)) {
         return errorOrStatus instanceof MaintenanceError;
-    } else if (errorOrStatus && get(errorOrStatus, 'isAdapterError')) {
-        return get(errorOrStatus, 'errors.firstObject.errorType') === 'Maintenance';
     } else {
         return errorOrStatus === 503;
     }
@@ -99,8 +105,6 @@ ThemeValidationError.prototype = Object.create(AjaxError.prototype);
 export function isThemeValidationError(errorOrStatus, payload) {
     if (isAjaxError(errorOrStatus)) {
         return errorOrStatus instanceof ThemeValidationError;
-    } else if (errorOrStatus && get(errorOrStatus, 'isAdapterError')) {
-        return get(errorOrStatus, 'errors.firstObject.errorType') === 'ThemeValidationError';
     } else {
         return get(payload || {}, 'errors.firstObject.errorType') === 'ThemeValidationError';
     }
@@ -116,6 +120,7 @@ export default AjaxService.extend({
         let headers = {};
 
         headers['X-Ghost-Version'] = config.APP.version;
+        headers['Content-Type'] = `${JSONContentType}; charset=utf-8`;
 
         if (session.get('isAuthenticated')) {
             session.authorize('authorizer:oauth2', (headerName, headerValue) => {
@@ -125,6 +130,18 @@ export default AjaxService.extend({
 
         return headers;
     }).volatile(),
+
+    // ember-ajax recognises `application/vnd.api+json` as a JSON-API request
+    // and formats appropriately, we want to handle `application/json` the same
+    _makeRequest(url, hash) {
+        if (isJSONContentType(hash.headers['Content-Type']) && hash.type !== 'GET') {
+            if (typeof hash.data === 'object') {
+                hash.data = JSON.stringify(hash.data);
+            }
+        }
+
+        return this._super(...arguments);
+    },
 
     handleResponse(status, headers, payload) {
         if (this.isVersionMismatchError(status, headers, payload)) {
@@ -141,24 +158,32 @@ export default AjaxService.extend({
             return new ThemeValidationError(payload.errors);
         }
 
+        // TODO: we may want to check that we are hitting our own API before
+        // logging the user out due to a 401 response
+        if (this.isUnauthorizedError(status, headers, payload) && this.get('session.isAuthenticated')) {
+            this.get('session').invalidate();
+        }
+
         return this._super(...arguments);
     },
 
     normalizeErrorResponse(status, headers, payload) {
         if (payload && typeof payload === 'object') {
-            payload.errors = payload.error || payload.errors || payload.message || undefined;
+            let errors = payload.error || payload.errors || payload.message || undefined;
 
-            if (!isEmberArray(payload.errors)) {
-                payload.errors = [payload.errors];
-            }
-
-            payload.errors = payload.errors.map(function(error) {
-                if (typeof error === 'string') {
-                    return {message: error};
-                } else {
-                    return error;
+            if (errors) {
+                if (!isEmberArray(errors)) {
+                    errors = [errors];
                 }
-            });
+
+                payload.errors = errors.map(function(error) {
+                    if (typeof error === 'string') {
+                        return {message: error};
+                    } else {
+                        return error;
+                    }
+                });
+            }
         }
 
         return this._super(status, headers, payload);

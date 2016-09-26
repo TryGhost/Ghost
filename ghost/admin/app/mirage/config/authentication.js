@@ -1,6 +1,5 @@
 /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import Mirage from 'ember-cli-mirage';
-import $ from 'jquery';
 import {isBlank} from 'ember-utils';
 
 export default function mockAuthentication(server) {
@@ -15,7 +14,7 @@ export default function mockAuthentication(server) {
 
     server.post('/authentication/passwordreset', function (db, request) {
         // jscs:disable requireObjectDestructuring
-        let {passwordreset} = $.deparam(request.requestBody);
+        let {passwordreset} = JSON.parse(request.requestBody);
         let email = passwordreset[0].email;
         // jscs:enable requireObjectDestructuring
 
@@ -40,7 +39,7 @@ export default function mockAuthentication(server) {
     /* Setup ---------------------------------------------------------------- */
 
     server.post('/authentication/setup', function (db, request) {
-        let [attrs] = $.deparam(request.requestBody).setup;
+        let [attrs] = JSON.parse(request.requestBody).setup;
         let [role] = db.roles.where({name: 'Owner'});
         let user;
 

@@ -95,7 +95,7 @@ export default Service.extend({
             return this.get('upgradeStatus').maintenanceAlert();
         }
 
-        // loop over Ember Data / ember-ajax errors object
+        // loop over ember-ajax errors object
         if (resp && isEmberArray(resp.errors)) {
             return resp.errors.forEach((error) => {
                 this._showAPIError(error, options);
