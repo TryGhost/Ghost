@@ -37,37 +37,6 @@ describeModel(
             expect(model.get('active')).to.not.be.ok;
         });
 
-        it('invited property is correct', function () {
-            let model = this.subject({
-                status: 'invited'
-            });
-
-            expect(model.get('invited')).to.be.ok;
-
-            run(() => { model.set('status', 'invited-pending'); });
-            expect(model.get('invited')).to.be.ok;
-
-            run(() => { model.set('status', 'active'); });
-            expect(model.get('invited')).to.not.be.ok;
-
-            run(() => { model.set('status', 'inactive'); });
-            expect(model.get('invited')).to.not.be.ok;
-        });
-
-        it('pending property is correct', function () {
-            let model = this.subject({
-                status: 'invited-pending'
-            });
-
-            expect(model.get('pending')).to.be.ok;
-
-            run(() => { model.set('status', 'invited'); });
-            expect(model.get('pending')).to.not.be.ok;
-
-            run(() => { model.set('status', 'inactive'); });
-            expect(model.get('pending')).to.not.be.ok;
-        });
-
         it('role property is correct', function () {
             let model = this.subject();
 

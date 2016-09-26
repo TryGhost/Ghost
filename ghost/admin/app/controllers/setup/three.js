@@ -164,16 +164,15 @@ export default Controller.extend({
                 this.get('authorRole').then((authorRole) => {
                     RSVP.Promise.all(
                         users.map((user) => {
-                            let newUser = this.store.createRecord('user', {
+                            let invite = this.store.createRecord('invite', {
                                 email: user,
-                                status: 'invited',
                                 role: authorRole
                             });
 
-                            return newUser.save().then(() => {
+                            return invite.save().then(() => {
                                 return {
                                     email: user,
-                                    success: newUser.get('status') === 'invited'
+                                    success: invite.get('status') === 'sent'
                                 };
                             }).catch(() => {
                                 return {

@@ -58,12 +58,6 @@ export default Model.extend(ValidationEngine, {
         return ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'].indexOf(this.get('status')) > -1;
     }),
 
-    invited: computed('status', function () {
-        return ['invited', 'invited-pending'].indexOf(this.get('status')) > -1;
-    }),
-
-    pending: equal('status', 'invited-pending'),
-
     role: computed('roles', {
         get() {
             return this.get('roles.firstObject');
@@ -116,19 +110,5 @@ export default Model.extend(ValidationEngine, {
         } catch (error) {
             this.get('notifications').showAPIError(error, {key: 'user.change-password'});
         }
-    }).drop(),
-
-    resendInvite() {
-        let fullUserData = this.toJSON();
-        let userData = {
-            email: fullUserData.email,
-            roles: fullUserData.roles
-        };
-        let inviteUrl = this.get('ghostPaths.url').api('users');
-
-        return this.get('ajax').post(inviteUrl, {
-            data: JSON.stringify({users: [userData]}),
-            contentType: 'application/json'
-        });
-    }
+    }).drop()
 });

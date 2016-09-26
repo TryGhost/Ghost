@@ -23,22 +23,23 @@
     }}
         {{!-- Do not show invited users to authors --}}
         {{#unless session.user.isAuthor}}
-            {{#if invitedUsers}}
+            {{#if invites}}
                 <section class="user-list invited-users">
                     <h4 class="user-list-title">Invited users</h4>
-                    {{#each invitedUsers as |user|}}
-                        {{#gh-user-invited user=user reload="reload" as |component|}}
+                    {{#each sortedInvites as |invite|}}
+                        {{#gh-user-invited invite=invite reload="reload" as |component|}}
                             <div class="user-list-item">
                                 <span class="user-list-item-icon icon-mail">ic</span>
                                 <div class="user-list-item-body">
-                                    <span class="name">{{user.email}}</span><br>
-                                    {{#if user.pending}}
+                                    <span class="name">{{invite.email}}</span><br>
+                                    {{#if invite.pending}}
                                         <span class="description-error">
                                             Invitation not sent - please try again
                                         </span>
                                     {{else}}
                                         <span class="description">
-                                            Invitation sent: {{component.createdAtUTC}}
+                                            Invitation sent: {{component.createdAt}},
+                                            expires {{component.expiresAt}}
                                         </span>
                                     {{/if}}
                                 </div>
@@ -46,13 +47,13 @@
                                     {{#if component.isSending}}
                                         <span>Sending Invite...</span>
                                     {{else}}
-                                        <a class="user-list-action" href="#" {{action "revoke" target=component}}>
+                                        <a class="user-list-action" href="#revoke" {{action "revoke" target=component}}>
                                             Revoke
                                         </a>
-                                        <a class="user-list-action" href="#" {{action "resend" target=component}}>
+                                        <a class="user-list-action" href="#resend" {{action "resend" target=component}}>
                                             Resend
                                         </a>
-                                        {{#each user.roles as |role|}}
+                                        {{#each invite.roles as |role|}}
                                             <span class="role-label {{role.lowerCaseName}}">{{role.name}}</span>
                                         {{/each}}
                                     {{/if}}
@@ -66,7 +67,7 @@
 
         <section class="user-list active-users">
             <h4 class="user-list-title">Active users</h4>
-            {{#each activeUsers key="id" as |user|}}
+            {{#each users key="id" as |user|}}
                 {{!-- For authors only shows users as a list, otherwise show users with links to user page --}}
                 {{#unless session.user.isAuthor}}
                     {{#gh-user-active user=user as |component|}}

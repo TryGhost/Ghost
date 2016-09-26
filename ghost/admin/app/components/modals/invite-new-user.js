@@ -53,15 +53,19 @@ export default ModalComponent.extend(ValidationEngine, {
         // the API should return an appropriate error when attempting to save
         return new Promise((resolve, reject) => {
             return this._super().then(() => {
-                this.get('store').findAll('user', {reload: true}).then((result) => {
-                    let invitedUser = result.findBy('email', email);
+                return RSVP.hash({
+                    users: this.get('store').findAll('user', {reload: true}),
+                    invites: this.get('store').findAll('invite', {reload: true})
+                }).then((data) => {
+                    let existingUser = data.users.findBy('email', email);
+                    let existingInvite = data.invites.findBy('email', email);
 
-                    if (invitedUser) {
+                    if (existingUser || existingInvite) {
                         this.get('errors').clear('email');
-                        if (invitedUser.get('status') === 'invited' || invitedUser.get('status') === 'invited-pending') {
-                            this.get('errors').add('email', 'A user with that email address was already invited.');
-                        } else {
+                        if (existingUser) {
                             this.get('errors').add('email', 'A user with that email address already exists.');
+                        } else {
+                            this.get('errors').add('email', 'A user with that email address was already invited.');
                         }
 
                         // TODO: this shouldn't be needed, ValidationEngine doesn't mark
@@ -90,29 +94,28 @@ export default ModalComponent.extend(ValidationEngine, {
             let email = this.get('email');
             let role = this.get('role');
             let notifications = this.get('notifications');
-            let newUser;
+            let invite;
 
             this.validate().then(() => {
                 this.set('submitting', true);
 
-                newUser = this.get('store').createRecord('user', {
+                invite = this.get('store').createRecord('invite', {
                     email,
-                    role,
-                    status: 'invited'
+                    role
                 });
 
-                newUser.save().then(() => {
+                invite.save().then(() => {
                     let notificationText = `Invitation sent! (${email})`;
 
                     // If sending the invitation email fails, the API will still return a status of 201
-                    // but the user's status in the response object will be 'invited-pending'.
-                    if (newUser.get('status') === 'invited-pending') {
+                    // but the invite's status in the response object will be 'invited-pending'.
+                    if (invite.get('status') === 'pending') {
                         notifications.showAlert('Invitation email was not sent.  Please try resending.', {type: 'error', key: 'invite.send.failed'});
                     } else {
                         notifications.showNotification(notificationText, {key: 'invite.send.success'});
                     }
                 }).catch((error) => {
-                    newUser.deleteRecord();
+                    invite.deleteRecord();
                     notifications.showAPIError(error, {key: 'invite.send'});
                 }).finally(() => {
                     this.send('closeModal');

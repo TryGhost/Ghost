@@ -266,13 +266,13 @@ describe('Acceptance: Setup', function () {
         it('handles validation errors in step 3', function () {
             let input = '[name="users"]';
             let postCount = 0;
-            let button, formGroup, user;
+            let button, formGroup, invite;
 
             invalidateSession(application);
             server.loadFixtures('roles');
 
-            server.post('/users', function (db, request) {
-                let [params] = JSON.parse(request.requestBody).users;
+            server.post('/invites', function (db, request) {
+                let [params] = JSON.parse(request.requestBody).invites;
 
                 postCount++;
 
@@ -288,10 +288,21 @@ describe('Acceptance: Setup', function () {
                     });
                 }
 
+                // TODO: duplicated from mirage/config/invites - extract method?
+                /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+                params.token = `${db.invites.length}-token`;
+                params.expires = moment.utc().add(1, 'day').unix();
+                params.created_at = moment.utc().format();
+                params.created_by = 1;
+                params.updated_at = moment.utc().format();
+                params.updated_by = 1;
+                params.status = 'sent';
+                /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
+
                 // valid
-                user = db.users.insert(params);
+                invite = db.invites.insert(params);
                 return {
-                    users: [user]
+                    invites: [invite]
                 };
             });
 
