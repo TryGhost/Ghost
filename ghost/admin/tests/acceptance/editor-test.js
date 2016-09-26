@@ -474,7 +474,7 @@ describe('Acceptance: Editor', function() {
             clock.restore();
         });
 
-        it('lets user unschedule the post shortly before scheduled date', function () {
+        it.skip('lets user unschedule the post shortly before scheduled date', function () {
             /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
             let clock = sinon.useFakeTimers(moment().valueOf());
             let post = server.create('post', {published_at: moment.utc().add(1, 'minute'), status: 'scheduled'});
