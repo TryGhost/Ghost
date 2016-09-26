@@ -1,13 +1,14 @@
 var _                = require('lodash'),
     validator        = require('validator'),
+    Promise          = require('bluebird'),
     pipeline         = require('../utils/pipeline'),
-    dataProvider     = require('../models'),
     settings         = require('./settings'),
     mail             = require('./../mail'),
     apiMail          = require('./mail'),
     globalUtils      = require('../utils'),
     utils            = require('./utils'),
     errors           = require('../errors'),
+    models           = require('../models'),
     events           = require('../events'),
     config           = require('../config'),
     i18n             = require('../i18n'),
@@ -72,7 +73,7 @@ function setupTasks(setupData) {
 
     function setupUser(userData) {
         var context = {context: {internal: true}},
-            User = dataProvider.User;
+            User = models.User;
 
         return User.findOne({role: 'Owner', status: 'all'}).then(function then(owner) {
             if (!owner) {
@@ -158,7 +159,7 @@ authentication = {
                 var dbHash = response.settings[0].value,
                     expiresAt = Date.now() + globalUtils.ONE_DAY_MS;
 
-                return dataProvider.User.generateResetToken(email, expiresAt, dbHash);
+                return models.User.generateResetToken(email, expiresAt, dbHash);
             }).then(function then(resetToken) {
                 return {
                     email: email,
@@ -235,7 +236,7 @@ authentication = {
                 ne2Password = data.ne2Password;
 
             return settings.read(settingsQuery).then(function then(response) {
-                return dataProvider.User.resetPassword({
+                return models.User.resetPassword({
                     token: resetToken,
                     newPassword: newPassword,
                     ne2Password: ne2Password,
@@ -270,33 +271,56 @@ authentication = {
      * @returns {Promise<Object>}
      */
     acceptInvitation: function acceptInvitation(invitation) {
-        var tasks;
+        var tasks, invite, options = {context: {internal: true}};
 
         function validateInvitation(invitation) {
-            return utils.checkObject(invitation, 'invitation');
+            return utils.checkObject(invitation, 'invitation')
+                .then(function () {
+                    if (!invitation.invitation[0].token) {
+                        return Promise.reject(new errors.ValidationError(i18n.t('errors.api.authentication.noTokenProvided')));
+                    }
+
+                    if (!invitation.invitation[0].email) {
+                        return Promise.reject(new errors.ValidationError(i18n.t('errors.api.authentication.noEmailProvided')));
+                    }
+
+                    if (!invitation.invitation[0].password) {
+                        return Promise.reject(new errors.ValidationError(i18n.t('errors.api.authentication.noPasswordProvided')));
+                    }
+
+                    if (!invitation.invitation[0].name) {
+                        return Promise.reject(new errors.ValidationError(i18n.t('errors.api.authentication.noNameProvided')));
+                    }
+
+                    return invitation;
+                });
         }
 
         function processInvitation(invitation) {
-            var User = dataProvider.User,
-                settingsQuery = {context: {internal: true}, key: 'dbHash'},
-                data = invitation.invitation[0],
-                resetToken = data.token,
-                newPassword = data.password,
-                email = data.email,
-                name = data.name;
+            var data = invitation.invitation[0], inviteToken = globalUtils.decodeBase64URLsafe(data.token);
 
-            return settings.read(settingsQuery).then(function then(response) {
-                return User.resetPassword({
-                    token: resetToken,
-                    newPassword: newPassword,
-                    ne2Password: newPassword,
-                    dbHash: response.settings[0].value
+            return models.Invite.findOne({token: inviteToken, status: 'sent'}, _.merge({}, {include: ['roles']}, options))
+                .then(function (_invite) {
+                    invite = _invite;
+
+                    if (!invite) {
+                        throw new errors.NotFoundError(i18n.t('errors.api.invites.inviteNotFound'));
+                    }
+
+                    if (invite.get('expires') < Date.now()) {
+                        throw new errors.NotFoundError(i18n.t('errors.api.invites.inviteExpired'));
+                    }
+
+                    return models.User.add({
+                        email: data.email,
+                        name: data.name,
+                        password: data.password,
+                        roles: invite.toJSON().roles
+                    }, options);
+                })
+                .then(function () {
+                    return invite.destroy(options);
                 });
-            }).then(function then(user) {
-                return User.edit({name: name, email: email, slug: ''}, {id: user.id});
-            }).catch(function (error) {
-                throw new errors.UnauthorizedError(error.message);
-            });
         }
 
         function formatResponse() {
@@ -339,8 +363,8 @@ authentication = {
         }
 
         function checkInvitation(email) {
-            return dataProvider.User
-                .where({email: email, status: 'invited'})
+            return models.Invite
+                .where({email: email, status: 'sent'})
                 .count('id')
                 .then(function then(count) {
                     return !!count;
@@ -370,7 +394,7 @@ authentication = {
             validStatuses = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'];
 
         function checkSetupStatus() {
-            return dataProvider.User
+            return models.User
                 .where('status', 'in', validStatuses)
                 .count('id')
                 .then(function (count) {
@@ -478,7 +502,7 @@ authentication = {
         }
 
         function checkPermission(options) {
-            return dataProvider.User.findOne({role: 'Owner', status: 'all'})
+            return models.User.findOne({role: 'Owner', status: 'all'})
                 .then(function (owner) {
                     if (owner.id !== options.context.user) {
                         throw new errors.NoPermissionError(i18n.t('errors.api.authentication.notTheBlogOwner'));
@@ -519,8 +543,8 @@ authentication = {
 
         function revokeToken(options) {
             var providers = [
-                    dataProvider.Refreshtoken,
-                    dataProvider.Accesstoken
+                    models.Refreshtoken,
+                    models.Accesstoken
                 ],
                 response = {token: options.token};
 

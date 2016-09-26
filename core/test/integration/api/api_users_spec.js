@@ -1,19 +1,13 @@
 var testUtils       = require('../../utils'),
     should          = require('should'),
-    sinon           = require('sinon'),
     Promise         = require('bluebird'),
     _               = require('lodash'),
-
-    // Stuff we are testing
     models          = require('../../../server/models'),
     UserAPI         = require('../../../server/api/users'),
-    mail            = require('../../../server/api/mail'),
     db              = require('../../../server/data/db'),
-
     context         = testUtils.context,
     userIdFor       = testUtils.users.ids,
-    roleIdFor       = testUtils.roles.ids,
-    sandbox         = sinon.sandbox.create();
+    roleIdFor       = testUtils.roles.ids;
 
 describe('Users API', function () {
     // Keep the DB clean
@@ -95,29 +89,6 @@ describe('Users API', function () {
                 checkBrowseResponse(response, 7, null, ['email']);
                 done();
             }).catch(done);
-        });
-
-        it('No-auth CANNOT browse non-active users', function (done) {
-            UserAPI.browse({status: 'invited'}).then(function () {
-                done(new Error('Browse non-active users is not denied without authentication.'));
-            }, function () {
-                done();
-            }).catch(done);
-        });
-
-        it('Can browse invited/invited-pending (admin)', function (done) {
-            testUtils.fixtures.createInvitedUsers().then(function () {
-                UserAPI.browse(_.extend({}, testUtils.context.admin, {status: 'invited'})).then(function (response) {
-                    should.exist(response);
-                    testUtils.API.checkResponse(response, 'users');
-                    should.exist(response.users);
-                    response.users.should.have.length(3);
-                    testUtils.API.checkResponse(response.users[0], 'user');
-                    response.users[0].status.should.equal('invited-pending');
-
-                    done();
-                }).catch(done);
-            });
         });
 
         it('Can browse all', function (done) {
@@ -488,208 +459,6 @@ describe('Users API', function () {
                     done();
                 });
             }).catch(done);
-        });
-    });
-
-    describe('Add', function () {
-        var newUser;
-
-        beforeEach(function () {
-            newUser = _.clone(testUtils.DataGenerator.forKnex.createUser(testUtils.DataGenerator.Content.users[4]));
-
-            sandbox.stub(mail, 'send', function () {
-                return Promise.resolve();
-            });
-        });
-        afterEach(function () {
-            sandbox.restore();
-        });
-
-        function checkAddResponse(response) {
-            should.exist(response);
-            should.exist(response.users);
-            should.not.exist(response.meta);
-            response.users.should.have.length(1);
-            testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
-            response.users[0].created_at.should.be.an.instanceof(Date);
-        }
-
-        describe('Owner', function () {
-            it('CANNOT add an Owner', function (done) {
-                newUser.roles = [roleIdFor.owner];
-                // Owner cannot add owner
-                UserAPI.add({users: [newUser]}, _.extend({}, context.owner, {include: 'roles'}))
-                    .then(function () {
-                        done(new Error('Owner should not be able to add an owner'));
-                    }).catch(checkForErrorType('NoPermissionError', done));
-            });
-
-            it('Can add an Admin', function (done) {
-                // Can add admin
-                newUser.roles = [roleIdFor.admin];
-                UserAPI.add({users: [newUser]}, _.extend({}, context.owner, {include: 'roles'}))
-                    .then(function (response) {
-                        checkAddResponse(response);
-                        response.users[0].id.should.eql(8);
-                        response.users[0].roles[0].name.should.equal('Administrator');
-                        done();
-                    }).catch(done);
-            });
-
-            it('Can add an Editor', function (done) {
-                // Can add editor
-                newUser.roles = [roleIdFor.editor];
-                UserAPI.add({users: [newUser]}, _.extend({}, context.owner, {include: 'roles'}))
-                    .then(function (response) {
-                        checkAddResponse(response);
-                        response.users[0].id.should.eql(8);
-                        response.users[0].roles[0].name.should.equal('Editor');
-                        done();
-                    }).catch(done);
-            });
-            it('Can add an Author', function (done) {
-                // Can add author
-                newUser.roles = [roleIdFor.author];
-                UserAPI.add({users: [newUser]}, _.extend({}, context.owner, {include: 'roles'}))
-                    .then(function (response) {
-                        checkAddResponse(response);
-                        response.users[0].id.should.eql(8);
-                        response.users[0].roles[0].name.should.equal('Author');
-                        done();
-                    }).catch(done);
-            });
-
-            it('Can add with no role set', function (done) {
-                // Can add author
-                delete newUser.roles;
-                UserAPI.add({users: [newUser]}, _.extend({}, context.owner, {include: 'roles'}))
-                    .then(function (response) {
-                        checkAddResponse(response);
-                        response.users[0].id.should.eql(8);
-                        response.users[0].roles[0].name.should.equal('Author');
-                        done();
-                    }).catch(done);
-            });
-
-            it('Can add with role set as string', function (done) {
-                // Can add author
-                newUser.roles = [roleIdFor.author.toString()];
-                UserAPI.add({users: [newUser]}, _.extend({}, context.owner, {include: 'roles'}))
-                    .then(function (response) {
-                        checkAddResponse(response);
-                        response.users[0].id.should.eql(8);
-                        response.users[0].roles[0].name.should.equal('Author');
-                        done();
-                    }).catch(done);
-            });
-        });
-
-        describe('Admin', function () {
-            it('CANNOT add an Owner', function (done) {
-                newUser.roles = [roleIdFor.owner];
-                // Admin cannot add owner
-                UserAPI.add({users: [newUser]}, _.extend({}, context.admin, {include: 'roles'}))
-                    .then(function () {
-                        done(new Error('Admin should not be able to add an owner'));
-                    }).catch(checkForErrorType('NoPermissionError', done));
-            });
-            it('Can add an Admin', function (done) {
-                // Can add admin
-                newUser.roles = [roleIdFor.admin];
-                UserAPI.add({users: [newUser]}, _.extend({}, context.admin, {include: 'roles'}))
-                    .then(function (response) {
-                        checkAddResponse(response);
-                        response.users[0].id.should.eql(8);
-                        response.users[0].roles[0].name.should.equal('Administrator');
-                        done();
-                    }).catch(done);
-            });
-
-            it('Can add an Editor', function (done) {
-                // Can add editor
-                newUser.roles = [roleIdFor.editor];
-                UserAPI.add({users: [newUser]}, _.extend({}, context.admin, {include: 'roles'}))
-                    .then(function (response) {
-                        checkAddResponse(response);
-                        response.users[0].id.should.eql(8);
-                        response.users[0].roles[0].name.should.equal('Editor');
-                        done();
-                    }).catch(done);
-            });
-
-            it('Can add an Author', function (done) {
-                // Can add author
-                newUser.roles = [roleIdFor.author];
-                UserAPI.add({users: [newUser]}, _.extend({}, context.admin, {include: 'roles'}))
-                    .then(function (response) {
-                        checkAddResponse(response);
-                        response.users[0].id.should.eql(8);
-                        response.users[0].roles[0].name.should.equal('Author');
-                        done();
-                    }).catch(done);
-            });
-
-            it('Can add two users with the same local-part in their email addresses', function (done) {
-                newUser.roles = [roleIdFor.author];
-
-                UserAPI.add({users: [newUser]}, _.extend({}, context.owner, {include: 'roles'}))
-                    .then(function (response) {
-                        checkAddResponse(response);
-                        response.users[0].id.should.eql(8);
-                        response.users[0].roles[0].name.should.equal('Author');
-                    }).then(function () {
-                        newUser.email = newUser.email.split('@')[0] + '@someotherdomain.com';
-                        return UserAPI.add({users: [newUser]}, _.extend({}, context.owner, {include: 'roles'}))
-                            .then(function (response) {
-                                checkAddResponse(response);
-                                response.users[0].id.should.eql(9);
-                                response.users[0].roles[0].name.should.equal('Author');
-
-                                done();
-                            });
-                    }).catch(done);
-            });
-        });
-
-        describe('Editor', function () {
-            it('CANNOT add an Owner', function (done) {
-                newUser.roles = [roleIdFor.owner];
-                // Editor cannot add owner
-                UserAPI.add({users: [newUser]}, _.extend({}, context.editor, {include: 'roles'}))
-                    .then(function () {
-                        done(new Error('Editor should not be able to add an owner'));
-                    }).catch(checkForErrorType('NoPermissionError', done));
-            });
-
-            it('Can add an Author', function (done) {
-                newUser.roles = [roleIdFor.author];
-                UserAPI.add({users: [newUser]}, _.extend({}, context.editor, {include: 'roles'}))
-                    .then(function (response) {
-                        checkAddResponse(response);
-                        response.users[0].id.should.eql(8);
-                        response.users[0].roles[0].name.should.equal('Author');
-                        done();
-                    }).catch(done);
-            });
-        });
-
-        describe('Author', function () {
-            it('CANNOT add an Owner', function (done) {
-                newUser.roles = [roleIdFor.owner];
-                // Admin cannot add owner
-                UserAPI.add({users: [newUser]}, _.extend({}, context.author, {include: 'roles'}))
-                    .then(function () {
-                        done(new Error('Author should not be able to add an owner'));
-                    }).catch(checkForErrorType('NoPermissionError', done));
-            });
-
-            it('CANNOT add an Author', function (done) {
-                newUser.roles = [roleIdFor.author];
-                UserAPI.add({users: [newUser]}, _.extend({}, context.author, {include: 'roles'}))
-                    .then(function () {
-                        done(new Error('Author should not be able to add an author'));
-                    }).catch(checkForErrorType('NoPermissionError', done));
-            });
         });
     });
 
