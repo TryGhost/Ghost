@@ -388,6 +388,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     findOne: function findOne(data, options) {
         data = this.filterData(data);
         options = this.filterOptions(options, 'findOne');
+
         // We pass include to forge so that toJSON has access
         return this.forge(data, {include: options.include}).fetch(options);
     },

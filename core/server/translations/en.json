@@ -292,6 +292,9 @@
                 "setupUnableToRun": "Database missing fixture data. Please reset database and try again.",
                 "setupMustBeCompleted": "Setup must be completed before making this request.",
                 "noEmailProvided": "No email provided.",
+                "noTokenProvided": "No token provided.",
+                "noPasswordProvided": "No password provided.",
+                "noNameProvided": "No name provided.",
                 "invalidEmailReceived": "The server did not receive a valid email",
                 "setupAlreadyCompleted": "Setup has already been completed.",
                 "unableToSendWelcomeEmail": "Unable to send welcome email, your blog will continue to function.",
@@ -373,14 +376,9 @@
                 "cannotChangeOwnRole": "You cannot change your own role.",
                 "cannotChangeOwnersRole": "Cannot change Owner's role",
                 "noPermissionToEditUser": "You do not have permission to edit this user",
-                "notAllowedToCreateOwner": "Not allowed to create an owner user.",
                 "noPermissionToAddUser": "You do not have permission to add this user",
                 "noEmailProvided": "No email provided.",
                 "userAlreadyRegistered": "User is already registered.",
-                "errorSendingEmail": {
-                    "error": "Error sending email: {message}",
-                    "help": "Please check your email settings and resend the invitation."
-                },
                 "noPermissionToDestroyUser": "You do not have permission to destroy this user.",
                 "noPermissionToChangeUsersPwd": "You do not have permission to change the password for this user"
             },
@@ -388,6 +386,17 @@
                 "noPermissionToCall": "You do not have permission to {method} {docName}",
                 "noRootKeyProvided": "No root key ('{docName}') provided.",
                 "invalidIdProvided": "Invalid id provided."
+            },
+            "invites": {
+                "inviteNotFound": "Invite not found.",
+                "inviteExpired": "Invite is expired.",
+                "emailIsRequired": "E-Mail is required.",
+                "roleIsRequired": "Role is required",
+                "errorSendingEmail": {
+                    "error": "Error sending email: {message}",
+                    "help": "Please check your email settings and resend the invitation."
+                },
+                "notAllowedToInviteOwner": "Not allowed to invire an owner user."
             }
         },
         "data": {

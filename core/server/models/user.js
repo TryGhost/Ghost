@@ -17,7 +17,6 @@ var _              = require('lodash'),
 
     tokenSecurity  = {},
     activeStates   = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'],
-    invitedStates  = ['invited', 'invited-pending'],
     User,
     Users;
 
@@ -201,8 +200,7 @@ User = ghostBookshelf.Model.extend({
         // This is the only place that 'options.where' is set now
         options.where = {statements: []};
 
-        var allStates = activeStates.concat(invitedStates),
-            value;
+        var allStates = activeStates, value;
 
         // Filter on the status.  A status of 'all' translates to no filter since we want all statuses
         if (options.status !== 'all') {
@@ -212,8 +210,6 @@ User = ghostBookshelf.Model.extend({
 
         if (options.status === 'active') {
             value = activeStates;
-        } else if (options.status === 'invited') {
-            value = invitedStates;
         } else if (options.status === 'all') {
             value = allStates;
         } else {
@@ -293,8 +289,6 @@ User = ghostBookshelf.Model.extend({
 
         if (status === 'active') {
             query.query('whereIn', 'status', activeStates);
-        } else if (status === 'invited') {
-            query.query('whereIn', 'status', invitedStates);
         } else if (status !== 'all') {
             query.query('where', {status: options.status});
         }
@@ -302,7 +296,6 @@ User = ghostBookshelf.Model.extend({
         options = this.filterOptions(options, 'findOne');
         delete options.include;
         options.include = optInc;
-
         return query.fetch(options);
     },
 
@@ -545,11 +538,7 @@ User = ghostBookshelf.Model.extend({
             if (!user) {
                 return Promise.reject(new errors.NotFoundError(i18n.t('errors.models.user.noUserWithEnteredEmailAddr')));
             }
-            if (user.get('status') === 'invited' || user.get('status') === 'invited-pending' ||
-                    user.get('status') === 'inactive'
-                ) {
-                return Promise.reject(new errors.NoPermissionError(i18n.t('errors.models.user.userIsInactive')));
-            }
+
             if (user.get('status') !== 'locked') {
                 return bcryptCompare(object.password, user.get('password')).then(function then(matched) {
                     if (!matched) {

@@ -187,6 +187,7 @@ fixtures = {
             }));
         });
     },
+
     insertRoles: function insertRoles() {
         return db.knex('roles').insert(DataGenerator.forKnex.roles);
     },
@@ -383,6 +384,13 @@ fixtures = {
 
     insertAccessToken: function insertAccessToken(override) {
         return db.knex('accesstokens').insert(DataGenerator.forKnex.createToken(override));
+    },
+
+    insertInvites: function insertInvites() {
+        return db.knex('invites').insert(DataGenerator.forKnex.invites)
+            .then(function () {
+                return db.knex('invites_roles').insert(DataGenerator.forKnex.invites_roles);
+            });
     }
 };
 
@@ -434,7 +442,8 @@ toDoList = {
         return function permissionsForObj() { return fixtures.permissionsFor(obj); };
     },
     clients: function insertClients() { return fixtures.insertClients(); },
-    filter: function createFilterParamFixtures() { return filterData(DataGenerator); }
+    filter: function createFilterParamFixtures() { return filterData(DataGenerator); },
+    invites: function insertInvites() { return fixtures.insertInvites(); }
 };
 
 /**
