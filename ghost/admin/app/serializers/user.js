@@ -26,8 +26,10 @@ export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
         let root = this.keyForAttribute(primaryModelClass.modelName);
         let pluralizedRoot = pluralize(primaryModelClass.modelName);
 
-        payload[root] = payload[pluralizedRoot][0];
-        delete payload[pluralizedRoot];
+        if (payload[pluralizedRoot]) {
+            payload[root] = payload[pluralizedRoot][0];
+            delete payload[pluralizedRoot];
+        }
 
         return this._super(...arguments);
     }

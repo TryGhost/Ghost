@@ -685,7 +685,7 @@ describe('Acceptance: Team', function () {
                 andThen(() => {
                     // hits the endpoint
                     let [lastRequest] = server.pretender.handledRequests.slice(-1);
-                    let params = $.deparam(lastRequest.requestBody);
+                    let params = JSON.parse(lastRequest.requestBody);
 
                     expect(lastRequest.url, 'password request URL')
                         .to.match(/\/users\/password/);

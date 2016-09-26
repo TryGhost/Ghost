@@ -115,7 +115,7 @@ describe('Acceptance: Signup', function() {
         });
 
         server.post('/authentication/invitation/', function (db, request) {
-            let params = $.deparam(request.requestBody);
+            let params = JSON.parse(request.requestBody);
             expect(params.invitation[0].name).to.equal('Test User');
             expect(params.invitation[0].email).to.equal('kevin+test2@ghost.org');
             expect(params.invitation[0].password).to.equal('ValidPassword');

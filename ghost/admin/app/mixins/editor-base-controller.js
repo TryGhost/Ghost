@@ -15,6 +15,7 @@ import {task, timeout} from 'ember-concurrency';
 import PostModel from 'ghost-admin/models/post';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
+import {isInvalidError} from 'ember-ajax/errors';
 
 const {resolve} = RSVP;
 
@@ -450,9 +451,7 @@ export default Mixin.create({
                 });
             }).catch((error) => {
                 // re-throw if we have a general server error
-                // TODO: use isValidationError(error) once we have
-                // ember-ajax/ember-data integration
-                if (error && error.errors && error.errors[0].errorType !== 'ValidationError') {
+                if (error && !isInvalidError(error)) {
                     this.toggleProperty('submitting');
                     this.send('error', error);
                     return;
