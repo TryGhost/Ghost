@@ -37,10 +37,10 @@
         </li>
       </ul>
 
-      <form action="" class="search-form navbar-form navbar-right hidden-xs" role="search">
+      <form action="{{@blog.url}}/search" method="get" class="search-form navbar-form navbar-right hidden-xs" role="search">
         <div class="form-group pull-right">
           <label for="search" class="sr-only">Search</label>
-          <input type="text" class="form-control pull-right" name="search" id="search-field" placeholder="Search" required>
+          <input type="text" class="form-control pull-right" name="search" id="nav-search" placeholder="Search" required>
           <span class="glyphicon glyphicon-search form-control-feedback pull-right"></span>
         </div>
       </form>

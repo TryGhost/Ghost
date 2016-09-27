@@ -33,29 +33,29 @@
     </div>
     <div class="row">
       {{#foreach posts}}
-          {{^if featured}}
+          {{#unless featured}}
             <a href="{{url}}">
-            <div class="col-md-6">
-              <div class="panel panel-default single-post">
-                <div class="panel-heading" style="background-image: url({{image}})">
-                    <div class="green-overlay"></div>
-                    <span class="custom-badge custom-badge-white category">{{this.tags.1.name}}</span>
-                </div>
-                <div class="panel-body">
-                  <h3>{{{title}}}</h3>
-                  <p>{{excerpt characters="115"}}</p>
-                  <span class="shares-count">
-                      <span
-                       data-open-share-count="reddit,facebook,linkedin,google,pinterest"
-                       data-open-share-count-url="{{url absolute="true"}}"></span>
-                      shares
-                  </span>
-                  <span class="comments-count"><i class="fa fa-comment"></i> 25</span>
+              <div class="col-md-6">
+                <div class="panel panel-default single-post">
+                  <div class="panel-heading" style="background-image: url({{image}})">
+                      <div class="green-overlay"></div>
+                      <span class="custom-badge custom-badge-white category">{{this.tags.1.name}}</span>
+                  </div>
+                  <div class="panel-body">
+                    <h3>{{{title}}}</h3>
+                    <p>{{excerpt characters="115"}}</p>
+                    <span class="shares-count">
+                        <span
+                         data-open-share-count="reddit,facebook,linkedin,google,pinterest"
+                         data-open-share-count-url="{{url absolute="true"}}"></span>
+                        shares
+                    </span>
+                    <span class="comments-count"><i class="fa fa-comment"></i> 25</span>
+                  </div>
                 </div>
               </div>
-            </div>
-        </a>
-          {{/if}}
+            </a>
+          {{/unless}}
       {{/foreach}}
     </div>
     <div class="row posts-footer">

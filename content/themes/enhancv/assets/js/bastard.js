@@ -94,15 +94,58 @@
 
         //Ghost posts search functionality start
         $(".search-results").addClass("hidden");
+
+        // Save search term
+        $("#nav-search").on('keydown', function (e) {
+            if (e.which === 13) {
+                var searchVal = $(this).val();
+                sessionStorage.setItem("searchVal", searchVal);
+                $(this).closest('form').submit();
+            }
+        });
+
+        var result_template = '<a href="{{link}}">' +
+                                '<div class="col-md-6">' +
+                                    '<div class="panel panel-default single-post">' +
+                                        '<div class="panel-heading" style="">' +
+                                            '<div class="green-overlay"></div>' +
+                                            '<span class="custom-badge custom-badge-white category">{{category}}</span>' +
+                                        '</div>' +
+                                        '<div class="panel-body">' +
+                                            '<h3>{{title}}</h3>' +
+                                            '<p>{{description}}</p>' +
+                                            '<span class="shares-count">' +
+                                                '<span data-open-share-count="reddit,facebook,linkedin,google,pinterest" data-open-share-count-url="{{link}}"></span>' +
+                                                'shares' +
+                                            '</span>' +
+                                            '<span class="comments-count"><i class="fa fa-comment"></i> 25</span>' +
+                                        '</div>' +
+                                    '</div>' +
+                                  '</div>' +
+                                '</a>';
+
         $("#search-field").ghostHunter({
             results: "#search-results",
             onKeyUp: true,
             displaySearchInfo: false,
-            result_template : "<a href='{{link}}'><li class='list-group-item'>{{title}}</li></a>",
-            before: function() {
+            result_template : result_template,
+            before: function () {
                 $(".search-results").removeClass("hidden");
+            },
+            onComplete: function (results) {
+                console.log( results );
+
             }
         });
+
+        // Write search term to search form
+        $('#search-field').val(sessionStorage.getItem("searchVal"))
+        setTimeout(function () {
+            var e = $.Event('keyup', {
+                keycode: 68
+            });
+            $('#search-field').trigger(e);
+        }, 500);
     });
 
 }(jQuery));
