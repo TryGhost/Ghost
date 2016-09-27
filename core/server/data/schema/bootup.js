@@ -1,6 +1,6 @@
 var Promise = require('bluebird'),
     versioning = require('./versioning'),
-    migrations = require('../migration'),
+    populate = require('../migration/populate'),
     errors = require('./../../errors');
 
 module.exports = function bootUp() {
@@ -19,7 +19,7 @@ module.exports = function bootUp() {
         // We don't use .catch here, as it would catch the error from the successHandler
         function errorHandler(err) {
             if (err instanceof errors.DatabaseNotPopulated) {
-                return migrations.populate();
+                return populate();
             }
 
             return Promise.reject(err);
