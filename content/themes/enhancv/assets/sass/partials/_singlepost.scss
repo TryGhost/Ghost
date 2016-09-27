@@ -10,6 +10,24 @@
             a {
                 margin-right: 20px;
                 color: $gray-dark;
+
+                &:hover,
+                &:active,
+                &:focus {
+                    color: $enhancv-color;
+                }
+            }
+        }
+
+        .follow-us {
+            a {
+                color: $gray-dark;
+
+                &:hover,
+                &:active,
+                &:focus {
+                    color: $enhancv-color;
+                }
             }
         }
 
@@ -160,6 +178,7 @@ h1.post-title {
 
                     h3 {
                         font-size: 1.6rem;
+                        margin-top: 15px;
                         color: $text-color;
                     }
 
@@ -176,6 +195,8 @@ h1.post-title {
 
                         a {
                             display: inline-block;
+                            background-size: cover;
+                            background-position: center;
                         }
 
                         img {
@@ -198,6 +219,20 @@ h1.post-title {
                             &:hover {
                                 color: $enhancv-color;
                             }
+                        }
+                    }
+
+                    .media {
+                        &:hover,
+                        &:active,
+                        &:focus {
+                            .media-left a {
+                                opacity: .8;
+                            }
+                        }
+
+                        .media-left a {
+                            transition: all .2s ease-in-out;
                         }
                     }
                 }
