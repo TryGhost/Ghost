@@ -13,6 +13,7 @@
   font-size: 1.3rem;
   color: #333;
   text-align: center;
+
   a {
     color: #333;
     transition: all 0.2s ease;
@@ -29,6 +30,7 @@
   text-decoration: none;
   border-radius: 30px;
   transition: border ease 0.3s;
+
   &:hover, &:focus, &:active, &.active {
     text-decoration: none;
     border: 1px solid #00c091;

@@ -73,9 +73,7 @@
         if ($subNav.length > 0) {
             var subNavPosTop = $subNav.position().top;
             var handleSubNav = function () {
-                console.log(breakpoint.value);
                 if ($.inArray(breakpoint.value, ['smartphone', 'smartphone_wide']) === -1) {
-                    console.log('baaaaa');
                     if ($(document).scrollTop() > 200) {
                         $subNav.animate({
                             top: (subNavPosTop - 50) + 'px'
@@ -94,8 +92,16 @@
             $(window).on('scroll', handleSubNav.debounce(100));
         }
 
-        $('.modal-backdrop').click(function () {
-          $('#slidemenu-wrapper').removeClass('active');
+        //Ghost posts search functionality start
+        $(".search-results").addClass("hidden");
+        $("#search-field").ghostHunter({
+            results: "#search-results",
+            onKeyUp: true,
+            displaySearchInfo: false,
+            result_template : "<a href='{{link}}'><li class='list-group-item'>{{title}}</li></a>",
+            before: function() {
+                $(".search-results").removeClass("hidden");
+            }
         });
     });
 
