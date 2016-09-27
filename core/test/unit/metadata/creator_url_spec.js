@@ -1,4 +1,3 @@
-/*globals describe, it*/
 var getCreatorTwitterUrl = require('../../../server/data/meta/creator_url'),
     should = require('should');
 
@@ -32,6 +31,40 @@ describe('getCreatorTwitterUrl', function () {
     it('should return null if context does not contain author and is a post', function () {
         var twitterUrl = getCreatorTwitterUrl({
             context: ['post'],
+            post: {}
+        });
+        should(twitterUrl).equal(null);
+    });
+
+    it('should return author twitter url if AMP post and has url',
+    function () {
+        var twitterUrl = getCreatorTwitterUrl({
+            context: ['amp', 'post'],
+            post: {
+                author: {
+                    twitter: 'https://twitter.com/user'
+                }
+            }
+        });
+        twitterUrl.should.equal('https://twitter.com/user');
+    });
+
+    it('should return null if context does not contain author twitter url and is an AMP post',
+    function () {
+        var twitterUrl = getCreatorTwitterUrl({
+            context: ['amp', 'post'],
+            post: {
+                author: {
+                    twitter: ''
+                }
+            }
+        });
+        should(twitterUrl).equal(null);
+    });
+
+    it('should return null if context does not contain author and is an AMP post', function () {
+        var twitterUrl = getCreatorTwitterUrl({
+            context: ['amp', 'post'],
             post: {}
         });
         should(twitterUrl).equal(null);

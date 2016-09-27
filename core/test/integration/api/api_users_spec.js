@@ -1,4 +1,3 @@
-/*globals describe, before, beforeEach, afterEach, it */
 var testUtils       = require('../../utils'),
     should          = require('should'),
     sinon           = require('sinon'),
@@ -147,7 +146,7 @@ describe('Users API', function () {
                 .then(function (results) {
                     should.exist(results);
 
-                    expectedUsers = _(results.users).pluck('slug').sortBy().value();
+                    expectedUsers = _(results.users).map('slug').sortBy().value();
 
                     return UserAPI.browse(_.extend({}, testUtils.context.admin, {order: 'slug asc'}));
                 })
@@ -156,7 +155,7 @@ describe('Users API', function () {
 
                     should.exist(results);
 
-                    users = _.pluck(results.users, 'slug');
+                    users = _.map(results.users, 'slug');
                     users.should.eql(expectedUsers);
                 })
                 .then(done)
@@ -170,7 +169,7 @@ describe('Users API', function () {
                 .then(function (results) {
                     should.exist(results);
 
-                    expectedUsers = _(results.users).pluck('slug').sortBy().reverse().value();
+                    expectedUsers = _(results.users).map('slug').sortBy().reverse().value();
 
                     return UserAPI.browse(_.extend({}, testUtils.context.admin, {order: 'slug desc'}));
                 })
@@ -179,7 +178,7 @@ describe('Users API', function () {
 
                     should.exist(results);
 
-                    users = _.pluck(results.users, 'slug');
+                    users = _.map(results.users, 'slug');
                     users.should.eql(expectedUsers);
                 })
                 .then(done)

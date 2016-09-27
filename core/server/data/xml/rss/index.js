@@ -1,18 +1,18 @@
-var _        = require('lodash'),
-    cheerio  = require('cheerio'),
-    crypto   = require('crypto'),
-    downsize = require('downsize'),
-    RSS      = require('rss'),
-    url      = require('url'),
-    config   = require('../../../config'),
-    errors   = require('../../../errors'),
-    filters  = require('../../../filters'),
+var crypto      = require('crypto'),
+    downsize    = require('downsize'),
+    RSS         = require('rss'),
+    config      = require('../../../config'),
+    errors      = require('../../../errors'),
+    filters     = require('../../../filters'),
+    processUrls = require('../../../utils/make-absolute-urls'),
+    labs        = require('../../../utils/labs'),
 
     // Really ugly temporary hack for location of things
-    fetchData = require('../../../controllers/frontend/fetch-data'),
+    fetchData   = require('../../../controllers/frontend/fetch-data'),
 
     generate,
     generateFeed,
+    generateTags,
     getFeedXml,
     feedCache = {};
 
@@ -65,48 +65,6 @@ function getBaseUrl(req, slugParam) {
     return baseUrl;
 }
 
-function processUrls(html, siteUrl, itemUrl) {
-    var htmlContent = cheerio.load(html, {decodeEntities: false});
-    // convert relative resource urls to absolute
-    ['href', 'src'].forEach(function forEach(attributeName) {
-        htmlContent('[' + attributeName + ']').each(function each(ix, el) {
-            var baseUrl,
-                attributeValue,
-                parsed;
-
-            el = htmlContent(el);
-
-            attributeValue = el.attr(attributeName);
-
-            // if URL is absolute move on to the next element
-            try {
-                parsed = url.parse(attributeValue);
-
-                if (parsed.protocol) {
-                    return;
-                }
-
-                // Do not convert protocol relative URLs
-                if (attributeValue.lastIndexOf('//', 0) === 0) {
-                    return;
-                }
-            } catch (e) {
-                return;
-            }
-
-            // compose an absolute URL
-
-            // if the relative URL begins with a '/' use the blog URL (including sub-directory)
-            // as the base URL, otherwise use the post's URL.
-            baseUrl = attributeValue[0] === '/' ? siteUrl : itemUrl;
-            attributeValue = config.urlJoin(baseUrl, attributeValue);
-            el.attr(attributeName, attributeValue);
-        });
-    });
-
-    return htmlContent;
-}
-
 getFeedXml = function getFeedXml(path, data) {
     var dataHash = crypto.createHash('md5').update(JSON.stringify(data)).digest('hex');
     if (!feedCache[path] || feedCache[path].hash !== dataHash) {
@@ -118,6 +76,19 @@ getFeedXml = function getFeedXml(path, data) {
     }
 
     return feedCache[path].xml;
+};
+
+generateTags = function generateTags(data) {
+    if (data.tags) {
+        return data.tags.reduce(function (tags, tag) {
+            if (tag.visibility !== 'internal' || !labs.isSet('internalTags')) {
+                tags.push(tag.name);
+            }
+            return tags;
+        }, []);
+    }
+
+    return [];
 };
 
 generateFeed = function generateFeed(data) {
@@ -143,7 +114,7 @@ generateFeed = function generateFeed(data) {
                 guid: post.uuid,
                 url: itemUrl,
                 date: post.published_at,
-                categories: _.pluck(post.tags, 'name'),
+                categories: generateTags(post),
                 author: post.author ? post.author.name : null,
                 custom_elements: []
             },

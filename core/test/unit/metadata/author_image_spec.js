@@ -1,4 +1,3 @@
-/*globals describe, it*/
 var getAuthorImage = require('../../../server/data/meta/author_image'),
     should = require('should'),
     config = require('../../../server/config');
@@ -21,6 +20,33 @@ describe('getAuthorImage', function () {
     function () {
         var imageUrl = getAuthorImage({
             context: ['post'],
+            post: {
+                author: {
+                    image: '/content/images/2016/01/myimage.jpg'
+                }
+            }
+        }, true);
+        imageUrl.should.not.equal('/content/images/2016/01/myimage.jpg');
+        imageUrl.should.match(/\/content\/images\/2016\/01\/myimage\.jpg$/);
+    });
+
+    it('should return author image url if AMP post and has url',
+    function () {
+        var imageUrl = getAuthorImage({
+            context: ['amp', 'post'],
+            post: {
+                author: {
+                    image: '/content/images/2016/01/myimage.jpg'
+                }
+            }
+        }, false);
+        imageUrl.should.equal('/content/images/2016/01/myimage.jpg');
+    });
+
+    it('should return absolute author image url if AMP post and has url',
+    function () {
+        var imageUrl = getAuthorImage({
+            context: ['amp', 'post'],
             post: {
                 author: {
                     image: '/content/images/2016/01/myimage.jpg'
@@ -59,7 +85,7 @@ describe('getAuthorImage', function () {
         should(imageUrl).equal(null);
     });
 
-    it('should return config theme auther image if context is a post and no post',
+    it('should return config theme author image if context is a post and no post',
     function () {
         config.set({
             theme: {

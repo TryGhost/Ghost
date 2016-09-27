@@ -66,9 +66,14 @@ frontendControllers = {
                 return next();
             }
 
-            // If we're ready to render the page but the last param is 'edit' then we'll send you to the edit page.
+            // CASE: last param is of url is /edit, redirect to admin
             if (lookup.isEditURL) {
                 return res.redirect(config.paths.subdir + '/ghost/editor/' + post.id + '/');
+            }
+
+            // CASE: permalink is not valid anymore, we redirect him permanently to the correct one
+            if (post.url !== req.path) {
+                return res.redirect(301, post.url);
             }
 
             setRequestIsSecure(req, post);

@@ -1,4 +1,3 @@
-/*globals describe, it, before, after */
 var should          = require('should'),
     getContextObject = require('../../../server/data/meta/context_object.js'),
     configUtils     = require('../../utils/configUtils');
@@ -12,7 +11,7 @@ describe('getContextObject', function () {
 
     it('should return post context object for a post', function () {
         data = {post: {id: 2}};
-        context = 'post';
+        context = ['post'];
         contextObject = getContextObject(data, context);
 
         should.exist(contextObject);
@@ -21,7 +20,25 @@ describe('getContextObject', function () {
 
     it('should return post context object for a static page', function () {
         data = {post: {id: 2}};
-        context = 'page';
+        context = ['page'];
+        contextObject = getContextObject(data, context);
+
+        should.exist(contextObject);
+        contextObject.should.eql(data.post);
+    });
+
+    it('should return post context object for an AMP post', function () {
+        data = {post: {id: 2}};
+        context = ['amp', 'post'];
+        contextObject = getContextObject(data, context);
+
+        should.exist(contextObject);
+        contextObject.should.eql(data.post);
+    });
+
+    it('should return post context object for a static page with amp context', function () {
+        data = {post: {id: 2}};
+        context = ['amp', 'page'];
         contextObject = getContextObject(data, context);
 
         should.exist(contextObject);
@@ -39,7 +56,7 @@ describe('getContextObject', function () {
 
         it('should return blog context object for unknown context', function () {
             data = {post: {id: 2}};
-            context = 'unknown';
+            context = ['unknown'];
             contextObject = getContextObject(data, context);
 
             should.exist(contextObject);

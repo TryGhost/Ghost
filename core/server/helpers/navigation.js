@@ -42,6 +42,10 @@ navigation = function (options) {
 
     // strips trailing slashes and compares urls
     function _isCurrentUrl(href, currentUrl) {
+        if (!currentUrl) {
+            return false;
+        }
+
         var strippedHref = href.replace(/\/+$/, ''),
             strippedCurrentUrl = currentUrl.replace(/\/+$/, '');
         return strippedHref === strippedCurrentUrl;

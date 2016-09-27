@@ -76,30 +76,44 @@ function ghost_head(options) {
         return;
     }
 
-    var metaData = getMetaData(this, options.data.root),
+    var metaData,
+        client,
         head = [],
-        context = this.context ? this.context[0] : null,
+        context = this.context ? this.context : null,
         useStructuredData = !config.isPrivacyDisabled('useStructuredData'),
-        safeVersion = this.safeVersion;
+        safeVersion = this.safeVersion,
+        referrerPolicy = config.referrerPolicy ? config.referrerPolicy : 'no-referrer-when-downgrade',
+        fetch = {
+            metaData: getMetaData(this, options.data.root),
+            client: getClient()
+        };
 
-    return getClient().then(function (client) {
+    return Promise.props(fetch).then(function (response) {
+        client = response.client;
+        metaData = response.metaData;
+
         if (context) {
             // head is our main array that holds our meta data
             head.push('<link rel="canonical" href="' +
-            escapeExpression(metaData.canonicalUrl) + '" />');
-            head.push('<meta name="referrer" content="origin" />');
+                escapeExpression(metaData.canonicalUrl) + '" />');
+            head.push('<meta name="referrer" content="' + referrerPolicy + '" />');
+
+            if (_.includes(context, 'post') && !_.includes(context, 'amp')) {
+                head.push('<link rel="amphtml" href="' +
+                    escapeExpression(metaData.ampUrl) + '" />');
+            }
 
             if (metaData.previousUrl) {
                 head.push('<link rel="prev" href="' +
-                escapeExpression(metaData.previousUrl) + '" />');
+                    escapeExpression(metaData.previousUrl) + '" />');
             }
 
             if (metaData.nextUrl) {
                 head.push('<link rel="next" href="' +
-                escapeExpression(metaData.nextUrl) + '" />');
+                    escapeExpression(metaData.nextUrl) + '" />');
             }
 
-            if (context !== 'paged' && useStructuredData) {
+            if (!_.includes(context, 'paged') && useStructuredData) {
                 head.push('');
                 head.push.apply(head, finaliseStructuredData(metaData));
                 head.push('');
@@ -111,20 +125,23 @@ function ghost_head(options) {
                 }
             }
 
-            if (client && client.id && client.secret) {
+            if (client && client.id && client.secret && !_.includes(context, 'amp')) {
                 head.push(getAjaxHelper(client.id, client.secret));
             }
         }
 
         head.push('<meta name="generator" content="Ghost ' +
-        escapeExpression(safeVersion) + '" />');
+            escapeExpression(safeVersion) + '" />');
         head.push('<link rel="alternate" type="application/rss+xml" title="' +
-        escapeExpression(metaData.blog.title)  + '" href="' +
-        escapeExpression(metaData.rssUrl) + '" />');
+            escapeExpression(metaData.blog.title)  + '" href="' +
+            escapeExpression(metaData.rssUrl) + '" />');
 
         return api.settings.read({key: 'ghost_head'});
     }).then(function (response) {
-        head.push(response.settings[0].value);
+        // no code injection for amp context!!!
+        if (!_.includes(context, 'amp')) {
+            head.push(response.settings[0].value);
+        }
         return filters.doFilter('ghost_head', head);
     }).then(function (head) {
         return new SafeString(head.join('\n    ').trim());

@@ -1,17 +1,19 @@
-/*globals describe, beforeEach, afterEach, it*/
-var nock            = require('nock'),
+var _               = require('lodash'),
+    nock            = require('nock'),
     should          = require('should'),
     sinon           = require('sinon'),
+    rewire          = require('rewire'),
     Promise         = require('bluebird'),
     testUtils       = require('../utils'),
     url             = require('url'),
 
 // Stuff we test
-    slack          = require('../../server/data/slack'),
+    slack          = rewire('../../server/data/slack'),
     events         = require('../../server/events'),
     api            = require('../../server/api/settings'),
     config         = require('../../server/config'),
     schema         = require('../../server/data/schema').checks,
+
     sandbox        = sinon.sandbox.create(),
 // Test data
     slackObjNoUrl =
@@ -43,121 +45,198 @@ var nock            = require('nock'),
 should.equal(true, true);
 
 describe('Slack', function () {
-    var testPost;
+    var eventStub;
+
+    beforeEach(function () {
+        eventStub = sandbox.stub(events, 'on');
+    });
 
     afterEach(function () {
         sandbox.restore();
     });
 
-    it('should call ping if post is published', function () {
-        // set up
-        var ping = sandbox.stub(slack, '_ping');
-        testPost = {
-                toJSON: function () {
-                    return testUtils.DataGenerator.Content.posts[2];
-                }
-            };
-        // execute code
-        slack.init();
-        events.emit('post.published', testPost);
-
-        // assertions
-        ping.calledOnce.should.be.true();
+    it('listen() should initialise event correctly', function () {
+        slack.listen();
+        eventStub.calledTwice.should.be.true();
+        eventStub.firstCall.calledWith('post.published', slack.__get__('listener')).should.be.true();
+        eventStub.secondCall.calledWith('slack.test', slack.__get__('testPing')).should.be.true();
     });
 
-    it('should make request to slack correctly', function () {
-        // set up
-        var reqOptions,
-            pingSlack;
+    it('listener() calls ping() with toJSONified model', function () {
+        var testPost = _.clone(testUtils.DataGenerator.Content.posts[2]),
+            testModel = {toJSON: function () {return testPost; }},
+            pingStub = sandbox.stub(),
+            resetSlack = slack.__set__('ping', pingStub),
+            listener = slack.__get__('listener');
 
-        // fill the options for https request
-        reqOptions = url.parse('https://hooks.slack.com/services/a-b-c-d');
-        reqOptions.method = 'POST';
-        reqOptions.headers = {'Content-type': 'application/json'};
+        listener(testModel);
 
-        pingSlack = nock('https://hooks.slack.com/')
-                        .post('/services/a-b-c-d', {text:'http://myblog.com/mypost', icon_url: 'http://myblog.com/someImageurl.jpg', username: 'Ghost'})
-                        .reply(200);
-        // execute code
-        slack._makeRequest(reqOptions, {text:'http://myblog.com/mypost', icon_url: 'http://myblog.com/someImageurl.jpg', username: 'Ghost'});
+        pingStub.calledOnce.should.be.true();
+        pingStub.calledWith(testPost).should.be.true();
 
-        // assertions
-        pingSlack.isDone().should.be.true();
+        // Reset slack ping method
+        resetSlack();
     });
 
-    it('can handle an error response correctly', function () {
-        // set up
-        var reqOptions,
-            pingSlack;
+    it('testPing() calls ping() with default message', function () {
+        var pingStub = sandbox.stub(),
+            resetSlack = slack.__set__('ping', pingStub),
+            testPing = slack.__get__('testPing');
 
-        // fill the options for https request
-        reqOptions = url.parse('https://hooks.slack.com/services/a-b-c-d');
-        reqOptions.method = 'POST';
-        reqOptions.headers = {'Content-type': 'application/json'};
+        testPing();
 
-        pingSlack = nock('https://hooks.slack.com/')
-                        .post('/services/a-b-c-d', {text:'http://myblog.com/mypost', icon_url: 'http://myblog.com/someImageurl.jpg', username: 'Ghost'})
-                        .replyWithError(404);
-        // execute code
-        slack._makeRequest(reqOptions, {text:'http://myblog.com/mypost', icon_url: 'http://myblog.com/someImageurl.jpg', username: 'Ghost'});
+        pingStub.calledOnce.should.be.true();
+        pingStub.calledWith(sinon.match.has('message')).should.be.true();
 
-        // assertions
-        pingSlack.isDone().should.be.true();
+        // Reset slack ping method
+        resetSlack();
     });
 
-    describe('Ping', function () {
+    describe('makeRequest()', function () {
+        var makeRequest = slack.__get__('makeRequest');
+
+        it('should make request to slack correctly', function () {
+            // set up
+            var reqOptions,
+                pingSlack;
+
+            // fill the options for https request
+            reqOptions = url.parse('https://hooks.slack.com/services/a-b-c-d');
+            reqOptions.method = 'POST';
+            reqOptions.headers = {'Content-type': 'application/json'};
+
+            pingSlack = nock('https://hooks.slack.com/')
+                .post('/services/a-b-c-d', {text:'http://myblog.com/mypost', icon_url: 'http://myblog.com/someImageurl.jpg', username: 'Ghost'})
+                .reply(200);
+
+            // execute code
+            makeRequest(reqOptions, {text:'http://myblog.com/mypost', icon_url: 'http://myblog.com/someImageurl.jpg', username: 'Ghost'});
+
+            // assertions
+            pingSlack.isDone().should.be.true();
+        });
+
+        it('can handle an error response correctly', function () {
+            // set up
+            var reqOptions,
+                pingSlack;
+
+            // fill the options for https request
+            reqOptions = url.parse('https://hooks.slack.com/services/a-b-c-d');
+            reqOptions.method = 'POST';
+            reqOptions.headers = {'Content-type': 'application/json'};
+
+            pingSlack = nock('https://hooks.slack.com/')
+                .post('/services/a-b-c-d', {text:'http://myblog.com/mypost', icon_url: 'http://myblog.com/someImageurl.jpg', username: 'Ghost'})
+                .replyWithError(404);
+
+            // execute code
+            makeRequest(reqOptions, {text:'http://myblog.com/mypost', icon_url: 'http://myblog.com/someImageurl.jpg', username: 'Ghost'});
+
+            // assertions
+            pingSlack.isDone().should.be.true();
+        });
+    });
+
+    describe('ping()', function () {
         var makeRequestAssertions,
-            schemaStub,
+            isPostStub,
             urlForStub,
             settingsAPIStub,
             settingsObj,
-            makeRequestStub;
+            slackReset,
+            makeRequestMock,
+            makeRequestSpy,
+            ping =  slack.__get__('ping');
 
         beforeEach(function () {
-            schemaStub = sandbox.stub(schema, 'isPost');
+            isPostStub = sandbox.stub(schema, 'isPost');
             urlForStub = sandbox.stub(config, 'urlFor');
-            urlForStub.onFirstCall().returns('http://myblog.com/post');
-            urlForStub.onSecondCall().returns('http://myblog.com/someImageurl.jpg');
+            urlForStub.withArgs('post').returns('http://myblog.com/post');
+            urlForStub.returns('http://myblog.com/someImageurl.jpg');
             settingsObj = {settings: [], meta: {}};
             settingsAPIStub = sandbox.stub(api, 'read').returns(Promise.resolve(settingsObj));
-            makeRequestStub = sandbox.stub(slack, '_makeRequest', function () {
+
+            makeRequestMock = function () {
                 makeRequestAssertions.apply(this, arguments);
-            });
+            };
+            makeRequestSpy = sandbox.spy(makeRequestMock);
+            slackReset = slack.__set__('makeRequest', makeRequestMock);
         });
 
-        it('makes a request if url is provided', function (done) {
+        afterEach(function () {
+            slackReset();
+        });
+
+        it('makes a request for a post if url is provided', function (done) {
             // set up
-            schemaStub.returns('true');
+            isPostStub.returns(true);
             settingsObj.settings[0] = slackObjWithUrl;
 
             // assertions
             makeRequestAssertions = function (requestOptions, requestData) {
-                    schemaStub.calledOnce.should.be.true();
-                    urlForStub.calledTwice.should.be.true();
-                    settingsAPIStub.calledOnce.should.be.true();
-                    requestOptions.should.have.property('href').and.be.equal('https://hooks.slack.com/services/a-b-c-d');
-                    requestData.should.have.property('text').and.be.equal('http://myblog.com/post');
-                    requestData.should.have.property('icon_url').and.be.equal('http://myblog.com/someImageurl.jpg');
-                    requestData.should.have.property('username').and.be.equal('Ghost');
-                    done();
-                };
+                isPostStub.calledOnce.should.be.true();
+                urlForStub.calledTwice.should.be.true();
+                settingsAPIStub.calledOnce.should.be.true();
+                requestOptions.should.have.property('href').and.be.equal('https://hooks.slack.com/services/a-b-c-d');
+                requestData.should.have.property('text').and.be.equal('http://myblog.com/post');
+                requestData.should.have.property('icon_url').and.be.equal('http://myblog.com/someImageurl.jpg');
+                requestData.should.have.property('username').and.be.equal('Ghost');
+                done();
+            };
 
             // execute code
-            slack._ping({}).catch(done);
+            ping({}).catch(done);
+        });
+
+        it('makes a request for a message if url is provided', function (done) {
+            isPostStub.returns(false);
+            settingsObj.settings[0] = slackObjWithUrl;
+
+            // assertions
+            makeRequestAssertions = function (requestOptions, requestData) {
+                isPostStub.calledOnce.should.be.true();
+                urlForStub.calledOnce.should.be.true();
+                settingsAPIStub.calledOnce.should.be.true();
+                requestOptions.should.have.property('href').and.be.equal('https://hooks.slack.com/services/a-b-c-d');
+                requestData.should.have.property('text').and.be.equal('Hi!');
+                requestData.should.have.property('icon_url').and.be.equal('http://myblog.com/someImageurl.jpg');
+                requestData.should.have.property('username').and.be.equal('Ghost');
+                done();
+            };
+
+            ping({message: 'Hi!'}).catch(done);
+        });
+
+        it('does not make a request if post is a page', function (done) {
+            // set up
+            isPostStub.returns(true);
+            settingsObj.settings[0] = slackObjWithUrl;
+
+            // execute code
+            ping({page: true}).then(function (result) {
+                // assertions
+                isPostStub.calledOnce.should.be.true();
+                urlForStub.calledOnce.should.be.true();
+                settingsAPIStub.calledOnce.should.be.true();
+                makeRequestSpy.called.should.be.false();
+                should.not.exist(result);
+                done();
+            }).catch(done);
         });
 
         it('does not make a request if no url is provided', function (done) {
             // set up
-            schemaStub.returns('true');
+            isPostStub.returns(true);
             settingsObj.settings[0] = slackObjNoUrl;
 
             // execute code
-            slack._ping({}).then(function (result) {
+            ping({}).then(function (result) {
                 // assertions
-                schemaStub.calledOnce.should.be.true();
+                isPostStub.calledOnce.should.be.true();
                 urlForStub.calledOnce.should.be.true();
                 settingsAPIStub.calledOnce.should.be.true();
-                makeRequestStub.called.should.be.false();
+                makeRequestSpy.called.should.be.false();
                 should.not.exist(result);
                 done();
             }).catch(done);
@@ -165,20 +244,33 @@ describe('Slack', function () {
 
         it('does not send webhook for \'welcome-to-ghost\' post', function (done) {
             // set up
-            schemaStub.returns('true');
+            isPostStub.returns(true);
             settingsObj.settings[0] = slackObjWithUrl;
 
-            makeRequestAssertions = function () {};
             // execute code
-            slack._ping({slug: 'welcome-to-ghost'}).then(function (result) {
+            ping({slug: 'welcome-to-ghost'}).then(function (result) {
                 // assertions
-                schemaStub.calledOnce.should.be.true();
+                isPostStub.calledOnce.should.be.true();
                 urlForStub.calledOnce.should.be.true();
                 settingsAPIStub.calledOnce.should.be.true();
-                makeRequestStub.called.should.be.false();
+                makeRequestSpy.called.should.be.false();
                 should.not.exist(result);
                 done();
             }).catch(done);
+        });
+
+        it('handles broken slack settings', function (done) {
+            settingsObj.settings[0] = '';
+
+            ping({}).then(function () {
+                done('This should not get called');
+            }).catch(function () {
+                isPostStub.calledOnce.should.be.true();
+                urlForStub.calledOnce.should.be.false();
+                settingsAPIStub.calledOnce.should.be.true();
+                makeRequestSpy.called.should.be.false();
+                done();
+            });
         });
     });
 });

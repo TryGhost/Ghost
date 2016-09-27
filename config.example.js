@@ -33,6 +33,11 @@ config = {
         // Change this to your Ghost blog's published URL.
         url: 'http://localhost:2368',
 
+        // Example refferer policy
+        // Visit https://www.w3.org/TR/referrer-policy/ for instructions
+        // default 'origin-when-cross-origin',
+        // referrerPolicy: 'origin-when-cross-origin',
+
         // Example mail config
         // Visit http://support.ghost.org/mail for instructions
         // ```
@@ -91,7 +96,8 @@ config = {
                     'PRAGMA locking_mode=EXCLUSIVE;' +
                     'BEGIN EXCLUSIVE; COMMIT;', done);
                 }
-            }
+            },
+            useNullAsDefault: true
         },
         server: {
             host: '127.0.0.1',

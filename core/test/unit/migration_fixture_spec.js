@@ -1,31 +1,38 @@
-/*global describe, it, beforeEach, afterEach */
-var should  = require('should'),
-    sinon   = require('sinon'),
-    rewire  = require('rewire'),
+var should = require('should'),
+    sinon = require('sinon'),
+    _ = require('lodash'),
+    moment = require('moment'),
+    rewire = require('rewire'),
     Promise = require('bluebird'),
 
     // Stuff we are testing
-    configUtils   = require('../utils/configUtils'),
-    models        = require('../../server/models'),
+    configUtils = require('../utils/configUtils'),
+    models = require('../../server/models'),
+    api = require('../../server/api'),
+    permissions = require('../../server/permissions'),
     notifications = require('../../server/api/notifications'),
-    versioning    = require('../../server/data/schema/versioning'),
-    update        = rewire('../../server/data/migration/fixtures/update'),
-    populate      = rewire('../../server/data/migration/fixtures/populate'),
-    fixtureUtils  = require('../../server/data/migration/fixtures/utils'),
-    fixtures004   = require('../../server/data/migration/fixtures/004'),
-    fixtures005   = require('../../server/data/migration/fixtures/005'),
-    ensureDefaultSettings = require('../../server/data/migration/fixtures/settings'),
+    versioning = require('../../server/data/schema/versioning'),
+    update = rewire('../../server/data/migration/fixtures/update'),
+    populate = rewire('../../server/data/migration/fixtures/populate'),
+    fixtureUtils = require('../../server/data/migration/fixtures/utils'),
+    fixtures004 = require('../../server/data/migration/fixtures/004'),
+    fixtures005 = require('../../server/data/migration/fixtures/005'),
+    fixtures006 = require('../../server/data/migration/fixtures/006'),
+    fixtures007 = require('../../server/data/migration/fixtures/007'),
+    fixtures008 = require('../../server/data/migration/fixtures/008'),
 
-    sandbox       = sinon.sandbox.create();
+    sandbox = sinon.sandbox.create();
 
 describe('Fixtures', function () {
-    var loggerStub;
+    var loggerStub, transactionStub;
 
     beforeEach(function () {
         loggerStub = {
             info: sandbox.stub(),
             warn: sandbox.stub()
         };
+
+        transactionStub = sandbox.stub();
 
         models.init();
     });
@@ -36,39 +43,24 @@ describe('Fixtures', function () {
     });
 
     describe('Update fixtures', function () {
-        it('should call `getUpdateFixturesTasks` when upgrading from 003 -> 004', function (done) {
-            var getVersionTasksStub = sandbox.stub(versioning, 'getUpdateFixturesTasks').returns([]);
-
-            update(['004'], loggerStub).then(function () {
-                loggerStub.info.calledOnce.should.be.true();
-                loggerStub.warn.called.should.be.false();
-                getVersionTasksStub.calledOnce.should.be.true();
-                done();
-            }).catch(done);
-        });
-
-        it('should NOT call `getUpdateFixturesTasks` when upgrading from 004 -> 004', function (done) {
-            var getVersionTasksStub = sandbox.stub(versioning, 'getUpdateFixturesTasks').returns([]);
-
-            update([], loggerStub).then(function () {
-                loggerStub.info.calledOnce.should.be.true();
-                loggerStub.warn.called.should.be.false();
-                getVersionTasksStub.calledOnce.should.be.false();
-                done();
-            }).catch(done);
-        });
-
         it('should call tasks in correct order if provided', function (done) {
-            var task1Stub = sandbox.stub().returns(Promise.resolve()),
-                task2Stub = sandbox.stub().returns(Promise.resolve()),
-                getVersionTasksStub = sandbox.stub(versioning, 'getUpdateFixturesTasks').returns([task1Stub, task2Stub]);
+            var sequenceStub = sandbox.stub(),
+                sequenceReset = update.__set__('sequence', sequenceStub),
+                tasks = [
+                    sandbox.stub(),
+                    sandbox.stub()
+                ];
 
-            update(['000'], loggerStub).then(function () {
-                loggerStub.info.calledTwice.should.be.true();
+            sequenceStub.returns(Promise.resolve([]));
+
+            update(tasks, loggerStub, {transacting: transactionStub}).then(function () {
+                loggerStub.info.calledOnce.should.be.true();
                 loggerStub.warn.called.should.be.false();
-                getVersionTasksStub.calledOnce.should.be.true();
-                task1Stub.calledOnce.should.be.true();
-                task2Stub.calledOnce.should.be.true();
+
+                sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(2);
+                sequenceStub.firstCall.args[1].should.eql({transacting: transactionStub});
+                sequenceStub.firstCall.args[2].should.eql(loggerStub);
+                sequenceReset();
                 done();
             }).catch(done);
         });
@@ -78,36 +70,28 @@ describe('Fixtures', function () {
                 // Setup
                 // Create a new stub, this will replace sequence, so that db calls don't actually get run
                 var sequenceStub = sandbox.stub(),
-                    sequenceReset = update.__set__('sequence', sequenceStub);
+                    sequenceReset = update.__set__('sequence', sequenceStub),
+                    tasks = versioning.getUpdateFixturesTasks('004', loggerStub);
 
-                // The first time we call sequence, it should be to execute a top level version, e.g 004
-                // yieldsTo('0') means this stub will execute the function at index 0 of the array passed as the
-                // first argument. In short the `runVersionTasks` function gets executed, and sequence gets called
-                // again with the array of tasks to execute for 004, which is what we want to check
-                sequenceStub.onFirstCall().yieldsTo('0').returns(Promise.resolve([]));
+                sequenceStub.returns(Promise.resolve([]));
 
-                update(['004'], loggerStub).then(function (result) {
+                update(tasks, loggerStub, {transacting: transactionStub}).then(function (result) {
                     should.exist(result);
 
-                    loggerStub.info.calledTwice.should.be.true();
+                    loggerStub.info.calledOnce.should.be.true();
                     loggerStub.warn.called.should.be.false();
 
-                    sequenceStub.calledTwice.should.be.true();
-
+                    sequenceStub.calledOnce.should.be.true();
                     sequenceStub.firstCall.calledWith(sinon.match.array, sinon.match.object, loggerStub).should.be.true();
-                    sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(1);
-                    sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'runVersionTasks');
-
-                    sequenceStub.secondCall.calledWith(sinon.match.array, sinon.match.object, loggerStub).should.be.true();
-                    sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(8);
-                    sequenceStub.secondCall.args[0][0].should.be.a.Function().with.property('name', 'moveJQuery');
-                    sequenceStub.secondCall.args[0][1].should.be.a.Function().with.property('name', 'updatePrivateSetting');
-                    sequenceStub.secondCall.args[0][2].should.be.a.Function().with.property('name', 'updatePasswordSetting');
-                    sequenceStub.secondCall.args[0][3].should.be.a.Function().with.property('name', 'updateGhostAdminClient');
-                    sequenceStub.secondCall.args[0][4].should.be.a.Function().with.property('name', 'addGhostFrontendClient');
-                    sequenceStub.secondCall.args[0][5].should.be.a.Function().with.property('name', 'cleanBrokenTags');
-                    sequenceStub.secondCall.args[0][6].should.be.a.Function().with.property('name', 'addPostTagOrder');
-                    sequenceStub.secondCall.args[0][7].should.be.a.Function().with.property('name', 'addNewPostFixture');
+                    sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(8);
+                    sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'moveJQuery');
+                    sequenceStub.firstCall.args[0][1].should.be.a.Function().with.property('name', 'updatePrivateSetting');
+                    sequenceStub.firstCall.args[0][2].should.be.a.Function().with.property('name', 'updatePasswordSetting');
+                    sequenceStub.firstCall.args[0][3].should.be.a.Function().with.property('name', 'updateGhostAdminClient');
+                    sequenceStub.firstCall.args[0][4].should.be.a.Function().with.property('name', 'addGhostFrontendClient');
+                    sequenceStub.firstCall.args[0][5].should.be.a.Function().with.property('name', 'cleanBrokenTags');
+                    sequenceStub.firstCall.args[0][6].should.be.a.Function().with.property('name', 'addPostTagOrder');
+                    sequenceStub.firstCall.args[0][7].should.be.a.Function().with.property('name', 'addNewPostFixture');
 
                     // Reset
                     sequenceReset();
@@ -181,7 +165,7 @@ describe('Fixtures', function () {
 
                     it('tried to move jQuery AND add a privacy message if any privacy settings are on', function (done) {
                         var notificationsAddStub = sandbox.stub(notifications, 'add').returns(Promise.resolve());
-                        configUtils.set({privacy: {useGoogleFonts: false}});
+                        configUtils.set({privacy: {useGravatar: false}});
                         getObjStub.get.returns('');
 
                         moveJquery({}, loggerStub).then(function () {
@@ -509,7 +493,7 @@ describe('Fixtures', function () {
                             loggerStub.info.calledOnce.should.be.true();
                             // gets called because we're stubbing to return an empty array
                             loggerStub.warn.calledOnce.should.be.true();
-                            sinon.assert.callOrder(loggerStub.info, postAllStub, postCollStub.mapThen,  postObjStub.load);
+                            sinon.assert.callOrder(loggerStub.info, postAllStub, postCollStub.mapThen, postObjStub.load);
 
                             done();
                         }).catch(done);
@@ -711,32 +695,25 @@ describe('Fixtures', function () {
                 // Setup
                 // Create a new stub, this will replace sequence, so that db calls don't actually get run
                 var sequenceStub = sandbox.stub(),
-                    sequenceReset = update.__set__('sequence', sequenceStub);
+                    sequenceReset = update.__set__('sequence', sequenceStub),
+                    tasks = versioning.getUpdateFixturesTasks('005', loggerStub);
 
-                // The first time we call sequence, it should be to execute a top level version, e.g 005
-                // yieldsTo('0') means this stub will execute the function at index 0 of the array passed as the
-                // first argument. In short the `runVersionTasks` function gets executed, and sequence gets called
-                // again with the array of tasks to execute for 005, which is what we want to check
-                sequenceStub.onFirstCall().yieldsTo('0').returns(Promise.resolve([]));
+                sequenceStub.returns(Promise.resolve([]));
 
-                update(['005'], loggerStub).then(function (result) {
+                update(tasks, loggerStub, {transacting: transactionStub}).then(function (result) {
                     should.exist(result);
 
-                    loggerStub.info.calledTwice.should.be.true();
+                    loggerStub.info.calledOnce.should.be.true();
                     loggerStub.warn.called.should.be.false();
 
-                    sequenceStub.calledTwice.should.be.true();
+                    sequenceStub.calledOnce.should.be.true();
 
                     sequenceStub.firstCall.calledWith(sinon.match.array, sinon.match.object, loggerStub).should.be.true();
-                    sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(1);
-                    sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'runVersionTasks');
-
-                    sequenceStub.secondCall.calledWith(sinon.match.array, sinon.match.object, loggerStub).should.be.true();
-                    sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(4);
-                    sequenceStub.secondCall.args[0][0].should.be.a.Function().with.property('name', 'updateGhostClientsSecrets');
-                    sequenceStub.secondCall.args[0][1].should.be.a.Function().with.property('name', 'addGhostFrontendClient');
-                    sequenceStub.secondCall.args[0][2].should.be.a.Function().with.property('name', 'addClientPermissions');
-                    sequenceStub.secondCall.args[0][3].should.be.a.Function().with.property('name', 'addSubscriberPermissions');
+                    sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(4);
+                    sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'updateGhostClientsSecrets');
+                    sequenceStub.firstCall.args[0][1].should.be.a.Function().with.property('name', 'addGhostFrontendClient');
+                    sequenceStub.firstCall.args[0][2].should.be.a.Function().with.property('name', 'addClientPermissions');
+                    sequenceStub.firstCall.args[0][3].should.be.a.Function().with.property('name', 'addSubscriberPermissions');
 
                     // Reset
                     sequenceReset();
@@ -947,6 +924,486 @@ describe('Fixtures', function () {
                 });
             });
         });
+
+        describe('Update to 006', function () {
+            it('should call all the 006 fixture upgrades', function (done) {
+                // Setup
+                // Create a new stub, this will replace sequence, so that db calls don't actually get run
+                var sequenceStub = sandbox.stub(),
+                    sequenceReset = update.__set__('sequence', sequenceStub),
+                    tasks = versioning.getUpdateFixturesTasks('006', loggerStub);
+
+                sequenceStub.returns(Promise.resolve([]));
+
+                update(tasks, loggerStub, {transacting: transactionStub}).then(function (result) {
+                    should.exist(result);
+
+                    loggerStub.info.calledOnce.should.be.true();
+                    loggerStub.warn.called.should.be.false();
+
+                    sequenceStub.calledOnce.should.be.true();
+
+                    sequenceStub.firstCall.calledWith(sinon.match.array, sinon.match.object, loggerStub).should.be.true();
+                    sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(1);
+                    sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'transformDatesIntoUTC');
+
+                    // Reset
+                    sequenceReset();
+                    done();
+                }).catch(done);
+            });
+
+            describe('Tasks:', function () {
+                var isPostgres = false;
+
+                it('should have tasks for 006', function () {
+                    should.exist(fixtures006);
+                    fixtures006.should.be.an.Array().with.lengthOf(1);
+                });
+
+                describe('01-transform-dates-into-utc', function () {
+                    var updateClient = fixtures006[0],
+                        serverTimezoneOffset,
+                        migrationsSettingsValue;
+
+                    beforeEach(function () {
+                        configUtils.config.database.isPostgreSQL = function () {
+                            return isPostgres;
+                        };
+
+                        sandbox.stub(Date.prototype, 'getTimezoneOffset', function () {
+                            return serverTimezoneOffset;
+                        });
+                    });
+
+                    afterEach(function () {
+                        isPostgres = false;
+                    });
+
+                    describe('error cases', function () {
+                        before(function () {
+                            serverTimezoneOffset = 0;
+                        });
+
+                        beforeEach(function () {
+                            sandbox.stub(models.Settings, 'findOne', function () {
+                                return Promise.resolve({attributes: {value: migrationsSettingsValue}});
+                            });
+                        });
+
+                        it('server offset is 0 and mysql', function (done) {
+                            migrationsSettingsValue = '{}';
+                            configUtils.config.database.client = 'mysql';
+
+                            updateClient({}, loggerStub)
+                                .then(function () {
+                                    loggerStub.warn.called.should.be.true();
+                                    done();
+                                })
+                                .catch(done);
+                        });
+
+                        it('migration already ran', function (done) {
+                            migrationsSettingsValue = '{ "006/01": "timestamp" }';
+
+                            updateClient({}, loggerStub)
+                                .then(function () {
+                                    loggerStub.warn.called.should.be.true();
+                                    done();
+                                })
+                                .catch(done);
+                        });
+                    });
+
+                    describe('success cases', function () {
+                        var newModels, createdAt, migrationsSettingsWasUpdated;
+
+                        before(function () {
+                            serverTimezoneOffset = -60;
+                            migrationsSettingsValue = '{}';
+                        });
+
+                        beforeEach(function () {
+                            newModels = {};
+                            migrationsSettingsWasUpdated = false;
+                            serverTimezoneOffset = -60;
+                            migrationsSettingsValue = '{}';
+
+                            // stub for checkIfMigrationAlreadyRan
+                            sandbox.stub(models.Settings.prototype, 'fetch', function () {
+                                // CASE: we update migrations settings entry
+                                if (this.get('key') === 'migrations') {
+                                    migrationsSettingsWasUpdated = true;
+                                    return Promise.resolve(newModels[Object.keys(newModels)[0]] || {attributes: {value: migrationsSettingsValue}});
+                                }
+
+                                return Promise.resolve(newModels[Number(this.get('key'))]);
+                            });
+
+                            _.each(['Post', 'User', 'Subscriber', 'Settings', 'Role', 'Permission', 'Tag', 'App', 'AppSetting', 'AppField', 'Client'], function (modelType) {
+                                sandbox.stub(models[modelType], 'findAll', function () {
+                                    var model = models[modelType].forge();
+                                    model.set('id', Date.now());
+                                    model.set('created_at', createdAt);
+                                    model.set('key', model.id.toString());
+                                    model.set('name', modelType);
+
+                                    newModels[model.id] = model;
+                                    return Promise.resolve({models: [model]});
+                                });
+
+                                if (modelType !== 'Settings') {
+                                    sandbox.stub(models[modelType], 'findOne', function (data) {
+                                        return Promise.resolve(newModels[data.id]);
+                                    });
+                                }
+
+                                sandbox.stub(models[modelType], 'edit').returns(Promise.resolve({}));
+                            });
+
+                            sandbox.stub(api.settings, 'updateSettingsCache').returns(Promise.resolve({}));
+                        });
+
+                        it('pg: server TZ is UTC, only format is changing', function (done) {
+                            createdAt = moment(1464798678537).toDate();
+                            configUtils.config.database.client = 'pg';
+                            isPostgres = true;
+                            serverTimezoneOffset = 0;
+
+                            moment(createdAt).format('YYYY-MM-DD HH:mm:ss').should.eql('2016-06-01 16:31:18');
+
+                            updateClient({}, loggerStub)
+                                .then(function () {
+                                    _.each(newModels, function (model) {
+                                        moment(model.get('created_at')).format('YYYY-MM-DD HH:mm:ss').should.eql('2016-06-01 16:31:18');
+                                    });
+
+                                    migrationsSettingsWasUpdated.should.eql(true);
+                                    done();
+                                })
+                                .catch(done);
+                        });
+
+                        it('pg: server TZ is non UTC, only format is changing', function (done) {
+                            createdAt = moment(1464798678537).toDate();
+                            configUtils.config.database.client = 'pg';
+                            isPostgres = true;
+
+                            moment(createdAt).format('YYYY-MM-DD HH:mm:ss').should.eql('2016-06-01 16:31:18');
+
+                            updateClient({}, loggerStub)
+                                .then(function () {
+                                    _.each(newModels, function (model) {
+                                        moment(model.get('created_at')).format('YYYY-MM-DD HH:mm:ss').should.eql('2016-06-01 16:31:18');
+                                    });
+
+                                    migrationsSettingsWasUpdated.should.eql(true);
+                                    done();
+                                })
+                                .catch(done);
+                        });
+
+                        it('server offset is 0 and sqlite', function (done) {
+                            serverTimezoneOffset = 0;
+                            createdAt = moment(1464798678537).toDate();
+                            configUtils.config.database.client = 'sqlite3';
+
+                            moment(createdAt).format('YYYY-MM-DD HH:mm:ss').should.eql('2016-06-01 16:31:18');
+
+                            updateClient({}, loggerStub)
+                                .then(function () {
+                                    _.each(newModels, function (model) {
+                                        moment(model.get('created_at')).format('YYYY-MM-DD HH:mm:ss').should.eql('2016-06-01 16:31:18');
+                                    });
+
+                                    migrationsSettingsWasUpdated.should.eql(true);
+                                    done();
+                                })
+                                .catch(done);
+                        });
+
+                        it('sqlite: no UTC update, only format', function (done) {
+                            createdAt = moment(1464798678537).toDate();
+                            configUtils.config.database.client = 'sqlite3';
+
+                            moment(createdAt).format('YYYY-MM-DD HH:mm:ss').should.eql('2016-06-01 16:31:18');
+
+                            updateClient({}, loggerStub)
+                                .then(function () {
+                                    _.each(newModels, function (model) {
+                                        moment(model.get('created_at')).format('YYYY-MM-DD HH:mm:ss').should.eql('2016-06-01 16:31:18');
+                                    });
+
+                                    migrationsSettingsWasUpdated.should.eql(true);
+                                    done();
+                                })
+                                .catch(done);
+                        });
+
+                        it('mysql: UTC update', function (done) {
+                            /**
+                             * we fetch 2016-06-01 06:00:00 from the database which was stored as local representation
+                             * our base model will wrap it into a UTC moment
+                             * the offset is 1 hour
+                             * we expect 2016-06-01 05:00:00
+                             */
+                            createdAt = moment('2016-06-01 06:00:00').toDate();
+                            configUtils.config.database.client = 'mysql';
+
+                            moment(createdAt).format('YYYY-MM-DD HH:mm:ss').should.eql('2016-06-01 06:00:00');
+
+                            updateClient({}, loggerStub)
+                                .then(function () {
+                                    _.each(newModels, function (model) {
+                                        moment(model.get('created_at')).format('YYYY-MM-DD HH:mm:ss').should.eql('2016-06-01 05:00:00');
+                                    });
+
+                                    migrationsSettingsWasUpdated.should.eql(true);
+                                    done();
+                                })
+                                .catch(done);
+                        });
+                    });
+                });
+            });
+        });
+
+        describe('Update to 007', function () {
+            it('should call all the 007 fixture upgrades', function (done) {
+                // Setup
+                // Create a new stub, this will replace sequence, so that db calls don't actually get run
+                var sequenceStub = sandbox.stub(),
+                    sequenceReset = update.__set__('sequence', sequenceStub),
+                    tasks = versioning.getUpdateFixturesTasks('007', loggerStub);
+
+                sequenceStub.returns(Promise.resolve([]));
+
+                update(tasks, loggerStub, {transacting: transactionStub}).then(function (result) {
+                    should.exist(result);
+
+                    loggerStub.info.calledOnce.should.be.true();
+                    loggerStub.warn.called.should.be.false();
+
+                    sequenceStub.calledOnce.should.be.true();
+
+                    sequenceStub.firstCall.calledWith(sinon.match.array, sinon.match.object, loggerStub).should.be.true();
+                    sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(1);
+                    sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'addThemePermissions');
+
+                    // Reset
+                    sequenceReset();
+                    done();
+                }).catch(done);
+            });
+
+            describe('Tasks:', function () {
+                it('should have tasks for 007', function () {
+                    should.exist(fixtures007);
+                    fixtures007.should.be.an.Array().with.lengthOf(1);
+                });
+
+                describe('01-addThemePermissions', function () {
+                    var updateThemePermissions = fixtures007[0], addModelStub, relationResult, addRelationStub, modelResult;
+
+                    before(function () {
+                        modelResult = {expected: 1, done: 1};
+                        addModelStub = sandbox.stub(fixtureUtils, 'addFixturesForModel')
+                            .returns(Promise.resolve(modelResult));
+
+                        relationResult = {expected: 1, done: 1};
+                        addRelationStub = sandbox.stub(fixtureUtils, 'addFixturesForRelation')
+                            .returns(Promise.resolve(relationResult));
+
+                        sandbox.stub(permissions, 'init').returns(Promise.resolve());
+                    });
+
+                    it('ensure permissions get updates', function (done) {
+                        updateThemePermissions({context: {internal: true}}, loggerStub)
+                            .then(function () {
+                                addModelStub.calledOnce.should.be.true();
+                                addModelStub.calledWith(
+                                    fixtureUtils.findModelFixtures('Permission', {object_type: 'theme'})
+                                ).should.be.true();
+
+                                addRelationStub.calledOnce.should.be.true();
+                                addRelationStub.calledWith(
+                                    fixtureUtils.findPermissionRelationsForObject('theme')
+                                ).should.be.true();
+
+                                permissions.init.calledOnce.should.eql(true);
+                                done();
+                            })
+                            .catch(done);
+                    });
+                });
+            });
+        });
+
+        describe('Update to 008', function () {
+            it('should call all the 008 fixture upgrades', function (done) {
+                // Setup
+                // Create a new stub, this will replace sequence, so that db calls don't actually get run
+                var sequenceStub = sandbox.stub(),
+                    sequenceReset = update.__set__('sequence', sequenceStub),
+                    tasks = versioning.getUpdateFixturesTasks('008', loggerStub);
+
+                sequenceStub.returns(Promise.resolve([]));
+
+                update(tasks, loggerStub, {transacting: transactionStub}).then(function (result) {
+                    should.exist(result);
+
+                    loggerStub.info.calledOnce.should.be.true();
+                    loggerStub.warn.called.should.be.false();
+
+                    sequenceStub.calledOnce.should.be.true();
+
+                    sequenceStub.firstCall.calledWith(sinon.match.array, sinon.match.object, loggerStub).should.be.true();
+                    sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(1);
+                    sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'fixSqliteFormat');
+
+                    // Reset
+                    sequenceReset();
+                    done();
+                }).catch(done);
+            });
+
+            describe('Tasks:', function () {
+                it('should have tasks for 008', function () {
+                    should.exist(fixtures008);
+                    fixtures008.should.be.an.Array().with.lengthOf(1);
+                });
+
+                describe('01-fix-sqlite-pg-format', function () {
+                    var updateClient = rewire('../../server/data/migration/fixtures/008/01-fix-sqlite-pg-format'),
+                        serverTimezoneOffset = 60,
+                        transfomDatesIntoUTCStub, rawStub, isPostgres = false, isPostgreSQLWasCalled = false;
+
+                    beforeEach(function () {
+                        configUtils.config.database.isPostgreSQL = function () {
+                            isPostgreSQLWasCalled = true;
+                            return isPostgres;
+                        };
+
+                        sandbox.stub(Date.prototype, 'getTimezoneOffset', function () {
+                            return serverTimezoneOffset;
+                        });
+                    });
+
+                    afterEach(function () {
+                        serverTimezoneOffset = 60;
+                        isPostgres = false;
+                        isPostgreSQLWasCalled = false;
+                    });
+
+                    describe('success', function () {
+                        beforeEach(function () {
+                            sandbox.stub(models.Settings, 'findOne', function (options) {
+                                if (options.key === 'migrations') {
+                                    return Promise.resolve({attributes: {value: '{"006/01":"2016-09-05T12:39:11Z", "005/02": "2015-09-05T12:39:11Z"}'}});
+                                }
+
+                                return Promise.resolve();
+                            });
+
+                            sandbox.stub(models.Settings, 'edit', function (data) {
+                                data.key.should.eql('migrations');
+                                data.value.should.eql('{"005/02":"2015-09-05T12:39:11Z"}');
+                                return Promise.resolve();
+                            });
+
+                            transfomDatesIntoUTCStub = sandbox.stub().returns(Promise.resolve());
+                            updateClient.__set__('transfomDatesIntoUTC', transfomDatesIntoUTCStub);
+                        });
+
+                        it('sqlite and server TZ is UTC: date format is integer', function (done) {
+                            serverTimezoneOffset = 0;
+                            configUtils.config.database.client = 'sqlite3';
+
+                            rawStub = sandbox.stub().returns(Promise.resolve([{created_at: Date.now()}]));
+
+                            updateClient({transacting: {raw: rawStub}}, loggerStub)
+                                .then(function () {
+                                    models.Settings.edit.callCount.should.eql(1);
+                                    models.Settings.findOne.callCount.should.eql(1);
+                                    transfomDatesIntoUTCStub.callCount.should.eql(1);
+                                    done();
+                                })
+                                .catch(done);
+                        });
+
+                        it('postgres and server TZ is UTC', function (done) {
+                            serverTimezoneOffset = 0;
+                            configUtils.config.database.client = 'pg';
+                            isPostgres = true;
+
+                            updateClient({}, loggerStub)
+                                .then(function () {
+                                    isPostgreSQLWasCalled.should.eql(true);
+                                    models.Settings.edit.callCount.should.eql(1);
+                                    models.Settings.findOne.callCount.should.eql(1);
+                                    transfomDatesIntoUTCStub.callCount.should.eql(1);
+                                    done();
+                                })
+                                .catch(done);
+                        });
+
+                        it('postgres and server TZ is not UTC', function (done) {
+                            configUtils.config.database.client = 'pg';
+                            isPostgres = true;
+
+                            updateClient({}, loggerStub)
+                                .then(function () {
+                                    isPostgreSQLWasCalled.should.eql(true);
+                                    models.Settings.edit.callCount.should.eql(1);
+                                    models.Settings.findOne.callCount.should.eql(1);
+                                    transfomDatesIntoUTCStub.callCount.should.eql(1);
+                                    done();
+                                })
+                                .catch(done);
+                        });
+                    });
+
+                    describe('error', function () {
+                        it('skip mysql', function (done) {
+                            configUtils.config.database.client = 'mysql';
+
+                            updateClient({}, loggerStub)
+                                .then(function () {
+                                    loggerStub.warn.called.should.be.true();
+                                    done();
+                                })
+                                .catch(done);
+                        });
+
+                        it('skip sqlite and non UTC server timezone', function (done) {
+                            configUtils.config.database.client = 'sqlite3';
+                            rawStub = sandbox.stub().returns(Promise.resolve([{created_at: moment().format('YYYY-MM-DD HH:mm:ss')}]));
+
+                            updateClient({transacting: {raw:rawStub}}, loggerStub)
+                                .then(function () {
+                                    loggerStub.warn.called.should.be.true();
+                                    done();
+                                })
+                                .catch(done);
+                        });
+
+                        it('skip sqlite with UTC server timezone, but correct format', function (done) {
+                            configUtils.config.database.client = 'sqlite3';
+                            serverTimezoneOffset = 0;
+
+                            rawStub = sandbox.stub().returns(Promise.resolve([{created_at: moment().format('YYYY-MM-DD HH:mm:ss')}]));
+
+                            updateClient({transacting: {raw: rawStub}}, loggerStub)
+                                .then(function () {
+                                    loggerStub.warn.called.should.be.true();
+                                    done();
+                                })
+                                .catch(done);
+                        });
+                    });
+                });
+            });
+        });
     });
 
     describe('Populate fixtures', function () {
@@ -959,14 +1416,14 @@ describe('Fixtures', function () {
                 clientAddStub = sandbox.stub(models.Client, 'add').returns(Promise.resolve()),
                 permsAddStub = sandbox.stub(models.Permission, 'add').returns(Promise.resolve()),
 
-            // Existence checks
+                // Existence checks
                 postOneStub = sandbox.stub(models.Post, 'findOne').returns(Promise.resolve()),
                 tagOneStub = sandbox.stub(models.Tag, 'findOne').returns(Promise.resolve()),
                 roleOneStub = sandbox.stub(models.Role, 'findOne').returns(Promise.resolve()),
                 clientOneStub = sandbox.stub(models.Client, 'findOne').returns(Promise.resolve()),
                 permOneStub = sandbox.stub(models.Permission, 'findOne').returns(Promise.resolve()),
 
-            // Relations
+                // Relations
                 fromItem = {
                     related: sandbox.stub().returnsThis(),
                     findWhere: sandbox.stub().returns({})
@@ -978,7 +1435,7 @@ describe('Fixtures', function () {
                 postsAllStub = sandbox.stub(models.Post, 'findAll').returns(Promise.resolve(modelMethodStub)),
                 tagsAllStub = sandbox.stub(models.Tag, 'findAll').returns(Promise.resolve(modelMethodStub)),
 
-            // Create Owner
+                // Create Owner
                 userAddStub = sandbox.stub(models.User, 'add').returns(Promise.resolve({}));
             roleOneStub.onCall(4).returns(Promise.resolve({id: 1}));
 
@@ -995,9 +1452,9 @@ describe('Fixtures', function () {
                 clientOneStub.calledThrice.should.be.true();
                 clientAddStub.calledThrice.should.be.true();
 
-                permOneStub.callCount.should.eql(40);
+                permOneStub.callCount.should.eql(43);
                 permsAddStub.called.should.be.true();
-                permsAddStub.callCount.should.eql(40);
+                permsAddStub.callCount.should.eql(43);
 
                 permsAllStub.calledOnce.should.be.true();
                 rolesAllStub.calledOnce.should.be.true();
@@ -1054,19 +1511,6 @@ describe('Fixtures', function () {
                     done();
                 }).catch(done);
             });
-        });
-    });
-
-    describe('Ensure default settings', function () {
-        it('should call populate settings and provide messaging', function (done) {
-            var settingsStub = sandbox.stub(models.Settings, 'populateDefaults').returns(new Promise.resolve());
-
-            ensureDefaultSettings(loggerStub).then(function () {
-                settingsStub.calledOnce.should.be.true();
-                loggerStub.info.calledOnce.should.be.true();
-
-                done();
-            }).catch(done);
         });
     });
 });

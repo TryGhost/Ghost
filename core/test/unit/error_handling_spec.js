@@ -1,4 +1,3 @@
-/*globals describe, after, before, beforeEach, afterEach, it*/
 var should     = require('should'),
     Promise    = require('bluebird'),
     sinon      = require('sinon'),

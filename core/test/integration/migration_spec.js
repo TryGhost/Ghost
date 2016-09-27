@@ -1,4 +1,3 @@
-/*globals describe, before, beforeEach, afterEach, it */
 var testUtils   = require('../utils'),
     should      = require('should'),
     sinon       = require('sinon'),
@@ -35,7 +34,7 @@ describe('Database Migration (special functions)', function () {
             this.obj.roles.should.be.an.Array();
 
             // Ensure the roles are in id order
-            roleNames = _(this.obj.roles).sortBy('id').pluck('name').value();
+            roleNames = _(this.obj.roles).sortBy('id').map('name').value();
             roleNames.should.eql(roles);
         });
 
@@ -105,55 +104,61 @@ describe('Database Migration (special functions)', function () {
             permissions[21].should.be.AssignedToRoles(['Administrator']);
             permissions[22].name.should.eql('Edit themes');
             permissions[22].should.be.AssignedToRoles(['Administrator']);
+            permissions[23].name.should.eql('Upload themes');
+            permissions[23].should.be.AssignedToRoles(['Administrator']);
+            permissions[24].name.should.eql('Download themes');
+            permissions[24].should.be.AssignedToRoles(['Administrator']);
+            permissions[25].name.should.eql('Delete themes');
+            permissions[25].should.be.AssignedToRoles(['Administrator']);
 
             // Users
-            permissions[23].name.should.eql('Browse users');
-            permissions[23].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
-            permissions[24].name.should.eql('Read users');
-            permissions[24].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
-            permissions[25].name.should.eql('Edit users');
-            permissions[25].should.be.AssignedToRoles(['Administrator', 'Editor']);
-            permissions[26].name.should.eql('Add users');
-            permissions[26].should.be.AssignedToRoles(['Administrator', 'Editor']);
-            permissions[27].name.should.eql('Delete users');
-            permissions[27].should.be.AssignedToRoles(['Administrator', 'Editor']);
+            permissions[26].name.should.eql('Browse users');
+            permissions[26].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[27].name.should.eql('Read users');
+            permissions[27].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[28].name.should.eql('Edit users');
+            permissions[28].should.be.AssignedToRoles(['Administrator', 'Editor']);
+            permissions[29].name.should.eql('Add users');
+            permissions[29].should.be.AssignedToRoles(['Administrator', 'Editor']);
+            permissions[30].name.should.eql('Delete users');
+            permissions[30].should.be.AssignedToRoles(['Administrator', 'Editor']);
 
             // Roles
-            permissions[28].name.should.eql('Assign a role');
-            permissions[28].should.be.AssignedToRoles(['Administrator', 'Editor']);
-            permissions[29].name.should.eql('Browse roles');
-            permissions[29].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[31].name.should.eql('Assign a role');
+            permissions[31].should.be.AssignedToRoles(['Administrator', 'Editor']);
+            permissions[32].name.should.eql('Browse roles');
+            permissions[32].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
 
             // Clients
-            permissions[30].name.should.eql('Browse clients');
-            permissions[30].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
-            permissions[31].name.should.eql('Read clients');
-            permissions[31].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
-            permissions[32].name.should.eql('Edit clients');
-            permissions[32].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
-            permissions[33].name.should.eql('Add clients');
+            permissions[33].name.should.eql('Browse clients');
             permissions[33].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
-            permissions[34].name.should.eql('Delete clients');
+            permissions[34].name.should.eql('Read clients');
             permissions[34].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[35].name.should.eql('Edit clients');
+            permissions[35].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[36].name.should.eql('Add clients');
+            permissions[36].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[37].name.should.eql('Delete clients');
+            permissions[37].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
 
             // Subscribers
-            permissions[35].name.should.eql('Browse subscribers');
-            permissions[35].should.be.AssignedToRoles(['Administrator']);
-            permissions[36].name.should.eql('Read subscribers');
-            permissions[36].should.be.AssignedToRoles(['Administrator']);
-            permissions[37].name.should.eql('Edit subscribers');
-            permissions[37].should.be.AssignedToRoles(['Administrator']);
-            permissions[38].name.should.eql('Add subscribers');
-            permissions[38].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
-            permissions[39].name.should.eql('Delete subscribers');
+            permissions[38].name.should.eql('Browse subscribers');
+            permissions[38].should.be.AssignedToRoles(['Administrator']);
+            permissions[39].name.should.eql('Read subscribers');
             permissions[39].should.be.AssignedToRoles(['Administrator']);
+            permissions[40].name.should.eql('Edit subscribers');
+            permissions[40].should.be.AssignedToRoles(['Administrator']);
+            permissions[41].name.should.eql('Add subscribers');
+            permissions[41].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[42].name.should.eql('Delete subscribers');
+            permissions[42].should.be.AssignedToRoles(['Administrator']);
         });
 
         describe('Populate', function () {
             beforeEach(testUtils.setup());
 
             it('should populate all fixtures correctly', function (done) {
-                fixtures.populate(loggerStub).then(function () {
+                fixtures.populate(loggerStub, {context:{internal:true}}).then(function () {
                     var props = {
                         posts: Models.Post.findAll({include: ['tags']}),
                         tags: Models.Tag.findAll(),
@@ -207,7 +212,7 @@ describe('Database Migration (special functions)', function () {
                         result.roles.at(3).get('name').should.eql('Owner');
 
                         // Permissions
-                        result.permissions.length.should.eql(40);
+                        result.permissions.length.should.eql(43);
                         result.permissions.toJSON().should.be.CompletePermissions();
 
                         done();
@@ -221,7 +226,7 @@ describe('Database Migration (special functions)', function () {
             beforeEach(testUtils.setup('users:roles', 'perms:db', 'perms:init'));
 
             it('should update client permissions correctly', function (done) {
-                fixtures005[2]({}, loggerStub).then(function () {
+                fixtures005[2]({context:{internal:true}}, loggerStub).then(function () {
                     var props = {
                         roles: Models.Role.findAll(),
                         permissions: Models.Permission.findAll({include: ['roles']})
@@ -271,4 +276,3 @@ describe('Database Migration (special functions)', function () {
         });
     });
 });
-

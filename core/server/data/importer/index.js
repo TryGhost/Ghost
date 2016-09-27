@@ -7,7 +7,7 @@ var _            = require('lodash'),
     os           = require('os'),
     glob         = require('glob'),
     uuid         = require('node-uuid'),
-    extract      = require('extract-zip'),
+    extract      = require('extract-zip-fork'),
     errors       = require('../../errors'),
     ImageHandler    = require('./handlers/image'),
     JSONHandler     = require('./handlers/json'),
@@ -25,7 +25,7 @@ var _            = require('lodash'),
 
 defaults = {
     extensions: ['.zip'],
-    types: ['application/zip', 'application/x-zip-compressed'],
+    contentTypes: ['application/zip', 'application/x-zip-compressed'],
     directories: []
 };
 
@@ -49,21 +49,21 @@ _.extend(ImportManager.prototype, {
      * @returns {string[]}
      */
     getExtensions: function () {
-        return _.flatten(_.union(_.pluck(this.handlers, 'extensions'), defaults.extensions));
+        return _.flatten(_.union(_.map(this.handlers, 'extensions'), defaults.extensions));
     },
     /**
      * Get an array of all the mime types for which we have handlers
      * @returns {string[]}
      */
-    getTypes: function () {
-        return _.flatten(_.union(_.pluck(this.handlers, 'types'), defaults.types));
+    getContentTypes: function () {
+        return _.flatten(_.union(_.map(this.handlers, 'contentTypes'), defaults.contentTypes));
     },
     /**
      * Get an array of directories for which we have handlers
      * @returns {string[]}
      */
     getDirectories: function () {
-        return _.flatten(_.union(_.pluck(this.handlers, 'directories'), defaults.directories));
+        return _.flatten(_.union(_.map(this.handlers, 'directories'), defaults.directories));
     },
     /**
      * Convert items into a glob string
@@ -122,7 +122,7 @@ _.extend(ImportManager.prototype, {
      * @returns Boolean
      */
     isZip: function (ext) {
-        return _.contains(defaults.extensions, ext);
+        return _.includes(defaults.extensions, ext);
     },
     /**
      * Checks the content of a zip folder to see if it is valid.
@@ -276,7 +276,7 @@ _.extend(ImportManager.prototype, {
      */
     processFile: function (file, ext) {
         var fileHandler = _.find(this.handlers, function (handler) {
-            return _.contains(handler.extensions, ext);
+            return _.includes(handler.extensions, ext);
         });
 
         return fileHandler.loadFile([_.pick(file, 'name', 'path')]).then(function (loadedData) {

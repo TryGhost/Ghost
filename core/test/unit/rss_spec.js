@@ -1,10 +1,10 @@
-/*globals describe, before, beforeEach, afterEach, it*/
 var should          = require('should'),
     sinon           = require('sinon'),
     rewire          = require('rewire'),
     _               = require('lodash'),
     Promise         = require('bluebird'),
     testUtils       = require('../utils'),
+    labs            = require('../../server/utils/labs'),
 
     channelConfig   = require('../../server/controllers/frontend/channel-config'),
 
@@ -148,6 +148,80 @@ describe('RSS', function () {
             rss(req, res, failTest(done));
         });
 
+        it('should only return visible tags if internal tags are enabled in labs', function (done) {
+            sandbox.stub(labs, 'isSet').returns(true);
+            var postWithTags = posts[2];
+            postWithTags.tags = [
+                {name: 'public', visibility: 'public'},
+                {name: 'internal', visibility: 'internal'},
+                {name: 'visibility'}
+            ];
+
+            rss.__set__('getData', function () {
+                return Promise.resolve({
+                    title: 'Test Title',
+                    description: 'Testing Desc',
+                    permalinks: '/:slug/',
+                    results: {posts: [postWithTags], meta: {pagination: {pages: 1}}}
+                });
+            });
+
+            res.send = function send(xmlData) {
+                should.exist(xmlData);
+                // item tags
+                xmlData.should.match(/<title><!\[CDATA\[Short and Sweet\]\]>/);
+                xmlData.should.match(/<description><!\[CDATA\[test stuff/);
+                xmlData.should.match(/<content:encoded><!\[CDATA\[<h2 id="testing">testing<\/h2>\n\n/);
+                xmlData.should.match(/<img src="http:\/\/placekitten.com\/500\/200"/);
+                xmlData.should.match(/<media:content url="http:\/\/placekitten.com\/500\/200" medium="image"\/>/);
+                xmlData.should.match(/<category><!\[CDATA\[public\]\]/);
+                xmlData.should.match(/<category><!\[CDATA\[visibility\]\]/);
+                xmlData.should.not.match(/<category><!\[CDATA\[internal\]\]/);
+                done();
+            };
+
+            req.channelConfig = channelConfig.get('index');
+            req.channelConfig.isRSS = true;
+            rss(req, res, failTest(done));
+        });
+
+        it('should return all tags if internal tags are not enabled in labs', function (done) {
+            sandbox.stub(labs, 'isSet').returns(false);
+            var postWithTags = posts[2];
+            postWithTags.tags = [
+                {name: 'public', visibility: 'public'},
+                {name: 'internal', visibility: 'internal'},
+                {name: 'visibility'}
+            ];
+
+            rss.__set__('getData', function () {
+                return Promise.resolve({
+                    title: 'Test Title',
+                    description: 'Testing Desc',
+                    permalinks: '/:slug/',
+                    results: {posts: [postWithTags], meta: {pagination: {pages: 1}}}
+                });
+            });
+
+            res.send = function send(xmlData) {
+                should.exist(xmlData);
+                // item tags
+                xmlData.should.match(/<title><!\[CDATA\[Short and Sweet\]\]>/);
+                xmlData.should.match(/<description><!\[CDATA\[test stuff/);
+                xmlData.should.match(/<content:encoded><!\[CDATA\[<h2 id="testing">testing<\/h2>\n\n/);
+                xmlData.should.match(/<img src="http:\/\/placekitten.com\/500\/200"/);
+                xmlData.should.match(/<media:content url="http:\/\/placekitten.com\/500\/200" medium="image"\/>/);
+                xmlData.should.match(/<category><!\[CDATA\[public\]\]/);
+                xmlData.should.match(/<category><!\[CDATA\[visibility\]\]/);
+                xmlData.should.match(/<category><!\[CDATA\[internal\]\]/);
+                done();
+            };
+
+            req.channelConfig = channelConfig.get('index');
+            req.channelConfig.isRSS = true;
+            rss(req, res, failTest(done));
+        });
+
         it('should use meta_description and image where available', function (done) {
             rss.__set__('getData', function () {
                 return Promise.resolve({
@@ -168,7 +242,6 @@ describe('RSS', function () {
                 xmlData.should.match(/<img src="http:\/\/placekitten.com\/500\/200"/);
                 xmlData.should.match(/<media:content url="http:\/\/placekitten.com\/500\/200" medium="image"\/>/);
 
-                // done
                 done();
             };
 

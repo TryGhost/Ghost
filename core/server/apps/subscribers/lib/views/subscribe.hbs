@@ -15,7 +15,6 @@
     <link rel="shortcut icon" href="{{asset "favicon.ico"}}">
     <meta http-equiv="cleartype" content="on">
 
-    <link rel="stylesheet" type='text/css' href='//fonts.googleapis.com/css?family=Open+Sans:400,300,700'>
     <link rel="stylesheet" href="{{asset "ghost.css" ghost="true" minifyInProduction="true"}}" />
 </head>
 <body>
@@ -25,7 +24,7 @@
             <div class="gh-flow">
                 <header class="gh-flow-head">
                     <nav class="gh-flow-nav">
-                        <a href="{{@blog.url}}" class="gh-flow-back"><i class="icon-arrow-left"></i> Back</a>
+                        <a href="{{#if subscribed_url}}{{subscribed_url}}{{else}}{{@blog.url}}{{/if}}" class="gh-flow-back"><i class="icon-arrow-left"></i> Back</a>
                     </nav>
                 </header>
 

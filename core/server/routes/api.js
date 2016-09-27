@@ -23,6 +23,13 @@ apiRoutes = function apiRoutes(middleware) {
     // alias delete with del
     router.del = router.delete;
 
+    // send 503 json response in case of maintenance
+    router.use(middleware.api.maintenance);
+
+    // Check version matches for API requests, depends on res.locals.safeVersion being set
+    // Therefore must come after themeHandler.ghostLocals, for now
+    router.use(middleware.api.versionMatch);
+
     // ## CORS pre-flight check
     router.options('*', middleware.api.cors);
 
@@ -39,6 +46,9 @@ apiRoutes = function apiRoutes(middleware) {
     router.get('/posts/slug/:slug', authenticatePublic, api.http(api.posts.read));
     router.put('/posts/:id', authenticatePrivate, api.http(api.posts.edit));
     router.del('/posts/:id', authenticatePrivate, api.http(api.posts.destroy));
+
+    // ## Schedules
+    router.put('/schedules/posts/:id', [middleware.api.authenticateClient, middleware.api.authenticateUser], api.http(api.schedules.publishPost));
 
     // ## Settings
     router.get('/settings', authenticatePrivate, api.http(api.settings.browse));
@@ -72,6 +82,7 @@ apiRoutes = function apiRoutes(middleware) {
         middleware.api.labs.subscribers,
         authenticatePrivate,
         middleware.upload.single('subscribersfile'),
+        middleware.validation.upload({type: 'subscribers'}),
         api.http(api.subscribers.importCSV)
     );
     router.get('/subscribers/:id', middleware.api.labs.subscribers, authenticatePrivate, api.http(api.subscribers.read));
@@ -89,8 +100,22 @@ apiRoutes = function apiRoutes(middleware) {
     router.get('/slugs/:type/:name', authenticatePrivate, api.http(api.slugs.generate));
 
     // ## Themes
-    router.get('/themes', authenticatePrivate, api.http(api.themes.browse));
-    router.put('/themes/:name', authenticatePrivate, api.http(api.themes.edit));
+    router.get('/themes/:name/download',
+        authenticatePrivate,
+        api.http(api.themes.download)
+    );
+
+    router.post('/themes/upload',
+        authenticatePrivate,
+        middleware.upload.single('theme'),
+        middleware.validation.upload({type: 'themes'}),
+        api.http(api.themes.upload)
+    );
+
+    router.del('/themes/:name',
+        authenticatePrivate,
+        api.http(api.themes.destroy)
+    );
 
     // ## Notifications
     router.get('/notifications', authenticatePrivate, api.http(api.notifications.browse));
@@ -99,7 +124,12 @@ apiRoutes = function apiRoutes(middleware) {
 
     // ## DB
     router.get('/db', authenticatePrivate, api.http(api.db.exportContent));
-    router.post('/db', authenticatePrivate, middleware.upload.single('importfile'), api.http(api.db.importContent));
+    router.post('/db',
+        authenticatePrivate,
+        middleware.upload.single('importfile'),
+        middleware.validation.upload({type: 'db'}),
+        api.http(api.db.importContent)
+    );
     router.del('/db', authenticatePrivate, api.http(api.db.deleteAllContent));
 
     // ## Mail
@@ -128,7 +158,13 @@ apiRoutes = function apiRoutes(middleware) {
     router.post('/authentication/revoke', authenticatePrivate, api.http(api.authentication.revoke));
 
     // ## Uploads
-    router.post('/uploads', authenticatePrivate, middleware.upload.single('uploadimage'), api.http(api.uploads.add));
+    // @TODO: rename endpoint to /images/upload (or similar)
+    router.post('/uploads',
+        authenticatePrivate,
+        middleware.upload.single('uploadimage'),
+        middleware.validation.upload({type: 'images'}),
+        api.http(api.uploads.add)
+    );
 
     // API Router middleware
     router.use(middleware.api.errorHandler);

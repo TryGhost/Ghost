@@ -266,20 +266,6 @@ subscribers = {
         var tasks = [];
         options = options || {};
 
-        function validate(options) {
-            options.name = options.originalname;
-            options.type = options.mimetype;
-
-            // Check if a file was provided
-            if (!utils.checkFileExists(options)) {
-                return Promise.reject(new errors.ValidationError(i18n.t('errors.api.db.selectFileToImport')));
-            }
-
-            // TODO: check for valid entries
-
-            return options;
-        }
-
         function importCSV(options) {
             var filePath = options.path,
                 fulfilled = 0,
@@ -288,7 +274,7 @@ subscribers = {
 
             return serverUtils.readCSV({
                 path: filePath,
-                columnsToExtract: ['email']
+                columnsToExtract: [{name: 'email', lookup: /email/i}]
             }).then(function (result) {
                 return Promise.all(result.map(function (entry) {
                     return subscribers.add(
@@ -323,7 +309,6 @@ subscribers = {
         }
 
         tasks = [
-            validate,
             utils.handlePermissions(docName, 'add'),
             importCSV
         ];

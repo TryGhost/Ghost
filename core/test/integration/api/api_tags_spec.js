@@ -1,4 +1,3 @@
-/*globals describe, before, beforeEach, afterEach, it */
 var testUtils   = require('../../utils'),
     should      = require('should'),
     Promise     = require('bluebird'),
@@ -273,7 +272,7 @@ describe('Tags API', function () {
                 .then(function (results) {
                     should.exist(results);
 
-                    expectedTags = _(results.tags).pluck('slug').filter(onlyFixtures).sortBy().value();
+                    expectedTags = _(results.tags).map('slug').filter(onlyFixtures).sortBy().value();
 
                     return TagAPI.browse({context: {user: 1}, order: 'slug asc'});
                 })
@@ -282,7 +281,7 @@ describe('Tags API', function () {
 
                     should.exist(results);
 
-                    tags = _(results.tags).pluck('slug').filter(onlyFixtures).value();
+                    tags = _(results.tags).map('slug').filter(onlyFixtures).value();
                     tags.should.eql(expectedTags);
                 })
                 .then(done)
@@ -296,7 +295,7 @@ describe('Tags API', function () {
                 .then(function (results) {
                     should.exist(results);
 
-                    expectedTags = _(results.tags).pluck('slug').filter(onlyFixtures).sortBy().reverse().value();
+                    expectedTags = _(results.tags).map('slug').filter(onlyFixtures).sortBy().reverse().value();
 
                     return TagAPI.browse({context: {user: 1}, order: 'slug desc'});
                 })
@@ -305,7 +304,7 @@ describe('Tags API', function () {
 
                     should.exist(results);
 
-                    tags = _(results.tags).pluck('slug').filter(onlyFixtures).value();
+                    tags = _(results.tags).map('slug').filter(onlyFixtures).value();
                     tags.should.eql(expectedTags);
                 })
                 .then(done)

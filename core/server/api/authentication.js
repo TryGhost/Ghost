@@ -3,10 +3,12 @@ var _                = require('lodash'),
     pipeline         = require('../utils/pipeline'),
     dataProvider     = require('../models'),
     settings         = require('./settings'),
-    mail             = require('./mail'),
+    mail             = require('./../mail'),
+    apiMail          = require('./mail'),
     globalUtils      = require('../utils'),
     utils            = require('./utils'),
     errors           = require('../errors'),
+    events           = require('../events'),
     config           = require('../config'),
     i18n             = require('../i18n'),
     authentication;
@@ -171,7 +173,7 @@ authentication = {
                     '/ghost/reset/' +
                     globalUtils.encodeBase64URLsafe(data.resetToken) + '/';
 
-            return mail.generateContent({
+            return mail.utils.generateContent({
                 data: {
                     resetUrl: resetUrl
                 },
@@ -189,7 +191,7 @@ authentication = {
                     }]
                 };
 
-                return mail.send(payload, {context: {internal: true}});
+                return apiMail.send(payload, {context: {internal: true}});
             });
         }
 
@@ -377,13 +379,15 @@ authentication = {
         }
 
         function formatResponse(isSetup) {
-            return {setup: [{
-                status: isSetup,
-                // Pre-populate from config if, and only if the values exist in config.
-                title: config.title || undefined,
-                name: config.user_name || undefined,
-                email: config.user_email || undefined
-            }]};
+            return {setup: [
+                {
+                    status: isSetup,
+                    // Pre-populate from config if, and only if the values exist in config.
+                    title: config.title || undefined,
+                    name: config.user_name || undefined,
+                    email: config.user_email || undefined
+                }
+            ]};
         }
 
         tasks = [
@@ -411,7 +415,9 @@ authentication = {
                 ownerEmail: setupUser.email
             };
 
-            return mail.generateContent({data: data, template: 'welcome'})
+            events.emit('setup.completed', setupUser);
+
+            return mail.utils.generateContent({data: data, template: 'welcome'})
                 .then(function then(content) {
                     var message = {
                             to: setupUser.email,
@@ -426,7 +432,7 @@ authentication = {
                             }]
                         };
 
-                    mail.send(payload, {context: {internal: true}}).catch(function (error) {
+                    apiMail.send(payload, {context: {internal: true}}).catch(function (error) {
                         errors.logError(
                             error.message,
                             i18n.t(

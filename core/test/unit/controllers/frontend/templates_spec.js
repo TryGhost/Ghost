@@ -1,4 +1,3 @@
-/*globals describe, it, afterEach, beforeEach*/
 var should   = require('should'),
     rewire   = require('rewire'),
 

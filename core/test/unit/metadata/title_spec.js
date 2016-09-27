@@ -1,4 +1,3 @@
-/*globals describe, it*/
 var getTitle = require('../../../server/data/meta/title'),
     config = require('../../../server/config');
 
@@ -30,7 +29,7 @@ describe('getTitle', function () {
             author: {
                 name: 'Author Name'
             }
-        }, {context: 'author'});
+        }, {context: ['author']});
         title.should.equal('Author Name - My blog title 2');
     });
 
@@ -45,7 +44,7 @@ describe('getTitle', function () {
                 name: 'Author Name'
             }
         }, {
-            context: 'author',
+            context: ['author'],
             pagination: {
                 total: 40,
                 page: 3
@@ -64,7 +63,7 @@ describe('getTitle', function () {
             tag: {
                 name: 'Tag Name'
             }
-        }, {context: 'tag'});
+        }, {context: ['tag']});
         title.should.equal('Tag Name - My blog title 3');
     });
 
@@ -79,7 +78,7 @@ describe('getTitle', function () {
                 name: 'Tag Name'
             }
         }, {
-            context: 'tag',
+            context: ['tag'],
             pagination: {
                 total: 40,
                 page: 39
@@ -94,7 +93,7 @@ describe('getTitle', function () {
                 name: 'Tag Name',
                 meta_title: 'My Tag Meta Title!'
             }
-        }, {context: 'tag'});
+        }, {context: ['tag']});
         title.should.equal('My Tag Meta Title!');
     });
 
@@ -103,7 +102,16 @@ describe('getTitle', function () {
             post: {
                 title: 'My awesome post!'
             }
-        }, {context: 'post'});
+        }, {context: ['post']});
+        title.should.equal('My awesome post!');
+    });
+
+    it('should return post title if in amp context', function () {
+        var title = getTitle({
+            post: {
+                title: 'My awesome post!'
+            }
+        }, {context: ['amp', 'post']});
         title.should.equal('My awesome post!');
     });
 
@@ -112,7 +120,16 @@ describe('getTitle', function () {
             post: {
                 title: 'My awesome page!'
             }
-        }, {context: 'page'});
+        }, {context: ['page']});
+        title.should.equal('My awesome page!');
+    });
+
+    it('should return post title if in amp and page context', function () {
+        var title = getTitle({
+            post: {
+                title: 'My awesome page!'
+            }
+        }, {context: ['amp', 'page']});
         title.should.equal('My awesome page!');
     });
 
@@ -122,7 +139,17 @@ describe('getTitle', function () {
                 name: 'My awesome post!',
                 meta_title: 'My Tag Meta Title Post!  '
             }
-        }, {context: 'post'});
+        }, {context: ['post']});
+        title.should.equal('My Tag Meta Title Post!');
+    });
+
+    it('should return post meta_title if amp context in post data', function () {
+        var title = getTitle({
+            post: {
+                name: 'My awesome post!',
+                meta_title: 'My Tag Meta Title Post!  '
+            }
+        }, {context: ['amp', 'post']});
         title.should.equal('My Tag Meta Title Post!');
     });
 
@@ -133,7 +160,7 @@ describe('getTitle', function () {
             }
         });
         var title = getTitle({}, {
-            context: 'paged',
+            context: ['paged'],
             pagination: {
                 total: 40,
                 page: 35

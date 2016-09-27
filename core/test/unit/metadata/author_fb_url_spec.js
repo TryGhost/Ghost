@@ -1,4 +1,3 @@
-/*globals describe, it*/
 var getAuthorFacebookUrl = require('../../../server/data/meta/author_fb_url'),
     should = require('should');
 
@@ -7,6 +6,19 @@ describe('getAuthorFacebookUrl', function () {
     function () {
         var facebookUrl = getAuthorFacebookUrl({
             context: ['post'],
+            post: {
+                author: {
+                    facebook: 'https://www.facebook.com/user'
+                }
+            }
+        });
+        facebookUrl.should.equal('https://www.facebook.com/user');
+    });
+
+    it('should return author facebook url if AMP post and has url',
+    function () {
+        var facebookUrl = getAuthorFacebookUrl({
+            context: ['amp', 'post'],
             post: {
                 author: {
                     facebook: 'https://www.facebook.com/user'

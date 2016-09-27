@@ -1,4 +1,3 @@
-/*globals describe, before, after, it */
 var testUtils = require('../../utils'),
     should    = require('should'),
     _         = require('lodash'),
@@ -33,7 +32,7 @@ describe('Filter Param Spec', function () {
                     result.posts.should.be.an.Array().with.lengthOf(3);
 
                     // None of the items returned should be the post with id 4, as that was excluded
-                    ids = _.pluck(result.posts, 'id');
+                    ids = _.map(result.posts, 'id');
                     ids.should.not.containEql(4);
 
                     // Should not contain draft
@@ -45,7 +44,7 @@ describe('Filter Param Spec', function () {
 
                     // Each post should have a tag which matches either 'photo' or 'video'
                     _.each(result.posts, function (post) {
-                        var slugs = _.pluck(post.tags, 'slug');
+                        var slugs = _.map(post.tags, 'slug');
                         slugs.should.matchAny(/photo|video/);
                     });
 
@@ -82,7 +81,7 @@ describe('Filter Param Spec', function () {
                     // We should have 5 matching items
                     result.posts.should.be.an.Array().with.lengthOf(9);
 
-                    ids = _.pluck(result.posts, 'id');
+                    ids = _.map(result.posts, 'id');
                     ids.should.eql([14, 11, 9, 8, 7, 6, 5, 3, 2]);
 
                     _.each(result.posts, function (post) {
@@ -155,17 +154,17 @@ describe('Filter Param Spec', function () {
 
                     // Each post must either be featured or have the tag 'audio'
                     _.each(result.posts, function (post) {
-                        var tags = _.pluck(post.tags, 'slug');
+                        var tags = _.map(post.tags, 'slug');
                         // This construct ensures we get an assertion or a failure
                         if (!_.isEmpty(post.image)) {
                             post.image.should.not.be.empty();
                         } else {
-                            tags = _.pluck(post.tags, 'slug');
+                            tags = _.map(post.tags, 'slug');
                             tags.should.containEql('audio');
                         }
                     });
 
-                    ids = _.pluck(result.posts, 'id');
+                    ids = _.map(result.posts, 'id');
                     ids.should.eql([14, 12, 11, 9, 8, 7]);
 
                     // 3. The meta object should contain the right details
@@ -197,7 +196,7 @@ describe('Filter Param Spec', function () {
                     // We should have 2 matching items
                     result.users.should.be.an.Array().with.lengthOf(2);
 
-                    ids = _.pluck(result.users, 'id');
+                    ids = _.map(result.users, 'id');
                     ids.should.eql([1, 2]);
 
                     // TODO: add the order
@@ -252,7 +251,7 @@ describe('Filter Param Spec', function () {
                     // We should have 2 matching items
                     result.users.should.be.an.Array().with.lengthOf(2);
 
-                    ids = _.pluck(result.users, 'id');
+                    ids = _.map(result.users, 'id');
                     ids.should.eql([2, 1]);
 
                     should.exist(result.users[0].website);
@@ -286,7 +285,7 @@ describe('Filter Param Spec', function () {
                     // We should have 3 matching items
                     result.tags.should.be.an.Array().with.lengthOf(3);
 
-                    ids = _.pluck(result.tags, 'id');
+                    ids = _.map(result.tags, 'id');
                     ids.should.containEql(4);
                     ids.should.containEql(3);
                     ids.should.containEql(2);
@@ -406,7 +405,7 @@ describe('Filter Param Spec', function () {
                     return tag.name === 'Special';
                 }).count.posts.should.eql(3);
 
-                ids = _.pluck(result.tags, 'id');
+                ids = _.map(result.tags, 'id');
                 ids.should.eql([4, 3, 1, 2, 6, 5]);
 
                 // 3. The meta object should contain the right details
@@ -493,7 +492,7 @@ describe('Filter Param Spec', function () {
                     return user.slug === 'camhowe';
                 }).count.posts.should.eql(0);
 
-                ids = _.pluck(result.users, 'id');
+                ids = _.map(result.users, 'id');
                 ids.should.eql([3, 2, 1]);
 
                 // 3. The meta object should contain the right details
@@ -534,7 +533,7 @@ describe('Filter Param Spec', function () {
                     // We should have 4 matching items
                     result.posts.should.be.an.Array().with.lengthOf(4);
 
-                    ids = _.pluck(result.posts, 'id');
+                    ids = _.map(result.posts, 'id');
                     ids.should.eql([11, 9, 3, 2]);
 
                     // 3. The meta object should contain the right details
@@ -566,7 +565,7 @@ describe('Filter Param Spec', function () {
                     // We should have 5 matching items
                     result.posts.should.be.an.Array().with.lengthOf(5);
 
-                    ids = _.pluck(result.posts, 'id');
+                    ids = _.map(result.posts, 'id');
                     ids.should.eql([13, 12, 11, 10, 9]);
 
                     // 3. The meta object should contain the right details
@@ -600,7 +599,7 @@ describe('Filter Param Spec', function () {
                     // We should have 5 matching items
                     result.posts.should.be.an.Array().with.lengthOf(15);
 
-                    ids = _.pluck(result.posts, 'id');
+                    ids = _.map(result.posts, 'id');
                     ids.should.eql([20, 18, 17, 16, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4]);
 
                     // 3. The meta object should contain the right details
@@ -633,11 +632,11 @@ describe('Filter Param Spec', function () {
                     result.posts.should.be.an.Array().with.lengthOf(3);
 
                     // All posts should be marked as featured 'true'
-                    featured = _.pluck(result.posts, 'featured');
+                    featured = _.map(result.posts, 'featured');
                     featured.should.matchEach(true);
 
                     // Match exact items
-                    ids = _.pluck(result.posts, 'id');
+                    ids = _.map(result.posts, 'id');
                     ids.should.eql([14, 8, 5]);
 
                     // 3. The meta object should contain the right details
@@ -670,11 +669,11 @@ describe('Filter Param Spec', function () {
                     result.posts.should.be.an.Array().with.lengthOf(15);
 
                     // All posts should be marked as featured 'false'
-                    featured = _.pluck(result.posts, 'featured');
+                    featured = _.map(result.posts, 'featured');
                     featured.should.matchEach(false);
 
                     // Match exact items
-                    ids = _.pluck(result.posts, 'id');
+                    ids = _.map(result.posts, 'id');
                     ids.should.eql([20, 18, 17, 16, 13, 12, 11, 10, 9, 7, 6, 4, 3, 2, 1]);
 
                     // 3. The meta object should contain the right details
@@ -709,11 +708,11 @@ describe('Filter Param Spec', function () {
                     result.posts.should.be.an.Array().with.lengthOf(18);
 
                     // All posts should be marked as page 'false'
-                    page = _.pluck(result.posts, 'page');
+                    page = _.map(result.posts, 'page');
                     page.should.matchEach(false);
 
                     // Match exact items
-                    ids = _.pluck(result.posts, 'id');
+                    ids = _.map(result.posts, 'id');
                     ids.should.eql([20, 18, 17, 16, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]);
 
                     // 3. The meta object should contain the right details
@@ -747,11 +746,11 @@ describe('Filter Param Spec', function () {
                     result.posts.should.be.an.Array().with.lengthOf(2);
 
                     // All posts should be marked as page 'true'
-                    page = _.pluck(result.posts, 'page');
+                    page = _.map(result.posts, 'page');
                     page.should.matchEach(true);
 
                     // Match exact items
-                    ids = _.pluck(result.posts, 'id');
+                    ids = _.map(result.posts, 'id');
                     ids.should.eql([21, 15]);
 
                     // 3. The meta object should contain the right details

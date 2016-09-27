@@ -1,4 +1,3 @@
-/*globals describe, afterEach, it*/
 var should    = require('should'),
     sinon     = require('sinon'),
     Promise   = require('bluebird'),
@@ -46,12 +45,12 @@ describe('Importer', function () {
         });
 
         it('gets the correct types', function () {
-            ImportManager.getTypes().should.be.instanceof(Array).and.have.lengthOf(10);
-            ImportManager.getTypes().should.containEql('application/octet-stream');
-            ImportManager.getTypes().should.containEql('application/json');
-            ImportManager.getTypes().should.containEql('application/zip');
-            ImportManager.getTypes().should.containEql('application/x-zip-compressed');
-            ImportManager.getTypes().should.containEql('text/plain');
+            ImportManager.getContentTypes().should.be.instanceof(Array).and.have.lengthOf(10);
+            ImportManager.getContentTypes().should.containEql('application/octet-stream');
+            ImportManager.getContentTypes().should.containEql('application/json');
+            ImportManager.getContentTypes().should.containEql('application/zip');
+            ImportManager.getContentTypes().should.containEql('application/x-zip-compressed');
+            ImportManager.getContentTypes().should.containEql('text/plain');
         });
 
         it('gets the correct directories', function () {
@@ -306,9 +305,9 @@ describe('Importer', function () {
             JSONHandler.type.should.eql('data');
             JSONHandler.extensions.should.be.instanceof(Array).and.have.lengthOf(1);
             JSONHandler.extensions.should.containEql('.json');
-            JSONHandler.types.should.be.instanceof(Array).and.have.lengthOf(2);
-            JSONHandler.types.should.containEql('application/octet-stream');
-            JSONHandler.types.should.containEql('application/json');
+            JSONHandler.contentTypes.should.be.instanceof(Array).and.have.lengthOf(2);
+            JSONHandler.contentTypes.should.containEql('application/octet-stream');
+            JSONHandler.contentTypes.should.containEql('application/json');
             JSONHandler.loadFile.should.be.instanceof(Function);
         });
 
@@ -351,11 +350,11 @@ describe('Importer', function () {
             ImageHandler.extensions.should.containEql('.png');
             ImageHandler.extensions.should.containEql('.svg');
             ImageHandler.extensions.should.containEql('.svgz');
-            ImageHandler.types.should.be.instanceof(Array).and.have.lengthOf(4);
-            ImageHandler.types.should.containEql('image/jpeg');
-            ImageHandler.types.should.containEql('image/png');
-            ImageHandler.types.should.containEql('image/gif');
-            ImageHandler.types.should.containEql('image/svg+xml');
+            ImageHandler.contentTypes.should.be.instanceof(Array).and.have.lengthOf(4);
+            ImageHandler.contentTypes.should.containEql('image/jpeg');
+            ImageHandler.contentTypes.should.containEql('image/png');
+            ImageHandler.contentTypes.should.containEql('image/gif');
+            ImageHandler.contentTypes.should.containEql('image/svg+xml');
             ImageHandler.loadFile.should.be.instanceof(Function);
         });
 
@@ -488,9 +487,9 @@ describe('Importer', function () {
             MarkdownHandler.extensions.should.be.instanceof(Array).and.have.lengthOf(2);
             MarkdownHandler.extensions.should.containEql('.md');
             MarkdownHandler.extensions.should.containEql('.markdown');
-            MarkdownHandler.types.should.be.instanceof(Array).and.have.lengthOf(2);
-            MarkdownHandler.types.should.containEql('application/octet-stream');
-            MarkdownHandler.types.should.containEql('text/plain');
+            MarkdownHandler.contentTypes.should.be.instanceof(Array).and.have.lengthOf(2);
+            MarkdownHandler.contentTypes.should.containEql('application/octet-stream');
+            MarkdownHandler.contentTypes.should.containEql('text/plain');
             MarkdownHandler.loadFile.should.be.instanceof(Function);
         });
 

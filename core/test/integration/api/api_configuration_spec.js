@@ -1,4 +1,3 @@
-/*globals describe, before, afterEach, it */
 var testUtils         = require('../../utils'),
     should            = require('should'),
     rewire            = require('rewire'),
@@ -27,7 +26,6 @@ describe('Configuration API', function () {
             props.should.have.property('blogTitle').which.is.an.Object().with.properties('type', 'value');
             props.should.have.property('routeKeywords').which.is.an.Object().with.properties('type', 'value');
             props.should.have.property('fileStorage').which.is.an.Object().with.properties('type', 'value');
-            props.should.have.property('useGoogleFonts').which.is.an.Object().with.properties('type', 'value');
             props.should.have.property('useGravatar').which.is.an.Object().with.properties('type', 'value');
             props.should.have.property('publicAPI').which.is.an.Object().with.properties('type', 'value');
 
