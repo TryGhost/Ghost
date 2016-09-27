@@ -343,6 +343,7 @@ margin on the iframe, cause it breaks stuff. */
 
 .btn-black {
   @include button-variant(#fff, $gray-dark, $gray-dark);
+  color: #fff;
 }
 
 .btn-padded {
@@ -579,6 +580,7 @@ $directions: 'top' 'bottom' 'left' 'right';
 
     &:hover, &:focus, &:active:hover, &:active {
       background-color: #fff;
+      color: $text-color;
     } 
   }
 

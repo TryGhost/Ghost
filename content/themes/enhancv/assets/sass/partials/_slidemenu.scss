@@ -48,9 +48,21 @@ $slidemenu-nav-width: 280px;
     padding: 0;
     margin: 0;
 
+    &.menu-slideout-bottom {
+      li {
+        font-size: 1.4rem;
+        font-weight: normal;
+
+        a.item {
+          line-height: 2rem;
+        }
+      }
+    }
+
     li {
-      font-size: 1.4rem;
+      font-size: 1.9rem;
       padding-left: 25px;
+      font-weight: 300;
       opacity: 0;
       transition: padding-left .3s ease-in-out .2s, opacity .4s ease-in-out .15s;
 
@@ -86,6 +98,7 @@ $slidemenu-nav-width: 280px;
             }
 
             i {
+              display: block;
               transition: all .4s ease-in-out;
             }
           }

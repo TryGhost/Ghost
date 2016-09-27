@@ -68,6 +68,14 @@ body:before {
 
             &.text {
                 padding: 8px 25px;
+
+                &.top {
+                    padding: 0 15px;
+                }
+
+                &.top-ty {
+                    padding-left: 25px;
+                }
             }
           }
         }
@@ -100,6 +108,10 @@ body:before {
 
             .navbar-brand {
               padding-left: 25px;
+
+              svg {
+                width: 120px;
+              }
             }
         }
     }
@@ -412,7 +424,7 @@ body:before {
         width: 32px;
         height: 32px;
         font-size: 15px;
-        line-height: 30px;
+        line-height: 32px;
     }
 
     .subscribe {
