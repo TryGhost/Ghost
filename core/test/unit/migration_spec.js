@@ -170,14 +170,15 @@ describe('Migrations', function () {
     });
 
     describe('Populate', function () {
-        var createStub, fixturesStub;
+        var createStub, fixturesStub, transactionStub;
 
         beforeEach(function () {
-            createStub = sandbox.stub(schema.commands, 'createTable').returns(new Promise.resolve());
             fixturesStub = sandbox.stub(fixtures, 'populate').returns(new Promise.resolve());
         });
 
         it('should create all tables, and populate fixtures', function (done) {
+            createStub = sandbox.stub(schema.commands, 'createTable').returns(new Promise.resolve());
+
             populate().then(function (result) {
                 should.not.exist(result);
 
@@ -190,18 +191,44 @@ describe('Migrations', function () {
             }).catch(done);
         });
 
-        it('should should only create tables, with tablesOnly setting', function (done) {
-            populate({tablesOnly: true}).then(function (result) {
-                should.exist(result);
-                result.should.be.an.Array().with.lengthOf(schemaTables.length);
+        it('should rollback if error occurs', function (done) {
+            var i = 0,
+                transaction = {
+                    commit: sandbox.stub()
+                };
 
-                createStub.called.should.be.true();
-                createStub.callCount.should.be.eql(schemaTables.length);
-                createStub.firstCall.calledWith(schemaTables[0]).should.be.true();
-                createStub.lastCall.calledWith(schemaTables[schemaTables.length - 1]).should.be.true();
-                fixturesStub.called.should.be.false();
-                done();
-            }).catch(done);
+            createStub = sandbox.stub(schema.commands, 'createTable', function () {
+                i = i + 1;
+
+                if (i > 10) {
+                    return new Promise.reject(new Error('error on table creation :('));
+                }
+
+                return new Promise.resolve();
+            });
+
+            transactionStub = sandbox.stub(db.knex, 'transaction', function (transactionStart) {
+                return new Promise(function (resolve, reject) {
+                    transaction.rollback = function rollback() {
+                        reject();
+                    };
+
+                    sandbox.spy(transaction, 'rollback');
+
+                    transactionStart(transaction);
+                });
+            });
+
+            populate()
+                .then(function () {
+                    done(new Error('should throw an error for database population'));
+                }).catch(function (err) {
+                    should.not.exist(err);
+                    createStub.callCount.should.eql(11);
+                    transaction.rollback.callCount.should.eql(1);
+                    transaction.commit.callCount.should.eql(0);
+                    done();
+                });
         });
     });
 

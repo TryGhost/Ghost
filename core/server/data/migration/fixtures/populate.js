@@ -56,7 +56,7 @@ createOwner = function createOwner(logger, modelOptions) {
         password:         coreUtils.uid(50)
     };
 
-    return models.Role.findOne({name: 'Owner'}).then(function (ownerRole) {
+    return models.Role.findOne({name: 'Owner'}, modelOptions).then(function (ownerRole) {
         if (ownerRole) {
             user.roles = [ownerRole.id];
 
