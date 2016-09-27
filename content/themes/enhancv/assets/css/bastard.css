@@ -115,8 +115,8 @@ Railscasts-like style (c) Visoft, Inc. (Damien White)
 
 @charset "UTF-8";
 /*!
- * Bootstrap v3.3.6 (http://getbootstrap.com)
- * Copyright 2011-2015 Twitter, Inc.
+ * Bootstrap v3.3.7 (http://getbootstrap.com)
+ * Copyright 2011-2016 Twitter, Inc.
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
  */
 /*! normalize.css v3.0.3 | MIT License | github.com/necolas/normalize.css */
@@ -1190,7 +1190,6 @@ a:hover, a:focus {
   text-decoration: none; }
 
 a:focus {
-  outline: thin dotted;
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px; }
 
@@ -2433,7 +2432,6 @@ select[size] {
 input[type="file"]:focus,
 input[type="radio"]:focus,
 input[type="checkbox"]:focus {
-  outline: thin dotted;
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px; }
 
@@ -2975,7 +2973,6 @@ select[multiple].input-lg,
   user-select: none; }
 
 .btn:focus, .custom-badge:focus, .btn.focus, .focus.custom-badge, .btn:active:focus, .custom-badge:active:focus, .btn:active.focus, .custom-badge:active.focus, .btn.active:focus, .active.custom-badge:focus, .btn.active.focus, .active.focus.custom-badge {
-  outline: thin dotted;
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px; }
 
@@ -8555,7 +8552,13 @@ body:before {
 
 @media (min-width: 768px) {
   body:before {
-    content: "tablet_narrow"; } }
+    content: "tablet_narrow"; }
+  .panel-body {
+    height: 200px;
+    position: relative; }
+  .panel-body .post-box-footer {
+    position: absolute;
+    bottom: 30px; } }
 
 @media (min-width: 992px) {
   body:before {

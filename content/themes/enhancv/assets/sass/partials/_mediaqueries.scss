@@ -20,6 +20,17 @@ body:before {
     body:before {
         content: "tablet_narrow";
     }
+
+    .panel-body {
+        height: 200px;
+        position: relative;
+
+
+        .post-box-footer {
+            position: absolute;
+            bottom: 30px;
+        }
+    }
 }
 
 @media (min-width: $screen-md-min) {
@@ -94,7 +105,7 @@ body:before {
         .container {
             h1 {
                 width: 100%;
-            } 
+            }
         }
     }
 }
