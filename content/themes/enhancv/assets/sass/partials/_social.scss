@@ -1,0 +1,135 @@
+/* ==========================================================================
+   12. Social Links
+   ========================================================================== */
+
+.btn-outline {
+  margin-top: 15px;
+  border: solid 1px $gray-light;
+  font-size: 24px;
+  color: $gray-light;
+  background: 0 0;
+  transition: all .3s ease-in-out;
+
+  &:hover, &:focus, &:active, &.active {
+    border: solid 1px $gray-light;
+    color: #000;
+    background: $gray-light;
+  }
+}
+
+.btn-social {
+    display: inline-block;
+    height: 34px;
+    width: 34px;
+    line-height: 34px;
+    text-align: center;
+    margin: 0 5px;
+    border-radius: 50%;
+    background: #666;
+    text-decoration: none;
+    color: #1a1a1a;
+    transition: background-color 0.2s ease-out, border-color 0.2s ease-out, opacity 0.2s ease-out;
+
+    &:hover,
+    &:focus {
+      background: rgba(#fff, .8);
+      color: #1a1a1a;
+    }
+
+    &.btn-invert {
+      color: #fff;
+      background-color: #4d4d4d;
+
+      &:hover,
+      &:active,
+      &:focus {
+        background-color: $text-color;
+      }
+    }
+}
+
+.btn-social-share {
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    padding: 0px;
+    text-decoration: none;
+    text-align: center;
+    color: #fff !important;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 2em;
+    border-radius: 50%;
+
+    &.facebook {
+        background: $facebook-color;
+
+        &:hover,
+        &:active,
+        &:focus {
+            background: darken($facebook-color, 7%);
+        }
+    }
+
+    &.twitter {
+        background: $twitter-color;
+
+        &:hover,
+        &:active,
+        &:focus {
+            background: darken($twitter-color, 7%);
+        }
+    }
+
+    &.google {
+        background: $google-plus-color;
+
+        &:hover,
+        &:active,
+        &:focus {
+            background: darken($google-plus-color, 7%);
+        }
+    }
+
+    &.linkedin {
+        background: $linkedin-color;
+
+        &:hover,
+        &:active,
+        &:focus {
+            background: darken($linkedin-color, 7%);
+        }
+    }
+
+    &.pinterest {
+        background: $pinterest-color;
+
+        &:hover,
+        &:active,
+        &:focus {
+            background: darken($pinterest-color, 7%);
+        }
+    }
+
+    &.tumblr {
+        background: $tumblr-color;
+
+        &:hover,
+        &:active,
+        &:focus {
+            background: darken($tumblr-color, 7%);
+        }
+    }
+
+    &.reddit {
+        background: $reddit-color;
+
+        &:hover,
+        &:active,
+        &:focus {
+            background: darken($reddit-color, 7%);
+        }
+    }
+}

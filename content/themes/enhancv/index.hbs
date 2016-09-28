@@ -1,0 +1,68 @@
+{{!< default}}
+
+{{#get "posts" filter="featured:true" limit="1" as |featured|}}
+    {{#foreach featured}}
+        <div class="main-header post-head top-post" {{#if image}}
+         style="background-image: url('{{image}}');" {{/if}}>
+          <a href="{{url}}">
+            <div class="hover-gradient"></div>
+            <div class="container separator lg">
+              <span class="custom-badge custom-badge-white">Top Post</span>
+              <h1>{{title}}</h1>
+              <span class="custom-badge custom-badge-line shares visible-md visible-lg">
+                  <span
+                   data-open-share-count="reddit,facebook,linkedin,google,pinterest"
+                   data-open-share-count-url="{{url absolute="true"}}"></span>
+                  shares
+              </span>
+            </div>
+          </a>
+        </div>
+    {{/foreach}}
+{{/get}}
+
+<main class="content container posts-wrapper" role="main">
+    <div class="row posts-header">
+      <div class="col-md-9 posts-filters">
+        <a href="#">Recent posts</a>
+        <a href="#">Most popular</a>
+      </div>
+      <div class="col-md-3 visible-md visible-lg follow-us">
+        <a href="#">Follow us</a>
+      </div>
+    </div>
+    <div class="row">
+      {{#foreach posts}}
+          {{#unless featured}}
+            <a href="{{url}}">
+              <div class="col-md-6">
+                <div class="panel panel-default single-post">
+                  <div class="panel-heading" style="background-image: url({{image}})">
+                      <div class="green-overlay"></div>
+                      <span class="custom-badge custom-badge-white category">{{this.tags.1.name}}</span>
+                  </div>
+                  <div class="panel-body">
+                    <h3>{{{title}}}</h3>
+                    <p>{{excerpt characters="115"}}</p>
+                    <div class="post-box-footer">
+                      <span class="shares-count">
+                          <span
+                           data-open-share-count="reddit,facebook,linkedin,google,pinterest"
+                           data-open-share-count-url="{{url absolute="true"}}"></span>
+                          shares
+                      </span>
+                      <span class="comments-count"><i class="fa fa-comment"></i> 25</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </a>
+          {{/unless}}
+      {{/foreach}}
+    </div>
+    <div class="row posts-footer">
+      <div class="col-xs-12 text-center">
+        {{pagination}}
+      </div>
+    </div>
+</main>

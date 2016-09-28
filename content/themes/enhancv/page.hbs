@@ -1,0 +1,33 @@
+{{!< default}}
+
+{{! This is a page template. A page outputs content just like any other post, and has all the same
+    attributes by default, but you can also customize it to behave differently if you prefer. }}
+
+<div id="top" class="top-ornament"></div>
+<main class="content" role="main">
+
+    <article class="{{post_class}}">
+
+        <header class="post-header">
+            <a class="blog-logo" href="{{@blog.url}}">
+                {{#if @blog.logo}}
+                    <img src="{{@blog.logo}}" alt="Blog Logo" />
+                {{else}}
+                    <span class="blog-title">{{@blog.title}}</span>
+                {{/if}}
+            </a>
+        </header>
+
+        {{#post}}
+
+            <h1 class="post-title">{{{title}}}</h1>
+
+            <section class="post-content">
+                {{content}}
+            </section>
+
+        {{/post}}
+
+    </article>
+
+</main>

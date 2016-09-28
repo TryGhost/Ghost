@@ -1,0 +1,123 @@
+/* ==========================================================================
+   7. Read More - Next/Prev Post Links
+   ========================================================================== */
+
+.read-next {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: stretch;
+  -webkit-align-items: stretch;
+  -ms-flex-align: stretch;
+  align-items: stretch;
+  margin-top: 10rem;
+}
+
+.read-next-story {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-flex: 1;
+  -webkit-flex-grow: 1;
+  -ms-flex-positive: 1;
+  flex-grow: 1;
+  min-width: 50%;
+  text-decoration: none;
+  position: relative;
+  text-align: center;
+  color: $gray-light;
+  background: #222 no-repeat center center;
+  background-size: cover;
+  overflow: hidden;
+
+  &:hover {
+    text-decoration: none;
+    &:before {
+      background: rgba(0, 0, 0, 0.8);
+      transition: all 0.2s ease;
+    }
+    .post:before {
+      color: #222;
+      background: $gray-light;
+      transition: all 0.2s ease;
+    }
+  }
+  &:before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: rgba(0, 0, 0, 0.7);
+    transition: all 0.5s ease;
+  }
+  .post {
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+    &:before {
+      content: "Read Next";
+      padding: 4px 10px 5px;
+      text-transform: uppercase;
+      font-size: 1.1rem;
+      font-family: "Open Sans", sans-serif;
+      color: $gray-light;
+      border: $gray-darker 1px solid;
+      border-radius: 30px;
+      transition: all 0.5s ease;
+    }
+  }
+  &.prev .post:before {
+    content: "Previous";
+  }
+  h2 {
+    margin-top: 1rem;
+    color: $gray-light;
+  }
+  p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  &.no-cover {
+    background: $medium-black;
+    &:hover {
+      text-decoration: none;
+    }
+    &:before {
+      display: none;
+    }
+    .post:before {
+      color: $gray-medium;
+      border-color: $gray-light;
+    }
+    h2 {
+      color: $gray-darker;
+    }
+    p {
+      color: $gray-medium;
+    }
+    + .read-next-story.no-cover {
+      border-left: rgba(0, 0, 100, 0.04) 1px solid;
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+    }
+  }
+}
+
+/* Special styles for posts with no cover images */
+
+/* if there are two posts without covers, put a border between them */
+
+/* Correctly position site-footer when next to the .read-next container */
+
+.read-next + .site-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0;
+}

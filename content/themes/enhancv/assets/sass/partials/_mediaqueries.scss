@@ -1,0 +1,495 @@
+/* ==========================================================================
+ 16. Media Queries - Smaller than 900px
+ ========================================================================== */
+
+// code to transfer media query breakpoints to javascript
+body:before {
+    content: "smartphone";
+    display: none;
+
+    /* Prevent from displaying. */
+}
+
+@media (min-width: $screen-xs-min) {
+    body:before {
+        content: "smartphone_wide";
+    }
+}
+
+@media (min-width: $screen-sm-min) {
+    body:before {
+        content: "tablet_narrow";
+    }
+
+    .panel-body {
+        height: 200px;
+        position: relative;
+
+
+        .post-box-footer {
+            position: absolute;
+            bottom: 30px;
+        }
+    }
+}
+
+@media (min-width: $screen-md-min) {
+    body:before {
+        content: "tablet_wide";
+    }
+}
+
+@media (min-width: $screen-lg-min) {
+    body:before {
+        content: "desktop";
+    }
+}
+
+@media (min-width: 1600px) {
+    body:before {
+        content: "wide";
+    }
+}
+
+@media only screen and (max-width: $screen-md-max) {
+    .post-template {
+        .post {
+            padding-left: 20px;
+            padding-right: 20px;
+            margin: 0;
+            max-width: 100%;
+            width: 100%;
+        }
+    }
+
+    .side {
+        display: none;
+    }
+}
+
+@media (max-width: $screen-sm-max) {
+    #slidemenu-wrapper {
+        margin-right: -100%;
+
+        .slidemenu-nav {
+          text-align: center;
+
+          li {
+            font-size: 1.6rem;
+
+            &.text {
+                padding: 8px 25px;
+
+                &.top {
+                    padding: 0 15px;
+                }
+
+                &.top-ty {
+                    padding-left: 25px;
+                }
+            }
+          }
+        }
+
+        &.active {
+            width: 100%;
+            right: 100%;
+        }
+    }
+
+    #wavy-footer {
+        text-align: center;
+    }
+
+    .top-post {
+        .container {
+            h1 {
+                width: 100%;
+            }
+        }
+    }
+}
+
+@media (max-width: $screen-xs-max) {
+    .main-nav-fixed {
+        .navbar {
+            .navbar-toggle {
+                margin-right: 15px;
+            }
+
+            .navbar-brand {
+              padding-left: 25px;
+
+              svg {
+                width: 120px;
+              }
+            }
+        }
+    }
+
+    #wavy-footer {
+        .notice {
+            margin: 15px 0 0 0;
+            display: block;
+        }
+    }
+}
+
+@media only screen and (max-width: 900px) {
+    blockquote {
+        margin-left: 0;
+    }
+
+    .post-head {
+        &.main-header {
+            height: 55vh;
+        }
+    }
+
+    .site-head {
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        height: 100%;
+        min-height: 240px;
+        padding: 15% 0;
+    }
+
+    .blog-title {
+        font-size: 4rem;
+        letter-spacing: -1px;
+    }
+
+    .blog-description {
+        font-size: 1.6rem;
+        line-height: 1.4em;
+    }
+
+    .blog-logo img {
+        max-height: 90px;
+        max-width: 320px;
+    }
+
+    .page-title {
+        font-size: 4rem;
+        letter-spacing: -1px;
+    }
+
+    .page-description {
+        font-size: 1.8rem;
+        line-height: 1.5em;
+    }
+
+    .post {
+        font-size: 0.9em;
+    }
+
+    body:not(.post-template) .post-title {
+        font-size: 3.2rem;
+    }
+
+    .post-template {
+        .post {
+            padding-bottom: 1rem;
+        }
+
+        .post-header {
+            padding: 40px 0;
+        }
+    }
+
+    ol, ul {
+        padding-left: 2em;
+    }
+
+    h1 {
+        font-size: 4.5rem;
+        text-indent: -2px;
+    }
+
+    h2 {
+        font-size: 3.6rem;
+    }
+
+    h3 {
+        font-size: 3.1rem;
+    }
+
+    h4 {
+        font-size: 2.5rem;
+    }
+
+    h5 {
+        font-size: 2.2rem;
+    }
+
+    h6 {
+        font-size: 1.8rem;
+    }
+
+    .read-next {
+        -webkit-box-orient: vertical;
+        -webkit-box-direction: normal;
+        -webkit-flex-direction: column;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        margin-top: 4rem;
+
+        p {
+            display: none;
+        }
+    }
+
+    .read-next-story.no-cover + .read-next-story.no-cover {
+        border-top: rgba(0, 0, 100, 0.06) 1px solid;
+        border-left: none;
+    }
+
+    .sub-nav-main {
+        .navbar-collapse {
+            padding: 0;
+        }
+    }
+}
+
+/* ==========================================================================
+   Media Queries - Smaller than 500px
+   ========================================================================== */
+
+@media only screen and (max-width: 500px) {
+    .no-cover.main-header {
+        height: 30vh;
+    }
+
+    .blog-logo img {
+        max-height: 80px;
+        max-width: 210px;
+    }
+
+    .inner, .pagination {
+        width: auto;
+        margin-left: 16px;
+        margin-right: 16px;
+    }
+
+    .post {
+        width: auto;
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+        margin-left: 16px;
+        margin-right: 16px;
+        line-height: 1.65em;
+    }
+
+    .post-date {
+        display: none;
+    }
+
+    .post-template {
+        .post-header {
+            margin-bottom: 2rem;
+        }
+
+        .post-date {
+            display: inline-block;
+        }
+    }
+
+    hr {
+        margin: 1.75em 0;
+    }
+
+    .site-head {
+        padding: 10% 0;
+        height: 100%;
+    }
+
+    .blog-title {
+        font-size: 3rem;
+    }
+
+    .blog-description {
+        font-size: 1.5rem;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        margin: 0 0 0.3em 0;
+    }
+
+    h1 {
+        font-size: 2.8rem;
+        letter-spacing: -1px;
+    }
+
+    h2 {
+        font-size: 2.4rem;
+        letter-spacing: 0;
+    }
+
+    h3 {
+        font-size: 2.1rem;
+    }
+
+    h4 {
+        font-size: 1.9rem;
+    }
+
+    h5, h6 {
+        font-size: 1.8rem;
+    }
+
+    body:not(.post-template) .post-title {
+        font-size: 2.5rem;
+    }
+
+    .post-template {
+        .post {
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+
+        .post-header {
+            padding: 30px 0 0 0;
+            margin-bottom: 0;
+        }
+
+        .site-footer {
+            margin-top: 0;
+        }
+    }
+
+    .post-content {
+        img {
+            padding: 0;
+        }
+
+        .full-img {
+            width: 100%;
+        }
+    }
+
+    .post-meta {
+        font-size: 1.3rem;
+    }
+
+    .post-footer {
+        padding: 4rem 0;
+        text-align: center;
+
+        .author {
+          padding: 35px;
+        }
+
+        .share {
+            position: static;
+            width: auto;
+            margin-top: 0;
+
+            a {
+                width: 100%;
+
+                &.twitter,
+                &.facebook {
+                  margin: 0;
+                }
+
+                &.facebook {
+                  margin-bottom: 20px;
+                }
+            }
+        }
+    }
+
+    .author-meta li {
+        float: none;
+        margin: 0;
+        line-height: 1.6em;
+
+        &:before {
+            display: none;
+        }
+    }
+
+    .older-posts, .newer-posts {
+        position: static;
+        margin: 10px 0;
+    }
+
+    .page-number {
+        display: block;
+    }
+
+    .read-next {
+        margin-top: 2rem;
+
+        .post {
+            width: 100%;
+        }
+    }
+
+    .site-footer {
+        font-size: 0.7rem;
+    }
+
+    .btn-social {
+        width: 32px;
+        height: 32px;
+        font-size: 15px;
+        line-height: 32px;
+    }
+
+    .subscribe {
+        display: none;
+    }
+
+    .media {
+      .media-left {
+        display: table-row;
+        text-align: center;
+        padding: 0;
+
+        .wrapper {
+          margin: auto;
+        }
+      }
+
+      .media-body {
+        display: table-row;
+
+        h4 {
+          padding-top: 20px;
+        }
+
+        p {
+          margin: 0;
+        }
+      }
+    }
+}
+
+@media only screen and (min-width: $screen-sm-min) {
+    .main-nav-fixed {
+        .navbar-brand {
+            padding: 15px 15px 15px 50px;
+        }
+    }
+}
+
+@media only screen and (max-width: $screen-sm-max) {
+    .sub-nav-main {
+        height: auto;
+
+        .nav-inline {
+            display: block;
+
+            .nav-link {
+                display: block;
+            }
+        }
+    }
+}
+
+/* ==========================================================================
+   End of file. Media queries should be the last thing here. Do not add stuff
+   below this point, or it will probably fuck everything up.
+   ========================================================================== */

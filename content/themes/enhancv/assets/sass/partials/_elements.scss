@@ -1,0 +1,601 @@
+/* ==========================================================================
+   2. General - Setting up some base styles
+   ========================================================================== */
+
+html {
+  height: 100%;
+  max-height: 100%;
+  font-size: 62.5%;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+body {
+  height: 100%;
+  max-height: 100%;
+  font-family: $font-family-base;
+  color: $text-color;
+  letter-spacing: 0.01rem;
+  font-size: 1.8rem;
+  line-height: 1.75em;
+  font-feature-settings: 'kern' 1;
+  text-rendering: geometricPrecision;
+}
+
+::selection {
+  color: #fff;
+  background: $brand-success;
+  text-shadow: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-feature-settings: 'dlig' 1, 'liga' 1, 'lnum' 1, 'kern' 1;
+  line-height: 1.15em;
+  margin: 0 0 0.4em 0;
+  font-family: $font-family-base;
+  text-rendering: geometricPrecision;
+}
+
+h1 {
+  font-size: 4.5rem;
+  line-height: 1.2em;
+  letter-spacing: -2px;
+  text-indent: -3px;
+}
+
+h2 {
+  font-size: 4rem;
+  line-height: 1.2em;
+  letter-spacing: -1px;
+  text-indent: -2px;
+}
+
+h3 {
+  font-size: 3.5rem;
+}
+
+h4 {
+  font-size: 3rem;
+}
+
+h5 {
+  font-size: 2.5rem;
+}
+
+h6 {
+  font-size: 2rem;
+}
+
+a {
+  transition: color ease 0.3s;
+}
+
+p, ul, ol, dl {
+  font-feature-settings: 'liga' 1, 'onum' 1, 'kern' 1;
+  margin: 0 0 1.6em 0;
+  text-rendering: geometricPrecision;
+}
+
+ol ol {
+  margin: 0.4em 0;
+}
+
+ul {
+  ul, ol {
+    margin: 0.4em 0;
+  }
+}
+
+ol ul {
+  margin: 0.4em 0;
+}
+
+dl {
+  dt {
+    float: left;
+    width: 180px;
+    overflow: hidden;
+    clear: left;
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: bold;
+    margin-bottom: 1em;
+  }
+  dd {
+    margin-left: 200px;
+    margin-bottom: 1em;
+  }
+}
+
+hr {
+  display: block;
+  height: 1px;
+  border: 0;
+  border-top: $gray-medium 1px solid;
+  margin: 3.2em 0;
+  padding: 0;
+}
+
+blockquote {
+  box-sizing: border-box;
+  margin: 1.6em 0 1.6em -2.2em;
+  padding: 0 0 0 1.6em;
+  border-left: #4a4a4a 0.4em solid;
+
+  p {
+    margin: 0.8em 0;
+    font-style: italic;
+  }
+
+  small {
+    display: inline-block;
+    margin: 0.8em 0 0.8em 1.5em;
+    font-size: 0.9em;
+    color: $info-font-color;
+
+    &:before {
+      content: '\2014 \00A0';
+    }
+  }
+
+  cite {
+    font-weight: bold;
+
+    a {
+      font-weight: normal;
+    }
+  }
+}
+
+mark {
+  background-color: $brand-warning;
+}
+
+code, tt {
+  padding: 1px 3px;
+  font-family: Inconsolata, monospace, sans-serif;
+  font-size: 0.85em;
+  white-space: pre-wrap;
+  border: 1px solid $gray-lighter;
+  background: #fafafa;
+  border-radius: 5px;
+  font-feature-settings: "liga" 0;
+}
+
+pre {
+  box-sizing: border-box;
+  margin: 1.6em 0;
+  border: 1px solid $gray-lighter;
+  width: 100%;
+  padding: 1px;
+  font-family: Inconsolata, monospace, sans-serif;
+  font-size: 0.9em;
+  white-space: pre;
+  overflow: auto;
+  background: #fafafa;
+
+  code {
+    font-size: inherit;
+    white-space: pre-wrap;
+    background: transparent;
+    border: none;
+    padding: 0;
+  }
+}
+
+tt {
+  font-size: inherit;
+  white-space: pre-wrap;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+kbd {
+  display: inline-block;
+  margin-bottom: 0.4em;
+  padding: 1px 8px;
+  border: 1px solid $gray-lighter;
+  color: #666;
+  text-shadow: #fff 0 1px 0;
+  font-size: 0.9em;
+  font-weight: bold;
+  background: #fafafa;
+  border-radius: 4px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 0 white inset;
+}
+
+table {
+  box-sizing: border-box;
+  margin: 1.6em 0;
+  width: 100%;
+  max-width: 100%;
+  background-color: transparent;
+
+  th, td {
+    padding: 8px;
+    line-height: 20px;
+    text-align: left;
+    vertical-align: top;
+    border-top: 1px solid #efefef;
+  }
+  th {
+    color: #333;
+  }
+  caption + thead tr:first-child {
+    th, td {
+      border-top: 0;
+    }
+  }
+  colgroup + thead tr:first-child {
+    th, td {
+      border-top: 0;
+    }
+  }
+  thead:first-child tr:first-child {
+    th, td {
+      border-top: 0;
+    }
+  }
+  tbody + tbody {
+    border-top: 2px solid #efefef;
+  }
+  table table {
+    background-color: #fff;
+  }
+  tbody > tr:nth-child(odd) > {
+    td, th {
+      background-color: #f6f6f6;
+    }
+  }
+  &.plain tbody > tr:nth-child(odd) > {
+    td, th {
+      background: transparent;
+    }
+  }
+}
+
+iframe {
+  display: block;
+  margin: 1.6em 0;
+}
+
+label {
+  font-weight: normal;
+  font-size: 16px;
+}
+
+.fluid-width-video-wrapper {
+  display: block;
+  margin: 1.6em 0;
+
+  iframe {
+    margin: 0;
+  }
+}
+
+// inputs & placeholders
+input[type="text"], input[type="password"], input[type="datetime"], input[type="datetime-local"], input[type="date"], input[type="month"], input[type="time"], input[type="week"], input[type="number"], input[type="email"], input[type="url"], input[type="search"], input[type="tel"] {
+  font-size: .9em;
+
+  &.form-control {
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.035);
+    height: auto;
+    padding: 0 20px;
+    font-size: 1.4rem;
+    line-height: 3.5rem;
+  }
+}
+
+::-webkit-input-placeholder {
+  opacity: 1;
+}
+
+textarea, input {
+  &:focus::placeholder {
+    opacity: 0.35;
+  }
+}
+/* When a video is inside the fitvids wrapper, drop the
+margin on the iframe, cause it breaks stuff. */
+
+/* Buttons */
+.btn {
+  padding: 8px 22px;
+  font-weight: 100;
+  transition: background-color 0.2s ease-out, border-color 0.2s ease-out, opacity 0.2s ease-out;
+
+  &:focus, &.focus, &:active:focus, &:active.focus, &.active:focus, &.active.focus {
+    outline: 0 none;
+    box-shadow: none;
+  }
+}
+
+.btn-default {
+  background-color: #fff;
+  border-color: #fff;
+
+  &:focus, &.focus,
+  &:focus:hover, &.focus:hover,
+  &:hover,
+  &:active {
+    background-color: $text-color;
+    border-color: $text-color;
+    color: #fff;
+  }
+}
+
+.btn-transparent {
+  color: #fff;
+  background-color: transparent;
+
+  &.invert-color {
+    &:hover {
+        background-color: #fff;
+        color: #333;
+    }
+  }
+}
+
+.btn-line {
+  border: 1px solid #fff;
+}
+
+.btn-black {
+  @include button-variant(#fff, $gray-dark, $gray-dark);
+  color: #fff;
+}
+
+.btn-padded {
+  padding: $padding-base-vertical $padding-base-horizontal + 16px;
+}
+
+.btn-info-link {
+  @include button-variant($gray-dark, transparent, transparent);
+
+  &:hover {
+    opacity: 0.5;
+  }
+  &:active {
+    box-shadow: none;
+  }
+}
+
+.btn-success {
+  background-color: $enhancv-color;
+  border-color: $enhancv-color;
+
+  &:hover,
+  &:focus,
+  &:focus:active {
+    background-color: darken($enhancv-color, 7%);
+    border-color: darken($enhancv-color, 7%);
+  }
+}
+
+.btn-muted-link {
+  color: $text-muted;
+  font-weight: normal;
+  border-radius: 0;
+
+  &,
+  &:active,
+  &.active,
+  &[disabled],
+  fieldset[disabled] & {
+    background-color: transparent;
+    @include box-shadow(none);
+  }
+  &,
+  &:hover,
+  &:focus,
+  &:active {
+    border-color: transparent;
+  }
+  &:hover,
+  &:focus {
+    color: darken($text-muted, 20%);
+    text-decoration: $link-hover-decoration;
+    background-color: transparent;
+  }
+  &[disabled],
+  fieldset[disabled] & {
+    &:hover,
+    &:focus {
+      color: $btn-link-disabled-color;
+      text-decoration: none;
+    }
+  }
+}
+
+.btn-primary .text-muted {
+  color: darken(white, 20%);
+}
+
+.btn-menu-social {
+  width: 35px;
+  height: 35px;
+  line-height: 3.5rem;
+  text-align: center;
+  color: #fff;
+  background-color: $gray-light;
+  border-color: $gray-light;
+
+  &:hover,
+  &.focus,
+  &:focus {
+    color: #fff;
+    background-color: $gray-lighter;
+    border-color: $gray-lighter;
+  }
+}
+
+// BUTTON SIZES
+.btn-xlg {
+  @include button-size(15px, 25px, 22px, 25px, 40px);
+}
+
+.btn-lg {
+  min-width: 160px;
+  @include button-size(14px, 25px, inherit, normal, 35px);
+}
+
+.btn-md {
+  min-width: 160px;
+  @include button-size(12px, 25px, inherit, normal, 35px);
+}
+
+.btn-sm {
+  @include button-size(10px, 18px, inherit, normal, 35px);
+}
+
+.btn-xs {
+  @include button-size(8px, 15px, inherit, normal, 35px);
+}
+
+// text
+.text-lg {
+  font-size: $font-size-large;
+}
+
+// forms
+.form-control::placeholder {
+  font-style: italic;
+  font-size: 14px;
+  color: $gray-medium;
+}
+
+// offset
+$spacer: 20px;
+$directions: 'top' 'bottom' 'left' 'right';
+
+@each $direction in $directions {
+  .#{$direction}-sm {
+    margin-#{$direction}: $spacer;
+  }
+  .#{$direction}-md {
+    margin-#{$direction}: $spacer*2;
+  }
+  .#{$direction}-lg {
+    margin-#{$direction}: $spacer*3;
+  }
+}
+
+// modal
+.modal-backdrop {
+  background-color: transparentize($enhancv-color, .3);
+
+  .modal-dialog {
+
+    &:focus {
+      outline: 0 none;
+    }
+
+    .modal-header {
+
+      .modal-title {
+        display: inline-block;
+        color: #b3b3b3;
+        font-size: 16px;
+        font-weight: 300;
+      }
+
+      .close {
+        top: 0;
+        margin-top: 0;
+        color: #333;
+        opacity: 1;
+        text-shadow: none;
+        font-size: 24px;
+        transition: all 0.4s ease-in-out;
+        transform: rotateZ(0deg);
+
+        &:hover, &:active {
+          color: #808080;
+          transform: rotateZ(90deg);
+        }
+      }
+    }
+
+    .modal-content {
+      box-shadow: none;
+    }
+
+    .modal-body {
+      font-weight: 300;
+    }
+  }
+}
+
+// progress
+.progress {
+  height: 10px;
+  margin-top: 5px;
+}
+
+// separators
+.separator {
+  &.sm {
+    padding-top: 20px;
+  }
+
+  &.md {
+    padding-top: 35px;
+  }
+
+  &.lg {
+    padding-top: 50px;
+  }
+}
+
+// media
+.media {
+  margin-top: 0;
+}
+
+.green-overlay {
+  background-color: $enhancv-color;
+  width: 100%;
+  position: relative;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.custom-badge {
+  @extend .btn;
+  border: none;
+  cursor: auto;
+
+  &:hover, &:focus, &:active:hover, &:active {
+    background-color: #fff;
+  } 
+
+  &.custom-badge-white {
+    @extend .btn-default;
+
+    &:hover, &:focus, &:active:hover, &:active {
+      background-color: #fff;
+      color: $text-color;
+    } 
+  }
+
+  &.custom-badge-line {
+    @extend .btn-line;
+    color: #fff;
+
+    &:hover, &:focus, &:active:hover, &:active {
+      color: #fff;
+      background: transparent;
+    } 
+  }
+}
+
+// overlay
+.modal-backdrop {
+  background-color: transparentize($enhancv-color, .3);
+}

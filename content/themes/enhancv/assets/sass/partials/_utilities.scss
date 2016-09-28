@@ -1,0 +1,51 @@
+/* ==========================================================================
+   3. Utilities - These things get used a lot
+   ========================================================================== */
+
+/* Clears shit */
+
+.clearfix {
+  &:before {
+    content: " ";
+    display: table;
+  }
+  &:after {
+    content: " ";
+    display: table;
+    clear: both;
+  }
+  zoom: 1;
+}
+
+/* Hides shit */
+
+.hidden {
+  text-indent: -9999px;
+  visibility: hidden;
+  display: none;
+}
+
+/* Creates a responsive wrapper that makes our content scale nicely */
+
+.inner {
+  position: relative;
+  width: 80%;
+  max-width: 710px;
+  margin: 0 auto;
+}
+
+/* Centres vertically yo. (IE8+) */
+
+.vertical {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+/* Wraps the main content & footer */
+
+.site-wrapper {
+  position: relative;
+  min-height: 100%;
+  -webkit-transition: -webkit-transform 0.5s ease;
+  transition: transform 0.5s ease;
+}

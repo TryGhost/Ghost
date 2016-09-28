@@ -1,0 +1,45 @@
+{{!< default}}
+
+{{! The comment above "< default" means - insert everything in this file into
+    the {body} of the default.hbs template, which contains our header/footer. }}
+
+{{! The main content area on the homepage }}
+<main class="content container posts-wrapper" role="main">
+
+        <header class="tag-archive-header">
+            <h1>{{tag.name}}</h1>
+            <p>{{posts.length}} posts</p>
+        </header>
+
+    {{! Each post will be output using this markup }}
+    <div class="row">
+        {{#foreach posts}}
+        <a href="{{url}}">
+            <div class="col-md-6">
+              <div class="panel panel-default single-post">
+                <div class="panel-heading" style="background-image: url({{image}})">
+                    <div class="green-overlay"></div>
+                    <span class="custom-badge custom-badge-white category">{{this.tags.1.name}}</span>
+                </div>
+                <div class="panel-body">
+                  <h3>{{{title}}}</h3>
+                  <p>{{excerpt characters="115"}}</p>
+                  <span class="shares-count">3.5k shares</span>
+                  <span class="comments-count"><i class="fa fa-comment"></i> 25</span>
+                </div>
+              </div>
+            </div>
+        </a>
+        {{/foreach}}
+    </div>
+
+    {{!! After all the posts, we have the previous/next pagination links }}
+    <div class="container">
+        <div class="row">
+          <div class="col-xs-12 text-center">
+            {{pagination}}
+          </div>
+        </div>    
+    </div>
+
+</main>

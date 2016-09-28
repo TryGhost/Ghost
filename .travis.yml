@@ -15,7 +15,6 @@ env:
     - GITHUB_OAUTH_KEY=003a44d58f12089d0c0261338298af3813330949
     - GHOST_NODE_VERSION_CHECK=false
     - TEST_SUITE=server
-  matrix:
     - DB=sqlite3 NODE_ENV=testing
     - DB=mysql NODE_ENV=testing-mysql
 matrix:
@@ -42,3 +41,22 @@ after_success:
       else
         echo "This is a PR. No coverage generated."
       fi
+deploy:
+  - provider: s3
+    access_key_id: $AWS_ACCESS_KEY_ID
+    secret_access_key: $AWS_SECRET_ACCESS_KEY
+    local_dir: .dist/release
+    skip_cleanup: true
+    bucket: enhancv
+    on:
+      branch: master
+  - provider: codedeploy
+    access_key_id: $AWS_ACCESS_KEY_ID
+    secret_access_key: $AWS_SECRET_ACCESS_KEY
+    key: Ghost-release.zip
+    bundle_type: zip
+    application: "Blog"
+    deployment_group: "Blog"
+    bucket: enhancv
+    on:
+      branch: master

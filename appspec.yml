@@ -1,0 +1,14 @@
+version: 0.0
+os: linux
+files:
+  - source: /
+    destination: /var/www/blog
+hooks:
+  AfterInstall:
+    - location: bin/beforeInstall.sh
+      timeout: 900
+      runas: root
+  ApplicationStart:
+    - location: bin/startApp.sh
+      timeout: 60
+      runas: root

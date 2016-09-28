@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    {{! Document Settings }}
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    {{! Page Meta }}
+    <title>{{meta_title}}</title>
+    <meta name="description" content="{{meta_description}}" />
+
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="MobileOptimized" content="320" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    {{! Styles'n'Scripts }}
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700&subset=cyrillic" rel="stylesheet">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="{{asset "css/bastard.min.css"}}" />
+
+    {{! Touch icons and favicon }}
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="{{asset "/images/apple-touch-icon-144x144-precomposed.png"}}" />
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="{{asset "/images/apple-touch-icon-114x114-precomposed.png"}}" />
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="{{asset "/images/apple-touch-icon-72x72-precomposed.png"}}" />
+    <link rel="apple-touch-icon-precomposed" sizes="57x57" href="{{asset "/images/apple-touch-icon-57x57-precomposed.png"}}" />
+    <link rel="apple-touch-icon-precomposed" href="{{asset "/images/apple-touch-icon-precomposed.png"}}" />
+    <link rel="apple-touch-icon" href="{{asset "/images/apple-touch-icon.png"}}" />
+    <link rel="icon" type="image/x-icon" href="{{asset "/images/favicon.ico"}}" />
+    <link rel="shortcut icon" type="image/x-icon" href="{{asset "/images/favicon.ico"}}" />
+
+    <!-- For non-Retina iPhone, iPod Touch, and Android 2.1+ devices: -->
+    <link rel="apple-touch-icon" sizes="57x57" href="{{asset "/images/apple-touch-icon-57x57.png"}}" />
+    <link rel="apple-touch-icon" sizes="60x60" href="{{asset "/images/apple-touch-icon-60x60.png"}}" />
+    <!-- For first- and second-generation iPad: -->
+    <link rel="apple-touch-icon" sizes="72x72" href="{{asset "/images/apple-touch-icon-72x72.png"}}" />
+    <link rel="apple-touch-icon" sizes="76x76" href="{{asset "/images/apple-touch-icon-76x76.png"}}" />
+    <!-- For iPhone with high-resolution Retina display running iOS ≤ 6: -->
+    <link rel="apple-touch-icon" sizes="114x114" href="{{asset "/images/apple-touch-icon-114x114.png"}}" />
+    <!-- For iPhone with high-resolution Retina display running iOS ≥ 7: -->
+    <link rel="apple-touch-icon" sizes="120x120" href="{{asset "/images/apple-touch-icon-120x120.png"}}" />
+    <!-- For iPad with high-resolution Retina display running iOS ≤ 6: -->
+    <link rel="apple-touch-icon" sizes="144x144" href="{{asset "/images/apple-touch-icon-144x144.png"}}" />
+    <!-- For iPad with high-resolution Retina display running iOS ≥ 7: -->
+    <link rel="apple-touch-icon" sizes="152x152" href="{{asset "/images/apple-touch-icon-152x152.png"}}" />
+    <link rel="apple-touch-icon" sizes="180x180" href="{{asset "/images/apple-touch-icon-180x180.png"}}" />
+    <link rel="icon" type="image/png" href="{{asset "/images/favicon-32x32.png"}}" sizes="32x32">
+    <link rel="icon" type="image/png" href="{{asset "/images/favicon-194x194.png"}}" sizes="194x194">
+    <link rel="icon" type="image/png" href="{{asset "/images/favicon-96x96.png"}}" sizes="96x96">
+    <link rel="icon" type="image/png" href="{{asset "/images/android-chrome-192x192.png"}}" sizes="192x192">
+    <link rel="icon" type="image/png" href="{{asset "/images/favicon-16x16.png"}}" sizes="16x16">
+    <link rel="manifest" href="{{asset "/images/manifest.json"}}">
+    <link rel="shortcut icon" href="{{asset "/images/favicon.ico"}}">
+    <meta name="msapplication-TileColor" content="#000000">
+    <meta name="msapplication-TileImage" content="{{asset "/images/mstile-144x144.png"}}">
+    <meta name="theme-color" content="#ffffff">
+
+    {{! Ghost outputs important style and meta data with this tag }}
+    {{ghost_head}}
+  </head>
+<body class="{{body_class}}">
+    <!-- Side Menu -->
+    <div id="slidemenu-wrapper">
+        {{> slidemenu}}
+    </div>
+    <!-- /Side Menu -->
+
+    <div class="modal-backdrop"></div>
+
+    {{! Everything else gets inserted here }}
+    {{> main-nav}}
+
+    {{> sub-nav}}
+
+    {{{body}}}
+
+    <ul id="search-results" class="search-results col-md-12" class="list-group"></ul>
+
+    {{> wavy-footer}}
+
+    <footer class="site-footer clearfix">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-4 visible-md visible-lg">
+                    <a href="https://app.enhancv.com" class="btn btn-sm btn-transparent btn-line invert-color lets-begin">
+                        Let's Begin
+                    </a> <span>It's Free</span>
+                </div>
+                <div class="col-sm-4 text-center">
+                    {{> social }}
+                </div>
+                <div class="col-sm-4 visible-md visible-lg text-right">
+                    <a href="{{@blog.url}}">
+                      <img src="{{asset "images/main-logo.svg"}}" alt="Enhancv Blog Logo" class="logo">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    {{!-- jQuery needs to come before `{{ghost_foot}}` so that jQuery can be used in code injection --}}
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+    {{! Ghost outputs important scripts and data with this tag }}
+    {{ghost_foot}}
+
+    {{! The main JavaScript file for Bastard }}
+    <script type="text/javascript" src="{{asset "js/scripts.min.js"}}"></script>
+    <script id="dsq-count-scr" src="//enhancv.disqus.com/count.js" async></script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+/* ==========================================================================
+   8. Tag archive
+   ========================================================================== */
+
+.archive-template, .tag-template {
+  .site-head {
+    height: auto;
+    padding-bottom: 5rem;
+    a {
+      color: $gray-medium;
+    }
+  }
+  .blog-logo {
+    display: block;
+  }
+}
+
+.tag-archive-header {
+  text-align: center;
+  margin-top: 160px;
+  padding: 125px 0;
+  position: relative;
+  h1 {
+    letter-spacing: 0.1em;
+    font-size: 3.6rem;
+    margin-bottom: 0;
+  }
+  p {
+    font-size: 1.4rem;
+    margin: 0;
+    color: #808080;
+  }
+}
+
+.archive-template .blog-title {
+  display: inline-block;
+  padding: 2.5rem 0;
+}

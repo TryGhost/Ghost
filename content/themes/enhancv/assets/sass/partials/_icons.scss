@@ -1,0 +1,144 @@
+/* ==========================================================================
+   1. Icons - Sets up the icon font and respective classes
+   ========================================================================== */
+
+/* Import the font file with the icons in it */
+/*@font-face {
+  font-family: 'icons';
+  src: url('../fonts/icons.eot');
+  src: url('../fonts/icons.eot?#iefix') format("embedded-opentype"), url('../fonts/icons.woff') format("woff"), url('../fonts/icons.ttf') format("truetype"), url('../fonts/icons.svg#icons') format("svg");
+  font-weight: normal;
+  font-style: normal;
+}*/
+
+@font-face {
+  font-family: 'FontAwesome';
+  src: url('../fonts/fontawesome-webfont.eot?v=4.6.3');
+  src: url('../fonts/fontawesome-webfont.eot?#iefix&v=4.6.3') format('embedded-opentype'), url('../fonts/fontawesome-webfont.woff2?v=4.6.3') format('woff2'), url('../fonts/fontawesome-webfont.woff?v=4.6.3') format('woff'), url('../fonts/fontawesome-webfont.ttf?v=4.6.3') format('truetype'), url('../fonts/fontawesome-webfont.svg?v=4.6.3#fontawesomeregular') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.fa {
+  display: inline-block;
+  font: normal normal normal 14px/1 FontAwesome;
+  font-size: inherit;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+/* makes the font 33% larger relative to the icon container */
+.fa-lg {
+  font-size: 1.33333333em;
+  line-height: 0.75em;
+  vertical-align: -15%;
+}
+.fa-2x {
+  font-size: 2em;
+}
+.fa-3x {
+  font-size: 3em;
+}
+.fa-4x {
+  font-size: 4em;
+}
+.fa-5x {
+  font-size: 5em;
+}
+.fa-fw {
+  width: 1.28571429em;
+  text-align: center;
+}
+.fa-ul {
+  padding-left: 0;
+  margin-left: 2.14285714em;
+  list-style-type: none;
+}
+.fa-ul > li {
+  position: relative;
+}
+.fa-li {
+  position: absolute;
+  left: -2.14285714em;
+  width: 2.14285714em;
+  top: 0.14285714em;
+  text-align: center;
+}
+.fa-li.fa-lg {
+  left: -1.85714286em;
+}
+.fa-border {
+  padding: .2em .25em .15em;
+  border: solid 0.08em #eeeeee;
+  border-radius: .1em;
+}
+.fa-inverse {
+  color: #ffffff;
+}
+
+.fa-reddit:before {
+  content: "\f1a1";
+}
+
+.fa-pinterest:before {
+  content: "\f0d2";
+}
+
+.fa-tumblr:before {
+  content: "\f173";
+}
+
+.fa-linkedin:before {
+  content: "\f0e1";
+}
+
+.fa-twitter:before {
+  content: "\f099";
+}
+.fa-facebook-f:before,
+.fa-facebook:before {
+  content: "\f09a";
+}
+
+.fa-google-plus:before {
+  content: "\f0d5";
+}
+
+.fa-comment:before {
+  content: "\f075";
+}
+
+/* Apply these base styles to all icons */
+
+/*.icon-ghost:before, .icon-feed:before, .icon-twitter:before, .icon-google-plus:before, .icon-facebook:before {
+  font-family: 'icons';
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  text-decoration: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}*/
+
+/* Each icon is created by inserting the corret character into the
+   content of the :before pseudo element. Like a boss. */
+
+/*.icon-ghost:before {
+  content: "\e000";
+}
+.icon-feed:before {
+  content: "\e001";
+}
+.icon-twitter:before {
+  content: "\e002";
+  font-size: 1.1em;
+}
+.icon-google-plus:before {
+  content: "\e003";
+}
+.icon-facebook:before {
+  content: "\e004";
+}*/
