@@ -3,8 +3,8 @@ var api    = require('../api'),
 
 // Redirect to setup if no user exists
 function redirectToSetup(req, res, next) {
-    var isSetupRequest = req.path.match(/\/setup\//);
-    var isOauthAuthorization = req.path.match(/\/$/) && req.query && (req.query.code || req.query.error);
+    var isSetupRequest = req.path.match(/\/setup\//),
+        isOauthAuthorization = req.path.match(/\/$/) && req.query && (req.query.code || req.query.error);
 
     api.authentication.isSetup().then(function then(exists) {
         if (!exists.setup[0].status && !isSetupRequest && !isOauthAuthorization) {

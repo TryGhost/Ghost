@@ -298,9 +298,14 @@ describe('Auth Strategies', function () {
 
             userByEmailStub.returns(Promise.resolve(null));
             userFindOneStub.returns(Promise.resolve(_.merge({}, {status: 'inactive'}, owner)));
-            //userAddStub.returns(Promise.resolve(owner));
-            userEditStub.withArgs({status: 'active', email: 'kate@ghost.org'}, { context: { internal: true }, id: 2}).returns(Promise.resolve(owner));
-            userEditStub.withArgs({patronus_access_token: patronusAccessToken}, { context: { internal: true }, id: 2}).returns(Promise.resolve(owner));
+            userEditStub.withArgs({status: 'active', email: 'kate@ghost.org'}, {
+                context: {internal: true},
+                id: 2
+            }).returns(Promise.resolve(owner));
+            userEditStub.withArgs({patronus_access_token: patronusAccessToken}, {
+                context: {internal: true},
+                id: 2
+            }).returns(Promise.resolve(owner));
 
             authStrategies.ghostStrategy(req, patronusAccessToken, null, profile, next)
                 .then(function () {

@@ -1,5 +1,4 @@
 var errors = require('../errors'),
-    events = require('../events'),
     labs = require('../utils/labs'),
     i18n = require('../i18n'),
     authorize;

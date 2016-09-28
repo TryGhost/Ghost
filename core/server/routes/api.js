@@ -1,11 +1,8 @@
 // # API routes
 var express = require('express'),
-    _ = require('lodash'),
     api = require('../api'),
     auth = require('../auth'),
-    models = require('../models'),
     config = require('../config'),
-    passport = require('passport'),
     apiRoutes;
 
 apiRoutes = function apiRoutes(middleware) {

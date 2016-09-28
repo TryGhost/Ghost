@@ -1,60 +1,63 @@
-var oauth2orize      = require('oauth2orize'),
-    models           = require('../models'),
-    utils            = require('../utils'),
-    errors           = require('../errors'),
+var oauth2orize = require('oauth2orize'),
+    models = require('../models'),
+    utils = require('../utils'),
+    errors = require('../errors'),
     authenticationAPI = require('../api/authentication'),
-    spamPrevention   = require('../middleware/spam-prevention'),
-    i18n             = require('../i18n'),
+    spamPrevention = require('../middleware/spam-prevention'),
+    i18n = require('../i18n'),
     oauthServer,
     oauth;
 
 function exchangeRefreshToken(client, refreshToken, scope, done) {
-    models.Refreshtoken.findOne({token: refreshToken}).then(function then(model) {
-        if (!model) {
-            return done(new errors.NoPermissionError(i18n.t('errors.middleware.oauth.invalidRefreshToken')), false);
-        } else {
-            var token = model.toJSON(),
-                accessToken = utils.uid(191),
-                accessExpires = Date.now() + utils.ONE_HOUR_MS,
-                refreshExpires = Date.now() + utils.ONE_WEEK_MS;
-
-            if (token.expires > Date.now()) {
-                models.Accesstoken.add({
-                    token: accessToken,
-                    user_id: token.user_id,
-                    client_id: token.client_id,
-                    expires: accessExpires
-                }).then(function then() {
-                    return models.Refreshtoken.edit({expires: refreshExpires}, {id: token.id});
-                }).then(function then() {
-                    return done(null, accessToken, {expires_in: utils.ONE_HOUR_S});
-                }).catch(function handleError(error) {
-                    return done(error, false);
-                });
+    models.Refreshtoken.findOne({token: refreshToken})
+        .then(function then(model) {
+            if (!model) {
+                return done(new errors.NoPermissionError(i18n.t('errors.middleware.oauth.invalidRefreshToken')), false);
             } else {
-                done(new errors.UnauthorizedError(i18n.t('errors.middleware.oauth.refreshTokenExpired')), false);
+                var token = model.toJSON(),
+                    accessToken = utils.uid(191),
+                    accessExpires = Date.now() + utils.ONE_HOUR_MS,
+                    refreshExpires = Date.now() + utils.ONE_WEEK_MS;
+
+                if (token.expires > Date.now()) {
+                    models.Accesstoken.add({
+                        token: accessToken,
+                        user_id: token.user_id,
+                        client_id: token.client_id,
+                        expires: accessExpires
+                    }).then(function then() {
+                        return models.Refreshtoken.edit({expires: refreshExpires}, {id: token.id});
+                    }).then(function then() {
+                        return done(null, accessToken, {expires_in: utils.ONE_HOUR_S});
+                    }).catch(function handleError(error) {
+                        return done(error, false);
+                    });
+                } else {
+                    done(new errors.UnauthorizedError(i18n.t('errors.middleware.oauth.refreshTokenExpired')), false);
+                }
             }
-        }
-    });
+        });
 }
 
 function exchangePassword(client, username, password, scope, done) {
     // Validate the client
-    models.Client.findOne({slug: client.slug}).then(function then(client) {
-        if (!client) {
-            return done(new errors.NoPermissionError(i18n.t('errors.middleware.oauth.invalidClient')), false);
-        }
+    models.Client.findOne({slug: client.slug})
+        .then(function then(client) {
+            if (!client) {
+                return done(new errors.NoPermissionError(i18n.t('errors.middleware.oauth.invalidClient')), false);
+            }
 
-        // Validate the user
-        return models.User.check({email: username, password: password})
-            .then(function then(user) {
-                return authenticationAPI.createTokens({}, {context: {client_id: client.id, user: user.id}})
-            })
-            .then(function then(response) {
-                spamPrevention.resetCounter(username);
-                return done(null, response.access_token, response.refresh_token, {expires_in: response.expires_in});
-            });
-        }).catch(function handleError(error) {
+            // Validate the user
+            return models.User.check({email: username, password: password})
+                .then(function then(user) {
+                    return authenticationAPI.createTokens({}, {context: {client_id: client.id, user: user.id}});
+                })
+                .then(function then(response) {
+                    spamPrevention.resetCounter(username);
+                    return done(null, response.access_token, response.refresh_token, {expires_in: response.expires_in});
+                });
+        })
+        .catch(function handleError(error) {
             return done(error, false);
         });
 }

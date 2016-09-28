@@ -131,8 +131,6 @@ function setupTasks(setupData) {
 authentication = {
     /**
      * Generate a pair of tokens
-     * @param data
-     * @param options
      */
     createTokens: function createTokens(data, options) {
         var localAccessToken = globalUtils.uid(191),
@@ -159,7 +157,7 @@ authentication = {
                 access_token: localAccessToken,
                 refresh_token: localRefreshToken,
                 expires_in: accessExpires
-            }
+            };
         });
     },
 

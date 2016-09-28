@@ -10,7 +10,6 @@ var ClientPasswordStrategy = require('passport-oauth2-client-password').Strategy
 
 /**
  * Public client registration at Ghost.org
- * @param ghostOAuth2Strategy
  */
 _private.registerClient = function (ghostOAuth2Strategy) {
     return new Promise(function (resolve, reject) {
@@ -27,7 +26,7 @@ _private.registerClient = function (ghostOAuth2Strategy) {
 
                     return ghostOAuth2Strategy.registerClient()
                         .then(function (credentials) {
-                            //@TODO: uuid usage
+                            // @TODO: uuid usage
                             return models.Client.add({
                                 name: 'patronus',
                                 slug: 'patronus',
