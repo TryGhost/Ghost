@@ -11,7 +11,10 @@ var ClientPasswordStrategy = require('passport-oauth2-client-password').Strategy
 /**
  * Public client registration at Ghost.org
  */
-_private.registerClient = function (ghostOAuth2Strategy) {
+_private.registerClient = function (options) {
+    var ghostOAuth2Strategy = options.ghostOAuth2Strategy,
+        url = options.url;
+
     return new Promise(function (resolve, reject) {
         var retry = function (retryCount, done) {
             models.Client.findOne({name: 'patronus'}, {context: {internal: true}})
@@ -24,7 +27,7 @@ _private.registerClient = function (ghostOAuth2Strategy) {
                         });
                     }
 
-                    return ghostOAuth2Strategy.registerClient()
+                    return ghostOAuth2Strategy.registerClient({clientName: url})
                         .then(function (credentials) {
                             // @TODO: uuid usage
                             return models.Client.add({
@@ -85,7 +88,7 @@ exports.init = function (options) {
             passReqToCallback: true
         }, authStrategies.ghostStrategy);
 
-        _private.registerClient(ghostOAuth2Strategy)
+        _private.registerClient({ghostOAuth2Strategy: ghostOAuth2Strategy, url: utils.url.getBaseUrl()})
             .then(function (client) {
                 console.log('SUCCESS: Public Client Patronus Registration');
                 ghostOAuth2Strategy.setClient(client);

@@ -33,7 +33,7 @@ adminControllers = {
                 configuration.clientSecret = {value: result.client.secret, type: 'string'};
 
                 if (result.patronus && config.get('auth:type') === 'patronus') {
-                    configuration.patronusId = {value: result.patronus.uuid, type: 'string'};
+                    configuration.ghostAuthId = {value: result.patronus.uuid, type: 'string'};
                 }
 
                 res.render('default', {
