@@ -1,8 +1,7 @@
 var should           = require('should'),
     sinon            = require('sinon'),
     Promise          = require('bluebird'),
-
-    authStrategies   = require('../../../server/middleware/auth-strategies'),
+    authStrategies   = require('../../../server/auth/auth-strategies'),
     Models           = require('../../../server/models'),
     globalUtils      = require('../../../server/utils'),
 

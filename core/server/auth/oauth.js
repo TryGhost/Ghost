@@ -2,7 +2,7 @@ var oauth2orize      = require('oauth2orize'),
     models           = require('../models'),
     utils            = require('../utils'),
     errors           = require('../errors'),
-    spamPrevention   = require('./spam-prevention'),
+    spamPrevention   = require('../middleware/spam-prevention'),
     i18n             = require('../i18n'),
 
     oauthServer,
