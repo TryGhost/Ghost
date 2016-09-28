@@ -22,7 +22,7 @@ var _               = require('lodash'),
         // Post API swaps author_id to author, and always returns a computed 'url' property
         post:        _(schema.posts).keys().without('author_id').concat('author', 'url').value(),
         // User API always removes the password field
-        user:        _(schema.users).keys().without('password').value(),
+        user:        _(schema.users).keys().without('password').without('patronus_access_token').value(),
         // Tag API swaps parent_id to parent
         tag:         _(schema.tags).keys().without('parent_id').concat('parent').value(),
         setting:     _.keys(schema.settings),
