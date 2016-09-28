@@ -8,5 +8,9 @@
     },
     "paths": {
         "contentPath": "content/"
+    },
+    "auth": {
+        "type": "patronus",
+        "url": "http://patronus.ghostfoundation.org:8080"
     }
 }

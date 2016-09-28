@@ -165,6 +165,12 @@ apiRoutes = function apiRoutes(middleware) {
         auth.oauth.generateAccessToken
     );
 
+    router.post('/authentication/ghost', [
+        auth.authenticate.authenticateClient,
+        auth.authenticate.authenticateGhostUser,
+        api.http(api.authentication.createTokens)
+    ]);
+
     router.post('/authentication/revoke', authenticatePrivate, api.http(api.authentication.revoke));
 
     // ## Uploads

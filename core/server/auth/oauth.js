@@ -2,9 +2,9 @@ var oauth2orize      = require('oauth2orize'),
     models           = require('../models'),
     utils            = require('../utils'),
     errors           = require('../errors'),
+    authenticationAPI = require('../api/authentication'),
     spamPrevention   = require('../middleware/spam-prevention'),
     i18n             = require('../i18n'),
-
     oauthServer,
     oauth;
 
@@ -44,28 +44,19 @@ function exchangePassword(client, username, password, scope, done) {
         if (!client) {
             return done(new errors.NoPermissionError(i18n.t('errors.middleware.oauth.invalidClient')), false);
         }
-        // Validate the user
-        return models.User.check({email: username, password: password}).then(function then(user) {
-            // Everything validated, return the access- and refreshtoken
-            var accessToken = utils.uid(191),
-                refreshToken = utils.uid(191),
-                accessExpires = Date.now() + utils.ONE_HOUR_MS,
-                refreshExpires = Date.now() + utils.ONE_WEEK_MS;
 
-            return models.Accesstoken.add(
-                {token: accessToken, user_id: user.id, client_id: client.id, expires: accessExpires}
-            ).then(function then() {
-                return models.Refreshtoken.add(
-                    {token: refreshToken, user_id: user.id, client_id: client.id, expires: refreshExpires}
-                );
-            }).then(function then() {
+        // Validate the user
+        return models.User.check({email: username, password: password})
+            .then(function then(user) {
+                return authenticationAPI.createTokens({}, {context: {client_id: client.id, user: user.id}})
+            })
+            .then(function then(response) {
                 spamPrevention.resetCounter(username);
-                return done(null, accessToken, refreshToken, {expires_in: utils.ONE_HOUR_S});
+                return done(null, response.access_token, response.refresh_token, {expires_in: response.expires_in});
             });
         }).catch(function handleError(error) {
             return done(error, false);
         });
-    });
 }
 
 oauth = {

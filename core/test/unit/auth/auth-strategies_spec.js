@@ -1,13 +1,16 @@
-var should           = require('should'),
-    sinon            = require('sinon'),
-    Promise          = require('bluebird'),
-    authStrategies   = require('../../../server/auth/auth-strategies'),
-    Models           = require('../../../server/models'),
-    globalUtils      = require('../../../server/utils'),
+var should = require('should'),
+    sinon = require('sinon'),
+    Promise = require('bluebird'),
+    _ = require('lodash'),
+
+    authStrategies = require('../../../server/auth/auth-strategies'),
+    Models = require('../../../server/models'),
+    errors = require('../../../server/errors'),
+    globalUtils = require('../../../server/utils'),
 
     sandbox = sinon.sandbox.create(),
 
-    fakeClient =  {
+    fakeClient = {
         slug: 'ghost-admin',
         secret: 'not_available',
         status: 'enabled'
@@ -49,7 +52,9 @@ describe('Auth Strategies', function () {
             clientStub = sandbox.stub(Models.Client, 'findOne');
             clientStub.returns(new Promise.resolve());
             clientStub.withArgs({slug: fakeClient.slug}).returns(new Promise.resolve({
-                toJSON: function () { return fakeClient; }
+                toJSON: function () {
+                    return fakeClient;
+                }
             }));
         });
 
@@ -115,16 +120,22 @@ describe('Auth Strategies', function () {
             tokenStub = sandbox.stub(Models.Accesstoken, 'findOne');
             tokenStub.returns(new Promise.resolve());
             tokenStub.withArgs({token: fakeValidToken.token}).returns(new Promise.resolve({
-                toJSON: function () { return fakeValidToken; }
+                toJSON: function () {
+                    return fakeValidToken;
+                }
             }));
             tokenStub.withArgs({token: fakeInvalidToken.token}).returns(new Promise.resolve({
-                toJSON: function () { return fakeInvalidToken; }
+                toJSON: function () {
+                    return fakeInvalidToken;
+                }
             }));
 
             userStub = sandbox.stub(Models.User, 'findOne');
             userStub.returns(new Promise.resolve());
             userStub.withArgs({id: 3}).returns(new Promise.resolve({
-                toJSON: function () { return {id: 3}; }
+                toJSON: function () {
+                    return {id: 3};
+                }
             }));
         });
 
@@ -186,6 +197,124 @@ describe('Auth Strategies', function () {
                 next.calledWith(null, false).should.be.true();
                 done();
             }).catch(done);
+        });
+    });
+
+    describe('Ghost Strategy', function () {
+        var userByEmailStub, inviteStub, userAddStub, userEditStub, userFindOneStub;
+
+        beforeEach(function () {
+            userByEmailStub = sandbox.stub(Models.User, 'getByEmail');
+            userFindOneStub = sandbox.stub(Models.User, 'findOne');
+            userAddStub = sandbox.stub(Models.User, 'add');
+            userEditStub = sandbox.stub(Models.User, 'edit');
+            inviteStub = sandbox.stub(Models.Invite, 'findOne');
+        });
+
+        it('with invite, but with wrong invite token', function (done) {
+            var patronusAccessToken = '12345',
+                req = {body: {inviteToken: 'wrong'}},
+                profile = {email_address: 'kate@ghost.org'};
+
+            userByEmailStub.returns(Promise.resolve(null));
+            inviteStub.returns(Promise.reject(new errors.NotFoundError()));
+
+            authStrategies.ghostStrategy(req, patronusAccessToken, null, profile, next)
+                .then(function () {
+                    userByEmailStub.calledOnce.should.be.true();
+                    inviteStub.calledOnce.should.be.true();
+
+                    next.called.should.be.true();
+                    next.firstCall.args.length.should.eql(1);
+                    (next.firstCall.args[0] instanceof errors.NotFoundError).should.eql(true);
+                    done();
+                })
+                .catch(done);
+        });
+
+        it('with correct invite token, but expired', function (done) {
+            var patronusAccessToken = '12345',
+                req = {body: {inviteToken: 'token'}},
+                profile = {email_address: 'kate@ghost.org'};
+
+            userByEmailStub.returns(Promise.resolve(null));
+            inviteStub.returns(Promise.resolve(Models.Invite.forge({
+                id: 1,
+                token: 'token',
+                expires: Date.now() - 1000
+            })));
+
+            authStrategies.ghostStrategy(req, patronusAccessToken, null, profile, next)
+                .then(function () {
+                    userByEmailStub.calledOnce.should.be.true();
+                    inviteStub.calledOnce.should.be.true();
+
+                    next.called.should.be.true();
+                    next.firstCall.args.length.should.eql(2);
+                    should.equal(next.firstCall.args[0], null);
+                    next.firstCall.args[1].should.eql(false);
+                    done();
+                })
+                .catch(done);
+        });
+
+        it('with correct invite token', function (done) {
+            var patronusAccessToken = '12345',
+                req = {body: {inviteToken: 'token'}},
+                profile = {email_address: 'kate@ghost.org'},
+                user = {id: 2},
+                inviteModel = Models.Invite.forge({
+                    id: 1,
+                    token: 'token',
+                    expires: Date.now() + 1000
+                });
+
+            userByEmailStub.returns(Promise.resolve(null));
+            userAddStub.returns(Promise.resolve(user));
+            userEditStub.returns(Promise.resolve(user));
+            inviteStub.returns(Promise.resolve(inviteModel));
+            sandbox.stub(inviteModel, 'destroy').returns(Promise.resolve());
+
+            authStrategies.ghostStrategy(req, patronusAccessToken, null, profile, next)
+                .then(function () {
+                    userByEmailStub.calledOnce.should.be.true();
+                    inviteStub.calledOnce.should.be.true();
+
+                    next.called.should.be.true();
+                    next.firstCall.args.length.should.eql(3);
+                    should.equal(next.firstCall.args[0], null);
+                    next.firstCall.args[1].should.eql(user);
+                    next.firstCall.args[2].should.eql(profile);
+                    done();
+                })
+                .catch(done);
+        });
+
+        it('setup', function (done) {
+            var patronusAccessToken = '12345',
+                req = {body: {}},
+                profile = {email_address: 'kate@ghost.org'},
+                owner = {id: 2};
+
+            userByEmailStub.returns(Promise.resolve(null));
+            userFindOneStub.returns(Promise.resolve(_.merge({}, {status: 'inactive'}, owner)));
+            //userAddStub.returns(Promise.resolve(owner));
+            userEditStub.withArgs({status: 'active', email: 'kate@ghost.org'}, { context: { internal: true }, id: 2}).returns(Promise.resolve(owner));
+            userEditStub.withArgs({patronus_access_token: patronusAccessToken}, { context: { internal: true }, id: 2}).returns(Promise.resolve(owner));
+
+            authStrategies.ghostStrategy(req, patronusAccessToken, null, profile, next)
+                .then(function () {
+                    userByEmailStub.calledOnce.should.be.true();
+                    inviteStub.calledOnce.should.be.false();
+
+                    next.called.should.be.true();
+                    next.firstCall.args.length.should.eql(3);
+                    should.equal(next.firstCall.args[0], null);
+                    next.firstCall.args[1].should.eql(owner);
+                    next.firstCall.args[2].should.eql(profile);
+                    done();
+                })
+                .catch(done);
         });
     });
 });

@@ -290,6 +290,8 @@ User = ghostBookshelf.Model.extend({
 
         if (status === 'active') {
             query.query('whereIn', 'status', activeStates);
+        } else if (status === 'inactive') {
+            query.query('where', {status: status});
         } else if (status !== 'all') {
             query.query('where', {status: options.status});
         }

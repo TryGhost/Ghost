@@ -105,6 +105,29 @@ authenticate = {
                 return errors.handleAPIError(new errors.UnauthorizedError(i18n.t('errors.middleware.auth.accessDenied')), req, res, next);
             }
         )(req, res, next);
+    },
+
+    // ### Authenticate Ghost.org User
+    authenticateGhostUser: function authenticateGhostUser(req, res, next) {
+        req.query.code = req.body.authorizationCode;
+
+        if (!req.query.code) {
+            return errors.handleAPIError(new errors.UnauthorizedError(i18n.t('errors.middleware.auth.accessDenied')), req, res, next);
+        }
+
+        passport.authenticate('ghost', {session: false, failWithError: false}, function authenticate(err, user, info) {
+            if (err) {
+                return next(err);
+            }
+
+            if (!user) {
+                return errors.handleAPIError(new errors.UnauthorizedError(i18n.t('errors.middleware.auth.accessDenied')), req, res, next);
+            }
+
+            req.authInfo = info;
+            req.user = user;
+            next();
+        })(req, res, next);
     }
 };
 

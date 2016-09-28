@@ -1,6 +1,7 @@
 var _             = require('lodash'),
     Promise       = require('bluebird'),
     api           = require('../api'),
+    config        = require('../config'),
     errors        = require('../errors'),
     updateCheck   = require('../update-check'),
     i18n          = require('../i18n'),
@@ -17,7 +18,12 @@ adminControllers = {
             var configuration,
                 fetch = {
                     configuration: api.configuration.read().then(function (res) { return res.configuration[0]; }),
-                    client: api.clients.read({slug: 'ghost-admin'}).then(function (res) { return res.clients[0]; })
+                    client: api.clients.read({slug: 'ghost-admin'}).then(function (res) { return res.clients[0]; }),
+                    patronus: api.clients.read({slug: 'patronus'})
+                        .then(function (res) { return res.clients[0]; })
+                        .catch(function () {
+                            return;
+                        })
                 };
 
             return Promise.props(fetch).then(function renderIndex(result) {
@@ -25,6 +31,10 @@ adminControllers = {
 
                 configuration.clientId = {value: result.client.slug, type: 'string'};
                 configuration.clientSecret = {value: result.client.secret, type: 'string'};
+
+                if (result.patronus && config.get('auth:type') === 'patronus') {
+                    configuration.patronusId = {value: result.patronus.uuid, type: 'string'};
+                }
 
                 res.render('default', {
                     configuration: configuration
