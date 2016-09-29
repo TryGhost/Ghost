@@ -61,7 +61,7 @@ function initDbHashAndFirstRun() {
 function init(options) {
     options = options || {};
 
-    var ghostServer = null;
+    var ghostServer = null, settingsMigrations, currentDatabaseVersion;
 
     // ### Initialisation
     // The server and its dependencies require a populated config
@@ -78,9 +78,39 @@ function init(options) {
         models.init();
     }).then(function () {
         return versioning.getDatabaseVersion()
-            .then(function (currentVersion) {
+            .then(function (_currentDatabaseVersion) {
+                currentDatabaseVersion = _currentDatabaseVersion;
+
+                // ATTENTION:
+                // this piece of code was only invented for https://github.com/TryGhost/Ghost/issues/7351#issuecomment-250414759
+                if (currentDatabaseVersion !== '008') {
+                    return;
+                }
+
+                if (config.database.client !== 'sqlite3') {
+                    return;
+                }
+
+                return models.Settings.findOne({key: 'migrations'}, options)
+                    .then(function fetchedMigrationsSettings(result) {
+                        try {
+                            settingsMigrations = JSON.parse(result.attributes.value) || {};
+                        } catch (err) {
+                            return;
+                        }
+
+                        if (settingsMigrations.hasOwnProperty('006/01')) {
+                            return;
+                        }
+
+                        // force them to re-run 008, because we have fixed the date fixture migration
+                        currentDatabaseVersion = '007';
+                        return versioning.setDatabaseVersion(null, '007');
+                    });
+            })
+            .then(function () {
                 var response = migrations.update.isDatabaseOutOfDate({
-                    fromVersion: currentVersion,
+                    fromVersion: currentDatabaseVersion,
                     toVersion: versioning.getNewestDatabaseVersion(),
                     forceMigration: process.env.FORCE_MIGRATION
                 }), maintenanceState;
@@ -90,7 +120,7 @@ function init(options) {
                     config.maintenance.enabled = true;
 
                     migrations.update.execute({
-                        fromVersion: currentVersion,
+                        fromVersion: currentDatabaseVersion,
                         toVersion: versioning.getNewestDatabaseVersion(),
                         forceMigration: process.env.FORCE_MIGRATION
                     }).then(function () {
