@@ -395,22 +395,23 @@ authentication = {
 
         function checkInvitation(email) {
             return models.Invite
-                .where({email: email, status: 'sent'})
-                .count('id')
-                .then(function then(count) {
-                    return !!count;
-                });
-        }
+                .findOne({email: email, status: 'sent'}, options)
+                .then(function fetchedInvite(invite) {
+                    if (!invite) {
+                        return {invitation: [{valid: false}]};
+                    }
 
-        function formatResponse(isInvited) {
-            return {invitation: [{valid: isInvited}]};
+                    return models.User.findOne({id: invite.get('created_by')})
+                        .then(function fetchedUser(user) {
+                            return {invitation: [{valid: true, invitedBy: user.get('name')}]};
+                        });
+                });
         }
 
         tasks = [
             processArgs,
             assertSetupCompleted(true),
-            checkInvitation,
-            formatResponse
+            checkInvitation
         ];
 
         return pipeline(tasks, localOptions);

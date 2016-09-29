@@ -1,7 +1,6 @@
 var passport = require('passport'),
     errors = require('../errors'),
     events = require('../events'),
-    models = require('../models'),
     i18n = require('../i18n'),
     authenticate;
 

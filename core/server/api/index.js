@@ -229,6 +229,7 @@ http = function http(apiMethod) {
         var object = req.body,
             options = _.extend({}, req.file, req.query, req.params, {
                 context: {
+                    // @TODO: forward the client and user obj in 1.0 (options.context.user.id)
                     user: ((req.user && req.user.id) || (req.user && req.user.id === 0)) ? req.user.id : null,
                     client: (req.client && req.client.slug) ? req.client.slug : null,
                     client_id: (req.client && req.client.id) ? req.client.id : null

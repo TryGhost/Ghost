@@ -219,17 +219,13 @@ describe('Auth Strategies', function () {
             userByEmailStub.returns(Promise.resolve(null));
             inviteStub.returns(Promise.reject(new errors.NotFoundError()));
 
-            authStrategies.ghostStrategy(req, patronusAccessToken, null, profile, next)
-                .then(function () {
-                    userByEmailStub.calledOnce.should.be.true();
-                    inviteStub.calledOnce.should.be.true();
-
-                    next.called.should.be.true();
-                    next.firstCall.args.length.should.eql(1);
-                    (next.firstCall.args[0] instanceof errors.NotFoundError).should.eql(true);
-                    done();
-                })
-                .catch(done);
+            authStrategies.ghostStrategy(req, patronusAccessToken, null, profile, function (err) {
+                should.exist(err);
+                (err instanceof errors.NotFoundError).should.eql(true);
+                userByEmailStub.calledOnce.should.be.true();
+                inviteStub.calledOnce.should.be.true();
+                done();
+            });
         });
 
         it('with correct invite token, but expired', function (done) {
@@ -244,25 +240,20 @@ describe('Auth Strategies', function () {
                 expires: Date.now() - 1000
             })));
 
-            authStrategies.ghostStrategy(req, patronusAccessToken, null, profile, next)
-                .then(function () {
-                    userByEmailStub.calledOnce.should.be.true();
-                    inviteStub.calledOnce.should.be.true();
-
-                    next.called.should.be.true();
-                    next.firstCall.args.length.should.eql(2);
-                    should.equal(next.firstCall.args[0], null);
-                    next.firstCall.args[1].should.eql(false);
-                    done();
-                })
-                .catch(done);
+            authStrategies.ghostStrategy(req, patronusAccessToken, null, profile, function (err) {
+                should.exist(err);
+                (err instanceof errors.NotFoundError).should.eql(true);
+                userByEmailStub.calledOnce.should.be.true();
+                inviteStub.calledOnce.should.be.true();
+                done();
+            });
         });
 
         it('with correct invite token', function (done) {
             var patronusAccessToken = '12345',
                 req = {body: {inviteToken: 'token'}},
-                profile = {email_address: 'kate@ghost.org'},
-                user = {id: 2},
+                invitedProfile = {email_address: 'kate@ghost.org'},
+                invitedUser = {id: 2},
                 inviteModel = Models.Invite.forge({
                     id: 1,
                     token: 'token',
@@ -270,56 +261,79 @@ describe('Auth Strategies', function () {
                 });
 
             userByEmailStub.returns(Promise.resolve(null));
-            userAddStub.returns(Promise.resolve(user));
-            userEditStub.returns(Promise.resolve(user));
+            userAddStub.returns(Promise.resolve(invitedUser));
+            userEditStub.returns(Promise.resolve(invitedUser));
             inviteStub.returns(Promise.resolve(inviteModel));
             sandbox.stub(inviteModel, 'destroy').returns(Promise.resolve());
 
-            authStrategies.ghostStrategy(req, patronusAccessToken, null, profile, next)
-                .then(function () {
-                    userByEmailStub.calledOnce.should.be.true();
-                    inviteStub.calledOnce.should.be.true();
+            authStrategies.ghostStrategy(req, patronusAccessToken, null, invitedProfile, function (err, user, profile) {
+                should.not.exist(err);
+                should.exist(user);
+                should.exist(profile);
+                user.should.eql(invitedUser);
+                profile.should.eql(invitedProfile);
 
-                    next.called.should.be.true();
-                    next.firstCall.args.length.should.eql(3);
-                    should.equal(next.firstCall.args[0], null);
-                    next.firstCall.args[1].should.eql(user);
-                    next.firstCall.args[2].should.eql(profile);
-                    done();
-                })
-                .catch(done);
+                userByEmailStub.calledOnce.should.be.true();
+                inviteStub.calledOnce.should.be.true();
+                done();
+            });
         });
 
         it('setup', function (done) {
             var patronusAccessToken = '12345',
                 req = {body: {}},
-                profile = {email_address: 'kate@ghost.org'},
+                ownerProfile = {email_address: 'kate@ghost.org'},
                 owner = {id: 2};
 
             userByEmailStub.returns(Promise.resolve(null));
             userFindOneStub.returns(Promise.resolve(_.merge({}, {status: 'inactive'}, owner)));
             userEditStub.withArgs({status: 'active', email: 'kate@ghost.org'}, {
                 context: {internal: true},
-                id: 2
+                id: owner.id
             }).returns(Promise.resolve(owner));
+
             userEditStub.withArgs({patronus_access_token: patronusAccessToken}, {
                 context: {internal: true},
-                id: 2
+                id: owner.id
             }).returns(Promise.resolve(owner));
 
-            authStrategies.ghostStrategy(req, patronusAccessToken, null, profile, next)
-                .then(function () {
-                    userByEmailStub.calledOnce.should.be.true();
-                    inviteStub.calledOnce.should.be.false();
+            authStrategies.ghostStrategy(req, patronusAccessToken, null, ownerProfile, function (err, user, profile) {
+                should.not.exist(err);
+                userByEmailStub.calledOnce.should.be.true();
+                inviteStub.calledOnce.should.be.false();
 
-                    next.called.should.be.true();
-                    next.firstCall.args.length.should.eql(3);
-                    should.equal(next.firstCall.args[0], null);
-                    next.firstCall.args[1].should.eql(owner);
-                    next.firstCall.args[2].should.eql(profile);
-                    done();
-                })
-                .catch(done);
+                should.exist(user);
+                should.exist(profile);
+                user.should.eql(owner);
+                profile.should.eql(ownerProfile);
+                done();
+            });
+        });
+
+        it('auth', function (done) {
+            var patronusAccessToken = '12345',
+                req = {body: {}},
+                ownerProfile = {email_address: 'kate@ghost.org'},
+                owner = {id: 2};
+
+            userByEmailStub.returns(Promise.resolve(owner));
+            userEditStub.withArgs({patronus_access_token: patronusAccessToken}, {
+                context: {internal: true},
+                id: owner.id
+            }).returns(Promise.resolve(owner));
+
+            authStrategies.ghostStrategy(req, patronusAccessToken, null, ownerProfile, function (err, user, profile) {
+                should.not.exist(err);
+                userByEmailStub.calledOnce.should.be.true();
+                userEditStub.calledOnce.should.be.true();
+                inviteStub.calledOnce.should.be.false();
+
+                should.exist(user);
+                should.exist(profile);
+                user.should.eql(owner);
+                profile.should.eql(ownerProfile);
+                done();
+            });
         });
     });
 });

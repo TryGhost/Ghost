@@ -1,6 +1,8 @@
 var models = require('../models'),
     utils = require('../utils'),
-    Promise = require('bluebird'),
+    i18n = require('../i18n'),
+    errors = require('../errors'),
+    _ = require('lodash'),
     strategies;
 
 strategies = {
@@ -66,11 +68,9 @@ strategies = {
      * CASES:
      * - via invite token
      * - via normal auth
+     * - via setup
      *
-     * @TODO: case protect self invite (check first if invite token exists)
-     * @TODO: password_digest is send from patronus - tell
-     * @TODO: forward type (invite, signup)
-     * @TODO: validate profile?
+     * @TODO: validate patronus profile?
      */
     ghostStrategy: function ghostStrategy(req, patronusAccessToken, patronusRefreshToken, profile, done) {
         var inviteToken = req.body.inviteToken,
@@ -79,20 +79,18 @@ strategies = {
 
         handleInviteToken = function handleInviteToken() {
             var user, invite;
-
-            // @TODO: reconsider how we are doing that
             inviteToken = utils.decodeBase64URLsafe(inviteToken);
 
             return models.Invite.findOne({token: inviteToken}, options)
-                .then(function (_invite) {
+                .then(function addInviteUser(_invite) {
                     invite = _invite;
 
                     if (!invite) {
-                        return null;
+                        throw new errors.NotFoundError(i18n.t('errors.api.invites.inviteNotFound'));
                     }
 
                     if (invite.get('expires') < Date.now()) {
-                        return null;
+                        throw new errors.NotFoundError(i18n.t('errors.api.invites.inviteExpired'));
                     }
 
                     return models.User.add({
@@ -102,13 +100,8 @@ strategies = {
                         roles: invite.toJSON().roles
                     }, options);
                 })
-                .then(function (_user) {
+                .then(function destroyInvite(_user) {
                     user = _user;
-
-                    if (!invite || !user) {
-                        return null;
-                    }
-
                     return invite.destroy(options);
                 })
                 .then(function () {
@@ -117,27 +110,23 @@ strategies = {
         };
 
         handleSetup = function handleSetup() {
-            // @TODO: fixme status with context
-            return models.User.findOne({slug: 'ghost-owner', status: 'inactive'}, options)
-                .then(function (owner) {
-                    options.id = owner.id;
+            return models.User.findOne({slug: 'ghost-owner', status: 'all'}, options)
+                .then(function fetchedOwner(owner) {
+                    if (!owner) {
+                        throw new errors.NotFoundError(i18n.t('errors.models.user.userNotFound'));
+                    }
 
                     return models.User.edit({
                         email: profile.email_address,
                         status: 'active'
-                    }, options);
-                })
-                .catch(function (err) {
-                    // @TODO: use logging.error
-                    console.log('ERRR ON SETUP', err);
-                    return null;
+                    }, _.merge({id: owner.id}, options));
                 });
         };
 
-        return models.User.getByEmail(profile.email_address, options)
-            .then(function (user) {
+        models.User.getByEmail(profile.email_address, options)
+            .then(function fetchedUser(user) {
                 if (user) {
-                    return Promise.resolve(user);
+                    return user;
                 }
 
                 if (inviteToken) {
@@ -146,26 +135,14 @@ strategies = {
 
                 return handleSetup();
             })
-            .then(function (user) {
-                if (!user) {
-                    return done(null, false);
-                }
-
+            .then(function updatePatronusToken(user) {
                 options.id = user.id;
-
-                // @TODO: only store for owner?
                 return models.User.edit({patronus_access_token: patronusAccessToken}, options);
             })
-            .then(function (user) {
-                if (!user) {
-                    return done(null, false);
-                }
-
+            .then(function returnResponse(user) {
                 done(null, user, profile);
             })
-            .catch(function (err) {
-                done(err);
-            });
+            .catch(done);
     }
 };
 

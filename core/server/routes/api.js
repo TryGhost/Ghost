@@ -2,7 +2,6 @@
 var express = require('express'),
     api = require('../api'),
     auth = require('../auth'),
-    config = require('../config'),
     apiRoutes;
 
 apiRoutes = function apiRoutes(middleware) {
