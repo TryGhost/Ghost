@@ -37,6 +37,7 @@ logger = {
  */
 updateDatabaseSchema = function (tasks, logger, modelOptions) {
     if (!tasks.length) {
+        logger.info('No database migration tasks found for this version');
         return Promise.resolve();
     }
 

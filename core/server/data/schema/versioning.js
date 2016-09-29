@@ -72,16 +72,15 @@ function getMigrationVersions(fromVersion, toVersion) {
  *
  * @param {String} version
  * @param {String} relPath
- * @param {Function} logger
  * @returns {Array}
  */
-function getVersionTasks(version, relPath, logger) {
+function getVersionTasks(version, relPath) {
     var tasks = [];
 
     try {
         tasks = require(path.join(relPath, version));
     } catch (e) {
-        logger.info('No tasks found for version', version);
+        // ignore
     }
 
     return tasks;

@@ -1530,8 +1530,8 @@ describe('Migrations', function () {
             var updateDatabaseSchema = update.__get__('updateDatabaseSchema');
 
             it('should not do anything if there are no tasks', function (done) {
-                updateDatabaseSchema([], {}, loggerStub).then(function () {
-                    loggerStub.info.called.should.be.false();
+                updateDatabaseSchema([], loggerStub).then(function () {
+                    loggerStub.info.called.should.be.true();
                     loggerStub.warn.called.should.be.false();
                     done();
                 }).catch(done);
