@@ -102,7 +102,7 @@
     "gulp-git-submodule": "1.0.1",
     "gulp-livereload": "3.8.1",
     "gulp-nodemon": "2.1.0",
-    "gulp-shell": "0.5.2",
+    "gulp-util": "3.0.7",
     "istanbul": "0.4.5",
     "matchdep": "1.0.1",
     "minimist": "1.2.0",
