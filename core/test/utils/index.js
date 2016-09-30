@@ -459,7 +459,13 @@ getFixtureOps = function getFixtureOps(toDos) {
     // Database initialisation
     if (toDos.init || toDos.default) {
         fixtureOps.push(function initDB() {
-            return migration.populate({tablesOnly: tablesOnly});
+            return new Promise(function initDb(resolve, reject) {
+                migration.populate({tablesOnly: tablesOnly})
+                    .then(function () {
+                        resolve();
+                    })
+                    .catch(reject);
+            });
         });
 
         delete toDos.default;
