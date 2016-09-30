@@ -66,6 +66,7 @@
     "passport": "0.3.2",
     "passport-http-bearer": "1.0.1",
     "passport-oauth2-client-password": "0.1.2",
+    "passport-ghost": "1.0.0",
     "path-match": "1.2.4",
     "rss": "1.2.1",
     "sanitize-html": "1.13.0",

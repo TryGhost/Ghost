@@ -129,6 +129,37 @@ function setupTasks(setupData) {
  * **See:** [API Methods](index.js.html#api%20methods)
  */
 authentication = {
+    /**
+     * Generate a pair of tokens
+     */
+    createTokens: function createTokens(data, options) {
+        var localAccessToken = globalUtils.uid(191),
+            localRefreshToken = globalUtils.uid(191),
+            accessExpires = Date.now() + globalUtils.ONE_HOUR_MS,
+            refreshExpires = Date.now() + globalUtils.ONE_WEEK_MS,
+            client = options.context.client_id,
+            user = options.context.user;
+
+        return models.Accesstoken.add({
+            token: localAccessToken,
+            user_id: user,
+            client_id: client,
+            expires: accessExpires
+        }).then(function () {
+            return models.Refreshtoken.add({
+                token: localRefreshToken,
+                user_id: user,
+                client_id: client,
+                expires: refreshExpires
+            });
+        }).then(function () {
+            return {
+                access_token: localAccessToken,
+                refresh_token: localRefreshToken,
+                expires_in: accessExpires
+            };
+        });
+    },
 
     /**
      * @description generate a reset token for a given email address
@@ -364,22 +395,23 @@ authentication = {
 
         function checkInvitation(email) {
             return models.Invite
-                .where({email: email, status: 'sent'})
-                .count('id')
-                .then(function then(count) {
-                    return !!count;
-                });
-        }
+                .findOne({email: email, status: 'sent'}, options)
+                .then(function fetchedInvite(invite) {
+                    if (!invite) {
+                        return {invitation: [{valid: false}]};
+                    }
 
-        function formatResponse(isInvited) {
-            return {invitation: [{valid: isInvited}]};
+                    return models.User.findOne({id: invite.get('created_by')})
+                        .then(function fetchedUser(user) {
+                            return {invitation: [{valid: true, invitedBy: user.get('name')}]};
+                        });
+                });
         }
 
         tasks = [
             processArgs,
             assertSetupCompleted(true),
-            checkInvitation,
-            formatResponse
+            checkInvitation
         ];
 
         return pipeline(tasks, localOptions);

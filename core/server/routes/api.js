@@ -1,22 +1,23 @@
 // # API routes
-var express     = require('express'),
-    api         = require('../api'),
+var express = require('express'),
+    api = require('../api'),
+    auth = require('../auth'),
     apiRoutes;
 
 apiRoutes = function apiRoutes(middleware) {
     var router = express.Router(),
         // Authentication for public endpoints
         authenticatePublic = [
-            middleware.api.authenticateClient,
-            middleware.api.authenticateUser,
-            middleware.api.requiresAuthorizedUserPublicAPI,
+            auth.authenticate.authenticateClient,
+            auth.authenticate.authenticateUser,
+            auth.authorize.requiresAuthorizedUserPublicAPI,
             middleware.api.cors
         ],
         // Require user for private endpoints
         authenticatePrivate = [
-            middleware.api.authenticateClient,
-            middleware.api.authenticateUser,
-            middleware.api.requiresAuthorizedUser,
+            auth.authenticate.authenticateClient,
+            auth.authenticate.authenticateUser,
+            auth.authorize.requiresAuthorizedUser,
             middleware.api.cors
         ];
 
@@ -48,7 +49,10 @@ apiRoutes = function apiRoutes(middleware) {
     router.del('/posts/:id', authenticatePrivate, api.http(api.posts.destroy));
 
     // ## Schedules
-    router.put('/schedules/posts/:id', [middleware.api.authenticateClient, middleware.api.authenticateUser], api.http(api.schedules.publishPost));
+    router.put('/schedules/posts/:id', [
+        auth.authenticate.authenticateClient,
+        auth.authenticate.authenticateUser
+    ], api.http(api.schedules.publishPost));
 
     // ## Settings
     router.get('/settings', authenticatePrivate, api.http(api.settings.browse));
@@ -57,13 +61,15 @@ apiRoutes = function apiRoutes(middleware) {
 
     // ## Users
     router.get('/users', authenticatePublic, api.http(api.users.browse));
-
     router.get('/users/:id', authenticatePublic, api.http(api.users.read));
     router.get('/users/slug/:slug', authenticatePublic, api.http(api.users.read));
     router.get('/users/email/:email', authenticatePublic, api.http(api.users.read));
+
     router.put('/users/password', authenticatePrivate, api.http(api.users.changePassword));
     router.put('/users/owner', authenticatePrivate, api.http(api.users.transferOwnership));
     router.put('/users/:id', authenticatePrivate, api.http(api.users.edit));
+
+    router.post('/users', authenticatePrivate, api.http(api.users.add));
     router.del('/users/:id', authenticatePrivate, api.http(api.users.destroy));
 
     // ## Tags
@@ -87,7 +93,7 @@ apiRoutes = function apiRoutes(middleware) {
     router.get('/subscribers/:id', middleware.api.labs.subscribers, authenticatePrivate, api.http(api.subscribers.read));
     router.post('/subscribers', middleware.api.labs.subscribers, authenticatePublic, api.http(api.subscribers.add));
     router.put('/subscribers/:id', middleware.api.labs.subscribers, authenticatePrivate, api.http(api.subscribers.edit));
-    router.del('/subscribers/:id',  middleware.api.labs.subscribers, authenticatePrivate, api.http(api.subscribers.destroy));
+    router.del('/subscribers/:id', middleware.api.labs.subscribers, authenticatePrivate, api.http(api.subscribers.destroy));
 
     // ## Roles
     router.get('/roles/', authenticatePrivate, api.http(api.roles.browse));
@@ -151,9 +157,16 @@ apiRoutes = function apiRoutes(middleware) {
     router.get('/authentication/setup', api.http(api.authentication.isSetup));
     router.post('/authentication/token',
         middleware.spamPrevention.signin,
-        middleware.api.authenticateClient,
-        middleware.oauth.generateAccessToken
+        auth.authenticate.authenticateClient,
+        auth.oauth.generateAccessToken
     );
+
+    router.post('/authentication/ghost', [
+        auth.authenticate.authenticateClient,
+        auth.authenticate.authenticateGhostUser,
+        api.http(api.authentication.createTokens)
+    ]);
+
     router.post('/authentication/revoke', authenticatePrivate, api.http(api.authentication.revoke));
 
     // ## Uploads
