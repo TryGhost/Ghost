@@ -60,6 +60,8 @@ themeHandler = {
 
         // clear the view cache
         blogApp.cache = {};
+        // reset the asset hash
+        config.assetHash = null;
 
         // set view engine
         hbsOptions = {
