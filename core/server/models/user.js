@@ -131,6 +131,7 @@ User = ghostBookshelf.Model.extend({
         var attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
         // remove password hash for security reasons
         delete attrs.password;
+        delete attrs.patronus_access_token;
 
         if (!options || !options.context || (!options.context.user && !options.context.internal)) {
             delete attrs.email;

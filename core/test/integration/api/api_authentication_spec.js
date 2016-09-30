@@ -394,6 +394,7 @@ describe('Authentication API', function () {
                     .then(function (response) {
                         should.exist(response);
                         response.invitation[0].valid.should.be.true();
+                        response.invitation[0].invitedBy.should.eql('Joe Bloggs');
                     });
             });
 
