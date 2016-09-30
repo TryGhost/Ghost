@@ -36,6 +36,21 @@ export default function mockAuthentication(server) {
         }
     });
 
+    server.get('/authentication/invitation/', function (db, request) {
+        let {email} = request.queryParams;
+        let [invite] = db.invites.where({email});
+        let user = db.users.find(invite.created_by);
+        let valid = !!invite;
+        let invitedBy = user && user.name;
+
+        return {
+            invitation: [{
+                valid,
+                invitedBy
+            }]
+        };
+    });
+
     /* Setup ---------------------------------------------------------------- */
 
     server.post('/authentication/setup', function (db, request) {
@@ -68,6 +83,21 @@ export default function mockAuthentication(server) {
             setup: [
                 {status: true}
             ]
+        };
+    });
+
+    /* OAuth ---------------------------------------------------------------- */
+
+    server.post('/authentication/ghost', function (db) {
+        if (!db.users.length) {
+            let [role] = db.roles.where({name: 'Owner'});
+            server.create('user', {email: 'oauthtest@example.com', roles: [role]});
+        }
+
+        return {
+            access_token: '5JhTdKI7PpoZv4ROsFoERc6wCHALKFH5jxozwOOAErmUzWrFNARuH1q01TYTKeZkPW7FmV5MJ2fU00pg9sm4jtH3Z1LjCf8D6nNqLYCfFb2YEKyuvG7zHj4jZqSYVodN2YTCkcHv6k8oJ54QXzNTLIDMlCevkOebm5OjxGiJpafMxncm043q9u1QhdU9eee3zouGRMVVp8zkKVoo5zlGMi3zvS2XDpx7xsfk8hKHpUgd7EDDQxmMueifWv7hv6n',
+            expires_in: 3600,
+            refresh_token: 'XP13eDjwV5mxOcrq1jkIY9idhdvN3R1Br5vxYpYIub2P5Hdc8pdWMOGmwFyoUshiEB62JWHTl8H1kACJR18Z8aMXbnk5orG28br2kmVgtVZKqOSoiiWrQoeKTqrRV0t7ua8uY5HdDUaKpnYKyOdpagsSPn3WEj8op4vHctGL3svOWOjZhq6F2XeVPMR7YsbiwBE8fjT3VhTB3KRlBtWZd1rE0Qo2EtSplWyjGKv1liAEiL0ndQoLeeSOCH4rTP7'
         };
     });
 }

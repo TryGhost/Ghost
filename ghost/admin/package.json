@@ -93,6 +93,7 @@
     "moment-timezone": "0.5.5",
     "password-generator": "2.0.2",
     "top-gh-contribs": "2.0.4",
+    "torii": "0.8.0",
     "walk-sync": "0.3.1"
   },
   "ember-addon": {

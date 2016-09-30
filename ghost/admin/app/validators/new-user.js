@@ -4,16 +4,22 @@ export default BaseValidator.extend({
     properties: ['name', 'email', 'password'],
 
     name(model) {
+        let usingOAuth = model.get('config.ghostOAuth');
         let name = model.get('name');
 
-        if (!validator.isLength(name, 1)) {
+        if (!usingOAuth && !validator.isLength(name, 1)) {
             model.get('errors').add('name', 'Please enter a name.');
             this.invalidate();
         }
     },
 
     email(model) {
+        let usingOAuth = model.get('config.ghostOAuth');
         let email = model.get('email');
+
+        if (usingOAuth) {
+            return;
+        }
 
         if (validator.empty(email)) {
             model.get('errors').add('email', 'Please enter an email.');
@@ -25,9 +31,10 @@ export default BaseValidator.extend({
     },
 
     password(model) {
+        let usingOAuth = model.get('config.ghostOAuth');
         let password = model.get('password');
 
-        if (!validator.isLength(password, 8)) {
+        if (!usingOAuth && !validator.isLength(password, 8)) {
             model.get('errors').add('password', 'Password must be at least 8 characters long');
             this.invalidate();
         }

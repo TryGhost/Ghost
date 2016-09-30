@@ -1,4 +1,5 @@
 /* jshint expr:true */
+import Ember from 'ember';
 import {
     describe,
     it,
@@ -10,6 +11,11 @@ import startApp from 'ghost-admin/tests/helpers/start-app';
 import destroyApp from 'ghost-admin/tests/helpers/destroy-app';
 import { invalidateSession, authenticateSession } from 'ghost-admin/tests/helpers/ember-simple-auth';
 import Mirage from 'ember-cli-mirage';
+import $ from 'jquery';
+import {
+    stubSuccessfulOAuthConnect,
+    stubFailedOAuthConnect
+} from 'ghost-admin/tests/helpers/oauth';
 
 describe('Acceptance: Setup', function () {
     let application;
@@ -406,6 +412,123 @@ describe('Acceptance: Setup', function () {
                 // it displays failure alert
                 expect(find('.gh-alert-red').length, 'number of failure alerts')
                     .to.equal(1);
+            });
+        });
+    });
+
+    describe('using Ghost OAuth', function () {
+        beforeEach(function () {
+            // mimic a new install
+            server.get('/authentication/setup/', function () {
+                return {
+                    setup: [
+                        {status: false}
+                    ]
+                };
+            });
+
+            // simulate active oauth config
+            $('head').append('<meta name="env-ghostAuthId" content="6e0704b3-c653-4c12-8da7-584232b5c629" />');
+
+            // ensure we have roles available
+            server.loadFixtures('roles');
+        });
+
+        afterEach(function () {
+            // ensure we don't leak OAuth config to other tests
+            $('meta[name="env-ghostAuthId"]').remove();
+        });
+
+        it('displays the connect form and validates', function () {
+            invalidateSession(application);
+
+            visit('/setup');
+
+            andThen(() => {
+                // it redirects to step one
+                expect(
+                    currentURL(),
+                    'url after accessing /setup'
+                ).to.equal('/setup/one');
+            });
+
+            click('.btn-green');
+
+            andThen(() => {
+                expect(
+                    find('button.login').text().trim(),
+                    'login button text'
+                ).to.equal('Sign in with Ghost');
+            });
+
+            click('.btn-green');
+
+            andThen(() => {
+                let sessionFG = find('button.login').closest('.form-group');
+                let titleFG = find('input[name="blog-title"]').closest('.form-group');
+
+                // session is validated
+                expect(
+                    sessionFG.hasClass('error'),
+                    'session form group has error class'
+                ).to.be.true;
+
+                expect(
+                    sessionFG.find('.response').text().trim(),
+                    'session validation text'
+                ).to.match(/Please connect a Ghost\.org account/i);
+
+                // blog title is validated
+                expect(
+                    titleFG.hasClass('error'),
+                    'title form group has error class'
+                ).to.be.true;
+
+                expect(
+                    titleFG.find('.response').text().trim(),
+                    'title validation text'
+                ).to.match(/please enter a blog title/i);
+            });
+
+            // TODO: test that connecting clears session validation error
+            // TODO: test that typing in blog title clears validation error
+        });
+
+        it('can connect and setup successfully', function () {
+            stubSuccessfulOAuthConnect(application);
+
+            visit('/setup/two');
+            click('button.login');
+
+            andThen(() => {
+                expect(
+                    find('button.login').text().trim(),
+                    'login button text when connected'
+                ).to.equal('Connected: oauthtest@example.com');
+            });
+
+            fillIn('input[name="blog-title"]', 'Ghostbusters');
+            click('.btn-green');
+
+            andThen(() => {
+                expect(
+                    currentURL(),
+                    'url after submitting'
+                ).to.equal('/setup/three');
+            });
+        });
+
+        it('handles failed connect', function () {
+            stubFailedOAuthConnect(application);
+
+            visit('/setup/two');
+            click('button.login');
+
+            andThen(() => {
+                expect(
+                    find('.main-error').text().trim(),
+                    'error text after failed oauth connect'
+                ).to.match(/authentication with ghost\.org denied or failed/i);
             });
         });
     });

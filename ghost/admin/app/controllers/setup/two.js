@@ -89,6 +89,90 @@ export default Controller.extend(ValidationEngine, {
         }
     },
 
+    _passwordSetup() {
+        let setupProperties = ['blogTitle', 'name', 'email', 'password'];
+        let data = this.getProperties(setupProperties);
+        let config = this.get('config');
+        let method = this.get('blogCreated') ? 'put' : 'post';
+
+        this.toggleProperty('submitting');
+        this.set('flowErrors', '');
+
+        this.get('hasValidated').addObjects(setupProperties);
+        this.validate().then(() => {
+            let authUrl = this.get('ghostPaths.url').api('authentication', 'setup');
+            this.get('ajax')[method](authUrl, {
+                data: {
+                    setup: [{
+                        name: data.name,
+                        email: data.email,
+                        password: data.password,
+                        blogTitle: data.blogTitle
+                    }]
+                }
+            }).then((result) => {
+                config.set('blogTitle', data.blogTitle);
+
+                // don't try to login again if we are already logged in
+                if (this.get('session.isAuthenticated')) {
+                    return this.afterAuthentication(result);
+                }
+
+                // Don't call the success handler, otherwise we will be redirected to admin
+                this.set('session.skipAuthSuccessHandler', true);
+                this.get('session').authenticate('authenticator:oauth2', this.get('email'), this.get('password')).then(() => {
+                    this.set('blogCreated', true);
+                    return this.afterAuthentication(result);
+                }).catch((error) => {
+                    this._handleAuthenticationError(error);
+                }).finally(() => {
+                    this.set('session.skipAuthSuccessHandler', undefined);
+                });
+            }).catch((error) => {
+                this._handleSaveError(error);
+            });
+        }).catch(() => {
+            this.toggleProperty('submitting');
+            this.set('flowErrors', 'Please fill out the form to setup your blog.');
+        });
+    },
+
+    // TODO: for OAuth ghost is in the "setup completed" step as soon
+    // as a user has been authenticated so we need to use the standard settings
+    // update to set the blog title before redirecting
+    _oauthSetup() {
+        let blogTitle = this.get('blogTitle');
+        let config = this.get('config');
+
+        this.get('hasValidated').addObjects(['blogTitle', 'session']);
+
+        return this.validate().then(() => {
+            this.store.queryRecord('setting', {type: 'blog,theme,private'})
+                .then((settings) => {
+                    settings.set('title', blogTitle);
+
+                    return settings.save()
+                        .then((settings) => {
+                            // update the config so that the blog title shown in
+                            // the nav bar is also updated
+                            config.set('blogTitle', settings.get('title'));
+
+                            // this.blogCreated is used by step 3 to check if step 2
+                            // has been completed
+                            this.set('blogCreated', true);
+                            return this.afterAuthentication(settings);
+                        })
+                        .catch((error) => {
+                            this._handleSaveError(error);
+                        });
+                })
+                .finally(() => {
+                    this.toggleProperty('submitting');
+                    this.set('session.skipAuthSuccessHandler', undefined);
+                });
+        });
+    },
+
     actions: {
         preValidate(model) {
             // Only triggers validation if a value has been entered, preventing empty errors on focusOut
@@ -98,51 +182,11 @@ export default Controller.extend(ValidationEngine, {
         },
 
         setup() {
-            let setupProperties = ['blogTitle', 'name', 'email', 'password'];
-            let data = this.getProperties(setupProperties);
-            let config = this.get('config');
-            let method = this.get('blogCreated') ? 'put' : 'post';
-
-            this.toggleProperty('submitting');
-            this.set('flowErrors', '');
-
-            this.get('hasValidated').addObjects(setupProperties);
-            this.validate().then(() => {
-                let authUrl = this.get('ghostPaths.url').api('authentication', 'setup');
-                this.get('ajax')[method](authUrl, {
-                    data: {
-                        setup: [{
-                            name: data.name,
-                            email: data.email,
-                            password: data.password,
-                            blogTitle: data.blogTitle
-                        }]
-                    }
-                }).then((result) => {
-                    config.set('blogTitle', data.blogTitle);
-
-                    // don't try to login again if we are already logged in
-                    if (this.get('session.isAuthenticated')) {
-                        return this.afterAuthentication(result);
-                    }
-
-                    // Don't call the success handler, otherwise we will be redirected to admin
-                    this.set('session.skipAuthSuccessHandler', true);
-                    this.get('session').authenticate('authenticator:oauth2', this.get('email'), this.get('password')).then(() => {
-                        this.set('blogCreated', true);
-                        return this.afterAuthentication(result);
-                    }).catch((error) => {
-                        this._handleAuthenticationError(error);
-                    }).finally(() => {
-                        this.set('session.skipAuthSuccessHandler', undefined);
-                    });
-                }).catch((error) => {
-                    this._handleSaveError(error);
-                });
-            }).catch(() => {
-                this.toggleProperty('submitting');
-                this.set('flowErrors', 'Please fill out the form to setup your blog.');
-            });
+            if (this.get('config.ghostOAuth')) {
+                return this._oauthSetup();
+            } else {
+                return this._passwordSetup();
+            }
         },
 
         setImage(image) {
