@@ -5,12 +5,12 @@ var debug           = require('debug')('ghost:middleware'),
     errors          = require('../errors'),
     express         = require('express'),
     hbs             = require('express-hbs'),
-    logger          = require('morgan'),
     path            = require('path'),
     routes          = require('../routes'),
     serveStatic     = require('express').static,
     slashes         = require('connect-slashes'),
     storage         = require('../storage'),
+    logging         = require('../logging'),
     utils           = require('../utils'),
     sitemapHandler  = require('../data/xml/sitemap/handler'),
     multer          = require('multer'),
@@ -50,8 +50,7 @@ middleware = {
 
 setupMiddleware = function setupMiddleware(blogApp) {
     debug('Middleware start');
-    var logging = config.get('logging'),
-        corePath = config.get('paths').corePath,
+    var corePath = config.get('paths').corePath,
         adminApp = express(),
         adminHbs = hbs.create();
 
@@ -79,14 +78,17 @@ setupMiddleware = function setupMiddleware(blogApp) {
     // (X-Forwarded-Proto header will be checked, if present)
     blogApp.enable('trust proxy');
 
-    // Logging configuration
-    if (logging !== false) {
-        if (blogApp.get('env') !== 'development') {
-            blogApp.use(logger('combined', logging));
-        } else {
-            blogApp.use(logger('dev', logging));
-        }
-    }
+    /**
+     * request logging
+     * @TODO: add error to output
+     */
+    blogApp.use(function expressLogging(req, res, next) {
+        res.once('finish', function () {
+            logging.request({req: req, res: res});
+        });
+
+        next();
+    });
 
     if (debug.enabled) {
         // debug keeps a timer, so this is super useful
