@@ -24,6 +24,7 @@ update = function update(tasks, logger, modelOptions) {
     logger.info('Running fixture updates');
 
     if (!tasks.length) {
+        logger.info('No fixture migration tasks found for this version');
         return Promise.resolve();
     }
 
