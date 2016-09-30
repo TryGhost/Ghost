@@ -10,6 +10,7 @@ var testUtils   = require('../../utils'),
     gravatar    = require('../../../server/utils/gravatar'),
     UserModel   = require('../../../server/models/user').User,
     RoleModel   = require('../../../server/models/role').Role,
+    models      = require('../../../server/models'),
     events      = require('../../../server/events'),
     context     = testUtils.context.admin,
     sandbox     = sinon.sandbox.create();
@@ -29,6 +30,16 @@ describe('User Model', function run() {
 
     beforeEach(function () {
         eventSpy = sandbox.spy(events, 'emit');
+
+        /**
+         * @TODO:
+         * - this is not pretty
+         * - eventSpy get's now more events then expected
+         * - because on migrations.populate we trigger populateDefaults
+         * - how to solve? eventSpy must be local and not global?
+         */
+        models.init();
+        sandbox.stub(models.Settings, 'populateDefaults').returns(Promise.resolve());
     });
 
     describe('Registration', function runRegistration() {

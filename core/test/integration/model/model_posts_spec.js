@@ -10,6 +10,7 @@ var testUtils       = require('../../utils'),
     ghostBookshelf  = require('../../../server/models/base'),
     PostModel       = require('../../../server/models/post').Post,
     TagModel        = require('../../../server/models/tag').Tag,
+    models          = require('../../../server/models'),
     events          = require('../../../server/events'),
     errors          = require('../../../server/errors'),
     DataGenerator   = testUtils.DataGenerator,
@@ -28,6 +29,16 @@ describe('Post Model', function () {
 
     beforeEach(function () {
         eventSpy = sandbox.spy(events, 'emit');
+
+        /**
+         * @TODO:
+         * - this is not pretty
+         * - eventSpy get's now more events then expected
+         * - because on migrations.populate we trigger populateDefaults
+         * - how to solve? eventSpy must be local and not global?
+         */
+        models.init();
+        sandbox.stub(models.Settings, 'populateDefaults').returns(Promise.resolve());
     });
 
     afterEach(function () {

@@ -5,6 +5,7 @@ var Promise = require('bluebird'),
     commands = require('../schema').commands,
     fixtures = require('./fixtures'),
     errors = require('../../errors'),
+    models = require('../../models'),
     db = require('../../data/db'),
     schema = require('../schema').tables,
     schemaTables = Object.keys(schema),
@@ -35,7 +36,6 @@ populate = function populate(options) {
         };
 
     logger.info('Creating tables...');
-
     return db.knex.transaction(function populateDatabaseInTransaction(transaction) {
         return Promise.mapSeries(schemaTables, function createTable(table) {
             logger.info('Creating table: ' + table);
@@ -46,6 +46,8 @@ populate = function populate(options) {
             }
 
             return fixtures.populate(logger, _.merge({}, {transacting: transaction}, modelOptions));
+        }).then(function () {
+            return models.Settings.populateDefaults({transacting: transaction});
         });
     }).catch(function populateDatabaseError(err) {
         logger.warn('rolling back...');
