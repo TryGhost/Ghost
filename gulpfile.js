@@ -5,14 +5,18 @@ var gulp                = require('gulp-help')(require('gulp'), {hideEmpty: true
     jscs                = require('gulp-jscs'),
     jshint              = require('gulp-jshint'),
     jsonlint            = require('gulp-jsonlint'),
+    submodule           = require('gulp-git-submodule'),
+    mocha               = require('gulp-mocha'),
+    clean               = require('gulp-clean'),
+    plumber             = require('gulp-plumber'),
     chalk               = require('chalk'),
     runSequence         = require('run-sequence').use(gulp),
     argv                = require('minimist')(process.argv.slice(2)),
     _                   = require('lodash'),
     exec                = require('child_process').exec,
     spawn               = require('child_process').spawn,
-    submodule           = require('gulp-git-submodule'),
     fs                  = require('fs'),
+    overrides           = require('./core/server/overrides'),
     paramConfig,
     gitBranches,
     swallowError,
@@ -20,7 +24,8 @@ var gulp                = require('gulp-help')(require('gulp'), {hideEmpty: true
     filterParams,
     getGitCommand,
     checkDirectoryExistance,
-    ember;
+    ember,
+    testOptions;
 
 // paramConfig is used to store constant values to check against
 // called parameter as well as the paths for each repository
@@ -69,6 +74,16 @@ gitBranches = {
     ghost: {},
     admin: {},
     casper: {}
+};
+
+testOptions = {
+    timeout: 15000,
+    require: overrides,
+    reporter: 'spec',
+    globals: {
+        should: require('should')
+    },
+    bail: false
 };
 
 submodule.registerTasks(gulp);
@@ -535,6 +550,76 @@ gulp.task('lint', 'Linting and code style check of all Ghost core JavaScript and
         }
     });
 });
+
+gulp.task('test:setup', ['test:clean'], function () {
+    process.env.NODE_ENV = process.env.TRAVIS ? process.env.NODE_ENV : 'testing';
+});
+
+gulp.task('test:clean', function () {
+    gulp.src(['content/data/ghost-test.db'], {read: false})
+        .pipe(clean());
+});
+
+gulp.task('test:unit', ['test:setup'], function () {
+    gulp.doneCallback = function (err) {
+        process.exit(err ? 1 : 0);
+    };
+    return gulp.src([
+        'core/test/unit/**/*_spec.js',
+        'core/server/apps/**/tests/*_spec.js'
+    ], {read: false})
+        .pipe(plumber())
+        .pipe(mocha(testOptions))
+        .once('end', function () {
+            process.exit();
+        });
+});
+
+gulp.task('test:integration', ['test:setup'], function () {
+    gulp.doneCallback = function (err) {
+        process.exit(err ? 1 : 0);
+    };
+    return gulp.src([
+        'core/test/integration/**/*_spec.js',
+        'core/test/integration/*_spec.js'
+    ], {read: false})
+        .pipe(plumber())
+        .pipe(mocha(testOptions))
+        .once('end', function () {
+            process.exit();
+        });
+});
+
+gulp.task('test:routes', ['test:setup'], function () {
+    gulp.doneCallback = function (err) {
+        process.exit(err ? 1 : 0);
+    };
+    return gulp.src(['core/test/functional/routes/**/*_spec.js'], {read: false})
+        .pipe(plumber())
+        .pipe(mocha(testOptions))
+        .once('end', function () {
+            process.exit();
+        });
+});
+
+gulp.task('test:module', ['test:setup'], function () {
+    gulp.doneCallback = function (err) {
+        process.exit(err ? 1 : 0);
+    };
+    return gulp.src(['core/test/functional/module/**/*_spec.js'], {read: false})
+        .pipe(plumber())
+        .pipe(mocha(testOptions))
+        .once('end', function () {
+            process.exit();
+        });
+});
+
+gulp.task('test:server', ['test:unit', 'test:integration', 'test:routes', 'test:module']);
+
+// TODO: call client test
+// gulp.task('test:client');
+
+gulp.task('validate', ['lint', 'test:server', 'test:client']);
 
 // Default task at the moment is development.
 // TODO: As soon as we have a production build task, we should
