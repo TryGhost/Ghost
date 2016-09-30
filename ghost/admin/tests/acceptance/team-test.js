@@ -716,6 +716,44 @@ describe('Acceptance: Team', function () {
             });
         });
 
+        describe('using Ghost OAuth', function () {
+            beforeEach(function () {
+                // simulate active oauth config
+                $('head').append('<meta name="env-ghostAuthId" content="6e0704b3-c653-4c12-8da7-584232b5c629" />');
+
+                server.loadFixtures();
+            });
+
+            afterEach(function () {
+                // ensure we don't leak OAuth config to other tests
+                $('meta[name="env-ghostAuthId"]').remove();
+            });
+
+            it('doesn\'t show the password reset form', function () {
+                visit(`/team/${admin.slug}`);
+
+                andThen(() => {
+                    // ensure that the normal form is displayed so we don't get
+                    // false positives
+                    expect(
+                        find('input#user-slug').length,
+                        'profile form is displayed'
+                    ).to.equal(1);
+
+                    // check that the password form is hidden
+                    expect(
+                        find('#password-reset').length,
+                        'presence of password reset form'
+                    ).to.equal(0);
+
+                    expect(
+                        find('#user-password-new').length,
+                        'presence of new password field'
+                    ).to.equal(0);
+                });
+            });
+        });
+
         describe('own user', function () {
             beforeEach(function () {
                 server.loadFixtures();

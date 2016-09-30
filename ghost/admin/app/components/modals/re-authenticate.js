@@ -12,8 +12,10 @@ export default ModalComponent.extend(ValidationEngine, {
     submitting: false,
     authenticationError: null,
 
+    config: injectService(),
     notifications: injectService(),
     session: injectService(),
+    torii: injectService(),
 
     identification: computed('session.user.email', function () {
         return this.get('session.user.email');
@@ -35,35 +37,69 @@ export default ModalComponent.extend(ValidationEngine, {
         });
     },
 
+    _passwordConfirm() {
+        // Manually trigger events for input fields, ensuring legacy compatibility with
+        // browsers and password managers that don't send proper events on autofill
+        $('#login').find('input').trigger('change');
+
+        this.set('authenticationError', null);
+
+        this.validate({property: 'signin'}).then(() => {
+            this._authenticate().then(() => {
+                this.get('notifications').closeAlerts();
+                this.send('closeModal');
+            }).catch((error) => {
+                if (error && error.errors) {
+                    error.errors.forEach((err) => {
+                        if (isVersionMismatchError(err)) {
+                            return this.get('notifications').showAPIError(error);
+                        }
+                        err.message = htmlSafe(err.message);
+                    });
+
+                    this.get('errors').add('password', 'Incorrect password');
+                    this.get('hasValidated').pushObject('password');
+                    this.set('authenticationError', error.errors[0].message);
+                }
+            });
+        }, () => {
+            this.get('hasValidated').pushObject('password');
+        });
+    },
+
+    _oauthConfirm() {
+        // TODO: remove duplication between signin/signup/re-auth
+        let authStrategy = 'authenticator:oauth2-ghost';
+
+        this.toggleProperty('submitting');
+        this.set('authenticationError', '');
+
+        this.get('torii')
+            .open('ghost-oauth2', {type: 'signin'})
+            .then((authentication) => {
+                this.get('session').set('skipAuthSuccessHandler', true);
+
+                this.get('session').authenticate(authStrategy, authentication).finally(() => {
+                    this.get('session').set('skipAuthSuccessHandler', undefined);
+
+                    this.toggleProperty('submitting');
+                    this.get('notifications').closeAlerts();
+                    this.send('closeModal');
+                });
+            })
+            .catch(() => {
+                this.toggleProperty('submitting');
+                this.set('authenticationError', 'Authentication with Ghost.org denied or failed');
+            });
+    },
+
     actions: {
         confirm() {
-            // Manually trigger events for input fields, ensuring legacy compatibility with
-            // browsers and password managers that don't send proper events on autofill
-            $('#login').find('input').trigger('change');
-
-            this.set('authenticationError', null);
-
-            this.validate({property: 'signin'}).then(() => {
-                this._authenticate().then(() => {
-                    this.get('notifications').closeAlerts('post.save');
-                    this.send('closeModal');
-                }).catch((error) => {
-                    if (error && error.errors) {
-                        error.errors.forEach((err) => {
-                            if (isVersionMismatchError(err)) {
-                                return this.get('notifications').showAPIError(error);
-                            }
-                            err.message = htmlSafe(err.message);
-                        });
-
-                        this.get('errors').add('password', 'Incorrect password');
-                        this.get('hasValidated').pushObject('password');
-                        this.set('authenticationError', error.errors[0].message);
-                    }
-                });
-            }, () => {
-                this.get('hasValidated').pushObject('password');
-            });
+            if (this.get('config.ghostOAuth')) {
+                return this._oauthConfirm();
+            } else {
+                return this._passwordConfirm();
+            }
         }
     }
 });

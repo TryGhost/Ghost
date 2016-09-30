@@ -19,6 +19,7 @@ export default Controller.extend({
     _scratchTwitter: null,
 
     ajax: injectService(),
+    config: injectService(),
     dropdown: injectService(),
     ghostPaths: injectService(),
     notifications: injectService(),
@@ -48,6 +49,10 @@ export default Controller.extend({
             this.get('user.isAuthor')))) {
             return true;
         }
+    }),
+
+    canChangePassword: computed('config.ghostOAuth', 'isAdminUserOnOwnerProfile', function () {
+        return !this.get('config.ghostOAuth') && !this.get('isAdminUserOnOwnerProfile');
     }),
 
     // duplicated in gh-user-active -- find a better home and consolidate?

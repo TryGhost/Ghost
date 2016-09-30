@@ -4,12 +4,18 @@
 <a class="close icon-x" href="" title="Close" {{action "closeModal"}}><span class="hidden">Close</span></a>
 
 <div class="modal-body {{if authenticationError 'error'}}">
-    <form id="login" class="login-form" method="post" novalidate="novalidate" {{action "confirm" on="submit"}}>
-        {{#gh-validation-status-container class="password-wrap" errors=errors property="password" hasValidated=hasValidated}}
-            {{gh-input password class="password" type="password" placeholder="Password" name="password" update=(action (mut password))}}
-        {{/gh-validation-status-container}}
-        {{#gh-spin-button class="btn btn-blue" type="submit" submitting=submitting}}Log in{{/gh-spin-button}}
-   </form>
+
+    {{#if config.ghostOAuth}}
+        {{#gh-spin-button class="login btn btn-blue btn-block" type="submit" action="confirm" tabindex="3" submitting=loggingIn autoWidth="false"}}Sign in with Ghost{{/gh-spin-button}}
+    {{else}}
+        <form id="login" class="login-form" method="post" novalidate="novalidate" {{action "confirm" on="submit"}}>
+            {{#gh-validation-status-container class="password-wrap" errors=errors property="password" hasValidated=hasValidated}}
+                {{gh-input password class="password" type="password" placeholder="Password" name="password" update=(action (mut password))}}
+            {{/gh-validation-status-container}}
+            {{#gh-spin-button class="btn btn-blue" type="submit" submitting=submitting}}Log in{{/gh-spin-button}}
+        </form>
+    {{/if}}
+
    {{#if authenticationError}}
      <p class="response">{{authenticationError}}</p>
    {{/if}}

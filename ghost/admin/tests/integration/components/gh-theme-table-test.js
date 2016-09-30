@@ -185,8 +185,6 @@ describeComponent(
                 return $(name).text().trim();
             }).toArray();
 
-            console.log(packageNames);
-
             expect(
                 packageNames,
                 'themes are ordered by label, folder names shown for duplicates'

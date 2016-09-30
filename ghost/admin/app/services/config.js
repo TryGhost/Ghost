@@ -3,8 +3,9 @@ import Ember from 'ember';
 import Service from 'ember-service';
 import computed from 'ember-computed';
 import injectService from 'ember-service/inject';
+import {isBlank} from 'ember-utils';
 
-// ember-cli-shims doesn't export _ProxyMixin
+// ember-cli-shims doesn't export _ProxyMixin ot testing
 const {_ProxyMixin} = Ember;
 const {isNumeric} = $;
 
@@ -47,7 +48,7 @@ export default Service.extend(_ProxyMixin, {
         return config;
     }),
 
-    availableTimezones: computed(function() {
+    availableTimezones: computed(function () {
         let timezonesUrl = this.get('ghostPaths.url').api('configuration', 'timezones');
 
         return this.get('ajax').request(timezonesUrl).then((configTimezones) => {
@@ -57,5 +58,9 @@ export default Service.extend(_ProxyMixin, {
 
             return timezonesObj;
         });
+    }),
+
+    ghostOAuth: computed('ghostAuthId', function () {
+        return !isBlank(this.get('ghostAuthId'));
     })
 });

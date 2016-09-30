@@ -2,42 +2,59 @@
 
     <div class="gh-flow-content-wrap">
         <section class="gh-flow-content">
-            <header>
-                <h1>Create your account</h1>
-            </header>
+            {{#if config.ghostOAuth}}
+                <header>
+                        <h1>{{config.blogTitle}}</h1>
+                        <p>
+                            {{!-- TODO: show invite creator's name/email --}}
+                            Accept your invite from <strong>{{model.invitedBy}}</strong>
+                        </p>
+                </header>
 
-            <form id="signup" class="gh-flow-create" method="post" novalidate="novalidate">
-                {{!-- Hack to stop Chrome's broken auto-fills --}}
-                <input style="display:none;" type="text" name="fakeusernameremembered"/>
-                <input style="display:none;" type="password" name="fakepasswordremembered"/>
+                <form id="signup" class="gh-signin" method="post" novalidate="novalidate">
+                    {{#gh-spin-button class="login btn btn-blue btn-block" type="submit" action="authenticateWithGhostOrg" tabindex="3" submitting=loggingIn autoWidth="false"}}
+                        Sign in with Ghost to accept
+                    {{/gh-spin-button}}
+                </form>
+            {{else}}
+                <header>
+                    <h1>Create your account</h1>
+                </header>
 
-                {{gh-profile-image fileStorage=config.fileStorage email=model.email setImage="setImage"}}
+                <form id="signup" class="gh-flow-create" method="post" novalidate="novalidate">
+                    {{!-- Hack to stop Chrome's broken auto-fills --}}
+                    <input style="display:none;" type="text" name="fakeusernameremembered"/>
+                    <input style="display:none;" type="password" name="fakepasswordremembered"/>
 
-                {{#gh-form-group}}
-                    <label for="email-address">Email address</label>
-                    <span class="input-icon icon-mail">
-                        {{gh-input model.email type="email" name="email" placeholder="Eg. john@example.com" disabled="disabled" autocorrect="off"}}
-                    </span>
-                {{/gh-form-group}}
+                    {{gh-profile-image fileStorage=config.fileStorage email=model.email setImage="setImage"}}
 
-                {{#gh-form-group errors=model.errors hasValidated=hasValidated property="name"}}
-                    <label for="full-name">Full name</label>
-                    <span class="input-icon icon-user">
-                        {{gh-trim-focus-input model.name tabindex="1" type="text" name="name" placeholder="Eg. John H. Watson" onenter=(action "signup") autocorrect="off" focusOut=(action "validate" "name") update=(action (mut model.name))}}
-                    </span>
-                    {{gh-error-message errors=model.errors property="name"}}
-                {{/gh-form-group}}
+                    {{#gh-form-group}}
+                        <label for="email-address">Email address</label>
+                        <span class="input-icon icon-mail">
+                            {{gh-input model.email type="email" name="email" placeholder="Eg. john@example.com" disabled="disabled" autocorrect="off"}}
+                        </span>
+                    {{/gh-form-group}}
 
-                {{#gh-form-group errors=model.errors hasValidated=hasValidated property="password"}}
-                    <label for="password">Password</label>
-                    <span class="input-icon icon-lock">
-                        {{gh-input model.password tabindex="2" type="password" name="password" placeholder="At least 8 characters" onenter=(action "signup") autocorrect="off" focusOut=(action "validate" "password") update=(action (mut model.password))}}
-                    </span>
-                    {{gh-error-message errors=model.errors property="password"}}
-                {{/gh-form-group}}
-            </form>
+                    {{#gh-form-group errors=model.errors hasValidated=hasValidated property="name"}}
+                        <label for="full-name">Full name</label>
+                        <span class="input-icon icon-user">
+                            {{gh-trim-focus-input model.name tabindex="1" type="text" name="name" placeholder="Eg. John H. Watson" onenter=(action "signup") autocorrect="off" focusOut=(action "validate" "name") update=(action (mut model.name))}}
+                        </span>
+                        {{gh-error-message errors=model.errors property="name"}}
+                    {{/gh-form-group}}
 
-            {{#gh-spin-button tabindex="3" type="submit" class="btn btn-green btn-lg btn-block" action="signup" submitting=submitting autoWidth="false"}}Create Account{{/gh-spin-button}}
+                    {{#gh-form-group errors=model.errors hasValidated=hasValidated property="password"}}
+                        <label for="password">Password</label>
+                        <span class="input-icon icon-lock">
+                            {{gh-input model.password tabindex="2" type="password" name="password" placeholder="At least 8 characters" onenter=(action "signup") autocorrect="off" focusOut=(action "validate" "password") update=(action (mut model.password))}}
+                        </span>
+                        {{gh-error-message errors=model.errors property="password"}}
+                    {{/gh-form-group}}
+                </form>
+
+                {{#gh-spin-button tabindex="3" type="submit" class="btn btn-green btn-lg btn-block" action="signup" submitting=submitting autoWidth="false"}}Create Account{{/gh-spin-button}}
+            {{/if}}
+
             <p class="main-error">{{{flowErrors}}}</p>
         </section>
     </div>

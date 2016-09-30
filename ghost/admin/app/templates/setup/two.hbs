@@ -1,44 +1,76 @@
-<header>
-    <h1>Create your account</h1>
-</header>
+{{#if config.ghostOAuth}}
+    <header>
+        <h1>Setup your blog</h1>
+    </header>
 
-<form id="setup" class="gh-flow-create">
-    {{!-- Horrible hack to prevent Chrome from incorrectly auto-filling inputs --}}
-    <input style="display:none;" type="text" name="fakeusernameremembered"/>
-    <input style="display:none;" type="password" name="fakepasswordremembered"/>
+    <form id="setup" class="gh-flow-create" {{action "setup" on="submit"}}>
+        {{#gh-form-group errors=errors hasValidated=hasValidated property="session"}}
+            {{#gh-spin-button class="login btn btn-blue btn-block" type="button" action="authenticateWithGhostOrg" tabindex="3" submitting=loggingIn autoWidth="false"}}
+                {{#if session.isAuthenticated}}
+                    Connected: {{session.user.email}}
+                {{else}}
+                    Sign in with Ghost
+                {{/if}}
+            {{/gh-spin-button}}
+            {{gh-error-message errors=errors property="session"}}
+        {{/gh-form-group}}
 
-    {{gh-profile-image fileStorage=config.fileStorage email=email setImage="setImage"}}
-    {{#gh-form-group errors=errors hasValidated=hasValidated property="email"}}
-        <label for="email-address">Email address</label>
-        <span class="input-icon icon-mail">
-            {{gh-trim-focus-input email tabindex="1" type="email" name="email" placeholder="Eg. john@example.com" autocorrect="off" focusOut=(action "preValidate" "email") update=(action (mut email))}}
-        </span>
-        {{gh-error-message errors=errors property="email"}}
-    {{/gh-form-group}}
-    {{#gh-form-group errors=errors hasValidated=hasValidated property="name"}}
-        <label for="full-name">Full name</label>
-        <span class="input-icon icon-user">
-            {{gh-input name tabindex="2" type="text" name="name" placeholder="Eg. John H. Watson"  autocorrect="off" focusOut=(action "preValidate" "name") update=(action (mut name))}}
-        </span>
-        {{gh-error-message errors=errors property="name"}}
-    {{/gh-form-group}}
-    {{#gh-form-group errors=errors hasValidated=hasValidated property="password"}}
-        <label for="password">Password</label>
-        <span class="input-icon icon-lock">
-            {{gh-input password tabindex="3" type="password" name="password" placeholder="At least 8 characters" autocorrect="off" focusOut=(action "preValidate" "password") update=(action (mut password))}}
-        </span>
-        {{gh-error-message errors=errors property="password"}}
-    {{/gh-form-group}}
-    {{#gh-form-group errors=errors hasValidated=hasValidated property="blogTitle"}}
-        <label for="blog-title">Blog title</label>
-        <span class="input-icon icon-content">
-            {{gh-input blogTitle tabindex="4" type="text" name="blog-title" placeholder="Eg. The Daily Awesome" autocorrect="off" focusOut=(action "preValidate" "blogTitle") update=(action (mut blogTitle))}}
-        </span>
-        {{gh-error-message errors=errors property="blogTitle"}}
-    {{/gh-form-group}}
-    {{#gh-spin-button type="submit" tabindex="5" class="btn btn-green btn-lg btn-block" action="setup" submitting=submitting autoWidth="false"}}
+        {{#gh-form-group errors=errors hasValidated=hasValidated property="blogTitle"}}
+            <label for="blog-title">Blog title</label>
+            <span class="input-icon icon-content">
+                {{gh-input blogTitle tabindex="4" type="text" name="blog-title" placeholder="Eg. The Daily Awesome" autocorrect="off" focusOut=(action "preValidate" "blogTitle") update=(action (mut blogTitle)) onenter=(action "setup")}}
+            </span>
+            {{gh-error-message errors=errors property="blogTitle"}}
+        {{/gh-form-group}}
+    </form>
+
+    {{#gh-spin-button type="submit" tabindex="5" class="btn btn-green btn-lg btn-block" action=(action 'setup') disabled=submitDisabled submitting=submitting autoWidth="false"}}
         Last step: Invite your team <i class="icon-chevron"></i>
     {{/gh-spin-button}}
-</form>
+{{else}}
+
+    <header>
+        <h1>Create your account</h1>
+    </header>
+
+    <form id="setup" class="gh-flow-create">
+        {{!-- Horrible hack to prevent Chrome from incorrectly auto-filling inputs --}}
+        <input style="display:none;" type="text" name="fakeusernameremembered"/>
+        <input style="display:none;" type="password" name="fakepasswordremembered"/>
+
+        {{gh-profile-image fileStorage=config.fileStorage email=email setImage="setImage"}}
+        {{#gh-form-group errors=errors hasValidated=hasValidated property="email"}}
+            <label for="email-address">Email address</label>
+            <span class="input-icon icon-mail">
+                {{gh-trim-focus-input email tabindex="1" type="email" name="email" placeholder="Eg. john@example.com" autocorrect="off" focusOut=(action "preValidate" "email") update=(action (mut email))}}
+            </span>
+            {{gh-error-message errors=errors property="email"}}
+        {{/gh-form-group}}
+        {{#gh-form-group errors=errors hasValidated=hasValidated property="name"}}
+            <label for="full-name">Full name</label>
+            <span class="input-icon icon-user">
+                {{gh-input name tabindex="2" type="text" name="name" placeholder="Eg. John H. Watson"  autocorrect="off" focusOut=(action "preValidate" "name") update=(action (mut name))}}
+            </span>
+            {{gh-error-message errors=errors property="name"}}
+        {{/gh-form-group}}
+        {{#gh-form-group errors=errors hasValidated=hasValidated property="password"}}
+            <label for="password">Password</label>
+            <span class="input-icon icon-lock">
+                {{gh-input password tabindex="3" type="password" name="password" placeholder="At least 8 characters" autocorrect="off" focusOut=(action "preValidate" "password") update=(action (mut password))}}
+            </span>
+            {{gh-error-message errors=errors property="password"}}
+        {{/gh-form-group}}
+        {{#gh-form-group errors=errors hasValidated=hasValidated property="blogTitle"}}
+            <label for="blog-title">Blog title</label>
+            <span class="input-icon icon-content">
+                {{gh-input blogTitle tabindex="4" type="text" name="blog-title" placeholder="Eg. The Daily Awesome" autocorrect="off" focusOut=(action "preValidate" "blogTitle") update=(action (mut blogTitle))}}
+            </span>
+            {{gh-error-message errors=errors property="blogTitle"}}
+        {{/gh-form-group}}
+        {{#gh-spin-button type="submit" tabindex="5" class="btn btn-green btn-lg btn-block" action="setup" submitting=submitting autoWidth="false"}}
+            Last step: Invite your team <i class="icon-chevron"></i>
+        {{/gh-spin-button}}
+    </form>
+{{/if}}
 
 <p class="main-error">{{{flowErrors}}}</p>

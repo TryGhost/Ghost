@@ -11,20 +11,23 @@ export default Route.extend(styleBody, {
     ghostPaths: injectService(),
     session: injectService(),
     ajax: injectService(),
+    config: injectService(),
 
     // use the beforeModel hook to check to see whether or not setup has been
     // previously completed.  If it has, stop the transition into the setup page.
     beforeModel() {
         this._super(...arguments);
 
-        if (this.get('session.isAuthenticated')) {
+        // with OAuth auth users are authenticated on step 2 so we
+        // can't use the session.isAuthenticated shortcut
+        if (!this.get('config.ghostOAuth') && this.get('session.isAuthenticated')) {
             this.transitionTo(Configuration.routeIfAlreadyAuthenticated);
             return;
         }
 
         let authUrl = this.get('ghostPaths.url').api('authentication', 'setup');
 
-        // If user is not logged in, check the state of the setup process via the API
+        // check the state of the setup process via the API
         return this.get('ajax').request(authUrl)
             .then((result) => {
                 let [setup] = result.setup;

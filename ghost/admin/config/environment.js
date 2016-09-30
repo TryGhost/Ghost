@@ -35,6 +35,10 @@ module.exports = function (environment) {
             authenticationRoute: 'signin',
             routeAfterAuthentication: 'posts',
             routeIfAlreadyAuthenticated: 'posts'
+        },
+
+        torii: {
+            
         }
     };
 

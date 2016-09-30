@@ -1,19 +1,29 @@
 <div class="gh-flow">
     <div class="gh-flow-content-wrap">
         <section class="gh-flow-content">
+            {{#if config.ghostOAuth}}
+                <header>
+                    <h1>{{config.blogTitle}}</h1>
+                </header>
+            {{/if}}
+
             <form id="login" class="gh-signin" method="post" novalidate="novalidate">
-                {{#gh-form-group errors=model.errors hasValidated=hasValidated property="identification"}}
-                    <span class="input-icon icon-mail">
-                        {{gh-trim-focus-input model.identification class="email" type="email" placeholder="Email Address" name="identification" autocapitalize="off" autocorrect="off" tabindex="1" focusOut=(action "validate" "identification") update=(action (mut model.identification))}}
-                    </span>
-                {{/gh-form-group}}
-                {{#gh-form-group errors=model.errors hasValidated=hasValidated property="password"}}
-                    <span class="input-icon icon-lock forgotten-wrap">
-                        {{gh-input model.password class="password" type="password" placeholder="Password" name="password" tabindex="2" autocorrect="off" update=(action (mut model.password))}}
-                        {{#gh-spin-button class="forgotten-link btn btn-link" type="button" action="forgotten" tabindex="4" submitting=submitting autoWidth="true"}}Forgot?{{/gh-spin-button}}
-                    </span>
-                {{/gh-form-group}}
-                {{#gh-spin-button class="login btn btn-blue btn-block" type="submit" action="validateAndAuthenticate" tabindex="3" submitting=loggingIn autoWidth="false"}}Sign in{{/gh-spin-button}}
+                {{#if config.ghostOAuth}}
+                    {{#gh-spin-button class="login btn btn-blue btn-block" type="submit" action="authenticateWithGhostOrg" tabindex="3" submitting=loggingIn autoWidth="false"}}Sign in with Ghost{{/gh-spin-button}}
+                {{else}}
+                    {{#gh-form-group errors=model.errors hasValidated=hasValidated property="identification"}}
+                        <span class="input-icon icon-mail">
+                            {{gh-trim-focus-input model.identification class="email" type="email" placeholder="Email Address" name="identification" autocapitalize="off" autocorrect="off" tabindex="1" focusOut=(action "validate" "identification") update=(action (mut model.identification))}}
+                        </span>
+                    {{/gh-form-group}}
+                    {{#gh-form-group errors=model.errors hasValidated=hasValidated property="password"}}
+                        <span class="input-icon icon-lock forgotten-wrap">
+                            {{gh-input model.password class="password" type="password" placeholder="Password" name="password" tabindex="2" autocorrect="off" update=(action (mut model.password))}}
+                            {{#gh-spin-button class="forgotten-link btn btn-link" type="button" action="forgotten" tabindex="4" submitting=submitting autoWidth="true"}}Forgot?{{/gh-spin-button}}
+                        </span>
+                    {{/gh-form-group}}
+                    {{#gh-spin-button class="login btn btn-blue btn-block" type="submit" action="validateAndAuthenticate" tabindex="3" submitting=loggingIn autoWidth="false"}}Sign in{{/gh-spin-button}}
+                {{/if}}
             </form>
 
             <p class="main-error">{{{flowErrors}}}</p>

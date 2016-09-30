@@ -171,9 +171,10 @@
             </fieldset>
 
         </form> {{! user details form }}
-        <form class="user-profile" novalidate="novalidate" autocomplete="off" {{action (perform user.saveNewPassword) on="submit"}}>
-            {{!-- If an administrator is viewing Owner's profile then hide inputs for change password --}}
-            {{#unless isAdminUserOnOwnerProfile}}
+
+        {{!-- If an administrator is viewing Owner's profile or we're using Ghost.org OAuth then hide inputs for change password --}}
+        {{#if canChangePassword}}
+            <form id="password-reset" class="user-profile" novalidate="novalidate" autocomplete="off" {{action (perform user.saveNewPassword) on="submit"}}>
                 <fieldset>
                     {{#unless isNotOwnProfile}}
                         {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="password"}}
@@ -199,7 +200,7 @@
                         {{#gh-task-button class="btn btn-red button-change-password" task=user.saveNewPassword}}Change Password{{/gh-task-button}}
                     </div>
                 </fieldset>
-            {{/unless}}
-        </form> {{! change password form }}
+            </form> {{! change password form }}
+        {{/if}}
     </div>
 </section>
