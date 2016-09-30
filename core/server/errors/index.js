@@ -26,10 +26,7 @@ var _                          = require('lodash'),
     DatabaseVersion            = require('./database-version'),
     i18n                       = require('../i18n'),
     config                     = require('../config'),
-    errors,
-
-    // Paths for views
-    userErrorTemplateExists   = false;
+    errors;
 
 function isValidErrorStatus(status) {
     return _.isNumber(status) && status >= 400 && status < 600;
@@ -58,10 +55,6 @@ function getStatusCode(error) {
  * Basic error handling helpers
  */
 errors = {
-    updateActiveTheme: function (activeTheme) {
-        userErrorTemplateExists = config.get('paths').availableThemes[activeTheme].hasOwnProperty('error.hbs');
-    },
-
     throwError: function (err) {
         if (!err) {
             err = new Error(i18n.t('errors.errors.anErrorOccurred'));
@@ -365,7 +358,8 @@ errors = {
         }
 
         // Are we admin? If so, don't worry about the user template
-        if ((res.isAdmin && req.user && req.user.id) || userErrorTemplateExists === true) {
+        if ((res.isAdmin && req.user && req.user.id) ||
+            (config.get('paths').availableThemes[req.app.get('activeTheme')] || {}).hasOwnProperty('error.hbs') === true) {
             return renderErrorInt();
         }
 

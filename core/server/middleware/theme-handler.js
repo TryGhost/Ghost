@@ -80,9 +80,6 @@ themeHandler = {
 
         blogApp.engine('hbs', hbs.express3(hbsOptions));
 
-        // Update user error template
-        errors.updateActiveTheme(activeTheme);
-
         // Set active theme variable on the express server
         blogApp.set('activeTheme', activeTheme);
     },
