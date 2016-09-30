@@ -88,7 +88,7 @@ function init(options) {
                 /**
                  * No fresh install:
                  * - every time Ghost starts,  we populate the default settings before we run migrations
-                 * - importing, because it can happen that a new added default property won't be existent
+                 * - important, because it can happen that a new added default property won't be existent
                  */
                 return models.Settings.populateDefaults();
             })

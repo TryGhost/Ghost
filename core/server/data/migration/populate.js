@@ -36,7 +36,6 @@ populate = function populate(options) {
         };
 
     logger.info('Creating tables...');
-
     return db.knex.transaction(function populateDatabaseInTransaction(transaction) {
         return Promise.mapSeries(schemaTables, function createTable(table) {
             logger.info('Creating table: ' + table);
