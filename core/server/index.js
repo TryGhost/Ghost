@@ -25,6 +25,7 @@ var express = require('express'),
     models = require('./models'),
     permissions = require('./permissions'),
     apps = require('./apps'),
+    auth = require('./auth'),
     xmlrpc = require('./data/xml/xmlrpc'),
     slack = require('./data/slack'),
     GhostServer = require('./ghost-server'),
@@ -61,7 +62,7 @@ function initDbHashAndFirstRun() {
 function init(options) {
     options = options || {};
 
-    var ghostServer = null;
+    var ghostServer, parentApp;
 
     // ### Initialisation
     // The server and its dependencies require a populated config
@@ -101,7 +102,7 @@ function init(options) {
         );
     }).then(function () {
         // Get reference to an express app instance.
-        var parentApp = express();
+        parentApp = express();
 
         // ## Middleware and Routing
         middleware(parentApp);
@@ -119,6 +120,11 @@ function init(options) {
                 });
             });
 
+        return auth.init(config.get('auth'))
+            .then(function (response) {
+                parentApp.use(response.auth);
+            });
+    }).then(function () {
         return new GhostServer(parentApp);
     }).then(function (_ghostServer) {
         ghostServer = _ghostServer;
