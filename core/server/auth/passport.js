@@ -44,7 +44,7 @@ _private.registerClient = function registerClient(options) {
                             });
                         })
                         .catch(function publicClientRegistrationError(err) {
-                            if (retryCount < 10) {
+                            if (retryCount < 0) {
                                 return done(new errors.IncorrectUsage(
                                     'Public client registration failed:  ' + err.code || err.message,
                                     'Please verify that the url is reachable: ' + ghostOAuth2Strategy.url
