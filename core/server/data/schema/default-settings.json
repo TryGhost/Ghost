@@ -16,7 +16,7 @@
             "defaultValue": "[]"
         },
         "migrations": {
-            "defaultValue": ""
+            "defaultValue": "{}"
         }
     },
     "blog": {
