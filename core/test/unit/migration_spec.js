@@ -32,7 +32,7 @@ var should = require('should'),
 // both of which are required for migrations to work properly.
 describe('DB version integrity', function () {
     // Only these variables should need updating
-    var currentDbVersion = '008',
+    var currentDbVersion = '009',
         currentSchemaHash = 'b3bdae210526b2d4393359c3e45d7f83',
         currentFixturesHash = '30b0a956b04e634e7f2cddcae8d2fd20';
 
@@ -170,10 +170,11 @@ describe('Migrations', function () {
     });
 
     describe('Populate', function () {
-        var createStub, fixturesStub;
+        var createStub, fixturesStub, populateSettingsStub;
 
         beforeEach(function () {
             fixturesStub = sandbox.stub(fixtures, 'populate').returns(new Promise.resolve());
+            populateSettingsStub = sandbox.stub(models.Settings, 'populateDefaults').returns(new Promise.resolve());
         });
 
         it('should create all tables, and populate fixtures', function (done) {
@@ -182,6 +183,7 @@ describe('Migrations', function () {
             populate().then(function (result) {
                 should.not.exist(result);
 
+                populateSettingsStub.called.should.be.true();
                 createStub.called.should.be.true();
                 createStub.callCount.should.be.eql(schemaTables.length);
                 createStub.firstCall.calledWith(schemaTables[0]).should.be.true();

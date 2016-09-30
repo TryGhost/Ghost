@@ -77,64 +77,20 @@ function init(options) {
     }).then(function () {
         models.init();
     }).then(function () {
+        /**
+         * fresh install:
+         * - getDatabaseVersion will throw an error and we will create all tables (including populating settings)
+         * - this will run in one single transaction to avoid having problems with non existent settings
+         * - see https://github.com/TryGhost/Ghost/issues/7345
+         */
         return versioning.getDatabaseVersion()
-            .then(function (_currentDatabaseVersion) {
-                currentDatabaseVersion = _currentDatabaseVersion;
-
-                // ATTENTION:
-                // this piece of code was only invented for https://github.com/TryGhost/Ghost/issues/7351#issuecomment-250414759
-                if (currentDatabaseVersion !== '008') {
-                    return;
-                }
-
-                if (config.database.client !== 'sqlite3') {
-                    return;
-                }
-
-                return models.Settings.findOne({key: 'migrations'}, options)
-                    .then(function fetchedMigrationsSettings(result) {
-                        try {
-                            settingsMigrations = JSON.parse(result.attributes.value) || {};
-                        } catch (err) {
-                            return;
-                        }
-
-                        if (settingsMigrations.hasOwnProperty('006/01')) {
-                            return;
-                        }
-
-                        // force them to re-run 008, because we have fixed the date fixture migration
-                        currentDatabaseVersion = '007';
-                        return versioning.setDatabaseVersion(null, '007');
-                    });
-            })
             .then(function () {
-                var response = migrations.update.isDatabaseOutOfDate({
-                    fromVersion: currentDatabaseVersion,
-                    toVersion: versioning.getNewestDatabaseVersion(),
-                    forceMigration: process.env.FORCE_MIGRATION
-                }), maintenanceState;
-
-                if (response.migrate === true) {
-                    maintenanceState = config.maintenance.enabled || false;
-                    config.maintenance.enabled = true;
-
-                    migrations.update.execute({
-                        fromVersion: currentDatabaseVersion,
-                        toVersion: versioning.getNewestDatabaseVersion(),
-                        forceMigration: process.env.FORCE_MIGRATION
-                    }).then(function () {
-                        config.maintenance.enabled = maintenanceState;
-                    }).catch(function (err) {
-                        if (!err) {
-                            return;
-                        }
-
-                        errors.logErrorAndExit(err, err.context, err.help);
-                    });
-                } else if (response.error) {
-                    return Promise.reject(response.error);
-                }
+                /**
+                 * No fresh install:
+                 * - every time Ghost starts,  we populate the default settings before we run migrations
+                 * - importing, because it can happen that a new added default property won't be existent
+                 */
+                return models.Settings.populateDefaults();
             })
             .catch(function (err) {
                 if (err instanceof errors.DatabaseNotPopulated) {
@@ -144,8 +100,68 @@ function init(options) {
                 return Promise.reject(err);
             });
     }).then(function () {
-        // Populate any missing default settings
-        return models.Settings.populateDefaults();
+        /**
+         * a little bit of duplicated code, but:
+         * - ensure now we load the current database version and remember
+         */
+        return versioning.getDatabaseVersion()
+            .then(function (_currentDatabaseVersion) {
+                currentDatabaseVersion = _currentDatabaseVersion;
+            });
+    }).then(function () {
+        // ATTENTION:
+        // this piece of code was only invented for https://github.com/TryGhost/Ghost/issues/7351#issuecomment-250414759
+        if (currentDatabaseVersion !== '008') {
+            return;
+        }
+
+        if (config.database.client !== 'sqlite3') {
+            return;
+        }
+
+        return models.Settings.findOne({key: 'migrations'}, options)
+            .then(function fetchedMigrationsSettings(result) {
+                try {
+                    settingsMigrations = JSON.parse(result.attributes.value) || {};
+                } catch (err) {
+                    return;
+                }
+
+                if (settingsMigrations.hasOwnProperty('006/01')) {
+                    return;
+                }
+
+                // force them to re-run 008, because we have fixed the date fixture migration
+                currentDatabaseVersion = '007';
+                return versioning.setDatabaseVersion(null, '007');
+            });
+    }).then(function () {
+        var response = migrations.update.isDatabaseOutOfDate({
+            fromVersion: currentDatabaseVersion,
+            toVersion: versioning.getNewestDatabaseVersion(),
+            forceMigration: process.env.FORCE_MIGRATION
+        }), maintenanceState;
+
+        if (response.migrate === true) {
+            maintenanceState = config.maintenance.enabled || false;
+            config.maintenance.enabled = true;
+
+            migrations.update.execute({
+                fromVersion: currentDatabaseVersion,
+                toVersion: versioning.getNewestDatabaseVersion(),
+                forceMigration: process.env.FORCE_MIGRATION
+            }).then(function () {
+                config.maintenance.enabled = maintenanceState;
+            }).catch(function (err) {
+                if (!err) {
+                    return;
+                }
+
+                errors.logErrorAndExit(err, err.context, err.help);
+            });
+        } else if (response.error) {
+            return Promise.reject(response.error);
+        }
     }).then(function () {
         // Initialize the settings cache
         return api.init();
