@@ -173,11 +173,12 @@ describe('Migrations', function () {
         var createStub, fixturesStub;
 
         beforeEach(function () {
-            createStub = sandbox.stub(schema.commands, 'createTable').returns(new Promise.resolve());
             fixturesStub = sandbox.stub(fixtures, 'populate').returns(new Promise.resolve());
         });
 
         it('should create all tables, and populate fixtures', function (done) {
+            createStub = sandbox.stub(schema.commands, 'createTable').returns(new Promise.resolve());
+
             populate().then(function (result) {
                 should.not.exist(result);
 
@@ -190,18 +191,29 @@ describe('Migrations', function () {
             }).catch(done);
         });
 
-        it('should should only create tables, with tablesOnly setting', function (done) {
-            populate({tablesOnly: true}).then(function (result) {
-                should.exist(result);
-                result.should.be.an.Array().with.lengthOf(schemaTables.length);
+        it('should rollback if error occurs', function (done) {
+            var i = 0;
 
-                createStub.called.should.be.true();
-                createStub.callCount.should.be.eql(schemaTables.length);
-                createStub.firstCall.calledWith(schemaTables[0]).should.be.true();
-                createStub.lastCall.calledWith(schemaTables[schemaTables.length - 1]).should.be.true();
-                fixturesStub.called.should.be.false();
-                done();
-            }).catch(done);
+            createStub = sandbox.stub(schema.commands, 'createTable', function () {
+                i = i + 1;
+
+                if (i > 10) {
+                    return new Promise.reject(new Error('error on table creation :('));
+                }
+
+                return new Promise.resolve();
+            });
+
+            populate()
+                .then(function () {
+                    done(new Error('should throw an error for database population'));
+                })
+                .catch(function (err) {
+                    should.exist(err);
+                    (err instanceof errors.InternalServerError).should.eql(true);
+                    createStub.callCount.should.eql(11);
+                    done();
+                });
         });
     });
 
