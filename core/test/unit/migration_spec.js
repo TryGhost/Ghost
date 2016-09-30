@@ -170,7 +170,7 @@ describe('Migrations', function () {
     });
 
     describe('Populate', function () {
-        var createStub, fixturesStub, transactionStub;
+        var createStub, fixturesStub;
 
         beforeEach(function () {
             fixturesStub = sandbox.stub(fixtures, 'populate').returns(new Promise.resolve());
@@ -192,10 +192,7 @@ describe('Migrations', function () {
         });
 
         it('should rollback if error occurs', function (done) {
-            var i = 0,
-                transaction = {
-                    commit: sandbox.stub()
-                };
+            var i = 0;
 
             createStub = sandbox.stub(schema.commands, 'createTable', function () {
                 i = i + 1;
@@ -207,26 +204,14 @@ describe('Migrations', function () {
                 return new Promise.resolve();
             });
 
-            transactionStub = sandbox.stub(db.knex, 'transaction', function (transactionStart) {
-                return new Promise(function (resolve, reject) {
-                    transaction.rollback = function rollback() {
-                        reject();
-                    };
-
-                    sandbox.spy(transaction, 'rollback');
-
-                    transactionStart(transaction);
-                });
-            });
-
             populate()
                 .then(function () {
                     done(new Error('should throw an error for database population'));
-                }).catch(function (err) {
-                    should.not.exist(err);
+                })
+                .catch(function (err) {
+                    should.exist(err);
+                    (err instanceof errors.InternalServerError).should.eql(true);
                     createStub.callCount.should.eql(11);
-                    transaction.rollback.callCount.should.eql(1);
-                    transaction.commit.callCount.should.eql(0);
                     done();
                 });
         });

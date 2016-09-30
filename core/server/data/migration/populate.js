@@ -36,27 +36,20 @@ populate = function populate(options) {
 
     logger.info('Creating tables...');
 
-    return new Promise(function populateDatabase(resolve, reject) {
-        db.knex.transaction(function populateDatabaseInTransaction(transaction) {
-            return Promise.mapSeries(schemaTables, function createTable(table) {
-                logger.info('Creating table: ' + table);
-                return commands.createTable(table, transaction);
-            }).then(function populateFixtures() {
-                if (tablesOnly) {
-                    return;
-                }
+    return db.knex.transaction(function populateDatabaseInTransaction(transaction) {
+        return Promise.mapSeries(schemaTables, function createTable(table) {
+            logger.info('Creating table: ' + table);
+            return commands.createTable(table, transaction);
+        }).then(function populateFixtures() {
+            if (tablesOnly) {
+                return;
+            }
 
-                return fixtures.populate(logger, _.merge({}, {transacting: transaction}, modelOptions));
-            }).then(function commitTransaction() {
-                transaction.commit();
-                resolve();
-            }).catch(function rollbackTransaction(err) {
-                logger.warn('rolling back...');
-                return transaction.rollback(err);
-            });
-        }).catch(function populateDatabaseError(err) {
-            reject(err);
+            return fixtures.populate(logger, _.merge({}, {transacting: transaction}, modelOptions));
         });
+    }).catch(function populateDatabaseError(err) {
+        logger.warn('rolling back...');
+        return Promise.reject(new errors.InternalServerError('Unable to populate database: ' + err.message));
     });
 };
 
