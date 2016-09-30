@@ -51,7 +51,7 @@
     "intl": "1.2.5",
     "intl-messageformat": "1.3.0",
     "jsonpath": "0.2.7",
-    "knex": "0.12.1",
+    "knex": "0.12.2",
     "lodash": "4.16.0",
     "moment": "2.15.1",
     "mobiledoc-html-renderer": "0.3.0",
