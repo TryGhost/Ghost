@@ -1,10 +1,8 @@
-var passport    = require('passport'),
-    errors      = require('../errors'),
-    events      = require('../events'),
-    labs        = require('../utils/labs'),
-    i18n        = require('../i18n'),
-
-    auth;
+var passport = require('passport'),
+    errors = require('../errors'),
+    events = require('../events'),
+    i18n = require('../i18n'),
+    authenticate;
 
 function isBearerAutorizationHeader(req) {
     var parts,
@@ -29,8 +27,7 @@ function isBearerAutorizationHeader(req) {
     return false;
 }
 
-auth = {
-
+authenticate = {
     // ### Authenticate Client Middleware
     authenticateClient: function authenticateClient(req, res, next) {
         // skip client authentication if bearer token is present
@@ -108,28 +105,28 @@ auth = {
         )(req, res, next);
     },
 
-    // Workaround for missing permissions
-    // TODO: rework when https://github.com/TryGhost/Ghost/issues/3911 is  done
-    requiresAuthorizedUser: function requiresAuthorizedUser(req, res, next) {
-        if (req.user && req.user.id) {
-            return next();
-        } else {
-            return errors.handleAPIError(new errors.NoPermissionError(i18n.t('errors.middleware.auth.pleaseSignIn')), req, res, next);
-        }
-    },
+    // ### Authenticate Ghost.org User
+    authenticateGhostUser: function authenticateGhostUser(req, res, next) {
+        req.query.code = req.body.authorizationCode;
 
-    // ### Require user depending on public API being activated.
-    requiresAuthorizedUserPublicAPI: function requiresAuthorizedUserPublicAPI(req, res, next) {
-        if (labs.isSet('publicAPI') === true) {
-            return next();
-        } else {
-            if (req.user && req.user.id) {
-                return next();
-            } else {
-                return errors.handleAPIError(new errors.NoPermissionError(i18n.t('errors.middleware.auth.pleaseSignIn')), req, res, next);
-            }
+        if (!req.query.code) {
+            return errors.handleAPIError(new errors.UnauthorizedError(i18n.t('errors.middleware.auth.accessDenied')), req, res, next);
         }
+
+        passport.authenticate('ghost', {session: false, failWithError: false}, function authenticate(err, user, info) {
+            if (err) {
+                return next(err);
+            }
+
+            if (!user) {
+                return errors.handleAPIError(new errors.UnauthorizedError(i18n.t('errors.middleware.auth.accessDenied')), req, res, next);
+            }
+
+            req.authInfo = info;
+            req.user = user;
+            next();
+        })(req, res, next);
     }
 };
 
-module.exports = auth;
+module.exports = authenticate;

@@ -24,5 +24,8 @@
     },
     "scheduling": {
         "active": "SchedulingDefault"
+    },
+    "auth": {
+        "type": "password"
     }
 }
