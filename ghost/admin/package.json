@@ -100,5 +100,16 @@
     "paths": [
       "lib/asset-delivery"
     ]
+  },
+  "greenkeeper": {
+    "ignore": [
+      "grunt",
+      "grunt-bg-shell",
+      "grunt-contrib-clean",
+      "grunt-contrib-jshint",
+      "grunt-contrib-watch",
+      "grunt-jscs",
+      "grunt-shell"
+    ]
   }
 }
