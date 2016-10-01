@@ -73,8 +73,9 @@ cacheInvalidationHeader = function cacheInvalidationHeader(req, result) {
 
     if (isActiveThemeOverride(method, endpoint, result)) {
         // Special case for if we're overwriting an active theme
-        // @TODO: remove this crazy DIRTY HORRIBLE HACK
+        // @TODO: remove these crazy DIRTY HORRIBLE HACKSSS
         req.app.set('activeTheme', null);
+        config.assetHash = null;
         return INVALIDATE_ALL;
     } else if (['POST', 'PUT', 'DELETE'].indexOf(method) > -1) {
         if (endpoint === 'schedules' && subdir === 'posts') {

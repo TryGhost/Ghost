@@ -32,7 +32,7 @@ var should = require('should'),
 // both of which are required for migrations to work properly.
 describe('DB version integrity', function () {
     // Only these variables should need updating
-    var currentDbVersion = '008',
+    var currentDbVersion = '009',
         currentSchemaHash = 'b3bdae210526b2d4393359c3e45d7f83',
         currentFixturesHash = '30b0a956b04e634e7f2cddcae8d2fd20';
 
@@ -170,17 +170,20 @@ describe('Migrations', function () {
     });
 
     describe('Populate', function () {
-        var createStub, fixturesStub;
+        var createStub, fixturesStub, populateSettingsStub;
 
         beforeEach(function () {
-            createStub = sandbox.stub(schema.commands, 'createTable').returns(new Promise.resolve());
             fixturesStub = sandbox.stub(fixtures, 'populate').returns(new Promise.resolve());
+            populateSettingsStub = sandbox.stub(models.Settings, 'populateDefaults').returns(new Promise.resolve());
         });
 
         it('should create all tables, and populate fixtures', function (done) {
+            createStub = sandbox.stub(schema.commands, 'createTable').returns(new Promise.resolve());
+
             populate().then(function (result) {
                 should.not.exist(result);
 
+                populateSettingsStub.called.should.be.true();
                 createStub.called.should.be.true();
                 createStub.callCount.should.be.eql(schemaTables.length);
                 createStub.firstCall.calledWith(schemaTables[0]).should.be.true();
@@ -190,18 +193,29 @@ describe('Migrations', function () {
             }).catch(done);
         });
 
-        it('should should only create tables, with tablesOnly setting', function (done) {
-            populate({tablesOnly: true}).then(function (result) {
-                should.exist(result);
-                result.should.be.an.Array().with.lengthOf(schemaTables.length);
+        it('should rollback if error occurs', function (done) {
+            var i = 0;
 
-                createStub.called.should.be.true();
-                createStub.callCount.should.be.eql(schemaTables.length);
-                createStub.firstCall.calledWith(schemaTables[0]).should.be.true();
-                createStub.lastCall.calledWith(schemaTables[schemaTables.length - 1]).should.be.true();
-                fixturesStub.called.should.be.false();
-                done();
-            }).catch(done);
+            createStub = sandbox.stub(schema.commands, 'createTable', function () {
+                i = i + 1;
+
+                if (i > 10) {
+                    return new Promise.reject(new Error('error on table creation :('));
+                }
+
+                return new Promise.resolve();
+            });
+
+            populate()
+                .then(function () {
+                    done(new Error('should throw an error for database population'));
+                })
+                .catch(function (err) {
+                    should.exist(err);
+                    (err instanceof errors.InternalServerError).should.eql(true);
+                    createStub.callCount.should.eql(11);
+                    done();
+                });
         });
     });
 
@@ -1530,8 +1544,8 @@ describe('Migrations', function () {
             var updateDatabaseSchema = update.__get__('updateDatabaseSchema');
 
             it('should not do anything if there are no tasks', function (done) {
-                updateDatabaseSchema([], {}, loggerStub).then(function () {
-                    loggerStub.info.called.should.be.false();
+                updateDatabaseSchema([], loggerStub).then(function () {
+                    loggerStub.info.called.should.be.true();
                     loggerStub.warn.called.should.be.false();
                     done();
                 }).catch(done);
