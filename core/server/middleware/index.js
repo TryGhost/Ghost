@@ -1,6 +1,4 @@
 var debug           = require('debug')('ghost:middleware'),
-    express         = require('express'),
-    hbs             = require('express-hbs'),
     path            = require('path'),
 
     // app requires
@@ -17,7 +15,7 @@ var debug           = require('debug')('ghost:middleware'),
     // middleware
     compress        = require('compression'),
     netjet          = require('netjet'),
-    serveStatic     = require('express').static,
+
     // local middleware
     cacheControl    = require('./cache-control'),
     checkSSL        = require('./check-ssl'),
@@ -25,16 +23,12 @@ var debug           = require('debug')('ghost:middleware'),
     ghostLocals     = require('./ghost-locals'),
     maintenance     = require('./maintenance'),
     prettyURLs      = require('./pretty-urls'),
-    redirectToSetup = require('./redirect-to-setup'),
     serveSharedFile = require('./serve-shared-file'),
     staticTheme     = require('./static-theme'),
     themeHandler    = require('./theme-handler');
 
 module.exports = function setupMiddleware(blogApp) {
     debug('Middleware start');
-
-    var adminApp = express(),
-        adminHbs = hbs.create();
 
     // ##Configuration
 
@@ -47,13 +41,8 @@ module.exports = function setupMiddleware(blogApp) {
     // set the view engine
     blogApp.set('view engine', 'hbs');
 
-    // Create a hbs instance for admin and init view engine
-    adminApp.set('view engine', 'hbs');
-    adminApp.engine('hbs', adminHbs.express3({}));
-    debug('Views done');
-
     // Load helpers
-    helpers.loadCoreHelpers(adminHbs);
+    helpers.loadCoreHelpers();
     debug('Helpers done');
 
     // Make sure 'req.secure' is valid for proxied requests
@@ -94,13 +83,6 @@ module.exports = function setupMiddleware(blogApp) {
     // This sets global res.locals which are needed everywhere
     blogApp.use(ghostLocals);
 
-    // First determine whether we're serving admin or theme content
-    // @TODO finish refactoring this away.
-    adminApp.use(function setIsAdmin(req, res, next) {
-        res.isAdmin = true;
-        next();
-    });
-
     // Theme middleware
     // rightly or wrongly currently comes before theme static assets
     // @TODO revisit where and when these are needed
@@ -122,23 +104,9 @@ module.exports = function setupMiddleware(blogApp) {
     // Serve blog images using the storage adapter
     blogApp.use('/content/images', storage.getStorage().serve());
 
-    // Admin assets
-    // Admin only config
-    blogApp.use('/ghost/assets', serveStatic(
-        config.get('paths').clientAssets,
-        {maxAge: utils.ONE_YEAR_MS, fallthrough: false}
-    ));
-
     // Theme static assets/files
     blogApp.use(staticTheme());
     debug('Static content done');
-
-    adminApp.set('views', config.get('paths').adminViews);
-
-    // Force SSL if required
-    // must happen AFTER asset loading and BEFORE routing
-    blogApp.use(checkSSL);
-    adminApp.use(checkSSL);
 
     // setup middleware for internal apps
     // @TODO: refactor this to be a proper app middleware hook for internal & external apps
@@ -153,33 +121,32 @@ module.exports = function setupMiddleware(blogApp) {
     sitemapHandler(blogApp);
     debug('Internal apps done');
 
-    // Add in all trailing slashes & remove uppercase
-    // must happen AFTER asset loading and BEFORE routing
-    blogApp.use(prettyURLs);
-    adminApp.use(prettyURLs);
-
-    // ### Caching
-    // Blog frontend is cacheable
-    blogApp.use(cacheControl('public'));
-    // Admin shouldn't be cached
-    adminApp.use(cacheControl('private'));
-
-    debug('General middleware done');
-
     // Load the API
     // @TODO: finish refactoring the API app
     // @TODO: decide what to do with these paths - config defaults? config overrides?
     blogApp.use('/ghost/api/v0.1/', require('../api/app')());
 
-    // Mount admin express app to /ghost and set up routes
-    adminApp.use(redirectToSetup);
-    adminApp.use(maintenance);
-    adminApp.use(routes.admin());
-    blogApp.use('/ghost', adminApp);
+    // ADMIN
+    blogApp.use('/ghost', require('../admin')());
+
     debug('Admin app & api done');
 
     // send 503 error page in case of maintenance
     blogApp.use(maintenance);
+
+    // Force SSL if required
+    // must happen AFTER asset loading and BEFORE routing
+    blogApp.use(checkSSL);
+
+    // Add in all trailing slashes & remove uppercase
+    // must happen AFTER asset loading and BEFORE routing
+    blogApp.use(prettyURLs);
+
+    // ### Caching
+    // Blog frontend is cacheable
+    blogApp.use(cacheControl('public'));
+
+    debug('General middleware done');
 
     // Set up Frontend routes (including private blogging routes)
     blogApp.use(routes.frontend());
