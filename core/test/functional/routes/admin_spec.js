@@ -61,6 +61,15 @@ describe('Admin Routing', function () {
         }).catch(done);
     });
 
+    describe('Assets', function () {
+        it('should retrieve built assets', function (done) {
+            request.get('/ghost/assets/vendor.js')
+                .expect('Cache-Control', testUtils.cacheRules.year)
+                .expect(200)
+                .end(doEnd(done));
+        });
+    });
+
     describe('Legacy Redirects', function () {
         it('should redirect /logout/ to /ghost/signout/', function (done) {
             request.get('/logout/')

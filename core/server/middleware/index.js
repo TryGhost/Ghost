@@ -1,8 +1,8 @@
 var debug           = require('debug')('ghost:middleware'),
     bodyParser      = require('body-parser'),
     compress        = require('compression'),
-    express         = require('express'),
-    hbs             = require('express-hbs'),
+    config          = require('../config'),
+    errors          = require('../errors'),
     path            = require('path'),
     netjet           = require('netjet'),
     multer          = require('multer'),
@@ -10,17 +10,14 @@ var debug           = require('debug')('ghost:middleware'),
     serveStatic     = require('express').static,
     slashes         = require('connect-slashes'),
     routes          = require('../routes'),
-    config          = require('../config'),
     storage         = require('../storage'),
     logging         = require('../logging'),
-    errors          = require('../errors'),
     i18n            = require('../i18n'),
     utils           = require('../utils'),
     sitemapHandler  = require('../data/xml/sitemap/handler'),
     cacheControl     = require('./cache-control'),
     checkSSL         = require('./check-ssl'),
-    decideIsAdmin    = require('./decide-is-admin'),
-    redirectToSetup  = require('./redirect-to-setup'),
+    decideIsAdmin   = require('./decide-is-admin'),
     serveSharedFile  = require('./serve-shared-file'),
     spamPrevention   = require('./spam-prevention'),
     staticTheme      = require('./static-theme'),
@@ -52,13 +49,9 @@ middleware = {
 
 setupMiddleware = function setupMiddleware(blogApp) {
     debug('Middleware start');
-
-    var corePath = config.get('paths').corePath,
-        adminApp = express(),
-        adminHbs = hbs.create();
+    var corePath = config.get('paths').corePath;
 
     // ##Configuration
-
     // enabled gzip compression by default
     if (config.get('server').compress !== false) {
         blogApp.use(compress());
@@ -68,13 +61,8 @@ setupMiddleware = function setupMiddleware(blogApp) {
     // set the view engine
     blogApp.set('view engine', 'hbs');
 
-    // Create a hbs instance for admin and init view engine
-    adminApp.set('view engine', 'hbs');
-    adminApp.engine('hbs', adminHbs.express3({}));
-    debug('Views done');
-
     // Load helpers
-    helpers.loadCoreHelpers(adminHbs);
+    helpers.loadCoreHelpers();
     debug('Helpers done');
 
     // Make sure 'req.secure' is valid for proxied requests
@@ -127,27 +115,26 @@ setupMiddleware = function setupMiddleware(blogApp) {
 
     blogApp.use('/content/images', storage.getStorage().serve());
 
+    // @TODO remove this
+    blogApp.use(decideIsAdmin);
+
+    // @TODO: fix this!
+    require('../admin').assets(blogApp);
+
     debug('Static content done');
 
-    // First determine whether we're serving admin or theme content
-    blogApp.use(decideIsAdmin);
-    blogApp.use(themeHandler.updateActiveTheme);
-    blogApp.use(themeHandler.configHbsForContext);
-
-    // Admin only config
-    blogApp.use('/ghost/assets', serveStatic(
-        config.get('paths').clientAssets,
-        {maxAge: utils.ONE_YEAR_MS}
-    ));
 
     // Force SSL
-    // NOTE: Importantly this is _after_ the check above for admin-theme static resources,
-    //       which do not need HTTPS. In fact, if HTTPS is forced on them, then 404 page might
-    //       not display properly when HTTPS is not available!
+    // @TODO fix this so that it works for the API, currently it is incorrectly broken
+    // @TODO make sure this only happens for the admin app once
     blogApp.use(checkSSL);
-    adminApp.set('views', config.get('paths').adminViews);
+    debug('SSL done');
 
-    // Theme only config
+    // Theme middleware
+    blogApp.use(themeHandler.updateActiveTheme);
+    blogApp.use(themeHandler.configHbsForContext);
+    blogApp.use(themeHandler.ghostLocals);
+
     blogApp.use(staticTheme());
     debug('Themes done');
 
@@ -170,7 +157,16 @@ setupMiddleware = function setupMiddleware(blogApp) {
     // site map
     sitemapHandler(blogApp);
 
-    // Add in all trailing slashes
+    // Body parsing
+    blogApp.use(bodyParser.json({limit: '1mb'}));
+    blogApp.use(bodyParser.urlencoded({extended: true, limit: '1mb'}));
+
+    // send 503 error page in case of maintenance
+    blogApp.use(maintenance);
+
+    // Pretty URL redirects, these should be for the frontend, ONLY?
+    // If we want to use these for the API, and not the admin, then we need
+    // To mount them on the API separately
     blogApp.use(slashes(true, {
         headers: {
             'Cache-Control': 'public, max-age=' + utils.ONE_YEAR_S
@@ -178,37 +174,20 @@ setupMiddleware = function setupMiddleware(blogApp) {
     }));
     blogApp.use(uncapitalise);
 
-    // Body parsing
-    blogApp.use(bodyParser.json({limit: '1mb'}));
-    blogApp.use(bodyParser.urlencoded({extended: true, limit: '1mb'}));
-
-    // ### Caching
-    // Blog frontend is cacheable
-    blogApp.use(cacheControl('public'));
-    // Admin shouldn't be cached
-    adminApp.use(cacheControl('private'));
-    // API shouldn't be cached
-    blogApp.use(routes.apiBaseUri, cacheControl('private'));
-
-    // local data
-    blogApp.use(themeHandler.ghostLocals);
-
     debug('General middleware done');
 
-    // ### Routing
-    // Set up API routes
+    // API shouldn't be cached
+    blogApp.use(routes.apiBaseUri, cacheControl('private'));
+    // Load the API
     blogApp.use(routes.apiBaseUri, routes.api(middleware));
 
-    // Mount admin express app to /ghost and set up routes
-    adminApp.use(redirectToSetup);
-    adminApp.use(maintenance);
-    adminApp.use(routes.admin());
-    blogApp.use('/ghost', adminApp);
+    // ADMIN
+    blogApp.use('/ghost', require('../admin')());
+
     debug('Admin app & api done');
 
-    // send 503 error page in case of maintenance
-    blogApp.use(maintenance);
-
+    // Blog frontend is cacheable
+    blogApp.use(cacheControl('public'));
     // Set up Frontend routes (including private blogging routes)
     blogApp.use(routes.frontend());
 

@@ -319,13 +319,6 @@ describe('Frontend Routing', function () {
                     .end(doEnd(done));
             });
 
-            it('should retrieve built assets', function (done) {
-                request.get('/ghost/assets/vendor.js')
-                    .expect('Cache-Control', testUtils.cacheRules.year)
-                    .expect(200)
-                    .end(doEnd(done));
-            });
-
             it('should retrieve default robots.txt', function (done) {
                 request.get('/robots.txt')
                     .expect('Cache-Control', testUtils.cacheRules.hour)

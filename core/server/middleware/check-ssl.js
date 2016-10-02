@@ -44,7 +44,7 @@ checkSSL = function checkSSL(req, res, next) {
                 forceAdminSSL: config.get('forceAdminSSL'),
                 configUrlSSL: config.get('urlSSL'),
                 configUrl: config.get('url'),
-                reqUrl: req.url
+                reqUrl: req.originalUrl
             });
 
             if (response.isForbidden) {
