@@ -123,7 +123,6 @@ setupMiddleware = function setupMiddleware(blogApp) {
 
     debug('Static content done');
 
-
     // Force SSL
     // @TODO fix this so that it works for the API, currently it is incorrectly broken
     // @TODO make sure this only happens for the admin app once
