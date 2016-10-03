@@ -4,7 +4,8 @@
 
 /*global require, module */
 
-var api         = require('../../api'),
+var debug = require('debug')('ghost:channels:single'),
+    api         = require('../../api'),
     utils       = require('../../utils'),
     filters     = require('../../filters'),
     templates   = require('./templates'),
@@ -23,11 +24,13 @@ var api         = require('../../api'),
 * Returns a function that takes the post to be rendered.
 */
 function renderPost(req, res) {
+    debug('renderPost called');
     return function renderPost(post) {
         var view = templates.single(req.app.get('activeTheme'), post),
             response = formatResponse.single(post);
 
         setResponseContext(req, res, response);
+        debug('Rendering view: ' + view);
         res.render(view, response);
     };
 }

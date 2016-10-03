@@ -1,4 +1,5 @@
-var _           = require('lodash'),
+var debug = require('debug')('ghost:channels:render'),
+    _           = require('lodash'),
     errors      = require('../../errors'),
     filters     = require('../../filters'),
     safeString  = require('../../utils/index').safeString,
@@ -11,6 +12,7 @@ var _           = require('lodash'),
     templates          = require('./templates');
 
 function renderChannel(req, res, next) {
+    debug('renderChannel called');
     // Parse the parameters we need from the URL
     var channelOpts = req.channelConfig,
         pageParam = req.params.page !== undefined ? req.params.page : 1,
@@ -53,6 +55,7 @@ function renderChannel(req, res, next) {
             result.posts = posts;
             result = formatResponse.channel(result);
             setResponseContext(req, res);
+            debug('Rendering view: ' + view);
             res.render(view, result);
         });
     }).catch(handleError(next));

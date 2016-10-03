@@ -1,6 +1,7 @@
 // # Ghost Server
 // Handles the creation of an HTTP Server for Ghost
-var Promise = require('bluebird'),
+var debug = require('debug')('ghost:server'),
+    Promise = require('bluebird'),
     chalk = require('chalk'),
     fs = require('fs'),
     path = require('path'),
@@ -36,6 +37,7 @@ function GhostServer(rootApp) {
  * @return {Promise} Resolves once Ghost has started
  */
 GhostServer.prototype.start = function (externalApp) {
+    debug('Starting...');
     var self = this,
         rootApp = externalApp ? externalApp : self.rootApp,
         socketConfig, socketValues = {
@@ -89,6 +91,7 @@ GhostServer.prototype.start = function (externalApp) {
         });
         self.httpServer.on('connection', self.connection.bind(self));
         self.httpServer.on('listening', function () {
+            debug('...Started');
             self.logStartMessages();
             resolve(self);
         });

@@ -1,4 +1,5 @@
-var bodyParser      = require('body-parser'),
+var debug           = require('debug')('ghost:middleware'),
+    bodyParser      = require('body-parser'),
     compress        = require('compression'),
     config          = require('../config'),
     errors          = require('../errors'),
@@ -48,6 +49,7 @@ middleware = {
 };
 
 setupMiddleware = function setupMiddleware(blogApp) {
+    debug('Middleware start');
     var logging = config.get('logging'),
         corePath = config.get('paths').corePath,
         adminApp = express(),
@@ -67,9 +69,11 @@ setupMiddleware = function setupMiddleware(blogApp) {
     // Create a hbs instance for admin and init view engine
     adminApp.set('view engine', 'hbs');
     adminApp.engine('hbs', adminHbs.express3({}));
+    debug('Views done');
 
     // Load helpers
     helpers.loadCoreHelpers(adminHbs);
+    debug('Helpers done');
 
     // Make sure 'req.secure' is valid for proxied requests
     // (X-Forwarded-Proto header will be checked, if present)
@@ -82,6 +86,17 @@ setupMiddleware = function setupMiddleware(blogApp) {
         } else {
             blogApp.use(logger('dev', logging));
         }
+    }
+
+    if (debug.enabled) {
+        // debug keeps a timer, so this is super useful
+        blogApp.use((function () {
+            var reqDebug = require('debug')('ghost:req');
+            return function debugLog(req, res, next) {
+                reqDebug('Request', req.originalUrl);
+                next();
+            };
+        })());
     }
 
     // Preload link headers
@@ -111,6 +126,7 @@ setupMiddleware = function setupMiddleware(blogApp) {
         {maxAge: utils.ONE_YEAR_MS, fallthrough: false}
     ));
 
+    debug('Static content done');
     // First determine whether we're serving admin or theme content
     blogApp.use(decideIsAdmin);
     blogApp.use(themeHandler.updateActiveTheme);
@@ -131,6 +147,7 @@ setupMiddleware = function setupMiddleware(blogApp) {
 
     // Theme only config
     blogApp.use(staticTheme());
+    debug('Themes done');
 
     // setup middleware for internal apps
     // @TODO: refactor this to be a proper app middleware hook for internal & external apps
@@ -140,6 +157,7 @@ setupMiddleware = function setupMiddleware(blogApp) {
             app.setupMiddleware(blogApp);
         }
     });
+    debug('Internal apps done');
 
     // Serve sitemap.xsl file
     blogApp.use(serveSharedFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
@@ -173,6 +191,8 @@ setupMiddleware = function setupMiddleware(blogApp) {
     // local data
     blogApp.use(themeHandler.ghostLocals);
 
+    debug('General middleware done');
+
     // ### Routing
     // Set up API routes
     blogApp.use(routes.apiBaseUri, routes.api(middleware));
@@ -181,8 +201,8 @@ setupMiddleware = function setupMiddleware(blogApp) {
     adminApp.use(redirectToSetup);
     adminApp.use(maintenance);
     adminApp.use(routes.admin());
-
     blogApp.use('/ghost', adminApp);
+    debug('Admin app & api done');
 
     // send 503 error page in case of maintenance
     blogApp.use(maintenance);
@@ -196,6 +216,7 @@ setupMiddleware = function setupMiddleware(blogApp) {
 
     // 500 Handler
     blogApp.use(errors.error500);
+    debug('Middleware end');
 };
 
 module.exports = setupMiddleware;

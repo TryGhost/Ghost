@@ -13,7 +13,8 @@
 require('./overrides');
 
 // Module dependencies
-var express = require('express'),
+var debug = require('debug')('ghost:boot:init'),
+    express = require('express'),
     uuid = require('node-uuid'),
     Promise = require('bluebird'),
     i18n = require('./i18n'),
@@ -60,6 +61,7 @@ function initDbHashAndFirstRun() {
 // Sets up the express server instances, runs init on a bunch of stuff, configures views, helpers, routes and more
 // Finally it returns an instance of GhostServer
 function init(options) {
+    debug('Init Start...');
     options = options || {};
 
     var ghostServer, parentApp;
@@ -71,11 +73,14 @@ function init(options) {
 
     // Initialize Internationalization
     i18n.init();
+    debug('I18n done');
 
     return readDirectory(config.getContentPath('apps')).then(function loadThemes(result) {
         config.set('paths:availableApps', result);
         return api.themes.loadThemes();
     }).then(function () {
+        debug('Themes & apps done');
+
         models.init();
         // @TODO: this is temporary, replace migrations with a warning if a DB exists
         return db.bootUp();
@@ -83,13 +88,16 @@ function init(options) {
         // Populate any missing default settings
         return models.Settings.populateDefaults();
     }).then(function () {
+        debug('Models & database done');
         // Initialize the settings cache
         return api.init();
     }).then(function () {
+        debug('API done');
         // Initialize the permissions actions and objects
         // NOTE: Must be done before initDbHashAndFirstRun calls
         return permissions.init();
     }).then(function () {
+        debug('Permissions done');
         return Promise.join(
             // Check for or initialise a dbHash.
             initDbHashAndFirstRun(),
@@ -101,11 +109,12 @@ function init(options) {
             slack.listen()
         );
     }).then(function () {
+        debug('Apps, XMLRPC, Slack done');
         // Get reference to an express app instance.
         parentApp = express();
-
         // ## Middleware and Routing
         middleware(parentApp);
+        debug('Express done');
 
         // Log all theme errors and warnings
         validateThemes(config.getContentPath('themes'))
@@ -125,12 +134,14 @@ function init(options) {
                 parentApp.use(response.auth);
             });
     }).then(function () {
+        debug('Auth done');
         return new GhostServer(parentApp);
     }).then(function (_ghostServer) {
         ghostServer = _ghostServer;
 
         // scheduling can trigger api requests, that's why we initialize the module after the ghost server creation
         // scheduling module can create x schedulers with different adapters
+        debug('Server done');
         return scheduling.init({
             active: config.get('scheduling').active,
             apiUrl: utils.url.apiUrl(),
@@ -138,6 +149,8 @@ function init(options) {
             contentPath: config.getContentPath('scheduling')
         });
     }).then(function () {
+        debug('Scheduling done');
+        debug('...Init End');
         return ghostServer;
     });
 }
