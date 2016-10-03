@@ -1,4 +1,4 @@
-var gulp                = require('gulp'),
+var gulp                = require('gulp-help')(require('gulp'), {hideEmpty: true, hideDepsMessage:true}),
     livereload          = require('gulp-livereload'),
     nodemon             = require('gulp-nodemon'),
     gutil               = require('gulp-util'),
@@ -319,7 +319,7 @@ gulp.task('_setup:force', ['submodules'], function (cb) {
 
 // Starting the 🚗 to run the server only
 // No client watch here.
-gulp.task('server', function () {
+gulp.task('server', 'Run Ghost server in development with livereload but without client build', function () {
     console.info(chalk.cyan('Starting Ghost engines 🚗 ...'));
     nodemonServerInit();
 });
@@ -327,7 +327,7 @@ gulp.task('server', function () {
 // Run `gulp dev` to enter development mode
 // Filechanges in client will force a livereload
 // Call it with `--deps` or `-d` to install dependencies as well`
-gulp.task('dev', function (cb) {
+gulp.task('dev', 'Runs Ghost server in delelopment including client build and livereload for both', function (cb) {
     console.info(chalk.cyan('Development mode for Ghost will start right meow 👻 ...'));
     if (argv.deps || argv.d) {
         runSequence(
@@ -345,6 +345,10 @@ gulp.task('dev', function (cb) {
             cb
         );
     }
+}, {
+    options: {
+        deps: '[-d] Install core and client dependencies'
+    }
 });
 
 // Update the submodules with gulp-git-submodule
@@ -353,7 +357,7 @@ gulp.task('dev', function (cb) {
 // 2. submodule doesn't exist, even if submodule param is given
 // Can be called directly, but will only update, if submodule doesn't exist.
 // Can be called with `--force` or `-f` to force and update of the submodules
-gulp.task('submodules', function (cb) {
+gulp.task('submodules', 'Updates Ghost submodules, if submodule directory is not found', function (cb) {
     var adminBranch = gitBranches.admin.branch || undefined,
         casperBranch = gitBranches.casper.branch || undefined,
         force = (argv.force || argv.f) || undefined;
@@ -370,16 +374,24 @@ gulp.task('submodules', function (cb) {
         console.info(chalk.cyan('No need to update Ghost submodules 🏄🏼 ...'));
         cb();
     }
+}, {
+    options: {
+        force: '[-f] Force submodules install'
+    }
 });
 
 // Task to update dependencies for ghost and admin
 // Can be called with `--force` or `-f` to force a delete of the dependencies and
 // fresh install afterwards
-gulp.task('deps', function (cb) {
+gulp.task('deps', 'Installs Ghost and Ghost-Admin dependencies', function (cb) {
     if (argv.force || argv.f) {
         runSequence('_FFS', '_deps:client', '_deps:ghost', cb);
     } else {
         runSequence('_deps:client', '_deps:ghost', cb);
+    }
+}, {
+    options: {
+        force: '[-f] Force a fresh install of all dependencies. Deletes the dependencies, the cache, and installs it back again.'
     }
 });
 
@@ -411,7 +423,8 @@ gulp.task('deps', function (cb) {
 //
 // All the combinations above can be executed with the `--force` or `-f` flag, which
 // will delete the dependencies and install them again, but for the chosen branches.
-gulp.task('setup', function (cb) {
+gulp.task('setup', 'Prepares everything for development. Checks out different branches ' +
+                    'per repository, installs submodules and dependencies.', function (cb) {
     var options = filterParams(argv) || {},
         force = (options.force || options.f) || undefined,
         branchToCheckOut;
@@ -452,9 +465,19 @@ gulp.task('setup', function (cb) {
             }
         });
     }
+}, {
+    options: {
+        force: '[-f] Force a fresh install of all dependencies',
+        'ghost=foo-branch': '[-g] Checks out a local branch for Ghost core and installs dependencies. Branch `master` will update submodules',
+        'ghost=pr/1234': '[-g] Checks out `pr/1234` for Ghost core and installs dependencies',
+        'admin=foo-branch': '[-a] Checks out a local branch for Ghost-Admin and installs dependencies. Branch `master` will update submodules',
+        'admin=pr/1234': '[-a] Checks out `pr/1234` for Ghost-Admin and installs dependencies',
+        'casper=foo-branch': '[-c] Checks out a local branch for Casper and installs dependencies. Branch `master` will update submodules',
+        'casper=pr/1234': '[-c] Checks out `pr/1234` for Casper and installs dependencies'
+    }
 });
 
-gulp.task('jscs', function () {
+gulp.task('jscs', 'Code Style check of Ghost core JavaScript', function () {
     return gulp.src(
         [
             '*.js',
@@ -470,7 +493,7 @@ gulp.task('jscs', function () {
         .pipe(jscs.reporter('failImmediately'));
 });
 
-gulp.task('jshint', function () {
+gulp.task('jshint', 'Linting of Ghost core JavaScript', function () {
     return gulp.src(
         [
             '*.js',
@@ -486,7 +509,7 @@ gulp.task('jshint', function () {
         .pipe(jshint.reporter('fail'));
 });
 
-gulp.task('json', function () {
+gulp.task('json', 'Linting of Ghost core JSON', function () {
     return gulp.src(
         [
             '*.json',
@@ -501,7 +524,7 @@ gulp.task('json', function () {
         .pipe(jsonlint.reporter());
 });
 
-gulp.task('lint', function (cb) {
+gulp.task('lint', 'Linting and code style check of all Ghost core JavaScript and JSON', function (cb) {
     console.info(chalk.cyan('Starting linting and code style checker 🎨 ...'));
     runSequence(['jscs', 'jshint', 'json'], function (err) {
         if (err) {
