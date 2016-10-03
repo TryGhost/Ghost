@@ -10,7 +10,7 @@ import config from 'ghost-admin/config/environment';
 const JSONContentType = 'application/json';
 
 function isJSONContentType(header) {
-    if (isNone(header)) {
+    if (!header || isNone(header)) {
         return false;
     }
     return header.indexOf(JSONContentType) === 0;
@@ -112,7 +112,7 @@ export function isThemeValidationError(errorOrStatus, payload) {
 
 /* end: custom error types */
 
-export default AjaxService.extend({
+let ajaxService = AjaxService.extend({
     session: injectService(),
 
     headers: computed('session.isAuthenticated', function () {
@@ -120,7 +120,6 @@ export default AjaxService.extend({
         let headers = {};
 
         headers['X-Ghost-Version'] = config.APP.version;
-        headers['Content-Type'] = `${JSONContentType}; charset=utf-8`;
 
         if (session.get('isAuthenticated')) {
             session.authorize('authorizer:oauth2', (headerName, headerValue) => {
@@ -133,8 +132,8 @@ export default AjaxService.extend({
 
     // ember-ajax recognises `application/vnd.api+json` as a JSON-API request
     // and formats appropriately, we want to handle `application/json` the same
-    _makeRequest(url, hash) {
-        if (isJSONContentType(hash.headers['Content-Type']) && hash.type !== 'GET') {
+    _makeRequest(hash) {
+        if (isJSONContentType(hash.contentType) && hash.type !== 'GET') {
             if (typeof hash.data === 'object') {
                 hash.data = JSON.stringify(hash.data);
             }
@@ -213,3 +212,10 @@ export default AjaxService.extend({
         return isThemeValidationError(status, payload);
     }
 });
+
+// we need to reopen so that internal methods use the correct contentType
+ajaxService.reopen({
+    contentType: 'application/json; charset=UTF-8'
+});
+
+export default ajaxService;
