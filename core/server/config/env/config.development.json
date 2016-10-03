@@ -8,9 +8,5 @@
     },
     "paths": {
         "contentPath": "content/"
-    },
-    "auth": {
-        "type": "patronus",
-        "url": "http://devauth.ghost.org:8080"
     }
 }

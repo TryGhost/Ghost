@@ -26,6 +26,7 @@
         "active": "SchedulingDefault"
     },
     "auth": {
-        "type": "password"
+        "type": "ghost",
+        "url": "http://devauth.ghost.org:8080"
     }
 }

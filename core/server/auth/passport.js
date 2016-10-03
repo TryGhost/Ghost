@@ -18,9 +18,9 @@ _private.registerClient = function registerClient(options) {
 
     return new Promise(function (resolve, reject) {
         var retry = function retry(retryCount, done) {
-            models.Client.findOne({name: 'Ghost Patronus'}, {context: {internal: true}})
+            models.Client.findOne({slug: 'ghost-auth'}, {context: {internal: true}})
                 .then(function (client) {
-                    // CASE: patronus client is already registered
+                    // CASE: Ghost Auth client is already registered
                     if (client) {
                         return done(null, {
                             client_id: client.get('uuid'),
@@ -31,8 +31,8 @@ _private.registerClient = function registerClient(options) {
                     return ghostOAuth2Strategy.registerClient({clientName: url})
                         .then(function addClient(credentials) {
                             return models.Client.add({
-                                name: 'Ghost Patronus',
-                                slug: 'patronus',
+                                name: 'Ghost Auth',
+                                slug: 'ghost-auth',
                                 uuid: credentials.client_id,
                                 secret: credentials.client_secret
                             }, {context: {internal: true}});
@@ -80,7 +80,7 @@ exports.init = function initPassport(options) {
         passport.use(new ClientPasswordStrategy(authStrategies.clientPasswordStrategy));
         passport.use(new BearerStrategy(authStrategies.bearerStrategy));
 
-        if (type !== 'patronus') {
+        if (type !== 'ghost') {
             return resolve({passport: passport.initialize()});
         }
 

@@ -212,14 +212,14 @@ describe('Auth Strategies', function () {
         });
 
         it('with invite, but with wrong invite token', function (done) {
-            var patronusAccessToken = '12345',
+            var ghostAuthAccessToken = '12345',
                 req = {body: {inviteToken: 'wrong'}},
-                profile = {email_address: 'kate@ghost.org'};
+                profile = {email_address: 'test@example.com'};
 
             userByEmailStub.returns(Promise.resolve(null));
             inviteStub.returns(Promise.reject(new errors.NotFoundError()));
 
-            authStrategies.ghostStrategy(req, patronusAccessToken, null, profile, function (err) {
+            authStrategies.ghostStrategy(req, ghostAuthAccessToken, null, profile, function (err) {
                 should.exist(err);
                 (err instanceof errors.NotFoundError).should.eql(true);
                 userByEmailStub.calledOnce.should.be.true();
@@ -229,9 +229,9 @@ describe('Auth Strategies', function () {
         });
 
         it('with correct invite token, but expired', function (done) {
-            var patronusAccessToken = '12345',
+            var ghostAuthAccessToken = '12345',
                 req = {body: {inviteToken: 'token'}},
-                profile = {email_address: 'kate@ghost.org'};
+                profile = {email_address: 'test@example.com'};
 
             userByEmailStub.returns(Promise.resolve(null));
             inviteStub.returns(Promise.resolve(Models.Invite.forge({
@@ -240,7 +240,7 @@ describe('Auth Strategies', function () {
                 expires: Date.now() - 1000
             })));
 
-            authStrategies.ghostStrategy(req, patronusAccessToken, null, profile, function (err) {
+            authStrategies.ghostStrategy(req, ghostAuthAccessToken, null, profile, function (err) {
                 should.exist(err);
                 (err instanceof errors.NotFoundError).should.eql(true);
                 userByEmailStub.calledOnce.should.be.true();
@@ -250,9 +250,9 @@ describe('Auth Strategies', function () {
         });
 
         it('with correct invite token', function (done) {
-            var patronusAccessToken = '12345',
+            var ghostAuthAccessToken = '12345',
                 req = {body: {inviteToken: 'token'}},
-                invitedProfile = {email_address: 'kate@ghost.org'},
+                invitedProfile = {email_address: 'test@example.com'},
                 invitedUser = {id: 2},
                 inviteModel = Models.Invite.forge({
                     id: 1,
@@ -266,7 +266,7 @@ describe('Auth Strategies', function () {
             inviteStub.returns(Promise.resolve(inviteModel));
             sandbox.stub(inviteModel, 'destroy').returns(Promise.resolve());
 
-            authStrategies.ghostStrategy(req, patronusAccessToken, null, invitedProfile, function (err, user, profile) {
+            authStrategies.ghostStrategy(req, ghostAuthAccessToken, null, invitedProfile, function (err, user, profile) {
                 should.not.exist(err);
                 should.exist(user);
                 should.exist(profile);
@@ -280,24 +280,24 @@ describe('Auth Strategies', function () {
         });
 
         it('setup', function (done) {
-            var patronusAccessToken = '12345',
+            var ghostAuthAccessToken = '12345',
                 req = {body: {}},
-                ownerProfile = {email_address: 'kate@ghost.org'},
+                ownerProfile = {email_address: 'test@example.com'},
                 owner = {id: 2};
 
             userByEmailStub.returns(Promise.resolve(null));
             userFindOneStub.returns(Promise.resolve(_.merge({}, {status: 'inactive'}, owner)));
-            userEditStub.withArgs({status: 'active', email: 'kate@ghost.org'}, {
+            userEditStub.withArgs({status: 'active', email: 'test@example.com'}, {
                 context: {internal: true},
                 id: owner.id
             }).returns(Promise.resolve(owner));
 
-            userEditStub.withArgs({patronus_access_token: patronusAccessToken}, {
+            userEditStub.withArgs({ghost_auth_access_token: ghostAuthAccessToken}, {
                 context: {internal: true},
                 id: owner.id
             }).returns(Promise.resolve(owner));
 
-            authStrategies.ghostStrategy(req, patronusAccessToken, null, ownerProfile, function (err, user, profile) {
+            authStrategies.ghostStrategy(req, ghostAuthAccessToken, null, ownerProfile, function (err, user, profile) {
                 should.not.exist(err);
                 userByEmailStub.calledOnce.should.be.true();
                 inviteStub.calledOnce.should.be.false();
@@ -311,18 +311,18 @@ describe('Auth Strategies', function () {
         });
 
         it('auth', function (done) {
-            var patronusAccessToken = '12345',
+            var ghostAuthAccessToken = '12345',
                 req = {body: {}},
-                ownerProfile = {email_address: 'kate@ghost.org'},
+                ownerProfile = {email_address: 'test@example.com'},
                 owner = {id: 2};
 
             userByEmailStub.returns(Promise.resolve(owner));
-            userEditStub.withArgs({patronus_access_token: patronusAccessToken}, {
+            userEditStub.withArgs({ghost_auth_access_token: ghostAuthAccessToken}, {
                 context: {internal: true},
                 id: owner.id
             }).returns(Promise.resolve(owner));
 
-            authStrategies.ghostStrategy(req, patronusAccessToken, null, ownerProfile, function (err, user, profile) {
+            authStrategies.ghostStrategy(req, ghostAuthAccessToken, null, ownerProfile, function (err, user, profile) {
                 should.not.exist(err);
                 userByEmailStub.calledOnce.should.be.true();
                 userEditStub.calledOnce.should.be.true();

@@ -29,11 +29,11 @@ describe('Mail: Utils', function () {
         mail.utils.generateContent({
             template: 'welcome',
             data: {
-                ownerEmail: 'kate@ghost.org'
+                ownerEmail: 'test@example.com'
             }
         }).then(function (result) {
             return scope.ghostMailer.send({
-                to: 'kate@ghost.org',
+                to: 'test@example.com',
                 subject: 'lol',
                 html: result.html,
                 text: result.text
@@ -104,7 +104,7 @@ describe('Mail: Utils', function () {
             }
         }).then(function (result) {
             return scope.ghostMailer.send({
-                to: 'aileen@ghost.org',
+                to: 'jbloggs@example.com',
                 subject: 'The Newsletter Blog',
                 html: result.html,
                 text: result.text
