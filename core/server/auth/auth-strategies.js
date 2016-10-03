@@ -63,16 +63,16 @@ strategies = {
 
     /**
      * Ghost Strategy
-     * patronusRefreshToken: will be null for now, because we don't need it right now
+     * ghostAuthRefreshToken: will be null for now, because we don't need it right now
      *
      * CASES:
      * - via invite token
      * - via normal auth
      * - via setup
      *
-     * @TODO: validate patronus profile?
+     * @TODO: validate GhostAuth profile?
      */
-    ghostStrategy: function ghostStrategy(req, patronusAccessToken, patronusRefreshToken, profile, done) {
+    ghostStrategy: function ghostStrategy(req, ghostAuthAccessToken, ghostAuthRefreshToken, profile, done) {
         var inviteToken = req.body.inviteToken,
             options = {context: {internal: true}},
             handleInviteToken, handleSetup;
@@ -135,9 +135,9 @@ strategies = {
 
                 return handleSetup();
             })
-            .then(function updatePatronusToken(user) {
+            .then(function updateGhostAuthToken(user) {
                 options.id = user.id;
-                return models.User.edit({patronus_access_token: patronusAccessToken}, options);
+                return models.User.edit({ghost_auth_access_token: ghostAuthAccessToken}, options);
             })
             .then(function returnResponse(user) {
                 done(null, user, profile);

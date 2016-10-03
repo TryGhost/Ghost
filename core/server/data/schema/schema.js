@@ -29,7 +29,7 @@ module.exports = {
         uuid: {type: 'string', maxlength: 36, nullable: false, validations: {isUUID: true}},
         name: {type: 'string', maxlength: 150, nullable: false},
         slug: {type: 'string', maxlength: 150, nullable: false, unique: true},
-        patronus_access_token: {type: 'string', nullable: true},
+        ghost_auth_access_token: {type: 'string', nullable: true},
         password: {type: 'string', maxlength: 60, nullable: false},
         email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
         image: {type: 'text', maxlength: 2000, nullable: true},
