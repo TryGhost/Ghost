@@ -29,7 +29,7 @@ describe('Invites API', function () {
         describe('Add', function () {
             it('add invite 1', function (done) {
                 InvitesAPI.add({
-                    invites: [{email: 'kate+1@ghost.org', roles: [testUtils.roles.ids.editor]}]
+                    invites: [{email: 'test@example.com', roles: [testUtils.roles.ids.editor]}]
                 }, _.merge({}, {include: ['roles']}, testUtils.context.owner))
                     .then(function (response) {
                         response.invites.length.should.eql(1);
@@ -41,7 +41,7 @@ describe('Invites API', function () {
 
             it('add invite 2', function (done) {
                 InvitesAPI.add({
-                    invites: [{email: 'kate+2@ghost.org', roles: [testUtils.roles.ids.author]}]
+                    invites: [{email: 'test2@example.com', roles: [testUtils.roles.ids.author]}]
                 }, _.merge({}, {include: ['roles']}, testUtils.context.owner))
                     .then(function (response) {
                         response.invites.length.should.eql(1);
@@ -189,7 +189,7 @@ describe('Invites API', function () {
                 InvitesAPI.add({
                     invites: [
                         {
-                            email: 'kate+1@ghost.org',
+                            email: 'test@example.com',
                             roles: [testUtils.roles.ids.owner]
                         }
                     ]
@@ -202,7 +202,7 @@ describe('Invites API', function () {
                 InvitesAPI.add({
                     invites: [
                         {
-                            email: 'kate+1@ghost.org',
+                            email: 'test@example.com',
                             roles: [testUtils.roles.ids.admin]
                         }
                     ]
@@ -217,7 +217,7 @@ describe('Invites API', function () {
                 InvitesAPI.add({
                     invites: [
                         {
-                            email: 'kate+1@ghost.org',
+                            email: 'test@example.com',
                             roles: [testUtils.roles.ids.editor]
                         }
                     ]
@@ -232,7 +232,7 @@ describe('Invites API', function () {
                 InvitesAPI.add({
                     invites: [
                         {
-                            email: 'kate+1@ghost.org',
+                            email: 'test@example.com',
                             roles: [testUtils.roles.ids.author]
                         }
                     ]
@@ -247,7 +247,7 @@ describe('Invites API', function () {
                 InvitesAPI.add({
                     invites: [
                         {
-                            email: 'kate+1@ghost.org',
+                            email: 'test@example.com',
                             roles: [testUtils.roles.ids.author.toString()]
                         }
                     ]
@@ -264,7 +264,7 @@ describe('Invites API', function () {
                 InvitesAPI.add({
                     invites: [
                         {
-                            email: 'kate+1@ghost.org',
+                            email: 'test@example.com',
                             roles: [testUtils.roles.ids.owner]
                         }
                     ]
@@ -277,7 +277,7 @@ describe('Invites API', function () {
                 InvitesAPI.add({
                     invites: [
                         {
-                            email: 'kate+1@ghost.org',
+                            email: 'test@example.com',
                             roles: [testUtils.roles.ids.admin]
                         }
                     ]
@@ -292,7 +292,7 @@ describe('Invites API', function () {
                 InvitesAPI.add({
                     invites: [
                         {
-                            email: 'kate+1@ghost.org',
+                            email: 'test@example.com',
                             roles: [testUtils.roles.ids.editor]
                         }
                     ]
@@ -307,7 +307,7 @@ describe('Invites API', function () {
                 InvitesAPI.add({
                     invites: [
                         {
-                            email: 'kate+1@ghost.org',
+                            email: 'test@example.com',
                             roles: [testUtils.roles.ids.author]
                         }
                     ]
@@ -324,7 +324,7 @@ describe('Invites API', function () {
                 InvitesAPI.add({
                     invites: [
                         {
-                            email: 'kate+1@ghost.org',
+                            email: 'test@example.com',
                             roles: [testUtils.roles.ids.owner]
                         }
                     ]
@@ -337,7 +337,7 @@ describe('Invites API', function () {
                 InvitesAPI.add({
                     invites: [
                         {
-                            email: 'kate+1@ghost.org',
+                            email: 'test@example.com',
                             roles: [testUtils.roles.ids.author]
                         }
                     ]
@@ -352,7 +352,7 @@ describe('Invites API', function () {
                 InvitesAPI.add({
                     invites: [
                         {
-                            email: 'kate+1@ghost.org',
+                            email: 'test@example.com',
                             roles: [testUtils.roles.ids.owner]
                         }
                     ]
@@ -365,7 +365,7 @@ describe('Invites API', function () {
                 InvitesAPI.add({
                     invites: [
                         {
-                            email: 'kate+1@ghost.org',
+                            email: 'test@example.com',
                             roles: [testUtils.roles.ids.author]
                         }
                     ]
