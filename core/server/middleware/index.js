@@ -11,6 +11,8 @@ var debug           = require('debug')('ghost:middleware'),
     slashes         = require('connect-slashes'),
     storage         = require('../storage'),
     logging         = require('../logging'),
+    i18n            = require('../i18n'),
+    passport        = require('passport'),
     utils           = require('../utils'),
     sitemapHandler  = require('../data/xml/sitemap/handler'),
     multer          = require('multer'),
@@ -24,7 +26,8 @@ var debug           = require('debug')('ghost:middleware'),
     staticTheme      = require('./static-theme'),
     themeHandler     = require('./theme-handler'),
     uncapitalise     = require('./uncapitalise'),
-    maintenance     = require('./maintenance'),
+    maintenance      = require('./maintenance'),
+    errorHandler     = require('./error-handler'),
     versionMatch     = require('./api/version-match'),
     cors             = require('./cors'),
     validation       = require('./validation'),
@@ -40,7 +43,7 @@ middleware = {
     cacheControl: cacheControl,
     spamPrevention: spamPrevention,
     api: {
-        errorHandler: errors.handleAPIError,
+        errorHandler: errorHandler,
         cors: cors,
         labs: labs,
         versionMatch: versionMatch,
@@ -80,11 +83,10 @@ setupMiddleware = function setupMiddleware(blogApp) {
 
     /**
      * request logging
-     * @TODO: add error to output
      */
     blogApp.use(function expressLogging(req, res, next) {
         res.once('finish', function () {
-            logging.request({req: req, res: res});
+            logging.request({req: req, res: res, err: req.err});
         });
 
         next();
@@ -212,12 +214,12 @@ setupMiddleware = function setupMiddleware(blogApp) {
     // Set up Frontend routes (including private blogging routes)
     blogApp.use(routes.frontend());
 
-    // ### Error handling
-    // 404 Handler
-    blogApp.use(errors.error404);
+    // ### Error handlers
+    blogApp.use(function pageNotFound(req, res, next) {
+        next(new errors.NotFoundError(i18n.t('errors.errors.pageNotFound')));
+    });
 
-    // 500 Handler
-    blogApp.use(errors.error500);
+    blogApp.use(errorHandler);
     debug('Middleware end');
 };
 
