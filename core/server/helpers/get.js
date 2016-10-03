@@ -4,7 +4,7 @@
 var _               = require('lodash'),
     hbs             = require('express-hbs'),
     Promise         = require('bluebird'),
-    errors          = require('../errors'),
+    logging         = require('../logging'),
     api             = require('../api'),
     jsonpath        = require('jsonpath'),
     labs            = require('../utils/labs'),
@@ -101,13 +101,13 @@ get = function get(resource, options) {
 
     if (!options.fn) {
         data.error = i18n.t('warnings.helpers.get.mustBeCalledAsBlock');
-        errors.logWarn(data.error);
+        logging.warn(data.error);
         return Promise.resolve();
     }
 
     if (!_.includes(resources, resource)) {
         data.error = i18n.t('warnings.helpers.get.invalidResource');
-        errors.logWarn(data.error);
+        logging.warn(data.error);
         return Promise.resolve(options.inverse(self, {data: data}));
     }
 
@@ -145,19 +145,20 @@ get = function get(resource, options) {
 
 module.exports = function getWithLabs(resource, options) {
     var self = this,
-        errorMessages = [
-            i18n.t('warnings.helpers.get.helperNotAvailable'),
-            i18n.t('warnings.helpers.get.apiMustBeEnabled'),
-            i18n.t('warnings.helpers.get.seeLink', {url: 'http://support.ghost.org/public-api-beta'})
-        ];
+        err;
 
     if (labs.isSet('publicAPI') === true) {
         // get helper is  active
         return get.call(self, resource, options);
     } else {
-        errors.logError.apply(this, errorMessages);
+        err = new Error();
+        err.message = i18n.t('warnings.helpers.get.helperNotAvailable');
+        err.context = i18n.t('warnings.helpers.get.apiMustBeEnabled');
+        err.help = i18n.t('warnings.helpers.get.seeLink', {url: 'http://support.ghost.org/public-api-beta'});
+        logging.error(err);
+
         return Promise.resolve(function noGetHelper() {
-            return '<script>console.error("' + errorMessages.join(' ') + '");</script>';
+            return '<script>console.error(' + JSON.stringify(err) + ');</script>';
         });
     }
 };

@@ -173,7 +173,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         } else if (options.context && options.context.external) {
             return 0;
         } else {
-            errors.logAndThrowError(new Error(i18n.t('errors.models.base.index.missingContext')));
+            throw new errors.IncorrectUsage(i18n.t('errors.models.base.index.missingContext'));
         }
     },
 

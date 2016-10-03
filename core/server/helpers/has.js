@@ -4,7 +4,7 @@
 // Checks if a post has a particular property
 
 var _               = require('lodash'),
-    errors          = require('../errors'),
+    logging         = require('../logging'),
     i18n            = require('../i18n'),
     has;
 
@@ -41,7 +41,7 @@ has = function (options) {
     }
 
     if (!tagList && !authorList) {
-        errors.logWarn(i18n.t('warnings.helpers.has.invalidAttribute'));
+        logging.warn(i18n.t('warnings.helpers.has.invalidAttribute'));
         return;
     }
 

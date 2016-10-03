@@ -8,6 +8,7 @@ var _ = require('lodash'),
     globalUtils = require('../utils'),
     utils = require('./utils'),
     errors = require('../errors'),
+    logging = require('../logging'),
     config = require('../config'),
     i18n = require('../i18n'),
     docName = 'invites',
@@ -144,8 +145,7 @@ invites = {
                     if (error && error.errorType === 'EmailError') {
                         error.message = i18n.t('errors.api.invites.errorSendingEmail.error', {message: error.message}) + ' ' +
                             i18n.t('errors.api.invites.errorSendingEmail.help');
-
-                        errors.logWarn(error.message);
+                        logging.warn(error.message);
                     }
 
                     return Promise.reject(error);

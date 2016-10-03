@@ -2,9 +2,9 @@ var express = require('express'),
     _       = require('lodash'),
     config  = require('../../config'),
     errors  = require('../../errors'),
+    i18n    = require('../../i18n'),
     rss     = require('../../data/xml/rss'),
     utils   = require('../../utils'),
-
     channelConfig = require('./channel-config'),
     renderChannel = require('./render-channel'),
 
@@ -26,7 +26,7 @@ function handlePageParam(req, res, next, page) {
         }
     } else if (page < 1 || isNaN(page)) {
         // Nothing less than 1 is a valid page number, go straight to a 404
-        return next(new errors.NotFoundError());
+        return next(new errors.NotFoundError(i18n.t('errors.errors.pageNotFound')));
     } else {
         // Set req.params.page to the already parsed number, and continue
         req.params.page = page;

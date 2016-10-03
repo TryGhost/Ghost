@@ -91,7 +91,7 @@ utils = {
                 }
 
                 // For now, we can only handle showing the first validation error
-                return errors.logAndRejectError(validationErrors[0]);
+                return Promise.reject(validationErrors[0]);
             }
 
             // If we got an object, check that too
@@ -187,8 +187,6 @@ utils = {
 
             return permsPromise.then(function permissionGranted() {
                 return options;
-            }).catch(function handleError(error) {
-                return errors.formatAndRejectAPIError(error);
             });
         };
     },
@@ -218,8 +216,6 @@ utils = {
                 error.message = i18n.t('errors.api.utils.noPermissionToCall', {method: method, docName: docName});
                 // forward error to next catch()
                 return Promise.reject(error);
-            }).catch(function handleError(error) {
-                return errors.formatAndRejectAPIError(error);
             });
         };
     },
@@ -275,7 +271,7 @@ utils = {
      */
     checkObject: function (object, docName, editId) {
         if (_.isEmpty(object) || _.isEmpty(object[docName]) || _.isEmpty(object[docName][0])) {
-            return errors.logAndRejectError(new errors.BadRequestError(i18n.t('errors.api.utils.noRootKeyProvided', {docName: docName})));
+            return Promise.reject(new errors.BadRequestError(i18n.t('errors.api.utils.noRootKeyProvided', {docName: docName})));
         }
 
         // convert author property to author_id to match the name in the database
@@ -296,7 +292,7 @@ utils = {
         });
 
         if (editId && object[docName][0].id && parseInt(editId, 10) !== parseInt(object[docName][0].id, 10)) {
-            return errors.logAndRejectError(new errors.BadRequestError(i18n.t('errors.api.utils.invalidIdProvided')));
+            return Promise.reject(new errors.BadRequestError(i18n.t('errors.api.utils.invalidIdProvided')));
         }
 
         return Promise.resolve(object);

@@ -81,7 +81,11 @@ PrettyStream.prototype.write = function write(data) {
 
         bodyPretty += '\n';
         if (data.err) {
-            bodyPretty += colorize('yellow', 'ERROR (' + data.err.level + ')') + '\n';
+            if (data.err.level) {
+                bodyPretty += colorize('yellow', 'ERROR (' + data.err.level + ')') + '\n';
+            } else {
+                bodyPretty += colorize('yellow', 'ERROR\n');
+            }
 
             _.each(data.err, function (value, key) {
                 if (['message', 'context', 'help', 'stack'].indexOf(key) !== -1 && !_.isEmpty(value)) {
@@ -126,8 +130,14 @@ PrettyStream.prototype.write = function write(data) {
                 data.res.statusCode,
                 colorize('grey', bodyPretty)
             ));
-        } else {
+        } else if (data.err) {
             this.emit('data', format('[%s] %s \n%s\n\n',
+                time,
+                logLevel,
+                colorize('grey', bodyPretty)
+            ));
+        } else {
+            this.emit('data', format('[%s] %s %s\n',
                 time,
                 logLevel,
                 colorize('grey', bodyPretty)

@@ -160,6 +160,7 @@ describe('Public API', function () {
     it('denies access with invalid client_secret', function (done) {
         request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=invalid_secret'))
             .set('Origin', testUtils.API.getURL())
+            .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(401)
@@ -180,6 +181,7 @@ describe('Public API', function () {
     it('denies access with invalid client_id', function (done) {
         request.get(testUtils.API.getApiQuery('posts/?client_id=invalid-id&client_secret=not_available'))
             .set('Origin', testUtils.API.getURL())
+            .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(401)
@@ -200,6 +202,7 @@ describe('Public API', function () {
     it('does not send CORS headers on an invalid origin', function (done) {
         request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available'))
             .set('Origin', 'http://invalid-origin')
+            .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
@@ -218,6 +221,7 @@ describe('Public API', function () {
     it('denies access to settings endpoint', function (done) {
         request.get(testUtils.API.getApiQuery('settings/?client_id=ghost-admin&client_secret=not_available'))
             .set('Origin', testUtils.API.getURL())
+            .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(403)
@@ -238,6 +242,7 @@ describe('Public API', function () {
     it('throws version mismatch error when request includes a version', function (done) {
         request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available'))
             .set('Origin', testUtils.API.getURL())
+            .set('Accept', 'application/json')
             .set('X-Ghost-Version', '0.3')
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
