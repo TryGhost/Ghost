@@ -1,4 +1,5 @@
-var _             = require('lodash'),
+var debug         = require('debug')('ghost:admin:controller'),
+    _             = require('lodash'),
     Promise       = require('bluebird'),
     api           = require('../api'),
     config        = require('../config'),
@@ -12,6 +13,7 @@ adminControllers = {
     // Path: /ghost/
     // Method: GET
     index: function index(req, res) {
+        debug('index called');
         /*jslint unparam:true*/
 
         function renderIndex() {
@@ -36,6 +38,7 @@ adminControllers = {
                     configuration.ghostAuthId = {value: result.patronus.uuid, type: 'string'};
                 }
 
+                debug('rendering default template');
                 res.render('default', {
                     configuration: configuration
                 });
