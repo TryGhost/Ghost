@@ -12,5 +12,8 @@
             "database" : "ghost_testing"
         }
     },
+    "auth": {
+        "type": "password"
+    },
     "logging": false
 }
