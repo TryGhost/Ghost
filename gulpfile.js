@@ -2,6 +2,9 @@ var gulp                = require('gulp'),
     livereload          = require('gulp-livereload'),
     nodemon             = require('gulp-nodemon'),
     gutil               = require('gulp-util'),
+    jscs                = require('gulp-jscs'),
+    jshint              = require('gulp-jshint'),
+    jsonlint            = require('gulp-jsonlint'),
     chalk               = require('chalk'),
     runSequence         = require('run-sequence').use(gulp),
     argv                = require('minimist')(process.argv.slice(2)),
@@ -449,6 +452,65 @@ gulp.task('setup', function (cb) {
             }
         });
     }
+});
+
+gulp.task('jscs', function () {
+    return gulp.src(
+        [
+            '*.js',
+            '!config*.js',
+            'core/*.js',
+            'core/server/**/*.js',
+            'core/test/**/*.js',
+            '!core/test/coverage/**',
+            '!core/shared/vendor/**/*.js'
+        ])
+        .pipe(jscs('.jscsrc'))
+        .pipe(jscs.reporter())
+        .pipe(jscs.reporter('failImmediately'));
+});
+
+gulp.task('jshint', function () {
+    return gulp.src(
+        [
+            '*.js',
+            '!config*.js',
+            'core/*.js',
+            'core/server/**/*.js',
+            'core/test/**/*.js',
+            '!core/test/coverage/**',
+            '!core/shared/vendor/**/*.js'
+        ])
+        .pipe(jshint('.jshintrc'))
+        .pipe(jshint.reporter('jshint-stylish'))
+        .pipe(jshint.reporter('fail'));
+});
+
+gulp.task('json', function () {
+    return gulp.src(
+        [
+            '*.json',
+            'core/*.json',
+            'core/server/**/*.json',
+            'core/test/**/*.json',
+            '!core/test/utils/fixtures/import/zips/**/*.json',
+            '!core/test/coverage/**',
+            '!core/shared/vendor/**/*.json'
+        ])
+        .pipe(jsonlint())
+        .pipe(jsonlint.reporter());
+});
+
+gulp.task('lint', function (cb) {
+    console.info(chalk.cyan('Starting linting and code style checker 🎨 ...'));
+    runSequence(['jscs', 'jshint', 'json'], function (err) {
+        if (err) {
+            swallowError(err, false);
+        } else {
+            console.info(chalk.green('No code or style errors ✅'));
+            cb();
+        }
+    });
 });
 
 // Default task at the moment is development.
