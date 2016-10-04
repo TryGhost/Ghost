@@ -89,7 +89,7 @@ module.exports = function errorHandler(err, req, res, next) {
     }
 
     req.err = err;
-    res.statusCode = err.statusCode;
+    res.statusCode = err.statusCode || 500;
 
     // never cache errors
     res.set({
