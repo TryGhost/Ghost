@@ -58,6 +58,7 @@ describe('Authentication API', function () {
     it('can\'t authenticate unknown user', function (done) {
         request.post(testUtils.API.getApiQuery('authentication/token'))
             .set('Origin', config.get('url'))
+            .set('Accept', 'application/json')
             .send({
                 grant_type: 'password',
                 username: 'invalid@email.com',
@@ -81,6 +82,7 @@ describe('Authentication API', function () {
     it('can\'t authenticate invalid password user', function (done) {
         request.post(testUtils.API.getApiQuery('authentication/token'))
             .set('Origin', config.get('url'))
+            .set('Accept', 'application/json')
             .send({
                 grant_type: 'password',
                 username: user.email,
@@ -145,6 +147,7 @@ describe('Authentication API', function () {
     it('can\'t request new access token with invalid refresh token', function (done) {
         request.post(testUtils.API.getApiQuery('authentication/token'))
             .set('Origin', config.get('url'))
+            .set('Accept', 'application/json')
             .send({
                 grant_type: 'refresh_token',
                 refresh_token: 'invalid',

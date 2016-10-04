@@ -123,6 +123,7 @@ describe('Slug API', function () {
     it('should not be able to get a slug for an unknown type', function (done) {
         request.get(testUtils.API.getApiQuery('slugs/unknown/who knows/'))
             .set('Authorization', 'Bearer ' + accesstoken)
+            .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(400)

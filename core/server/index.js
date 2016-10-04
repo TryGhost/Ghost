@@ -20,7 +20,7 @@ var debug = require('debug')('ghost:boot:init'),
     i18n = require('./i18n'),
     api = require('./api'),
     config = require('./config'),
-    errors = require('./errors'),
+    logging = require('./logging'),
     middleware = require('./middleware'),
     db = require('./data/schema'),
     models = require('./models'),
@@ -121,11 +121,11 @@ function init(options) {
             .catch(function (result) {
                 // TODO: change `result` to something better
                 result.errors.forEach(function (err) {
-                    errors.logError(err.message, err.context, err.help);
+                    logging.error(err);
                 });
 
                 result.warnings.forEach(function (warn) {
-                    errors.logWarn(warn.message, warn.context, warn.help);
+                    logging.warn(warn.message);
                 });
             });
 

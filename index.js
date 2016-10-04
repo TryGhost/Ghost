@@ -3,7 +3,7 @@
 var ghost = require('./core'),
     debug = require('debug')('ghost:boot:index'),
     express = require('express'),
-    errors = require('./core/server/errors'),
+    logging = require('./core/server/logging'),
     utils = require('./core/server/utils'),
     parentApp = express();
 
@@ -16,5 +16,6 @@ ghost().then(function (ghostServer) {
     // Let Ghost handle starting our server instance.
     ghostServer.start(parentApp);
 }).catch(function (err) {
-    errors.logErrorAndExit(err, err.context, err.help);
+    logging.error(err);
+    process.exit(0);
 });

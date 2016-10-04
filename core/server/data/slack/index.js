@@ -1,9 +1,9 @@
 var https           = require('https'),
-    errors          = require('../../errors'),
     url             = require('url'),
     Promise         = require('bluebird'),
     utils           = require('../../utils'),
     events          = require('../../events'),
+    logging          = require('../../logging'),
     api             = require('../../api/settings'),
     i18n            = require('../../i18n'),
     schema          = require('../schema').checks,
@@ -31,12 +31,10 @@ function makeRequest(reqOptions, reqPayload) {
     reqPayload = JSON.stringify(reqPayload);
 
     req.write(reqPayload);
-    req.on('error', function (error) {
-        errors.logError(
-            error,
-            i18n.t('errors.data.xml.xmlrpc.pingUpdateFailed.error'),
-            i18n.t('errors.data.xml.xmlrpc.pingUpdateFailed.help', {url: 'http://support.ghost.org'})
-        );
+    req.on('error', function (err) {
+        err.context = i18n.t('errors.data.xml.xmlrpc.pingUpdateFailed.error');
+        err.help = i18n.t('errors.data.xml.xmlrpc.pingUpdateFailed.help', {url: 'http://support.ghost.org'});
+        logging.error(err);
     });
 
     req.end();
