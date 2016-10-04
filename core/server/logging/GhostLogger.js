@@ -133,7 +133,7 @@ GhostLogger.prototype.setStreams = function setStreams() {
             stream: {
                 type: 'rotating-file',
                 path: self.path,
-                period: '60000ms',
+                period: '1w',
                 count: 3,
                 level: self.level
             }
