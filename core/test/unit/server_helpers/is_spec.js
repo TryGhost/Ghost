@@ -2,11 +2,9 @@ var should         = require('should'),
     sinon          = require('sinon'),
     hbs            = require('express-hbs'),
     utils          = require('./utils'),
-
-// Stuff we are testing
     handlebars     = hbs.handlebars,
     helpers        = require('../../../server/helpers'),
-    errors         = require('../../../server/errors');
+    logging        = require('../../../server/logging');
 
 describe('{{#is}} helper', function () {
     before(function () {
@@ -63,7 +61,7 @@ describe('{{#is}} helper', function () {
     it('should log warning with no args', function () {
         var fn = sinon.spy(),
             inverse = sinon.spy(),
-            logWarn = sinon.stub(errors, 'logWarn');
+            logWarn = sinon.stub(logging, 'warn');
 
         helpers.is.call(
             {},

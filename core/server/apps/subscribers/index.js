@@ -5,7 +5,7 @@ var _          = require('lodash'),
 
     // Dirty requires
     config     = require('../../config'),
-    errors     = require('../../errors'),
+    logging    = require('../../logging'),
     i18n       = require('../../i18n'),
     labs       = require('../../utils/labs'),
     template   = require('../../helpers/template'),
@@ -53,11 +53,7 @@ function subscribeFormHelper(options) {
 
 module.exports = {
     activate: function activate(ghost) {
-        var errorMessages = [
-            i18n.t('warnings.helpers.helperNotAvailable', {helperName: 'subscribe_form'}),
-            i18n.t('warnings.helpers.apiMustBeEnabled', {helperName: 'subscribe_form', flagName: 'subscribers'}),
-            i18n.t('warnings.helpers.seeLink', {url: 'http://support.ghost.org/subscribers-beta/'})
-        ];
+        var err;
 
         // Correct way to register a helper from an app
         ghost.helpers.register('subscribe_form', function labsEnabledHelper() {
@@ -65,8 +61,13 @@ module.exports = {
                 return subscribeFormHelper.apply(this, arguments);
             }
 
-            errors.logError.apply(this, errorMessages);
-            return new hbs.handlebars.SafeString('<script>console.error("' + errorMessages.join(' ') + '");</script>');
+            err = new Error();
+            err.message = i18n.t('warnings.helpers.helperNotAvailable', {helperName: 'subscribe_form'});
+            err.context = i18n.t('warnings.helpers.apiMustBeEnabled', {helperName: 'subscribe_form', flagName: 'subscribers'});
+            err.help = i18n.t('warnings.helpers.seeLink', {url: 'http://support.ghost.org/subscribers-beta/'});
+            logging.error(err);
+
+            return new hbs.handlebars.SafeString('<script>console.error(' + JSON.stringify(err) + ');</script>');
         });
     },
 

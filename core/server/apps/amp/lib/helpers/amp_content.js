@@ -12,7 +12,7 @@ var hbs                  = require('express-hbs'),
     moment               = require('moment'),
     sanitizeHtml         = require('sanitize-html'),
     config               = require('../../../../config'),
-    errors               = require('../../../../errors'),
+    logging              = require('../../../../logging'),
     makeAbsoluteUrl      = require('../../../../utils/make-absolute-urls'),
     cheerio              = require('cheerio'),
     amperize             = new Amperize(),
@@ -126,9 +126,10 @@ function getAmperizeHTML(html, post) {
             amperize.parse(html, function (err, res) {
                 if (err) {
                     if (err.src) {
-                        errors.logError(err.message, 'AMP HTML couldn\'t get parsed: ' + err.src);
+                        err.context = 'AMP HTML couldn\'t get parsed: ' + err.src;
+                        logging.error(err);
                     } else {
-                        errors.logError(err);
+                        logging.error(err);
                     }
 
                     // save it in cache to prevent multiple calls to Amperize until

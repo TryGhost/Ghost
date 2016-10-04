@@ -325,6 +325,7 @@ describe('Post API', function () {
         it('can\'t retrieve non existent post', function (done) {
             request.get(testUtils.API.getApiQuery('posts/99/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
+                .set('Accept', 'application/json')
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(404)
@@ -345,6 +346,7 @@ describe('Post API', function () {
         it('can\'t retrieve a draft post', function (done) {
             request.get(testUtils.API.getApiQuery('posts/5/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
+                .set('Accept', 'application/json')
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(404)
@@ -365,6 +367,7 @@ describe('Post API', function () {
         it('can\'t retrieve a draft page', function (done) {
             request.get(testUtils.API.getApiQuery('posts/8/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
+                .set('Accept', 'application/json')
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(404)
@@ -929,6 +932,7 @@ describe('Post API', function () {
         it('can\'t delete a non existent post', function (done) {
             request.del(testUtils.API.getApiQuery('posts/99/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
+                .set('Accept', 'application/json')
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(404)

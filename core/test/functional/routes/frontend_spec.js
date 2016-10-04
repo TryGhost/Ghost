@@ -139,6 +139,7 @@ describe('Frontend Routing', function () {
 
             it('should 404 for unknown frontend route', function (done) {
                 request.get('/spectacular/marvellous/')
+                    .set('Accept', 'application/json')
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(404)
                     .expect(/Page not found/)

@@ -92,11 +92,8 @@ describe('Private Blogging', function () {
         });
 
         describe('private', function () {
-            var errorSpy;
-
             beforeEach(function () {
                 res.isPrivateBlog = true;
-                errorSpy = sandbox.spy(errors, 'error404');
                 res = {
                     status: function () {
                         return this;
@@ -121,39 +118,62 @@ describe('Private Blogging', function () {
 
             it('filterPrivateRoutes should throw 404 if url is sitemap', function () {
                 req.path = req.url = '/sitemap.xml';
+                var next = function next(err) {
+                    (err instanceof errors.NotFoundError).should.eql(true);
+                };
+
                 privateBlogging.filterPrivateRoutes(req, res, next);
-                errorSpy.called.should.be.true();
             });
 
             it('filterPrivateRoutes should throw 404 if url is sitemap with param', function () {
                 req.url = '/sitemap.xml?weird=param';
                 req.path = '/sitemap.xml';
+
+                var next = function next(err) {
+                    (err instanceof errors.NotFoundError).should.eql(true);
+                };
+
                 privateBlogging.filterPrivateRoutes(req, res, next);
-                errorSpy.called.should.be.true();
             });
 
             it('filterPrivateRoutes should throw 404 if url is rss', function () {
                 req.path = req.url = '/rss/';
+
+                var next = function next(err) {
+                    (err instanceof errors.NotFoundError).should.eql(true);
+                };
+
                 privateBlogging.filterPrivateRoutes(req, res, next);
-                errorSpy.called.should.be.true();
             });
 
             it('filterPrivateRoutes should throw 404 if url is author rss', function () {
                 req.path = req.url = '/author/halfdan/rss/';
+
+                var next = function next(err) {
+                    (err instanceof errors.NotFoundError).should.eql(true);
+                };
+
                 privateBlogging.filterPrivateRoutes(req, res, next);
-                errorSpy.called.should.be.true();
             });
 
             it('filterPrivateRoutes should throw 404 if url is tag rss', function () {
                 req.path = req.url = '/tag/slimer/rss/';
+
+                var next = function next(err) {
+                    (err instanceof errors.NotFoundError).should.eql(true);
+                };
+
                 privateBlogging.filterPrivateRoutes(req, res, next);
-                errorSpy.called.should.be.true();
             });
 
             it('filterPrivateRoutes should throw 404 if url is rss plus something', function () {
                 req.path = req.url = '/rss/sometag';
+
+                var next = function next(err) {
+                    (err instanceof errors.NotFoundError).should.eql(true);
+                };
+
                 privateBlogging.filterPrivateRoutes(req, res, next);
-                errorSpy.called.should.be.true();
             });
 
             it('filterPrivateRoutes should render custom robots.txt', function () {

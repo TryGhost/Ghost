@@ -15,5 +15,7 @@
     "auth": {
         "type": "password"
     },
-    "logging": false
+    "logging": {
+        "level": "fatal"
+    }
 }

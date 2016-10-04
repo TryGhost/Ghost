@@ -9,6 +9,7 @@ var _            = require('lodash'),
     uuid         = require('node-uuid'),
     extract      = require('extract-zip-fork'),
     errors       = require('../../errors'),
+    logging      = require('../../logging'),
     ImageHandler    = require('./handlers/image'),
     JSONHandler     = require('./handlers/json'),
     MarkdownHandler = require('./handlers/markdown'),
@@ -108,8 +109,9 @@ _.extend(ImportManager.prototype, {
             _.each(filesToDelete, function (fileToDelete) {
                 fs.remove(fileToDelete, function (err) {
                     if (err) {
-                        errors.logError(err, i18n.t('errors.data.importer.index.couldNotCleanUpFile.error'),
-                                        i18n.t('errors.data.importer.index.couldNotCleanUpFile.context'));
+                        err.context = i18n.t('errors.data.importer.index.couldNotCleanUpFile.error');
+                        err.help = i18n.t('errors.data.importer.index.couldNotCleanUpFile.context');
+                        logging.error(err);
                     }
                 });
             });

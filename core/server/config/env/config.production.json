@@ -8,5 +8,10 @@
     },
     "paths": {
         "contentPath": "content/"
+    },
+    "logging": {
+        "level": "info",
+        "rotation": true,
+        "transports": ["file"]
     }
 }

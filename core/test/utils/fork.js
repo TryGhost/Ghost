@@ -55,7 +55,11 @@ function forkGhost(newConfig, envName) {
                 newConfig.url = url.format(_.extend({}, url.parse(config.get('url')), {port: newConfig.server.port, host: null}));
             }
 
-            newConfig.logging = false;
+            newConfig.logging = {
+                level: 'fatal',
+                transports: ['stdout'],
+                rotation: false
+            };
 
             var newConfigFile = path.join(config.get('paths').appRoot, 'config.test.' + envName + '.json');
 

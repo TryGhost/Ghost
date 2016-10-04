@@ -31,10 +31,12 @@ JSONHandler = {
                 }
 
                 return importData;
-            } catch (e) {
-                errors.logError(e, i18n.t('errors.data.importer.handlers.json.apiDbImportContent'),
-                                i18n.t('errors.data.importer.handlers.json.checkImportJsonIsValid'));
-                return Promise.reject(new errors.BadRequestError(i18n.t('errors.data.importer.handlers.json.failedToParseImportJson')));
+            } catch (err) {
+                return Promise.reject(new errors.BadRequestError(
+                    i18n.t('errors.data.importer.handlers.json.failedToParseImportJson'),
+                    i18n.t('errors.data.importer.handlers.json.apiDbImportContent'),
+                    i18n.t('errors.data.importer.handlers.json.checkImportJsonIsValid')
+                ));
             }
         });
     }

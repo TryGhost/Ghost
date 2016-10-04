@@ -22,7 +22,6 @@ spamPrevention = {
             remoteAddress = req.connection.remoteAddress,
             deniedRateLimit = '',
             ipCount = '',
-            message = i18n.t('errors.middleware.spamprevention.tooManyAttempts'),
             rateSigninPeriod = config.rateSigninPeriod || 3600,
             rateSigninAttempts = config.rateSigninAttempts || 10;
 
@@ -44,12 +43,11 @@ spamPrevention = {
         deniedRateLimit = (ipCount[remoteAddress] > rateSigninAttempts);
 
         if (deniedRateLimit) {
-            errors.logError(
+            return next(new errors.TooManyRequestsError(
+                i18n.t('errors.middleware.spamprevention.tooManyAttempts') + rateSigninPeriod === 3600 ? i18n.t('errors.middleware.spamprevention.waitOneHour') : i18n.t('errors.middleware.spamprevention.tryAgainLater'),
                 i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.error', {rateSigninAttempts: rateSigninAttempts, rateSigninPeriod: rateSigninPeriod}),
                 i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context')
-            );
-            message += rateSigninPeriod === 3600 ? i18n.t('errors.middleware.spamprevention.waitOneHour') : i18n.t('errors.middleware.spamprevention.tryAgainLater');
-            return next(new errors.TooManyRequestsError(message));
+            ));
         }
         next();
     },
@@ -65,7 +63,6 @@ spamPrevention = {
             ipCount = '',
             deniedRateLimit = '',
             deniedEmailRateLimit = '',
-            message = i18n.t('errors.middleware.spamprevention.tooManyAttempts'),
             index = _.findIndex(forgottenSecurity, function findIndex(logTime) {
                 return (logTime.ip === remoteAddress && logTime.email === email);
             });
@@ -94,22 +91,19 @@ spamPrevention = {
         }
 
         if (deniedEmailRateLimit) {
-            errors.logError(
+            return next(new errors.TooManyRequestsError(
+                i18n.t('errors.middleware.spamprevention.tooManyAttempts') + rateForgottenPeriod === 3600 ? i18n.t('errors.middleware.spamprevention.waitOneHour') : i18n.t('errors.middleware.spamprevention.tryAgainLater'),
                 i18n.t('errors.middleware.spamprevention.forgottenPasswordEmail.error', {rfa: rateForgottenAttempts, rfp: rateForgottenPeriod}),
                 i18n.t('errors.middleware.spamprevention.forgottenPasswordEmail.context')
-            );
+            ));
         }
 
         if (deniedRateLimit) {
-            errors.logError(
+            return next(new errors.TooManyRequestsError(
+                i18n.t('errors.middleware.spamprevention.tooManyAttempts') + rateForgottenPeriod === 3600 ? i18n.t('errors.middleware.spamprevention.waitOneHour') : i18n.t('errors.middleware.spamprevention.tryAgainLater'),
                 i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error', {rfa: rateForgottenAttempts, rfp: rateForgottenPeriod}),
                 i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.context')
-            );
-        }
-
-        if (deniedEmailRateLimit || deniedRateLimit) {
-            message += rateForgottenPeriod === 3600 ? i18n.t('errors.middleware.spamprevention.waitOneHour') : i18n.t('errors.middleware.spamprevention.tryAgainLater');
-            return next(new errors.TooManyRequestsError(message));
+            ));
         }
 
         next();

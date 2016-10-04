@@ -7,6 +7,7 @@ var debug = require('debug')('ghost:server'),
     path = require('path'),
     _ = require('lodash'),
     errors = require('./errors'),
+    logging = require('./logging'),
     config = require('./config'),
     i18n   = require('./i18n'),
     moment = require('moment');
@@ -75,18 +76,19 @@ GhostServer.prototype.start = function (externalApp) {
 
         self.httpServer.on('error', function (error) {
             if (error.errno === 'EADDRINUSE') {
-                errors.logError(
+                logging.error(new errors.InternalServerError(
                     i18n.t('errors.httpServer.addressInUse.error'),
                     i18n.t('errors.httpServer.addressInUse.context', {port: config.get('server').port}),
                     i18n.t('errors.httpServer.addressInUse.help')
-                );
+                ));
             } else {
-                errors.logError(
+                logging.error(new errors.InternalServerError(
                     i18n.t('errors.httpServer.otherError.error', {errorNumber: error.errno}),
                     i18n.t('errors.httpServer.otherError.context'),
                     i18n.t('errors.httpServer.otherError.help')
-                );
+                ));
             }
+
             process.exit(-1);
         });
         self.httpServer.on('connection', self.connection.bind(self));

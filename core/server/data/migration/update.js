@@ -5,6 +5,7 @@ var Promise = require('bluebird'),
     backup = require('./backup'),
     fixtures = require('./fixtures'),
     errors = require('../../errors'),
+    logging = require('../../logging'),
     i18n = require('../../i18n'),
     db = require('../../data/db'),
     versioning = require('../schema').versioning,
@@ -22,13 +23,12 @@ var Promise = require('bluebird'),
     migrateToDatabaseVersion,
     execute, logger, isDatabaseOutOfDate;
 
-// @TODO: remove me asap!
 logger = {
     info: function info(message) {
-        errors.logComponentInfo('Migrations', message);
+        logging.info('Migrations:' + message);
     },
     warn: function warn(message) {
-        errors.logComponentWarn('Skipping Migrations', message);
+        logging.warn('Skipping Migrations:' + message);
     }
 };
 

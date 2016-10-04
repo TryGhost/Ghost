@@ -276,6 +276,7 @@ describe('User API', function () {
             it('can\'t retrieve non existent user by id', function (done) {
                 request.get(testUtils.API.getApiQuery('users/99/'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
+                    .set('Accept', 'application/json')
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(404)
@@ -296,6 +297,7 @@ describe('User API', function () {
             it('can\'t retrieve non existent user by slug', function (done) {
                 request.get(testUtils.API.getApiQuery('users/slug/blargh/'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
+                    .set('Accept', 'application/json')
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(404)

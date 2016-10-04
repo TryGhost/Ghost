@@ -108,12 +108,12 @@ describe('XMLRPC', function () {
             var ping1 = nock('http://blogsearch.google.com').post('/ping/RPC2').reply(200),
                 ping2 = nock('http://rpc.pingomatic.com').post('/').replyWithError('ping site is down'),
                 testPost = _.clone(testUtils.DataGenerator.Content.posts[2]),
-                errorMock, resetXmlRpc;
+                loggingMock, resetXmlRpc;
 
-            errorMock = {
-                logError: function logError(error) {
-                    should.exist(error);
-                    error.message.should.eql('ping site is down');
+            loggingMock = {
+                error: function onError(err) {
+                    should.exist(err);
+                    err.message.should.eql('ping site is down');
 
                     // Reset xmlrpc handleError method and exit test
                     resetXmlRpc();
@@ -121,7 +121,7 @@ describe('XMLRPC', function () {
                 }
             };
 
-            resetXmlRpc = xmlrpc.__set__('errors', errorMock);
+            resetXmlRpc = xmlrpc.__set__('logging', loggingMock);
 
             ping(testPost);
 

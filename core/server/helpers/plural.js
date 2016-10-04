@@ -17,7 +17,7 @@ var hbs             = require('express-hbs'),
 plural = function (number, options) {
     if (_.isUndefined(options.hash) || _.isUndefined(options.hash.empty) ||
         _.isUndefined(options.hash.singular) || _.isUndefined(options.hash.plural)) {
-        return errors.logAndThrowError(i18n.t('warnings.helpers.plural.valuesMustBeDefined'));
+        throw new errors.IncorrectUsage(i18n.t('warnings.helpers.plural.valuesMustBeDefined'));
     }
 
     if (number === 0) {

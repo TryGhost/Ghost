@@ -2,14 +2,11 @@ var sinon        = require('sinon'),
     should       = require('should'),
     express      = require('express'),
     Promise      = require('bluebird'),
-
-// Stuff we test
     fs           = require('fs'),
     hbs          = require('express-hbs'),
     themeHandler = require('../../../server/middleware/theme-handler'),
-    errors       = require('../../../server/errors'),
+    logging      = require('../../../server/logging'),
     api          = require('../../../server/api'),
-
     configUtils  = require('../../utils/configUtils'),
     sandbox      = sinon.sandbox.create();
 
@@ -45,15 +42,13 @@ describe('Theme Handler', function () {
 
     describe('activateTheme', function () {
         it('should activate new theme with partials', function () {
-            var errorStub = sandbox.stub(errors, 'updateActiveTheme'),
-                fsStub = sandbox.stub(fs, 'stat', function (path, cb) {
+            var fsStub = sandbox.stub(fs, 'stat', function (path, cb) {
                     cb(null, {isDirectory: function () { return true; }});
                 }),
                 hbsStub = sandbox.spy(hbs, 'express3');
 
             themeHandler.activateTheme(blogApp, 'casper');
 
-            errorStub.calledWith('casper').should.be.true();
             fsStub.calledOnce.should.be.true();
             hbsStub.calledOnce.should.be.true();
             hbsStub.firstCall.args[0].should.be.an.Object().and.have.property('partialsDir');
@@ -62,15 +57,13 @@ describe('Theme Handler', function () {
         });
 
         it('should activate new theme without partials', function () {
-            var errorStub = sandbox.stub(errors, 'updateActiveTheme'),
-                fsStub = sandbox.stub(fs, 'stat', function (path, cb) {
+            var fsStub = sandbox.stub(fs, 'stat', function (path, cb) {
                     cb(null, null);
                 }),
                 hbsStub = sandbox.spy(hbs, 'express3');
 
             themeHandler.activateTheme(blogApp, 'casper');
 
-            errorStub.calledWith('casper').should.be.true();
             fsStub.calledOnce.should.be.true();
             hbsStub.calledOnce.should.be.true();
             hbsStub.firstCall.args[0].should.be.an.Object().and.have.property('partialsDir');
@@ -162,8 +155,7 @@ describe('Theme Handler', function () {
         });
 
         it('throws error if theme is missing', function (done) {
-            var errorSpy = sandbox.spy(errors, 'throwError'),
-                activateThemeSpy = sandbox.spy(themeHandler, 'activateTheme');
+            var activateThemeSpy = sandbox.spy(themeHandler, 'activateTheme');
 
             sandbox.stub(api.settings, 'read').withArgs(sandbox.match.has('key', 'activeTheme')).returns(Promise.resolve({
                 settings: [{
@@ -171,12 +163,12 @@ describe('Theme Handler', function () {
                     value: 'rasper'
                 }]
             }));
+
             blogApp.set('activeTheme', 'not-casper');
             configUtils.set({paths: {availableThemes: {casper: {}}}});
 
             themeHandler.updateActiveTheme(req, res, function (err) {
                 should.exist(err);
-                errorSpy.called.should.be.true();
                 activateThemeSpy.called.should.be.false();
                 err.message.should.eql('The currently active theme "rasper" is missing.');
                 done();
@@ -184,8 +176,7 @@ describe('Theme Handler', function () {
         });
 
         it('throws only warns if theme is missing for admin req', function (done) {
-            var errorSpy = sandbox.spy(errors, 'throwError'),
-                warnSpy = sandbox.spy(errors, 'logWarn'),
+            var warnSpy = sandbox.spy(logging, 'warn'),
                 activateThemeSpy = sandbox.spy(themeHandler, 'activateTheme');
 
             sandbox.stub(api.settings, 'read').withArgs(sandbox.match.has('key', 'activeTheme')).returns(Promise.resolve({
@@ -199,7 +190,6 @@ describe('Theme Handler', function () {
             configUtils.set({paths: {availableThemes: {casper: {}}}});
 
             themeHandler.updateActiveTheme(req, res, function () {
-                errorSpy.called.should.be.false();
                 activateThemeSpy.called.should.be.false();
                 warnSpy.called.should.be.true();
                 warnSpy.calledWith('The currently active theme "rasper" is missing.').should.be.true();

@@ -7,8 +7,9 @@ var serveStatic = require('express').static,
     path = require('path'),
     util = require('util'),
     Promise = require('bluebird'),
-    errors = require('../errors'),
     config = require('../config'),
+    errors = require('../errors'),
+    i18n = require('../i18n'),
     utils = require('../utils'),
     BaseStore = require('./base'),
     remove = Promise.promisify(fs.remove);
@@ -44,7 +45,6 @@ LocalFileStore.prototype.save = function (image, targetDir) {
 
         return fullUrl;
     }).catch(function (e) {
-        errors.logError(e);
         return Promise.reject(e);
     });
 };
@@ -100,7 +100,20 @@ LocalFileStore.prototype.serve = function (options) {
         // CASE: serve images
         // For some reason send divides the max age number by 1000
         // Fallthrough: false ensures that if an image isn't found, it automatically 404s
-        return serveStatic(config.getContentPath('images'), {maxAge: utils.ONE_YEAR_MS, fallthrough: false});
+        // Wrap server static errors
+        return function serveStaticContent(req, res, next) {
+            return serveStatic(config.getContentPath('images'), {maxAge: utils.ONE_YEAR_MS, fallthrough: false})(req, res, function (err) {
+                if (err) {
+                    if (err.statusCode === 404) {
+                        return next(new errors.NotFoundError(i18n.t('errors.errors.pageNotFound')));
+                    }
+
+                    return next(err);
+                }
+
+                next();
+            });
+        };
     }
 };
 

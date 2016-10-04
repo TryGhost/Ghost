@@ -4,6 +4,7 @@ var sinon                   = require('sinon'),
     rewire                  = require('rewire'),
     errors                  = require('../../../server/errors'),
     auth                    = rewire('../../../server/auth'),
+    logging                 = require('../../../server/logging'),
     BearerStrategy          = require('passport-http-bearer').Strategy,
     ClientPasswordStrategy  = require('passport-oauth2-client-password').Strategy,
     user                    = {id: 1},
@@ -84,13 +85,13 @@ function registerFaultyClientPasswordStrategy() {
 }
 
 describe('Auth', function () {
-    var res, req, next, errorStub;
+    var res, req, next, loggingStub;
 
     beforeEach(function () {
         req = {};
         res = {};
         next = sandbox.spy();
-        errorStub = sandbox.stub(errors, 'logError');
+        loggingStub = sandbox.stub(logging, 'error');
     });
 
     afterEach(function () {
@@ -110,18 +111,13 @@ describe('Auth', function () {
         req.user = false;
         res.status = {};
 
-        sandbox.stub(res, 'status', function (statusCode) {
-            statusCode.should.eql(403);
-            return {
-                json: function (err) {
-                    err.errors[0].errorType.should.eql('NoPermissionError');
-                }
-            };
-        });
+        var next = function next(err) {
+            err.statusCode.should.eql(403);
+            (err instanceof errors.NoPermissionError).should.eql(true);
+            done();
+        };
 
         auth.authorize.requiresAuthorizedUser(req, res, next);
-        next.called.should.be.false();
-        done();
     });
 
     describe('User Authentication', function () {
@@ -154,40 +150,28 @@ describe('Auth', function () {
             req.headers.authorization = 'Bearer ' + token;
             res.status = {};
 
-            sandbox.stub(res, 'status', function (statusCode) {
-                statusCode.should.eql(401);
-                return {
-                    json: function (err) {
-                        err.errors[0].errorType.should.eql('UnauthorizedError');
-                    }
-                };
-            });
+            var next = function next(err) {
+                err.statusCode.should.eql(401);
+                (err instanceof errors.UnauthorizedError).should.eql(true);
+                done();
+            };
 
             registerUnsuccessfulBearerStrategy();
             auth.authenticate.authenticateUser(req, res, next);
-
-            next.called.should.be.false();
-            done();
         });
 
         it('shouldn\'t authenticate without bearer token', function (done) {
             req.headers = {};
             res.status = {};
 
-            sandbox.stub(res, 'status', function (statusCode) {
-                statusCode.should.eql(401);
-                return {
-                    json: function (err) {
-                        err.errors[0].errorType.should.eql('UnauthorizedError');
-                    }
-                };
-            });
+            var next = function next(err) {
+                err.statusCode.should.eql(401);
+                (err instanceof errors.UnauthorizedError).should.eql(true);
+                done();
+            };
 
             registerUnsuccessfulBearerStrategy();
             auth.authenticate.authenticateUser(req, res, next);
-
-            next.called.should.be.false();
-            done();
         });
 
         it('shouldn\'t authenticate with bearer token and client', function (done) {
@@ -196,20 +180,14 @@ describe('Auth', function () {
             req.client = {id: 1};
             res.status = {};
 
-            sandbox.stub(res, 'status', function (statusCode) {
-                statusCode.should.eql(401);
-                return {
-                    json: function (err) {
-                        err.errors[0].errorType.should.eql('UnauthorizedError');
-                    }
-                };
-            });
+            var next = function next(err) {
+                err.statusCode.should.eql(401);
+                (err instanceof errors.UnauthorizedError).should.eql(true);
+                done();
+            };
 
             registerUnsuccessfulBearerStrategy();
             auth.authenticate.authenticateUser(req, res, next);
-
-            next.called.should.be.false();
-            done();
         });
 
         it('shouldn\'t authenticate when error', function (done) {
@@ -242,36 +220,26 @@ describe('Auth', function () {
             req.headers.authorization = 'Bearer';
             res.status = {};
 
-            sandbox.stub(res, 'status', function (statusCode) {
-                statusCode.should.eql(401);
-                return {
-                    json: function (err) {
-                        err.errors[0].errorType.should.eql('UnauthorizedError');
-                    }
-                };
-            });
+            var next = function next(err) {
+                err.statusCode.should.eql(401);
+                (err instanceof errors.UnauthorizedError).should.eql(true);
+                done();
+            };
 
             auth.authenticate.authenticateClient(req, res, next);
-            next.called.should.be.false();
-            done();
         });
 
         it('shouldn\'t authenticate client without client_id/client_secret', function (done) {
             req.body = {};
             res.status = {};
 
-            sandbox.stub(res, 'status', function (statusCode) {
-                statusCode.should.eql(401);
-                return {
-                    json: function (err) {
-                        err.errors[0].errorType.should.eql('UnauthorizedError');
-                    }
-                };
-            });
+            var next = function next(err) {
+                err.statusCode.should.eql(401);
+                (err instanceof errors.UnauthorizedError).should.eql(true);
+                done();
+            };
 
             auth.authenticate.authenticateClient(req, res, next);
-            next.called.should.be.false();
-            done();
         });
 
         it('shouldn\'t authenticate client without client_id', function (done) {
@@ -279,18 +247,13 @@ describe('Auth', function () {
             req.body.client_secret = testSecret;
             res.status = {};
 
-            sandbox.stub(res, 'status', function (statusCode) {
-                statusCode.should.eql(401);
-                return {
-                    json: function (err) {
-                        err.errors[0].errorType.should.eql('UnauthorizedError');
-                    }
-                };
-            });
+            var next = function next(err) {
+                err.statusCode.should.eql(401);
+                (err instanceof errors.UnauthorizedError).should.eql(true);
+                done();
+            };
 
             auth.authenticate.authenticateClient(req, res, next);
-            next.called.should.be.false();
-            done();
         });
 
         it('shouldn\'t authenticate client without client_secret', function (done) {
@@ -298,18 +261,13 @@ describe('Auth', function () {
             req.body.client_id = testClient;
             res.status = {};
 
-            sandbox.stub(res, 'status', function (statusCode) {
-                statusCode.should.eql(401);
-                return {
-                    json: function (err) {
-                        err.errors[0].errorType.should.eql('UnauthorizedError');
-                    }
-                };
-            });
+            var next = function next(err) {
+                err.statusCode.should.eql(401);
+                (err instanceof errors.UnauthorizedError).should.eql(true);
+                done();
+            };
 
             auth.authenticate.authenticateClient(req, res, next);
-            next.called.should.be.false();
-            done();
         });
 
         it('shouldn\'t authenticate without full client credentials', function (done) {
@@ -317,22 +275,14 @@ describe('Auth', function () {
             req.body.client_id = testClient;
             res.status = {};
 
-            sandbox.stub(res, 'status', function (statusCode) {
-                statusCode.should.eql(401);
-                return {
-                    json: function (err) {
-                        err.errors[0].errorType.should.eql('UnauthorizedError');
-                    }
-                };
-            });
+            var next = function next(err) {
+                err.statusCode.should.eql(401);
+                (err instanceof errors.UnauthorizedError).should.eql(true);
+                done();
+            };
 
             registerUnsuccessfulClientPasswordStrategy();
             auth.authenticate.authenticateClient(req, res, next);
-            next.called.should.be.false();
-            errorStub.calledTwice.should.be.true();
-            errorStub.getCall(0).args[1].should.eql('Client credentials were not provided');
-
-            done();
         });
 
         it('shouldn\'t authenticate invalid/unknown client', function (done) {
@@ -341,22 +291,14 @@ describe('Auth', function () {
             req.body.client_secret = testSecret;
             res.status = {};
 
-            sandbox.stub(res, 'status', function (statusCode) {
-                statusCode.should.eql(401);
-                return {
-                    json: function (err) {
-                        err.errors[0].errorType.should.eql('UnauthorizedError');
-                    }
-                };
-            });
+            var next = function next(err) {
+                err.statusCode.should.eql(401);
+                (err instanceof errors.UnauthorizedError).should.eql(true);
+                done();
+            };
 
             registerUnsuccessfulClientPasswordStrategy();
             auth.authenticate.authenticateClient(req, res, next);
-            next.called.should.be.false();
-            errorStub.calledTwice.should.be.true();
-            errorStub.getCall(0).args[1].should.eql('Client credentials were not valid');
-
-            done();
         });
 
         it('should authenticate valid/known client', function (done) {

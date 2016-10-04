@@ -76,6 +76,7 @@ describe('Settings API', function () {
     it('can\'t retrieve non existent setting', function (done) {
         request.get(testUtils.API.getApiQuery('settings/testsetting/'))
             .set('Authorization', 'Bearer ' + accesstoken)
+            .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(404)
@@ -138,6 +139,7 @@ describe('Settings API', function () {
     it('can\'t edit settings with invalid accesstoken', function (done) {
         request.get(testUtils.API.getApiQuery('settings/'))
             .set('Authorization', 'Bearer ' + accesstoken)
+            .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .end(function (err, res) {
@@ -168,6 +170,7 @@ describe('Settings API', function () {
     it('can\'t edit non existent setting', function (done) {
         request.get(testUtils.API.getApiQuery('settings/'))
             .set('Authorization', 'Bearer ' + accesstoken)
+            .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .end(function (err, res) {

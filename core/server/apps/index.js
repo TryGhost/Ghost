@@ -1,7 +1,7 @@
 
 var _           = require('lodash'),
     Promise     = require('bluebird'),
-    errors      = require('../errors'),
+    logging     = require('../logging'),
     api         = require('../api'),
     loader      = require('./loader'),
     i18n        = require('../i18n'),
@@ -46,12 +46,11 @@ module.exports = {
 
                 appsToLoad = appsToLoad.concat(config.get('internalApps'));
             });
-        } catch (e) {
-            errors.logError(
-                i18n.t('errors.apps.failedToParseActiveAppsSettings.error', {message: e.message}),
-                i18n.t('errors.apps.failedToParseActiveAppsSettings.context'),
-                i18n.t('errors.apps.failedToParseActiveAppsSettings.help')
-            );
+        } catch (err) {
+            err.message = i18n.t('errors.apps.failedToParseActiveAppsSettings.error', {message: err.message});
+            err.help = i18n.t('errors.apps.failedToParseActiveAppsSettings.context');
+            err.context = i18n.t('errors.apps.failedToParseActiveAppsSettings.help');
+            logging.error(err);
 
             return Promise.resolve();
         }
@@ -88,11 +87,9 @@ module.exports = {
                 // Extend the loadedApps onto the available apps
                 _.extend(availableApps, loadedApps);
             }).catch(function (err) {
-                errors.logError(
-                    err.message || err,
-                    i18n.t('errors.apps.appWillNotBeLoaded.error'),
-                    i18n.t('errors.apps.appWillNotBeLoaded.help')
-                );
+                err.context = i18n.t('errors.apps.appWillNotBeLoaded.error');
+                err.help = i18n.t('errors.apps.appWillNotBeLoaded.help');
+                logging.error(err);
             });
         });
     },

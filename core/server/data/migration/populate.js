@@ -4,19 +4,19 @@ var Promise = require('bluebird'),
     _ = require('lodash'),
     commands = require('../schema').commands,
     fixtures = require('./fixtures'),
-    errors = require('../../errors'),
     db = require('../../data/db'),
+    logging = require('../../logging'),
+    errors = require('../../errors'),
     schema = require('../schema').tables,
     schemaTables = Object.keys(schema),
     populate, logger;
 
-// @TODO: remove me asap!
 logger = {
     info: function info(message) {
-        errors.logComponentInfo('Migrations', message);
+        logging.info('Migrations:' + message);
     },
     warn: function warn(message) {
-        errors.logComponentWarn('Skipping Migrations', message);
+        logging.warn('Skipping Migrations:' + message);
     }
 };
 

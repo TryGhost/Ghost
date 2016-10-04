@@ -25,8 +25,9 @@ filterUtils = {
                 return _.isString(arg) ? gql.parse(arg) : arg;
             });
         } catch (error) {
-            errors.logAndThrowError(
-                new errors.ValidationError(error.message, 'filter'),
+            throw new errors.ValidationError(
+                error.message,
+                'filter',
                 i18n.t('errors.models.plugins.filter.errorParsing'),
                 i18n.t('errors.models.plugins.filter.forInformationRead', {url: 'http://api.ghost.org/docs/filter'})
             );

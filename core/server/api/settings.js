@@ -6,6 +6,7 @@ var _            = require('lodash'),
     config       = require('../config'),
     canThis      = require('../permissions').canThis,
     errors       = require('../errors'),
+    logging      = require('../logging'),
     utils        = require('./utils'),
     i18n         = require('../i18n'),
 
@@ -36,17 +37,16 @@ var _            = require('lodash'),
 * @private
 */
 updateConfigCache = function () {
-    var errorMessages = [
-        i18n.t('errors.api.settings.invalidJsonInLabs'),
-        i18n.t('errors.api.settings.labsColumnCouldNotBeParsed'),
-        i18n.t('errors.api.settings.tryUpdatingLabs')
-    ], labsValue = {};
+    var labsValue = {};
 
     if (settingsCache.labs && settingsCache.labs.value) {
         try {
             labsValue = JSON.parse(settingsCache.labs.value);
-        } catch (e) {
-            errors.logError.apply(this, errorMessages);
+        } catch (err) {
+            err.message = i18n.t('errors.api.settings.invalidJsonInLabs');
+            err.context = i18n.t('errors.api.settings.labsColumnCouldNotBeParsed');
+            err.help = i18n.t('errors.api.settings.tryUpdatingLabs');
+            logging.error(err);
         }
     }
 

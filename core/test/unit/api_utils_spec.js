@@ -2,10 +2,9 @@ var should  = require('should'),
     sinon   = require('sinon'),
     _       = require('lodash'),
     Promise = require('bluebird'),
-
     permissions = require('../../server/permissions'),
+    errors = require('../../server/errors'),
     apiUtils = require('../../server/api/utils'),
-
     sandbox = sinon.sandbox.create();
 
 describe('API Utils', function () {
@@ -485,7 +484,7 @@ describe('API Utils', function () {
         it('should throw a permissions error if permission is not granted', function (done) {
             var cTMethodStub = {
                     test: {
-                        test: sandbox.stub().returns(Promise.reject())
+                        test: sandbox.stub().returns(Promise.reject(new errors.NoPermissionError()))
                     }
                 },
                 cTStub = sandbox.stub(permissions, 'canThis').returns(cTMethodStub);
@@ -497,7 +496,7 @@ describe('API Utils', function () {
                 cTMethodStub.test.test.calledOnce.should.eql(true);
                 err.errorType.should.eql('NoPermissionError');
                 done();
-            }).catch(done);
+            });
         });
     });
 });

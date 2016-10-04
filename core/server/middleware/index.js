@@ -5,12 +5,13 @@ var debug           = require('debug')('ghost:middleware'),
     errors          = require('../errors'),
     express         = require('express'),
     hbs             = require('express-hbs'),
-    logger          = require('morgan'),
     path            = require('path'),
     routes          = require('../routes'),
     serveStatic     = require('express').static,
     slashes         = require('connect-slashes'),
     storage         = require('../storage'),
+    logging         = require('../logging'),
+    i18n            = require('../i18n'),
     utils           = require('../utils'),
     sitemapHandler  = require('../data/xml/sitemap/handler'),
     multer          = require('multer'),
@@ -24,7 +25,8 @@ var debug           = require('debug')('ghost:middleware'),
     staticTheme      = require('./static-theme'),
     themeHandler     = require('./theme-handler'),
     uncapitalise     = require('./uncapitalise'),
-    maintenance     = require('./maintenance'),
+    maintenance      = require('./maintenance'),
+    errorHandler     = require('./error-handler'),
     versionMatch     = require('./api/version-match'),
     cors             = require('./cors'),
     validation       = require('./validation'),
@@ -40,7 +42,7 @@ middleware = {
     cacheControl: cacheControl,
     spamPrevention: spamPrevention,
     api: {
-        errorHandler: errors.handleAPIError,
+        errorHandler: errorHandler,
         cors: cors,
         labs: labs,
         versionMatch: versionMatch,
@@ -50,8 +52,7 @@ middleware = {
 
 setupMiddleware = function setupMiddleware(blogApp) {
     debug('Middleware start');
-    var logging = config.get('logging'),
-        corePath = config.get('paths').corePath,
+    var corePath = config.get('paths').corePath,
         adminApp = express(),
         adminHbs = hbs.create();
 
@@ -79,14 +80,16 @@ setupMiddleware = function setupMiddleware(blogApp) {
     // (X-Forwarded-Proto header will be checked, if present)
     blogApp.enable('trust proxy');
 
-    // Logging configuration
-    if (logging !== false) {
-        if (blogApp.get('env') !== 'development') {
-            blogApp.use(logger('combined', logging));
-        } else {
-            blogApp.use(logger('dev', logging));
-        }
-    }
+    /**
+     * request logging
+     */
+    blogApp.use(function expressLogging(req, res, next) {
+        res.once('finish', function () {
+            logging.request({req: req, res: res, err: req.err});
+        });
+
+        next();
+    });
 
     if (debug.enabled) {
         // debug keeps a timer, so this is super useful
@@ -210,12 +213,12 @@ setupMiddleware = function setupMiddleware(blogApp) {
     // Set up Frontend routes (including private blogging routes)
     blogApp.use(routes.frontend());
 
-    // ### Error handling
-    // 404 Handler
-    blogApp.use(errors.error404);
+    // ### Error handlers
+    blogApp.use(function pageNotFound(req, res, next) {
+        next(new errors.NotFoundError(i18n.t('errors.errors.pageNotFound')));
+    });
 
-    // 500 Handler
-    blogApp.use(errors.error500);
+    blogApp.use(errorHandler);
     debug('Middleware end');
 };
 

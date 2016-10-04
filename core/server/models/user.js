@@ -9,6 +9,7 @@ var _              = require('lodash'),
     validator      = require('validator'),
     validation     = require('../data/validation'),
     events         = require('../events'),
+    logging        = require('../logging'),
     i18n           = require('../i18n'),
 
     bcryptGenSalt  = Promise.promisify(bcrypt.genSalt),
@@ -121,7 +122,7 @@ User = ghostBookshelf.Model.extend({
         } else if (this.get('id')) {
             return this.get('id');
         } else {
-            errors.logAndThrowError(new errors.NotFoundError(i18n.t('errors.models.user.missingContext')));
+            throw new errors.IncorrectUsage(i18n.t('errors.models.user.missingContext'));
         }
     },
 
@@ -463,7 +464,7 @@ User = ghostBookshelf.Model.extend({
                 var newArgs = [foundUserModel].concat(origArgs);
 
                 return self.permissible.apply(self, newArgs);
-            }, errors.logAndThrowError);
+            });
         }
 
         if (action === 'edit') {
@@ -554,30 +555,28 @@ User = ghostBookshelf.Model.extend({
                             return Promise.reject(new errors.UnauthorizedError(i18n.t('errors.models.user.incorrectPasswordAttempts', {remaining: remaining, s: s})));
 
                             // Use comma structure, not .catch, because we don't want to catch incorrect passwords
-                        }, function handleError(error) {
+                        }, function handleError(err) {
                             // If we get a validation or other error during this save, catch it and log it, but don't
                             // cause a login error because of it. The user validation is not important here.
-                            errors.logError(
-                                error,
-                                i18n.t('errors.models.user.userUpdateError.context'),
-                                i18n.t('errors.models.user.userUpdateError.help')
-                            );
+                            err.context = i18n.t('errors.models.user.userUpdateError.context');
+                            err.help = i18n.t('errors.models.user.userUpdateError.help');
+                            logging.error(err);
+
                             return Promise.reject(new errors.UnauthorizedError(i18n.t('errors.models.user.incorrectPassword')));
                         });
                     }
 
                     return Promise.resolve(user.set({status: 'active', last_login: new Date()}).save({validate: false}))
-                        .catch(function handleError(error) {
+                        .catch(function handleError(err) {
                             // If we get a validation or other error during this save, catch it and log it, but don't
                             // cause a login error because of it. The user validation is not important here.
-                            errors.logError(
-                                error,
-                                i18n.t('errors.models.user.userUpdateError.context'),
-                                i18n.t('errors.models.user.userUpdateError.help')
-                            );
+                            err.context = i18n.t('errors.models.user.userUpdateError.context');
+                            err.help = i18n.t('errors.models.user.userUpdateError.help');
+                            logging.error(err);
+
                             return user;
                         });
-                }, errors.logAndThrowError);
+                });
             }
             return Promise.reject(new errors.NoPermissionError(
                 i18n.t('errors.models.user.accountLocked')));

@@ -4,6 +4,7 @@ var crypto      = require('crypto'),
     config      = require('../../../config'),
     utils       = require('../../../utils'),
     errors      = require('../../../errors'),
+    i18n        = require('../../../i18n'),
     filters     = require('../../../filters'),
     processUrls = require('../../../utils/make-absolute-urls'),
     labs        = require('../../../utils/labs'),
@@ -173,7 +174,7 @@ generate = function generate(req, res, next) {
 
         // If page is greater than number of pages we have, redirect to last page
         if (pageParam > maxPage) {
-            return next(new errors.NotFoundError());
+            return next(new errors.NotFoundError(i18n.t('errors.errors.pageNotFound')));
         }
 
         data.version = res.locals.safeVersion;

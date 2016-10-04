@@ -2,7 +2,7 @@ var util = require('util'),
     moment = require('moment'),
     request = require('superagent'),
     SchedulingBase = require(__dirname + '/SchedulingBase'),
-    errors = require(__dirname + '/../errors');
+    logging = require(__dirname + '/../logging');
 
 /**
  * allJobs is a sorted list by time attribute
@@ -212,7 +212,7 @@ SchedulingDefault.prototype._pingUrl = function (object) {
                 }, self.retryTimeoutInMs);
             }
 
-            errors.logError(err);
+            logging.error(err);
         }
     });
 };

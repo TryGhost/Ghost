@@ -38,7 +38,7 @@ effective = {
                 });
 
                 return {permissions: allPerms, roles: user.roles};
-            }, errors.logAndThrowError);
+            });
     },
 
     app: function (appName) {
@@ -49,7 +49,7 @@ effective = {
                 }
 
                 return {permissions: foundApp.related('permissions').models};
-            }, errors.logAndThrowError);
+            });
     }
 };
 
