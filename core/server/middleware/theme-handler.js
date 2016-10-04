@@ -100,7 +100,7 @@ themeHandler = {
                 // Change theme
                 if (!config.get('paths').availableThemes.hasOwnProperty(activeTheme.value)) {
                     if (!res.isAdmin) {
-                        return next(new errors.NotFoundError(i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeTheme.value})));
+                        return next(new errors.InternalServerError(i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeTheme.value})));
                     } else {
                         // At this point the activated theme is not present and the current
                         // request is for the admin client.  In order to allow the user access
