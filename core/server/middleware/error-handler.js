@@ -71,7 +71,8 @@ _private.handleJSONResponse = function handleJSONResponse(err, req, res) {
         res.json({
             errors: [{
                 message: err.message,
-                errorType: err.errorType
+                errorType: err.errorType,
+                errorDetails: err.errorDetails
             }]
         });
     };
