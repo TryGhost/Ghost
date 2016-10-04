@@ -19,7 +19,7 @@ The project is maintained by a non-profit organisation called the **Ghost Founda
 
 # Quick Start Install
 
-First, you’ll need **Node.js v4 LTS** or a [supported version](http://support.ghost.org/supported-node-versions/).
+First, you’ll need [**Node.js v4 LTS**](https://nodejs.org/en/download/) or a [supported version](http://support.ghost.org/supported-node-versions/).
 
 1. Download the [latest release](https://ghost.org/developers/) of Ghost
 1. Unzip, and fire up terminal
@@ -36,7 +36,7 @@ More [install docs](http://support.ghost.org/installation/) here in case you get
 <a name="getting-started"></a>
 # Developer Install
 
-This is for if you want to hack on Ghost core. First, you’ll need **Node.js v4 LTS** or a [supported version](http://support.ghost.org/supported-node-versions/). Then:
+This is for if you want to hack on Ghost core. First, you’ll need [**Node.js v4 LTS**](https://nodejs.org/en/download/) or a [supported version](http://support.ghost.org/supported-node-versions/). Then:
 
 ```bash
 git clone git://github.com/tryghost/ghost.git
