@@ -5,6 +5,7 @@ var _           = require('lodash'),
     versioning  = require('../schema').versioning,
     serverUtils = require('../../utils'),
     errors      = require('../../errors'),
+    logging     = require('../../logging'),
     settings    = require('../../api/settings'),
     i18n        = require('../../i18n'),
 
@@ -29,7 +30,7 @@ exportFileName = function exportFileName() {
         }
         return title + 'ghost.' + datetime + '.json';
     }).catch(function (err) {
-        errors.logError(err);
+        logging.error(err);
         return 'ghost.' + datetime + '.json';
     });
 };
@@ -74,7 +75,7 @@ doExport = function doExport() {
 
         return exportData;
     }).catch(function (err) {
-        errors.logAndThrowError(err, i18n.t('errors.data.export.errorExportingData'), '');
+        return Promise.reject(new errors.InternalServerError(err.message, i18n.t('errors.data.export.errorExportingData')));
     });
 };
 

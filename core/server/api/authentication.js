@@ -8,6 +8,7 @@ var _                = require('lodash'),
     globalUtils      = require('../utils'),
     utils            = require('./utils'),
     errors           = require('../errors'),
+    logging          = require('../logging'),
     models           = require('../models'),
     events           = require('../events'),
     config           = require('../config'),
@@ -488,14 +489,10 @@ authentication = {
                             }]
                         };
 
-                    apiMail.send(payload, {context: {internal: true}}).catch(function (error) {
-                        errors.logError(
-                            error.message,
-                            i18n.t(
-                                'errors.api.authentication.unableToSendWelcomeEmail'
-                            ),
-                            i18n.t('errors.api.authentication.checkEmailConfigInstructions', {url: 'http://support.ghost.org/mail/'})
-                        );
+                    apiMail.send(payload, {context: {internal: true}}).catch(function (err) {
+                        err.context = i18n.t('errors.api.authentication.unableToSendWelcomeEmail');
+                        err.help = i18n.t('errors.api.authentication.checkEmailConfigInstructions', {url: 'http://support.ghost.org/mail/'});
+                        logging.error(err);
                     });
                 })
                 .return(setupUser);

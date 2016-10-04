@@ -4,7 +4,7 @@
 // Block helper designed for looping through posts
 var hbs             = require('express-hbs'),
     _               = require('lodash'),
-    errors          = require('../errors'),
+    logging         = require('../logging'),
     i18n            = require('../i18n'),
     labs            = require('../utils/labs'),
     utils           = require('./utils'),
@@ -33,7 +33,7 @@ function filterItemsByVisibility(items, options) {
 
 foreach = function (items, options) {
     if (!options) {
-        errors.logWarn(i18n.t('warnings.helpers.foreach.iteratorNeeded'));
+        logging.warn(i18n.t('warnings.helpers.foreach.iteratorNeeded'));
     }
 
     if (hbsUtils.isFunction(items)) {

@@ -89,6 +89,7 @@ describe('Upload API', function () {
         it('import should fail without file', function (done) {
             request.post(testUtils.API.getApiQuery('uploads'))
                 .set('Authorization', 'Bearer ' + accesstoken)
+                .set('Accept', 'application/json')
                 .expect('Content-Type', /json/)
                 .expect(403)
                 .end(function (err) {

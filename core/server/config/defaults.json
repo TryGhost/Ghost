@@ -28,5 +28,10 @@
     "auth": {
         "type": "ghost",
         "url": "http://devauth.ghost.org:8080"
+    },
+    "logging": {
+        "level": "info",
+        "rotation": false,
+        "transports": ["stdout"]
     }
 }

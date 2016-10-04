@@ -1,6 +1,7 @@
 var debug = require('debug')('ghost:channels:render'),
     _           = require('lodash'),
     errors      = require('../../errors'),
+    i18n        = require('../../i18n'),
     filters     = require('../../filters'),
     safeString  = require('../../utils/index').safeString,
     labs        = require('../../utils/labs'),
@@ -37,7 +38,7 @@ function renderChannel(req, res, next) {
     return fetchData(channelOpts).then(function handleResult(result) {
         // If page is greater than number of pages we have, go straight to 404
         if (pageParam > result.meta.pagination.pages) {
-            return next(new errors.NotFoundError());
+            return next(new errors.NotFoundError(i18n.t('errors.errors.pageNotFound')));
         }
 
         // @TODO: figure out if this can be removed, it's supposed to ensure that absolutely URLs get generated

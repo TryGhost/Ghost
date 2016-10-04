@@ -5,6 +5,7 @@ var _               = require('lodash'),
     Promise         = require('bluebird'),
     sequence        = require('../utils/sequence'),
     errors          = require('../errors'),
+    logging         = require('../logging'),
     Showdown        = require('showdown-ghost'),
     legacyConverter = new Showdown.converter({extensions: ['ghostgfm', 'footnotes', 'highlight']}),
     Mobiledoc       = require('mobiledoc-html-renderer').default,
@@ -376,11 +377,12 @@ Post = ghostBookshelf.Model.extend({
             }).then(function () {
                 // Don't do anything, the transaction processed ok
             }).catch(function failure(error) {
-                errors.logError(
-                    error,
+                logging.error(new errors.InternalServerError(
+                    error.message,
                     i18n.t('errors.models.post.tagUpdates.error'),
                     i18n.t('errors.models.post.tagUpdates.help')
-                );
+                ));
+
                 return Promise.reject(new errors.InternalServerError(
                     i18n.t('errors.models.post.tagUpdates.error') + ' ' + i18n.t('errors.models.post.tagUpdates.help') + error
                 ));
@@ -700,7 +702,7 @@ Post = ghostBookshelf.Model.extend({
                 var newArgs = [foundPostModel].concat(origArgs);
 
                 return self.permissible.apply(self, newArgs);
-            }, errors.logAndThrowError);
+            });
         }
 
         if (postModel) {
