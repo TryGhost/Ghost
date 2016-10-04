@@ -139,7 +139,7 @@ Settings = ghostBookshelf.Model.extend({
                 }
 
                 return Promise.reject(new errors.NotFoundError(i18n.t('errors.models.settings.unableToFindSetting', {key: item.key})));
-            }, errors.logAndThrowError);
+            });
         });
     },
 

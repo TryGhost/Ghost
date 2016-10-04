@@ -164,8 +164,8 @@ users = {
                         return options;
                     });
                 });
-            }).catch(function handleError(error) {
-                return errors.formatAndRejectAPIError(error, i18n.t('errors.api.users.noPermissionToEditUser'));
+            }).catch(function handleError(err) {
+                return Promise.reject(new errors.NoPermissionError(err.message, i18n.t('errors.api.users.noPermissionToEditUser')));
             });
         }
 
@@ -214,8 +214,8 @@ users = {
             return canThis(options.context).destroy.user(options.id).then(function permissionGranted() {
                 options.status = 'all';
                 return options;
-            }).catch(function handleError(error) {
-                return errors.formatAndRejectAPIError(error, i18n.t('errors.api.users.noPermissionToDestroyUser'));
+            }).catch(function handleError(err) {
+                return Promise.reject(new errors.NoPermissionError(err.message, i18n.t('errors.api.users.noPermissionToDestroyUser')));
             });
         }
 
@@ -235,8 +235,8 @@ users = {
                 ]).then(function () {
                     return dataProvider.User.destroy(options);
                 }).return(null);
-            }).catch(function (error) {
-                return errors.formatAndRejectAPIError(error);
+            }).catch(function (err) {
+                return Promise.reject(new errors.NoPermissionError(err.message));
             });
         }
 
@@ -270,8 +270,8 @@ users = {
         function handlePermissions(options) {
             return canThis(options.context).edit.user(options.data.password[0].user_id).then(function permissionGranted() {
                 return options;
-            }).catch(function (error) {
-                return errors.formatAndRejectAPIError(error, i18n.t('errors.api.users.noPermissionToChangeUsersPwd'));
+            }).catch(function (err) {
+                return Promise.reject(new errors.NoPermissionError(err.message, i18n.t('errors.api.users.noPermissionToChangeUsersPwd')));
             });
         }
 
@@ -322,8 +322,6 @@ users = {
                 return canThis(options.context).assign.role(ownerRole);
             }).then(function () {
                 return options;
-            }).catch(function (error) {
-                return errors.formatAndRejectAPIError(error);
             });
         }
 
@@ -348,8 +346,6 @@ users = {
         // Pipeline calls each task passing the result of one to be the arguments for the next
         return pipeline(tasks, object, options).then(function formatResult(result) {
             return Promise.resolve({users: result});
-        }).catch(function (error) {
-            return errors.formatAndRejectAPIError(error);
         });
     }
 };

@@ -7,6 +7,7 @@ var Promise = require('bluebird'),
     config = require('../config'),
     errors = require('../errors'),
     events = require('../events'),
+    logging = require('../logging'),
     storage = require('../storage'),
     settings = require('./settings'),
     apiUtils = require('./utils'),
@@ -103,7 +104,7 @@ themes = {
                 // happens in background
                 Promise.promisify(fs.removeSync)(zip.path)
                     .catch(function (err) {
-                        errors.logError(err);
+                        logging.error(err);
                     });
 
                 // remove extracted dir from gscan
@@ -111,7 +112,7 @@ themes = {
                 if (theme) {
                     Promise.promisify(fs.removeSync)(theme.path)
                         .catch(function (err) {
-                            errors.logError(err);
+                            logging.error(err);
                         });
                 }
             });

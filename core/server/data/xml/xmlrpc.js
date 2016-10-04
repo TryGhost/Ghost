@@ -3,7 +3,7 @@ var _               = require('lodash'),
     xml             = require('xml'),
     config          = require('../../config'),
     utils           = require('../../utils'),
-    errors          = require('../../errors'),
+    logging         = require('../../logging'),
     events          = require('../../events'),
     i18n            = require('../../i18n'),
     pingList;
@@ -67,14 +67,11 @@ function ping(post) {
 
         req = http.request(options);
         req.write(pingXML);
-        req.on('error', function handleError(error) {
-                errors.logError(
-                    error,
-                    i18n.t('errors.data.xml.xmlrpc.pingUpdateFailed.error'),
-                    i18n.t('errors.data.xml.xmlrpc.pingUpdateFailed.help', {url: 'http://support.ghost.org'})
-                );
-            }
-        );
+        req.on('error', function handleError(err) {
+            err.context = i18n.t('errors.data.xml.xmlrpc.pingUpdateFailed.error');
+            err.help = i18n.t('errors.data.xml.xmlrpc.pingUpdateFailed.help', {url: 'http://support.ghost.org'});
+            logging.error(err);
+        });
         req.end();
     });
 }

@@ -82,15 +82,15 @@ describe('Exporter', function () {
 
         it('should catch and log any errors', function (done) {
             // Setup for failure
-            var errorStub = sandbox.stub(errors, 'logAndThrowError');
             queryMock.select.returns(new Promise.reject({}));
 
             // Execute
-            exporter.doExport().then(function (exportData) {
-                should.not.exist(exportData);
-                errorStub.calledOnce.should.be.true();
+            exporter.doExport().then(function () {
+                done(new Error('expected error on export data'));
+            }).catch(function (err) {
+                (err instanceof errors.InternalServerError).should.eql(true);
                 done();
-            }).catch(done);
+            });
         });
     });
 

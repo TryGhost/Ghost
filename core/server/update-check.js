@@ -28,10 +28,9 @@ var crypto   = require('crypto'),
     Promise  = require('bluebird'),
     _        = require('lodash'),
     url      = require('url'),
-
     api      = require('./api'),
     config   = require('./config'),
-    errors   = require('./errors'),
+    logging   = require('./logging'),
     i18n     = require('./i18n'),
     internal = {context: {internal: true}},
     allowedCheckEnvironments = ['development', 'production'],
@@ -44,11 +43,9 @@ function updateCheckError(error) {
         internal
     );
 
-    errors.logError(
-        error,
-        i18n.t('errors.update-check.checkingForUpdatesFailed.error'),
-        i18n.t('errors.update-check.checkingForUpdatesFailed.help', {url: 'http://support.ghost.org'})
-    );
+    error.context = i18n.t('errors.update-check.checkingForUpdatesFailed.error');
+    error.help = i18n.t('errors.update-check.checkingForUpdatesFailed.help', {url: 'http://support.ghost.org'});
+    logging.error(error);
 }
 
 /**
