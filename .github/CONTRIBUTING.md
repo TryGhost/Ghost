@@ -208,7 +208,7 @@ instructions below this list
 1. `npm start` - starts Ghost or `grunt dev` will start it in watch mode
 
 If something goes wrong, please see the
-[troubleshooting tips](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md#troubleshooting--faq) below.
+[troubleshooting tips](https://github.com/TryGhost/Ghost/blob/master/.github/CONTRIBUTING.md#troubleshooting--faq) below.
 
 ### Looking for something to work on?
 
