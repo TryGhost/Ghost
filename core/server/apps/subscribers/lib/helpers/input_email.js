@@ -1,13 +1,14 @@
 // # Input Email Helper
 // Usage: `{{input_email}}`
 //
-// Password input used on private.hbs for password-protected blogs
+// Used by `{{subscribe_form}}`
 //
-// We use the name meta_title to match the helper for consistency:
+// We use the name input_email to match the helper for consistency:
 // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 
-var hbs             = require('express-hbs'),
-    utils           = require('./utils'),
+// Dirty requires
+var hbs = require('express-hbs'),
+    utils = require('../../../../helpers/utils'),
     input_email;
 
 input_email = function (options) {

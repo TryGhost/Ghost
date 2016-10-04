@@ -124,10 +124,6 @@ setupMiddleware = function setupMiddleware(blogApp) {
         {maxAge: utils.ONE_HOUR_MS, fallthrough: false}
     ));
     blogApp.use('/content/images', storage.getStorage().serve());
-    blogApp.use('/public', serveStatic(
-        path.join(corePath, '/built/public'),
-        {maxAge: utils.ONE_YEAR_MS, fallthrough: false}
-    ));
 
     debug('Static content done');
     // First determine whether we're serving admin or theme content

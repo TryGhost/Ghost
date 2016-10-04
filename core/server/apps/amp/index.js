@@ -1,12 +1,12 @@
 var router           = require('./lib/router'),
-    registerAmpHelpers  = require('./lib/helpers'),
+    registerHelpers  = require('./lib/helpers'),
 
     // Dirty requires
     config     = require('../../config');
 
 module.exports = {
     activate: function activate(ghost) {
-        registerAmpHelpers(ghost);
+        registerHelpers(ghost);
     },
 
     setupRoutes: function setupRoutes(blogRouter) {

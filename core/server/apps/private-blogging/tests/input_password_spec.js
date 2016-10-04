@@ -1,23 +1,18 @@
+// We use the name input_password to match the helper for consistency:
+// jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 var should         = require('should'),
-    hbs            = require('express-hbs'),
-    utils          = require('./utils'),
 
 // Stuff we are testing
-    handlebars     = hbs.handlebars,
-    helpers        = require('../../../server/helpers');
+    input_password = require('../lib/helpers/input_password');
 
 describe('{{input_password}} helper', function () {
-    before(function () {
-        utils.loadHelpers();
-    });
-
-    it('has loaded input_password helper', function () {
-        should.exist(handlebars.helpers.input_password);
+    it('has input_password helper', function () {
+        should.exist(input_password);
     });
 
     it('returns the correct input when no custom options are specified', function () {
         var markup = '<input class="private-login-password" type="password" name="password" autofocus="autofocus" />',
-            rendered = helpers.input_password();
+            rendered = input_password();
         should.exist(rendered);
 
         String(rendered).should.equal(markup);
@@ -30,7 +25,7 @@ describe('{{input_password}} helper', function () {
                     class: 'test-class'
                 }
             },
-            rendered = helpers.input_password(options);
+            rendered = input_password(options);
 
         should.exist(rendered);
 
@@ -44,7 +39,7 @@ describe('{{input_password}} helper', function () {
                     placeholder: 'Test'
                 }
             },
-            rendered = helpers.input_password(options);
+            rendered = input_password(options);
 
         should.exist(rendered);
 

@@ -3,10 +3,11 @@ var config     = require('../../config'),
     logging    = require('../../logging'),
     i18n       = require('../../i18n'),
     middleware = require('./lib/middleware'),
-    router     = require('./lib/router');
+    router     = require('./lib/router'),
+    registerHelpers = require('./lib/helpers');
 
 module.exports = {
-    activate: function activate() {
+    activate: function activate(ghost) {
         var err, paths;
 
         if (utils.url.getSubdir()) {
@@ -23,6 +24,8 @@ module.exports = {
                 process.exit(0);
             }
         }
+
+        registerHelpers(ghost);
     },
 
     setupMiddleware: function setupMiddleware(blogApp) {
