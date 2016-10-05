@@ -18,11 +18,15 @@ nconf.env();
 
 /**
  * load config files
+ * @TODO:
+ * - why does this work? i have no idea!
+ * - find out why argv override works, when defining these weird keys
+ * - i could not find any nconf usages so that all config requirements work
  */
-nconf.file('1', __dirname + '/overrides.json');
-nconf.file('2', path.join(process.cwd(), 'config.' + env + '.json'));
-nconf.file('3', __dirname + '/env/config.' + env + '.json');
-nconf.file('4', __dirname + '/defaults.json');
+nconf.file('ghost1', __dirname + '/overrides.json');
+nconf.file('ghost2', path.join(process.cwd(), 'config.' + env + '.json'));
+nconf.file('ghost3', __dirname + '/env/config.' + env + '.json');
+nconf.file('ghost4', __dirname + '/defaults.json');
 
 /**
  * transform all relative paths to absolute paths
