@@ -36,6 +36,18 @@ populate = function populate(options) {
         };
 
     logger.info('Creating tables...');
+
+    /**
+     * mysql does not support DDL
+     * http://stackoverflow.com/questions/4692690/is-it-possible-to-roll-back-create-table-and-alter-table-statements-in-major-sql
+     *
+     * Still we can a achieve a workaround:
+     * - population condition should not be depend on settings table only
+     * - population is finished when the default values are set in the database
+     * - populate fixtures needs to check if fixtures already exists
+     *
+     * We still keep the transaction, because it works in for sqlite3.
+     */
     return db.knex.transaction(function populateDatabaseInTransaction(transaction) {
         return Promise.mapSeries(schemaTables, function createTable(table) {
             logger.info('Creating table: ' + table);
@@ -47,7 +59,13 @@ populate = function populate(options) {
 
             return fixtures.populate(logger, _.merge({}, {transacting: transaction}, modelOptions));
         }).then(function () {
+            logger.info('Populating defaults...');
             return models.Settings.populateDefaults({transacting: transaction});
+        }).then(function () {
+            logger.info('Finish database population...');
+
+            // this indicates that database population was successful
+            return models.Settings.edit({key: 'databasePopulated', value: true}, _.merge({}, {transacting: transaction}, modelOptions));
         });
     }).catch(function populateDatabaseError(err) {
         logger.warn('rolling back...');

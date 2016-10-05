@@ -2,9 +2,9 @@ var path            = require('path'),
     Promise         = require('bluebird'),
     db              = require('../db'),
     errors          = require('../../errors'),
+    models          = require('../../models'),
     i18n            = require('../../i18n'),
     defaultSettings = require('./default-settings'),
-
     defaultDatabaseVersion;
 
 // Newest Database Version
@@ -23,10 +23,11 @@ function getNewestDatabaseVersion() {
 // The migration version number according to the database
 // This is what the database is currently at and may need to be updated
 function getDatabaseVersion() {
+    var databaseVersion;
+
     return db.knex.schema.hasTable('settings').then(function (exists) {
         // Check for the current version from the settings table
         if (exists) {
-            // Temporary code to deal with old databases with currentVersion settings
             return db.knex('settings')
                 .where('key', 'databaseVersion')
                 .first('value')
@@ -36,6 +37,22 @@ function getDatabaseVersion() {
                     }
 
                     return version.value;
+                })
+                .then(function (_databaseVersion) {
+                    databaseVersion = _databaseVersion;
+
+                    return db.knex('settings')
+                        .where('key', 'databasePopulated')
+                        .first('value');
+                })
+                .then(function (databasePopulatedExists) {
+                    // CASE: we invented a new population flag to indicate database population
+                    // SKIP for all db versions before 010
+                    if (!databasePopulatedExists && databaseVersion >= '010') {
+                        return Promise.reject(new errors.DatabaseNotPopulated(i18n.t('errors.data.versioning.index.databaseNotPopulated')));
+                    }
+
+                    return databaseVersion;
                 });
         }
 
