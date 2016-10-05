@@ -1,13 +1,13 @@
-var should  = require('should'),
-    sinon   = require('sinon'),
+var should = require('should'),
+    sinon = require('sinon'),
     Promise = require('bluebird'),
 
     // Stuff we are testing
     versioning = require('../../server/data/schema').versioning,
-    db         = require('../../server/data/db'),
-    errors     = require('../../server/errors'),
+    db = require('../../server/data/db'),
+    errors = require('../../server/errors'),
 
-    sandbox    = sinon.sandbox.create();
+    sandbox = sinon.sandbox.create();
 
 describe('Versioning', function () {
     afterEach(function () {
@@ -17,25 +17,26 @@ describe('Versioning', function () {
     describe('getMigrationVersions', function () {
         it('should output a single item if the from and to versions are the same', function () {
             should.exist(versioning.getMigrationVersions);
-            versioning.getMigrationVersions('003', '003').should.eql(['003']);
-            versioning.getMigrationVersions('004', '004').should.eql(['004']);
+            versioning.getMigrationVersions('1.0', '1.0').should.eql([]);
+            versioning.getMigrationVersions('1.2', '1.2').should.eql([]);
         });
 
         it('should output an empty array if the toVersion is higher than the fromVersion', function () {
-            versioning.getMigrationVersions('003', '002').should.eql([]);
+            versioning.getMigrationVersions('1.2', '1.1').should.eql([]);
         });
 
         it('should output all the versions between two versions', function () {
-            versioning.getMigrationVersions('003', '004').should.eql(['003', '004']);
-            versioning.getMigrationVersions('003', '005').should.eql(['003', '004', '005']);
-            versioning.getMigrationVersions('003', '006').should.eql(['003', '004', '005', '006']);
-            versioning.getMigrationVersions('010', '011').should.eql(['010', '011']);
+            versioning.getMigrationVersions('1.0', '1.1').should.eql(['1.1']);
+            versioning.getMigrationVersions('1.0', '1.2').should.eql(['1.1', '1.2']);
+            versioning.getMigrationVersions('1.2', '1.5').should.eql(['1.3', '1.4', '1.5']);
+            versioning.getMigrationVersions('2.1', '2.2').should.eql(['2.2']);
         });
     });
 
     describe('getNewestDatabaseVersion', function () {
         it('should return the correct version', function () {
-            var currentVersion = require('../../server/data/schema').defaultSettings.core.databaseVersion.defaultValue;
+            var currentVersion = '1.0';
+
             // This function has an internal cache, so we call it twice.
             // First, to check that it fetches the correct version from default-settings.json.
             versioning.getNewestDatabaseVersion().should.eql(currentVersion);
@@ -59,7 +60,11 @@ describe('Versioning', function () {
             };
 
             // this MUST use sinon, not sandbox, see sinonjs/sinon#781
-            knexStub = sinon.stub(db, 'knex', {get: function () { return knexMock; }});
+            knexStub = sinon.stub(db, 'knex', {
+                get: function () {
+                    return knexMock;
+                }
+            });
         });
 
         afterEach(function () {
@@ -89,12 +94,12 @@ describe('Versioning', function () {
         it('should lookup & return version, if settings table exists', function (done) {
             // Setup
             knexMock.schema.hasTable.returns(new Promise.resolve(true));
-            queryMock.first.returns(new Promise.resolve({value: '001'}));
+            queryMock.first.returns(new Promise.resolve({value: '1.0'}));
 
             // Execute
             versioning.getDatabaseVersion().then(function (version) {
                 should.exist(version);
-                version.should.eql('001');
+                version.should.eql('1.0');
 
                 knexStub.get.calledTwice.should.be.true();
                 knexMock.schema.hasTable.calledOnce.should.be.true();
@@ -155,6 +160,21 @@ describe('Versioning', function () {
                 done();
             }).catch(done);
         });
+
+        it('database does exist: expect alpha error', function (done) {
+            knexMock.schema.hasTable.returns(new Promise.resolve(true));
+            queryMock.first.returns(new Promise.resolve({value: '008'}));
+
+            versioning.getDatabaseVersion()
+                .then(function () {
+                    done('Should throw an error if version is not a number');
+                })
+                .catch(function (err) {
+                    err.errorType.should.eql('DatabaseVersion');
+                    err.message.should.eql('Your database version is not compatible with Ghost 1.0.0 Alpha (master branch)');
+                    done();
+                });
+        });
     });
 
     describe('setDatabaseVersion', function () {
@@ -169,7 +189,11 @@ describe('Versioning', function () {
             knexMock = sandbox.stub().returns(queryMock);
 
             // this MUST use sinon, not sandbox, see sinonjs/sinon#781
-            knexStub = sinon.stub(db, 'knex', {get: function () { return knexMock; }});
+            knexStub = sinon.stub(db, 'knex', {
+                get: function () {
+                    return knexMock;
+                }
+            });
         });
 
         afterEach(function () {

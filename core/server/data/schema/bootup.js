@@ -23,6 +23,7 @@ module.exports = function bootUp() {
      *
      * @TODO:
      * - remove return populate() -> belongs to db init
+     * - key: migrations-kate
      */
     return versioning
         .getDatabaseVersion()

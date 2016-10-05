@@ -43,10 +43,14 @@ populate = function populate(options) {
             logger.info('Creating table: ' + table);
             return commands.createTable(table, transaction);
         }).then(function () {
-            // @TODO: move to seed
+            // @TODO:
+            //  - key: migrations-kate
+            //  - move to seed
             return models.Settings.populateDefaults(_.merge({}, {transacting: transaction}, modelOptions));
         }).then(function () {
-            // @TODO: move to seed
+            // @TODO:
+            //  - key: migrations-kate
+            //  - move to seed
             return versioning.setDatabaseVersion(transaction);
         }).then(function populateFixtures() {
             if (tablesOnly) {

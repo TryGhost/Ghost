@@ -125,44 +125,5 @@ describe('server bootstrap', function () {
                     done(err);
                 });
         });
-
-        // @TODO remove these temporary tests ;)
-        it('TEMP: database does exist: expect alpha error', function (done) {
-            sandbox.stub(migration.update, 'isDatabaseOutOfDate').returns({migrate:false});
-            sandbox.spy(migration.update, 'execute');
-
-            sandbox.stub(versioning, 'getDatabaseVersion', function () {
-                return Promise.resolve('006');
-            });
-
-            bootstrap()
-                .then(function () {
-                    done('This should not be called');
-                })
-                .catch(function (err) {
-                    err.errorType.should.eql('DatabaseVersionError');
-                    err.message.should.eql('Your database version is not compatible with Ghost 1.0.0 Alpha (master branch)');
-                    done();
-                });
-        });
-
-        it('TEMP: database does exist: expect alpha error', function (done) {
-            sandbox.stub(migration.update, 'isDatabaseOutOfDate').returns({migrate:true});
-            sandbox.stub(migration.update, 'execute').returns(Promise.resolve());
-
-            sandbox.stub(versioning, 'getDatabaseVersion', function () {
-                return Promise.resolve('006');
-            });
-
-            bootstrap()
-                .then(function () {
-                    done('This should not be called');
-                })
-                .catch(function (err) {
-                    err.errorType.should.eql('DatabaseVersionError');
-                    err.message.should.eql('Your database version is not compatible with Ghost 1.0.0 Alpha (master branch)');
-                    done();
-                });
-        });
     });
 });
