@@ -2,7 +2,6 @@ var should          = require('should'),
     sinon           = require('sinon'),
     nock            = require('nock'),
     parsePackageJson = require('../../server/utils/parse-package-json'),
-    validateThemes  = require('../../server/utils/validate-themes'),
     readDirectory   = require('../../server/utils/read-directory'),
     readThemes      = require('../../server/utils/read-themes'),
     gravatar        = require('../../server/utils/gravatar'),
@@ -359,67 +358,6 @@ describe('Server Utilities', function () {
                             'index.hbs': join(themesPath.name, 'casper', 'index.hbs')
                         }
                     });
-
-                    done();
-                })
-                .catch(done)
-                .finally(themesPath.removeCallback);
-        });
-    });
-
-    describe('validate-themes', function () {
-        it('should return warnings for themes without package.json', function (done) {
-            var themesPath, pkgJson;
-
-            themesPath = tmp.dirSync({unsafeCleanup: true});
-            pkgJson = JSON.stringify({
-                name: 'casper',
-                version: '1.0.0'
-            });
-
-            fs.mkdirSync(join(themesPath.name, 'casper'));
-            fs.mkdirSync(join(themesPath.name, 'invalid-casper'));
-
-            fs.writeFileSync(join(themesPath.name, 'casper', 'package.json'), pkgJson);
-
-            validateThemes(themesPath.name)
-                .then(function () {
-                    done(new Error('validateThemes succeeded, but should\'ve failed'));
-                })
-                .catch(function (result) {
-                    result.errors.length.should.equal(0);
-                    result.warnings.should.eql([{
-                        message: 'Found a theme with no package.json file',
-                        context: 'Theme name: invalid-casper',
-                        help: 'This will be required in future. Please see http://docs.ghost.org/themes/'
-                    }]);
-
-                    done();
-                })
-                .catch(done)
-                .finally(themesPath.removeCallback);
-        });
-
-        it('should return warning for theme with invalid package.json', function (done) {
-            var themesPath, pkgJson;
-
-            themesPath = tmp.dirSync({unsafeCleanup: true});
-            pkgJson = '{"name":casper}';
-
-            fs.mkdirSync(join(themesPath.name, 'casper'));
-            fs.writeFileSync(join(themesPath.name, 'casper', 'package.json'), pkgJson);
-
-            validateThemes(themesPath.name)
-                .then(function () {
-                    done(new Error('validateThemes succeeded, but should\'ve failed'));
-                })
-                .catch(function (result) {
-                    result.errors.length.should.equal(0);
-                    result.warnings.should.eql([{
-                        message: 'Found a malformed package.json',
-                        context: 'Theme name: casper',
-                        help: 'Valid package.json will be required in future. Please see http://docs.ghost.org/themes/'
-                    }]);
 
                     done();
                 })

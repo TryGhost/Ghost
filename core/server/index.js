@@ -20,7 +20,6 @@ var debug = require('debug')('ghost:boot:init'),
     i18n = require('./i18n'),
     api = require('./api'),
     config = require('./config'),
-    logging = require('./logging'),
     middleware = require('./middleware'),
     db = require('./data/schema'),
     models = require('./models'),
@@ -31,7 +30,6 @@ var debug = require('debug')('ghost:boot:init'),
     slack = require('./data/slack'),
     GhostServer = require('./ghost-server'),
     scheduling = require('./scheduling'),
-    validateThemes = require('./utils/validate-themes'),
     readDirectory = require('./utils/read-directory'),
     utils = require('./utils'),
     dbHash;
@@ -115,19 +113,6 @@ function init(options) {
         // ## Middleware and Routing
         middleware(parentApp);
         debug('Express done');
-
-        // Log all theme errors and warnings
-        validateThemes(config.getContentPath('themes'))
-            .catch(function (result) {
-                // TODO: change `result` to something better
-                result.errors.forEach(function (err) {
-                    logging.error(err);
-                });
-
-                result.warnings.forEach(function (warn) {
-                    logging.warn(warn.message);
-                });
-            });
 
         return auth.init(config.get('auth'))
             .then(function (response) {
