@@ -2,8 +2,8 @@ var supertest     = require('supertest'),
     should        = require('should'),
     testUtils     = require('../../../utils'),
     user          = testUtils.DataGenerator.forModel.users[0],
-    ghost         = require('../../../../../core'),
     config        = require('../../../../../core/server/config'),
+    ghost         = testUtils.startGhost,
     request;
 
 describe('Authentication API', function () {
