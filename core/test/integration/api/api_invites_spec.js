@@ -27,56 +27,48 @@ describe('Invites API', function () {
 
     describe('CRUD', function () {
         describe('Add', function () {
-            it('add invite 1', function (done) {
-                InvitesAPI.add({
+            it('add invite 1', function () {
+                return InvitesAPI.add({
                     invites: [{email: 'test@example.com', roles: [testUtils.roles.ids.editor]}]
-                }, _.merge({}, {include: ['roles']}, testUtils.context.owner))
-                    .then(function (response) {
-                        response.invites.length.should.eql(1);
-                        response.invites[0].roles.length.should.eql(1);
-                        response.invites[0].roles[0].name.should.eql('Editor');
-                        done();
-                    }).catch(done);
+                }, _.merge({}, {include: ['roles']}, testUtils.context.owner)).then(function (response) {
+                    response.invites.length.should.eql(1);
+                    response.invites[0].roles.length.should.eql(1);
+                    response.invites[0].roles[0].name.should.eql('Editor');
+                });
             });
 
-            it('add invite 2', function (done) {
-                InvitesAPI.add({
+            it('add invite 2', function () {
+                return InvitesAPI.add({
                     invites: [{email: 'test2@example.com', roles: [testUtils.roles.ids.author]}]
-                }, _.merge({}, {include: ['roles']}, testUtils.context.owner))
-                    .then(function (response) {
-                        response.invites.length.should.eql(1);
-                        response.invites[0].roles.length.should.eql(1);
-                        response.invites[0].roles[0].name.should.eql('Author');
-                        done();
-                    }).catch(done);
+                }, _.merge({}, {include: ['roles']}, testUtils.context.owner)).then(function (response) {
+                    response.invites.length.should.eql(1);
+                    response.invites[0].roles.length.should.eql(1);
+                    response.invites[0].roles[0].name.should.eql('Author');
+                });
             });
 
-            it('add invite: empty invites object', function (done) {
-                InvitesAPI.add({invites: []}, _.merge({}, {include: ['roles']}, testUtils.context.owner))
+            it('add invite: empty invites object', function () {
+                return InvitesAPI.add({invites: []}, _.merge({}, {include: ['roles']}, testUtils.context.owner))
                     .then(function () {
                         throw new Error('expected validation error');
-                    })
-                    .catch(function (err) {
+                    }).catch(function (err) {
                         should.exist(err);
-                        done();
                     });
             });
 
-            it('add invite: no email provided', function (done) {
-                InvitesAPI.add({invites: [{status: 'sent'}]}, _.merge({}, {include: ['roles']}, testUtils.context.owner))
+            it('add invite: no email provided', function () {
+                return InvitesAPI.add({invites: [{status: 'sent'}]}, _.merge({}, {include: ['roles']}, testUtils.context.owner))
                     .then(function () {
                         throw new Error('expected validation error');
-                    })
-                    .catch(function (err) {
+                    }).catch(function (err) {
                         (err instanceof errors.ValidationError).should.eql(true);
-                        done();
                     });
             });
         });
 
         describe('Browse', function () {
-            it('browse invites', function (done) {
-                InvitesAPI.browse(_.merge({}, {include: ['roles']}, testUtils.context.owner))
+            it('browse invites', function () {
+                return InvitesAPI.browse(_.merge({}, {include: ['roles']}, testUtils.context.owner))
                     .then(function (response) {
                         response.invites.length.should.eql(2);
 
@@ -95,81 +87,71 @@ describe('Invites API', function () {
 
                         should.not.exist(response.invites[1].token);
                         should.exist(response.invites[1].expires);
-
-                        done();
-                    }).catch(done);
+                    });
             });
         });
 
         describe('Read', function () {
-            it('read invites: not found', function (done) {
-                InvitesAPI.read(_.merge({}, testUtils.context.owner, {
+            it('read invites: not found', function () {
+                return InvitesAPI.read(_.merge({}, testUtils.context.owner, {
                     email: 'not-existend@hey.org',
                     include: ['roles']
                 })).then(function () {
                     throw new Error('expected not found error for invite');
                 }).catch(function (err) {
                     (err instanceof errors.NotFoundError).should.eql(true);
-                    done();
                 });
             });
 
-            it('read invite', function (done) {
-                InvitesAPI.read(_.merge({}, {email: 'test1@ghost.org', include: ['roles']}, testUtils.context.owner))
+            it('read invite', function () {
+                return InvitesAPI.read(_.merge({}, {email: 'test1@ghost.org', include: ['roles']}, testUtils.context.owner))
                     .then(function (response) {
                         response.invites.length.should.eql(1);
                         response.invites[0].roles.length.should.eql(1);
                         response.invites[0].roles[0].name.should.eql('Administrator');
-                        done();
-                    }).catch(done);
+                    });
             });
 
-            it('read invite', function (done) {
-                InvitesAPI.read(_.merge({}, testUtils.context.owner, {email: 'test2@ghost.org', include: ['roles']}))
+            it('read invite', function () {
+                return InvitesAPI.read(_.merge({}, testUtils.context.owner, {email: 'test2@ghost.org', include: ['roles']}))
                     .then(function (response) {
                         response.invites.length.should.eql(1);
                         response.invites[0].roles.length.should.eql(1);
                         response.invites[0].roles[0].name.should.eql('Author');
-                        done();
-                    }).catch(done);
+                    });
             });
         });
 
         describe('Destroy', function () {
-            it('destroy invite', function (done) {
-                InvitesAPI.destroy(_.merge({}, testUtils.context.owner, {id: 1, include: ['roles']}))
+            it('destroy invite', function () {
+                return InvitesAPI.destroy(_.merge({}, testUtils.context.owner, {id: 1, include: ['roles']}))
                     .then(function () {
                         return InvitesAPI.read(_.merge({}, testUtils.context.owner, {
                             email: 'test1@ghost.org',
                             include: ['roles']
                         })).catch(function (err) {
                             (err instanceof errors.NotFoundError).should.eql(true);
-                            done();
                         });
-                    }).catch(done);
+                    });
             });
 
-            it('destroy invite: id does not exist', function (done) {
-                InvitesAPI.destroy({context: {user: 1}, id: 100})
+            it('destroy invite: id does not exist', function () {
+                return InvitesAPI.destroy({context: {user: 1}, id: 100})
                     .then(function () {
                         throw new Error('expect error on destroy invite');
                     })
                     .catch(function (err) {
                         (err instanceof errors.NotFoundError).should.eql(true);
-                        done();
                     });
             });
         });
     });
 
     describe('Permissions', function () {
-        function checkForErrorType(type, done) {
+        function checkForErrorType(type) {
             return function checkForErrorType(error) {
                 if (error.errorType) {
                     error.errorType.should.eql(type);
-                    done();
-                } else {
-                    done(error);
                 }
             };
         }
@@ -185,8 +167,8 @@ describe('Invites API', function () {
         }
 
         describe('Owner', function () {
-            it('CANNOT add an Owner', function (done) {
-                InvitesAPI.add({
+            it('CANNOT add an Owner', function () {
+                return InvitesAPI.add({
                     invites: [
                         {
                             email: 'test@example.com',
@@ -194,12 +176,12 @@ describe('Invites API', function () {
                         }
                     ]
                 }, context.owner).then(function () {
-                    done(new Error('Owner should not be able to add an owner'));
-                }).catch(checkForErrorType('NoPermissionError', done));
+                    throw new Error('Owner should not be able to add an owner');
+                }).catch(checkForErrorType('NoPermissionError'));
             });
 
-            it('Can add an Admin', function (done) {
-                InvitesAPI.add({
+            it('Can add an Admin', function () {
+                return InvitesAPI.add({
                     invites: [
                         {
                             email: 'test@example.com',
@@ -209,12 +191,11 @@ describe('Invites API', function () {
                 }, _.merge({}, {include: ['roles']}, testUtils.context.owner)).then(function (response) {
                     checkAddResponse(response);
                     response.invites[0].roles[0].name.should.equal('Administrator');
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('Can add an Editor', function (done) {
-                InvitesAPI.add({
+            it('Can add an Editor', function () {
+                return InvitesAPI.add({
                     invites: [
                         {
                             email: 'test@example.com',
@@ -224,12 +205,11 @@ describe('Invites API', function () {
                 }, _.merge({}, {include: ['roles']}, testUtils.context.owner)).then(function (response) {
                     checkAddResponse(response);
                     response.invites[0].roles[0].name.should.equal('Editor');
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('Can add an Author', function (done) {
-                InvitesAPI.add({
+            it('Can add an Author', function () {
+                return InvitesAPI.add({
                     invites: [
                         {
                             email: 'test@example.com',
@@ -239,12 +219,11 @@ describe('Invites API', function () {
                 }, _.merge({}, {include: ['roles']}, testUtils.context.owner)).then(function (response) {
                     checkAddResponse(response);
                     response.invites[0].roles[0].name.should.equal('Author');
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('Can add with role set as string', function (done) {
-                InvitesAPI.add({
+            it('Can add with role set as string', function () {
+                return InvitesAPI.add({
                     invites: [
                         {
                             email: 'test@example.com',
@@ -254,14 +233,13 @@ describe('Invites API', function () {
                 }, _.merge({}, {include: ['roles']}, testUtils.context.owner)).then(function (response) {
                     checkAddResponse(response);
                     response.invites[0].roles[0].name.should.equal('Author');
-                    done();
-                }).catch(done);
+                });
             });
         });
 
         describe('Admin', function () {
-            it('CANNOT add an Owner', function (done) {
-                InvitesAPI.add({
+            it('CANNOT add an Owner', function () {
+                return InvitesAPI.add({
                     invites: [
                         {
                             email: 'test@example.com',
@@ -269,12 +247,12 @@ describe('Invites API', function () {
                         }
                     ]
                 }, _.merge({}, {include: ['roles']}, testUtils.context.admin)).then(function () {
-                    done(new Error('Admin should not be able to add an owner'));
-                }).catch(checkForErrorType('NoPermissionError', done));
+                    throw new Error('Admin should not be able to add an owner');
+                }).catch(checkForErrorType('NoPermissionError'));
             });
 
-            it('Can add an Admin', function (done) {
-                InvitesAPI.add({
+            it('Can add an Admin', function () {
+                return InvitesAPI.add({
                     invites: [
                         {
                             email: 'test@example.com',
@@ -284,12 +262,11 @@ describe('Invites API', function () {
                 }, _.merge({}, {include: ['roles']}, testUtils.context.admin)).then(function (response) {
                     checkAddResponse(response);
                     response.invites[0].roles[0].name.should.equal('Administrator');
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('Can add an Editor', function (done) {
-                InvitesAPI.add({
+            it('Can add an Editor', function () {
+                return InvitesAPI.add({
                     invites: [
                         {
                             email: 'test@example.com',
@@ -299,12 +276,11 @@ describe('Invites API', function () {
                 }, _.merge({}, {include: ['roles']}, testUtils.context.admin)).then(function (response) {
                     checkAddResponse(response);
                     response.invites[0].roles[0].name.should.equal('Editor');
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('Can add an Author', function (done) {
-                InvitesAPI.add({
+            it('Can add an Author', function () {
+                return InvitesAPI.add({
                     invites: [
                         {
                             email: 'test@example.com',
@@ -314,14 +290,13 @@ describe('Invites API', function () {
                 }, _.merge({}, {include: ['roles']}, testUtils.context.admin)).then(function (response) {
                     checkAddResponse(response);
                     response.invites[0].roles[0].name.should.equal('Author');
-                    done();
-                }).catch(done);
+                });
             });
         });
 
         describe('Editor', function () {
-            it('CANNOT add an Owner', function (done) {
-                InvitesAPI.add({
+            it('CANNOT add an Owner', function () {
+                return InvitesAPI.add({
                     invites: [
                         {
                             email: 'test@example.com',
@@ -329,12 +304,12 @@ describe('Invites API', function () {
                         }
                     ]
                 }, context.editor).then(function () {
-                    done(new Error('Editor should not be able to add an owner'));
-                }).catch(checkForErrorType('NoPermissionError', done));
+                    throw new Error('Editor should not be able to add an owner');
+                }).catch(checkForErrorType('NoPermissionError'));
             });
 
-            it('CANNOT add an Author', function (done) {
-                InvitesAPI.add({
+            it('CANNOT add an Author', function () {
+                return InvitesAPI.add({
                     invites: [
                         {
                             email: 'test@example.com',
@@ -342,14 +317,14 @@ describe('Invites API', function () {
                         }
                     ]
                 }, context.editor).then(function () {
-                    done(new Error('Editor should not be able to add an author'));
-                }).catch(checkForErrorType('NoPermissionError', done));
+                    throw new Error('Editor should not be able to add an author');
+                }).catch(checkForErrorType('NoPermissionError'));
             });
         });
 
         describe('Author', function () {
-            it('CANNOT add an Owner', function (done) {
-                InvitesAPI.add({
+            it('CANNOT add an Owner', function () {
+                return InvitesAPI.add({
                     invites: [
                         {
                             email: 'test@example.com',
@@ -357,12 +332,12 @@ describe('Invites API', function () {
                         }
                     ]
                 }, context.author).then(function () {
-                    done(new Error('Author should not be able to add an owner'));
-                }).catch(checkForErrorType('NoPermissionError', done));
+                    throw new Error('Author should not be able to add an owner');
+                }).catch(checkForErrorType('NoPermissionError'));
             });
 
-            it('CANNOT add an Author', function (done) {
-                InvitesAPI.add({
+            it('CANNOT add an Author', function () {
+                return InvitesAPI.add({
                     invites: [
                         {
                             email: 'test@example.com',
@@ -370,8 +345,8 @@ describe('Invites API', function () {
                         }
                     ]
                 }, context.author).then(function () {
-                    done(new Error('Author should not be able to add an Author'));
-                }).catch(checkForErrorType('NoPermissionError', done));
+                    throw new Error('Author should not be able to add an Author');
+                }).catch(checkForErrorType('NoPermissionError'));
             });
         });
     });
