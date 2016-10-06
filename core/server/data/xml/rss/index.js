@@ -7,7 +7,6 @@ var crypto      = require('crypto'),
     i18n        = require('../../../i18n'),
     filters     = require('../../../filters'),
     processUrls = require('../../../utils/make-absolute-urls'),
-    labs        = require('../../../utils/labs'),
 
     // Really ugly temporary hack for location of things
     fetchData   = require('../../../controllers/frontend/fetch-data'),
@@ -83,7 +82,7 @@ getFeedXml = function getFeedXml(path, data) {
 generateTags = function generateTags(data) {
     if (data.tags) {
         return data.tags.reduce(function (tags, tag) {
-            if (tag.visibility !== 'internal' || !labs.isSet('internalTags')) {
+            if (tag.visibility !== 'internal') {
                 tags.push(tag.name);
             }
             return tags;
