@@ -1,8 +1,6 @@
 var testUtils = require('../../utils'),
     should    = require('should'),
     _         = require('lodash'),
-
-    // Stuff we are testing
     dbAPI          = require('../../../server/api/db'),
     ModelTag       = require('../../../server/models/tag'),
     ModelPost      = require('../../../server/models/post');

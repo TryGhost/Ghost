@@ -161,7 +161,7 @@ describe('Migrations', function () {
     });
 
     describe('Populate', function () {
-        var createStub, fixturesStub;
+        var createStub, fixturesStub, setDatabaseVersionStub, populateDefaultsStub;
 
         beforeEach(function () {
             fixturesStub = sandbox.stub(fixtures, 'populate').returns(new Promise.resolve());
@@ -169,10 +169,14 @@ describe('Migrations', function () {
 
         it('should create all tables, and populate fixtures', function (done) {
             createStub = sandbox.stub(schema.commands, 'createTable').returns(new Promise.resolve());
+            setDatabaseVersionStub = sandbox.stub(schema.versioning, 'setDatabaseVersion').returns(new Promise.resolve());
+            populateDefaultsStub = sandbox.stub(models.Settings, 'populateDefaults').returns(new Promise.resolve());
 
             populate().then(function (result) {
                 should.not.exist(result);
 
+                populateDefaultsStub.called.should.be.true();
+                setDatabaseVersionStub.called.should.be.true();
                 createStub.called.should.be.true();
                 createStub.callCount.should.be.eql(schemaTables.length);
                 createStub.firstCall.calledWith(schemaTables[0]).should.be.true();
@@ -224,7 +228,7 @@ describe('Migrations', function () {
         });
 
         it('should throw error if versions are too old', function () {
-            var response = update.isDatabaseOutOfDate({fromVersion: '000', toVersion: '002'});
+            var response = update.isDatabaseOutOfDate({fromVersion: '0.8', toVersion: '1.0'});
             updateDatabaseSchemaStub.calledOnce.should.be.false();
             (response.error instanceof errors.DatabaseVersionError).should.eql(true);
         });
@@ -232,7 +236,7 @@ describe('Migrations', function () {
         it('should just return if versions are the same', function () {
             var migrateToDatabaseVersionStub = sandbox.stub().returns(new Promise.resolve()),
                 migrateToDatabaseVersionReset = update.__set__('migrateToDatabaseVersion', migrateToDatabaseVersionStub),
-                response = update.isDatabaseOutOfDate({fromVersion: '004', toVersion: '004'});
+                response = update.isDatabaseOutOfDate({fromVersion: '1.0', toVersion: '1.0'});
 
             response.migrate.should.eql(false);
             versionsSpy.calledOnce.should.be.false();
@@ -241,7 +245,7 @@ describe('Migrations', function () {
         });
 
         it('should throw an error if the database version is higher than the default', function () {
-            var response = update.isDatabaseOutOfDate({fromVersion: '010', toVersion: '004'});
+            var response = update.isDatabaseOutOfDate({fromVersion: '1.3', toVersion: '1.2'});
             updateDatabaseSchemaStub.calledOnce.should.be.false();
             (response.error instanceof errors.DatabaseVersionError).should.eql(true);
         });
