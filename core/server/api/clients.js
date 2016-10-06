@@ -53,7 +53,7 @@ clients = {
                 return {clients: [result.toJSON(options)]};
             }
 
-            return Promise.reject(new errors.NotFoundError(i18n.t('common.api.clients.clientNotFound')));
+            return Promise.reject(new errors.NotFoundError({message: i18n.t('common.api.clients.clientNotFound')}));
         });
     }
 };

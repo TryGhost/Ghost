@@ -78,7 +78,7 @@ Role = ghostBookshelf.Model.extend({
             return Promise.resolve();
         }
 
-        return Promise.reject(new errors.NoPermissionError(i18n.t('errors.models.role.notEnoughPermission')));
+        return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.models.role.notEnoughPermission')}));
     }
 });
 

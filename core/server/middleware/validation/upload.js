@@ -17,12 +17,12 @@ module.exports = function upload(options) {
 
         // Check if a file was provided
         if (!apiUtils.checkFileExists(req.file)) {
-            return next(new errors.NoPermissionError(i18n.t('errors.api.' + type + '.missingFile')));
+            return next(new errors.NoPermissionError({message: i18n.t('errors.api.' + type + '.missingFile')}));
         }
 
         // Check if the file is valid
         if (!apiUtils.checkFileIsValid(req.file, contentTypes, extensions)) {
-            return next(new errors.UnsupportedMediaTypeError(i18n.t('errors.api.' + type + '.invalidFile', {extensions: extensions})));
+            return next(new errors.UnsupportedMediaTypeError({message: i18n.t('errors.api.' + type + '.invalidFile', {extensions: extensions})}));
         }
 
         next();

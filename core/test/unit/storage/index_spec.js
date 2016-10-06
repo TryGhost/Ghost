@@ -41,7 +41,7 @@ describe('storage: index_spec', function () {
             try {
                 storage.getStorage('theme');
             } catch (err) {
-                (err instanceof errors.IncorrectUsage).should.eql(true);
+                (err instanceof errors.IncorrectUsageError).should.eql(true);
             }
         });
     });
@@ -140,7 +140,7 @@ describe('storage: index_spec', function () {
                 storage.getStorage();
             } catch (err) {
                 should.exist(err);
-                (err instanceof errors.IncorrectUsage).should.eql(true);
+                (err instanceof errors.IncorrectUsageError).should.eql(true);
             }
         });
     });

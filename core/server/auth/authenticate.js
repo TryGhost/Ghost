@@ -44,11 +44,11 @@ authenticate = {
         }
 
         if (!req.body.client_id || !req.body.client_secret) {
-            return next(new errors.UnauthorizedError(
-                i18n.t('errors.middleware.auth.accessDenied')),
-                i18n.t('errors.middleware.auth.clientCredentialsNotProvided'),
-                i18n.t('errors.middleware.auth.forInformationRead', {url: 'http://api.ghost.org/docs/client-authentication'})
-            );
+            return next(new errors.UnauthorizedError({
+                message: i18n.t('errors.middleware.auth.accessDenied'),
+                context: i18n.t('errors.middleware.auth.clientCredentialsNotProvided'),
+                help: i18n.t('errors.middleware.auth.forInformationRead', {url: 'http://api.ghost.org/docs/client-authentication'})
+            }));
         }
 
         return passport.authenticate(['oauth2-client-password'], {session: false, failWithError: false},
@@ -62,11 +62,11 @@ authenticate = {
                 delete req.body.client_secret;
 
                 if (!client) {
-                    return next(new errors.UnauthorizedError(
-                        i18n.t('errors.middleware.auth.accessDenied')),
-                        i18n.t('errors.middleware.auth.clientCredentialsNotValid'),
-                        i18n.t('errors.middleware.auth.forInformationRead', {url: 'http://api.ghost.org/docs/client-authentication'})
-                    );
+                    return next(new errors.UnauthorizedError({
+                        message: i18n.t('errors.middleware.auth.accessDenied'),
+                        context: i18n.t('errors.middleware.auth.clientCredentialsNotValid'),
+                        help: i18n.t('errors.middleware.auth.forInformationRead', {url: 'http://api.ghost.org/docs/client-authentication'})
+                    }));
                 }
 
                 req.client = client;
@@ -92,13 +92,17 @@ authenticate = {
                     events.emit('user.authenticated', user);
                     return next(null, user, info);
                 } else if (isBearerAutorizationHeader(req)) {
-                    return next(new errors.UnauthorizedError(i18n.t('errors.middleware.auth.accessDenied')));
+                    return next(new errors.UnauthorizedError({
+                        message: i18n.t('errors.middleware.auth.accessDenied')
+                    }));
                 } else if (req.client) {
                     req.user = {id: 0};
                     return next();
                 }
 
-                return next(new errors.UnauthorizedError(i18n.t('errors.middleware.auth.accessDenied')));
+                return next(new errors.UnauthorizedError({
+                    message: i18n.t('errors.middleware.auth.accessDenied')
+                }));
             }
         )(req, res, next);
     },
@@ -108,7 +112,7 @@ authenticate = {
         req.query.code = req.body.authorizationCode;
 
         if (!req.query.code) {
-            return next(new errors.UnauthorizedError(i18n.t('errors.middleware.auth.accessDenied')));
+            return next(new errors.UnauthorizedError({message: i18n.t('errors.middleware.auth.accessDenied')}));
         }
 
         passport.authenticate('ghost', {session: false, failWithError: false}, function authenticate(err, user, info) {
@@ -117,7 +121,7 @@ authenticate = {
             }
 
             if (!user) {
-                return next(new errors.UnauthorizedError(i18n.t('errors.middleware.auth.accessDenied')));
+                return next(new errors.UnauthorizedError({message: i18n.t('errors.middleware.auth.accessDenied')}));
             }
 
             req.authInfo = info;

@@ -104,7 +104,7 @@ describe('Scheduling: Post Scheduling', function () {
                 postScheduling.init()
                     .catch(function (err) {
                         should.exist(err);
-                        (err instanceof errors.IncorrectUsage).should.eql(true);
+                        (err instanceof errors.IncorrectUsageError).should.eql(true);
                         done();
                     });
             });

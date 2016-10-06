@@ -7,7 +7,7 @@ var _           = require('lodash'),
     config      = require('../../../config'),
     api         = require('../../../api'),
     errors      = require('../../../errors'),
-    logging     = require('../../../logging'),
+    logging      = require('../../../logging'),
     utils       = require('../../../utils'),
     i18n        = require('../../../i18n'),
     privateRoute = '/' + config.get('routeKeywords').private + '/',
@@ -56,7 +56,7 @@ privateBlogging = {
         if (req.path.lastIndexOf('/rss/', 0) === 0 ||
             req.path.lastIndexOf('/rss/') === req.url.length - 5 ||
             (req.path.lastIndexOf('/sitemap', 0) === 0 && req.path.lastIndexOf('.xml') === req.path.length - 4)) {
-            return next(new errors.NotFoundError(i18n.t('errors.errors.pageNotFound')));
+            return next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
         } else if (req.url.lastIndexOf('/robots.txt', 0) === 0) {
             fs.readFile(path.resolve(__dirname, '../', 'robots.txt'), function readFile(err, buf) {
                 if (err) {
@@ -146,8 +146,7 @@ privateBlogging = {
             ipCount = '',
             message = i18n.t('errors.middleware.spamprevention.tooManyAttempts'),
             deniedRateLimit = '',
-            password = req.body.password,
-            err;
+            password = req.body.password;
 
         if (password) {
             protectedSecurity.push({ip: remoteAddress, time: currentTime});
@@ -167,10 +166,10 @@ privateBlogging = {
         deniedRateLimit = (ipCount[remoteAddress] > rateProtectedAttempts);
 
         if (deniedRateLimit) {
-            err = new Error();
-            err.message = i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error', {rfa: rateProtectedAttempts, rfp: rateProtectedPeriod});
-            err.context = i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.context');
-            logging.error(err);
+            logging.error(new errors.GhostError({
+                message: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error', {rfa: rateProtectedAttempts, rfp: rateProtectedPeriod}),
+                context: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.context')
+            }));
 
             message += rateProtectedPeriod === 3600 ? i18n.t('errors.middleware.spamprevention.waitOneHour') : i18n.t('errors.middleware.spamprevention.tryAgainLater');
 
