@@ -135,7 +135,7 @@ setupMiddleware = function setupMiddleware(blogApp) {
     blogApp.use(themeHandler.configHbsForContext);
 
     // Admin only config
-    blogApp.use('/ghost', serveStatic(
+    blogApp.use('/ghost/assets', serveStatic(
         config.get('paths').clientAssets,
         {maxAge: utils.ONE_YEAR_MS}
     ));
