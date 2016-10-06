@@ -170,7 +170,7 @@ describe('Versioning', function () {
                     done('Should throw an error if version is not a number');
                 })
                 .catch(function (err) {
-                    err.errorType.should.eql('DatabaseVersion');
+                    (err instanceof errors.DatabaseVersionError).should.eql(true);
                     err.message.should.eql('Your database version is not compatible with Ghost 1.0.0 Alpha (master branch)');
                     done();
                 });
