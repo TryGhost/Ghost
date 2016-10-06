@@ -32,44 +32,40 @@ describe('Import', function () {
     describe('Resolves', function () {
         beforeEach(testUtils.setup());
 
-        it('resolves DataImporter', function (done) {
+        it('resolves DataImporter', function () {
             var importStub = sandbox.stub(DataImporter, 'importData', function () {
                     return Promise.resolve();
                 }),
                 fakeData = {test: true};
 
-            importer.doImport(fakeData).then(function () {
+            return importer.doImport(fakeData).then(function () {
                 importStub.calledWith(fakeData).should.equal(true);
 
                 importStub.restore();
-
-                done();
-            }).catch(done);
+            });
         });
     });
 
     describe('Sanitizes', function () {
         beforeEach(testUtils.setup('roles', 'owner', 'settings'));
 
-        it('import results have data and problems', function (done) {
+        it('import results have data and problems', function () {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003').then(function (exported) {
+            return testUtils.fixtures.loadExportFixture('export-003').then(function (exported) {
                 exportData = exported;
                 return importer.doImport(exportData);
             }).then(function (importResult) {
                 should.exist(importResult);
                 should.exist(importResult.data);
                 should.exist(importResult.problems);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('removes duplicate posts', function (done) {
+        it('removes duplicate posts', function () {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003-duplicate-posts').then(function (exported) {
+            return testUtils.fixtures.loadExportFixture('export-003-duplicate-posts').then(function (exported) {
                 exportData = exported;
                 return importer.doImport(exportData);
             }).then(function (importResult) {
@@ -78,15 +74,13 @@ describe('Import', function () {
                 importResult.data.data.posts.length.should.equal(1);
 
                 importResult.problems.posts.length.should.equal(1);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('removes duplicate tags and updates associations', function (done) {
+        it('removes duplicate tags and updates associations', function () {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003-duplicate-tags').then(function (exported) {
+            return testUtils.fixtures.loadExportFixture('export-003-duplicate-tags').then(function (exported) {
                 exportData = exported;
                 return importer.doImport(exportData);
             }).then(function (importResult) {
@@ -103,9 +97,7 @@ describe('Import', function () {
                 });
 
                 importResult.problems.tags.length.should.equal(1);
-
-                done();
-            }).catch(done);
+            });
         });
     });
 
@@ -114,10 +106,10 @@ describe('Import', function () {
 
         should.exist(DataImporter);
 
-        it('imports data from 000', function (done) {
+        it('imports data from 000', function () {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-000').then(function (exported) {
+            return testUtils.fixtures.loadExportFixture('export-000').then(function (exported) {
                 exportData = exported;
 
                 return importer.doImport(exportData);
@@ -150,16 +142,14 @@ describe('Import', function () {
 
                 // test tags
                 tags.length.should.equal(exportData.data.tags.length, 'no new tags');
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('safely imports data, from 001', function (done) {
+        it('safely imports data, from 001', function () {
             var exportData,
                 timestamp = moment().startOf('day').valueOf(); // no ms
 
-            testUtils.fixtures.loadExportFixture('export-001').then(function (exported) {
+            return testUtils.fixtures.loadExportFixture('export-001').then(function (exported) {
                 exportData = exported;
 
                 // Modify timestamp data for testing
@@ -218,15 +208,13 @@ describe('Import', function () {
                 assert.equal(moment(posts[0].created_at).valueOf(), timestamp);
                 assert.equal(moment(posts[0].updated_at).valueOf(), timestamp);
                 assert.equal(moment(posts[0].published_at).valueOf(), timestamp);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('doesn\'t import invalid post data from 001', function (done) {
+        it('doesn\'t import invalid post data from 001', function () {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-001').then(function (exported) {
+            return testUtils.fixtures.loadExportFixture('export-001').then(function (exported) {
                 exportData = exported;
 
                 // change title to 151 characters
@@ -264,16 +252,14 @@ describe('Import', function () {
                     // test settings
                     settings.length.should.be.above(0, 'Wrong number of settings');
                     _.find(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
-
-                    done();
                 });
-            }).catch(done);
+            });
         });
 
-        it('doesn\'t import invalid settings data from 001', function (done) {
+        it('doesn\'t import invalid settings data from 001', function () {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-001').then(function (exported) {
+            return testUtils.fixtures.loadExportFixture('export-001').then(function (exported) {
                 exportData = exported;
                 // change to blank settings key
                 exportData.data.settings[3].key = null;
@@ -309,21 +295,19 @@ describe('Import', function () {
                     // test settings
                     settings.length.should.be.above(0, 'Wrong number of settings');
                     _.find(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
-
-                    done();
                 });
-            }).catch(done);
+            });
         });
     });
 
     describe('002', function () {
         beforeEach(testUtils.setup('roles', 'owner', 'settings'));
 
-        it('safely imports data from 002', function (done) {
+        it('safely imports data from 002', function () {
             var exportData,
                 timestamp = moment().startOf('day').valueOf(); // no ms
 
-            testUtils.fixtures.loadExportFixture('export-002').then(function (exported) {
+            return testUtils.fixtures.loadExportFixture('export-002').then(function (exported) {
                 exportData = exported;
 
                 // Modify timestamp data for testing
@@ -382,15 +366,13 @@ describe('Import', function () {
                 assert.equal(moment(posts[0].created_at).valueOf(), timestamp);
                 assert.equal(moment(posts[0].updated_at).valueOf(), timestamp);
                 assert.equal(moment(posts[0].published_at).valueOf(), timestamp);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('doesn\'t import invalid post data from 002', function (done) {
+        it('doesn\'t import invalid post data from 002', function () {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-002').then(function (exported) {
+            return testUtils.fixtures.loadExportFixture('export-002').then(function (exported) {
                 exportData = exported;
 
                 // change title to 151 characters
@@ -427,16 +409,14 @@ describe('Import', function () {
                     // test settings
                     settings.length.should.be.above(0, 'Wrong number of settings');
                     _.find(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
-
-                    done();
                 });
-            }).catch(done);
+            });
         });
 
-        it('doesn\'t import invalid settings data from 002', function (done) {
+        it('doesn\'t import invalid settings data from 002', function () {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-002').then(function (exported) {
+            return testUtils.fixtures.loadExportFixture('export-002').then(function (exported) {
                 exportData = exported;
                 // change to blank settings key
                 exportData.data.settings[3].key = null;
@@ -471,20 +451,18 @@ describe('Import', function () {
                     // test settings
                     settings.length.should.be.above(0, 'Wrong number of settings');
                     _.find(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
-
-                    done();
                 });
-            }).catch(done);
+            });
         });
     });
 
     describe('003', function () {
         beforeEach(testUtils.setup('roles', 'owner', 'settings'));
 
-        it('safely imports data from 003 (single user)', function (done) {
+        it('safely imports data from 003 (single user)', function () {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003').then(function (exported) {
+            return testUtils.fixtures.loadExportFixture('export-003').then(function (exported) {
                 exportData = exported;
                 return importer.doImport(exportData);
             }).then(function () {
@@ -521,19 +499,17 @@ describe('Import', function () {
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
                 _.find(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('handles validation errors nicely', function (done) {
+        it('handles validation errors nicely', function () {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003-badValidation').then(function (exported) {
+            return testUtils.fixtures.loadExportFixture('export-003-badValidation').then(function (exported) {
                 exportData = exported;
                 return importer.doImport(exportData);
             }).then(function () {
-                done(new Error('Allowed import of duplicate data'));
+                throw new Error('Allowed import of duplicate data');
             }).catch(function (response) {
                 response.length.should.equal(5);
                 response[0].errorType.should.equal('ValidationError');
@@ -546,46 +522,42 @@ describe('Import', function () {
                 response[3].message.should.eql('Value in [tags.slug] cannot be blank.');
                 response[4].errorType.should.equal('ValidationError');
                 response[4].message.should.eql('Value in [tags.name] cannot be blank.');
-                done();
-            }).catch(done);
+            });
         });
 
-        it('handles database errors nicely', function (done) {
+        it('handles database errors nicely', function () {
             var exportData;
             testUtils.fixtures.loadExportFixture('export-003-dbErrors').then(function (exported) {
                 exportData = exported;
                 return importer.doImport(exportData);
             }).then(function () {
-                done(new Error('Allowed import of duplicate data'));
+                throw new Error('Allowed import of duplicate data');
             }).catch(function (response) {
                 response.length.should.be.above(0);
                 response[0].errorType.should.equal('DataImportError');
-                done();
-            }).catch(done);
+            });
         });
 
-        it('doesn\'t import posts with an invalid author', function (done) {
+        it('doesn\'t import posts with an invalid author', function () {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003-mu-unknownAuthor').then(function (exported) {
+            return testUtils.fixtures.loadExportFixture('export-003-mu-unknownAuthor').then(function (exported) {
                 exportData = exported;
 
                 return importer.doImport(exportData);
             }).then(function () {
-                done(new Error('Allowed import of unknown author'));
+                throw new Error('Allowed import of unknown author');
             }).catch(function (response) {
                 response.length.should.equal(1);
                 response[0].message.should.eql('Attempting to import data linked to unknown user id 2');
                 response[0].errorType.should.equal('DataImportError');
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('doesn\'t import invalid tags data from 003', function (done) {
+        it('doesn\'t import invalid tags data from 003', function () {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003-nullTags').then(function (exported) {
+            return testUtils.fixtures.loadExportFixture('export-003-nullTags').then(function (exported) {
                 exportData = exported;
 
                 exportData.data.tags.length.should.be.above(1);
@@ -593,38 +565,36 @@ describe('Import', function () {
 
                 return importer.doImport(exportData);
             }).then(function () {
-                done(new Error('Allowed import of invalid tags data'));
+                throw new Error('Allowed import of invalid tags data');
             }).catch(function (response) {
                 response.length.should.equal(2);
                 response[0].errorType.should.equal('ValidationError');
                 response[0].message.should.eql('Value in [tags.name] cannot be blank.');
                 response[1].errorType.should.equal('ValidationError');
                 response[1].message.should.eql('Value in [tags.slug] cannot be blank.');
-                done();
-            }).catch(done);
+            });
         });
 
-        it('doesn\'t import invalid posts data from 003', function (done) {
+        it('doesn\'t import invalid posts data from 003', function () {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003-nullPosts').then(function (exported) {
+            return testUtils.fixtures.loadExportFixture('export-003-nullPosts').then(function (exported) {
                 exportData = exported;
 
                 exportData.data.posts.length.should.be.above(1);
 
                 return importer.doImport(exportData);
             }).then(function () {
-                done(new Error('Allowed import of invalid tags data'));
+                throw new Error('Allowed import of invalid tags data');
             }).catch(function (response) {
                 response.length.should.equal(5, response);
-                done();
-            }).catch(done);
+            });
         });
 
-        it('correctly sanitizes incorrect UUIDs', function (done) {
+        it('correctly sanitizes incorrect UUIDs', function () {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003-wrongUUID').then(function (exported) {
+            return testUtils.fixtures.loadExportFixture('export-003-wrongUUID').then(function (exported) {
                 exportData = exported;
 
                 exportData.data.posts.length.should.be.above(0);
@@ -640,8 +610,7 @@ describe('Import', function () {
                 assert.equal(validator.isUUID(importedData[1].uuid), true, 'Empty UUID NOT fixed');
                 assert.equal(validator.isUUID(importedData[2].uuid), true, 'Missing UUID NOT fixed');
                 assert.equal(validator.isUUID(importedData[3].uuid), true, 'Malformed UUID NOT fixed');
-                done();
-            }).catch(done);
+            });
         });
     });
 });
@@ -653,26 +622,24 @@ describe('Import (new test structure)', function () {
     describe('imports multi user data onto blank ghost install', function () {
         var exportData;
 
-        before(function doImport(done) {
-            testUtils.initFixtures('roles', 'owner', 'settings').then(function () {
+        before(function doImport() {
+            return testUtils.initFixtures('roles', 'owner', 'settings').then(function () {
                 return testUtils.fixtures.loadExportFixture('export-003-mu');
             }).then(function (exported) {
                 exportData = exported;
                 return importer.doImport(exportData);
-            }).then(function () {
-                done();
-            }).catch(done);
+            });
         });
         after(testUtils.teardown);
 
-        it('gets the right data', function (done) {
+        it('gets the right data', function () {
             var fetchImported = Promise.join(
                 knex('posts').select(),
                 knex('settings').select(),
                 knex('tags').select()
             );
 
-            fetchImported.then(function (importedData) {
+            return fetchImported.then(function (importedData) {
                 var posts,
                     settings,
                     tags,
@@ -711,18 +678,16 @@ describe('Import (new test structure)', function () {
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
                 _.find(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('imports users with correct roles and status', function (done) {
+        it('imports users with correct roles and status', function () {
             var fetchImported = Promise.join(
                 knex('users').select(),
                 knex('roles_users').select()
             );
 
-            fetchImported.then(function (importedData) {
+            return fetchImported.then(function (importedData) {
                 var user1,
                     user2,
                     user3,
@@ -785,19 +750,17 @@ describe('Import (new test structure)', function () {
                         roleUser.role_id.should.equal(3, 'Smith should be an author by default');
                     }
                 });
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('imports posts & tags with correct authors, owners etc', function (done) {
+        it('imports posts & tags with correct authors, owners etc', function () {
             var fetchImported = Promise.join(
                 knex('users').select(),
                 knex('posts').select(),
                 knex('tags').select()
             );
 
-            fetchImported.then(function (importedData) {
+            return fetchImported.then(function (importedData) {
                 var users, user1, user2, user3,
                     posts, post1, post2, post3,
                     tags, tag1, tag2, tag3;
@@ -869,35 +832,31 @@ describe('Import (new test structure)', function () {
                 tag1.updated_by.should.equal(user1.id);
                 tag2.updated_by.should.equal(user1.id);
                 tag3.updated_by.should.equal(user1.id);
-
-                done();
-            }).catch(done);
+            });
         });
     });
 
     describe('imports multi user data with no owner onto blank ghost install', function () {
         var exportData;
 
-        before(function doImport(done) {
-            testUtils.initFixtures('roles', 'owner', 'settings').then(function () {
+        before(function doImport() {
+            return testUtils.initFixtures('roles', 'owner', 'settings').then(function () {
                 return testUtils.fixtures.loadExportFixture('export-003-mu-noOwner');
             }).then(function (exported) {
                 exportData = exported;
                 return importer.doImport(exportData);
-            }).then(function () {
-                done();
-            }).catch(done);
+            });
         });
         after(testUtils.teardown);
 
-        it('gets the right data', function (done) {
+        it('gets the right data', function () {
             var fetchImported = Promise.join(
                 knex('posts').select(),
                 knex('settings').select(),
                 knex('tags').select()
             );
 
-            fetchImported.then(function (importedData) {
+            return fetchImported.then(function (importedData) {
                 var posts,
                     settings,
                     tags,
@@ -936,18 +895,16 @@ describe('Import (new test structure)', function () {
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
                 _.find(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('imports users with correct roles and status', function (done) {
+        it('imports users with correct roles and status', function () {
             var fetchImported = Promise.join(
                 knex('users').select(),
                 knex('roles_users').select()
             );
 
-            fetchImported.then(function (importedData) {
+            return fetchImported.then(function (importedData) {
                 var user1,
                     user2,
                     user3,
@@ -1010,19 +967,17 @@ describe('Import (new test structure)', function () {
                         roleUser.role_id.should.equal(3, 'Smith should be an author by default');
                     }
                 });
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('imports posts & tags with correct authors, owners etc', function (done) {
+        it('imports posts & tags with correct authors, owners etc', function () {
             var fetchImported = Promise.join(
                 knex('users').select(),
                 knex('posts').select(),
                 knex('tags').select()
             );
 
-            fetchImported.then(function (importedData) {
+            return fetchImported.then(function (importedData) {
                 var users, user1, user2, user3,
                     posts, post1, post2, post3,
                     tags, tag1, tag2, tag3;
@@ -1094,36 +1049,32 @@ describe('Import (new test structure)', function () {
                 tag1.updated_by.should.equal(user1.id);
                 tag2.updated_by.should.equal(user1.id);
                 tag3.updated_by.should.equal(user1.id);
-
-                done();
-            }).catch(done);
+            });
         });
     });
 
     describe('imports multi user data onto existing data', function () {
         var exportData;
 
-        before(function doImport(done) {
+        before(function doImport() {
             // initialise the blog with some data
-            testUtils.initFixtures('users:roles', 'posts', 'settings').then(function () {
+            return testUtils.initFixtures('users:roles', 'posts', 'settings').then(function () {
                 return testUtils.fixtures.loadExportFixture('export-003-mu');
             }).then(function (exported) {
                 exportData = exported;
                 return importer.doImport(exportData);
-            }).then(function () {
-                done();
-            }).catch(done);
+            });
         });
         after(testUtils.teardown);
 
-        it('gets the right data', function (done) {
+        it('gets the right data', function () {
             var fetchImported = Promise.join(
                 knex('posts').select(),
                 knex('settings').select(),
                 knex('tags').select()
             );
 
-            fetchImported.then(function (importedData) {
+            return fetchImported.then(function (importedData) {
                 var posts,
                     settings,
                     tags,
@@ -1173,18 +1124,16 @@ describe('Import (new test structure)', function () {
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
                 _.find(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('imports users with correct roles and status', function (done) {
+        it('imports users with correct roles and status', function () {
             var fetchImported = Promise.join(
                 knex('users').select(),
                 knex('roles_users').select()
             );
 
-            fetchImported.then(function (importedData) {
+            return fetchImported.then(function (importedData) {
                 var ownerUser,
                     newUser,
                     existingUser,
@@ -1242,19 +1191,17 @@ describe('Import (new test structure)', function () {
                         roleUser.role_id.should.equal(1, 'Existing user was an admin');
                     }
                 });
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('imports posts & tags with correct authors, owners etc', function (done) {
+        it('imports posts & tags with correct authors, owners etc', function () {
             var fetchImported = Promise.join(
                 knex('users').select(),
                 knex('posts').select(),
                 knex('tags').select()
             );
 
-            fetchImported.then(function (importedData) {
+            return fetchImported.then(function (importedData) {
                 var users, ownerUser, newUser, existingUser,
                     posts, post1, post2, post3,
                     tags, tag1, tag2, tag3;
@@ -1326,35 +1273,31 @@ describe('Import (new test structure)', function () {
                 tag1.updated_by.should.equal(ownerUser.id);
                 tag2.updated_by.should.equal(ownerUser.id);
                 tag3.updated_by.should.equal(ownerUser.id);
-
-                done();
-            }).catch(done);
+            });
         });
     });
 
     describe('imports multi user data onto existing data without duplicate owners', function () {
         var exportData;
 
-        before(function doImport(done) {
+        before(function doImport() {
             // initialise the blog with some data
-            testUtils.initFixtures('users:roles', 'posts', 'settings').then(function () {
+            return testUtils.initFixtures('users:roles', 'posts', 'settings').then(function () {
                 return testUtils.fixtures.loadExportFixture('export-003-mu-multipleOwner');
             }).then(function (exported) {
                 exportData = exported;
                 return importer.doImport(exportData);
-            }).then(function () {
-                done();
-            }).catch(done);
+            });
         });
         after(testUtils.teardown);
 
-        it('imports users with correct roles and status', function (done) {
+        it('imports users with correct roles and status', function () {
             var fetchImported = Promise.join(
                 knex('users').select(),
                 knex('roles_users').select()
             );
 
-            fetchImported.then(function (importedData) {
+            return fetchImported.then(function (importedData) {
                 var ownerUser,
                     newUser,
                     existingUser,
@@ -1396,9 +1339,7 @@ describe('Import (new test structure)', function () {
                         roleUser.role_id.should.equal(1, 'Existing user was an admin');
                     }
                 });
-
-                done();
-            }).catch(done);
+            });
         });
     });
 });
