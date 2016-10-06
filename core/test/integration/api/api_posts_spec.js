@@ -545,7 +545,7 @@ describe('Post API', function () {
     });
 
     describe('Destroy', function () {
-        it('can delete a post', function () {
+        it('can delete a post', function (done) {
             var options = {context: {user: 1}, id: 1};
 
             return PostAPI.read(options).then(function (results) {
@@ -558,6 +558,8 @@ describe('Post API', function () {
                 return PostAPI.read(options);
             }).then(function () {
                 throw new Error('Post still exists when it should have been deleted');
+            }).catch(function() {
+                done();
             });
         });
 

@@ -49,10 +49,12 @@ describe('Tags API', function () {
             });
         });
 
-        it('No-auth CANNOT add tag', function () {
-            return TagAPI.add({tags: [newTag]}).then(function () {
-                throw new Error('Add tag is not denied without authentication.');
-            });
+        it('No-auth CANNOT add tag', function (done) {
+            TagAPI.add({tags: [newTag]}).then(function () {
+                done(new Error('Add tag is not denied without authentication.'));
+            }, function () {
+                done();
+            }).catch(done);
         });
 
         it('rejects invalid names with ValidationError', function () {
@@ -91,11 +93,13 @@ describe('Tags API', function () {
             });
         });
 
-        it('No-auth CANNOT edit tag', function () {
-            return TagAPI.edit({tags: [{name: newTagName}]}, _.extend({}, {id: firstTag}))
-            .then(function () {
-                throw new Error('Add tag is not denied without authentication.');
-            });
+        it('No-auth CANNOT edit tag', function (done) {
+            TagAPI.edit({tags: [{name: newTagName}]}, _.extend({}, {id: firstTag}))
+            .then(function (results) {
+                done(new Error('Add tag is not denied without authentication.'));
+            }, function () {
+                done();
+            }).catch(done);
         });
 
         it('rejects invalid names with ValidationError', function () {

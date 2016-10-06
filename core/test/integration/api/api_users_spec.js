@@ -83,10 +83,12 @@ describe('Users API', function () {
             });
         });
 
-        it('No-auth CANNOT browse non-active users', function () {
-            return UserAPI.browse({status: 'invited'}).then(function () {
-                throw new Error('Browse non-active users is not denied without authentication.');
-            });
+        it('No-auth CANNOT browse non-active users', function (done) {
+            UserAPI.browse({status: 'invited'}).then(function () {
+                done(new Error('Browse non-active users is not denied without authentication.'));
+            }, function () {
+                done();
+            }).catch(done);
         });
 
         it('Can browse invited/invited-pending (admin)', function () {

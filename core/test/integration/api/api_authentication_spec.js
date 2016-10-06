@@ -226,9 +226,7 @@ describe('Authentication API', function () {
                     err.name.should.equal('NotFoundError');
                     err.statusCode.should.equal(404);
                     err.message.should.equal('Invite not found.');
-
-                    done();
-                }).catch(done);
+                });
             });
 
             it('should allow an invitation to be accepted', function () {
