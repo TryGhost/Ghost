@@ -92,6 +92,17 @@ setupMiddleware = function setupMiddleware(blogApp) {
         next();
     });
 
+    if (debug.enabled) {
+        // debug keeps a timer, so this is super useful
+        blogApp.use((function () {
+            var reqDebug = require('debug')('ghost:req');
+            return function debugLog(req, res, next) {
+                reqDebug('Request', req.originalUrl);
+                next();
+            };
+        })());
+    }
+
     // Preload link headers
     if (config.get('preloadHeaders')) {
         blogApp.use(netjet({

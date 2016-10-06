@@ -13,6 +13,7 @@ function GhostError(options) {
 
     /**
      * defaults
+     * @TODO: I'd like to add the usage of an individual ID to errors, as we have in ignition
      */
     this.statusCode = 500;
     this.errorType = 'InternalServerError';
