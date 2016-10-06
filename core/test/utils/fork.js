@@ -40,9 +40,7 @@ function findFreePort(port) {
 
 // Creates a new fork of Ghost process with a given config
 // Useful for tests that want to verify certain config options
-function forkGhost(newConfig, envName) {
-    envName = envName || 'forked';
-
+function forkGhost(newConfig) {
     return findFreePort()
         .then(function (port) {
             newConfig.server = _.merge({}, {
@@ -61,7 +59,7 @@ function forkGhost(newConfig, envName) {
                 rotation: false
             };
 
-            var newConfigFile = path.join(config.get('paths').appRoot, 'config.test.' + envName + '.json');
+            var newConfigFile = path.join(config.get('paths').appRoot, 'config.' + config.get('env') + '.json');
 
             return new Promise(function (resolve, reject) {
                 fs.writeFile(newConfigFile, JSON.stringify(newConfig), function (err) {
@@ -84,7 +82,7 @@ function forkGhost(newConfig, envName) {
                             return false;
                         };
 
-                    env.NODE_ENV = 'test.' + envName;
+                    env.NODE_ENV = config.get('env');
 
                     child = cp.fork(path.join(config.get('paths').appRoot, 'index.js'), {env: env});
 
