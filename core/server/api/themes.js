@@ -35,15 +35,15 @@ themes = {
         options.originalname = options.originalname.toLowerCase();
 
         var storageAdapter = storage.getStorage('themes'),
-        zip = {
-            path: options.path,
-            name: options.originalname,
-            shortName: storageAdapter.getSanitizedFileName(options.originalname.split('.zip')[0])
-        }, theme;
+            zip = {
+                path: options.path,
+                name: options.originalname,
+                shortName: storageAdapter.getSanitizedFileName(options.originalname.split('.zip')[0])
+            }, theme;
 
         // check if zip name is casper.zip
         if (zip.name === 'casper.zip') {
-            throw new errors.ValidationError(i18n.t('errors.api.themes.overrideCasper'));
+            throw new errors.ValidationError({message: i18n.t('errors.api.themes.overrideCasper')});
         }
 
         return apiUtils.handlePermissions('themes', 'add')(options)
@@ -58,10 +58,10 @@ themes = {
                     return;
                 }
 
-                throw new errors.ThemeValidationError(
-                    i18n.t('errors.api.themes.invalidTheme'),
-                    theme.results.error
-                );
+                throw new errors.ThemeValidationError({
+                    message: i18n.t('errors.api.themes.invalidTheme'),
+                    errorDetails: theme.results.error
+                });
             })
             .then(function () {
                 return storageAdapter.exists(config.getContentPath('themes') + '/' + zip.shortName);
@@ -104,7 +104,7 @@ themes = {
                 // happens in background
                 Promise.promisify(fs.removeSync)(zip.path)
                     .catch(function (err) {
-                        logging.error(err);
+                        logging.error(new errors.GhostError({err: err}));
                     });
 
                 // remove extracted dir from gscan
@@ -112,7 +112,7 @@ themes = {
                 if (theme) {
                     Promise.promisify(fs.removeSync)(theme.path)
                         .catch(function (err) {
-                            logging.error(err);
+                            logging.error(new errors.GhostError({err: err}));
                         });
                 }
             });
@@ -124,7 +124,7 @@ themes = {
             storageAdapter = storage.getStorage('themes');
 
         if (!theme) {
-            return Promise.reject(new errors.BadRequestError(i18n.t('errors.api.themes.invalidRequest')));
+            return Promise.reject(new errors.BadRequestError({message: i18n.t('errors.api.themes.invalidRequest')}));
         }
 
         return apiUtils.handlePermissions('themes', 'read')(options)
@@ -146,13 +146,13 @@ themes = {
         return apiUtils.handlePermissions('themes', 'destroy')(options)
             .then(function () {
                 if (name === 'casper') {
-                    throw new errors.ValidationError(i18n.t('errors.api.themes.destroyCasper'));
+                    throw new errors.ValidationError({message: i18n.t('errors.api.themes.destroyCasper')});
                 }
 
                 theme = config.get('paths').availableThemes[name];
 
                 if (!theme) {
-                    throw new errors.NotFoundError(i18n.t('errors.api.themes.themeDoesNotExist'));
+                    throw new errors.NotFoundError({message: i18n.t('errors.api.themes.themeDoesNotExist')});
                 }
 
                 events.emit('theme.deleted', name);

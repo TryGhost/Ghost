@@ -4,6 +4,7 @@
 var _               = require('lodash'),
     hbs             = require('express-hbs'),
     Promise         = require('bluebird'),
+    errors          = require('../errors'),
     logging         = require('../logging'),
     api             = require('../api'),
     jsonpath        = require('jsonpath'),
@@ -144,17 +145,18 @@ get = function get(resource, options) {
 };
 
 module.exports = function getWithLabs(resource, options) {
-    var self = this,
-        err;
+    var self = this, err;
 
     if (labs.isSet('publicAPI') === true) {
         // get helper is  active
         return get.call(self, resource, options);
     } else {
-        err = new Error();
-        err.message = i18n.t('warnings.helpers.get.helperNotAvailable');
-        err.context = i18n.t('warnings.helpers.get.apiMustBeEnabled');
-        err.help = i18n.t('warnings.helpers.get.seeLink', {url: 'http://support.ghost.org/public-api-beta'});
+        err = new errors.GhostError({
+            message: i18n.t('warnings.helpers.get.helperNotAvailable'),
+            context: i18n.t('warnings.helpers.get.apiMustBeEnabled'),
+            help: i18n.t('warnings.helpers.get.seeLink', {url: 'http://support.ghost.org/public-api-beta'})
+        });
+
         logging.error(err);
 
         return Promise.resolve(function noGetHelper() {

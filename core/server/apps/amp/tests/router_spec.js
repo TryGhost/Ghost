@@ -182,9 +182,10 @@ describe('AMP getPostData', function () {
             done();
         });
     });
+
     it('should return error if postlookup returns NotFoundError', function (done) {
         postLookupStub = sandbox.stub();
-        postLookupStub.returns(new Promise.reject(new errors.NotFoundError('not found')));
+        postLookupStub.returns(new Promise.reject(new errors.NotFoundError({message: 'not found'})));
 
         ampController.__set__('postLookup', postLookupStub);
 

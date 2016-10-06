@@ -2,6 +2,7 @@ var util = require('util'),
     moment = require('moment'),
     request = require('superagent'),
     SchedulingBase = require(__dirname + '/SchedulingBase'),
+    errors = require(__dirname + '/../errors'),
     logging = require(__dirname + '/../logging');
 
 /**
@@ -212,7 +213,10 @@ SchedulingDefault.prototype._pingUrl = function (object) {
                 }, self.retryTimeoutInMs);
             }
 
-            logging.error(err);
+            logging.error(new errors.GhostError({
+                err: err,
+                level: 'critical'
+            }));
         }
     });
 };

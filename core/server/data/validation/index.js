@@ -65,7 +65,7 @@ validateSchema = function validateSchema(tableName, model) {
                 && schema[tableName][columnKey].nullable !== true) {
             if (validator.empty(strVal)) {
                 message = i18n.t('notices.data.validation.index.valueCannotBeBlank', {tableName: tableName, columnKey: columnKey});
-                validationErrors.push(new errors.ValidationError(message, tableName + '.' + columnKey));
+                validationErrors.push(new errors.ValidationError({message: message, context: tableName + '.' + columnKey}));
             }
         }
 
@@ -74,7 +74,7 @@ validateSchema = function validateSchema(tableName, model) {
                 && schema[tableName][columnKey].type === 'bool') {
             if (!(validator.isBoolean(strVal) || validator.empty(strVal))) {
                 message = i18n.t('notices.data.validation.index.valueMustBeBoolean', {tableName: tableName, columnKey: columnKey});
-                validationErrors.push(new errors.ValidationError(message, tableName + '.' + columnKey));
+                validationErrors.push(new errors.ValidationError({message: message, context: tableName + '.' + columnKey}));
             }
         }
 
@@ -85,7 +85,7 @@ validateSchema = function validateSchema(tableName, model) {
                 if (!validator.isLength(strVal, 0, schema[tableName][columnKey].maxlength)) {
                     message = i18n.t('notices.data.validation.index.valueExceedsMaxLength',
                                      {tableName: tableName, columnKey: columnKey, maxlength: schema[tableName][columnKey].maxlength});
-                    validationErrors.push(new errors.ValidationError(message, tableName + '.' + columnKey));
+                    validationErrors.push(new errors.ValidationError({message: message, context: tableName + '.' + columnKey}));
                 }
             }
 
@@ -98,7 +98,7 @@ validateSchema = function validateSchema(tableName, model) {
             if (schema[tableName][columnKey].hasOwnProperty('type')) {
                 if (schema[tableName][columnKey].type === 'integer' && !validator.isInt(strVal)) {
                     message = i18n.t('notices.data.validation.index.valueIsNotInteger', {tableName: tableName, columnKey: columnKey});
-                    validationErrors.push(new errors.ValidationError(message, tableName + '.' + columnKey));
+                    validationErrors.push(new errors.ValidationError({message: message, context: tableName + '.' + columnKey}));
                 }
             }
         }
@@ -146,7 +146,7 @@ validateActiveTheme = function validateActiveTheme(themeName) {
 
     return availableThemes.then(function then(themes) {
         if (!themes.hasOwnProperty(themeName)) {
-            return Promise.reject(new errors.ValidationError(i18n.t('notices.data.validation.index.themeCannotBeActivated', {themeName: themeName}), 'activeTheme'));
+            return Promise.reject(new errors.ValidationError({message: i18n.t('notices.data.validation.index.themeCannotBeActivated', {themeName: themeName}), context: 'activeTheme'}));
         }
     });
 };
@@ -186,8 +186,9 @@ validate = function validate(value, key, validations) {
 
         // equivalent of validator.isSomething(option1, option2)
         if (validator[validationName].apply(validator, validationOptions) !== goodResult) {
-            validationErrors.push(new errors.ValidationError(i18n.t('notices.data.validation.index.validationFailed',
-                                                                    {validationName: validationName, key: key})));
+            validationErrors.push(new errors.ValidationError({
+                message: i18n.t('notices.data.validation.index.validationFailed', {validationName: validationName, key: key})
+            }));
         }
 
         validationOptions.shift();
