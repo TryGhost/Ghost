@@ -53,39 +53,3 @@ describe('{{page_url}} helper', function () {
         helpers.page_url(options).should.equal(helpers.page_url(1, options));
     });
 });
-
-describe('{{pageUrl}} helper [DEPRECATED]', function () {
-    var options = {data: {root: {pagination: {}}}};
-
-    before(function () {
-        utils.loadHelpers();
-    });
-
-    it('has loaded pageUrl helper', function () {
-        should.exist(handlebars.helpers.pageUrl);
-    });
-
-    it('should do the same thing as page_url when the relative URL is /', function () {
-        options.data.root.relativeUrl = '/';
-        options.data.root.pagination.next = 5;
-        options.data.root.pagination.prev = 7;
-
-        helpers.pageUrl(options).should.eql(helpers.page_url(options));
-        helpers.pageUrl(1, options).should.eql(helpers.page_url(1, options));
-        helpers.pageUrl(20, options).should.eql(helpers.page_url(20, options));
-        helpers.pageUrl('next', options).should.eql(helpers.page_url('next', options));
-        helpers.pageUrl('prev', options).should.eql(helpers.page_url('prev', options));
-    });
-
-    it('should do the same thing as page_url when the relative url has a path', function () {
-        options.data.root.relativeUrl = '/tag/pumpkin/';
-        options.data.root.pagination.next = 12;
-        options.data.root.pagination.prev = 9;
-
-        helpers.pageUrl(options).should.eql(helpers.page_url(options));
-        helpers.pageUrl(1, options).should.eql(helpers.page_url(1, options));
-        helpers.pageUrl(20, options).should.eql(helpers.page_url(20, options));
-        helpers.pageUrl('next', options).should.eql(helpers.page_url('next', options));
-        helpers.pageUrl('prev', options).should.eql(helpers.page_url('prev', options));
-    });
-});
