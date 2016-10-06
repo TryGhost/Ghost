@@ -122,6 +122,7 @@ describe('Theme Handler', function () {
     describe('updateActiveTheme', function () {
         it('updates the active theme if changed', function (done) {
             var activateThemeSpy = sandbox.spy(themeHandler, 'activateTheme');
+
             sandbox.stub(api.settings, 'read').withArgs(sandbox.match.has('key', 'activeTheme')).returns(Promise.resolve({
                 settings: [{
                     key: 'activeKey',
@@ -176,8 +177,8 @@ describe('Theme Handler', function () {
         });
 
         it('throws only warns if theme is missing for admin req', function (done) {
-            var warnSpy = sandbox.spy(logging, 'warn'),
-                activateThemeSpy = sandbox.spy(themeHandler, 'activateTheme');
+            var activateThemeSpy = sandbox.spy(themeHandler, 'activateTheme'),
+                loggingWarnStub = sandbox.spy(logging, 'warn');
 
             sandbox.stub(api.settings, 'read').withArgs(sandbox.match.has('key', 'activeTheme')).returns(Promise.resolve({
                 settings: [{
@@ -185,14 +186,15 @@ describe('Theme Handler', function () {
                     value: 'rasper'
                 }]
             }));
+
             res.isAdmin = true;
             blogApp.set('activeTheme', 'not-casper');
             configUtils.set({paths: {availableThemes: {casper: {}}}});
 
             themeHandler.updateActiveTheme(req, res, function () {
                 activateThemeSpy.called.should.be.false();
-                warnSpy.called.should.be.true();
-                warnSpy.calledWith('The currently active theme "rasper" is missing.').should.be.true();
+                loggingWarnStub.called.should.be.true();
+                loggingWarnStub.calledWith('The currently active theme "rasper" is missing.').should.be.true();
                 done();
             });
         });

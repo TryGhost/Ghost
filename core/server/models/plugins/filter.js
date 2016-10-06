@@ -24,13 +24,13 @@ filterUtils = {
             custom = _.map(custom, function (arg) {
                 return _.isString(arg) ? gql.parse(arg) : arg;
             });
-        } catch (error) {
-            throw new errors.ValidationError(
-                error.message,
-                'filter',
-                i18n.t('errors.models.plugins.filter.errorParsing'),
-                i18n.t('errors.models.plugins.filter.forInformationRead', {url: 'http://api.ghost.org/docs/filter'})
-            );
+        } catch (err) {
+            throw new errors.ValidationError({
+                err: err,
+                property: 'filter',
+                context: i18n.t('errors.models.plugins.filter.errorParsing'),
+                help: i18n.t('errors.models.plugins.filter.forInformationRead', {url: 'http://api.ghost.org/docs/filter'})
+            });
         }
 
         // Merge custom filter options into a single set of statements

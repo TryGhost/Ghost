@@ -1,6 +1,7 @@
 var config = require('../../config'),
     events = require(config.get('paths:corePath') + '/server/events'),
     models = require(config.get('paths:corePath') + '/server/models'),
+    errors = require(config.get('paths:corePath') + '/server/errors'),
     logging = require(config.get('paths:corePath') + '/server/logging'),
     sequence = require(config.get('paths:corePath') + '/server/utils/sequence'),
     moment = require('moment-timezone');
@@ -11,7 +12,7 @@ var config = require('../../config'),
 events.on('token.added', function (tokenModel) {
     models.User.edit({last_login: moment().toDate()}, {id: tokenModel.get('user_id')})
         .catch(function (err) {
-            logging.error(err);
+            logging.error(new errors.GhostError({err: err, level: 'critical'}));
         });
 });
 
@@ -61,11 +62,16 @@ events.on('settings.activeTimezone.edited', function (settingModel) {
                 };
             })).each(function (result) {
                 if (!result.isFulfilled()) {
-                    logging.error(result.reason());
+                    logging.error(new errors.GhostError({
+                        err: result.reason()
+                    }));
                 }
             });
         })
         .catch(function (err) {
-            logging.error(err);
+            logging.error(new errors.GhostError({
+                err: err,
+                level: 'critical'
+            }));
         });
 });

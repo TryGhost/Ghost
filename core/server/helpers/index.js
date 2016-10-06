@@ -1,23 +1,23 @@
-var hbs             = require('express-hbs'),
-    Promise         = require('bluebird'),
-    errors          = require('../errors'),
-    logging         = require('../logging'),
-    utils           = require('./utils'),
-    i18n            = require('../i18n'),
-    coreHelpers     = {},
+var hbs = require('express-hbs'),
+    Promise = require('bluebird'),
+    errors = require('../errors'),
+    logging = require('../logging'),
+    utils = require('./utils'),
+    i18n = require('../i18n'),
+    coreHelpers = {},
     registerHelpers;
 
 if (!utils.isProduction) {
     hbs.handlebars.logger.level = 0;
 }
 
-coreHelpers.asset  = require('./asset');
-coreHelpers.author  = require('./author');
-coreHelpers.body_class  = require('./body_class');
-coreHelpers.content  = require('./content');
-coreHelpers.date  = require('./date');
-coreHelpers.encode  = require('./encode');
-coreHelpers.excerpt  = require('./excerpt');
+coreHelpers.asset = require('./asset');
+coreHelpers.author = require('./author');
+coreHelpers.body_class = require('./body_class');
+coreHelpers.content = require('./content');
+coreHelpers.date = require('./date');
+coreHelpers.encode = require('./encode');
+coreHelpers.excerpt = require('./excerpt');
 coreHelpers.facebook_url = require('./facebook_url');
 coreHelpers.foreach = require('./foreach');
 coreHelpers.get = require('./get');
@@ -48,7 +48,9 @@ coreHelpers.helperMissing = function (arg) {
         return undefined;
     }
 
-    logging.error(new errors.InternalServerError(i18n.t('warnings.helpers.index.missingHelper', {arg: arg})));
+    logging.error(new errors.GhostError({
+        message: i18n.t('warnings.helpers.index.missingHelper', {arg: arg})
+    }));
 };
 
 // Register an async handlebars helper for a given handlebars instance
@@ -64,8 +66,10 @@ function registerAsyncHelper(hbs, name, fn) {
         Promise.resolve(fn.call(this, context, options)).then(function (result) {
             cb(result);
         }).catch(function (err) {
-            logging.warn('registerAsyncThemeHelper: ' + name);
-            throw err;
+            throw new errors.IncorrectUsageError({
+                err: err,
+                context: 'registerAsyncThemeHelper: ' + name
+            });
         });
     });
 }

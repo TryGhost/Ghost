@@ -114,7 +114,7 @@ Settings = ghostBookshelf.Model.extend({
             // Accept an array of models as input
             if (item.toJSON) { item = item.toJSON(); }
             if (!(_.isString(item.key) && item.key.length > 0)) {
-                return Promise.reject(new errors.ValidationError(i18n.t('errors.models.settings.valueCannotBeBlank')));
+                return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.settings.valueCannotBeBlank')}));
             }
 
             item = self.filterData(item);
@@ -138,14 +138,14 @@ Settings = ghostBookshelf.Model.extend({
                     return setting.save(saveData, options);
                 }
 
-                return Promise.reject(new errors.NotFoundError(i18n.t('errors.models.settings.unableToFindSetting', {key: item.key})));
+                return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.models.settings.unableToFindSetting', {key: item.key})}));
             });
         });
     },
 
     populateDefault: function (key) {
         if (!getDefaultSettings()[key]) {
-            return Promise.reject(new errors.NotFoundError(i18n.t('errors.models.settings.unableToFindDefaultSetting', {key: key})));
+            return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.models.settings.unableToFindDefaultSetting', {key: key})}));
         }
 
         return this.findOne({key: key}).then(function then(foundSetting) {

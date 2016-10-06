@@ -90,7 +90,7 @@ users = {
                 return {users: [result.toJSON(options)]};
             }
 
-            return Promise.reject(new errors.NotFoundError(i18n.t('errors.api.users.userNotFound')));
+            return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.users.userNotFound')}));
         });
     },
 
@@ -145,14 +145,14 @@ users = {
                     var contextRoleId = contextUser.related('roles').toJSON(options)[0].id;
 
                     if (roleId !== contextRoleId && editedUserId === contextUser.id) {
-                        return Promise.reject(new errors.NoPermissionError(i18n.t('errors.api.users.cannotChangeOwnRole')));
+                        return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.api.users.cannotChangeOwnRole')}));
                     }
 
                     return dataProvider.User.findOne({role: 'Owner'}).then(function (owner) {
                         if (contextUser.id !== owner.id) {
                             if (editedUserId === owner.id) {
                                 if (owner.related('roles').at(0).id !== roleId) {
-                                    return Promise.reject(new errors.NoPermissionError(i18n.t('errors.api.users.cannotChangeOwnersRole')));
+                                    return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.api.users.cannotChangeOwnersRole')}));
                                 }
                             } else if (roleId !== contextRoleId) {
                                 return canThis(options.context).assign.role(role).then(function () {
@@ -165,7 +165,10 @@ users = {
                     });
                 });
             }).catch(function handleError(err) {
-                return Promise.reject(new errors.NoPermissionError(err.message, i18n.t('errors.api.users.noPermissionToEditUser')));
+                return Promise.reject(new errors.NoPermissionError({
+                    err: err,
+                    context: i18n.t('errors.api.users.noPermissionToEditUser')
+                }));
             });
         }
 
@@ -192,7 +195,7 @@ users = {
                 return {users: [result.toJSON(options)]};
             }
 
-            return Promise.reject(new errors.NotFoundError(i18n.t('errors.api.users.userNotFound')));
+            return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.users.userNotFound')}));
         });
     },
 
@@ -215,7 +218,10 @@ users = {
                 options.status = 'all';
                 return options;
             }).catch(function handleError(err) {
-                return Promise.reject(new errors.NoPermissionError(err.message, i18n.t('errors.api.users.noPermissionToDestroyUser')));
+                return Promise.reject(new errors.NoPermissionError({
+                    err: err,
+                    context: i18n.t('errors.api.users.noPermissionToDestroyUser')
+                }));
             });
         }
 
@@ -236,7 +242,9 @@ users = {
                     return dataProvider.User.destroy(options);
                 }).return(null);
             }).catch(function (err) {
-                return Promise.reject(new errors.NoPermissionError(err.message));
+                return Promise.reject(new errors.NoPermissionError({
+                    err: err
+                }));
             });
         }
 
@@ -271,7 +279,10 @@ users = {
             return canThis(options.context).edit.user(options.data.password[0].user_id).then(function permissionGranted() {
                 return options;
             }).catch(function (err) {
-                return Promise.reject(new errors.NoPermissionError(err.message, i18n.t('errors.api.users.noPermissionToChangeUsersPwd')));
+                return Promise.reject(new errors.NoPermissionError({
+                    err: err,
+                    context: i18n.t('errors.api.users.noPermissionToChangeUsersPwd')
+                }));
             });
         }
 

@@ -4,8 +4,6 @@ var nconf = require('nconf'),
     packageInfo = require('../../../package.json'),
     env = process.env.NODE_ENV || 'development';
 
-nconf.set('NODE_ENV', env);
-
 /**
  * command line arguments
  */
@@ -38,6 +36,7 @@ localUtils.makePathsAbsolute.bind(nconf)();
  * @TODO: ghost-cli?
  */
 nconf.set('ghostVersion', packageInfo.version);
+nconf.set('env', env);
 
 module.exports = nconf;
 module.exports.isPrivacyDisabled = localUtils.isPrivacyDisabled.bind(nconf);

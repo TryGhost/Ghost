@@ -6,6 +6,7 @@ var ClientPasswordStrategy = require('passport-oauth2-client-password').Strategy
     authStrategies = require('./auth-strategies'),
     utils = require('../utils'),
     errors = require('../errors'),
+    logging = require('../logging'),
     models = require('../models'),
     _private = {};
 
@@ -44,11 +45,13 @@ _private.registerClient = function registerClient(options) {
                             });
                         })
                         .catch(function publicClientRegistrationError(err) {
+                            logging.error(err);
+
                             if (retryCount < 0) {
-                                return done(new errors.IncorrectUsage(
-                                    'Public client registration failed:  ' + err.code || err.message,
-                                    'Please verify that the url is reachable: ' + ghostOAuth2Strategy.url
-                                ));
+                                return done(new errors.IncorrectUsageError({
+                                    message: 'Public client registration failed:  ' + err.code || err.message,
+                                    context: 'Please verify that the url is reachable: ' + ghostOAuth2Strategy.url
+                                }));
                             }
 
                             console.log('RETRY: Public Client Registration...');

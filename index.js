@@ -4,6 +4,7 @@ var ghost = require('./core'),
     debug = require('debug')('ghost:boot:index'),
     express = require('express'),
     logging = require('./core/server/logging'),
+    errors = require('./core/server/errors'),
     utils = require('./core/server/utils'),
     parentApp = express();
 
@@ -16,6 +17,6 @@ ghost().then(function (ghostServer) {
     // Let Ghost handle starting our server instance.
     ghostServer.start(parentApp);
 }).catch(function (err) {
-    logging.error(err);
+    logging.error(new errors.GhostError({err: err}));
     process.exit(0);
 });

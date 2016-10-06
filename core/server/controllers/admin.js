@@ -3,6 +3,7 @@ var debug         = require('debug')('ghost:admin:controller'),
     Promise       = require('bluebird'),
     api           = require('../api'),
     config        = require('../config'),
+    errors        = require('../errors'),
     logging       = require('../logging'),
     updateCheck   = require('../update-check'),
     i18n          = require('../i18n'),
@@ -67,7 +68,9 @@ adminControllers = {
             });
         }).finally(function noMatterWhat() {
             renderIndex();
-        }).catch(logging.error);
+        }).catch(function (err) {
+            logging.error(new errors.GhostError({err: err}));
+        });
     }
 };
 

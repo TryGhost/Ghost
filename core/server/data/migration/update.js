@@ -124,11 +124,13 @@ isDatabaseOutOfDate = function isDatabaseOutOfDate(options) {
 
     // CASE: current database version is lower then we support
     if (fromVersion < versioning.canMigrateFromVersion) {
-        return {error: new errors.DatabaseVersion(
-            i18n.t('errors.data.versioning.index.cannotMigrate.error'),
-            i18n.t('errors.data.versioning.index.cannotMigrate.context'),
-            i18n.t('common.seeLinkForInstructions', {link: 'http://support.ghost.org/how-to-upgrade/'})
-        )};
+        return {
+            error: new errors.DatabaseVersionError({
+                message: i18n.t('errors.data.versioning.index.cannotMigrate.error'),
+                context: i18n.t('errors.data.versioning.index.cannotMigrate.context'),
+                help: i18n.t('common.seeLinkForInstructions', {link: 'http://support.ghost.org/how-to-upgrade/'})
+            })
+        };
     }
     // CASE: the database exists but is out of date
     else if (fromVersion < toVersion || forceMigration) {
@@ -140,7 +142,7 @@ isDatabaseOutOfDate = function isDatabaseOutOfDate(options) {
     }
     // CASE: we don't understand the version
     else {
-        return {error: new errors.DatabaseVersion(i18n.t('errors.data.versioning.index.dbVersionNotRecognized'))};
+        return {error: new errors.DatabaseVersionError({message: i18n.t('errors.data.versioning.index.dbVersionNotRecognized')})};
     }
 };
 

@@ -43,10 +43,12 @@ updateConfigCache = function () {
         try {
             labsValue = JSON.parse(settingsCache.labs.value);
         } catch (err) {
-            err.message = i18n.t('errors.api.settings.invalidJsonInLabs');
-            err.context = i18n.t('errors.api.settings.labsColumnCouldNotBeParsed');
-            err.help = i18n.t('errors.api.settings.tryUpdatingLabs');
-            logging.error(err);
+            logging.error(new errors.GhostError({
+                err: err,
+                message: i18n.t('errors.api.settings.invalidJsonInLabs'),
+                context: i18n.t('errors.api.settings.labsColumnCouldNotBeParsed'),
+                help: i18n.t('errors.api.settings.tryUpdatingLabs')
+            }));
         }
     }
 
@@ -250,7 +252,7 @@ populateDefaultSetting = function (key) {
         }
 
         // TODO: Different kind of error?
-        return Promise.reject(new errors.NotFoundError(i18n.t('errors.api.settings.problemFindingSetting', {key: key})));
+        return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.settings.problemFindingSetting', {key: key})}));
     });
 };
 
@@ -265,12 +267,12 @@ canEditAllSettings = function (settingsInfo, options) {
     var checkSettingPermissions = function (setting) {
             if (setting.type === 'core' && !(options.context && options.context.internal)) {
                 return Promise.reject(
-                    new errors.NoPermissionError(i18n.t('errors.api.settings.accessCoreSettingFromExtReq'))
+                    new errors.NoPermissionError({message: i18n.t('errors.api.settings.accessCoreSettingFromExtReq')})
                 );
             }
 
             return canThis(options.context).edit.setting(setting.key).catch(function () {
-                return Promise.reject(new errors.NoPermissionError(i18n.t('errors.api.settings.noPermissionToEditSettings')));
+                return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.api.settings.noPermissionToEditSettings')}));
             });
         },
         checks = _.map(settingsInfo, function (settingInfo) {
@@ -349,7 +351,7 @@ settings = {
 
                 if (setting.type === 'core' && !(options.context && options.context.internal)) {
                     return Promise.reject(
-                        new errors.NoPermissionError(i18n.t('errors.api.settings.accessCoreSettingFromExtReq'))
+                        new errors.NoPermissionError({message: i18n.t('errors.api.settings.accessCoreSettingFromExtReq')})
                     );
                 }
 
@@ -360,7 +362,7 @@ settings = {
                 return canThis(options.context).read.setting(options.key).then(function () {
                     return settingsResult(result);
                 }, function () {
-                    return Promise.reject(new errors.NoPermissionError(i18n.t('errors.api.settings.noPermissionToReadSettings')));
+                    return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.api.settings.noPermissionToReadSettings')}));
                 });
             };
 

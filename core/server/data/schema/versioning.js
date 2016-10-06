@@ -35,7 +35,7 @@ function getDatabaseVersion() {
                 });
         }
 
-        return Promise.reject(new errors.DatabaseNotPopulated(i18n.t('errors.data.versioning.index.databaseNotPopulated')));
+        return Promise.reject(new errors.DatabaseNotPopulatedError({message: i18n.t('errors.data.versioning.index.databaseNotPopulated')}));
     });
 }
 

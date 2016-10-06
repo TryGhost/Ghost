@@ -38,7 +38,7 @@ function sendMail(object) {
             );
         }
 
-        return Promise.reject(new errors.EmailError(err.message));
+        return Promise.reject(new errors.EmailError({err: err}));
     });
 }
 

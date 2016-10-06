@@ -12,7 +12,7 @@ function exchangeRefreshToken(client, refreshToken, scope, done) {
     models.Refreshtoken.findOne({token: refreshToken})
         .then(function then(model) {
             if (!model) {
-                return done(new errors.NoPermissionError(i18n.t('errors.middleware.oauth.invalidRefreshToken')), false);
+                return done(new errors.NoPermissionError({message: i18n.t('errors.middleware.oauth.invalidRefreshToken')}), false);
             } else {
                 var token = model.toJSON(),
                     accessToken = utils.uid(191),
@@ -33,7 +33,7 @@ function exchangeRefreshToken(client, refreshToken, scope, done) {
                         return done(error, false);
                     });
                 } else {
-                    done(new errors.UnauthorizedError(i18n.t('errors.middleware.oauth.refreshTokenExpired')), false);
+                    done(new errors.UnauthorizedError({message: i18n.t('errors.middleware.oauth.refreshTokenExpired')}), false);
                 }
             }
         });
@@ -44,7 +44,7 @@ function exchangePassword(client, username, password, scope, done) {
     models.Client.findOne({slug: client.slug})
         .then(function then(client) {
             if (!client) {
-                return done(new errors.NoPermissionError(i18n.t('errors.middleware.oauth.invalidClient')), false);
+                return done(new errors.NoPermissionError({message: i18n.t('errors.middleware.oauth.invalidClient')}), false);
             }
 
             // Validate the user

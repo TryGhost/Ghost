@@ -4,9 +4,7 @@ var config = require('../config'),
 
 module.exports = function maintenance(req, res, next) {
     if (config.get('maintenance').enabled) {
-        return next(new errors.Maintenance(
-            i18n.t('errors.general.maintenance')
-        ));
+        return next(new errors.MaintenanceError({message: i18n.t('errors.general.maintenance')}));
     }
 
     next();

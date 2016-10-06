@@ -6,12 +6,9 @@ function checkVersionMatch(req, res, next) {
         currentVersion = res.locals.safeVersion;
 
     if (requestVersion && requestVersion !== currentVersion) {
-        return next(new errors.VersionMismatchError(
-            i18n.t(
-                'errors.middleware.api.versionMismatch',
-                {requestVersion: requestVersion, currentVersion: currentVersion}
-            )
-        ));
+        return next(new errors.VersionMismatchError({
+            message: i18n.t('errors.middleware.api.versionMismatch', {requestVersion: requestVersion, currentVersion: currentVersion})
+        }));
     }
 
     next();

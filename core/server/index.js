@@ -108,8 +108,10 @@ function init(options) {
         );
     }).then(function () {
         debug('Apps, XMLRPC, Slack done');
+
         // Get reference to an express app instance.
         parentApp = express();
+
         // ## Middleware and Routing
         middleware(parentApp);
         debug('Express done');

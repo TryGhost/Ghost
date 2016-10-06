@@ -140,7 +140,7 @@ describe('server bootstrap', function () {
                     done('This should not be called');
                 })
                 .catch(function (err) {
-                    err.errorType.should.eql('DatabaseVersion');
+                    err.errorType.should.eql('DatabaseVersionError');
                     err.message.should.eql('Your database version is not compatible with Ghost 1.0.0 Alpha (master branch)');
                     done();
                 });
@@ -159,7 +159,7 @@ describe('server bootstrap', function () {
                     done('This should not be called');
                 })
                 .catch(function (err) {
-                    err.errorType.should.eql('DatabaseVersion');
+                    err.errorType.should.eql('DatabaseVersionError');
                     err.message.should.eql('Your database version is not compatible with Ghost 1.0.0 Alpha (master branch)');
                     done();
                 });

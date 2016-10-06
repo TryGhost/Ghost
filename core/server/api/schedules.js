@@ -25,7 +25,7 @@ exports.publishPost = function publishPost(object, options) {
 
     // CASE: only the scheduler client is allowed to publish (hardcoded because of missing client permission system)
     if (!options.context || !options.context.client || options.context.client !== 'ghost-scheduler') {
-        return Promise.reject(new errors.NoPermissionError(i18n.t('errors.permissions.noPermissionToAction')));
+        return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.permissions.noPermissionToAction')}));
     }
 
     options.context = {internal: true};
@@ -41,11 +41,11 @@ exports.publishPost = function publishPost(object, options) {
                     publishedAtMoment = moment(post.published_at);
 
                     if (publishedAtMoment.diff(moment(), 'minutes') > publishAPostBySchedulerToleranceInMinutes) {
-                        return Promise.reject(new errors.NotFoundError(i18n.t('errors.api.job.notFound')));
+                        return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.job.notFound')}));
                     }
 
                     if (publishedAtMoment.diff(moment(), 'minutes') < publishAPostBySchedulerToleranceInMinutes * -1 && object.force !== true) {
-                        return Promise.reject(new errors.NotFoundError(i18n.t('errors.api.job.publishInThePast')));
+                        return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.job.publishInThePast')}));
                     }
 
                     return apiPosts.edit({posts: [{status: 'published'}]}, _.pick(cleanOptions, ['context', 'id']));

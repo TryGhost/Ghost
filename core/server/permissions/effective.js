@@ -11,7 +11,7 @@ effective = {
             .then(function (foundUser) {
                 // CASE: {context: {user: id}} where the id is not in our database
                 if (!foundUser) {
-                    return Promise.reject(new errors.NotFoundError(i18n.t('errors.models.user.userNotFound')));
+                    return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.models.user.userNotFound')}));
                 }
 
                 var seenPerms = {},

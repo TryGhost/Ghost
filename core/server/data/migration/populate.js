@@ -49,7 +49,7 @@ populate = function populate(options) {
         });
     }).catch(function populateDatabaseError(err) {
         logger.warn('rolling back...');
-        return Promise.reject(new errors.InternalServerError('Unable to populate database: ' + err.message));
+        return Promise.reject(new errors.GhostError({err: err, context: 'Unable to populate database!'}));
     });
 };
 

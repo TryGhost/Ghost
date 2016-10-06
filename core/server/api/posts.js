@@ -107,7 +107,7 @@ posts = {
                 return {posts: [result.toJSON(options)]};
             }
 
-            return Promise.reject(new errors.NotFoundError(i18n.t('errors.api.posts.postNotFound')));
+            return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.posts.postNotFound')}));
         });
     },
 
@@ -154,7 +154,7 @@ posts = {
                 return {posts: [post]};
             }
 
-            return Promise.reject(new errors.NotFoundError(i18n.t('errors.api.posts.postNotFound')));
+            return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.posts.postNotFound')}));
         });
     },
 
@@ -223,7 +223,7 @@ posts = {
             return Post.findOne(data, fetchOpts).then(function () {
                 return Post.destroy(options).return(null);
             }).catch(Post.NotFoundError, function () {
-                throw new errors.NotFoundError(i18n.t('errors.api.posts.postNotFound'));
+                throw new errors.NotFoundError({message: i18n.t('errors.api.posts.postNotFound')});
             });
         }
 

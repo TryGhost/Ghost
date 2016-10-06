@@ -57,7 +57,7 @@ Basetoken = ghostBookshelf.Model.extend({
                 });
         }
 
-        return Promise.reject(new errors.NotFoundError(i18n.t('errors.models.base.token.noUserFound')));
+        return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.models.base.token.noUserFound')}));
     },
 
     /**

@@ -10,7 +10,7 @@ authorize = {
         if (req.user && req.user.id) {
             return next();
         } else {
-            return next(new errors.NoPermissionError(i18n.t('errors.middleware.auth.pleaseSignIn')));
+            return next(new errors.NoPermissionError({message: i18n.t('errors.middleware.auth.pleaseSignIn')}));
         }
     },
 
@@ -22,7 +22,7 @@ authorize = {
             if (req.user && req.user.id) {
                 return next();
             } else {
-                return next(new errors.NoPermissionError(i18n.t('errors.middleware.auth.pleaseSignIn')));
+                return next(new errors.NoPermissionError({message: i18n.t('errors.middleware.auth.pleaseSignIn')}));
             }
         }
     }

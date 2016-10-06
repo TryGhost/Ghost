@@ -6,7 +6,7 @@ var _      = require('lodash'),
     config = require('../config'),
     logging = require('../logging'),
     errors = require('../errors'),
-    i18n   = require('../i18n'),
+    i18n = require('../i18n'),
     themeHandler;
 
 themeHandler = {
@@ -100,7 +100,9 @@ themeHandler = {
                 // Change theme
                 if (!config.get('paths').availableThemes.hasOwnProperty(activeTheme.value)) {
                     if (!res.isAdmin) {
-                        return next(new errors.InternalServerError(i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeTheme.value})));
+                        return next(new errors.NotFoundError({
+                            message: i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeTheme.value})
+                        }));
                     } else {
                         // At this point the activated theme is not present and the current
                         // request is for the admin client.  In order to allow the user access
@@ -108,7 +110,6 @@ themeHandler = {
                         // processing can continue.
                         blogApp.engine('hbs', hbs.express3());
                         logging.warn(i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeTheme.value}));
-
                         return next();
                     }
                 } else {

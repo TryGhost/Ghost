@@ -54,7 +54,7 @@ invites = {
                     return {invites: [result.toJSON(options)]};
                 }
 
-                return Promise.reject(new errors.NotFoundError(i18n.t('errors.api.invites.inviteNotFound')));
+                return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.invites.inviteNotFound')}));
             });
     },
 
@@ -65,7 +65,7 @@ invites = {
             return dataProvider.Invite.findOne({id: options.id}, _.omit(options, ['data']))
                 .then(function (invite) {
                     if (!invite) {
-                        throw new errors.NotFoundError(i18n.t('errors.api.invites.inviteNotFound'));
+                        throw new errors.NotFoundError({message: i18n.t('errors.api.invites.inviteNotFound')});
                     }
 
                     return invite.destroy(options).return(null);
@@ -94,7 +94,7 @@ invites = {
             return dataProvider.User.findOne({id: loggedInUser}, options)
                 .then(function (user) {
                     if (!user) {
-                        return Promise.reject(new errors.NotFoundError(i18n.t('errors.api.users.userNotFound')));
+                        return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.users.userNotFound')}));
                     }
 
                     loggedInUser = user;
@@ -172,11 +172,11 @@ invites = {
             var roleId;
 
             if (!options.data.invites[0].email) {
-                return Promise.reject(new errors.ValidationError(i18n.t('errors.api.invites.emailIsRequired')));
+                return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.invites.emailIsRequired')}));
             }
 
             if (!options.data.invites[0].roles || !options.data.invites[0].roles[0]) {
-                return Promise.reject(new errors.ValidationError(i18n.t('errors.api.invites.roleIsRequired')));
+                return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.invites.roleIsRequired')}));
             }
 
             roleId = parseInt(options.data.invites[0].roles[0].id || options.data.invites[0].roles[0], 10);
@@ -185,7 +185,7 @@ invites = {
             // Make sure user is allowed to add a user with this role
             return dataProvider.Role.findOne({id: roleId}).then(function (role) {
                 if (role.get('name') === 'Owner') {
-                    return Promise.reject(new errors.NoPermissionError(i18n.t('errors.api.invites.notAllowedToInviteOwner')));
+                    return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.api.invites.notAllowedToInviteOwner')}));
                 }
             }).then(function () {
                 return options;

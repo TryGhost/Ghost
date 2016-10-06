@@ -1,5 +1,6 @@
 var config     = require('../../config'),
     utils      = require('../../utils'),
+    errors     = require('../../errors'),
     logging    = require('../../logging'),
     i18n       = require('../../i18n'),
     middleware = require('./lib/middleware'),
@@ -8,19 +9,19 @@ var config     = require('../../config'),
 
 module.exports = {
     activate: function activate(ghost) {
-        var err, paths;
+        var paths;
 
         if (utils.url.getSubdir()) {
             paths = utils.url.getSubdir().split('/');
 
             if (paths.pop() === config.get('routeKeywords').private) {
-                err = new Error();
-                err.message = i18n.t('errors.config.urlCannotContainPrivateSubdir.error');
-                err.context = i18n.t('errors.config.urlCannotContainPrivateSubdir.description');
-                err.help = i18n.t('errors.config.urlCannotContainPrivateSubdir.help');
-                logging.error(err);
+                logging.error(new errors.GhostError({
+                    message: i18n.t('errors.config.urlCannotContainPrivateSubdir.error'),
+                    context: i18n.t('errors.config.urlCannotContainPrivateSubdir.description'),
+                    help: i18n.t('errors.config.urlCannotContainPrivateSubdir.help')
+                }));
 
-                // @TODO: why?
+                // @TODO: why
                 process.exit(0);
             }
         }

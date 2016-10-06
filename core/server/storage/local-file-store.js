@@ -105,10 +105,10 @@ LocalFileStore.prototype.serve = function (options) {
             return serveStatic(config.getContentPath('images'), {maxAge: utils.ONE_YEAR_MS, fallthrough: false})(req, res, function (err) {
                 if (err) {
                     if (err.statusCode === 404) {
-                        return next(new errors.NotFoundError(i18n.t('errors.errors.pageNotFound')));
+                        return next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
                     }
 
-                    return next(err);
+                    return next(new errors.GhostError({err: err}));
                 }
 
                 next();

@@ -23,7 +23,9 @@ function getStorage(type) {
 
     // CASE: type does not exist
     if (!storageChoice) {
-        throw new errors.IncorrectUsage('No adapter found for type: ' + type);
+        throw new errors.IncorrectUsageError({
+            message: 'No adapter found for type: ' + type
+        });
     }
 
     // cache?
@@ -37,11 +39,11 @@ function getStorage(type) {
     } catch (err) {
         // CASE: only throw error if module does exist
         if (err.code !== 'MODULE_NOT_FOUND') {
-            throw new errors.IncorrectUsage(err.message);
+            throw new errors.IncorrectUsageError({err: err});
         }
         // CASE: if module not found it can be an error within the adapter (cannot find bluebird for example)
         else if (err.code === 'MODULE_NOT_FOUND' && err.message.indexOf(config.getContentPath('storage') + storageChoice) === -1) {
-            throw new errors.IncorrectUsage(err.message);
+            throw new errors.IncorrectUsageError({err: err});
         }
     }
 
@@ -50,24 +52,27 @@ function getStorage(type) {
         storage[storageChoice] = storage[storageChoice] || require(config.get('paths').internalStoragePath + storageChoice);
     } catch (err) {
         if (err.code === 'MODULE_NOT_FOUND') {
-            throw new errors.IncorrectUsage('We cannot find your adapter in: ' + config.getContentPath('storage') + ' or: ' + config.get('paths').internalStoragePath);
+            throw new errors.IncorrectUsageError({
+                err: err,
+                context: 'We cannot find your adapter in: ' + config.getContentPath('storage') + ' or: ' + config.get('paths').internalStoragePath
+            });
         } else {
-            throw new errors.IncorrectUsage(err.message);
+            throw new errors.IncorrectUsageError({err: err});
         }
     }
 
     storage[storageChoice] = new storage[storageChoice](storageConfig);
 
     if (!(storage[storageChoice] instanceof Base)) {
-        throw new errors.IncorrectUsage('Your storage adapter does not inherit from the Storage Base.');
+        throw new errors.IncorrectUsageError({message: 'Your storage adapter does not inherit from the Storage Base.'});
     }
 
     if (!storage[storageChoice].requiredFns) {
-        throw new errors.IncorrectUsage('Your storage adapter does not provide the minimum required functions.');
+        throw new errors.IncorrectUsageError({message:'Your storage adapter does not provide the minimum required functions.'});
     }
 
     if (_.xor(storage[storageChoice].requiredFns, Object.keys(_.pick(Object.getPrototypeOf(storage[storageChoice]), storage[storageChoice].requiredFns))).length) {
-        throw new errors.IncorrectUsage('Your storage adapter does not provide the minimum required functions.');
+        throw new errors.IncorrectUsageError({message:'Your storage adapter does not provide the minimum required functions.'});
     }
 
     return storage[storageChoice];

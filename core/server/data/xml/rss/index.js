@@ -174,7 +174,7 @@ generate = function generate(req, res, next) {
 
         // If page is greater than number of pages we have, redirect to last page
         if (pageParam > maxPage) {
-            return next(new errors.NotFoundError(i18n.t('errors.errors.pageNotFound')));
+            return next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
         }
 
         data.version = res.locals.safeVersion;

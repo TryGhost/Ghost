@@ -46,7 +46,7 @@ slugs = {
          */
         function checkAllowedTypes(options) {
             if (allowedTypes[options.type] === undefined) {
-                return Promise.reject(new errors.BadRequestError(i18n.t('errors.api.slugs.unknownSlugType', {type: options.type})));
+                return Promise.reject(new errors.BadRequestError({message: i18n.t('errors.api.slugs.unknownSlugType', {type: options.type})}));
             }
             return options;
         }
@@ -72,7 +72,7 @@ slugs = {
         // Pipeline calls each task passing the result of one to be the arguments for the next
         return pipeline(tasks, options).then(function (slug) {
             if (!slug) {
-                return Promise.reject(new errors.InternalServerError(i18n.t('errors.api.slugs.couldNotGenerateSlug')));
+                return Promise.reject(new errors.GhostError({message: i18n.t('errors.api.slugs.couldNotGenerateSlug')}));
             }
 
             return {slugs: [{slug: slug}]};

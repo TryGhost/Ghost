@@ -1,16 +1,12 @@
 var should    = require('should'),
     sinon     = require('sinon'),
     Promise   = require('bluebird'),
-
-    // Stuff we're testing
     db        = require('../../server/data/db'),
     errors    = require('../../server/errors'),
     exporter  = require('../../server/data/export'),
     schema    = require('../../server/data/schema'),
     settings  = require('../../server/api/settings'),
-
     schemaTables = Object.keys(schema.tables),
-
     sandbox = sinon.sandbox.create();
 
 describe('Exporter', function () {
@@ -85,12 +81,14 @@ describe('Exporter', function () {
             queryMock.select.returns(new Promise.reject({}));
 
             // Execute
-            exporter.doExport().then(function () {
-                done(new Error('expected error on export data'));
-            }).catch(function (err) {
-                (err instanceof errors.InternalServerError).should.eql(true);
-                done();
-            });
+            exporter.doExport()
+                .then(function () {
+                    done(new Error('expected error for export'));
+                })
+                .catch(function (err) {
+                    (err instanceof errors.DataExportError).should.eql(true);
+                    done();
+                });
         });
     });
 

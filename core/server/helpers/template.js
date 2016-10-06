@@ -11,7 +11,9 @@ templates.execute = function (name, context, options) {
     var partial = hbs.handlebars.partials[name];
 
     if (partial === undefined) {
-        throw new errors.IncorrectUsage(i18n.t('warnings.helpers.template.templateNotFound', {name: name}));
+        throw new errors.IncorrectUsageError({
+            message: i18n.t('warnings.helpers.template.templateNotFound', {name: name})
+        });
     }
 
     // If the partial view is not compiled, it compiles and saves in handlebars

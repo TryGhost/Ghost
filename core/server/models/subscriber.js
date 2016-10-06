@@ -72,7 +72,7 @@ Subscriber = ghostBookshelf.Model.extend({
             return Promise.resolve();
         }
 
-        return Promise.reject(new errors.NoPermissionError(i18n.t('errors.models.subscriber.notEnoughPermission')));
+        return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.models.subscriber.notEnoughPermission')}));
     },
 
     // TODO: This is a copy paste of models/user.js!
