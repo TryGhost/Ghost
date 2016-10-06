@@ -38,10 +38,10 @@ module.exports = function bootUp() {
         })
         .catch(function (err) {
             if ([sephiroth.utils.errors.dbInitMissing, sephiroth.utils.errors.migrationsTableMissing].indexOf(err.code) !== -1) {
-                return Promise.reject(new errors.DatabaseNotPopulated(
-                    i18n.t('errors.data.versioning.index.databaseNotInitialised'),
-                    i18n.t('errors.data.versioning.index.databaseNotInitialisedContext')
-                ));
+                return Promise.reject(new errors.DatabaseNotPopulatedError({
+                    message: i18n.t('errors.data.versioning.index.databaseNotInitialised'),
+                    context: i18n.t('errors.data.versioning.index.databaseNotInitialisedContext')
+                }));
             }
 
             return Promise.reject(err);
