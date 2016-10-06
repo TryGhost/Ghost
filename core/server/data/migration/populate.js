@@ -3,9 +3,11 @@
 var Promise = require('bluebird'),
     _ = require('lodash'),
     commands = require('../schema').commands,
+    versioning = require('../schema').versioning,
     fixtures = require('./fixtures'),
     db = require('../../data/db'),
     logging = require('../../logging'),
+    models = require('../../models'),
     errors = require('../../errors'),
     schema = require('../schema').tables,
     schemaTables = Object.keys(schema),
@@ -40,6 +42,16 @@ populate = function populate(options) {
         return Promise.mapSeries(schemaTables, function createTable(table) {
             logger.info('Creating table: ' + table);
             return commands.createTable(table, transaction);
+        }).then(function () {
+            // @TODO:
+            //  - key: migrations-kate
+            //  - move to seed
+            return models.Settings.populateDefaults(_.merge({}, {transacting: transaction}, modelOptions));
+        }).then(function () {
+            // @TODO:
+            //  - key: migrations-kate
+            //  - move to seed
+            return versioning.setDatabaseVersion(transaction);
         }).then(function populateFixtures() {
             if (tablesOnly) {
                 return;

@@ -89,6 +89,12 @@ var errors = {
             errorType: 'DatabaseNotPopulatedError'
         }, options));
     },
+    DatabaseNotSeededError: function DatabaseNotSeededError(options) {
+        GhostError.call(this, _.merge({
+            statusCode: 500,
+            errorType: 'DatabaseNotSeededError'
+        }, options));
+    },
     UnauthorizedError: function UnauthorizedError(options) {
         GhostError.call(this, _.merge({
             statusCode: 401,
