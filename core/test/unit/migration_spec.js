@@ -121,11 +121,11 @@ describe('Migrations', function () {
                 result.should.be.an.Array().with.lengthOf(schemaTables.length);
 
                 deleteStub.called.should.be.true();
-                deleteStub.callCount.should.be.eql(schemaTables.length);
+                deleteStub.callCount.should.be.eql(schemaTables.length + 1);
                 // First call should be called with the last table
                 deleteStub.firstCall.calledWith(schemaTables[schemaTables.length - 1]).should.be.true();
                 // Last call should be called with the first table
-                deleteStub.lastCall.calledWith(schemaTables[0]).should.be.true();
+                deleteStub.lastCall.calledWith('migrations').should.be.true();
 
                 done();
             }).catch(done);
@@ -137,11 +137,11 @@ describe('Migrations', function () {
                 result.should.be.an.Array().with.lengthOf(schemaTables.length);
 
                 deleteStub.called.should.be.true();
-                deleteStub.callCount.should.be.eql(schemaTables.length);
+                deleteStub.callCount.should.be.eql(schemaTables.length + 1);
                 // First call should be called with the last table
                 deleteStub.firstCall.calledWith(schemaTables[schemaTables.length - 1]).should.be.true();
                 // Last call should be called with the first table
-                deleteStub.lastCall.calledWith(schemaTables[0]).should.be.true();
+                deleteStub.lastCall.calledWith('migrations').should.be.true();
 
                 return migration.reset();
             }).then(function (result) {
@@ -149,11 +149,11 @@ describe('Migrations', function () {
                 result.should.be.an.Array().with.lengthOf(schemaTables.length);
 
                 deleteStub.called.should.be.true();
-                deleteStub.callCount.should.be.eql(schemaTables.length * 2);
+                deleteStub.callCount.should.be.eql(schemaTables.length * 2 + 2);
                 // First call (second set) should be called with the last table
-                deleteStub.getCall(schemaTables.length).calledWith(schemaTables[schemaTables.length - 1]).should.be.true();
+                deleteStub.getCall(schemaTables.length).calledWith('migrations').should.be.true();
                 // Last call (second Set) should be called with the first table
-                deleteStub.getCall(schemaTables.length * 2 - 1).calledWith(schemaTables[0]).should.be.true();
+                // deleteStub.getCall(schemaTables.length * 2 + 2).calledWith(schemaTables[0]).should.be.true();
 
                 done();
             }).catch(done);
@@ -205,7 +205,7 @@ describe('Migrations', function () {
                 })
                 .catch(function (err) {
                     should.exist(err);
-                    (err instanceof errors.GhostError).should.eql(true);
+                    (err instanceof errors.InternalServerError).should.eql(true);
                     createStub.callCount.should.eql(11);
                     done();
                 });
@@ -230,7 +230,7 @@ describe('Migrations', function () {
         it('should throw error if versions are too old', function () {
             var response = update.isDatabaseOutOfDate({fromVersion: '0.8', toVersion: '1.0'});
             updateDatabaseSchemaStub.calledOnce.should.be.false();
-            (response.error instanceof errors.DatabaseVersionError).should.eql(true);
+            (response.error instanceof errors.DatabaseVersion).should.eql(true);
         });
 
         it('should just return if versions are the same', function () {
@@ -247,7 +247,7 @@ describe('Migrations', function () {
         it('should throw an error if the database version is higher than the default', function () {
             var response = update.isDatabaseOutOfDate({fromVersion: '1.3', toVersion: '1.2'});
             updateDatabaseSchemaStub.calledOnce.should.be.false();
-            (response.error instanceof errors.DatabaseVersionError).should.eql(true);
+            (response.error instanceof errors.DatabaseVersion).should.eql(true);
         });
     });
 });
