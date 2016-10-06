@@ -75,7 +75,7 @@ describe('Versioning', function () {
                 done('Should throw an error if the settings table does not exist');
             }).catch(function (err) {
                 should.exist(err);
-                (err instanceof errors.DatabaseNotPopulated).should.eql(true);
+                (err instanceof errors.DatabaseNotPopulatedError).should.eql(true);
 
                 knexStub.get.calledOnce.should.be.true();
                 knexMock.schema.hasTable.calledOnce.should.be.true();
@@ -120,7 +120,7 @@ describe('Versioning', function () {
                 done('Should throw an error if version does not exist');
             }).catch(function (err) {
                 should.exist(err);
-                (err instanceof errors.DatabaseVersion).should.eql(true);
+                (err instanceof errors.DatabaseVersionError).should.eql(true);
 
                 knexStub.get.calledTwice.should.be.true();
                 knexMock.schema.hasTable.calledOnce.should.be.true();
@@ -144,7 +144,7 @@ describe('Versioning', function () {
                 done('Should throw an error if version is not a number');
             }).catch(function (err) {
                 should.exist(err);
-                (err instanceof errors.DatabaseVersion).should.eql(true);
+                (err instanceof errors.DatabaseVersionError).should.eql(true);
 
                 knexStub.get.calledTwice.should.be.true();
                 knexMock.schema.hasTable.calledOnce.should.be.true();

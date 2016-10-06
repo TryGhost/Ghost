@@ -75,7 +75,7 @@ describe('Scheduling: utils', function () {
                 active: __dirname + '/bad-adapter'
             }).catch(function (err) {
                 should.exist(err);
-                (err instanceof errors.IncorrectUsage).should.eql(true);
+                (err instanceof errors.IncorrectUsageError).should.eql(true);
                 done();
             }).finally(function () {
                 fs.unlinkSync(__dirname + '/bad-adapter.js');

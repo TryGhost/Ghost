@@ -56,7 +56,7 @@ function parseContext(context) {
 }
 
 function applyStatusRules(docName, method, opts) {
-    var err = new errors.NoPermissionError(i18n.t('errors.permissions.applyStatusRules.error', {docName: docName}));
+    var err = new errors.NoPermissionError({message: i18n.t('errors.permissions.applyStatusRules.error', {docName: docName})});
 
     // Enforce status 'active' for users
     if (docName === 'users') {
@@ -202,7 +202,7 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
                     return;
                 }
 
-                return Promise.reject(new errors.NoPermissionError(i18n.t('errors.permissions.noPermissionToAction')));
+                return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.permissions.noPermissionToAction')}));
             });
         };
 

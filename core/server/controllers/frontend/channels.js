@@ -7,7 +7,6 @@ var express = require('express'),
     utils   = require('../../utils'),
     channelConfig = require('./channel-config'),
     renderChannel = require('./render-channel'),
-
     rssRouter,
     channelRouter;
 
@@ -26,7 +25,7 @@ function handlePageParam(req, res, next, page) {
         }
     } else if (page < 1 || isNaN(page)) {
         // Nothing less than 1 is a valid page number, go straight to a 404
-        return next(new errors.NotFoundError(i18n.t('errors.errors.pageNotFound')));
+        return next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
     } else {
         // Set req.params.page to the already parsed number, and continue
         req.params.page = page;

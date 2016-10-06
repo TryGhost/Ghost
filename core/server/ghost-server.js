@@ -76,17 +76,17 @@ GhostServer.prototype.start = function (externalApp) {
 
         self.httpServer.on('error', function (error) {
             if (error.errno === 'EADDRINUSE') {
-                logging.error(new errors.InternalServerError(
-                    i18n.t('errors.httpServer.addressInUse.error'),
-                    i18n.t('errors.httpServer.addressInUse.context', {port: config.get('server').port}),
-                    i18n.t('errors.httpServer.addressInUse.help')
-                ));
+                logging.error(new errors.GhostError({
+                    message: i18n.t('errors.httpServer.addressInUse.error'),
+                    context: i18n.t('errors.httpServer.addressInUse.context', {port: config.get('server').port}),
+                    help: i18n.t('errors.httpServer.addressInUse.help')
+                }));
             } else {
-                logging.error(new errors.InternalServerError(
-                    i18n.t('errors.httpServer.otherError.error', {errorNumber: error.errno}),
-                    i18n.t('errors.httpServer.otherError.context'),
-                    i18n.t('errors.httpServer.otherError.help')
-                ));
+                logging.error(new errors.GhostError({
+                    message: i18n.t('errors.httpServer.otherError.error', {errorNumber: error.errno}),
+                    context: i18n.t('errors.httpServer.otherError.context'),
+                    help: i18n.t('errors.httpServer.otherError.help')
+                }));
             }
 
             process.exit(-1);

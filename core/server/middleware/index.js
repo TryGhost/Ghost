@@ -1,21 +1,22 @@
 var debug           = require('debug')('ghost:middleware'),
     bodyParser      = require('body-parser'),
     compress        = require('compression'),
-    config          = require('../config'),
-    errors          = require('../errors'),
     express         = require('express'),
     hbs             = require('express-hbs'),
     path            = require('path'),
-    routes          = require('../routes'),
+    netjet           = require('netjet'),
+    multer          = require('multer'),
+    tmpdir          = require('os').tmpdir,
     serveStatic     = require('express').static,
     slashes         = require('connect-slashes'),
+    routes          = require('../routes'),
+    config          = require('../config'),
     storage         = require('../storage'),
     logging         = require('../logging'),
+    errors          = require('../errors'),
     i18n            = require('../i18n'),
     utils           = require('../utils'),
     sitemapHandler  = require('../data/xml/sitemap/handler'),
-    multer          = require('multer'),
-    tmpdir          = require('os').tmpdir,
     cacheControl     = require('./cache-control'),
     checkSSL         = require('./check-ssl'),
     decideIsAdmin    = require('./decide-is-admin'),
@@ -30,7 +31,6 @@ var debug           = require('debug')('ghost:middleware'),
     versionMatch     = require('./api/version-match'),
     cors             = require('./cors'),
     validation       = require('./validation'),
-    netjet           = require('netjet'),
     labs             = require('./labs'),
     helpers          = require('../helpers'),
     middleware,
@@ -52,6 +52,7 @@ middleware = {
 
 setupMiddleware = function setupMiddleware(blogApp) {
     debug('Middleware start');
+
     var corePath = config.get('paths').corePath,
         adminApp = express(),
         adminHbs = hbs.create();
@@ -123,9 +124,11 @@ setupMiddleware = function setupMiddleware(blogApp) {
         path.join(corePath, '/shared'),
         {maxAge: utils.ONE_HOUR_MS, fallthrough: false}
     ));
+
     blogApp.use('/content/images', storage.getStorage().serve());
 
     debug('Static content done');
+
     // First determine whether we're serving admin or theme content
     blogApp.use(decideIsAdmin);
     blogApp.use(themeHandler.updateActiveTheme);
@@ -211,7 +214,7 @@ setupMiddleware = function setupMiddleware(blogApp) {
 
     // ### Error handlers
     blogApp.use(function pageNotFound(req, res, next) {
-        next(new errors.NotFoundError(i18n.t('errors.errors.pageNotFound')));
+        next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
     });
 
     blogApp.use(errorHandler);

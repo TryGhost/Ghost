@@ -32,7 +32,7 @@ notifications = {
         return canThis(options.context).browse.notification().then(function () {
             return {notifications: notificationsStore};
         }, function () {
-            return Promise.reject(new errors.NoPermissionError(i18n.t('errors.api.notifications.noPermissionToBrowseNotif')));
+            return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.api.notifications.noPermissionToBrowseNotif')}));
         });
     },
 
@@ -72,7 +72,7 @@ notifications = {
             return canThis(options.context).add.notification().then(function () {
                 return options;
             }, function () {
-                return Promise.reject(new errors.NoPermissionError(i18n.t('errors.api.notifications.noPermissionToAddNotif')));
+                return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.api.notifications.noPermissionToAddNotif')}));
             });
         }
 
@@ -155,7 +155,7 @@ notifications = {
             return canThis(options.context).destroy.notification().then(function () {
                 return options;
             }, function () {
-                return Promise.reject(new errors.NoPermissionError(i18n.t('errors.api.notifications.noPermissionToDestroyNotif')));
+                return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.api.notifications.noPermissionToDestroyNotif')}));
             });
         }
 
@@ -166,12 +166,12 @@ notifications = {
 
             if (notification && !notification.dismissible) {
                 return Promise.reject(
-                    new errors.NoPermissionError(i18n.t('errors.api.notifications.noPermissionToDismissNotif'))
+                    new errors.NoPermissionError({message: i18n.t('errors.api.notifications.noPermissionToDismissNotif')})
                 );
             }
 
             if (!notification) {
-                return Promise.reject(new errors.NotFoundError(i18n.t('errors.api.notifications.notificationDoesNotExist')));
+                return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.notifications.notificationDoesNotExist')}));
             }
 
             notificationsStore = _.reject(notificationsStore, function (element) {
@@ -206,8 +206,11 @@ notifications = {
             notificationCounter = 0;
 
             return notificationsStore;
-        }, function () {
-            return Promise.reject(new errors.NoPermissionError(i18n.t('errors.api.notifications.noPermissionToDestroyNotif')));
+        }, function (err) {
+            return Promise.reject(new errors.NoPermissionError({
+                err: err,
+                context: i18n.t('errors.api.notifications.noPermissionToDestroyNotif')
+            }));
         });
     }
 };
