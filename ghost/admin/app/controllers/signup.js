@@ -54,10 +54,10 @@ export default Controller.extend(ValidationEngine, {
             this.set('flowErrors', '');
 
             this.get('hasValidated').addObjects(setupProperties);
-            this.validate().then(() => {
+            return this.validate().then(() => {
                 let authUrl = this.get('ghostPaths.url').api('authentication', 'invitation');
                 this.toggleProperty('submitting');
-                this.get('ajax').post(authUrl, {
+                return this.get('ajax').post(authUrl, {
                     dataType: 'json',
                     data: {
                         invitation: [{
@@ -68,7 +68,7 @@ export default Controller.extend(ValidationEngine, {
                         }]
                     }
                 }).then(() => {
-                    this.get('session').authenticate('authenticator:oauth2', this.get('model.email'), this.get('model.password')).then(() => {
+                    return this.get('session').authenticate('authenticator:oauth2', this.get('model.email'), this.get('model.password')).then(() => {
                         if (image) {
                             this.sendImage();
                         }

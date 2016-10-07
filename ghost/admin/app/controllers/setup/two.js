@@ -43,7 +43,8 @@ export default Controller.extend(ValidationEngine, {
                 .success((response) => {
                     let usersUrl = this.get('ghostPaths.url').api('users', user.id.toString());
                     user.image = response;
-                    this.get('ajax').put(usersUrl, {
+
+                    return this.get('ajax').put(usersUrl, {
                         data: {
                             users: [user]
                         }
@@ -75,17 +76,17 @@ export default Controller.extend(ValidationEngine, {
 
     afterAuthentication(result) {
         if (this.get('image')) {
-            this.sendImage(result.users[0])
+            return this.sendImage(result.users[0])
             .then(() => {
                 this.toggleProperty('submitting');
-                this.transitionToRoute('setup.three');
+                return this.transitionToRoute('setup.three');
             }).catch((resp) => {
                 this.toggleProperty('submitting');
                 this.get('notifications').showAPIError(resp, {key: 'setup.blog-details'});
             });
         } else {
             this.toggleProperty('submitting');
-            this.transitionToRoute('setup.three');
+            return this.transitionToRoute('setup.three');
         }
     },
 
@@ -99,9 +100,11 @@ export default Controller.extend(ValidationEngine, {
         this.set('flowErrors', '');
 
         this.get('hasValidated').addObjects(setupProperties);
-        this.validate().then(() => {
+
+        return this.validate().then(() => {
             let authUrl = this.get('ghostPaths.url').api('authentication', 'setup');
-            this.get('ajax')[method](authUrl, {
+
+            return this.get('ajax')[method](authUrl, {
                 data: {
                     setup: [{
                         name: data.name,
@@ -120,7 +123,8 @@ export default Controller.extend(ValidationEngine, {
 
                 // Don't call the success handler, otherwise we will be redirected to admin
                 this.set('session.skipAuthSuccessHandler', true);
-                this.get('session').authenticate('authenticator:oauth2', this.get('email'), this.get('password')).then(() => {
+
+                return this.get('session').authenticate('authenticator:oauth2', this.get('email'), this.get('password')).then(() => {
                     this.set('blogCreated', true);
                     return this.afterAuthentication(result);
                 }).catch((error) => {
@@ -147,7 +151,7 @@ export default Controller.extend(ValidationEngine, {
         this.get('hasValidated').addObjects(['blogTitle', 'session']);
 
         return this.validate().then(() => {
-            this.store.queryRecord('setting', {type: 'blog,theme,private'})
+            return this.store.queryRecord('setting', {type: 'blog,theme,private'})
                 .then((settings) => {
                     settings.set('title', blogTitle);
 
@@ -177,7 +181,7 @@ export default Controller.extend(ValidationEngine, {
         preValidate(model) {
             // Only triggers validation if a value has been entered, preventing empty errors on focusOut
             if (this.get(model)) {
-                this.validate({property: model});
+                return this.validate({property: model});
             }
         },
 

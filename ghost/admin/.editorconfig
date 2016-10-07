@@ -16,7 +16,7 @@ insert_final_newline = false
 [{package,bower}.json]
 indent_size = 2
 
-[*.md]
+[*.{diff,md}]
 trim_trailing_whitespace = false
 
 [*.yml]

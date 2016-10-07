@@ -1,4 +1,5 @@
 import Component from 'ember-component';
+import {invokeAction} from 'ember-invoke-action';
 
 export default Component.extend({
     actions: {
@@ -30,6 +31,10 @@ export default Component.extend({
             if (typeof this.attrs.formChanged === 'function') {
                 this.attrs.formChanged(...arguments);
             }
+        },
+
+        remove() {
+            invokeAction(this, 'remove');
         }
     }
 });
