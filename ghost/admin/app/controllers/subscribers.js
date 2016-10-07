@@ -51,7 +51,9 @@ export default Controller.extend(PaginationMixin, {
             label: 'Subscriber',
             valuePath: 'email',
             sorted: order === 'email',
-            ascending: direction === 'asc'
+            ascending: direction === 'asc',
+            classNames: ['gh-subscribers-table-email-cell'],
+            cellClassNames: ['gh-subscribers-table-email-cell']
         }, {
             label: 'Subscription Date',
             valuePath: 'createdAtUTC',
@@ -59,17 +61,23 @@ export default Controller.extend(PaginationMixin, {
                 return value.format('MMMM DD, YYYY');
             },
             sorted: order === 'created_at',
-            ascending: direction === 'asc'
+            ascending: direction === 'asc',
+            classNames: ['gh-subscribers-table-date-cell'],
+            cellClassNames: ['gh-subscribers-table-date-cell']
         }, {
             label: 'Status',
             valuePath: 'status',
             sorted: order === 'status',
-            ascending: direction === 'asc'
+            ascending: direction === 'asc',
+            classNames: ['gh-subscribers-table-status-cell'],
+            cellClassNames: ['gh-subscribers-table-status-cell']
         }, {
             label: '',
             sortable: false,
             cellComponent: 'gh-subscribers-table-delete-cell',
-            align: 'right'
+            align: 'right',
+            classNames: ['gh-subscribers-table-delete-cell'],
+            cellClassNames: ['gh-subscribers-table-delete-cell']
         }];
     }),
 
