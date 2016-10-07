@@ -25,9 +25,9 @@ const CmEditorComponent =  Component.extend(InvokeActionMixin, {
     didInsertElement() {
         this._super(...arguments);
 
-        this.get('lazyLoader').loadStyle('codemirror', 'codemirror/codemirror.css');
+        this.get('lazyLoader').loadStyle('codemirror', 'assets/codemirror/codemirror.css');
 
-        this.get('lazyLoader').loadScript('codemirror', 'codemirror/codemirror.js').then(() => {
+        this.get('lazyLoader').loadScript('codemirror', 'assets/codemirror/codemirror.js').then(() => {
             scheduleOnce('afterRender', this, function () {
                 this._initCodeMirror();
             });

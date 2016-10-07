@@ -7,7 +7,7 @@ import ghostPaths from 'ghost-admin/utils/ghost-paths';
 // {{gh-path}} or {{gh-path 'blog'}} for Ghost's root (/myblog/)
 // {{gh-path 'admin'}} for Ghost's admin root (/myblog/ghost/)
 // {{gh-path 'api'}} for Ghost's api root (/myblog/ghost/api/v0.1/)
-// {{gh-path 'admin' '/assets/hi.png'}} for resolved url (/myblog/ghost/assets/hi.png)
+// {{gh-path 'asset' '/img/hi.png'}} for resolved url (/myblog/ghost/assets/img/hi.png)
 
 export default helper(function (params) {
     let paths = ghostPaths();
@@ -18,7 +18,7 @@ export default helper(function (params) {
         path = 'blog';
     }
 
-    if (!/^(blog|admin|api)$/.test(path)) {
+    if (!/^(blog|admin|asset|api)$/.test(path)) {
         url = path;
         path = 'blog';
     }
@@ -29,6 +29,9 @@ export default helper(function (params) {
             break;
         case 'admin':
             base = paths.adminRoot;
+            break;
+        case 'asset':
+            base = paths.assetRoot;
             break;
         case 'api':
             base = paths.apiRoot;
