@@ -21,7 +21,7 @@ function addTableColumn(tableName, table, columnName) {
     if (columnSpec.hasOwnProperty('nullable') && columnSpec.nullable === true) {
         column.nullable();
     } else {
-        column.notNullable();
+        column.nullable(false);
     }
     if (columnSpec.hasOwnProperty('primary') && columnSpec.primary === true) {
         column.primary();
