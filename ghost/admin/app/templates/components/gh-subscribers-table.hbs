@@ -1,10 +1,19 @@
-{{#gh-light-table table scrollContainer=".subscribers-table" scrollBuffer=100 onScrolledToBottom=(action 'onScrolledToBottom') as |t|}}
-    {{t.head onColumnClick=(action sortByColumn) iconAscending="icon-ascending" iconDescending="icon-descending"}}
+{{#light-table table scrollBuffer=100 as |t|}}
+    {{t.head
+        onColumnClick=(action sortByColumn)
+        iconAscending="icon-ascending"
+        iconDescending="icon-descending"}}
 
-    {{#t.body canSelect=false tableActions=(hash delete=(action delete)) as |body|}}
+    {{#t.body
+        canSelect=false
+        tableActions=(hash delete=delete)
+        scrollBuffer=100
+        onScrolledToBottom=(action 'onScrolledToBottom')
+        as |body|
+    }}
         {{#if isLoading}}
             {{#body.loader}}
-                Loading...
+                <span class="gh-subscribers-loading">Loading...</span>
             {{/body.loader}}
         {{else}}
             {{#if table.isEmpty}}
@@ -14,4 +23,4 @@
             {{/if}}
         {{/if}}
     {{/t.body}}
-{{/gh-light-table}}
+{{/light-table}}

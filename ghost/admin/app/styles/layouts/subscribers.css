@@ -35,6 +35,23 @@
     padding-left: 0;
 }
 
+.gh-subscribers-table-email-cell {
+    width: auto;
+}
+
+.gh-subscribers-table-date-cell {
+    width: 194px;
+}
+
+.gh-subscribers-table-status-cell {
+    width: 114px;
+}
+
+.gh-subscribers-table-delete-cell {
+    width: 52px;
+}
+
+
 
 /* Sidebar (right pane)
 /* ---------------------------------------------------------- */
