@@ -2,8 +2,13 @@ import computed from 'ember-computed';
 import injectService from 'ember-service/inject';
 import Authenticator from 'ember-simple-auth/authenticators/oauth2-password-grant';
 import run from 'ember-runloop';
+import RSVP from 'rsvp';
+import {wrap} from 'ember-array/utils';
+import {isEmpty} from 'ember-utils';
+import {assign} from 'ember-platform';
 
 export default Authenticator.extend({
+    ajax: injectService(),
     session: injectService(),
     config: injectService(),
     ghostPaths: injectService(),
@@ -30,7 +35,14 @@ export default Authenticator.extend({
         data.client_id = this.get('config.clientId');
         data.client_secret = this.get('config.clientSecret');
         /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
-        return this._super(url, data);
+
+        let options = {
+            data,
+            dataType:    'json',
+            contentType: 'application/x-www-form-urlencoded'
+        };
+
+        return this.get('ajax').post(url, options);
     },
 
     /**
@@ -47,5 +59,32 @@ export default Authenticator.extend({
                 return this._refreshAccessToken(expiresIn, token);
             }
         }
+    },
+
+    authenticate(identification, password, scope = [], headers = {}) {
+        return new RSVP.Promise((resolve, reject) => {
+            let data                = {'grant_type': 'password', username: identification, password};
+            let serverTokenEndpoint = this.get('serverTokenEndpoint');
+            let scopesString = wrap(scope).join(' ');
+            if (!isEmpty(scopesString)) {
+                data.scope = scopesString;
+            }
+            this.makeRequest(serverTokenEndpoint, data, headers).then((response) => {
+                run(() => {
+                    /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+                    let expiresAt = this._absolutizeExpirationTime(response.expires_in);
+                    this._scheduleAccessTokenRefresh(response.expires_in, expiresAt, response.refresh_token);
+                    /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
+
+                    if (!isEmpty(expiresAt)) {
+                        response = assign(response, {'expires_at': expiresAt});
+                    }
+
+                    resolve(response);
+                });
+            }, (error) => {
+                reject(error);
+            });
+        });
     }
 });

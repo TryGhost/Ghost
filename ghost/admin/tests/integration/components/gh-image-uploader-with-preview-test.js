@@ -35,7 +35,7 @@ describeComponent(
             this.set('remove', remove);
             this.set('image', 'http://example.com/test.png');
 
-            this.render(hbs`{{gh-image-uploader-with-preview image=image remove=remove}}`);
+            this.render(hbs`{{gh-image-uploader-with-preview image=image remove=(action remove)}}`);
             run(() => {
                 this.$('.icon-trash').click();
             });
