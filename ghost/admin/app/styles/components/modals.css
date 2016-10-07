@@ -5,8 +5,16 @@
 /* Fullscreen Modal
 /* ---------------------------------------------------------- */
 
-.fullscreen-modal-liquid-target {
-    overflow-y: auto;
+/* explicit modal container so that background and content can be animated individually */
+.fullscreen-modal-container {
+    visibility: hidden;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 10000;
+    overflow: auto;
     height: 100vh;
 }
 
@@ -16,15 +24,18 @@
     right: 0;
     bottom: 0;
     left: 0;
-    z-index: 0;
+    z-index: 50;
+    height: 100vh;
     background: rgba(0, 0, 0, 0.6);
 }
 
 .fullscreen-modal {
-    padding-top: 30px;
-    padding-bottom: 30px;
+    position: relative;
+    z-index: 100;
+    margin: auto;
+    margin-top: 30px;
+    margin-bottom: 30px;
     max-width: 550px;
-    width: 100%;
     pointer-events: auto;
 }
 
@@ -48,12 +59,12 @@
 }
 
 .fullscreen-modal-action {
-    padding: 60px 0 30px;
+    margin: 60px auto 30px;
 }
 
 @media (max-width: 900px) {
     .fullscreen-modal-action {
-        padding: 30px 0;
+        margin: 30px auto;
     }
 }
 

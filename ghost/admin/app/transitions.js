@@ -1,12 +1,14 @@
-import { target } from 'liquid-tether';
-
 export default function () {
     this.transition(
-        target('fullscreen-modal'),
-        this.toValue(({isVisible}) => isVisible),
-        // this.use('tether', [modal options], [background options])
-        this.use('tether', ['fade', {duration: 150}], ['fade', {duration: 150}]),
-        this.reverse('tether', ['fade', {duration: 80}], ['fade', {duration: 150}])
+        this.hasClass('fullscreen-modal-container'),
+        this.toValue(true),
+        this.use('fade', {duration: 150}),
+        this.reverse('explode', {
+            pick: '.fullscreen-modal',
+            use: ['fade', {duration: 80}]
+        }, {
+            use: ['fade', {duration: 150}]
+        })
     );
 
     this.transition(
