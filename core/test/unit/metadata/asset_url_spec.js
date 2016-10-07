@@ -14,7 +14,7 @@ describe('getAssetUrl', function () {
 
     it('should return ghost url if is admin', function () {
         var testUrl = getAssetUrl('myfile.js', true);
-        testUrl.should.equal('/ghost/myfile.js?v=' + config.get('assetHash'));
+        testUrl.should.equal('/ghost/assets/myfile.js?v=' + config.get('assetHash'));
     });
 
     it('should not add ghost to url if is admin and has asset in context', function () {

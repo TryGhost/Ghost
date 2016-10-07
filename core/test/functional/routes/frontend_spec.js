@@ -320,7 +320,7 @@ describe('Frontend Routing', function () {
             });
 
             it('should retrieve built assets', function (done) {
-                request.get('/ghost/vendor.js')
+                request.get('/ghost/assets/vendor.js')
                     .expect('Cache-Control', testUtils.cacheRules.year)
                     .expect(200)
                     .end(doEnd(done));
