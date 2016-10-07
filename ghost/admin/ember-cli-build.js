@@ -42,7 +42,8 @@ codemirrorAssets = function () {
                 var jsTree = concat(tree, {
                     outputFile: 'assets/codemirror/codemirror.js',
                     headerFiles: ['lib/codemirror.js'],
-                    inputFiles: ['mode/**/*']
+                    inputFiles: ['mode/**/*'],
+                    sourceMapConfig: {enabled: false}
                 });
 
                 var cssTree = concat(tree, {
