@@ -9,9 +9,9 @@ function getAssetUrl(path, isAdmin, minify) {
     if (!path.match(/^favicon\.ico$/) && !path.match(/^shared/) && !path.match(/^asset/)) {
         if (isAdmin) {
             output += 'ghost/';
-        } else {
-            output += 'assets/';
         }
+
+        output += 'assets/';
     }
 
     // Get rid of any leading slash on the path
