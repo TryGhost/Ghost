@@ -4,42 +4,34 @@ import {A as emberA} from 'ember-array/utils';
 import {isBlank} from 'ember-utils';
 import on from 'ember-evented/on';
 import run from 'ember-runloop';
-
-import LiquidTether from 'liquid-tether/components/liquid-tether';
 import {invokeAction} from 'ember-invoke-action';
+import computed from 'ember-computed';
+import Component from 'ember-component';
 
-const {Promise} = RSVP;
+const FullScreenModalComponent = Component.extend({
 
-const FullScreenModalComponent = LiquidTether.extend({
-    to: 'fullscreen-modal',
-    target: 'document.body',
-    targetModifier: 'visible',
-    targetAttachment: 'top center',
-    attachment: 'top center',
-    tetherClass: 'fullscreen-modal',
-    overlayClass: 'fullscreen-modal-background',
-    modalPath: 'unknown',
+    model: null,
+    modifier: null,
 
     dropdown: injectService(),
 
-    init() {
-        this._super(...arguments);
-        this.modalPath = `modals/${this.get('modal')}`;
-    },
+    modalPath: computed('modal', function () {
+        return `modals/${this.get('modal') || 'unknown'}`;
+    }),
 
-    setTetherClass: on('init', function () {
-        let tetherClass = this.get('tetherClass');
+    modalClasses: computed('modifiers', function () {
+        let modalClass = 'fullscreen-modal';
         let modifiers = (this.get('modifier') || '').split(' ');
-        let tetherClasses = emberA([tetherClass]);
+        let modalClasses = emberA([modalClass]);
 
         modifiers.forEach((modifier) => {
             if (!isBlank(modifier)) {
-                let className = `${tetherClass}-${modifier}`;
-                tetherClasses.push(className);
+                let className = `${modalClass}-${modifier}`;
+                modalClasses.push(className);
             }
         });
 
-        this.set('tetherClass', tetherClasses.join(' '));
+        return modalClasses.join(' ');
     }),
 
     closeDropdowns: on('didInsertElement', function () {
@@ -56,9 +48,7 @@ const FullScreenModalComponent = LiquidTether.extend({
                 return invokeAction(this, 'close');
             }
 
-            return new Promise((resolve) => {
-                resolve();
-            });
+            return RSVP.resolve();
         },
 
         confirm() {
@@ -66,9 +56,7 @@ const FullScreenModalComponent = LiquidTether.extend({
                 return invokeAction(this, 'confirm');
             }
 
-            return new Promise((resolve) => {
-                resolve();
-            });
+            return RSVP.resolve();
         },
 
         clickOverlay() {
