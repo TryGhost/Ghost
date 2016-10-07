@@ -12,7 +12,9 @@ nconf.argv();
 /**
  * env arguments
  */
-nconf.env();
+nconf.env({
+    separator: '__'
+});
 
 /**
  * load config files
