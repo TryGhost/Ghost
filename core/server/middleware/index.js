@@ -115,13 +115,27 @@ setupMiddleware = function setupMiddleware(blogApp) {
     // This sets global res.locals which are needed everywhere
     blogApp.use(ghostLocals);
 
+    // First determine whether we're serving admin or theme content
+    // @TODO refactor this horror away!
+    blogApp.use(decideIsAdmin);
+
+    // Theme middleware
+    // rightly or wrongly currently comes before theme static assets
+    // @TODO revisit where and when these are needed
+    blogApp.use(themeHandler.updateActiveTheme);
+    blogApp.use(themeHandler.configHbsForContext);
+    debug('Themes done');
+
     // Static content/assets
     // Favicon
     blogApp.use(serveSharedFile('favicon.ico', 'image/x-icon', utils.ONE_DAY_S));
-
     // Ghost-Url
     blogApp.use(serveSharedFile('shared/ghost-url.js', 'application/javascript', utils.ONE_HOUR_S));
     blogApp.use(serveSharedFile('shared/ghost-url.min.js', 'application/javascript', utils.ONE_HOUR_S));
+    // Serve sitemap.xsl file
+    blogApp.use(serveSharedFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
+    // Serve robots.txt if not found in theme
+    blogApp.use(serveSharedFile('robots.txt', 'text/plain', utils.ONE_HOUR_S));
 
     // Static assets
     blogApp.use('/shared', serveStatic(
@@ -129,31 +143,24 @@ setupMiddleware = function setupMiddleware(blogApp) {
         {maxAge: utils.ONE_HOUR_MS, fallthrough: false}
     ));
 
+    // Serve blog images using the storage adapter
     blogApp.use('/content/images', storage.getStorage().serve());
 
-    debug('Static content done');
-
-    // First determine whether we're serving admin or theme content
-    blogApp.use(decideIsAdmin);
-    blogApp.use(themeHandler.updateActiveTheme);
-    blogApp.use(themeHandler.configHbsForContext);
-
+    // Admin assets
     // Admin only config
     blogApp.use('/ghost/assets', serveStatic(
         config.get('paths').clientAssets,
         {maxAge: utils.ONE_YEAR_MS}
     ));
 
+    // Theme static assets/files
+    blogApp.use(staticTheme());
+    debug('Static content done');
+
     // Force SSL
-    // NOTE: Importantly this is _after_ the check above for admin-theme static resources,
-    //       which do not need HTTPS. In fact, if HTTPS is forced on them, then 404 page might
-    //       not display properly when HTTPS is not available!
+    // must happen AFTER asset loading and BEFORE routing
     blogApp.use(checkSSL);
     adminApp.set('views', config.get('paths').adminViews);
-
-    // Theme only config
-    blogApp.use(staticTheme());
-    debug('Themes done');
 
     // setup middleware for internal apps
     // @TODO: refactor this to be a proper app middleware hook for internal & external apps
@@ -163,18 +170,13 @@ setupMiddleware = function setupMiddleware(blogApp) {
             app.setupMiddleware(blogApp);
         }
     });
+
+    // site map - this should probably be refactored to be an internal app
+    sitemapHandler(blogApp);
     debug('Internal apps done');
 
-    // Serve sitemap.xsl file
-    blogApp.use(serveSharedFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
-
-    // Serve robots.txt if not found in theme
-    blogApp.use(serveSharedFile('robots.txt', 'text/plain', utils.ONE_HOUR_S));
-
-    // site map
-    sitemapHandler(blogApp);
-
     // Add in all trailing slashes & remove uppercase
+    // must happen AFTER asset loading and BEFORE routing
     blogApp.use(prettyURLs);
 
     // Body parsing
