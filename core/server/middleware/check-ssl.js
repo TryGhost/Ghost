@@ -38,7 +38,7 @@ function sslForbiddenOrRedirect(opt) {
 // Check to see if we should use SSL
 // and redirect if needed
 checkSSL = function checkSSL(req, res, next) {
-    if (isSSLrequired(res.isAdmin, config.get('url'), config.get('forceAdminSSL'))) {
+    if (isSSLrequired(req.app.get('isAdmin'), config.get('url'), config.get('forceAdminSSL'))) {
         if (!req.secure) {
             var response = sslForbiddenOrRedirect({
                 forceAdminSSL: config.get('forceAdminSSL'),

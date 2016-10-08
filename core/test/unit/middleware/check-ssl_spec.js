@@ -10,7 +10,11 @@ describe('checkSSL', function () {
 
     beforeEach(function () {
         sandbox = sinon.sandbox.create();
-        req = {};
+        req = {
+            app: {
+                get: sandbox.stub().returns(false)
+            }
+        };
         res = {};
         next = sandbox.spy();
 
@@ -43,7 +47,7 @@ describe('checkSSL', function () {
 
     it('should not require SSL (admin)', function (done) {
         req.originalUrl = '/ghost';
-        res.isAdmin = true;
+        req.app.get.returns(true);
         checkSSL(req, res, next);
         next.called.should.be.true();
         next.calledWith().should.be.true();
@@ -52,7 +56,7 @@ describe('checkSSL', function () {
 
     it('should not redirect with SSL (admin)', function (done) {
         req.originalUrl = '/ghost';
-        res.isAdmin = true;
+        req.app.get.returns(true);
         res.secure = true;
 
         checkSSL(req, res, next);
@@ -63,7 +67,7 @@ describe('checkSSL', function () {
 
     it('should not redirect with force admin SSL (admin)', function (done) {
         req.originalUrl = '/ghost';
-        res.isAdmin = true;
+        req.app.get.returns(true);
         req.secure = true;
         configUtils.set({
             url: 'http://default.com:2368/',
@@ -77,7 +81,7 @@ describe('checkSSL', function () {
 
     it('should redirect with force admin SSL (admin)', function (done) {
         req.originalUrl = '/ghost/';
-        res.isAdmin = true;
+        req.app.get.returns(true);
         res.redirect = {};
         req.secure = false;
         configUtils.set({
@@ -98,7 +102,7 @@ describe('checkSSL', function () {
 
     it('should redirect to subdirectory with force admin SSL (admin)', function (done) {
         req.originalUrl = '/blog/ghost/';
-        res.isAdmin = true;
+        req.app.get.returns(true);
         res.redirect = {};
         req.secure = false;
         configUtils.set({
@@ -122,7 +126,7 @@ describe('checkSSL', function () {
         req.query = {
             test: 'true'
         };
-        res.isAdmin = true;
+        req.app.get.returns(true);
         res.redirect = {};
         req.secure = false;
         configUtils.set({
@@ -163,7 +167,7 @@ describe('checkSSL', function () {
 
     it('should redirect to urlSSL (admin)', function (done) {
         req.originalUrl = '/ghost/';
-        res.isAdmin = true;
+        req.app.get.returns(true);
         res.redirect = {};
         req.secure = false;
         configUtils.set({
@@ -184,7 +188,7 @@ describe('checkSSL', function () {
 
     it('should not redirect if redirect:false (admin)', function (done) {
         req.originalUrl = '/ghost/';
-        res.isAdmin = true;
+        req.app.get.returns(true);
         res.sendStatus = {};
         req.secure = false;
         configUtils.set({

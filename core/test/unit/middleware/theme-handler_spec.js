@@ -187,7 +187,7 @@ describe('Theme Handler', function () {
                 }]
             }));
 
-            res.isAdmin = true;
+            blogApp.set('isAdmin', true);
             blogApp.set('activeTheme', 'not-casper');
             configUtils.set({paths: {availableThemes: {casper: {}}}});
 

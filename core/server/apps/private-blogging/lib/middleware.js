@@ -48,7 +48,7 @@ privateBlogging = {
     },
 
     filterPrivateRoutes: function filterPrivateRoutes(req, res, next) {
-        if (res.isAdmin || !res.isPrivateBlog || req.url.lastIndexOf(privateRoute, 0) === 0) {
+        if (req.app.get('isAdmin') || !res.isPrivateBlog || req.url.lastIndexOf(privateRoute, 0) === 0) {
             return next();
         }
 

@@ -17,7 +17,6 @@ var debug           = require('debug')('ghost:middleware'),
     sitemapHandler  = require('../data/xml/sitemap/handler'),
     cacheControl     = require('./cache-control'),
     checkSSL         = require('./check-ssl'),
-    decideIsAdmin   = require('./decide-is-admin'),
     serveSharedFile  = require('./serve-shared-file'),
     spamPrevention   = require('./spam-prevention'),
     staticTheme      = require('./static-theme'),
@@ -114,9 +113,6 @@ setupMiddleware = function setupMiddleware(blogApp) {
     ));
 
     blogApp.use('/content/images', storage.getStorage().serve());
-
-    // @TODO remove this
-    blogApp.use(decideIsAdmin);
 
     // @TODO: fix this!
     require('../admin').assets(blogApp);

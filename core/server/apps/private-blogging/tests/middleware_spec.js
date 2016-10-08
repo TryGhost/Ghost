@@ -34,7 +34,11 @@ describe('Private Blogging', function () {
         var req, res, next;
 
         beforeEach(function () {
-            req = {};
+            req = {
+                app: {
+                    get: sandbox.stub().returns(false)
+                }
+            };
             res = {};
             apiSettingsStub = sandbox.stub(api.settings, 'read');
             next = sinon.spy();
@@ -105,7 +109,7 @@ describe('Private Blogging', function () {
             });
 
             it('filterPrivateRoutes should call next if admin', function () {
-                res.isAdmin = true;
+                req.app.get.returns(true);
                 privateBlogging.filterPrivateRoutes(req, res, next);
                 next.called.should.be.true();
             });

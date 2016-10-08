@@ -17,6 +17,9 @@ module.exports = function setupAdminApp() {
     debug('Admin setup start');
     var adminApp = express();
 
+    // this is the admin app
+    adminApp.set('isAdmin', true);
+
     // Create a hbs instance for admin and init view engine
     adminApp.set('view engine', 'hbs');
     adminApp.set('views', config.get('paths').adminViews);

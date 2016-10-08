@@ -99,7 +99,8 @@ themeHandler = {
             if (activeTheme.value !== blogApp.get('activeTheme')) {
                 // Change theme
                 if (!config.get('paths').availableThemes.hasOwnProperty(activeTheme.value)) {
-                    if (!res.isAdmin) {
+                    // @TODO remove this by only mounting this middleware for the frontend
+                    if (!req.app.get('isAdmin')) {
                         return next(new errors.NotFoundError({
                             message: i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeTheme.value})
                         }));
