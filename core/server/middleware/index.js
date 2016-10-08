@@ -53,8 +53,7 @@ middleware = {
 setupMiddleware = function setupMiddleware(blogApp) {
     debug('Middleware start');
 
-    var corePath = config.get('paths').corePath,
-        adminApp = express(),
+    var adminApp = express(),
         adminHbs = hbs.create();
 
     // ##Configuration
@@ -136,13 +135,6 @@ setupMiddleware = function setupMiddleware(blogApp) {
     blogApp.use(serveSharedFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
     // Serve robots.txt if not found in theme
     blogApp.use(serveSharedFile('robots.txt', 'text/plain', utils.ONE_HOUR_S));
-
-    // Static assets
-    blogApp.use('/shared', serveStatic(
-        path.join(corePath, '/shared'),
-        {maxAge: utils.ONE_HOUR_MS, fallthrough: false}
-    ));
-
     // Serve blog images using the storage adapter
     blogApp.use('/content/images', storage.getStorage().serve());
 
