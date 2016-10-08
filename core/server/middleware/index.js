@@ -8,7 +8,6 @@ var debug           = require('debug')('ghost:middleware'),
     multer          = require('multer'),
     tmpdir          = require('os').tmpdir,
     serveStatic     = require('express').static,
-    slashes         = require('connect-slashes'),
     routes          = require('../routes'),
     config          = require('../config'),
     storage         = require('../storage'),
@@ -21,11 +20,11 @@ var debug           = require('debug')('ghost:middleware'),
     checkSSL         = require('./check-ssl'),
     decideIsAdmin    = require('./decide-is-admin'),
     redirectToSetup  = require('./redirect-to-setup'),
+    prettyURLs      = require('./pretty-urls'),
     serveSharedFile  = require('./serve-shared-file'),
     spamPrevention   = require('./spam-prevention'),
     staticTheme      = require('./static-theme'),
     themeHandler     = require('./theme-handler'),
-    uncapitalise     = require('./uncapitalise'),
     maintenance      = require('./maintenance'),
     errorHandler     = require('./error-handler'),
     versionMatch     = require('./api/version-match'),
@@ -170,13 +169,8 @@ setupMiddleware = function setupMiddleware(blogApp) {
     // site map
     sitemapHandler(blogApp);
 
-    // Add in all trailing slashes
-    blogApp.use(slashes(true, {
-        headers: {
-            'Cache-Control': 'public, max-age=' + utils.ONE_YEAR_S
-        }
-    }));
-    blogApp.use(uncapitalise);
+    // Add in all trailing slashes & remove uppercase
+    blogApp.use(prettyURLs);
 
     // Body parsing
     blogApp.use(bodyParser.json({limit: '1mb'}));
