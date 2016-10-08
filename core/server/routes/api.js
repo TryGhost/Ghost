@@ -2,10 +2,27 @@
 var express = require('express'),
     api = require('../api'),
     auth = require('../auth'),
-    bodyParser = require('body-parser'),
-    apiRoutes;
 
-apiRoutes = function apiRoutes(middleware) {
+    // From middleware/index.js
+    bodyParser      = require('body-parser'),
+    tmpdir          = require('os').tmpdir,
+    // @TODO refactor this again :P
+    middleware = {
+        upload: require('multer')({dest: tmpdir()}),
+        validation: require('../middleware/validation'),
+        cacheControl: require('../middleware/cache-control'),
+        spamPrevention: require('../middleware/spam-prevention'),
+        api: {
+            errorHandler: require('../middleware/error-handler'),
+            cors: require('../middleware/cors'),
+            labs: require('../middleware/labs'),
+            versionMatch: require('../middleware/api/version-match'),
+            maintenance: require('../middleware/maintenance')
+        }
+    };
+
+module.exports = function apiRoutes() {
+    // @TODO: turn this into an app, rather than just a router?
     var router = express.Router(),
         // Authentication for public endpoints
         authenticatePublic = [
@@ -28,6 +45,9 @@ apiRoutes = function apiRoutes(middleware) {
     // Body parsing
     router.use(bodyParser.json({limit: '1mb'}));
     router.use(bodyParser.urlencoded({extended: true, limit: '1mb'}));
+
+    // API shouldn't be cached
+    router.use(middleware.cacheControl('private'));
 
     // send 503 json response in case of maintenance
     router.use(middleware.api.maintenance);
@@ -190,9 +210,8 @@ apiRoutes = function apiRoutes(middleware) {
     router.del('/invites/:id', authenticatePrivate, api.http(api.invites.destroy));
 
     // API Router middleware
+    // @TODO: split the API error handling into its own thing?
     router.use(middleware.api.errorHandler);
 
     return router;
 };
-
-module.exports = apiRoutes;

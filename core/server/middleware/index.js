@@ -1,55 +1,39 @@
 var debug           = require('debug')('ghost:middleware'),
-    compress        = require('compression'),
     express         = require('express'),
     hbs             = require('express-hbs'),
     path            = require('path'),
-    netjet           = require('netjet'),
-    multer          = require('multer'),
-    tmpdir          = require('os').tmpdir,
-    serveStatic     = require('express').static,
-    routes          = require('../routes'),
+
+    // app requires
     config          = require('../config'),
-    storage         = require('../storage'),
-    logging         = require('../logging'),
     errors          = require('../errors'),
+    helpers         = require('../helpers'),
     i18n            = require('../i18n'),
+    logging         = require('../logging'),
+    routes          = require('../routes'),
+    storage         = require('../storage'),
     utils           = require('../utils'),
+
+    // This should probably be an internal app
     sitemapHandler  = require('../data/xml/sitemap/handler'),
-    cacheControl     = require('./cache-control'),
-    checkSSL         = require('./check-ssl'),
-    decideIsAdmin    = require('./decide-is-admin'),
-    redirectToSetup  = require('./redirect-to-setup'),
+
+    // middleware
+    compress        = require('compression'),
+    netjet          = require('netjet'),
+    serveStatic     = require('express').static,
+    // local middleware
+    cacheControl    = require('./cache-control'),
+    checkSSL        = require('./check-ssl'),
+    decideIsAdmin   = require('./decide-is-admin'),
+    errorHandler    = require('./error-handler'),
     ghostLocals     = require('./ghost-locals'),
+    maintenance     = require('./maintenance'),
     prettyURLs      = require('./pretty-urls'),
-    serveSharedFile  = require('./serve-shared-file'),
-    spamPrevention   = require('./spam-prevention'),
-    staticTheme      = require('./static-theme'),
-    themeHandler     = require('./theme-handler'),
-    maintenance      = require('./maintenance'),
-    errorHandler     = require('./error-handler'),
-    versionMatch     = require('./api/version-match'),
-    cors             = require('./cors'),
-    validation       = require('./validation'),
-    labs             = require('./labs'),
-    helpers          = require('../helpers'),
-    middleware,
-    setupMiddleware;
+    redirectToSetup = require('./redirect-to-setup'),
+    serveSharedFile = require('./serve-shared-file'),
+    staticTheme     = require('./static-theme'),
+    themeHandler    = require('./theme-handler');
 
-middleware = {
-    upload: multer({dest: tmpdir()}),
-    validation: validation,
-    cacheControl: cacheControl,
-    spamPrevention: spamPrevention,
-    api: {
-        errorHandler: errorHandler,
-        cors: cors,
-        labs: labs,
-        versionMatch: versionMatch,
-        maintenance: maintenance
-    }
-};
-
-setupMiddleware = function setupMiddleware(blogApp) {
+module.exports = function setupMiddleware(blogApp) {
     debug('Middleware start');
 
     var adminApp = express(),
@@ -175,14 +159,12 @@ setupMiddleware = function setupMiddleware(blogApp) {
     blogApp.use(cacheControl('public'));
     // Admin shouldn't be cached
     adminApp.use(cacheControl('private'));
-    // API shouldn't be cached
-    blogApp.use(routes.apiBaseUri, cacheControl('private'));
 
     debug('General middleware done');
 
     // ### Routing
     // Set up API routes
-    blogApp.use(routes.apiBaseUri, routes.api(middleware));
+    blogApp.use(routes.apiBaseUri, routes.api());
 
     // Mount admin express app to /ghost and set up routes
     adminApp.use(redirectToSetup);
@@ -205,7 +187,3 @@ setupMiddleware = function setupMiddleware(blogApp) {
     blogApp.use(errorHandler);
     debug('Middleware end');
 };
-
-module.exports = setupMiddleware;
-// Export middleware functions directly
-module.exports.middleware = middleware;
