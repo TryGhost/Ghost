@@ -30,6 +30,9 @@ var debug           = require('debug')('ghost:middleware'),
 module.exports = function setupMiddleware(parentApp) {
     debug('Middleware start');
 
+    // @TODO find this a proper home
+    var blogApp = require('express')();
+
     // ## Global settings
 
     // Make sure 'req.secure' is valid for proxied requests
@@ -77,7 +80,7 @@ module.exports = function setupMiddleware(parentApp) {
 
     // ## App - specific code
     // set the view engine
-    parentApp.set('view engine', 'hbs');
+    blogApp.set('view engine', 'hbs');
 
     // Load helpers
     helpers.loadCoreHelpers();
@@ -86,26 +89,26 @@ module.exports = function setupMiddleware(parentApp) {
     // Theme middleware
     // rightly or wrongly currently comes before theme static assets
     // @TODO revisit where and when these are needed
-    parentApp.use(themeHandler.updateActiveTheme);
-    parentApp.use(themeHandler.configHbsForContext);
+    blogApp.use(themeHandler.updateActiveTheme);
+    blogApp.use(themeHandler.configHbsForContext);
     debug('Themes done');
 
     // Static content/assets
     // @TODO make sure all of these have a local 404 error handler
     // Favicon
-    parentApp.use(serveSharedFile('favicon.ico', 'image/x-icon', utils.ONE_DAY_S));
+    blogApp.use(serveSharedFile('favicon.ico', 'image/x-icon', utils.ONE_DAY_S));
     // Ghost-Url
-    parentApp.use(serveSharedFile('shared/ghost-url.js', 'application/javascript', utils.ONE_HOUR_S));
-    parentApp.use(serveSharedFile('shared/ghost-url.min.js', 'application/javascript', utils.ONE_HOUR_S));
+    blogApp.use(serveSharedFile('shared/ghost-url.js', 'application/javascript', utils.ONE_HOUR_S));
+    blogApp.use(serveSharedFile('shared/ghost-url.min.js', 'application/javascript', utils.ONE_HOUR_S));
     // Serve sitemap.xsl file
-    parentApp.use(serveSharedFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
+    blogApp.use(serveSharedFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
     // Serve robots.txt if not found in theme
-    parentApp.use(serveSharedFile('robots.txt', 'text/plain', utils.ONE_HOUR_S));
+    blogApp.use(serveSharedFile('robots.txt', 'text/plain', utils.ONE_HOUR_S));
     // Serve blog images using the storage adapter
-    parentApp.use('/content/images', storage.getStorage().serve());
+    blogApp.use('/content/images', storage.getStorage().serve());
 
     // Theme static assets/files
-    parentApp.use(staticTheme());
+    blogApp.use(staticTheme());
     debug('Static content done');
 
     // setup middleware for internal apps
@@ -113,14 +116,39 @@ module.exports = function setupMiddleware(parentApp) {
     config.get('internalApps').forEach(function (appName) {
         var app = require(path.join(config.get('paths').internalAppPath, appName));
         if (app.hasOwnProperty('setupMiddleware')) {
-            app.setupMiddleware(parentApp);
+            app.setupMiddleware(blogApp);
         }
     });
 
     // site map - this should probably be refactored to be an internal app
-    sitemapHandler(parentApp);
+    sitemapHandler(blogApp);
     debug('Internal apps done');
 
+    // send 503 error page in case of maintenance
+    blogApp.use(maintenance);
+
+    // Force SSL if required
+    // must happen AFTER asset loading and BEFORE routing
+    blogApp.use(checkSSL);
+
+    // Add in all trailing slashes & remove uppercase
+    // must happen AFTER asset loading and BEFORE routing
+    blogApp.use(prettyURLs);
+
+    // ### Caching
+    // Blog frontend is cacheable
+    blogApp.use(cacheControl('public'));
+
+    debug('General middleware done');
+
+    // Set up Frontend routes (including private blogging routes)
+    blogApp.use(routes.frontend());
+
+    // ### Error handlers
+    blogApp.use(errorHandler.pageNotFound);
+    blogApp.use(errorHandler.handleHTMLResponse);
+
+    // Mount the  apps on the parentApp
     // Load the API
     // @TODO: finish refactoring the API app
     // @TODO: decide what to do with these paths - config defaults? config overrides?
@@ -131,28 +159,7 @@ module.exports = function setupMiddleware(parentApp) {
 
     debug('Admin app & api done');
 
-    // send 503 error page in case of maintenance
-    parentApp.use(maintenance);
+    parentApp.use(blogApp);
 
-    // Force SSL if required
-    // must happen AFTER asset loading and BEFORE routing
-    parentApp.use(checkSSL);
-
-    // Add in all trailing slashes & remove uppercase
-    // must happen AFTER asset loading and BEFORE routing
-    parentApp.use(prettyURLs);
-
-    // ### Caching
-    // Blog frontend is cacheable
-    parentApp.use(cacheControl('public'));
-
-    debug('General middleware done');
-
-    // Set up Frontend routes (including private blogging routes)
-    parentApp.use(routes.frontend());
-
-    // ### Error handlers
-    parentApp.use(errorHandler.pageNotFound);
-    parentApp.use(errorHandler.handleHTMLResponse);
     debug('Middleware end');
 };
