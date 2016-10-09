@@ -47,9 +47,8 @@ describe('Roles API', function () {
         });
 
         it('No-auth CANNOT browse', function () {
-            RoleAPI.browse().then(function (results) {
+            RoleAPI.browse().then(function () {
                 throw new Error('Browse roles is not denied without authentication.');
-                return results;
             });
         });
     });
@@ -101,9 +100,8 @@ describe('Roles API', function () {
         });
 
         it('No-auth CANNOT browse', function () {
-            RoleAPI.browse({permissions: 'assign'}).then(function (results) {
+            RoleAPI.browse({permissions: 'assign'}).then(function () {
                 throw new Error('Browse roles is not denied without authentication.');
-                return results;
             });
         });
     });

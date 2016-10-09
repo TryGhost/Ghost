@@ -95,7 +95,7 @@ describe('Tags API', function () {
 
         it('No-auth CANNOT edit tag', function (done) {
             TagAPI.edit({tags: [{name: newTagName}]}, _.extend({}, {id: firstTag}))
-            .then(function (results) {
+            .then(function () {
                 done(new Error('Add tag is not denied without authentication.'));
             }, function () {
                 done();

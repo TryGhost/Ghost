@@ -558,7 +558,7 @@ describe('Post API', function () {
                 return PostAPI.read(options);
             }).then(function () {
                 throw new Error('Post still exists when it should have been deleted');
-            }).catch(function() {
+            }).catch(function () {
                 done();
             });
         });

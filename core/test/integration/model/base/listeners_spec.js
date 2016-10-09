@@ -76,7 +76,7 @@ describe('Models: listeners', function () {
                 });
             });
 
-            it('activeTimezone changes change', function () {
+            it('activeTimezone changes change', function (done) {
                 var timeout;
 
                 eventsToRemember['settings.activeTimezone.edited']({
@@ -103,6 +103,7 @@ describe('Models: listeners', function () {
                                 post3.get('status') === 'scheduled' &&
                                 moment(post1.get('published_at')).diff(scope.publishedAtFutureMoment1.clone().add(scope.timezoneOffset, 'minutes')) === 0 &&
                                 moment(post3.get('published_at')).diff(scope.publishedAtFutureMoment3.clone().add(scope.timezoneOffset, 'minutes')) === 0) {
+                                return done();
                             }
 
                             clearTimeout(timeout);
@@ -111,7 +112,7 @@ describe('Models: listeners', function () {
                 })();
             });
 
-            it('activeTimezone changes change: from a TZ to UTC', function () {
+            it('activeTimezone changes change: from a TZ to UTC', function (done) {
                 var timeout;
 
                 scope.timezoneOffset = -180;
@@ -124,7 +125,7 @@ describe('Models: listeners', function () {
                 });
 
                 (function retry() {
-                    return models.Post.findAll({context: {internal: true}})
+                    models.Post.findAll({context: {internal: true}})
                         .then(function (results) {
                             var post1 = _.find(results.models, function (post) {
                                     return post.get('title') === '1';
@@ -142,6 +143,7 @@ describe('Models: listeners', function () {
                                 post3.get('status') === 'scheduled' &&
                                 moment(post1.get('published_at')).diff(scope.publishedAtFutureMoment1.clone().add(scope.timezoneOffset, 'minutes')) === 0 &&
                                 moment(post3.get('published_at')).diff(scope.publishedAtFutureMoment3.clone().add(scope.timezoneOffset, 'minutes')) === 0) {
+                                return done();
                             }
 
                             clearTimeout(timeout);
