@@ -2,6 +2,7 @@
 // RESTful API for browsing the configuration
 var _                  = require('lodash'),
     config             = require('../config'),
+    ghostVersion       = require('../utils/ghost-version'),
     Promise            = require('bluebird'),
 
     configuration;
@@ -20,7 +21,7 @@ function fetchAvailableTimezones() {
 
 function getAboutConfig() {
     return {
-        version: config.get('ghostVersion'),
+        version: ghostVersion.full,
         environment: process.env.NODE_ENV,
         database: config.get('database').client,
         mail: _.isObject(config.get('mail')) ? config.get('mail').transport : ''
