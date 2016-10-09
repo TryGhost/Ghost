@@ -1,7 +1,7 @@
 var should      = require('should'),
     sinon       = require('sinon'),
     rewire      = require('rewire'),
-    spamPrevention = require('../../../server/middleware/spam-prevention');
+    spamPrevention = require('../../../../server/middleware/api/spam-prevention');
 
 describe('Middleware: spamPrevention', function () {
     var sandbox,
@@ -19,7 +19,7 @@ describe('Middleware: spamPrevention', function () {
         spyNext = sinon.spy(function (param) {
             error = param;
         });
-        spamPrevention = rewire('../../../server/middleware/spam-prevention');
+        spamPrevention = rewire('../../../../server/middleware/api/spam-prevention');
     });
 
     afterEach(function () {

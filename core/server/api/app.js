@@ -1,38 +1,48 @@
 // # API routes
 var express = require('express'),
-    api = require('../api'),
-    auth = require('../auth'),
+    tmpdir = require('os').tmpdir,
 
-    // From middleware/index.js
-    bodyParser      = require('body-parser'),
-    tmpdir          = require('os').tmpdir,
-    // @TODO refactor this again :P
-    middleware = {
-        upload: require('multer')({dest: tmpdir()}),
-        validation: require('../middleware/validation'),
-        cacheControl: require('../middleware/cache-control'),
-        spamPrevention: require('../middleware/spam-prevention'),
-        api: {
-            errorHandler: require('../middleware/error-handler'),
-            cors: require('../middleware/cors'),
-            labs: require('../middleware/labs'),
-            versionMatch: require('../middleware/api/version-match'),
-            maintenance: require('../middleware/maintenance')
-        }
-    },
+    // This essentially provides the controllers for the routes
+    api = require('../api'),
+
+    // Include the middleware
+
+    // API specific
+    auth = require('../auth'),
+    cors = require('../middleware/api/cors'),   // routes only?!
+    spamPrevention = require('../middleware/api/spam-prevention'), // routes only
+    versionMatch = require('../middleware/api/version-match'), // global
+
+    // Handling uploads & imports
+    upload = require('multer')({dest: tmpdir()}), // routes only
+    validation = require('../middleware/validation'), // routes only
+
+    // Shared
+    bodyParser = require('body-parser'), // global, shared
+    cacheControl = require('../middleware/cache-control'), // global, shared
+    maintenance = require('../middleware/maintenance'), // global, shared
+    errorHandler = require('../middleware/error-handler'), // global, shared
+
+    // Temporary
+    // @TODO find a more appy way to do this!
+    labs = require('../middleware/labs'),
+
+    // @TODO find a better way to bundle these authentication packages
     // Authentication for public endpoints
     authenticatePublic = [
         auth.authenticate.authenticateClient,
         auth.authenticate.authenticateUser,
         auth.authorize.requiresAuthorizedUserPublicAPI,
-        middleware.api.cors
+        // @TODO do we really need this multiple times or should it be global?
+        cors
     ],
     // Require user for private endpoints
     authenticatePrivate = [
         auth.authenticate.authenticateClient,
         auth.authenticate.authenticateUser,
         auth.authorize.requiresAuthorizedUser,
-        middleware.api.cors
+        // @TODO do we really need this multiple times or should it be global?
+        cors
     ];
 
 // @TODO refactor/clean this up - how do we want the routing to work long term?
@@ -41,6 +51,9 @@ function apiRoutes() {
 
     // alias delete with del
     apiRouter.del = apiRouter.delete;
+
+    // ## CORS pre-flight check
+    apiRouter.options('*', cors);
 
     // ## Configuration
     apiRouter.get('/configuration', authenticatePrivate, api.http(api.configuration.read));
@@ -89,19 +102,19 @@ function apiRoutes() {
     apiRouter.del('/tags/:id', authenticatePrivate, api.http(api.tags.destroy));
 
     // ## Subscribers
-    apiRouter.get('/subscribers', middleware.api.labs.subscribers, authenticatePrivate, api.http(api.subscribers.browse));
-    apiRouter.get('/subscribers/csv', middleware.api.labs.subscribers, authenticatePrivate, api.http(api.subscribers.exportCSV));
+    apiRouter.get('/subscribers', labs.subscribers, authenticatePrivate, api.http(api.subscribers.browse));
+    apiRouter.get('/subscribers/csv', labs.subscribers, authenticatePrivate, api.http(api.subscribers.exportCSV));
     apiRouter.post('/subscribers/csv',
-        middleware.api.labs.subscribers,
+        labs.subscribers,
         authenticatePrivate,
-        middleware.upload.single('subscribersfile'),
-        middleware.validation.upload({type: 'subscribers'}),
+        upload.single('subscribersfile'),
+        validation.upload({type: 'subscribers'}),
         api.http(api.subscribers.importCSV)
     );
-    apiRouter.get('/subscribers/:id', middleware.api.labs.subscribers, authenticatePrivate, api.http(api.subscribers.read));
-    apiRouter.post('/subscribers', middleware.api.labs.subscribers, authenticatePublic, api.http(api.subscribers.add));
-    apiRouter.put('/subscribers/:id', middleware.api.labs.subscribers, authenticatePrivate, api.http(api.subscribers.edit));
-    apiRouter.del('/subscribers/:id', middleware.api.labs.subscribers, authenticatePrivate, api.http(api.subscribers.destroy));
+    apiRouter.get('/subscribers/:id', labs.subscribers, authenticatePrivate, api.http(api.subscribers.read));
+    apiRouter.post('/subscribers', labs.subscribers, authenticatePublic, api.http(api.subscribers.add));
+    apiRouter.put('/subscribers/:id', labs.subscribers, authenticatePrivate, api.http(api.subscribers.edit));
+    apiRouter.del('/subscribers/:id', labs.subscribers, authenticatePrivate, api.http(api.subscribers.destroy));
 
     // ## Roles
     apiRouter.get('/roles/', authenticatePrivate, api.http(api.roles.browse));
@@ -120,8 +133,8 @@ function apiRoutes() {
 
     apiRouter.post('/themes/upload',
         authenticatePrivate,
-        middleware.upload.single('theme'),
-        middleware.validation.upload({type: 'themes'}),
+        upload.single('theme'),
+        validation.upload({type: 'themes'}),
         api.http(api.themes.upload)
     );
 
@@ -139,8 +152,8 @@ function apiRoutes() {
     apiRouter.get('/db', authenticatePrivate, api.http(api.db.exportContent));
     apiRouter.post('/db',
         authenticatePrivate,
-        middleware.upload.single('importfile'),
-        middleware.validation.upload({type: 'db'}),
+        upload.single('importfile'),
+        validation.upload({type: 'db'}),
         api.http(api.db.importContent)
     );
     apiRouter.del('/db', authenticatePrivate, api.http(api.db.deleteAllContent));
@@ -154,7 +167,7 @@ function apiRoutes() {
 
     // ## Authentication
     apiRouter.post('/authentication/passwordreset',
-        middleware.spamPrevention.forgotten,
+        spamPrevention.forgotten,
         api.http(api.authentication.generateResetToken)
     );
     apiRouter.put('/authentication/passwordreset', api.http(api.authentication.resetPassword));
@@ -164,7 +177,7 @@ function apiRoutes() {
     apiRouter.put('/authentication/setup', authenticatePrivate, api.http(api.authentication.updateSetup));
     apiRouter.get('/authentication/setup', api.http(api.authentication.isSetup));
     apiRouter.post('/authentication/token',
-        middleware.spamPrevention.signin,
+        spamPrevention.signin,
         auth.authenticate.authenticateClient,
         auth.oauth.generateAccessToken
     );
@@ -181,8 +194,8 @@ function apiRoutes() {
     // @TODO: rename endpoint to /images/upload (or similar)
     apiRouter.post('/uploads',
         authenticatePrivate,
-        middleware.upload.single('uploadimage'),
-        middleware.validation.upload({type: 'images'}),
+        upload.single('uploadimage'),
+        validation.upload({type: 'images'}),
         api.http(api.uploads.add)
     );
 
@@ -205,24 +218,23 @@ module.exports = function setupApiApp() {
     apiApp.use(bodyParser.urlencoded({extended: true, limit: '1mb'}));
 
     // send 503 json response in case of maintenance
-    apiApp.use(middleware.api.maintenance);
+    apiApp.use(maintenance);
+
+    // @TODO check SSL and pretty URLS is needed here too, once we've finished refactoring
 
     // Check version matches for API requests, depends on res.locals.safeVersion being set
     // Therefore must come after themeHandler.ghostLocals, for now
-    apiApp.use(middleware.api.versionMatch);
-
-    // ## CORS pre-flight check
-    apiApp.options('*', middleware.api.cors);
+    apiApp.use(versionMatch);
 
     // API shouldn't be cached
-    apiApp.use(middleware.cacheControl('private'));
+    apiApp.use(cacheControl('private'));
 
     // Routing
     apiApp.use(apiRoutes());
 
     // API error handling
     // @TODO: split the API error handling into its own thing?
-    apiApp.use(middleware.api.errorHandler);
+    apiApp.use(errorHandler);
 
     return apiApp;
 };
