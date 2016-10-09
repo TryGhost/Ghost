@@ -30,20 +30,7 @@ var debug           = require('debug')('ghost:middleware'),
 module.exports = function setupMiddleware(blogApp) {
     debug('Middleware start');
 
-    // ##Configuration
-
-    // enabled gzip compression by default
-    if (config.get('server').compress !== false) {
-        blogApp.use(compress());
-    }
-
-    // ## View engine
-    // set the view engine
-    blogApp.set('view engine', 'hbs');
-
-    // Load helpers
-    helpers.loadCoreHelpers();
-    debug('Helpers done');
+    // ## Global settings
 
     // Make sure 'req.secure' is valid for proxied requests
     // (X-Forwarded-Proto header will be checked, if present)
@@ -71,6 +58,11 @@ module.exports = function setupMiddleware(blogApp) {
         })());
     }
 
+    // enabled gzip compression by default
+    if (config.get('server').compress !== false) {
+        blogApp.use(compress());
+    }
+
     // Preload link headers
     if (config.get('preloadHeaders')) {
         blogApp.use(netjet({
@@ -82,6 +74,14 @@ module.exports = function setupMiddleware(blogApp) {
 
     // This sets global res.locals which are needed everywhere
     blogApp.use(ghostLocals);
+
+    // ## App - specific code
+    // set the view engine
+    blogApp.set('view engine', 'hbs');
+
+    // Load helpers
+    helpers.loadCoreHelpers();
+    debug('Helpers done');
 
     // Theme middleware
     // rightly or wrongly currently comes before theme static assets
