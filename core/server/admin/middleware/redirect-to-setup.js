@@ -1,5 +1,5 @@
-var api    = require('../api'),
-    utils = require('../utils');
+var api    = require('../../api'),
+    utils = require('../../utils');
 
 // Redirect to setup if no user exists
 function redirectToSetup(req, res, next) {

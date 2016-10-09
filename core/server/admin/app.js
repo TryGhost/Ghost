@@ -4,7 +4,7 @@ var debug = require('debug')('ghost:admin'),
     adminHbs = require('express-hbs').create(),
 
     // Admin only middleware
-    redirectToSetup = require('../middleware/redirect-to-setup'),
+    redirectToSetup = require('./middleware/redirect-to-setup'),
 
     // Global/shared middleware?
     cacheControl = require('../middleware/cache-control'),
