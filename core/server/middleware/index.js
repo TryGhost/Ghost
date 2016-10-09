@@ -162,9 +162,10 @@ module.exports = function setupMiddleware(blogApp) {
 
     debug('General middleware done');
 
-    // ### Routing
-    // Set up API routes
-    blogApp.use(routes.apiBaseUri, routes.api());
+    // Load the API
+    // @TODO: finish refactoring the API app
+    // @TODO: decide what to do with these paths - config defaults? config overrides?
+    blogApp.use('/ghost/api/v0.1/', require('../api/app')());
 
     // Mount admin express app to /ghost and set up routes
     adminApp.use(redirectToSetup);
