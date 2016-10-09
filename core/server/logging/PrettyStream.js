@@ -127,7 +127,7 @@ PrettyStream.prototype.write = function write(data) {
                 time,
                 logLevel,
                 data.req.method,
-                data.req.url,
+                data.req.originalUrl,
                 data.res.statusCode
             );
 
