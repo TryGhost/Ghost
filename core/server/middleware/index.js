@@ -20,6 +20,7 @@ var debug           = require('debug')('ghost:middleware'),
     checkSSL         = require('./check-ssl'),
     decideIsAdmin    = require('./decide-is-admin'),
     redirectToSetup  = require('./redirect-to-setup'),
+    ghostLocals     = require('./ghost-locals'),
     prettyURLs      = require('./pretty-urls'),
     serveSharedFile  = require('./serve-shared-file'),
     spamPrevention   = require('./spam-prevention'),
@@ -111,6 +112,10 @@ setupMiddleware = function setupMiddleware(blogApp) {
         }));
     }
 
+    // This sets global res.locals which are needed everywhere
+    blogApp.use(ghostLocals);
+
+    // Static content/assets
     // Favicon
     blogApp.use(serveSharedFile('favicon.ico', 'image/x-icon', utils.ONE_DAY_S));
 
@@ -183,9 +188,6 @@ setupMiddleware = function setupMiddleware(blogApp) {
     adminApp.use(cacheControl('private'));
     // API shouldn't be cached
     blogApp.use(routes.apiBaseUri, cacheControl('private'));
-
-    // local data
-    blogApp.use(themeHandler.ghostLocals);
 
     debug('General middleware done');
 
