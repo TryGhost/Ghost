@@ -1,81 +1,199 @@
 var sinon        = require('sinon'),
     should       = require('should'),
-    uncapitalise = require('../../../server/middleware/uncapitalise');
+    uncapitalise = require('../../../server/middleware/uncapitalise'),
+
+    sandbox = sinon.sandbox.create();
 
 should.equal(true, true);
 
+// NOTE: all urls will have had trailing slashes added before uncapitalise is called
+
 describe('Middleware: uncapitalise', function () {
-    var sandbox,
-        res,
-        req,
-        next;
+    var res, req, next;
 
     beforeEach(function () {
-        sandbox = sinon.sandbox.create();
-
-        res = sinon.spy();
-        req = sinon.spy();
-        next = sinon.spy();
+        res = {
+            redirect: sandbox.spy(),
+            set: sandbox.spy()
+        };
+        req = {};
+        next = sandbox.spy();
     });
 
     afterEach(function () {
         sandbox.restore();
     });
 
-    describe('A signup or reset request', function () {
-        it('does nothing if there are no capital letters', function (done) {
-            req.path = '/ghost/signup';
+    describe('Signup or reset request', function () {
+        it('[signup] does nothing if there are no capitals in req.path', function (done) {
+            req.path = '/ghost/signup/';
             uncapitalise(req, res, next);
 
             next.calledOnce.should.be.true();
             done();
         });
 
-        it('redirects to the lower case slug if there are capital letters', function (done) {
-            req.path = '/ghost/SignUP';
-            req.url = 'http://localhost' + req.path;
-            res = {
-                redirect: sinon.spy(),
-                set: sinon.spy()
-            };
+        it('[signup] does nothing if there are no capitals in the baseUrl', function (done) {
+            req.baseUrl = '/ghost/signup/';
+            req.path = '';
+            uncapitalise(req, res, next);
+
+            next.calledOnce.should.be.true();
+            done();
+        });
+
+        it('[signup] does nothing if there are no capitals except in a token', function (done) {
+            req.baseUrl = '/blog';
+            req.path = '/ghost/signup/XEB123';
+
+            uncapitalise(req, res, next);
+
+            next.calledOnce.should.be.true();
+            done();
+        });
+
+        it('[reset] does nothing if there are no capitals except in a token', function (done) {
+            req.baseUrl = '/blog';
+            req.path = '/ghost/reset/NCR3NjY4NzI1ODI1OHzlcmlzZHNAZ51haWwuY29tfEpWeGxRWHUzZ3Y0cEpQRkNYYzQvbUZyc2xFSVozU3lIZHZWeFJLRml6cY54';
+            uncapitalise(req, res, next);
+
+            next.calledOnce.should.be.true();
+            done();
+        });
+
+        it('[signup] redirects if there are capitals in req.path', function (done) {
+            req.path = '/ghost/SignUP/';
+            req.url = req.path;
 
             uncapitalise(req, res, next);
 
             next.called.should.be.false();
             res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, 'http://localhost/ghost/signup').should.be.true();
+            res.redirect.calledWith(301, '/ghost/signup/').should.be.true();
+            done();
+        });
+
+        it('[signup] redirects if there are capitals in req.baseUrl', function (done) {
+            req.baseUrl = '/ghost/SignUP/';
+            req.path = '';
+            req.url = req.path;
+            req.originalUrl = req.baseUrl + req.path;
+
+            uncapitalise(req, res, next);
+
+            next.called.should.be.false();
+            res.redirect.calledOnce.should.be.true();
+            res.redirect.calledWith(301, '/ghost/signup/').should.be.true();
+            done();
+        });
+
+        it('[signup] redirects correctly if there are capitals in req.path and req.baseUrl', function (done) {
+            req.baseUrl = '/Blog';
+            req.path = '/ghosT/signUp/';
+            req.url = req.path;
+            req.originalUrl = req.baseUrl + req.path;
+
+            uncapitalise(req, res, next);
+
+            next.called.should.be.false();
+            res.redirect.calledOnce.should.be.true();
+            res.redirect.calledWith(301, '/blog/ghost/signup/').should.be.true();
+            done();
+        });
+
+        it('[signup] redirects correctly with capitals in req.path if there is a token', function (done) {
+            req.path = '/ghosT/sigNup/XEB123';
+            req.url = req.path;
+
+            uncapitalise(req, res, next);
+
+            next.called.should.be.false();
+            res.redirect.calledOnce.should.be.true();
+            res.redirect.calledWith(301, '/ghost/signup/XEB123').should.be.true();
+            done();
+        });
+
+        it('[reset] redirects correctly with capitals in req.path & req.baseUrl if there is a token', function (done) {
+            req.baseUrl = '/Blog';
+            req.path = '/Ghost/Reset/NCR3NjY4NzI1ODI1OHzlcmlzZHNAZ51haWwuY29tfEpWeGxRWHUzZ3Y0cEpQRkNYYzQvbUZyc2xFSVozU3lIZHZWeFJLRml6cY54';
+            req.url = req.path;
+            req.originalUrl = req.baseUrl + req.path;
+
+            uncapitalise(req, res, next);
+
+            next.called.should.be.false();
+            res.redirect.calledOnce.should.be.true();
+            res.redirect.calledWith(301, '/blog/ghost/reset/NCR3NjY4NzI1ODI1OHzlcmlzZHNAZ51haWwuY29tfEpWeGxRWHUzZ3Y0cEpQRkNYYzQvbUZyc2xFSVozU3lIZHZWeFJLRml6cY54').should.be.true();
             done();
         });
     });
 
     describe('An API request', function () {
-        it('does nothing if there are no capital letters', function (done) {
-            req.path = '/ghost/api/v0.1';
+        it('does nothing if there are no capitals', function (done) {
+            req.path = '/ghost/api/v0.1/endpoint/';
             uncapitalise(req, res, next);
 
             next.calledOnce.should.be.true();
             done();
         });
 
-        it('redirects to the lower case slug if there are capital letters', function (done) {
-            req.path = '/ghost/api/v0.1/ASDfJ';
-            req.url = 'http://localhost' + req.path;
-            res = {
-                redirect: sinon.spy(),
-                set: sinon.spy()
-            };
+        it('redirects to the lower case slug if there are capitals', function (done) {
+            req.path = '/ghost/api/v0.1/ASDfJ/';
+            req.url = req.path;
 
             uncapitalise(req, res, next);
 
             next.called.should.be.false();
             res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, 'http://localhost/ghost/api/v0.1/asdfj').should.be.true();
+            res.redirect.calledWith(301, '/ghost/api/v0.1/asdfj/').should.be.true();
+            done();
+        });
+
+        it('redirects to the lower case slug if there are capitals in req.baseUrl', function (done) {
+            req.baseUrl = '/Blog';
+            req.path = '/ghost/api/v0.1/ASDfJ/';
+            req.url = req.path;
+            req.originalUrl = req.baseUrl + req.path;
+
+            uncapitalise(req, res, next);
+
+            next.called.should.be.false();
+            res.redirect.calledOnce.should.be.true();
+            res.redirect.calledWith(301, '/blog/ghost/api/v0.1/asdfj/').should.be.true();
+            done();
+        });
+
+        it('does not convert any capitals after the endpoint', function (done) {
+            var query = '?filter=mAgic';
+            req.path = '/Ghost/API/v0.1/settings/isPrivate/';
+            req.url = req.path + query;
+
+            uncapitalise(req, res, next);
+
+            next.called.should.be.false();
+            res.redirect.calledOnce.should.be.true();
+            res.redirect.calledWith(301, '/ghost/api/v0.1/settings/isPrivate/?filter=mAgic').should.be.true();
+            done();
+        });
+
+        it('does not convert any capitals after the endpoint with baseUrl', function (done) {
+            var query = '?filter=mAgic';
+            req.baseUrl = '/Blog';
+            req.path = '/ghost/api/v0.1/mail/test@example.COM/';
+            req.url = req.path + query;
+            req.originalUrl = req.baseUrl + req.path + query;
+
+            uncapitalise(req, res, next);
+
+            next.called.should.be.false();
+            res.redirect.calledOnce.should.be.true();
+            res.redirect.calledWith(301, '/blog/ghost/api/v0.1/mail/test@example.COM/?filter=mAgic').should.be.true();
             done();
         });
     });
 
     describe('Any other request', function () {
-        it('does nothing if there are no capital letters', function (done) {
+        it('does nothing if there are no capitals', function (done) {
             req.path = '/this-is-my-blog-post';
             uncapitalise(req, res, next);
 
@@ -83,19 +201,15 @@ describe('Middleware: uncapitalise', function () {
             done();
         });
 
-        it('redirects to the lower case slug if there are capital letters', function (done) {
+        it('redirects to the lower case slug if there are capitals', function (done) {
             req.path = '/THis-iS-my-BLOg-poSt';
-            req.url = 'http://localhost' + req.path;
-            res = {
-                redirect: sinon.spy(),
-                set: sinon.spy()
-            };
+            req.url = req.path;
 
             uncapitalise(req, res, next);
 
             next.called.should.be.false();
             res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, 'http://localhost/this-is-my-blog-post').should.be.true();
+            res.redirect.calledWith(301, '/this-is-my-blog-post').should.be.true();
             done();
         });
     });
