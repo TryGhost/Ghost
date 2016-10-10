@@ -173,6 +173,10 @@ GhostLogger.prototype.info = function info() {
         print += ' ';
     });
 
+    if (!this.loggers.stdout) {
+        return;
+    }
+
     this.loggers.stdout.log.info(print);
 };
 
@@ -184,10 +188,18 @@ GhostLogger.prototype.warn = function warn() {
         print += ' ';
     });
 
+    if (!this.loggers.stdout) {
+        return;
+    }
+
     this.loggers.stdout.log.warn(print);
 };
 
 GhostLogger.prototype.debug = function debug(options) {
+    if (!this.loggers.stdout) {
+        return;
+    }
+
     this.loggers.stdout.log.debug(options);
 };
 
