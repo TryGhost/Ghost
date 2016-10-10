@@ -116,9 +116,6 @@ PrettyStream.prototype.write = function write(data) {
                 bodyPretty += colorize('white', value) + '\n';
             }
         });
-    } else {
-        // print string
-        bodyPretty += data.msg;
     }
 
     try {
@@ -135,6 +132,12 @@ PrettyStream.prototype.write = function write(data) {
             output += format('[%s] %s\n',
                 time,
                 logLevel
+            );
+        } else if (data.msg) {
+            output += format('[%s] %s %s\n',
+                time,
+                logLevel,
+                data.msg
             );
         } else {
             output += format('[%s] %s\n',
