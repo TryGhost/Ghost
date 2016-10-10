@@ -26,20 +26,6 @@ describe('Theme Handler', function () {
         configUtils.restore();
     });
 
-    describe('ghostLocals', function () {
-        it('sets all locals', function () {
-            req.path = '/awesome-post';
-
-            themeHandler.ghostLocals(req, res, next);
-
-            res.locals.should.be.an.Object();
-            should.exist(res.locals.version);
-            should.exist(res.locals.safeVersion);
-            res.locals.relativeUrl.should.equal(req.path);
-            next.called.should.be.true();
-        });
-    });
-
     describe('activateTheme', function () {
         it('should activate new theme with partials', function () {
             var fsStub = sandbox.stub(fs, 'stat', function (path, cb) {

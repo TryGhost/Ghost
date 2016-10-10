@@ -2,8 +2,8 @@ var path = require('path'),
     Promise = require('bluebird'),
     db = require('../db'),
     errors = require('../../errors'),
-    config = require('../../config'),
-    i18n = require('../../i18n');
+    i18n = require('../../i18n'),
+    ghostVersion = require('../../utils/ghost-version');
 
 /**
  * Database version has always two digits
@@ -52,7 +52,7 @@ function getDatabaseVersion() {
 }
 
 function getNewestDatabaseVersion() {
-    return config.get('ghostVersion').slice(0, 3);
+    return ghostVersion.safe;
 }
 
 /**
