@@ -45,7 +45,7 @@
     "express-hbs": "1.0.3",
     "extract-zip-fork": "1.5.1",
     "fs-extra": "0.30.0",
-    "ghost-editor": "0.0.9",
+    "ghost-editor": "0.0.10",
     "ghost-gql": "0.0.5",
     "glob": "5.0.15",
     "gscan": "0.0.15",
