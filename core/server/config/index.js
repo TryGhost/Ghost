@@ -2,7 +2,6 @@ var Nconf = require('nconf'),
     nconf = new Nconf.Provider(),
     path = require('path'),
     localUtils = require('./utils'),
-    packageInfo = require('../../../package.json'),
     env = process.env.NODE_ENV || 'development';
 
 /**
@@ -36,9 +35,7 @@ localUtils.makePathsAbsolute.bind(nconf)();
 
 /**
  * values we have to set manual
- * @TODO: ghost-cli?
  */
-nconf.set('ghostVersion', packageInfo.version);
 nconf.set('env', env);
 
 module.exports = nconf;
