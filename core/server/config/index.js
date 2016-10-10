@@ -1,4 +1,5 @@
-var nconf = require('nconf'),
+var Nconf = require('nconf'),
+    nconf = new Nconf.Provider(),
     path = require('path'),
     localUtils = require('./utils'),
     packageInfo = require('../../../package.json'),
