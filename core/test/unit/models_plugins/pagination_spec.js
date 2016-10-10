@@ -212,10 +212,10 @@ describe('pagination', function () {
             bookshelf.Model.prototype.fetchPage.should.be.a.Function();
         });
 
-        it('calls all paginationUtils and methods', function (done) {
+        it('calls all paginationUtils and methods', function () {
             paginationUtils.parseOptions.returns({});
 
-            bookshelf.Model.prototype.fetchPage().then(function () {
+            return bookshelf.Model.prototype.fetchPage().then(function () {
                 sinon.assert.callOrder(
                     paginationUtils.parseOptions,
                     model.prototype.query,
@@ -243,16 +243,14 @@ describe('pagination', function () {
 
                 model.prototype.fetchAll.calledOnce.should.be.true();
                 model.prototype.fetchAll.calledWith({}).should.be.true();
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('calls all paginationUtils and methods when order set', function (done) {
+        it('calls all paginationUtils and methods when order set', function () {
             var orderOptions = {order: {id: 'DESC'}};
             paginationUtils.parseOptions.returns(orderOptions);
 
-            bookshelf.Model.prototype.fetchPage(orderOptions).then(function () {
+            return bookshelf.Model.prototype.fetchPage(orderOptions).then(function () {
                 sinon.assert.callOrder(
                     paginationUtils.parseOptions,
                     model.prototype.query,
@@ -282,16 +280,14 @@ describe('pagination', function () {
 
                 model.prototype.fetchAll.calledOnce.should.be.true();
                 model.prototype.fetchAll.calledWith(orderOptions).should.be.true();
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('calls all paginationUtils and methods when group by set', function (done) {
+        it('calls all paginationUtils and methods when group by set', function () {
             var groupOptions = {groups: ['posts.id']};
             paginationUtils.parseOptions.returns(groupOptions);
 
-            bookshelf.Model.prototype.fetchPage(groupOptions).then(function () {
+            return bookshelf.Model.prototype.fetchPage(groupOptions).then(function () {
                 sinon.assert.callOrder(
                     paginationUtils.parseOptions,
                     model.prototype.query,
@@ -321,35 +317,29 @@ describe('pagination', function () {
 
                 model.prototype.fetchAll.calledOnce.should.be.true();
                 model.prototype.fetchAll.calledWith(groupOptions).should.be.true();
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('returns expected response', function (done) {
+        it('returns expected response', function () {
             paginationUtils.parseOptions.returns({});
-            bookshelf.Model.prototype.fetchPage().then(function (result) {
+            return bookshelf.Model.prototype.fetchPage().then(function (result) {
                 result.should.have.ownProperty('collection');
                 result.should.have.ownProperty('pagination');
                 result.collection.should.be.an.Object();
                 result.pagination.should.be.an.Object();
-
-                done();
             });
         });
 
-        it('returns expected response even when aggregate is empty', function (done) {
+        it('returns expected response even when aggregate is empty', function () {
             // override aggregate response
             mockQuery.select.returns(Promise.resolve([]));
             paginationUtils.parseOptions.returns({});
 
-            bookshelf.Model.prototype.fetchPage().then(function (result) {
+            return bookshelf.Model.prototype.fetchPage().then(function (result) {
                 result.should.have.ownProperty('collection');
                 result.should.have.ownProperty('pagination');
                 result.collection.should.be.an.Object();
                 result.pagination.should.be.an.Object();
-
-                done();
             });
         });
     });

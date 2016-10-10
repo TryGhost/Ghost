@@ -25,7 +25,7 @@ describe('Models: listeners', function () {
     });
 
     describe('on token added', function () {
-        it('calls User edit when event is emitted', function (done) {
+        it('calls User edit when event is emitted', function () {
             var userModelSpy = sandbox.spy(Models.User, 'edit');
 
             eventsToRemember['token.added']({get: function () { return 1; }});
@@ -35,8 +35,6 @@ describe('Models: listeners', function () {
                 sinon.match.has('last_login'),
                 sinon.match.has('id')
             );
-
-            done();
         });
     });
 });
