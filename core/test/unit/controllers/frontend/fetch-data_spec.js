@@ -29,8 +29,8 @@ describe('fetchData', function () {
             configUtils.set({theme: {postsPerPage: 10}});
         });
 
-        it('should handle no post options', function (done) {
-            fetchData({}).then(function (result) {
+        it('should handle no post options', function () {
+            return fetchData({}).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object().with.properties('posts', 'meta');
                 result.should.not.have.property('data');
@@ -39,13 +39,11 @@ describe('fetchData', function () {
                 apiPostsStub.firstCall.args[0].should.be.an.Object();
                 apiPostsStub.firstCall.args[0].should.have.property('include');
                 apiPostsStub.firstCall.args[0].should.have.property('limit', 10);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('should handle post options with only page', function (done) {
-            fetchData({postOptions: {page: 2}}).then(function (result) {
+        it('should handle post options with only page', function () {
+            return fetchData({postOptions: {page: 2}}).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object().with.properties('posts', 'meta');
                 result.should.not.have.property('data');
@@ -55,12 +53,10 @@ describe('fetchData', function () {
                 apiPostsStub.firstCall.args[0].should.have.property('include');
                 apiPostsStub.firstCall.args[0].should.have.property('limit', 10);
                 apiPostsStub.firstCall.args[0].should.have.property('page', 2);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('should handle multiple queries', function (done) {
+        it('should handle multiple queries', function () {
             var channelOpts = {
                 data: {
                     featured: {
@@ -71,7 +67,7 @@ describe('fetchData', function () {
                 }
             };
 
-            fetchData(channelOpts).then(function (result) {
+            return fetchData(channelOpts).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object().with.properties('posts', 'meta', 'data');
                 result.data.should.be.an.Object().with.properties('featured');
@@ -83,11 +79,10 @@ describe('fetchData', function () {
                 apiPostsStub.firstCall.args[0].should.have.property('limit', 10);
                 apiPostsStub.secondCall.args[0].should.have.property('filter', 'featured:true');
                 apiPostsStub.secondCall.args[0].should.have.property('limit', 3);
-                done();
-            }).catch(done);
+            });
         });
 
-        it('should handle multiple queries with page param', function (done) {
+        it('should handle multiple queries with page param', function () {
             var channelOpts = {
                 postOptions: {page: 2},
                 data: {
@@ -99,7 +94,7 @@ describe('fetchData', function () {
                 }
             };
 
-            fetchData(channelOpts).then(function (result) {
+            return fetchData(channelOpts).then(function (result) {
                 should.exist(result);
 
                 result.should.be.an.Object().with.properties('posts', 'meta', 'data');
@@ -113,11 +108,10 @@ describe('fetchData', function () {
                 apiPostsStub.firstCall.args[0].should.have.property('page', 2);
                 apiPostsStub.secondCall.args[0].should.have.property('filter', 'featured:true');
                 apiPostsStub.secondCall.args[0].should.have.property('limit', 3);
-                done();
-            }).catch(done);
+            });
         });
 
-        it('should handle queries with slug replacements', function (done) {
+        it('should handle queries with slug replacements', function () {
             var channelOpts = {
                 postOptions: {
                     filter: 'tags:%s'
@@ -132,7 +126,7 @@ describe('fetchData', function () {
                 }
             };
 
-            fetchData(channelOpts).then(function (result) {
+            return fetchData(channelOpts).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object().with.properties('posts', 'meta', 'data');
                 result.data.should.be.an.Object().with.properties('tag');
@@ -141,8 +135,7 @@ describe('fetchData', function () {
                 apiPostsStub.firstCall.args[0].should.have.property('include');
                 apiPostsStub.firstCall.args[0].should.have.property('limit', 10);
                 apiTagStub.firstCall.args[0].should.have.property('slug', 'testing');
-                done();
-            }).catch(done);
+            });
         });
     });
 
@@ -151,14 +144,13 @@ describe('fetchData', function () {
             configUtils.set({theme: {postsPerPage: 10}});
         });
 
-        it('Adds limit & includes to options by default', function (done) {
-            fetchData({}).then(function () {
+        it('Adds limit & includes to options by default', function () {
+            return fetchData({}).then(function () {
                 apiPostsStub.calledOnce.should.be.true();
                 apiPostsStub.firstCall.args[0].should.be.an.Object();
                 apiPostsStub.firstCall.args[0].should.have.property('include');
                 apiPostsStub.firstCall.args[0].should.have.property('limit', 10);
-                done();
-            }).catch(done);
+            });
         });
     });
 
@@ -167,15 +159,13 @@ describe('fetchData', function () {
             configUtils.set({theme: {postsPerPage: '-1'}});
         });
 
-        it('Will not add limit if postsPerPage is not valid', function (done) {
-            fetchData({}).then(function () {
+        it('Will not add limit if postsPerPage is not valid', function () {
+            return fetchData({}).then(function () {
                 apiPostsStub.calledOnce.should.be.true();
                 apiPostsStub.firstCall.args[0].should.be.an.Object();
                 apiPostsStub.firstCall.args[0].should.have.property('include');
                 apiPostsStub.firstCall.args[0].should.not.have.property('limit');
-
-                done();
-            }).catch(done);
+            });
         });
     });
 });
