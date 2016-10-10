@@ -4,7 +4,7 @@ var rewire = require('rewire'),
     NotificationAPI = rewire('../../../server/api/notifications');
 
 describe('UNIT: Notification API', function () {
-    it('ensure non duplicates', function (done) {
+    it('ensure non duplicates', function () {
         var options = {context: {internal: true}},
             notifications = [{
                 type: 'info',
@@ -12,25 +12,20 @@ describe('UNIT: Notification API', function () {
             }],
             notificationStore = NotificationAPI.__get__('notificationsStore');
 
-        NotificationAPI.add({notifications: notifications}, options)
-            .then(function () {
-                notificationStore.length.should.eql(1);
-                return NotificationAPI.add({notifications: notifications}, options);
-            })
-            .then(function () {
-                notificationStore.length.should.eql(1);
+        return NotificationAPI.add({notifications: notifications}, options).then(function () {
+            notificationStore.length.should.eql(1);
+            return NotificationAPI.add({notifications: notifications}, options);
+        }).then(function () {
+            notificationStore.length.should.eql(1);
 
-                notifications.push({
-                    type: 'info',
-                    message: 'Hello, this is cat'
-                });
+            notifications.push({
+                type: 'info',
+                message: 'Hello, this is cat'
+            });
 
-                return NotificationAPI.add({notifications: notifications}, options);
-            })
-            .then(function () {
-                notificationStore.length.should.eql(2);
-                done();
-            })
-            .catch(done);
+            return NotificationAPI.add({notifications: notifications}, options);
+        }).then(function () {
+            notificationStore.length.should.eql(2);
+        });
     });
 });
