@@ -69,41 +69,38 @@ describe('Mail: Ghostmailer', function () {
         mailer.transport.transportType.should.eql('DIRECT');
     });
 
-    it('sends valid message successfully ', function (done) {
+    it('sends valid message successfully ', function () {
         configUtils.set({mail: {transport: 'stub'}});
 
         mailer = new mail.GhostMailer();
 
         mailer.transport.transportType.should.eql('STUB');
 
-        mailer.send(mailDataNoServer).then(function (response) {
+        return mailer.send(mailDataNoServer).then(function (response) {
             should.exist(response.message);
             should.exist(response.envelope);
             response.envelope.to.should.containEql('joe@example.com');
-
-            done();
-        }).catch(done);
+        });
     });
 
-    it('handles failure', function (done) {
+    it('handles failure', function () {
         configUtils.set({mail: {transport: 'stub', options: {error: 'Stub made a boo boo :('}}});
 
         mailer = new mail.GhostMailer();
 
         mailer.transport.transportType.should.eql('STUB');
 
-        mailer.send(mailDataNoServer).then(function () {
-            done(new Error('Stub did not error'));
+        return mailer.send(mailDataNoServer).then(function () {
+            throw new Error('Stub did not error');
         }).catch(function (error) {
             error.message.should.eql('Error: Stub made a boo boo :(');
-            done();
-        }).catch(done);
+        });
     });
 
-    it('should fail to send messages when given insufficient data', function (done) {
+    it('should fail to send messages when given insufficient data', function () {
         mailer = new mail.GhostMailer();
 
-        Promise.all([
+        return Promise.all([
             mailer.send().reflect(),
             mailer.send({}).reflect(),
             mailer.send({subject: '123'}).reflect(),
@@ -114,8 +111,7 @@ describe('Mail: Ghostmailer', function () {
                 d.reason().should.be.an.instanceOf(Error);
                 d.reason().message.should.eql('Error: Incomplete message data.');
             });
-            done();
-        }).catch(done);
+        });
     });
 
     describe('Direct', function () {
@@ -129,37 +125,34 @@ describe('Mail: Ghostmailer', function () {
             mailer = null;
         });
 
-        it('return correct failure message for domain doesn\'t exist', function (done) {
+        it('return correct failure message for domain doesn\'t exist', function () {
             mailer.transport.transportType.should.eql('DIRECT');
 
-            mailer.send(mailDataNoDomain).then(function () {
-                done(new Error('Error message not shown.'));
+            return mailer.send(mailDataNoDomain).then(function () {
+                throw new Error('Error message not shown.');
             }, function (error) {
                 error.message.should.startWith('Error: Failed to send email');
-                done();
-            }).catch(done);
+            });
         });
 
-        it('return correct failure message for no mail server at this address', function (done) {
+        it('return correct failure message for no mail server at this address', function () {
             mailer.transport.transportType.should.eql('DIRECT');
 
-            mailer.send(mailDataNoServer).then(function () {
-                done(new Error('Error message not shown.'));
+            return mailer.send(mailDataNoServer).then(function () {
+                throw new Error('Error message not shown.');
             }, function (error) {
                 error.message.should.eql('Error: Failed to send email.');
-                done();
-            }).catch(done);
+            });
         });
 
-        it('return correct failure message for incomplete data', function (done) {
+        it('return correct failure message for incomplete data', function () {
             mailer.transport.transportType.should.eql('DIRECT');
 
-            mailer.send(mailDataIncomplete).then(function () {
-                done(new Error('Error message not shown.'));
+            return mailer.send(mailDataIncomplete).then(function () {
+                throw new Error('Error message not shown.');
             }, function (error) {
                 error.message.should.eql('Error: Incomplete message data.');
-                done();
-            }).catch(done);
+            });
         });
     });
 
