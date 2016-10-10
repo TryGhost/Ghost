@@ -79,17 +79,15 @@ describe('Generators', function () {
             generator = new BaseGenerator();
         });
 
-        it('can initialize with empty siteMapContent', function (done) {
-            generator.init().then(function () {
+        it('can initialize with empty siteMapContent', function () {
+            return generator.init().then(function () {
                 should.exist(generator.siteMapContent);
 
                 validator.contains(generator.siteMapContent, '<loc>').should.equal(false);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can initialize with non-empty siteMapContent', function (done) {
+        it('can initialize with non-empty siteMapContent', function () {
             stubUrl(generator);
 
             sandbox.stub(generator, 'getData', function () {
@@ -100,7 +98,7 @@ describe('Generators', function () {
                 ]);
             });
 
-            generator.init().then(function () {
+            return generator.init().then(function () {
                 var idxFirst,
                     idxSecond,
                     idxThird;
@@ -122,9 +120,7 @@ describe('Generators', function () {
 
                 idxFirst.should.be.below(idxSecond);
                 idxSecond.should.be.below(idxThird);
-
-                done();
-            }).catch(done);
+            });
         });
     });
 
@@ -171,7 +167,7 @@ describe('Generators', function () {
             urlNode.should.be.a.ValidUrlNode({withImage: true});
         });
 
-        it('can initialize with non-empty siteMapContent', function (done) {
+        it('can initialize with non-empty siteMapContent', function () {
             stubUrl(generator);
 
             sandbox.stub(generator, 'getData', function () {
@@ -190,7 +186,7 @@ describe('Generators', function () {
                 ]);
             });
 
-            generator.init().then(function () {
+            return generator.init().then(function () {
                 var idxFirst,
                     idxSecond,
                     idxThird;
@@ -217,9 +213,7 @@ describe('Generators', function () {
 
                 idxFirst.should.be.below(idxSecond);
                 idxSecond.should.be.below(idxThird);
-
-                done();
-            }).catch(done);
+            });
         });
     });
 
@@ -228,24 +222,22 @@ describe('Generators', function () {
             generator = new PageGenerator();
         });
 
-        it('has a home item even if pages are empty', function (done) {
+        it('has a home item even if pages are empty', function () {
             // Fake the api call to return no posts
             sandbox.stub(api.posts, 'browse', function () {
                 return Promise.resolve({posts: []});
             });
 
-            generator.init().then(function () {
+            return generator.init().then(function () {
                 should.exist(generator.siteMapContent);
 
                 generator.siteMapContent.should.containEql('<loc>' + utils.url.urlFor('home', true) + '</loc>');
                 // <loc> should exist exactly one time
                 generator.siteMapContent.indexOf('<loc>').should.eql(generator.siteMapContent.lastIndexOf('<loc>'));
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('has a home item when pages are not empty', function (done) {
+        it('has a home item when pages are not empty', function () {
             // Fake the api call to return no posts
             sandbox.stub(api.posts, 'browse', function () {
                 return Promise.resolve({
@@ -256,14 +248,12 @@ describe('Generators', function () {
                 });
             });
 
-            generator.init().then(function () {
+            return generator.init().then(function () {
                 should.exist(generator.siteMapContent);
 
                 generator.siteMapContent.should.containEql('<loc>' + utils.url.urlFor('home', true) + '</loc>');
                 generator.siteMapContent.should.containEql('<loc>' + utils.url.urlFor('page', {url: 'magic'}, true) + '</loc>');
-
-                done();
-            }).catch(done);
+            });
         });
 
         it('uses 1 priority for home page', function () {
