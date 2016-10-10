@@ -41,13 +41,11 @@
                     					{{/if}}
                                     {{/if}}
                                 </span>
-                                {{#if feature.internalTags}}
-                                    <div class="internal-tags-list">
-                                        {{#each post.internalTags as |tag|}}
-                                            <span class="label label-default">{{tag.name}}</span>
-                                        {{/each}}
-                                    </div>
-                                {{/if}}
+                                <div class="internal-tags-list">
+                                    {{#each post.internalTags as |tag|}}
+                                        <span class="label label-default">{{tag.name}}</span>
+                                    {{/each}}
+                                </div>
                             </section>
                         {{/link-to}}
                     {{/gh-posts-list-item}}

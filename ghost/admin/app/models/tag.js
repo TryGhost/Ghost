@@ -32,19 +32,18 @@ export default Model.extend(ValidationEngine, {
 
     setVisibility() {
         let internalRegex = /^#.?/;
-
         this.set('visibility', internalRegex.test(this.get('name')) ? 'internal' : 'public');
     },
 
     save() {
-        if (this.get('feature.internalTags') && this.get('changedAttributes.name') && !this.get('isDeleted')) {
+        if (this.get('changedAttributes.name') && !this.get('isDeleted')) {
             this.setVisibility();
         }
         return this._super(...arguments);
     },
 
-    setVisibilityOnNew: observer('feature.internalTags', 'isNew', 'isSaving', 'name', function () {
-        if (this.get('isNew') && !this.get('isSaving') && this.get('feature.internalTags')) {
+    setVisibilityOnNew: observer('isNew', 'isSaving', 'name', function () {
+        if (this.get('isNew') && !this.get('isSaving')) {
             this.setVisibility();
         }
     })
