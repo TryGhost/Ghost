@@ -4,6 +4,7 @@ var knex = require('knex');
  * we only support knex
  */
 exports.connect = function connect(options) {
+    options = options || {};
     var client = options.client;
 
     if (client === 'sqlite3') {

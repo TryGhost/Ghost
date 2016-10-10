@@ -2,26 +2,8 @@ var path = require('path'),
     _ = require('lodash'),
     fs = require('fs'),
     database = require('./database'),
+    errors = require('./errors'),
     logging = require('../../../logging');
-
-exports.errors = {
-    taskFound: 100,
-    unknown: 99,
-    migrationsTableMissing: 98,
-    dbInitMissing: 97,
-    databaseConfigMissing: 96
-};
-
-/**
- * Sephiroth erorr handling for now
- */
-exports.throwError = function throwError(options) {
-    var code = options.code,
-        err = new Error();
-
-    err.code = code;
-    throw err;
-};
 
 exports.readTasks = function readTasks(absolutePath) {
     var files = [],
@@ -39,7 +21,7 @@ exports.readTasks = function readTasks(absolutePath) {
 
         return tasks;
     } catch (err) {
-        throw err;
+        throw new errors.SephirothError({err: err});
     }
 };
 
@@ -65,12 +47,12 @@ exports.preTask = function preTask(options) {
             }
 
             if (_.find(migrations, {name: task, type: type})) {
-                exports.throwError({code: exports.errors.taskFound});
+                throw new errors.MigrationExistsError();
             }
         })
         .catch(function (err) {
             // CASE: table does not exist
-            if (err.errno === 1) {
+            if (err.errno === 1 || err.errno === 1146) {
                 logging.info('Creating table: migrations');
 
                 return (localDatabase || database.knex).schema.createTable('migrations', function (table) {
@@ -117,14 +99,21 @@ exports.isDatabaseOK = function isDatabaseOK(options) {
                 return;
             }
 
-            exports.throwError({code: exports.errors.dbInitMissing});
+            throw new errors.DatabaseIsNotOkError({
+                message: 'Please run node core/server/data/sephiroth/bin/sephiroth init.',
+                code: 'DB_NOT_INITIALISED'
+            });
         })
         .catch(function (err) {
-            // CASE: table does not exist
-            if (err.errno === 1) {
-                exports.throwError({code: exports.errors.dbInitMissing});
+            if (err.errno === 1 || err.errno === 1146) {
+                throw new errors.DatabaseIsNotOkError({
+                    message: 'Please run node core/server/data/sephiroth/bin/sephiroth init.',
+                    code: 'MIGRATION_TABLE_IS_MISSING'
+                });
             }
 
-            exports.throwError({code: exports.errors.unknown});
+            throw new errors.SephirothError({
+                err: err
+            });
         });
 };
