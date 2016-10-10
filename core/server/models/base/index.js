@@ -16,7 +16,6 @@ var _          = require('lodash'),
     filters    = require('../../filters'),
     schema     = require('../../data/schema'),
     utils      = require('../../utils'),
-    labs       = require('../../utils/labs'),
     validation = require('../../data/validation'),
     plugins    = require('../plugins'),
     i18n       = require('../../i18n'),
@@ -520,10 +519,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
 
         if (!_.has(options, 'importing') || !options.importing) {
-            // TODO: remove the labs requirement when internal tags is out of beta
             // This checks if the first character of a tag name is a #. If it is, this
             // is an internal tag, and as such we should add 'hash' to the beginning of the slug
-            if (labs.isSet('internalTags') && baseName === 'tag' && /^#/.test(base)) {
+            if (baseName === 'tag' && /^#/.test(base)) {
                 slug = 'hash-' + slug;
             }
         }
