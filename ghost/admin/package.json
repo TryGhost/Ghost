@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "bluebird": "3.4.6",
-    "blueimp-md5": "2.3.1",
+    "blueimp-md5": "2.4.0",
     "bower": "1.7.9",
     "broccoli-asset-rev": "2.4.6",
     "broccoli-clean-css": "1.1.0",
