@@ -40,7 +40,8 @@ var _ = require('lodash'),
     };
 
 
-function PrettyStream() {
+function PrettyStream(options) {
+    this.mode = options.mode || 'short';
 }
 util.inherits(PrettyStream, Stream);
 
@@ -59,7 +60,8 @@ PrettyStream.prototype.write = function write(data) {
         }
     }
 
-    var body = {},
+    var output = '',
+        body = {},
         time = moment(data.time).format('YYYY-MM-DD HH:mm:ss'),
         logLevel = __private__.levelFromName[data.level].toUpperCase(),
         codes = __private__.colors[__private__.colorForLevel[data.level]],
@@ -74,12 +76,11 @@ PrettyStream.prototype.write = function write(data) {
     if (data.req && data.res) {
         _.each(data.req, function (value, key) {
             if (['headers', 'query', 'body'].indexOf(key) !== -1 && !_.isEmpty(value)) {
-                bodyPretty += colorize('yellow', key.toUpperCase()) + '\n';
+                bodyPretty += '\n' + colorize('yellow', key.toUpperCase()) + '\n';
                 bodyPretty += prettyjson.render(value, {}) + '\n';
             }
         });
 
-        bodyPretty += '\n';
         if (data.err) {
             if (data.err.level) {
                 bodyPretty += colorize('yellow', 'ERROR (' + data.err.level + ')') + '\n';
@@ -100,7 +101,7 @@ PrettyStream.prototype.write = function write(data) {
             }
 
             if (key === 'level') {
-                bodyPretty += colorize('underline', key + ':' + value) + '\n\n';
+                bodyPretty += colorize('underline', key + ':' + value) + '\n';
             }
             else if (key === 'message') {
                 bodyPretty += colorize('red', value) + '\n';
@@ -122,33 +123,36 @@ PrettyStream.prototype.write = function write(data) {
 
     try {
         if (data.req && data.res) {
-            this.emit('data', format('[%s] %s --> %s %s (%s) \n%s\n\n',
+            output += format('[%s] %s %s %s (%s)\n',
                 time,
                 logLevel,
                 data.req.method,
-                data.req.url,
-                data.res.statusCode,
-                colorize('grey', bodyPretty)
-            ));
+                data.req.originalUrl,
+                data.res.statusCode
+            );
+
         } else if (data.err) {
-            this.emit('data', format('[%s] %s \n%s\n\n',
+            output += format('[%s] %s\n',
                 time,
-                logLevel,
-                colorize('grey', bodyPretty)
-            ));
+                logLevel
+            );
         } else {
-            this.emit('data', format('[%s] %s %s\n',
+            output += format('[%s] %s\n',
                 time,
-                logLevel,
-                colorize('grey', bodyPretty)
-            ));
+                logLevel
+            );
         }
+
+        if (this.mode !== 'short' && bodyPretty) {
+            output += format('%s\n', colorize('grey', bodyPretty));
+        }
+
+        this.emit('data', output);
     } catch (err) {
         this.emit('data', err);
     }
 
     return true;
 };
-
 
 module.exports = PrettyStream;

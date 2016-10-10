@@ -113,7 +113,7 @@ GhostLogger.prototype.setStreams = function setStreams() {
         }
 
         if (transport === 'stdout') {
-            prettyStdOut = new GhostPrettyStream();
+            prettyStdOut = new GhostPrettyStream({mode: self.mode});
             prettyStdOut.pipe(process.stdout);
 
             streams.push({
