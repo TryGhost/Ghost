@@ -20,13 +20,12 @@ describe('Scheduling', function () {
     });
 
     describe('success', function () {
-        it('ensure post scheduling init is called', function (done) {
-            scope.scheduling.init({
+        it('ensure post scheduling init is called', function () {
+            return scope.scheduling.init({
                 postScheduling: {}
             }).then(function () {
                 postScheduling.init.calledOnce.should.eql(true);
-                done();
-            }).catch(done);
+            });
         });
     });
 });
