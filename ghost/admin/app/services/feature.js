@@ -30,7 +30,6 @@ export default Service.extend({
 
     publicAPI: feature('publicAPI'),
     subscribers: feature('subscribers'),
-    internalTags: feature('internalTags'),
 
     _settings: null,
 
