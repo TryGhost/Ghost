@@ -34,12 +34,12 @@ describe('{{next_post}} helper', function () {
             should.exist(handlebars.helpers.prev_post);
         });
 
-        it('shows \'if\' template with next post data', function (done) {
+        it('shows \'if\' template with next post data', function () {
             var fn = sinon.spy(),
                 inverse = sinon.spy(),
                 optionsData = {name: 'next_post', fn: fn, inverse: inverse};
 
-            helpers.prev_post.call({html: 'content',
+            return helpers.prev_post.call({html: 'content',
                 status: 'published',
                 markdown: 'ff',
                 title: 'post2',
@@ -51,10 +51,6 @@ describe('{{next_post}} helper', function () {
 
                 readPostStub.calledOnce.should.be.true();
                 readPostStub.firstCall.args[0].include.should.eql('next,next.author,next.tags');
-                done();
-            }).catch(function (err) {
-                console.log('err ', err);
-                done(err);
             });
         });
     });
@@ -69,12 +65,12 @@ describe('{{next_post}} helper', function () {
             });
         });
 
-        it('shows \'else\' template', function (done) {
+        it('shows \'else\' template', function () {
             var fn = sinon.spy(),
                 inverse = sinon.spy(),
                 optionsData = {name: 'next_post', fn: fn, inverse: inverse};
 
-            helpers.prev_post.call({html: 'content',
+            return helpers.prev_post.call({html: 'content',
                 markdown: 'ff',
                 title: 'post2',
                 slug: 'current',
@@ -82,9 +78,6 @@ describe('{{next_post}} helper', function () {
                 url: '/current/'}, optionsData).then(function () {
                 fn.called.should.be.false();
                 inverse.called.should.be.true();
-                done();
-            }).catch(function (err) {
-                done(err);
             });
         });
     });
@@ -99,18 +92,15 @@ describe('{{next_post}} helper', function () {
             });
         });
 
-        it('shows \'else\' template', function (done) {
+        it('shows \'else\' template', function () {
             var fn = sinon.spy(),
                 inverse = sinon.spy(),
                 optionsData = {name: 'next_post', fn: fn, inverse: inverse};
 
-            helpers.prev_post.call({}, optionsData).then(function () {
+            return helpers.prev_post.call({}, optionsData).then(function () {
                 fn.called.should.be.false();
                 inverse.called.should.be.true();
                 readPostStub.called.should.be.false();
-                done();
-            }).catch(function (err) {
-                done(err);
             });
         });
     });
@@ -127,12 +117,12 @@ describe('{{next_post}} helper', function () {
             });
         });
 
-        it('shows \'else\' template', function (done) {
+        it('shows \'else\' template', function () {
             var fn = sinon.spy(),
                 inverse = sinon.spy(),
                 optionsData = {name: 'next_post', fn: fn, inverse: inverse};
 
-            helpers.prev_post.call({html: 'content',
+            return helpers.prev_post.call({html: 'content',
                 status: 'published',
                 markdown: 'ff',
                 title: 'post2',
@@ -142,9 +132,6 @@ describe('{{next_post}} helper', function () {
             .then(function () {
                 fn.called.should.be.true();
                 inverse.called.should.be.false();
-                done();
-            }).catch(function (err) {
-                done(err);
             });
         });
     });
