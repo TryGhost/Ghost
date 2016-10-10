@@ -13,13 +13,13 @@ channelConfig = function channelConfig() {
             name: 'tag',
             route: '/' + config.get('routeKeywords').tag + '/:slug/',
             postOptions: {
-                filter: 'tags:\'%s\''
+                filter: 'tags:\'%s\'+tags.visibility:\'public\''
             },
             data: {
                 tag: {
                     type: 'read',
                     resource: 'tags',
-                    options: {slug: '%s'}
+                    options: {slug: '%s', visibility: 'public'}
                 }
             },
             slugTemplate: true,
