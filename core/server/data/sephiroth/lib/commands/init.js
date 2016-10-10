@@ -1,6 +1,7 @@
 var Promise = require('bluebird'),
     path = require('path'),
     utils = require('../utils'),
+    errors = require('../errors'),
     logging = require('../../../../logging');
 
 /**
@@ -34,7 +35,7 @@ module.exports = function init(options) {
                     type: 'init'
                 });
             }).catch(function (err) {
-                if (err.code === utils.errors.taskFound) {
+                if (err instanceof errors.MigrationExistsError) {
                     logging.warn('Skipping:' + task.name);
                     return Promise.resolve();
                 }
