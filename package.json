@@ -117,7 +117,7 @@
     "jshint-stylish": "2.2.1",
     "matchdep": "1.0.1",
     "minimist": "1.2.0",
-    "mocha": "3.1.0",
+    "mocha": "3.1.1",
     "nock": "8.0.0",
     "rewire": "2.5.2",
     "run-sequence": "1.2.2",
