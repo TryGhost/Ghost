@@ -9,8 +9,8 @@
 var hbs             = require('express-hbs'),
     _               = require('lodash'),
     utils           = require('../utils'),
-    labs            = require('../utils/labs'),
     localUtils      = require('./utils'),
+    visibilityFilter = require('../utils/visibility-filter'),
     tags;
 
 tags = function (options) {
@@ -28,29 +28,14 @@ tags = function (options) {
         output     = '';
 
     function createTagList(tags) {
-        return _.reduce(tags, function (tagArray, tag) {
-            // If labs.internalTags is set && visibility is not set to all
-            // Then, if tag has a visibility property, and that visibility property is also not explicitly allowed, skip tag
-            // or if there is no visibility property, and options.hash.visibility was set, skip tag
-            if (labs.isSet('internalTags') && !_.includes(visibility, 'all')) {
-                if (
-                    (tag.visibility && !_.includes(visibility, tag.visibility) && !_.includes(visibility, 'all')) ||
-                    (!!options.hash.visibility && !_.includes(visibility, 'all') && !tag.visibility)
-                ) {
-                    // Skip this tag
-                    return tagArray;
-                }
-            }
-
-            var tagOutput = autolink ? localUtils.linkTemplate({
+        function processTag(tag) {
+            return autolink ? localUtils.linkTemplate({
                 url: utils.url.urlFor('tag', {tag: tag}),
                 text: _.escape(tag.name)
             }) : _.escape(tag.name);
+        }
 
-            tagArray.push(tagOutput);
-
-            return tagArray;
-        }, []);
+        return visibilityFilter(tags, visibility, !!options.hash.visibility, processTag);
     }
 
     if (this.tags && this.tags.length) {

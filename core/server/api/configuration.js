@@ -32,7 +32,6 @@ function getBaseConfig() {
         fileStorage:    {value: (config.fileStorage !== false), type: 'bool'},
         useGravatar:    {value: !config.isPrivacyDisabled('useGravatar'), type: 'bool'},
         publicAPI:      labsFlag('publicAPI'),
-        internalTags:   labsFlag('internalTags'),
         blogUrl:        {value: config.get('url').replace(/\/$/, ''), type: 'string'},
         blogTitle:      {value: config.get('theme').title, type: 'string'},
         routeKeywords:  {value: JSON.stringify(config.get('routeKeywords')), type: 'json'}

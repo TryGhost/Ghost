@@ -6,7 +6,6 @@ var should         = require('should'),
 
 // Stuff we are testing
     handlebars     = hbs.handlebars,
-    labs           = require('../../../server/utils/labs'),
     helpers        = rewire('../../../server/helpers'),
 
     sandbox = sinon.sandbox.create();
@@ -191,123 +190,83 @@ describe('{{tags}} helper', function () {
             {name: 'buzz', slug: 'buzz'}
         ];
 
-        // @TODO: remove these once internal tags are out of beta
-        describe('Labs Flag', function () {
-            it('will output internal tags when the labs flag IS NOT set', function () {
-                sandbox.stub(labs, 'isSet').returns(false);
+        it('will not output internal tags by default', function () {
+            var rendered = helpers.tags.call(
+                {tags: tags}
+            );
 
-                var rendered = helpers.tags.call(
-                    {tags: tags}
-                );
-
-                String(rendered).should.equal(
-                    '<a href="/tag/foo-bar/">foo</a>, ' +
-                    '<a href="/tag/hash-bar/">#bar</a>, ' +
-                    '<a href="/tag/bar/">bar</a>, ' +
-                    '<a href="/tag/baz/">baz</a>, ' +
-                    '<a href="/tag/buzz/">buzz</a>'
-                );
-            });
-
-            it('will NOT output internal tags when the labs flag IS set', function () {
-                sandbox.stub(labs, 'isSet').returns(true);
-
-                var rendered = helpers.tags.call(
-                    {tags: tags}
-                );
-
-                String(rendered).should.equal(
-                    '<a href="/tag/foo-bar/">foo</a>, ' +
-                    '<a href="/tag/bar/">bar</a>, ' +
-                    '<a href="/tag/baz/">baz</a>, ' +
-                    '<a href="/tag/buzz/">buzz</a>'
-                );
-            });
+            String(rendered).should.equal(
+                '<a href="/tag/foo-bar/">foo</a>, ' +
+                '<a href="/tag/bar/">bar</a>, ' +
+                '<a href="/tag/baz/">baz</a>, ' +
+                '<a href="/tag/buzz/">buzz</a>'
+            );
         });
 
-        describe('Enabled', function () {
-            beforeEach(function () {
-                sandbox.stub(labs, 'isSet').returns(true);
-            });
+        it('should still correctly apply from & limit tags', function () {
+            var rendered = helpers.tags.call(
+                {tags: tags},
+                {hash: {from: '2', limit: '2'}}
+            );
 
-            it('will not output internal tags by default', function () {
-                var rendered = helpers.tags.call(
-                    {tags: tags}
-                );
+            String(rendered).should.equal(
+                '<a href="/tag/bar/">bar</a>, ' +
+                '<a href="/tag/baz/">baz</a>'
+            );
+        });
 
-                String(rendered).should.equal(
-                    '<a href="/tag/foo-bar/">foo</a>, ' +
-                    '<a href="/tag/bar/">bar</a>, ' +
-                    '<a href="/tag/baz/">baz</a>, ' +
-                    '<a href="/tag/buzz/">buzz</a>'
-                );
-            });
+        it('should output all tags with visibility="all"', function () {
+            var rendered = helpers.tags.call(
+                {tags: tags},
+                {hash: {visibility: 'all'}}
+            );
 
-            it('should still correctly apply from & limit tags', function () {
-                var rendered = helpers.tags.call(
+            String(rendered).should.equal(
+                '<a href="/tag/foo-bar/">foo</a>, ' +
+                '<a href="/tag/hash-bar/">#bar</a>, ' +
+                '<a href="/tag/bar/">bar</a>, ' +
+                '<a href="/tag/baz/">baz</a>, ' +
+                '<a href="/tag/buzz/">buzz</a>'
+            );
+        });
+
+        it('should output all tags with visibility property set with visibility="public,internal"', function () {
+            var rendered = helpers.tags.call(
                     {tags: tags},
-                    {hash: {from: '2', limit: '2'}}
+                    {hash: {visibility: 'public,internal'}}
                 );
+            should.exist(rendered);
 
-                String(rendered).should.equal(
-                    '<a href="/tag/bar/">bar</a>, ' +
-                    '<a href="/tag/baz/">baz</a>'
-                );
-            });
+            String(rendered).should.equal(
+                '<a href="/tag/foo-bar/">foo</a>, ' +
+                '<a href="/tag/hash-bar/">#bar</a>, ' +
+                '<a href="/tag/bar/">bar</a>, ' +
+                '<a href="/tag/baz/">baz</a>'
+            );
+        });
 
-            it('should output all tags with visibility="all"', function () {
-                var rendered = helpers.tags.call(
+        it('Should output only internal tags with visibility="internal"', function () {
+            var rendered = helpers.tags.call(
                     {tags: tags},
-                    {hash: {visibility: 'all'}}
+                    {hash: {visibility: 'internal'}}
                 );
+            should.exist(rendered);
 
-                String(rendered).should.equal(
-                    '<a href="/tag/foo-bar/">foo</a>, ' +
-                    '<a href="/tag/hash-bar/">#bar</a>, ' +
-                    '<a href="/tag/bar/">bar</a>, ' +
-                    '<a href="/tag/baz/">baz</a>, ' +
-                    '<a href="/tag/buzz/">buzz</a>'
-                );
-            });
+            String(rendered).should.equal('<a href="/tag/hash-bar/">#bar</a>');
+        });
 
-            it('should output all tags with visibility property set with visibility="public,internal"', function () {
-                var rendered = helpers.tags.call(
-                        {tags: tags},
-                        {hash: {visibility: 'public,internal'}}
-                    );
-                should.exist(rendered);
+        it('should output nothing if all tags are internal', function () {
+            var tags = [
+                {name: '#foo', slug: 'hash-foo-bar', visibility: 'internal'},
+                {name: '#bar', slug: 'hash-bar', visibility: 'internal'}
+            ],
+                rendered = helpers.tags.call(
+                {tags: tags},
+                {hash: {prefix: 'stuff'}}
+            );
+            should.exist(rendered);
 
-                String(rendered).should.equal(
-                    '<a href="/tag/foo-bar/">foo</a>, ' +
-                    '<a href="/tag/hash-bar/">#bar</a>, ' +
-                    '<a href="/tag/bar/">bar</a>, ' +
-                    '<a href="/tag/baz/">baz</a>'
-                );
-            });
-
-            it('Should output only internal tags with visibility="internal"', function () {
-                var rendered = helpers.tags.call(
-                        {tags: tags},
-                        {hash: {visibility: 'internal'}}
-                    );
-                should.exist(rendered);
-
-                String(rendered).should.equal('<a href="/tag/hash-bar/">#bar</a>');
-            });
-
-            it('should output nothing if all tags are internal', function () {
-                var tags = [
-                    {name: '#foo', slug: 'hash-foo-bar', visibility: 'internal'},
-                    {name: '#bar', slug: 'hash-bar', visibility: 'internal'}
-                ],
-                    rendered = helpers.tags.call(
-                    {tags: tags},
-                    {hash: {prefix: 'stuff'}}
-                );
-                should.exist(rendered);
-
-                String(rendered).should.equal('');
-            });
+            String(rendered).should.equal('');
         });
     });
 });

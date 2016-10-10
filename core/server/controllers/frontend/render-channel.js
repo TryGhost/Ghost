@@ -4,7 +4,6 @@ var debug = require('debug')('ghost:channels:render'),
     i18n        = require('../../i18n'),
     filters     = require('../../filters'),
     safeString  = require('../../utils/index').safeString,
-    labs        = require('../../utils/labs'),
     handleError        = require('./error'),
     fetchData          = require('./fetch-data'),
     formatResponse     = require('./format-response'),
@@ -24,15 +23,6 @@ function renderChannel(req, res, next) {
     // Set page on postOptions for the query made later
     channelOpts.postOptions.page = pageParam;
     channelOpts.slugParam = slugParam;
-
-    // this is needed here because the channel config is cloned,
-    // and thus changes to labs flags don't update the config
-    // Once internal tags is moved out of labs the functionality can be
-    // moved back into the channel config
-    if (labs.isSet('internalTags') && channelOpts.name === 'tag') {
-        channelOpts.postOptions.filter = 'tags:\'%s\'+tags.visibility:\'public\'';
-        channelOpts.data.tag.options = {slug: '%s', visibility: 'public'};
-    }
 
     // Call fetchData to get everything we need from the API
     return fetchData(channelOpts).then(function handleResult(result) {
