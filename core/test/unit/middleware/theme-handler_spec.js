@@ -106,7 +106,7 @@ describe('Theme Handler', function () {
     });
 
     describe('updateActiveTheme', function () {
-        it('updates the active theme if changed', function (done) {
+        it('updates the active theme if changed', function () {
             var activateThemeSpy = sandbox.spy(themeHandler, 'activateTheme');
 
             sandbox.stub(api.settings, 'read').withArgs(sandbox.match.has('key', 'activeTheme')).returns(Promise.resolve({
@@ -120,11 +120,10 @@ describe('Theme Handler', function () {
 
             themeHandler.updateActiveTheme(req, res, function () {
                 activateThemeSpy.called.should.be.true();
-                done();
             });
         });
 
-        it('does not update the active theme if not changed', function (done) {
+        it('does not update the active theme if not changed', function () {
             var activateThemeSpy = sandbox.spy(themeHandler, 'activateTheme');
             sandbox.stub(api.settings, 'read').withArgs(sandbox.match.has('key', 'activeTheme')).returns(Promise.resolve({
                 settings: [{
@@ -137,11 +136,10 @@ describe('Theme Handler', function () {
 
             themeHandler.updateActiveTheme(req, res, function () {
                 activateThemeSpy.called.should.be.false();
-                done();
             });
         });
 
-        it('throws error if theme is missing', function (done) {
+        it('throws error if theme is missing', function () {
             var activateThemeSpy = sandbox.spy(themeHandler, 'activateTheme');
 
             sandbox.stub(api.settings, 'read').withArgs(sandbox.match.has('key', 'activeTheme')).returns(Promise.resolve({
@@ -158,11 +156,10 @@ describe('Theme Handler', function () {
                 should.exist(err);
                 activateThemeSpy.called.should.be.false();
                 err.message.should.eql('The currently active theme "rasper" is missing.');
-                done();
             });
         });
 
-        it('throws only warns if theme is missing for admin req', function (done) {
+        it('throws only warns if theme is missing for admin req', function () {
             var activateThemeSpy = sandbox.spy(themeHandler, 'activateTheme'),
                 loggingWarnStub = sandbox.spy(logging, 'warn');
 
@@ -181,7 +178,6 @@ describe('Theme Handler', function () {
                 activateThemeSpy.called.should.be.false();
                 loggingWarnStub.called.should.be.true();
                 loggingWarnStub.calledWith('The currently active theme "rasper" is missing.').should.be.true();
-                done();
             });
         });
     });

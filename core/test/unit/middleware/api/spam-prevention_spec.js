@@ -39,25 +39,23 @@ describe('Middleware: spamPrevention', function () {
             };
         });
 
-        it('calls next if refreshing the token', function (done) {
+        it('calls next if refreshing the token', function () {
             req.body.grant_type = 'refresh_token';
             spamPrevention.signin(req, null, next);
 
             next.calledOnce.should.be.true();
-            done();
         });
 
-        it ('creates a BadRequestError when there\'s no username', function (done) {
+        it ('creates a BadRequestError when there\'s no username', function () {
             req.body = {};
 
             spamPrevention.signin(req, null, spyNext);
 
             should.exist(error);
             error.errorType.should.eql('BadRequestError');
-            done();
         });
 
-        it ('rate limits after 10 attempts', function (done) {
+        it ('rate limits after 10 attempts', function () {
             for (var ndx = 0; ndx < 10; ndx = ndx + 1) {
                 spamPrevention.signin(req, null, spyNext);
             }
@@ -65,11 +63,9 @@ describe('Middleware: spamPrevention', function () {
             spamPrevention.signin(req, null, spyNext);
             should.exist(error);
             error.errorType.should.eql('TooManyRequestsError');
-
-            done();
         });
 
-        it ('allows more attempts after an hour', function (done) {
+        it ('allows more attempts after an hour', function () {
             var ndx,
                 stub = sinon.stub(process, 'hrtime', function () {
                     return [10, 10];
@@ -94,7 +90,6 @@ describe('Middleware: spamPrevention', function () {
             spyNext.called.should.be.true();
 
             process.hrtime.restore();
-            done();
         });
     });
 
@@ -112,29 +107,25 @@ describe('Middleware: spamPrevention', function () {
             };
         });
 
-        it ('send a bad request if no email is specified', function (done) {
+        it ('send a bad request if no email is specified', function () {
             req.body = {
                 passwordreset: [{}]
             };
 
             spamPrevention.forgotten(req, null, spyNext);
             error.errorType.should.eql('BadRequestError');
-
-            done();
         });
 
-        it ('creates an unauthorized error after 5 attempts with same email', function (done) {
+        it ('creates an unauthorized error after 5 attempts with same email', function () {
             for (var ndx = 0; ndx < 6; ndx = ndx + 1) {
                 spamPrevention.forgotten(req, null, spyNext);
             }
 
             spamPrevention.forgotten(req, null, spyNext);
             error.errorType.should.eql('TooManyRequestsError');
-
-            done();
         });
 
-        it ('creates an unauthorized error after 5 attempts from the same ip', function (done) {
+        it ('creates an unauthorized error after 5 attempts from the same ip', function () {
             var ndx, email;
 
             for (ndx = 0; ndx < 6; ndx = ndx + 1) {
@@ -148,8 +139,6 @@ describe('Middleware: spamPrevention', function () {
 
             spamPrevention.forgotten(req, null, spyNext);
             error.errorType.should.eql('TooManyRequestsError');
-
-            done();
         });
     });
 });

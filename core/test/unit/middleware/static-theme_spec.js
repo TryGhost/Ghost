@@ -38,7 +38,7 @@ describe('staticTheme', function () {
         next.called.should.be.true();
     });
 
-    it('should call express.static if valid file type', function (done) {
+    it('should call express.static if valid file type', function () {
         var req = {
                 path: 'myvalidfile.css',
                 app: {
@@ -58,11 +58,10 @@ describe('staticTheme', function () {
             activeThemeStub.called.should.be.true();
             expressStatic.called.should.be.true();
             should.exist(expressStatic.args[0][1].maxAge);
-            done();
         });
     });
 
-    it('should not error if active theme is missing', function (done) {
+    it('should not error if active theme is missing', function () {
         var req = {
                 path: 'myvalidfile.css',
                 app: {
@@ -78,11 +77,10 @@ describe('staticTheme', function () {
             /*jshint unused:false */
             sandbox.restore();
             next.called.should.be.false();
-            done();
         });
     });
 
-    it('should not call next if file is on whitelist', function (done) {
+    it('should not call next if file is on whitelist', function () {
         var req = {
                 path: 'manifest.json',
                 app: {
@@ -99,7 +97,6 @@ describe('staticTheme', function () {
             sandbox.restore();
             next.called.should.be.false();
             activeThemeStub.called.should.be.true();
-            done();
         });
     });
 });

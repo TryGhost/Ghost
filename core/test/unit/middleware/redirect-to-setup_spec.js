@@ -21,7 +21,7 @@ describe('redirectToSetup', function () {
         sandbox.restore();
     });
 
-    it('should redirect to setup if not on setup', function (done) {
+    it('should redirect to setup if not on setup', function () {
         sandbox.stub(api.authentication, 'isSetup', function () {
             return Promise.resolve({setup: [{status: false}]});
         });
@@ -30,13 +30,12 @@ describe('redirectToSetup', function () {
         res.redirect = sinon.spy(function () {
             next.called.should.be.false();
             res.redirect.called.should.be.true();
-            done();
         });
 
         redirectToSetup(req, res, next);
     });
 
-    it('should not redirect if setup is done', function (done) {
+    it('should not redirect if setup is done', function () {
         sandbox.stub(api.authentication, 'isSetup', function () {
             return Promise.resolve({setup: [{status: true}]});
         });
@@ -47,13 +46,12 @@ describe('redirectToSetup', function () {
         next = sinon.spy(function () {
             next.called.should.be.true();
             res.redirect.called.should.be.false();
-            done();
         });
 
         redirectToSetup(req, res, next);
     });
 
-    it('should not redirect if already on setup', function (done) {
+    it('should not redirect if already on setup', function () {
         sandbox.stub(api.authentication, 'isSetup', function () {
             return Promise.resolve({setup: [{status: false}]});
         });
@@ -64,13 +62,12 @@ describe('redirectToSetup', function () {
         next = sinon.spy(function () {
             next.called.should.be.true();
             res.redirect.called.should.be.false();
-            done();
         });
 
         redirectToSetup(req, res, next);
     });
 
-    it('should not redirect successful oauth authorization requests', function (done) {
+    it('should not redirect successful oauth authorization requests', function () {
         sandbox.stub(api.authentication, 'isSetup', function () {
             return Promise.resolve({setup: [{status: false}]});
         });
@@ -82,13 +79,12 @@ describe('redirectToSetup', function () {
         next = sinon.spy(function () {
             next.called.should.be.true();
             res.redirect.called.should.be.false();
-            done();
         });
 
         redirectToSetup(req, res, next);
     });
 
-    it('should not redirect failed oauth authorization requests', function (done) {
+    it('should not redirect failed oauth authorization requests', function () {
         sandbox.stub(api.authentication, 'isSetup', function () {
             return Promise.resolve({setup: [{status: false}]});
         });
@@ -100,7 +96,6 @@ describe('redirectToSetup', function () {
         next = sinon.spy(function () {
             next.called.should.be.true();
             res.redirect.called.should.be.false();
-            done();
         });
 
         redirectToSetup(req, res, next);

@@ -36,18 +36,16 @@ describe('cors', function () {
         cors = rewire('../../../../server/middleware/api/cors');
     });
 
-    it('should not be enabled without a request origin header', function (done) {
+    it('should not be enabled without a request origin header', function () {
         req.get = sinon.stub().withArgs('origin').returns(null);
 
         cors(req, res, next);
 
         next.called.should.be.true();
         should.not.exist(res.headers['Access-Control-Allow-Origin']);
-
-        done();
     });
 
-    it('should be enabled when origin is 127.0.0.1', function (done) {
+    it('should be enabled when origin is 127.0.0.1', function () {
         var origin = 'http://127.0.0.1:2368';
 
         req.get = sinon.stub().withArgs('origin').returns(origin);
@@ -58,11 +56,9 @@ describe('cors', function () {
 
         next.called.should.be.true();
         res.headers['Access-Control-Allow-Origin'].should.equal(origin);
-
-        done();
     });
 
-    it('should be enabled when origin is localhost', function (done) {
+    it('should be enabled when origin is localhost', function () {
         var origin = 'http://localhost:2368';
 
         req.get = sinon.stub().withArgs('origin').returns(origin);
@@ -73,11 +69,9 @@ describe('cors', function () {
 
         next.called.should.be.true();
         res.headers['Access-Control-Allow-Origin'].should.equal(origin);
-
-        done();
     });
 
-    it('should be enabled when origin is a client_trusted_domain', function (done) {
+    it('should be enabled when origin is a client_trusted_domain', function () {
         var origin = 'http://my-trusted-domain.com';
 
         req.client.trustedDomains.push({trusted_domain: origin});
@@ -89,11 +83,9 @@ describe('cors', function () {
 
         next.called.should.be.true();
         res.headers['Access-Control-Allow-Origin'].should.equal(origin);
-
-        done();
     });
 
-    it('should be enabled when there are multiple trusted domains', function (done) {
+    it('should be enabled when there are multiple trusted domains', function () {
         var origin = 'http://my-other-trusted-domain.com';
 
         req.client.trustedDomains.push({trusted_domain: origin});
@@ -106,11 +98,9 @@ describe('cors', function () {
 
         next.called.should.be.true();
         res.headers['Access-Control-Allow-Origin'].should.equal(origin);
-
-        done();
     });
 
-    it('should not be enabled the origin is not trusted or whitelisted', function (done) {
+    it('should not be enabled the origin is not trusted or whitelisted', function () {
         var origin = 'http://not-trusted.com';
 
         req.client.trustedDomains.push({trusted_domain: 'http://example.com'});
@@ -122,11 +112,9 @@ describe('cors', function () {
 
         next.called.should.be.true();
         should.not.exist(res.headers['Access-Control-Allow-Origin']);
-
-        done();
     });
 
-    it('should not be enabled the origin client_trusted_domains is empty', function (done) {
+    it('should not be enabled the origin client_trusted_domains is empty', function () {
         var origin = 'http://example.com';
 
         req.get = sinon.stub().withArgs('origin').returns(origin);
@@ -137,11 +125,9 @@ describe('cors', function () {
 
         next.called.should.be.true();
         should.not.exist(res.headers['Access-Control-Allow-Origin']);
-
-        done();
     });
 
-    it('should be enabled if the origin matches config.url', function (done) {
+    it('should be enabled if the origin matches config.url', function () {
         var origin = 'http://my.blog';
         configUtils.set({
             url: origin
@@ -155,11 +141,9 @@ describe('cors', function () {
 
         next.called.should.be.true();
         res.headers['Access-Control-Allow-Origin'].should.equal(origin);
-
-        done();
     });
 
-    it('should be enabled if the origin matches config.urlSSL', function (done) {
+    it('should be enabled if the origin matches config.urlSSL', function () {
         var origin = 'https://secure.blog';
         configUtils.set({
             url: 'http://my.blog',
@@ -174,7 +158,5 @@ describe('cors', function () {
 
         next.called.should.be.true();
         res.headers['Access-Control-Allow-Origin'].should.equal(origin);
-
-        done();
     });
 });
