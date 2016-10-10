@@ -2,6 +2,7 @@
 var express = require('express'),
     api = require('../api'),
     auth = require('../auth'),
+    bodyParser = require('body-parser'),
     apiRoutes;
 
 apiRoutes = function apiRoutes(middleware) {
@@ -23,6 +24,10 @@ apiRoutes = function apiRoutes(middleware) {
 
     // alias delete with del
     router.del = router.delete;
+
+    // Body parsing
+    router.use(bodyParser.json({limit: '1mb'}));
+    router.use(bodyParser.urlencoded({extended: true, limit: '1mb'}));
 
     // send 503 json response in case of maintenance
     router.use(middleware.api.maintenance);

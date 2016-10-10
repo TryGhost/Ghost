@@ -1,5 +1,4 @@
 var debug           = require('debug')('ghost:middleware'),
-    bodyParser      = require('body-parser'),
     compress        = require('compression'),
     express         = require('express'),
     hbs             = require('express-hbs'),
@@ -170,10 +169,6 @@ setupMiddleware = function setupMiddleware(blogApp) {
     // Add in all trailing slashes & remove uppercase
     // must happen AFTER asset loading and BEFORE routing
     blogApp.use(prettyURLs);
-
-    // Body parsing
-    blogApp.use(bodyParser.json({limit: '1mb'}));
-    blogApp.use(bodyParser.urlencoded({extended: true, limit: '1mb'}));
 
     // ### Caching
     // Blog frontend is cacheable
