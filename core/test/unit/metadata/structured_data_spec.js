@@ -2,7 +2,7 @@ var getStructuredData = require('../../../server/data/meta/structured_data'),
     should = require('should');
 
 describe('getStructuredData', function () {
-    it('should return structured data from metadata', function (done) {
+    it('should return structured data from metadata', function () {
         var metadata = {
             blog: {
                 title: 'Blog Title',
@@ -54,10 +54,9 @@ describe('getStructuredData', function () {
             'twitter:site': '@testuser',
             'twitter:creator': '@twitterpage'
         });
-        done();
     });
 
-    it('should return structured data from metadata with no nulls', function (done) {
+    it('should return structured data from metadata with no nulls', function () {
         var metadata = {
             blog: {
                 title: 'Blog Title',
@@ -90,6 +89,5 @@ describe('getStructuredData', function () {
             'twitter:title': 'Post Title',
             'twitter:url': 'http://mysite.com/post/my-post-slug/'
         });
-        done();
     });
 });
