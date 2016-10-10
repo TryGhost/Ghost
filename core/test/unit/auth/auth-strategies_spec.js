@@ -240,7 +240,7 @@ describe('Auth Strategies', function () {
             });
         });
 
-        it('with correct invite token', function () {
+        it('with correct invite token', function (done) {
             var ghostAuthAccessToken = '12345',
                 req = {body: {inviteToken: 'token'}},
                 invitedProfile = {email_address: 'test@example.com'},
