@@ -40,8 +40,8 @@ var _ = require('lodash'),
     };
 
 
-function PrettyStream(format) {
-    this.format = format;
+function PrettyStream(options) {
+    this.mode = options.mode || 'short';
 }
 util.inherits(PrettyStream, Stream);
 
@@ -143,7 +143,7 @@ PrettyStream.prototype.write = function write(data) {
             );
         }
 
-        if (this.format !== 'short' && bodyPretty) {
+        if (this.mode !== 'short' && bodyPretty) {
             output += format('%s\n', colorize('grey', bodyPretty));
         }
 

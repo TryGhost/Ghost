@@ -8,7 +8,6 @@ function GhostLogger(options) {
     this.level = options.level || 'info';
     this.mode = options.mode || 'short';
     this.path = options.path || 'ghost.log';
-    this.format = options.format || 'short';
     this.rotation = options.rotation || false;
     this.loggers = {};
 
@@ -114,7 +113,7 @@ GhostLogger.prototype.setStreams = function setStreams() {
         }
 
         if (transport === 'stdout') {
-            prettyStdOut = new GhostPrettyStream(self.format);
+            prettyStdOut = new GhostPrettyStream({mode: self.mode});
             prettyStdOut.pipe(process.stdout);
 
             streams.push({
