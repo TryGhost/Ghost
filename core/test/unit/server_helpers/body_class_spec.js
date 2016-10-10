@@ -86,7 +86,7 @@ describe('{{body_class}} helper', function () {
                 {relativeUrl: '/page/4'}
             );
 
-            rendered.string.should.equal('paged archive-template');
+            rendered.string.should.equal('paged');
         });
 
         it('tag page', function () {
@@ -104,7 +104,7 @@ describe('{{body_class}} helper', function () {
                 {relativeUrl: '/tag/foo/page/2', tag: {slug: 'foo'}}
             );
 
-            rendered.string.should.equal('tag-template tag-foo paged archive-template');
+            rendered.string.should.equal('tag-template tag-foo paged');
         });
 
         it('author page', function () {
@@ -122,7 +122,7 @@ describe('{{body_class}} helper', function () {
                 {relativeUrl: '/author/bar/page/2', author: {slug: 'bar'}}
             );
 
-            rendered.string.should.equal('author-template author-bar paged archive-template');
+            rendered.string.should.equal('author-template author-bar paged');
         });
 
         it('private route for password protection', function () {
@@ -146,19 +146,19 @@ describe('{{body_class}} helper', function () {
         it('a static page', function () {
             var rendered = callBodyClassWithContext(
                 ['page'],
-                {relativeUrl: '/about', post: {page: true}}
+                {relativeUrl: '/about', post: {page: true, slug: 'about'}}
             );
 
-            rendered.string.should.equal('post-template page-template page');
+            rendered.string.should.equal('page-template page-about');
         });
 
-        it('a static page with custom template', function () {
+        it('a static page with custom template (is now the same as one without)', function () {
             var rendered = callBodyClassWithContext(
                 ['page'],
                 {relativeUrl: '/about', post: {page: true, slug: 'about'}}
             );
 
-            rendered.string.should.equal('post-template page-template page page-about page-template-about');
+            rendered.string.should.equal('page-template page-about');
         });
     });
 });
