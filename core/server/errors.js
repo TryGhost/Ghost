@@ -3,6 +3,7 @@ var _ = require('lodash'),
 
 function GhostError(options) {
     options = options || {};
+    var self = this;
 
     if (_.isString(options)) {
         throw new Error('Please instantiate Errors with the option pattern. e.g. new errors.GhostError({message: ...})');
@@ -37,9 +38,15 @@ function GhostError(options) {
     this.hideStack = options.hideStack;
 
     // error to inherit from, override!
+    // nested objects are getting copied over in one piece (can be changed, but not needed right now)
     if (options.err) {
-        this.message = options.err.message;
-        this.stack = options.err.stack;
+        Object.getOwnPropertyNames(options.err).forEach(function (property) {
+            if (['errorType', 'name', 'statusCode'].indexOf(property) !== -1) {
+                return;
+            }
+
+            self[property] = options.err[property] || self[property];
+        });
     }
 }
 
