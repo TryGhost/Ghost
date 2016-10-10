@@ -64,7 +64,8 @@ describe('server bootstrap', function () {
                 .catch(function (err) {
                     migration.populate.calledOnce.should.eql(false);
                     config.get('maintenance').enabled.should.eql(false);
-                    (err instanceof errors.DatabaseNotPopulated).should.eql(true);
+                    (err instanceof errors.GhostError).should.eql(true);
+                    err.code.should.eql('MIGRATION_TABLE_IS_MISSING');
                     done();
                 });
         });

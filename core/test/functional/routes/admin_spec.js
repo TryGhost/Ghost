@@ -7,9 +7,9 @@
 var request    = require('supertest'),
     should     = require('should'),
     testUtils  = require('../../utils'),
-    ghost      = require('../../../../core'),
+    ghost      = testUtils.startGhost,
     i18n       = require('../../../../core/server/i18n'),
-    config       = require('../../../../core/server/config');
+    config     = require('../../../../core/server/config');
 
 i18n.init();
 

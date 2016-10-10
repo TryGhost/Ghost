@@ -7,7 +7,6 @@ var Promise = require('bluebird'),
     versioning = require('./../../data/schema/versioning'),
     logging = require('./../../logging'),
     fixtures = require('../migration/fixtures'),
-    i18n = require('./../../i18n'),
     sephiroth = new Sephiroth({database: config.get('database')});
 
 /**
@@ -37,13 +36,8 @@ module.exports = function bootUp() {
             return fixtures.populate(logging, modelOptions);
         })
         .catch(function (err) {
-            if ([sephiroth.utils.errors.dbInitMissing, sephiroth.utils.errors.migrationsTableMissing].indexOf(err.code) !== -1) {
-                return Promise.reject(new errors.DatabaseNotPopulatedError({
-                    message: i18n.t('errors.data.versioning.index.databaseNotInitialised'),
-                    context: i18n.t('errors.data.versioning.index.databaseNotInitialisedContext')
-                }));
-            }
-
-            return Promise.reject(err);
+            return Promise.reject(new errors.GhostError({
+                err: err
+            }));
         });
 };

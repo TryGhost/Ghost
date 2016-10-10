@@ -42,14 +42,9 @@ function findFreePort(port) {
 
 // Creates a new fork of Ghost process with a given config
 // Useful for tests that want to verify certain config options
-<<<<<<< 4143b88b7d33ce849cbd4ae83f7e68bfdd6cf2f2
 function forkGhost(newConfig) {
-=======
-function forkGhost(newConfig, envName) {
-    envName = envName || 'forked';
     var port;
 
->>>>>>> 🎨  tests: populate db in test env
     return findFreePort()
         .then(function (_port) {
             port = _port;
