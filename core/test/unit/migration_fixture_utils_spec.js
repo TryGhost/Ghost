@@ -98,11 +98,11 @@ describe('Utils', function () {
     });
 
     describe('Add Fixtures For Model', function () {
-        it('should call add for main post fixture', function (done) {
+        it('should call add for main post fixture', function () {
             var postOneStub = sandbox.stub(models.Post, 'findOne').returns(Promise.resolve()),
                 postAddStub = sandbox.stub(models.Post, 'add').returns(Promise.resolve({}));
 
-            fixtureUtils.addFixturesForModel(fixtures.models[0]).then(function (result) {
+            return fixtureUtils.addFixturesForModel(fixtures.models[0]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
                 result.should.have.property('expected',  1);
@@ -110,15 +110,13 @@ describe('Utils', function () {
 
                 postOneStub.calledOnce.should.be.true();
                 postAddStub.calledOnce.should.be.true();
-
-                done();
             });
         });
 
-        it('should not call add for main post fixture if it is already found', function (done) {
+        it('should not call add for main post fixture if it is already found', function () {
             var postOneStub = sandbox.stub(models.Post, 'findOne').returns(Promise.resolve({})),
                 postAddStub = sandbox.stub(models.Post, 'add').returns(Promise.resolve({}));
-            fixtureUtils.addFixturesForModel(fixtures.models[0]).then(function (result) {
+            return fixtureUtils.addFixturesForModel(fixtures.models[0]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
                 result.should.have.property('expected',  1);
@@ -126,14 +124,12 @@ describe('Utils', function () {
 
                 postOneStub.calledOnce.should.be.true();
                 postAddStub.calledOnce.should.be.false();
-
-                done();
             });
         });
     });
 
     describe('Add Fixtures For Relation', function () {
-        it('should call attach for permissions-roles', function (done) {
+        it('should call attach for permissions-roles', function () {
             var fromItem = {
                     related: sandbox.stub().returnsThis(),
                     findWhere: sandbox.stub().returns(),
@@ -148,7 +144,7 @@ describe('Utils', function () {
                 permsAllStub = sandbox.stub(models.Permission, 'findAll').returns(Promise.resolve(dataMethodStub)),
                 rolesAllStub = sandbox.stub(models.Role, 'findAll').returns(Promise.resolve(dataMethodStub));
 
-            fixtureUtils.addFixturesForRelation(fixtures.relations[0]).then(function (result) {
+            return fixtureUtils.addFixturesForRelation(fixtures.relations[0]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
                 result.should.have.property('expected',  29);
@@ -167,12 +163,10 @@ describe('Utils', function () {
                 fromItem.permissions.callCount.should.eql(29);
                 fromItem.attach.callCount.should.eql(29);
                 fromItem.attach.calledWith(toItem).should.be.true();
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('should call attach for posts-tags', function (done) {
+        it('should call attach for posts-tags', function () {
             var fromItem = {
                     related: sandbox.stub().returnsThis(),
                     findWhere: sandbox.stub().returns(),
@@ -188,7 +182,7 @@ describe('Utils', function () {
                 postsAllStub = sandbox.stub(models.Post, 'findAll').returns(Promise.resolve(dataMethodStub)),
                 tagsAllStub = sandbox.stub(models.Tag, 'findAll').returns(Promise.resolve(dataMethodStub));
 
-            fixtureUtils.addFixturesForRelation(fixtures.relations[1]).then(function (result) {
+            return fixtureUtils.addFixturesForRelation(fixtures.relations[1]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
                 result.should.have.property('expected',  1);
@@ -207,12 +201,10 @@ describe('Utils', function () {
                 fromItem.tags.calledOnce.should.be.true();
                 fromItem.attach.calledOnce.should.be.true();
                 fromItem.attach.calledWith(toItem).should.be.true();
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('will not call attach for posts-tags if already present', function (done) {
+        it('will not call attach for posts-tags if already present', function () {
             var fromItem = {
                     related: sandbox.stub().returnsThis(),
                     findWhere: sandbox.stub().returns({}),
@@ -228,7 +220,7 @@ describe('Utils', function () {
                 postsAllStub = sandbox.stub(models.Post, 'findAll').returns(Promise.resolve(dataMethodStub)),
                 tagsAllStub = sandbox.stub(models.Tag, 'findAll').returns(Promise.resolve(dataMethodStub));
 
-            fixtureUtils.addFixturesForRelation(fixtures.relations[1]).then(function (result) {
+            return fixtureUtils.addFixturesForRelation(fixtures.relations[1]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
                 result.should.have.property('expected',  1);
@@ -246,9 +238,7 @@ describe('Utils', function () {
 
                 fromItem.tags.called.should.be.false();
                 fromItem.attach.called.should.be.false();
-
-                done();
-            }).catch(done);
+            });
         });
     });
 

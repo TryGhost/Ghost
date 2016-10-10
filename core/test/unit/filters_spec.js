@@ -58,7 +58,7 @@ describe('Filters', function () {
         filters.filterCallbacks[filterName][defaultPriority].should.containEql(testFilterHandler);
     });
 
-    it('executes filters in priority order', function (done) {
+    it('executes filters in priority order', function () {
         var filterName = 'testpriority',
             testFilterHandler1 = sandbox.spy(),
             testFilterHandler2 = sandbox.spy(),
@@ -68,17 +68,15 @@ describe('Filters', function () {
         filters.registerFilter(filterName, 2, testFilterHandler2);
         filters.registerFilter(filterName, 9, testFilterHandler3);
 
-        filters.doFilter(filterName, null).then(function () {
+        return filters.doFilter(filterName, null).then(function () {
             testFilterHandler1.calledBefore(testFilterHandler2).should.equal(true);
             testFilterHandler2.calledBefore(testFilterHandler3).should.equal(true);
 
             testFilterHandler3.called.should.equal(true);
-
-            done();
         });
     });
 
-    it('executes filters that return a promise', function (done) {
+    it('executes filters that return a promise', function () {
         var filterName = 'testprioritypromise',
             testFilterHandler1 = sinon.spy(function (args) {
                 return new Promise(function (resolve) {
@@ -108,7 +106,7 @@ describe('Filters', function () {
         filters.registerFilter(filterName, 2, testFilterHandler2);
         filters.registerFilter(filterName, 9, testFilterHandler3);
 
-        filters.doFilter(filterName, {test: true}).then(function (newArgs) {
+        return filters.doFilter(filterName, {test: true}).then(function (newArgs) {
             testFilterHandler1.calledBefore(testFilterHandler2).should.equal(true);
             testFilterHandler2.calledBefore(testFilterHandler3).should.equal(true);
 
@@ -117,12 +115,10 @@ describe('Filters', function () {
             newArgs.filter1.should.equal(true);
             newArgs.filter2.should.equal(true);
             newArgs.filter3.should.equal(true);
-
-            done();
-        }).catch(done);
+        });
     });
 
-    it('executes filters with a context', function (done) {
+    it('executes filters with a context', function () {
         var filterName = 'textContext',
             testFilterHandler1 = sinon.spy(function (args, context) {
                 args.context1 = _.isObject(context);
@@ -136,10 +132,9 @@ describe('Filters', function () {
         filters.registerFilter(filterName, 0, testFilterHandler1);
         filters.registerFilter(filterName, 1, testFilterHandler2);
 
-        filters.doFilter(filterName, {test: true}, {context: true}).then(function (newArgs) {
+        return filters.doFilter(filterName, {test: true}, {context: true}).then(function (newArgs) {
             newArgs.context1.should.equal(true);
             newArgs.context2.should.equal(true);
-            done();
-        }).catch(done);
+        });
     });
 });

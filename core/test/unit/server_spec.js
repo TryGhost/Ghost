@@ -57,24 +57,22 @@ describe('server bootstrap', function () {
                 return Promise.reject();
             });
 
-            bootstrap()
-                .then(function () {
-                    done(new Error('expect error: database population'));
-                })
-                .catch(function (err) {
-                    migration.populate.calledOnce.should.eql(false);
-                    config.get('maintenance').enabled.should.eql(false);
-                    (err instanceof errors.GhostError).should.eql(true);
-                    err.code.should.eql('MIGRATION_TABLE_IS_MISSING');
-                    done();
-                });
+            return bootstrap().then(function () {
+                throw new Error('expect error: database population');
+            }).catch(function (err) {
+                migration.populate.calledOnce.should.eql(false);
+                config.get('maintenance').enabled.should.eql(false);
+                (err instanceof errors.GhostError).should.eql(true);
+                err.code.should.eql('MIGRATION_TABLE_IS_MISSING');
+                done();
+            });
         });
 
         // @TODO fix these two tests once we've decided on a new migration
         // versioning scheme
         // the tests do not work right now because if the version isn't an
         // alpha version, we error. I've added two temporary tests to show this.
-        it.skip('database does exist: expect no update', function (done) {
+        it.skip('database does exist: expect no update', function () {
             sandbox.stub(migration.update, 'isDatabaseOutOfDate').returns({migrate:false});
             sandbox.spy(migration.update, 'execute');
 
@@ -82,21 +80,15 @@ describe('server bootstrap', function () {
                 return Promise.resolve('006');
             });
 
-            bootstrap()
-                .then(function () {
-                    migration.update.isDatabaseOutOfDate.calledOnce.should.eql(true);
-                    migration.update.execute.called.should.eql(false);
-                    models.Settings.populateDefaults.callCount.should.eql(1);
-                    migration.populate.calledOnce.should.eql(false);
-
-                    done();
-                })
-                .catch(function (err) {
-                    done(err);
-                });
+            return bootstrap().then(function () {
+                migration.update.isDatabaseOutOfDate.calledOnce.should.eql(true);
+                migration.update.execute.called.should.eql(false);
+                models.Settings.populateDefaults.callCount.should.eql(1);
+                migration.populate.calledOnce.should.eql(false);
+            });
         });
 
-        it.skip('database does exist: expect update', function (done) {
+        it.skip('database does exist: expect update', function () {
             sandbox.stub(migration.update, 'isDatabaseOutOfDate').returns({migrate:true});
             sandbox.stub(migration.update, 'execute').returns(Promise.resolve());
 
@@ -104,26 +96,21 @@ describe('server bootstrap', function () {
                 return Promise.resolve('006');
             });
 
-            bootstrap()
-                .then(function () {
-                    migration.update.isDatabaseOutOfDate.calledOnce.should.eql(true);
-                    migration.update.execute.calledOnce.should.eql(true);
+            return bootstrap().then(function () {
+                migration.update.isDatabaseOutOfDate.calledOnce.should.eql(true);
+                migration.update.execute.calledOnce.should.eql(true);
 
-                    migration.update.execute.calledWith({
-                        fromVersion: '006',
-                        toVersion: '008',
-                        forceMigration: undefined
-                    }).should.eql(true);
+                migration.update.execute.calledWith({
+                    fromVersion: '006',
+                    toVersion: '008',
+                    forceMigration: undefined
+                }).should.eql(true);
 
-                    models.Settings.populateDefaults.callCount.should.eql(1);
-                    migration.populate.calledOnce.should.eql(false);
-                    config.get('maintenance').enabled.should.eql(false);
+                models.Settings.populateDefaults.callCount.should.eql(1);
+                migration.populate.calledOnce.should.eql(false);
+                config.get('maintenance').enabled.should.eql(false);
 
-                    done();
-                })
-                .catch(function (err) {
-                    done(err);
-                });
+            });
         });
     });
 });

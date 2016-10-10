@@ -116,7 +116,7 @@ describe('Apps', function () {
             should.exist(appProxy.api.settings.edit);
         });
 
-        it('allows filter registration with permission', function (done) {
+        it('allows filter registration with permission', function () {
             var registerSpy = sandbox.spy(filters, 'registerFilter'),
                 appProxy = new AppProxy({
                     name: 'TestApp',
@@ -137,13 +137,10 @@ describe('Apps', function () {
 
             filterStub.called.should.equal(false);
 
-            filters.doFilter('testFilter', fakePosts)
-                .then(function () {
-                    filterStub.called.should.equal(true);
-                    appProxy.filters.deregister('testFilter', 5, filterStub);
-                    done();
-                })
-                .catch(done);
+            return filters.doFilter('testFilter', fakePosts).then(function () {
+                filterStub.called.should.equal(true);
+                appProxy.filters.deregister('testFilter', 5, filterStub);
+            });
         });
 
         it('does not allow filter registration without permission', function () {
@@ -168,7 +165,7 @@ describe('Apps', function () {
             registerSpy.called.should.equal(false);
         });
 
-        it('allows filter deregistration with permission', function (done) {
+        it('allows filter deregistration with permission', function () {
             var registerSpy = sandbox.spy(filters, 'deregisterFilter'),
                 appProxy = new AppProxy({
                     name: 'TestApp',
@@ -187,12 +184,9 @@ describe('Apps', function () {
 
             filterStub.called.should.equal(false);
 
-            filters.doFilter('prePostsRender', fakePosts)
-                .then(function () {
-                    filterStub.called.should.equal(false);
-                    done();
-                })
-                .catch(done);
+            return filters.doFilter('prePostsRender', fakePosts).then(function () {
+                filterStub.called.should.equal(false);
+            });
         });
 
         it('does not allow filter deregistration without permission', function () {
@@ -382,6 +376,7 @@ describe('Apps', function () {
                 fakeEmitter.emit('exit');
             }, 30);
         });
+
         it('does not install when no package.json', function (done) {
             var deps = new AppDependencies(__dirname),
                 fakeEmitter = new EventEmitter();
@@ -447,21 +442,21 @@ describe('Apps', function () {
             // Make it hurt to add more so additional checks are added here
             _.keys(AppPermissions.DefaultPermissions).length.should.equal(1);
         });
-        it('uses default permissions if no package.json', function (done) {
+
+        it('uses default permissions if no package.json', function () {
             var perms = new AppPermissions('test');
 
             // No package.json in this directory
             sandbox.stub(perms, 'checkPackageContentsExists').returns(Promise.resolve(false));
 
-            perms.read().then(function (readPerms) {
+            return perms.read().then(function (readPerms) {
                 should.exist(readPerms);
 
                 readPerms.should.equal(AppPermissions.DefaultPermissions);
-
-                done();
-            }).catch(done);
+            });
         });
-        it('uses default permissions if no ghost object in package.json', function (done) {
+
+        it('uses default permissions if no ghost object in package.json', function () {
             var perms = new AppPermissions('test'),
                 noGhostPackageJsonContents = JSON.stringify(noGhostPackageJson, null, 2);
 
@@ -470,15 +465,14 @@ describe('Apps', function () {
             // no ghost property on package
             sandbox.stub(perms, 'getPackageContents').returns(Promise.resolve(noGhostPackageJsonContents));
 
-            perms.read().then(function (readPerms) {
+            return perms.read().then(function (readPerms) {
                 should.exist(readPerms);
 
                 readPerms.should.equal(AppPermissions.DefaultPermissions);
-
-                done();
-            }).catch(done);
+            });
         });
-        it('rejects when reading malformed package.json', function (done) {
+
+        it('rejects when reading malformed package.json', function () {
             var perms = new AppPermissions('test');
 
             // package.json IS in this directory
@@ -486,15 +480,15 @@ describe('Apps', function () {
             // malformed JSON on package
             sandbox.stub(perms, 'getPackageContents').returns(Promise.reject(new Error('package.json file is malformed')));
 
-            perms.read().then(function (readPerms) {
+            return perms.read().then(function (readPerms) {
                 /*jshint unused:false*/
-                done(new Error('should not resolve'));
+                throw new Error('should not resolve');
             }).catch(function (err) {
                 err.message.should.equal('package.json file is malformed');
-                done();
             });
         });
-        it('reads from package.json in root of app directory', function (done) {
+
+        it('reads from package.json in root of app directory', function () {
             var perms = new AppPermissions('test'),
                 validGhostPackageJsonContents = validGhostPackageJson;
 
@@ -503,7 +497,7 @@ describe('Apps', function () {
             // valid ghost property on package
             sandbox.stub(perms, 'getPackageContents').returns(Promise.resolve(validGhostPackageJsonContents));
 
-            perms.read().then(function (readPerms) {
+            return perms.read().then(function (readPerms) {
                 should.exist(readPerms);
 
                 readPerms.should.not.equal(AppPermissions.DefaultPermissions);
@@ -518,9 +512,7 @@ describe('Apps', function () {
                 readPerms.settings.length.should.equal(5);
 
                 _.keys(readPerms).length.should.equal(3);
-
-                done();
-            }).catch(done);
+            });
         });
     });
 });

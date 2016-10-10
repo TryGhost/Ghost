@@ -81,30 +81,26 @@ describe('Migrations', function () {
             fsStub = sandbox.stub(fs, 'writeFile').yields();
         });
 
-        it('should create a backup JSON file', function (done) {
-            migration.backupDatabase(loggerStub).then(function () {
+        it('should create a backup JSON file', function () {
+            return migration.backupDatabase(loggerStub).then(function () {
                 exportStub.calledOnce.should.be.true();
                 filenameStub.calledOnce.should.be.true();
                 fsStub.calledOnce.should.be.true();
                 loggerStub.info.calledTwice.should.be.true();
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('should fall back to console.log if no logger provided', function (done) {
+        it('should fall back to console.log if no logger provided', function () {
             var noopStub = sandbox.stub(_, 'noop');
 
-            migration.backupDatabase().then(function () {
+            return migration.backupDatabase().then(function () {
                 exportStub.calledOnce.should.be.true();
                 filenameStub.calledOnce.should.be.true();
                 fsStub.calledOnce.should.be.true();
                 noopStub.calledTwice.should.be.true();
                 // restore early so we get the test output
                 noopStub.restore();
-
-                done();
-            }).catch(done);
+            });
         });
     });
 
@@ -115,8 +111,8 @@ describe('Migrations', function () {
             deleteStub = sandbox.stub(schema.commands, 'deleteTable').returns(new Promise.resolve());
         });
 
-        it('should delete all tables in reverse order', function (done) {
-            migration.reset().then(function (result) {
+        it('should delete all tables in reverse order', function () {
+            return migration.reset().then(function (result) {
                 should.exist(result);
                 result.should.be.an.Array().with.lengthOf(schemaTables.length);
 
@@ -126,13 +122,11 @@ describe('Migrations', function () {
                 deleteStub.firstCall.calledWith(schemaTables[schemaTables.length - 1]).should.be.true();
                 // Last call should be called with the first table
                 deleteStub.lastCall.calledWith('migrations').should.be.true();
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('should delete all tables in reverse order when called twice in a row', function (done) {
-            migration.reset().then(function (result) {
+        it('should delete all tables in reverse order when called twice in a row', function () {
+            return migration.reset().then(function (result) {
                 should.exist(result);
                 result.should.be.an.Array().with.lengthOf(schemaTables.length);
 
@@ -154,9 +148,7 @@ describe('Migrations', function () {
                 deleteStub.getCall(schemaTables.length).calledWith('migrations').should.be.true();
                 // Last call (second Set) should be called with the first table
                 // deleteStub.getCall(schemaTables.length * 2 + 2).calledWith(schemaTables[0]).should.be.true();
-
-                done();
-            }).catch(done);
+            });
         });
     });
 
@@ -167,12 +159,12 @@ describe('Migrations', function () {
             fixturesStub = sandbox.stub(fixtures, 'populate').returns(new Promise.resolve());
         });
 
-        it('should create all tables, and populate fixtures', function (done) {
+        it('should create all tables, and populate fixtures', function () {
             createStub = sandbox.stub(schema.commands, 'createTable').returns(new Promise.resolve());
             setDatabaseVersionStub = sandbox.stub(schema.versioning, 'setDatabaseVersion').returns(new Promise.resolve());
             populateDefaultsStub = sandbox.stub(models.Settings, 'populateDefaults').returns(new Promise.resolve());
 
-            populate().then(function (result) {
+            return populate().then(function (result) {
                 should.not.exist(result);
 
                 populateDefaultsStub.called.should.be.true();
@@ -182,11 +174,10 @@ describe('Migrations', function () {
                 createStub.firstCall.calledWith(schemaTables[0]).should.be.true();
                 createStub.lastCall.calledWith(schemaTables[schemaTables.length - 1]).should.be.true();
                 fixturesStub.calledOnce.should.be.true();
-                done();
-            }).catch(done);
+            });
         });
 
-        it('should rollback if error occurs', function (done) {
+        it('should rollback if error occurs', function () {
             var i = 0;
 
             createStub = sandbox.stub(schema.commands, 'createTable', function () {
@@ -199,16 +190,13 @@ describe('Migrations', function () {
                 return new Promise.resolve();
             });
 
-            populate()
-                .then(function () {
-                    done(new Error('should throw an error for database population'));
-                })
-                .catch(function (err) {
-                    should.exist(err);
-                    (err instanceof errors.GhostError).should.eql(true);
-                    createStub.callCount.should.eql(11);
-                    done();
-                });
+            return populate().then(function () {
+                throw new Error('should throw an error for database population');
+            }).catch(function (err) {
+                should.exist(err);
+                (err instanceof errors.GhostError).should.eql(true);
+                createStub.callCount.should.eql(11);
+            });
         });
     });
 

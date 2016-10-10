@@ -28,16 +28,14 @@ describe('Permissions', function () {
             });
         });
 
-        it('can load an actions map from existing permissions', function (done) {
-            permissions.init().then(function (actionsMap) {
+        it('can load an actions map from existing permissions', function () {
+            return permissions.init().then(function (actionsMap) {
                 should.exist(actionsMap);
 
                 actionsMap.edit.sort().should.eql(['post', 'tag', 'user', 'page'].sort());
 
                 actionsMap.should.equal(permissions.actionsMap);
-
-                done();
-            }).catch(done);
+            });
         });
     });
 
@@ -116,19 +114,18 @@ describe('Permissions', function () {
     });
 
     describe('applyPublicRules', function () {
-        it('should return empty object for docName with no rules', function (done) {
-            permissions.applyPublicRules('test', 'test', {}).then(function (result) {
+        it('should return empty object for docName with no rules', function () {
+            return permissions.applyPublicRules('test', 'test', {}).then(function (result) {
                 result.should.eql({});
-                done();
             });
         });
 
-        it('should return unchanged object for non-public context', function (done) {
+        it('should return unchanged object for non-public context', function () {
             var internal = {context: 'internal'},
                 user = {context: {user: 1}},
                 app =  {context: {app: 1}};
 
-            permissions.applyPublicRules('posts', 'browse', _.cloneDeep(internal)).then(function (result) {
+            return permissions.applyPublicRules('posts', 'browse', _.cloneDeep(internal)).then(function (result) {
                 result.should.eql(internal);
 
                 return permissions.applyPublicRules('posts', 'browse', _.cloneDeep(user));
@@ -138,15 +135,13 @@ describe('Permissions', function () {
                 return permissions.applyPublicRules('posts', 'browse', _.cloneDeep(app));
             }).then(function (result) {
                 result.should.eql(app);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('should return unchanged object for post with public context', function (done) {
+        it('should return unchanged object for post with public context', function () {
             var publicContext = {context: {}};
 
-            permissions.applyPublicRules('posts', 'browse', _.cloneDeep(publicContext)).then(function (result) {
+            return permissions.applyPublicRules('posts', 'browse', _.cloneDeep(publicContext)).then(function (result) {
                 result.should.not.eql(publicContext);
                 result.should.eql({
                     context: {},
@@ -159,96 +154,87 @@ describe('Permissions', function () {
                     context: {},
                     status: 'published'
                 });
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('should throw an error for draft post without uuid (read)', function (done) {
+        it('should throw an error for draft post without uuid (read)', function () {
             var draft = {context: {}, data: {status: 'draft'}};
 
-            permissions.applyPublicRules('posts', 'read', _.cloneDeep(draft)).then(function () {
-                done('Did not throw an error for draft');
+            return permissions.applyPublicRules('posts', 'read', _.cloneDeep(draft)).then(function () {
+                throw new Error('Did not throw an error for draft');
             }).catch(function (err) {
                 (err instanceof errors.NoPermissionError).should.eql(true);
-                done();
             });
         });
 
-        it('should throw an error for draft post (browse)', function (done) {
+        it('should throw an error for draft post (browse)', function () {
             var draft = {context: {}, status: 'draft'};
 
-            permissions.applyPublicRules('posts', 'browse', _.cloneDeep(draft)).then(function () {
-                done('Did not throw an error for draft');
+            return permissions.applyPublicRules('posts', 'browse', _.cloneDeep(draft)).then(function () {
+                throw new Error('Did not throw an error for draft');
             }).catch(function (err) {
                 (err instanceof errors.NoPermissionError).should.eql(true);
-                done();
             });
         });
 
-        it('should permit post draft status with uuid (read)', function (done) {
+        it('should permit post draft status with uuid (read)', function () {
             var draft = {context: {}, data: {status: 'draft', uuid: '1234-abcd'}};
 
-            permissions.applyPublicRules('posts', 'read', _.cloneDeep(draft)).then(function (result) {
+            return permissions.applyPublicRules('posts', 'read', _.cloneDeep(draft)).then(function (result) {
                 result.should.eql(draft);
-                done();
-            }).catch(done);
+            });
         });
 
-        it('should permit post all status with uuid (read)', function (done) {
+        it('should permit post all status with uuid (read)', function () {
             var draft = {context: {}, data: {status: 'all', uuid: '1234-abcd'}};
 
-            permissions.applyPublicRules('posts', 'read', _.cloneDeep(draft)).then(function (result) {
+            return permissions.applyPublicRules('posts', 'read', _.cloneDeep(draft)).then(function (result) {
                 result.should.eql(draft);
-                done();
-            }).catch(done);
+            });
         });
 
-        it('should NOT permit post draft status with uuid (browse)', function (done) {
+        it('should NOT permit post draft status with uuid (browse)', function () {
             var draft = {context: {}, status: 'draft', uuid: '1234-abcd'};
 
-            permissions.applyPublicRules('posts', 'browse', _.cloneDeep(draft)).then(function () {
-                done('Did not throw an error for draft');
+            return permissions.applyPublicRules('posts', 'browse', _.cloneDeep(draft)).then(function () {
+                throw new Error('Did not throw an error for draft');
             }).catch(function (err) {
                 (err instanceof errors.NoPermissionError).should.eql(true);
-                done();
             });
         });
 
-        it('should NOT permit post all status with uuid (browse)', function (done) {
+        it('should NOT permit post all status with uuid (browse)', function () {
             var draft = {context: {}, status: 'all', uuid: '1234-abcd'};
 
-            permissions.applyPublicRules('posts', 'browse', _.cloneDeep(draft)).then(function () {
-                done('Did not throw an error for draft');
+            return permissions.applyPublicRules('posts', 'browse', _.cloneDeep(draft)).then(function () {
+                throw new ('Did not throw an error for draft');
             }).catch(function (err) {
                 (err instanceof errors.NoPermissionError).should.eql(true);
-                done();
             });
         });
 
-        it('should throw an error for draft post with uuid and id or slug (read)', function (done) {
+        it('should throw an error for draft post with uuid and id or slug (read)', function () {
             var draft = {context: {}, data: {status: 'draft', uuid: '1234-abcd', id: 1}};
 
-            permissions.applyPublicRules('posts', 'read', _.cloneDeep(draft)).then(function () {
-                done('Did not throw an error for draft');
+            return permissions.applyPublicRules('posts', 'read', _.cloneDeep(draft)).then(function () {
+                throw new Error('Did not throw an error for draft');
             }).catch(function (err) {
                 (err instanceof errors.NoPermissionError).should.eql(true);
 
                 draft = {context: {},  data: {status: 'draft', uuid: '1234-abcd', slug: 'abcd'}};
 
                 return permissions.applyPublicRules('posts', 'read', _.cloneDeep(draft)).then(function () {
-                    done('Did not throw an error for draft');
+                    throw new Error('Did not throw an error for draft');
                 }).catch(function (err) {
                     (err instanceof errors.NoPermissionError).should.eql(true);
-                    done();
                 });
             });
         });
 
-        it('should return unchanged object for user with public context', function (done) {
+        it('should return unchanged object for user with public context', function () {
             var publicContext = {context: {}};
 
-            permissions.applyPublicRules('users', 'browse', _.cloneDeep(publicContext)).then(function (result) {
+            return permissions.applyPublicRules('users', 'browse', _.cloneDeep(publicContext)).then(function (result) {
                 result.should.not.eql(publicContext);
                 result.should.eql({
                     context: {},
@@ -261,19 +247,16 @@ describe('Permissions', function () {
                     context: {},
                     status: 'active'
                 });
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('should throw an error for an inactive user', function (done) {
+        it('should throw an error for an inactive user', function () {
             var inactive = {context: {}, status: 'inactive'};
 
-            permissions.applyPublicRules('users', 'browse', _.cloneDeep(inactive)).then(function () {
-                done('Did not throw an error for inactive');
+            return permissions.applyPublicRules('users', 'browse', _.cloneDeep(inactive)).then(function () {
+                throw new Error('Did not throw an error for inactive');
             }).catch(function (err) {
                 (err instanceof errors.NoPermissionError).should.eql(true);
-                done();
             });
         });
     });
