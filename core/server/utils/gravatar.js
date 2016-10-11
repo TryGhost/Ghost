@@ -9,7 +9,7 @@ module.exports.lookup = function lookup(userData, timeout) {
         '?s=250';
 
     return new Promise(function gravatarRequest(resolve) {
-        if (config.isPrivacyDisabled('useGravatar') || process.env.NODE_ENV.indexOf('testing') > -1) {
+        if (config.isPrivacyDisabled('useGravatar') || config.get('env').indexOf('testing') > -1) {
             return resolve(userData);
         }
 
