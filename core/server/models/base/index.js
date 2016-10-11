@@ -331,7 +331,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             requestedColumns = options.columns;
 
         // Set this to true or pass ?debug=true as an API option to get output
-        itemCollection.debug = options.debug && process.env.NODE_ENV !== 'production';
+        itemCollection.debug = options.debug && config.get('env') !== 'production';
 
         // Filter options so that only permitted ones remain
         options = this.filterOptions(options, 'findPage');
