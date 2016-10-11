@@ -26,24 +26,81 @@ describe('Unauthorized', function () {
         }).catch(done);
     });
 
-    describe('Unauthorized API', function () {
-        it('can\'t retrieve posts', function (done) {
-            request.get(testUtils.API.getApiQuery('posts/'))
-                .set('Accept', 'application/json')
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(401)
-                .end(function firstRequest(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+    it('returns 401 error for known endpoint', function (done) {
+        request.get(testUtils.API.getApiQuery('posts/'))
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(401)
+            .end(function firstRequest(err, res) {
+                if (err) {
+                    return done(err);
+                }
 
-                    should.not.exist(res.headers['x-cache-invalidate']);
-                    res.should.be.json();
-                    var jsonResponse = res.body;
-                    should.exist(jsonResponse);
-                    // TODO: testUtils.API.checkResponseValue(jsonResponse, ['error']);
-                    done();
-                });
-        });
+                should.not.exist(res.headers['x-cache-invalidate']);
+                should.not.exist(res.headers['x-cache-invalidate']);
+                res.should.be.json();
+                should.exist(res.body);
+                res.body.should.be.a.JSONErrorResponse();
+
+                done();
+            });
+    });
+
+    it('returns 404 error for unknown endpoint', function (done) {
+        request.get(testUtils.API.getApiQuery('unknown/'))
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(404)
+            .end(function firstRequest(err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                res.should.be.json();
+                should.exist(res.body);
+                res.body.should.be.a.JSONErrorResponse();
+
+                done();
+            });
+    });
+});
+
+describe('Authorized API', function () {
+    var accesstoken;
+    before(function (done) {
+        // starting ghost automatically populates the db
+        // TODO: prevent db init, and manage bringing up the DB with fixtures ourselves
+        ghost().then(function (ghostServer) {
+            request = supertest.agent(ghostServer.rootApp);
+        }).then(function () {
+            return testUtils.doAuth(request);
+        }).then(function (token) {
+            accesstoken = token;
+            done();
+        }).catch(done);
+    });
+
+    after(function (done) {
+        testUtils.clearData().then(function () {
+            done();
+        }).catch(done);
+    });
+
+    it('serves a JSON 404 for an unknown endpoint', function (done) {
+        request.get(testUtils.API.getApiQuery('unknown/'))
+            .set('Authorization', 'Bearer ' + accesstoken)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(404)
+            .end(function firstRequest(err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                res.should.be.json();
+                should.exist(res.body);
+                res.body.should.be.a.JSONErrorResponse();
+
+                done();
+            });
     });
 });

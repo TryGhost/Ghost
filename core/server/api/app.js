@@ -233,8 +233,8 @@ module.exports = function setupApiApp() {
     apiApp.use(apiRoutes());
 
     // API error handling
-    // @TODO: split the API error handling into its own thing?
-    apiApp.use(errorHandler);
+    apiApp.use(errorHandler.resourceNotFound);
+    apiApp.use(errorHandler.handleJSONResponse);
 
     return apiApp;
 };
