@@ -2,7 +2,7 @@ var supertest     = require('supertest'),
     should        = require('should'),
     path          = require('path'),
     testUtils     = require('../../../utils'),
-    ghost         = require('../../../../../core'),
+    ghost         = testUtils.startGhost,
     request;
 
 describe('DB API', function () {
