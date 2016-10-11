@@ -157,7 +157,7 @@ authentication = {
             return {
                 access_token: localAccessToken,
                 refresh_token: localRefreshToken,
-                expires_in: accessExpires
+                expires_in: globalUtils.ONE_HOUR_S
             };
         });
     },
