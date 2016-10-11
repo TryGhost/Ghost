@@ -61,7 +61,6 @@ PrettyStream.prototype.write = function write(data) {
     }
 
     var output = '',
-        body = {},
         time = moment(data.time).format('YYYY-MM-DD HH:mm:ss'),
         logLevel = __private__.levelFromName[data.level].toUpperCase(),
         codes = __private__.colors[__private__.colorForLevel[data.level]],
@@ -69,10 +68,7 @@ PrettyStream.prototype.write = function write(data) {
 
     logLevel = '\x1B[' + codes[0] + 'm' + logLevel + '\x1B[' + codes[1] + 'm';
 
-    if (data.msg) {
-        body.msg = data.msg;
-    }
-
+    // CASE: logging.request
     if (data.req && data.res) {
         _.each(data.req, function (value, key) {
             if (['headers', 'query', 'body'].indexOf(key) !== -1 && !_.isEmpty(value)) {
@@ -94,7 +90,21 @@ PrettyStream.prototype.write = function write(data) {
                 }
             });
         }
-    } else if (data.err) {
+
+        output += format('[%s] %s %s %s (%s)\n',
+            time,
+            logLevel,
+            data.req.method,
+            data.req.originalUrl,
+            data.res.statusCode
+        );
+
+        if (this.mode !== 'short') {
+            output += format('%s\n', colorize('grey', bodyPretty));
+        }
+    }
+    // CASE: logging.error (standalone error)
+    else if (data.err) {
         _.each(data.err, function (value, key) {
             if (_.isEmpty(value)) {
                 return;
@@ -116,40 +126,29 @@ PrettyStream.prototype.write = function write(data) {
                 bodyPretty += colorize('white', value) + '\n';
             }
         });
+
+        output += format('[%s] %s\n%\n',
+            time,
+            logLevel,
+            bodyPretty
+        );
+    }
+    // CASE: logging.info('text')
+    else if (data.msg) {
+        output += format('[%s] %s %s\n',
+            time,
+            logLevel,
+            data.msg
+        );
+    }
+    else {
+        output += format('[%s] %s\n',
+            time,
+            logLevel
+        );
     }
 
     try {
-        if (data.req && data.res) {
-            output += format('[%s] %s %s %s (%s)\n',
-                time,
-                logLevel,
-                data.req.method,
-                data.req.originalUrl,
-                data.res.statusCode
-            );
-
-        } else if (data.err) {
-            output += format('[%s] %s\n',
-                time,
-                logLevel
-            );
-        } else if (data.msg) {
-            output += format('[%s] %s %s\n',
-                time,
-                logLevel,
-                data.msg
-            );
-        } else {
-            output += format('[%s] %s\n',
-                time,
-                logLevel
-            );
-        }
-
-        if (this.mode !== 'short' && bodyPretty) {
-            output += format('%s\n', colorize('grey', bodyPretty));
-        }
-
         this.emit('data', output);
     } catch (err) {
         this.emit('data', err);
