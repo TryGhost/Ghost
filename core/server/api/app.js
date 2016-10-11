@@ -1,5 +1,6 @@
 // # API routes
-var express = require('express'),
+var debug = require('debug')('ghost:api'),
+    express = require('express'),
     tmpdir = require('os').tmpdir,
 
     // This essentially provides the controllers for the routes
@@ -211,6 +212,7 @@ function apiRoutes() {
 }
 
 module.exports = function setupApiApp() {
+    debug('API setup start');
     var apiApp = express();
 
     // @TODO finish refactoring this away.
@@ -250,6 +252,8 @@ module.exports = function setupApiApp() {
     // API error handling
     apiApp.use(errorHandler.resourceNotFound);
     apiApp.use(errorHandler.handleJSONResponse);
+
+    debug('API setup end');
 
     return apiApp;
 };
