@@ -71,7 +71,7 @@ migrateToDatabaseVersion = function migrateToDatabaseVersion(version, logger, mo
                     resolve();
                 })
                 .catch(function (err) {
-                    logger.warn('rolling back because of: ' + err.stack);
+                    logger.warn('rolling back because of an Error:\n' + err.message + '\n' + err.stack);
 
                     transaction.rollback();
                 });
