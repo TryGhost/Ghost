@@ -156,6 +156,7 @@ module.exports = function setupMiddleware(blogApp) {
     // Add in all trailing slashes & remove uppercase
     // must happen AFTER asset loading and BEFORE routing
     blogApp.use(prettyURLs);
+    adminApp.use(prettyURLs);
 
     // ### Caching
     // Blog frontend is cacheable

@@ -21,6 +21,7 @@ var express = require('express'),
     bodyParser = require('body-parser'), // global, shared
     cacheControl = require('../middleware/cache-control'), // global, shared
     checkSSL = require('../middleware/check-ssl'),
+    prettyURLs = require('../middleware/pretty-urls'),
     maintenance = require('../middleware/maintenance'), // global, shared
     errorHandler = require('../middleware/error-handler'), // global, shared
 
@@ -228,10 +229,13 @@ module.exports = function setupApiApp() {
     // send 503 json response in case of maintenance
     apiApp.use(maintenance);
 
-    // @TODO pretty URLS is needed here too, once we've finished refactoring
     // Force SSL if required
     // must happen AFTER asset loading and BEFORE routing
     apiApp.use(checkSSL);
+
+    // Add in all trailing slashes & remove uppercase
+    // must happen AFTER asset loading and BEFORE routing
+    apiApp.use(prettyURLs);
 
     // Check version matches for API requests, depends on res.locals.safeVersion being set
     // Therefore must come after themeHandler.ghostLocals, for now
