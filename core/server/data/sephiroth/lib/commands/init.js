@@ -13,24 +13,24 @@ var Promise = require('bluebird'),
 module.exports = function init(options) {
     options = options || {};
 
-    var migrationFolder = options.migrationFolder || path.join(__dirname, '../../../migrations'),
-        dbInitTasks = utils.readTasks(migrationFolder + '/init');
+    var initPath = utils.getPath({type: 'init'}),
+        dbInitTasks = utils.readTasks(initPath);
 
-    return utils.createTransaction(function executeTasks(transaction) {
+    return utils.createTransaction(function executeTasks(transacting) {
         return Promise.each(dbInitTasks, function executeInitTask(task) {
             return utils.preTask({
-                database: transaction,
+                transacting: transacting,
                 task: task.name,
                 type: 'init'
             }).then(function () {
                 logging.info('Running: ' + task.name);
 
                 return task.execute({
-                    database: transaction
+                    transacting: transacting
                 });
             }).then(function () {
                 return utils.postTask({
-                    database: transaction,
+                    transacting: transacting,
                     task: task.name,
                     type: 'init'
                 });
