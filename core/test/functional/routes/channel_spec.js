@@ -6,9 +6,8 @@
 var request    = require('supertest'),
     should     = require('should'),
     cheerio    = require('cheerio'),
-
     testUtils  = require('../../utils'),
-    ghost      = require('../../../../core');
+    ghost      = testUtils.startGhost;
 
 describe('Channel Routes', function () {
     function doEnd(done) {

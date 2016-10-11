@@ -2,9 +2,7 @@ var testUtils     = require('../../../utils'),
     should        = require('should'),
     supertest     = require('supertest'),
     _             = require('lodash'),
-
-    ghost         = require('../../../../../core'),
-
+    ghost         = testUtils.startGhost,
     request;
 
 describe('Post API', function () {

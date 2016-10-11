@@ -121,11 +121,11 @@ describe('Migrations', function () {
                 result.should.be.an.Array().with.lengthOf(schemaTables.length);
 
                 deleteStub.called.should.be.true();
-                deleteStub.callCount.should.be.eql(schemaTables.length);
+                deleteStub.callCount.should.be.eql(schemaTables.length + 1);
                 // First call should be called with the last table
                 deleteStub.firstCall.calledWith(schemaTables[schemaTables.length - 1]).should.be.true();
                 // Last call should be called with the first table
-                deleteStub.lastCall.calledWith(schemaTables[0]).should.be.true();
+                deleteStub.lastCall.calledWith('migrations').should.be.true();
 
                 done();
             }).catch(done);
@@ -137,11 +137,11 @@ describe('Migrations', function () {
                 result.should.be.an.Array().with.lengthOf(schemaTables.length);
 
                 deleteStub.called.should.be.true();
-                deleteStub.callCount.should.be.eql(schemaTables.length);
+                deleteStub.callCount.should.be.eql(schemaTables.length + 1);
                 // First call should be called with the last table
                 deleteStub.firstCall.calledWith(schemaTables[schemaTables.length - 1]).should.be.true();
                 // Last call should be called with the first table
-                deleteStub.lastCall.calledWith(schemaTables[0]).should.be.true();
+                deleteStub.lastCall.calledWith('migrations').should.be.true();
 
                 return migration.reset();
             }).then(function (result) {
@@ -149,11 +149,11 @@ describe('Migrations', function () {
                 result.should.be.an.Array().with.lengthOf(schemaTables.length);
 
                 deleteStub.called.should.be.true();
-                deleteStub.callCount.should.be.eql(schemaTables.length * 2);
+                deleteStub.callCount.should.be.eql(schemaTables.length * 2 + 2);
                 // First call (second set) should be called with the last table
-                deleteStub.getCall(schemaTables.length).calledWith(schemaTables[schemaTables.length - 1]).should.be.true();
+                deleteStub.getCall(schemaTables.length).calledWith('migrations').should.be.true();
                 // Last call (second Set) should be called with the first table
-                deleteStub.getCall(schemaTables.length * 2 - 1).calledWith(schemaTables[0]).should.be.true();
+                // deleteStub.getCall(schemaTables.length * 2 + 2).calledWith(schemaTables[0]).should.be.true();
 
                 done();
             }).catch(done);

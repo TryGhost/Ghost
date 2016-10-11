@@ -7,6 +7,7 @@ var should = require('should'),
     versioning = require(config.get('paths').corePath + '/server/data/schema/versioning'),
     migration = require(config.get('paths').corePath + '/server/data/migration'),
     models = require(config.get('paths').corePath + '/server/models'),
+    errors = require(config.get('paths').corePath + '/server/errors'),
     permissions = require(config.get('paths').corePath + '/server/permissions'),
     api = require(config.get('paths').corePath + '/server/api'),
     apps = require(config.get('paths').corePath + '/server/apps'),
@@ -33,7 +34,6 @@ describe('server bootstrap', function () {
         sandbox.stub(models.Settings, 'populateDefaults').returns(Promise.resolve());
         sandbox.stub(permissions, 'init').returns(Promise.resolve());
         sandbox.stub(api, 'init').returns(Promise.resolve());
-        sandbox.stub(i18n, 'init');
         sandbox.stub(apps, 'init').returns(Promise.resolve());
         sandbox.stub(slack, 'listen').returns(Promise.resolve());
         sandbox.stub(xmlrpc, 'listen').returns(Promise.resolve());
@@ -50,7 +50,7 @@ describe('server bootstrap', function () {
     });
 
     describe('migrations', function () {
-        it('database does not exist: expect database population', function (done) {
+        it('database does not exist: expect database population error', function (done) {
             sandbox.stub(migration.update, 'isDatabaseOutOfDate').returns({migrate:false});
 
             sandbox.stub(versioning, 'getDatabaseVersion', function () {
@@ -59,14 +59,14 @@ describe('server bootstrap', function () {
 
             bootstrap()
                 .then(function () {
-                    migration.populate.calledOnce.should.eql(true);
-                    migration.update.execute.calledOnce.should.eql(false);
-                    models.Settings.populateDefaults.callCount.should.eql(1);
-                    config.get('maintenance').enabled.should.eql(false);
-                    done();
+                    done(new Error('expect error: database population'));
                 })
                 .catch(function (err) {
-                    done(err);
+                    migration.populate.calledOnce.should.eql(false);
+                    config.get('maintenance').enabled.should.eql(false);
+                    (err instanceof errors.GhostError).should.eql(true);
+                    err.code.should.eql('MIGRATION_TABLE_IS_MISSING');
+                    done();
                 });
         });
 

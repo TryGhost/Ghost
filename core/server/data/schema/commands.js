@@ -1,8 +1,8 @@
-var _       = require('lodash'),
+var _ = require('lodash'),
     Promise = require('bluebird'),
-    i18n    = require('../../i18n'),
-    db      = require('../db'),
-    schema  = require('./schema'),
+    i18n = require('../../i18n'),
+    db = require('../db'),
+    schema = require('./schema'),
     clients = require('./clients');
 
 function addTableColumn(tableName, table, columnName) {
@@ -65,13 +65,24 @@ function dropUnique(table, column, transaction) {
     });
 }
 
+/**
+ * https://github.com/tgriesser/knex/issues/1303
+ * createTableIfNotExists can throw error if indexes are already in place
+ */
 function createTable(table, transaction) {
-    return (transaction || db.knex).schema.createTableIfNotExists(table, function (t) {
-        var columnKeys = _.keys(schema[table]);
-        _.each(columnKeys, function (column) {
-            return addTableColumn(table, t, column);
+    return (transaction || db.knex).schema.hasTable(table)
+        .then(function (exists) {
+            if (exists) {
+                return;
+            }
+
+            return (transaction || db.knex).schema.createTable(table, function (t) {
+                var columnKeys = _.keys(schema[table]);
+                _.each(columnKeys, function (column) {
+                    return addTableColumn(table, t, column);
+                });
+            });
         });
-    });
 }
 
 function deleteTable(table, transaction) {
