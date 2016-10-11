@@ -27,19 +27,19 @@ var debug           = require('debug')('ghost:middleware'),
     staticTheme     = require('./static-theme'),
     themeHandler    = require('./theme-handler');
 
-module.exports = function setupMiddleware(blogApp) {
+module.exports = function setupMiddleware(parentApp) {
     debug('Middleware start');
 
     // ## Global settings
 
     // Make sure 'req.secure' is valid for proxied requests
     // (X-Forwarded-Proto header will be checked, if present)
-    blogApp.enable('trust proxy');
+    parentApp.enable('trust proxy');
 
     /**
      * request logging
      */
-    blogApp.use(function expressLogging(req, res, next) {
+    parentApp.use(function expressLogging(req, res, next) {
         res.once('finish', function () {
             logging.request({req: req, res: res, err: req.err});
         });
@@ -49,7 +49,7 @@ module.exports = function setupMiddleware(blogApp) {
 
     if (debug.enabled) {
         // debug keeps a timer, so this is super useful
-        blogApp.use((function () {
+        parentApp.use((function () {
             var reqDebug = require('debug')('ghost:req');
             return function debugLog(req, res, next) {
                 reqDebug('Request', req.originalUrl);
@@ -60,12 +60,12 @@ module.exports = function setupMiddleware(blogApp) {
 
     // enabled gzip compression by default
     if (config.get('server').compress !== false) {
-        blogApp.use(compress());
+        parentApp.use(compress());
     }
 
     // Preload link headers
     if (config.get('preloadHeaders')) {
-        blogApp.use(netjet({
+        parentApp.use(netjet({
             cache: {
                 max: config.get('preloadHeaders')
             }
@@ -73,11 +73,11 @@ module.exports = function setupMiddleware(blogApp) {
     }
 
     // This sets global res.locals which are needed everywhere
-    blogApp.use(ghostLocals);
+    parentApp.use(ghostLocals);
 
     // ## App - specific code
     // set the view engine
-    blogApp.set('view engine', 'hbs');
+    parentApp.set('view engine', 'hbs');
 
     // Load helpers
     helpers.loadCoreHelpers();
@@ -86,26 +86,26 @@ module.exports = function setupMiddleware(blogApp) {
     // Theme middleware
     // rightly or wrongly currently comes before theme static assets
     // @TODO revisit where and when these are needed
-    blogApp.use(themeHandler.updateActiveTheme);
-    blogApp.use(themeHandler.configHbsForContext);
+    parentApp.use(themeHandler.updateActiveTheme);
+    parentApp.use(themeHandler.configHbsForContext);
     debug('Themes done');
 
     // Static content/assets
     // @TODO make sure all of these have a local 404 error handler
     // Favicon
-    blogApp.use(serveSharedFile('favicon.ico', 'image/x-icon', utils.ONE_DAY_S));
+    parentApp.use(serveSharedFile('favicon.ico', 'image/x-icon', utils.ONE_DAY_S));
     // Ghost-Url
-    blogApp.use(serveSharedFile('shared/ghost-url.js', 'application/javascript', utils.ONE_HOUR_S));
-    blogApp.use(serveSharedFile('shared/ghost-url.min.js', 'application/javascript', utils.ONE_HOUR_S));
+    parentApp.use(serveSharedFile('shared/ghost-url.js', 'application/javascript', utils.ONE_HOUR_S));
+    parentApp.use(serveSharedFile('shared/ghost-url.min.js', 'application/javascript', utils.ONE_HOUR_S));
     // Serve sitemap.xsl file
-    blogApp.use(serveSharedFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
+    parentApp.use(serveSharedFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
     // Serve robots.txt if not found in theme
-    blogApp.use(serveSharedFile('robots.txt', 'text/plain', utils.ONE_HOUR_S));
+    parentApp.use(serveSharedFile('robots.txt', 'text/plain', utils.ONE_HOUR_S));
     // Serve blog images using the storage adapter
-    blogApp.use('/content/images', storage.getStorage().serve());
+    parentApp.use('/content/images', storage.getStorage().serve());
 
     // Theme static assets/files
-    blogApp.use(staticTheme());
+    parentApp.use(staticTheme());
     debug('Static content done');
 
     // setup middleware for internal apps
@@ -113,46 +113,46 @@ module.exports = function setupMiddleware(blogApp) {
     config.get('internalApps').forEach(function (appName) {
         var app = require(path.join(config.get('paths').internalAppPath, appName));
         if (app.hasOwnProperty('setupMiddleware')) {
-            app.setupMiddleware(blogApp);
+            app.setupMiddleware(parentApp);
         }
     });
 
     // site map - this should probably be refactored to be an internal app
-    sitemapHandler(blogApp);
+    sitemapHandler(parentApp);
     debug('Internal apps done');
 
     // Load the API
     // @TODO: finish refactoring the API app
     // @TODO: decide what to do with these paths - config defaults? config overrides?
-    blogApp.use('/ghost/api/v0.1/', require('../api/app')());
+    parentApp.use('/ghost/api/v0.1/', require('../api/app')());
 
     // ADMIN
-    blogApp.use('/ghost', require('../admin')());
+    parentApp.use('/ghost', require('../admin')());
 
     debug('Admin app & api done');
 
     // send 503 error page in case of maintenance
-    blogApp.use(maintenance);
+    parentApp.use(maintenance);
 
     // Force SSL if required
     // must happen AFTER asset loading and BEFORE routing
-    blogApp.use(checkSSL);
+    parentApp.use(checkSSL);
 
     // Add in all trailing slashes & remove uppercase
     // must happen AFTER asset loading and BEFORE routing
-    blogApp.use(prettyURLs);
+    parentApp.use(prettyURLs);
 
     // ### Caching
     // Blog frontend is cacheable
-    blogApp.use(cacheControl('public'));
+    parentApp.use(cacheControl('public'));
 
     debug('General middleware done');
 
     // Set up Frontend routes (including private blogging routes)
-    blogApp.use(routes.frontend());
+    parentApp.use(routes.frontend());
 
     // ### Error handlers
-    blogApp.use(errorHandler.pageNotFound);
-    blogApp.use(errorHandler.handleHTMLResponse);
+    parentApp.use(errorHandler.pageNotFound);
+    parentApp.use(errorHandler.handleHTMLResponse);
     debug('Middleware end');
 };
