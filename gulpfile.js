@@ -87,13 +87,13 @@ nodemonServerInit = function () {
         script: 'index.js',
         ext: 'js,json,hbs',
         watch: [
-            'core/index.js',
-            paramConfig.ghost.path + '/',
-            'core/built/assets/*.js'
+            'core/'
         ],
         ignore: [
-            'core/client/*',
-            'core/server/test/*'
+            'core/client/',
+            'core/server/test/',
+            'core/server/views/',
+            'core/built/'
         ]
     }).on('restart', function () {
         gulp.src(paramConfig.ghost.path + '/')
@@ -327,7 +327,7 @@ gulp.task('server', 'Run Ghost server in development with livereload but without
 // Run `gulp dev` to enter development mode
 // Filechanges in client will force a livereload
 // Call it with `--deps` or `-d` to install dependencies as well`
-gulp.task('dev', 'Runs Ghost server in delelopment including client build and livereload for both', function (cb) {
+gulp.task('dev', 'Runs Ghost server in development with livereload and client rebuild on file changes', function (cb) {
     console.info(chalk.cyan('Development mode for Ghost will start right meow 👻 ...'));
     if (argv.deps || argv.d) {
         runSequence(
