@@ -3,7 +3,7 @@ var oauth2orize = require('oauth2orize'),
     utils = require('../utils'),
     errors = require('../errors'),
     authenticationAPI = require('../api/authentication'),
-    spamPrevention = require('../middleware/spam-prevention'),
+    spamPrevention = require('../middleware/api/spam-prevention'),
     i18n = require('../i18n'),
     oauthServer,
     oauth;
