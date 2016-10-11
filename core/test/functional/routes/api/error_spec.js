@@ -6,8 +6,7 @@
 var supertest     = require('supertest'),
     should        = require('should'),
     testUtils     = require('../../../utils'),
-
-    ghost         = require('../../../../../core'),
+    ghost         = testUtils.startGhost,
     request;
 
 require('should-http');

@@ -4,7 +4,7 @@ var testUtils     = require('../../../utils'),
     path          = require('path'),
     fs            = require('fs-extra'),
     supertest     = require('supertest'),
-    ghost         = require('../../../../../core'),
+    ghost         = testUtils.startGhost,
     config        = require('../../../../../core/server/config'),
     request;
 
