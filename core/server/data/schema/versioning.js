@@ -14,8 +14,8 @@ var path = require('path'),
  */
 function validateDatabaseVersion(version) {
     if (version === null) {
-        throw new errors.DatabaseNotSeededError({
-            message: i18n.t('errors.data.versioning.index.databaseNotSeeded')
+        throw new errors.DatabaseVersionError({
+            code: 'VERSION_DOES_NOT_EXIST'
         });
     }
 
@@ -34,21 +34,24 @@ function validateDatabaseVersion(version) {
  * If the database version is null, the database was never seeded.
  * The seed migration script will set your database to current Ghost Version.
  */
-function getDatabaseVersion() {
-    return db.knex.schema.hasTable('settings').then(function (exists) {
-        if (!exists) {
-            return Promise.reject(new errors.DatabaseNotPopulatedError({
-                message: i18n.t('errors.data.versioning.index.databaseNotPopulated')
-            }));
-        }
+function getDatabaseVersion(options) {
+    options = options || {};
 
-        return db.knex('settings')
-            .where('key', 'databaseVersion')
-            .first('value')
-            .then(function (version) {
-                return validateDatabaseVersion(version.value);
-            });
-    });
+    return (options.transacting || db.knex).schema.hasTable('settings')
+        .then(function (exists) {
+            if (!exists) {
+                return Promise.reject(new errors.DatabaseVersionError({
+                    code: 'SETTINGS_TABLE_DOES_NOT_EXIST'
+                }));
+            }
+
+            return (options.transacting || db.knex)('settings')
+                .where('key', 'databaseVersion')
+                .first('value')
+                .then(function (version) {
+                    return validateDatabaseVersion(version.value);
+                });
+        });
 }
 
 function getNewestDatabaseVersion() {
@@ -59,8 +62,8 @@ function getNewestDatabaseVersion() {
  * Database version cannot set from outside.
  * If this function get called, we set the database version to your current Ghost version.
  */
-function setDatabaseVersion(transaction) {
-    return (transaction || db.knex)('settings')
+function setDatabaseVersion(options) {
+    return (options.transacting || db.knex)('settings')
         .where('key', 'databaseVersion')
         .update({
             value: getNewestDatabaseVersion()
