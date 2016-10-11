@@ -207,7 +207,7 @@ describe('Permissions', function () {
             var draft = {context: {}, status: 'all', uuid: '1234-abcd'};
 
             return permissions.applyPublicRules('posts', 'browse', _.cloneDeep(draft)).then(function () {
-                throw new ('Did not throw an error for draft');
+                throw new Error('Did not throw an error for draft');
             }).catch(function (err) {
                 (err instanceof errors.NoPermissionError).should.eql(true);
             });

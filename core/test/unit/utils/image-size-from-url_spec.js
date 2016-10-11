@@ -11,7 +11,6 @@ var should = require('should'),
 
 describe('Image Size', function () {
     var sizeOfStub,
-        result,
         requestMock;
 
     beforeEach(function () {
@@ -42,7 +41,7 @@ describe('Image Size', function () {
         sizeOfStub.returns({width: 50, height: 50, type: 'jpg'});
         imageSize.__set__('sizeOf', sizeOfStub);
 
-        return result = Promise.resolve(imageSize.getImageSizeFromUrl(url)).then(function (res) {
+        return Promise.resolve(imageSize.getImageSizeFromUrl(url)).then(function (res) {
             requestMock.isDone().should.be.true();
             should.exist(res);
             should.exist(res.width);
@@ -71,7 +70,7 @@ describe('Image Size', function () {
         sizeOfStub.returns({width: 256, height: 256, type: 'png'});
         imageSize.__set__('sizeOf', sizeOfStub);
 
-        return result = Promise.resolve(imageSize.getImageSizeFromUrl(url)).then(function (res) {
+        return Promise.resolve(imageSize.getImageSizeFromUrl(url)).then(function (res) {
             requestMock.isDone().should.be.true();
             should.exist(res);
             should.exist(res.width);
@@ -100,7 +99,7 @@ describe('Image Size', function () {
         sizeOfStub.returns({width: 250, height: 250, type: 'jpg'});
         imageSize.__set__('sizeOf', sizeOfStub);
 
-        return result = Promise.resolve(imageSize.getImageSizeFromUrl(url)).then(function (res) {
+        return Promise.resolve(imageSize.getImageSizeFromUrl(url)).then(function (res) {
             requestMock.isDone().should.be.true();
             should.exist(res);
             should.exist(res.width);
@@ -134,7 +133,7 @@ describe('Image Size', function () {
         sizeOfStub.returns({width: 100, height: 100, type: 'jpg'});
         imageSize.__set__('sizeOf', sizeOfStub);
 
-        return result = Promise.resolve(imageSize.getImageSizeFromUrl(url)).then(function (res) {
+        return Promise.resolve(imageSize.getImageSizeFromUrl(url)).then(function (res) {
             requestMock.isDone().should.be.true();
             should.exist(res);
             should.exist(res.width);
@@ -153,7 +152,7 @@ describe('Image Size', function () {
             .get('/files/f/feedough/x/11/1540353_20925115.jpg')
             .reply(404);
 
-        return result = Promise.resolve(imageSize.getImageSizeFromUrl(url)).catch(function (err) {
+        return Promise.resolve(imageSize.getImageSizeFromUrl(url)).catch(function (err) {
             requestMock.isDone().should.be.true();
             should.exist(err);
         });
@@ -166,7 +165,7 @@ describe('Image Size', function () {
             .socketDelay(11)
             .reply(408);
 
-        return result = Promise.resolve(imageSize.getImageSizeFromUrl(url, 10)).catch(function (err) {
+        return Promise.resolve(imageSize.getImageSizeFromUrl(url, 10)).catch(function (err) {
             requestMock.isDone().should.be.true();
             should.exist(err);
         });
@@ -184,7 +183,7 @@ describe('Image Size', function () {
         sizeOfStub.throws({error: 'image-size could not find dimensions'});
         imageSize.__set__('sizeOf', sizeOfStub);
 
-        return result = Promise.resolve(imageSize.getImageSizeFromUrl(url)).catch(function (err) {
+        return Promise.resolve(imageSize.getImageSizeFromUrl(url)).catch(function (err) {
             requestMock.isDone().should.be.true();
             should.exist(err);
         });
@@ -197,7 +196,7 @@ describe('Image Size', function () {
             .get('/images/notapicture.jpg')
             .replyWithError({message: 'something awful happened', code: 'AWFUL_ERROR'});
 
-        return result = Promise.resolve(imageSize.getImageSizeFromUrl(url)).catch(function (err) {
+        return Promise.resolve(imageSize.getImageSizeFromUrl(url)).catch(function (err) {
             requestMock.isDone().should.be.true();
             should.exist(err);
         });

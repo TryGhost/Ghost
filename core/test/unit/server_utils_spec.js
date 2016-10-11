@@ -366,7 +366,7 @@ describe('Server Utilities', function () {
 
             res.set = sinon.spy();
 
-            return res.redirect = function (code, path) {
+            res.redirect = function (code, path) {
                 code.should.equal(301);
                 path.should.eql('my/awesome/path');
                 res.set.calledWith({'Cache-Control': 'public, max-age=' + utils.ONE_YEAR_S}).should.be.true();

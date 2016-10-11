@@ -109,7 +109,6 @@ describe('server bootstrap', function () {
                 models.Settings.populateDefaults.callCount.should.eql(1);
                 migration.populate.calledOnce.should.eql(false);
                 config.get('maintenance').enabled.should.eql(false);
-
             });
         });
     });
