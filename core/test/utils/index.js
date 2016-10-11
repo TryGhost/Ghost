@@ -4,7 +4,9 @@ var Promise       = require('bluebird'),
     path          = require('path'),
     Module        = require('module'),
     uuid          = require('node-uuid'),
+    ghost         = require('../../server'),
     db            = require('../../server/data/db'),
+    Sephiroth     = require('../../server/data/sephiroth'),
     migration     = require('../../server/data/migration/'),
     fixtureUtils  = require('../../server/data/migration/fixtures/utils'),
     models        = require('../../server/models'),
@@ -17,7 +19,7 @@ var Promise       = require('bluebird'),
     fork          = require('./fork'),
     mocks         = require('./mocks'),
     config        = require('../../server/config'),
-
+    sephiroth     = new Sephiroth({database: config.get('database')}),
     fixtures,
     getFixtureOps,
     toDoList,
@@ -31,6 +33,7 @@ var Promise       = require('bluebird'),
     doAuth,
     login,
     togglePermalinks,
+    startGhost,
 
     initFixtures,
     initData,
@@ -646,7 +649,19 @@ unmockNotExistingModule = function unmockNotExistingModule() {
     Module.prototype.require = originalRequireFn;
 };
 
+/**
+ * 1. sephiroth init db
+ * 2. start ghost
+ */
+startGhost = function startGhost() {
+    return sephiroth.commands.init()
+        .then(function () {
+            return ghost();
+        });
+};
+
 module.exports = {
+    startGhost: startGhost,
     teardown: teardown,
     setup: setup,
     doAuth: doAuth,

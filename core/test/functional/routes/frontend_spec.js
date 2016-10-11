@@ -8,7 +8,7 @@ var request = require('supertest'),
     moment = require('moment'),
     cheerio = require('cheerio'),
     testUtils = require('../../utils'),
-    ghost = require('../../../../core');
+    ghost     = testUtils.startGhost;
 
 describe('Frontend Routing', function () {
     function doEnd(done) {

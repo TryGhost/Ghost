@@ -5,7 +5,9 @@ var cp         = require('child_process'),
     net        = require('net'),
     Promise    = require('bluebird'),
     path       = require('path'),
-    config     = require('../../server/config');
+    config     = require('../../server/config'),
+    Sephiroth  = require('../../server/data/sephiroth'),
+    sephiroth  = new Sephiroth({database: config.get('database')});
 
 function findFreePort(port) {
     return new Promise(function (resolve, reject) {
@@ -41,8 +43,15 @@ function findFreePort(port) {
 // Creates a new fork of Ghost process with a given config
 // Useful for tests that want to verify certain config options
 function forkGhost(newConfig) {
+    var port;
+
     return findFreePort()
-        .then(function (port) {
+        .then(function (_port) {
+            port = _port;
+
+            return sephiroth.commands.init();
+        })
+        .then(function () {
             newConfig.server = _.merge({}, {
                 port: port
             }, (newConfig.server || {}));
@@ -83,7 +92,6 @@ function forkGhost(newConfig) {
                         };
 
                     env.NODE_ENV = config.get('env');
-
                     child = cp.fork(path.join(config.get('paths').appRoot, 'index.js'), {env: env});
 
                     // return the port to make it easier to do requests
@@ -94,6 +102,7 @@ function forkGhost(newConfig) {
                         var socket = net.connect(newConfig.server.port);
                         socket.on('connect', function () {
                             socket.end();
+
                             if (pingStop()) {
                                 resolve(child);
                             }
@@ -101,6 +110,7 @@ function forkGhost(newConfig) {
                         socket.on('error', function (err) {
                             /*jshint unused:false*/
                             pingTries = pingTries + 1;
+
                             // continue checking
                             if (pingTries >= 100 && pingStop()) {
                                 child.kill();
