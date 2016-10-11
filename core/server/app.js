@@ -1,18 +1,20 @@
-var debug           = require('debug')('ghost:middleware'),
+var debug = require('debug')('ghost:app'),
+    express = require('express'),
 
     // app requires
-    config          = require('../config'),
-    logging         = require('../logging'),
+    config          = require('./config'),
+    logging         = require('./logging'),
 
     // middleware
     compress        = require('compression'),
     netjet          = require('netjet'),
 
     // local middleware
-    ghostLocals     = require('./ghost-locals');
+    ghostLocals     = require('./middleware/ghost-locals');
 
-module.exports = function setupMiddleware(parentApp) {
-    debug('Middleware start');
+module.exports = function setupParentApp() {
+    debug('ParentApp setup start');
+    var parentApp = express();
 
     // ## Global settings
 
@@ -61,20 +63,22 @@ module.exports = function setupMiddleware(parentApp) {
 
     // @TODO where should this live?!
     // Load helpers
-    require('../helpers').loadCoreHelpers();
+    require('./helpers').loadCoreHelpers();
     debug('Helpers done');
 
     // Mount the  apps on the parentApp
     // API
     // @TODO: finish refactoring the API app
     // @TODO: decide what to do with these paths - config defaults? config overrides?
-    parentApp.use('/ghost/api/v0.1/', require('../api/app')());
+    parentApp.use('/ghost/api/v0.1/', require('./api/app')());
 
     // ADMIN
-    parentApp.use('/ghost', require('../admin')());
+    parentApp.use('/ghost', require('./admin')());
 
     // BLOG
-    parentApp.use(require('../blog')());
+    parentApp.use(require('./blog')());
 
-    debug('Middleware end');
+    debug('ParentApp setup end');
+
+    return parentApp;
 };
