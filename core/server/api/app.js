@@ -20,6 +20,7 @@ var express = require('express'),
     // Shared
     bodyParser = require('body-parser'), // global, shared
     cacheControl = require('../middleware/cache-control'), // global, shared
+    checkSSL = require('../middleware/check-ssl'),
     maintenance = require('../middleware/maintenance'), // global, shared
     errorHandler = require('../middleware/error-handler'), // global, shared
 
@@ -211,6 +212,13 @@ function apiRoutes() {
 module.exports = function setupApiApp() {
     var apiApp = express();
 
+    // @TODO finish refactoring this away.
+    apiApp.use(function setIsAdmin(req, res, next) {
+        // Api === isAdmin for the purposes of the forceAdminSSL config option.
+        res.isAdmin = true;
+        next();
+    });
+
     // API middleware
 
     // Body parsing
@@ -220,7 +228,10 @@ module.exports = function setupApiApp() {
     // send 503 json response in case of maintenance
     apiApp.use(maintenance);
 
-    // @TODO check SSL and pretty URLS is needed here too, once we've finished refactoring
+    // @TODO pretty URLS is needed here too, once we've finished refactoring
+    // Force SSL if required
+    // must happen AFTER asset loading and BEFORE routing
+    apiApp.use(checkSSL);
 
     // Check version matches for API requests, depends on res.locals.safeVersion being set
     // Therefore must come after themeHandler.ghostLocals, for now

@@ -21,7 +21,6 @@ var debug           = require('debug')('ghost:middleware'),
     // local middleware
     cacheControl    = require('./cache-control'),
     checkSSL        = require('./check-ssl'),
-    decideIsAdmin   = require('./decide-is-admin'),
     errorHandler    = require('./error-handler'),
     ghostLocals     = require('./ghost-locals'),
     maintenance     = require('./maintenance'),
@@ -96,8 +95,11 @@ module.exports = function setupMiddleware(blogApp) {
     blogApp.use(ghostLocals);
 
     // First determine whether we're serving admin or theme content
-    // @TODO refactor this horror away!
-    blogApp.use(decideIsAdmin);
+    // @TODO finish refactoring this away.
+    adminApp.use(function setIsAdmin(req, res, next) {
+        res.isAdmin = true;
+        next();
+    });
 
     // Theme middleware
     // rightly or wrongly currently comes before theme static assets
@@ -131,10 +133,12 @@ module.exports = function setupMiddleware(blogApp) {
     blogApp.use(staticTheme());
     debug('Static content done');
 
-    // Force SSL
+    adminApp.set('views', config.get('paths').adminViews);
+
+    // Force SSL if required
     // must happen AFTER asset loading and BEFORE routing
     blogApp.use(checkSSL);
-    adminApp.set('views', config.get('paths').adminViews);
+    adminApp.use(checkSSL);
 
     // setup middleware for internal apps
     // @TODO: refactor this to be a proper app middleware hook for internal & external apps
