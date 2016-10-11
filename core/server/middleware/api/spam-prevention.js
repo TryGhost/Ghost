@@ -7,9 +7,9 @@
 // Helpers to handle spam detection on signin, forgot password, and protected pages.
 
 var _ = require('lodash'),
-    errors    = require('../errors'),
-    config    = require('../config'),
-    i18n      = require('../i18n'),
+    errors    = require('../../errors'),
+    config    = require('../../config'),
+    i18n      = require('../../i18n'),
     loginSecurity = [],
     forgottenSecurity = [],
     spamPrevention;
