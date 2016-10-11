@@ -25,7 +25,7 @@ describe('PrettyStream', function () {
             var ghostPrettyStream = new GhostPrettyStream({mode: 'short'});
 
             ghostPrettyStream.emit = function (eventName, data) {
-                data.should.eql('[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m\n%\n \u001b[4mlevel:normal\u001b[24m\n\u001b[31mHey Jude!\u001b[39m\n');
+                data.should.eql('[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m\n\u001b[4mlevel:normal\u001b[24m\n\u001b[31mHey Jude!\u001b[39m\n\n');
                 done();
             };
 
@@ -106,7 +106,7 @@ describe('PrettyStream', function () {
             var ghostPrettyStream = new GhostPrettyStream({mode: 'long'});
 
             ghostPrettyStream.emit = function (eventName, data) {
-                data.should.eql('[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m\n%\n \u001b[4mlevel:normal\u001b[24m\n\u001b[31mHey Jude!\u001b[39m\n');
+                data.should.eql('[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m\n\u001b[4mlevel:normal\u001b[24m\n\u001b[31mHey Jude!\u001b[39m\n\n');
                 done();
             };
 

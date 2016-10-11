@@ -127,7 +127,7 @@ PrettyStream.prototype.write = function write(data) {
             }
         });
 
-        output += format('[%s] %s\n%\n',
+        output += format('[%s] %s\n%s\n',
             time,
             logLevel,
             bodyPretty
