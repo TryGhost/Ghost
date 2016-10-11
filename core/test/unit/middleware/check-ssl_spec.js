@@ -201,4 +201,26 @@ describe('checkSSL', function () {
         next.called.should.be.false();
         done();
     });
+
+    it('should redirect to correct path with force admin SSL (admin as subapp)', function (done) {
+        req.url = '/';
+        req.originalUrl = '/ghost/';
+        res.isAdmin = true;
+        res.redirect = {};
+        req.secure = false;
+        configUtils.set({
+            url: 'http://default.com:2368/',
+            urlSSL: '',
+            forceAdminSSL: true
+        });
+        sandbox.stub(res, 'redirect', function (statusCode, url) {
+            statusCode.should.eql(301);
+            url.should.not.be.empty();
+            url.should.eql('https://default.com:2368/ghost/');
+            return;
+        });
+        checkSSL(req, res, next);
+        next.called.should.be.false();
+        done();
+    });
 });
