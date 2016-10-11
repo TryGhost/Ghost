@@ -2,15 +2,16 @@
 // API for sending Mail
 
 var Promise       = require('bluebird'),
+    config        = require('../config'),
     pipeline      = require('../utils/pipeline'),
     errors        = require('../errors'),
     mail          = require('../mail'),
     Models        = require('../models'),
     utils         = require('./utils'),
     notifications = require('./notifications'),
-    docName       = 'mail',
     i18n          = require('../i18n'),
-    mode          = process.env.NODE_ENV,
+    docName       = 'mail',
+    mode          = config.get('env'),
     testing       = mode !== 'production' && mode !== 'development',
     mailer,
     apiMail;

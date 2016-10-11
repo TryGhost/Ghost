@@ -3,7 +3,8 @@
 //
 // Returns the path to the specified asset. The ghost flag outputs the asset path for the Ghost admin
 
-var getAssetUrl = require('../data/meta/asset_url'),
+var config = require('../config'),
+    getAssetUrl = require('../data/meta/asset_url'),
     hbs = require('express-hbs');
 
 function asset(path, options) {
@@ -14,7 +15,7 @@ function asset(path, options) {
         isAdmin = options.hash.ghost;
         minify = options.hash.minifyInProduction;
     }
-    if (process.env.NODE_ENV !== 'production') {
+    if (config.get('env') !== 'production') {
         minify = false;
     }
     return new hbs.handlebars.SafeString(

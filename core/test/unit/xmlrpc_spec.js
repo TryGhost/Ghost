@@ -8,9 +8,7 @@ var _ = require('lodash'),
     configUtils = require('../utils/configUtils'),
     xmlrpc = rewire('../../server/data/xml/xmlrpc'),
     events = require('../../server/events'),
-    logging = require('../../server/logging'),
-    // storing current environment
-    currentEnv = process.env.NODE_ENV;
+    logging = require('../../server/logging');
 
 // To stop jshint complaining
 should.equal(true, true);
@@ -21,16 +19,14 @@ describe('XMLRPC', function () {
     beforeEach(function () {
         sandbox = sinon.sandbox.create();
         eventStub = sandbox.stub(events, 'on');
-        // give environment a value that will ping
-        process.env.NODE_ENV = 'production';
+
+        configUtils.set('env', 'production');
     });
 
     afterEach(function () {
         sandbox.restore();
         configUtils.restore();
         nock.cleanAll();
-        // reset the environment
-        process.env.NODE_ENV = currentEnv;
     });
 
     it('listen() should initialise event correctly', function () {

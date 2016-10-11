@@ -14,9 +14,7 @@ var should         = require('should'),
 
     // Thing we are testing
     configUtils    = require('../utils/configUtils'),
-    config         = configUtils.config,
-    // storing current environment
-    currentEnv     = process.env.NODE_ENV;
+    config         = configUtils.config;
 
 i18n.init();
 

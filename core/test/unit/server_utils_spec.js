@@ -1,14 +1,15 @@
 var should          = require('should'),
     sinon           = require('sinon'),
     nock            = require('nock'),
+    tmp             = require('tmp'),
+    join            = require('path').join,
+    fs              = require('fs'),
+    configUtils     = require('../utils/configUtils'),
     parsePackageJson = require('../../server/utils/parse-package-json'),
     readDirectory   = require('../../server/utils/read-directory'),
     readThemes      = require('../../server/utils/read-themes'),
     gravatar        = require('../../server/utils/gravatar'),
-    tmp             = require('tmp'),
-    utils           = require('../../server/utils'),
-    join            = require('path').join,
-    fs              = require('fs');
+    utils           = require('../../server/utils');
 
 // To stop jshint complaining
 should.equal(true, true);
@@ -367,16 +368,12 @@ describe('Server Utilities', function () {
     });
 
     describe('gravatar-lookup', function () {
-        var currentEnv = process.env.NODE_ENV;
-
         beforeEach(function () {
-            // give environment a value that will call gravatar
-            process.env.NODE_ENV = 'production';
+            configUtils.set('env', 'production');
         });
 
         afterEach(function () {
-            // reset the environment
-            process.env.NODE_ENV = currentEnv;
+            configUtils.restore();
         });
 
         it('can successfully lookup a gravatar url', function (done) {
