@@ -22,7 +22,7 @@ function fetchAvailableTimezones() {
 function getAboutConfig() {
     return {
         version: ghostVersion.full,
-        environment: process.env.NODE_ENV,
+        environment: config.get('env'),
         database: config.get('database').client,
         mail: _.isObject(config.get('mail')) ? config.get('mail').transport : ''
     };
