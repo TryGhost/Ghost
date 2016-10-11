@@ -168,6 +168,7 @@ apiRoutes = function apiRoutes(middleware) {
     ]);
 
     router.post('/authentication/revoke', authenticatePrivate, api.http(api.authentication.revoke));
+    router.del('/authentication/tokens', authenticatePrivate, api.http(api.authentication.revokeOtherTokens));
 
     // ## Uploads
     // @TODO: rename endpoint to /images/upload (or similar)
