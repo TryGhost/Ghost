@@ -268,8 +268,8 @@ User = ghostBookshelf.Model.extend({
         var query,
             status,
             optInc,
-            lookupRole = data.role,
-            data = _.cloneDeep(dataToClone);
+            data = _.cloneDeep(dataToClone),
+            lookupRole = data.role;
 
         delete data.role;
         data = _.defaults(data || {}, {

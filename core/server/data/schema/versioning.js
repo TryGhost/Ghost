@@ -2,7 +2,6 @@ var path = require('path'),
     Promise = require('bluebird'),
     db = require('../db'),
     errors = require('../../errors'),
-    i18n = require('../../i18n'),
     ghostVersion = require('../../utils/ghost-version');
 
 /**
@@ -49,7 +48,7 @@ function getDatabaseVersion(options) {
                 .where('key', 'databaseVersion')
                 .first('value')
                 .then(function (version) {
-                    return validateDatabaseVersion(version.value);
+                    return validateDatabaseVersion(version ? version.value : null);
                 });
         });
 }
@@ -63,6 +62,8 @@ function getNewestDatabaseVersion() {
  * If this function get called, we set the database version to your current Ghost version.
  */
 function setDatabaseVersion(options) {
+    options = options || {};
+
     return (options.transacting || db.knex)('settings')
         .where('key', 'databaseVersion')
         .update({

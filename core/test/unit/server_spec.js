@@ -10,6 +10,7 @@ var should = require('should'),
     errors = require(config.get('paths').corePath + '/server/errors'),
     permissions = require(config.get('paths').corePath + '/server/permissions'),
     api = require(config.get('paths').corePath + '/server/api'),
+    Sephiroth = require(config.get('paths').corePath + '/server/data/sephiroth'),
     apps = require(config.get('paths').corePath + '/server/apps'),
     i18n = require(config.get('paths').corePath + '/server/i18n'),
     xmlrpc = require(config.get('paths').corePath + '/server/data/xml/xmlrpc'),
@@ -64,13 +65,14 @@ describe('server bootstrap', function () {
                 .catch(function (err) {
                     migration.populate.calledOnce.should.eql(false);
                     config.get('maintenance').enabled.should.eql(false);
-                    (err instanceof errors.GhostError).should.eql(true);
+                    (err instanceof Sephiroth.errors.DatabaseIsNotOkError).should.eql(true);
                     err.code.should.eql('MIGRATION_TABLE_IS_MISSING');
                     done();
                 });
         });
 
         // @TODO fix these two tests once we've decided on a new migration
+        // @TODO kate-migrations
         // versioning scheme
         // the tests do not work right now because if the version isn't an
         // alpha version, we error. I've added two temporary tests to show this.
