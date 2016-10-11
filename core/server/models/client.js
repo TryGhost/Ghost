@@ -1,7 +1,7 @@
-var ghostBookshelf = require('./base'),
-    crypto         = require('crypto'),
+var crypto         = require('crypto'),
     uuid           = require('node-uuid'),
-
+    ghostBookshelf = require('./base'),
+    config         = require('../config'),
     Client,
     Clients;
 
@@ -10,7 +10,7 @@ Client = ghostBookshelf.Model.extend({
     tableName: 'clients',
 
     defaults: function defaults() {
-        var env = process.env.NODE_ENV,
+        var env = config.get('env'),
             secret = env.indexOf('testing') !== 0 ? crypto.randomBytes(6).toString('hex') : 'not_available';
 
         return {
