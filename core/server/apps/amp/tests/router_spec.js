@@ -37,7 +37,7 @@ describe('AMP Controller', function () {
             route: {path: '/'},
             query: {r: ''},
             params: {},
-            body: {}
+            amp: {}
         };
 
         defaultPath = path.join(configUtils.config.get('paths').appRoot, '/core/server/apps/amp/lib/views/amp.hbs');
@@ -148,7 +148,7 @@ describe('AMP getPostData', function () {
         };
 
         req = {
-            body: {
+            amp: {
                 post: {}
             }
         };
@@ -173,7 +173,7 @@ describe('AMP getPostData', function () {
         ampController.__set__('postLookup', postLookupStub);
 
         ampController.getPostData(req, res, function () {
-            req.body.post.should.be.eql({
+            req.amp.post.should.be.eql({
                     id: '1',
                     slug: 'welcome-to-ghost',
                     isAmpURL: true
@@ -197,7 +197,7 @@ describe('AMP getPostData', function () {
             err.message.should.be.eql('not found');
             err.statusCode.should.be.eql(404);
             err.errorType.should.be.eql('NotFoundError');
-            req.body.post.should.be.eql({});
+            req.amp.should.be.eql({});
             done();
         });
     });
@@ -210,7 +210,7 @@ describe('AMP getPostData', function () {
         ampController.getPostData(req, res, function (err) {
             should.exist(err);
             err.should.be.eql('not found');
-            req.body.post.should.be.eql({});
+            req.amp.should.be.eql({});
             done();
         });
     });

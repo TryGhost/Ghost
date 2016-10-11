@@ -1,7 +1,7 @@
 var should      = require('should'),
     sinon       = require('sinon'),
     rewire      = require('rewire'),
-    middleware  = require('../../../server/middleware').middleware;
+    spamPrevention = require('../../../../server/middleware/api/spam-prevention');
 
 describe('Middleware: spamPrevention', function () {
     var sandbox,
@@ -19,7 +19,7 @@ describe('Middleware: spamPrevention', function () {
         spyNext = sinon.spy(function (param) {
             error = param;
         });
-        middleware.spamPrevention = rewire('../../../server/middleware/spam-prevention');
+        spamPrevention = rewire('../../../../server/middleware/api/spam-prevention');
     });
 
     afterEach(function () {
@@ -41,7 +41,7 @@ describe('Middleware: spamPrevention', function () {
 
         it('calls next if refreshing the token', function (done) {
             req.body.grant_type = 'refresh_token';
-            middleware.spamPrevention.signin(req, null, next);
+            spamPrevention.signin(req, null, next);
 
             next.calledOnce.should.be.true();
             done();
@@ -50,7 +50,7 @@ describe('Middleware: spamPrevention', function () {
         it ('creates a BadRequestError when there\'s no username', function (done) {
             req.body = {};
 
-            middleware.spamPrevention.signin(req, null, spyNext);
+            spamPrevention.signin(req, null, spyNext);
 
             should.exist(error);
             error.errorType.should.eql('BadRequestError');
@@ -59,10 +59,10 @@ describe('Middleware: spamPrevention', function () {
 
         it ('rate limits after 10 attempts', function (done) {
             for (var ndx = 0; ndx < 10; ndx = ndx + 1) {
-                middleware.spamPrevention.signin(req, null, spyNext);
+                spamPrevention.signin(req, null, spyNext);
             }
 
-            middleware.spamPrevention.signin(req, null, spyNext);
+            spamPrevention.signin(req, null, spyNext);
             should.exist(error);
             error.errorType.should.eql('TooManyRequestsError');
 
@@ -76,10 +76,10 @@ describe('Middleware: spamPrevention', function () {
                 });
 
             for (ndx = 0; ndx < 10; ndx = ndx + 1) {
-                middleware.spamPrevention.signin(req, null, spyNext);
+                spamPrevention.signin(req, null, spyNext);
             }
 
-            middleware.spamPrevention.signin(req, null, spyNext);
+            spamPrevention.signin(req, null, spyNext);
             error.errorType.should.eql('TooManyRequestsError');
             error = null;
 
@@ -89,7 +89,7 @@ describe('Middleware: spamPrevention', function () {
                 return [3610, 10];
             });
 
-            middleware.spamPrevention.signin(req, null, spyNext);
+            spamPrevention.signin(req, null, spyNext);
             should(error).equal(undefined);
             spyNext.called.should.be.true();
 
@@ -117,7 +117,7 @@ describe('Middleware: spamPrevention', function () {
                 passwordreset: [{}]
             };
 
-            middleware.spamPrevention.forgotten(req, null, spyNext);
+            spamPrevention.forgotten(req, null, spyNext);
             error.errorType.should.eql('BadRequestError');
 
             done();
@@ -125,10 +125,10 @@ describe('Middleware: spamPrevention', function () {
 
         it ('creates an unauthorized error after 5 attempts with same email', function (done) {
             for (var ndx = 0; ndx < 6; ndx = ndx + 1) {
-                middleware.spamPrevention.forgotten(req, null, spyNext);
+                spamPrevention.forgotten(req, null, spyNext);
             }
 
-            middleware.spamPrevention.forgotten(req, null, spyNext);
+            spamPrevention.forgotten(req, null, spyNext);
             error.errorType.should.eql('TooManyRequestsError');
 
             done();
@@ -143,10 +143,10 @@ describe('Middleware: spamPrevention', function () {
                     {email: email}
                 ];
 
-                middleware.spamPrevention.forgotten(req, null, spyNext);
+                spamPrevention.forgotten(req, null, spyNext);
             }
 
-            middleware.spamPrevention.forgotten(req, null, spyNext);
+            spamPrevention.forgotten(req, null, spyNext);
             error.errorType.should.eql('TooManyRequestsError');
 
             done();

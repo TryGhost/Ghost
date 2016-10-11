@@ -12,7 +12,7 @@ var path                = require('path'),
 function controller(req, res, next) {
     var defaultView = path.resolve(__dirname, 'views', 'amp.hbs'),
         paths = templates.getActiveThemePaths(req.app.get('activeTheme')),
-        data = req.body;
+        data = req.amp;
 
     if (res.error) {
         data.error = res.error;
@@ -33,10 +33,12 @@ function controller(req, res, next) {
 }
 
 function getPostData(req, res, next) {
+    // Create a req property where we can store our data
+    req.amp = {};
     postLookup(res.locals.relativeUrl)
         .then(function (result) {
             if (result && result.post) {
-                req.body.post = result.post;
+                req.amp.post = result.post;
             }
 
             next();

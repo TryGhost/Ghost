@@ -2,6 +2,7 @@ var path                = require('path'),
     express             = require('express'),
     _                   = require('lodash'),
     subscribeRouter     = express.Router(),
+    bodyParser          = require('body-parser'),
 
     // Dirty requires
     api                 = require('../../../api'),
@@ -92,6 +93,7 @@ subscribeRouter.route('/')
         controller
     )
     .post(
+        bodyParser.urlencoded({extended: true}),
         honeyPot,
         handleSource,
         storeSubscriber,

@@ -1,6 +1,7 @@
 var path                = require('path'),
     express             = require('express'),
     middleware          = require('./middleware'),
+    bodyParser          = require('body-parser'),
     templates           = require('../../../controllers/frontend/templates'),
     setResponseContext  = require('../../../controllers/frontend/context'),
     privateRouter = express.Router();
@@ -29,6 +30,7 @@ privateRouter.route('/')
         controller
     )
     .post(
+        bodyParser.urlencoded({extended: true}),
         middleware.isPrivateSessionAuth,
         middleware.spamPrevention,
         middleware.authenticateProtection,
