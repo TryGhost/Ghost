@@ -54,7 +54,7 @@ _private.registerClient = function registerClient(options) {
                                 }));
                             }
 
-                            console.log('RETRY: Public Client Registration...');
+                            logging.debug('Trying to register Public Client...');
                             var timeout = setTimeout(function () {
                                 clearTimeout(timeout);
                                 retryCount = retryCount - 1;
@@ -95,7 +95,7 @@ exports.init = function initPassport(options) {
 
         _private.registerClient({ghostOAuth2Strategy: ghostOAuth2Strategy, url: utils.url.getBaseUrl()})
             .then(function setClient(client) {
-                console.log('SUCCESS: Public Client Registration');
+                logging.debug('Public Client Registration was successful');
 
                 ghostOAuth2Strategy.setClient(client);
                 passport.use(ghostOAuth2Strategy);
