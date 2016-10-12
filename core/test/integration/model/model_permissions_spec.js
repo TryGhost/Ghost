@@ -15,27 +15,23 @@ describe('Permission Model', function () {
         should.exist(PermissionModel);
     });
 
-    it('can findAll', function (done) {
-        PermissionModel.findAll().then(function (foundPermissions) {
+    it('can findAll', function () {
+        return PermissionModel.findAll().then(function (foundPermissions) {
             should.exist(foundPermissions);
 
             foundPermissions.models.length.should.be.above(0);
-
-            done();
-        }).catch(done);
+        });
     });
 
-    it('can findOne', function (done) {
-        PermissionModel.findOne({id: 1}).then(function (foundPermission) {
+    it('can findOne', function () {
+        return PermissionModel.findOne({id: 1}).then(function (foundPermission) {
             should.exist(foundPermission);
             foundPermission.get('created_at').should.be.an.instanceof(Date);
-
-            done();
-        }).catch(done);
+        });
     });
 
-    it('can edit', function (done) {
-        PermissionModel.findOne({id: 1}).then(function (foundPermission) {
+    it('can edit', function () {
+        return PermissionModel.findOne({id: 1}).then(function (foundPermission) {
             should.exist(foundPermission);
 
             return foundPermission.set({name: 'updated'}).save(null, context);
@@ -45,31 +41,27 @@ describe('Permission Model', function () {
             should.exist(updatedPermission);
 
             updatedPermission.get('name').should.equal('updated');
-
-            done();
-        }).catch(done);
+        });
     });
 
-    it('can add', function (done) {
+    it('can add', function () {
         var newPerm = {
             name: 'testperm1',
             object_type: 'test',
             action_type: 'test'
         };
 
-        PermissionModel.add(newPerm, context).then(function (createdPerm) {
+        return PermissionModel.add(newPerm, context).then(function (createdPerm) {
             should.exist(createdPerm);
 
             createdPerm.attributes.name.should.equal(newPerm.name);
-
-            done();
-        }).catch(done);
+        });
     });
 
-    it('can destroy', function (done) {
+    it('can destroy', function () {
         var firstPermission = {id: 1};
 
-        PermissionModel.findOne(firstPermission).then(function (foundPermission) {
+        return PermissionModel.findOne(firstPermission).then(function (foundPermission) {
             should.exist(foundPermission);
             foundPermission.attributes.id.should.equal(firstPermission.id);
 
@@ -79,9 +71,7 @@ describe('Permission Model', function () {
             return PermissionModel.findOne(firstPermission);
         }).then(function (newResults) {
             should.equal(newResults, null);
-
-            done();
-        }).catch(done);
+        });
     });
 
     // it('can add user to role', function (done) {

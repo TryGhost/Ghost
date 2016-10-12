@@ -12,8 +12,8 @@ describe('Configuration API', function () {
 
     should.exist(ConfigurationAPI);
 
-    it('can read basic config and get all expected properties', function (done) {
-        ConfigurationAPI.read().then(function (response) {
+    it('can read basic config and get all expected properties', function () {
+        return ConfigurationAPI.read().then(function (response) {
             var props;
 
             should.exist(response);
@@ -32,13 +32,11 @@ describe('Configuration API', function () {
             // Check a few values
             props.blogUrl.should.have.property('value', 'http://127.0.0.1:2369');
             props.fileStorage.should.have.property('value', true);
-
-            done();
-        }).catch(done);
+        });
     });
 
-    it('can read about config and get all expected properties', function (done) {
-        ConfigurationAPI.read({key: 'about'}).then(function (response) {
+    it('can read about config and get all expected properties', function () {
+        return ConfigurationAPI.read({key: 'about'}).then(function (response) {
             var props;
 
             should.exist(response);
@@ -55,8 +53,6 @@ describe('Configuration API', function () {
             // Check a few values
             props.environment.should.match(/^testing/);
             props.version.should.eql(require('../../../../package.json').version);
-
-            done();
-        }).catch(done);
+        });
     });
 });

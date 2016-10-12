@@ -21,13 +21,13 @@ describe('Exporter', function () {
 
     should.exist(exporter);
 
-    it('exports data', function (done) {
+    it('exports data', function () {
         // Stub migrations to return DEF_DB_VERSION as the current database version
         var versioningStub = sandbox.stub(versioning, 'getDatabaseVersion', function () {
             return Promise.resolve(DEF_DB_VERSION);
         });
 
-        exporter.doExport().then(function (exportData) {
+        return exporter.doExport().then(function (exportData) {
             var tables = ['posts', 'users', 'roles', 'roles_users', 'permissions', 'permissions_roles',
                 'permissions_users', 'settings', 'tags', 'posts_tags'],
                 dbVersionSetting;
@@ -52,7 +52,6 @@ describe('Exporter', function () {
             should.not.exist(exportData.data.sqlite_sequence);
 
             versioningStub.restore();
-            done();
-        }).catch(done);
+        });
     });
 });

@@ -30,20 +30,18 @@ describe('Settings Model', function () {
     });
 
     describe('API', function () {
-        it('can findAll', function (done) {
-            SettingsModel.findAll().then(function (results) {
+        it('can findAll', function () {
+            return SettingsModel.findAll().then(function (results) {
                 should.exist(results);
 
                 results.length.should.be.above(0);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can findOne', function (done) {
+        it('can findOne', function () {
             var firstSetting;
 
-            SettingsModel.findAll().then(function (results) {
+            return SettingsModel.findAll().then(function (results) {
                 should.exist(results);
 
                 results.length.should.be.above(0);
@@ -56,13 +54,11 @@ describe('Settings Model', function () {
 
                 should(found.get('value')).equal(firstSetting.attributes.value);
                 found.get('created_at').should.be.an.instanceof(Date);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can edit single', function (done) {
-            SettingsModel.findAll().then(function (results) {
+        it('can edit single', function () {
+            return SettingsModel.findAll().then(function (results) {
                 should.exist(results);
 
                 results.length.should.be.above(0);
@@ -81,17 +77,15 @@ describe('Settings Model', function () {
                 eventSpy.calledTwice.should.be.true();
                 eventSpy.firstCall.calledWith('settings.edited').should.be.true();
                 eventSpy.secondCall.calledWith('settings.description.edited').should.be.true();
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can edit multiple', function (done) {
+        it('can edit multiple', function () {
             var model1,
                 model2,
                 editedModel;
 
-            SettingsModel.findAll().then(function (results) {
+            return SettingsModel.findAll().then(function (results) {
                 should.exist(results);
 
                 results.length.should.be.above(0);
@@ -125,12 +119,10 @@ describe('Settings Model', function () {
 
                 eventSpy.calledWith('settings.description.edited').should.be.true();
                 eventSpy.calledWith('settings.title.edited').should.be.true();
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can add', function (done) {
+        it('can add', function () {
             var newSetting = {
                 key: 'TestSetting1',
                 value: 'Test Content 1'
@@ -146,16 +138,14 @@ describe('Settings Model', function () {
                 eventSpy.calledTwice.should.be.true();
                 eventSpy.firstCall.calledWith('settings.added').should.be.true();
                 eventSpy.secondCall.calledWith('settings.TestSetting1.added').should.be.true();
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can destroy', function (done) {
+        it('can destroy', function () {
             // dont't use id 1, since it will delete databaseversion
             var settingToDestroy = {id: 2};
 
-            SettingsModel.findOne(settingToDestroy).then(function (results) {
+            return SettingsModel.findOne(settingToDestroy).then(function (results) {
                 should.exist(results);
                 results.attributes.id.should.equal(settingToDestroy.id);
 
@@ -166,21 +156,17 @@ describe('Settings Model', function () {
                 return SettingsModel.findOne(settingToDestroy);
             }).then(function (newResults) {
                 should.equal(newResults, null);
-
-                done();
-            }).catch(done);
+            });
         });
     });
 
     describe('populating defaults from settings.json', function () {
-        beforeEach(function (done) {
-            db.knex('settings').truncate().then(function () {
-                done();
-            });
+        beforeEach(function () {
+            return db.knex('settings').truncate();
         });
 
-        it('populates any unset settings from the JSON defaults', function (done) {
-            SettingsModel.findAll().then(function (allSettings) {
+        it('populates any unset settings from the JSON defaults', function () {
+            return SettingsModel.findAll().then(function (allSettings) {
                 allSettings.length.should.equal(0);
                 return SettingsModel.populateDefaults();
             }).then(function () {
@@ -193,19 +179,17 @@ describe('Settings Model', function () {
                 // Testing against the actual value in default-settings.json feels icky,
                 // but it's easier to fix the test if that ever changes than to mock out that behaviour
                 descriptionSetting.get('value').should.equal('Just a blogging platform.');
-                done();
-            }).catch(done);
+            });
         });
 
-        it('doesn\'t overwrite any existing settings', function (done) {
-            SettingsModel.add({key: 'description', value: 'Adam\'s Blog'}, context).then(function () {
+        it('doesn\'t overwrite any existing settings', function () {
+            return SettingsModel.add({key: 'description', value: 'Adam\'s Blog'}, context).then(function () {
                 return SettingsModel.populateDefaults();
             }).then(function () {
                 return SettingsModel.findOne('description');
             }).then(function (descriptionSetting) {
                 descriptionSetting.get('value').should.equal('Adam\'s Blog');
-                done();
-            }).catch(done);
+            });
         });
     });
 });

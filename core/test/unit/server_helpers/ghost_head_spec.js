@@ -61,8 +61,8 @@ describe('{{ghost_head}} helper', function () {
             should.exist(handlebars.helpers.ghost_head);
         });
 
-        it('returns meta tag string on paginated index page without structured data and schema', function (done) {
-            helpers.ghost_head.call(
+        it('returns meta tag string on paginated index page without structured data and schema', function () {
+            return helpers.ghost_head.call(
                 {safeVersion: '0.3', relativeUrl: '/page/2/', context: ['paged', 'index']},
                 {data: {root: {context: ['paged', 'index']}}}
             ).then(function (rendered) {
@@ -72,13 +72,11 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
                 rendered.string.should.not.match(/<meta property="og/);
                 rendered.string.should.not.match(/<script type=\"application\/ld\+json\">/);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('returns structured data on first index page', function (done) {
-            helpers.ghost_head.call(
+        it('returns structured data on first index page', function () {
+            return helpers.ghost_head.call(
                 {safeVersion: '0.3', relativeUrl: '/', context: ['home', 'index']},
                 {data: {root: {context: ['home', 'index']}}}
             ).then(function (rendered) {
@@ -105,12 +103,10 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"url": "http:\/\/testurl.com\/"/);
                 rendered.string.should.match(/"image": "http:\/\/testurl.com\/content\/images\/blog-cover.png"/);
                 rendered.string.should.match(/"description": "blog description"/);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('returns structured data on static page', function (done) {
+        it('returns structured data on static page', function () {
             var post = {
                 meta_description: 'all about our blog',
                 title: 'About',
@@ -130,7 +126,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            helpers.ghost_head.call(
+            return helpers.ghost_head.call(
                 {safeVersion: '0.3', relativeUrl: '/about/', context: ['page'], post: post},
                 {data: {root: {context: ['page']}}}
             ).then(function (rendered) {
@@ -163,12 +159,10 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"image": "http:\/\/testurl.com\/content\/images\/test-image-about.png"/);
                 rendered.string.should.match(/"image\": \"http:\/\/testurl.com\/content\/images\/test-author-image.png\"/);
                 rendered.string.should.match(/"description": "all about our blog"/);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('returns structured data and schema first tag page with meta description and meta title', function (done) {
+        it('returns structured data and schema first tag page with meta description and meta title', function () {
             var tag = {
                 meta_description: 'tag meta description',
                 name: 'tagtitle',
@@ -176,7 +170,7 @@ describe('{{ghost_head}} helper', function () {
                 image: '/content/images/tag-image.png'
             };
 
-            helpers.ghost_head.call(
+            return helpers.ghost_head.call(
                 {safeVersion: '0.3', relativeUrl: '/tag/tagtitle/', tag: tag, context: ['tag']},
                 {data: {root: {context: ['tag']}}}
             ).then(function (rendered) {
@@ -203,12 +197,10 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"image": "http:\/\/testurl.com\/content\/images\/tag-image.png"/);
                 rendered.string.should.match(/"name": "tagtitle"/);
                 rendered.string.should.match(/"description": "tag meta description"/);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('tag first page without meta description uses tag description, and title if no meta title', function (done) {
+        it('tag first page without meta description uses tag description, and title if no meta title', function () {
             var tag = {
                 meta_description: '',
                 description: 'tag description',
@@ -244,12 +236,10 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"image": "http:\/\/testurl.com\/content\/images\/tag-image.png"/);
                 rendered.string.should.match(/"name": "tagtitle"/);
                 rendered.string.should.match(/"description": "tag description"/);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('tag first page with meta and model description returns no description fields', function (done) {
+        it('tag first page with meta and model description returns no description fields', function () {
             var tag = {
                 meta_description: '',
                 name: 'tagtitle',
@@ -257,7 +247,7 @@ describe('{{ghost_head}} helper', function () {
                 image: '/content/images/tag-image.png'
             };
 
-            helpers.ghost_head.call(
+            return helpers.ghost_head.call(
                 {safeVersion: '0.3', relativeUrl: '/tag/tagtitle/', tag: tag, context: ['tag']},
                 {data: {root: {context: ['tag']}}}
             ).then(function (rendered) {
@@ -265,12 +255,10 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.not.match(/<meta property="og:description" \/>/);
                 rendered.string.should.not.match(/<meta name="twitter:description"\/>/);
                 rendered.string.should.not.match(/"description":/);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('does not return structured data on paginated tag pages', function (done) {
+        it('does not return structured data on paginated tag pages', function () {
             var tag = {
                 meta_description: 'tag meta description',
                 title: 'tagtitle',
@@ -278,7 +266,7 @@ describe('{{ghost_head}} helper', function () {
                 image: '/content/images/tag-image.png'
             };
 
-            helpers.ghost_head.call(
+            return helpers.ghost_head.call(
                 {safeVersion: '0.3', relativeUrl: '/tag/tagtitle/page/2/', tag: tag, context: ['paged', 'tag']},
                 {data: {root: {context: ['tag']}}}
             ).then(function (rendered) {
@@ -288,12 +276,10 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
                 rendered.string.should.not.match(/<meta property="og/);
                 rendered.string.should.not.match(/<script type=\"application\/ld\+json\">/);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('returns structured data and schema on first author page with cover image', function (done) {
+        it('returns structured data and schema on first author page with cover image', function () {
             var author = {
                 name: 'Author name',
                 slug: 'AuthorName',
@@ -305,7 +291,7 @@ describe('{{ghost_head}} helper', function () {
                 twitter: '@testuser'
             }, authorBk = _.cloneDeep(author);
 
-            helpers.ghost_head.call(
+            return helpers.ghost_head.call(
                 {safeVersion: '0.3', relativeUrl: '/author/AuthorName/', author: author, context: ['author']},
                 {data: {root: {context: ['author']}}}
             ).then(function (rendered) {
@@ -335,12 +321,10 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"description": "Author bio"/);
 
                 author.should.eql(authorBk);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('does not return structured data on paginated author pages', function (done) {
+        it('does not return structured data on paginated author pages', function () {
             var author = {
                 name: 'Author name',
                 slug: 'AuthorName',
@@ -350,7 +334,7 @@ describe('{{ghost_head}} helper', function () {
                 website: 'http://authorwebsite.com'
             };
 
-            helpers.ghost_head.call(
+            return helpers.ghost_head.call(
                 {safeVersion: '0.3', relativeUrl: '/author/AuthorName/page/2/', author: author, context: ['paged', 'author']},
                 {data: {root: {context: ['paged', 'author']}}}
             ).then(function (rendered) {
@@ -360,25 +344,21 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
                 rendered.string.should.not.match(/<meta property="og/);
                 rendered.string.should.not.match(/<script type=\"application\/ld\+json\">/);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('returns meta tag string even if safeVersion is invalid', function (done) {
-            helpers.ghost_head.call(
+        it('returns meta tag string even if safeVersion is invalid', function () {
+            return helpers.ghost_head.call(
                 {safeVersion: '0.9', context: []},
                 {data: {root: {context: []}}}
             ).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.9" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('returns structured data on post page with author image and post cover image', function (done) {
+        it('returns structured data on post page with author image and post cover image', function () {
             var post = {
                 meta_description: 'blog description',
                 title: 'Welcome to Ghost',
@@ -398,7 +378,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             }, postBk = _.cloneDeep(post);
 
-            helpers.ghost_head.call(
+            return helpers.ghost_head.call(
                 {relativeUrl: '/post/', safeVersion: '0.3', context: ['post'], post: post},
                 {data: {root: {context: ['post']}}}
             ).then(function (rendered) {
@@ -451,12 +431,10 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
 
                 post.should.eql(postBk);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('returns structured data on AMP post page with author image and post cover image', function (done) {
+        it('returns structured data on AMP post page with author image and post cover image', function () {
             var post = {
                 meta_description: 'blog description',
                 title: 'Welcome to Ghost',
@@ -476,7 +454,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             }, postBk = _.cloneDeep(post);
 
-            helpers.ghost_head.call(
+            return helpers.ghost_head.call(
                 {relativeUrl: '/post/amp/', safeVersion: '0.3', context: ['amp', 'post'], post: post},
                 {data: {root: {context: ['amp', 'post']}}}
             ).then(function (rendered) {
@@ -529,12 +507,10 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
 
                 post.should.eql(postBk);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('returns structured data if metaTitle and metaDescription have double quotes', function (done) {
+        it('returns structured data if metaTitle and metaDescription have double quotes', function () {
             var post = {
                 meta_description: 'blog "test" description',
                 title: 'title',
@@ -554,7 +530,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            helpers.ghost_head.call(
+            return helpers.ghost_head.call(
                 {relativeUrl: '/post/', safeVersion: '0.3', context: ['post'], post: post},
                 {data: {root: {context: ['post']}}}
             ).then(function (rendered) {
@@ -607,12 +583,10 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('returns structured data without tags if there are no tags', function (done) {
+        it('returns structured data without tags if there are no tags', function () {
             var post = {
                 meta_description: 'blog description',
                 title: 'Welcome to Ghost',
@@ -631,7 +605,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            helpers.ghost_head.call(
+            return helpers.ghost_head.call(
                 {relativeUrl: '/post/', safeVersion: '0.3', context: ['post'], post: post},
                 {data: {root: {context: ['post']}}}).then(function (rendered) {
                 var re1 = new RegExp('<meta property="article:published_time" content="' + post.published_at),
@@ -680,12 +654,10 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('returns structured data on post page with null author image and post cover image', function (done) {
+        it('returns structured data on post page with null author image and post cover image', function () {
             var post = {
                 meta_description: 'blog description',
                 title: 'Welcome to Ghost',
@@ -704,7 +676,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            helpers.ghost_head.call(
+            return helpers.ghost_head.call(
                 {relativeUrl: '/post/', safeVersion: '0.3', context: ['post'], post: post},
                 {data: {root: {context: ['post']}}}
             ).then(function (rendered) {
@@ -754,13 +726,11 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"description": "blog description"/);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('outputs structured data but not schema for custom channel', function (done) {
-            helpers.ghost_head.call(
+        it('outputs structured data but not schema for custom channel', function () {
+            return helpers.ghost_head.call(
                 {safeVersion: '0.3', relativeUrl: '/featured/', context: ['featured']},
                 {data: {root: {context: ['featured']}}}
             ).then(function (rendered) {
@@ -774,12 +744,10 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<meta property="og:url" content="http:\/\/testurl.com\/featured\/" \/>/);
 
                 rendered.string.should.not.match(/<script type=\"application\/ld\+json\">/);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('returns twitter and facebook descriptions if no meta description available', function (done) {
+        it('returns twitter and facebook descriptions if no meta description available', function () {
             var post = {
                 title: 'Welcome to Ghost',
                 html: '<p>This is a short post</p>',
@@ -788,7 +756,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            helpers.ghost_head.call(
+            return helpers.ghost_head.call(
                 {relativeUrl: '/post/', safeVersion: '0.3', context: ['post'], post: post},
                 {data: {root: {context: ['post']}}}
             ).then(function (rendered) {
@@ -796,12 +764,10 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<link rel="amphtml" href="http:\/\/testurl.com\/post\/amp\/" \/>/);
                 rendered.string.should.match(/<meta property="og:description" content="This is a short post" \/>/);
                 rendered.string.should.match(/<meta name="twitter:description" content="This is a short post" \/>/);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('returns canonical URL', function (done) {
+        it('returns canonical URL', function () {
             var post = {
                 title: 'Welcome to Ghost',
                 html: '<p>This is a short post</p>',
@@ -810,7 +776,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            helpers.ghost_head.call(
+            return helpers.ghost_head.call(
                 {safeVersion: '0.3', relativeUrl: '/about/', context: ['page'], post: post},
                 {data: {root: {context: ['page']}}}
             ).then(function (rendered) {
@@ -818,13 +784,11 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/about\/" \/>/);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('returns next & prev URL correctly for middle page', function (done) {
-            helpers.ghost_head.call(
+        it('returns next & prev URL correctly for middle page', function () {
+            return helpers.ghost_head.call(
                 {safeVersion: '0.3', relativeUrl: '/page/3/', context: ['paged', 'index'], pagination: {next: '4', prev: '2'}},
                 {data: {root: {context: ['index', 'paged'], pagination: {total: 4, page: 3, next: 4, prev: 2}}}}
             ).then(function (rendered) {
@@ -836,13 +800,11 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
                 rendered.string.should.not.match(/<meta property="og/);
                 rendered.string.should.not.match(/<script type=\"application\/ld\+json\">/);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('returns next & prev URL correctly for second page', function (done) {
-            helpers.ghost_head.call(
+        it('returns next & prev URL correctly for second page', function () {
+            return helpers.ghost_head.call(
                 {safeVersion: '0.3', relativeUrl: '/page/2/', context: ['paged', 'index'], pagination: {next: '3', prev: '1'}},
                 {data: {root: {context: ['index', 'paged'], pagination: {total: 3, page: 2, next: 3, prev: 1}}}}
             ).then(function (rendered) {
@@ -854,9 +816,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
                 rendered.string.should.not.match(/<meta property="og/);
                 rendered.string.should.not.match(/<script type=\"application\/ld\+json\">/);
-
-                done();
-            }).catch(done);
+            });
         });
 
         describe('with /blog subdirectory', function () {
@@ -871,8 +831,8 @@ describe('{{ghost_head}} helper', function () {
                 });
             });
 
-            it('returns correct rss url with subdirectory', function (done) {
-                helpers.ghost_head.call(
+            it('returns correct rss url with subdirectory', function () {
+                return helpers.ghost_head.call(
                     {safeVersion: '0.3', context: ['paged', 'index']},
                     {data: {root: {context: []}}}
                 ).then(function (rendered) {
@@ -880,9 +840,7 @@ describe('{{ghost_head}} helper', function () {
                     rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/blog\/" \/>/);
                     rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                     rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/blog\/rss\/" \/>/);
-
-                    done();
-                }).catch(done);
+                });
             });
         });
     });
@@ -900,16 +858,14 @@ describe('{{ghost_head}} helper', function () {
             });
         });
 
-        it('contains the changed origin', function (done) {
-            helpers.ghost_head.call(
+        it('contains the changed origin', function () {
+            return helpers.ghost_head.call(
                 {safeVersion: '0.3', context: ['paged', 'index']},
                 {data: {root: {context: []}}}
             ).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<meta name="referrer" content="origin" \/>/);
-
-                done();
-            }).catch(done);
+            });
         });
     });
 
@@ -928,7 +884,7 @@ describe('{{ghost_head}} helper', function () {
             });
         });
 
-        it('does not return structured data', function (done) {
+        it('does not return structured data', function () {
             var post = {
                 meta_description: 'blog description',
                 title: 'Welcome to Ghost',
@@ -947,7 +903,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            helpers.ghost_head.call(
+            return helpers.ghost_head.call(
                 {relativeUrl: '/post/', safeVersion: '0.3', context: ['post'], post: post},
                 {data: {root: {context: ['post']}}}
             ).then(function (rendered) {
@@ -958,9 +914,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
                 rendered.string.should.not.match(/<meta property="og/);
                 rendered.string.should.not.match(/<script type=\"application\/ld\+json\">/);
-
-                done();
-            }).catch(done);
+            });
         });
     });
 
@@ -980,8 +934,8 @@ describe('{{ghost_head}} helper', function () {
             });
         });
 
-        it('returns meta tag plus injected code', function (done) {
-            helpers.ghost_head.call(
+        it('returns meta tag plus injected code', function () {
+            return helpers.ghost_head.call(
                 {safeVersion: '0.3', context: ['paged', 'index'], post: false},
                 {data: {root: {context: []}}}
             ).then(function (rendered) {
@@ -990,12 +944,10 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
                 rendered.string.should.match(/<style>body {background: red;}<\/style>/);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('returns meta tag without injected code for amp context', function (done) {
+        it('returns meta tag without injected code for amp context', function () {
             var post = {
                 meta_description: 'blog description',
                 title: 'Welcome to Ghost',
@@ -1013,7 +965,8 @@ describe('{{ghost_head}} helper', function () {
                     twitter: '@testuser'
                 }
             };
-            helpers.ghost_head.call(
+
+            return helpers.ghost_head.call(
                 {safeVersion: '0.3', context: ['amp', 'post'], post: post},
                 {data: {root: {context: []}}}
             ).then(function (rendered) {
@@ -1022,27 +975,23 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
                 rendered.string.should.not.match(/<style>body {background: red;}<\/style>/);
-
-                done();
-            }).catch(done);
+            });
         });
     });
 
     describe('with Ajax Helper', function () {
-        it('renders script tag with src', function (done) {
-            helpers.ghost_head.call(
+        it('renders script tag with src', function () {
+            return helpers.ghost_head.call(
                 {safeVersion: '0.3', context: ['paged', 'index'], post: false},
                 {data: {root: {context: []}}}
             ).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<script type="text\/javascript" src="\/shared\/ghost-url\.js\?v=/);
-
-                done();
             });
         });
 
-        it('renders script tag with init correctly', function (done) {
-            helpers.ghost_head.call(
+        it('renders script tag with init correctly', function () {
+            return helpers.ghost_head.call(
                 {safeVersion: '0.3', context: ['paged', 'index'], post: false},
                 {data: {root: {context: []}}}
             ).then(function (rendered) {
@@ -1053,11 +1002,10 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/\tclientSecret: "/);
                 rendered.string.should.match(/}\);\n/);
                 rendered.string.should.match(/\n<\/script>/);
-
-                done();
             });
         });
-        it('does not render script tag with for amp context', function (done) {
+
+        it('does not render script tag with for amp context', function () {
             var post = {
                 meta_description: 'blog description',
                 title: 'Welcome to Ghost',
@@ -1075,7 +1023,8 @@ describe('{{ghost_head}} helper', function () {
                     twitter: '@testuser'
                 }
             };
-            helpers.ghost_head.call(
+
+            return helpers.ghost_head.call(
                 {safeVersion: '0.3', context: ['amp', 'post'], post: post},
                 {data: {root: {context: ['amp', 'post']}}}
             ).then(function (rendered) {
@@ -1086,8 +1035,6 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.not.match(/\tclientSecret: "/);
                 rendered.string.should.not.match(/}\);\n/);
                 rendered.string.should.not.match(/\n<\/script>/);
-
-                done();
             });
         });
     });

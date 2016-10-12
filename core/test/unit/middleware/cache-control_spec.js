@@ -23,8 +23,8 @@ describe('Middleware: cacheControl', function () {
             should.not.exist(a);
             res.set.calledOnce.should.be.true();
             res.set.calledWith({'Cache-Control': 'public, max-age=0'});
-            done();
         });
+        done();
     });
 
     it('correctly sets the private profile headers', function (done) {
@@ -35,16 +35,16 @@ describe('Middleware: cacheControl', function () {
                 'Cache-Control':
                     'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
             });
-            done();
         });
+        done();
     });
 
     it('will not set headers without a profile', function (done) {
         cacheControl()(null, res, function (a) {
             should.not.exist(a);
             res.set.called.should.be.false();
-            done();
         });
+        done();
     });
 
     it('will not get confused between serving public and private', function (done) {
@@ -86,7 +86,7 @@ describe('Middleware: cacheControl', function () {
                 'Cache-Control':
                     'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
             });
-            done();
         });
+        done();
     });
 });

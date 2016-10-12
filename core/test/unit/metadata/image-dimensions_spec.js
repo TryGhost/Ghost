@@ -20,7 +20,7 @@ describe('getImageDimensions', function () {
         getCachedImageSizeFromUrl.__set__('imageSizeCache', {});
     });
 
-    it('should return dimension for images', function (done) {
+    it('should return dimension for images', function () {
         var metaData = {
             coverImage: {
                 url: 'http://mysite.com/content/image/mypostcoverimage.jpg'
@@ -43,7 +43,7 @@ describe('getImageDimensions', function () {
 
         getImageDimensions.__set__('getCachedImageSizeFromUrl', sizeOfStub);
 
-        getImageDimensions(metaData).then(function (result) {
+        return getImageDimensions(metaData).then(function (result) {
             should.exist(result);
             sizeOfStub.calledWith(metaData.coverImage.url).should.be.true();
             sizeOfStub.calledWith(metaData.authorImage.url).should.be.true();
@@ -54,11 +54,10 @@ describe('getImageDimensions', function () {
             result.blog.logo.should.have.property('url');
             result.authorImage.should.have.property('dimensions');
             result.authorImage.should.have.property('url');
-            done();
-        }).catch(done);
+        });
     });
 
-    it('should return metaData if url is undefined or null', function (done) {
+    it('should return metaData if url is undefined or null', function () {
         var metaData = {
             coverImage: {
                 url: undefined
@@ -77,7 +76,7 @@ describe('getImageDimensions', function () {
 
         getImageDimensions.__set__('getCachedImageSizeFromUrl', sizeOfStub);
 
-        getImageDimensions(metaData).then(function (result) {
+        return getImageDimensions(metaData).then(function (result) {
             console.log('result:', result);
             should.exist(result);
             sizeOfStub.calledWith(metaData.coverImage.url).should.be.true();
@@ -89,11 +88,10 @@ describe('getImageDimensions', function () {
             result.coverImage.should.have.property('url');
             result.blog.logo.should.have.property('url');
             result.authorImage.should.have.property('url');
-            done();
-        }).catch(done);
+        });
     });
 
-    it('should not return dimension for publisher.logo only if logo is too big', function (done) {
+    it('should not return dimension for publisher.logo only if logo is too big', function () {
         var metaData = {
             coverImage: {
                 url: 'http://mysite.com/content/image/mypostcoverimage.jpg'
@@ -116,7 +114,7 @@ describe('getImageDimensions', function () {
 
         getImageDimensions.__set__('getCachedImageSizeFromUrl', sizeOfStub);
 
-        getImageDimensions(metaData).then(function (result) {
+        return getImageDimensions(metaData).then(function (result) {
             should.exist(result);
             sizeOfStub.calledWith(metaData.coverImage.url).should.be.true();
             sizeOfStub.calledWith(metaData.authorImage.url).should.be.true();
@@ -127,7 +125,6 @@ describe('getImageDimensions', function () {
             result.coverImage.should.have.property('url');
             result.blog.logo.should.have.property('url');
             result.authorImage.should.have.property('url');
-            done();
-        }).catch(done);
+        });
     });
 });

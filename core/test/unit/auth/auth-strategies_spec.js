@@ -58,58 +58,54 @@ describe('Auth Strategies', function () {
             }));
         });
 
-        it('should find client', function (done) {
+        it('should find client', function () {
             var clientId = 'ghost-admin',
                 clientSecret = 'not_available';
 
-            authStrategies.clientPasswordStrategy(clientId, clientSecret, next).then(function () {
+            return authStrategies.clientPasswordStrategy(clientId, clientSecret, next).then(function () {
                 clientStub.calledOnce.should.be.true();
                 clientStub.calledWith({slug: clientId}).should.be.true();
                 next.called.should.be.true();
                 next.firstCall.args.length.should.eql(2);
                 should.equal(next.firstCall.args[0], null);
                 next.firstCall.args[1].slug.should.eql(clientId);
-                done();
-            }).catch(done);
+            });
         });
 
-        it('shouldn\'t find client with invalid id', function (done) {
+        it('shouldn\'t find client with invalid id', function () {
             var clientId = 'invalid_id',
                 clientSecret = 'not_available';
-            authStrategies.clientPasswordStrategy(clientId, clientSecret, next).then(function () {
+            return authStrategies.clientPasswordStrategy(clientId, clientSecret, next).then(function () {
                 clientStub.calledOnce.should.be.true();
                 clientStub.calledWith({slug: clientId}).should.be.true();
                 next.called.should.be.true();
                 next.calledWith(null, false).should.be.true();
-                done();
-            }).catch(done);
+            });
         });
 
-        it('shouldn\'t find client with invalid secret', function (done) {
+        it('shouldn\'t find client with invalid secret', function () {
             var clientId = 'ghost-admin',
                 clientSecret = 'invalid_secret';
-            authStrategies.clientPasswordStrategy(clientId, clientSecret, next).then(function () {
+            return authStrategies.clientPasswordStrategy(clientId, clientSecret, next).then(function () {
                 clientStub.calledOnce.should.be.true();
                 clientStub.calledWith({slug: clientId}).should.be.true();
                 next.called.should.be.true();
                 next.calledWith(null, false).should.be.true();
-                done();
-            }).catch(done);
+            });
         });
 
-        it('shouldn\'t auth client that is disabled', function (done) {
+        it('shouldn\'t auth client that is disabled', function () {
             var clientId = 'ghost-admin',
                 clientSecret = 'not_available';
 
             fakeClient.status = 'disabled';
 
-            authStrategies.clientPasswordStrategy(clientId, clientSecret, next).then(function () {
+            return authStrategies.clientPasswordStrategy(clientId, clientSecret, next).then(function () {
                 clientStub.calledOnce.should.be.true();
                 clientStub.calledWith({slug: clientId}).should.be.true();
                 next.called.should.be.true();
                 next.calledWith(null, false).should.be.true();
-                done();
-            }).catch(done);
+            });
         });
     });
 
@@ -139,11 +135,11 @@ describe('Auth Strategies', function () {
             }));
         });
 
-        it('should find user with valid token', function (done) {
+        it('should find user with valid token', function () {
             var accessToken = 'valid-token',
                 userId = 3;
 
-            authStrategies.bearerStrategy(accessToken, next).then(function () {
+            return authStrategies.bearerStrategy(accessToken, next).then(function () {
                 tokenStub.calledOnce.should.be.true();
                 tokenStub.calledWith({token: accessToken}).should.be.true();
                 userStub.calledOnce.should.be.true();
@@ -151,52 +147,48 @@ describe('Auth Strategies', function () {
                 next.calledOnce.should.be.true();
                 next.firstCall.args.length.should.eql(3);
                 next.calledWith(null, {id: userId}, {scope: '*'}).should.be.true();
-                done();
-            }).catch(done);
+            });
         });
 
-        it('shouldn\'t find user with invalid token', function (done) {
+        it('shouldn\'t find user with invalid token', function () {
             var accessToken = 'invalid_token';
 
-            authStrategies.bearerStrategy(accessToken, next).then(function () {
+            return authStrategies.bearerStrategy(accessToken, next).then(function () {
                 tokenStub.calledOnce.should.be.true();
                 tokenStub.calledWith({token: accessToken}).should.be.true();
                 userStub.called.should.be.false();
                 next.called.should.be.true();
                 next.calledWith(null, false).should.be.true();
-                done();
-            }).catch(done);
+            });
         });
 
-        it('should find user that doesn\'t exist', function (done) {
+        it('should find user that doesn\'t exist', function () {
             var accessToken = 'valid-token',
                 userId = 2;
 
             // override user
             fakeValidToken.user_id = userId;
 
-            authStrategies.bearerStrategy(accessToken, next).then(function () {
+            return authStrategies.bearerStrategy(accessToken, next).then(function () {
                 tokenStub.calledOnce.should.be.true();
                 tokenStub.calledWith({token: accessToken}).should.be.true();
                 userStub.calledOnce.should.be.true();
                 userStub.calledWith({id: userId}).should.be.true();
                 next.called.should.be.true();
                 next.calledWith(null, false).should.be.true();
-                done();
-            }).catch(done);
+            });
         });
 
-        it('should find user with expired token', function (done) {
+        it('should find user with expired token', function () {
             var accessToken = 'expired-token';
 
-            authStrategies.bearerStrategy(accessToken, next).then(function () {
+            return authStrategies.bearerStrategy(accessToken, next).then(function () {
                 tokenStub.calledOnce.should.be.true();
                 tokenStub.calledWith({token: accessToken}).should.be.true();
                 userStub.calledOnce.should.be.false();
                 next.called.should.be.true();
                 next.calledWith(null, false).should.be.true();
-                done();
-            }).catch(done);
+            });
         });
     });
 
@@ -211,7 +203,7 @@ describe('Auth Strategies', function () {
             inviteStub = sandbox.stub(Models.Invite, 'findOne');
         });
 
-        it('with invite, but with wrong invite token', function (done) {
+        it('with invite, but with wrong invite token', function () {
             var ghostAuthAccessToken = '12345',
                 req = {body: {inviteToken: 'wrong'}},
                 profile = {email_address: 'test@example.com'};
@@ -219,12 +211,11 @@ describe('Auth Strategies', function () {
             userByEmailStub.returns(Promise.resolve(null));
             inviteStub.returns(Promise.reject(new errors.NotFoundError()));
 
-            authStrategies.ghostStrategy(req, ghostAuthAccessToken, null, profile, function (err) {
+            return authStrategies.ghostStrategy(req, ghostAuthAccessToken, null, profile, function (err) {
                 should.exist(err);
                 (err instanceof errors.NotFoundError).should.eql(true);
                 userByEmailStub.calledOnce.should.be.true();
                 inviteStub.calledOnce.should.be.true();
-                done();
             });
         });
 

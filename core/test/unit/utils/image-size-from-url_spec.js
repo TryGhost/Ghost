@@ -11,7 +11,6 @@ var should = require('should'),
 
 describe('Image Size', function () {
     var sizeOfStub,
-        result,
         requestMock;
 
     beforeEach(function () {
@@ -26,7 +25,7 @@ describe('Image Size', function () {
         should.exist(imageSize);
     });
 
-    it('should return image dimensions with http request', function (done) {
+    it('should return image dimensions with http request', function () {
         var url = 'http://img.stockfresh.com/files/f/feedough/x/11/1540353_20925115.jpg',
             expectedImageObject =
                 {
@@ -42,7 +41,7 @@ describe('Image Size', function () {
         sizeOfStub.returns({width: 50, height: 50, type: 'jpg'});
         imageSize.__set__('sizeOf', sizeOfStub);
 
-        result = Promise.resolve(imageSize.getImageSizeFromUrl(url)).then(function (res) {
+        return Promise.resolve(imageSize.getImageSizeFromUrl(url)).then(function (res) {
             requestMock.isDone().should.be.true();
             should.exist(res);
             should.exist(res.width);
@@ -51,11 +50,10 @@ describe('Image Size', function () {
             res.height.should.be.equal(expectedImageObject.height);
             should.exist(res.url);
             res.url.should.be.equal(expectedImageObject.url);
-            done();
-        }).catch(done);
+        });
     });
 
-    it('should return image dimensions with https request', function (done) {
+    it('should return image dimensions with https request', function () {
         var url = 'https://static.wixstatic.com/media/355241_d31358572a2542c5a44738ddcb59e7ea.jpg_256',
             expectedImageObject =
                 {
@@ -72,7 +70,7 @@ describe('Image Size', function () {
         sizeOfStub.returns({width: 256, height: 256, type: 'png'});
         imageSize.__set__('sizeOf', sizeOfStub);
 
-        result = Promise.resolve(imageSize.getImageSizeFromUrl(url)).then(function (res) {
+        return Promise.resolve(imageSize.getImageSizeFromUrl(url)).then(function (res) {
             requestMock.isDone().should.be.true();
             should.exist(res);
             should.exist(res.width);
@@ -81,11 +79,10 @@ describe('Image Size', function () {
             res.height.should.be.equal(expectedImageObject.height);
             should.exist(res.url);
             res.url.should.be.equal(expectedImageObject.url);
-            done();
-        }).catch(done);
+        });
     });
 
-    it('should return image dimensions for gravatar images request', function (done) {
+    it('should return image dimensions for gravatar images request', function () {
         var url = '//www.gravatar.com/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=250&d=mm&r=x',
             expectedImageObject =
                 {
@@ -102,7 +99,7 @@ describe('Image Size', function () {
         sizeOfStub.returns({width: 250, height: 250, type: 'jpg'});
         imageSize.__set__('sizeOf', sizeOfStub);
 
-        result = Promise.resolve(imageSize.getImageSizeFromUrl(url)).then(function (res) {
+        return Promise.resolve(imageSize.getImageSizeFromUrl(url)).then(function (res) {
             requestMock.isDone().should.be.true();
             should.exist(res);
             should.exist(res.width);
@@ -111,11 +108,10 @@ describe('Image Size', function () {
             res.height.should.be.equal(expectedImageObject.height);
             should.exist(res.url);
             res.url.should.be.equal(expectedImageObject.url);
-            done();
-        }).catch(done);
+        });
     });
 
-    it('should return image dimensions relative url request', function (done) {
+    it('should return image dimensions relative url request', function () {
         var url = '/content/images/cat.jpg',
             urlForStub,
             expectedImageObject =
@@ -137,7 +133,7 @@ describe('Image Size', function () {
         sizeOfStub.returns({width: 100, height: 100, type: 'jpg'});
         imageSize.__set__('sizeOf', sizeOfStub);
 
-        result = Promise.resolve(imageSize.getImageSizeFromUrl(url)).then(function (res) {
+        return Promise.resolve(imageSize.getImageSizeFromUrl(url)).then(function (res) {
             requestMock.isDone().should.be.true();
             should.exist(res);
             should.exist(res.width);
@@ -146,41 +142,36 @@ describe('Image Size', function () {
             res.height.should.be.equal(expectedImageObject.height);
             should.exist(res.url);
             res.url.should.be.equal(expectedImageObject.url);
-            done();
-        }).catch(done);
+        });
     });
 
-    it('can handle an error a statuscode not 200', function (done) {
+    it('can handle an error a statuscode not 200', function () {
         var url = 'http://noimagehere.com/files/f/feedough/x/11/1540353_20925115.jpg';
 
         requestMock = nock('http://noimagehere.com')
             .get('/files/f/feedough/x/11/1540353_20925115.jpg')
             .reply(404);
 
-        result = Promise.resolve(imageSize.getImageSizeFromUrl(url))
-        .catch(function (err) {
+        return Promise.resolve(imageSize.getImageSizeFromUrl(url)).catch(function (err) {
             requestMock.isDone().should.be.true();
             should.exist(err);
-            done();
         });
     });
 
-    it('will timeout', function (done) {
+    it('will timeout', function () {
         var url = 'https://static.wixstatic.com/media/355241_d31358572a2542c5a44738ddcb59e7ea.jpg_256';
         requestMock = nock('https://static.wixstatic.com')
             .get('/media/355241_d31358572a2542c5a44738ddcb59e7ea.jpg_256')
             .socketDelay(11)
             .reply(408);
 
-        result = Promise.resolve(imageSize.getImageSizeFromUrl(url, 10))
-        .catch(function (err) {
+        return Promise.resolve(imageSize.getImageSizeFromUrl(url, 10)).catch(function (err) {
             requestMock.isDone().should.be.true();
             should.exist(err);
-            done();
         });
     });
 
-    it('returns error if \`image-size`\ module throws error', function (done) {
+    it('returns error if \`image-size`\ module throws error', function () {
         var url = 'https://static.wixstatic.com/media/355241_d31358572a2542c5a44738ddcb59e7ea.jpg_256',
 
         requestMock = nock('https://static.wixstatic.com')
@@ -192,26 +183,22 @@ describe('Image Size', function () {
         sizeOfStub.throws({error: 'image-size could not find dimensions'});
         imageSize.__set__('sizeOf', sizeOfStub);
 
-        result = Promise.resolve(imageSize.getImageSizeFromUrl(url))
-        .catch(function (err) {
+        return Promise.resolve(imageSize.getImageSizeFromUrl(url)).catch(function (err) {
             requestMock.isDone().should.be.true();
             should.exist(err);
-            done();
         });
     });
 
-    it('returns error if request errors', function (done) {
+    it('returns error if request errors', function () {
         var url = 'https://notarealwebsite.com/images/notapicture.jpg',
 
         requestMock = nock('https://notarealwebsite.com')
             .get('/images/notapicture.jpg')
             .replyWithError({message: 'something awful happened', code: 'AWFUL_ERROR'});
 
-        result = Promise.resolve(imageSize.getImageSizeFromUrl(url))
-        .catch(function (err) {
+        return Promise.resolve(imageSize.getImageSizeFromUrl(url)).catch(function (err) {
             requestMock.isDone().should.be.true();
             should.exist(err);
-            done();
         });
     });
 });

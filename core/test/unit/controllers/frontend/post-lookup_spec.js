@@ -32,50 +32,44 @@ describe('postLookup', function () {
                 }]}));
         });
 
-        it('can lookup absolute url: /:slug/', function (done) {
+        it('can lookup absolute url: /:slug/', function () {
             var testUrl = 'http://127.0.0.1:2369/welcome-to-ghost/';
 
-            postLookup(testUrl).then(function (lookup) {
+            return postLookup(testUrl).then(function (lookup) {
                 postAPIStub.calledOnce.should.be.true();
                 should.exist(lookup.post);
                 lookup.post.should.have.property('url', '/welcome-to-ghost/');
                 lookup.isEditURL.should.be.false();
                 lookup.isAmpURL.should.be.false();
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can lookup relative url: /:slug/', function (done) {
+        it('can lookup relative url: /:slug/', function () {
             var testUrl = '/welcome-to-ghost/';
 
-            postLookup(testUrl).then(function (lookup) {
+            return postLookup(testUrl).then(function (lookup) {
                 postAPIStub.calledOnce.should.be.true();
                 should.exist(lookup.post);
                 lookup.post.should.have.property('url', '/welcome-to-ghost/');
                 lookup.isEditURL.should.be.false();
                 lookup.isAmpURL.should.be.false();
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('cannot lookup absolute url: /:year/:month/:day/:slug/', function (done) {
+        it('cannot lookup absolute url: /:year/:month/:day/:slug/', function () {
             var testUrl = 'http://127.0.0.1:2369/2016/01/01/welcome-to-ghost/';
 
-            postLookup(testUrl).then(function (lookup) {
+            return postLookup(testUrl).then(function (lookup) {
                 should.not.exist(lookup);
-                done();
-            }).catch(done);
+            });
         });
 
-        it('cannot lookup relative url: /:year/:month/:day/:slug/', function (done) {
+        it('cannot lookup relative url: /:year/:month/:day/:slug/', function () {
             var testUrl = '/2016/01/01/welcome-to-ghost/';
 
-            postLookup(testUrl).then(function (lookup) {
+            return postLookup(testUrl).then(function (lookup) {
                 should.not.exist(lookup);
-                done();
-            }).catch(done);
+            });
         });
     });
 
@@ -90,50 +84,44 @@ describe('postLookup', function () {
                 }]}));
         });
 
-        it('cannot lookup absolute url: /:slug/', function (done) {
+        it('cannot lookup absolute url: /:slug/', function () {
             var testUrl = 'http://127.0.0.1:2369/welcome-to-ghost/';
 
-            postLookup(testUrl).then(function (lookup) {
+            return postLookup(testUrl).then(function (lookup) {
                 should.not.exist(lookup);
-                done();
-            }).catch(done);
+            });
         });
 
-        it('cannot lookup relative url: /:slug/', function (done) {
+        it('cannot lookup relative url: /:slug/', function () {
             var testUrl = '/welcome-to-ghost/';
 
-            postLookup(testUrl).then(function (lookup) {
+            return postLookup(testUrl).then(function (lookup) {
                 should.not.exist(lookup);
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can lookup absolute url: /:year/:month/:day/:slug/', function (done) {
+        it('can lookup absolute url: /:year/:month/:day/:slug/', function () {
             var testUrl = 'http://127.0.0.1:2369/2016/01/01/welcome-to-ghost/';
 
-            postLookup(testUrl).then(function (lookup) {
+            return postLookup(testUrl).then(function (lookup) {
                 postAPIStub.calledOnce.should.be.true();
                 should.exist(lookup.post);
                 lookup.post.should.have.property('url', '/2016/01/01/welcome-to-ghost/');
                 lookup.isEditURL.should.be.false();
                 lookup.isAmpURL.should.be.false();
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can lookup relative url: /:year/:month/:day/:slug/', function (done) {
+        it('can lookup relative url: /:year/:month/:day/:slug/', function () {
             var testUrl = '/2016/01/01/welcome-to-ghost/';
 
-            postLookup(testUrl).then(function (lookup) {
+            return postLookup(testUrl).then(function (lookup) {
                 postAPIStub.calledOnce.should.be.true();
                 should.exist(lookup.post);
                 lookup.post.should.have.property('url', '/2016/01/01/welcome-to-ghost/');
                 lookup.isEditURL.should.be.false();
                 lookup.isAmpURL.should.be.false();
-
-                done();
-            }).catch(done);
+            });
         });
     });
 
@@ -148,53 +136,48 @@ describe('postLookup', function () {
                 }]}));
         });
 
-        it('can lookup absolute url: /:slug/edit/', function (done) {
+        it('can lookup absolute url: /:slug/edit/', function () {
             var testUrl = 'http://127.0.0.1:2369/welcome-to-ghost/edit/';
 
-            postLookup(testUrl).then(function (lookup) {
+            return postLookup(testUrl).then(function (lookup) {
                 lookup.post.should.have.property('url', '/welcome-to-ghost/');
                 lookup.isEditURL.should.be.true();
                 lookup.isAmpURL.should.be.false();
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can lookup relative url: /:slug/edit/', function (done) {
+        it('can lookup relative url: /:slug/edit/', function () {
             var testUrl = '/welcome-to-ghost/edit/';
 
-            postLookup(testUrl).then(function (lookup) {
+            return postLookup(testUrl).then(function (lookup) {
                 lookup.post.should.have.property('url', '/welcome-to-ghost/');
                 lookup.isEditURL.should.be.true();
                 lookup.isAmpURL.should.be.false();
-                done();
-            }).catch(done);
+            });
         });
 
-        it('cannot lookup absolute url: /:year/:month/:day/:slug/edit/', function (done) {
+        it('cannot lookup absolute url: /:year/:month/:day/:slug/edit/', function () {
             var testUrl = 'http://127.0.0.1:2369/2016/01/01/welcome-to-ghost/edit/';
 
-            postLookup(testUrl).then(function (lookup) {
+            return postLookup(testUrl).then(function (lookup) {
                 should.not.exist(lookup);
-                done();
-            }).catch(done);
+            });
         });
 
-        it('cannot lookup relative url: /:year/:month/:day/:slug/edit/', function (done) {
+        it('cannot lookup relative url: /:year/:month/:day/:slug/edit/', function () {
             var testUrl = '/2016/01/01/welcome-to-ghost/edit/';
 
-            postLookup(testUrl).then(function (lookup) {
+            return postLookup(testUrl).then(function (lookup) {
                 should.not.exist(lookup);
-                done();
-            }).catch(done);
+            });
         });
 
-        it('cannot lookup relative url: /:slug/notedit/', function (done) {
+        it('cannot lookup relative url: /:slug/notedit/', function () {
             var testUrl = '/welcome-to-ghost/notedit/';
 
-            postLookup(testUrl).then(function (lookup) {
+            return postLookup(testUrl).then(function (lookup) {
                 should.not.exist(lookup);
-                done();
-            }).catch(done);
+            });
         });
     });
     describe('AMP URLs', function () {
@@ -208,53 +191,48 @@ describe('postLookup', function () {
                 }]}));
         });
 
-        it('can lookup absolute url: /:slug/amp/', function (done) {
+        it('can lookup absolute url: /:slug/amp/', function () {
             var testUrl = 'http://127.0.0.1:2369/welcome-to-ghost/amp/';
 
-            postLookup(testUrl).then(function (lookup) {
+            return postLookup(testUrl).then(function (lookup) {
                 lookup.post.should.have.property('url', '/welcome-to-ghost/');
                 lookup.isAmpURL.should.be.true();
                 lookup.isEditURL.should.be.false();
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can lookup relative url: /:slug/amp/', function (done) {
+        it('can lookup relative url: /:slug/amp/', function () {
             var testUrl = '/welcome-to-ghost/amp/';
 
-            postLookup(testUrl).then(function (lookup) {
+            return postLookup(testUrl).then(function (lookup) {
                 lookup.post.should.have.property('url', '/welcome-to-ghost/');
                 lookup.isAmpURL.should.be.true();
                 lookup.isEditURL.should.be.false();
-                done();
-            }).catch(done);
+            });
         });
 
-        it('cannot lookup absolute url: /:year/:month/:day/:slug/amp/', function (done) {
+        it('cannot lookup absolute url: /:year/:month/:day/:slug/amp/', function () {
             var testUrl = 'http://127.0.0.1:2369/2016/01/01/welcome-to-ghost/amp/';
 
-            postLookup(testUrl).then(function (lookup) {
+            return postLookup(testUrl).then(function (lookup) {
                 should.not.exist(lookup);
-                done();
-            }).catch(done);
+            });
         });
 
-        it('cannot lookup relative url: /:year/:month/:day/:slug/amp/', function (done) {
+        it('cannot lookup relative url: /:year/:month/:day/:slug/amp/', function () {
             var testUrl = '/2016/01/01/welcome-to-ghost/amp/';
 
-            postLookup(testUrl).then(function (lookup) {
+            return postLookup(testUrl).then(function (lookup) {
                 should.not.exist(lookup);
-                done();
-            }).catch(done);
+            });
         });
 
-        it('cannot lookup relative url: /:slug/notamp/', function (done) {
+        it('cannot lookup relative url: /:slug/notamp/', function () {
             var testUrl = '/welcome-to-ghost/notamp/';
 
-            postLookup(testUrl).then(function (lookup) {
+            return postLookup(testUrl).then(function (lookup) {
                 should.not.exist(lookup);
-                done();
-            }).catch(done);
+            });
         });
     });
 });

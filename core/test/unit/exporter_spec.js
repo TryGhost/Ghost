@@ -32,12 +32,12 @@ describe('Exporter', function () {
             knexStub = sinon.stub(db, 'knex', {get: function () { return knexMock; }});
         });
 
-        it('should try to export all the correct tables', function (done) {
+        it('should try to export all the correct tables', function () {
             // Setup for success
             queryMock.select.returns(new Promise.resolve({}));
 
             // Execute
-            exporter.doExport().then(function (exportData) {
+            return exporter.doExport().then(function (exportData) {
                 // No tables, less the number of excluded tables
                 var expectedCallCount = schemaTables.length - 4;
 
@@ -71,68 +71,59 @@ describe('Exporter', function () {
                 knexMock.calledWith('client_trusted_domains').should.be.false();
                 knexMock.calledWith('refreshtokens').should.be.false();
                 knexMock.calledWith('accesstokens').should.be.false();
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('should catch and log any errors', function (done) {
+        it('should catch and log any errors', function () {
             // Setup for failure
             queryMock.select.returns(new Promise.reject({}));
 
             // Execute
-            exporter.doExport()
+            return exporter.doExport()
                 .then(function () {
-                    done(new Error('expected error for export'));
+                    throw new Error('expected error for export');
                 })
                 .catch(function (err) {
                     (err instanceof errors.DataExportError).should.eql(true);
-                    done();
                 });
         });
     });
 
     describe('exportFileName', function () {
-        it('should return a correctly structured filename', function (done) {
+        it('should return a correctly structured filename', function () {
             var settingsStub = sandbox.stub(settings, 'read').returns(
                 new Promise.resolve({settings: [{value: 'testblog'}]})
             );
 
-            exporter.fileName().then(function (result) {
+            return exporter.fileName().then(function (result) {
                 should.exist(result);
                 settingsStub.calledOnce.should.be.true();
                 result.should.match(/^testblog\.ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}\.json$/);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('should return a correctly structured filename if settings is empty', function (done) {
+        it('should return a correctly structured filename if settings is empty', function () {
             var settingsStub = sandbox.stub(settings, 'read').returns(
                 new Promise.resolve()
             );
 
-            exporter.fileName().then(function (result) {
+            return exporter.fileName().then(function (result) {
                 should.exist(result);
                 settingsStub.calledOnce.should.be.true();
                 result.should.match(/^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}\.json$/);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('should return a correctly structured filename if settings errors', function (done) {
+        it('should return a correctly structured filename if settings errors', function () {
             var settingsStub = sandbox.stub(settings, 'read').returns(
                 new Promise.reject()
             );
 
-            exporter.fileName().then(function (result) {
+            return exporter.fileName().then(function (result) {
                 should.exist(result);
                 settingsStub.calledOnce.should.be.true();
                 result.should.match(/^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}\.json$/);
-
-                done();
-            }).catch(done);
+            });
         });
     });
 });

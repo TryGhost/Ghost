@@ -7,16 +7,15 @@ var should = require('should'),
 
 describe('Scheduling: utils', function () {
     describe('success', function () {
-        it('create good adapter', function (done) {
-            schedulingUtils.createAdapter({
+        it('create good adapter', function () {
+            return schedulingUtils.createAdapter({
                 active: __dirname + '/../../../server/scheduling/SchedulingDefault'
             }).then(function (adapter) {
                 should.exist(adapter);
-                done();
-            }).catch(done);
+            });
         });
 
-        it('create good adapter', function (done) {
+        it('create good adapter', function () {
             var jsFile = '' +
                 'var util = require(\'util\');' +
                 'var SchedulingBase = require(__dirname + \'/../../../server/scheduling/SchedulingBase\');' +
@@ -30,37 +29,33 @@ describe('Scheduling: utils', function () {
 
             fs.writeFileSync(__dirname + '/another-scheduler.js', jsFile);
 
-            schedulingUtils.createAdapter({
+            return schedulingUtils.createAdapter({
                 active: 'another-scheduler',
                 contentPath: __dirname + '/'
             }).then(function (adapter) {
                 should.exist(adapter);
-                done();
             }).finally(function () {
                 fs.unlinkSync(__dirname + '/another-scheduler.js');
-            }).catch(done);
+            });
         });
     });
 
     describe('error', function () {
-        it('create without adapter path', function (done) {
-            schedulingUtils.createAdapter()
-                .catch(function (err) {
-                    should.exist(err);
-                    done();
-                });
-        });
-
-        it('create with unknown adapter', function (done) {
-            schedulingUtils.createAdapter({
-                active: '/follow/the/heart'
-            }).catch(function (err) {
+        it('create without adapter path', function () {
+            return schedulingUtils.createAdapter().catch(function (err) {
                 should.exist(err);
-                done();
             });
         });
 
-        it('create with adapter, but missing fn\'s', function (done) {
+        it('create with unknown adapter', function () {
+            return schedulingUtils.createAdapter({
+                active: '/follow/the/heart'
+            }).catch(function (err) {
+                should.exist(err);
+            });
+        });
+
+        it('create with adapter, but missing fn\'s', function () {
             var jsFile = '' +
                 'var util = require(\'util\');' +
                 'var SchedulingBase = require(__dirname + \'/../../../server/scheduling/SchedulingBase\');' +
@@ -71,12 +66,11 @@ describe('Scheduling: utils', function () {
 
             fs.writeFileSync(__dirname + '/bad-adapter.js', jsFile);
 
-            schedulingUtils.createAdapter({
+            return schedulingUtils.createAdapter({
                 active: __dirname + '/bad-adapter'
             }).catch(function (err) {
                 should.exist(err);
                 (err instanceof errors.IncorrectUsageError).should.eql(true);
-                done();
             }).finally(function () {
                 fs.unlinkSync(__dirname + '/bad-adapter.js');
             });

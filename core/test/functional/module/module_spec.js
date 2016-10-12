@@ -11,42 +11,35 @@ describe('Module', function () {
     before(testUtils.teardown);
 
     describe('Setup', function () {
-        it('should resolve with a ghost-server instance', function (done) {
+        it('should resolve with a ghost-server instance', function () {
             ghost().then(function (ghostServer) {
                 should.exist(ghostServer);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('should expose an express instance', function (done) {
+        it('should expose an express instance', function () {
             ghost().then(function (ghostServer) {
                 should.exist(ghostServer);
                 should.exist(ghostServer.rootApp);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('should expose configuration values', function (done) {
+        it('should expose configuration values', function () {
             ghost().then(function (ghostServer) {
                 should.exist(ghostServer);
                 should.exist(ghostServer.config);
                 should.exist(ghostServer.config.get('server'));
                 should.exist(ghostServer.config.get('paths'));
-                done();
-            }).catch(done);
+            });
         });
 
-        it('should have start/stop/restart functions', function (done) {
+        it('should have start/stop/restart functions', function () {
             ghost().then(function (ghostServer) {
                 should.exist(ghostServer);
                 ghostServer.start.should.be.a.Function();
                 ghostServer.restart.should.be.a.Function();
                 ghostServer.stop.should.be.a.Function();
-
-                done();
-            }).catch(done);
+            });
         });
     });
 });

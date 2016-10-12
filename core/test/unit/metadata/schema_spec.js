@@ -2,7 +2,7 @@ var getSchema = require('../../../server/data/meta/schema'),
     should = require('should');
 
 describe('getSchema', function () {
-    it('should return post schema if context starts with post', function (done) {
+    it('should return post schema if context starts with post', function () {
         var metadata = {
             blog: {
                 title: 'Blog Title',
@@ -98,10 +98,9 @@ describe('getSchema', function () {
             },
             url: 'http://mysite.com/post/my-post-slug/'
         });
-        done();
     });
 
-    it('should return post schema if context starts with amp', function (done) {
+    it('should return post schema if context starts with amp', function () {
         var metadata = {
             blog: {
                 title: 'Blog Title',
@@ -201,10 +200,9 @@ describe('getSchema', function () {
             },
             url: 'http://mysite.com/post/my-amp-post-slug/'
         });
-        done();
     });
 
-    it('should return post schema removing null or undefined values', function (done) {
+    it('should return post schema removing null or undefined values', function () {
         var metadata = {
             blog: {
                 title: 'Blog Title'
@@ -257,10 +255,9 @@ describe('getSchema', function () {
             },
             url: 'http://mysite.com/post/my-post-slug/'
         });
-        done();
     });
 
-    it('should return image url instead of ImageObjects if no dimensions supplied', function (done) {
+    it('should return image url instead of ImageObjects if no dimensions supplied', function () {
         var metadata = {
             blog: {
                 title: 'Blog Title',
@@ -329,7 +326,6 @@ describe('getSchema', function () {
             },
             url: 'http://mysite.com/post/my-post-slug/'
         });
-        done();
     });
 
     it('should return home schema if context starts with home', function () {

@@ -26,10 +26,10 @@ describe('Update Check', function () {
 
         afterEach(testUtils.teardown);
 
-        it('should report the correct data', function (done) {
+        it('should report the correct data', function () {
             var updateCheckData = updateCheck.__get__('updateCheckData');
 
-            updateCheckData().then(function (data) {
+            return updateCheckData().then(function (data) {
                 should.exist(data);
                 data.ghost_version.should.equal(packageInfo.version);
                 data.node_version.should.equal(process.versions.node);
@@ -44,9 +44,7 @@ describe('Update Check', function () {
                 data.post_count.should.be.above(0);
                 data.npm_version.should.be.a.String();
                 data.npm_version.should.not.be.empty();
-
-                done();
-            }).catch(done);
+            });
         });
     });
 
@@ -66,7 +64,7 @@ describe('Update Check', function () {
 
         afterEach(testUtils.teardown);
 
-        it('should create a custom notification for target version', function (done) {
+        it('should create a custom notification for target version', function () {
             var createCustomNotification = updateCheck.__get__('createCustomNotification'),
                 message = {
                     id: uuid.v4(),
@@ -74,18 +72,17 @@ describe('Update Check', function () {
                     content: '<p>Hey there! This is for 0.9.0 version</p>'
                 };
 
-            createCustomNotification(message).then(function () {
+            return createCustomNotification(message).then(function () {
                 return NotificationsAPI.browse(testUtils.context.internal);
             }).then(function (results) {
                 should.exist(results);
                 should.exist(results.notifications);
                 results.notifications.length.should.be.above(0);
                 should.exist(_.find(results.notifications, {uuid: message.id}));
-                done();
-            }).catch(done);
+            });
         });
 
-        it('should not create notifications meant for other versions', function (done) {
+        it('should not create notifications meant for other versions', function () {
             var createCustomNotification = updateCheck.__get__('createCustomNotification'),
                 message = {
                     id: uuid.v4(),
@@ -93,12 +90,11 @@ describe('Update Check', function () {
                     content: '<p>Hey there! This is for 0.5.0 version</p>'
                 };
 
-            createCustomNotification(message).then(function () {
+            return createCustomNotification(message).then(function () {
                 return NotificationsAPI.browse(testUtils.context.internal);
             }).then(function (results) {
                 should.not.exist(_.find(results.notifications, {uuid: message.id}));
-                done();
-            }).catch(done);
+            });
         });
     });
 });

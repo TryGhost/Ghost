@@ -25,8 +25,8 @@ describe('Mail: Utils', function () {
         sandbox.restore();
     });
 
-    it('generate welcome', function (done) {
-        mail.utils.generateContent({
+    it('generate welcome', function () {
+        return mail.utils.generateContent({
             template: 'welcome',
             data: {
                 ownerEmail: 'test@example.com'
@@ -38,13 +38,11 @@ describe('Mail: Utils', function () {
                 html: result.html,
                 text: result.text
             });
-        }).then(function () {
-            done();
-        }).catch(done);
+        });
     });
 
-    it('generates newsletter template', function (done) {
-        mail.utils.generateContent({
+    it('generates newsletter template', function () {
+        return mail.utils.generateContent({
             template: 'newsletter',
             data: {
                 blog: {
@@ -109,8 +107,6 @@ describe('Mail: Utils', function () {
                 html: result.html,
                 text: result.text
             });
-        }).then(function () {
-            done();
-        }).catch(done);
+        });
     });
 });

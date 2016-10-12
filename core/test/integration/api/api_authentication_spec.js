@@ -61,7 +61,7 @@ describe('Authentication API', function () {
             beforeEach(testUtils.setup('roles', 'owner:pre', 'settings', 'perms:setting', 'perms:mail', 'perms:init'));
 
             describe('Invalid database state', function () {
-                it('should not allow setup to be run if owner missing from database', function (done) {
+                it('should not allow setup to be run if owner missing from database', function () {
                     var setupData = {
                         name: 'test user',
                         email: 'test@example.com',
@@ -69,16 +69,14 @@ describe('Authentication API', function () {
                         blogTitle: 'a test blog'
                     };
 
-                    User.fetchAll().call('invokeThen', 'destroy').then(function () {
+                    return User.fetchAll().call('invokeThen', 'destroy').then(function () {
                         AuthAPI.setup({setup: [setupData]}).then(function () {
-                            done(new Error('Setup ran when it should not have.'));
+                            throw new Error('Setup ran when it should not have.');
                         }).catch(function (err) {
                             should.exist(err);
                             err.name.should.equal('InternalServerError');
                             err.statusCode.should.equal(500);
-
-                            done();
-                        }).catch(done);
+                        });
                     });
                 });
             });
@@ -88,16 +86,14 @@ describe('Authentication API', function () {
             // TODO: stub settings
             beforeEach(testUtils.setup('roles', 'owner:pre', 'settings', 'perms:setting', 'perms:mail', 'perms:init'));
 
-            it('should report that setup has not been completed', function (done) {
-                AuthAPI.isSetup().then(function (result) {
+            it('should report that setup has not been completed', function () {
+                return AuthAPI.isSetup().then(function (result) {
                     should.exist(result);
                     result.setup[0].status.should.be.false();
-
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('should allow setup to be completed', function (done) {
+            it('should allow setup to be completed', function () {
                 var setupData = {
                     name: 'test user',
                     email: 'test@example.com',
@@ -105,7 +101,7 @@ describe('Authentication API', function () {
                     blogTitle: 'a test blog'
                 };
 
-                AuthAPI.setup({setup: [setupData]}).then(function (result) {
+                return AuthAPI.setup({setup: [setupData]}).then(function (result) {
                     should.exist(result);
                     should.exist(result.users);
                     should.not.exist(result.meta);
@@ -117,19 +113,17 @@ describe('Authentication API', function () {
                     newUser.id.should.equal(1);
                     newUser.name.should.equal(setupData.name);
                     newUser.email.should.equal(setupData.email);
-
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('should allow setup to be completed without a blog title', function (done) {
+            it('should allow setup to be completed without a blog title', function () {
                 var setupData = {
                     name: 'test user',
                     email: 'test@example.com',
                     password: 'areallygoodpassword'
                 };
 
-                AuthAPI.setup({setup: [setupData]}).then(function (result) {
+                return AuthAPI.setup({setup: [setupData]}).then(function (result) {
                     should.exist(result);
                     should.exist(result.users);
                     should.not.exist(result.meta);
@@ -141,61 +135,51 @@ describe('Authentication API', function () {
                     newUser.id.should.equal(1);
                     newUser.name.should.equal(setupData.name);
                     newUser.email.should.equal(setupData.email);
-
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('should return an error for an invitation check', function (done) {
-                AuthAPI.isInvitation({email: 'a@example.com'}).then(function () {
-                    done(new Error('Did not receive an error response'));
+            it('should return an error for an invitation check', function () {
+                return AuthAPI.isInvitation({email: 'a@example.com'}).then(function () {
+                    throw new Error('Did not receive an error response');
                 }).catch(function (err) {
                     should.exist(err);
 
                     err.name.should.equal('NoPermissionError');
                     err.statusCode.should.equal(403);
-
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('should not allow an invitation to be accepted', function (done) {
-                AuthAPI.acceptInvitation(testInvite).then(function () {
-                    done(new Error('Invitation was allowed to be accepted'));
+            it('should not allow an invitation to be accepted', function () {
+                return AuthAPI.acceptInvitation(testInvite).then(function () {
+                    throw new Error('Invitation was allowed to be accepted');
                 }).catch(function (err) {
                     should.exist(err);
 
                     err.name.should.equal('NoPermissionError');
                     err.statusCode.should.equal(403);
-
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('should not generate a password reset token', function (done) {
-                AuthAPI.generateResetToken(testGenerateReset).then(function () {
-                    done(new Error('Reset token was generated'));
+            it('should not generate a password reset token', function () {
+                return AuthAPI.generateResetToken(testGenerateReset).then(function () {
+                    throw new Error('Reset token was generated');
                 }).catch(function (err) {
                     should.exist(err);
 
                     err.name.should.equal('NoPermissionError');
                     err.statusCode.should.equal(403);
-
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('should not allow a password reset', function (done) {
-                AuthAPI.resetPassword(testReset).then(function () {
-                    done(new Error('Password was reset'));
+            it('should not allow a password reset', function () {
+                return AuthAPI.resetPassword(testReset).then(function () {
+                    throw new Error('Password was reset');
                 }).catch(function (err) {
                     should.exist(err);
 
                     err.name.should.equal('NoPermissionError');
                     err.statusCode.should.equal(403);
-
-                    done();
-                }).catch(done);
+                });
             });
         });
 
@@ -208,16 +192,14 @@ describe('Authentication API', function () {
 
             beforeEach(testUtils.setup('invites', 'roles', 'owner', 'clients', 'settings', 'perms:setting', 'perms:mail', 'perms:init'));
 
-            it('should report that setup has been completed', function (done) {
-                AuthAPI.isSetup().then(function (result) {
+            it('should report that setup has been completed', function () {
+                return AuthAPI.isSetup().then(function (result) {
                     should.exist(result);
                     result.setup[0].status.should.be.true();
-
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('should not allow setup to be run again', function (done) {
+            it('should not allow setup to be run again', function () {
                 var setupData = {
                     name: 'test user',
                     email: 'test@example.com',
@@ -225,30 +207,26 @@ describe('Authentication API', function () {
                     blogTitle: 'a test blog'
                 };
 
-                AuthAPI.setup({setup: [setupData]}).then(function () {
-                    done(new Error('Setup was able to be run'));
+                return AuthAPI.setup({setup: [setupData]}).then(function () {
+                    throw new Error('Setup was able to be run');
                 }).catch(function (err) {
                     should.exist(err);
 
                     err.name.should.equal('NoPermissionError');
                     err.statusCode.should.equal(403);
-
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('should allow an invitation to be accepted, but fail on token validation', function (done) {
-                AuthAPI.acceptInvitation(testInvite).then(function () {
-                    done(new Error('invitation did not fail on token validation'));
+            it('should allow an invitation to be accepted, but fail on token validation', function () {
+                return AuthAPI.acceptInvitation(testInvite).then(function () {
+                    throw new Error('invitation did not fail on token validation');
                 }).catch(function (err) {
                     should.exist(err);
 
                     err.name.should.equal('NotFoundError');
                     err.statusCode.should.equal(404);
                     err.message.should.equal('Invite not found.');
-
-                    done();
-                }).catch(done);
+                });
             });
 
             it('should allow an invitation to be accepted', function () {
@@ -321,50 +299,45 @@ describe('Authentication API', function () {
                     });
             });
 
-            it('should generate a password reset token', function (done) {
-                AuthAPI.generateResetToken(testGenerateReset).then(function (result) {
+            it('should generate a password reset token', function () {
+                return AuthAPI.generateResetToken(testGenerateReset).then(function (result) {
                     should.exist(result);
                     result.passwordreset.should.be.an.Array().with.lengthOf(1);
                     result.passwordreset[0].should.have.property('message', 'Check your email for further instructions.');
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('should not generate a password reset token for an invalid email address', function (done) {
+            it('should not generate a password reset token for an invalid email address', function () {
                 var badResetRequest = {
                         passwordreset: [{email: ''}]
                     };
 
-                AuthAPI.generateResetToken(badResetRequest).then(function () {
-                    done(new Error('reset token was generated for invalid email address'));
+                return AuthAPI.generateResetToken(badResetRequest).then(function () {
+                    throw new Error('reset token was generated for invalid email address');
                 }).catch(function (err) {
                     should.exist(err);
 
                     err.name.should.equal('BadRequestError');
                     err.statusCode.should.equal(400);
-
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('should allow a password reset', function (done) {
-                AuthAPI.resetPassword(testReset).then(function () {
-                    done(new Error('password reset did not fail on token validation'));
+            it('should allow a password reset', function () {
+                return AuthAPI.resetPassword(testReset).then(function () {
+                    throw new Error('password reset did not fail on token validation');
                 }).catch(function (err) {
                     should.exist(err);
 
                     err.name.should.equal('UnauthorizedError');
                     err.statusCode.should.equal(401);
                     err.message.should.equal('Invalid token structure');
-
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('should allow an access token to be revoked', function (done) {
+            it('should allow an access token to be revoked', function () {
                 var id = uid(191);
 
-                Accesstoken.add({
+                return Accesstoken.add({
                     token: id,
                     expires: Date.now() + 8640000,
                     user_id: 1,
@@ -384,9 +357,7 @@ describe('Authentication API', function () {
                     return Accesstoken.findOne({token: id});
                 }).then(function (token) {
                     should.not.exist(token);
-
-                    done();
-                }).catch(done);
+                });
             });
 
             it('should know an email address has an active invitation', function () {
@@ -398,7 +369,7 @@ describe('Authentication API', function () {
                     });
             });
 
-            it('should know an email address does not have an active invitation', function (done) {
+            it('should know an email address does not have an active invitation', function () {
                 var user = {
                         name: 'uninvited user',
                         email: 'notinvited@example.com',
@@ -409,29 +380,25 @@ describe('Authentication API', function () {
                         context: {internal: true}
                     };
 
-                User.add(user, options).then(function (user) {
+                return User.add(user, options).then(function (user) {
                     return AuthAPI.isInvitation({email: user.get('email')});
                 }).then(function (response) {
                     should.exist(response);
                     response.invitation[0].valid.should.be.false();
-
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('should know an unknown email address is not an active invitation', function (done) {
-                AuthAPI.isInvitation({email: 'unknown@example.com'}).then(function (response) {
+            it('should know an unknown email address is not an active invitation', function () {
+                return AuthAPI.isInvitation({email: 'unknown@example.com'}).then(function (response) {
                     should.exist(response);
                     response.invitation[0].valid.should.be.false();
-
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('should allow a refresh token to be revoked', function (done) {
+            it('should allow a refresh token to be revoked', function () {
                 var id = uid(191);
 
-                Refreshtoken.add({
+                return Refreshtoken.add({
                     token: id,
                     expires: Date.now() + 8640000,
                     user_id: 1,
@@ -451,15 +418,13 @@ describe('Authentication API', function () {
                     return Refreshtoken.findOne({token: id});
                 }).then(function (token) {
                     should.not.exist(token);
-
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('should return success when attempting to revoke an invalid token', function (done) {
+            it('should return success when attempting to revoke an invalid token', function () {
                 var id = uid(191);
 
-                Accesstoken.add({
+                return Accesstoken.add({
                     token: id,
                     expires: Date.now() + 8640000,
                     user_id: 1,
@@ -476,9 +441,7 @@ describe('Authentication API', function () {
                     should.exist(response);
                     response.token.should.equal('notavalidtoken');
                     response.error.should.equal('Invalid token provided');
-
-                    done();
-                }).catch(done);
+                });
             });
         });
     });
@@ -487,16 +450,14 @@ describe('Authentication API', function () {
         describe('Setup not complete', function () {
             beforeEach(testUtils.setup('roles', 'owner:pre', 'settings', 'perms:setting', 'perms:init'));
 
-            it('should report that setup has not been completed', function (done) {
-                AuthAPI.isSetup().then(function (result) {
+            it('should report that setup has not been completed', function () {
+                return AuthAPI.isSetup().then(function (result) {
                     should.exist(result);
                     result.setup[0].status.should.be.false();
-
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('should not allow setup to be updated', function (done) {
+            it('should not allow setup to be updated', function () {
                 var setupData = {
                         name: 'test user',
                         email: 'test@example.com',
@@ -504,32 +465,28 @@ describe('Authentication API', function () {
                         blogTitle: 'a test blog'
                     };
 
-                AuthAPI.updateSetup({setup: [setupData]}, {}).then(function () {
-                    done(new Error('Update was able to be run'));
+                return AuthAPI.updateSetup({setup: [setupData]}, {}).then(function () {
+                    throw new Error('Update was able to be run');
                 }).catch(function (err) {
                     should.exist(err);
 
                     err.name.should.equal('NoPermissionError');
                     err.statusCode.should.equal(403);
-
-                    done();
-                }).catch(done);
+                });
             });
         });
 
         describe('Not Owner', function () {
             beforeEach(testUtils.setup('roles', 'users:roles', 'settings', 'perms:setting', 'perms:init', 'perms:user'));
 
-            it('should report that setup has been completed', function (done) {
-                AuthAPI.isSetup().then(function (result) {
+            it('should report that setup has been completed', function () {
+                return AuthAPI.isSetup().then(function (result) {
                     should.exist(result);
                     result.setup[0].status.should.be.true();
-
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('should not allow setup to be updated', function (done) {
+            it('should not allow setup to be updated', function () {
                 var setupData = {
                         name: 'test user',
                         email: 'test@example.com',
@@ -537,32 +494,28 @@ describe('Authentication API', function () {
                         blogTitle: 'a test blog'
                     };
 
-                AuthAPI.updateSetup({setup: [setupData]}, context.author).then(function () {
-                    done(new Error('Update was able to be run'));
+                return AuthAPI.updateSetup({setup: [setupData]}, context.author).then(function () {
+                    throw new Error('Update was able to be run');
                 }).catch(function (err) {
                     should.exist(err);
 
                     err.name.should.equal('NoPermissionError');
                     err.statusCode.should.equal(403);
-
-                    done();
-                }).catch(done);
+                });
             });
         });
 
         describe('Owner', function () {
             beforeEach(testUtils.setup('roles', 'users:roles', 'settings', 'perms:setting', 'perms:init'));
 
-            it('should report that setup has been completed', function (done) {
-                AuthAPI.isSetup().then(function (result) {
+            it('should report that setup has been completed', function () {
+                return AuthAPI.isSetup().then(function (result) {
                     should.exist(result);
                     result.setup[0].status.should.be.true();
-
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('should allow setup to be updated', function (done) {
+            it('should allow setup to be updated', function () {
                 var setupData = {
                         name: 'test user',
                         email: 'test@example.com',
@@ -570,7 +523,7 @@ describe('Authentication API', function () {
                         blogTitle: 'a test blog'
                     };
 
-                AuthAPI.updateSetup({setup: [setupData]}, context.owner).then(function (result) {
+                return AuthAPI.updateSetup({setup: [setupData]}, context.owner).then(function (result) {
                     should.exist(result);
                     should.exist(result.users);
                     should.not.exist(result.meta);
@@ -582,9 +535,7 @@ describe('Authentication API', function () {
                     newUser.id.should.equal(1);
                     newUser.name.should.equal(setupData.name);
                     newUser.email.should.equal(setupData.email);
-
-                    done();
-                }).catch(done);
+                });
             });
         });
     });

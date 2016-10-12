@@ -52,20 +52,20 @@ describe('Scheduling: Post Scheduling', function () {
         sinon.spy(scope.adapter, 'reschedule');
     });
 
-    afterEach(function (done) {
+    afterEach(function () {
         scope.adapter.schedule.reset();
         schedulingUtils.createAdapter.restore();
         scope.adapter.schedule.restore();
         scope.adapter.reschedule.restore();
         events.onMany.restore();
         api.schedules.getScheduledPosts.restore();
-        testUtils.teardown(done);
+        return testUtils.teardown();
     });
 
     describe('fn:init', function () {
         describe('success', function () {
-            it('will be scheduled', function (done) {
-                postScheduling.init({
+            it('will be scheduled', function () {
+                return postScheduling.init({
                     apiUrl: scope.apiUrl
                 }).then(function () {
                     scope.events['post.scheduled'](scope.post);
@@ -79,34 +79,29 @@ describe('Scheduling: Post Scheduling', function () {
                             oldTime: null
                         }
                     }).should.eql(true);
-
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('will load scheduled posts from database', function (done) {
+            it('will load scheduled posts from database', function () {
                 scope.scheduledPosts = [
                     models.Post.forge(testUtils.DataGenerator.forKnex.createPost({status: 'scheduled'})),
                     models.Post.forge(testUtils.DataGenerator.forKnex.createPost({status: 'scheduled'}))
                 ];
 
-                postScheduling.init({
+                return postScheduling.init({
                     apiUrl: scope.apiUrl
                 }).then(function () {
                     scope.adapter.reschedule.calledTwice.should.eql(true);
-                    done();
-                }).catch(done);
+                });
             });
         });
 
         describe('error', function () {
-            it('no url passed', function (done) {
-                postScheduling.init()
-                    .catch(function (err) {
-                        should.exist(err);
-                        (err instanceof errors.IncorrectUsageError).should.eql(true);
-                        done();
-                    });
+            it('no url passed', function () {
+                return postScheduling.init().catch(function (err) {
+                    should.exist(err);
+                    (err instanceof errors.IncorrectUsageError).should.eql(true);
+                });
             });
         });
     });

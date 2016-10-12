@@ -88,32 +88,30 @@ describe('Importer', function () {
 
         // Step 1 of importing is loadFile
         describe('loadFile', function () {
-            it('knows when to process a file', function (done) {
+            it('knows when to process a file', function () {
                 var testFile = {name: 'myFile.json', path: '/my/path/myFile.json'},
                     zipSpy = sandbox.stub(ImportManager, 'processZip').returns(Promise.resolve()),
                     fileSpy = sandbox.stub(ImportManager, 'processFile').returns(Promise.resolve());
 
-                ImportManager.loadFile(testFile).then(function () {
+                return ImportManager.loadFile(testFile).then(function () {
                     zipSpy.calledOnce.should.be.false();
                     fileSpy.calledOnce.should.be.true();
-                    done();
-                }).catch(done);
+                });
             });
 
             // We need to make sure we don't actually extract a zip and leave temporary files everywhere!
-            it('knows when to process a zip', function (done) {
+            it('knows when to process a zip', function () {
                 var testZip = {name: 'myFile.zip', path: '/my/path/myFile.zip'},
                     zipSpy = sandbox.stub(ImportManager, 'processZip').returns(Promise.resolve()),
                     fileSpy = sandbox.stub(ImportManager, 'processFile').returns(Promise.resolve());
 
-                ImportManager.loadFile(testZip).then(function () {
+                return ImportManager.loadFile(testZip).then(function () {
                     zipSpy.calledOnce.should.be.true();
                     fileSpy.calledOnce.should.be.false();
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('has same result for zips and files', function (done) {
+            it('has same result for zips and files', function () {
                 var testFile = {name: 'myFile.json', path: '/my/path/myFile.json'},
                     testZip = {name: 'myFile.zip', path: '/my/path/myFile.zip'},
                     // need to stub out the extract and glob function for zip
@@ -129,7 +127,7 @@ describe('Importer', function () {
                 getFileSpy.withArgs(ImageHandler).returns([]);
                 getFileSpy.withArgs(MarkdownHandler).returns([]);
 
-                ImportManager.processZip(testZip).then(function (zipResult) {
+                return ImportManager.processZip(testZip).then(function (zipResult) {
                     extractSpy.calledOnce.should.be.true();
                     validSpy.calledOnce.should.be.true();
                     baseDirSpy.calledOnce.should.be.true();
@@ -138,16 +136,15 @@ describe('Importer', function () {
                     imageSpy.called.should.be.false();
                     mdSpy.called.should.be.false();
 
-                    ImportManager.processFile(testFile, '.json').then(function (fileResult) {
+                    return ImportManager.processFile(testFile, '.json').then(function (fileResult) {
                         jsonSpy.calledTwice.should.be.true();
 
                         // They should both have data keys, and they should be equivalent
                         zipResult.should.have.property('data');
                         fileResult.should.have.property('data');
                         zipResult.should.eql(fileResult);
-                        done();
                     });
-                }).catch(done);
+                });
             });
 
             describe('Validate Zip', function () {
@@ -209,14 +206,14 @@ describe('Importer', function () {
         // Step 2 of importing is preProcess
         describe('preProcess', function () {
             // preProcess can modify the data prior to importing
-            it('calls the DataImporter preProcess method', function (done) {
+            it('calls the DataImporter preProcess method', function () {
                 var input = {data: {}, images: []},
                     // pass a copy so that input doesn't get modified
                     inputCopy = _.cloneDeep(input),
                     dataSpy = sandbox.spy(DataImporter, 'preProcess'),
                     imageSpy = sandbox.spy(ImageImporter, 'preProcess');
 
-                ImportManager.preProcess(inputCopy).then(function (output) {
+                return ImportManager.preProcess(inputCopy).then(function (output) {
                     dataSpy.calledOnce.should.be.true();
                     dataSpy.calledWith(inputCopy).should.be.true();
                     imageSpy.calledOnce.should.be.true();
@@ -226,8 +223,7 @@ describe('Importer', function () {
                     output.should.not.equal(input);
                     output.should.have.property('preProcessedByData', true);
                     output.should.have.property('preProcessedByImage', true);
-                    done();
-                }).catch(done);
+                });
             });
         });
 
@@ -235,7 +231,7 @@ describe('Importer', function () {
         describe('doImport', function () {
             // doImport calls the real importers and has an effect on the DB. We don't want any of those calls to be made,
             // but to test that the right calls would be made
-            it('calls the DataImporter doImport method with the data object', function (done) {
+            it('calls the DataImporter doImport method with the data object', function () {
                 var input = {data: {posts: []}, images: []},
                     // pass a copy so that input doesn't get modified
                     inputCopy = _.cloneDeep(input),
@@ -250,7 +246,7 @@ describe('Importer', function () {
                     expectedData = input.data,
                     expectedImages = input.images;
 
-                ImportManager.doImport(inputCopy).then(function (output) {
+                return ImportManager.doImport(inputCopy).then(function (output) {
                     // eql checks for equality
                     // equal checks the references are for the same object
                     dataSpy.calledOnce.should.be.true();
@@ -260,8 +256,7 @@ describe('Importer', function () {
 
                     // we stubbed this as a noop but ImportManager calls with sequence, so we should get an array
                     output.should.eql([expectedImages, expectedData]);
-                    done();
-                }).catch(done);
+                });
             });
         });
 
@@ -269,33 +264,30 @@ describe('Importer', function () {
         describe('generateReport', function () {
             // generateReport is intended to create a message to show to the user about what has been imported
             // it is currently a noop
-            it('is currently a noop', function (done) {
+            it('is currently a noop', function () {
                 var input = {data: {}, images: []};
-                ImportManager.generateReport(input).then(function (output) {
+                return ImportManager.generateReport(input).then(function (output) {
                     output.should.equal(input);
-                    done();
-                }).catch(done);
+                });
             });
         });
 
         describe('importFromFile', function () {
-            it('does the import steps in order', function (done) {
+            it('does the import steps in order', function () {
                 var loadFileSpy = sandbox.stub(ImportManager, 'loadFile').returns(Promise.resolve()),
                     preProcessSpy = sandbox.stub(ImportManager, 'preProcess').returns(Promise.resolve()),
                     doImportSpy = sandbox.stub(ImportManager, 'doImport').returns(Promise.resolve()),
                     generateReportSpy = sandbox.stub(ImportManager, 'generateReport').returns(Promise.resolve()),
                     cleanupSpy = sandbox.stub(ImportManager, 'cleanUp').returns({});
 
-                ImportManager.importFromFile({}).then(function () {
+                return ImportManager.importFromFile({}).then(function () {
                     loadFileSpy.calledOnce.should.be.true();
                     preProcessSpy.calledOnce.should.be.true();
                     doImportSpy.calledOnce.should.be.true();
                     generateReportSpy.calledOnce.should.be.true();
                     cleanupSpy.calledOnce.should.be.true();
                     sinon.assert.callOrder(loadFileSpy, preProcessSpy, doImportSpy, generateReportSpy, cleanupSpy);
-
-                    done();
-                }).catch(done);
+                });
             });
         });
     });
@@ -311,30 +303,28 @@ describe('Importer', function () {
             JSONHandler.loadFile.should.be.instanceof(Function);
         });
 
-        it('correctly handles a valid db api wrapper', function (done) {
+        it('correctly handles a valid db api wrapper', function () {
             var file = [{
                 path: testUtils.fixtures.getExportFixturePath('export-003-api-wrapper'),
                 name: 'export-003-api-wrapper.json'
             }];
-            JSONHandler.loadFile(file).then(function (result) {
+            return JSONHandler.loadFile(file).then(function (result) {
                 _.keys(result).should.containEql('meta');
                 _.keys(result).should.containEql('data');
-                done();
-            }).catch(done);
+            });
         });
 
-        it('correctly errors when given a bad db api wrapper', function (done) {
+        it('correctly errors when given a bad db api wrapper', function () {
             var file = [{
                 path: testUtils.fixtures.getExportFixturePath('export-003-api-wrapper-bad'),
                 name: 'export-003-api-wrapper-bad.json'
             }];
 
-            JSONHandler.loadFile(file).then(function () {
-                done(new Error('Didn\'t error for bad db api wrapper'));
+            return JSONHandler.loadFile(file).then(function () {
+                throw new Error('Didn\'t error for bad db api wrapper');
             }).catch(function (response) {
                 response.errorType.should.equal('BadRequestError');
-                done();
-            }).catch(done);
+            });
         });
     });
 
@@ -358,7 +348,7 @@ describe('Importer', function () {
             ImageHandler.loadFile.should.be.instanceof(Function);
         });
 
-        it('can load a single file', function (done) {
+        it('can load a single file', function () {
             var filename = 'test-image.jpeg',
                 file = [{
                     path: '/my/test/' + filename,
@@ -367,18 +357,16 @@ describe('Importer', function () {
                 storeSpy = sandbox.spy(store, 'getUniqueFileName'),
                 storageSpy = sandbox.spy(storage, 'getStorage');
 
-            ImageHandler.loadFile(_.clone(file)).then(function () {
+            return ImageHandler.loadFile(_.clone(file)).then(function () {
                 storageSpy.calledOnce.should.be.true();
                 storeSpy.calledOnce.should.be.true();
                 storeSpy.firstCall.args[1].originalPath.should.equal('test-image.jpeg');
                 storeSpy.firstCall.args[1].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
                 storeSpy.firstCall.args[1].newPath.should.eql('/content/images/test-image.jpeg');
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can load a single file, maintaining structure', function (done) {
+        it('can load a single file, maintaining structure', function () {
             var filename = 'photos/my-cat.jpeg',
                 file = [{
                     path: '/my/test/' + filename,
@@ -387,18 +375,16 @@ describe('Importer', function () {
                 storeSpy = sandbox.spy(store, 'getUniqueFileName'),
                 storageSpy = sandbox.spy(storage, 'getStorage');
 
-            ImageHandler.loadFile(_.clone(file)).then(function () {
+            return ImageHandler.loadFile(_.clone(file)).then(function () {
                 storageSpy.calledOnce.should.be.true();
                 storeSpy.calledOnce.should.be.true();
                 storeSpy.firstCall.args[1].originalPath.should.equal('photos/my-cat.jpeg');
                 storeSpy.firstCall.args[1].targetDir.should.match(/(\/|\\)content(\/|\\)images(\/|\\)photos$/);
                 storeSpy.firstCall.args[1].newPath.should.eql('/content/images/photos/my-cat.jpeg');
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can load a single file, removing ghost dirs', function (done) {
+        it('can load a single file, removing ghost dirs', function () {
             var filename = 'content/images/my-cat.jpeg',
                 file = [{
                     path: '/my/test/content/images/' + filename,
@@ -407,18 +393,16 @@ describe('Importer', function () {
                 storeSpy = sandbox.spy(store, 'getUniqueFileName'),
                 storageSpy = sandbox.spy(storage, 'getStorage');
 
-            ImageHandler.loadFile(_.clone(file)).then(function () {
+            return ImageHandler.loadFile(_.clone(file)).then(function () {
                 storageSpy.calledOnce.should.be.true();
                 storeSpy.calledOnce.should.be.true();
                 storeSpy.firstCall.args[1].originalPath.should.equal('content/images/my-cat.jpeg');
                 storeSpy.firstCall.args[1].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
                 storeSpy.firstCall.args[1].newPath.should.eql('/content/images/my-cat.jpeg');
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can load a file (subdirectory)', function (done) {
+        it('can load a file (subdirectory)', function () {
             configUtils.set({url: 'http://testurl.com/subdir'});
 
             var filename = 'test-image.jpeg',
@@ -429,18 +413,16 @@ describe('Importer', function () {
                 storeSpy = sandbox.spy(store, 'getUniqueFileName'),
                 storageSpy = sandbox.spy(storage, 'getStorage');
 
-            ImageHandler.loadFile(_.clone(file)).then(function () {
+            return ImageHandler.loadFile(_.clone(file)).then(function () {
                 storageSpy.calledOnce.should.be.true();
                 storeSpy.calledOnce.should.be.true();
                 storeSpy.firstCall.args[1].originalPath.should.equal('test-image.jpeg');
                 storeSpy.firstCall.args[1].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
                 storeSpy.firstCall.args[1].newPath.should.eql('/subdir/content/images/test-image.jpeg');
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can load multiple files', function (done) {
+        it('can load multiple files', function () {
             var files = [{
                     path: '/my/test/testing.png',
                     name: 'testing.png'
@@ -460,7 +442,7 @@ describe('Importer', function () {
                 storeSpy = sandbox.spy(store, 'getUniqueFileName'),
                 storageSpy = sandbox.spy(storage, 'getStorage');
 
-            ImageHandler.loadFile(_.clone(files)).then(function () {
+            return ImageHandler.loadFile(_.clone(files)).then(function () {
                 storageSpy.calledOnce.should.be.true();
                 storeSpy.callCount.should.eql(4);
                 storeSpy.firstCall.args[1].originalPath.should.equal('testing.png');
@@ -475,9 +457,7 @@ describe('Importer', function () {
                 storeSpy.lastCall.args[1].originalPath.should.equal('images/puppy.jpg');
                 storeSpy.lastCall.args[1].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
                 storeSpy.lastCall.args[1].newPath.should.eql('/content/images/puppy.jpg');
-
-                done();
-            }).catch(done);
+            });
         });
     });
 
@@ -493,14 +473,14 @@ describe('Importer', function () {
             MarkdownHandler.loadFile.should.be.instanceof(Function);
         });
 
-        it('does convert a markdown file into a post object', function (done) {
+        it('does convert a markdown file into a post object', function () {
             var filename = 'draft-2014-12-19-test-1.md',
                 file = [{
                     path: testUtils.fixtures.getImportFixturePath(filename),
                     name: filename
                 }];
 
-            MarkdownHandler.loadFile(file).then(function (result) {
+            return MarkdownHandler.loadFile(file).then(function (result) {
                 result.data.posts[0].markdown.should.eql('You\'re live! Nice.');
                 result.data.posts[0].status.should.eql('draft');
                 result.data.posts[0].slug.should.eql('test-1');
@@ -508,12 +488,10 @@ describe('Importer', function () {
                 result.data.posts[0].created_at.should.eql(1418990400000);
                 moment.utc(result.data.posts[0].created_at).format('DD MM YY HH:mm').should.eql('19 12 14 12:00');
                 result.data.posts[0].should.not.have.property('image');
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can parse a title from a markdown file', function (done) {
+        it('can parse a title from a markdown file', function () {
             var filename = 'draft-2014-12-19-test-2.md',
                 file = [{
                     path: testUtils.fixtures.getImportFixturePath(filename),
@@ -527,38 +505,34 @@ describe('Importer', function () {
                 result.data.posts[0].title.should.eql('Welcome to Ghost');
                 result.data.posts[0].created_at.should.eql(1418990400000);
                 result.data.posts[0].should.not.have.property('image');
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can parse a featured image from a markdown file if there is a title', function (done) {
+        it('can parse a featured image from a markdown file if there is a title', function () {
             var filename = 'draft-2014-12-19-test-3.md',
                 file = [{
                     path: testUtils.fixtures.getImportFixturePath(filename),
                     name: filename
                 }];
 
-            MarkdownHandler.loadFile(file).then(function (result) {
+            return MarkdownHandler.loadFile(file).then(function (result) {
                 result.data.posts[0].markdown.should.eql('You\'re live! Nice.');
                 result.data.posts[0].status.should.eql('draft');
                 result.data.posts[0].slug.should.eql('test-3');
                 result.data.posts[0].title.should.eql('Welcome to Ghost');
                 result.data.posts[0].created_at.should.eql(1418990400000);
                 result.data.posts[0].image.should.eql('/images/kitten.jpg');
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can import a published post', function (done) {
+        it('can import a published post', function () {
             var filename = 'published-2014-12-19-test-1.md',
                 file = [{
                     path: testUtils.fixtures.getImportFixturePath(filename),
                     name: filename
                 }];
 
-            MarkdownHandler.loadFile(file).then(function (result) {
+            return MarkdownHandler.loadFile(file).then(function (result) {
                 result.data.posts[0].markdown.should.eql('You\'re live! Nice.');
                 result.data.posts[0].status.should.eql('published');
                 result.data.posts[0].slug.should.eql('test-1');
@@ -566,26 +540,22 @@ describe('Importer', function () {
                 result.data.posts[0].published_at.should.eql(1418990400000);
                 moment.utc(result.data.posts[0].published_at).format('DD MM YY HH:mm').should.eql('19 12 14 12:00');
                 result.data.posts[0].should.not.have.property('image');
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('does not import deleted posts', function (done) {
+        it('does not import deleted posts', function () {
             var filename = 'deleted-2014-12-19-test-1.md',
                 file = [{
                     path: testUtils.fixtures.getImportFixturePath(filename),
                     name: filename
                 }];
 
-            MarkdownHandler.loadFile(file).then(function (result) {
+            return MarkdownHandler.loadFile(file).then(function (result) {
                 result.data.posts.should.be.empty();
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can import multiple files', function (done) {
+        it('can import multiple files', function () {
             var files = [{
                     path: testUtils.fixtures.getImportFixturePath('deleted-2014-12-19-test-1.md'),
                     name: 'deleted-2014-12-19-test-1.md'
@@ -597,7 +567,7 @@ describe('Importer', function () {
                     name: 'draft-2014-12-19-test-3.md'
                 }];
 
-            MarkdownHandler.loadFile(files).then(function (result) {
+            return MarkdownHandler.loadFile(files).then(function (result) {
                 // deleted-2014-12-19-test-1.md
                 // doesn't get imported ;)
 
@@ -621,9 +591,7 @@ describe('Importer', function () {
                 result.data.posts[two].title.should.eql('Welcome to Ghost');
                 result.data.posts[two].created_at.should.eql(1418990400000);
                 result.data.posts[two].image.should.eql('/images/kitten.jpg');
-
-                done();
-            }).catch(done);
+            });
         });
     });
 

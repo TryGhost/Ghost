@@ -19,12 +19,12 @@ describe('Accesstoken Model', function () {
 
     beforeEach(testUtils.setup('users', 'clients'));
 
-    it('on creation emits token.added event', function (done) {
+    it('on creation emits token.added event', function () {
         // Setup
         var eventSpy = sandbox.spy(events, 'emit');
         // Test
         // Stub refreshtoken
-        AccesstokenModel.add({
+        return AccesstokenModel.add({
             token: 'foobartoken',
             user_id: 1,
             client_id: 1,
@@ -35,8 +35,6 @@ describe('Accesstoken Model', function () {
             // Assert
             eventSpy.calledOnce.should.be.true();
             eventSpy.calledWith('token.added').should.be.true();
-
-            done();
-        }).catch(done);
+        });
     });
 });

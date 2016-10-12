@@ -19,8 +19,8 @@ describe('Filter Param Spec', function () {
 
     describe('Advanced Use Cases', function () {
         describe('1. Posts - filter: "tags: [photo, video] + id: -4", limit: "3", include: "tags"', function () {
-            it('Will fetch 3 posts with tags which match `photo` or `video` and are not the post with id 4.', function (done) {
-                PostAPI.browse({filter: 'tags: [photo, video] + id: -4', limit: 3, include: 'tags'}).then(function (result) {
+            it('Will fetch 3 posts with tags which match `photo` or `video` and are not the post with id 4.', function () {
+                return PostAPI.browse({filter: 'tags: [photo, video] + id: -4', limit: 3, include: 'tags'}).then(function (result) {
                     var ids;
                     // 1. Result should have the correct base structure
                     should.exist(result);
@@ -61,15 +61,13 @@ describe('Filter Param Spec', function () {
                     result.meta.pagination.total.should.eql(7);
                     result.meta.pagination.next.should.eql(2);
                     should.equal(result.meta.pagination.prev, null);
-
-                    done();
-                }).catch(done);
+                });
             });
         });
 
         describe('2. Posts - filter: "tag:photo,featured:true,image:-null", include: "tags"', function () {
-            it('Will fetch posts which have either a tag of `photo`, are marked `featured` or have an image.', function (done) {
-                PostAPI.browse({filter: 'tag:photo,featured:true,image:-null', include: 'tags'}).then(function (result) {
+            it('Will fetch posts which have either a tag of `photo`, are marked `featured` or have an image.', function () {
+                return PostAPI.browse({filter: 'tag:photo,featured:true,image:-null', include: 'tags'}).then(function (result) {
                     var ids;
 
                     // 1. Result should have the correct base structure
@@ -100,16 +98,14 @@ describe('Filter Param Spec', function () {
                     result.meta.pagination.total.should.eql(9);
                     should.equal(result.meta.pagination.next, null);
                     should.equal(result.meta.pagination.prev, null);
-
-                    done();
-                }).catch(done);
+                });
             });
         });
 
         describe.skip('3. Tags - filter="count.posts:>=1" order="count.posts DESC" limit="all"', function () {
             // @TODO add support for counts/aggregates in order & filter params
-            it('Will fetch all tags, ordered by post count, where the post count is at least 1.', function (done) {
-                TagAPI.browse({filter: 'count.posts:>=1', order: 'count.posts DESC', limit: 'all', include: 'count.posts'}).then(function (result) {
+            it('Will fetch all tags, ordered by post count, where the post count is at least 1.', function () {
+                return TagAPI.browse({filter: 'count.posts:>=1', order: 'count.posts DESC', limit: 'all', include: 'count.posts'}).then(function (result) {
                     // 1. Result should have the correct base structure
                     should.exist(result);
                     result.should.have.property('tags');
@@ -126,16 +122,14 @@ describe('Filter Param Spec', function () {
                     result.meta.should.have.property('pagination');
                     result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
                     // TODO complete meta data assertions
-
-                    done();
-                }).catch(done);
+                });
             });
         });
 
         describe('4. Posts - filter="author:[leslie,pat]+(tag:audio,image:-null)"', function () {
             // Note that `pat` doesn't exist (it's `pat-smith`)
-            it('Will fetch posts by the author `leslie` or `pat` which are either have tag `audio` or an image.', function (done) {
-                PostAPI.browse({filter: 'author:[leslie,pat]+(tag:audio,image:-null)', include: 'author,tags'}).then(function (result) {
+            it('Will fetch posts by the author `leslie` or `pat` which are either have tag `audio` or an image.', function () {
+                return PostAPI.browse({filter: 'author:[leslie,pat]+(tag:audio,image:-null)', include: 'author,tags'}).then(function (result) {
                     var ids, authors;
                     // 1. Result should have the correct base structure
                     should.exist(result);
@@ -176,16 +170,14 @@ describe('Filter Param Spec', function () {
                     result.meta.pagination.total.should.eql(6);
                     should.equal(result.meta.pagination.next, null);
                     should.equal(result.meta.pagination.prev, null);
-
-                    done();
-                }).catch(done);
+                });
             });
         });
 
         describe.skip('5. Users - filter="posts.tags:photo" order="count.posts DESC" limit="3"', function () {
             // @TODO: add support for joining through posts and tags for users
-            it('Will fetch the 3 most prolific users who write posts with the tag `photo` ordered by most posts.', function (done) {
-                UserAPI.browse({filter: 'posts.tags:special', order: 'count.posts DESC', limit: 3}).then(function (result) {
+            it('Will fetch the 3 most prolific users who write posts with the tag `photo` ordered by most posts.', function () {
+                return UserAPI.browse({filter: 'posts.tags:special', order: 'count.posts DESC', limit: 3}).then(function (result) {
                     var ids;
                     // 1. Result should have the correct base structure
                     should.exist(result);
@@ -211,15 +203,13 @@ describe('Filter Param Spec', function () {
                     result.meta.pagination.total.should.eql(2);
                     should.equal(result.meta.pagination.next, null);
                     should.equal(result.meta.pagination.prev, null);
-
-                    done();
-                }).catch(done);
+                });
             });
         });
 
         describe.skip('6. Posts filter="published_at:>\'2015-07-20\'" limit="5"}}', function () {
-            it('Will fetch 5 posts after a given date.', function (done) {
-                PostAPI.browse({filter: 'published_at:>\'2015-07-20\'', limit: 5, include: 'tags'}).then(function (result) {
+            it('Will fetch 5 posts after a given date.', function () {
+                return PostAPI.browse({filter: 'published_at:>\'2015-07-20\'', limit: 5, include: 'tags'}).then(function (result) {
                     // 1. Result should have the correct base structure
                     should.exist(result);
                     result.should.have.property('posts');
@@ -232,15 +222,13 @@ describe('Filter Param Spec', function () {
                     result.meta.should.have.property('pagination');
                     result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
                     // TODO complete meta data assertions
-
-                    done();
-                }).catch(done);
+                });
             });
         });
 
         describe('7. Users filter: "website:-null", order: "website"', function () {
-            it('Will fetch users that have a website and order them by website', function (done) {
-                UserAPI.browse({filter: 'website:-null', order: 'website ASC'}).then(function (result) {
+            it('Will fetch users that have a website and order them by website', function () {
+                return UserAPI.browse({filter: 'website:-null', order: 'website ASC'}).then(function (result) {
                     var ids;
                     // 1. Result should have the correct base structure
                     should.exist(result);
@@ -266,15 +254,13 @@ describe('Filter Param Spec', function () {
                     result.meta.pagination.total.should.eql(2);
                     should.equal(result.meta.pagination.next, null);
                     should.equal(result.meta.pagination.prev, null);
-
-                    done();
-                }).catch(done);
+                });
             });
         });
 
         describe('8. Tags filter: "image:-null+description:-null"', function () {
-            it('Will fetch tags which have an image and a description', function (done) {
-                TagAPI.browse({filter: 'image:-null+description:-null', order: 'name ASC'}).then(function (result) {
+            it('Will fetch tags which have an image and a description', function () {
+                return TagAPI.browse({filter: 'image:-null+description:-null', order: 'name ASC'}).then(function (result) {
                     var ids;
                     // 1. Result should have the correct base structure
                     should.exist(result);
@@ -309,16 +295,14 @@ describe('Filter Param Spec', function () {
                     result.meta.pagination.total.should.eql(3);
                     should.equal(result.meta.pagination.next, null);
                     should.equal(result.meta.pagination.prev, null);
-
-                    done();
-                }).catch(done);
+                });
             });
         });
     });
 
     describe('Count capabilities', function () {
-        it('can fetch `count.posts` for tags (public data only)', function (done) {
-            TagAPI.browse({include: 'count.posts'}).then(function (result) {
+        it('can fetch `count.posts` for tags (public data only)', function () {
+            return TagAPI.browse({include: 'count.posts'}).then(function (result) {
                 // 1. Result should have the correct base structure
                 should.exist(result);
                 result.should.have.property('tags');
@@ -362,12 +346,10 @@ describe('Filter Param Spec', function () {
                 result.meta.pagination.total.should.eql(6);
                 should.equal(result.meta.pagination.next, null);
                 should.equal(result.meta.pagination.prev, null);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can fetch and order by `count.posts` for tags (public data only)', function (done) {
+        it('can fetch and order by `count.posts` for tags (public data only)', function () {
             TagAPI.browse({include: 'count.posts', order: 'count.posts DESC'}).then(function (result) {
                 var ids;
 
@@ -417,19 +399,16 @@ describe('Filter Param Spec', function () {
                 result.meta.pagination.total.should.eql(6);
                 should.equal(result.meta.pagination.next, null);
                 should.equal(result.meta.pagination.prev, null);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it.skip('can fetch `count.posts` for tags (all data)', function (done) {
+        it.skip('can fetch `count.posts` for tags (all data)', function () {
             // This is tested elsewhere for now using user context
             // No way to override it for public requests
-            done();
         });
 
-        it('can fetch `count.posts` for users (published only)', function (done) {
-            UserAPI.browse({include: 'count.posts'}).then(function (result) {
+        it('can fetch `count.posts` for users (published only)', function () {
+            return UserAPI.browse({include: 'count.posts'}).then(function (result) {
                 // 1. Result should have the correct base structure
                 should.exist(result);
                 result.should.have.property('users');
@@ -461,13 +440,11 @@ describe('Filter Param Spec', function () {
                 result.meta.pagination.total.should.eql(3);
                 should.equal(result.meta.pagination.next, null);
                 should.equal(result.meta.pagination.prev, null);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('can fetch and order by `count.posts` for users (published only)', function (done) {
-            UserAPI.browse({include: 'count.posts', order: 'count.posts ASC'}).then(function (result) {
+        it('can fetch and order by `count.posts` for users (published only)', function () {
+            return UserAPI.browse({include: 'count.posts', order: 'count.posts ASC'}).then(function (result) {
                 var ids;
 
                 // 1. Result should have the correct base structure
@@ -504,25 +481,21 @@ describe('Filter Param Spec', function () {
                 result.meta.pagination.total.should.eql(3);
                 should.equal(result.meta.pagination.next, null);
                 should.equal(result.meta.pagination.prev, null);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it.skip('can fetch `posts.all.count` for users (all posts)', function (done) {
-            done();
+        it.skip('can fetch `posts.all.count` for users (all posts)', function () {
         });
 
-        it.skip('can fetch `tags.count` for posts', function (done) {
-            done();
+        it.skip('can fetch `tags.count` for posts', function () {
         });
     });
 
     describe('Old Use Cases', function () {
         // Please note: these tests are mostly here to help prove certain things whilst building out new behaviour
         describe('Old post "filters"', function () {
-            it('Will fetch posts with a given tag', function (done) {
-                PostAPI.browse({filter: 'tag:photo', include: 'tag,author'}).then(function (result) {
+            it('Will fetch posts with a given tag', function () {
+                return PostAPI.browse({filter: 'tag:photo', include: 'tag,author'}).then(function (result) {
                     var ids;
                     // 1. Result should have the correct base structure
                     should.exist(result);
@@ -548,13 +521,11 @@ describe('Filter Param Spec', function () {
 
                     // NOTE: new query does not have meta filter
                     result.meta.should.not.have.property('filters');
-
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('Will fetch posts with a given author', function (done) {
-                PostAPI.browse({filter: 'author:leslie', include: 'tag,author', limit: 5, page: 2}).then(function (result) {
+            it('Will fetch posts with a given author', function () {
+                return PostAPI.browse({filter: 'author:leslie', include: 'tag,author', limit: 5, page: 2}).then(function (result) {
                     var ids;
                     // 1. Result should have the correct base structure
                     should.exist(result);
@@ -580,15 +551,13 @@ describe('Filter Param Spec', function () {
 
                     // NOTE: old query has meta filter
                     result.meta.should.not.have.property('filters');
-
-                    done();
-                }).catch(done);
+                });
             });
         });
 
         describe('Handling "featured"', function () {
-            it('Will fetch all posts regardless of featured status by default', function (done) {
-                PostAPI.browse({}).then(function (result) {
+            it('Will fetch all posts regardless of featured status by default', function () {
+                return PostAPI.browse({}).then(function (result) {
                     var ids;
                     // 1. Result should have the correct base structure
                     should.exist(result);
@@ -614,13 +583,11 @@ describe('Filter Param Spec', function () {
 
                     // NOTE: old query has meta filter
                     result.meta.should.not.have.property('filters');
-
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('Will fetch only featured posts when requested', function (done) {
-                PostAPI.browse({filter: 'featured:true'}).then(function (result) {
+            it('Will fetch only featured posts when requested', function () {
+                return PostAPI.browse({filter: 'featured:true'}).then(function (result) {
                     var ids, featured;
                     // 1. Result should have the correct base structure
                     should.exist(result);
@@ -651,13 +618,11 @@ describe('Filter Param Spec', function () {
 
                     // NOTE: old query has meta filter
                     result.meta.should.not.have.property('filters');
-
-                    done();
-                }).catch(done);
+                });
             });
 
-            it('Will fetch only non-featured posts when requested', function (done) {
-                PostAPI.browse({filter: 'featured:false'}).then(function (result) {
+            it('Will fetch only non-featured posts when requested', function () {
+                return PostAPI.browse({filter: 'featured:false'}).then(function (result) {
                     var ids, featured;
                     // 1. Result should have the correct base structure
                     should.exist(result);
@@ -688,15 +653,13 @@ describe('Filter Param Spec', function () {
 
                     // NOTE: old query has meta filter
                     result.meta.should.not.have.property('filters');
-
-                    done();
-                }).catch(done);
+                });
             });
         });
 
         describe('Handling "page" (staticPages)', function () {
-            it('Will return only published posts by default', function (done) {
-                PostAPI.browse({limit: 'all'}).then(function (result) {
+            it('Will return only published posts by default', function () {
+                return PostAPI.browse({limit: 'all'}).then(function (result) {
                     var ids, page;
                     // 1. Result should have the correct base structure
                     should.exist(result);
@@ -727,14 +690,12 @@ describe('Filter Param Spec', function () {
 
                     // NOTE: old query has meta filter
                     result.meta.should.not.have.property('filters');
-
-                    done();
-                }).catch(done);
+                });
             });
 
             // @TODO: determine if this should be supported via filter, or whether it should only be available via a 'PageAPI'
-            it('Will return only pages when requested', function (done) {
-                PostAPI.browse({filter: 'page:true'}).then(function (result) {
+            it('Will return only pages when requested', function () {
+                return PostAPI.browse({filter: 'page:true'}).then(function (result) {
                     var ids, page;
                     // 1. Result should have the correct base structure
                     should.exist(result);
@@ -765,19 +726,16 @@ describe('Filter Param Spec', function () {
 
                     // NOTE: old query has meta filter
                     result.meta.should.not.have.property('filters');
-
-                    done();
-                }).catch(done);
+                });
             });
 
-            it.skip('Will NOT return both posts and pages from post API', function (done) {
-                done();
+            it.skip('Will NOT return both posts and pages from post API', function () {
             });
         });
 
         describe('Empty results', function () {
-            it('Will return empty result if tag has no posts', function (done) {
-                PostAPI.browse({filter: 'tag:no-posts', include: 'tag,author'}).then(function (result) {
+            it('Will return empty result if tag has no posts', function () {
+                return PostAPI.browse({filter: 'tag:no-posts', include: 'tag,author'}).then(function (result) {
                     // 1. Result should have the correct base structure
                     should.exist(result);
                     result.should.have.property('posts');
@@ -799,16 +757,14 @@ describe('Filter Param Spec', function () {
 
                     // NOTE: new query does not have meta filter
                     result.meta.should.not.have.property('filters');
-
-                    done();
-                }).catch(done);
+                });
             });
         });
     });
 
     describe('Bad behaviour', function () {
-        it('Try to get draft posts (filter with or)', function (done) {
-            PostAPI.browse({filter: 'status:published,status:draft', limit: 'all'}).then(function (result) {
+        it('Try to get draft posts (filter with or)', function () {
+            return PostAPI.browse({filter: 'status:published,status:draft', limit: 'all'}).then(function (result) {
                 // 1. Result should have the correct base structure
                 should.exist(result);
                 result.should.have.property('posts');
@@ -818,13 +774,11 @@ describe('Filter Param Spec', function () {
                     post.page.should.be.false();
                     post.status.should.eql('published');
                 });
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('Try to get draft posts (filter with in)', function (done) {
-            PostAPI.browse({filter: 'status:[published,draft]', limit: 'all'}).then(function (result) {
+        it('Try to get draft posts (filter with in)', function () {
+            return PostAPI.browse({filter: 'status:[published,draft]', limit: 'all'}).then(function (result) {
                 // 1. Result should have the correct base structure
                 should.exist(result);
                 result.should.have.property('posts');
@@ -834,13 +788,11 @@ describe('Filter Param Spec', function () {
                     post.page.should.be.false();
                     post.status.should.eql('published');
                 });
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('Try to get draft posts (filter with group)', function (done) {
-            PostAPI.browse({filter: 'page:false,(status:draft)', limit: 'all'}).then(function (result) {
+        it('Try to get draft posts (filter with group)', function () {
+            return PostAPI.browse({filter: 'page:false,(status:draft)', limit: 'all'}).then(function (result) {
                 // 1. Result should have the correct base structure
                 should.exist(result);
                 result.should.have.property('posts');
@@ -850,13 +802,11 @@ describe('Filter Param Spec', function () {
                     post.page.should.be.false();
                     post.status.should.eql('published');
                 });
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('Try to get draft posts (filter with group and in)', function (done) {
-            PostAPI.browse({filter: 'page:false,(status:[draft,published])', limit: 'all'}).then(function (result) {
+        it('Try to get draft posts (filter with group and in)', function () {
+            return PostAPI.browse({filter: 'page:false,(status:[draft,published])', limit: 'all'}).then(function (result) {
                 // 1. Result should have the correct base structure
                 should.exist(result);
                 result.should.have.property('posts');
@@ -866,9 +816,7 @@ describe('Filter Param Spec', function () {
                     post.page.should.be.false();
                     post.status.should.eql('published');
                 });
-
-                done();
-            }).catch(done);
+            });
         });
     });
 });

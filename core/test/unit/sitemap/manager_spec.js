@@ -62,22 +62,20 @@ describe('Sitemap', function () {
             should.exist(manager);
         });
 
-        it('can initialize', function (done) {
+        it('can initialize', function () {
             manager.initialized.should.equal(false);
-            manager.init().then(function () {
+            return manager.init().then(function () {
                 manager.posts.init.called.should.equal(true);
                 manager.pages.init.called.should.equal(true);
                 manager.authors.init.called.should.equal(true);
                 manager.tags.init.called.should.equal(true);
 
                 manager.initialized.should.equal(true);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('updates page site map correctly', function (done) {
-            manager.init().then(function () {
+        it('updates page site map correctly', function () {
+            return manager.init().then(function () {
                 events.on('page.added', function (fakeModel) {
                     fakeModel.should.eql(fake);
                     // page add events are ignored, as these are drafts
@@ -116,13 +114,11 @@ describe('Sitemap', function () {
                 events.emit('page.published.edited', fake);
                 events.emit('page.deleted', fake);
                 events.emit('page.unpublished', fake);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('updates post site map', function (done) {
-            manager.init().then(function () {
+        it('updates post site map', function () {
+            return manager.init().then(function () {
                 events.on('post.added', function (fakeModel) {
                     fakeModel.should.eql(fake);
                     // post add events are ignored, as these are drafts
@@ -161,13 +157,11 @@ describe('Sitemap', function () {
                 events.emit('post.published.edited', fake);
                 events.emit('post.deleted', fake);
                 events.emit('post.unpublished', fake);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('doesn\'t add posts until they are published', function (done) {
-            manager.init().then(function () {
+        it('doesn\'t add posts until they are published', function () {
+            return manager.init().then(function () {
                 events.on('post.added', function () {
                     manager.posts.addOrUpdateUrl.called.should.equal(false);
                     manager.posts.removeUrl.called.should.equal(false);
@@ -186,26 +180,22 @@ describe('Sitemap', function () {
                 events.emit('post.added', fake);
                 events.emit('post.edited', fake);
                 events.emit('post.published', fake);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('deletes posts that were unpublished', function (done) {
-            manager.init().then(function () {
+        it('deletes posts that were unpublished', function () {
+            return manager.init().then(function () {
                 events.on('post.unpublished', function () {
                     manager.posts.addOrUpdateUrl.called.should.equal(false);
                     manager.posts.removeUrl.calledOnce.should.equal(true);
                 });
 
                 events.emit('post.unpublished', fake);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('updates authors site map', function (done) {
-            manager.init().then(function () {
+        it('updates authors site map', function () {
+            return manager.init().then(function () {
                 events.on('user.added', function (fakeModel) {
                     fakeModel.should.eql(fake);
                     // user added is ignored as this may be an invited user
@@ -244,13 +234,11 @@ describe('Sitemap', function () {
                 events.emit('user.activated.edited', fake);
                 events.emit('user.deleted', fake);
                 events.emit('user.deactivated', fake);
-
-                done();
-            }).catch(done);
+            });
         });
 
-        it('updates tags site map', function (done) {
-            manager.init().then(function () {
+        it('updates tags site map', function () {
+            return manager.init().then(function () {
                 events.on('tag.added', function (fakeModel) {
                     fakeModel.should.eql(fake);
                     manager.tags.addOrUpdateUrl.calledOnce.should.equal(true);
@@ -268,9 +256,7 @@ describe('Sitemap', function () {
                 events.emit('tag.added', fake);
                 events.emit('tag.edited', fake);
                 events.emit('tag.deleted', fake);
-
-                done();
-            }).catch(done);
+            });
         });
     });
 });

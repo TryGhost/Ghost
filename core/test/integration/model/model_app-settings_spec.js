@@ -15,28 +15,24 @@ describe('App Setting Model', function () {
         should.exist(AppSettingModel);
     });
 
-    it('can findAll', function (done) {
-        AppSettingModel.findAll().then(function (results) {
+    it('can findAll', function () {
+        return AppSettingModel.findAll().then(function (results) {
             should.exist(results);
 
             results.length.should.be.above(0);
-
-            done();
-        }).catch(done);
+        });
     });
 
-    it('can findOne', function (done) {
-        AppSettingModel.findOne({id: 1}).then(function (foundAppSetting) {
+    it('can findOne', function () {
+        return AppSettingModel.findOne({id: 1}).then(function (foundAppSetting) {
             should.exist(foundAppSetting);
 
             foundAppSetting.get('created_at').should.be.an.instanceof(Date);
-
-            done();
-        }).catch(done);
+        });
     });
 
-    it('can edit', function (done) {
-        AppSettingModel.findOne({id: 1}).then(function (foundAppSetting) {
+    it('can edit', function () {
+        return AppSettingModel.findOne({id: 1}).then(function (foundAppSetting) {
             should.exist(foundAppSetting);
 
             return foundAppSetting.set({value: '350'}).save(null, context);
@@ -46,8 +42,6 @@ describe('App Setting Model', function () {
             should.exist(updatedAppSetting);
 
             updatedAppSetting.get('value').should.equal('350');
-
-            done();
-        }).catch(done);
+        });
     });
 });
