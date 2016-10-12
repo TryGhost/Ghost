@@ -563,7 +563,7 @@
                     "valueMustBeBoolean": "Value in [settings.key] must be one of true, false, 0 or 1.",
                     "valueExceedsMaxLength": "Value in [{tableName}.{columnKey}] exceeds maximum length of {maxlength} characters.",
                     "valueIsNotInteger": "Value in [{tableName}.{columnKey}] is not an integer.",
-                    "themeCannotBeActivated": "{themeName} cannot be activated because it is not currently installed.",
+                    "themeCannotBeActivated": "The theme \"{themeName}\" cannot be activated because it is not currently installed.",
                     "validationFailed": "Validation ({validationName}) failed for {key}"
                 }
             }

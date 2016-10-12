@@ -12,8 +12,6 @@ var overrides      = require('./core/server/overrides'),
     chalk          = require('chalk'),
     fs             = require('fs-extra'),
     path           = require('path'),
-    Promise        = require('bluebird'),
-    Git            = require('git-wrapper'),
 
     escapeChar     = process.platform.match(/^win/) ? '^' : '\\',
     cwd            = process.cwd().replace(/( |\(|\))/g, escapeChar + '$1'),
@@ -721,78 +719,6 @@ var overrides      = require('./core/server/overrides'),
         // Note that the current implementation of watch only works with casper, not other themes.
         grunt.registerTask('dev', 'Dev Mode; watch files and restart server on changes',
            ['bgShell:client', 'express:dev', 'watch']);
-
-        // ### Contributors
-        // `grunt contributors:<tag-name>` - generate a comma-separated list of contributors for a Ghost release.
-        //
-        // You must supply a tag name to us
-        //
-        grunt.registerTask('contributors', 'Generate a list of contributors for a release', function () {
-            var getContribList = require('gh-contrib-list'),
-                oauthKey = process.env.GITHUB_OAUTH_KEY,
-                thisGit = new Git(),
-                clientGit = new Git({'git-dir': path.resolve(cwd + '/core/client/.git')}),
-                done = this.async();
-
-            function mergeContribs(first, second) {
-                _.each(second, function (contributor) {
-                    var contributorInFirst = _.find(first, ['id', contributor.id]);
-
-                    if (contributorInFirst) {
-                        contributorInFirst.commitCount += contributor.commitCount;
-                    } else {
-                        first.push(contributor);
-                    }
-                });
-
-                return _.orderBy(first, ['commitCount'], ['desc']);
-            }
-
-            if (!this.args) {
-                grunt.log.error('You must supply a tag name. Please run like this: `grunt contributors:<tag-name>`');
-            }
-
-            return Promise.props({
-                ghost: Promise.promisify(thisGit.exec, {context: thisGit})('rev-list', {n: 1}, this.args),
-                admin: Promise.promisify(clientGit.exec, {context: clientGit})('rev-list', {n: 1}, this.args)
-            }).then(function (props) {
-                return Promise.join(
-                    getContribList({
-                        user: 'tryghost',
-                        repo: 'ghost',
-                        oauthKey: oauthKey,
-                        commit: props.ghost.trim(),
-                        removeGreenkeeper: true,
-                        retry: true
-                    }),
-                    getContribList({
-                        user: 'tryghost',
-                        repo: 'ghost-admin',
-                        oauthKey: oauthKey,
-                        commit: props.admin.trim(),
-                        removeGreenkeeper: true,
-                        retry: true
-                    })
-                );
-            }).then(function (results) {
-                var contributors = mergeContribs(results[0], results[1]);
-
-                grunt.log.writeln(_.map(contributors, 'name').join(', '));
-                done();
-            }).catch(function (error) {
-                grunt.log.error(error);
-
-                if (error.http_status) {
-                    grunt.log.writeln('GitHub API request returned status: ' + error.http_status);
-                }
-
-                if (error.ratelimit_limit) {
-                    grunt.log.writeln('Rate limit data: limit: %d, remaining: %d, reset: %s', error.ratelimit_limit, error.ratelimit_remaining, require('moment').unix(error.ratelimit_reset).fromNow());
-                }
-
-                done(false);
-            });
-        });
 
         // ### Release
         // Run `grunt release` to create a Ghost release zip file.
