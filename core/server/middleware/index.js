@@ -5,9 +5,7 @@ var debug           = require('debug')('ghost:middleware'),
 
     // app requires
     config          = require('../config'),
-    errors          = require('../errors'),
     helpers         = require('../helpers'),
-    i18n            = require('../i18n'),
     logging         = require('../logging'),
     routes          = require('../routes'),
     storage         = require('../storage'),
@@ -109,6 +107,7 @@ module.exports = function setupMiddleware(blogApp) {
     debug('Themes done');
 
     // Static content/assets
+    // @TODO make sure all of these have a local 404 error handler
     // Favicon
     blogApp.use(serveSharedFile('favicon.ico', 'image/x-icon', utils.ONE_DAY_S));
     // Ghost-Url
@@ -125,7 +124,7 @@ module.exports = function setupMiddleware(blogApp) {
     // Admin only config
     blogApp.use('/ghost/assets', serveStatic(
         config.get('paths').clientAssets,
-        {maxAge: utils.ONE_YEAR_MS}
+        {maxAge: utils.ONE_YEAR_MS, fallthrough: false}
     ));
 
     // Theme static assets/files
@@ -181,10 +180,7 @@ module.exports = function setupMiddleware(blogApp) {
     blogApp.use(routes.frontend());
 
     // ### Error handlers
-    blogApp.use(function pageNotFound(req, res, next) {
-        next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
-    });
-
-    blogApp.use(errorHandler);
+    blogApp.use(errorHandler.pageNotFound);
+    blogApp.use(errorHandler.handleHTMLResponse);
     debug('Middleware end');
 };
