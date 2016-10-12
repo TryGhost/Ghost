@@ -182,6 +182,10 @@ User = ghostBookshelf.Model.extend({
     },
 
     defaultFilters: function defaultFilters() {
+        if (this.isInternalContext()) {
+            return null;
+        }
+
         return this.isPublicContext() ? null : 'status:[' + activeStates.join(',') + ']';
     }
 }, {
@@ -253,17 +257,21 @@ User = ghostBookshelf.Model.extend({
 
     /**
      * ### Find One
+     *
+     * We have to clone the data, because we remove values from this object.
+     * This is not expected from outside!
+     *
      * @extends ghostBookshelf.Model.findOne to include roles
      * **See:** [ghostBookshelf.Model.findOne](base.js.html#Find%20One)
      */
-    findOne: function findOne(data, options) {
+    findOne: function findOne(dataToClone, options) {
         var query,
             status,
             optInc,
+            data = _.cloneDeep(dataToClone),
             lookupRole = data.role;
 
         delete data.role;
-
         data = _.defaults(data || {}, {
             status: 'active'
         });
@@ -294,7 +302,7 @@ User = ghostBookshelf.Model.extend({
         if (status === 'active') {
             query.query('whereIn', 'status', activeStates);
         } else if (status !== 'all') {
-            query.query('where', {status: options.status});
+            query.query('where', {status: status});
         }
 
         options = this.filterOptions(options, 'findOne');
@@ -355,15 +363,23 @@ User = ghostBookshelf.Model.extend({
      * Naive user add
      * Hashes the password provided before saving to the database.
      *
-     * @param {object} data
+     * We have to clone the data, because we remove values from this object.
+     * This is not expected from outside!
+     *
+     * @param {object} dataToClone
      * @param {object} options
      * @extends ghostBookshelf.Model.add to manage all aspects of user signup
      * **See:** [ghostBookshelf.Model.add](base.js.html#Add)
      */
-    add: function add(data, options) {
+    add: function add(dataToClone, options) {
         var self = this,
+            data = _.cloneDeep(dataToClone),
             userData = this.filterData(data),
             roles;
+
+        if (!userData.password) {
+            userData.password = utils.uid(50);
+        }
 
         userData.password = _.toString(userData.password);
 

@@ -9,3 +9,4 @@ function Sephiroth(options) {
 }
 
 module.exports = Sephiroth;
+module.exports.errors = require('./lib/errors');
