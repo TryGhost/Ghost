@@ -399,7 +399,7 @@ fixtures = {
 
 /** Test Utility Functions **/
 initData = function initData() {
-    return migration.populate();
+    return sephiroth.commands.init();
 };
 
 clearData = function clearData() {
@@ -473,13 +473,12 @@ getFixtureOps = function getFixtureOps(toDos) {
     // Database initialisation
     if (toDos.init || toDos.default) {
         fixtureOps.push(function initDB() {
-            return new Promise(function initDb(resolve, reject) {
-                migration.populate({tablesOnly: tablesOnly})
-                    .then(function () {
-                        resolve();
-                    })
-                    .catch(reject);
-            });
+            // skip adding all fixtures!
+            if (tablesOnly) {
+                return sephiroth.commands.init({skip: 2});
+            }
+
+            return sephiroth.commands.init();
         });
 
         delete toDos.default;

@@ -298,6 +298,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                     item.include = options.include;
                 });
             }
+
             return result;
         });
     },
