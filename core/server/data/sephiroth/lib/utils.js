@@ -36,7 +36,7 @@ exports.createTransaction = function createTransaction(callback) {
 exports.preTask = function preTask(options) {
     options = options || {};
 
-    var localDatabase = options.database,
+    var localDatabase = options.transacting,
         task = options.task,
         type = options.type;
 
@@ -71,7 +71,7 @@ exports.preTask = function preTask(options) {
 exports.postTask = function postTask(options) {
     options = options || {};
 
-    var localDatabase = options.database,
+    var localDatabase = options.transacting,
         task = options.task,
         type = options.type;
 
@@ -83,19 +83,21 @@ exports.postTask = function postTask(options) {
 };
 
 /**
- * - check init
- * - check seed
+ * DB health depends on the amount of executed init scripts right now
  *
- * @TODO: optimise!
+ * @TODO:
+ *   - alternative for checking length of init scripts?
  */
 exports.isDatabaseOK = function isDatabaseOK(options) {
     options = options || {};
 
-    var localDatabase = options.database;
+    var localDatabase = options.transacting,
+        initPath = exports.getPath({type: 'init'}),
+        dbInitTasksLength = exports.readTasks(initPath).length;
 
     return (localDatabase || database.knex)('migrations')
         .then(function (migrations) {
-            if (_.find(migrations, {type: 'init'})) {
+            if (_.filter(migrations, {type: 'init'}).length === dbInitTasksLength) {
                 return;
             }
 
@@ -116,4 +118,22 @@ exports.isDatabaseOK = function isDatabaseOK(options) {
                 err: err
             });
         });
+};
+
+/**
+ * @TODO:
+ *   - make migrationPath configureable
+ */
+exports.getPath = function getPath(options) {
+    options = options || {};
+
+    var migrationsPath = path.join(__dirname, '../../migrations');
+
+    switch (options.type) {
+        case 'init':
+            migrationsPath += '/init';
+            break;
+    }
+
+    return migrationsPath;
 };

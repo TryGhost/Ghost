@@ -29,6 +29,7 @@ function GhostError(options) {
     this.help = options.help || this.help;
     this.errorType = this.name = options.errorType || this.errorType;
     this.errorDetails = options.errorDetails;
+    this.code = options.code || null;
 
     // @TODO: ?
     this.property = options.property;

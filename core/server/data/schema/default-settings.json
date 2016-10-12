@@ -14,9 +14,6 @@
         },
         "seenNotifications": {
             "defaultValue": "[]"
-        },
-        "migrations": {
-            "defaultValue": "{}"
         }
     },
     "blog": {
