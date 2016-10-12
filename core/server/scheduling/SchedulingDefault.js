@@ -170,7 +170,7 @@ SchedulingDefault.prototype._execute = function (jobs) {
                     });
                 });
             })();
-        }, diff - 200);
+        }, diff - 70);
     });
 };
 
