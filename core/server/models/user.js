@@ -73,20 +73,45 @@ User = ghostBookshelf.Model.extend({
         model.emitChange('edited');
     },
 
+    /**
+     * Lookup Gravatar if email changes to update image url
+     * Generating a slug requires a db call to look for conflicting slugs
+     */
     onSaving: function onSaving(newPage, attr, options) {
-        /*jshint unused:false*/
-        var self = this;
+        var self = this,
+            ops = [];
 
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 
-        if (this.hasChanged('slug') || !this.get('slug')) {
-            // Generating a slug requires a db call to look for conflicting slugs
-            return ghostBookshelf.Model.generateSlug(User, this.get('slug') || this.get('name'),
-                {status: 'all', transacting: options.transacting, shortSlug: !this.get('slug')})
-                .then(function then(slug) {
-                    self.set({slug: slug});
+        if (self.hasChanged('email')) {
+            ops.push(function lookUpGravatar() {
+                return gravatar.lookup({
+                    email: self.get('email')
+                }).then(function (response) {
+                    if (response && response.image) {
+                        self.set('image', response.image);
+                    }
                 });
+            });
         }
+
+        if (this.hasChanged('slug') || !this.get('slug')) {
+            ops.push(function generateSlug() {
+                return ghostBookshelf.Model.generateSlug(
+                    User,
+                    self.get('slug') || self.get('name'),
+                    {
+                        status: 'all',
+                        transacting: options.transacting,
+                        shortSlug: !self.get('slug')
+                    })
+                    .then(function then(slug) {
+                        self.set({slug: slug});
+                    });
+            });
+        }
+
+        return utils.sequence(ops);
     },
 
     // For the user model ONLY it is possible to disable validations.
@@ -404,11 +429,6 @@ User = ghostBookshelf.Model.extend({
         return generatePasswordHash(userData.password).then(function then(hash) {
             // Assign the hashed password
             userData.password = hash;
-            return gravatar.lookup(userData);
-        }).then(function then(response) {
-            if (response && response.image) {
-                userData.image = response.image;
-            }
 
             // Save the user with the hashed password
             return ghostBookshelf.Model.add.call(self, userData, options);
@@ -451,14 +471,7 @@ User = ghostBookshelf.Model.extend({
             // Assign the hashed password
             userData.password = hash;
 
-            return gravatar.lookup(userData)
-                .then(function (response) {
-                    if (response && response.image) {
-                        userData.image = response.image;
-                    }
-
-                    return ghostBookshelf.Model.generateSlug.call(this, User, userData.name, options);
-                });
+            return ghostBookshelf.Model.generateSlug.call(this, User, userData.name, options);
         }).then(function then(slug) {
             userData.slug = slug;
             return self.edit.call(self, userData, options);
