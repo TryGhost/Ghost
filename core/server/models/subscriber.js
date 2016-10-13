@@ -13,23 +13,24 @@ Subscriber = ghostBookshelf.Model.extend({
     emitChange: function emitChange(event) {
         events.emit('subscriber' + '.' + event, this);
     },
+
     defaults: function defaults() {
         return {
             uuid: uuid.v4(),
             status: 'subscribed'
         };
     },
-    initialize: function initialize() {
-        ghostBookshelf.Model.prototype.initialize.apply(this, arguments);
-        this.on('created', function onCreated(model) {
-            model.emitChange('added');
-        });
-        this.on('updated', function onUpdated(model) {
-            model.emitChange('edited');
-        });
-        this.on('destroyed', function onDestroyed(model) {
-            model.emitChange('deleted');
-        });
+
+    onCreated: function onCreated(model) {
+        model.emitChange('added');
+    },
+
+    onUpdated: function onUpdated(model) {
+        model.emitChange('edited');
+    },
+
+    onDestroyed: function onDestroyed(model) {
+        model.emitChange('deleted');
     }
 }, {
 
