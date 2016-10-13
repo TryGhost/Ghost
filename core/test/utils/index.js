@@ -4,9 +4,9 @@ var Promise       = require('bluebird'),
     path          = require('path'),
     Module        = require('module'),
     uuid          = require('node-uuid'),
+    KnexMigrator  = require('knex-migrator'),
     ghost         = require('../../server'),
     db            = require('../../server/data/db'),
-    Sephiroth     = require('../../server/data/sephiroth'),
     migration     = require('../../server/data/migration/'),
     fixtureUtils  = require('../../server/data/migration/fixtures/utils'),
     models        = require('../../server/models'),
@@ -19,7 +19,7 @@ var Promise       = require('bluebird'),
     fork          = require('./fork'),
     mocks         = require('./mocks'),
     config        = require('../../server/config'),
-    sephiroth     = new Sephiroth({database: config.get('database')}),
+    knexMigrator  = new KnexMigrator(),
     fixtures,
     getFixtureOps,
     toDoList,
@@ -402,7 +402,7 @@ fixtures = {
 
 /** Test Utility Functions **/
 initData = function initData() {
-    return sephiroth.commands.init();
+    return knexMigrator.init();
 };
 
 clearData = function clearData() {
@@ -478,10 +478,10 @@ getFixtureOps = function getFixtureOps(toDos) {
         fixtureOps.push(function initDB() {
             // skip adding all fixtures!
             if (tablesOnly) {
-                return sephiroth.commands.init({skip: 2});
+                return knexMigrator.init({skip: 2});
             }
 
-            return sephiroth.commands.init();
+            return knexMigrator.init();
         });
 
         delete toDos.default;
@@ -656,7 +656,7 @@ unmockNotExistingModule = function unmockNotExistingModule() {
  * 2. start ghost
  */
 startGhost = function startGhost() {
-    return sephiroth.commands.init()
+    return knexMigrator.init()
         .then(function () {
             return ghost();
         });
