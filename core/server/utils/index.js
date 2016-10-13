@@ -105,7 +105,8 @@ utils = {
     zipFolder: require('./zip-folder'),
     readThemes: require('./read-themes'),
     generateAssetHash: require('./asset-hash'),
-    url: require('./url')
+    url: require('./url'),
+    tokens: require('./tokens')
 };
 
 module.exports = utils;
