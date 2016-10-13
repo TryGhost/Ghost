@@ -5,15 +5,26 @@ var _ = require('lodash'),
     errors = require('../errors'),
     i18n = require('../i18n'),
     _private = {},
-    errorHandler = {},
-    htmlStackExclusions = ['NotFoundError', 'DatabaseNotPopulatedError'];
+    errorHandler = {};
 
+/**
+ * This function splits the stack into pieces, that are then rendered using the following handlebars code:
+ * ```
+ * {{#each stack}}
+ *   <li>
+ *   at
+ *   {{#if function}}<em class="error-stack-function">{{function}}</em>{{/if}}
+ *   <span class="error-stack-file">({{at}})</span>
+ *   </li>
+ * {{/each}}
+ * ```
+ * @TODO revisit whether this is useful as part of #7491
+ */
 _private.parseStack = function parseStack(stack) {
     if (!_.isString(stack)) {
         return stack;
     }
 
-    // TODO: split out line numbers
     var stackRegex = /\s*at\s*(\w+)?\s*\(([^\)]+)\)\s*/i;
 
     return (
@@ -43,14 +54,14 @@ _private.parseStack = function parseStack(stack) {
  * @TODO: support multiple errors
  * @TODO: decouple req.err
  */
-_private.prepareError = function prepareError(err, req, res) {
-    /*jshint unused:false */
+_private.prepareError = function prepareError(err, req, res, next) {
     if (_.isArray(err)) {
         err = err[0];
     }
 
     if (!(err instanceof errors.GhostError)) {
         // We need a special case for 404 errors
+        // @TODO look at adding this to the GhostError class
         if (err.statusCode && err.statusCode === 404) {
             err = new errors.NotFoundError({
                 err: err
@@ -71,24 +82,10 @@ _private.prepareError = function prepareError(err, req, res) {
         'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
     });
 
-    return err;
+    next(err);
 };
 
-errorHandler.resourceNotFound = function resourceNotFound(req, res, next) {
-    // TODO, handle unknown resources & methods differently, so that we can also produce
-    // 405 Method Not Allowed
-    next(new errors.NotFoundError({message: i18n.t('errors.errors.resourceNotFound')}));
-};
-
-errorHandler.pageNotFound = function pageNotFound(req, res, next) {
-    next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
-};
-
-errorHandler.handleJSONResponse = function _handleJSONResponse(err, req, res, next) {
-    /*jshint unused:false */
-    // Make sure the error can be served
-    err = _private.prepareError(err, req, res);
-
+_private.JSONErrorRenderer = function JSONErrorRenderer(err, req, res, /*jshint unused:false */ next) {
     // @TODO: jsonapi errors format ?
     res.json({
         errors: [{
@@ -99,11 +96,7 @@ errorHandler.handleJSONResponse = function _handleJSONResponse(err, req, res, ne
     });
 };
 
-errorHandler.handleHTMLResponse = function handleHTMLResponse(err, req, res, next) {
-    /*jshint unused:false */
-    // Make sure the error can be served
-    err = _private.prepareError(err, req, res);
-
+_private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, /*jshint unused:false */ next) {
     // @TODO reconsider this
     var availableTheme = config.get('paths').availableThemes[req.app.get('activeTheme')] || {},
         defaultTemplate = availableTheme['error.hbs'] ||
@@ -114,8 +107,9 @@ errorHandler.handleHTMLResponse = function handleHTMLResponse(err, req, res, nex
             code: err.statusCode
         };
 
-    if (!_.includes(htmlStackExclusions, err.errorType)) {
-        templateData.stack = _private.parseStack(err.stack);
+    // @TODO revisit use of config.get('env') as part of #7488
+    if (err.statusCode === 500 && config.get('env') !== 'production') {
+        templateData.stack = err.stack;
     }
 
     res.render(defaultTemplate, templateData, function renderResponse(err, html) {
@@ -134,5 +128,29 @@ errorHandler.handleHTMLResponse = function handleHTMLResponse(err, req, res, nex
         );
     });
 };
+
+errorHandler.resourceNotFound = function resourceNotFound(req, res, next) {
+    // TODO, handle unknown resources & methods differently, so that we can also produce
+    // 405 Method Not Allowed
+    next(new errors.NotFoundError({message: i18n.t('errors.errors.resourceNotFound')}));
+};
+
+errorHandler.pageNotFound = function pageNotFound(req, res, next) {
+    next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
+};
+
+errorHandler.handleJSONResponse = [
+    // Make sure the error can be served
+    _private.prepareError,
+    // Render the error using JSON format
+    _private.JSONErrorRenderer
+];
+
+errorHandler.handleHTMLResponse = [
+    // Make sure the error can be served
+    _private.prepareError,
+    // Render the error using HTML format
+    _private.HTMLErrorRenderer
+];
 
 module.exports = errorHandler;
