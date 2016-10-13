@@ -39,6 +39,9 @@ var Promise       = require('bluebird'),
     initData,
     clearData;
 
+// Require additional assertions which help us keep our tests small and clear
+require('./assertions');
+
 /** TEST FIXTURES **/
 fixtures = {
     insertPosts: function insertPosts(posts) {
