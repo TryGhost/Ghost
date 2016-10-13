@@ -14,13 +14,11 @@ require('./overrides');
 
 // Module dependencies
 var debug = require('debug')('ghost:boot:init'),
-    express = require('express'),
     uuid = require('node-uuid'),
     Promise = require('bluebird'),
     i18n = require('./i18n'),
     api = require('./api'),
     config = require('./config'),
-    middleware = require('./middleware'),
     db = require('./data/schema'),
     models = require('./models'),
     permissions = require('./permissions'),
@@ -109,12 +107,10 @@ function init(options) {
     }).then(function () {
         debug('Apps, XMLRPC, Slack done');
 
-        // Get reference to an express app instance.
-        parentApp = express();
+        // Setup our collection of express apps
+        parentApp = require('./app')();
 
-        // ## Middleware and Routing
-        middleware(parentApp);
-        debug('Express done');
+        debug('Express Apps done');
 
         return auth.init(config.get('auth'))
             .then(function (response) {

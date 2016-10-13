@@ -474,7 +474,8 @@
             "whilstTryingToRender": "whilst trying to render an error page for the error: ",
             "renderingErrorPage": "Rendering Error Page",
             "caughtProcessingError": "Ghost caught a processing error in the middleware layer.",
-            "pageNotFound": "Page not found"
+            "pageNotFound": "Page not found",
+            "resourceNotFound": "Resource not found"
         }
     },
     "warnings": {

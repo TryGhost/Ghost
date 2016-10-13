@@ -1,5 +1,6 @@
 // # API routes
-var express = require('express'),
+var debug = require('debug')('ghost:api'),
+    express = require('express'),
     tmpdir = require('os').tmpdir,
 
     // This essentially provides the controllers for the routes
@@ -20,6 +21,8 @@ var express = require('express'),
     // Shared
     bodyParser = require('body-parser'), // global, shared
     cacheControl = require('../middleware/cache-control'), // global, shared
+    checkSSL = require('../middleware/check-ssl'),
+    prettyURLs = require('../middleware/pretty-urls'),
     maintenance = require('../middleware/maintenance'), // global, shared
     errorHandler = require('../middleware/error-handler'), // global, shared
 
@@ -209,7 +212,15 @@ function apiRoutes() {
 }
 
 module.exports = function setupApiApp() {
+    debug('API setup start');
     var apiApp = express();
+
+    // @TODO finish refactoring this away.
+    apiApp.use(function setIsAdmin(req, res, next) {
+        // Api === isAdmin for the purposes of the forceAdminSSL config option.
+        res.isAdmin = true;
+        next();
+    });
 
     // API middleware
 
@@ -220,7 +231,13 @@ module.exports = function setupApiApp() {
     // send 503 json response in case of maintenance
     apiApp.use(maintenance);
 
-    // @TODO check SSL and pretty URLS is needed here too, once we've finished refactoring
+    // Force SSL if required
+    // must happen AFTER asset loading and BEFORE routing
+    apiApp.use(checkSSL);
+
+    // Add in all trailing slashes & remove uppercase
+    // must happen AFTER asset loading and BEFORE routing
+    apiApp.use(prettyURLs);
 
     // Check version matches for API requests, depends on res.locals.safeVersion being set
     // Therefore must come after themeHandler.ghostLocals, for now
@@ -233,8 +250,10 @@ module.exports = function setupApiApp() {
     apiApp.use(apiRoutes());
 
     // API error handling
-    // @TODO: split the API error handling into its own thing?
-    apiApp.use(errorHandler);
+    apiApp.use(errorHandler.resourceNotFound);
+    apiApp.use(errorHandler.handleJSONResponse);
+
+    debug('API setup end');
 
     return apiApp;
 };

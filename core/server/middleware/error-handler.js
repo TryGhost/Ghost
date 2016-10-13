@@ -4,14 +4,27 @@ var _ = require('lodash'),
     config = require('../config'),
     errors = require('../errors'),
     i18n = require('../i18n'),
-    _private = {};
+    _private = {},
+    errorHandler = {};
 
-_private.parseStack = function (stack) {
+/**
+ * This function splits the stack into pieces, that are then rendered using the following handlebars code:
+ * ```
+ * {{#each stack}}
+ *   <li>
+ *   at
+ *   {{#if function}}<em class="error-stack-function">{{function}}</em>{{/if}}
+ *   <span class="error-stack-file">({{at}})</span>
+ *   </li>
+ * {{/each}}
+ * ```
+ * @TODO revisit whether this is useful as part of #7491
+ */
+_private.parseStack = function parseStack(stack) {
     if (!_.isString(stack)) {
         return stack;
     }
 
-    // TODO: split out line numbers
     var stackRegex = /\s*at\s*(\w+)?\s*\(([^\)]+)\)\s*/i;
 
     return (
@@ -35,64 +48,30 @@ _private.parseStack = function (stack) {
     );
 };
 
-_private.handleHTMLResponse = function handleHTMLResponse(err, req, res) {
-    return function handleHTMLResponse() {
-        var availableTheme = config.get('paths').availableThemes[req.app.get('activeTheme')] || {},
-            defaultTemplate = availableTheme['error.hbs'] ||
-                path.resolve(config.get('paths').adminViews, 'user-error.hbs') ||
-                'error';
-
-        res.render(defaultTemplate, {
-            message: err.message,
-            code: err.statusCode,
-            stack: _private.parseStack(err.stack)
-        }, function renderResponse(err, html) {
-            if (!err) {
-                return res.send(html);
-            }
-
-            // And then try to explain things to the user...
-            // Cheat and output the error using handlebars escapeExpression
-            return res.status(500).send(
-                '<h1>' + i18n.t('errors.errors.oopsErrorTemplateHasError') + '</h1>' +
-                '<p>' + i18n.t('errors.errors.encounteredError') + '</p>' +
-                '<pre>' + hbs.handlebars.Utils.escapeExpression(err.message || err) + '</pre>' +
-                '<br ><p>' + i18n.t('errors.errors.whilstTryingToRender') + '</p>' +
-                err.statusCode + ' ' + '<pre>' + hbs.handlebars.Utils.escapeExpression(err.message || err) + '</pre>'
-            );
-        });
-    };
-};
-
 /**
- * @TODO: jsonapi errors format
- */
-_private.handleJSONResponse = function handleJSONResponse(err, req, res) {
-    return function handleJSONResponse() {
-        res.json({
-            errors: [{
-                message: err.message,
-                errorType: err.errorType,
-                errorDetails: err.errorDetails
-            }]
-        });
-    };
-};
-
-/**
- * @TODO: test uncaught exception (wrap into custom error!)
+ * Get an error ready to be shown the the user
+ *
  * @TODO: support multiple errors
  * @TODO: decouple req.err
  */
-module.exports = function errorHandler(err, req, res, next) {
+_private.prepareError = function prepareError(err, req, res, next) {
     if (_.isArray(err)) {
         err = err[0];
     }
 
     if (!(err instanceof errors.GhostError)) {
-        err = new errors.GhostError({
-            err: err
-        });
+        // We need a special case for 404 errors
+        // @TODO look at adding this to the GhostError class
+        if (err.statusCode && err.statusCode === 404) {
+            err = new errors.NotFoundError({
+                err: err
+            });
+        } else {
+            err = new errors.GhostError({
+                err: err,
+                statusCode: err.statusCode
+            });
+        }
     }
 
     req.err = err;
@@ -103,15 +82,75 @@ module.exports = function errorHandler(err, req, res, next) {
         'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
     });
 
-    // @TODO: does this resolves all use cases?
-    if (!req.headers.accept && !req.headers.hasOwnProperty('content-type')) {
-        req.headers.accept = 'text/html';
-    }
+    next(err);
+};
 
-    // jscs:disable
-    res.format({
-        json: _private.handleJSONResponse(err, req, res, next),
-        html: _private.handleHTMLResponse(err, req, res, next),
-        'default': _private.handleHTMLResponse(err, req, res, next)
+_private.JSONErrorRenderer = function JSONErrorRenderer(err, req, res, /*jshint unused:false */ next) {
+    // @TODO: jsonapi errors format ?
+    res.json({
+        errors: [{
+            message: err.message,
+            errorType: err.errorType,
+            errorDetails: err.errorDetails
+        }]
     });
 };
+
+_private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, /*jshint unused:false */ next) {
+    // @TODO reconsider this
+    var availableTheme = config.get('paths').availableThemes[req.app.get('activeTheme')] || {},
+        defaultTemplate = availableTheme['error.hbs'] ||
+            path.resolve(config.get('paths').adminViews, 'user-error.hbs') ||
+            'error',
+        templateData = {
+            message: err.message,
+            code: err.statusCode
+        };
+
+    // @TODO revisit use of config.get('env') as part of #7488
+    if (err.statusCode === 500 && config.get('env') !== 'production') {
+        templateData.stack = err.stack;
+    }
+
+    res.render(defaultTemplate, templateData, function renderResponse(err, html) {
+        if (!err) {
+            return res.send(html);
+        }
+
+        // And then try to explain things to the user...
+        // Cheat and output the error using handlebars escapeExpression
+        return res.status(500).send(
+            '<h1>' + i18n.t('errors.errors.oopsErrorTemplateHasError') + '</h1>' +
+            '<p>' + i18n.t('errors.errors.encounteredError') + '</p>' +
+            '<pre>' + hbs.handlebars.Utils.escapeExpression(err.message || err) + '</pre>' +
+            '<br ><p>' + i18n.t('errors.errors.whilstTryingToRender') + '</p>' +
+            err.statusCode + ' ' + '<pre>' + hbs.handlebars.Utils.escapeExpression(err.message || err) + '</pre>'
+        );
+    });
+};
+
+errorHandler.resourceNotFound = function resourceNotFound(req, res, next) {
+    // TODO, handle unknown resources & methods differently, so that we can also produce
+    // 405 Method Not Allowed
+    next(new errors.NotFoundError({message: i18n.t('errors.errors.resourceNotFound')}));
+};
+
+errorHandler.pageNotFound = function pageNotFound(req, res, next) {
+    next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
+};
+
+errorHandler.handleJSONResponse = [
+    // Make sure the error can be served
+    _private.prepareError,
+    // Render the error using JSON format
+    _private.JSONErrorRenderer
+];
+
+errorHandler.handleHTMLResponse = [
+    // Make sure the error can be served
+    _private.prepareError,
+    // Render the error using HTML format
+    _private.HTMLErrorRenderer
+];
+
+module.exports = errorHandler;

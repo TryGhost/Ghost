@@ -61,6 +61,22 @@ describe('Admin Routing', function () {
         }).catch(done);
     });
 
+    describe('Assets', function () {
+        it('should return 404 for unknown assets', function (done) {
+            request.get('/ghost/assets/not-found.js')
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(404)
+                .end(doEnd(done));
+        });
+
+        it('should retrieve built assets', function (done) {
+            request.get('/ghost/assets/vendor.js')
+                .expect('Cache-Control', testUtils.cacheRules.year)
+                .expect(200)
+                .end(doEnd(done));
+        });
+    });
+
     describe('Legacy Redirects', function () {
         it('should redirect /logout/ to /ghost/signout/', function (done) {
             request.get('/logout/')

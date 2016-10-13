@@ -84,15 +84,7 @@ function registerAsyncThemeHelper(name, fn) {
     registerAsyncHelper(hbs, name, fn);
 }
 
-// Register a handlebars helper for admin
-function registerAdminHelper(name, fn) {
-    coreHelpers.adminHbs.registerHelper(name, fn);
-}
-
-registerHelpers = function (adminHbs) {
-    // Expose hbs instance for admin
-    coreHelpers.adminHbs = adminHbs;
-
+registerHelpers = function () {
     // Register theme helpers
     registerThemeHelper('asset', coreHelpers.asset);
     registerThemeHelper('author', coreHelpers.author);
@@ -125,9 +117,6 @@ registerHelpers = function (adminHbs) {
     registerAsyncThemeHelper('next_post', coreHelpers.next_post);
     registerAsyncThemeHelper('prev_post', coreHelpers.prev_post);
     registerAsyncThemeHelper('get', coreHelpers.get);
-
-    // Register admin helpers
-    registerAdminHelper('asset', coreHelpers.asset);
 };
 
 module.exports = coreHelpers;
