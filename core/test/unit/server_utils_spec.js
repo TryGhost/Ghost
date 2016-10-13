@@ -410,9 +410,7 @@ describe('Server Utilities', function () {
                 .reply(200);
 
             gravatar.lookup({email: 'exists@example.com'}, 10).then(function (result) {
-                should.exist(result);
-                should.not.exist(result.image);
-
+                should.not.exist(result);
                 done();
             }).catch(done);
         });
