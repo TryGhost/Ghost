@@ -50,7 +50,7 @@
     "ember-cli-mocha": "0.10.4",
     "ember-cli-node-assets": "0.1.4",
     "ember-cli-pretender": "0.7.0",
-    "ember-cli-selectize": "0.5.7",
+    "ember-cli-selectize": "0.5.8",
     "ember-cli-sri": "2.1.1",
     "ember-cli-test-loader": "1.1.0",
     "ember-cli-uglify": "1.2.0",
