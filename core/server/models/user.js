@@ -407,9 +407,12 @@ User = ghostBookshelf.Model.extend({
         return generatePasswordHash(userData.password).then(function then(hash) {
             // Assign the hashed password
             userData.password = hash;
-            // LookupGravatar
             return gravatar.lookup(userData);
-        }).then(function then(userData) {
+        }).then(function then(response) {
+            if (response && response.image) {
+                userData.image = response.image;
+            }
+
             // Save the user with the hashed password
             return ghostBookshelf.Model.add.call(self, userData, options);
         }).then(function then(addedUser) {
@@ -451,14 +454,16 @@ User = ghostBookshelf.Model.extend({
             // Assign the hashed password
             userData.password = hash;
 
-            return Promise.join(
-                gravatar.lookup(userData),
-                ghostBookshelf.Model.generateSlug.call(this, User, userData.name, options)
-            );
-        }).then(function then(results) {
-            userData = results[0];
-            userData.slug = results[1];
+            return gravatar.lookup(userData)
+                .then(function (response) {
+                    if (response && response.image) {
+                        userData.image = response.image;
+                    }
 
+                    return ghostBookshelf.Model.generateSlug.call(this, User, userData.name, options);
+                });
+        }).then(function then(slug) {
+            userData.slug = slug;
             return self.edit.call(self, userData, options);
         });
     },
