@@ -27,12 +27,10 @@ _private.loadClient = function loadClient() {
 };
 
 _private.loadScheduledPosts = function () {
-    return schedules.getScheduledPosts({
-        from: moment().subtract(7, 'days').startOf('day').toDate(),
-        to: moment().endOf('day').toDate()
-    }).then(function (result) {
-        return result.posts || [];
-    });
+    return schedules.getScheduledPosts()
+        .then(function (result) {
+            return result.posts || [];
+        });
 };
 
 exports.init = function init(options) {
