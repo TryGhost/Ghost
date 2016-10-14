@@ -41,46 +41,43 @@ User = ghostBookshelf.Model.extend({
         events.emit('user' + '.' + event, this);
     },
 
-    initialize: function initialize() {
-        ghostBookshelf.Model.prototype.initialize.apply(this, arguments);
+    onDestroyed: function onDestroyed(model) {
+        if (_.includes(activeStates, model.previous('status'))) {
+            model.emitChange('deactivated');
+        }
 
-        this.on('created', function onCreated(model) {
-            model.emitChange('added');
-
-            // active is the default state, so if status isn't provided, this will be an active user
-            if (!model.get('status') || _.includes(activeStates, model.get('status'))) {
-                model.emitChange('activated');
-            }
-        });
-        this.on('updated', function onUpdated(model) {
-            model.statusChanging = model.get('status') !== model.updated('status');
-            model.isActive = _.includes(activeStates, model.get('status'));
-
-            if (model.statusChanging) {
-                model.emitChange(model.isActive ? 'activated' : 'deactivated');
-            } else {
-                if (model.isActive) {
-                    model.emitChange('activated.edited');
-                }
-            }
-
-            model.emitChange('edited');
-        });
-        this.on('destroyed', function onDestroyed(model) {
-            if (_.includes(activeStates, model.previous('status'))) {
-                model.emitChange('deactivated');
-            }
-
-            model.emitChange('deleted');
-        });
+        model.emitChange('deleted');
     },
 
-    saving: function saving(newPage, attr, options) {
-        /*jshint unused:false*/
+    onCreated: function onCreated(model) {
+        model.emitChange('added');
 
+        // active is the default state, so if status isn't provided, this will be an active user
+        if (!model.get('status') || _.includes(activeStates, model.get('status'))) {
+            model.emitChange('activated');
+        }
+    },
+
+    onUpdated: function onUpdated(model) {
+        model.statusChanging = model.get('status') !== model.updated('status');
+        model.isActive = _.includes(activeStates, model.get('status'));
+
+        if (model.statusChanging) {
+            model.emitChange(model.isActive ? 'activated' : 'deactivated');
+        } else {
+            if (model.isActive) {
+                model.emitChange('activated.edited');
+            }
+        }
+
+        model.emitChange('edited');
+    },
+
+    onSaving: function onSaving(newPage, attr, options) {
+        /*jshint unused:false*/
         var self = this;
 
-        ghostBookshelf.Model.prototype.saving.apply(this, arguments);
+        ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 
         if (this.hasChanged('slug') || !this.get('slug')) {
             // Generating a slug requires a db call to look for conflicting slugs
@@ -95,7 +92,7 @@ User = ghostBookshelf.Model.extend({
     // For the user model ONLY it is possible to disable validations.
     // This is used to bypass validation during the credential check, and must never be done with user-provided data
     // Should be removed when #3691 is done
-    validate: function validate() {
+    onValidate: function validate() {
         var opts = arguments[1],
             userData;
 
