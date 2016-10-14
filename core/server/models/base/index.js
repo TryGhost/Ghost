@@ -491,10 +491,12 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         checkIfSlugExists = function checkIfSlugExists(slugToFind) {
             var args = {slug: slugToFind};
+
             // status is needed for posts
             if (options && options.status) {
                 args.status = options.status;
             }
+
             return Model.findOne(args, options).then(function then(found) {
                 var trimSpace;
 
