@@ -79,7 +79,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             this.include = _.clone(options.include);
         }
 
-        ['creating', 'created', 'updated', 'destroying', 'destroyed', 'saved']
+        ['fetching', 'fetched', 'creating', 'created', 'updating', 'updated', 'destroying', 'destroyed', 'saved']
             .forEach(function (eventName) {
                 var functionName = 'on' + eventName[0].toUpperCase() + eventName.slice(1);
 
