@@ -1,4 +1,5 @@
 var oauth2orize = require('oauth2orize'),
+    passport = require('passport'),
     models = require('../models'),
     utils = require('../utils'),
     errors = require('../errors'),
@@ -62,6 +63,44 @@ function exchangePassword(client, username, password, scope, done) {
         });
 }
 
+function exchangeAuthorizationCode(req, res, next) {
+    if (!req.body.authorizationCode) {
+        return next(new errors.UnauthorizedError({
+            message: i18n.t('errors.middleware.auth.accessDenied')
+        }));
+    }
+
+    req.query.code = req.body.authorizationCode;
+
+    passport.authenticate('ghost', {session: false, failWithError: false}, function authenticate(err, user) {
+        if (err) {
+            return next(new errors.UnauthorizedError({
+                err: err
+            }));
+        }
+
+        if (!user) {
+            return next(new errors.UnauthorizedError({
+                message: i18n.t('errors.middleware.auth.accessDenied')
+            }));
+        }
+
+        authenticationAPI.createTokens({}, {context: {client_id: req.client.id, user: user.id}})
+            .then(function then(response) {
+                spamPrevention.resetCounter(user.get('email'));
+
+                res.json({
+                    access_token: response.access_token,
+                    refresh_token: response.refresh_token,
+                    expires_in: response.expires_in
+                });
+            })
+            .catch(function (err) {
+                next(err);
+            });
+    })(req, res, next);
+}
+
 oauth = {
 
     init: function init() {
@@ -85,6 +124,13 @@ oauth = {
         // access token on behalf of the user who authorized the code.
         oauthServer.exchange(oauth2orize.exchange.refreshToken({userProperty: 'client'},
             exchangeRefreshToken));
+
+        /**
+         * We forward the authorization code to Ghost.org, so no need to call exchange.authorizationCode
+         * exchange.authorizationCode wraps the req and res object, which is used by passport!
+         * See exchangeAuthorizationCode!
+         */
+        oauthServer.exchange('authorization_code', exchangeAuthorizationCode);
     },
 
     // ### Generate access token Middleware

@@ -27,7 +27,7 @@ spamPrevention = {
 
         if (req.body.username && req.body.grant_type === 'password') {
             loginSecurity.push({ip: remoteAddress, time: currentTime, email: req.body.username});
-        } else if (req.body.grant_type === 'refresh_token') {
+        } else if (req.body.grant_type === 'refresh_token' || req.body.grant_type === 'authorization_code') {
             return next();
         } else {
             return next(new errors.BadRequestError({message: i18n.t('errors.middleware.spamprevention.noUsername')}));
