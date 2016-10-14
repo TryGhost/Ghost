@@ -25,10 +25,11 @@ function validatePasswordLength(password) {
     return validator.isLength(password, 8);
 }
 
+/**
+ * generate a random salt and then hash the password with that salt
+ */
 function generatePasswordHash(password) {
-    // Generate a new salt
     return bcryptGenSalt().then(function (salt) {
-        // Hash the provided password with bcrypt
         return bcryptHash(password, salt);
     });
 }
@@ -36,6 +37,14 @@ function generatePasswordHash(password) {
 User = ghostBookshelf.Model.extend({
 
     tableName: 'users',
+
+    defaults: function defaults() {
+        var baseDefaults = ghostBookshelf.Model.prototype.defaults.call(this);
+
+        return _.merge({
+            password: utils.uid(50)
+        }, baseDefaults);
+    },
 
     emitChange: function emitChange(event) {
         events.emit('user' + '.' + event, this);
@@ -107,6 +116,29 @@ User = ghostBookshelf.Model.extend({
                     })
                     .then(function then(slug) {
                         self.set({slug: slug});
+                    });
+            })();
+        }
+
+        /**
+         * CASE: add model, hash password
+         * CASE: update model, hash password
+         *
+         * Important:
+         *   - Password hashing happens when we import a database
+         *   - we do some pre-validation checks, because onValidate is called AFTER onSaving
+         */
+        if (self.isNew() || self.hasChanged('password')) {
+            this.set('password', String(this.get('password')));
+
+            if (!validatePasswordLength(this.get('password'))) {
+                return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.passwordDoesNotComplyLength')}));
+            }
+
+            tasks.hashPassword = (function hashPassword() {
+                return generatePasswordHash(self.get('password'))
+                    .then(function (hash) {
+                        self.set('password', hash);
                     });
             })();
         }
@@ -399,22 +431,12 @@ User = ghostBookshelf.Model.extend({
             userData = this.filterData(data),
             roles;
 
-        if (!userData.password) {
-            userData.password = utils.uid(50);
-        }
-
-        userData.password = _.toString(userData.password);
-
         options = this.filterOptions(options, 'add');
         options.withRelated = _.union(options.withRelated, options.include);
 
         // check for too many roles
         if (data.roles && data.roles.length > 1) {
             return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.onlyOneRolePerUserSupported')}));
-        }
-
-        if (!validatePasswordLength(userData.password)) {
-            return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.passwordDoesNotComplyLength')}));
         }
 
         function getAuthorRole() {
@@ -426,35 +448,36 @@ User = ghostBookshelf.Model.extend({
         roles = data.roles || getAuthorRole();
         delete data.roles;
 
-        return generatePasswordHash(userData.password).then(function then(hash) {
-            // Assign the hashed password
-            userData.password = hash;
+        return ghostBookshelf.Model.add.call(self, userData, options)
+            .then(function then(addedUser) {
+                // Assign the userData to our created user so we can pass it back
+                userData = addedUser;
 
-            // Save the user with the hashed password
-            return ghostBookshelf.Model.add.call(self, userData, options);
-        }).then(function then(addedUser) {
-            // Assign the userData to our created user so we can pass it back
-            userData = addedUser;
-            // if we are given a "role" object, only pass in the role ID in place of the full object
-            return Promise.resolve(roles).then(function then(roles) {
-                roles = _.map(roles, function mapper(role) {
-                    if (_.isString(role)) {
-                        return parseInt(role, 10);
-                    } else if (_.isNumber(role)) {
-                        return role;
-                    } else {
-                        return parseInt(role.id, 10);
-                    }
+                // if we are given a "role" object, only pass in the role ID in place of the full object
+                return Promise.resolve(roles).then(function then(roles) {
+                    roles = _.map(roles, function mapper(role) {
+                        if (_.isString(role)) {
+                            return parseInt(role, 10);
+                        } else if (_.isNumber(role)) {
+                            return role;
+                        } else {
+                            return parseInt(role.id, 10);
+                        }
+                    });
+
+                    return addedUser.roles().attach(roles, options);
                 });
-
-                return addedUser.roles().attach(roles, options);
+            }).then(function then() {
+                // find and return the added user
+                return self.findOne({id: userData.id, status: 'all'}, options);
             });
-        }).then(function then() {
-            // find and return the added user
-            return self.findOne({id: userData.id, status: 'all'}, options);
-        });
     },
 
+    /**
+     * We override the owner!
+     * Owner already has a slug -> force setting a new one by setting slug to null
+     * @TODO: kill setup function?
+     */
     setup: function setup(data, options) {
         var self = this,
             userData = this.filterData(data);
@@ -465,17 +488,9 @@ User = ghostBookshelf.Model.extend({
 
         options = this.filterOptions(options, 'setup');
         options.withRelated = _.union(options.withRelated, options.include);
-        options.shortSlug = true;
 
-        return generatePasswordHash(data.password).then(function then(hash) {
-            // Assign the hashed password
-            userData.password = hash;
-
-            return ghostBookshelf.Model.generateSlug.call(this, User, userData.name, options);
-        }).then(function then(slug) {
-            userData.slug = slug;
-            return self.edit.call(self, userData, options);
-        });
+        userData.slug = null;
+        return self.edit.call(self, userData, options);
     },
 
     permissible: function permissible(userModelOrId, action, context, loadedPermissions, hasUserPermission, hasAppPermission) {
@@ -644,17 +659,14 @@ User = ghostBookshelf.Model.extend({
             return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.passwordRequiredForOperation')}));
         }
 
-        // If password is not complex enough
-        if (!validatePasswordLength(newPassword)) {
-            return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.passwordDoesNotComplyLength')}));
-        }
-
         return self.forge({id: userId}).fetch({require: true}).then(function then(_user) {
             user = _user;
+
             // If the user is the current user, check old password
             if (userId === options.context.user) {
                 return bcryptCompare(oldPassword, user.get('password'));
             }
+
             // If user is admin and changing another user's password, old password isn't compared to the old one
             return true;
         }).then(function then(matched) {
@@ -662,9 +674,7 @@ User = ghostBookshelf.Model.extend({
                 return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.incorrectPassword')}));
             }
 
-            return generatePasswordHash(newPassword);
-        }).then(function then(hash) {
-            return user.save({password: hash});
+            return user.save({password: newPassword});
         });
     },
 
@@ -756,30 +766,23 @@ User = ghostBookshelf.Model.extend({
             dbHash = options.dbHash;
 
         if (newPassword !== ne2Password) {
-            return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.newPasswordsDoNotMatch')}));
-        }
-
-        if (!validatePasswordLength(newPassword)) {
-            return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.passwordDoesNotComplyLength')}));
+            return Promise.reject(new errors.ValidationError({
+                message: i18n.t('errors.models.user.newPasswordsDoNotMatch')
+            }));
         }
 
         // Validate the token; returns the email address from token
         return self.validateToken(utils.decodeBase64URLsafe(token), dbHash).then(function then(email) {
-            // Fetch the user by email, and hash the password at the same time.
-            return Promise.join(
-                self.getByEmail(email),
-                generatePasswordHash(newPassword)
-            );
-        }).then(function then(results) {
-            if (!results[0]) {
+            return self.getByEmail(email);
+        }).then(function then(foundUser) {
+            if (!foundUser) {
                 return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.models.user.userNotFound')}));
             }
 
-            // Update the user with the new password hash
-            var foundUser = results[0],
-                passwordHash = results[1];
-
-            return foundUser.save({password: passwordHash, status: 'active'});
+            return foundUser.save({
+                status: 'active',
+                password: newPassword
+            });
         });
     },
 
