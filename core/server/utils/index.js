@@ -106,7 +106,8 @@ utils = {
     readThemes: require('./read-themes'),
     generateAssetHash: require('./asset-hash'),
     url: require('./url'),
-    tokens: require('./tokens')
+    tokens: require('./tokens'),
+    sequence: require('./sequence')
 };
 
 module.exports = utils;
