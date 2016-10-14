@@ -79,25 +79,41 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             this.include = _.clone(options.include);
         }
 
-        this.on('creating', this.creating, this);
-        this.on('saving', function onSaving(model, attributes, options) {
-            return Promise.resolve(self.saving(model, attributes, options)).then(function then() {
-                return self.validate(model, attributes, options);
+        ['fetching', 'fetched', 'creating', 'created', 'updating', 'updated', 'destroying', 'destroyed', 'saved']
+            .forEach(function (eventName) {
+                var functionName = 'on' + eventName[0].toUpperCase() + eventName.slice(1);
+
+                if (!self[functionName]) {
+                    return;
+                }
+
+                self.on(eventName, function eventTriggered() {
+                    return this[functionName].apply(this, arguments);
+                });
             });
+
+        this.on('saving', function onSaving() {
+            var self = this,
+                args = arguments;
+
+            return Promise.resolve(self.onSaving.apply(self, args))
+                .then(function validated() {
+                    return Promise.resolve(self.onValidate.apply(self, args));
+                });
         });
     },
 
-    validate: function validate() {
+    onValidate: function onValidate() {
         return validation.validateSchema(this.tableName, this.toJSON());
     },
 
-    creating: function creating(newObj, attr, options) {
+    onCreating: function onCreating(newObj, attr, options) {
         if (!this.get('created_by')) {
             this.set('created_by', this.contextUser(options));
         }
     },
 
-    saving: function saving(newObj, attr, options) {
+    onSaving: function onSaving(newObj, attr, options) {
         // Remove any properties which don't belong on the model
         this.attributes = this.pick(this.permittedAttributes());
         // Store the previous attributes so we can tell what was updated later
