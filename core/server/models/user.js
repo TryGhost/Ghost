@@ -36,7 +36,6 @@ function generatePasswordHash(password) {
 User = ghostBookshelf.Model.extend({
 
     tableName: 'users',
-
     emitChange: function emitChange(event) {
         events.emit('user' + '.' + event, this);
     },
@@ -455,6 +454,11 @@ User = ghostBookshelf.Model.extend({
         });
     },
 
+    /**
+     * We override the owner!
+     * Owner already has a slug -> force setting a new one by setting slug to null
+     * @TODO: kill setup function?
+     */
     setup: function setup(data, options) {
         var self = this,
             userData = this.filterData(data);
@@ -465,15 +469,12 @@ User = ghostBookshelf.Model.extend({
 
         options = this.filterOptions(options, 'setup');
         options.withRelated = _.union(options.withRelated, options.include);
-        options.shortSlug = true;
 
         return generatePasswordHash(data.password).then(function then(hash) {
             // Assign the hashed password
             userData.password = hash;
+            userData.slug = null;
 
-            return ghostBookshelf.Model.generateSlug.call(this, User, userData.name, options);
-        }).then(function then(slug) {
-            userData.slug = slug;
             return self.edit.call(self, userData, options);
         });
     },

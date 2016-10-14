@@ -675,6 +675,30 @@ describe('User Model', function run() {
         });
     });
 
+    describe('User setup', function () {
+        beforeEach(testUtils.setup('owner'));
+
+        it('setup user', function(done) {
+            var userData = {
+                name: 'Max Mustermann',
+                email: 'test@ghost.org',
+                password: '12345678'
+            };
+
+            UserModel.setup(userData, {id: 1})
+                .then(function (user) {
+                    user.get('name').should.eql(userData.name);
+                    user.get('email').should.eql(userData.email);
+                    user.get('slug').should.eql('max');
+
+                    // naive check that password was hashed
+                    user.get('password').should.not.eql(userData.password);
+                    done();
+                })
+                .catch(done);
+        });
+    });
+
     describe('User Login', function () {
         beforeEach(testUtils.setup('owner'));
 
