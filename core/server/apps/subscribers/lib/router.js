@@ -7,6 +7,7 @@ var path                = require('path'),
     // Dirty requires
     api                 = require('../../../api'),
     errors              = require('../../../errors'),
+    validator           = require('../../../data/validation').validator,
     templates           = require('../../../controllers/frontend/templates'),
     postlookup          = require('../../../controllers/frontend/post-lookup'),
     setResponseContext  = require('../../../controllers/frontend/context');
@@ -45,9 +46,13 @@ function honeyPot(req, res, next) {
     next();
 }
 
+function santizeUrl(url) {
+    return validator.isEmptyOrURL(url) ? url : '';
+}
+
 function handleSource(req, res, next) {
-    req.body.subscribed_url = req.body.location;
-    req.body.subscribed_referrer = req.body.referrer;
+    req.body.subscribed_url = santizeUrl(req.body.location);
+    req.body.subscribed_referrer = santizeUrl(req.body.referrer);
     delete req.body.location;
     delete req.body.referrer;
 
