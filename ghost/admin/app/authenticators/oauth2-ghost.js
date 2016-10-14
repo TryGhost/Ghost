@@ -1,4 +1,3 @@
-/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import Oauth2Authenticator from './oauth2';
 import RSVP from 'rsvp';
 import run from 'ember-runloop';
