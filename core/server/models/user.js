@@ -79,12 +79,12 @@ User = ghostBookshelf.Model.extend({
      */
     onSaving: function onSaving(newPage, attr, options) {
         var self = this,
-            ops = [];
+            tasks = [];
 
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 
         if (self.hasChanged('email')) {
-            ops.push(function lookUpGravatar() {
+            tasks.gravatar = (function lookUpGravatar() {
                 return gravatar.lookup({
                     email: self.get('email')
                 }).then(function (response) {
@@ -92,11 +92,11 @@ User = ghostBookshelf.Model.extend({
                         self.set('image', response.image);
                     }
                 });
-            });
+            })();
         }
 
         if (this.hasChanged('slug') || !this.get('slug')) {
-            ops.push(function generateSlug() {
+            tasks.slug = (function generateSlug() {
                 return ghostBookshelf.Model.generateSlug(
                     User,
                     self.get('slug') || self.get('name'),
@@ -108,10 +108,10 @@ User = ghostBookshelf.Model.extend({
                     .then(function then(slug) {
                         self.set({slug: slug});
                     });
-            });
+            })();
         }
 
-        return utils.sequence(ops);
+        return Promise.props(tasks);
     },
 
     // For the user model ONLY it is possible to disable validations.
