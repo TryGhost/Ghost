@@ -35,53 +35,6 @@ module.exports = function(grunt) {
             }
         },
 
-        jshint: {
-            options: {
-                jshintrc: true,
-                ignores: [
-                    'node_modules/**',
-                    'bower_components/**',
-                    'tmp/**',
-                    'dist/**',
-                    'vendor/**'
-                ]
-            },
-
-            all: ['**/*.js']
-        },
-
-        jscs: {
-            app: {
-                options: {
-                    config: '.jscsrc',
-                    excludeFiles: [
-                        'node_modules/**',
-                        'bower_components/**',
-                        'tests/**',
-                        'tmp/**',
-                        'dist/**',
-                        'vendor/**'
-                    ]
-                },
-
-                files: {
-                    src: ['**/*.js']
-                }
-            },
-
-            tests: {
-                options: {
-                    config: 'tests/.jscsrc'
-                },
-
-                files: {
-                    src: [
-                        'tests/**/*.js'
-                    ]
-                }
-            }
-        },
-
         // ### grunt-bg-shell
         // Used to run ember-cli watch in the background
         bgShell: {
@@ -144,10 +97,6 @@ module.exports = function(grunt) {
 
     grunt.registerTask('init', 'Install the client dependencies',
         ['shell:npm-install', 'shell:bower-install']
-    );
-
-    grunt.registerTask('lint', 'Run the code style checks and linter',
-        ['jshint', 'jscs', 'shell:csscomblint']
     );
 
     // ### Build About Page *(Utility Task)*
