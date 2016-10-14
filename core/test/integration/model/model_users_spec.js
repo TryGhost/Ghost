@@ -7,6 +7,7 @@ var testUtils   = require('../../utils'),
 
     // Stuff we are testing
     utils       = require('../../../server/utils'),
+    errors      = require('../../../server/errors'),
     gravatar    = require('../../../server/utils/gravatar'),
     UserModel   = require('../../../server/models/user').User,
     RoleModel   = require('../../../server/models/role').Role,
@@ -542,6 +543,40 @@ describe('User Model', function run() {
         });
     });
 
+    describe('Password change', function () {
+        beforeEach(testUtils.setup('users:roles'));
+
+        describe('error', function () {
+            it('wrong old password', function (done) {
+                UserModel.changePassword({
+                    newPassword: '12345678',
+                    ne2Password: '12345678',
+                    oldPassword: '123456789',
+                    user_id: 1
+                }, testUtils.context.owner).then(function () {
+                    done(new Error('expected error!'));
+                }).catch(function (err) {
+                    (err instanceof errors.ValidationError).should.eql(true);
+                    done();
+                });
+            });
+        });
+
+        describe('success', function () {
+            it('can change password', function (done) {
+                UserModel.changePassword({
+                    newPassword: '12345678',
+                    ne2Password: '12345678',
+                    oldPassword: 'Sl1m3rson',
+                    user_id: 1
+                }, testUtils.context.owner).then(function (user) {
+                    user.get('password').should.not.eql('12345678');
+                    done();
+                }).catch(done);
+            });
+        });
+    });
+
     describe('Password Reset', function () {
         beforeEach(testUtils.setup('users:roles'));
 
@@ -613,7 +648,6 @@ describe('User Model', function run() {
                 var resetPassword = resetUser.get('password');
 
                 should.exist(resetPassword);
-
                 resetPassword.should.not.equal(origPassword);
 
                 done();
@@ -678,7 +712,7 @@ describe('User Model', function run() {
     describe('User setup', function () {
         beforeEach(testUtils.setup('owner'));
 
-        it('setup user', function(done) {
+        it('setup user', function (done) {
             var userData = {
                 name: 'Max Mustermann',
                 email: 'test@ghost.org',
