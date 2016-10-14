@@ -17,14 +17,11 @@ Basetoken = ghostBookshelf.Model.extend({
 
     // override for base function since we don't have
     // a created_by field for sessions
-    creating: function creating(newObj, attr, options) {
-        /*jshint unused:false*/
-    },
+    onCreating: function onCreating() {},
 
     // override for base function since we don't have
     // a updated_by field for sessions
-    saving: function saving(newObj, attr, options) {
-        /*jshint unused:false*/
+    onSaving: function onSaving() {
         // Remove any properties which don't belong on the model
         this.attributes = this.pick(this.permittedAttributes());
     }
