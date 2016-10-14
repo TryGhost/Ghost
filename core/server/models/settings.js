@@ -55,24 +55,22 @@ Settings = ghostBookshelf.Model.extend({
         events.emit('settings' + '.' + event, this);
     },
 
-    initialize: function initialize() {
-        ghostBookshelf.Model.prototype.initialize.apply(this, arguments);
-
-        this.on('created', function (model) {
-            model.emitChange('added');
-            model.emitChange(model.attributes.key + '.' + 'added');
-        });
-        this.on('updated', function (model) {
-            model.emitChange('edited');
-            model.emitChange(model.attributes.key + '.' + 'edited');
-        });
-        this.on('destroyed', function (model) {
-            model.emitChange('deleted');
-            model.emitChange(model.attributes.key + '.' + 'deleted');
-        });
+    onDestroyed: function onDestroyed(model) {
+        model.emitChange('deleted');
+        model.emitChange(model.attributes.key + '.' + 'deleted');
     },
 
-    validate: function validate() {
+    onCreated: function onCreated(model) {
+        model.emitChange('added');
+        model.emitChange(model.attributes.key + '.' + 'added');
+    },
+
+    onUpdated: function onUpdated(model) {
+        model.emitChange('edited');
+        model.emitChange(model.attributes.key + '.' + 'edited');
+    },
+
+    onValidate: function onValidate() {
         var self = this,
             setting = this.toJSON();
 

@@ -38,113 +38,106 @@ Post = ghostBookshelf.Model.extend({
         };
     },
 
-    initialize: function initialize() {
-        var self = this;
+    onSaved: function onSaved(model, response, options) {
+        return this.updateTags(model, response, options);
+    },
 
-        ghostBookshelf.Model.prototype.initialize.apply(this, arguments);
+    onCreated: function onCreated(model) {
+        var status = model.get('status');
+        model.emitChange('added');
 
-        this.on('saved', function onSaved(model, response, options) {
-            return self.updateTags(model, response, options);
-        });
+        if (['published', 'scheduled'].indexOf(status) !== -1) {
+            model.emitChange(status);
+        }
+    },
 
-        this.on('created', function onCreated(model) {
-            var status = model.get('status');
+    onUpdated: function onUpdated(model) {
+        model.statusChanging = model.get('status') !== model.updated('status');
+        model.isPublished = model.get('status') === 'published';
+        model.isScheduled = model.get('status') === 'scheduled';
+        model.wasPublished = model.updated('status') === 'published';
+        model.wasScheduled = model.updated('status') === 'scheduled';
+        model.resourceTypeChanging = model.get('page') !== model.updated('page');
+        model.publishedAtHasChanged = model.hasDateChanged('published_at');
+        model.needsReschedule = model.publishedAtHasChanged && model.isScheduled;
 
+        // Handle added and deleted for post -> page or page -> post
+        if (model.resourceTypeChanging) {
+            if (model.wasPublished) {
+                model.emitChange('unpublished', true);
+            }
+
+            if (model.wasScheduled) {
+                model.emitChange('unscheduled', true);
+            }
+
+            model.emitChange('deleted', true);
             model.emitChange('added');
 
-            if (['published', 'scheduled'].indexOf(status) !== -1) {
-                model.emitChange(status);
+            if (model.isPublished) {
+                model.emitChange('published');
             }
-        });
 
-        this.on('updated', function onUpdated(model) {
-            model.statusChanging = model.get('status') !== model.updated('status');
-            model.isPublished = model.get('status') === 'published';
-            model.isScheduled = model.get('status') === 'scheduled';
-            model.wasPublished = model.updated('status') === 'published';
-            model.wasScheduled = model.updated('status') === 'scheduled';
-            model.resourceTypeChanging = model.get('page') !== model.updated('page');
-            model.publishedAtHasChanged = model.hasDateChanged('published_at');
-            model.needsReschedule = model.publishedAtHasChanged && model.isScheduled;
-
-            // Handle added and deleted for post -> page or page -> post
-            if (model.resourceTypeChanging) {
+            if (model.isScheduled) {
+                model.emitChange('scheduled');
+            }
+        } else {
+            if (model.statusChanging) {
+                // CASE: was published before and is now e.q. draft or scheduled
                 if (model.wasPublished) {
-                    model.emitChange('unpublished', true);
+                    model.emitChange('unpublished');
                 }
 
-                if (model.wasScheduled) {
-                    model.emitChange('unscheduled', true);
-                }
-
-                model.emitChange('deleted', true);
-                model.emitChange('added');
-
+                // CASE: was draft or scheduled before and is now e.q. published
                 if (model.isPublished) {
                     model.emitChange('published');
                 }
 
+                // CASE: was draft or published before and is now e.q. scheduled
                 if (model.isScheduled) {
                     model.emitChange('scheduled');
                 }
+
+                // CASE: from scheduled to something
+                if (model.wasScheduled && !model.isScheduled && !model.isPublished) {
+                    model.emitChange('unscheduled');
+                }
             } else {
-                if (model.statusChanging) {
-                    // CASE: was published before and is now e.q. draft or scheduled
-                    if (model.wasPublished) {
-                        model.emitChange('unpublished');
-                    }
-
-                    // CASE: was draft or scheduled before and is now e.q. published
-                    if (model.isPublished) {
-                        model.emitChange('published');
-                    }
-
-                    // CASE: was draft or published before and is now e.q. scheduled
-                    if (model.isScheduled) {
-                        model.emitChange('scheduled');
-                    }
-
-                    // CASE: from scheduled to something
-                    if (model.wasScheduled && !model.isScheduled && !model.isPublished) {
-                        model.emitChange('unscheduled');
-                    }
-                } else {
-                    if (model.isPublished) {
-                        model.emitChange('published.edited');
-                    }
-
-                    if (model.needsReschedule) {
-                        model.emitChange('rescheduled');
-                    }
+                if (model.isPublished) {
+                    model.emitChange('published.edited');
                 }
 
-                // Fire edited if this wasn't a change between resourceType
-                model.emitChange('edited');
+                if (model.needsReschedule) {
+                    model.emitChange('rescheduled');
+                }
             }
-        });
 
-        this.on('destroying', function (model, options) {
-            return model.load('tags', options)
-                .then(function (response) {
-                    if (!response.related || !response.related('tags') || !response.related('tags').length) {
-                        return;
-                    }
-
-                    return Promise.mapSeries(response.related('tags').models, function (tag) {
-                        return baseUtils.tagUpdate.detachTagFromPost(model, tag, options)();
-                    });
-                })
-                .then(function () {
-                    if (model.previous('status') === 'published') {
-                        model.emitChange('unpublished');
-                    }
-
-                    model.emitChange('deleted');
-                });
-        });
+            // Fire edited if this wasn't a change between resourceType
+            model.emitChange('edited');
+        }
     },
 
-    saving: function saving(model, attr, options) {
+    onDestroying: function onDestroying(model, options) {
+        return model.load('tags', options)
+            .then(function (response) {
+                if (!response.related || !response.related('tags') || !response.related('tags').length) {
+                    return;
+                }
+
+                return Promise.mapSeries(response.related('tags').models, function (tag) {
+                    return baseUtils.tagUpdate.detachTagFromPost(model, tag, options)();
+                });
+            })
+            .then(function () {
+                if (model.previous('status') === 'published') {
+                    model.emitChange('unpublished');
+                }
+
+                model.emitChange('deleted');
+            });
+    },
+
+    onSaving: function onSaving(model, attr, options) {
         options = options || {};
 
         var self = this,
@@ -207,7 +200,7 @@ Post = ghostBookshelf.Model.extend({
             this.tagsToSave = tags;
         }
 
-        ghostBookshelf.Model.prototype.saving.call(this, model, attr, options);
+        ghostBookshelf.Model.prototype.onSaving.call(this, model, attr, options);
 
         if (mobiledoc) {
             this.set('html', converter.render(JSON.parse(mobiledoc)).result);
@@ -267,7 +260,7 @@ Post = ghostBookshelf.Model.extend({
         }
     },
 
-    creating: function creating(model, attr, options) {
+    onCreating: function onCreating(model, attr, options) {
         options = options || {};
 
         // set any dynamic default properties
@@ -275,7 +268,7 @@ Post = ghostBookshelf.Model.extend({
             this.set('author_id', this.contextUser(options));
         }
 
-        ghostBookshelf.Model.prototype.creating.call(this, model, attr, options);
+        ghostBookshelf.Model.prototype.onCreating.call(this, model, attr, options);
     },
 
     /**
