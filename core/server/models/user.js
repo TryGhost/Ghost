@@ -582,50 +582,62 @@ User = ghostBookshelf.Model.extend({
     },
 
     // Finds the user by email, and checks the password
+    // @TODO: shorten this function and rename...
     check: function check(object) {
         var self = this,
             s;
+
         return this.getByEmail(object.email).then(function then(user) {
             if (!user) {
                 return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.models.user.noUserWithEnteredEmailAddr')}));
             }
 
             if (user.get('status') !== 'locked') {
-                return bcryptCompare(object.password, user.get('password')).then(function then(matched) {
-                    if (!matched) {
-                        return Promise.resolve(self.setWarning(user, {validate: false})).then(function then(remaining) {
-                            if (remaining === 0) {
-                                // If remaining attempts = 0, the account has been locked, so show a locked account message
-                                return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.models.user.accountLocked')}));
-                            }
+                return self.isPasswordCorrect({plainPassword: object.password, hashedPassword: user.get('password')})
+                    .then(function then() {
+                        return Promise.resolve(user.set({status: 'active', last_login: new Date()}).save({validate: false}))
+                            .catch(function handleError(err) {
+                                // If we get a validation or other error during this save, catch it and log it, but don't
+                                // cause a login error because of it. The user validation is not important here.
+                                logging.error(new errors.GhostError({
+                                    err: err,
+                                    context: i18n.t('errors.models.user.userUpdateError.context'),
+                                    help: i18n.t('errors.models.user.userUpdateError.help')
+                                }));
 
-                            s = (remaining > 1) ? 's' : '';
-                            return Promise.reject(new errors.UnauthorizedError({message: i18n.t('errors.models.user.incorrectPasswordAttempts', {remaining: remaining, s: s})}));
+                                return user;
+                            });
+                    })
+                    .catch(function onError(err) {
+                        if (err.code !== 'PASSWORD_INCORRECT') {
+                            return Promise.reject(err);
+                        }
 
-                            // Use comma structure, not .catch, because we don't want to catch incorrect passwords
-                        }, function handleError(err) {
-                            return Promise.reject(new errors.UnauthorizedError({
-                                err: err,
-                                context: i18n.t('errors.models.user.incorrectPassword'),
-                                help: i18n.t('errors.models.user.userUpdateError.help')
-                            }));
-                        });
-                    }
+                        return Promise.resolve(self.setWarning(user, {validate: false}))
+                            .then(function then(remaining) {
+                                if (remaining === 0) {
+                                    // If remaining attempts = 0, the account has been locked, so show a locked account message
+                                    return Promise.reject(new errors.NoPermissionError({
+                                        message: i18n.t('errors.models.user.accountLocked')
+                                    }));
+                                }
 
-                    return Promise.resolve(user.set({status: 'active', last_login: new Date()}).save({validate: false}))
-                        .catch(function handleError(err) {
-                            // If we get a validation or other error during this save, catch it and log it, but don't
-                            // cause a login error because of it. The user validation is not important here.
-                            logging.error(new errors.GhostError({
-                                err: err,
-                                context: i18n.t('errors.models.user.userUpdateError.context'),
-                                help: i18n.t('errors.models.user.userUpdateError.help')
-                            }));
+                                s = (remaining > 1) ? 's' : '';
+                                return Promise.reject(new errors.UnauthorizedError({
+                                    message: i18n.t('errors.models.user.incorrectPasswordAttempts', {remaining: remaining, s: s})
+                                }));
+                            }, function handleError(err) {
+                                // ^ Use comma structure, not .catch, because we don't want to catch incorrect passwords
 
-                            return user;
-                        });
-                });
+                                return Promise.reject(new errors.UnauthorizedError({
+                                    err: err,
+                                    context: i18n.t('errors.models.user.incorrectPassword'),
+                                    help: i18n.t('errors.models.user.userUpdateError.help')
+                                }));
+                            });
+                    });
             }
+
             return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.models.user.accountLocked')}));
         }, function handleError(error) {
             if (error.message === 'NotFound' || error.message === 'EmptyResponse') {
@@ -634,6 +646,30 @@ User = ghostBookshelf.Model.extend({
 
             return Promise.reject(error);
         });
+    },
+
+    isPasswordCorrect: function isPasswordCorrect(object) {
+        var plainPassword = object.plainPassword,
+            hashedPassword = object.hashedPassword;
+
+        if (!plainPassword || !hashedPassword) {
+            return Promise.reject(new errors.ValidationError({
+                message: i18n.t('errors.models.user.passwordRequiredForOperation')
+            }));
+        }
+
+        return bcryptCompare(plainPassword, hashedPassword)
+            .then(function (matched) {
+                if (matched) {
+                    return;
+                }
+
+                return Promise.reject(new errors.ValidationError({
+                    message: i18n.t('errors.models.user.incorrectPassword'),
+                    help: i18n.t('errors.models.user.userUpdateError.help'),
+                    code: 'PASSWORD_INCORRECT'
+                }));
+            });
     },
 
     /**
@@ -647,6 +683,7 @@ User = ghostBookshelf.Model.extend({
             ne2Password = object.ne2Password,
             userId = parseInt(object.user_id),
             oldPassword = object.oldPassword,
+            isLoggedInUser = object.user_id === options.context.user,
             user;
 
         // If the two passwords do not match
@@ -654,28 +691,20 @@ User = ghostBookshelf.Model.extend({
             return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.newPasswordsDoNotMatch')}));
         }
 
-        // If the old password is empty when changing current user's password
-        if (userId === options.context.user && _.isEmpty(oldPassword)) {
-            return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.passwordRequiredForOperation')}));
-        }
+        return self.forge({id: userId}).fetch({require: true})
+            .then(function then(_user) {
+                user = _user;
 
-        return self.forge({id: userId}).fetch({require: true}).then(function then(_user) {
-            user = _user;
-
-            // If the user is the current user, check old password
-            if (userId === options.context.user) {
-                return bcryptCompare(oldPassword, user.get('password'));
-            }
-
-            // If user is admin and changing another user's password, old password isn't compared to the old one
-            return true;
-        }).then(function then(matched) {
-            if (!matched) {
-                return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.incorrectPassword')}));
-            }
-
-            return user.save({password: newPassword});
-        });
+                if (isLoggedInUser) {
+                    return self.isPasswordCorrect({
+                        plainPassword: oldPassword,
+                        hashedPassword: user.get('password')
+                    });
+                }
+            })
+            .then(function then() {
+                return user.save({password: newPassword});
+            });
     },
 
     generateResetToken: function generateResetToken(email, expires, dbHash) {
