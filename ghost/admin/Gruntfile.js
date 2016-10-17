@@ -143,7 +143,7 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask('init', 'Install the client dependencies',
-        ['shell:npm-install', 'shell:bower-install', 'buildAboutPage']
+        ['shell:npm-install', 'shell:bower-install']
     );
 
     grunt.registerTask('lint', 'Run the code style checks and linter',
