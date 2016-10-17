@@ -1,5 +1,6 @@
 var path = require('path'),
-    _ = require('lodash');
+    _ = require('lodash'),
+    errors = require('../errors');
 
 exports.isPrivacyDisabled = function isPrivacyDisabled(privacyFlag) {
     if (!this.get('privacy')) {
@@ -16,20 +17,36 @@ exports.isPrivacyDisabled = function isPrivacyDisabled(privacyFlag) {
 /**
  * transform all relative paths to absolute paths
  * @TODO: imagesRelPath is a dirty little attribute (especially when looking at the usages)
+ * @TODO: re-write this function a little bit so we don't have to path the parent, that is hard to understand
+ *
+ * Path must be string.
+ * Path must match minimum one / or \
+ * Path can be a "." to re-present current folder
  */
-exports.makePathsAbsolute = function makePathsAbsolute(paths, parent) {
+exports.makePathsAbsolute = function makePathsAbsolute(obj, parent) {
     var self = this;
 
-    if (!paths && !parent) {
-        paths = this.get('paths');
-        parent = 'paths';
+    if (!obj) {
+        throw new errors.IncorrectUsageError({
+            message: 'makePathsAbsolute: Object is missing.'
+        });
     }
 
-    _.each(paths, function (configValue, pathsKey) {
+    if (!parent) {
+        throw new errors.IncorrectUsageError({
+            message: 'makePathsAbsolute: Parent is missing.'
+        });
+    }
+
+    _.each(obj, function (configValue, pathsKey) {
         if (_.isObject(configValue)) {
             makePathsAbsolute.bind(self)(configValue, parent + ':' + pathsKey);
         } else {
-            if (configValue[0] !== '/' && pathsKey !== 'imagesRelPath') {
+            if (_.isString(configValue) &&
+                (configValue.match(/\/+|\\+/) || configValue === '.') &&
+                (configValue[0] !== '/' && configValue[0] !== '\\') &&
+                pathsKey !== 'imagesRelPath'
+            ) {
                 self.set(parent + ':' + pathsKey, path.join(__dirname + '/../../../', configValue));
             }
         }
