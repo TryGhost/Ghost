@@ -1,0 +1,8 @@
+#!/usr/bin/env node
+
+var config = require('./core/server/config');
+
+module.exports = {
+    database: config.get('database'),
+    migrationPath: config.get('paths:migrationPath')
+}
