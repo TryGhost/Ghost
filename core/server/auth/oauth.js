@@ -1,4 +1,5 @@
 var oauth2orize = require('oauth2orize'),
+    passport = require('passport'),
     models = require('../models'),
     utils = require('../utils'),
     errors = require('../errors'),
@@ -62,6 +63,42 @@ function exchangePassword(client, username, password, scope, done) {
         });
 }
 
+function exchangeAuthorizationCode(req, res, next) {
+    if (!req.body.authorizationCode) {
+        return next(new errors.UnauthorizedError({
+            message: i18n.t('errors.middleware.auth.accessDenied')
+        }));
+    }
+
+    req.query.code = req.body.authorizationCode;
+
+    passport.authenticate('ghost', {session: false, failWithError: false}, function authenticate(err, user) {
+        if (err) {
+            return next(new errors.UnauthorizedError({
+                err: err
+            }));
+        }
+
+        if (!user) {
+            return next(new errors.UnauthorizedError({
+                message: i18n.t('errors.middleware.auth.accessDenied')
+            }));
+        }
+
+        authenticationAPI.createTokens({}, {context: {client_id: req.client.id, user: user.id}})
+            .then(function then(response) {
+                res.json({
+                    access_token: response.access_token,
+                    refresh_token: response.refresh_token,
+                    expires_in: response.expires_in
+                });
+            })
+            .catch(function (err) {
+                next(err);
+            });
+    })(req, res, next);
+}
+
 oauth = {
 
     init: function init() {
@@ -85,6 +122,23 @@ oauth = {
         // access token on behalf of the user who authorized the code.
         oauthServer.exchange(oauth2orize.exchange.refreshToken({userProperty: 'client'},
             exchangeRefreshToken));
+
+        /**
+         * Exchange authorization_code for an access token.
+         * We forward to authorization code to Ghost.org.
+         *
+         * oauth2orize offers a default implementation via exchange.authorizationCode, but this function
+         * wraps the express request and response. So no chance to get access to it.
+         * We use passport to communicate with Ghost.org. Passport's module design requires the express req/res.
+         *
+         * For now it's OK to not use exchange.authorizationCode. You can read through the implementation here:
+         * https://github.com/jaredhanson/oauth2orize/blob/master/lib/exchange/authorizationCode.js
+         * As you can see, it does some validation and set's some headers, not very very important,
+         * but it's part of the oauth2 spec.
+         *
+         * @TODO: How to use exchange.authorizationCode in combination of passport?
+         */
+        oauthServer.exchange('authorization_code', exchangeAuthorizationCode);
     },
 
     // ### Generate access token Middleware
