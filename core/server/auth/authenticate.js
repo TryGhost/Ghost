@@ -105,29 +105,6 @@ authenticate = {
                 }));
             }
         )(req, res, next);
-    },
-
-    // ### Authenticate Ghost.org User
-    authenticateGhostUser: function authenticateGhostUser(req, res, next) {
-        req.query.code = req.body.authorizationCode;
-
-        if (!req.query.code) {
-            return next(new errors.UnauthorizedError({message: i18n.t('errors.middleware.auth.accessDenied')}));
-        }
-
-        passport.authenticate('ghost', {session: false, failWithError: false}, function authenticate(err, user, info) {
-            if (err) {
-                return next(err);
-            }
-
-            if (!user) {
-                return next(new errors.UnauthorizedError({message: i18n.t('errors.middleware.auth.accessDenied')}));
-            }
-
-            req.authInfo = info;
-            req.user = user;
-            next();
-        })(req, res, next);
     }
 };
 

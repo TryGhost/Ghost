@@ -185,12 +185,6 @@ function apiRoutes() {
         auth.oauth.generateAccessToken
     );
 
-    apiRouter.post('/authentication/ghost', [
-        auth.authenticate.authenticateClient,
-        auth.authenticate.authenticateGhostUser,
-        api.http(api.authentication.createTokens)
-    ]);
-
     apiRouter.post('/authentication/revoke', authenticatePrivate, api.http(api.authentication.revoke));
 
     // ## Uploads
