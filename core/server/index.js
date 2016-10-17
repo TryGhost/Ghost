@@ -30,7 +30,9 @@ var debug = require('debug')('ghost:boot:init'),
     scheduling = require('./scheduling'),
     readDirectory = require('./utils/read-directory'),
     utils = require('./utils'),
-    knexMigrator = new KnexMigrator(),
+    knexMigrator = new KnexMigrator({
+        knexMigratorFilePath: config.get('paths:appRoot')
+    }),
     dbHash;
 
 function initDbHashAndFirstRun() {
