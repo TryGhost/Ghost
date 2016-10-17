@@ -87,8 +87,6 @@ function exchangeAuthorizationCode(req, res, next) {
 
         authenticationAPI.createTokens({}, {context: {client_id: req.client.id, user: user.id}})
             .then(function then(response) {
-                spamPrevention.resetCounter(user.get('email'));
-
                 res.json({
                     access_token: response.access_token,
                     refresh_token: response.refresh_token,
@@ -126,9 +124,19 @@ oauth = {
             exchangeRefreshToken));
 
         /**
-         * We forward the authorization code to Ghost.org, so no need to call exchange.authorizationCode
-         * exchange.authorizationCode wraps the req and res object, which is used by passport!
-         * See exchangeAuthorizationCode!
+         * Exchange authorization_code for an access token.
+         * We forward to authorization code to Ghost.org.
+         *
+         * oauth2orize offers a default implementation via exchange.authorizationCode, but this function
+         * wraps the express request and response. So no chance to get access to it.
+         * We use passport to communicate with Ghost.org. Passport's module design requires the express req/res.
+         *
+         * For now it's OK to not use exchange.authorizationCode. You can read through the implementation here:
+         * https://github.com/jaredhanson/oauth2orize/blob/master/lib/exchange/authorizationCode.js
+         * As you can see, it does some validation and set's some headers, not very very important,
+         * but it's part of the oauth2 spec.
+         *
+         * @TODO: How to use exchange.authorizationCode in combination of passport?
          */
         oauthServer.exchange('authorization_code', exchangeAuthorizationCode);
     },
