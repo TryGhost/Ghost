@@ -1,1 +1,0 @@
-exports.init = require('./init');

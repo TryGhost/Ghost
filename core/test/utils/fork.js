@@ -5,9 +5,9 @@ var cp         = require('child_process'),
     net        = require('net'),
     Promise    = require('bluebird'),
     path       = require('path'),
-    config     = require('../../server/config'),
-    Sephiroth  = require('../../server/data/sephiroth'),
-    sephiroth  = new Sephiroth({database: config.get('database')});
+    KnexMigrator  = require('knex-migrator'),
+    config        = require('../../server/config'),
+    knexMigrator     = new KnexMigrator();
 
 function findFreePort(port) {
     return new Promise(function (resolve, reject) {
@@ -49,7 +49,7 @@ function forkGhost(newConfig) {
         .then(function (_port) {
             port = _port;
 
-            return sephiroth.commands.init();
+            return knexMigrator.init();
         })
         .then(function () {
             newConfig.server = _.merge({}, {

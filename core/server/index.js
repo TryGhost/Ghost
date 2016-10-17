@@ -16,10 +16,10 @@ require('./overrides');
 var debug = require('debug')('ghost:boot:init'),
     uuid = require('node-uuid'),
     Promise = require('bluebird'),
+    KnexMigrator = require('knex-migrator'),
+    config = require('./config'),
     i18n = require('./i18n'),
     api = require('./api'),
-    config = require('./config'),
-    db = require('./data/schema'),
     models = require('./models'),
     permissions = require('./permissions'),
     apps = require('./apps'),
@@ -30,6 +30,7 @@ var debug = require('debug')('ghost:boot:init'),
     scheduling = require('./scheduling'),
     readDirectory = require('./utils/read-directory'),
     utils = require('./utils'),
+    knexMigrator = new KnexMigrator(),
     dbHash;
 
 function initDbHashAndFirstRun() {
@@ -78,8 +79,8 @@ function init(options) {
         debug('Themes & apps done');
 
         models.init();
-        // @TODO: this is temporary, replace migrations with a warning if a DB exists
-        return db.bootUp();
+    }).then(function () {
+        return knexMigrator.isDatabaseOK();
     }).then(function () {
         // Populate any missing default settings
         return models.Settings.populateDefaults();
