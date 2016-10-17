@@ -41,6 +41,28 @@ describe('checkSSL', function () {
         done();
     });
 
+    it('should redirect to subdirectory (frontend)', function (done) {
+        req.originalUrl = '/blog';
+        // req.url can be different than req.originalUrl when mounting or url
+        // rewriting happens.
+        req.url = '/';
+        res.redirect = {};
+        req.secure = false;
+        configUtils.set({
+            url: 'https://default.com:2368/blog',
+            urlSSL: '',
+            forceAdminSSL: true
+        });
+        sandbox.stub(res, 'redirect', function (statusCode, url) {
+            statusCode.should.eql(301);
+            url.should.not.be.empty();
+            url.should.eql('https://default.com:2368/blog');
+        });
+        checkSSL(req, res, next);
+        next.called.should.be.false();
+        done();
+    });
+
     it('should not require SSL (admin)', function (done) {
         req.originalUrl = '/ghost';
         res.isAdmin = true;
