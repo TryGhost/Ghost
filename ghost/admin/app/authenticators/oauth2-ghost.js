@@ -1,6 +1,5 @@
 /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import Oauth2Authenticator from './oauth2';
-import computed from 'ember-computed';
 import RSVP from 'rsvp';
 import run from 'ember-runloop';
 import {assign} from 'ember-platform';
@@ -8,10 +7,6 @@ import {isEmpty} from 'ember-utils';
 import {wrap} from 'ember-array/utils';
 
 export default Oauth2Authenticator.extend({
-    serverTokenEndpoint: computed('ghostPaths.apiRoot', function () {
-        return `${this.get('ghostPaths.apiRoot')}/authentication/ghost`;
-    }),
-
     // TODO: all this is doing is changing the `data` structure, we should
     // probably create our own token auth, maybe look at
     // https://github.com/jpadilla/ember-simple-auth-token
@@ -21,9 +16,13 @@ export default Oauth2Authenticator.extend({
             let data = identification;
             let serverTokenEndpoint = this.get('serverTokenEndpoint');
             let scopesString = wrap(scope).join(' ');
+
+            data.grant_type = 'authorization_code';
+
             if (!isEmpty(scopesString)) {
                 data.scope = scopesString;
             }
+
             this.makeRequest(serverTokenEndpoint, data).then((response) => {
                 run(() => {
                     let expiresAt = this._absolutizeExpirationTime(response.expires_in);
