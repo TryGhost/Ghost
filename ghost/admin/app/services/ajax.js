@@ -133,10 +133,36 @@ let ajaxService = AjaxService.extend({
     // ember-ajax recognises `application/vnd.api+json` as a JSON-API request
     // and formats appropriately, we want to handle `application/json` the same
     _makeRequest(hash) {
+        let isAuthenticated = this.get('session.isAuthenticated');
+        let isGhostRequest = hash.url.indexOf('/ghost/api/') !== -1;
+        let isTokenRequest = isGhostRequest && hash.url.match(/authentication\/(?:token|ghost)/);
+        let tokenExpiry = this.get('session.authenticated.expires_at');
+        let isTokenExpired = tokenExpiry < (new Date()).getTime();
+
         if (isJSONContentType(hash.contentType) && hash.type !== 'GET') {
             if (typeof hash.data === 'object') {
                 hash.data = JSON.stringify(hash.data);
             }
+        }
+
+        // we can get into a situation where the app is left open without a
+        // network connection and the token subsequently expires, this will
+        // result in the next network request returning a 401 and killing the
+        // session. This is an attempt to detect that and restore the session
+        // using the stored refresh token before continuing with the request
+        //
+        // TODO:
+        // - this might be quite blunt, if we have a lot of requests at once
+        //   we probably want to queue the requests until the restore completes
+        // BUG:
+        // - the original caller gets a rejected promise with `undefined` instead
+        //   of the AjaxError object when session restore fails. This isn't a
+        //   huge deal because the session will be invalidated and app reloaded
+        //   but it would be nice to be consistent
+        if (isAuthenticated && isGhostRequest && !isTokenRequest && isTokenExpired) {
+            return this.get('session').restore().then(() => {
+                return this._makeRequest(hash);
+            });
         }
 
         return this._super(...arguments);
