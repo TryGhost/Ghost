@@ -17,7 +17,7 @@ exports.isPrivacyDisabled = function isPrivacyDisabled(privacyFlag) {
 /**
  * transform all relative paths to absolute paths
  * @TODO: imagesRelPath is a dirty little attribute (especially when looking at the usages)
- * @TODO: re-write this function a little bit so we don't have to path the parent, that is hard to understand
+ * @TODO: re-write this function a little bit so we don't have to add the parent path - that is hard to understand
  *
  * Path must be string.
  * Path must match minimum one / or \
