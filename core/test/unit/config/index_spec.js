@@ -6,14 +6,14 @@ var should         = require('should'),
     fs             = require('fs'),
     _              = require('lodash'),
 
-    testUtils      = require('../utils'),
-    i18n           = require('../../server/i18n'),
-    utils          = require('../../server/utils'),
+    testUtils      = require('../../utils'),
+    i18n           = require('../../../server/i18n'),
+    utils          = require('../../../server/utils'),
     /*jshint unused:false*/
-    db             = require('../../server/data/db/connection'),
+    db             = require('../../../server/data/db/connection'),
 
     // Thing we are testing
-    configUtils    = require('../utils/configUtils'),
+    configUtils    = require('../../utils/configUtils'),
     config         = configUtils.config;
 
 i18n.init();
@@ -106,9 +106,10 @@ describe('Config', function () {
 
         it('should have the correct values for each key', function () {
             var pathConfig = config.get('paths'),
-                appRoot = path.resolve(__dirname, '../../../');
+                appRoot = path.resolve(__dirname, '../../../../');
 
             pathConfig.should.have.property('appRoot', appRoot);
+            pathConfig.should.have.property('imagesRelPath', 'content/images');
         });
 
         it('should allow specific properties to be user defined', function () {
