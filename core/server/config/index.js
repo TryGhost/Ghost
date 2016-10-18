@@ -30,8 +30,10 @@ nconf.file('ghost4', __dirname + '/defaults.json');
 
 /**
  * transform all relative paths to absolute paths
+ * transform sqlite filename path for Ghost-CLI
  */
-localUtils.makePathsAbsolute.bind(nconf)();
+localUtils.makePathsAbsolute.bind(nconf)(nconf.get('paths'), 'paths');
+localUtils.makePathsAbsolute.bind(nconf)(nconf.get('database:connection'), 'database:connection');
 
 /**
  * values we have to set manual
