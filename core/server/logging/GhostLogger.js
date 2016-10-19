@@ -3,6 +3,8 @@ var bunyan = require('bunyan'),
     GhostPrettyStream = require('./PrettyStream');
 
 function GhostLogger(options) {
+    var self = this;
+
     this.env = options.env;
     this.transports = options.transports || ['stdout'];
     this.level = options.level || 'info';
@@ -15,10 +17,65 @@ function GhostLogger(options) {
             count: 100
         };
 
-    this.loggers = {};
+    this.streams = {};
     this.setSerializers();
-    this.setStreams();
+
+    _.each(this.transports, function (transport) {
+        self['set' + transport.slice(0, 1).toUpperCase() + transport.slice(1) + 'Stream']();
+    });
 }
+
+GhostLogger.prototype.setStdoutStream = function () {
+    var prettyStdOut = new GhostPrettyStream({
+        mode: this.mode
+    });
+
+    prettyStdOut.pipe(process.stdout);
+
+    this.streams['stdout'] = {
+        name: 'stdout',
+        log: bunyan.createLogger({
+            name: 'Log',
+            streams: [{
+                type: 'raw',
+                stream: prettyStdOut,
+                level: this.level
+            }],
+            serializers: this.serializers
+        })
+    };
+};
+
+GhostLogger.prototype.setFileStream = function () {
+    this.streams['file'] = {
+        name: 'file',
+        log: bunyan.createLogger({
+            name: 'Log',
+            streams: [{
+                path: this.path,
+                level: this.level
+            }],
+            serializers: this.serializers
+        })
+    };
+
+    if (this.rotation.enabled) {
+        this.streams['rotation'] = {
+            name: 'rotation',
+            log: bunyan.createLogger({
+                name: 'Log',
+                streams: [{
+                    type: 'rotating-file',
+                    path: this.path,
+                    period: this.rotation.period,
+                    count: this.rotation.count,
+                    level: this.level
+                }],
+                serializers: this.serializers
+            })
+        };
+    }
+};
 
 // @TODO: add correlation identifier
 // @TODO: res.on('finish') has no access to the response body
@@ -57,6 +114,18 @@ GhostLogger.prototype.setSerializers = function setSerializers() {
             };
         }
     };
+};
+
+GhostLogger.prototype.removeSensitiveData = function removeSensitiveData(obj) {
+    var newObj = {};
+
+    _.each(obj, function (value, key) {
+        if (!key.match(/pin|password|authorization|cookie/gi)) {
+            newObj[key] = value;
+        }
+    });
+
+    return newObj;
 };
 
 /**
@@ -99,81 +168,9 @@ GhostLogger.prototype.log = function log(type, arguments) {
         }
     });
 
-    _.each(self.loggers, function (logger) {
+    _.each(self.streams, function (logger) {
         logger.log[type](modifiedArguments);
     });
-};
-
-GhostLogger.prototype.setStreams = function setStreams() {
-    var self = this,
-        streams = [],
-        prettyStdOut;
-
-    _.each(self.transports, function (transport) {
-        if (transport === 'file') {
-            streams.push({
-                name: 'file',
-                stream: {
-                    path: self.path,
-                    level: self.level
-                }
-            });
-        }
-
-        if (transport === 'stdout') {
-            prettyStdOut = new GhostPrettyStream({
-                mode: self.mode
-            });
-
-            prettyStdOut.pipe(process.stdout);
-
-            streams.push({
-                name: 'stdout',
-                stream: {
-                    type: 'raw',
-                    stream: prettyStdOut,
-                    level: self.level
-                }
-            });
-        }
-    });
-
-    if (self.rotation.enabled) {
-        streams.push({
-            name: 'rotation',
-            stream: {
-                type: 'rotating-file',
-                path: self.path,
-                period: self.rotation.period,
-                count: self.rotation.count,
-                level: self.level
-            }
-        });
-    }
-
-    // the env defines which streams are available
-    _.each(streams, function (stream) {
-        self.loggers[stream.name] = {
-            name: stream.name,
-            log: bunyan.createLogger({
-                name: 'Log',
-                streams: [stream.stream],
-                serializers: self.serializers
-            })
-        };
-    });
-};
-
-GhostLogger.prototype.removeSensitiveData = function removeSensitiveData(obj) {
-    var newObj = {};
-
-    _.each(obj, function (value, key) {
-        if (!key.match(/pin|password|authorization|cookie/gi)) {
-            newObj[key] = value;
-        }
-    });
-
-    return newObj;
 };
 
 GhostLogger.prototype.info = function info() {
