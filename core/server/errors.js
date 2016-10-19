@@ -166,6 +166,7 @@ var errors = {
     }
 };
 
+util.inherits(GhostError, Error);
 _.each(errors, function (error) {
     util.inherits(error, GhostError);
 });

@@ -4,6 +4,11 @@ var errors = require('../../server/errors'),
 should.equal(true, true);
 
 describe('Errors', function () {
+    it('Ensure we inherit from Error', function () {
+        var ghostError = new errors.GhostError();
+        (ghostError instanceof Error).should.eql(true);
+    });
+
     describe('Inherite from other error', function () {
         it('default', function () {
             var someError = new Error(), ghostError;
