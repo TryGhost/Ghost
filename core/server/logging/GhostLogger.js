@@ -8,11 +8,13 @@ function GhostLogger(options) {
     this.level = options.level || 'info';
     this.mode = options.mode || 'short';
     this.path = options.path || 'ghost.log';
+
     this.rotation = options.rotation || {
             enabled: false,
             period: '1w',
             count: 100
         };
+
     this.loggers = {};
 
     this.setSerializers();

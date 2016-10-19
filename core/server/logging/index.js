@@ -6,7 +6,7 @@ var config = require('../config'),
         level: process.env.NODE_LEVEL || config.get('logging:level'),
         transports: config.get('logging:transports'),
         rotation: config.get('logging:rotation'),
-        path: config.get('paths:appRoot') + '/ghost.log'
+        path: config.get('logging:path') || config.get('paths:contentPath') + 'logs/' + config.get('url').replace(/[^\w]/gi, '_') + '_ghost.log'
     });
 
 module.exports = adapter;
