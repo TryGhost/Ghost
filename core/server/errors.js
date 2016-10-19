@@ -19,7 +19,7 @@ function GhostError(options) {
     this.statusCode = 500;
     this.errorType = 'InternalServerError';
     this.level = 'normal';
-    this.id = uuid.v4();
+    this.id = uuid.v1();
 
     /**
      * custom overrides
