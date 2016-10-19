@@ -214,10 +214,6 @@ GhostLogger.prototype.warn = function warn() {
     this.log('warn', arguments);
 };
 
-GhostLogger.prototype.debug = function debug() {
-    this.log('debug', arguments);
-};
-
 GhostLogger.prototype.error = function error() {
     this.log('error', arguments);
 };

@@ -2,6 +2,7 @@ var ClientPasswordStrategy = require('passport-oauth2-client-password').Strategy
     BearerStrategy = require('passport-http-bearer').Strategy,
     GhostOAuth2Strategy = require('passport-ghost').Strategy,
     passport = require('passport'),
+    debug = require('debug')('ghost:auth'),
     Promise = require('bluebird'),
     authStrategies = require('./auth-strategies'),
     utils = require('../utils'),
@@ -80,7 +81,7 @@ _private.startPublicClientRegistration = function startPublicClientRegistration(
                         }));
                     }
 
-                    logging.debug('Trying to register Public Client...');
+                    debug('Trying to register Public Client...');
                     var timeout = setTimeout(function () {
                         clearTimeout(timeout);
 
@@ -119,7 +120,7 @@ exports.init = function initPassport(options) {
             ghostOAuth2Strategy: ghostOAuth2Strategy,
             url: utils.url.getBaseUrl()
         }).then(function setClient(client) {
-            logging.debug('Public Client Registration was successful');
+            debug('Public Client Registration was successful');
 
             ghostOAuth2Strategy.setClient(client);
             passport.use(ghostOAuth2Strategy);
