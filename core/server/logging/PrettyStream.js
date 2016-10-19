@@ -101,11 +101,14 @@ PrettyStream.prototype.write = function write(data) {
         }
 
         _.each(_.omit(data, ['time', 'level', 'name', 'hostname', 'pid', 'v', 'msg']), function (value, key) {
-            bodyPretty += '\n' + colorize('yellow', key.toUpperCase()) + '\n';
-
             // we always output errors for now
             if (_.isObject(value) && value.message && value.stack) {
-                var error = colorize('red', value.message) + '\n';
+                var error = '\n';
+                error += colorize('red', value.message) + '\n';
+
+                if (value.level) {
+                    error += colorize('white', 'level:') + colorize('white', value.level) + '\n\n';
+                }
 
                 if (value.context) {
                     error += colorize('white', value.context) + '\n';
@@ -115,6 +118,10 @@ PrettyStream.prototype.write = function write(data) {
                     error += colorize('yellow', value.help) + '\n';
                 }
 
+                if (value.errorDetails) {
+                    error += prettyjson.render(value.errorDetails, {}) + '\n';
+                }
+
                 if (value.stack && !value.hideStack) {
                     error += colorize('white', value.stack) + '\n';
                 }
@@ -122,6 +129,8 @@ PrettyStream.prototype.write = function write(data) {
                 output += format('%s\n', colorize('red', error));
             }
             else if (_.isObject(value)) {
+                bodyPretty += '\n' + colorize('yellow', key.toUpperCase()) + '\n';
+
                 var sanitized = {};
 
                 _.each(value, function (innerValue, innerKey) {
