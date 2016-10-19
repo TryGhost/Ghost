@@ -16,9 +16,7 @@ function GhostLogger(options) {
         };
 
     this.loggers = {};
-
     this.setSerializers();
-    this.setLoggers();
     this.setStreams();
 }
 
@@ -30,6 +28,7 @@ GhostLogger.prototype.setSerializers = function setSerializers() {
     this.serializers = {
         req: function (req) {
             return {
+                ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
                 url: req.url,
                 method: req.method,
                 originalUrl: req.originalUrl,
@@ -60,46 +59,49 @@ GhostLogger.prototype.setSerializers = function setSerializers() {
     };
 };
 
-GhostLogger.prototype.setLoggers = function setLoggers() {
-    var self = this;
+/**
+ * Because arguments can contain lot's of different things, we prepare the arguments here.
+ * This function allows us to use logging very flexible!
+ *
+ * logging.info('HEY', 'DU') --> is one string
+ * logging.info({}, {}) --> is one object
+ * logging.error(new Error()) --> is {err: new Error()}
+ */
+GhostLogger.prototype.log = function log(type, arguments) {
+    var self = this,
+        modifiedArguments;
 
-    this.log = {
-        info: function (options) {
-            var req = options.req,
-                res = options.res;
+    _.each(arguments, function (value) {
+        if (value instanceof Error) {
+            if (!modifiedArguments) {
+                modifiedArguments = {};
+            }
 
-            _.each(self.loggers, function (logger) {
-                logger.log.info({
-                    req: req,
-                    res: res
-                });
-            });
-        },
-        debug: function (options) {
-            var req = options.req,
-                res = options.res;
+            modifiedArguments.err = value;
+        }
+        else if (_.isObject(value)) {
+            if (!modifiedArguments) {
+                modifiedArguments = {};
+            }
 
-            _.each(self.loggers, function (logger) {
-                logger.log.debug({
-                    req: req,
-                    res: res
-                });
-            });
-        },
-        error: function (options) {
-            var req = options.req,
-                res = options.res,
-                err = options.err;
-
-            _.each(self.loggers, function (logger) {
-                logger.log.error({
-                    req: req,
-                    res: res,
-                    err: err
-                });
+            var keys = Object.keys(value);
+            _.each(keys, function (key) {
+                modifiedArguments[key] = value[key];
             });
         }
-    };
+        else {
+            if (!modifiedArguments) {
+                modifiedArguments = '';
+            }
+
+            modifiedArguments += value;
+            modifiedArguments += ' ';
+        }
+    });
+
+    _.each(self.loggers, function (logger) {
+        logger.log[type](modifiedArguments);
+    });
 };
 
 GhostLogger.prototype.setStreams = function setStreams() {
@@ -119,7 +121,10 @@ GhostLogger.prototype.setStreams = function setStreams() {
         }
 
         if (transport === 'stdout') {
-            prettyStdOut = new GhostPrettyStream({mode: self.mode});
+            prettyStdOut = new GhostPrettyStream({
+                mode: self.mode
+            });
+
             prettyStdOut.pipe(process.stdout);
 
             streams.push({
@@ -172,57 +177,19 @@ GhostLogger.prototype.removeSensitiveData = function removeSensitiveData(obj) {
 };
 
 GhostLogger.prototype.info = function info() {
-    var print = '';
-
-    _.each(arguments, function (value) {
-        print += value;
-        print += ' ';
-    });
-
-    if (!this.loggers.stdout) {
-        return;
-    }
-
-    this.loggers.stdout.log.info(print);
+    this.log('info', arguments);
 };
 
 GhostLogger.prototype.warn = function warn() {
-    var print = '';
-
-    _.each(arguments, function (value) {
-        print += value;
-        print += ' ';
-    });
-
-    if (!this.loggers.stdout) {
-        return;
-    }
-
-    this.loggers.stdout.log.warn(print);
+    this.log('warn', arguments);
 };
 
-GhostLogger.prototype.debug = function debug(options) {
-    if (!this.loggers.stdout) {
-        return;
-    }
-
-    this.loggers.stdout.log.debug(options);
+GhostLogger.prototype.debug = function debug() {
+    this.log('debug', arguments);
 };
 
-GhostLogger.prototype.error = function error(err) {
-    this.log.error({err: err});
-};
-
-GhostLogger.prototype.request = function request(options) {
-    var req = options.req,
-        res = options.res,
-        err = options.err;
-
-    if (err) {
-        this.log.error({req: req, res: res, err: err});
-    } else {
-        this.log.info({req: req, res: res});
-    }
+GhostLogger.prototype.error = function error() {
+    this.log('error', arguments);
 };
 
 module.exports = GhostLogger;
