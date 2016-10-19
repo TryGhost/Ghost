@@ -68,84 +68,77 @@ PrettyStream.prototype.write = function write(data) {
 
     logLevel = '\x1B[' + codes[0] + 'm' + logLevel + '\x1B[' + codes[1] + 'm';
 
-    // CASE: logging.request
-    if (data.req && data.res) {
-        _.each(data.req, function (value, key) {
-            if (['headers', 'query', 'body'].indexOf(key) !== -1 && !_.isEmpty(value)) {
-                bodyPretty += '\n' + colorize('yellow', key.toUpperCase()) + '\n';
-                bodyPretty += prettyjson.render(value, {}) + '\n';
-            }
-        });
+    // CASE: bunyan passes each plain string/integer as `msg` attribute (logging.info('Hey!'))
+    if (data.msg) {
+        bodyPretty += data.msg;
 
-        if (data.err) {
-            if (data.err.level) {
-                bodyPretty += colorize('yellow', 'ERROR (' + data.err.level + ')') + '\n';
-            } else {
-                bodyPretty += colorize('yellow', 'ERROR\n');
-            }
-
-            _.each(data.err, function (value, key) {
-                if (['message', 'context', 'help', 'stack'].indexOf(key) !== -1 && !_.isEmpty(value)) {
-                    bodyPretty += value + '\n';
-                }
-            });
-        }
-
-        output += format('[%s] %s %s %s (%s)\n',
-            time,
-            logLevel,
-            data.req.method,
-            data.req.originalUrl,
-            data.res.statusCode
-        );
-
-        if (this.mode !== 'short') {
-            output += format('%s\n', colorize('grey', bodyPretty));
-        }
-    }
-    // CASE: logging.error (standalone error)
-    else if (data.err) {
-        _.each(data.err, function (value, key) {
-            if (_.isEmpty(value)) {
-                return;
-            }
-
-            if (key === 'level') {
-                bodyPretty += colorize('underline', key + ':' + value) + '\n';
-            }
-            else if (key === 'message') {
-                bodyPretty += colorize('red', value) + '\n';
-            }
-            else if (key === 'context') {
-                bodyPretty += colorize('white', value) + '\n';
-            }
-            else if (key === 'help') {
-                bodyPretty += colorize('yellow', value) + '\n';
-            }
-            else if (key === 'stack' && !data.err['hideStack']) {
-                bodyPretty += colorize('white', value) + '\n';
-            }
-        });
-
-        output += format('[%s] %s\n%s\n',
+        output += format('[%s] %s %s\n',
             time,
             logLevel,
             bodyPretty
         );
     }
-    // CASE: logging.info('text')
-    else if (data.msg) {
-        output += format('[%s] %s %s\n',
-            time,
-            logLevel,
-            data.msg
-        );
-    }
+    // CASE: log objects in pretty JSON format
     else {
-        output += format('[%s] %s\n',
-            time,
-            logLevel
-        );
+        // common format: 127.0.0.1 user-identifier user-id [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326
+        // if all values are available we log in common format
+        // can be extended to define from outside, but not important
+        try {
+            output += format('%s %s [%s] "%s %s" %s %s\n',
+                logLevel,
+                data.req.ip,
+                time,
+                data.req.method.toUpperCase(),
+                data.req.originalUrl,
+                data.res.statusCode,
+                data.res._headers['x-response-time']
+            );
+        } catch (err) {
+            output += format('[%s] %s\n',
+                time,
+                logLevel
+            );
+        }
+
+        _.each(_.omit(data, ['time', 'level', 'name', 'hostname', 'pid', 'v', 'msg']), function (value, key) {
+            bodyPretty += '\n' + colorize('yellow', key.toUpperCase()) + '\n';
+
+            // we always output errors for now
+            if (_.isObject(value) && value.message && value.stack) {
+                var error = colorize('red', value.message) + '\n';
+
+                if (value.context) {
+                    error += colorize('white', value.context) + '\n';
+                }
+
+                if (value.help) {
+                    error += colorize('yellow', value.help) + '\n';
+                }
+
+                if (value.stack && !value.hideStack) {
+                    error += colorize('white', value.stack) + '\n';
+                }
+
+                output += format('%s\n', colorize('red', error));
+            }
+            else if (_.isObject(value)) {
+                var sanitized = {};
+
+                _.each(value, function (innerValue, innerKey) {
+                    if (!_.isEmpty(innerValue)) {
+                        sanitized[innerKey] = innerValue;
+                    }
+                });
+
+                bodyPretty += prettyjson.render(sanitized, {}) + '\n';
+            } else {
+                bodyPretty += prettyjson.render(value, {}) + '\n';
+            }
+        });
+
+        if (this.mode !== 'short') {
+            output += format('%s\n', colorize('grey', bodyPretty));
+        }
     }
 
     try {
