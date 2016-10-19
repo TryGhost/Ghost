@@ -33,7 +33,7 @@ GhostLogger.prototype.setStdoutStream = function () {
 
     prettyStdOut.pipe(process.stdout);
 
-    this.streams['stdout'] = {
+    this.streams.stdout = {
         name: 'stdout',
         log: bunyan.createLogger({
             name: 'Log',
@@ -169,19 +169,18 @@ GhostLogger.prototype.removeSensitiveData = function removeSensitiveData(obj) {
  * logging.info({}, {}) --> is one object
  * logging.error(new Error()) --> is {err: new Error()}
  */
-GhostLogger.prototype.log = function log(type, arguments) {
+GhostLogger.prototype.log = function log(type, args) {
     var self = this,
         modifiedArguments;
 
-    _.each(arguments, function (value) {
+    _.each(args, function (value) {
         if (value instanceof Error) {
             if (!modifiedArguments) {
                 modifiedArguments = {};
             }
 
             modifiedArguments.err = value;
-        }
-        else if (_.isObject(value)) {
+        } else if (_.isObject(value)) {
             if (!modifiedArguments) {
                 modifiedArguments = {};
             }
@@ -190,8 +189,7 @@ GhostLogger.prototype.log = function log(type, arguments) {
             _.each(keys, function (key) {
                 modifiedArguments[key] = value[key];
             });
-        }
-        else {
+        } else {
             if (!modifiedArguments) {
                 modifiedArguments = '';
             }
