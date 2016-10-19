@@ -1,5 +1,6 @@
 var debug = require('debug')('ghost:app'),
     express = require('express'),
+    responseTime = require('response-time'),
 
     // app requires
     config          = require('./config'),
@@ -22,12 +23,18 @@ module.exports = function setupParentApp() {
     // (X-Forwarded-Proto header will be checked, if present)
     parentApp.enable('trust proxy');
 
+    parentApp.use(responseTime());
+
     /**
      * request logging
      */
     parentApp.use(function expressLogging(req, res, next) {
         res.once('finish', function () {
-            logging.request({req: req, res: res, err: req.err});
+            if (req.err) {
+                logging.error({req: req, res: res, err: req.err});
+            } else {
+                logging.info({req: req, res: res});
+            }
         });
 
         next();
