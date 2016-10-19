@@ -8,7 +8,11 @@ function GhostLogger(options) {
     this.level = options.level || 'info';
     this.mode = options.mode || 'short';
     this.path = options.path || 'ghost.log';
-    this.rotation = options.rotation || false;
+    this.rotation = options.rotation || {
+            enabled: false,
+            period: '1w',
+            count: 100
+        };
     this.loggers = {};
 
     this.setSerializers();
@@ -127,14 +131,14 @@ GhostLogger.prototype.setStreams = function setStreams() {
         }
     });
 
-    if (self.rotation) {
+    if (self.rotation.enabled) {
         streams.push({
             name: 'rotation',
             stream: {
                 type: 'rotating-file',
                 path: self.path,
-                period: '1w',
-                count: 3,
+                period: self.rotation.period,
+                count: self.rotation.count,
                 level: self.level
             }
         });
