@@ -6,10 +6,11 @@ function GhostLogger(options) {
     var self = this;
 
     this.env = options.env;
+    this.domain = options.domain || 'localhost';
     this.transports = options.transports || ['stdout'];
     this.level = options.level || 'info';
     this.mode = options.mode || 'short';
-    this.path = options.path || 'ghost.log';
+    this.path = options.path || process.cwd();
 
     this.rotation = options.rotation || {
             enabled: false,
@@ -46,13 +47,30 @@ GhostLogger.prototype.setStdoutStream = function () {
     };
 };
 
+/**
+ * by default we log into two files
+ * 1. file-errors: all errors only
+ * 2. file-all: everything
+ */
 GhostLogger.prototype.setFileStream = function () {
-    this.streams['file'] = {
+    this.streams['file-errors'] = {
         name: 'file',
         log: bunyan.createLogger({
             name: 'Log',
             streams: [{
-                path: this.path,
+                path: this.path + this.domain + '_' + '.error.log',
+                level: 'error'
+            }],
+            serializers: this.serializers
+        })
+    };
+
+    this.streams['file-all'] = {
+        name: 'file',
+        log: bunyan.createLogger({
+            name: 'Log',
+            streams: [{
+                path: this.path + this.domain + '_' + '.log',
                 level: this.level
             }],
             serializers: this.serializers
@@ -60,13 +78,28 @@ GhostLogger.prototype.setFileStream = function () {
     };
 
     if (this.rotation.enabled) {
-        this.streams['rotation'] = {
-            name: 'rotation',
+        this.streams['rotation-errors'] = {
+            name: 'rotation-errors',
             log: bunyan.createLogger({
                 name: 'Log',
                 streams: [{
                     type: 'rotating-file',
-                    path: this.path,
+                    path: this.path + this.domain + '_' + '.error.log',
+                    period: this.rotation.period,
+                    count: this.rotation.count,
+                    level: this.level
+                }],
+                serializers: this.serializers
+            })
+        };
+
+        this.streams['rotation-all'] = {
+            name: 'rotation-all',
+            log: bunyan.createLogger({
+                name: 'Log',
+                streams: [{
+                    type: 'rotating-file',
+                    path: this.path + this.domain + '_' + '.log',
                     period: this.rotation.period,
                     count: this.rotation.count,
                     level: this.level
