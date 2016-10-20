@@ -80,18 +80,19 @@ PrettyStream.prototype.write = function write(data) {
     }
     // CASE: log objects in pretty JSON format
     else {
-        // common format: 127.0.0.1 user-identifier user-id [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326
+        // common log format:
+        // 127.0.0.1 user-identifier user-id [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326
+
         // if all values are available we log in common format
         // can be extended to define from outside, but not important
         try {
-            output += format('%s %s [%s] "%s %s" %s %s\n',
+            output += format('%s [%s] "%s %s" %s %s\n',
                 logLevel,
-                data.req.ip,
                 time,
                 data.req.method.toUpperCase(),
                 data.req.originalUrl,
                 data.res.statusCode,
-                data.res._headers['x-response-time']
+                data.res.responseTime
             );
         } catch (err) {
             output += format('[%s] %s\n',

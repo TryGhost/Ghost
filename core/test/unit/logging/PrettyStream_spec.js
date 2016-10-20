@@ -42,7 +42,7 @@ describe('PrettyStream', function () {
             var ghostPrettyStream = new GhostPrettyStream({mode: 'short'});
 
             ghostPrettyStream.emit = function (eventName, data) {
-                data.should.eql('\u001b[36mINFO\u001b[39m 127.0.01 [2016-07-01 00:00:00] "GET /test" 200 50ms\n');
+                data.should.eql('\u001b[36mINFO\u001b[39m [2016-07-01 00:00:00] "GET /test" 200 39ms\n');
                 done();
             };
 
@@ -50,7 +50,6 @@ describe('PrettyStream', function () {
                 time: '2016-07-01 00:00:00',
                 level: 30,
                 req: {
-                    ip: '127.0.01',
                     originalUrl: '/test',
                     method: 'GET',
                     body: {
@@ -59,9 +58,7 @@ describe('PrettyStream', function () {
                 },
                 res: {
                     statusCode: 200,
-                    _headers: {
-                        'x-response-time': '50ms'
-                    }
+                    responseTime: '39ms'
                 }
             }));
         });
@@ -70,7 +67,7 @@ describe('PrettyStream', function () {
             var ghostPrettyStream = new GhostPrettyStream({mode: 'short'});
 
             ghostPrettyStream.emit = function (eventName, data) {
-                data.should.eql('\u001b[31mERROR\u001b[39m 127.0.01 [2016-07-01 00:00:00] "GET /test" 400 50ms\n\u001b[31m\n\u001b[31mmessage\u001b[39m\n\u001b[37mstack\u001b[39m\n\u001b[39m\n');
+                data.should.eql('\u001b[31mERROR\u001b[39m [2016-07-01 00:00:00] "GET /test" 400 39ms\n\u001b[31m\n\u001b[31mmessage\u001b[39m\n\u001b[37mstack\u001b[39m\n\u001b[39m\n');
                 done();
             };
 
@@ -78,7 +75,6 @@ describe('PrettyStream', function () {
                 time: '2016-07-01 00:00:00',
                 level: 50,
                 req: {
-                    ip: '127.0.01',
                     originalUrl: '/test',
                     method: 'GET',
                     body: {
@@ -87,9 +83,7 @@ describe('PrettyStream', function () {
                 },
                 res: {
                     statusCode: 400,
-                    _headers: {
-                        'x-response-time': '50ms'
-                    }
+                    responseTime: '39ms'
                 },
                 err: {
                     message: 'message',
@@ -137,7 +131,7 @@ describe('PrettyStream', function () {
             var ghostPrettyStream = new GhostPrettyStream({mode: 'long'});
 
             ghostPrettyStream.emit = function (eventName, data) {
-                data.should.eql('\u001b[36mINFO\u001b[39m 127.0.01 [2016-07-01 00:00:00] "GET /test" 200 50ms\n\u001b[90m\n\u001b[33mREQ\u001b[39m\n\u001b[32mip: \u001b[39m         127.0.01\n\u001b[32moriginalUrl: \u001b[39m/test\n\u001b[32mmethod: \u001b[39m     GET\n\u001b[32mbody: \u001b[39m\n  \u001b[32ma: \u001b[39mb\n\n\u001b[33mRES\u001b[39m\n\u001b[32m_headers: \u001b[39m\n  \u001b[32mx-response-time: \u001b[39m50ms\n\u001b[39m\n');
+                data.should.eql('\u001b[36mINFO\u001b[39m [2016-07-01 00:00:00] "GET /test" 200 39ms\n\u001b[90m\n\u001b[33mREQ\u001b[39m\n\u001b[32mip: \u001b[39m         127.0.01\n\u001b[32moriginalUrl: \u001b[39m/test\n\u001b[32mmethod: \u001b[39m     GET\n\u001b[32mbody: \u001b[39m\n  \u001b[32ma: \u001b[39mb\n\n\u001b[33mRES\u001b[39m\n\u001b[32mresponseTime: \u001b[39m39ms\n\u001b[39m\n');
                 done();
             };
 
@@ -154,9 +148,7 @@ describe('PrettyStream', function () {
                 },
                 res: {
                     statusCode: 200,
-                    _headers: {
-                        'x-response-time': '50ms'
-                    }
+                    responseTime: '39ms'
                 }
             }));
         });
@@ -165,7 +157,7 @@ describe('PrettyStream', function () {
             var ghostPrettyStream = new GhostPrettyStream({mode: 'long'});
 
             ghostPrettyStream.emit = function (eventName, data) {
-                data.should.eql('\u001b[31mERROR\u001b[39m 127.0.01 [2016-07-01 00:00:00] "GET /test" 400 50ms\n\u001b[31m\n\u001b[31mHey Jude!\u001b[39m\n\u001b[37mstack\u001b[39m\n\u001b[39m\n\u001b[90m\n\u001b[33mREQ\u001b[39m\n\u001b[32mip: \u001b[39m         127.0.01\n\u001b[32moriginalUrl: \u001b[39m/test\n\u001b[32mmethod: \u001b[39m     GET\n\u001b[32mbody: \u001b[39m\n  \u001b[32ma: \u001b[39mb\n\n\u001b[33mRES\u001b[39m\n\u001b[32m_headers: \u001b[39m\n  \u001b[32mx-response-time: \u001b[39m50ms\n\u001b[39m\n');
+                data.should.eql('\u001b[31mERROR\u001b[39m [2016-07-01 00:00:00] "GET /test" 400 39ms\n\u001b[31m\n\u001b[31mHey Jude!\u001b[39m\n\u001b[37mstack\u001b[39m\n\u001b[39m\n\u001b[90m\n\u001b[33mREQ\u001b[39m\n\u001b[32moriginalUrl: \u001b[39m/test\n\u001b[32mmethod: \u001b[39m     GET\n\u001b[32mbody: \u001b[39m\n  \u001b[32ma: \u001b[39mb\n\n\u001b[33mRES\u001b[39m\n\u001b[32mresponseTime: \u001b[39m39ms\n\u001b[39m\n');
                 done();
             };
 
@@ -173,7 +165,6 @@ describe('PrettyStream', function () {
                 time: '2016-07-01 00:00:00',
                 level: 50,
                 req: {
-                    ip: '127.0.01',
                     originalUrl: '/test',
                     method: 'GET',
                     body: {
@@ -182,9 +173,7 @@ describe('PrettyStream', function () {
                 },
                 res: {
                     statusCode: 400,
-                    _headers: {
-                        'x-response-time': '50ms'
-                    }
+                    responseTime: '39ms'
                 },
                 err: {
                     message: 'Hey Jude!',

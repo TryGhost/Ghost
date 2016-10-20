@@ -118,7 +118,6 @@ GhostLogger.prototype.setSerializers = function setSerializers() {
     this.serializers = {
         req: function (req) {
             return {
-                ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
                 url: req.url,
                 method: req.method,
                 originalUrl: req.originalUrl,
@@ -131,7 +130,8 @@ GhostLogger.prototype.setSerializers = function setSerializers() {
         res: function (res) {
             return {
                 _headers: self.removeSensitiveData(res._headers),
-                statusCode: res.statusCode
+                statusCode: res.statusCode,
+                responseTime: res.responseTime
             };
         },
         err: function (err) {
