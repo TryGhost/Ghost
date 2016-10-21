@@ -560,6 +560,20 @@ describe('User Model', function run() {
                     done();
                 });
             });
+
+            it('wrong old password', function (done) {
+                UserModel.changePassword({
+                    newPassword: '12345678',
+                    ne2Password: '12345678',
+                    oldPassword: '123456789',
+                    user_id: '1'
+                }, testUtils.context.owner).then(function () {
+                    done(new Error('expected error!'));
+                }).catch(function (err) {
+                    (err instanceof errors.ValidationError).should.eql(true);
+                    done();
+                });
+            });
         });
 
         describe('success', function () {
