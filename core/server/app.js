@@ -3,14 +3,14 @@ var debug = require('debug')('ghost:app'),
 
     // app requires
     config          = require('./config'),
-    logging         = require('./logging'),
 
     // middleware
     compress        = require('compression'),
     netjet          = require('netjet'),
 
     // local middleware
-    ghostLocals     = require('./middleware/ghost-locals');
+    ghostLocals     = require('./middleware/ghost-locals'),
+    logRequest      = require('./middleware/log-request');
 
 module.exports = function setupParentApp() {
     debug('ParentApp setup start');
@@ -22,24 +22,7 @@ module.exports = function setupParentApp() {
     // (X-Forwarded-Proto header will be checked, if present)
     parentApp.enable('trust proxy');
 
-    /**
-     * request logging
-     */
-    parentApp.use(function expressLogging(req, res, next) {
-        var startTime = Date.now();
-
-        res.once('finish', function () {
-            res.responseTime = (Date.now() - startTime) + 'ms';
-
-            if (req.err) {
-                logging.error({req: req, res: res, err: req.err});
-            } else {
-                logging.info({req: req, res: res});
-            }
-        });
-
-        next();
-    });
+    parentApp.use(logRequest);
 
     if (debug.enabled) {
         // debug keeps a timer, so this is super useful
