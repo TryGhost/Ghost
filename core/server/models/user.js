@@ -683,7 +683,7 @@ User = ghostBookshelf.Model.extend({
             ne2Password = object.ne2Password,
             userId = parseInt(object.user_id),
             oldPassword = object.oldPassword,
-            isLoggedInUser = object.user_id === options.context.user,
+            isLoggedInUser = userId === options.context.user,
             user;
 
         // If the two passwords do not match
