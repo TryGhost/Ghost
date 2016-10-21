@@ -21,10 +21,27 @@ _private.registerClient = function (options) {
         .then(function fetchedClient(client) {
             // CASE: Ghost Auth client is already registered
             if (client) {
-                return {
-                    client_id: client.get('uuid'),
-                    client_secret: client.get('secret')
-                };
+                if (client.get('redirection_uri') === url) {
+                    return {
+                        client_id: client.get('uuid'),
+                        client_secret: client.get('secret')
+                    };
+                }
+
+                logging.debug('Update ghost client callback url...');
+                return ghostOAuth2Strategy.changeCallbackURL({
+                    callbackURL: url + '/ghost/',
+                    clientId: client.get('uuid'),
+                    clientSecret: client.get('secret')
+                }).then(function changedCallbackURL() {
+                    client.set('redirection_uri', url);
+                    return client.save(null, {context: {internal: true}});
+                }).then(function updatedClient() {
+                    return {
+                        client_id: client.get('uuid'),
+                        client_secret: client.get('secret')
+                    };
+                });
             }
 
             return ghostOAuth2Strategy.registerClient({clientName: url})
@@ -33,7 +50,8 @@ _private.registerClient = function (options) {
                         name: 'Ghost Auth',
                         slug: 'ghost-auth',
                         uuid: credentials.client_id,
-                        secret: credentials.client_secret
+                        secret: credentials.client_secret,
+                        redirection_uri: url + '/ghost/'
                     }, {context: {internal: true}});
                 })
                 .then(function returnClient(client) {
