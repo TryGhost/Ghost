@@ -11,7 +11,7 @@ pids
 logs
 results
 
-npm-debug.log
+npm-debug.log*
 .nvmrc
 .bowerrc
 .idea/*
