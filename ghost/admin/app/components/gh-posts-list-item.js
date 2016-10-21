@@ -33,7 +33,7 @@ export default Component.extend(ActiveLinkWrapper, {
     }),
 
     authorAvatar: computed('post.author.image', function () {
-        return this.get('post.author.image') || `${this.get('ghostPaths.subdir')}/ghost/img/user-image.png`;
+        return this.get('post.author.image') || `${this.get('ghostPaths.assetRoot')}/img/user-image.png`;
     }),
 
     authorAvatarBackground: computed('authorAvatar', function () {
