@@ -7,6 +7,7 @@ var passport = require('passport'),
     testUtils = require('../../utils'),
     GhostPassport = rewire('../../../server/auth/passport'),
     models = require('../../../server/models'),
+    utils = require('../../../server/utils'),
     errors = require('../../../server/errors');
 
 should.equal(true, true);
@@ -35,6 +36,7 @@ describe('Ghost Passport', function () {
 
         FakeGhostOAuth2Strategy.prototype.setClient = sandbox.stub();
         FakeGhostOAuth2Strategy.prototype.registerClient = sandbox.stub().returns(Promise.resolve({}));
+        FakeGhostOAuth2Strategy.prototype.changeCallbackURL = sandbox.stub().returns(Promise.resolve({}));
     });
 
     afterEach(function () {
@@ -53,13 +55,16 @@ describe('Ghost Passport', function () {
                 models.Client.add.called.should.eql(false);
                 FakeGhostOAuth2Strategy.prototype.setClient.called.should.eql(false);
                 FakeGhostOAuth2Strategy.prototype.registerClient.called.should.eql(false);
+                FakeGhostOAuth2Strategy.prototype.changeCallbackURL.called.should.eql(false);
             });
         });
     });
 
     describe('auth_type: ghost', function () {
-        it('ghost client is already present in database', function () {
-            client = new models.Client(testUtils.DataGenerator.forKnex.createClient());
+        it('ghost client is already present in database and redirect_uri hasn\'t changed', function () {
+            client = new models.Client(testUtils.DataGenerator.forKnex.createClient({
+                redirection_uri: utils.url.getBaseUrl()
+            }));
 
             return GhostPassport.init({
                 type: 'ghost'
@@ -71,6 +76,26 @@ describe('Ghost Passport', function () {
                 models.Client.add.called.should.eql(false);
                 FakeGhostOAuth2Strategy.prototype.setClient.called.should.eql(true);
                 FakeGhostOAuth2Strategy.prototype.registerClient.called.should.eql(false);
+                FakeGhostOAuth2Strategy.prototype.changeCallbackURL.called.should.eql(false);
+            });
+        });
+
+        it('ghost client is already present in database and redirect_uri has changed', function () {
+            client = new models.Client(testUtils.DataGenerator.forKnex.createClient({
+                redirection_uri: 'URL-HAS-CHANGED'
+            }));
+
+            return GhostPassport.init({
+                type: 'ghost'
+            }).then(function (response) {
+                should.exist(response.passport);
+                passport.use.callCount.should.eql(3);
+
+                models.Client.findOne.called.should.eql(true);
+                models.Client.add.called.should.eql(false);
+                FakeGhostOAuth2Strategy.prototype.setClient.called.should.eql(true);
+                FakeGhostOAuth2Strategy.prototype.registerClient.called.should.eql(false);
+                FakeGhostOAuth2Strategy.prototype.changeCallbackURL.called.should.eql(true);
             });
         });
 
