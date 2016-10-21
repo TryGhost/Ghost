@@ -1,4 +1,5 @@
 var _ = require('lodash'),
+    uuid = require('node-uuid'),
     util = require('util');
 
 function GhostError(options) {
@@ -14,11 +15,11 @@ function GhostError(options) {
 
     /**
      * defaults
-     * @TODO: I'd like to add the usage of an individual ID to errors, as we have in ignition
      */
     this.statusCode = 500;
     this.errorType = 'InternalServerError';
     this.level = 'normal';
+    this.id = uuid.v1();
 
     /**
      * custom overrides
