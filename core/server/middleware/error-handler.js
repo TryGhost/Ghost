@@ -51,8 +51,7 @@ _private.parseStack = function parseStack(stack) {
 /**
  * Get an error ready to be shown the the user
  *
- * @TODO: support multiple errors
- * @TODO: decouple req.err
+ * @TODO: support multiple errors within one single error, see https://github.com/TryGhost/Ghost/issues/7116#issuecomment-252231809
  */
 _private.prepareError = function prepareError(err, req, res, next) {
     if (_.isArray(err)) {
@@ -74,7 +73,10 @@ _private.prepareError = function prepareError(err, req, res, next) {
         }
     }
 
+    // used for express logging middleware see core/server/app.js
     req.err = err;
+
+    // alternative for res.status();
     res.statusCode = err.statusCode;
 
     // never cache errors
@@ -86,7 +88,7 @@ _private.prepareError = function prepareError(err, req, res, next) {
 };
 
 _private.JSONErrorRenderer = function JSONErrorRenderer(err, req, res, /*jshint unused:false */ next) {
-    // @TODO: jsonapi errors format ?
+    // @TODO: jsonapi errors format (http://jsonapi.org/format/#error-objects)
     res.json({
         errors: [{
             message: err.message,
