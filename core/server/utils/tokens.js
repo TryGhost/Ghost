@@ -11,10 +11,10 @@ exports.resetToken = {
             password = options.password,
             text = '';
 
-        hash.update(String(expires).toLocaleLowerCase());
-        hash.update(String(email).toLocaleLowerCase());
-        hash.update(String(dbHash).toLocaleLowerCase());
-        hash.update(String(password).toLocaleLowerCase());
+        hash.update(String(expires));
+        hash.update(email.toLocaleLowerCase());
+        hash.update(password);
+        hash.update(String(dbHash));
 
         text += [expires, email, hash.digest('base64')].join('|');
         return new Buffer(text).toString('base64');

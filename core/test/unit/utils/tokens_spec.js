@@ -12,6 +12,7 @@ describe('Utils: tokens', function () {
         token = utils.tokens.resetToken.generateHash({
             email: 'test1@ghost.org',
             expires: expires,
+            password: 'password',
             dbHash: dbHash
         });
 
@@ -80,12 +81,34 @@ describe('Utils: tokens', function () {
         should.not.exist(parts.dbHash);
     });
 
-    it('can validate an URI encoded reset token', function () {
+    it('extract', function () {
         var expires = Date.now() + 60 * 1000,
-            dbHash = uuid.v4(), token, tokenIsCorrect;
+            dbHash = uuid.v4(), token, parts, email = 'test3@ghost.org';
 
         token = utils.tokens.resetToken.generateHash({
-            email: 'test1@ghost.org',
+            email: email,
+            expires: expires,
+            password: '$2a$10$t5dY1uRRdjvqfNlXhae3uuc0nuhi.Rd7/K/9JaHHwSkLm6UUa3NsW',
+            dbHash: dbHash
+        });
+
+        parts = utils.tokens.resetToken.extract({
+            token: token
+        });
+
+        parts.email.should.eql(email);
+        parts.expires.should.eql(expires);
+        should.not.exist(parts.password);
+        should.not.exist(parts.dbHash);
+    });
+
+    it('can validate an URI encoded reset token', function () {
+        var expires = Date.now() + 60 * 1000,
+            email = 'test1@ghost.org',
+            dbHash = uuid.v4(), token, tokenIsCorrect, parts;
+
+        token = utils.tokens.resetToken.generateHash({
+            email: email,
             expires: expires,
             password: '12345678',
             dbHash: dbHash
@@ -95,6 +118,13 @@ describe('Utils: tokens', function () {
         token = encodeURIComponent(token);
         token = decodeURIComponent(token);
         token = utils.decodeBase64URLsafe(token);
+
+        parts = utils.tokens.resetToken.extract({
+            token: token
+        });
+
+        parts.email.should.eql(email);
+        parts.expires.should.eql(expires);
 
         tokenIsCorrect = utils.tokens.resetToken.compare({
             token: token,
