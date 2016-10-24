@@ -1,7 +1,6 @@
 var _              = require('lodash'),
     Promise        = require('bluebird'),
     bcrypt         = require('bcryptjs'),
-    crypto         = require('crypto'),
     validator      = require('validator'),
     ghostBookshelf = require('./base'),
     errors         = require('../errors'),
@@ -16,7 +15,6 @@ var _              = require('lodash'),
     bcryptHash     = Promise.promisify(bcrypt.hash),
     bcryptCompare  = Promise.promisify(bcrypt.compare),
 
-    tokenSecurity  = {},
     activeStates   = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'],
     User,
     Users;

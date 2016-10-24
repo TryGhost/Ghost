@@ -2,11 +2,9 @@ var testUtils   = require('../../utils'),
     should      = require('should'),
     Promise     = require('bluebird'),
     sinon       = require('sinon'),
-    uuid        = require('node-uuid'),
     _           = require('lodash'),
 
     // Stuff we are testing
-    utils       = require('../../../server/utils'),
     errors      = require('../../../server/errors'),
     gravatar    = require('../../../server/utils/gravatar'),
     UserModel   = require('../../../server/models/user').User,
@@ -590,7 +588,7 @@ describe('User Model', function run() {
             });
         });
     });
-    
+
     describe('User setup', function () {
         beforeEach(testUtils.setup('owner'));
 

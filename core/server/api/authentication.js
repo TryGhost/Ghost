@@ -14,7 +14,7 @@ var _                = require('lodash'),
     config           = require('../config'),
     i18n             = require('../i18n'),
     authentication,
-    tokenSecurity;
+    tokenSecurity = {};
 
 /**
  * Returns setup status
@@ -165,7 +165,7 @@ authentication = {
 
     /**
      * @description generate a reset token for a given email address
-     * @param {Object} resetRequest
+     * @param {Object} object
      * @returns {Promise<Object>} message
      */
     generateResetToken: function generateResetToken(object) {
@@ -190,19 +190,19 @@ authentication = {
                 dbHash, token;
 
             return settings.read(_.merge({key: 'dbHash'}, options))
-                .then(function then(response) {
+                .then(function fetchedSettings(response) {
                     dbHash = response.settings[0].value;
 
                     return models.User.getByEmail(email, options);
                 })
-                .then(function(user){
+                .then(function fetchedUser(user) {
                     if (!user) {
                         throw new errors.NotFoundError({message: i18n.t('errors.api.users.userNotFound')});
                     }
 
                     token = globalUtils.tokens.resetToken.generateHash({
                         expires: Date.now() + globalUtils.ONE_DAY_MS,
-                        unique: email,
+                        email: email,
                         dbHash: dbHash,
                         password: user.get('password')
                     });
@@ -270,10 +270,10 @@ authentication = {
     resetPassword: function resetPassword(object) {
         var tasks, tokenIsCorrect, dbHash, options = {context: {internal: true}}, tokenParts;
 
-        function validateRequest(options) {
+        function validateRequest() {
             return utils.validate('passwordreset')(object, options)
                 .then(function (options) {
-                    var data = (options.data.passwordreset || options.data.password)[0];
+                    var data = options.data.passwordreset[0];
 
                     if (data.newPassword !== data.ne2Password) {
                         return Promise.reject(new errors.ValidationError({
@@ -285,24 +285,24 @@ authentication = {
                 });
         }
 
-        function extractTokenParts (options) {
-            var data = options.data.passwordreset[0];
+        function extractTokenParts(options) {
+            options.data.passwordreset[0].token = globalUtils.decodeBase64URLsafe(options.data.passwordreset[0].token);
 
             tokenParts = globalUtils.tokens.resetToken.extract({
-                token: data.token
+                token: options.data.passwordreset[0].token
             });
 
             if (!tokenParts) {
                 return Promise.reject(new errors.UnauthorizedError({
-                    message: 'Invalid token'
+                    message: i18n.t('errors.models.user.invalidTokenStructure')
                 }));
             }
 
-            return Promise.resolve();
+            return Promise.resolve(options);
         }
 
         // @TODO: use brute force middleware (see https://github.com/TryGhost/Ghost/pull/7579)
-        function protectBruteForce() {
+        function protectBruteForce(options) {
             if (tokenSecurity[tokenParts.email + '+' + tokenParts.expires] &&
                 tokenSecurity[tokenParts.email + '+' + tokenParts.expires].count >= 10) {
                 return Promise.reject(new errors.NoPermissionError({
@@ -310,15 +310,14 @@ authentication = {
                 }));
             }
 
-            return Promise.resolve();
+            return Promise.resolve(options);
         }
 
         function doReset(options) {
             var data = options.data.passwordreset[0],
                 resetToken = data.token,
                 oldPassword = data.oldPassword,
-                newPassword = data.newPassword,
-                user;
+                newPassword = data.newPassword;
 
             return settings.read(_.merge({key: 'dbHash'}, options))
                 .then(function fetchedSettings(response) {
@@ -326,9 +325,7 @@ authentication = {
 
                     return models.User.getByEmail(tokenParts.email, options);
                 })
-                .then(function fetchedUser(_user) {
-                    user = _user;
-
+                .then(function fetchedUser(user) {
                     if (!user) {
                         throw new errors.NotFoundError({message: i18n.t('errors.api.users.userNotFound')});
                     }
@@ -345,14 +342,15 @@ authentication = {
                         }));
                     }
 
-                    return user.changePassword({
+                    return models.User.changePassword({
                         oldPassword: oldPassword,
-                        newPassword: newPassword
+                        newPassword: newPassword,
+                        user_id: user.id
                     }, options);
                 })
-                .then(function () {
-                    user.set('status', 'active');
-                    return user.save(options);
+                .then(function changedPassword(updatedUser) {
+                    updatedUser.set('status', 'active');
+                    return updatedUser.save(options);
                 })
                 .catch(function (err) {
                     throw new errors.UnauthorizedError({err: err});
