@@ -678,16 +678,10 @@ User = ghostBookshelf.Model.extend({
     changePassword: function changePassword(object, options) {
         var self = this,
             newPassword = object.newPassword,
-            ne2Password = object.ne2Password,
             userId = parseInt(object.user_id),
             oldPassword = object.oldPassword,
             isLoggedInUser = userId === options.context.user,
             user;
-
-        // If the two passwords do not match
-        if (newPassword !== ne2Password) {
-            return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.newPasswordsDoNotMatch')}));
-        }
 
         return self.forge({id: userId}).fetch({require: true})
             .then(function then(_user) {
