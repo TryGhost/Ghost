@@ -118,6 +118,10 @@ GhostLogger.prototype.setSerializers = function setSerializers() {
     this.serializers = {
         req: function (req) {
             return {
+                meta: {
+                    requestId: req.requestId,
+                    userId: req.userId
+                },
                 url: req.url,
                 method: req.method,
                 originalUrl: req.originalUrl,
