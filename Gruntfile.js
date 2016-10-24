@@ -280,7 +280,7 @@ var overrides      = require('./core/server/overrides'),
                     },
                     expand: true,
                     cwd: '<%= paths.releaseBuild %>/',
-                    src: ['**']
+                    src: ['**', '.knex-migrator']
                 }
             },
 
@@ -719,9 +719,9 @@ var overrides      = require('./core/server/overrides'),
                     // A list of files and patterns to include when creating a release zip.
                     // This is read from the `.npmignore` file and all patterns are inverted as the `.npmignore`
                     // file defines what to ignore, whereas we want to define what to include.
-                    src: fs.readFileSync('.npmignore', 'utf8').split('\n').filter(Boolean).map(function (pattern) {
+                    src: ['.knex-migrator'].concat(fs.readFileSync('.npmignore', 'utf8').split('\n').filter(Boolean).map(function (pattern) {
                         return pattern[0] === '!' ? pattern.substr(1) : '!' + pattern;
-                    }),
+                    })),
                     dest: '<%= paths.releaseBuild %>/'
                 });
 
