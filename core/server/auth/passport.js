@@ -29,7 +29,7 @@ _private.registerClient = function (options) {
                     };
                 }
 
-                logging.debug('Update ghost client callback url...');
+                debug('Update ghost client callback url...');
                 return ghostOAuth2Strategy.changeCallbackURL({
                     callbackURL: url + '/ghost/',
                     clientId: client.get('uuid'),
