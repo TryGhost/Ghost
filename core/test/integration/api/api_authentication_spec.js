@@ -4,6 +4,7 @@ var testUtils   = require('../../utils'),
     sinon       = require('sinon'),
     Promise     = require('bluebird'),
     uid         = require('../../../server/utils').uid,
+    globalUtils = require('../../../server/utils'),
     AuthAPI     = require('../../../server/api/authentication'),
     mail        = require('../../../server/api/mail'),
     models      = require('../../../server/models'),
@@ -14,6 +15,7 @@ var testUtils   = require('../../utils'),
     Refreshtoken,
     User;
 
+// @TODO: group tests by api call, not by setup completed or not
 describe('Authentication API', function () {
     var testInvite = {
             invitation: [{
@@ -31,6 +33,7 @@ describe('Authentication API', function () {
         testReset = {
             passwordreset: [{
                 token: 'abc',
+                oldPassword: 'Sl1m3rson',
                 newPassword: 'abcdefgh',
                 ne2Password: 'abcdefgh'
             }]
@@ -355,7 +358,7 @@ describe('Authentication API', function () {
 
                     err.name.should.equal('UnauthorizedError');
                     err.statusCode.should.equal(401);
-                    err.message.should.equal('Invalid token');
+                    err.message.should.equal('Invalid token structure');
 
                     done();
                 }).catch(done);
