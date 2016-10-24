@@ -3,7 +3,6 @@ import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import base from 'ghost-admin/mixins/editor-base-route';
 import isNumber from 'ghost-admin/utils/isNumber';
 import isFinite from 'ghost-admin/utils/isFinite';
-import ghostPaths from 'ghost-admin/utils/ghost-paths';
 
 export default AuthenticatedRoute.extend(base, {
     titleToken: 'Editor',
@@ -53,13 +52,7 @@ export default AuthenticatedRoute.extend(base, {
 
     setupController(controller) {
         this._super(...arguments);
-
         controller.set('shouldFocusEditor', this.get('_transitionedFromNew'));
-        controller.set('cards' , []);
-        controller.set('atoms' , []);
-        controller.set('toolbar' , []);
-        controller.set('apiRoot', ghostPaths().apiRoot);
-        controller.set('assetPath', ghostPaths().assetRoot);
     },
 
     actions: {

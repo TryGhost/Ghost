@@ -7,6 +7,7 @@
 
 .gh-editor-title {
     flex-grow: 1;
+    margin-bottom: 2vw;
 }
 
 .gh-editor-title input {
@@ -16,7 +17,7 @@
     border: 0;
     background: transparent;
     color: var(--darkgrey);
-    font-size: 2.6rem;
+    font-size: 3.2rem;
     font-weight: bold;
 }
 
@@ -399,4 +400,33 @@
 
 .modal-markdown-help-table th {
     text-align: left;
+}
+
+
+/* NEW editor
+/* ---------------------------------------------------------- */
+
+.gh-editor-header {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    height: 65px;
+}
+
+.gh-editor-container {
+    position: relative;
+    overflow-y: auto;
+    padding: 100px 4vw 40px;
+    width: 100%;
+}
+
+.gh-editor-inner {
+    margin: 0 auto;
+    max-width: 700px;
 }

@@ -16,6 +16,8 @@ import PostModel from 'ghost-admin/models/post';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {isInvalidError} from 'ember-ajax/errors';
+import $ from 'jquery';
+import ghostPaths from 'ghost-admin/utils/ghost-paths';
 
 const {resolve} = RSVP;
 
@@ -39,6 +41,12 @@ export default Mixin.create({
     notifications: injectService(),
     clock: injectService(),
     slugGenerator: injectService(),
+
+    cards: [], // for apps
+    atoms: [], // for apps
+    toolbar: [], // for apps
+    apiRoot: ghostPaths().apiRoot,
+    assetPath: ghostPaths().assetRoot,
 
     init() {
         this._super(...arguments);
@@ -543,6 +551,13 @@ export default Mixin.create({
 
         toggleReAuthenticateModal() {
             this.toggleProperty('showReAuthenticateModal');
+        },
+
+        titleKeyDown(event) {
+            if (event.keyCode === 13 || event.keyCode === 40) {
+                // if the enter key or down key are pressed then focus on the editor
+                $('.__mobiledoc-editor').focus();
+            }
         }
     }
 });
