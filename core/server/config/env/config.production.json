@@ -11,7 +11,9 @@
     },
     "logging": {
         "level": "info",
-        "rotation": true,
+        "rotation": {
+            "enabled": true
+        },
         "transports": ["file"]
     }
 }
