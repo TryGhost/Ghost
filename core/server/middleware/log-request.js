@@ -1,4 +1,4 @@
-var cuid = require('cuid'),
+var uuid = require('node-uuid'),
     logging = require('../logging');
 
 /**
@@ -7,7 +7,7 @@ var cuid = require('cuid'),
  */
 module.exports = function logRequest(req, res, next) {
     var startTime = Date.now(),
-        requestId = cuid();
+        requestId = uuid.v1();
 
     function logResponse() {
         res.responseTime = (Date.now() - startTime) + 'ms';
