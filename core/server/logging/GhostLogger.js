@@ -3,18 +3,112 @@ var bunyan = require('bunyan'),
     GhostPrettyStream = require('./PrettyStream');
 
 function GhostLogger(options) {
+    var self = this;
+
     this.env = options.env;
+    this.domain = options.domain || 'localhost';
     this.transports = options.transports || ['stdout'];
     this.level = options.level || 'info';
     this.mode = options.mode || 'short';
-    this.path = options.path || 'ghost.log';
-    this.rotation = options.rotation || false;
-    this.loggers = {};
+    this.path = options.path || process.cwd();
 
+    this.rotation = options.rotation || {
+            enabled: false,
+            period: '1w',
+            count: 100
+        };
+
+    this.streams = {};
     this.setSerializers();
-    this.setLoggers();
-    this.setStreams();
+
+    _.each(this.transports, function (transport) {
+        self['set' + transport.slice(0, 1).toUpperCase() + transport.slice(1) + 'Stream']();
+    });
 }
+
+GhostLogger.prototype.setStdoutStream = function () {
+    var prettyStdOut = new GhostPrettyStream({
+        mode: this.mode
+    });
+
+    prettyStdOut.pipe(process.stdout);
+
+    this.streams.stdout = {
+        name: 'stdout',
+        log: bunyan.createLogger({
+            name: 'Log',
+            streams: [{
+                type: 'raw',
+                stream: prettyStdOut,
+                level: this.level
+            }],
+            serializers: this.serializers
+        })
+    };
+};
+
+/**
+ * by default we log into two files
+ * 1. file-errors: all errors only
+ * 2. file-all: everything
+ */
+GhostLogger.prototype.setFileStream = function () {
+    this.streams['file-errors'] = {
+        name: 'file',
+        log: bunyan.createLogger({
+            name: 'Log',
+            streams: [{
+                path: this.path + this.domain + '_' + '.error.log',
+                level: 'error'
+            }],
+            serializers: this.serializers
+        })
+    };
+
+    this.streams['file-all'] = {
+        name: 'file',
+        log: bunyan.createLogger({
+            name: 'Log',
+            streams: [{
+                path: this.path + this.domain + '_' + '.log',
+                level: this.level
+            }],
+            serializers: this.serializers
+        })
+    };
+
+    if (this.rotation.enabled) {
+        this.streams['rotation-errors'] = {
+            name: 'rotation-errors',
+            log: bunyan.createLogger({
+                name: 'Log',
+                streams: [{
+                    type: 'rotating-file',
+                    path: this.path + this.domain + '_' + '.error.log',
+                    period: this.rotation.period,
+                    count: this.rotation.count,
+                    level: this.level
+                }],
+                serializers: this.serializers
+            })
+        };
+
+        this.streams['rotation-all'] = {
+            name: 'rotation-all',
+            log: bunyan.createLogger({
+                name: 'Log',
+                streams: [{
+                    type: 'rotating-file',
+                    path: this.path + this.domain + '_' + '.log',
+                    period: this.rotation.period,
+                    count: this.rotation.count,
+                    level: this.level
+                }],
+                serializers: this.serializers
+            })
+        };
+    }
+};
 
 // @TODO: add correlation identifier
 // @TODO: res.on('finish') has no access to the response body
@@ -24,6 +118,10 @@ GhostLogger.prototype.setSerializers = function setSerializers() {
     this.serializers = {
         req: function (req) {
             return {
+                meta: {
+                    requestId: req.requestId,
+                    userId: req.userId
+                },
                 url: req.url,
                 method: req.method,
                 originalUrl: req.originalUrl,
@@ -36,7 +134,8 @@ GhostLogger.prototype.setSerializers = function setSerializers() {
         res: function (res) {
             return {
                 _headers: self.removeSensitiveData(res._headers),
-                statusCode: res.statusCode
+                statusCode: res.statusCode,
+                responseTime: res.responseTime
             };
         },
         err: function (err) {
@@ -54,105 +153,6 @@ GhostLogger.prototype.setSerializers = function setSerializers() {
     };
 };
 
-GhostLogger.prototype.setLoggers = function setLoggers() {
-    var self = this;
-
-    this.log = {
-        info: function (options) {
-            var req = options.req,
-                res = options.res;
-
-            _.each(self.loggers, function (logger) {
-                logger.log.info({
-                    req: req,
-                    res: res
-                });
-            });
-        },
-        debug: function (options) {
-            var req = options.req,
-                res = options.res;
-
-            _.each(self.loggers, function (logger) {
-                logger.log.debug({
-                    req: req,
-                    res: res
-                });
-            });
-        },
-        error: function (options) {
-            var req = options.req,
-                res = options.res,
-                err = options.err;
-
-            _.each(self.loggers, function (logger) {
-                logger.log.error({
-                    req: req,
-                    res: res,
-                    err: err
-                });
-            });
-        }
-    };
-};
-
-GhostLogger.prototype.setStreams = function setStreams() {
-    var self = this,
-        streams = [],
-        prettyStdOut;
-
-    _.each(self.transports, function (transport) {
-        if (transport === 'file') {
-            streams.push({
-                name: 'file',
-                stream: {
-                    path: self.path,
-                    level: self.level
-                }
-            });
-        }
-
-        if (transport === 'stdout') {
-            prettyStdOut = new GhostPrettyStream({mode: self.mode});
-            prettyStdOut.pipe(process.stdout);
-
-            streams.push({
-                name: 'stdout',
-                stream: {
-                    type: 'raw',
-                    stream: prettyStdOut,
-                    level: self.level
-                }
-            });
-        }
-    });
-
-    if (self.rotation) {
-        streams.push({
-            name: 'rotation',
-            stream: {
-                type: 'rotating-file',
-                path: self.path,
-                period: '1w',
-                count: 3,
-                level: self.level
-            }
-        });
-    }
-
-    // the env defines which streams are available
-    _.each(streams, function (stream) {
-        self.loggers[stream.name] = {
-            name: stream.name,
-            log: bunyan.createLogger({
-                name: 'Log',
-                streams: [stream.stream],
-                serializers: self.serializers
-            })
-        };
-    });
-};
-
 GhostLogger.prototype.removeSensitiveData = function removeSensitiveData(obj) {
     var newObj = {};
 
@@ -165,58 +165,59 @@ GhostLogger.prototype.removeSensitiveData = function removeSensitiveData(obj) {
     return newObj;
 };
 
-GhostLogger.prototype.info = function info() {
-    var print = '';
+/**
+ * Because arguments can contain lot's of different things, we prepare the arguments here.
+ * This function allows us to use logging very flexible!
+ *
+ * logging.info('HEY', 'DU') --> is one string
+ * logging.info({}, {}) --> is one object
+ * logging.error(new Error()) --> is {err: new Error()}
+ */
+GhostLogger.prototype.log = function log(type, args) {
+    var self = this,
+        modifiedArguments;
 
-    _.each(arguments, function (value) {
-        print += value;
-        print += ' ';
+    _.each(args, function (value) {
+        if (value instanceof Error) {
+            if (!modifiedArguments) {
+                modifiedArguments = {};
+            }
+
+            modifiedArguments.err = value;
+        } else if (_.isObject(value)) {
+            if (!modifiedArguments) {
+                modifiedArguments = {};
+            }
+
+            var keys = Object.keys(value);
+            _.each(keys, function (key) {
+                modifiedArguments[key] = value[key];
+            });
+        } else {
+            if (!modifiedArguments) {
+                modifiedArguments = '';
+            }
+
+            modifiedArguments += value;
+            modifiedArguments += ' ';
+        }
     });
 
-    if (!this.loggers.stdout) {
-        return;
-    }
+    _.each(self.streams, function (logger) {
+        logger.log[type](modifiedArguments);
+    });
+};
 
-    this.loggers.stdout.log.info(print);
+GhostLogger.prototype.info = function info() {
+    this.log('info', arguments);
 };
 
 GhostLogger.prototype.warn = function warn() {
-    var print = '';
-
-    _.each(arguments, function (value) {
-        print += value;
-        print += ' ';
-    });
-
-    if (!this.loggers.stdout) {
-        return;
-    }
-
-    this.loggers.stdout.log.warn(print);
+    this.log('warn', arguments);
 };
 
-GhostLogger.prototype.debug = function debug(options) {
-    if (!this.loggers.stdout) {
-        return;
-    }
-
-    this.loggers.stdout.log.debug(options);
-};
-
-GhostLogger.prototype.error = function error(err) {
-    this.log.error({err: err});
-};
-
-GhostLogger.prototype.request = function request(options) {
-    var req = options.req,
-        res = options.res,
-        err = options.err;
-
-    if (err) {
-        this.log.error({req: req, res: res, err: err});
-    } else {
-        this.log.info({req: req, res: res});
-    }
+GhostLogger.prototype.error = function error() {
+    this.log('error', arguments);
 };
 
 module.exports = GhostLogger;
