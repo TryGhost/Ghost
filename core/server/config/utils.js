@@ -68,6 +68,8 @@ exports.getContentPath = function getContentPath(type) {
             return path.join(this.get('paths:contentPath'), 'themes/');
         case 'scheduling':
             return path.join(this.get('paths:contentPath'), 'scheduling/');
+        case 'logs':
+            return path.join(this.get('paths:contentPath'), 'logs/');
         default:
             throw new Error('getContentPath was called with: ' + type);
     }

@@ -31,7 +31,9 @@
     },
     "logging": {
         "level": "info",
-        "rotation": false,
+        "rotation": {
+            "enabled": false
+        },
         "transports": ["stdout"]
     }
 }
