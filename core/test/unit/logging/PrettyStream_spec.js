@@ -1,5 +1,4 @@
 var GhostPrettyStream = require('../../../server/logging/PrettyStream'),
-    errors = require('../../../server/errors'),
     should = require('should');
 
 should.equal(true, true);
@@ -25,14 +24,17 @@ describe('PrettyStream', function () {
             var ghostPrettyStream = new GhostPrettyStream({mode: 'short'});
 
             ghostPrettyStream.emit = function (eventName, data) {
-                data.should.eql('[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m\n\u001b[4mlevel:normal\u001b[24m\n\u001b[31mHey Jude!\u001b[39m\n\n');
+                data.should.eql('[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m\n\u001b[31m\n\u001b[31mHey Jude!\u001b[39m\n\u001b[37mstack\u001b[39m\n\u001b[39m\n');
                 done();
             };
 
             ghostPrettyStream.write(JSON.stringify({
                 time: '2016-07-01 00:00:00',
                 level: 50,
-                err: new errors.GhostError({message: 'Hey Jude!'})
+                err: {
+                    message: 'Hey Jude!',
+                    stack: 'stack'
+                }
             }));
         });
 
@@ -40,7 +42,7 @@ describe('PrettyStream', function () {
             var ghostPrettyStream = new GhostPrettyStream({mode: 'short'});
 
             ghostPrettyStream.emit = function (eventName, data) {
-                data.should.eql('[2016-07-01 00:00:00] \u001b[36mINFO\u001b[39m GET /test (200)\n');
+                data.should.eql('\u001b[36mINFO\u001b[39m [2016-07-01 00:00:00] "GET /test" 200 39ms\n');
                 done();
             };
 
@@ -55,7 +57,8 @@ describe('PrettyStream', function () {
                     }
                 },
                 res: {
-                    statusCode: 200
+                    statusCode: 200,
+                    responseTime: '39ms'
                 }
             }));
         });
@@ -64,7 +67,7 @@ describe('PrettyStream', function () {
             var ghostPrettyStream = new GhostPrettyStream({mode: 'short'});
 
             ghostPrettyStream.emit = function (eventName, data) {
-                data.should.eql('[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m GET /test (400)\n');
+                data.should.eql('\u001b[31mERROR\u001b[39m [2016-07-01 00:00:00] "GET /test" 400 39ms\n\u001b[31m\n\u001b[31mmessage\u001b[39m\n\u001b[37mstack\u001b[39m\n\u001b[39m\n');
                 done();
             };
 
@@ -79,9 +82,13 @@ describe('PrettyStream', function () {
                     }
                 },
                 res: {
-                    statusCode: 400
+                    statusCode: 400,
+                    responseTime: '39ms'
                 },
-                err: new errors.GhostError()
+                err: {
+                    message: 'message',
+                    stack: 'stack'
+                }
             }));
         });
     });
@@ -106,14 +113,17 @@ describe('PrettyStream', function () {
             var ghostPrettyStream = new GhostPrettyStream({mode: 'long'});
 
             ghostPrettyStream.emit = function (eventName, data) {
-                data.should.eql('[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m\n\u001b[4mlevel:normal\u001b[24m\n\u001b[31mHey Jude!\u001b[39m\n\n');
+                data.should.eql('[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m\n\u001b[31m\n\u001b[31mHey Jude!\u001b[39m\n\u001b[37mstack\u001b[39m\n\u001b[39m\n\u001b[90m\u001b[39m\n');
                 done();
             };
 
             ghostPrettyStream.write(JSON.stringify({
                 time: '2016-07-01 00:00:00',
                 level: 50,
-                err: new errors.GhostError({message: 'Hey Jude!'})
+                err: {
+                    message: 'Hey Jude!',
+                    stack: 'stack'
+                }
             }));
         });
 
@@ -121,7 +131,7 @@ describe('PrettyStream', function () {
             var ghostPrettyStream = new GhostPrettyStream({mode: 'long'});
 
             ghostPrettyStream.emit = function (eventName, data) {
-                data.should.eql('[2016-07-01 00:00:00] \u001b[36mINFO\u001b[39m GET /test (200)\n\u001b[90m\n\u001b[33mBODY\u001b[39m\n\u001b[32ma: \u001b[39mb\n\u001b[39m\n');
+                data.should.eql('\u001b[36mINFO\u001b[39m [2016-07-01 00:00:00] "GET /test" 200 39ms\n\u001b[90m\n\u001b[33mREQ\u001b[39m\n\u001b[32mip: \u001b[39m         127.0.01\n\u001b[32moriginalUrl: \u001b[39m/test\n\u001b[32mmethod: \u001b[39m     GET\n\u001b[32mbody: \u001b[39m\n  \u001b[32ma: \u001b[39mb\n\n\u001b[33mRES\u001b[39m\n\u001b[32mresponseTime: \u001b[39m39ms\n\u001b[39m\n');
                 done();
             };
 
@@ -129,6 +139,7 @@ describe('PrettyStream', function () {
                 time: '2016-07-01 00:00:00',
                 level: 30,
                 req: {
+                    ip: '127.0.01',
                     originalUrl: '/test',
                     method: 'GET',
                     body: {
@@ -136,7 +147,8 @@ describe('PrettyStream', function () {
                     }
                 },
                 res: {
-                    statusCode: 200
+                    statusCode: 200,
+                    responseTime: '39ms'
                 }
             }));
         });
@@ -145,7 +157,7 @@ describe('PrettyStream', function () {
             var ghostPrettyStream = new GhostPrettyStream({mode: 'long'});
 
             ghostPrettyStream.emit = function (eventName, data) {
-                data.should.eql('[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m GET /test (400)\n\u001b[90m\n\u001b[33mBODY\u001b[39m\n\u001b[32ma: \u001b[39mb\n\u001b[33mERROR (normal)\u001b[39m\n\u001b[39m\n');
+                data.should.eql('\u001b[31mERROR\u001b[39m [2016-07-01 00:00:00] "GET /test" 400 39ms\n\u001b[31m\n\u001b[31mHey Jude!\u001b[39m\n\u001b[37mstack\u001b[39m\n\u001b[39m\n\u001b[90m\n\u001b[33mREQ\u001b[39m\n\u001b[32moriginalUrl: \u001b[39m/test\n\u001b[32mmethod: \u001b[39m     GET\n\u001b[32mbody: \u001b[39m\n  \u001b[32ma: \u001b[39mb\n\n\u001b[33mRES\u001b[39m\n\u001b[32mresponseTime: \u001b[39m39ms\n\u001b[39m\n');
                 done();
             };
 
@@ -160,9 +172,13 @@ describe('PrettyStream', function () {
                     }
                 },
                 res: {
-                    statusCode: 400
+                    statusCode: 400,
+                    responseTime: '39ms'
                 },
-                err: new errors.GhostError()
+                err: {
+                    message: 'Hey Jude!',
+                    stack: 'stack'
+                }
             }));
         });
     });
