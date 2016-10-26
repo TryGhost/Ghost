@@ -119,7 +119,7 @@
     "matchdep": "1.0.1",
     "minimist": "1.2.0",
     "mocha": "3.1.2",
-    "nock": "8.1.0",
+    "nock": "9.0.0",
     "rewire": "2.5.2",
     "run-sequence": "1.2.2",
     "should": "11.1.1",
