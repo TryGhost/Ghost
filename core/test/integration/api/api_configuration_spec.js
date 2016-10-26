@@ -1,10 +1,10 @@
-var testUtils         = require('../../utils'),
-    configUtils       = require('../../utils/configUtils'),
-    should            = require('should'),
-    rewire            = require('rewire'),
+var testUtils = require('../../utils'),
+    configUtils = require('../../utils/configUtils'),
+    should = require('should'),
+    rewire = require('rewire'),
 
     // Stuff we are testing
-    ConfigurationAPI  = rewire('../../../server/api/configuration');
+    ConfigurationAPI = rewire('../../../server/api/configuration');
 
 describe('Configuration API', function () {
     // Keep the DB clean
@@ -28,28 +28,29 @@ describe('Configuration API', function () {
             response.configuration.should.be.an.Array().with.lengthOf(1);
             props = response.configuration[0];
 
-            // Check the structure
-            props.should.have.property('blogUrl').which.is.an.Object().with.properties('type', 'value');
-            props.should.have.property('blogTitle').which.is.an.Object().with.properties('type', 'value');
-            props.should.have.property('routeKeywords').which.is.an.Object().with.properties('type', 'value');
-            props.should.have.property('fileStorage').which.is.an.Object().with.properties('type', 'value');
-            props.should.have.property('useGravatar').which.is.an.Object().with.properties('type', 'value');
-            props.should.have.property('publicAPI').which.is.an.Object().with.properties('type', 'value');
+            props.blogUrl.should.eql('http://127.0.0.1:2369');
+            props.routeKeywords.should.eql(JSON.stringify({
+                tag: 'tag',
+                author: 'author',
+                page: 'page',
+                preview: 'p',
+                private: 'private',
+                subscribe: 'subscribe',
+                amp: 'amp'
+            }));
 
-            props.should.have.property('clientId').which.is.an.Object().with.properties('type', 'value');
-            props.should.have.property('clientSecret').which.is.an.Object().with.properties('type', 'value');
-            props.should.have.property('ghostAuthId').which.is.an.Object().with.properties('type', 'value');
-            props.should.have.property('ghostAuthUrl').which.is.an.Object().with.properties('type', 'value');
+            props.fileStorage.should.eql(true);
+            props.useGravatar.should.eql(true);
+            props.publicAPI.should.eql(false);
+            props.clientId.should.eql('ghost-admin');
+            props.clientSecret.should.eql('not_available');
+            props.ghostAuthUrl.should.eql('http://devauth.ghost.org:8080');
 
-            // Check a few values
-            props.blogUrl.should.have.property('value', 'http://127.0.0.1:2369');
-            props.fileStorage.should.have.property('value', true);
-            props.clientId.should.have.property('value', 'ghost-admin');
+            // value not available, because settings API was not called yet
+            props.hasOwnProperty('blogTitle').should.eql(true);
 
-            should.exist(props.ghostAuthId.value);
-            should.exist(props.ghostAuthUrl.value);
-            should.exist(props.clientSecret.value);
-            should.exist(props.clientId.value);
+            // uuid
+            props.hasOwnProperty('ghostAuthId').should.eql(true);
 
             done();
         }).catch(done);

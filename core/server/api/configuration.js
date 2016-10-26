@@ -8,13 +8,6 @@ var _                  = require('lodash'),
 
     configuration;
 
-function labsFlag(key) {
-    return {
-        value: (config[key] === true),
-        type: 'bool'
-    };
-}
-
 function fetchAvailableTimezones() {
     var timezones = require('../data/timezones.json');
     return timezones;
@@ -31,12 +24,12 @@ function getAboutConfig() {
 
 function getBaseConfig() {
     return {
-        fileStorage:    {value: (config.fileStorage !== false), type: 'bool'},
-        useGravatar:    {value: !config.isPrivacyDisabled('useGravatar'), type: 'bool'},
-        publicAPI:      labsFlag('publicAPI'),
-        blogUrl:        {value: config.get('url').replace(/\/$/, ''), type: 'string'},
-        blogTitle:      {value: config.get('theme').title, type: 'string'},
-        routeKeywords:  {value: JSON.stringify(config.get('routeKeywords')), type: 'json'}
+        fileStorage:    config.get('fileStorage') !== false,
+        useGravatar:    !config.isPrivacyDisabled('useGravatar'),
+        publicAPI:      config.get('publicAPI') === true,
+        blogUrl:        config.get('url').replace(/\/$/, ''),
+        blogTitle:      config.get('theme').title,
+        routeKeywords:  JSON.stringify(config.get('routeKeywords'))
     };
 }
 
@@ -46,8 +39,6 @@ function getBaseConfig() {
  * We need to load the client credentials dynamically.
  * For example: on bootstrap ghost-auth get's created and if we load them here in parallel,
  * it can happen that we won't get any client credentials or wrong credentials.
- *
- * @TODO: remove {value: .., type: ..} pattern?
  *
  * **See:** [API Methods](index.js.html#api%20methods)
  */
@@ -74,12 +65,12 @@ configuration = {
                 .then(function (result) {
                     var configuration = getBaseConfig();
 
-                    configuration.clientId = {value: result.ghostAdmin.get('slug'), type: 'string'};
-                    configuration.clientSecret = {value: result.ghostAdmin.get('secret'), type: 'string'};
+                    configuration.clientId = result.ghostAdmin.get('slug');
+                    configuration.clientSecret = result.ghostAdmin.get('secret');
 
                     if (result.ghostAuth) {
-                        configuration.ghostAuthId = {value: result.ghostAuth.get('uuid'), type: 'string'};
-                        configuration.ghostAuthUrl = {value: config.get('auth:url'), type: 'string'};
+                        configuration.ghostAuthId = result.ghostAuth.get('uuid');
+                        configuration.ghostAuthUrl = config.get('auth:url');
                     }
 
                     return {configuration: [configuration]};
