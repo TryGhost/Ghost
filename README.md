@@ -7,11 +7,11 @@ The project is maintained by a non-profit organisation called the **Ghost Founda
 
 - [Ghost.org](https://ghost.org)
 - [Latest Release](https://ghost.org/developers/)
-- [Support](http://support.ghost.org/)
-- [Theme Docs](http://themes.ghost.org)
+- [Support](https://support.ghost.org/)
+- [Theme Docs](https://themes.ghost.org)
 - [Contributing Guide](https://github.com/TryGhost/Ghost/blob/master/.github/CONTRIBUTING.md)
-- [Feature Requests](http://ideas.ghost.org/)
-- [Developer Blog](http://dev.ghost.org)
+- [Feature Requests](https://ideas.ghost.org/)
+- [Developer Blog](https://dev.ghost.org)
 
 **NOTE: If you’re stuck, can’t get something working or need some help, please head on over and join our [Slack community](https://ghost.org/slack/) rather than opening an issue.**
 
@@ -19,7 +19,7 @@ The project is maintained by a non-profit organisation called the **Ghost Founda
 
 # Quick Start Install
 
-First, you’ll need **Node.js v4 LTS** or a [supported version](http://support.ghost.org/supported-node-versions/).
+First, you’ll need **Node.js v4 LTS** or a [supported version](https://support.ghost.org/supported-node-versions/).
 
 1. Download the [latest release](https://ghost.org/developers/) of Ghost
 1. Unzip, and fire up terminal
@@ -29,14 +29,14 @@ First, you’ll need **Node.js v4 LTS** or a [supported version](http://support.
     - On a server: `npm start --production`
 1. `http://localhost:2368/ghost` :tada:
 
-More [install docs](http://support.ghost.org/installation/) here in case you get stuck.
+More [install docs](https://support.ghost.org/installation/) here in case you get stuck.
 
 &nbsp;
 
 <a name="getting-started"></a>
 # Developer Install
 
-This is for if you want to hack on Ghost core. First, you’ll need **Node.js v4 LTS** or a [supported version](http://support.ghost.org/supported-node-versions/). Then:
+This is for if you want to hack on Ghost core. First, you’ll need **Node.js v4 LTS** or a [supported version](https://support.ghost.org/supported-node-versions/). Then:
 
 ```bash
 git clone git://github.com/tryghost/ghost.git
@@ -86,18 +86,18 @@ The easiest way to deploy Ghost is with our official **[Ghost(Pro)](https://ghos
 
 Not only will it save you [many hours per month](https://ghost.org/ghost-pro-vs-self-hosting/), but all revenue goes to the Ghost Foundation, which funds the maintenance and further development of Ghost itself. So you’ll be supporting open source software *and* getting a great service **at the same time**! Talk about win/win. :trophy: 
 
-[Other options](http://support.ghost.org/deploying-ghost/) are also available if you prefer playing around with servers by yourself, of course. The freedom of choice is in your hands.
+[Other options](https://support.ghost.org/deploying-ghost/) are also available if you prefer playing around with servers by yourself, of course. The freedom of choice is in your hands.
 
 &nbsp;
 
 
 # Staying Up to Date
 
-When a new version of Ghost comes out, you'll want to look over these [upgrade instructions](http://support.ghost.org/how-to-upgrade/) for what to do next.
+When a new version of Ghost comes out, you'll want to look over these [upgrade instructions](https://support.ghost.org/how-to-upgrade/) for what to do next.
 
 You can talk to other Ghost users and developers in our [public Slack team](https://ghost.org/slack/) (it's pretty awesome). We have a public meeting every Tuesday at 5:30pm UK time.
 
-New releases are announced on the [dev blog](http://dev.ghost.org/tag/releases/). You can subscribe by email or follow [@TryGhost_Dev](https://twitter.com/tryghost_dev) on Twitter, if you prefer your updates bite-sized and facetious. :saxophone::turtle:
+New releases are announced on the [dev blog](https://dev.ghost.org/tag/releases/). You can subscribe by email or follow [@TryGhost_Dev](https://twitter.com/tryghost_dev) on Twitter, if you prefer your updates bite-sized and facetious. :saxophone::turtle:
 
 &nbsp;
 
