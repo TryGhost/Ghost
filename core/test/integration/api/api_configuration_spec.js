@@ -1,4 +1,5 @@
 var testUtils         = require('../../utils'),
+    configUtils       = require('../../utils/configUtils'),
     should            = require('should'),
     rewire            = require('rewire'),
 
@@ -8,11 +9,17 @@ var testUtils         = require('../../utils'),
 describe('Configuration API', function () {
     // Keep the DB clean
     before(testUtils.teardown);
-    afterEach(testUtils.teardown);
+    beforeEach(testUtils.setup('clients'));
+    afterEach(function () {
+        configUtils.restore();
+        return testUtils.teardown();
+    });
 
     should.exist(ConfigurationAPI);
 
     it('can read basic config and get all expected properties', function (done) {
+        configUtils.set('auth:type', 'ghost');
+
         ConfigurationAPI.read().then(function (response) {
             var props;
 
@@ -29,9 +36,20 @@ describe('Configuration API', function () {
             props.should.have.property('useGravatar').which.is.an.Object().with.properties('type', 'value');
             props.should.have.property('publicAPI').which.is.an.Object().with.properties('type', 'value');
 
+            props.should.have.property('clientId').which.is.an.Object().with.properties('type', 'value');
+            props.should.have.property('clientSecret').which.is.an.Object().with.properties('type', 'value');
+            props.should.have.property('ghostAuthId').which.is.an.Object().with.properties('type', 'value');
+            props.should.have.property('ghostAuthUrl').which.is.an.Object().with.properties('type', 'value');
+
             // Check a few values
             props.blogUrl.should.have.property('value', 'http://127.0.0.1:2369');
             props.fileStorage.should.have.property('value', true);
+            props.clientId.should.have.property('value', 'ghost-admin');
+
+            should.exist(props.ghostAuthId.value);
+            should.exist(props.ghostAuthUrl.value);
+            should.exist(props.clientSecret.value);
+            should.exist(props.clientId.value);
 
             done();
         }).catch(done);
