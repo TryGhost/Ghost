@@ -1,8 +1,6 @@
 var debug         = require('debug')('ghost:admin:controller'),
     _             = require('lodash'),
-    Promise       = require('bluebird'),
     api           = require('../api'),
-    config        = require('../config'),
     logging       = require('../logging'),
     updateCheck   = require('../update-check'),
     i18n          = require('../i18n');

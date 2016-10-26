@@ -3,6 +3,7 @@
 var _                  = require('lodash'),
     config             = require('../config'),
     ghostVersion       = require('../utils/ghost-version'),
+    models             = require('../models'),
     Promise            = require('bluebird'),
 
     configuration;
@@ -42,6 +43,12 @@ function getBaseConfig() {
 /**
  * ## Configuration API Methods
  *
+ * We need to load the client credentials dynamically.
+ * For example: on bootstrap ghost-auth get's created and if we load them here in parallel,
+ * it can happen that we won't get any client credentials or wrong credentials.
+ *
+ * @TODO: remove {value: .., type: ..} pattern?
+ *
  * **See:** [API Methods](index.js.html#api%20methods)
  */
 configuration = {
@@ -54,9 +61,29 @@ configuration = {
      */
     read: function read(options) {
         options = options || {};
+        var ops = {};
 
         if (!options.key) {
-            return Promise.resolve({configuration: [getBaseConfig()]});
+            ops.ghostAdmin = models.Client.findOne({slug: 'ghost-admin'});
+
+            if (config.get('auth:type') === 'ghost') {
+                ops.ghostAuth = models.Client.findOne({slug: 'ghost-auth'});
+            }
+
+            return Promise.props(ops)
+                .then(function (result) {
+                    var configuration = getBaseConfig();
+
+                    configuration.clientId = {value: result.ghostAdmin.get('slug'), type: 'string'};
+                    configuration.clientSecret = {value: result.ghostAdmin.get('secret'), type: 'string'};
+
+                    if (result.ghostAuth) {
+                        configuration.ghostAuthId = {value: result.ghostAuth.get('uuid'), type: 'string'};
+                        configuration.ghostAuthUrl = {value: config.get('auth:url'), type: 'string'};
+                    }
+
+                    return {configuration: [configuration]};
+                });
         }
 
         if (options.key === 'about') {
