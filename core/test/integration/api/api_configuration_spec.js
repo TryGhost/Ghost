@@ -29,7 +29,7 @@ describe('Configuration API', function () {
             props = response.configuration[0];
 
             props.blogUrl.should.eql('http://127.0.0.1:2369');
-            props.routeKeywords.should.eql(JSON.stringify({
+            props.routeKeywords.should.eql({
                 tag: 'tag',
                 author: 'author',
                 page: 'page',
@@ -37,7 +37,7 @@ describe('Configuration API', function () {
                 private: 'private',
                 subscribe: 'subscribe',
                 amp: 'amp'
-            }));
+            });
 
             props.fileStorage.should.eql(true);
             props.useGravatar.should.eql(true);

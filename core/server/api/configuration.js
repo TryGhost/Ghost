@@ -29,7 +29,7 @@ function getBaseConfig() {
         publicAPI:      config.get('publicAPI') === true,
         blogUrl:        config.get('url').replace(/\/$/, ''),
         blogTitle:      config.get('theme').title,
-        routeKeywords:  JSON.stringify(config.get('routeKeywords'))
+        routeKeywords:  config.get('routeKeywords')
     };
 }
 
