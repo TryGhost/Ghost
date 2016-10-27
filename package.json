@@ -130,6 +130,7 @@
   },
   "greenkeeper": {
     "ignore": [
+      "bunyan",
       "glob",
       "mysql",
       "nodemailer",
