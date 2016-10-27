@@ -294,7 +294,7 @@ authentication = {
 
             if (!tokenParts) {
                 return Promise.reject(new errors.UnauthorizedError({
-                    message: i18n.t('errors.models.user.invalidTokenStructure')
+                    message: i18n.t('errors.api.common.invalidTokenStructure')
                 }));
             }
 
@@ -338,7 +338,7 @@ authentication = {
 
                     if (!tokenIsCorrect) {
                         return Promise.reject(new errors.BadRequestError({
-                            message: i18n.t('errors.models.user.invalidTokenStructure')
+                            message: i18n.t('errors.api.common.invalidTokenStructure')
                         }));
                     }
 

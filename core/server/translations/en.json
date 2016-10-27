@@ -245,8 +245,6 @@
                 "accountLocked": "Your account is locked. Please reset your password to log in again by clicking the \"Forgotten password?\" link!",
                 "newPasswordsDoNotMatch": "Your new passwords do not match",
                 "passwordRequiredForOperation": "Password is required for this operation",
-                "invalidTokenStructure": "Invalid token structure",
-                "invalidTokenExpiration": "Invalid token expiration",
                 "expiredToken": "Expired token",
                 "tokenLocked": "Token locked",
                 "invalidToken": "Invalid token",
@@ -289,6 +287,9 @@
             }
         },
         "api": {
+            "common": {
+                "invalidTokenStructure": "Invalid token structure"
+            },
             "authentication": {
                 "setupUnableToRun": "Database missing fixture data. Please reset database and try again.",
                 "setupMustBeCompleted": "Setup must be completed before making this request.",
