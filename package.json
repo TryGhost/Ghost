@@ -108,7 +108,7 @@
     "gulp-git-submodule": "1.0.1",
     "gulp-help": "1.6.1",
     "gulp-jscs": "4.0.0",
-    "gulp-jshint": "2.0.1",
+    "gulp-jshint": "2.0.2",
     "gulp-jsonlint": "1.1.2",
     "gulp-livereload": "3.8.1",
     "gulp-nodemon": "2.2.1",
