@@ -66,7 +66,7 @@
     "netjet": "1.1.3",
     "node-uuid": "1.4.7",
     "nodemailer": "0.7.1",
-    "oauth2orize": "1.5.0",
+    "oauth2orize": "1.5.1",
     "passport": "0.3.2",
     "passport-ghost": "1.0.3",
     "passport-http-bearer": "1.0.1",
