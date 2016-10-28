@@ -59,7 +59,7 @@ function apiRoutes() {
     apiRouter.options('*', cors);
 
     // ## Configuration
-    apiRouter.get('/configuration', authenticatePrivate, api.http(api.configuration.read));
+    apiRouter.get('/configuration', api.http(api.configuration.read));
     apiRouter.get('/configuration/:key', authenticatePrivate, api.http(api.configuration.read));
     apiRouter.get('/configuration/timezones', authenticatePrivate, api.http(api.configuration.read));
 
