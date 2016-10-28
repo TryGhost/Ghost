@@ -7,7 +7,9 @@ let GhostOauth2 = Oauth2.extend({
     config: injectService(),
 
     name:    'ghost-oauth2',
-    baseUrl: 'http://devauth.ghost.org:8080/oauth2/authorize',
+    baseUrl: computed(function () {
+        return `${this.get('config.ghostAuthUrl')}/oauth2/authorize`;
+    }),
     apiKey: computed(function () {
         return this.get('config.ghostAuthId');
     }),

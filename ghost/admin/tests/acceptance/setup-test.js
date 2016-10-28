@@ -7,15 +7,16 @@ import {
     afterEach
 } from 'mocha';
 import { expect } from 'chai';
-import startApp from 'ghost-admin/tests/helpers/start-app';
-import destroyApp from 'ghost-admin/tests/helpers/destroy-app';
-import { invalidateSession, authenticateSession } from 'ghost-admin/tests/helpers/ember-simple-auth';
+import startApp from '../helpers/start-app';
+import destroyApp from '../helpers/destroy-app';
+import { invalidateSession, authenticateSession } from '../helpers/ember-simple-auth';
+import { enableGhostOAuth } from '../helpers/configuration';
 import Mirage from 'ember-cli-mirage';
 import $ from 'jquery';
 import {
     stubSuccessfulOAuthConnect,
     stubFailedOAuthConnect
-} from 'ghost-admin/tests/helpers/oauth';
+} from '../helpers/oauth';
 
 describe('Acceptance: Setup', function () {
     let application;
@@ -427,17 +428,10 @@ describe('Acceptance: Setup', function () {
                 };
             });
 
-            // simulate active oauth config
-            $('head').append('<meta name="env-ghostAuthId" content="6e0704b3-c653-4c12-8da7-584232b5c629" />');
-
             // ensure we have settings (to pass validation) and roles available
+            enableGhostOAuth(server);
             server.loadFixtures('settings');
             server.loadFixtures('roles');
-        });
-
-        afterEach(function () {
-            // ensure we don't leak OAuth config to other tests
-            $('meta[name="env-ghostAuthId"]').remove();
         });
 
         it('displays the connect form and validates', function () {

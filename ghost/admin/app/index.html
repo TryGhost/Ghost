@@ -31,10 +31,6 @@
     <meta name="msapplication-square150x150logo" content="{{asset "img/medium.png" ghost="true"}}" />
     <meta name="msapplication-square310x310logo" content="{{asset "img/large.png" ghost="true"}}" />
 
-    {{#each configuration as |config key|}}
-        <meta name="env-{{key}}" content="{{config.value}}" data-type="{{config.type}}" />
-    {{/each}}
-
     <link rel="stylesheet" href="{{asset "vendor.css" ghost="true" minifyInProduction="true"}}" />
     <link rel="stylesheet" href="{{asset "ghost.css" ghost="true" minifyInProduction="true"}}" />
 

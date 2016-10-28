@@ -1,4 +1,5 @@
 import mockAuthentication from './config/authentication';
+import mockConfiguration from './config/configuration';
 import mockInvites from './config/invites';
 import mockPosts from './config/posts';
 import mockRoles from './config/roles';
@@ -37,6 +38,7 @@ export function testConfig() {
     // this.logging = true;
 
     mockAuthentication(this);
+    mockConfiguration(this);
     mockInvites(this);
     mockPosts(this);
     mockRoles(this);
@@ -55,16 +57,6 @@ export function testConfig() {
 
     this.post('/slack/test', function () {
         return {};
-    });
-
-    /* Configuration -------------------------------------------------------- */
-
-    this.get('/configuration/timezones/', function (db) {
-        return {
-            configuration: [{
-                timezones: db.timezones
-            }]
-        };
     });
 
     /* External sites ------------------------------------------------------- */

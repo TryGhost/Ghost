@@ -28,6 +28,10 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
     notifications: injectService(),
     upgradeNotification: injectService(),
 
+    beforeModel() {
+        return this.get('config').fetch();
+    },
+
     afterModel(model, transition) {
         this._super(...arguments);
 

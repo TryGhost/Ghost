@@ -9,10 +9,11 @@ import { expect } from 'chai';
 import startApp from '../helpers/start-app';
 import destroyApp from '../helpers/destroy-app';
 import $ from 'jquery';
+import { enableGhostOAuth } from '../helpers/configuration';
 import {
     stubSuccessfulOAuthConnect,
     stubFailedOAuthConnect
-} from 'ghost-admin/tests/helpers/oauth';
+} from '../helpers/oauth';
 
 describe('Acceptance: Signup', function() {
     let application;
@@ -146,8 +147,7 @@ describe('Acceptance: Signup', function() {
 
     describe('using Ghost OAuth', function () {
         beforeEach(function () {
-            // simulate active oauth config
-            $('head').append('<meta name="env-ghostAuthId" content="6e0704b3-c653-4c12-8da7-584232b5c629" />');
+            enableGhostOAuth(server);
 
             let user = server.create('user', {name: 'Test Invite Creator'});
 
@@ -157,11 +157,6 @@ describe('Acceptance: Signup', function() {
                 created_by: user.id
             });
             /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
-        });
-
-        afterEach(function () {
-            // ensure we don't leak OAuth config to other tests
-            $('meta[name="env-ghostAuthId"]').remove();
         });
 
         it('can sign up sucessfully', function () {

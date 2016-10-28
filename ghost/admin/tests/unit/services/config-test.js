@@ -16,15 +16,5 @@ describeModule(
             let service = this.subject();
             expect(service).to.be.ok;
         });
-
-        it('correctly parses a client secret', function () {
-            $('<meta>').attr('name', 'env-clientSecret')
-                .attr('content', '23e435234423')
-                .appendTo('head');
-
-            let service = this.subject();
-
-            expect(service.get('clientSecret')).to.equal('23e435234423');
-        });
     }
 );
