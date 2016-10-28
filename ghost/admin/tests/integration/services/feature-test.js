@@ -144,6 +144,7 @@ describeModule(
             addTestFlag();
 
             let service = this.subject();
+            service.get('config').set('testFlag', false);
 
             service.fetch().then(() => {
                 expect(service.get('testFlag')).to.be.false;
@@ -165,6 +166,7 @@ describeModule(
             addTestFlag();
 
             let service = this.subject();
+            service.get('config').set('testFlag', false);
 
             service.fetch().then(() => {
                 expect(service.get('testFlag')).to.be.false;
@@ -195,6 +197,7 @@ describeModule(
             addTestFlag();
 
             let service = this.subject();
+            service.get('config').set('testFlag', false);
 
             service.fetch().then(() => {
                 expect(service.get('testFlag')).to.be.false;
