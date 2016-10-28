@@ -77,7 +77,7 @@
     "sanitize-html": "1.13.0",
     "semver": "5.3.0",
     "showdown-ghost": "0.3.6",
-    "sqlite3": "3.1.6",
+    "sqlite3": "3.1.7",
     "superagent": "2.3.0",
     "unidecode": "0.1.8",
     "validator": "5.7.0",
