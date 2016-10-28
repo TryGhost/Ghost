@@ -114,7 +114,7 @@
     "gulp-nodemon": "2.2.1",
     "gulp-util": "3.0.7",
     "istanbul": "0.4.5",
-    "jshint": "2.9.3",
+    "jshint": "2.9.4",
     "jshint-stylish": "2.2.1",
     "matchdep": "1.0.1",
     "minimist": "1.2.0",
