@@ -215,8 +215,7 @@ describe('Themes API', function () {
                 });
         });
 
-        // @TODO: does not pass in travis with 0.10.x, but local it works
-        it.skip('upload different field name', function (done) {
+        it('upload different field name', function (done) {
             scope.uploadTheme({
                 themePath: path.join(__dirname, '/../../../utils/fixtures/csv/single-column-with-header.csv'),
                 fieldName: 'wrong'
