@@ -3,7 +3,7 @@
 //
 // Formats a date using moment-timezone.js. Formats published_at by default but will also take a date as a parameter
 
-var moment          = require('moment-timezone'),
+var moment = require('moment-timezone'),
     date,
     timezone;
 
