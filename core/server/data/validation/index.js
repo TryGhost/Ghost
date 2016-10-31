@@ -1,7 +1,7 @@
 var schema    = require('../schema').tables,
     _         = require('lodash'),
     validator = require('validator'),
-    moment    = require('moment'),
+    moment    = require('moment-timezone'),
     assert    = require('assert'),
     Promise   = require('bluebird'),
     errors    = require('../../errors'),
