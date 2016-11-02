@@ -64,7 +64,11 @@ describe('server bootstrap', function () {
                 .catch(function (err) {
                     migration.populate.calledOnce.should.eql(false);
                     config.get('maintenance').enabled.should.eql(false);
-                    err.code.should.eql('DB_NOT_INITIALISED');
+
+                    // checking the error code is tricky, because it depends on other tests running before
+                    // it's fine just checking the type of the error
+                    // @TODO: kate-migrations (export errors in knex-migrator to be able to check instanceof)
+                    err.errorType.should.eql('DatabaseIsNotOkError');
                     done();
                 });
         });
