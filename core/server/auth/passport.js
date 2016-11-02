@@ -31,7 +31,7 @@ _private.registerClient = function (options) {
 
                 debug('Update ghost client callback url...');
                 return ghostOAuth2Strategy.changeCallbackURL({
-                    callbackURL: url + '/ghost/',
+                    callbackURL: utils.url.urlJoin(url, 'ghost', '/'),
                     clientId: client.get('uuid'),
                     clientSecret: client.get('secret')
                 }).then(function changedCallbackURL() {
@@ -52,7 +52,7 @@ _private.registerClient = function (options) {
                         slug: 'ghost-auth',
                         uuid: credentials.client_id,
                         secret: credentials.client_secret,
-                        redirection_uri: url + '/ghost/'
+                        redirection_uri: utils.url.urlJoin(url, 'ghost', '/')
                     }, {context: {internal: true}});
                 })
                 .then(function returnClient(client) {
@@ -111,7 +111,7 @@ exports.init = function initPassport(options) {
         }
 
         var ghostOAuth2Strategy = new GhostOAuth2Strategy({
-            callbackURL: utils.url.getBaseUrl() + '/ghost/',
+            callbackURL: utils.url.urlJoin(utils.url.getBaseUrl(), 'ghost', '/'),
             url: url,
             passReqToCallback: true
         }, authStrategies.ghostStrategy);
