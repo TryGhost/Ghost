@@ -13,11 +13,13 @@ var should = require('should'),
 
 describe('Models: listeners', function () {
     var eventsToRemember = {},
+        now = moment(),
         scope = {
             posts: [],
             publishedAtFutureMoment1: moment().add(2, 'days').startOf('hour'),
             publishedAtFutureMoment3: moment().add(10, 'hours').startOf('hour'),
-            timezoneOffset: -480,
+            // calculate the offset dynamically, because of DST
+            timezoneOffset: moment.tz.zone('Europe/London').offset(now) - moment.tz.zone('America/Los_Angeles').offset(now),
             newTimezone: 'America/Los_Angeles',
             oldTimezone: 'Europe/London'
         };
