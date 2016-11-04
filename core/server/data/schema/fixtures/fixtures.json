@@ -321,6 +321,7 @@
             "name": "User",
             "entries": [
                 {
+                    "id": 1,
                     "name": "Ghost Owner",
                     "email": "ghost@ghost.org",
                     "status": "inactive",
