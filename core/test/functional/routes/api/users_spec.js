@@ -1,6 +1,7 @@
 var testUtils = require('../../../utils'),
     should = require('should'),
     supertest = require('supertest'),
+    ObjectId = require('bson-objectid'),
     ghost         = testUtils.startGhost,
     request;
 
@@ -133,7 +134,7 @@ describe('User API', function () {
             });
 
             it('can retrieve a user by id', function (done) {
-                request.get(testUtils.API.getApiQuery('users/2/'))
+                request.get(testUtils.API.getApiQuery('users/' + testUtils.DataGenerator.Content.users[1].id + '/'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -272,7 +273,7 @@ describe('User API', function () {
             });
 
             it('can\'t retrieve non existent user by id', function (done) {
-                request.get(testUtils.API.getApiQuery('users/99/'))
+                request.get(testUtils.API.getApiQuery('users/' + ObjectId.generate() + '/'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .set('Accept', 'application/json')
                     .expect('Content-Type', /json/)
@@ -396,10 +397,10 @@ describe('User API', function () {
     describe('As Editor', function () {
         describe('success cases', function () {
             it('can edit himself', function (done) {
-                request.put(testUtils.API.getApiQuery('users/3/'))
+                request.put(testUtils.API.getApiQuery('users/' + testUtils.DataGenerator.Content.users[2].id + '/'))
                     .set('Authorization', 'Bearer ' + editorAccessToken)
                     .send({
-                        users: [{id: 3, name: 'test'}]
+                        users: [{id: testUtils.DataGenerator.Content.users[2].id, name: 'test'}]
                     })
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -419,7 +420,9 @@ describe('User API', function () {
                 request.put(testUtils.API.getApiQuery('users/1/'))
                     .set('Authorization', 'Bearer ' + editorAccessToken)
                     .send({
-                        users: [{id: 1}]
+                        users: [{
+                            id: '1'
+                        }]
                     })
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
