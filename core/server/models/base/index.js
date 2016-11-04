@@ -185,7 +185,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         options = options || {};
         options.context = options.context || {};
 
-        if (_.isNumber(options.context.user)) {
+        if (options.context.user || ghostBookshelf.Model.isExternalUser(options.context.user)) {
             return options.context.user;
         } else if (options.context.internal) {
             return ghostBookshelf.Model.internalUser;
@@ -265,21 +265,23 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     /**
      * please use these static definitions when comparing id's
+     * we keep type number, because we have too many check's where we rely on
+     * context.user ? true : false (if context.user is 0 as number, this condition is false)
      */
     internalUser: 1,
     ownerUser: 1,
     externalUser: 0,
 
     isOwnerUser: function isOwnerUser(id) {
-        return id === ghostBookshelf.Model.ownerUser;
+        return id === ghostBookshelf.Model.ownerUser || id === ghostBookshelf.Model.ownerUser.toString();
     },
 
     isInternalUser: function isInternalUser(id) {
-        return id === ghostBookshelf.Model.internalUser;
+        return id === ghostBookshelf.Model.internalUser || id === ghostBookshelf.Model.internalUser.toString();
     },
 
     isExternalUser: function isExternalUser(id) {
-        return id === ghostBookshelf.Model.externalUser;
+        return id === ghostBookshelf.Model.externalUser || id === ghostBookshelf.Model.externalUser.toString();
     },
 
     /**
@@ -488,6 +490,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         if (options.importing) {
             model.hasTimestamps = false;
         }
+
+        // Bookshelf determines whether an operation is an update or an insert based on the id
+        // Ghost auto-generates Object id's, so we need to tell Bookshelf here that we are inserting data
+        options.method = 'insert';
         return model.save(null, options);
     },
 
