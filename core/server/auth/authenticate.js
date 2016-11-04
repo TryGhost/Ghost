@@ -1,5 +1,6 @@
 var passport = require('passport'),
     errors = require('../errors'),
+    models = require('../models'),
     events = require('../events'),
     i18n = require('../i18n'),
     authenticate;
@@ -96,7 +97,7 @@ authenticate = {
                         message: i18n.t('errors.middleware.auth.accessDenied')
                     }));
                 } else if (req.client) {
-                    req.user = {id: 0};
+                    req.user = {id: models.User.externalUser};
                     return next();
                 }
 
