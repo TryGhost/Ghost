@@ -2,6 +2,7 @@
 // RESTful API for creating notifications
 var Promise            = require('bluebird'),
     _                  = require('lodash'),
+    ObjectId           = require('bson-objectid'),
     permissions        = require('../permissions'),
     errors             = require('../errors'),
     settings           = require('./settings'),
@@ -12,8 +13,6 @@ var Promise            = require('bluebird'),
 
     // Holds the persistent notifications
     notificationsStore = [],
-    // Holds the last used id
-    notificationCounter = 0,
     notifications;
 
 /**
@@ -91,10 +90,8 @@ notifications = {
                 addedNotifications = [], existingNotification;
 
             _.each(options.data.notifications, function (notification) {
-                notificationCounter = notificationCounter + 1;
-
                 notification = _.assign(defaults, notification, {
-                    id: notificationCounter
+                    id: ObjectId.generate()
                 });
 
                 existingNotification = _.find(notificationsStore, {message:notification.message});
@@ -177,7 +174,6 @@ notifications = {
             notificationsStore = _.reject(notificationsStore, function (element) {
                 return element.id === options.id;
             });
-            notificationCounter = notificationCounter - 1;
 
             if (notification.custom) {
                 return markAsSeen(notification);
@@ -203,8 +199,6 @@ notifications = {
     destroyAll: function destroyAll(options) {
         return canThis(options.context).destroy.notification().then(function () {
             notificationsStore = [];
-            notificationCounter = 0;
-
             return notificationsStore;
         }, function (err) {
             return Promise.reject(new errors.NoPermissionError({
