@@ -9,7 +9,6 @@ var _          = require('lodash'),
     bookshelf  = require('bookshelf'),
     moment     = require('moment'),
     Promise    = require('bluebird'),
-    uuid       = require('node-uuid'),
     ObjectId   = require('bson-objectid'),
     config     = require('../../config'),
     db         = require('../../data/db'),
@@ -60,9 +59,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     // Bookshelf `defaults` - default values setup on every model creation
     defaults: function defaults() {
-        return {
-            uuid: uuid.v4()
-        };
+        return {};
     },
 
     // When loading an instance, subclasses can specify default to fetch

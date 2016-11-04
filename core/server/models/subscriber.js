@@ -3,7 +3,6 @@ var ghostBookshelf = require('./base'),
     events = require('../events'),
     i18n = require('../i18n'),
     Promise = require('bluebird'),
-    uuid = require('node-uuid'),
     Subscriber,
     Subscribers;
 
@@ -16,7 +15,6 @@ Subscriber = ghostBookshelf.Model.extend({
 
     defaults: function defaults() {
         return {
-            uuid: uuid.v4(),
             status: 'subscribed'
         };
     },
