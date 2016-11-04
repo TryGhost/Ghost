@@ -297,7 +297,7 @@ utils = {
             object[docName][index] = _.omitBy(object[docName][index], _.isNull);
         });
 
-        if (editId && object[docName][0].id && parseInt(editId, 10) !== parseInt(object[docName][0].id, 10)) {
+        if (editId && object[docName][0].id && editId !== object[docName][0].id) {
             return Promise.reject(new errors.BadRequestError({
                 message: i18n.t('errors.api.utils.invalidIdProvided')
             }));

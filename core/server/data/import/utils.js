@@ -64,7 +64,6 @@ utils = {
 
         // We now have a list of users we need to figure out what their email addresses are
         _.each(_.keys(userMap), function (userToMap) {
-            userToMap = parseInt(userToMap, 10);
             var foundUser = _.find(tableData.users, function (tableDataUser) {
                 return tableDataUser.id === userToMap;
             });
@@ -120,8 +119,9 @@ utils = {
         _.each(postsWithTags, function (tagIds, postId) {
             var post, tags;
             post = _.find(tableData.posts, function (post) {
-                return post.id === parseInt(postId, 10);
+                return post.id === postId;
             });
+
             if (post) {
                 tags = _.filter(tableData.tags, function (tag) {
                     return _.indexOf(tagIds, tag.id) !== -1;
@@ -163,7 +163,7 @@ utils = {
 
         _.each(tableData.roles_users, function (roleUser) {
             var user = _.find(tableData.users, function (user) {
-                return user.id === parseInt(roleUser.user_id, 10);
+                return user.id === roleUser.user_id;
             });
 
             // Map role_id to updated roles id

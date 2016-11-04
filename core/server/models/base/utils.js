@@ -111,10 +111,11 @@ tagUpdate = {
     // Test if two tags are the same, checking ID first, and falling back to name
     tagsAreEqual: function tagsAreEqual(tag1, tag2) {
         if (tag1.hasOwnProperty('id') && tag2.hasOwnProperty('id')) {
-            return parseInt(tag1.id, 10) === parseInt(tag2.id, 10);
+            return tag1.id === tag2.id;
         }
         return tag1.name.toString() === tag2.name.toString();
     },
+
     tagSetsAreEqual: function tagSetsAreEqual(tags1, tags2) {
         // If the lengths are different, they cannot be the same
         if (tags1.length !== tags2.length) {

@@ -161,7 +161,7 @@ notifications = {
 
         function destroyNotification(options) {
             var notification = _.find(notificationsStore, function (element) {
-                return element.id === parseInt(options.id, 10);
+                return element.id === options.id;
             });
 
             if (notification && !notification.dismissible) {
@@ -175,7 +175,7 @@ notifications = {
             }
 
             notificationsStore = _.reject(notificationsStore, function (element) {
-                return element.id === parseInt(options.id, 10);
+                return element.id === options.id;
             });
             notificationCounter = notificationCounter - 1;
 

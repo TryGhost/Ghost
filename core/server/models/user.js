@@ -369,7 +369,7 @@ User = ghostBookshelf.Model.extend({
                 return user;
             }
 
-            roleId = parseInt(data.roles[0].id || data.roles[0], 10);
+            roleId = data.roles[0].id || data.roles[0];
 
             return user.roles().fetch().then(function then(roles) {
                 // return if the role is already assigned
@@ -626,7 +626,7 @@ User = ghostBookshelf.Model.extend({
     changePassword: function changePassword(object, options) {
         var self = this,
             newPassword = object.newPassword,
-            userId = parseInt(object.user_id),
+            userId = object.user_id,
             oldPassword = object.oldPassword,
             isLoggedInUser = userId === options.context.user,
             user;
