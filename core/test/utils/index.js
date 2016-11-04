@@ -204,11 +204,10 @@ fixtures = {
         user = DataGenerator.forKnex.createBasic(user);
         user = _.extend({}, user, {status: 'inactive'});
 
-        return db.knex('roles').insert(DataGenerator.forKnex.roles).then(function () {
-            return db.knex('users').insert(user);
-        }).then(function () {
-            return db.knex('roles_users').insert(DataGenerator.forKnex.roles_users[0]);
-        });
+        return db.knex('users').insert(user)
+            .then(function () {
+                return db.knex('roles_users').insert(DataGenerator.forKnex.roles_users[0]);
+            });
     },
 
     insertOwnerUser: function insertOwnerUser() {
@@ -242,14 +241,13 @@ fixtures = {
         });
     },
 
-    createUsersWithRolesWithoutOwner: function createUsersWithRolesWithoutOwner() {
+    createUsersWithoutOwner: function createUsersWithoutOwner() {
         var usersWithoutOwner = DataGenerator.forKnex.users.slice(1);
 
-        return db.knex('roles').insert(DataGenerator.forKnex.roles).then(function () {
-            return db.knex('users').insert(usersWithoutOwner);
-        }).then(function () {
-            return db.knex('roles_users').insert(DataGenerator.forKnex.roles_users);
-        });
+        return db.knex('users').insert(usersWithoutOwner)
+            .then(function () {
+                return db.knex('roles_users').insert(DataGenerator.forKnex.roles_users);
+            });
     },
 
     createExtraUsers: function createExtraUsers() {
@@ -437,7 +435,7 @@ toDoList = {
         return models.Settings.populateDefaults().then(function () { return SettingsAPI.updateSettingsCache(); });
     },
     'users:roles': function createUsersWithRoles() { return fixtures.createUsersWithRoles(); },
-    'users:roles:no-owner': function createUsersWithRoles() { return fixtures.createUsersWithRolesWithoutOwner(); },
+    'users:no-owner': function createUsersWithoutOwner() { return fixtures.createUsersWithoutOwner(); },
     users: function createExtraUsers() { return fixtures.createExtraUsers(); },
     'user:token': function createTokensForUser() { return fixtures.createTokensForUser(); },
     owner: function insertOwnerUser() { return fixtures.insertOwnerUser(); },
@@ -497,7 +495,7 @@ getFixtureOps = function getFixtureOps(toDos) {
             fixtureOps.push(toDoList[tmp[0]](tmp[1]));
         } else {
             if (!toDoList[toDo]) {
-                throw new Error('setup todo does not exist - spell mistake?');
+                throw new Error('setup todo does not exist - spell mistake? --> ' + toDo);
             }
 
             fixtureOps.push(toDoList[toDo]);
