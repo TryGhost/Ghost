@@ -114,7 +114,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             newObj.setId();
         }
 
-        if (!this.get('created_by')) {
+        if (schema.tables[this.tableName].hasOwnProperty('created_by') && !this.get('created_by')) {
             this.set('created_by', this.contextUser(options));
         }
     },
