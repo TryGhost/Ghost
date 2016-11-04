@@ -10,6 +10,7 @@ var _          = require('lodash'),
     moment     = require('moment'),
     Promise    = require('bluebird'),
     uuid       = require('node-uuid'),
+    ObjectId   = require('bson-objectid'),
     config     = require('../../config'),
     db         = require('../../data/db'),
     errors     = require('../../errors'),
@@ -108,6 +109,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     onCreating: function onCreating(newObj, attr, options) {
+        // id = 0 is still a valid value for external usage
+        if (_.isUndefined(newObj.id) || _.isNull(newObj.id)) {
+            newObj.setId();
+        }
+
         if (!this.get('created_by')) {
             this.set('created_by', this.contextUser(options));
         }
@@ -248,6 +254,14 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     hasDateChanged: function (attr) {
         return moment(this.get(attr)).diff(moment(this.updated(attr))) !== 0;
+    },
+
+    /**
+     * we auto generate a GUID for each resource
+     * no auto increment
+     */
+    setId: function setId() {
+        this.set('id', ObjectId.generate());
     }
 }, {
     // ## Data Utility Functions
