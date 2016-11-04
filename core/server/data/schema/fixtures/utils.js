@@ -3,6 +3,7 @@
 var _            = require('lodash'),
     Promise      = require('bluebird'),
     models       = require('../../../models'),
+    baseUtils    = require('../../../models/base/utils'),
     sequence     = require('../../../utils/sequence'),
 
     fixtures     = require('./fixtures'),
@@ -133,7 +134,13 @@ addFixturesForRelation = function addFixturesForRelation(relationFixture, option
 
                 if (toItems && toItems.length > 0) {
                     ops.push(function addRelationItems() {
-                        return fromItem[relationFixture.from.relation]().attach(toItems, options);
+                        return baseUtils.attach(
+                            models[relationFixture.from.Model || relationFixture.from.model],
+                            fromItem.id,
+                            relationFixture.from.relation,
+                            toItems,
+                            options
+                        );
                     });
                 }
             });

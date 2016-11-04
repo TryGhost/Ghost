@@ -1,5 +1,6 @@
 var ghostBookshelf = require('./base'),
     globalUtils = require('../utils'),
+    baseUtils = require('./base/utils'),
     crypto = require('crypto'),
     _ = require('lodash'),
     Invite,
