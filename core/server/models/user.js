@@ -426,6 +426,12 @@ User = ghostBookshelf.Model.extend({
             });
         }
 
+        /**
+         * We need this default author role because of the following Ghost feature:
+         * You setup your blog and you can invite people instantly, but without choosing a role.
+         * roles: [] -> no default role (used for owner creation, see fixtures.json)
+         * roles: undefined -> default role
+         */
         roles = data.roles || getAuthorRole();
         delete data.roles;
 
