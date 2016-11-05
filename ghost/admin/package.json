@@ -90,7 +90,7 @@
     "lodash": "4.16.5",
     "matchdep": "1.0.1",
     "moment": "2.15.2",
-    "moment-timezone": "0.5.7",
+    "moment-timezone": "0.5.9",
     "password-generator": "2.0.2",
     "top-gh-contribs": "2.0.4",
     "torii": "0.8.0",
