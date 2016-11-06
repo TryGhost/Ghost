@@ -60,7 +60,7 @@
     "lodash": "4.16.6",
     "mobiledoc-html-renderer": "0.3.0",
     "moment": "2.15.2",
-    "moment-timezone": "0.5.7",
+    "moment-timezone": "0.5.9",
     "multer": "1.2.0",
     "nconf": "0.8.4",
     "netjet": "1.1.3",
