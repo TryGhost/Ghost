@@ -55,7 +55,7 @@
     "knex": "0.12.5",
     "lodash": "4.16.6",
     "moment": "2.15.2",
-    "moment-timezone": "0.5.7",
+    "moment-timezone": "0.5.9",
     "morgan": "1.7.0",
     "multer": "1.2.0",
     "netjet": "1.1.3",
