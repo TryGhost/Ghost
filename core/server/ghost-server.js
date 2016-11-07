@@ -7,7 +7,6 @@ var debug = require('debug')('ghost:server'),
     path = require('path'),
     _ = require('lodash'),
     errors = require('./errors'),
-    logging = require('./logging'),
     config = require('./config'),
     i18n   = require('./i18n'),
     moment = require('moment');
@@ -46,7 +45,7 @@ GhostServer.prototype.start = function (externalApp) {
             permissions: '660'
         };
 
-    return new Promise(function (resolve) {
+    return new Promise(function (resolve, reject) {
         if (config.get('server').hasOwnProperty('socket')) {
             socketConfig = config.get('server').socket;
 
@@ -75,21 +74,23 @@ GhostServer.prototype.start = function (externalApp) {
         }
 
         self.httpServer.on('error', function (error) {
+            var ghostError;
+
             if (error.errno === 'EADDRINUSE') {
-                logging.error(new errors.GhostError({
+                ghostError = new errors.GhostError({
                     message: i18n.t('errors.httpServer.addressInUse.error'),
                     context: i18n.t('errors.httpServer.addressInUse.context', {port: config.get('server').port}),
                     help: i18n.t('errors.httpServer.addressInUse.help')
-                }));
+                });
             } else {
-                logging.error(new errors.GhostError({
+                ghostError = new errors.GhostError({
                     message: i18n.t('errors.httpServer.otherError.error', {errorNumber: error.errno}),
                     context: i18n.t('errors.httpServer.otherError.context'),
                     help: i18n.t('errors.httpServer.otherError.help')
-                }));
+                });
             }
 
-            process.exit(-1);
+            reject(ghostError);
         });
         self.httpServer.on('connection', self.connection.bind(self));
         self.httpServer.on('listening', function () {

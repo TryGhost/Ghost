@@ -15,8 +15,22 @@ ghost().then(function (ghostServer) {
 
     debug('Starting Ghost');
     // Let Ghost handle starting our server instance.
-    ghostServer.start(parentApp);
-}).catch(function (err) {
-    logging.error(new errors.GhostError({err: err}));
-    process.exit(0);
+    return ghostServer.start(parentApp).then(function afterStart() {
+        // if IPC messaging is enabled, ensure ghost sends message to parent
+        // process on successful start
+        if (process.send) {
+            process.send({started: true});
+        }
+    });
+}).catch(function (error) {
+    if (!(error instanceof errors.GhostError)) {
+        error = new errors.GhostError({err: error});
+    }
+
+    if (process.send) {
+        process.send({started: false, error: error.message});
+    }
+
+    logging.error(error);
+    process.exit(-1);
 });
