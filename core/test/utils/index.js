@@ -3,11 +3,11 @@ var Promise       = require('bluebird'),
     fs            = require('fs-extra'),
     path          = require('path'),
     Module        = require('module'),
+    debug         = require('debug')('ghost:test'),
     uuid          = require('node-uuid'),
     KnexMigrator  = require('knex-migrator'),
     ghost         = require('../../server'),
     db            = require('../../server/data/db'),
-    migration     = require('../../server/data/migration/'),
     fixtureUtils  = require('../../server/data/migration/fixtures/utils'),
     models        = require('../../server/models'),
     SettingsAPI   = require('../../server/api/settings'),
@@ -405,9 +405,10 @@ initData = function initData() {
     return knexMigrator.init();
 };
 
+// we must always try to delete all tables
 clearData = function clearData() {
-    // we must always try to delete all tables
-    return migration.reset();
+    debug('Database reset');
+    return knexMigrator.reset();
 };
 
 toDoList = {
@@ -623,12 +624,16 @@ togglePermalinks = function togglePermalinks(request, toggle) {
 };
 
 teardown = function teardown(done) {
+    debug('Database reset');
+
     if (done) {
-        migration.reset().then(function () {
-            done();
-        }).catch(done);
+        knexMigrator.reset()
+            .then(function () {
+                done();
+            })
+            .catch(done);
     } else {
-        return migration.reset();
+        return knexMigrator.reset();
     }
 };
 

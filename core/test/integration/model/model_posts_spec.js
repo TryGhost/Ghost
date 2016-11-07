@@ -1698,7 +1698,7 @@ describe('Post Model', function () {
                         startTags;
 
                     // Step 1, fetch a post with its tags, just to see what tags we have
-                    PostModel.findOne({id: postId}, {withRelated: ['tags']}).then(function (results) {
+                    return PostModel.findOne({id: postId}, {withRelated: ['tags']}).then(function (results) {
                         var post = results.toJSON(toJSONOpts);
                         should.exist(results);
                         post.title.should.not.equal('new title');
