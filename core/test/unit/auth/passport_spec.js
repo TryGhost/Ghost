@@ -15,8 +15,13 @@ should.equal(true, true);
 describe('Ghost Passport', function () {
     var client;
 
-    function FakeGhostOAuth2Strategy() {
+    function FakeGhostOAuth2Strategy(options) {
         this.name = 'FakeGhostOAuth2Strategy';
+
+        should.exist(options.blogUri);
+        should.exist(options.url);
+        should.exist(options.callbackURL);
+        options.passReqToCallback.should.eql(true);
     }
 
     before(function () {
@@ -46,7 +51,7 @@ describe('Ghost Passport', function () {
     describe('auth_type: password', function () {
         it('initialise passport with passport auth type', function () {
             return GhostPassport.init({
-                type: 'passport'
+                authType: 'passport'
             }).then(function (response) {
                 should.exist(response.passport);
                 passport.use.callCount.should.eql(2);
@@ -67,7 +72,10 @@ describe('Ghost Passport', function () {
             }));
 
             return GhostPassport.init({
-                type: 'ghost'
+                authType: 'ghost',
+                blogUri: 'http://my-blog.com',
+                ghostAuthUrl: 'http://devauth.ghost.org',
+                redirectUri: utils.url.getBaseUrl()
             }).then(function (response) {
                 should.exist(response.passport);
                 passport.use.callCount.should.eql(3);
@@ -86,7 +94,10 @@ describe('Ghost Passport', function () {
             }));
 
             return GhostPassport.init({
-                type: 'ghost'
+                authType: 'ghost',
+                blogUri: 'http://my-blog.com',
+                ghostAuthUrl: 'http://devauth.ghost.org',
+                redirectUri: utils.url.getBaseUrl()
             }).then(function (response) {
                 should.exist(response.passport);
                 passport.use.callCount.should.eql(3);
@@ -103,7 +114,10 @@ describe('Ghost Passport', function () {
             client = null;
 
             return GhostPassport.init({
-                type: 'ghost'
+                authType: 'ghost',
+                blogUri: 'http://my-blog.com',
+                ghostAuthUrl: 'http://devauth.ghost.org',
+                redirectUri: utils.url.getBaseUrl()
             }).then(function (response) {
                 should.exist(response.passport);
                 passport.use.callCount.should.eql(3);
@@ -121,7 +135,10 @@ describe('Ghost Passport', function () {
             FakeGhostOAuth2Strategy.prototype.registerClient.returns(Promise.reject(new Error('cannot connect to ghost.org')));
 
             return GhostPassport.init({
-                type: 'ghost'
+                authType: 'ghost',
+                blogUri: 'http://my-blog.com',
+                ghostAuthUrl: 'http://devauth.ghost.org',
+                redirectUri: utils.url.getBaseUrl()
             }).catch(function (err) {
                 (err instanceof errors.IncorrectUsageError).should.eql(true);
                 FakeGhostOAuth2Strategy.prototype.registerClient.callCount.should.eql(12);
