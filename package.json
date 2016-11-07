@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "amperize": "1.0.0",
-    "archiver": "1.1.0",
+    "archiver": "1.2.0",
     "bcryptjs": "2.3.0",
     "bluebird": "3.4.6",
     "body-parser": "1.15.2",
