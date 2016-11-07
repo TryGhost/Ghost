@@ -269,6 +269,21 @@ users = {
     changePassword: function changePassword(object, options) {
         var tasks;
 
+        function validateRequest() {
+            return utils.validate('password')(object, options)
+                .then(function (options) {
+                    var data = options.data.password[0];
+
+                    if (data.newPassword !== data.ne2Password) {
+                        return Promise.reject(new errors.ValidationError({
+                            message: i18n.t('errors.models.user.newPasswordsDoNotMatch')
+                        }));
+                    }
+
+                    return Promise.resolve(options);
+                });
+        }
+
         /**
          * ### Handle Permissions
          * We need to be an authorised user to perform this action
@@ -301,7 +316,7 @@ users = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate('password'),
+            validateRequest,
             handlePermissions,
             utils.convertOptions(allowedIncludes),
             doQuery

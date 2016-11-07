@@ -54,7 +54,14 @@ spamPrevention = {
 
     // limit forgotten password requests to five requests per IP per hour for different email addresses
     // limit forgotten password requests to five requests per email address
+    // @TODO: add validation check to validation middleware
     forgotten: function forgotten(req, res, next) {
+        if (!req.body.passwordreset) {
+            return next(new errors.BadRequestError({
+                message: i18n.t('errors.api.utils.noRootKeyProvided', {docName: 'passwordreset'})
+            }));
+        }
+
         var currentTime = process.hrtime()[0],
             remoteAddress = req.connection.remoteAddress,
             rateForgottenPeriod = config.rateForgottenPeriod || 3600,
