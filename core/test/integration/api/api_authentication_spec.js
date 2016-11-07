@@ -4,6 +4,7 @@ var testUtils   = require('../../utils'),
     sinon       = require('sinon'),
     Promise     = require('bluebird'),
     uid         = require('../../../server/utils').uid,
+    globalUtils = require('../../../server/utils'),
     AuthAPI     = require('../../../server/api/authentication'),
     mail        = require('../../../server/api/mail'),
     models      = require('../../../server/models'),
@@ -14,6 +15,7 @@ var testUtils   = require('../../utils'),
     Refreshtoken,
     User;
 
+// @TODO: group tests by api call, not by setup completed or not
 describe('Authentication API', function () {
     var testInvite = {
             invitation: [{
@@ -31,6 +33,7 @@ describe('Authentication API', function () {
         testReset = {
             passwordreset: [{
                 token: 'abc',
+                oldPassword: 'Sl1m3rson',
                 newPassword: 'abcdefgh',
                 ne2Password: 'abcdefgh'
             }]
@@ -347,7 +350,7 @@ describe('Authentication API', function () {
                 }).catch(done);
             });
 
-            it('should allow a password reset', function (done) {
+            it('should NOT allow a password reset', function (done) {
                 AuthAPI.resetPassword(testReset).then(function () {
                     done(new Error('password reset did not fail on token validation'));
                 }).catch(function (err) {
@@ -359,6 +362,38 @@ describe('Authentication API', function () {
 
                     done();
                 }).catch(done);
+            });
+
+            it('should allow a password reset', function (done) {
+                sandbox.stub(globalUtils.tokens.resetToken, 'generateHash').returns('valid-token');
+                sandbox.stub(globalUtils.tokens.resetToken, 'extract').returns({email: 'jbloggs@example.com', expires: Date.now() + (60 * 1000)});
+                sandbox.stub(globalUtils.tokens.resetToken, 'compare').returns(true);
+
+                models.User.edit({status: 'locked'}, {id: 1})
+                    .then(function (user) {
+                        user.get('status').should.eql('locked');
+                        return AuthAPI.generateResetToken(testGenerateReset);
+                    })
+                    .then(function () {
+                        return AuthAPI.resetPassword(testReset);
+                    })
+                    .then(function () {
+                        return models.User.findOne({id: 1});
+                    })
+                    .then(function (user) {
+                        user.get('status').should.eql('active');
+
+                        return models.User.isPasswordCorrect({
+                            plainPassword: testReset.passwordreset[0].newPassword,
+                            hashedPassword: user.get('password')
+                        });
+                    })
+                    .then(function () {
+                        done();
+                    })
+                    .catch(function (err) {
+                        done(err);
+                    });
             });
 
             it('should allow an access token to be revoked', function (done) {
