@@ -115,10 +115,16 @@ function init(options) {
 
         debug('Express Apps done');
 
-        return auth.init(config.get('auth'))
-            .then(function (response) {
-                parentApp.use(response.auth);
-            });
+        return auth.init({
+            authType: config.get('auth:type'),
+            ghostAuthUrl: config.get('auth:url'),
+            redirectUri: utils.url.urlJoin(utils.url.getBaseUrl(), 'ghost', '/'),
+            blogUri: utils.url.urlJoin(utils.url.getBaseUrl(), '/'),
+            // @TODO: set blog title
+            clientName: utils.url.getBaseUrl()
+        }).then(function (response) {
+            parentApp.use(response.auth);
+        });
     }).then(function () {
         debug('Auth done');
         return new GhostServer(parentApp);

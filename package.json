@@ -68,7 +68,7 @@
     "nodemailer": "0.7.1",
     "oauth2orize": "1.5.1",
     "passport": "0.3.2",
-    "passport-ghost": "1.0.3",
+    "passport-ghost": "1.1.0",
     "passport-http-bearer": "1.0.1",
     "passport-oauth2-client-password": "0.1.2",
     "path-match": "1.2.4",

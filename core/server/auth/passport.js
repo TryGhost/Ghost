@@ -5,7 +5,6 @@ var ClientPasswordStrategy = require('passport-oauth2-client-password').Strategy
     debug = require('debug')('ghost:auth'),
     Promise = require('bluebird'),
     authStrategies = require('./auth-strategies'),
-    utils = require('../utils'),
     errors = require('../errors'),
     logging = require('../logging'),
     models = require('../models'),
@@ -16,13 +15,14 @@ var ClientPasswordStrategy = require('passport-oauth2-client-password').Strategy
 
 _private.registerClient = function (options) {
     var ghostOAuth2Strategy = options.ghostOAuth2Strategy,
-        url = options.url;
+        clientName = options.clientName,
+        redirectUri = options.redirectUri;
 
     return models.Client.findOne({slug: 'ghost-auth'}, {context: {internal: true}})
         .then(function fetchedClient(client) {
             // CASE: Ghost Auth client is already registered
             if (client) {
-                if (client.get('redirection_uri') === url) {
+                if (client.get('redirection_uri') === redirectUri) {
                     return {
                         client_id: client.get('uuid'),
                         client_secret: client.get('secret')
@@ -31,11 +31,11 @@ _private.registerClient = function (options) {
 
                 debug('Update ghost client callback url...');
                 return ghostOAuth2Strategy.changeCallbackURL({
-                    callbackURL: utils.url.urlJoin(url, 'ghost', '/'),
+                    callbackURL: redirectUri,
                     clientId: client.get('uuid'),
                     clientSecret: client.get('secret')
                 }).then(function changedCallbackURL() {
-                    client.set('redirection_uri', url);
+                    client.set('redirection_uri', redirectUri);
                     return client.save(null, {context: {internal: true}});
                 }).then(function updatedClient() {
                     return {
@@ -45,14 +45,14 @@ _private.registerClient = function (options) {
                 });
             }
 
-            return ghostOAuth2Strategy.registerClient({clientName: url})
+            return ghostOAuth2Strategy.registerClient({clientName: clientName})
                 .then(function addClient(credentials) {
                     return models.Client.add({
                         name: 'Ghost Auth',
                         slug: 'ghost-auth',
                         uuid: credentials.client_id,
                         secret: credentials.client_secret,
-                        redirection_uri: utils.url.urlJoin(url, 'ghost', '/')
+                        redirection_uri: redirectUri
                     }, {context: {internal: true}});
                 })
                 .then(function returnClient(client) {
@@ -99,26 +99,31 @@ _private.startPublicClientRegistration = function startPublicClientRegistration(
  *   - ghost: remote login at Ghost.org
  */
 exports.init = function initPassport(options) {
-    var type = options.type,
-        url = options.url;
+    var authType = options.authType,
+        clientName = options.clientName,
+        ghostAuthUrl = options.ghostAuthUrl,
+        redirectUri = options.redirectUri,
+        blogUri = options.blogUri;
 
     return new Promise(function (resolve, reject) {
         passport.use(new ClientPasswordStrategy(authStrategies.clientPasswordStrategy));
         passport.use(new BearerStrategy(authStrategies.bearerStrategy));
 
-        if (type !== 'ghost') {
+        if (authType !== 'ghost') {
             return resolve({passport: passport.initialize()});
         }
 
         var ghostOAuth2Strategy = new GhostOAuth2Strategy({
-            callbackURL: utils.url.urlJoin(utils.url.getBaseUrl(), 'ghost', '/'),
-            url: url,
+            callbackURL: redirectUri,
+            blogUri: blogUri,
+            url: ghostAuthUrl,
             passReqToCallback: true
         }, authStrategies.ghostStrategy);
 
         _private.startPublicClientRegistration({
             ghostOAuth2Strategy: ghostOAuth2Strategy,
-            url: utils.url.getBaseUrl()
+            clientName: clientName,
+            redirectUri: redirectUri
         }).then(function setClient(client) {
             debug('Public Client Registration was successful');
 
