@@ -19,6 +19,7 @@ node_modules/**
 .git*
 .groc*
 .jshintrc
+.jscsrc
 *.iml
 config.js
 core/built/**/*.map
@@ -32,3 +33,4 @@ SECURITY.md
 !core/server/mail/templates/**
 bower_components/**
 .editorconfig
+gulpfile.js
