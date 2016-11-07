@@ -29,9 +29,9 @@ _private.registerClient = function (options) {
                     };
                 }
 
-                debug('Update ghost client callback url...');
-                return ghostOAuth2Strategy.changeCallbackURL({
-                    callbackURL: redirectUri,
+                debug('Update ghost client...');
+                return ghostOAuth2Strategy.updateClient({
+                    redirectUri: redirectUri,
                     clientId: client.get('uuid'),
                     clientSecret: client.get('secret')
                 }).then(function changedCallbackURL() {

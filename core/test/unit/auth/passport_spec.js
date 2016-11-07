@@ -41,7 +41,7 @@ describe('Ghost Passport', function () {
 
         FakeGhostOAuth2Strategy.prototype.setClient = sandbox.stub();
         FakeGhostOAuth2Strategy.prototype.registerClient = sandbox.stub().returns(Promise.resolve({}));
-        FakeGhostOAuth2Strategy.prototype.changeCallbackURL = sandbox.stub().returns(Promise.resolve({}));
+        FakeGhostOAuth2Strategy.prototype.updateClient = sandbox.stub().returns(Promise.resolve({}));
     });
 
     afterEach(function () {
@@ -60,7 +60,7 @@ describe('Ghost Passport', function () {
                 models.Client.add.called.should.eql(false);
                 FakeGhostOAuth2Strategy.prototype.setClient.called.should.eql(false);
                 FakeGhostOAuth2Strategy.prototype.registerClient.called.should.eql(false);
-                FakeGhostOAuth2Strategy.prototype.changeCallbackURL.called.should.eql(false);
+                FakeGhostOAuth2Strategy.prototype.updateClient.called.should.eql(false);
             });
         });
     });
@@ -84,7 +84,7 @@ describe('Ghost Passport', function () {
                 models.Client.add.called.should.eql(false);
                 FakeGhostOAuth2Strategy.prototype.setClient.called.should.eql(true);
                 FakeGhostOAuth2Strategy.prototype.registerClient.called.should.eql(false);
-                FakeGhostOAuth2Strategy.prototype.changeCallbackURL.called.should.eql(false);
+                FakeGhostOAuth2Strategy.prototype.updateClient.called.should.eql(false);
             });
         });
 
@@ -106,7 +106,7 @@ describe('Ghost Passport', function () {
                 models.Client.add.called.should.eql(false);
                 FakeGhostOAuth2Strategy.prototype.setClient.called.should.eql(true);
                 FakeGhostOAuth2Strategy.prototype.registerClient.called.should.eql(false);
-                FakeGhostOAuth2Strategy.prototype.changeCallbackURL.called.should.eql(true);
+                FakeGhostOAuth2Strategy.prototype.updateClient.called.should.eql(true);
             });
         });
 
