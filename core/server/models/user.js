@@ -1,7 +1,6 @@
 var _              = require('lodash'),
     Promise        = require('bluebird'),
     bcrypt         = require('bcryptjs'),
-    crypto         = require('crypto'),
     validator      = require('validator'),
     ghostBookshelf = require('./base'),
     errors         = require('../errors'),
@@ -16,7 +15,6 @@ var _              = require('lodash'),
     bcryptHash     = Promise.promisify(bcrypt.hash),
     bcryptCompare  = Promise.promisify(bcrypt.compare),
 
-    tokenSecurity  = {},
     activeStates   = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'],
     User,
     Users;
@@ -680,16 +678,10 @@ User = ghostBookshelf.Model.extend({
     changePassword: function changePassword(object, options) {
         var self = this,
             newPassword = object.newPassword,
-            ne2Password = object.ne2Password,
             userId = parseInt(object.user_id),
             oldPassword = object.oldPassword,
             isLoggedInUser = userId === options.context.user,
             user;
-
-        // If the two passwords do not match
-        if (newPassword !== ne2Password) {
-            return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.newPasswordsDoNotMatch')}));
-        }
 
         return self.forge({id: userId}).fetch({require: true})
             .then(function then(_user) {
@@ -705,114 +697,6 @@ User = ghostBookshelf.Model.extend({
             .then(function then() {
                 return user.save({password: newPassword});
             });
-    },
-
-    generateResetToken: function generateResetToken(email, expires, dbHash) {
-        return this.getByEmail(email).then(function then(foundUser) {
-            if (!foundUser) {
-                return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.models.user.noUserWithEnteredEmailAddr')}));
-            }
-
-            var hash = crypto.createHash('sha256'),
-                text = '';
-
-            // Token:
-            // BASE64(TIMESTAMP + email + HASH(TIMESTAMP + email + oldPasswordHash + dbHash ))
-            hash.update(String(expires));
-            hash.update(email.toLocaleLowerCase());
-            hash.update(foundUser.get('password'));
-            hash.update(String(dbHash));
-
-            text += [expires, email, hash.digest('base64')].join('|');
-            return new Buffer(text).toString('base64');
-        });
-    },
-
-    validateToken: function validateToken(token, dbHash) {
-        /*jslint bitwise:true*/
-        // TODO: Is there a chance the use of ascii here will cause problems if oldPassword has weird characters?
-        var tokenText = new Buffer(token, 'base64').toString('ascii'),
-            parts,
-            expires,
-            email;
-
-        parts = tokenText.split('|');
-
-        // Check if invalid structure
-        if (!parts || parts.length !== 3) {
-            return Promise.reject(new errors.BadRequestError({message: i18n.t('errors.models.user.invalidTokenStructure')}));
-        }
-
-        expires = parseInt(parts[0], 10);
-        email = parts[1];
-
-        if (isNaN(expires)) {
-            return Promise.reject(new errors.BadRequestError({message: i18n.t('errors.models.user.invalidTokenExpiration')}));
-        }
-
-        // Check if token is expired to prevent replay attacks
-        if (expires < Date.now()) {
-            return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.expiredToken')}));
-        }
-
-        // to prevent brute force attempts to reset the password the combination of email+expires is only allowed for
-        // 10 attempts
-        if (tokenSecurity[email + '+' + expires] && tokenSecurity[email + '+' + expires].count >= 10) {
-            return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.models.user.tokenLocked')}));
-        }
-
-        return this.generateResetToken(email, expires, dbHash).then(function then(generatedToken) {
-            // Check for matching tokens with timing independent comparison
-            var diff = 0,
-                i;
-
-            // check if the token length is correct
-            if (token.length !== generatedToken.length) {
-                diff = 1;
-            }
-
-            for (i = token.length - 1; i >= 0; i = i - 1) {
-                diff |= token.charCodeAt(i) ^ generatedToken.charCodeAt(i);
-            }
-
-            if (diff === 0) {
-                return email;
-            }
-
-            // increase the count for email+expires for each failed attempt
-            tokenSecurity[email + '+' + expires] = {
-                count: tokenSecurity[email + '+' + expires] ? tokenSecurity[email + '+' + expires].count + 1 : 1
-            };
-            return Promise.reject(new errors.BadRequestError({message: i18n.t('errors.models.user.invalidToken')}));
-        });
-    },
-
-    resetPassword: function resetPassword(options) {
-        var self = this,
-            token = options.token,
-            newPassword = options.newPassword,
-            ne2Password = options.ne2Password,
-            dbHash = options.dbHash;
-
-        if (newPassword !== ne2Password) {
-            return Promise.reject(new errors.ValidationError({
-                message: i18n.t('errors.models.user.newPasswordsDoNotMatch')
-            }));
-        }
-
-        // Validate the token; returns the email address from token
-        return self.validateToken(utils.decodeBase64URLsafe(token), dbHash).then(function then(email) {
-            return self.getByEmail(email);
-        }).then(function then(foundUser) {
-            if (!foundUser) {
-                return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.models.user.userNotFound')}));
-            }
-
-            return foundUser.save({
-                status: 'active',
-                password: newPassword
-            });
-        });
     },
 
     transferOwnership: function transferOwnership(object, options) {
