@@ -120,8 +120,7 @@ function init(options) {
             ghostAuthUrl: config.get('auth:url'),
             redirectUri: utils.url.urlJoin(utils.url.getBaseUrl(), 'ghost', '/'),
             blogUri: utils.url.urlJoin(utils.url.getBaseUrl(), '/'),
-            // @TODO: set blog title
-            clientName: utils.url.getBaseUrl()
+            clientName: config.get('theme:title')
         }).then(function (response) {
             parentApp.use(response.auth);
         });
