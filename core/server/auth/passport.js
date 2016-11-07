@@ -45,7 +45,7 @@ _private.registerClient = function (options) {
                 });
             }
 
-            return ghostOAuth2Strategy.registerClient({clientName: clientName})
+            return ghostOAuth2Strategy.registerClient({name: clientName})
                 .then(function addClient(credentials) {
                     return models.Client.add({
                         name: 'Ghost Auth',
