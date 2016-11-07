@@ -30,6 +30,7 @@ var crypto   = require('crypto'),
     url      = require('url'),
     api      = require('./api'),
     config   = require('./config'),
+    utils    = require('./utils'),
     logging  = require('./logging'),
     errors   = require('./errors'),
     i18n     = require('./i18n'),
@@ -116,7 +117,7 @@ function updateCheckData() {
             posts            = descriptors.posts.value(),
             users            = descriptors.users.value(),
             npm              = descriptors.npm.value(),
-            blogUrl          = url.parse(config.get('url')),
+            blogUrl          = url.parse(utils.url.urlFor('home', true)),
             blogId           = blogUrl.hostname + blogUrl.pathname.replace(/\//, '') + hash.value;
 
         data.blog_id         = crypto.createHash('md5').update(blogId).digest('hex');

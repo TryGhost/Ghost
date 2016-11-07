@@ -8,6 +8,7 @@ var debug = require('debug')('ghost:server'),
     _ = require('lodash'),
     errors = require('./errors'),
     config = require('./config'),
+    utils = require('./utils'),
     i18n   = require('./i18n'),
     moment = require('moment');
 
@@ -202,7 +203,7 @@ GhostServer.prototype.logStartMessages = function () {
             chalk.green(i18n.t('notices.httpServer.ghostIsRunningIn', {env: process.env.NODE_ENV})),
             i18n.t('notices.httpServer.listeningOn'),
             config.get('server').socket || config.get('server').host + ':' + config.get('server').port,
-            i18n.t('notices.httpServer.urlConfiguredAs', {url: config.get('url')}),
+            i18n.t('notices.httpServer.urlConfiguredAs', {url: utils.url.urlFor('home', true)}),
             chalk.gray(i18n.t('notices.httpServer.ctrlCToShutDown'))
         );
     }
