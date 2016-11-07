@@ -16,6 +16,7 @@ var ClientPasswordStrategy = require('passport-oauth2-client-password').Strategy
 _private.registerClient = function (options) {
     var ghostOAuth2Strategy = options.ghostOAuth2Strategy,
         clientName = options.clientName,
+        clientDescription = options.clientDescription,
         redirectUri = options.redirectUri;
 
     return models.Client.findOne({slug: 'ghost-auth'}, {context: {internal: true}})
@@ -45,22 +46,23 @@ _private.registerClient = function (options) {
                 });
             }
 
-            return ghostOAuth2Strategy.registerClient({name: clientName})
-                .then(function addClient(credentials) {
-                    return models.Client.add({
-                        name: 'Ghost Auth',
-                        slug: 'ghost-auth',
-                        uuid: credentials.client_id,
-                        secret: credentials.client_secret,
-                        redirection_uri: redirectUri
-                    }, {context: {internal: true}});
-                })
-                .then(function returnClient(client) {
-                    return {
-                        client_id: client.get('uuid'),
-                        client_secret: client.get('secret')
-                    };
-                });
+            return ghostOAuth2Strategy.registerClient({
+                name: clientName,
+                description: clientDescription
+            }).then(function addClient(credentials) {
+                return models.Client.add({
+                    name: 'Ghost Auth',
+                    slug: 'ghost-auth',
+                    uuid: credentials.client_id,
+                    secret: credentials.client_secret,
+                    redirection_uri: redirectUri
+                }, {context: {internal: true}});
+            }).then(function returnClient(client) {
+                return {
+                    client_id: client.get('uuid'),
+                    client_secret: client.get('secret')
+                };
+            });
         });
 };
 
@@ -101,6 +103,7 @@ _private.startPublicClientRegistration = function startPublicClientRegistration(
 exports.init = function initPassport(options) {
     var authType = options.authType,
         clientName = options.clientName,
+        clientDescription = options.clientDescription,
         ghostAuthUrl = options.ghostAuthUrl,
         redirectUri = options.redirectUri,
         blogUri = options.blogUri;
@@ -123,6 +126,7 @@ exports.init = function initPassport(options) {
         _private.startPublicClientRegistration({
             ghostOAuth2Strategy: ghostOAuth2Strategy,
             clientName: clientName,
+            clientDescription: clientDescription,
             redirectUri: redirectUri
         }).then(function setClient(client) {
             debug('Public Client Registration was successful');

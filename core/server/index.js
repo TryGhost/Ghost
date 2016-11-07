@@ -120,7 +120,9 @@ function init(options) {
             ghostAuthUrl: config.get('auth:url'),
             redirectUri: utils.url.urlJoin(utils.url.getBaseUrl(), 'ghost', '/'),
             blogUri: utils.url.urlJoin(utils.url.getBaseUrl(), '/'),
-            clientName: config.get('theme:title')
+            // @TODO: use settings cache when available api.settings.getSettingSync('title')
+            clientName: config.get('theme:title'),
+            clientDescription: config.get('theme:description')
         }).then(function (response) {
             parentApp.use(response.auth);
         });
