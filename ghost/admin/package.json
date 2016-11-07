@@ -109,8 +109,7 @@
       "grunt-contrib-jshint",
       "grunt-contrib-watch",
       "grunt-jscs",
-      "grunt-shell",
-      "ghost-editor"
+      "grunt-shell"
     ]
   }
 }
