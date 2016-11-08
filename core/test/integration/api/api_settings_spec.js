@@ -115,12 +115,21 @@ describe('Settings API', function () {
     });
 
     it('can edit', function () {
+        var testReference = SettingsAPI.getSettingsSync();
+
+        // see default-settings.json
+        SettingsAPI.getSettingSync('title').should.eql('Ghost');
+        testReference.title.value.should.eql('Ghost');
+
         return callApiWithContext(defaultContext, 'edit', {settings: [{key: 'title', value: 'UpdatedGhost'}]}, {})
             .then(function (response) {
                 should.exist(response);
                 testUtils.API.checkResponse(response, 'settings');
                 response.settings.length.should.equal(1);
                 testUtils.API.checkResponse(response.settings[0], 'setting');
+
+                SettingsAPI.getSettingSync('title').should.eql('UpdatedGhost');
+                testReference.title.value.should.eql('UpdatedGhost');
             });
     });
 
