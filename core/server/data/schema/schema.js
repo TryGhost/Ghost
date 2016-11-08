@@ -172,6 +172,7 @@ module.exports = {
         slug: {type: 'string', maxlength: 150, nullable: false, unique: true},
         secret: {type: 'string', maxlength: 150, nullable: false},
         redirection_uri: {type: 'string', maxlength: 2000, nullable: true},
+        client_uri: {type: 'string', maxlength: 2000, nullable: true},
         logo: {type: 'string', maxlength: 2000, nullable: true},
         status: {type: 'string', maxlength: 150, nullable: false, defaultTo: 'development'},
         type: {type: 'string', maxlength: 150, nullable: false, defaultTo: 'ua', validations: {isIn: [['ua', 'web', 'native']]}},
