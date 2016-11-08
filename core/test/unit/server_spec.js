@@ -33,7 +33,7 @@ describe('server bootstrap', function () {
         populateStub = sandbox.stub(migration, 'populate').returns(Promise.resolve());
         sandbox.stub(models.Settings, 'populateDefaults').returns(Promise.resolve());
         sandbox.stub(permissions, 'init').returns(Promise.resolve());
-        sandbox.stub(api, 'init').returns(Promise.resolve());
+        sandbox.stub(api.settings, 'updateSettingsCache').returns(Promise.resolve());
         sandbox.stub(apps, 'init').returns(Promise.resolve());
         sandbox.stub(slack, 'listen').returns(Promise.resolve());
         sandbox.stub(xmlrpc, 'listen').returns(Promise.resolve());
