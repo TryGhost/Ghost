@@ -41,6 +41,8 @@ describe('OAuth', function () {
             req.client = {
                 slug: 'test'
             };
+            req.authInfo = {};
+            req.authInfo.ip = '127.0.0.1';
 
             req.body.grant_type = 'password';
             req.body.username = 'username';

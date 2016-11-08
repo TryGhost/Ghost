@@ -1,129 +1,128 @@
-// # SpamPrevention Middleware
-// Usage: spamPrevention
-// After:
-// Before:
-// App: Admin|Blog|API
-//
-// Helpers to handle spam detection on signin, forgot password, and protected pages.
+var ExpressBrute = require('express-brute'),
+    BruteKnex = require('brute-knex'),
+    knexInstance = require('../../data/db/connection'),
+    store = new BruteKnex({tablename: 'brute', createTable:false, knex: knexInstance}),
+    moment = require('moment'),
+    errors = require('../../errors'),
+    config = require('../../config'),
+    spam = config.get('spam') || {},
+    _ = require('lodash'),
+    spamPrivateBlog = spam.private_blog || {},
+    spamGlobalBlock = spam.global_block || {},
+    spamGlobalReset = spam.global_reset || {},
+    spamUserReset = spam.user_reset || {},
+    spamUserLogin = spam.user_login || {},
 
-var _ = require('lodash'),
-    errors    = require('../../errors'),
-    config    = require('../../config'),
-    i18n      = require('../../i18n'),
-    loginSecurity = [],
-    forgottenSecurity = [],
-    spamPrevention;
+    i18n = require('../../i18n'),
+    handleStoreError,
+    globalBlock,
+    globalReset,
+    privateBlog,
+    userLogin,
+    userReset,
+    logging = require('../../logging'),
+    spamConfigKeys = ['freeRetries', 'minWait', 'maxWait', 'lifetime'];
 
-spamPrevention = {
-    /*jslint unparam:true*/
-    // limit signin requests to ten failed requests per IP per hour
-    signin: function signin(req, res, next) {
-        var currentTime = process.hrtime()[0],
-            remoteAddress = req.connection.remoteAddress,
-            deniedRateLimit = '',
-            ipCount = '',
-            rateSigninPeriod = config.rateSigninPeriod || 3600,
-            rateSigninAttempts = config.rateSigninAttempts || 10;
-
-        if (req.body.username && req.body.grant_type === 'password') {
-            loginSecurity.push({ip: remoteAddress, time: currentTime, email: req.body.username});
-        } else if (req.body.grant_type === 'refresh_token' || req.body.grant_type === 'authorization_code') {
-            return next();
-        } else {
-            return next(new errors.BadRequestError({message: i18n.t('errors.middleware.spamprevention.noUsername')}));
-        }
-
-        // filter entries that are older than rateSigninPeriod
-        loginSecurity = _.filter(loginSecurity, function filter(logTime) {
-            return (logTime.time + rateSigninPeriod > currentTime);
-        });
-
-        // check number of tries per IP address
-        ipCount = _.chain(loginSecurity).countBy('ip').value();
-        deniedRateLimit = (ipCount[remoteAddress] > rateSigninAttempts);
-
-        if (deniedRateLimit) {
-            return next(new errors.TooManyRequestsError({
-                message: i18n.t('errors.middleware.spamprevention.tooManyAttempts') + rateSigninPeriod === 3600 ? i18n.t('errors.middleware.spamprevention.waitOneHour') : i18n.t('errors.middleware.spamprevention.tryAgainLater'),
-                context: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.error', {rateSigninAttempts: rateSigninAttempts, rateSigninPeriod: rateSigninPeriod}),
-                help: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context')
-            }));
-        }
-        next();
-    },
-
-    // limit forgotten password requests to five requests per IP per hour for different email addresses
-    // limit forgotten password requests to five requests per email address
-    // @TODO: add validation check to validation middleware
-    forgotten: function forgotten(req, res, next) {
-        if (!req.body.passwordreset) {
-            return next(new errors.BadRequestError({
-                message: i18n.t('errors.api.utils.noRootKeyProvided', {docName: 'passwordreset'})
-            }));
-        }
-
-        var currentTime = process.hrtime()[0],
-            remoteAddress = req.connection.remoteAddress,
-            rateForgottenPeriod = config.rateForgottenPeriod || 3600,
-            rateForgottenAttempts = config.rateForgottenAttempts || 5,
-            email = req.body.passwordreset[0].email,
-            ipCount = '',
-            deniedRateLimit = '',
-            deniedEmailRateLimit = '',
-            index = _.findIndex(forgottenSecurity, function findIndex(logTime) {
-                return (logTime.ip === remoteAddress && logTime.email === email);
-            });
-
-        if (email) {
-            if (index !== -1) {
-                forgottenSecurity[index].count = forgottenSecurity[index].count + 1;
-            } else {
-                forgottenSecurity.push({ip: remoteAddress, time: currentTime, email: email, count: 0});
-            }
-        } else {
-            return next(new errors.BadRequestError({message: i18n.t('errors.middleware.spamprevention.noEmail')}));
-        }
-
-        // filter entries that are older than rateForgottenPeriod
-        forgottenSecurity = _.filter(forgottenSecurity, function filter(logTime) {
-            return (logTime.time + rateForgottenPeriod > currentTime);
-        });
-
-        // check number of tries with different email addresses per IP
-        ipCount = _.chain(forgottenSecurity).countBy('ip').value();
-        deniedRateLimit = (ipCount[remoteAddress] > rateForgottenAttempts);
-
-        if (index !== -1) {
-            deniedEmailRateLimit = (forgottenSecurity[index].count > rateForgottenAttempts);
-        }
-
-        if (deniedEmailRateLimit) {
-            return next(new errors.TooManyRequestsError({
-                message: i18n.t('errors.middleware.spamprevention.tooManyAttempts') + rateForgottenPeriod === 3600 ? i18n.t('errors.middleware.spamprevention.waitOneHour') : i18n.t('errors.middleware.spamprevention.tryAgainLater'),
-                context: i18n.t('errors.middleware.spamprevention.forgottenPasswordEmail.error', {
-                    rfa: rateForgottenAttempts,
-                    rfp: rateForgottenPeriod
-                }),
-                help: i18n.t('errors.middleware.spamprevention.forgottenPasswordEmail.context')
-            }));
-        }
-
-        if (deniedRateLimit) {
-            return next(new errors.TooManyRequestsError({
-                message: i18n.t('errors.middleware.spamprevention.tooManyAttempts') + rateForgottenPeriod === 3600 ? i18n.t('errors.middleware.spamprevention.waitOneHour') : i18n.t('errors.middleware.spamprevention.tryAgainLater'),
-                context: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error', {rfa: rateForgottenAttempts, rfp: rateForgottenPeriod}),
-                help: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.context')
-            }));
-        }
-
-        next();
-    },
-
-    resetCounter: function resetCounter(email) {
-        loginSecurity = _.filter(loginSecurity, function filter(logTime) {
-            return (logTime.email !== email);
-        });
-    }
+handleStoreError = function handleStoreError(err) {
+    return new errors.NoPermissionError({message: 'DB error', err: err});
 };
 
-module.exports = spamPrevention;
+// This is a global endpoint protection mechanism that will lock an endpoint if there are so many
+// requests from a single IP
+// We allow for a generous number of requests here to prevent communites on the same IP bing barred on account of a single suer
+// Defaults to 50 attempts per hour and locks the endpoint for an hour
+globalBlock = new ExpressBrute(store,
+    _.extend({
+        attachResetToRequest: false,
+        failCallback: function (req, res, next, nextValidRequestDate) {
+            return next(new errors.TooManyRequestsError({
+                message: 'Too many attempts try again in ' + moment(nextValidRequestDate).fromNow(true),
+                context: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error',
+                    {rfa: spamGlobalBlock.freeRetries + 1 || 5, rfp: spamGlobalBlock.lifetime || 60 * 60}),
+                help: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.context')
+            }));
+        },
+        handleStoreError: handleStoreError
+    }, _.pick(spamGlobalBlock, spamConfigKeys))
+);
+
+globalReset = new ExpressBrute(store,
+    _.extend({
+        attachResetToRequest: false,
+        failCallback: function (req, res, next, nextValidRequestDate) {
+            // TODO use i18n again
+            return next(new errors.TooManyRequestsError({
+                message: 'Too many attempts try again in ' + moment(nextValidRequestDate).fromNow(true),
+                context: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error',
+                    {rfa: spamGlobalReset.freeRetries + 1 || 5, rfp: spamGlobalReset.lifetime || 60 * 60}),
+                help: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.context')
+            }));
+        },
+        handleStoreError: handleStoreError
+    }, _.pick(spamGlobalBlock, spamConfigKeys))
+);
+
+// Stops login attempts for a user+IP pair with an increasing time period starting from 10 minutes
+// and rising to a week in a fibonnaci sequence
+// The user+IP count is reset when on successful login
+// Default value of 5 attempts per user+IP pair
+userLogin = new ExpressBrute(store,
+    _.extend({
+        attachResetToRequest: true,
+        failCallback: function (req, res, next, nextValidRequestDate) {
+            return next(new errors.TooManyRequestsError({
+                message: 'Too many attempts try again in ' + moment(nextValidRequestDate).fromNow(true),
+                context: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error',
+                    {rfa: spamUserLogin.freeRetries + 1 || 5, rfp: spamUserLogin.lifetime || 60 * 60}),
+                help: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.context')
+            }));
+        },
+        handleStoreError: handleStoreError
+    }, _.pick(spamUserLogin, spamConfigKeys))
+);
+
+// Stop password reset requests when there are (freeRetries + 1) requests per lifetime per email
+// Defaults here are 5 attempts per hour for a user+IP pair
+// The endpoint is then locked for an hour
+userReset = new ExpressBrute(store,
+    _.extend({
+        attachResetToRequest: true,
+        failCallback: function (req, res, next, nextValidRequestDate) {
+            return next(new errors.TooManyRequestsError({
+                message: 'Too many attempts try again in ' + moment(nextValidRequestDate).fromNow(true),
+                context: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error',
+                    {rfa: spamUserReset.freeRetries + 1 || 5, rfp: spamUserReset.lifetime || 60 * 60}),
+                help: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.context')
+            }));
+        },
+        handleStoreError: handleStoreError
+    }, _.pick(spamUserReset, spamConfigKeys))
+);
+
+// This protects a private blog from spam attacks. The defaults here allow 10 attempts per IP per hour
+// The endpoint is then locked for an hour
+privateBlog = new ExpressBrute(store,
+    _.extend({
+        attachResetToRequest: false,
+        failCallback: function (req, res, next, nextValidRequestDate) {
+            logging.error(new errors.GhostError({
+                message: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error',
+                    {rfa: spamPrivateBlog.freeRetries + 1 || 5, rfp: spamPrivateBlog.lifetime || 60 * 60}),
+                context: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.context')
+            }));
+
+            return next(new errors.GhostError({
+                message: 'Too many attempts try again in ' + moment(nextValidRequestDate).fromNow(true)
+            }));
+        },
+        handleStoreError: handleStoreError
+    }, _.pick(spamPrivateBlog, spamConfigKeys))
+);
+
+module.exports = {
+    globalBlock: globalBlock,
+    globalReset: globalReset,
+    userLogin: userLogin,
+    userReset: userReset,
+    privateBlog: privateBlog
+};

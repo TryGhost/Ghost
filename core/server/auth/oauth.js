@@ -39,8 +39,8 @@ function exchangeRefreshToken(client, refreshToken, scope, done) {
             }
         });
 }
-
-function exchangePassword(client, username, password, scope, done) {
+// We are required to pass in authInfo in order to reset spam counter for user login
+function exchangePassword(client, username, password, scope, body, authInfo, done) {
     // Validate the client
     models.Client.findOne({slug: client.slug})
         .then(function then(client) {
@@ -54,7 +54,8 @@ function exchangePassword(client, username, password, scope, done) {
                     return authenticationAPI.createTokens({}, {context: {client_id: client.id, user: user.id}});
                 })
                 .then(function then(response) {
-                    spamPrevention.resetCounter(username);
+                    // Reset spam count for username and IP pair
+                    spamPrevention.userLogin.reset(null, authInfo.ip + username + 'login');
                     return done(null, response.access_token, response.refresh_token, {expires_in: response.expires_in});
                 });
         })

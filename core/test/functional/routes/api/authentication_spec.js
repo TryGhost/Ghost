@@ -22,6 +22,12 @@ describe('Authentication API', function () {
         }).catch(done);
     });
 
+    afterEach(function (done) {
+        testUtils.clearBruteData().then(function () {
+            done();
+        });
+    });
+
     after(function (done) {
         testUtils.clearData().then(function () {
             done();

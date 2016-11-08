@@ -13,6 +13,7 @@ var _                = require('lodash'),
     events           = require('../events'),
     config           = require('../config'),
     i18n             = require('../i18n'),
+    spamPrevention   = require('../middleware/api/spam-prevention'),
     authentication,
     tokenSecurity = {};
 
@@ -341,6 +342,8 @@ authentication = {
                             message: i18n.t('errors.api.common.invalidTokenStructure')
                         }));
                     }
+
+                    spamPrevention.userLogin.reset(null, options.data.connection + tokenParts.email + 'login');
 
                     return models.User.changePassword({
                         oldPassword: oldPassword,
