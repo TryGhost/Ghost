@@ -35,5 +35,36 @@
             "enabled": false
         },
         "transports": ["stdout"]
+    },
+    "spam": {
+        "user_login": {
+            "minWait": 600000,
+            "maxWait": 604800000,
+            "freeRetries": 4
+        },
+        "user_reset": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 4
+        },
+        "global_reset": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries":4
+        },
+        "global_block": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries":99
+        },
+        "private_block": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries":99
+        }
     }
 }

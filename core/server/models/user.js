@@ -582,8 +582,7 @@ User = ghostBookshelf.Model.extend({
     // Finds the user by email, and checks the password
     // @TODO: shorten this function and rename...
     check: function check(object) {
-        var self = this,
-            s;
+        var self = this;
 
         return this.getByEmail(object.email).then(function then(user) {
             if (!user) {
@@ -607,32 +606,11 @@ User = ghostBookshelf.Model.extend({
                             });
                     })
                     .catch(function onError(err) {
-                        if (err.code !== 'PASSWORD_INCORRECT') {
-                            return Promise.reject(err);
-                        }
-
-                        return Promise.resolve(self.setWarning(user, {validate: false}))
-                            .then(function then(remaining) {
-                                if (remaining === 0) {
-                                    // If remaining attempts = 0, the account has been locked, so show a locked account message
-                                    return Promise.reject(new errors.NoPermissionError({
-                                        message: i18n.t('errors.models.user.accountLocked')
-                                    }));
-                                }
-
-                                s = (remaining > 1) ? 's' : '';
-                                return Promise.reject(new errors.UnauthorizedError({
-                                    message: i18n.t('errors.models.user.incorrectPasswordAttempts', {remaining: remaining, s: s})
-                                }));
-                            }, function handleError(err) {
-                                // ^ Use comma structure, not .catch, because we don't want to catch incorrect passwords
-
-                                return Promise.reject(new errors.UnauthorizedError({
-                                    err: err,
-                                    context: i18n.t('errors.models.user.incorrectPassword'),
-                                    help: i18n.t('errors.models.user.userUpdateError.help')
-                                }));
-                            });
+                        return Promise.reject(new errors.UnauthorizedError({
+                            err: err,
+                            context: i18n.t('errors.models.user.incorrectPassword'),
+                            help: i18n.t('errors.models.user.userUpdateError.help')
+                        }));
                     });
             }
 
