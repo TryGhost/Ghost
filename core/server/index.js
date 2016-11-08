@@ -122,9 +122,8 @@ function init(options) {
             ghostAuthUrl: config.get('auth:url'),
             redirectUri: utils.url.urlJoin(utils.url.getBaseUrl(), 'ghost', '/'),
             clientUri: utils.url.urlJoin(utils.url.getBaseUrl(), '/'),
-            // @TODO: use settings cache when available api.settings.getSettingSync('title')
-            clientName: config.get('theme:title'),
-            clientDescription: config.get('theme:description')
+            clientName: api.settings.getSettingSync('title'),
+            clientDescription: api.settings.getSettingSync('description')
         }).then(function (response) {
             parentApp.use(response.auth);
         }).catch(function onAuthError(err) {
