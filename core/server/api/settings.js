@@ -26,7 +26,6 @@ var _            = require('lodash'),
     /**
      * ## Cache
      * Holds cached settings
-     * @private
      * @type {{}}
      */
     settingsCache = {};
@@ -52,6 +51,9 @@ updateConfigCache = function () {
         }
     }
 
+    // @TODO: why are we putting the settings cache values into config?we could access the cache directly
+    // @TODO: plus: why do we assign the values to the prefix "theme"?
+    // @TODO: might be related to https://github.com/TryGhost/Ghost/issues/7488
     config.set('theme:title', (settingsCache.title && settingsCache.title.value) || '');
     config.set('theme:description', (settingsCache.description && settingsCache.description.value) || '');
     config.set('theme:logo', (settingsCache.logo && settingsCache.logo.value) || '');
@@ -92,10 +94,9 @@ updateSettingsCache = function (settings, options) {
 
     return dataProvider.Settings.findAll(options)
         .then(function (result) {
-            settingsCache = readSettingsResult(result.models);
-
+            // keep reference and update all keys
+            _.extend(settingsCache, readSettingsResult(result.models));
             updateConfigCache();
-
             return settingsCache;
         });
 };
@@ -428,4 +429,21 @@ settings = {
 };
 
 module.exports = settings;
+
+/**
+ * synchronous function to get cached settings value
+ * returns the value of the settings entry
+ */
+module.exports.getSettingSync = function getSettingSync(key) {
+    return settingsCache[key] && settingsCache[key].value;
+};
+
+/**
+ * synchronous function to get all cached settings values
+ * returns everything for now
+ */
+module.exports.getSettingsSync = function getSettingsSync() {
+    return settingsCache;
+};
+
 module.exports.updateSettingsCache = updateSettingsCache;

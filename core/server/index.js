@@ -88,10 +88,10 @@ function init(options) {
         return models.Settings.populateDefaults();
     }).then(function () {
         debug('Models & database done');
-        // Initialize the settings cache
-        return api.init();
+
+        return api.settings.updateSettingsCache();
     }).then(function () {
-        debug('API done');
+        debug('Update settings cache done');
         // Initialize the permissions actions and objects
         // NOTE: Must be done before initDbHashAndFirstRun calls
         return permissions.init();

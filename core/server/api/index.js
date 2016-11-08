@@ -33,17 +33,7 @@ var _              = require('lodash'),
     cacheInvalidationHeader,
     locationHeader,
     contentDispositionHeaderExport,
-    contentDispositionHeaderSubscribers,
-    init;
-
-/**
- * ### Init
- * Initialise the API - populate the settings cache
- * @return {Promise(Settings)} Resolves to Settings Collection
- */
-init = function init() {
-    return settings.updateSettingsCache();
-};
+    contentDispositionHeaderSubscribers;
 
 function isActiveThemeOverride(method, endpoint, result) {
     return method === 'POST' && endpoint === 'themes' && result.themes && result.themes[0] && result.themes[0].active === true;
@@ -274,8 +264,6 @@ http = function http(apiMethod) {
  * ## Public API
  */
 module.exports = {
-    // Extras
-    init: init,
     http: http,
     // API Endpoints
     configuration: configuration,
