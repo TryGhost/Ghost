@@ -18,6 +18,7 @@ var debug = require('debug')('ghost:boot:init'),
     Promise = require('bluebird'),
     KnexMigrator = require('knex-migrator'),
     config = require('./config'),
+    logging = require('./logging'),
     i18n = require('./i18n'),
     api = require('./api'),
     models = require('./models'),
@@ -115,7 +116,8 @@ function init(options) {
 
         debug('Express Apps done');
 
-        return auth.init({
+        // runs asynchronous
+        auth.init({
             authType: config.get('auth:type'),
             ghostAuthUrl: config.get('auth:url'),
             redirectUri: utils.url.urlJoin(utils.url.getBaseUrl(), 'ghost', '/'),
@@ -125,6 +127,8 @@ function init(options) {
             clientDescription: config.get('theme:description')
         }).then(function (response) {
             parentApp.use(response.auth);
+        }).catch(function onAuthError(err) {
+            logging.error(err);
         });
     }).then(function () {
         debug('Auth done');
