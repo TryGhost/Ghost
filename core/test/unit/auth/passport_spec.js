@@ -13,19 +13,30 @@ var passport = require('passport'),
 should.equal(true, true);
 
 describe('Ghost Passport', function () {
-    var client;
+    var client, events, registeredEvents = {};
 
     function FakeGhostOAuth2Strategy(options) {
-        this.name = 'FakeGhostOAuth2Strategy';
+        this.name = 'ghost';
 
         should.exist(options.blogUri);
         should.exist(options.url);
-        should.exist(options.callbackURL);
+        should.exist(options.redirectUri);
         options.passReqToCallback.should.eql(true);
+
+        this.blogUri = options.blogUri;
+        this.redirectUri = options.redirectUri;
     }
 
     before(function () {
         models.init();
+
+        events = {
+            on: function (name, onEvent) {
+                registeredEvents[name] = onEvent;
+            }
+        };
+
+        GhostPassport.__set__('events', events);
         GhostPassport.__set__('GhostOAuth2Strategy', FakeGhostOAuth2Strategy);
         GhostPassport.__set__('_private.retryTimeout', 50);
     });
@@ -34,14 +45,41 @@ describe('Ghost Passport', function () {
         sandbox.spy(passport, 'use');
 
         sandbox.stub(models.Client, 'findOne', function () {
+            if (client) {
+                client.save = sandbox.stub();
+            }
+
             return Promise.resolve(client);
         });
 
-        sandbox.stub(models.Client, 'add').returns(Promise.resolve(new models.Client(testUtils.DataGenerator.forKnex.createClient())));
+        sandbox.stub(models.Client, 'add', function () {
+            client = new models.Client(testUtils.DataGenerator.forKnex.createClient());
+            return Promise.resolve(client);
+        });
 
         FakeGhostOAuth2Strategy.prototype.setClient = sandbox.stub();
-        FakeGhostOAuth2Strategy.prototype.registerClient = sandbox.stub().returns(Promise.resolve({}));
-        FakeGhostOAuth2Strategy.prototype.updateClient = sandbox.stub().returns(Promise.resolve({}));
+        FakeGhostOAuth2Strategy.prototype.registerClient = function () {
+        };
+        FakeGhostOAuth2Strategy.prototype.updateClient = function () {
+        };
+
+        sandbox.stub(FakeGhostOAuth2Strategy.prototype, 'registerClient', function (options) {
+            return Promise.resolve({
+                redirect_uri: this.redirectUri,
+                blog_uri: this.blogUri,
+                name: options.name,
+                description: options.description
+            });
+        });
+
+        sandbox.stub(FakeGhostOAuth2Strategy.prototype, 'updateClient', function () {
+            return Promise.resolve({
+                redirect_uri: client.get('redirection_uri'),
+                blog_uri: client.get('blog_uri'),
+                name: client.get('name'),
+                description: client.get('description')
+            });
+        });
     });
 
     afterEach(function () {
@@ -66,8 +104,10 @@ describe('Ghost Passport', function () {
     });
 
     describe('auth_type: ghost', function () {
-        it('ghost client is already present in database and redirect_uri hasn\'t changed', function () {
+        it('ghost client is already present in database and nothing has changed', function () {
             client = new models.Client(testUtils.DataGenerator.forKnex.createClient({
+                name: 'Ghost',
+                blog_uri: 'http://my-blog.com',
                 redirection_uri: utils.url.getBaseUrl()
             }));
 
@@ -75,7 +115,8 @@ describe('Ghost Passport', function () {
                 authType: 'ghost',
                 blogUri: 'http://my-blog.com',
                 ghostAuthUrl: 'http://devauth.ghost.org',
-                redirectUri: utils.url.getBaseUrl()
+                redirectUri: utils.url.getBaseUrl(),
+                clientName: 'Ghost'
             }).then(function (response) {
                 should.exist(response.passport);
                 passport.use.callCount.should.eql(3);
@@ -90,6 +131,8 @@ describe('Ghost Passport', function () {
 
         it('ghost client is already present in database and redirect_uri has changed', function () {
             client = new models.Client(testUtils.DataGenerator.forKnex.createClient({
+                name: 'Ghost',
+                blog_uri: 'http://my-blog.com',
                 redirection_uri: 'URL-HAS-CHANGED'
             }));
 
@@ -97,7 +140,8 @@ describe('Ghost Passport', function () {
                 authType: 'ghost',
                 blogUri: 'http://my-blog.com',
                 ghostAuthUrl: 'http://devauth.ghost.org',
-                redirectUri: utils.url.getBaseUrl()
+                redirectUri: utils.url.getBaseUrl(),
+                clientName: 'Ghost'
             }).then(function (response) {
                 should.exist(response.passport);
                 passport.use.callCount.should.eql(3);
@@ -108,6 +152,39 @@ describe('Ghost Passport', function () {
                 FakeGhostOAuth2Strategy.prototype.registerClient.called.should.eql(false);
                 FakeGhostOAuth2Strategy.prototype.updateClient.called.should.eql(true);
             });
+        });
+
+        it('ghost client is already present in database and title changes', function (done) {
+            client = null;
+
+            GhostPassport.init({
+                authType: 'ghost',
+                blogUri: 'http://my-blog.com',
+                ghostAuthUrl: 'http://devauth.ghost.org',
+                redirectUri: utils.url.getBaseUrl(),
+                clientName: 'Ghost'
+            }).then(function () {
+                FakeGhostOAuth2Strategy.prototype.registerClient.called.should.eql(true);
+                FakeGhostOAuth2Strategy.prototype.updateClient.called.should.eql(false);
+
+                registeredEvents['settings.edited']({
+                    attributes: {
+                        key: 'title',
+                        value: 'new-title'
+                    },
+                    _updatedAttributes: {
+                        value: 'old-title'
+                    }
+                });
+
+                (function retry() {
+                    if (FakeGhostOAuth2Strategy.prototype.updateClient.called === true) {
+                        return done();
+                    }
+
+                    setTimeout(retry, 100);
+                })();
+            }).catch(done);
         });
 
         it('ghost client does not exist', function () {
@@ -127,13 +204,18 @@ describe('Ghost Passport', function () {
                 models.Client.add.called.should.eql(true);
                 FakeGhostOAuth2Strategy.prototype.setClient.called.should.eql(true);
                 FakeGhostOAuth2Strategy.prototype.registerClient.called.should.eql(true);
-                FakeGhostOAuth2Strategy.prototype.registerClient.calledWith({name: 'custom client name'}).should.eql(true);
+                FakeGhostOAuth2Strategy.prototype.registerClient.calledWith({
+                    name: 'custom client name',
+                    description: undefined
+                }).should.eql(true);
             });
         });
 
         it('ghost client does not exist, ghost.org register client does not work', function () {
             client = null;
 
+            FakeGhostOAuth2Strategy.prototype.registerClient.restore();
+            FakeGhostOAuth2Strategy.prototype.registerClient = sandbox.stub();
             FakeGhostOAuth2Strategy.prototype.registerClient.returns(Promise.reject(new Error('cannot connect to ghost.org')));
 
             return GhostPassport.init({
@@ -142,8 +224,8 @@ describe('Ghost Passport', function () {
                 ghostAuthUrl: 'http://devauth.ghost.org',
                 redirectUri: utils.url.getBaseUrl()
             }).catch(function (err) {
-                (err instanceof errors.IncorrectUsageError).should.eql(true);
-                FakeGhostOAuth2Strategy.prototype.registerClient.callCount.should.eql(12);
+                (err instanceof errors.GhostError).should.eql(true);
+                FakeGhostOAuth2Strategy.prototype.registerClient.callCount.should.eql(1);
             });
         });
     });
