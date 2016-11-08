@@ -68,8 +68,8 @@ configuration = {
                     configuration.clientId = result.ghostAdmin.get('slug');
                     configuration.clientSecret = result.ghostAdmin.get('secret');
 
-                    if (result.ghostAuth) {
-                        configuration.ghostAuthId = result.ghostAuth.get('uuid');
+                    if (config.get('auth:type') === 'ghost') {
+                        configuration.ghostAuthId = result.ghostAuth && result.ghostAuth.get('uuid') || 'not-available';
                         configuration.ghostAuthUrl = config.get('auth:url');
                     }
 

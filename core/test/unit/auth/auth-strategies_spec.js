@@ -214,7 +214,7 @@ describe('Auth Strategies', function () {
         it('with invite, but with wrong invite token', function (done) {
             var ghostAuthAccessToken = '12345',
                 req = {body: {inviteToken: 'wrong'}},
-                profile = {email_address: 'test@example.com'};
+                profile = {email: 'test@example.com'};
 
             userByEmailStub.returns(Promise.resolve(null));
             inviteStub.returns(Promise.reject(new errors.NotFoundError()));
@@ -231,7 +231,7 @@ describe('Auth Strategies', function () {
         it('with correct invite token, but expired', function (done) {
             var ghostAuthAccessToken = '12345',
                 req = {body: {inviteToken: 'token'}},
-                profile = {email_address: 'test@example.com'};
+                profile = {email: 'test@example.com'};
 
             userByEmailStub.returns(Promise.resolve(null));
             inviteStub.returns(Promise.resolve(Models.Invite.forge({
@@ -252,7 +252,7 @@ describe('Auth Strategies', function () {
         it('with correct invite token', function (done) {
             var ghostAuthAccessToken = '12345',
                 req = {body: {inviteToken: 'token'}},
-                invitedProfile = {email_address: 'test@example.com'},
+                invitedProfile = {email: 'test@example.com'},
                 invitedUser = {id: 2},
                 inviteModel = Models.Invite.forge({
                     id: 1,
@@ -282,7 +282,7 @@ describe('Auth Strategies', function () {
         it('setup', function (done) {
             var ghostAuthAccessToken = '12345',
                 req = {body: {}},
-                ownerProfile = {email_address: 'test@example.com'},
+                ownerProfile = {email: 'test@example.com'},
                 owner = {id: 2};
 
             userByEmailStub.returns(Promise.resolve(null));
@@ -313,7 +313,7 @@ describe('Auth Strategies', function () {
         it('auth', function (done) {
             var ghostAuthAccessToken = '12345',
                 req = {body: {}},
-                ownerProfile = {email_address: 'test@example.com'},
+                ownerProfile = {email: 'test@example.com'},
                 owner = {id: 2};
 
             userByEmailStub.returns(Promise.resolve(owner));

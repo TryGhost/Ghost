@@ -94,8 +94,8 @@ strategies = {
                     }
 
                     return models.User.add({
-                        email: profile.email_address,
-                        name: profile.email_address,
+                        email: profile.email,
+                        name: profile.email,
                         password: utils.uid(50),
                         roles: invite.toJSON().roles
                     }, options);
@@ -117,13 +117,13 @@ strategies = {
                     }
 
                     return models.User.edit({
-                        email: profile.email_address,
+                        email: profile.email,
                         status: 'active'
                     }, _.merge({id: owner.id}, options));
                 });
         };
 
-        models.User.getByEmail(profile.email_address, options)
+        models.User.getByEmail(profile.email, options)
             .then(function fetchedUser(user) {
                 if (user) {
                     return user;
