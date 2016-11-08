@@ -7,11 +7,9 @@ var _           = require('lodash'),
     config      = require('../../../config'),
     api         = require('../../../api'),
     errors      = require('../../../errors'),
-    logging      = require('../../../logging'),
     utils       = require('../../../utils'),
     i18n        = require('../../../i18n'),
     privateRoute = '/' + config.get('routeKeywords').private + '/',
-    protectedSecurity = [],
     privateBlogging;
 
 function verifySessionHash(salt, hash) {
@@ -136,50 +134,6 @@ privateBlogging = {
                 return next();
             }
         });
-    },
-
-    spamPrevention: function spamPrevention(req, res, next) {
-        var currentTime = process.hrtime()[0],
-            remoteAddress = req.connection.remoteAddress,
-            rateProtectedPeriod = config.rateProtectedPeriod || 3600,
-            rateProtectedAttempts = config.rateProtectedAttempts || 10,
-            ipCount = '',
-            message = i18n.t('errors.middleware.spamprevention.tooManyAttempts'),
-            deniedRateLimit = '',
-            password = req.body.password;
-
-        if (password) {
-            protectedSecurity.push({ip: remoteAddress, time: currentTime});
-        } else {
-            res.error = {
-                message: i18n.t('errors.middleware.spamprevention.noPassword')
-            };
-            return next();
-        }
-
-        // filter entries that are older than rateProtectedPeriod
-        protectedSecurity = _.filter(protectedSecurity, function filter(logTime) {
-            return (logTime.time + rateProtectedPeriod > currentTime);
-        });
-
-        ipCount = _.chain(protectedSecurity).countBy('ip').value();
-        deniedRateLimit = (ipCount[remoteAddress] > rateProtectedAttempts);
-
-        if (deniedRateLimit) {
-            logging.error(new errors.GhostError({
-                message: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error', {rfa: rateProtectedAttempts, rfp: rateProtectedPeriod}),
-                context: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.context')
-            }));
-
-            message += rateProtectedPeriod === 3600 ? i18n.t('errors.middleware.spamprevention.waitOneHour') : i18n.t('errors.middleware.spamprevention.tryAgainLater');
-
-            // @TODO: why?
-            res.error = {
-                message: message
-            };
-        }
-
-        return next();
     }
 };
 

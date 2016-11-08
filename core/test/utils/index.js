@@ -37,7 +37,8 @@ var Promise       = require('bluebird'),
 
     initFixtures,
     initData,
-    clearData;
+    clearData,
+    clearBruteData;
 
 // Require additional assertions which help us keep our tests small and clear
 require('./assertions');
@@ -405,6 +406,10 @@ initData = function initData() {
     return knexMigrator.init();
 };
 
+clearBruteData = function clearBruteData() {
+    return db.knex('brute').truncate();
+};
+
 // we must always try to delete all tables
 clearData = function clearData() {
     debug('Database reset');
@@ -681,6 +686,7 @@ module.exports = {
     initFixtures: initFixtures,
     initData: initData,
     clearData: clearData,
+    clearBruteData: clearBruteData,
 
     mocks: mocks,
 

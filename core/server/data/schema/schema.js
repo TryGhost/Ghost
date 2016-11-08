@@ -232,5 +232,12 @@ module.exports = {
         id: {type: 'increments', nullable: false, primary: true},
         role_id: {type: 'integer', nullable: false},
         invite_id: {type: 'integer', nullable: false}
+    },
+    brute: {
+        key: {type: 'string'},
+        firstRequest: {type: 'timestamp'},
+        lastRequest: {type: 'timestamp'},
+        lifetime: {type: 'bigInteger'},
+        count: {type: 'integer'}
     }
 };

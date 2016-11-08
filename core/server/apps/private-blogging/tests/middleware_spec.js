@@ -1,4 +1,4 @@
-/*globals describe, beforeEach, afterEach, before, it*/
+/*globals describe, beforeEach, afterEach, it*/
 var crypto          = require('crypto'),
     should          = require('should'),
     sinon           = require('sinon'),
@@ -286,79 +286,6 @@ describe('Private Blogging', function () {
                     }).catch(done);
                 });
             });
-        });
-    });
-
-    describe('spamPrevention', function () {
-        var error = null,
-            res, req, spyNext;
-
-        before(function () {
-            spyNext = sinon.spy(function (param) {
-                error = param;
-            });
-        });
-
-        beforeEach(function () {
-            res = sinon.spy();
-            req = {
-                connection: {
-                    remoteAddress: '10.0.0.0'
-                },
-                body: {
-                    password: 'password'
-                }
-            };
-        });
-
-        it ('sets an error when there is no password', function (done) {
-            req.body = {};
-
-            privateBlogging.spamPrevention(req, res, spyNext);
-            res.error.message.should.equal('No password entered');
-            spyNext.calledOnce.should.be.true();
-
-            done();
-        });
-
-        it ('sets and error message after 10 tries', function (done) {
-            var ndx;
-
-            for (ndx = 0; ndx < 10; ndx = ndx + 1) {
-                privateBlogging.spamPrevention(req, res, spyNext);
-            }
-
-            should.not.exist(res.error);
-            privateBlogging.spamPrevention(req, res, spyNext);
-            should.exist(res.error);
-            should.exist(res.error.message);
-
-            done();
-        });
-
-        it ('allows more tries after an hour', function (done) {
-            var ndx,
-                stub = sinon.stub(process, 'hrtime', function () {
-                    return [10, 10];
-                });
-
-            for (ndx = 0; ndx < 11; ndx = ndx + 1) {
-                privateBlogging.spamPrevention(req, res, spyNext);
-            }
-
-            should.exist(res.error);
-            process.hrtime.restore();
-            stub = sinon.stub(process, 'hrtime', function () {
-                return [3610000, 10];
-            });
-
-            res = sinon.spy();
-
-            privateBlogging.spamPrevention(req, res, spyNext);
-            should.not.exist(res.error);
-
-            process.hrtime.restore();
-            done();
         });
     });
 });
