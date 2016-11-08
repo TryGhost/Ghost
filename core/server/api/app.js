@@ -11,7 +11,7 @@ var debug = require('debug')('ghost:api'),
     // API specific
     auth = require('../auth'),
     cors = require('../middleware/api/cors'),   // routes only?!
-    spamPrevention = require('../middleware/api/spam-prevention'), // routes only
+    brute = require('../middleware/brute'),  // routes only
     versionMatch = require('../middleware/api/version-match'), // global
 
     // Handling uploads & imports
@@ -170,17 +170,21 @@ function apiRoutes() {
 
     // ## Authentication
     apiRouter.post('/authentication/passwordreset',
-        spamPrevention.forgotten,
+        // Prevent more than 5 password resets from an ip in an hour for any email address
+        brute.globalReset,
+        // Prevent more than 5 password resets in an hour for an email+IP pair
+        brute.userReset,
         api.http(api.authentication.generateResetToken)
     );
-    apiRouter.put('/authentication/passwordreset', api.http(api.authentication.resetPassword));
+    apiRouter.put('/authentication/passwordreset', brute.globalBlock, api.http(api.authentication.resetPassword));
     apiRouter.post('/authentication/invitation', api.http(api.authentication.acceptInvitation));
     apiRouter.get('/authentication/invitation', api.http(api.authentication.isInvitation));
     apiRouter.post('/authentication/setup', api.http(api.authentication.setup));
     apiRouter.put('/authentication/setup', authenticatePrivate, api.http(api.authentication.updateSetup));
     apiRouter.get('/authentication/setup', api.http(api.authentication.isSetup));
     apiRouter.post('/authentication/token',
-        spamPrevention.signin,
+        brute.globalBlock,
+        brute.userLogin,
         auth.authenticate.authenticateClient,
         auth.oauth.generateAccessToken
     );
