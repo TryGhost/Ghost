@@ -121,7 +121,7 @@ function init(options) {
             authType: config.get('auth:type'),
             ghostAuthUrl: config.get('auth:url'),
             redirectUri: utils.url.urlJoin(utils.url.getBaseUrl(), 'ghost', '/'),
-            blogUri: utils.url.urlJoin(utils.url.getBaseUrl(), '/'),
+            clientUri: utils.url.urlJoin(utils.url.getBaseUrl(), '/'),
             // @TODO: use settings cache when available api.settings.getSettingSync('title')
             clientName: config.get('theme:title'),
             clientDescription: config.get('theme:description')

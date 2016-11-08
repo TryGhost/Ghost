@@ -58,10 +58,8 @@ describe('Ghost Passport', function () {
         });
 
         FakeGhostOAuth2Strategy.prototype.setClient = sandbox.stub();
-        FakeGhostOAuth2Strategy.prototype.registerClient = function () {
-        };
-        FakeGhostOAuth2Strategy.prototype.updateClient = function () {
-        };
+        FakeGhostOAuth2Strategy.prototype.registerClient = function () {};
+        FakeGhostOAuth2Strategy.prototype.updateClient = function () {};
 
         sandbox.stub(FakeGhostOAuth2Strategy.prototype, 'registerClient', function (options) {
             return Promise.resolve({
@@ -107,13 +105,13 @@ describe('Ghost Passport', function () {
         it('ghost client is already present in database and nothing has changed', function () {
             client = new models.Client(testUtils.DataGenerator.forKnex.createClient({
                 name: 'Ghost',
-                blog_uri: 'http://my-blog.com',
+                client_uri: 'http://my-blog.com',
                 redirection_uri: utils.url.getBaseUrl()
             }));
 
             return GhostPassport.init({
                 authType: 'ghost',
-                blogUri: 'http://my-blog.com',
+                clientUri: 'http://my-blog.com',
                 ghostAuthUrl: 'http://devauth.ghost.org',
                 redirectUri: utils.url.getBaseUrl(),
                 clientName: 'Ghost'
@@ -132,13 +130,13 @@ describe('Ghost Passport', function () {
         it('ghost client is already present in database and redirect_uri has changed', function () {
             client = new models.Client(testUtils.DataGenerator.forKnex.createClient({
                 name: 'Ghost',
-                blog_uri: 'http://my-blog.com',
+                client_uri: 'http://my-blog.com',
                 redirection_uri: 'URL-HAS-CHANGED'
             }));
 
             return GhostPassport.init({
                 authType: 'ghost',
-                blogUri: 'http://my-blog.com',
+                clientUri: 'http://my-blog.com',
                 ghostAuthUrl: 'http://devauth.ghost.org',
                 redirectUri: utils.url.getBaseUrl(),
                 clientName: 'Ghost'
@@ -159,7 +157,7 @@ describe('Ghost Passport', function () {
 
             GhostPassport.init({
                 authType: 'ghost',
-                blogUri: 'http://my-blog.com',
+                clientUri: 'http://my-blog.com',
                 ghostAuthUrl: 'http://devauth.ghost.org',
                 redirectUri: utils.url.getBaseUrl(),
                 clientName: 'Ghost'
@@ -192,7 +190,7 @@ describe('Ghost Passport', function () {
 
             return GhostPassport.init({
                 authType: 'ghost',
-                blogUri: 'http://my-blog.com',
+                clientUri: 'http://my-blog.com',
                 ghostAuthUrl: 'http://devauth.ghost.org',
                 redirectUri: utils.url.getBaseUrl(),
                 clientName: 'custom client name'
@@ -220,7 +218,7 @@ describe('Ghost Passport', function () {
 
             return GhostPassport.init({
                 authType: 'ghost',
-                blogUri: 'http://my-blog.com',
+                clientUri: 'http://my-blog.com',
                 ghostAuthUrl: 'http://devauth.ghost.org',
                 redirectUri: utils.url.getBaseUrl()
             }).catch(function (err) {

@@ -339,7 +339,7 @@ DataGenerator.forKnex = (function () {
         return _.defaults(newObj, {
             secret: 'not_available',
             redirection_uri: 'http://localhost:9999',
-            blog_uri: 'http://localhost:9000',
+            client_uri: 'http://localhost:9000',
             name: 'client',
             type: 'ua',
             status: 'enabled'

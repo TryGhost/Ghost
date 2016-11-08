@@ -54,7 +54,7 @@ _private.registerEvents = function registerEvents() {
 _private.updateClient = function updateClient(options) {
     var ghostOAuth2Strategy = options.ghostOAuth2Strategy,
         redirectUri = options.redirectUri,
-        blogUri = options.blogUri,
+        clientUri = options.clientUri,
         clientName = options.clientName,
         clientDescription = options.clientDescription;
 
@@ -77,7 +77,7 @@ _private.updateClient = function updateClient(options) {
                         uuid: credentials.client_id,
                         secret: credentials.client_secret,
                         redirection_uri: credentials.redirect_uri,
-                        blog_uri: credentials.blog_uri
+                        client_uri: credentials.blog_uri
                     }, {context: {internal: true}});
                 }).then(function addedLocalClient(client) {
                     debug('Added local client: ' + JSON.stringify(client.toJSON()));
@@ -93,7 +93,7 @@ _private.updateClient = function updateClient(options) {
             if (client.get('redirection_uri') === redirectUri &&
                 client.get('name') === clientName &&
                 client.get('description') === clientDescription &&
-                client.get('blog_uri') === blogUri) {
+                client.get('client_uri') === clientUri) {
                 debug('Client did not change');
 
                 return {
@@ -107,14 +107,14 @@ _private.updateClient = function updateClient(options) {
                 clientId: client.get('uuid'),
                 clientSecret: client.get('secret'),
                 redirectUri: redirectUri,
-                blogUri: blogUri,
+                blogUri: clientUri,
                 name: clientName,
                 description: clientDescription
             }, _.isUndefined)).then(function updatedRemoteClient(updatedRemoteClient) {
                 debug('Update remote client: ' + JSON.stringify(updatedRemoteClient));
 
                 client.set('redirection_uri', updatedRemoteClient.redirect_uri);
-                client.set('blog_uri', updatedRemoteClient.blog_uri);
+                client.set('client_uri', updatedRemoteClient.blog_uri);
                 client.set('name', updatedRemoteClient.name);
                 client.set('description', updatedRemoteClient.description);
 
@@ -139,7 +139,7 @@ exports.init = function initPassport(options) {
         clientDescription = options.clientDescription,
         ghostAuthUrl = options.ghostAuthUrl,
         redirectUri = options.redirectUri,
-        blogUri = options.blogUri;
+        clientUri = options.clientUri;
 
     return new Promise(function (resolve, reject) {
         passport.use(new ClientPasswordStrategy(authStrategies.clientPasswordStrategy));
@@ -151,7 +151,7 @@ exports.init = function initPassport(options) {
 
         var ghostOAuth2Strategy = new GhostOAuth2Strategy({
             redirectUri: redirectUri,
-            blogUri: blogUri,
+            blogUri: clientUri,
             url: ghostAuthUrl,
             passReqToCallback: true
         }, authStrategies.ghostStrategy);
@@ -161,7 +161,7 @@ exports.init = function initPassport(options) {
             clientName: clientName,
             clientDescription: clientDescription,
             redirectUri: redirectUri,
-            blogUri: blogUri
+            clientUri: clientUri
         }).then(function setClient(client) {
             ghostOAuth2Strategy.setClient(client);
             passport.use(ghostOAuth2Strategy);
