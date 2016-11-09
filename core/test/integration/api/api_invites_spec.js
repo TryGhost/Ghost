@@ -2,6 +2,7 @@ var testUtils = require('../../utils'),
     should = require('should'),
     sinon = require('sinon'),
     _ = require('lodash'),
+    ObjectId = require('bson-objectid'),
     Promise = require('bluebird'),
     InvitesAPI = require('../../../server/api/invites'),
     mail = require('../../../server/api/mail'),
@@ -130,7 +131,7 @@ describe('Invites API', function () {
 
         describe('Destroy', function () {
             it('destroy invite', function (done) {
-                InvitesAPI.destroy(_.merge({}, testUtils.context.owner, {id: 1}))
+                InvitesAPI.destroy(_.merge({}, testUtils.context.owner, {id: testUtils.DataGenerator.forKnex.invites[0].id}))
                     .then(function () {
                         return InvitesAPI.read(_.merge({}, testUtils.context.owner, {
                             email: 'test1@ghost.org'
@@ -142,7 +143,7 @@ describe('Invites API', function () {
             });
 
             it('destroy invite: id does not exist', function (done) {
-                InvitesAPI.destroy({context: {user: 1}, id: 100})
+                InvitesAPI.destroy(_.merge({id: ObjectId.generate()}, testUtils.context.owner))
                     .then(function () {
                         throw new Error('expect error on destroy invite');
                     })

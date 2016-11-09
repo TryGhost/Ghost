@@ -2,9 +2,11 @@ var testUtils   = require('../../utils'),
     should      = require('should'),
     Promise     = require('bluebird'),
     sinon       = require('sinon'),
+    uuid        = require('node-uuid'),
     _           = require('lodash'),
 
     // Stuff we are testing
+    utils       = require('../../../server/utils'),
     errors      = require('../../../server/errors'),
     gravatar    = require('../../../server/utils/gravatar'),
     UserModel   = require('../../../server/models/user').User,
@@ -50,7 +52,6 @@ describe('User Model', function run() {
 
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
-                createdUser.has('uuid').should.equal(true);
                 createdUser.attributes.password.should.not.equal(userData.password, 'password was hashed');
                 createdUser.attributes.email.should.eql(userData.email, 'email address correct');
 
@@ -99,7 +100,6 @@ describe('User Model', function run() {
 
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
-                createdUser.has('uuid').should.equal(true);
                 createdUser.attributes.email.should.eql(userData.email, 'email address correct');
                 done();
             }).catch(done);
@@ -115,7 +115,6 @@ describe('User Model', function run() {
 
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
-                createdUser.has('uuid').should.equal(true);
                 createdUser.attributes.image.should.eql(
                     'http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404', 'Gravatar found'
                 );
@@ -132,7 +131,6 @@ describe('User Model', function run() {
 
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
-                createdUser.has('uuid').should.equal(true);
                 should.not.exist(createdUser.image);
                 done();
             }).catch(done);
@@ -342,7 +340,6 @@ describe('User Model', function run() {
 
             UserModel.add(_.extend({}, userData, {status: 'invited'}), context).then(function (createdUser) {
                 should.exist(createdUser);
-                createdUser.has('uuid').should.equal(true);
                 createdUser.attributes.password.should.not.equal(userData.password, 'password was hashed');
                 createdUser.attributes.email.should.eql(userData.email, 'email address correct');
 
@@ -362,7 +359,6 @@ describe('User Model', function run() {
                 return UserModel.add(userData, _.extend({}, context, {include: ['roles']}));
             }).then(function (createdUser) {
                 should.exist(createdUser);
-                createdUser.has('uuid').should.equal(true);
                 createdUser.get('password').should.not.equal(userData.password, 'password was hashed');
                 createdUser.get('email').should.eql(userData.email, 'email address correct');
                 createdUser.related('roles').toJSON()[0].name.should.eql('Administrator', 'role set correctly');
@@ -392,7 +388,7 @@ describe('User Model', function run() {
         });
 
         it('can edit active user', function (done) {
-            var firstUser = 1;
+            var firstUser = testUtils.DataGenerator.Content.users[0].id;
 
             UserModel.findOne({id: firstUser}).then(function (results) {
                 var user;
@@ -415,7 +411,7 @@ describe('User Model', function run() {
         });
 
         it('can NOT set an invalid email address', function (done) {
-            var firstUser = 1;
+            var firstUser = testUtils.DataGenerator.Content.users[0].id;
 
             UserModel.findOne({id: firstUser}).then(function (user) {
                 return user.edit({email: 'notanemailaddress'});
@@ -432,7 +428,6 @@ describe('User Model', function run() {
 
             UserModel.add(_.extend({}, userData, {status: 'invited'}), context).then(function (createdUser) {
                 should.exist(createdUser);
-                createdUser.has('uuid').should.equal(true);
                 createdUser.attributes.password.should.not.equal(userData.password, 'password was hashed');
                 createdUser.attributes.email.should.eql(userData.email, 'email address correct');
                 createdUser.attributes.status.should.equal('invited');
@@ -458,7 +453,6 @@ describe('User Model', function run() {
 
             UserModel.add(_.extend({}, userData, {status: 'invited'}), context).then(function (createdUser) {
                 should.exist(createdUser);
-                createdUser.has('uuid').should.equal(true);
                 createdUser.attributes.password.should.not.equal(userData.password, 'password was hashed');
                 createdUser.attributes.email.should.eql(userData.email, 'email address correct');
                 createdUser.attributes.status.should.equal('invited');
@@ -480,7 +474,7 @@ describe('User Model', function run() {
         });
 
         it('can destroy active user', function (done) {
-            var firstUser = {id: 1};
+            var firstUser = {id: testUtils.DataGenerator.Content.users[0].id};
 
             // Test that we have the user we expect
             UserModel.findOne(firstUser).then(function (results) {
@@ -513,7 +507,6 @@ describe('User Model', function run() {
 
             UserModel.add(_.extend({}, userData, {status: 'invited'}), context).then(function (createdUser) {
                 should.exist(createdUser);
-                createdUser.has('uuid').should.equal(true);
                 createdUser.attributes.password.should.not.equal(userData.password, 'password was hashed');
                 createdUser.attributes.email.should.eql(userData.email, 'email address correct');
                 createdUser.attributes.status.should.equal('invited');
@@ -550,7 +543,7 @@ describe('User Model', function run() {
                     newPassword: '12345678',
                     ne2Password: '12345678',
                     oldPassword: '123456789',
-                    user_id: 1
+                    user_id: testUtils.DataGenerator.Content.users[0].id
                 }, testUtils.context.owner).then(function () {
                     done(new Error('expected error!'));
                 }).catch(function (err) {
@@ -564,7 +557,7 @@ describe('User Model', function run() {
                     newPassword: '12345678',
                     ne2Password: '12345678',
                     oldPassword: '123456789',
-                    user_id: '1'
+                    user_id: testUtils.DataGenerator.Content.users[0].id
                 }, testUtils.context.owner).then(function () {
                     done(new Error('expected error!'));
                 }).catch(function (err) {
@@ -580,7 +573,7 @@ describe('User Model', function run() {
                     newPassword: '12345678',
                     ne2Password: '12345678',
                     oldPassword: 'Sl1m3rson',
-                    user_id: 1
+                    user_id: testUtils.DataGenerator.Content.users[0].id
                 }, testUtils.context.owner).then(function (user) {
                     user.get('password').should.not.eql('12345678');
                     done();
