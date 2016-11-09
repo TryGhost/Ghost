@@ -383,7 +383,10 @@ DataGenerator.forKnex = (function () {
 
         return _.defaults(newObj, {
             id: ObjectId.generate(),
+            name: 'name',
+            slug: 'slug_' + Date.now(),
             status: 'active',
+            password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6',
             created_by: DataGenerator.Content.users[0].id,
             created_at: new Date()
         });
@@ -579,6 +582,7 @@ DataGenerator.forKnex = (function () {
     };
 }());
 
+// @TODO: this logic only exists because we are now using our models :/
 DataGenerator.forModel = (function () {
     var posts,
         tags,
