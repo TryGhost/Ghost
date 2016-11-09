@@ -73,13 +73,11 @@ utils = {
             if (foundUser && _.has(foundUser, 'email') && _.has(existingUsers, foundUser.email)) {
                 existingUsers[foundUser.email].importId = userToMap;
                 userMap[userToMap] = existingUsers[foundUser.email].realId;
-            } else if (userToMap === 1) {
-                // if we don't have user data and the id is 1, we assume this means the owner
+            } else if (models.User.isOwnerUser(userToMap)) {
                 existingUsers[owner.email].importId = userToMap;
                 userMap[userToMap] = existingUsers[owner.email].realId;
-            } else if (userToMap === 0) {
-                // CASE: external context
-                userMap[userToMap] = '0';
+            } else if (models.User.isExternalUser(userToMap)) {
+                userMap[userToMap] = models.User.externalUser;
             } else {
                 throw new errors.DataImportError({
                     message: i18n.t('errors.data.import.utils.dataLinkedToUnknownUser', {userToMap: userToMap}),
