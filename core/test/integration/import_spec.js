@@ -229,14 +229,14 @@ describe('Import', function () {
             testUtils.fixtures.loadExportFixture('export-001').then(function (exported) {
                 exportData = exported;
 
-                // change title to 151 characters
-                exportData.data.posts[0].title = new Array(152).join('a');
+                // change title to 256 characters
+                exportData.data.posts[0].title = new Array(257).join('a');
                 exportData.data.posts[0].tags = 'Tag';
                 return importer.doImport(exportData);
             }).then(function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }, function (error) {
-                error[0].message.should.eql('Value in [posts.title] exceeds maximum length of 150 characters.');
+                error[0].message.should.eql('Value in [posts.title] exceeds maximum length of 255 characters.');
                 error[0].errorType.should.eql('ValidationError');
 
                 Promise.all([
@@ -393,14 +393,14 @@ describe('Import', function () {
             testUtils.fixtures.loadExportFixture('export-002').then(function (exported) {
                 exportData = exported;
 
-                // change title to 151 characters
-                exportData.data.posts[0].title = new Array(152).join('a');
+                // change title to 256 characters
+                exportData.data.posts[0].title = new Array(257).join('a');
                 exportData.data.posts[0].tags = 'Tag';
                 return importer.doImport(exportData);
             }).then(function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }, function (error) {
-                error[0].message.should.eql('Value in [posts.title] exceeds maximum length of 150 characters.');
+                error[0].message.should.eql('Value in [posts.title] exceeds maximum length of 255 characters.');
                 error[0].errorType.should.eql('ValidationError');
 
                 Promise.all([
