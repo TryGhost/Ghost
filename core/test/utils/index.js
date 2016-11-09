@@ -8,6 +8,7 @@ var Promise       = require('bluebird'),
     uuid          = require('node-uuid'),
     KnexMigrator  = require('knex-migrator'),
     ghost         = require('../../server'),
+    errors        = require('../../server/errors'),
     db            = require('../../server/data/db'),
     fixtureUtils  = require('../../server/data/migration/fixtures/utils'),
     models        = require('../../server/models'),
@@ -32,6 +33,7 @@ var Promise       = require('bluebird'),
     teardown,
     setup,
     doAuth,
+    createUser,
     login,
     togglePermalinks,
     startGhost,
@@ -539,9 +541,9 @@ setup = function setup() {
     };
 };
 
+// ## Functions for Route Tests (!!)
+
 /**
- * ## DoAuth For Route Tests
- *
  * This function manages the work of ensuring we have an overridden owner user, and grabbing an access token
  * @returns {deferred.promise<AccessToken>}
  */
@@ -568,19 +570,48 @@ doAuth = function doAuth() {
     });
 };
 
+createUser = function createUser(options) {
+    var user = options.user,
+        role = options.role;
+
+    return db.knex('users').insert(user)
+        .then(function () {
+            return db.knex('roles');
+        })
+        .then(function (roles) {
+            return db.knex('roles_users').insert({
+                id: ObjectId.generate(),
+                role_id: _.find(roles, {name: role.name}).id,
+                user_id: user.id
+            });
+        })
+        .then(function () {
+            return user;
+        });
+};
+
 login = function login(request) {
-    var user = DataGenerator.forModel.users[request.userIndex || 0];
+    // CASE: by default we use the owner to login
+    if (!request.user) {
+        request.user = DataGenerator.Content.users[0];
+    }
 
     return new Promise(function (resolve, reject) {
         request.post('/ghost/api/v0.1/authentication/token/')
             .set('Origin', config.get('url'))
             .send({
                 grant_type: 'password',
-                username: user.email,
-                password: user.password,
+                username: request.user.email,
+                password: 'Sl1m3rson',
                 client_id: 'ghost-admin',
                 client_secret: 'not_available'
             }).then(function then(res) {
+                if (res.statusCode !== 200) {
+                    return reject(new errors.GhostError({
+                        message: res.body.errors[0].message
+                    }));
+                }
+
                 resolve(res.body.access_token);
             }, reject);
     });
@@ -669,6 +700,7 @@ module.exports = {
     teardown: teardown,
     setup: setup,
     doAuth: doAuth,
+    createUser: createUser,
     login: login,
     togglePermalinks: togglePermalinks,
 
