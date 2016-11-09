@@ -67,6 +67,7 @@ describe('storage: index_spec', function () {
                 'AnotherAdapter.prototype.save = function (){};' +
                 'AnotherAdapter.prototype.serve = function (){};' +
                 'AnotherAdapter.prototype.delete = function (){};' +
+                'AnotherAdapter.prototype.read = function (){};' +
                 'module.exports = AnotherAdapter', chosenStorage;
 
             fs.writeFileSync(scope.adapter, jsFile);
@@ -103,6 +104,7 @@ describe('storage: index_spec', function () {
                 'AnotherAdapter.prototype.save = function (){};' +
                 'AnotherAdapter.prototype.serve = function (){};' +
                 'AnotherAdapter.prototype.delete = function (){};' +
+                'AnotherAdapter.prototype.read = function (){};' +
                 'module.exports = AnotherAdapter', adapter;
 
             fs.writeFileSync(scope.adapter, jsFile);
