@@ -27,7 +27,7 @@ describe('Themes API', function () {
         ghost().then(function (ghostServer) {
             request = supertest.agent(ghostServer.rootApp);
         }).then(function () {
-            return testUtils.doAuth(request, 'perms:theme', 'perms:init', 'users:roles:no-owner');
+            return testUtils.doAuth(request, 'perms:init', 'users:no-owner');
         }).then(function (token) {
             scope.ownerAccessToken = token;
 

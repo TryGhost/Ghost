@@ -14,7 +14,7 @@ describe('User API', function () {
         ghost().then(function (ghostServer) {
             request = supertest.agent(ghostServer.rootApp);
         }).then(function () {
-            return testUtils.doAuth(request, 'users:roles:no-owner');
+            return testUtils.doAuth(request, 'users:no-owner');
         }).then(function (token) {
             ownerAccessToken = token;
 

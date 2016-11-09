@@ -553,7 +553,7 @@ describe('Authentication API', function () {
         });
 
         describe('Not Owner', function () {
-            beforeEach(testUtils.setup('roles', 'users:roles', 'settings', 'perms:setting', 'perms:init', 'perms:user'));
+            beforeEach(testUtils.setup('users:roles', 'settings', 'perms:setting', 'perms:init', 'perms:user'));
 
             it('should report that setup has been completed', function (done) {
                 AuthAPI.isSetup().then(function (result) {
@@ -586,7 +586,7 @@ describe('Authentication API', function () {
         });
 
         describe('Owner', function () {
-            beforeEach(testUtils.setup('roles', 'users:roles', 'settings', 'perms:setting', 'perms:init'));
+            beforeEach(testUtils.setup('users:roles', 'settings', 'perms:setting', 'perms:init'));
 
             it('should report that setup has been completed', function (done) {
                 AuthAPI.isSetup().then(function (result) {
