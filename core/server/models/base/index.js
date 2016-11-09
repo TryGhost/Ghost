@@ -179,14 +179,17 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     // Get the user from the options object
     contextUser: function contextUser(options) {
-        // Default to context user
-        if ((options.context && options.context.user) || (options.context && options.context.user === 0)) {
+        options = options || {};
+        options.context = options.context || {};
+
+        if (_.isNumber(options.context.user)) {
             return options.context.user;
-        // Other wise use the internal override
-        } else if (options.context && options.context.internal) {
-            return 1;
-        } else if (options.context && options.context.external) {
-            return 0;
+        } else if (options.context.internal) {
+            return ghostBookshelf.Model.internalUser;
+        } else if (this.get('id')) {
+            return this.get('id');
+        } else if (options.context.external) {
+            return ghostBookshelf.Model.externalUser;
         } else {
             throw new errors.NotFoundError({
                 message: i18n.t('errors.models.base.index.missingContext'),
@@ -248,6 +251,25 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     }
 }, {
     // ## Data Utility Functions
+
+    /**
+     * please use these static definitions when comparing id's
+     */
+    internalUser: 1,
+    ownerUser: 1,
+    externalUser: 0,
+
+    isOwnerUser: function isOwnerUser(id) {
+        return id === ghostBookshelf.Model.ownerUser;
+    },
+
+    isInternalUser: function isInternalUser(id) {
+        return id === ghostBookshelf.Model.internalUser;
+    },
+
+    isExternalUser: function isExternalUser(id) {
+        return id === ghostBookshelf.Model.externalUser;
+    },
 
     /**
      * Returns an array of keys permitted in every method's `options` hash.

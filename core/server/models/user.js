@@ -162,24 +162,6 @@ User = ghostBookshelf.Model.extend({
         return validation.validateSchema(this.tableName, userData);
     },
 
-    // Get the user from the options object
-    contextUser: function contextUser(options) {
-        // Default to context user
-        if (options.context && options.context.user) {
-            return options.context.user;
-            // Other wise use the internal override
-        } else if (options.context && options.context.internal) {
-            return 1;
-            // This is the user object, so try using this user's id
-        } else if (this.get('id')) {
-            return this.get('id');
-        } else {
-            throw new errors.NotFoundError({
-                message: i18n.t('errors.models.user.missingContext')
-            });
-        }
-    },
-
     toJSON: function toJSON(options) {
         options = options || {};
 
