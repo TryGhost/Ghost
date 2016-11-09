@@ -7,7 +7,9 @@ var testUtils = require('../../../utils'),
 
 describe('User API', function () {
     var ownerAccessToken = '',
-        editorAccessToken = '';
+        editorAccessToken = '',
+        authorAccessToken = '',
+        editor, author;
 
     before(function (done) {
         // starting ghost automatically populates the db
@@ -15,15 +17,36 @@ describe('User API', function () {
         ghost().then(function (ghostServer) {
             request = supertest.agent(ghostServer.rootApp);
         }).then(function () {
-            return testUtils.doAuth(request, 'users:no-owner');
+            // create editor
+            return testUtils.createUser({
+                user: testUtils.DataGenerator.forKnex.createUser({email: 'test+1@ghost.org'}),
+                role: testUtils.DataGenerator.Content.roles[1]
+            });
+        }).then(function (_user1) {
+            editor = _user1;
+
+            // create author
+            return testUtils.createUser({
+                user: testUtils.DataGenerator.forKnex.createUser({email: 'test+2@ghost.org'}),
+                role: testUtils.DataGenerator.Content.roles[2]
+            });
+        }).then(function (_user2) {
+            author = _user2;
+
+            // by default we login with the owner
+            return testUtils.doAuth(request);
         }).then(function (token) {
             ownerAccessToken = token;
 
-            // 2 === editor
-            request.userIndex = 2;
+            request.user = editor;
             return testUtils.doAuth(request);
         }).then(function (token) {
             editorAccessToken = token;
+
+            request.user = author;
+            return testUtils.doAuth(request);
+        }).then(function (token) {
+            authorAccessToken = token;
             done();
         }).catch(done);
     });
@@ -51,7 +74,10 @@ describe('User API', function () {
                         should.exist(jsonResponse.users);
                         testUtils.API.checkResponse(jsonResponse, 'users');
 
-                        jsonResponse.users.should.have.length(4);
+                        // owner use when Ghost starts
+                        // and two extra users, see createUser in before
+                        jsonResponse.users.should.have.length(3);
+
                         testUtils.API.checkResponse(jsonResponse.users[0], 'user');
                         testUtils.API.isISO8601(jsonResponse.users[0].last_login).should.be.true();
                         testUtils.API.isISO8601(jsonResponse.users[0].created_at).should.be.true();
@@ -81,7 +107,7 @@ describe('User API', function () {
                         should.exist(jsonResponse.users);
                         testUtils.API.checkResponse(jsonResponse, 'users');
 
-                        jsonResponse.users.should.have.length(4);
+                        jsonResponse.users.should.have.length(3);
                         testUtils.API.checkResponse(jsonResponse.users[0], 'user');
                         done();
                     });
@@ -103,7 +129,7 @@ describe('User API', function () {
                         should.exist(jsonResponse.users);
                         testUtils.API.checkResponse(jsonResponse, 'users');
 
-                        jsonResponse.users.should.have.length(4);
+                        jsonResponse.users.should.have.length(3);
                         testUtils.API.checkResponse(jsonResponse.users[0], 'user', 'roles');
                         done();
                     });
@@ -134,7 +160,7 @@ describe('User API', function () {
             });
 
             it('can retrieve a user by id', function (done) {
-                request.get(testUtils.API.getApiQuery('users/' + testUtils.DataGenerator.Content.users[1].id + '/'))
+                request.get(testUtils.API.getApiQuery('users/' + author.id + '/'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -330,6 +356,7 @@ describe('User API', function () {
                         var jsonResponse = res.body,
                             changedValue = 'http://joe-bloggs.ghost.org',
                             dataToSend;
+
                         should.exist(jsonResponse.users[0]);
                         testUtils.API.checkResponse(jsonResponse.users[0], 'user');
 
@@ -397,10 +424,10 @@ describe('User API', function () {
     describe('As Editor', function () {
         describe('success cases', function () {
             it('can edit himself', function (done) {
-                request.put(testUtils.API.getApiQuery('users/' + testUtils.DataGenerator.Content.users[2].id + '/'))
+                request.put(testUtils.API.getApiQuery('users/' + editor.id + '/'))
                     .set('Authorization', 'Bearer ' + editorAccessToken)
                     .send({
-                        users: [{id: testUtils.DataGenerator.Content.users[2].id, name: 'test'}]
+                        users: [{id: editor.id, name: 'test'}]
                     })
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -417,11 +444,55 @@ describe('User API', function () {
 
         describe('error cases', function () {
             it('can\'t edit the owner', function (done) {
-                request.put(testUtils.API.getApiQuery('users/1/'))
+                request.put(testUtils.API.getApiQuery('users/' + testUtils.DataGenerator.Content.users[0].id + '/'))
                     .set('Authorization', 'Bearer ' + editorAccessToken)
                     .send({
                         users: [{
-                            id: '1'
+                            id: testUtils.DataGenerator.Content.users[0].id
+                        }]
+                    })
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(403)
+                    .end(function (err) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        done();
+                    });
+            });
+        });
+    });
+
+    describe('As Author', function () {
+        describe('success cases', function () {
+            it('can edit himself', function (done) {
+                request.put(testUtils.API.getApiQuery('users/' + author.id + '/'))
+                    .set('Authorization', 'Bearer ' + authorAccessToken)
+                    .send({
+                        users: [{id: author.id, name: 'test'}]
+                    })
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .end(function (err) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        done();
+                    });
+            });
+        });
+
+        describe('error cases', function () {
+            it('can\'t edit the owner', function (done) {
+                request.put(testUtils.API.getApiQuery('users/' + testUtils.DataGenerator.Content.users[0].id + '/'))
+                    .set('Authorization', 'Bearer ' + authorAccessToken)
+                    .send({
+                        users: [{
+                            id: testUtils.DataGenerator.Content.users[0].id
                         }]
                     })
                     .expect('Content-Type', /json/)

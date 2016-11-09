@@ -8,7 +8,6 @@ var _ = require('lodash'),
     errors = require('../../errors'),
     tagUpdate, attach;
 
-
 /**
  * Attach wrapper (please never call attach manual!)
  *
