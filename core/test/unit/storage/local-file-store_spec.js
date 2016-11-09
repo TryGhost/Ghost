@@ -3,6 +3,7 @@ var fs              = require('fs-extra'),
     path            = require('path'),
     should          = require('should'),
     sinon           = require('sinon'),
+    errors          = require('../../../server/errors'),
     LocalFileStore  = require('../../../server/storage/local-file-store'),
     localFileStore,
 
@@ -146,6 +147,41 @@ describe('Local File System Storage', function () {
 
             done();
         }).catch(done);
+    });
+
+    describe('read image', function () {
+        beforeEach(function () {
+            // we have some example images in our test utils folder
+            configUtils.set('paths:contentPath', path.join(__dirname, '../../utils/fixtures'));
+        });
+
+        it('success', function (done) {
+            localFileStore.read({path: 'ghost-logo.png'})
+                .then(function (bytes) {
+                    bytes.length.should.eql(8638);
+                    done();
+                });
+        });
+
+        it('success', function (done) {
+            localFileStore.read({path: '/ghost-logo.png/'})
+                .then(function (bytes) {
+                    bytes.length.should.eql(8638);
+                    done();
+                });
+        });
+
+        it('image does not exist', function (done) {
+            localFileStore.read({path: 'does-not-exist.png'})
+                .then(function () {
+                    done(new Error('image should not exist'));
+                })
+                .catch(function (err) {
+                    (err instanceof errors.GhostError).should.eql(true);
+                    err.code.should.eql('ENOENT');
+                    done();
+                });
+        });
     });
 
     describe('validate extentions', function () {
