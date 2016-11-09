@@ -36,7 +36,7 @@ More [install docs](http://support.ghost.org/installation/) here in case you get
 <a name="getting-started"></a>
 # Developer Install
 
-This is for if you want to hack on Ghost core. First, you’ll need **Node.js v4 LTS** or a [supported version](http://support.ghost.org/supported-node-versions/). Then:
+This is for you if you want to hack on Ghost core. First, you’ll need **Node.js v4 LTS** or a [supported version](http://support.ghost.org/supported-node-versions/). Then:
 
 ```bash
 git clone git://github.com/tryghost/ghost.git
