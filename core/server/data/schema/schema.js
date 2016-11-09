@@ -55,7 +55,7 @@ module.exports = {
     roles: {
         id: {type: 'increments', nullable: false, primary: true},
         uuid: {type: 'string', maxlength: 36, nullable: false, validations: {isUUID: true}},
-        name: {type: 'string', maxlength: 150, nullable: false},
+        name: {type: 'string', maxlength: 150, nullable: false, unique: true},
         description: {type: 'string', maxlength: 200, nullable: true},
         created_at: {type: 'dateTime',  nullable: false},
         created_by: {type: 'integer',  nullable: false},
@@ -70,7 +70,7 @@ module.exports = {
     permissions: {
         id: {type: 'increments', nullable: false, primary: true},
         uuid: {type: 'string', maxlength: 36, nullable: false, validations: {isUUID: true}},
-        name: {type: 'string', maxlength: 150, nullable: false},
+        name: {type: 'string', maxlength: 150, nullable: false, unique: true},
         object_type: {type: 'string', maxlength: 150, nullable: false},
         action_type: {type: 'string', maxlength: 150, nullable: false},
         object_id: {type: 'integer', nullable: true},
