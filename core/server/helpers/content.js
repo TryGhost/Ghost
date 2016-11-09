@@ -20,6 +20,9 @@ content = function (options) {
     });
 
     if (truncateOptions.hasOwnProperty('words') || truncateOptions.hasOwnProperty('characters')) {
+        if (_.contains(this.html, '<!--more-->')) {
+            return new hbs.handlebars.SafeString(this.html.split('<!--more-->', 2)[0]);
+        }
         // Legacy function: {{content words="0"}} should return leading tags.
         if (truncateOptions.hasOwnProperty('words') && truncateOptions.words === 0) {
             return new hbs.handlebars.SafeString(
