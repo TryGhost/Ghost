@@ -236,9 +236,9 @@ module.exports = {
     },
     brute: {
         key: {type: 'string'},
-        firstRequest: {type: 'timestamp'},
-        lastRequest: {type: 'timestamp'},
-        lifetime: {type: 'bigInteger'},
+        firstRequest: {type: 'dateTime'},
+        lastRequest: {type: 'dateTime'},
+        lifetime: {type: 'dateTime'},
         count: {type: 'integer'}
     }
 };
