@@ -23,8 +23,12 @@ var ExpressBrute = require('express-brute'),
     logging = require('../../logging'),
     spamConfigKeys = ['freeRetries', 'minWait', 'maxWait', 'lifetime'];
 
+// weird, but true
 handleStoreError = function handleStoreError(err) {
-    return new errors.NoPermissionError({message: 'DB error', err: err});
+    err.next(new errors.NoPermissionError({
+        message: 'Unknown error',
+        err: err.parent ? err.parent : err
+    }));
 };
 
 // This is a global endpoint protection mechanism that will lock an endpoint if there are so many
