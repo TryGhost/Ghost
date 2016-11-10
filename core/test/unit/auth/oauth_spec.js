@@ -4,6 +4,7 @@ var sinon = require('sinon'),
     passport = require('passport'),
     testUtils = require('../../utils'),
     oAuth = require('../../../server/auth/oauth'),
+    spamPrevention = require('../../../server/middleware/api/spam-prevention'),
     api = require('../../../server/api'),
     errors = require('../../../server/errors'),
     models = require('../../../server/models');
@@ -20,6 +21,8 @@ describe('OAuth', function () {
         req = {};
         res = {};
         next = sandbox.spy();
+
+        sandbox.stub(spamPrevention.userLogin, 'reset');
     });
 
     afterEach(function () {
@@ -32,7 +35,6 @@ describe('OAuth', function () {
                 .returns(new Promise.resolve());
             sandbox.stub(models.Refreshtoken, 'destroyAllExpired')
                 .returns(new Promise.resolve());
-
             oAuth.init();
         });
 
@@ -77,6 +79,7 @@ describe('OAuth', function () {
                     json.should.have.property('expires_in');
                     json.should.have.property('token_type', 'Bearer');
                     next.called.should.eql(false);
+                    spamPrevention.userLogin.reset.called.should.eql(true);
                     done();
                 } catch (err) {
                     done(err);
