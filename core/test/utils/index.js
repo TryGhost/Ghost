@@ -689,8 +689,11 @@ unmockNotExistingModule = function unmockNotExistingModule() {
  * 2. start ghost
  */
 startGhost = function startGhost() {
-    return knexMigrator.init()
-        .then(function () {
+    return knexMigrator.reset()
+        .then(function initialiseDatabase() {
+            return knexMigrator.init();
+        })
+        .then(function startGhost() {
             return ghost();
         });
 };
