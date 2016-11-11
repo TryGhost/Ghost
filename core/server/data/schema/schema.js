@@ -220,6 +220,7 @@ module.exports = {
     },
     invites: {
         id: {type: 'increments', nullable: false, primary: true},
+        role_id: {type: 'integer', nullable: false},
         status: {type: 'string', maxlength: 150, nullable: false, defaultTo: 'pending', validations: {isIn: [['pending', 'sent']]}},
         token: {type: 'string', maxlength: 191, nullable: false, unique: true},
         email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
@@ -228,11 +229,6 @@ module.exports = {
         created_by: {type: 'integer', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'integer', nullable: true}
-    },
-    invites_roles: {
-        id: {type: 'increments', nullable: false, primary: true},
-        role_id: {type: 'integer', nullable: false},
-        invite_id: {type: 'integer', nullable: false}
     },
     brute: {
         key: {type: 'string'},
