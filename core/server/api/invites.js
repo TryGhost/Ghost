@@ -12,7 +12,7 @@ var _ = require('lodash'),
     config = require('../config'),
     i18n = require('../i18n'),
     docName = 'invites',
-    allowedIncludes = ['created_by', 'updated_by', 'roles'],
+    allowedIncludes = ['created_by', 'updated_by'],
     invites;
 
 invites = {
@@ -169,21 +169,19 @@ invites = {
         }
 
         function validation(options) {
-            var roleId;
-
             if (!options.data.invites[0].email) {
                 return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.invites.emailIsRequired')}));
             }
 
-            if (!options.data.invites[0].roles || !options.data.invites[0].roles[0]) {
+            if (!options.data.invites[0].role_id) {
                 return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.invites.roleIsRequired')}));
             }
 
-            roleId = parseInt(options.data.invites[0].roles[0].id || options.data.invites[0].roles[0], 10);
+            options.data.invites[0].role_id = parseInt(options.data.invites[0].role_id, 10);
 
             // @TODO move this logic to permissible
             // Make sure user is allowed to add a user with this role
-            return dataProvider.Role.findOne({id: roleId}).then(function (role) {
+            return dataProvider.Role.findOne({id: options.data.invites[0].role_id}).then(function (role) {
                 if (role.get('name') === 'Owner') {
                     return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.api.invites.notAllowedToInviteOwner')}));
                 }

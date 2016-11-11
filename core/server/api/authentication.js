@@ -414,7 +414,7 @@ authentication = {
         function processInvitation(invitation) {
             var data = invitation.invitation[0], inviteToken = globalUtils.decodeBase64URLsafe(data.token);
 
-            return models.Invite.findOne({token: inviteToken, status: 'sent'}, _.merge({}, {include: ['roles']}, options))
+            return models.Invite.findOne({token: inviteToken, status: 'sent'}, options)
                 .then(function (_invite) {
                     invite = _invite;
 
@@ -430,7 +430,7 @@ authentication = {
                         email: data.email,
                         name: data.name,
                         password: data.password,
-                        roles: invite.toJSON().roles
+                        roles: [invite.toJSON().role_id]
                     }, options);
                 })
                 .then(function () {
