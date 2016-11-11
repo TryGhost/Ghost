@@ -392,10 +392,7 @@ fixtures = {
     },
 
     insertInvites: function insertInvites() {
-        return db.knex('invites').insert(DataGenerator.forKnex.invites)
-            .then(function () {
-                return db.knex('invites_roles').insert(DataGenerator.forKnex.invites_roles);
-            });
+        return db.knex('invites').insert(DataGenerator.forKnex.invites);
     }
 };
 
