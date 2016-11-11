@@ -182,6 +182,10 @@ invites = {
             // @TODO move this logic to permissible
             // Make sure user is allowed to add a user with this role
             return dataProvider.Role.findOne({id: options.data.invites[0].role_id}).then(function (role) {
+                if (!role) {
+                    return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.invites.roleNotFound')}));
+                }
+
                 if (role.get('name') === 'Owner') {
                     return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.api.invites.notAllowedToInviteOwner')}));
                 }
