@@ -20,7 +20,8 @@ var debug = require('debug')('ghost:blog'),
     prettyURLs = require('../middleware/pretty-urls'),
     serveSharedFile = require('../middleware/serve-shared-file'),
     staticTheme = require('../middleware/static-theme'),
-    themeHandler = require('../middleware/theme-handler');
+    themeHandler = require('../middleware/theme-handler'),
+    serveFavicon = require('../middleware/serve-favicon');
 
 module.exports = function setupBlogApp() {
     debug('Blog setup start');
@@ -41,7 +42,7 @@ module.exports = function setupBlogApp() {
     // Static content/assets
     // @TODO make sure all of these have a local 404 error handler
     // Favicon
-    blogApp.use(serveSharedFile('favicon.ico', 'image/x-icon', utils.ONE_DAY_S));
+    blogApp.use(serveFavicon());
     // Ghost-Url
     blogApp.use(serveSharedFile('shared/ghost-url.js', 'application/javascript', utils.ONE_HOUR_S));
     blogApp.use(serveSharedFile('shared/ghost-url.min.js', 'application/javascript', utils.ONE_HOUR_S));

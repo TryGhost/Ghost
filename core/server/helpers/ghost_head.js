@@ -16,6 +16,7 @@ var getMetaData = require('../data/meta'),
     config = require('../config'),
     Promise = require('bluebird'),
     labs = require('../utils/labs'),
+    utils = require('../utils'),
     api = require('../api');
 
 function getClient() {
@@ -86,7 +87,10 @@ function ghost_head(options) {
         fetch = {
             metaData: getMetaData(this, options.data.root),
             client: getClient()
-        };
+        },
+        // CASE: blog icon is not set in config, we serve the default
+        iconType = !config.get('theme:icon') ? 'x-icon' : config.get('theme:icon').match(/\/favicon\.ico$/i) ? 'x-icon' : 'png',
+        favicon = !config.get('theme:icon') ? '/favicon.ico' : utils.url.urlFor('image', {image: config.get('theme:icon')}, true);
 
     return Promise.props(fetch).then(function (response) {
         client = response.client;
@@ -94,6 +98,7 @@ function ghost_head(options) {
 
         if (context) {
             // head is our main array that holds our meta data
+            head.push('<link rel="shortcut icon" href="' + favicon + '" type="' + iconType + '" />');
             head.push('<link rel="canonical" href="' +
                 escapeExpression(metaData.canonicalUrl) + '" />');
             head.push('<meta name="referrer" content="' + referrerPolicy + '" />');
