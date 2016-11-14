@@ -98,7 +98,7 @@
 .dropdown-menu > .active > button:hover,
 .dropdown-menu > .active > button:focus {
     outline: 0;
-    background-color: #428bca;
+    background-color: var(--blue);
     color: #fff;
     text-decoration: none;
 }
@@ -110,7 +110,7 @@
 .dropdown-menu > .disabled > button,
 .dropdown-menu > .disabled > button:hover,
 .dropdown-menu > .disabled > button:focus {
-    color: #777;
+    color: var(--midgrey);
 }
 
 .dropdown-menu > .disabled > a:hover,

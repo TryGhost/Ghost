@@ -154,7 +154,11 @@ body > .ember-view:not(.liquid-target-container) {
     line-height: 1.5em;
 }
 
-.gh-nav-list-h {
+.gh-nav-list li {
+    margin: 0;
+}
+
+.gh-nav-list .gh-nav-list-h {
     overflow: hidden;
     margin-top: 15px;
     padding: 5px 10px 5px 15px;
