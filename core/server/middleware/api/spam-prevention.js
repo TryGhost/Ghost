@@ -24,7 +24,22 @@ var ExpressBrute = require('express-brute'),
     spamConfigKeys = ['freeRetries', 'minWait', 'maxWait', 'lifetime'];
 
 handleStoreError = function handleStoreError(err) {
-    return new errors.NoPermissionError({message: 'DB error', err: err});
+    var customError = new errors.NoPermissionError({
+        message: 'Unknown error',
+        err: err.parent ? err.parent : err
+    });
+
+    // see https://github.com/AdamPflug/express-brute/issues/45
+    // express-brute does not always forward a callback
+    // we are using reset as synchronous call, so we have to log the error if it occurs
+    // there is no way to try/catch, because the reset operation happens asynchronous
+    if (!err.next) {
+        err.level = 'critical';
+        logging.error(err);
+        return;
+    }
+
+    err.next(customError);
 };
 
 // This is a global endpoint protection mechanism that will lock an endpoint if there are so many
