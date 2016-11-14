@@ -24,7 +24,7 @@ util.inherits(LocalFileStore, BaseStore);
 // Saves the image to storage (the file system)
 // - image is the express image object
 // - returns a promise which ultimately returns the full url to the uploaded image
-LocalFileStore.prototype.save = function (image, targetDir) {
+LocalFileStore.prototype.save = function save(image, targetDir) {
     targetDir = targetDir || this.getTargetDir(config.getContentPath('images'));
     var targetFilename;
 
@@ -49,7 +49,7 @@ LocalFileStore.prototype.save = function (image, targetDir) {
     });
 };
 
-LocalFileStore.prototype.exists = function (filename) {
+LocalFileStore.prototype.exists = function exists(filename) {
     return new Promise(function (resolve) {
         fs.stat(filename, function (err) {
             var exists = !err;
@@ -59,7 +59,7 @@ LocalFileStore.prototype.exists = function (filename) {
 };
 
 // middleware for serving the files
-LocalFileStore.prototype.serve = function (options) {
+LocalFileStore.prototype.serve = function serve(options) {
     options = options || {};
 
     // CASE: serve themes
@@ -117,11 +117,37 @@ LocalFileStore.prototype.serve = function (options) {
     }
 };
 
-LocalFileStore.prototype.delete = function (fileName, targetDir) {
+LocalFileStore.prototype.delete = function deleteFile(fileName, targetDir) {
     targetDir = targetDir || this.getTargetDir(config.getContentPath('images'));
 
     var pathToDelete = path.join(targetDir, fileName);
     return remove(pathToDelete);
+};
+
+/**
+ * Reads bytes from disk for a target image
+ * path: path of target image (without content path!)
+ */
+LocalFileStore.prototype.read = function read(options) {
+    options = options || {};
+
+    // remove trailing slashes
+    options.path = (options.path || '').replace(/\/$|\\$/, '');
+
+    var targetPath = path.join(config.getContentPath('images'), options.path);
+
+    return new Promise(function (resolve, reject) {
+        fs.readFile(targetPath, function (err, bytes) {
+            if (err) {
+                return reject(new errors.GhostError({
+                    err: err,
+                    message: 'Could not read image: ' + targetPath
+                }));
+            }
+
+            resolve(bytes);
+        });
+    });
 };
 
 module.exports = LocalFileStore;
