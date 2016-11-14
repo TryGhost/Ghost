@@ -64,7 +64,7 @@ themes = {
                 });
             })
             .then(function () {
-                return storageAdapter.exists(config.getContentPath('themes') + '/' + zip.shortName);
+                return storageAdapter.exists(utils.url.urlJoin(config.getContentPath('themes'), zip.shortName));
             })
             .then(function (themeExists) {
                 // delete existing theme

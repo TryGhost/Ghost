@@ -37,10 +37,9 @@ LocalFileStore.prototype.save = function save(image, targetDir) {
         // The src for the image must be in URI format, not a file system path, which in Windows uses \
         // For local file system storage can use relative path so add a slash
         var fullUrl = (
-            utils.url.getSubdir() + '/' +
-            config.get('paths').imagesRelPath +
-            '/' +
-            path.relative(config.getContentPath('images'), targetFilename)
+            utils.url.urlJoin('/', utils.url.getSubdir(),
+            config.get('paths').imagesRelPath,
+            path.relative(config.getContentPath('images'), targetFilename))
         ).replace(new RegExp('\\' + path.sep, 'g'), '/');
 
         return fullUrl;

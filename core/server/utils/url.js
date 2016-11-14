@@ -47,6 +47,14 @@ function getProtectedSlugs() {
     }
 }
 
+// ## urlJoin
+// concats arguments to a path/URL
+// Usage:
+// urlJoin(getBaseUrl(), 'content', '/') -> http://my-ghost-blog.com/content/
+// Returns a URL or relative path
+// Only to use for Ghost URLs and paths
+// TODO: urlJoin needs to be optimised and to validate the URL/path properly.
+// e. g. URLs should end with a trailing `/` at the end of the pathname.
 function urlJoin() {
     var args = Array.prototype.slice.call(arguments),
         prefixDoubleSlash = false,
