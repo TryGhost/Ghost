@@ -170,10 +170,15 @@
     height: 65px;
 }
 
+.gh-editor-status {
+    color: var(--midgrey);
+    font-weight: 300;
+}
+
 .gh-editor-container {
     position: relative;
     overflow-y: auto;
-    padding: 100px 4vw 40px;
+    padding: 10vw 4vw;
     width: 100%;
 }
 

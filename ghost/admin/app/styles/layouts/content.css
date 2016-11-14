@@ -28,8 +28,7 @@
     top: 0;
     bottom: 0;
     left: 0;
-    padding: 15px;
-    width: 33%;
+    width: 30%;
     border-right: #dfe1e3 1px solid;
     background: #fff;
 }
@@ -54,25 +53,22 @@
 }
 
 .content-list .entry-title {
-    font-size: 1.6rem;
-    line-height: 1.4em;
+    margin: 0;
+    font-size: 1.5rem;
+    line-height: 1.3em;
     font-weight: normal;
 }
 
 .content-list .entry-meta {
-    margin-top: 14px;
+    position: relative;
+    margin-top: 7px;
     line-height: 18px;
-}
-
-.content-list .entry-meta .internal-tags-list {
-    margin-top: 5px;
-    line-height: 22px;
 }
 
 .content-list .avatar {
     position: relative;
     float: left;
-    margin-right: 14px;
+    margin: 1px 10px 0px 0;
     width: 18px;
     height: 18px;
     background-position: center center;
@@ -106,8 +102,8 @@
 
 .content-list .author {
     position: absolute;
-    bottom: 22px;
-    left: 56px;
+    bottom: 0;
+    left: 28px;
     opacity: 0;
 }
 
@@ -134,7 +130,7 @@
 
 .content-list li a {
     display: block;
-    padding: 19px 20px 22px 24px;
+    padding: 19px 25px 22px 20px;
     color: rgba(0, 0, 0, 0.5);
 }
 
@@ -162,7 +158,7 @@
 
 @media (min-width: 901px) {
     .content-list .active a {
-        border-left: var(--blue) 3px solid;
+        box-shadow: var(--blue) 3px 0 0 inset;
     }
 }
 
@@ -170,7 +166,7 @@
 /* Preview (Right pane)
 /* ---------------------------------------------------------- */
 
-.content-preview-content .content-preview-title a {
+.content-preview-title a {
     position: relative;
     color: var(--darkgrey);
     text-decoration: none;
@@ -183,8 +179,7 @@
     bottom: 0;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 15px;
-    width: 67%;
+    width: 70%;
     background: #fff;
 }
 
@@ -197,14 +192,14 @@
     }
 }
 
-.content-preview .content-preview-content {
-    padding: 5%;
+.content-preview-content {
+    padding: 5vw 6vw;
     word-break: break-word;
     hyphens: auto;
 }
 
 @media (max-width: 900px) {
-    .content-preview .content-preview-content {
+    .content-preview-content {
         position: absolute;
         top: 0;
         right: 0;
@@ -215,7 +210,7 @@
     }
 }
 
-.content-preview .content-preview-content .wrapper {
+.content-preview-content .wrapper {
     margin: 0 auto;
     max-width: 700px;
 }

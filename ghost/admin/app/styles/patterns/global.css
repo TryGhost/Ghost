@@ -7,13 +7,13 @@
 
 :root {
     /* Colours */
-    --darkgrey: #242628;
-    --midgrey: #7d878a;
+    --darkgrey: #343f44;
+    --midgrey: #738a94;
     --lightgrey: #e2edf2;
-    --blue: #5ba4e5;
-    --red: #e25440;
-    --orange: #f2a925;
-    --green: #9fbb58;
+    --blue: #3eb0ef;
+    --red: #f05230;
+    --orange: #fecd35;
+    --green: #a4d037;
     /* Style values */
     --border-radius: 4px;
     --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
@@ -103,28 +103,43 @@ h6 {
 
 h1 {
     text-indent: -1px;
-    font-size: 5rem;
+    font-size: 2.9rem;
+}
+@media (max-width: 500px) {
+    h1 {
+        font-size: 2.4rem;
+    }
 }
 
 h2 {
     text-indent: -1px;
-    font-size: 4.2rem;
+    font-size: 2.2rem;
+}
+@media (max-width: 500px) {
+    h2 {
+        font-size: 1.9rem;
+    }
 }
 
 h3 {
-    font-size: 3.8rem;
+    font-size: 1.9rem;
+}
+@media (max-width: 500px) {
+    h3 {
+        font-size: 1.7rem;
+    }
 }
 
 h4 {
-    font-size: 3.1rem;
+    font-size: 1.7rem;
 }
 
 h5 {
-    font-size: 2.8rem;
+    font-size: 1.5rem;
 }
 
 h6 {
-    font-size: 2.2rem;
+    font-size: 1.5rem;
 }
 
 p,
@@ -132,11 +147,17 @@ ul,
 ol,
 dl {
     margin: 0 0 1.7em 0;
+    font-size: 1.6rem;
 }
 
 ol,
 ul {
-    padding-left: 2.5em;
+    padding-left: 1.2em;
+}
+
+li {
+    margin-bottom: 10px;
+    line-height: 1.4em;
 }
 
 ol ol,

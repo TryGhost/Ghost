@@ -19,6 +19,11 @@
     list-style: none;
 }
 
+.gh-env-list li {
+    margin: 0;
+    font-size: 1.4rem;
+}
+
 .gh-env-help {
     max-width: 200px;
 }
