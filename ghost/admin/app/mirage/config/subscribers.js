@@ -1,4 +1,4 @@
-/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+/* eslint-disable camelcase */
 import Mirage from 'ember-cli-mirage';
 import {paginatedResponse} from '../utils';
 
@@ -48,7 +48,7 @@ export default function mockSubscribers(server) {
         return new Mirage.Response(204, {}, {});
     });
 
-    server.post('/subscribers/csv/', function (/*db, request*/) {
+    server.post('/subscribers/csv/', function () {
         // NB: we get a raw FormData object with no way to inspect it in Chrome
         // until version 50 adds the additional read methods
         // https://developer.mozilla.org/en-US/docs/Web/API/FormData#Browser_compatibility

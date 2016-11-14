@@ -1,18 +1,16 @@
 /* jshint expr:true */
-import Ember from 'ember';
 import {
     describe,
     it,
     beforeEach,
     afterEach
 } from 'mocha';
-import { expect } from 'chai';
+import {expect} from 'chai';
 import startApp from '../helpers/start-app';
 import destroyApp from '../helpers/destroy-app';
-import { invalidateSession, authenticateSession } from '../helpers/ember-simple-auth';
-import { enableGhostOAuth } from '../helpers/configuration';
+import {invalidateSession, authenticateSession} from '../helpers/ember-simple-auth';
+import {enableGhostOAuth} from '../helpers/configuration';
 import Mirage from 'ember-cli-mirage';
-import $ from 'jquery';
 import {
     stubSuccessfulOAuthConnect,
     stubFailedOAuthConnect
@@ -31,7 +29,7 @@ describe('Acceptance: Setup', function () {
 
     it('redirects if already authenticated', function () {
         let role = server.create('role', {name: 'Author'});
-        let user = server.create('user', {roles: [role], slug: 'test-user'});
+        server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
 
@@ -296,7 +294,7 @@ describe('Acceptance: Setup', function () {
                 }
 
                 // TODO: duplicated from mirage/config/invites - extract method?
-                /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+                /* eslint-disable camelcase */
                 params.token = `${db.invites.length}-token`;
                 params.expires = moment.utc().add(1, 'day').unix();
                 params.created_at = moment.utc().format();
@@ -304,7 +302,7 @@ describe('Acceptance: Setup', function () {
                 params.updated_at = moment.utc().format();
                 params.updated_by = 1;
                 params.status = 'sent';
-                /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
+                /* eslint-enable camelcase */
 
                 // valid
                 invite = db.invites.insert(params);

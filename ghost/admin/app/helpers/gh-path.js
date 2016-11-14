@@ -24,21 +24,21 @@ export default helper(function (params) {
     }
 
     switch (path.toString()) {
-        case 'blog':
-            base = paths.blogRoot;
-            break;
-        case 'admin':
-            base = paths.adminRoot;
-            break;
-        case 'asset':
-            base = paths.assetRoot;
-            break;
-        case 'api':
-            base = paths.apiRoot;
-            break;
-        default:
-            base = paths.blogRoot;
-            break;
+    case 'blog':
+        base = paths.blogRoot;
+        break;
+    case 'admin':
+        base = paths.adminRoot;
+        break;
+    case 'asset':
+        base = paths.assetRoot;
+        break;
+    case 'api':
+        base = paths.apiRoot;
+        break;
+    default:
+        base = paths.blogRoot;
+        break;
     }
 
     // handle leading and trailing slashes

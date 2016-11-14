@@ -1,4 +1,3 @@
-/*jshint scripturl:true*/
 import $ from 'jquery';
 import Component from 'ember-component';
 import {htmlSafe} from 'ember-string';

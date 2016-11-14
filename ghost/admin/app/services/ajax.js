@@ -218,15 +218,15 @@ let ajaxService = AjaxService.extend({
         return isVersionMismatchError(status, payload);
     },
 
-    isServerUnreachableError(status/*, headers, payload */) {
+    isServerUnreachableError(status) {
         return isServerUnreachableError(status);
     },
 
-    isRequestEntityTooLargeError(status/*, headers, payload */) {
+    isRequestEntityTooLargeError(status) {
         return isRequestEntityTooLargeError(status);
     },
 
-    isUnsupportedMediaTypeError(status/*, headers, payload */) {
+    isUnsupportedMediaTypeError(status) {
         return isUnsupportedMediaTypeError(status);
     },
 

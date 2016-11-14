@@ -1,16 +1,16 @@
 /* jshint expr:true */
-/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+/* eslint-disable camelcase */
 import {
     describe,
     it,
     beforeEach,
     afterEach
 } from 'mocha';
-import { expect } from 'chai';
+import {expect} from 'chai';
 import startApp from '../../helpers/start-app';
 import destroyApp from '../../helpers/destroy-app';
-import { invalidateSession, authenticateSession } from 'ghost-admin/tests/helpers/ember-simple-auth';
-import { errorOverride, errorReset } from 'ghost-admin/tests/helpers/adapter-error';
+import {authenticateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
+import {errorOverride, errorReset} from 'ghost-admin/tests/helpers/adapter-error';
 import Mirage from 'ember-cli-mirage';
 
 describe('Acceptance: Posts - Post', function() {
@@ -27,7 +27,7 @@ describe('Acceptance: Posts - Post', function() {
     describe('when logged in', function () {
         beforeEach(function () {
             let role = server.create('role', {name: 'Administrator'});
-            let user = server.create('user', {roles: [role]});
+            server.create('user', {roles: [role]});
 
             // load the settings fixtures
             // TODO: this should always be run for acceptance tests

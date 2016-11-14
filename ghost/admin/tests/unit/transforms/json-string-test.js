@@ -1,6 +1,5 @@
-import { expect } from 'chai';
-import { describeModule, it } from 'ember-mocha';
-import Post from 'ghost-admin/models/post';
+import {expect} from 'chai';
+import {describeModule, it} from 'ember-mocha';
 
 describeModule(
     'transform:json-string',

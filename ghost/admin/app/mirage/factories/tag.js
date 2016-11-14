@@ -1,4 +1,3 @@
-/* jscs:disable */
 import Mirage from 'ember-cli-mirage';
 
 export default Mirage.Factory.extend({
@@ -19,5 +18,5 @@ export default Mirage.Factory.extend({
         return {
             posts: 1
         };
-    },
+    }
 });

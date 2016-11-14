@@ -1,4 +1,4 @@
-/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+/* eslint-disable camelcase */
 import {A as emberA, isEmberArray} from 'ember-array/utils';
 import Transform from 'ember-data/transform';
 import SlackObject from 'ghost-admin/models/slack-integration';

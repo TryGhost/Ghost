@@ -26,14 +26,20 @@ describeModel(
             expect(model.get('active')).to.be.ok;
 
             ['warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'].forEach(function (status) {
-                run(() => { model.set('status', status); });
+                run(() => {
+                    model.set('status', status);
+                });
                 expect(model.get('status')).to.be.ok;
             });
 
-            run(() => { model.set('status', 'inactive'); });
+            run(() => {
+                model.set('status', 'inactive');
+            });
             expect(model.get('active')).to.not.be.ok;
 
-            run(() => { model.set('status', 'invited'); });
+            run(() => {
+                model.set('status', 'invited');
+            });
             expect(model.get('active')).to.not.be.ok;
         });
 

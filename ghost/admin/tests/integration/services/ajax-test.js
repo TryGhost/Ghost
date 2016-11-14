@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import {expect} from 'chai';
 import {
     describeModule,
     it
@@ -179,7 +179,7 @@ describeModule(
             });
         });
 
-        /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+        /* eslint-disable camelcase */
         describe('session handling', function () {
             let successfulRequest = false;
 
@@ -236,7 +236,7 @@ describeModule(
                     expect(ajax.get('session.restoreCalled'), 'restoreCalled').to.be.true;
                     expect(result.success, 'result.success').to.be.true;
                     done();
-                }).catch((error) => {
+                }).catch(() => {
                     expect(true, 'request failed').to.be.false;
                     done();
                 });
@@ -260,7 +260,7 @@ describeModule(
                 ajax.request('/ghost/api/v0.1/test/').then(() => {
                     expect(true, 'request was successful').to.be.false;
                     done();
-                }).catch((error) => {
+                }).catch(() => {
                     // TODO: fix the error return when a session restore fails
                     // expect(isUnauthorizedError(error)).to.be.true;
                     expect(ajax.get('session.restoreCalled'), 'restoreCalled').to.be.true;

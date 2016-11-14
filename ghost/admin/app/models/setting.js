@@ -1,4 +1,4 @@
-/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+/* eslint-disable camelcase */
 import Model from 'ember-data/model';
 import attr from 'ember-data/attr';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';

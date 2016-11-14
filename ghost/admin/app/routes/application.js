@@ -161,44 +161,44 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
         error(error, transition) {
             if (error && isEmberArray(error.errors)) {
                 switch (error.errors[0].errorType) {
+                case 'NotFoundError': {
+                    if (transition) {
+                        transition.abort();
+                    }
 
-                    case 'NotFoundError':
-                        if (transition) {
-                            transition.abort();
-                        }
+                    let routeInfo = transition.handlerInfos[transition.handlerInfos.length - 1];
+                    let router = this.get('router');
+                    let params = [];
 
-                        let routeInfo = transition.handlerInfos[transition.handlerInfos.length - 1];
-                        let router = this.get('router');
-                        let params = [];
+                    for (let key of Object.keys(routeInfo.params)) {
+                        params.push(routeInfo.params[key]);
+                    }
 
-                        for (let key of Object.keys(routeInfo.params)) {
-                            params.push(routeInfo.params[key]);
-                        }
+                    return this.transitionTo('error404', router.generate(routeInfo.name, ...params).replace('/ghost/', '').replace(/^\//g, ''));
+                }
+                case 'VersionMismatchError': {
+                    if (transition) {
+                        transition.abort();
+                    }
 
-                        return this.transitionTo('error404', router.generate(routeInfo.name, ...params).replace('/ghost/', '').replace(/^\//g, ''));
+                    this.get('upgradeStatus').requireUpgrade();
+                    return false;
+                }
+                case 'Maintenance': {
+                    if (transition) {
+                        transition.abort();
+                    }
 
-                    case 'VersionMismatchError':
-                        if (transition) {
-                            transition.abort();
-                        }
-
-                        this.get('upgradeStatus').requireUpgrade();
+                    this.get('upgradeStatus').maintenanceAlert();
+                    return false;
+                }
+                default: {
+                    this.get('notifications').showAPIError(error);
+                    // don't show the 500 page if we weren't navigating
+                    if (!transition) {
                         return false;
-
-                    case 'Maintenance':
-                        if (transition) {
-                            transition.abort();
-                        }
-
-                        this.get('upgradeStatus').maintenanceAlert();
-                        return false;
-
-                    default:
-                        this.get('notifications').showAPIError(error);
-                        // don't show the 500 page if we weren't navigating
-                        if (!transition) {
-                            return false;
-                        }
+                    }
+                }
                 }
             }
 

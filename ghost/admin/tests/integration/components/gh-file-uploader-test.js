@@ -1,5 +1,5 @@
 /* jshint expr:true */
-import { expect } from 'chai';
+import {expect} from 'chai';
 import {
     describeComponent,
     it
@@ -15,7 +15,7 @@ import Service from 'ember-service';
 import {UnsupportedMediaTypeError} from 'ghost-admin/services/ajax';
 
 const notificationsStub = Service.extend({
-    showAPIError(error, options) {
+    showAPIError() {
         // noop - to be stubbed
     }
 });
@@ -316,7 +316,7 @@ describeComponent(
             // after 75ms we should have had one progress event
             run.later(this, function () {
                 expect(this.$('.progress .bar').length).to.equal(1);
-                let [_, percentageWidth] = this.$('.progress .bar').attr('style').match(/width: (\d+)%?/);
+                let [, percentageWidth] = this.$('.progress .bar').attr('style').match(/width: (\d+)%?/);
                 expect(percentageWidth).to.be.above(0);
                 expect(percentageWidth).to.be.below(100);
             }, 75);
@@ -326,6 +326,7 @@ describeComponent(
             this.render(hbs`{{gh-file-uploader}}`);
 
             run(() => {
+                // eslint-disable-next-line new-cap
                 let dragover = $.Event('dragover', {
                     dataTransfer: {
                         files: []
@@ -345,6 +346,7 @@ describeComponent(
 
         it('triggers file upload on file drop', function (done) {
             let uploadSuccess = sinon.spy();
+            // eslint-disable-next-line new-cap
             let drop = $.Event('drop', {
                 dataTransfer: {
                     files: [createFile(['test'], {name: 'test.csv'})]

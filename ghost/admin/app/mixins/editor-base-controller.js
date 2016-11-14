@@ -172,8 +172,8 @@ export default Mixin.create({
 
         // if the two "scratch" properties (title and content) match the model, then
         // it's ok to set hasDirtyAttributes to false
-        if (model.get('titleScratch') === model.get('title') &&
-            JSON.stringify(model.get('scratch')) === JSON.stringify(model.get('mobiledoc'))) {
+        if (model.get('titleScratch') === model.get('title')
+            && JSON.stringify(model.get('scratch')) === JSON.stringify(model.get('mobiledoc'))) {
             this.set('hasDirtyAttributes', false);
         }
     },
@@ -241,11 +241,11 @@ export default Mixin.create({
 
     // used on window.onbeforeunload
     unloadDirtyMessage() {
-        return '==============================\n\n' +
-            'Hey there! It looks like you\'re in the middle of writing' +
-            ' something and you haven\'t saved all of your content.' +
-            '\n\nSave before you go!\n\n' +
-            '==============================';
+        return '==============================\n\n'
+             + 'Hey there! It looks like you\'re in the middle of writing'
+             + ' something and you haven\'t saved all of your content.'
+             + '\n\nSave before you go!\n\n'
+             + '==============================';
     },
 
     // TODO: This has to be moved to the I18n localization file.
@@ -318,7 +318,7 @@ export default Mixin.create({
         let errorMessage;
 
         function isString(str) {
-            /*global toString*/
+            /* global toString */
             return toString.call(str) === '[object String]';
         }
 

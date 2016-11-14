@@ -5,7 +5,7 @@ export function timeToSchedule(params) {
         return;
     }
 
-    let [ , blogTimezone] = params;
+    let [, blogTimezone] = params;
     let [time] = params;
 
     if (blogTimezone.get('isFulfilled')) {

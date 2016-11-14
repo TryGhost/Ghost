@@ -1,8 +1,9 @@
-/* global Showdown, html_sanitize*/
+/* global Showdown, html_sanitize */
 import {helper} from 'ember-helper';
 import {htmlSafe} from 'ember-string';
 import cajaSanitizers from 'ghost-admin/utils/caja-sanitizers';
 
+// eslint-disable-next-line new-cap
 let showdown = new Showdown.converter({extensions: ['ghostimagepreview', 'ghostgfm', 'footnotes', 'highlight']});
 
 export function formatMarkdown(params) {
@@ -23,9 +24,8 @@ export function formatMarkdown(params) {
         '<pre class="iframe-embed-placeholder">Embedded iFrame</pre>');
 
     // sanitize html
-    // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
+    /* eslint-disable-next-line camelcase */
     escapedhtml = html_sanitize(escapedhtml, cajaSanitizers.url, cajaSanitizers.id);
-    // jscs:enable requireCamelCaseOrUpperCaseIdentifiers
 
     return htmlSafe(escapedhtml);
 }

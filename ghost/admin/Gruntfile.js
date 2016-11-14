@@ -1,6 +1,5 @@
-/* global -moment */
-/* jshint node: true */
-/* jscs:disable */
+/* eslint-env node */
+/* eslint-disable no-var, one-var, object-shorthand, prefer-template */
 var _              = require('lodash'),
     fs             = require('fs-extra'),
     path           = require('path'),
@@ -63,11 +62,10 @@ module.exports = function(grunt) {
             ember: {
                 command: function (mode) {
                     switch (mode) {
-                        case 'prod':
-                            return 'npm run build -- --environment=production --silent';
-
-                        case 'dev':
-                            return 'npm run build';
+                    case 'prod':
+                        return 'npm run build -- --environment=production --silent';
+                    case 'dev':
+                        return 'npm run build';
                     }
                 },
                 options: {
@@ -164,9 +162,9 @@ module.exports = function(grunt) {
             })
         ).then(function (results) {
             var contributors = mergeContribs(results[1], results[2]),
-                contributorTemplate = '<article>\n    <a href="<%= githubUrl %>" title="<%= name %>">\n' +
-                    '        <img src="{{gh-path "asset" "/img/contributors"}}/<%= name %>" alt="<%= name %>" />\n' +
-                    '    </a>\n</article>',
+                contributorTemplate = '<article>\n    <a href="<%= githubUrl %>" title="<%= name %>">\n'
+                    + '        <img src="{{gh-path "asset" "/img/contributors"}}/<%= name %>" alt="<%= name %>" />\n'
+                    + '    </a>\n</article>',
 
                 downloadImagePromise = function (url, name) {
                     return new Promise(function (resolve, reject) {

@@ -1,5 +1,5 @@
 /* global key */
-/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+/* eslint-disable camelcase */
 import Component from 'ember-component';
 import RSVP from 'rsvp';
 import computed from 'ember-computed';
@@ -16,8 +16,7 @@ export function computedGroup(category) {
         return this.get('content').filter((item) => {
             let search = new RegExp(this.get('currentSearch'), 'ig');
 
-            return (item.category === category) &&
-                item.title.match(search);
+            return (item.category === category) && item.title.match(search);
         });
     });
 }

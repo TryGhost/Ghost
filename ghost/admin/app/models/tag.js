@@ -1,4 +1,4 @@
-/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+/* eslint-disable camelcase */
 import {equal} from 'ember-computed';
 import observer from 'ember-metal/observer';
 import injectService from 'ember-service/inject';

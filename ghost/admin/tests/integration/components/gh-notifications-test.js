@@ -1,11 +1,10 @@
 /* jshint expr:true */
-import { expect } from 'chai';
+import {expect} from 'chai';
 import {
   describeComponent,
   it
 } from 'ember-mocha';
 import hbs from 'htmlbars-inline-precompile';
-import run from 'ember-runloop';
 import Service from 'ember-service';
 import {A as emberA} from 'ember-array/utils';
 

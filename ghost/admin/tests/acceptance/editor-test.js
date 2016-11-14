@@ -5,10 +5,10 @@ import {
     beforeEach,
     afterEach
 } from 'mocha';
-import { expect } from 'chai';
+import {expect} from 'chai';
 import startApp from '../helpers/start-app';
 import destroyApp from '../helpers/destroy-app';
-import { invalidateSession, authenticateSession } from 'ghost-admin/tests/helpers/ember-simple-auth';
+import {invalidateSession, authenticateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import Mirage from 'ember-cli-mirage';
 import sinon from 'sinon';
 
@@ -36,7 +36,7 @@ describe('Acceptance: Editor', function() {
 
     it('does not redirect to team page when authenticated as author', function () {
         let role = server.create('role', {name: 'Author'});
-        let user = server.create('user', {roles: [role], slug: 'test-user'});
+        server.create('user', {roles: [role], slug: 'test-user'});
         server.create('post');
 
         authenticateSession(application);
@@ -49,7 +49,7 @@ describe('Acceptance: Editor', function() {
 
     it('does not redirect to team page when authenticated as editor', function () {
         let role = server.create('role', {name: 'Editor'});
-        let user = server.create('user', {roles: [role], slug: 'test-user'});
+        server.create('user', {roles: [role], slug: 'test-user'});
         server.create('post');
 
         authenticateSession(application);
@@ -62,7 +62,7 @@ describe('Acceptance: Editor', function() {
 
     it('displays 404 when post does not exist', function () {
         let role = server.create('role', {name: 'Editor'});
-        let user = server.create('user', {roles: [role], slug: 'test-user'});
+        server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
         visit('/editor/1');
@@ -77,7 +77,7 @@ describe('Acceptance: Editor', function() {
 
         beforeEach(function () {
             let role = server.create('role', {name: 'Administrator'});
-            let user = server.create('user', {roles: [role]});
+            server.create('user', {roles: [role]});
 
             server.loadFixtures();
 
@@ -85,7 +85,7 @@ describe('Acceptance: Editor', function() {
         });
 
         it('renders the editor correctly, PSM Publish Date and Save Button', function () {
-            let posts = server.createList('post', 2);
+            server.createList('post', 2);
             let plusTenMinPacific = moment().tz('Pacific/Kwajalein').add(10, 'minutes').format('DD MMM YY @ HH:mm').toString();
             let plusTwoMinPacific = moment().tz('Pacific/Kwajalein').add(2, 'minutes').format('DD MMM YY @ HH:mm').toString();
 
@@ -392,7 +392,7 @@ describe('Acceptance: Editor', function() {
         });
 
         it('handles title validation errors correctly', function () {
-            let post = server.createList('post', 1);
+            server.createList('post', 1);
 
             // post id 1 is a draft, checking for draft behaviour now
             visit('/editor/1');
@@ -421,11 +421,11 @@ describe('Acceptance: Editor', function() {
         });
 
         it('renders first countdown notification before scheduled time', function () {
-            /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+            /* eslint-disable camelcase */
             let clock = sinon.useFakeTimers(moment().valueOf());
-            let post = server.create('post', {published_at: moment.utc().add(4, 'minutes'), status: 'scheduled'});
             let compareDate = moment().tz('Etc/UTC').add(4, 'minutes').format('DD MMM YY @ HH:mm').toString();
-            let settings = server.create('setting', {activeTimezone: 'Europe/Dublin'});
+            server.create('post', {published_at: moment.utc().add(4, 'minutes'), status: 'scheduled'});
+            server.create('setting', {activeTimezone: 'Europe/Dublin'});
 
             visit('/editor/1');
 
@@ -451,11 +451,10 @@ describe('Acceptance: Editor', function() {
         });
 
         it('only shows option to unschedule post 2 minutes before scheduled time', function () {
-            /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+            /* eslint-disable camelcase */
             let clock = sinon.useFakeTimers(moment().valueOf());
-            let post = server.create('post', {published_at: moment.utc().add(2, 'minutes'), status: 'scheduled'});
-            let compareDate = moment().tz('Europe/Dublin').add(2, 'minutes').format('DD MMM YY @ HH:mm').toString();
-            let settings = server.create('setting', {activeTimezone: 'Europe/Dublin'});
+            server.create('post', {published_at: moment.utc().add(2, 'minutes'), status: 'scheduled'});
+            server.create('setting', {activeTimezone: 'Europe/Dublin'});
 
             visit('/editor/1');
 
@@ -475,11 +474,10 @@ describe('Acceptance: Editor', function() {
         });
 
         it.skip('lets user unschedule the post shortly before scheduled date', function () {
-            /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+            /* eslint-disable camelcase */
             let clock = sinon.useFakeTimers(moment().valueOf());
-            let post = server.create('post', {published_at: moment.utc().add(1, 'minute'), status: 'scheduled'});
-            let compareDate = moment().tz('Europe/Dublin').add(1, 'minute').format('DD MMM YY @ HH:mm').toString();
-            let settings = server.create('setting', {activeTimezone: 'Europe/Dublin'});
+            server.create('post', {published_at: moment.utc().add(1, 'minute'), status: 'scheduled'});
+            server.create('setting', {activeTimezone: 'Europe/Dublin'});
 
             visit('/editor/1');
 

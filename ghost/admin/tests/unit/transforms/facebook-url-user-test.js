@@ -1,7 +1,6 @@
 /* jshint expr:true */
-import { expect } from 'chai';
-import { describeModule, it } from 'ember-mocha';
-import {A as emberA} from 'ember-array/utils';
+import {expect} from 'chai';
+import {describeModule, it} from 'ember-mocha';
 
 describeModule(
     'transform:facebook-url-user',

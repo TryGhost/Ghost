@@ -16,6 +16,7 @@ export default Oauth2Authenticator.extend({
             let serverTokenEndpoint = this.get('serverTokenEndpoint');
             let scopesString = wrap(scope).join(' ');
 
+            // eslint-disable-next-line camelcase
             data.grant_type = 'authorization_code';
 
             if (!isEmpty(scopesString)) {

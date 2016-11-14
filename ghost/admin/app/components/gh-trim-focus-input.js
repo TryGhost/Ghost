@@ -1,4 +1,4 @@
-/*global device*/
+/* global device */
 import computed from 'ember-computed';
 import GhostInput from 'ghost-admin/components/gh-input';
 
