@@ -42,8 +42,25 @@ function GhostError(options) {
     // error to inherit from, override!
     // nested objects are getting copied over in one piece (can be changed, but not needed right now)
     if (options.err) {
+        // it can happen that third party libs return errors as strings, yes really
+        // we are creating an error stack from this line, but we need to ensure not loosing the original error message
+        if (_.isString(options.err)) {
+            options.err = new Error(options.err);
+        }
+
         Object.getOwnPropertyNames(options.err).forEach(function (property) {
+            // original message is part of the stack, no need to pick it
             if (['errorType', 'name', 'statusCode'].indexOf(property) !== -1) {
+                return;
+            }
+
+            if (property === 'message' && !self[property]) {
+                self[property] = options.err[property];
+                return;
+            }
+
+            if (property === 'stack') {
+                self[property] += '\n\n' + options.err[property];
                 return;
             }
 
