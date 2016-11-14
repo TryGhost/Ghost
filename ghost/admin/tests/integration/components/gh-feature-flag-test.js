@@ -1,11 +1,10 @@
-import { expect } from 'chai';
+import {expect} from 'chai';
 import {
     describeComponent,
     it
 } from 'ember-mocha';
 import hbs from 'htmlbars-inline-precompile';
 import Service from 'ember-service';
-import wait from 'ember-test-helpers/wait';
 
 const featureStub = Service.extend({
     testFlag: true
@@ -18,8 +17,6 @@ describeComponent(
         integration: true
     },
     function() {
-        let server;
-
         beforeEach(function () {
             this.register('service:feature', featureStub);
             this.inject.service('feature', {as: 'feature'});

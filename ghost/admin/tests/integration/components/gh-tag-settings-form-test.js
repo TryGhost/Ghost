@@ -1,6 +1,6 @@
 /* jshint expr:true */
 /* jscs:disable requireTemplateStringsForConcatenation */
-import { expect } from 'chai';
+import {expect} from 'chai';
 import {
     describeComponent,
     it
@@ -29,7 +29,7 @@ describeComponent(
     },
     function () {
         beforeEach(function () {
-            /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+            /* eslint-disable camelcase */
             let tag = EmberObject.create({
                 id: 1,
                 name: 'Test',
@@ -40,11 +40,12 @@ describeComponent(
                 errors: Errors.create(),
                 hasValidated: []
             });
-            /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
+            /* eslint-enable camelcase */
 
             this.set('tag', tag);
             this.set('actions.setProperty', function (property, value) {
                 // this should be overridden if a call is expected
+                // eslint-disable-next-line no-console
                 console.error(`setProperty called '${property}: ${value}'`);
             });
 

@@ -1,6 +1,6 @@
 /* jshint expr:true */
 import sinon from 'sinon';
-import { expect } from 'chai';
+import {expect} from 'chai';
 import {
     describeComponent,
     it
@@ -23,7 +23,7 @@ const configStub = Service.extend({
 });
 
 const notificationsStub = Service.extend({
-    showAPIError(error, options) {
+    showAPIError(/* error, options */) {
         // noop - to be stubbed
     }
 });
@@ -386,7 +386,7 @@ describeComponent(
                 // after 75ms we should have had one progress event
                 run.later(this, function () {
                     expect(this.$('.progress .bar').length).to.equal(1);
-                    let [_, percentageWidth] = this.$('.progress .bar').attr('style').match(/width: (\d+)%?/);
+                    let [, percentageWidth] = this.$('.progress .bar').attr('style').match(/width: (\d+)%?/);
                     expect(percentageWidth).to.be.above(0);
                     expect(percentageWidth).to.be.below(100);
                 }, 75);
@@ -398,6 +398,7 @@ describeComponent(
                 this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
 
                 run(() => {
+                    // eslint-disable-next-line new-cap
                     let dragover = $.Event('dragover', {
                         dataTransfer: {
                             files: []
@@ -417,6 +418,7 @@ describeComponent(
 
             it('triggers file upload on file drop', function (done) {
                 let uploadSuccess = sinon.spy();
+                // eslint-disable-next-line new-cap
                 let drop = $.Event('drop', {
                     dataTransfer: {
                         files: [createFile(['test'], {name: 'test.png'})]
@@ -568,6 +570,7 @@ describeComponent(
                 this.$('input[type="text"]').val('saved url');
                 this.$('input[type="text"]').change();
                 this.$('input[type="text"]').trigger(
+                    // eslint-disable-next-line new-cap
                     $.Event('keyup', {keyCode: keyCodes.enter, which: keyCodes.enter})
                 );
 

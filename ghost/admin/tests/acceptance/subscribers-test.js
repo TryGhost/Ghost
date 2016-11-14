@@ -5,10 +5,10 @@ import {
     beforeEach,
     afterEach
 } from 'mocha';
-import { expect } from 'chai';
+import {expect} from 'chai';
 import startApp from '../helpers/start-app';
 import destroyApp from '../helpers/destroy-app';
-import { invalidateSession, authenticateSession } from 'ghost-admin/tests/helpers/ember-simple-auth';
+import {invalidateSession, authenticateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 
 describe('Acceptance: Subscribers', function() {
     let application;
@@ -32,7 +32,7 @@ describe('Acceptance: Subscribers', function() {
 
     it('redirects editors to posts', function () {
         let role = server.create('role', {name: 'Editor'});
-        let user = server.create('user', {roles: [role]});
+        server.create('user', {roles: [role]});
 
         authenticateSession(application);
         visit('/subscribers');
@@ -46,7 +46,7 @@ describe('Acceptance: Subscribers', function() {
 
     it('redirects authors to posts', function () {
         let role = server.create('role', {name: 'Author'});
-        let user = server.create('user', {roles: [role]});
+        server.create('user', {roles: [role]});
 
         authenticateSession(application);
         visit('/subscribers');
@@ -61,7 +61,7 @@ describe('Acceptance: Subscribers', function() {
     describe('an admin', function () {
         beforeEach(function () {
             let role = server.create('role', {name: 'Administrator'});
-            let user = server.create('user', {roles: [role]});
+            server.create('user', {roles: [role]});
 
             server.loadFixtures();
 

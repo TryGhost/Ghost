@@ -5,10 +5,10 @@ import {
     beforeEach,
     afterEach
 } from 'mocha';
-import { expect } from 'chai';
+import {expect} from 'chai';
 import startApp from '../helpers/start-app';
 import destroyApp from '../helpers/destroy-app';
-import { authenticateSession } from 'ghost-admin/tests/helpers/ember-simple-auth';
+import {authenticateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 
 const originalAgent = window.navigator.userAgent;
 
@@ -47,7 +47,7 @@ describe('Acceptance: Ghost Desktop', function() {
     describe('update alerts for broken versions', function () {
         beforeEach(function() {
             let role = server.create('role', {name: 'Administrator'});
-            let user = server.create('user', {roles: [role]});
+            server.create('user', {roles: [role]});
 
             server.loadFixtures();
 

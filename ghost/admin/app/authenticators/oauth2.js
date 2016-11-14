@@ -31,10 +31,10 @@ export default Authenticator.extend({
     }),
 
     makeRequest(url, data) {
-        /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+        /* eslint-disable camelcase */
         data.client_id = this.get('config.clientId');
         data.client_secret = this.get('config.clientSecret');
-        /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
+        /* eslint-enable camelcase */
 
         let options = {
             data,
@@ -71,10 +71,10 @@ export default Authenticator.extend({
             }
             this.makeRequest(serverTokenEndpoint, data, headers).then((response) => {
                 run(() => {
-                    /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+                    /* eslint-disable camelcase */
                     let expiresAt = this._absolutizeExpirationTime(response.expires_in);
                     this._scheduleAccessTokenRefresh(response.expires_in, expiresAt, response.refresh_token);
-                    /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
+                    /* eslint-enable camelcase */
 
                     if (!isEmpty(expiresAt)) {
                         response = assign(response, {'expires_at': expiresAt});

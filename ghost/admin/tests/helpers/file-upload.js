@@ -16,6 +16,7 @@ export function createFile(content = ['test'], options = {}) {
 
 export function fileUpload($element, content, options) {
     let file = createFile(content, options);
+    // eslint-disable-next-line new-cap
     let event = $.Event('change', {
         testingFiles: [file]
     });

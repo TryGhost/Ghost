@@ -1,4 +1,4 @@
-/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+/* eslint-disable camelcase */
 import Mirage from 'ember-cli-mirage';
 import {isBlank} from 'ember-utils';
 import {assign} from 'ember-platform';

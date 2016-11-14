@@ -7,9 +7,6 @@ import wait from 'ember-test-helpers/wait';
 import FeatureService, {feature} from 'ghost-admin/services/feature';
 import Ember from 'ember';
 import run from 'ember-runloop';
-import {assign} from 'ember-platform';
-import RSVP from 'rsvp';
-import { errorOverride, errorReset } from 'ghost-admin/tests/helpers/adapter-error';
 
 const {Error: EmberError} = Ember;
 

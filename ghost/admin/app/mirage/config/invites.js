@@ -33,7 +33,7 @@ export default function mockInvites(server) {
             db.invites.remove(oldInvite.id);
         }
 
-        /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+        /* eslint-disable camelcase */
         attrs.token = `${db.invites.length}-token`;
         attrs.expires = moment.utc().add(1, 'day').unix();
         attrs.created_at = moment.utc().format();
@@ -41,7 +41,7 @@ export default function mockInvites(server) {
         attrs.updated_at = moment.utc().format();
         attrs.updated_by = 1;
         attrs.status = 'sent';
-        /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
+        /* eslint-enable camelcase */
 
         let invite = db.invites.insert(attrs);
 

@@ -1,5 +1,5 @@
 /* jshint expr:true */
-import { expect } from 'chai';
+import {expect} from 'chai';
 import {
     describeComponent,
     it
@@ -8,16 +8,6 @@ import hbs from 'htmlbars-inline-precompile';
 import run from 'ember-runloop';
 import Pretender from 'pretender';
 import wait from 'ember-test-helpers/wait';
-import sinon from 'sinon';
-
-let versionMismatchResponse = function () {
-    return [400, {'Content-Type': 'application/json'}, JSON.stringify({
-        errors: [{
-            errorType: 'VersionMismatchError',
-            statusCode: 400
-        }]
-    })];
-};
 
 describeComponent(
     'gh-search-input',

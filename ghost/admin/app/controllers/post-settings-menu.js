@@ -258,8 +258,8 @@ export default Controller.extend(SettingsMenuMixin, {
 
                 // Validate new Published date
                 if (!newPublishedAt.isValid()) {
-                    errMessage = 'Published Date must be a valid date with format: ' +
-                        'DD MMM YY @ HH:mm (e.g. 6 Dec 14 @ 15:00)';
+                    errMessage = 'Published Date must be a valid date with format: '
+                               + 'DD MMM YY @ HH:mm (e.g. 6 Dec 14 @ 15:00)';
                 }
 
                 // Date is a valid date, so now make it UTC

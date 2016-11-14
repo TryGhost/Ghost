@@ -1,6 +1,6 @@
 /* jshint expr:true */
 /* global md5 */
-import { expect } from 'chai';
+import {expect} from 'chai';
 import {
     describeComponent,
     it

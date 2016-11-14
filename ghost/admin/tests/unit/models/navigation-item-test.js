@@ -1,6 +1,6 @@
 /* jshint expr:true */
-import { expect } from 'chai';
-import { describeModule, it } from 'ember-mocha';
+import {expect} from 'chai';
+import {describeModule, it} from 'ember-mocha';
 
 describeModule(
     'model:navigation-item',

@@ -1,4 +1,4 @@
-/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+/* eslint-disable camelcase */
 import run from 'ember-runloop';
 import RSVP from 'rsvp';
 import EmberObject from 'ember-object';
@@ -6,7 +6,6 @@ import {
     describeModule,
     it
 } from 'ember-mocha';
-import sinon from 'sinon';
 
 function K() {
     return this;

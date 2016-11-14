@@ -5,11 +5,10 @@ import {
     beforeEach,
     afterEach
 } from 'mocha';
-import { expect } from 'chai';
+import {expect} from 'chai';
 import startApp from '../helpers/start-app';
 import destroyApp from '../helpers/destroy-app';
-import $ from 'jquery';
-import { enableGhostOAuth } from '../helpers/configuration';
+import {enableGhostOAuth} from '../helpers/configuration';
 import {
     stubSuccessfulOAuthConnect,
     stubFailedOAuthConnect
@@ -29,7 +28,7 @@ describe('Acceptance: Signup', function() {
     });
 
     it('can signup successfully', function() {
-        server.get('/authentication/invitation', function (db, request) {
+        server.get('/authentication/invitation', function () {
             return {
                 invitation: [{valid: true}]
             };
@@ -151,12 +150,12 @@ describe('Acceptance: Signup', function() {
 
             let user = server.create('user', {name: 'Test Invite Creator'});
 
-            /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+            /* eslint-disable camelcase */
             server.create('invite', {
                 email: 'kevin+test2@ghost.org',
                 created_by: user.id
             });
-            /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
+            /* eslint-enable camelcase */
         });
 
         it('can sign up sucessfully', function () {

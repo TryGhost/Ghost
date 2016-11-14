@@ -3,14 +3,14 @@ import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 
 export default AuthenticatedRoute.extend(ShortcutsRoute, {
     model(params) {
-        /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+        /* eslint-disable camelcase */
         let post = this.store.peekRecord('post', params.post_id);
         let query = {
             id: params.post_id,
             status: 'all',
             staticPages: 'all'
         };
-        /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
+        /* eslint-enable camelcase */
 
         if (post) {
             return post;

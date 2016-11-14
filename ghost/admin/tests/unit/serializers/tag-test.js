@@ -1,6 +1,6 @@
 /* jshint expr:true */
-import { expect } from 'chai';
-import { describeModel, it } from 'ember-mocha';
+import {expect} from 'chai';
+import {describeModel, it} from 'ember-mocha';
 
 describeModel(
     'tag',
@@ -17,7 +17,7 @@ describeModel(
 
             let serializedRecord = record.serialize();
 
-            expect(record).to.be.ok;
+            expect(serializedRecord).to.be.ok;
         });
     }
 );

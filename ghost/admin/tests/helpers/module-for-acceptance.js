@@ -1,5 +1,5 @@
 /* jscs:disable */
-import { module } from 'qunit';
+import {module} from 'qunit';
 import RSVP from 'rsvp';
 import startApp from '../helpers/start-app';
 import destroyApp from '../helpers/destroy-app';
