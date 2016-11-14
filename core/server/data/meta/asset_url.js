@@ -4,14 +4,14 @@ var config = require('../../config'),
 function getAssetUrl(path, isAdmin, minify) {
     var output = '';
 
-    output += utils.url.getSubdir() + '/';
+    output += utils.url.urlJoin(utils.url.getSubdir(), '/');
 
     if (!path.match(/^favicon\.ico$/) && !path.match(/^shared/) && !path.match(/^asset/)) {
         if (isAdmin) {
-            output += 'ghost/';
+            output = utils.url.urlJoin(output, 'ghost/');
         }
 
-        output += 'assets/';
+        output = utils.url.urlJoin(output, 'assets/');
     }
 
     // Get rid of any leading slash on the path
