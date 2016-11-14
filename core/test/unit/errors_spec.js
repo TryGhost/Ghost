@@ -67,5 +67,13 @@ describe('Errors', function () {
             ghostError.message.should.eql(someError.message);
             ghostError.context.should.eql('context');
         });
+
+        it('error is string', function () {
+            var ghostError = new errors.GhostError({
+                err: 'string'
+            });
+
+            ghostError.message.should.eql('string');
+        });
     });
 });
