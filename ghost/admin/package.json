@@ -75,7 +75,7 @@
     "emberx-file-input": "1.1.0",
     "eslint-plugin-ember-suave": "1.0.0",
     "fs-extra": "1.0.0",
-    "ghost-editor": "0.1.4",
+    "ghost-editor": "0.1.5",
     "glob": "7.1.1",
     "grunt": "1.0.1",
     "grunt-bg-shell": "2.3.3",
