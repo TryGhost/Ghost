@@ -1,4 +1,4 @@
-/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+/* eslint-disable camelcase */
 import Mirage from 'ember-cli-mirage';
 import {isBlank} from 'ember-utils';
 import $ from 'jquery';
@@ -31,10 +31,9 @@ export default function mockAuthentication(server) {
     });
 
     server.post('/authentication/passwordreset', function (db, request) {
-        // jscs:disable requireObjectDestructuring
         let {passwordreset} = JSON.parse(request.requestBody);
+        // eslint-disable-next-line ember-suave/prefer-destructuring
         let email = passwordreset[0].email;
-        // jscs:enable requireObjectDestructuring
 
         if (email === 'unknown@example.com') {
             return new Mirage.Response(404, {}, {

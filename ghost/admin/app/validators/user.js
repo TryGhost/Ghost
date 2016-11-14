@@ -55,18 +55,16 @@ export default BaseValidator.create({
 
     website(model) {
         let website = model.get('website');
+        // eslint-disable-next-line camelcase
+        let isInvalidWebsite = !validator.isURL(website, {require_protocol: false})
+                          || !validator.isLength(website, 0, 2000);
 
-        /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
         if (this.isActive(model)) {
-            if (!validator.empty(website) &&
-                (!validator.isURL(website, {require_protocol: false}) ||
-                !validator.isLength(website, 0, 2000))) {
-
+            if (!validator.empty(website) && isInvalidWebsite) {
                 model.get('errors').add('website', 'Website is not a valid url');
                 this.invalidate();
             }
         }
-        /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
     },
 
     roles(model) {

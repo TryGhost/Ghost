@@ -4,7 +4,7 @@ import get from 'ember-metal/get';
 import {A as emberA} from 'ember-array/utils';
 import EmberObject from 'ember-object';
 import sinon from 'sinon';
-import { expect } from 'chai';
+import {expect} from 'chai';
 import {
     describeModule,
     it
@@ -186,7 +186,9 @@ describeModule(
             let notifications = this.subject();
             let resp = false;
 
-            run(() => { notifications.showAPIError(resp); });
+            run(() => {
+                notifications.showAPIError(resp);
+            });
 
             expect(notifications.get('content').toArray()).to.deep.equal([
                 {message: 'There was a problem on the server, please try again.', status: 'alert', type: 'error', key: 'api-error'}
@@ -304,11 +306,15 @@ describeModule(
             };
             sinon.spy(notification, 'save');
 
-            run(() => { notifications.handleNotification(notification); });
+            run(() => {
+                notifications.handleNotification(notification);
+            });
 
             expect(notifications.get('alerts')).to.include(notification);
 
-            run(() => { notifications.closeNotification(notification); });
+            run(() => {
+                notifications.closeNotification(notification);
+            });
 
             expect(notification.deleteRecord.calledOnce).to.be.true;
             expect(notification.save.calledOnce).to.be.true;
@@ -328,7 +334,9 @@ describeModule(
             expect(notifications.get('alerts.length'), 'alerts count').to.equal(1);
             expect(notifications.get('notifications.length'), 'notifications count').to.equal(2);
 
-            run(() => { notifications.closeNotifications(); });
+            run(() => {
+                notifications.closeNotifications();
+            });
 
             expect(notifications.get('alerts.length'), 'alerts count').to.equal(1);
             expect(notifications.get('notifications.length'), 'notifications count').to.equal(0);

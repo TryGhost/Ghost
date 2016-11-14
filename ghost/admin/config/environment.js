@@ -1,5 +1,4 @@
-/* jshint node: true */
-/* jscs:disable */
+/* eslint-env node */
 
 module.exports = function (environment) {
     var ENV = {
@@ -38,7 +37,7 @@ module.exports = function (environment) {
         },
 
         torii: {
-            
+
         }
     };
 

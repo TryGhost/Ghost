@@ -1,5 +1,5 @@
-import { expect } from 'chai';
-import { describeModel, it } from 'ember-mocha';
+import {expect} from 'chai';
+import {describeModel, it} from 'ember-mocha';
 import run from 'ember-runloop';
 import Pretender from 'pretender';
 

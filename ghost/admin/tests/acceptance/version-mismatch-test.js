@@ -5,10 +5,10 @@ import {
     beforeEach,
     afterEach
 } from 'mocha';
-import { expect } from 'chai';
+import {expect} from 'chai';
 import startApp from '../helpers/start-app';
 import destroyApp from '../helpers/destroy-app';
-import { invalidateSession, authenticateSession } from 'ghost-admin/tests/helpers/ember-simple-auth';
+import {authenticateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import Mirage from 'ember-cli-mirage';
 
 let versionMismatchResponse = function () {
@@ -34,7 +34,7 @@ describe('Acceptance: Version Mismatch', function() {
     describe('logged in', function () {
         beforeEach(function () {
             let role = server.create('role', {name: 'Administrator'});
-            let user = server.create('user', {roles: [role]});
+            server.create('user', {roles: [role]});
 
             server.loadFixtures();
 

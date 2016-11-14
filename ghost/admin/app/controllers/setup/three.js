@@ -88,8 +88,8 @@ export default Controller.extend({
         validationResult.forEach((error) => {
             // Only one error type here so far, but one day the errors might be more detailed
             switch (error.error) {
-                case 'email':
-                    errors.add(property, `${error.user} is not a valid email.`);
+            case 'email':
+                errors.add(property, `${error.user} is not a valid email.`);
             }
         });
 

@@ -1,8 +1,7 @@
 import {
-    describeModule,
     it
 } from 'ember-mocha';
-import { ghUserCanAdmin } from 'ghost-admin/helpers/gh-user-can-admin';
+import {ghUserCanAdmin} from 'ghost-admin/helpers/gh-user-can-admin';
 
 describe('Unit: Helper: gh-user-can-admin', function () {
     // Mock up roles and test for truthy

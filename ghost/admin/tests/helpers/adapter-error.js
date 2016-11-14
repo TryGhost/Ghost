@@ -7,8 +7,7 @@ import Test from 'ember-test';
 // ember-cli-shims doesn't export Logger
 const {Logger} = Ember;
 
-let originalException;
-let originalLoggerError;
+let originalException, originalLoggerError;
 
 export function errorOverride() {
     originalException = Test.adapter.exception;

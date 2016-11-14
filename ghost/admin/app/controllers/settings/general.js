@@ -166,16 +166,16 @@ export default Controller.extend(SettingsSaveMixin, {
                 let username = [];
 
                 if (newUrl.match(/(?:facebook\.com\/)(\S+)/)) {
-                    [ , username ] = newUrl.match(/(?:facebook\.com\/)(\S+)/);
+                    [, username] = newUrl.match(/(?:facebook\.com\/)(\S+)/);
                 } else {
-                    [ , username ] = newUrl.match(/(?:https\:\/\/|http\:\/\/)?(?:www\.)?(?:\w+\.\w+\/+)?(\S+)/mi);
+                    [, username] = newUrl.match(/(?:https\:\/\/|http\:\/\/)?(?:www\.)?(?:\w+\.\w+\/+)?(\S+)/mi);
                 }
 
                 // check if we have a /page/username or without
                 if (username.match(/^(?:\/)?(pages?\/\S+)/mi)) {
                     // we got a page url, now save the username without the / in the beginning
 
-                    [ , username ] = username.match(/^(?:\/)?(pages?\/\S+)/mi);
+                    [, username] = username.match(/^(?:\/)?(pages?\/\S+)/mi);
                 } else if (username.match(/^(http|www)|(\/)/) || !username.match(/^([a-z\d\.]{5,50})$/mi)) {
                     errMessage = !username.match(/^([a-z\d\.]{5,50})$/mi) ? 'Your Page name is not a valid Facebook Page name' : 'The URL must be in a format like https://www.facebook.com/yourPage';
 
@@ -198,8 +198,8 @@ export default Controller.extend(SettingsSaveMixin, {
                     });
                 });
             } else {
-                errMessage = 'The URL must be in a format like ' +
-                    'https://www.facebook.com/yourPage';
+                errMessage = 'The URL must be in a format like '
+                           + 'https://www.facebook.com/yourPage';
                 this.get('model.errors').add('facebook', errMessage);
                 this.get('model.hasValidated').pushObject('facebook');
                 return;
@@ -233,7 +233,7 @@ export default Controller.extend(SettingsSaveMixin, {
                 let username = [];
 
                 if (newUrl.match(/(?:twitter\.com\/)(\S+)/)) {
-                    [ , username] = newUrl.match(/(?:twitter\.com\/)(\S+)/);
+                    [, username] = newUrl.match(/(?:twitter\.com\/)(\S+)/);
                 } else {
                     [username] = newUrl.match(/([^/]+)\/?$/mi);
                 }
@@ -261,8 +261,8 @@ export default Controller.extend(SettingsSaveMixin, {
                     });
                 });
             } else {
-                errMessage = 'The URL must be in a format like ' +
-                    'https://twitter.com/yourUsername';
+                errMessage = 'The URL must be in a format like '
+                           + 'https://twitter.com/yourUsername';
                 this.get('model.errors').add('twitter', errMessage);
                 this.get('model.hasValidated').pushObject('twitter');
                 return;

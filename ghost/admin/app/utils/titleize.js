@@ -1,7 +1,9 @@
 import {capitalize} from 'ember-string';
-const lowerWords = ['of', 'a', 'the', 'and', 'an', 'or', 'nor', 'but', 'is', 'if',
-                    'then', 'else', 'when', 'at', 'from', 'by', 'on', 'off', 'for',
-                    'in', 'out', 'over', 'to', 'into', 'with'];
+const lowerWords = [
+    'of', 'a', 'the', 'and', 'an', 'or', 'nor', 'but', 'is', 'if',
+    'then', 'else', 'when', 'at', 'from', 'by', 'on', 'off', 'for',
+    'in', 'out', 'over', 'to', 'into', 'with'
+];
 
 export default function (input) {
     let words = input.split(' ').map((word, index) => {

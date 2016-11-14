@@ -1,6 +1,6 @@
 /* jshint expr:true */
-import { expect, assert } from 'chai';
-import { describeModule, it } from 'ember-mocha';
+import {expect, assert} from 'chai';
+import {describeModule, it} from 'ember-mocha';
 import Ember from 'ember';
 import NavItem from 'ghost-admin/models/navigation-item';
 
@@ -9,16 +9,16 @@ const {
     Object: EmberObject
 } = Ember;
 
-const navSettingJSON = `[
-    {"label":"Home","url":"/"},
-    {"label":"JS Test","url":"javascript:alert('hello');"},
-    {"label":"About","url":"/about"},
-    {"label":"Sub Folder","url":"/blah/blah"},
-    {"label":"Telephone","url":"tel:01234-567890"},
-    {"label":"Mailto","url":"mailto:test@example.com"},
-    {"label":"External","url":"https://example.com/testing?query=test#anchor"},
-    {"label":"No Protocol","url":"//example.com"}
-]`;
+// const navSettingJSON = `[
+//     {"label":"Home","url":"/"},
+//     {"label":"JS Test","url":"javascript:alert('hello');"},
+//     {"label":"About","url":"/about"},
+//     {"label":"Sub Folder","url":"/blah/blah"},
+//     {"label":"Telephone","url":"tel:01234-567890"},
+//     {"label":"Mailto","url":"mailto:test@example.com"},
+//     {"label":"External","url":"https://example.com/testing?query=test#anchor"},
+//     {"label":"No Protocol","url":"//example.com"}
+// ]`;
 
 describeModule(
     'controller:settings/navigation',

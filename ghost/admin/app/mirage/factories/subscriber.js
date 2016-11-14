@@ -6,8 +6,7 @@ let randomDate = function randomDate(start = moment().subtract(30, 'days').toDat
 
 let statuses = ['pending', 'subscribed'];
 
-// jscs:disable requireBlocksOnNewline
-// jscs:disable requireCamelCaseOrUpperCaseIdentifiers
+/* eslint-disable camelcase, brace-style */
 export default Mirage.Factory.extend({
     uuid(i) { return `subscriber-${i}`; },
     name() { return `${faker.name.firstName()} ${faker.name.lastName()}`; },

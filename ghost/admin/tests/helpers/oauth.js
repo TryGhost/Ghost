@@ -14,13 +14,13 @@ const stubSuccessfulOAuthConnect = function stubSuccessfulOAuthConnect(applicati
 
     provider.open = function () {
         return RSVP.Promise.resolve({
-            /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+            /* eslint-disable camelcase */
             authorizationCode: generateCode(),
             client_id: 'ghost-admin',
             client_secret: generateSecret(),
             provider: 'ghost-oauth2',
             redirectUrl: 'http://localhost:2368/ghost/'
-            /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
+            /* eslint-enable camelcase */
         });
     };
 };
