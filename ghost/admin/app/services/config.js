@@ -25,7 +25,7 @@ export default Service.extend(_ProxyMixin, {
         let timezonesUrl = this.get('ghostPaths.url').api('configuration', 'timezones');
 
         return this.get('ajax').request(timezonesUrl).then((configTimezones) => {
-            let [ timezonesObj ] = configTimezones.configuration;
+            let [timezonesObj] = configTimezones.configuration;
 
             timezonesObj = timezonesObj.timezones;
 

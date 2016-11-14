@@ -12,8 +12,7 @@ export default BaseValidator.create({
         if (!validator.empty(url) && !url.match(urlRegex)) {
             model.get('errors').add(
                 'url',
-                'The URL must be in a format like ' +
-                    'https://hooks.slack.com/services/<your personal key>'
+                'The URL must be in a format like https://hooks.slack.com/services/<your personal key>'
             );
 
             this.invalidate();

@@ -1,4 +1,4 @@
-/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+/* eslint-disable camelcase */
 export default [
     {
         created_at: '2015-09-11T09:44:30.805Z',

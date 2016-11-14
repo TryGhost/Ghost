@@ -5,9 +5,6 @@ import {
     it
 } from 'ember-mocha';
 import hbs from 'htmlbars-inline-precompile';
-import {task, timeout} from 'ember-concurrency';
-import EmberObject from 'ember-object';
-import wait from 'ember-test-helpers/wait';
 
 describeComponent(
     'gh-task-button',

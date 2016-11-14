@@ -59,14 +59,14 @@ export default Mixin.create(styleBody, ShortcutsRoute, {
                 }, 100);
             }
 
-            fromNewToEdit = this.get('routeName') === 'editor.new' &&
-                transition.targetName === 'editor.edit' &&
-                transition.intent.contexts &&
-                transition.intent.contexts[0] &&
-                transition.intent.contexts[0].id === model.get('id');
+            fromNewToEdit = this.get('routeName') === 'editor.new'
+                && transition.targetName === 'editor.edit'
+                && transition.intent.contexts
+                && transition.intent.contexts[0]
+                && transition.intent.contexts[0].id === model.get('id');
 
-            deletedWithoutChanges = state.isDeleted &&
-                (state.isSaving || !state.hasDirtyAttributes);
+            deletedWithoutChanges = state.isDeleted
+                && (state.isSaving || !state.hasDirtyAttributes);
 
             if (!fromNewToEdit && !deletedWithoutChanges && controllerIsDirty) {
                 transition.abort();

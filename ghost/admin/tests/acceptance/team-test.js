@@ -5,14 +5,13 @@ import {
   beforeEach,
   afterEach
 } from 'mocha';
-import { expect } from 'chai';
+import {expect} from 'chai';
 import startApp from '../helpers/start-app';
 import destroyApp from '../helpers/destroy-app';
-import { invalidateSession, authenticateSession } from '../helpers/ember-simple-auth';
-import { errorOverride, errorReset } from '../helpers/adapter-error';
-import { enableGhostOAuth } from '../helpers/configuration';
+import {invalidateSession, authenticateSession} from '../helpers/ember-simple-auth';
+import {errorOverride, errorReset} from '../helpers/adapter-error';
+import {enableGhostOAuth} from '../helpers/configuration';
 import Mirage from 'ember-cli-mirage';
-import $ from 'jquery';
 
 describe('Acceptance: Team', function () {
     let application;
@@ -36,7 +35,7 @@ describe('Acceptance: Team', function () {
 
     it('redirects correctly when authenticated as author', function () {
         let role = server.create('role', {name: 'Author'});
-        let user = server.create('user', {roles: [role], slug: 'test-user'});
+        server.create('user', {roles: [role], slug: 'test-user'});
 
         server.create('user', {slug: 'no-access'});
 
@@ -50,7 +49,7 @@ describe('Acceptance: Team', function () {
 
     it('redirects correctly when authenticated as editor', function () {
         let role = server.create('role', {name: 'Editor'});
-        let user = server.create('user', {roles: [role], slug: 'test-user'});
+        server.create('user', {roles: [role], slug: 'test-user'});
 
         server.create('user', {slug: 'no-access'});
 
@@ -75,7 +74,7 @@ describe('Acceptance: Team', function () {
         });
 
         it('it renders and navigates correctly', function () {
-            let user1 = server.create('user');
+            server.create('user');
             let user2 = server.create('user');
 
             visit('/team');
@@ -115,8 +114,6 @@ describe('Acceptance: Team', function () {
         });
 
         it('can manage invites', function () {
-            let emailInputField = '.fullscreen-modal input[name="email"]';
-
             visit('/team');
 
             andThen(() => {
@@ -354,11 +351,10 @@ describe('Acceptance: Team', function () {
         });
 
         it('can delete users', function () {
-            /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
             let user1 = server.create('user');
             let user2 = server.create('user');
-            let post1 = server.create('post', {author_id: user2.id});
-            /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+            // eslint-disable-next-line camelcase
+            server.create('post', {author_id: user2.id});
 
             visit('/team');
             click(`a.user-list-item:contains("${user1.name}")`);
@@ -691,11 +687,10 @@ describe('Acceptance: Team', function () {
                     expect(lastRequest.url, 'password request URL')
                         .to.match(/\/users\/password/);
 
-                    /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+                    // eslint-disable-next-line camelcase
                     expect(params.password[0].user_id).to.equal(user.id.toString());
                     expect(params.password[0].newPassword).to.equal('password');
                     expect(params.password[0].ne2Password).to.equal('password');
-                    /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
 
                     // clears the fields
                     expect(
@@ -814,12 +809,12 @@ describe('Acceptance: Team', function () {
     });
 
     describe('when logged in as author', function () {
-        let author, authorRole, adminRole;
+        let adminRole, authorRole;
 
         beforeEach(function () {
             adminRole = server.create('role', {name: 'Administrator'});
             authorRole = server.create('role', {name: 'Author'});
-            author = server.create('user', {roles: [authorRole]});
+            server.create('user', {roles: [authorRole]});
 
             server.loadFixtures();
 
@@ -836,8 +831,8 @@ describe('Acceptance: Team', function () {
         });
 
         it('can access the team page', function () {
-            let user1 = server.create('user', {roles: [adminRole]});
-            let invite1 = server.create('invite', {roles: [authorRole]});
+            server.create('user', {roles: [adminRole]});
+            server.create('invite', {roles: [authorRole]});
 
             errorOverride();
 

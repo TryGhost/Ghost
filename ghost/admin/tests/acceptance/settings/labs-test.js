@@ -5,11 +5,11 @@ import {
     beforeEach,
     afterEach
 } from 'mocha';
-import { expect } from 'chai';
+import {expect} from 'chai';
 import $ from 'jquery';
 import startApp from '../../helpers/start-app';
 import destroyApp from '../../helpers/destroy-app';
-import { invalidateSession, authenticateSession } from 'ghost-admin/tests/helpers/ember-simple-auth';
+import {invalidateSession, authenticateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 
 describe('Acceptance: Settings - Labs', function() {
     let application;
@@ -33,7 +33,7 @@ describe('Acceptance: Settings - Labs', function() {
 
     it('redirects to team page when authenticated as author', function () {
         let role = server.create('role', {name: 'Author'});
-        let user = server.create('user', {roles: [role], slug: 'test-user'});
+        server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
         visit('/settings/labs');
@@ -45,7 +45,7 @@ describe('Acceptance: Settings - Labs', function() {
 
     it('redirects to team page when authenticated as editor', function () {
         let role = server.create('role', {name: 'Editor'});
-        let user = server.create('user', {roles: [role], slug: 'test-user'});
+        server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
         visit('/settings/labs');
@@ -58,7 +58,7 @@ describe('Acceptance: Settings - Labs', function() {
     describe('when logged in', function () {
         beforeEach(function () {
             let role = server.create('role', {name: 'Administrator'});
-            let user = server.create('user', {roles: [role]});
+            server.create('user', {roles: [role]});
 
             server.loadFixtures();
 

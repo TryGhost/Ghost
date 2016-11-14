@@ -1,11 +1,10 @@
 /* jshint expr:true */
-import { expect } from 'chai';
+import {expect} from 'chai';
 import {
     describeModule,
     it
 } from 'ember-mocha';
 import Pretender from 'pretender';
-import RSVP from 'rsvp';
 import $ from 'jquery';
 
 describeModule(

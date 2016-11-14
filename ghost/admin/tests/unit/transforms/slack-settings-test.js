@@ -1,6 +1,6 @@
 /* jshint expr:true */
-import { expect } from 'chai';
-import { describeModule, it } from 'ember-mocha';
+import {expect} from 'chai';
+import {describeModule, it} from 'ember-mocha';
 import {A as emberA} from 'ember-array/utils';
 import SlackIntegration from 'ghost-admin/models/slack-integration';
 

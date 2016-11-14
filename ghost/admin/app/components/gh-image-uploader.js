@@ -232,9 +232,8 @@ export default Component.extend({
         fileSelected(fileList) {
             // can't use array destructuring here as FileList is not a strict
             // array and fails in Safari
-            // jscs:disable requireArrayDestructuring
+            // eslint-disable-next-line ember-suave/prefer-destructuring
             let file = fileList[0];
-            // jscs:enable requireArrayDestructuring
             let validationResult = this._validate(file);
 
             this.set('file', file);

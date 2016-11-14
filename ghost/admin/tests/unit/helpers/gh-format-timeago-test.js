@@ -10,8 +10,8 @@ import {
 import sinon from 'sinon';
 
 describe('Unit: Helper: gh-format-timeago', function () {
-    let mockDate;
-    let utcStub;
+    // eslint-disable-next-line no-unused-vars
+    let mockDate, utcStub;
 
     it('calculates the correct time difference', function () {
         mockDate = '2016-05-30T10:00:00.000Z';

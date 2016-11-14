@@ -2,6 +2,7 @@ import {assign} from 'ember-platform';
 import run from 'ember-runloop';
 import Application from '../../app';
 import config from '../../config/environment';
+// eslint-disable-next-line no-unused-vars
 import fileUpload from './file-upload';
 
 export default function startApp(attrs) {

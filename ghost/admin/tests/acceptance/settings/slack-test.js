@@ -5,12 +5,11 @@ import {
     beforeEach,
     afterEach
 } from 'mocha';
-import { expect } from 'chai';
-import run from 'ember-runloop';
+import {expect} from 'chai';
 import startApp from '../../helpers/start-app';
 import destroyApp from '../../helpers/destroy-app';
 import Mirage from 'ember-cli-mirage';
-import { invalidateSession, authenticateSession } from 'ghost-admin/tests/helpers/ember-simple-auth';
+import {invalidateSession, authenticateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 
 describe('Acceptance: Settings - Apps - Slack', function () {
     let application;
@@ -34,7 +33,7 @@ describe('Acceptance: Settings - Apps - Slack', function () {
 
     it('redirects to team page when authenticated as author', function () {
         let role = server.create('role', {name: 'Author'});
-        let user = server.create('user', {roles: [role], slug: 'test-user'});
+        server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
         visit('/settings/apps/slack');
@@ -46,7 +45,7 @@ describe('Acceptance: Settings - Apps - Slack', function () {
 
     it('redirects to team page when authenticated as editor', function () {
         let role = server.create('role', {name: 'Editor'});
-        let user = server.create('user', {roles: [role], slug: 'test-user'});
+        server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
         visit('/settings/apps/slack');
@@ -59,7 +58,7 @@ describe('Acceptance: Settings - Apps - Slack', function () {
     describe('when logged in', function () {
         beforeEach(function () {
             let role = server.create('role', {name: 'Administrator'});
-            let user = server.create('user', {roles: [role]});
+            server.create('user', {roles: [role]});
 
             server.loadFixtures();
 
@@ -93,7 +92,7 @@ describe('Acceptance: Settings - Apps - Slack', function () {
             });
 
             andThen(() => {
-                server.put('/settings/', function (db, request) {
+                server.put('/settings/', function () {
                     return new Mirage.Response(402, {}, {
                         errors: [
                             {

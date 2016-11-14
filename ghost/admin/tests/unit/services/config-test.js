@@ -1,10 +1,9 @@
 /* jshint expr:true */
-import { expect } from 'chai';
+import {expect} from 'chai';
 import {
     describeModule,
     it
 } from 'ember-mocha';
-import $ from 'jquery';
 
 describeModule(
     'service:config',

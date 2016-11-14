@@ -119,9 +119,9 @@ export default BaseAdapter.extend({
         // Iterate through the model's relationships and build a list
         // of those that need to be pulled in via "include" from the API
         model.eachRelationship(function (name, meta) {
-            if (meta.kind === 'hasMany' &&
-                Object.prototype.hasOwnProperty.call(meta.options, 'embedded') &&
-                meta.options.embedded === 'always') {
+            if (meta.kind === 'hasMany'
+                && Object.prototype.hasOwnProperty.call(meta.options, 'embedded')
+                && meta.options.embedded === 'always') {
                 ret.push(name);
             }
         });

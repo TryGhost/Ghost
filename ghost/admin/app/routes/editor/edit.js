@@ -1,4 +1,4 @@
-/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+/* eslint-disable camelcase */
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import base from 'ghost-admin/mixins/editor-base-route';
 
@@ -12,13 +12,13 @@ export default AuthenticatedRoute.extend(base, {
     },
 
     model(params) {
-        /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+        /* eslint-disable camelcase */
         let query = {
             id: params.post_id,
             status: 'all',
             staticPages: 'all'
         };
-        /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
+        /* eslint-enable camelcase */
 
         return this.store.query('post', query).then((records) => {
             let post = records.get('firstObject');

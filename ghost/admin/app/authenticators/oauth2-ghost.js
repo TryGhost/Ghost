@@ -1,4 +1,3 @@
-/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import Oauth2Authenticator from './oauth2';
 import RSVP from 'rsvp';
 import run from 'ember-runloop';
@@ -17,6 +16,7 @@ export default Oauth2Authenticator.extend({
             let serverTokenEndpoint = this.get('serverTokenEndpoint');
             let scopesString = wrap(scope).join(' ');
 
+            // eslint-disable-next-line camelcase
             data.grant_type = 'authorization_code';
 
             if (!isEmpty(scopesString)) {

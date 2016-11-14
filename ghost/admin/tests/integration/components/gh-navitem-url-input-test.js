@@ -1,5 +1,5 @@
 /* jshint scripturl:true */
-import { expect } from 'chai';
+import {expect} from 'chai';
 import {
     describeComponent,
     it
@@ -84,6 +84,7 @@ describeComponent(
             expect($input.val()).to.equal(currentUrl);
             run(() => {
                 // TODO: why is ember's keyEvent helper not available here?
+                // eslint-disable-next-line new-cap
                 let e = $.Event('keydown');
                 e.keyCode = 8;
                 $input.trigger(e);
@@ -100,6 +101,7 @@ describeComponent(
             expect($input.val()).to.equal(currentUrl);
             run(() => {
                 // TODO: why is ember's keyEvent helper not available here?
+                // eslint-disable-next-line new-cap
                 let e = $.Event('keydown');
                 e.keyCode = 46;
                 $input.trigger(e);
@@ -218,6 +220,7 @@ describeComponent(
 
             run(() => {
                 // TODO: why is ember's keyEvent helper not available here?
+                // eslint-disable-next-line new-cap
                 let e = $.Event('keypress');
                 e.keyCode = 13;
                 $input.trigger(e);
@@ -239,6 +242,7 @@ describeComponent(
 
             run(() => {
                 // TODO: why is ember's keyEvent helper not available here?
+                // eslint-disable-next-line new-cap
                 let e = $.Event('keydown');
                 e.keyCode = 83;
                 e.metaKey = true;

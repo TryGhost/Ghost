@@ -1,6 +1,7 @@
 {
   "name": "ghost-admin",
   "dependencies": {
+    "Faker": "3.1.0",
     "devicejs": "0.2.7",
     "ember": "2.9.0",
     "ember-cli-shims": "0.1.3",
@@ -10,8 +11,8 @@
     "google-caja": "6005.0.0",
     "jquery-file-upload": "9.12.3",
     "jquery-ui": "1.11.4",
-    "jqueryui-touch-punch": "furf/jquery-ui-touch-punch#4bc009145202d9c7483ba85f3a236a8f3470354d",
     "jquery.simulate.drag-sortable": "0.1.0",
+    "jqueryui-touch-punch": "furf/jquery-ui-touch-punch#4bc009145202d9c7483ba85f3a236a8f3470354d",
     "keymaster": "1.6.3",
     "lodash": "3.7.0",
     "normalize.css": "3.0.3",

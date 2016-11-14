@@ -7,8 +7,8 @@ export default Controller.extend({
     session: injectService(),
 
     showNavMenu: computed('currentPath', 'session.isAuthenticated', function () {
-        return (this.get('currentPath') !== 'error404' || this.get('session.isAuthenticated')) &&
-            !this.get('currentPath').match(/(signin|signup|setup|reset)/);
+        return (this.get('currentPath') !== 'error404' || this.get('session.isAuthenticated'))
+                && !this.get('currentPath').match(/(signin|signup|setup|reset)/);
     }),
 
     topNotificationCount: 0,

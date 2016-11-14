@@ -5,12 +5,12 @@ import {
     beforeEach,
     afterEach
 } from 'mocha';
-import { expect } from 'chai';
+import {expect} from 'chai';
 import $ from 'jquery';
 import run from 'ember-runloop';
 import startApp from '../helpers/start-app';
 import destroyApp from '../helpers/destroy-app';
-import { authenticateSession, currentSession, invalidateSession } from 'ghost-admin/tests/helpers/ember-simple-auth';
+import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import Mirage from 'ember-cli-mirage';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
@@ -38,7 +38,7 @@ describe('Acceptance: Authentication', function () {
 
             server.loadFixtures();
             let role = server.create('role', {name: 'Administrator'});
-            let user = server.create('user', {roles: [role], slug: 'test-user'});
+            server.create('user', {roles: [role], slug: 'test-user'});
         });
 
         afterEach(function () {
@@ -47,7 +47,7 @@ describe('Acceptance: Authentication', function () {
 
         it('invalidates session on 401 API response', function () {
             // return a 401 when attempting to retrieve users
-            server.get('/users/', (db, request) => {
+            server.get('/users/', () => {
                 return new Mirage.Response(401, {}, {
                     errors: [
                         {message: 'Access denied.', errorType: 'UnauthorizedError'}
@@ -106,7 +106,7 @@ describe('Acceptance: Authentication', function () {
 
         it('displays re-auth modal attempting to save with invalid session', function () {
             let role = server.create('role', {name: 'Administrator'});
-            let user = server.create('user', {roles: [role]});
+            server.create('user', {roles: [role]});
 
             // simulate an invalid session when saving the edited post
             server.put('/posts/:id/', (db, request) => {
@@ -162,20 +162,20 @@ describe('Acceptance: Authentication', function () {
 
     it('adds auth headers to jquery ajax', function (done) {
         let role = server.create('role', {name: 'Administrator'});
-        let user = server.create('user', {roles: [role]});
+        server.create('user', {roles: [role]});
 
         server.post('/uploads', (db, request) => {
             return request;
         });
         server.loadFixtures();
 
-        // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
+        /* eslint-disable camelcase */
         authenticateSession(application, {
             access_token: 'test_token',
             expires_in: 3600,
             token_type: 'Bearer'
         });
-        // jscs:enable requireCamelCaseOrUpperCaseIdentifiers
+        /* eslint-enable camelcase */
 
         // necessary to visit a page to fully boot the app in testing
         visit('/').andThen(() => {

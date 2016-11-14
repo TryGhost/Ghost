@@ -18,9 +18,9 @@ export default BaseValidator.create({
     url(model) {
         let url = model.get('url');
         let hasValidated = model.get('hasValidated');
-        /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+        /* eslint-disable camelcase */
         let validatorOptions = {require_protocol: true};
-        /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
+        /* eslint-enable camelcase */
         let urlRegex = new RegExp(/^(\/|#|[a-zA-Z0-9\-]+:)/);
 
         if (validator.empty(url)) {

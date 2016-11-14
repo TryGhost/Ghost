@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import {expect} from 'chai';
 import {
     describeModule,
     it
@@ -6,7 +6,7 @@ import {
 import Pretender from 'pretender';
 
 function stubAvailableTimezonesEndpoint(server) {
-    server.get('/ghost/api/v0.1/configuration/timezones', function (request) {
+    server.get('/ghost/api/v0.1/configuration/timezones', function () {
         return [
             200,
             {'Content-Type': 'application/json'},

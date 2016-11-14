@@ -1,4 +1,4 @@
-/* jscs:disable */
+/* eslint-disable */
 /* global require, module */
 
 var EmberApp = require('ember-cli/lib/broccoli/ember-app'),
@@ -86,7 +86,6 @@ module.exports = function (defaults) {
             compress: mythCompress,
             outputFile: isProduction ? 'ghost.min.css' : 'ghost.css'
         },
-        hinting: false,
         fingerprint: disabled,
         nodeAssets: {
             'blueimp-md5': {

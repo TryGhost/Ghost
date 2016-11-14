@@ -1,4 +1,4 @@
-// jscs: disable
+/* eslint-disable */
 
 export default function (s) {
     // replaces previous XRegExp("[^\\s\\d\\p{L}]", 'g') that was causing

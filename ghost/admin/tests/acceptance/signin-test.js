@@ -5,12 +5,12 @@ import {
     beforeEach,
     afterEach
 } from 'mocha';
-import { expect } from 'chai';
+import {expect} from 'chai';
 import $ from 'jquery';
 import startApp from '../helpers/start-app';
 import destroyApp from '../helpers/destroy-app';
-import { invalidateSession, authenticateSession } from '../helpers/ember-simple-auth';
-import { enableGhostOAuth } from '../helpers/configuration';
+import {invalidateSession, authenticateSession} from '../helpers/ember-simple-auth';
+import {enableGhostOAuth} from '../helpers/configuration';
 import Mirage from 'ember-cli-mirage';
 import {
     stubSuccessfulOAuthConnect,
@@ -30,7 +30,7 @@ describe('Acceptance: Signin', function() {
 
     it('redirects if already authenticated', function () {
         let role = server.create('role', {name: 'Author'});
-        let user = server.create('user', {roles: [role], slug: 'test-user'});
+        server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
 
@@ -43,10 +43,10 @@ describe('Acceptance: Signin', function() {
     describe('when attempting to signin', function () {
         beforeEach(function () {
             let role = server.create('role', {name: 'Administrator'});
-            let user = server.create('user', {roles: [role], slug: 'test-user'});
+            server.create('user', {roles: [role], slug: 'test-user'});
 
             server.post('/authentication/token', function (db, request) {
-                // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
+                /* eslint-disable camelcase */
                 let {
                     grant_type: grantType,
                     username,
@@ -73,7 +73,7 @@ describe('Acceptance: Signin', function() {
                         }]
                     });
                 }
-                // jscs:enable requireCamelCaseOrUpperCaseIdentifiers
+                /* eslint-enable camelcase */
             });
         });
 

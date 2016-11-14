@@ -71,7 +71,7 @@ export default Service.extend({
             // we'll always have an errors object unless we hit a
             // validation error
             if (!error) {
-                throw new EmberError(`Validation of the feature service settings model failed when updating labs.`);
+                throw new EmberError('Validation of the feature service settings model failed when updating labs.');
             }
 
             this.get('notifications').showAPIError(error);

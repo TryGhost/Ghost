@@ -1,6 +1,5 @@
-/* global -moment */
-/* jshint node: true */
-/* jscs:disable */
+/* eslint-env node */
+/* eslint-disable no-var, one-var, object-shorthand, prefer-template */
 var _              = require('lodash'),
     fs             = require('fs-extra'),
     path           = require('path'),
@@ -35,53 +34,6 @@ module.exports = function(grunt) {
             }
         },
 
-        jshint: {
-            options: {
-                jshintrc: true,
-                ignores: [
-                    'node_modules/**',
-                    'bower_components/**',
-                    'tmp/**',
-                    'dist/**',
-                    'vendor/**'
-                ]
-            },
-
-            all: ['**/*.js']
-        },
-
-        jscs: {
-            app: {
-                options: {
-                    config: '.jscsrc',
-                    excludeFiles: [
-                        'node_modules/**',
-                        'bower_components/**',
-                        'tests/**',
-                        'tmp/**',
-                        'dist/**',
-                        'vendor/**'
-                    ]
-                },
-
-                files: {
-                    src: ['**/*.js']
-                }
-            },
-
-            tests: {
-                options: {
-                    config: 'tests/.jscsrc'
-                },
-
-                files: {
-                    src: [
-                        'tests/**/*.js'
-                    ]
-                }
-            }
-        },
-
         // ### grunt-bg-shell
         // Used to run ember-cli watch in the background
         bgShell: {
@@ -110,11 +62,10 @@ module.exports = function(grunt) {
             ember: {
                 command: function (mode) {
                     switch (mode) {
-                        case 'prod':
-                            return 'npm run build -- --environment=production --silent';
-
-                        case 'dev':
-                            return 'npm run build';
+                    case 'prod':
+                        return 'npm run build -- --environment=production --silent';
+                    case 'dev':
+                        return 'npm run build';
                     }
                 },
                 options: {
@@ -144,10 +95,6 @@ module.exports = function(grunt) {
 
     grunt.registerTask('init', 'Install the client dependencies',
         ['shell:npm-install', 'shell:bower-install']
-    );
-
-    grunt.registerTask('lint', 'Run the code style checks and linter',
-        ['jshint', 'jscs', 'shell:csscomblint']
     );
 
     // ### Build About Page *(Utility Task)*
@@ -215,9 +162,9 @@ module.exports = function(grunt) {
             })
         ).then(function (results) {
             var contributors = mergeContribs(results[1], results[2]),
-                contributorTemplate = '<article>\n    <a href="<%= githubUrl %>" title="<%= name %>">\n' +
-                    '        <img src="{{gh-path "asset" "/img/contributors"}}/<%= name %>" alt="<%= name %>" />\n' +
-                    '    </a>\n</article>',
+                contributorTemplate = '<article>\n    <a href="<%= githubUrl %>" title="<%= name %>">\n'
+                    + '        <img src="{{gh-path "asset" "/img/contributors"}}/<%= name %>" alt="<%= name %>" />\n'
+                    + '    </a>\n</article>',
 
                 downloadImagePromise = function (url, name) {
                     return new Promise(function (resolve, reject) {

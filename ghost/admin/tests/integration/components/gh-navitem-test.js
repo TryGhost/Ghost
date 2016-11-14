@@ -1,8 +1,7 @@
 /* jshint expr:true */
-import { expect } from 'chai';
-import { describeComponent, it } from 'ember-mocha';
+import {expect} from 'chai';
+import {describeComponent, it} from 'ember-mocha';
 import hbs from 'htmlbars-inline-precompile';
-import run from 'ember-runloop';
 import NavItem from 'ghost-admin/models/navigation-item';
 
 describeComponent(
