@@ -1,8 +1,6 @@
 /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import base from 'ghost-admin/mixins/editor-base-route';
-import isNumber from 'ghost-admin/utils/isNumber';
-import isFinite from 'ghost-admin/utils/isFinite';
 
 export default AuthenticatedRoute.extend(base, {
     titleToken: 'Editor',
@@ -14,20 +12,13 @@ export default AuthenticatedRoute.extend(base, {
     },
 
     model(params) {
-        let postId,
-            query;
-
-        postId = Number(params.post_id);
-
-        if (!isNumber(postId) || !isFinite(postId) || postId % 1 !== 0 || postId <= 0) {
-            return this.transitionTo('error404', `editor/${params.post_id}`);
-        }
-
-        query = {
-            id: postId,
+        /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+        let query = {
+            id: params.post_id,
             status: 'all',
             staticPages: 'all'
         };
+        /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
 
         return this.store.query('post', query).then((records) => {
             let post = records.get('firstObject');

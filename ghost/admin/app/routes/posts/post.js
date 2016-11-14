@@ -1,32 +1,20 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
-import isNumber from 'ghost-admin/utils/isNumber';
-import isFinite from 'ghost-admin/utils/isFinite';
 
 export default AuthenticatedRoute.extend(ShortcutsRoute, {
     model(params) {
-        let post,
-            postId,
-            query;
-
         /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
-        postId = Number(params.post_id);
-
-        if (!isNumber(postId) || !isFinite(postId) || postId % 1 !== 0 || postId <= 0) {
-            return this.transitionTo('error404', params.post_id);
-        }
-        /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
-
-        post = this.store.peekRecord('post', postId);
-        if (post) {
-            return post;
-        }
-
-        query = {
-            id: postId,
+        let post = this.store.peekRecord('post', params.post_id);
+        let query = {
+            id: params.post_id,
             status: 'all',
             staticPages: 'all'
         };
+        /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
+
+        if (post) {
+            return post;
+        }
 
         return this.store.query('post', query).then((records) => {
             let post = records.get('firstObject');
