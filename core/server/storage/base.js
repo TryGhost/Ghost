@@ -3,7 +3,7 @@ var moment = require('moment'),
 
 function StorageBase() {
     Object.defineProperty(this, 'requiredFns', {
-        value: ['exists', 'save', 'serve', 'delete'],
+        value: ['exists', 'save', 'serve', 'delete', 'read'],
         writable: false
     });
 }
