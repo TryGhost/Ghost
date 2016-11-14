@@ -18,11 +18,11 @@ var crypto      = require('crypto'),
     feedCache = {};
 
 function isTag(req) {
-    return req.originalUrl.indexOf('/' + config.get('routeKeywords').tag + '/') !== -1;
+    return req.originalUrl.indexOf(utils.url.urlJoin('/', config.get('routeKeywords').tag, '/')) !== -1;
 }
 
 function isAuthor(req) {
-    return req.originalUrl.indexOf('/' + config.get('routeKeywords').author + '/') !== -1;
+    return req.originalUrl.indexOf(utils.url.urlJoin('/', config.get('routeKeywords').author, '/')) !== -1;
 }
 
 function handleError(next) {
@@ -56,11 +56,11 @@ function getBaseUrl(req, slugParam) {
     var baseUrl = utils.url.getSubdir();
 
     if (isTag(req)) {
-        baseUrl += '/' + config.get('routeKeywords').tag + '/' + slugParam + '/rss/';
+        baseUrl = utils.url.urlJoin(baseUrl, config.get('routeKeywords').tag, slugParam, 'rss/');
     } else if (isAuthor(req)) {
-        baseUrl += '/' + config.get('routeKeywords').author + '/' + slugParam + '/rss/';
+        baseUrl = utils.url.urlJoin(baseUrl, config.get('routeKeywords').author, slugParam, 'rss/');
     } else {
-        baseUrl += '/rss/';
+        baseUrl = utils.url.urlJoin(baseUrl, 'rss/');
     }
 
     return baseUrl;

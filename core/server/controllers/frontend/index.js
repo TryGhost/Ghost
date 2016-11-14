@@ -71,8 +71,7 @@ frontendControllers = {
 
             // CASE: last param is of url is /edit, redirect to admin
             if (lookup.isEditURL) {
-                return res.redirect(utils.url.getSubdir()
-                    + '/ghost/editor/' + post.id + '/');
+                return res.redirect(utils.url.urlJoin(utils.url.getSubdir(), '/ghost/editor', post.id, '/'));
             }
 
             // CASE: permalink is not valid anymore, we redirect him permanently to the correct one

@@ -6,12 +6,13 @@ var _        = require('lodash'),
     Promise  = require('bluebird'),
     config   = require('../../config'),
     exporter = require('../export'),
+    utils    = require('../../utils'),
 
     writeExportFile,
     backup;
 
 writeExportFile = function writeExportFile(exportResult) {
-    var filename = path.resolve(config.get('paths').contentPath + '/data/' + exportResult.filename);
+    var filename = path.resolve(utils.url.urlJoin(config.get('paths').contentPath, 'data', exportResult.filename));
 
     return Promise.promisify(fs.writeFile)(filename, JSON.stringify(exportResult.data)).return(filename);
 };

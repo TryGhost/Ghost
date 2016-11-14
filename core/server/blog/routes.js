@@ -14,19 +14,19 @@ frontendRoutes = function frontendRoutes() {
 
     // ### Admin routes
     router.get(/^\/(logout|signout)\/$/, function redirectToSignout(req, res) {
-        utils.redirect301(res, subdir + '/ghost/signout/');
+        utils.redirect301(res, utils.url.urlJoin(subdir, '/ghost/signout/'));
     });
     router.get(/^\/signup\/$/, function redirectToSignup(req, res) {
-        utils.redirect301(res, subdir + '/ghost/signup/');
+        utils.redirect301(res, utils.url.urlJoin(subdir, '/ghost/signup/'));
     });
 
     // redirect to /ghost and let that do the authentication to prevent redirects to /ghost//admin etc.
     router.get(/^\/((ghost-admin|admin|wp-admin|dashboard|signin|login)\/?)$/, function redirectToAdmin(req, res) {
-        utils.redirect301(res, subdir + '/ghost/');
+        utils.redirect301(res, utils.url.urlJoin(subdir, '/ghost/'));
     });
 
     // Post Live Preview
-    router.get('/' + routeKeywords.preview + '/:uuid', frontend.preview);
+    router.get(utils.url.urlJoin('/', routeKeywords.preview, ':uuid'), frontend.preview);
 
     // Channels
     router.use(channels.router());

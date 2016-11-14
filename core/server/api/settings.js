@@ -9,6 +9,7 @@ var _            = require('lodash'),
     logging      = require('../logging'),
     utils        = require('./utils'),
     i18n         = require('../i18n'),
+    generalUtils = require('../utils'),
 
     docName      = 'settings',
     settings,
@@ -64,7 +65,7 @@ updateConfigCache = function () {
     config.set('theme:twitter', (settingsCache.twitter && settingsCache.twitter.value) || '');
     config.set('theme:facebook', (settingsCache.facebook && settingsCache.facebook.value) || '');
     config.set('theme:timezone', (settingsCache.activeTimezone && settingsCache.activeTimezone.value) || config.get('theme').timezone);
-    config.set('theme:url', config.get('url') ? config.get('url').replace(/\/$/, '') : '');
+    config.set('theme:url', config.get('url') ? generalUtils.url.urlJoin(config.get('url'), '/') : '');
 
     _.each(labsValue, function (value, key) {
         config.set('labs:' + key, value);
