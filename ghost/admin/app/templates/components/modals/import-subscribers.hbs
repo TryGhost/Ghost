@@ -10,7 +10,7 @@
 <a class="close icon-x" href="" title="Close" {{action "closeModal"}}><span class="hidden">Close</span></a>
 
 <div class="modal-body">
-    {{#liquid-if response class="fade-transition"}}
+    {{#if response}}
         <table class="subscribers-import-results">
             <tr>
                 <td>Imported:</td>
@@ -37,7 +37,7 @@
             uploadStarted=(action "uploadStarted")
             uploadFinished=(action "uploadFinished")
             uploadSuccess=(action "uploadSuccess")}}
-    {{/liquid-if}}
+    {{/if}}
 </div>
 
 <div class="modal-footer">
