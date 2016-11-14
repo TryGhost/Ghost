@@ -176,11 +176,6 @@ textarea {
     font-weight: normal;
 }
 
-.for-radio label:hover p,
-.for-checkbox label:hover p {
-    color: var(--midgrey);
-}
-
 .for-radio input,
 .for-checkbox input {
     position: absolute;
