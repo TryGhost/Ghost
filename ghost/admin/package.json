@@ -47,7 +47,7 @@
     "ember-cli-htmlbars-inline-precompile": "0.3.6",
     "ember-cli-jshint": "2.0.1",
     "ember-cli-mirage": "0.1.14",
-    "ember-cli-mocha": "0.10.4",
+    "ember-cli-mocha": "0.11.0",
     "ember-cli-node-assets": "0.1.4",
     "ember-cli-pretender": "0.7.0",
     "ember-cli-selectize": "0.5.11",
