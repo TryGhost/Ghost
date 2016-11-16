@@ -1,5 +1,4 @@
 /* jshint expr:true */
-/* jscs:disable requireTemplateStringsForConcatenation */
 import {expect} from 'chai';
 import {
     describeComponent,
