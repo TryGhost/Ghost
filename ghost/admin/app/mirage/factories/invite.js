@@ -9,5 +9,5 @@ export default Mirage.Factory.extend({
     updated_at() { return moment.utc().format(); },
     updated_by() { return 1; },
     status() { return 'sent'; },
-    roles() { return []; }
+    role_id() { return 1; }
 });

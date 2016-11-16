@@ -1,7 +1,8 @@
+/* eslint camelcase: [2, {properties: "never"}] */
+/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import Model from 'ember-data/model';
 import attr from 'ember-data/attr';
-import {hasMany} from 'ember-data/relationships';
-import computed from 'ember-computed';
+import {belongsTo} from 'ember-data/relationships';
 import injectService from 'ember-service/inject';
 
 export default Model.extend({
@@ -13,33 +14,19 @@ export default Model.extend({
     updatedAtUTC: attr('moment-utc'),
     updatedBy: attr('number'),
     status: attr('string'),
-    roles: hasMany('role', {
-        embedded: 'always',
-        async: false
-    }),
+    role: belongsTo('role', {async: false}),
 
     ajax: injectService(),
     ghostPaths: injectService(),
 
-    role: computed('roles', {
-        get() {
-            return this.get('roles.firstObject');
-        },
-        set(key, value) {
-            // Only one role per user, so remove any old data.
-            this.get('roles').clear();
-            this.get('roles').pushObject(value);
-
-            return value;
-        }
-    }),
-
     resend() {
         let fullInviteData = this.toJSON();
+
         let inviteData = {
             email: fullInviteData.email,
-            roles: fullInviteData.roles
+            role_id: fullInviteData.role
         };
+
         let inviteUrl = this.get('ghostPaths.url').api('invites');
 
         return this.get('ajax').post(inviteUrl, {

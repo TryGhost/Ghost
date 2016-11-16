@@ -19,22 +19,6 @@ describeModel(
         ]
     },
     function() {
-        it('role property returns first role in array', function () {
-            let model = this.subject();
-
-            run(() => {
-                let role = this.store().push({data: {id: 1, type: 'role', attributes: {name: 'Author'}}});
-                model.get('roles').pushObject(role);
-            });
-            expect(model.get('role.name')).to.equal('Author');
-
-            run(() => {
-                let role = this.store().push({data: {id: 1, type: 'role', attributes: {name: 'Editor'}}});
-                model.set('role', role);
-            });
-            expect(model.get('role.name')).to.equal('Editor');
-        });
-
         describe('with network', function () {
             let server;
 
@@ -76,11 +60,9 @@ describeModel(
                 ).to.equal(1);
 
                 expect(invite.email).to.equal('resend-test@example.com');
-                expect(
-                    invite.roles.length,
-                    'number of roles in request body'
-                ).to.equal(1);
-                expect(invite.roles[0], 'role ID').to.equal('1');
+                /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+                expect(invite.role_id, 'role ID').to.equal('1');
+                /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
             });
         });
     }

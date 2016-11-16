@@ -53,9 +53,8 @@
                                         <a class="user-list-action" href="#resend" {{action "resend" target=component}}>
                                             Resend
                                         </a>
-                                        {{#each invite.roles as |role|}}
-                                            <span class="role-label {{role.lowerCaseName}}">{{role.name}}</span>
-                                        {{/each}}
+
+                                        <span class="role-label {{invite.role.lowerCaseName}}">{{invite.role.name}}</span>
                                     {{/if}}
                                 </aside>
                             </div>

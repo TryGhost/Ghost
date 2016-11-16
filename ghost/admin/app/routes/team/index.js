@@ -35,6 +35,12 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, Paginat
                 });
             }
 
+            // we need to load the roles into ember cache
+            // invites return role_id only and we do not offer a /role/:id endpoint
+            modelPromises.roles = this.get('store').query('role', {}).then((roles) => {
+                return roles;
+            });
+
             return RSVP.hash(modelPromises);
         });
     },
