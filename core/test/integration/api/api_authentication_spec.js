@@ -257,7 +257,7 @@ describe('Authentication API', function () {
                 return models.Invite.add({email: '123@meins.de', role_id: testUtils.DataGenerator.Content.roles[0].id}, context.internal)
                     .then(function (_invite) {
                         invite = _invite;
-                        invite.toJSON().role_id.should.eql(testUtils.roles.ids.admin);
+                        invite.toJSON().role_id.should.eql(testUtils.DataGenerator.Content.roles[0].id);
 
                         return models.Invite.edit({status: 'sent'}, _.merge({}, {id: invite.id}, context.internal));
                     })
@@ -284,7 +284,8 @@ describe('Authentication API', function () {
                         }, _.merge({include: ['roles']}, context.internal));
                     })
                     .then(function (user) {
-                        user.toJSON().roles.length.should.eql(testUtils.roles.ids.admin);
+                        user.toJSON().roles.length.should.eql(1);
+                        user.toJSON().roles[0].id.should.eql(testUtils.DataGenerator.Content.roles[0].id);
                     });
             });
 

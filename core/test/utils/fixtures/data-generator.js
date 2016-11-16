@@ -470,7 +470,7 @@ DataGenerator.forKnex = (function () {
             id: ObjectId.generate(),
             token: uuid.v4(),
             email: 'test@ghost.org',
-            role_id: 1,
+            role_id: DataGenerator.Content.roles[0].id,
             expires: Date.now() + (60 * 1000),
             created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
@@ -547,8 +547,8 @@ DataGenerator.forKnex = (function () {
     ];
 
     invites = [
-        createInvite({email: 'test1@ghost.org', role_id: 1}),
-        createInvite({email: 'test2@ghost.org', role_id: 3})
+        createInvite({email: 'test1@ghost.org', role_id: DataGenerator.Content.roles[0].id}),
+        createInvite({email: 'test2@ghost.org', role_id: DataGenerator.Content.roles[2].id})
     ];
 
     return {
