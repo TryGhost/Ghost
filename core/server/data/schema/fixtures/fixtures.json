@@ -365,7 +365,8 @@
                     "user": "all",
                     "role": "all",
                     "client": "all",
-                    "subscriber": ["add"]
+                    "subscriber": ["add"],
+                    "invite": "all"
                 },
                 "Author": {
                     "post": ["browse", "read", "add"],
