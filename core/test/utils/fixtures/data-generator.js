@@ -265,8 +265,7 @@ DataGenerator.forKnex = (function () {
         users,
         roles_users,
         clients,
-        invites,
-        invites_roles;
+        invites;
 
     function createBasic(overrides) {
         var newObj = _.cloneDeep(overrides);
@@ -403,6 +402,7 @@ DataGenerator.forKnex = (function () {
         return _.defaults(newObj, {
             token: uuid.v4(),
             email: 'test@ghost.org',
+            role_id: 1,
             expires: Date.now() + (60 * 1000),
             created_by: 1,
             created_at: new Date(),
@@ -477,13 +477,8 @@ DataGenerator.forKnex = (function () {
     ];
 
     invites = [
-        createInvite({email: 'test1@ghost.org'}),
-        createInvite({email: 'test2@ghost.org'})
-    ];
-
-    invites_roles = [
-        {invite_id: 1, role_id: 1},
-        {invite_id: 2, role_id: 3}
+        createInvite({email: 'test1@ghost.org', role_id: 1}),
+        createInvite({email: 'test2@ghost.org', role_id: 3})
     ];
 
     return {
@@ -505,7 +500,6 @@ DataGenerator.forKnex = (function () {
         createInvite: createInvite,
 
         invites: invites,
-        invites_roles: invites_roles,
         posts: posts,
         tags: tags,
         posts_tags: posts_tags,

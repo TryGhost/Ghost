@@ -29,30 +29,28 @@ describe('Invites API', function () {
         describe('Add', function () {
             it('add invite 1', function (done) {
                 InvitesAPI.add({
-                    invites: [{email: 'test@example.com', roles: [testUtils.roles.ids.editor]}]
-                }, _.merge({}, {include: ['roles']}, testUtils.context.owner))
+                    invites: [{email: 'test@example.com', role_id: testUtils.roles.ids.editor}]
+                }, testUtils.context.owner)
                     .then(function (response) {
                         response.invites.length.should.eql(1);
-                        response.invites[0].roles.length.should.eql(1);
-                        response.invites[0].roles[0].name.should.eql('Editor');
+                        response.invites[0].role_id.should.eql(testUtils.roles.ids.editor);
                         done();
                     }).catch(done);
             });
 
             it('add invite 2', function (done) {
                 InvitesAPI.add({
-                    invites: [{email: 'test2@example.com', roles: [testUtils.roles.ids.author]}]
-                }, _.merge({}, {include: ['roles']}, testUtils.context.owner))
+                    invites: [{email: 'test2@example.com', role_id: testUtils.roles.ids.author}]
+                }, testUtils.context.owner)
                     .then(function (response) {
                         response.invites.length.should.eql(1);
-                        response.invites[0].roles.length.should.eql(1);
-                        response.invites[0].roles[0].name.should.eql('Author');
+                        response.invites[0].role_id.should.eql(testUtils.roles.ids.author);
                         done();
                     }).catch(done);
             });
 
             it('add invite: empty invites object', function (done) {
-                InvitesAPI.add({invites: []}, _.merge({}, {include: ['roles']}, testUtils.context.owner))
+                InvitesAPI.add({invites: []}, testUtils.context.owner)
                     .then(function () {
                         throw new Error('expected validation error');
                     })
@@ -63,7 +61,7 @@ describe('Invites API', function () {
             });
 
             it('add invite: no email provided', function (done) {
-                InvitesAPI.add({invites: [{status: 'sent'}]}, _.merge({}, {include: ['roles']}, testUtils.context.owner))
+                InvitesAPI.add({invites: [{status: 'sent'}]}, testUtils.context.owner)
                     .then(function () {
                         throw new Error('expected validation error');
                     })
@@ -76,19 +74,17 @@ describe('Invites API', function () {
 
         describe('Browse', function () {
             it('browse invites', function (done) {
-                InvitesAPI.browse(_.merge({}, {include: ['roles']}, testUtils.context.owner))
+                InvitesAPI.browse(testUtils.context.owner)
                     .then(function (response) {
                         response.invites.length.should.eql(2);
 
                         response.invites[0].status.should.eql('sent');
                         response.invites[0].email.should.eql('test1@ghost.org');
-                        response.invites[0].roles.length.should.eql(1);
-                        response.invites[0].roles[0].name.should.eql('Administrator');
+                        response.invites[0].role_id.should.eql(testUtils.roles.ids.admin);
 
                         response.invites[1].status.should.eql('sent');
                         response.invites[1].email.should.eql('test2@ghost.org');
-                        response.invites[1].roles.length.should.eql(1);
-                        response.invites[1].roles[0].name.should.eql('Author');
+                        response.invites[1].role_id.should.eql(testUtils.roles.ids.author);
 
                         should.not.exist(response.invites[0].token);
                         should.exist(response.invites[0].expires);
@@ -104,8 +100,7 @@ describe('Invites API', function () {
         describe('Read', function () {
             it('read invites: not found', function (done) {
                 InvitesAPI.read(_.merge({}, testUtils.context.owner, {
-                    email: 'not-existend@hey.org',
-                    include: ['roles']
+                    email: 'not-existend@hey.org'
                 })).then(function () {
                     throw new Error('expected not found error for invite');
                 }).catch(function (err) {
@@ -115,21 +110,19 @@ describe('Invites API', function () {
             });
 
             it('read invite', function (done) {
-                InvitesAPI.read(_.merge({}, {email: 'test1@ghost.org', include: ['roles']}, testUtils.context.owner))
+                InvitesAPI.read(_.merge({}, {email: 'test1@ghost.org'}, testUtils.context.owner))
                     .then(function (response) {
                         response.invites.length.should.eql(1);
-                        response.invites[0].roles.length.should.eql(1);
-                        response.invites[0].roles[0].name.should.eql('Administrator');
+                        response.invites[0].role_id.should.eql(testUtils.roles.ids.admin);
                         done();
                     }).catch(done);
             });
 
             it('read invite', function (done) {
-                InvitesAPI.read(_.merge({}, testUtils.context.owner, {email: 'test2@ghost.org', include: ['roles']}))
+                InvitesAPI.read(_.merge({}, testUtils.context.owner, {email: 'test2@ghost.org'}))
                     .then(function (response) {
                         response.invites.length.should.eql(1);
-                        response.invites[0].roles.length.should.eql(1);
-                        response.invites[0].roles[0].name.should.eql('Author');
+                        response.invites[0].role_id.should.eql(testUtils.roles.ids.author);
                         done();
                     }).catch(done);
             });
@@ -137,11 +130,10 @@ describe('Invites API', function () {
 
         describe('Destroy', function () {
             it('destroy invite', function (done) {
-                InvitesAPI.destroy(_.merge({}, testUtils.context.owner, {id: 1, include: ['roles']}))
+                InvitesAPI.destroy(_.merge({}, testUtils.context.owner, {id: 1}))
                     .then(function () {
                         return InvitesAPI.read(_.merge({}, testUtils.context.owner, {
-                            email: 'test1@ghost.org',
-                            include: ['roles']
+                            email: 'test1@ghost.org'
                         })).catch(function (err) {
                             (err instanceof errors.NotFoundError).should.eql(true);
                             done();
@@ -180,7 +172,7 @@ describe('Invites API', function () {
             should.not.exist(response.meta);
 
             response.invites.should.have.length(1);
-            testUtils.API.checkResponse(response.invites[0], 'invites', ['roles']);
+            testUtils.API.checkResponse(response.invites[0], 'invites');
             response.invites[0].created_at.should.be.an.instanceof(Date);
         }
 
@@ -190,7 +182,7 @@ describe('Invites API', function () {
                     invites: [
                         {
                             email: 'test@example.com',
-                            roles: [testUtils.roles.ids.owner]
+                            role_id: testUtils.roles.ids.owner
                         }
                     ]
                 }, context.owner).then(function () {
@@ -203,12 +195,12 @@ describe('Invites API', function () {
                     invites: [
                         {
                             email: 'test@example.com',
-                            roles: [testUtils.roles.ids.admin]
+                            role_id: testUtils.roles.ids.admin
                         }
                     ]
-                }, _.merge({}, {include: ['roles']}, testUtils.context.owner)).then(function (response) {
+                }, testUtils.context.owner).then(function (response) {
                     checkAddResponse(response);
-                    response.invites[0].roles[0].name.should.equal('Administrator');
+                    response.invites[0].role_id.should.equal(testUtils.roles.ids.admin);
                     done();
                 }).catch(done);
             });
@@ -218,12 +210,12 @@ describe('Invites API', function () {
                     invites: [
                         {
                             email: 'test@example.com',
-                            roles: [testUtils.roles.ids.editor]
+                            role_id: testUtils.roles.ids.editor
                         }
                     ]
-                }, _.merge({}, {include: ['roles']}, testUtils.context.owner)).then(function (response) {
+                }, testUtils.context.owner).then(function (response) {
                     checkAddResponse(response);
-                    response.invites[0].roles[0].name.should.equal('Editor');
+                    response.invites[0].role_id.should.equal(testUtils.roles.ids.editor);
                     done();
                 }).catch(done);
             });
@@ -233,12 +225,12 @@ describe('Invites API', function () {
                     invites: [
                         {
                             email: 'test@example.com',
-                            roles: [testUtils.roles.ids.author]
+                            role_id: testUtils.roles.ids.author
                         }
                     ]
-                }, _.merge({}, {include: ['roles']}, testUtils.context.owner)).then(function (response) {
+                }, testUtils.context.owner).then(function (response) {
                     checkAddResponse(response);
-                    response.invites[0].roles[0].name.should.equal('Author');
+                    response.invites[0].role_id.should.equal(testUtils.roles.ids.author);
                     done();
                 }).catch(done);
             });
@@ -248,12 +240,12 @@ describe('Invites API', function () {
                     invites: [
                         {
                             email: 'test@example.com',
-                            roles: [testUtils.roles.ids.author.toString()]
+                            role_id: testUtils.roles.ids.author.toString()
                         }
                     ]
-                }, _.merge({}, {include: ['roles']}, testUtils.context.owner)).then(function (response) {
+                }, testUtils.context.owner).then(function (response) {
                     checkAddResponse(response);
-                    response.invites[0].roles[0].name.should.equal('Author');
+                    response.invites[0].role_id.should.equal(testUtils.roles.ids.author);
                     done();
                 }).catch(done);
             });
@@ -265,10 +257,10 @@ describe('Invites API', function () {
                     invites: [
                         {
                             email: 'test@example.com',
-                            roles: [testUtils.roles.ids.owner]
+                            role_id: testUtils.roles.ids.owner
                         }
                     ]
-                }, _.merge({}, {include: ['roles']}, testUtils.context.admin)).then(function () {
+                }, testUtils.context.admin).then(function () {
                     done(new Error('Admin should not be able to add an owner'));
                 }).catch(checkForErrorType('NoPermissionError', done));
             });
@@ -278,12 +270,12 @@ describe('Invites API', function () {
                     invites: [
                         {
                             email: 'test@example.com',
-                            roles: [testUtils.roles.ids.admin]
+                            role_id: testUtils.roles.ids.admin
                         }
                     ]
                 }, _.merge({}, {include: ['roles']}, testUtils.context.admin)).then(function (response) {
                     checkAddResponse(response);
-                    response.invites[0].roles[0].name.should.equal('Administrator');
+                    response.invites[0].role_id.should.equal(testUtils.roles.ids.admin);
                     done();
                 }).catch(done);
             });
@@ -293,12 +285,12 @@ describe('Invites API', function () {
                     invites: [
                         {
                             email: 'test@example.com',
-                            roles: [testUtils.roles.ids.editor]
+                            role_id: testUtils.roles.ids.editor
                         }
                     ]
-                }, _.merge({}, {include: ['roles']}, testUtils.context.admin)).then(function (response) {
+                }, testUtils.context.admin).then(function (response) {
                     checkAddResponse(response);
-                    response.invites[0].roles[0].name.should.equal('Editor');
+                    response.invites[0].role_id.should.equal(testUtils.roles.ids.editor);
                     done();
                 }).catch(done);
             });
@@ -308,12 +300,12 @@ describe('Invites API', function () {
                     invites: [
                         {
                             email: 'test@example.com',
-                            roles: [testUtils.roles.ids.author]
+                            role_id: testUtils.roles.ids.author
                         }
                     ]
-                }, _.merge({}, {include: ['roles']}, testUtils.context.admin)).then(function (response) {
+                }, testUtils.context.admin).then(function (response) {
                     checkAddResponse(response);
-                    response.invites[0].roles[0].name.should.equal('Author');
+                    response.invites[0].role_id.should.equal(testUtils.roles.ids.author);
                     done();
                 }).catch(done);
             });
@@ -325,7 +317,7 @@ describe('Invites API', function () {
                     invites: [
                         {
                             email: 'test@example.com',
-                            roles: [testUtils.roles.ids.owner]
+                            role_id: testUtils.roles.ids.owner
                         }
                     ]
                 }, context.editor).then(function () {
@@ -338,7 +330,7 @@ describe('Invites API', function () {
                     invites: [
                         {
                             email: 'test@example.com',
-                            roles: [testUtils.roles.ids.author]
+                            role_id: testUtils.roles.ids.author
                         }
                     ]
                 }, context.editor).then(function () {
@@ -353,7 +345,7 @@ describe('Invites API', function () {
                     invites: [
                         {
                             email: 'test@example.com',
-                            roles: [testUtils.roles.ids.owner]
+                            role_id: testUtils.roles.ids.owner
                         }
                     ]
                 }, context.author).then(function () {
@@ -366,7 +358,7 @@ describe('Invites API', function () {
                     invites: [
                         {
                             email: 'test@example.com',
-                            roles: [testUtils.roles.ids.author]
+                            role_id: testUtils.roles.ids.author
                         }
                     ]
                 }, context.author).then(function () {
