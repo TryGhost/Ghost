@@ -41,7 +41,7 @@
     "cookie-session": "1.2.0",
     "cors": "2.8.1",
     "csv-parser": "1.11.0",
-    "debug": "2.2.0",
+    "debug": "2.3.2",
     "downsize": "0.0.8",
     "express": "4.14.0",
     "express-brute": "1.0.1",
