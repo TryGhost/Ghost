@@ -97,7 +97,7 @@ strategies = {
                         email: profile.email,
                         name: profile.email,
                         password: utils.uid(50),
-                        roles: invite.toJSON().roles
+                        roles: [invite.toJSON().role_id]
                     }, options);
                 })
                 .then(function destroyInvite(_user) {

@@ -394,6 +394,7 @@
                 "inviteExpired": "Invite is expired.",
                 "emailIsRequired": "E-Mail is required.",
                 "roleIsRequired": "Role is required",
+                "roleNotFound": "Role not found",
                 "errorSendingEmail": {
                     "error": "Error sending email: {message}",
                     "help": "Please check your email settings and resend the invitation."

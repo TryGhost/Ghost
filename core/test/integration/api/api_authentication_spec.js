@@ -257,10 +257,10 @@ describe('Authentication API', function () {
             it('should allow an invitation to be accepted', function () {
                 var invite;
 
-                return models.Invite.add({email: '123@meins.de', roles: [1]}, _.merge({}, {include: ['roles']}, context.internal))
+                return models.Invite.add({email: '123@meins.de', role_id: testUtils.roles.ids.admin}, context.internal)
                     .then(function (_invite) {
                         invite = _invite;
-                        invite.toJSON().roles.length.should.eql(1);
+                        invite.toJSON().role_id.should.eql(testUtils.roles.ids.admin);
 
                         return models.Invite.edit({status: 'sent'}, _.merge({}, {id: invite.id}, context.internal));
                     })
@@ -287,14 +287,14 @@ describe('Authentication API', function () {
                         }, _.merge({include: ['roles']}, context.internal));
                     })
                     .then(function (user) {
-                        user.toJSON().roles.length.should.eql(1);
+                        user.toJSON().roles.length.should.eql(testUtils.roles.ids.admin);
                     });
             });
 
             it('should not allow an invitation to be accepted: expired', function () {
                 var invite;
 
-                return models.Invite.add({email: '123@meins.de'}, context.internal)
+                return models.Invite.add({email: '123@meins.de', role_id: testUtils.roles.ids.author}, context.internal)
                     .then(function (_invite) {
                         invite = _invite;
 
