@@ -1,4 +1,4 @@
-/* jscs:disable */
+/* eslint-disable */
 module.exports = {
     name: 'asset-delivery',
     postBuild: function (results) {

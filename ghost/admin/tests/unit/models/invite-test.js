@@ -60,9 +60,8 @@ describeModel(
                 ).to.equal(1);
 
                 expect(invite.email).to.equal('resend-test@example.com');
-                /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+                // eslint-disable-next-line camelcase
                 expect(invite.role_id, 'role ID').to.equal('1');
-                /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
             });
         });
     }

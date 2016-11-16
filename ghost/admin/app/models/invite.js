@@ -1,5 +1,4 @@
 /* eslint camelcase: [2, {properties: "never"}] */
-/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import Model from 'ember-data/model';
 import attr from 'ember-data/attr';
 import {belongsTo} from 'ember-data/relationships';
