@@ -220,7 +220,7 @@ module.exports = {
     },
     invites: {
         id: {type: 'increments', nullable: false, primary: true},
-        role_id: {type: 'integer', nullable: false},
+        role_id: {type: 'integer', nullable: false, unsigned: true},
         status: {type: 'string', maxlength: 150, nullable: false, defaultTo: 'pending', validations: {isIn: [['pending', 'sent']]}},
         token: {type: 'string', maxlength: 191, nullable: false, unique: true},
         email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
