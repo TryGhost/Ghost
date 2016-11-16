@@ -325,6 +325,19 @@ describe('Invites API', function () {
                 }).catch(checkForErrorType('NoPermissionError', done));
             });
 
+            it('CANNOT add an Adminstrator', function (done) {
+                InvitesAPI.add({
+                    invites: [
+                        {
+                            email: 'test@example.com',
+                            role_id: testUtils.roles.ids.admin
+                        }
+                    ]
+                }, context.editor).then(function () {
+                    done(new Error('Editor should not be able to add an owner'));
+                }).catch(checkForErrorType('NoPermissionError', done));
+            });
+
             it('CANNOT add an Author', function (done) {
                 InvitesAPI.add({
                     invites: [
