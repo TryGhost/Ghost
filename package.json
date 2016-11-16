@@ -59,7 +59,7 @@
     "jsonpath": "0.2.7",
     "knex": "0.12.5",
     "knex-migrator": "0.2.0",
-    "lodash": "4.17.1",
+    "lodash": "4.17.2",
     "mobiledoc-html-renderer": "0.3.0",
     "moment": "2.16.0",
     "moment-timezone": "0.5.9",
