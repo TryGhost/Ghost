@@ -1,7 +1,8 @@
 /* eslint-disable camelcase */
-import {equal} from 'ember-computed';
+import computed, {equal} from 'ember-computed';
 import observer from 'ember-metal/observer';
 import injectService from 'ember-service/inject';
+import {guidFor} from 'ember-metal/utils';
 
 import Model from 'ember-data/model';
 import attr from 'ember-data/attr';
@@ -10,7 +11,6 @@ import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 export default Model.extend(ValidationEngine, {
     validationType: 'tag',
 
-    uuid: attr('string'),
     name: attr('string'),
     slug: attr('string'),
     description: attr('string'),
@@ -29,6 +29,13 @@ export default Model.extend(ValidationEngine, {
     isPublic: equal('visibility', 'public'),
 
     feature: injectService(),
+
+    // HACK: ugly hack to main compatibility with selectize as used in the
+    // PSM tags input
+    // TODO: remove once we've switched over to EPS for the tags input
+    uuid: computed(function () {
+        return guidFor(this);
+    }),
 
     setVisibility() {
         let internalRegex = /^#.?/;

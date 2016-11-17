@@ -6,7 +6,6 @@ import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 export default Model.extend(ValidationEngine, {
     validationType: 'subscriber',
 
-    uuid: attr('string'),
     name: attr('string'),
     email: attr('string'),
     status: attr('string'),
