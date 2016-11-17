@@ -1,7 +1,7 @@
-
 var should = require('should'),
     moment = require('moment'),
     Promise = require('bluebird'),
+    ObjectId = require('bson-objectid'),
     testUtils = require('../../utils'),
     config = require(__dirname + '/../../../server/config'),
     sequence = require(config.get('paths').corePath + '/server/utils/sequence'),
@@ -243,9 +243,9 @@ describe('Schedules API', function () {
             });
 
             it('client with specific perms has access to publish post', function (done) {
-                api.schedules.publishPost({id: 1, context: {client: 'ghost-scheduler'}})
+                api.schedules.publishPost({id: scope.posts[0].id, context: {client: 'ghost-scheduler'}})
                     .then(function (result) {
-                        result.posts[0].id.should.eql(1);
+                        result.posts[0].id.should.eql(scope.posts[0].id);
                         result.posts[0].status.should.eql('published');
                         done();
                     })
@@ -253,9 +253,9 @@ describe('Schedules API', function () {
             });
 
             it('can publish with tolerance (30 seconds in the future)', function (done) {
-                api.schedules.publishPost({id: 2, context: {client: 'ghost-scheduler'}})
+                api.schedules.publishPost({id: scope.posts[1].id, context: {client: 'ghost-scheduler'}})
                     .then(function (result) {
-                        result.posts[0].id.should.eql(2);
+                        result.posts[0].id.should.eql(scope.posts[1].id);
                         result.posts[0].status.should.eql('published');
                         done();
                     })
@@ -263,9 +263,9 @@ describe('Schedules API', function () {
             });
 
             it('can publish with tolerance (30seconds in the past)', function (done) {
-                api.schedules.publishPost({id: 3, context: {client: 'ghost-scheduler'}})
+                api.schedules.publishPost({id: scope.posts[2].id, context: {client: 'ghost-scheduler'}})
                     .then(function (result) {
-                        result.posts[0].id.should.eql(3);
+                        result.posts[0].id.should.eql(scope.posts[2].id);
                         result.posts[0].status.should.eql('published');
                         done();
                     })
@@ -273,9 +273,9 @@ describe('Schedules API', function () {
             });
 
             it('can publish a post in the past with force flag', function (done) {
-                api.schedules.publishPost({force: true}, {id: 4, context: {client: 'ghost-scheduler'}})
+                api.schedules.publishPost({force: true}, {id: scope.posts[3].id, context: {client: 'ghost-scheduler'}})
                     .then(function (result) {
-                        result.posts[0].id.should.eql(4);
+                        result.posts[0].id.should.eql(scope.posts[3].id);
                         result.posts[0].status.should.eql('published');
                         done();
                     })
@@ -334,7 +334,7 @@ describe('Schedules API', function () {
             });
 
             it('ghost admin has no access', function (done) {
-                api.schedules.publishPost({id: 1, context: {client: 'ghost-admin'}})
+                api.schedules.publishPost({id: scope.posts[0].id, context: {client: 'ghost-admin'}})
                     .then(function () {
                         done(new Error('expected NoPermissionError'));
                     })
@@ -346,7 +346,7 @@ describe('Schedules API', function () {
             });
 
             it('owner has no access (this is how it is right now!)', function (done) {
-                api.schedules.publishPost({id: 2, context: {user: testUtils.users.ids.author}})
+                api.schedules.publishPost({id: scope.posts[1].id, context: {user: testUtils.users.ids.author}})
                     .then(function () {
                         done(new Error('expected NoPermissionError'));
                     })
@@ -360,7 +360,7 @@ describe('Schedules API', function () {
             it('other user has no access', function (done) {
                 testUtils.fixtures.insertOne('users', 'createUser', 4)
                     .then(function (result) {
-                        api.schedules.publishPost({id: 1, context: {user: result[0]}})
+                        api.schedules.publishPost({id: scope.posts[0].id, context: {user: result[0]}})
                             .then(function () {
                                 done(new Error('expected NoPermissionError'));
                             })
@@ -373,8 +373,8 @@ describe('Schedules API', function () {
                     .catch(done);
             });
 
-            it('invalid params', function (done) {
-                api.schedules.publishPost({id: 'bla', context: {client: 'ghost-scheduler'}})
+            it('invalid params: id is integer', function (done) {
+                api.schedules.publishPost({id: 100, context: {client: 'ghost-scheduler'}})
                     .then(function () {
                         done(new Error('expected ValidationError'));
                     })
@@ -386,7 +386,7 @@ describe('Schedules API', function () {
             });
 
             it('post does not exist', function (done) {
-                api.schedules.publishPost({id: 10, context: {client: 'ghost-scheduler'}})
+                api.schedules.publishPost({id: ObjectId.generate(), context: {client: 'ghost-scheduler'}})
                     .then(function () {
                         done(new Error('expected ValidationError'));
                     })
@@ -398,7 +398,7 @@ describe('Schedules API', function () {
             });
 
             it('publish at a wrong time', function (done) {
-                api.schedules.publishPost({id: 1, context: {client: 'ghost-scheduler'}})
+                api.schedules.publishPost({id: scope.posts[0].id, context: {client: 'ghost-scheduler'}})
                     .then(function () {
                         done(new Error('expected ValidationError'));
                     })
@@ -410,7 +410,7 @@ describe('Schedules API', function () {
             });
 
             it('publish at a wrong time', function (done) {
-                api.schedules.publishPost({id: 3, context: {client: 'ghost-scheduler'}})
+                api.schedules.publishPost({id: scope.posts[2].id, context: {client: 'ghost-scheduler'}})
                     .then(function () {
                         done(new Error('expected ValidationError'));
                     })
@@ -422,7 +422,7 @@ describe('Schedules API', function () {
             });
 
             it('publish at a wrong time', function (done) {
-                api.schedules.publishPost({id: 4, context: {client: 'ghost-scheduler'}})
+                api.schedules.publishPost({id: scope.posts[3].id, context: {client: 'ghost-scheduler'}})
                     .then(function () {
                         done(new Error('expected ValidationError'));
                     })
@@ -434,7 +434,7 @@ describe('Schedules API', function () {
             });
 
             it('publish, but status is draft', function (done) {
-                api.schedules.publishPost({id: 2, context: {client: 'ghost-scheduler'}})
+                api.schedules.publishPost({id: scope.posts[1].id, context: {client: 'ghost-scheduler'}})
                     .then(function () {
                         done(new Error('expected ValidationError'));
                     })

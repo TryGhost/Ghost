@@ -31,7 +31,8 @@ describe('RSS', function () {
             return post.status === 'published' && post.page === false;
         });
 
-        _.each(posts, function (post) {
+        _.each(posts, function (post, i) {
+            post.id = i;
             post.url = '/' + post.slug + '/';
             post.author = {name: 'Joe Bloggs'};
         });

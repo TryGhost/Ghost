@@ -73,7 +73,7 @@ function createCustomNotification(message) {
     getSeenNotifications = api.settings.read(_.extend({key: 'seenNotifications'}, internal));
 
     return Promise.join(getAllNotifications, getSeenNotifications, function joined(all, seen) {
-        var isSeen      = _.includes(JSON.parse(seen.settings[0].value || []), notification.uuid),
+        var isSeen      = _.includes(JSON.parse(seen.settings[0].value || []), notification.id),
             isDuplicate = _.some(all.notifications, {message: notification.message});
 
         if (!isSeen && !isDuplicate) {

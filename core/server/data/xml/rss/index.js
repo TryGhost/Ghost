@@ -112,7 +112,7 @@ generateFeed = function generateFeed(data) {
             item = {
                 title: post.title,
                 description: post.meta_description || downsize(htmlContent.html(), {words: 50}),
-                guid: post.uuid,
+                guid: post.id,
                 url: itemUrl,
                 date: post.published_at,
                 categories: generateTags(post),

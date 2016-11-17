@@ -2,6 +2,7 @@ var testUtils   = require('../../utils'),
     should      = require('should'),
     sinon       = require('sinon'),
     Promise     = require('bluebird'),
+    ObjectId    = require('bson-objectid'),
     fs          = require('fs'),
     _           = require('lodash'),
     context     = testUtils.context,
@@ -92,7 +93,7 @@ describe('Subscribers API', function () {
 
     describe('Edit', function () {
         var newSubscriberEmail = 'subscriber@updated.com',
-        firstSubscriber = 1;
+        firstSubscriber = testUtils.DataGenerator.Content.subscribers[0].id;
 
         it('can edit a subscriber (admin)', function (done) {
             SubscribersAPI.edit({subscribers: [{email: newSubscriberEmail}]}, _.extend({}, context.admin, {id: firstSubscriber}))
@@ -137,7 +138,7 @@ describe('Subscribers API', function () {
         });
 
         it('CANNOT edit subscriber that doesn\'t exit', function (done) {
-            SubscribersAPI.edit({subscribers: [{email: newSubscriberEmail}]}, _.extend({}, context.internal, {id: 999}))
+            SubscribersAPI.edit({subscribers: [{email: newSubscriberEmail}]}, _.extend({}, context.internal, {id: ObjectId.generate()}))
                 .then(function () {
                     done(new Error('Edit non-existent subscriber is possible.'));
                 }, function (err) {
@@ -149,7 +150,7 @@ describe('Subscribers API', function () {
     });
 
     describe('Destroy', function () {
-        var firstSubscriber = 1;
+        var firstSubscriber = testUtils.DataGenerator.Content.subscribers[0].id;
 
         it('can destroy subscriber as admin', function (done) {
             SubscribersAPI.destroy(_.extend({}, testUtils.context.admin, {id: firstSubscriber}))
@@ -205,18 +206,13 @@ describe('Subscribers API', function () {
     });
 
     describe('Read', function () {
-        function extractFirstSubscriber(subscribers) {
-            return _.filter(subscribers, {id: 1})[0];
-        }
-
         it('with id', function (done) {
             SubscribersAPI.browse({context: {user: 1}}).then(function (results) {
                 should.exist(results);
                 should.exist(results.subscribers);
                 results.subscribers.length.should.be.above(0);
 
-                var firstSubscriber = extractFirstSubscriber(results.subscribers);
-
+                var firstSubscriber = _.find(results.subscribers, {id: testUtils.DataGenerator.Content.subscribers[0].id});
                 return SubscribersAPI.read({context: {user: 1}, id: firstSubscriber.id});
             }).then(function (found) {
                 should.exist(found);

@@ -17,17 +17,18 @@ describe('Accesstoken Model', function () {
         sandbox.restore();
     });
 
-    beforeEach(testUtils.setup('users', 'clients'));
+    beforeEach(testUtils.setup('users:roles', 'clients'));
 
     it('on creation emits token.added event', function (done) {
         // Setup
         var eventSpy = sandbox.spy(events, 'emit');
+
         // Test
         // Stub refreshtoken
         AccesstokenModel.add({
             token: 'foobartoken',
-            user_id: 1,
-            client_id: 1,
+            user_id: testUtils.DataGenerator.Content.users[0].id,
+            client_id: testUtils.DataGenerator.forKnex.clients[0].id,
             expires: Date.now() + utils.ONE_HOUR_MS
         })
         .then(function (token) {

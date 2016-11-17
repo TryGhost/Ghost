@@ -27,7 +27,7 @@ describe('Role Model', function () {
     });
 
     it('can findOne', function (done) {
-        RoleModel.findOne({id: 1}).then(function (foundRole) {
+        RoleModel.findOne({id: testUtils.DataGenerator.Content.roles[0].id}).then(function (foundRole) {
             should.exist(foundRole);
             foundRole.get('created_at').should.be.an.instanceof(Date);
 
@@ -36,12 +36,12 @@ describe('Role Model', function () {
     });
 
     it('can edit', function (done) {
-        RoleModel.findOne({id: 1}).then(function (foundRole) {
+        RoleModel.findOne({id: testUtils.DataGenerator.Content.roles[0].id}).then(function (foundRole) {
             should.exist(foundRole);
 
             return foundRole.set({name: 'updated'}).save(null, context);
         }).then(function () {
-            return RoleModel.findOne({id: 1});
+            return RoleModel.findOne({id: testUtils.DataGenerator.Content.roles[0].id});
         }).then(function (updatedRole) {
             should.exist(updatedRole);
 
@@ -68,7 +68,7 @@ describe('Role Model', function () {
     });
 
     it('can destroy', function (done) {
-        var firstRole = {id: 1};
+        var firstRole = {id: testUtils.DataGenerator.Content.roles[0].id};
 
         RoleModel.findOne(firstRole).then(function (foundRole) {
             should.exist(foundRole);
