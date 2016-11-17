@@ -136,8 +136,8 @@ users = {
 
                 // @TODO move role permissions out of here
                 var role = options.data.users[0].roles[0],
-                    roleId = parseInt(role.id || role, 10),
-                    editedUserId = parseInt(options.id, 10);
+                    roleId = role.id || role,
+                    editedUserId = options.id;
 
                 return dataProvider.User.findOne(
                     {id: options.context.user, status: 'all'}, {include: ['roles']}

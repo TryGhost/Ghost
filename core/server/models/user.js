@@ -3,6 +3,7 @@ var _              = require('lodash'),
     bcrypt         = require('bcryptjs'),
     validator      = require('validator'),
     ghostBookshelf = require('./base'),
+    baseUtils      = require('./base/utils'),
     errors         = require('../errors'),
     logging        = require('../logging'),
     utils          = require('../utils'),
@@ -368,7 +369,7 @@ User = ghostBookshelf.Model.extend({
                 return user;
             }
 
-            roleId = parseInt(data.roles[0].id || data.roles[0], 10);
+            roleId = data.roles[0].id || data.roles[0];
 
             return user.roles().fetch().then(function then(roles) {
                 // return if the role is already assigned
@@ -425,6 +426,12 @@ User = ghostBookshelf.Model.extend({
             });
         }
 
+        /**
+         * We need this default author role because of the following Ghost feature:
+         * You setup your blog and you can invite people instantly, but without choosing a role.
+         * roles: [] -> no default role (used for owner creation, see fixtures.json)
+         * roles: undefined -> default role
+         */
         roles = data.roles || getAuthorRole();
         delete data.roles;
 
@@ -433,20 +440,7 @@ User = ghostBookshelf.Model.extend({
                 // Assign the userData to our created user so we can pass it back
                 userData = addedUser;
 
-                // if we are given a "role" object, only pass in the role ID in place of the full object
-                return Promise.resolve(roles).then(function then(roles) {
-                    roles = _.map(roles, function mapper(role) {
-                        if (_.isString(role)) {
-                            return parseInt(role, 10);
-                        } else if (_.isNumber(role)) {
-                            return role;
-                        } else {
-                            return parseInt(role.id, 10);
-                        }
-                    });
-
-                    return addedUser.roles().attach(roles, options);
-                });
+                return baseUtils.attach(User, userData.id, 'roles', roles, options);
             }).then(function then() {
                 // find and return the added user
                 return self.findOne({id: userData.id, status: 'all'}, options);
@@ -638,7 +632,7 @@ User = ghostBookshelf.Model.extend({
     changePassword: function changePassword(object, options) {
         var self = this,
             newPassword = object.newPassword,
-            userId = parseInt(object.user_id),
+            userId = object.user_id,
             oldPassword = object.oldPassword,
             isLoggedInUser = userId === options.context.user,
             user;

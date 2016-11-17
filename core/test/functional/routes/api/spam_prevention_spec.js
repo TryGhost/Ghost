@@ -1,10 +1,7 @@
 var supertest     = require('supertest'),
     should        = require('should'),
     testUtils     = require('../../../utils'),
-    user1         = testUtils.DataGenerator.forModel.users[0],
-    user2         = testUtils.DataGenerator.forModel.users[1],
     config        = require('../../../../../core/server/config'),
-    ghostSetup    = testUtils.setup('settings', 'users:roles', 'perms:setting', 'perms:notification', 'perms:init'),
     ghost         = testUtils.startGhost,
     failedLoginAttempt,
     count,
@@ -12,12 +9,25 @@ var supertest     = require('supertest'),
     request;
 
 describe('Spam Prevention API', function () {
+    var author,
+        owner = testUtils.DataGenerator.Content.users[0];
+
     before(function (done) {
-        ghostSetup()
-        .then(ghost)
+        ghost()
         .then(function (ghostServer) {
             request = supertest.agent(ghostServer.rootApp);
+
+            // in functional tests we start Ghost and the database get's migrated/seeded
+            // no need to add or care about any missing data (settings, permissions) except of extra data we would like to add or override
+            // override Ghost fixture owner and add some extra users
+            return testUtils.setup('owner:post')();
         }).then(function () {
+            return testUtils.createUser({
+                user: testUtils.DataGenerator.forKnex.createUser({email: 'test+1@ghost.org'}),
+                role: testUtils.DataGenerator.Content.roles[1]
+            });
+        }).then(function (user) {
+            author = user;
             done();
         }).then(testUtils.clearBruteData)
         .catch(done);
@@ -88,7 +98,7 @@ describe('Spam Prevention API', function () {
                 });
         };
 
-        failedLoginAttempt(user1.email);
+        failedLoginAttempt(owner.email);
     });
 
     it('Too many failed login attempts for multiple users results in 429 TooManyRequestsError', function (done) {
@@ -138,16 +148,16 @@ describe('Spam Prevention API', function () {
                     }
 
                     if (count <  config.get('spam:user_login:freeRetries') + 1) {
-                        return failedLoginAttempt(user1.email);
+                        return failedLoginAttempt(owner.email);
                     }
 
                     if (count < config.get('spam:global_block:freeRetries') + 1) {
-                        return failedLoginAttempt(user2.email);
+                        return failedLoginAttempt(author.email);
                     }
-                    tooManyFailedLoginAttempts(user2.email);
+                    tooManyFailedLoginAttempts(author.email);
                 });
         };
 
-        failedLoginAttempt(user1.email);
+        failedLoginAttempt(owner.email);
     });
 });
