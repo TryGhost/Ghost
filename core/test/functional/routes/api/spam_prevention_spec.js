@@ -29,7 +29,7 @@ describe('Spam Prevention API', function () {
         }).then(function (user) {
             author = user;
             done();
-        }).then(testUtils.clearBruteData)
+        })
         .catch(done);
     });
 
@@ -67,7 +67,7 @@ describe('Spam Prevention API', function () {
                     var error = res.body.errors[0];
                     should.exist(error.errorType);
                     error.errorType.should.eql('TooManyRequestsError');
-                    error.message.should.eql('Too many attempts try again in 10 minutes');
+                    error.message.should.eql('Too many sign-in attempts try again in 10 minutes');
 
                     done();
                 });
