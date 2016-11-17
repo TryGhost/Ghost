@@ -46,17 +46,15 @@ describeModel(
         });
 
         it('isAuthoredByUser is correct', function () {
-            /* eslint-disable camelcase */
             let model = this.subject({
-                authorId: 15
+                authorId: 'abcd1234'
             });
-            /* eslint-enable camelcase */
-            let user = EmberObject.create({id: '15'});
+            let user = EmberObject.create({id: 'abcd1234'});
 
             expect(model.isAuthoredByUser(user)).to.be.ok;
 
             run(function () {
-                model.set('authorId', 1);
+                model.set('authorId', 'wxyz9876');
 
                 expect(model.isAuthoredByUser(user)).to.not.be.ok;
             });
