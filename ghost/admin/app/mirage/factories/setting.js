@@ -1,7 +1,6 @@
 import Mirage from 'ember-cli-mirage';
 
 export default Mirage.Factory.extend({
-    uuid(i) { return `setting-${i}`; },
     key(i) { return `setting-${i}`; },
     value() { return null; },
     type() { return 'blog'; },

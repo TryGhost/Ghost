@@ -8,7 +8,6 @@ let statuses = ['pending', 'subscribed'];
 
 /* eslint-disable camelcase, brace-style */
 export default Mirage.Factory.extend({
-    uuid(i) { return `subscriber-${i}`; },
     name() { return `${faker.name.firstName()} ${faker.name.lastName()}`; },
     email() { return faker.internet.email(); },
     status() { return statuses[Math.floor(Math.random() * statuses.length)]; },

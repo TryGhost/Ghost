@@ -13,7 +13,6 @@ export default Mirage.Factory.extend({
     slug(i) { return  `tag-${i}`; },
     updated_at() { return  '2015-10-19T16:25:07.756Z'; },
     updated_by() { return  1; },
-    uuid(i) { return  `tag-${i}`; },
     count() {
         return {
             posts: 1

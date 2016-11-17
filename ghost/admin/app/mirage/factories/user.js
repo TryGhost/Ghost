@@ -19,7 +19,6 @@ export default Mirage.Factory.extend({
     tour() { return null; },
     updated_at() { return '2015-11-02T16:12:05.000Z'; },
     updated_by() { return '2015-09-02T13:41:50.000Z'; },
-    uuid(i) { return `user-${i}`; },
     website() { return 'http://example.com'; },
 
     roles() { return []; }

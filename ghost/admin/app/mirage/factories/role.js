@@ -6,6 +6,5 @@ export default Mirage.Factory.extend({
     description(i) { return `Role ${i}`; },
     name() { return ''; },
     updated_at() { return '2013-11-25T14:48:11.000Z'; },
-    updated_by() { return 1; },
-    uuid(i) { return `role-${i}`; }
+    updated_by() { return 1; }
 });

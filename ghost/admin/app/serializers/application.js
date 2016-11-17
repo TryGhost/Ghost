@@ -14,9 +14,6 @@ export default RESTSerializer.extend({
         let root = pluralize(type.modelName);
         let data = this.serialize(record, options);
 
-        // Don't ever pass uuid's
-        delete data.uuid;
-
         hash[root] = [data];
     },
 
