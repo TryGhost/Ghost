@@ -43,7 +43,8 @@ describe('Authentication API', function () {
                 password: user.password,
                 client_id: 'ghost-admin',
                 client_secret: 'not_available'
-            }).expect('Content-Type', /json/)
+            })
+            .expect('Content-Type', /json/)
             // TODO: make it possible to override oauth2orize's header so that this is consistent
             .expect('Cache-Control', 'no-store')
             .expect(200)

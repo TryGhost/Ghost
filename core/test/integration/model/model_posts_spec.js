@@ -54,10 +54,6 @@ describe('Post Model', function () {
 
         beforeEach(testUtils.setup('owner', 'posts', 'apps'));
 
-        function extractFirstPost(posts) {
-            return _.filter(posts, {id: 1})[0];
-        }
-
         function checkFirstPostData(firstPost) {
             should.not.exist(firstPost.author_id);
             firstPost.author.should.be.an.Object();
@@ -94,14 +90,12 @@ describe('Post Model', function () {
                     .then(function (results) {
                         should.exist(results);
                         results.length.should.be.above(0);
+
                         var posts = results.models.map(function (model) {
                             return model.toJSON();
-                        });
+                        }), firstPost = _.find(posts, {title: testUtils.DataGenerator.Content.posts[0].title});
 
-                        // the first post in the result is not always the post at
-                        // position 0 in the fixture data so we need to use extractFirstPost
-                        // to get the post with id: 1
-                        checkFirstPostData(extractFirstPost(posts));
+                        checkFirstPostData(firstPost);
 
                         done();
                     }).catch(done);
@@ -138,10 +132,8 @@ describe('Post Model', function () {
                         results.meta.pagination.pages.should.equal(1);
                         results.posts.length.should.equal(4);
 
-                        // the first post in the result is not always the post at
-                        // position 0 in the fixture data so we need to use extractFirstPost
-                        // to get the post with id: 1
-                        checkFirstPostData(extractFirstPost(results.posts));
+                        var firstPost = _.find(results.posts, {title: testUtils.DataGenerator.Content.posts[0].title});
+                        checkFirstPostData(firstPost);
 
                         done();
                     }).catch(done);
@@ -151,8 +143,7 @@ describe('Post Model', function () {
                 PostModel.findPage({columns: ['id', 'slug', 'url', 'markdown']}).then(function (results) {
                     should.exist(results);
 
-                    var post = extractFirstPost(results.posts);
-
+                    var post = _.find(results.posts, {slug: testUtils.DataGenerator.Content.posts[0].slug});
                     post.url.should.equal('/html-ipsum/');
 
                     // If a computed property is inadvertently passed into a "fetch" operation,
@@ -168,9 +159,8 @@ describe('Post Model', function () {
                 PostModel.findPage({columns: ['id', 'slug', 'doesnotexist']}).then(function (results) {
                     should.exist(results);
 
-                    var post = extractFirstPost(results.posts);
-
-                    post.id.should.equal(1);
+                    var post = _.find(results.posts, {slug: testUtils.DataGenerator.Content.posts[0].slug});
+                    post.id.should.equal(testUtils.DataGenerator.Content.posts[0].id);
                     post.slug.should.equal('html-ipsum');
                     should.not.exist(post.doesnotexist);
 
@@ -337,12 +327,10 @@ describe('Post Model', function () {
             });
 
             it('can findOne, returning a slug only permalink', function (done) {
-                var firstPost = 1;
-
-                PostModel.findOne({id: firstPost})
+                PostModel.findOne({id: testUtils.DataGenerator.Content.posts[0].id})
                     .then(function (result) {
                         should.exist(result);
-                        firstPost = result.toJSON();
+                        var firstPost = result.toJSON();
                         firstPost.url.should.equal('/html-ipsum/');
 
                         done();
@@ -350,14 +338,12 @@ describe('Post Model', function () {
             });
 
             it('can findOne, returning a dated permalink', function (done) {
-                var firstPost = 1;
-
                 configUtils.set('theme:permalinks', '/:year/:month/:day/:slug/');
 
-                PostModel.findOne({id: firstPost})
+                PostModel.findOne({id: testUtils.DataGenerator.Content.posts[0].id})
                     .then(function (result) {
                         should.exist(result);
-                        firstPost = result.toJSON();
+                        var firstPost = result.toJSON();
 
                         // published_at of post 1 is 2015-01-01 00:00:00
                         // default blog TZ is UTC
@@ -370,7 +356,7 @@ describe('Post Model', function () {
 
         describe('edit', function () {
             it('can change title', function (done) {
-                var postId = 1;
+                var postId = testUtils.DataGenerator.Content.posts[0].id;
 
                 PostModel.findOne({id: postId}).then(function (results) {
                     var post;
@@ -392,7 +378,7 @@ describe('Post Model', function () {
             });
 
             it('can change title to number', function (done) {
-                var postId = 1;
+                var postId = testUtils.DataGenerator.Content.posts[0].id;
 
                 PostModel.findOne({id: postId}).then(function (results) {
                     should.exist(results);
@@ -407,7 +393,7 @@ describe('Post Model', function () {
             });
 
             it('can change markdown to number', function (done) {
-                var postId = 1;
+                var postId = testUtils.DataGenerator.Content.posts[0].id;
 
                 PostModel.findOne({id: postId}).then(function (results) {
                     should.exist(results);
@@ -422,7 +408,7 @@ describe('Post Model', function () {
             });
 
             it('can publish draft post', function (done) {
-                var postId = 4;
+                var postId = testUtils.DataGenerator.Content.posts[3].id;
 
                 PostModel.findOne({id: postId, status: 'draft'}).then(function (results) {
                     var post;
@@ -444,7 +430,7 @@ describe('Post Model', function () {
             });
 
             it('can unpublish published post', function (done) {
-                var postId = 1;
+                var postId = testUtils.DataGenerator.Content.posts[0].id;
 
                 PostModel.findOne({id: postId}).then(function (results) {
                     var post;
@@ -597,7 +583,7 @@ describe('Post Model', function () {
             });
 
             it('published -> scheduled and expect update of published_at', function (done) {
-                var postId = 1;
+                var postId = testUtils.DataGenerator.Content.posts[0].id;
 
                 PostModel.findOne({id: postId}).then(function (results) {
                     var post;
@@ -620,7 +606,7 @@ describe('Post Model', function () {
             });
 
             it('can convert draft post to page and back', function (done) {
-                var postId = 4;
+                var postId = testUtils.DataGenerator.Content.posts[3].id;
 
                 PostModel.findOne({id: postId, status: 'draft'}).then(function (results) {
                     var post;
@@ -686,7 +672,7 @@ describe('Post Model', function () {
             });
 
             it('can convert published post to page and back', function (done) {
-                var postId = 1;
+                var postId = testUtils.DataGenerator.Content.posts[0].id;
 
                 PostModel.findOne({id: postId}).then(function (results) {
                     var post;
@@ -723,7 +709,7 @@ describe('Post Model', function () {
             });
 
             it('can change type and status at the same time', function (done) {
-                var postId = 4;
+                var postId = testUtils.DataGenerator.Content.posts[3].id;
 
                 PostModel.findOne({id: postId, status: 'draft'}).then(function (results) {
                     var post;
@@ -790,7 +776,7 @@ describe('Post Model', function () {
             });
 
             it('cannot override the published_by setting', function (done) {
-                var postId = 4;
+                var postId = testUtils.DataGenerator.Content.posts[3].id;
 
                 PostModel.findOne({id: postId, status: 'draft'}).then(function (results) {
                     var post;
@@ -844,12 +830,12 @@ describe('Post Model', function () {
                     (createdPost.get('meta_description') === null).should.equal(true);
 
                     createdPost.get('created_at').should.be.above(new Date(0).getTime());
-                    createdPost.get('created_by').should.equal(1);
-                    createdPost.get('author_id').should.equal(1);
+                    createdPost.get('created_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
+                    createdPost.get('author_id').should.equal(testUtils.DataGenerator.Content.users[0].id);
                     createdPost.has('author').should.equal(false);
                     createdPost.get('created_by').should.equal(createdPost.get('author_id'));
                     createdPost.get('updated_at').should.be.above(new Date(0).getTime());
-                    createdPost.get('updated_by').should.equal(1);
+                    createdPost.get('updated_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
                     should.equal(createdPost.get('published_at'), null);
                     should.equal(createdPost.get('published_by'), null);
 
@@ -862,9 +848,9 @@ describe('Post Model', function () {
                     return createdPost.save({status: 'published'}, context);
                 }).then(function (publishedPost) {
                     publishedPost.get('published_at').should.be.instanceOf(Date);
-                    publishedPost.get('published_by').should.equal(1);
+                    publishedPost.get('published_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
                     publishedPost.get('updated_at').should.be.instanceOf(Date);
-                    publishedPost.get('updated_by').should.equal(1);
+                    publishedPost.get('updated_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
                     publishedPost.get('updated_at').should.not.equal(createdPostUpdatedDate);
 
                     eventSpy.calledThrice.should.be.true();
@@ -1187,8 +1173,8 @@ describe('Post Model', function () {
 
         describe('destroy', function () {
             it('published post', function (done) {
-                // We're going to try deleting post id 1 which also has tag id 1
-                var firstItemData = {id: 1};
+                // We're going to try deleting post id 1 which has tag id 1
+                var firstItemData = {id: testUtils.DataGenerator.Content.posts[0].id};
 
                 // Test that we have the post we expect, with exactly one tag
                 PostModel.findOne(firstItemData, {include: ['tags']}).then(function (results) {
@@ -1198,7 +1184,7 @@ describe('Post Model', function () {
                     post.id.should.equal(firstItemData.id);
                     post.status.should.equal('published');
                     post.tags.should.have.length(2);
-                    post.tags[0].id.should.equal(firstItemData.id);
+                    post.tags[0].id.should.equal(testUtils.DataGenerator.Content.tags[0].id);
 
                     // Destroy the post
                     return results.destroy();
@@ -1226,8 +1212,8 @@ describe('Post Model', function () {
             });
 
             it('draft post', function (done) {
-                // We're going to try deleting post id 4 which also has tag id 4
-                var firstItemData = {id: 4, status: 'draft'};
+                // We're going to try deleting post 4 which also has tag 4
+                var firstItemData = {id: testUtils.DataGenerator.Content.posts[3].id, status: 'draft'};
 
                 // Test that we have the post we expect, with exactly one tag
                 PostModel.findOne(firstItemData, {include: ['tags']}).then(function (results) {
@@ -1236,7 +1222,7 @@ describe('Post Model', function () {
                     post = results.toJSON();
                     post.id.should.equal(firstItemData.id);
                     post.tags.should.have.length(1);
-                    post.tags[0].id.should.equal(firstItemData.id);
+                    post.tags[0].id.should.equal(testUtils.DataGenerator.Content.tags[3].id);
 
                     // Destroy the post
                     return results.destroy(firstItemData);
@@ -1263,8 +1249,8 @@ describe('Post Model', function () {
             });
 
             it('published page', function (done) {
-                // We're going to try deleting page id 6 which also has tag id 1
-                var firstItemData = {id: 6};
+                // We're going to try deleting page 6 which has tag 1
+                var firstItemData = {id: testUtils.DataGenerator.Content.posts[5].id};
 
                 // Test that we have the post we expect, with exactly one tag
                 PostModel.findOne(firstItemData, {include: ['tags']}).then(function (results) {
@@ -1301,8 +1287,8 @@ describe('Post Model', function () {
             });
 
             it('draft page', function (done) {
-                // We're going to try deleting post id 4 which also has tag id 4
-                var firstItemData = {id: 7, status: 'draft'};
+                // We're going to try deleting post 7 which has tag 4
+                var firstItemData = {id: testUtils.DataGenerator.Content.posts[6].id, status: 'draft'};
 
                 // Test that we have the post we expect, with exactly one tag
                 PostModel.findOne(firstItemData, {include: ['tags']}).then(function (results) {
@@ -1344,7 +1330,7 @@ describe('Post Model', function () {
 
         it('can destroy multiple posts by author', function (done) {
             // We're going to delete all posts by user 1
-            var authorData = {id: 1};
+            var authorData = {id: testUtils.DataGenerator.Content.users[0].id};
 
             PostModel.findAll({context:{internal:true}}).then(function (found) {
                 // There are 50 posts to begin with

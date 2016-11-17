@@ -12,8 +12,12 @@ function addTableColumn(tableName, table, columnName) {
     // creation distinguishes between text with fieldtype, string with maxlength and all others
     if (columnSpec.type === 'text' && columnSpec.hasOwnProperty('fieldtype')) {
         column = table[columnSpec.type](columnName, columnSpec.fieldtype);
-    } else if (columnSpec.type === 'string' && columnSpec.hasOwnProperty('maxlength')) {
-        column = table[columnSpec.type](columnName, columnSpec.maxlength);
+    } else if (columnSpec.type === 'string') {
+        if (columnSpec.hasOwnProperty('maxlength')) {
+            column = table[columnSpec.type](columnName, columnSpec.maxlength);
+        } else {
+            column = table[columnSpec.type](columnName, 191);
+        }
     } else {
         column = table[columnSpec.type](columnName);
     }

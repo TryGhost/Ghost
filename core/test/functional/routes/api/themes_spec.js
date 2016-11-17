@@ -10,7 +10,7 @@ var testUtils = require('../../../utils'),
 
 describe('Themes API', function () {
     var scope = {
-        ownerownerAccessToken: '',
+        ownerAccessToken: '',
         editorAccessToken: '',
         uploadTheme: function uploadTheme(options) {
             var themePath = options.themePath,
@@ -20,19 +20,26 @@ describe('Themes API', function () {
             return request.post(testUtils.API.getApiQuery('themes/upload'))
                 .set('Authorization', 'Bearer ' + accessToken)
                 .attach(fieldName, themePath);
-        }
+        },
+        editor: null
     };
 
     before(function (done) {
         ghost().then(function (ghostServer) {
             request = supertest.agent(ghostServer.rootApp);
         }).then(function () {
-            return testUtils.doAuth(request, 'perms:init', 'users:no-owner');
+            return testUtils.doAuth(request);
         }).then(function (token) {
             scope.ownerAccessToken = token;
 
-            // 2 === Editor
-            request.userIndex = 2;
+            return testUtils.createUser({
+                user: testUtils.DataGenerator.forKnex.createUser({email: 'test+1@ghost.org'}),
+                role: testUtils.DataGenerator.Content.roles[1]
+            });
+        }).then(function (user) {
+            scope.editor = user;
+
+            request.user = scope.editor;
             return testUtils.doAuth(request);
         }).then(function (token) {
             scope.editorAccessToken = token;

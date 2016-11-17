@@ -1,9 +1,7 @@
 var testUtils        = require('../../utils'),
     should           = require('should'),
     _                = require('lodash'),
-    uuid             = require('node-uuid'),
-
-    // Stuff we are testing
+    ObjectId         = require('bson-objectid'),
     NotificationsAPI = require('../../../server/api/notifications'),
     SettingsAPI      = require('../../../server/api/settings');
 
@@ -61,7 +59,8 @@ describe('Notifications API', function () {
         var msg = {
             type: 'info',
             message: 'Hello, this is dog number 3',
-            id: 99
+            // id can't be passed from outside
+            id: ObjectId.generate()
         };
 
         NotificationsAPI.add({notifications: [msg]}, testUtils.context.internal).then(function (result) {
@@ -71,8 +70,7 @@ describe('Notifications API', function () {
             should.exist(result.notifications);
 
             notification = result.notifications[0];
-            notification.id.should.be.a.Number();
-            notification.id.should.not.equal(99);
+            notification.id.should.not.equal(msg.id);
             should.exist(notification.status);
             notification.status.should.equal('alert');
 
@@ -156,7 +154,6 @@ describe('Notifications API', function () {
             type: 'info',
             location: 'test.to-be-deleted',
             custom: true,
-            uuid: uuid.v4(),
             dismissible: true,
             message: 'Hello, this is dog number 4'
         };
@@ -170,7 +167,7 @@ describe('Notifications API', function () {
                 return SettingsAPI.read(_.extend({key: 'seenNotifications'}, testUtils.context.internal));
             }).then(function (response) {
                 should.exist(response);
-                response.settings[0].value.should.containEql(customNotification.uuid);
+                response.settings[0].value.should.containEql(notification.id);
 
                 done();
             }).catch(done);

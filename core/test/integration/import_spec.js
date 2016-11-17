@@ -614,7 +614,7 @@ describe('Import', function () {
 
                 return importer.doImport(exportData);
             }).then(function () {
-                done(new Error('Allowed import of invalid tags data'));
+                done(new Error('Allowed import of invalid post data'));
             }).catch(function (response) {
                 response.length.should.equal(5, response);
                 done();
@@ -776,13 +776,13 @@ describe('Import (new test structure)', function () {
 
                 _.each(rolesUsers, function (roleUser) {
                     if (roleUser.user_id === user1.id) {
-                        roleUser.role_id.should.equal(4, 'Original user should be an owner');
+                        roleUser.role_id.should.equal(testUtils.DataGenerator.Content.roles[3].id, 'Original user should be an owner');
                     }
                     if (roleUser.user_id === user2.id) {
-                        roleUser.role_id.should.equal(1, 'Josephine should be an admin');
+                        roleUser.role_id.should.equal(testUtils.DataGenerator.Content.roles[0].id, 'Josephine should be an admin');
                     }
                     if (roleUser.user_id === user3.id) {
-                        roleUser.role_id.should.equal(3, 'Smith should be an author by default');
+                        roleUser.role_id.should.equal(testUtils.DataGenerator.Content.roles[2].id, 'Smith should be an author by default');
                     }
                 });
 
@@ -1001,13 +1001,13 @@ describe('Import (new test structure)', function () {
 
                 _.each(rolesUsers, function (roleUser) {
                     if (roleUser.user_id === user1.id) {
-                        roleUser.role_id.should.equal(4, 'Original user should be an owner');
+                        roleUser.role_id.should.equal(testUtils.DataGenerator.Content.roles[3].id, 'Original user should be an owner');
                     }
                     if (roleUser.user_id === user2.id) {
-                        roleUser.role_id.should.equal(1, 'Josephine should be an admin');
+                        roleUser.role_id.should.equal(testUtils.DataGenerator.Content.roles[0].id, 'Josephine should be an admin');
                     }
                     if (roleUser.user_id === user3.id) {
-                        roleUser.role_id.should.equal(3, 'Smith should be an author by default');
+                        roleUser.role_id.should.equal(testUtils.DataGenerator.Content.roles[2].id, 'Smith should be an author by default');
                     }
                 });
 
@@ -1233,13 +1233,13 @@ describe('Import (new test structure)', function () {
 
                 _.each(rolesUsers, function (roleUser) {
                     if (roleUser.user_id === ownerUser.id) {
-                        roleUser.role_id.should.equal(4, 'Original user should be an owner');
+                        roleUser.role_id.should.equal(testUtils.DataGenerator.Content.roles[3].id, 'Original user should be an owner');
                     }
                     if (roleUser.user_id === newUser.id) {
-                        roleUser.role_id.should.equal(1, 'New user should be an admin');
+                        roleUser.role_id.should.equal(testUtils.DataGenerator.Content.roles[0].id, 'New user should be an admin');
                     }
                     if (roleUser.user_id === existingUser.id) {
-                        roleUser.role_id.should.equal(1, 'Existing user was an admin');
+                        roleUser.role_id.should.equal(testUtils.DataGenerator.Content.roles[0].id, 'Existing user was an admin');
                     }
                 });
 
@@ -1387,13 +1387,13 @@ describe('Import (new test structure)', function () {
 
                 _.each(rolesUsers, function (roleUser) {
                     if (roleUser.user_id === ownerUser.id) {
-                        roleUser.role_id.should.equal(4, 'Original user should be an owner');
+                        roleUser.role_id.should.equal(testUtils.DataGenerator.Content.roles[3].id, 'Original user should be an owner');
                     }
                     if (roleUser.user_id === newUser.id) {
-                        roleUser.role_id.should.equal(1, 'New user should be downgraded from owner to admin');
+                        roleUser.role_id.should.equal(testUtils.DataGenerator.Content.roles[0].id, 'New user should be downgraded from owner to admin');
                     }
                     if (roleUser.user_id === existingUser.id) {
-                        roleUser.role_id.should.equal(1, 'Existing user was an admin');
+                        roleUser.role_id.should.equal(testUtils.DataGenerator.Content.roles[0].id, 'Existing user was an admin');
                     }
                 });
 
