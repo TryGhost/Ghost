@@ -9,7 +9,7 @@ var oauth2orize = require('oauth2orize'),
     oauthServer,
     oauth;
 
-function exchangeRefreshToken(client, refreshToken, scope, done) {
+function exchangeRefreshToken(client, refreshToken, scope, body, authInfo, done) {
     models.Refreshtoken.findOne({token: refreshToken})
         .then(function then(model) {
             if (!model) {
@@ -21,6 +21,7 @@ function exchangeRefreshToken(client, refreshToken, scope, done) {
                     refreshExpires = Date.now() + utils.ONE_WEEK_MS;
 
                 if (token.expires > Date.now()) {
+                    spamPrevention.userLogin.reset(null, authInfo.ip + body.refresh_token + 'login');
                     models.Accesstoken.add({
                         token: accessToken,
                         user_id: token.user_id,
@@ -70,7 +71,6 @@ function exchangeAuthorizationCode(req, res, next) {
             message: i18n.t('errors.middleware.auth.accessDenied')
         }));
     }
-
     req.query.code = req.body.authorizationCode;
 
     passport.authenticate('ghost', {session: false, failWithError: false}, function authenticate(err, user) {
@@ -85,6 +85,8 @@ function exchangeAuthorizationCode(req, res, next) {
                 message: i18n.t('errors.middleware.auth.accessDenied')
             }));
         }
+
+        spamPrevention.userLogin.reset(null, req.authInfo.ip + req.body.authorizationCode + 'login');
 
         authenticationAPI.createTokens({}, {context: {client_id: req.client.id, user: user.id}})
             .then(function then(response) {
