@@ -8,6 +8,7 @@ module.exports = {
             req.authInfo = req.authInfo || {};
             req.authInfo.ip = req.connection.remoteAddress;
             req.body.connection = req.connection.remoteAddress;
+
             next(req.authInfo.ip);
         }
     }),
@@ -24,9 +25,21 @@ module.exports = {
         ignoreIP: true,
         key: function (req, res, next) {
             req.authInfo = req.authInfo || {};
-            req.authInfo.ip = req.connection.remoteAddress;
+            req.authInfo.ip = req.connection.remoteAddress || req.ip;
             // prevent too many attempts for the same username
-            next(req.authInfo.ip + req.body.username + 'login');
+            if (req.body.username) {
+                return next(req.authInfo.ip + req.body.username + 'login');
+            }
+
+            if (req.body.authorizationCode) {
+                return next(req.authInfo.ip + req.body.authorizationCode + 'login');
+            }
+
+            if (req.body.refresh_token) {
+                return next(req.authInfo.ip + req.body.refresh_token + 'login');
+            }
+
+            return next();
         }
     }),
     userReset: spamPrevention.userReset.getMiddleware({
