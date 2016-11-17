@@ -43,8 +43,8 @@ describe('OAuth', function () {
             req.client = {
                 slug: 'test'
             };
-            req.authInfo = {};
-            req.authInfo.ip = '127.0.0.1';
+            req.connection = {remoteAddress: '127.0.0.1'};
+            req.authInfo = {ip: '127.0.0.1'};
 
             req.body.grant_type = 'password';
             req.body.username = 'username';
@@ -95,6 +95,7 @@ describe('OAuth', function () {
                 slug: 'test'
             };
 
+            req.authInfo = {ip: '127.0.0.1'};
             req.body.grant_type = 'password';
             req.body.username = 'username';
             req.body.password = 'password';
@@ -116,6 +117,7 @@ describe('OAuth', function () {
                 slug: 'test'
             };
 
+            req.authInfo = {ip: '127.0.0.1'};
             req.body.grant_type = 'password';
             req.body.username = 'username';
             req.body.password = 'password';
@@ -159,7 +161,8 @@ describe('OAuth', function () {
             req.client = {
                 slug: 'test'
             };
-
+            req.authInfo = {ip: '127.0.0.1'};
+            req.connection = {remoteAddress: '127.0.0.1'};
             req.body.grant_type = 'refresh_token';
             req.body.refresh_token = 'token';
             res.setHeader = {};
@@ -204,7 +207,8 @@ describe('OAuth', function () {
             req.client = {
                 slug: 'test'
             };
-
+            req.connection = {remoteAddress: '127.0.0.1'};
+            req.authInfo = {ip: '127.0.0.1'};
             req.body.grant_type = 'refresh_token';
             req.body.refresh_token = 'token';
             res.setHeader = {};
@@ -224,7 +228,8 @@ describe('OAuth', function () {
             req.client = {
                 slug: 'test'
             };
-
+            req.connection = {remoteAddress: '127.0.0.1'};
+            req.authInfo = {ip: '127.0.0.1'};
             req.body.grant_type = 'refresh_token';
             req.body.refresh_token = 'token';
             res.setHeader = {};
@@ -250,7 +255,8 @@ describe('OAuth', function () {
             req.client = {
                 slug: 'test'
             };
-
+            req.connection = {remoteAddress: '127.0.0.1'};
+            req.authInfo = {ip: '127.0.0.1'};
             req.body.grant_type = 'refresh_token';
             req.body.refresh_token = 'token';
             res.setHeader = {};
@@ -296,7 +302,8 @@ describe('OAuth', function () {
             req.client = {
                 id: 1
             };
-
+            req.authInfo = {ip: '127.0.0.1'};
+            req.connection = {remoteAddress: '127.0.0.1'};
             req.body.grant_type = 'authorization_code';
             req.body.authorizationCode = '1234';
 
@@ -329,6 +336,8 @@ describe('OAuth', function () {
                 id: 1
             };
 
+            req.authInfo = {ip: '127.0.0.1'};
+            req.connection = {remoteAddress: '127.0.0.1'};
             req.body.grant_type = 'authorization_code';
             req.body.authorizationCode = '1234';
 
@@ -351,7 +360,7 @@ describe('OAuth', function () {
             req.client = {
                 id: 1
             };
-
+            req.connection = {remoteAddress: '127.0.0.1'};
             req.body.grant_type = 'authorization_code';
 
             oAuth.generateAccessToken(req, res, function (err) {

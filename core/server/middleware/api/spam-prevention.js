@@ -54,7 +54,7 @@ globalBlock = new ExpressBrute(store,
                 message: 'Too many attempts try again in ' + moment(nextValidRequestDate).fromNow(true),
                 context: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error',
                     {rfa: spamGlobalBlock.freeRetries + 1 || 5, rfp: spamGlobalBlock.lifetime || 60 * 60}),
-                help: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.context')
+                help: i18n.t('errors.middleware.spamprevention.tooManyAttempts')
             }));
         },
         handleStoreError: handleStoreError
@@ -86,10 +86,10 @@ userLogin = new ExpressBrute(store,
         attachResetToRequest: true,
         failCallback: function (req, res, next, nextValidRequestDate) {
             return next(new errors.TooManyRequestsError({
-                message: 'Too many attempts try again in ' + moment(nextValidRequestDate).fromNow(true),
-                context: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error',
-                    {rfa: spamUserLogin.freeRetries + 1 || 5, rfp: spamUserLogin.lifetime || 60 * 60}),
-                help: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.context')
+                message: 'Too many sign-in attempts try again in ' + moment(nextValidRequestDate).fromNow(true),
+                // TODO add more options to i18n
+                context: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context'),
+                help: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context')
             }));
         },
         handleStoreError: handleStoreError
@@ -104,10 +104,10 @@ userReset = new ExpressBrute(store,
         attachResetToRequest: true,
         failCallback: function (req, res, next, nextValidRequestDate) {
             return next(new errors.TooManyRequestsError({
-                message: 'Too many attempts try again in ' + moment(nextValidRequestDate).fromNow(true),
-                context: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error',
+                message: 'Too many password reset attempts try again in ' + moment(nextValidRequestDate).fromNow(true),
+                context: i18n.t('errors.middleware.spamprevention.forgottenPasswordEmail.error',
                     {rfa: spamUserReset.freeRetries + 1 || 5, rfp: spamUserReset.lifetime || 60 * 60}),
-                help: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.context')
+                help: i18n.t('errors.middleware.spamprevention.forgottenPasswordEmail.context')
             }));
         },
         handleStoreError: handleStoreError
@@ -121,13 +121,13 @@ privateBlog = new ExpressBrute(store,
         attachResetToRequest: false,
         failCallback: function (req, res, next, nextValidRequestDate) {
             logging.error(new errors.GhostError({
-                message: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error',
+                message: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.error',
                     {rfa: spamPrivateBlog.freeRetries + 1 || 5, rfp: spamPrivateBlog.lifetime || 60 * 60}),
-                context: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.context')
+                context: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context')
             }));
 
             return next(new errors.GhostError({
-                message: 'Too many attempts try again in ' + moment(nextValidRequestDate).fromNow(true)
+                message: 'Too many private sign-in attempts try again in ' + moment(nextValidRequestDate).fromNow(true)
             }));
         },
         handleStoreError: handleStoreError
