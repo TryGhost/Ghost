@@ -321,10 +321,11 @@
             "name": "User",
             "entries": [
                 {
+                    "id": 1,
                     "name": "Ghost Owner",
                     "email": "ghost@ghost.org",
                     "status": "inactive",
-                    "roles": [4]
+                    "roles": []
                 }
             ]
         }
@@ -392,6 +393,20 @@
             },
             "entries": {
                 "Welcome to Ghost": ["Getting Started"]
+            }
+        },
+        {
+            "from": {
+                "model": "User",
+                "match": "name",
+                "relation": "roles"
+            },
+            "to": {
+                "model": "Role",
+                "match": "name"
+            },
+            "entries": {
+                "Ghost Owner": ["Owner"]
             }
         }
     ]

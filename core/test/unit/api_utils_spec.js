@@ -2,6 +2,7 @@ var should  = require('should'),
     sinon   = require('sinon'),
     _       = require('lodash'),
     Promise = require('bluebird'),
+    ObjectId = require('bson-objectid'),
     permissions = require('../../server/permissions'),
     errors = require('../../server/errors'),
     apiUtils = require('../../server/api/utils'),
@@ -136,9 +137,10 @@ describe('API Utils', function () {
         });
 
         it('should allow idDefaultOptions when passed', function (done) {
-            // test read
+            var id = ObjectId.generate();
+
             apiUtils.validate('test', {opts: apiUtils.idDefaultOptions})(
-                {id: 5, context: 'stuff'}
+                {id: id, context: 'stuff'}
             ).then(function (options) {
                 options.should.not.have.ownProperty('data');
                 options.should.not.have.ownProperty('include');
@@ -148,7 +150,7 @@ describe('API Utils', function () {
                 options.should.have.ownProperty('context');
                 options.context.should.eql('stuff');
                 options.should.have.ownProperty('id');
-                options.id.should.eql(5);
+                options.id.should.eql(id);
 
                 done();
             }).catch(done);
@@ -198,8 +200,8 @@ describe('API Utils', function () {
         }
 
         it('can validate `id`', function () {
-            valid = [1, '1', 304, '304'];
-            invalid = ['test', 'de305d54'];
+            valid = [ObjectId.generate(), '1', 1];
+            invalid = ['test', 'de305d54', 300, '304'];
 
             check('id', valid, invalid);
         });

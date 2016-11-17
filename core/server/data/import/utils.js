@@ -63,26 +63,27 @@ utils = {
         });
 
         // We now have a list of users we need to figure out what their email addresses are
-        _.each(_.keys(userMap), function (userToMap) {
-            userToMap = parseInt(userToMap, 10);
+        // tableData.users has id's as numbers (see fixtures/export)
+        // userIdToMap === tableData.users, but it's already a string, because it's an object key and they are always strings
+        _.each(_.keys(userMap), function (userIdToMap) {
             var foundUser = _.find(tableData.users, function (tableDataUser) {
-                return tableDataUser.id === userToMap;
+                return tableDataUser.id.toString() === userIdToMap;
             });
 
             // we now know that userToMap's email is foundUser.email - look them up in existing users
             if (foundUser && _.has(foundUser, 'email') && _.has(existingUsers, foundUser.email)) {
-                existingUsers[foundUser.email].importId = userToMap;
-                userMap[userToMap] = existingUsers[foundUser.email].realId;
-            } else if (models.User.isOwnerUser(userToMap)) {
-                existingUsers[owner.email].importId = userToMap;
-                userMap[userToMap] = existingUsers[owner.email].realId;
-            } else if (models.User.isExternalUser(userToMap)) {
-                userMap[userToMap] = models.User.externalUser;
+                existingUsers[foundUser.email].importId = userIdToMap;
+                userMap[userIdToMap] = existingUsers[foundUser.email].realId;
+            } else if (models.User.isOwnerUser(userIdToMap)) {
+                existingUsers[owner.email].importId = userIdToMap;
+                userMap[userIdToMap] = existingUsers[owner.email].realId;
+            } else if (models.User.isExternalUser(userIdToMap)) {
+                userMap[userIdToMap] = models.User.externalUser;
             } else {
                 throw new errors.DataImportError({
-                    message: i18n.t('errors.data.import.utils.dataLinkedToUnknownUser', {userToMap: userToMap}),
+                    message: i18n.t('errors.data.import.utils.dataLinkedToUnknownUser', {userToMap: userIdToMap}),
                     property: 'user.id',
-                    value: userToMap
+                    value: userIdToMap
                 });
             }
         });
@@ -120,8 +121,9 @@ utils = {
         _.each(postsWithTags, function (tagIds, postId) {
             var post, tags;
             post = _.find(tableData.posts, function (post) {
-                return post.id === parseInt(postId, 10);
+                return post.id === postId;
             });
+
             if (post) {
                 tags = _.filter(tableData.tags, function (tag) {
                     return _.indexOf(tagIds, tag.id) !== -1;
@@ -163,7 +165,7 @@ utils = {
 
         _.each(tableData.roles_users, function (roleUser) {
             var user = _.find(tableData.users, function (user) {
-                return user.id === parseInt(roleUser.user_id, 10);
+                return user.id === roleUser.user_id;
             });
 
             // Map role_id to updated roles id

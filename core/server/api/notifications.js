@@ -2,6 +2,7 @@
 // RESTful API for creating notifications
 var Promise            = require('bluebird'),
     _                  = require('lodash'),
+    ObjectId           = require('bson-objectid'),
     permissions        = require('../permissions'),
     errors             = require('../errors'),
     settings           = require('./settings'),
@@ -12,8 +13,6 @@ var Promise            = require('bluebird'),
 
     // Holds the persistent notifications
     notificationsStore = [],
-    // Holds the last used id
-    notificationCounter = 0,
     notifications;
 
 /**
@@ -91,10 +90,8 @@ notifications = {
                 addedNotifications = [], existingNotification;
 
             _.each(options.data.notifications, function (notification) {
-                notificationCounter = notificationCounter + 1;
-
                 notification = _.assign(defaults, notification, {
-                    id: notificationCounter
+                    id: ObjectId.generate()
                 });
 
                 existingNotification = _.find(notificationsStore, {message:notification.message});
@@ -132,7 +129,7 @@ notifications = {
         var tasks;
 
         /**
-         * Adds the uuid of notification to "seenNotifications" array.
+         * Adds the id of notification to "seenNotifications" array.
          * @param {Object} notification
          * @return {*|Promise}
          */
@@ -140,7 +137,7 @@ notifications = {
             var context = {internal: true};
             return settings.read({key: 'seenNotifications', context: context}).then(function then(response) {
                 var seenNotifications = JSON.parse(response.settings[0].value);
-                seenNotifications = _.uniqBy(seenNotifications.concat([notification.uuid]));
+                seenNotifications = _.uniqBy(seenNotifications.concat([notification.id]));
                 return settings.edit({settings: [{key: 'seenNotifications', value: seenNotifications}]}, {context: context});
             });
         }
@@ -161,7 +158,7 @@ notifications = {
 
         function destroyNotification(options) {
             var notification = _.find(notificationsStore, function (element) {
-                return element.id === parseInt(options.id, 10);
+                return element.id === options.id;
             });
 
             if (notification && !notification.dismissible) {
@@ -175,9 +172,8 @@ notifications = {
             }
 
             notificationsStore = _.reject(notificationsStore, function (element) {
-                return element.id === parseInt(options.id, 10);
+                return element.id === options.id;
             });
-            notificationCounter = notificationCounter - 1;
 
             if (notification.custom) {
                 return markAsSeen(notification);
@@ -203,8 +199,6 @@ notifications = {
     destroyAll: function destroyAll(options) {
         return canThis(options.context).destroy.notification().then(function () {
             notificationsStore = [];
-            notificationCounter = 0;
-
             return notificationsStore;
         }, function (err) {
             return Promise.reject(new errors.NoPermissionError({

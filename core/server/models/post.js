@@ -332,7 +332,7 @@ Post = ghostBookshelf.Model.extend({
                     var tag;
 
                     if (tagsToCreate.indexOf(newTag.name) > -1) {
-                        tagOps.push(baseUtils.tagUpdate.createTagThenAttachTagToPost(TagModel, savedModel, newTag, index, options));
+                        tagOps.push(baseUtils.tagUpdate.createTagThenAttachTagToPost(Post, TagModel, savedModel, newTag, index, options));
                     } else {
                         // try to find a tag on the current post which matches
                         tag = _.find(currentTags, function (currentTag) {
@@ -350,7 +350,7 @@ Post = ghostBookshelf.Model.extend({
                         });
 
                         if (tag) {
-                            tagOps.push(baseUtils.tagUpdate.attachTagToPost(savedModel, tag, index, options));
+                            tagOps.push(baseUtils.tagUpdate.attachTagToPost(Post, savedModel.id, tag, index, options));
                         }
                     }
                 });

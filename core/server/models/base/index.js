@@ -9,7 +9,7 @@ var _          = require('lodash'),
     bookshelf  = require('bookshelf'),
     moment     = require('moment'),
     Promise    = require('bluebird'),
-    uuid       = require('node-uuid'),
+    ObjectId   = require('bson-objectid'),
     config     = require('../../config'),
     db         = require('../../data/db'),
     errors     = require('../../errors'),
@@ -59,9 +59,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     // Bookshelf `defaults` - default values setup on every model creation
     defaults: function defaults() {
-        return {
-            uuid: uuid.v4()
-        };
+        return {};
     },
 
     // When loading an instance, subclasses can specify default to fetch
@@ -108,7 +106,12 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     onCreating: function onCreating(newObj, attr, options) {
-        if (!this.get('created_by')) {
+        // id = 0 is still a valid value for external usage
+        if (_.isUndefined(newObj.id) || _.isNull(newObj.id)) {
+            newObj.setId();
+        }
+
+        if (schema.tables[this.tableName].hasOwnProperty('created_by') && !this.get('created_by')) {
             this.set('created_by', this.contextUser(options));
         }
     },
@@ -182,7 +185,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         options = options || {};
         options.context = options.context || {};
 
-        if (_.isNumber(options.context.user)) {
+        if (options.context.user || ghostBookshelf.Model.isExternalUser(options.context.user)) {
             return options.context.user;
         } else if (options.context.internal) {
             return ghostBookshelf.Model.internalUser;
@@ -248,27 +251,37 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     hasDateChanged: function (attr) {
         return moment(this.get(attr)).diff(moment(this.updated(attr))) !== 0;
+    },
+
+    /**
+     * we auto generate a GUID for each resource
+     * no auto increment
+     */
+    setId: function setId() {
+        this.set('id', ObjectId.generate());
     }
 }, {
     // ## Data Utility Functions
 
     /**
      * please use these static definitions when comparing id's
+     * we keep type number, because we have too many check's where we rely on
+     * context.user ? true : false (if context.user is 0 as number, this condition is false)
      */
     internalUser: 1,
     ownerUser: 1,
     externalUser: 0,
 
     isOwnerUser: function isOwnerUser(id) {
-        return id === ghostBookshelf.Model.ownerUser;
+        return id === ghostBookshelf.Model.ownerUser || id === ghostBookshelf.Model.ownerUser.toString();
     },
 
     isInternalUser: function isInternalUser(id) {
-        return id === ghostBookshelf.Model.internalUser;
+        return id === ghostBookshelf.Model.internalUser || id === ghostBookshelf.Model.internalUser.toString();
     },
 
     isExternalUser: function isExternalUser(id) {
-        return id === ghostBookshelf.Model.externalUser;
+        return id === ghostBookshelf.Model.externalUser || id === ghostBookshelf.Model.externalUser.toString();
     },
 
     /**
@@ -477,6 +490,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         if (options.importing) {
             model.hasTimestamps = false;
         }
+
+        // Bookshelf determines whether an operation is an update or an insert based on the id
+        // Ghost auto-generates Object id's, so we need to tell Bookshelf here that we are inserting data
+        options.method = 'insert';
         return model.save(null, options);
     },
 

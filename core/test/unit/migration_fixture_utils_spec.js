@@ -4,12 +4,12 @@ var should  = require('should'),
     rewire  = require('rewire'),
 
     models  = require('../../server/models'),
-
+    baseUtils = require('../../server/models/base/utils'),
     fixtureUtils = rewire('../../server/data/migration/fixtures/utils'),
     fixtures     = require('../../server/data/migration/fixtures/fixtures'),
     sandbox = sinon.sandbox.create();
 
-describe('Utils', function () {
+describe('Migration Fixture Utils', function () {
     var loggerStub;
 
     beforeEach(function () {
@@ -136,15 +136,14 @@ describe('Utils', function () {
         it('should call attach for permissions-roles', function (done) {
             var fromItem = {
                     related: sandbox.stub().returnsThis(),
-                    findWhere: sandbox.stub().returns(),
-                    permissions: sandbox.stub().returnsThis(),
-                    attach: sandbox.stub().returns(Promise.resolve([{}]))
+                    findWhere: sandbox.stub().returns()
                 },
                 toItem = [{get: sandbox.stub()}],
                 dataMethodStub = {
                     filter: sandbox.stub().returns(toItem),
                     find: sandbox.stub().returns(fromItem)
                 },
+                baseUtilAttachStub = sandbox.stub(baseUtils, 'attach').returns(Promise.resolve([{}])),
                 permsAllStub = sandbox.stub(models.Permission, 'findAll').returns(Promise.resolve(dataMethodStub)),
                 rolesAllStub = sandbox.stub(models.Role, 'findAll').returns(Promise.resolve(dataMethodStub));
 
@@ -159,14 +158,11 @@ describe('Utils', function () {
                 rolesAllStub.calledOnce.should.be.true();
                 dataMethodStub.filter.callCount.should.eql(29);
                 dataMethodStub.find.callCount.should.eql(3);
+                baseUtilAttachStub.callCount.should.eql(29);
 
                 fromItem.related.callCount.should.eql(29);
                 fromItem.findWhere.callCount.should.eql(29);
                 toItem[0].get.callCount.should.eql(58);
-
-                fromItem.permissions.callCount.should.eql(29);
-                fromItem.attach.callCount.should.eql(29);
-                fromItem.attach.calledWith(toItem).should.be.true();
 
                 done();
             }).catch(done);
@@ -175,16 +171,14 @@ describe('Utils', function () {
         it('should call attach for posts-tags', function (done) {
             var fromItem = {
                     related: sandbox.stub().returnsThis(),
-                    findWhere: sandbox.stub().returns(),
-                    tags: sandbox.stub().returnsThis(),
-                    attach: sandbox.stub().returns(Promise.resolve([{}]))
+                    findWhere: sandbox.stub().returns()
                 },
                 toItem = [{get: sandbox.stub()}],
                 dataMethodStub = {
                     filter: sandbox.stub().returns(toItem),
                     find: sandbox.stub().returns(fromItem)
                 },
-
+                baseUtilAttachStub = sandbox.stub(baseUtils, 'attach').returns(Promise.resolve([{}])),
                 postsAllStub = sandbox.stub(models.Post, 'findAll').returns(Promise.resolve(dataMethodStub)),
                 tagsAllStub = sandbox.stub(models.Tag, 'findAll').returns(Promise.resolve(dataMethodStub));
 
@@ -199,14 +193,10 @@ describe('Utils', function () {
                 tagsAllStub.calledOnce.should.be.true();
                 dataMethodStub.filter.calledOnce.should.be.true();
                 dataMethodStub.find.calledOnce.should.be.true();
-
                 fromItem.related.calledOnce.should.be.true();
                 fromItem.findWhere.calledOnce.should.be.true();
                 toItem[0].get.calledOnce.should.be.true();
-
-                fromItem.tags.calledOnce.should.be.true();
-                fromItem.attach.calledOnce.should.be.true();
-                fromItem.attach.calledWith(toItem).should.be.true();
+                baseUtilAttachStub.callCount.should.eql(1);
 
                 done();
             }).catch(done);

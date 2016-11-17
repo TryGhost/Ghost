@@ -26,7 +26,7 @@ describe('App Fields Model', function () {
     });
 
     it('can findOne', function (done) {
-        AppFieldsModel.findOne({id: 1}).then(function (foundAppField) {
+        AppFieldsModel.findOne({id: testUtils.DataGenerator.Content.app_fields[0].id}).then(function (foundAppField) {
             should.exist(foundAppField);
 
             foundAppField.get('created_at').should.be.an.instanceof(Date);
@@ -36,12 +36,12 @@ describe('App Fields Model', function () {
     });
 
     it('can edit', function (done) {
-        AppFieldsModel.findOne({id: 1}).then(function (foundAppField) {
+        AppFieldsModel.findOne({id: testUtils.DataGenerator.Content.app_fields[0].id}).then(function (foundAppField) {
             should.exist(foundAppField);
 
             return foundAppField.set({value: '350'}).save(null, context);
         }).then(function () {
-            return AppFieldsModel.findOne({id: 1});
+            return AppFieldsModel.findOne({id: testUtils.DataGenerator.Content.app_fields[0].id});
         }).then(function (updatedAppField) {
             should.exist(updatedAppField);
 

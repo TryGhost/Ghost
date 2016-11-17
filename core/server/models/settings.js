@@ -1,6 +1,5 @@
 var Settings,
     ghostBookshelf = require('./base'),
-    uuid           = require('node-uuid'),
     _              = require('lodash'),
     errors         = require('../errors'),
     Promise        = require('bluebird'),
@@ -46,7 +45,6 @@ Settings = ghostBookshelf.Model.extend({
 
     defaults: function defaults() {
         return {
-            uuid: uuid.v4(),
             type: 'core'
         };
     },

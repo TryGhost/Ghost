@@ -7,7 +7,7 @@ var testUtils = require('../../utils'),
     TagAPI    = require('../../../server/api/tags'),
     UserAPI   = require('../../../server/api/users');
 
-describe('Filter Param Spec', function () {
+describe('Advanced Browse', function () {
     // Initialise the DB just once, the tests are fetch-only
     before(testUtils.teardown);
     before(testUtils.setup('filter'));
@@ -20,7 +20,7 @@ describe('Filter Param Spec', function () {
     describe('Advanced Use Cases', function () {
         describe('1. Posts - filter: "tags: [photo, video] + id: -4", limit: "3", include: "tags"', function () {
             it('Will fetch 3 posts with tags which match `photo` or `video` and are not the post with id 4.', function (done) {
-                PostAPI.browse({filter: 'tags: [photo, video] + id: -4', limit: 3, include: 'tags'}).then(function (result) {
+                PostAPI.browse({filter: 'tags: [photo, video] + id: -' + testUtils.filterData.data.posts[3].id, limit: 3, include: 'tags'}).then(function (result) {
                     var ids;
                     // 1. Result should have the correct base structure
                     should.exist(result);
@@ -33,14 +33,14 @@ describe('Filter Param Spec', function () {
 
                     // None of the items returned should be the post with id 4, as that was excluded
                     ids = _.map(result.posts, 'id');
-                    ids.should.not.containEql(4);
+                    ids.should.not.containEql(testUtils.filterData.data.posts[3].id);
 
                     // Should not contain draft
-                    ids.should.not.containEql(19);
+                    ids.should.not.containEql(testUtils.filterData.data.posts[18].id);
 
                     // The ordering specifies that any post which matches both tags should be first
                     // Post 2 is the first in the list to have both tags
-                    ids[0].should.eql(2);
+                    ids[0].should.eql(testUtils.filterData.data.posts[1].id);
 
                     // Each post should have a tag which matches either 'photo' or 'video'
                     _.each(result.posts, function (post) {
@@ -82,7 +82,17 @@ describe('Filter Param Spec', function () {
                     result.posts.should.be.an.Array().with.lengthOf(9);
 
                     ids = _.map(result.posts, 'id');
-                    ids.should.eql([14, 11, 9, 8, 7, 6, 5, 3, 2]);
+                    ids.should.eql([
+                        testUtils.filterData.data.posts[13].id,
+                        testUtils.filterData.data.posts[10].id,
+                        testUtils.filterData.data.posts[8].id,
+                        testUtils.filterData.data.posts[7].id,
+                        testUtils.filterData.data.posts[6].id,
+                        testUtils.filterData.data.posts[5].id,
+                        testUtils.filterData.data.posts[4].id,
+                        testUtils.filterData.data.posts[2].id,
+                        testUtils.filterData.data.posts[1].id
+                    ]);
 
                     _.each(result.posts, function (post) {
                         post.page.should.be.false();
@@ -165,7 +175,14 @@ describe('Filter Param Spec', function () {
                     });
 
                     ids = _.map(result.posts, 'id');
-                    ids.should.eql([14, 12, 11, 9, 8, 7]);
+                    ids.should.eql([
+                        testUtils.filterData.data.posts[13].id,
+                        testUtils.filterData.data.posts[11].id,
+                        testUtils.filterData.data.posts[10].id,
+                        testUtils.filterData.data.posts[8].id,
+                        testUtils.filterData.data.posts[7].id,
+                        testUtils.filterData.data.posts[6].id
+                    ]);
 
                     // 3. The meta object should contain the right details
                     result.meta.should.have.property('pagination');
@@ -197,7 +214,11 @@ describe('Filter Param Spec', function () {
                     result.users.should.be.an.Array().with.lengthOf(2);
 
                     ids = _.map(result.users, 'id');
-                    ids.should.eql([1, 2]);
+
+                    ids.should.eql([
+                        testUtils.filterData.data.posts[0].id,
+                        testUtils.filterData.data.posts[1].id
+                    ]);
 
                     // TODO: add the order
                     // TODO: manage the count
@@ -252,7 +273,11 @@ describe('Filter Param Spec', function () {
                     result.users.should.be.an.Array().with.lengthOf(2);
 
                     ids = _.map(result.users, 'id');
-                    ids.should.eql([2, 1]);
+
+                    ids.should.eql([
+                        testUtils.filterData.data.users[1].id,
+                        testUtils.filterData.data.users[0].id
+                    ]);
 
                     should.exist(result.users[0].website);
                     should.exist(result.users[1].website);
@@ -286,9 +311,10 @@ describe('Filter Param Spec', function () {
                     result.tags.should.be.an.Array().with.lengthOf(3);
 
                     ids = _.map(result.tags, 'id');
-                    ids.should.containEql(4);
-                    ids.should.containEql(3);
-                    ids.should.containEql(2);
+                    ids.should.containEql(testUtils.filterData.data.tags[3].id);
+                    ids.should.containEql(testUtils.filterData.data.tags[2].id);
+                    ids.should.containEql(testUtils.filterData.data.tags[1].id);
+
                     // @TODO standardise how alphabetical ordering is done across DBs (see #6104)
                     // ids.should.eql([4, 2, 3]);
 
@@ -406,7 +432,14 @@ describe('Filter Param Spec', function () {
                 }).count.posts.should.eql(3);
 
                 ids = _.map(result.tags, 'id');
-                ids.should.eql([4, 3, 1, 2, 6, 5]);
+                ids.should.eql([
+                    testUtils.filterData.data.tags[3].id,
+                    testUtils.filterData.data.tags[2].id,
+                    testUtils.filterData.data.tags[0].id,
+                    testUtils.filterData.data.tags[1].id,
+                    testUtils.filterData.data.tags[5].id,
+                    testUtils.filterData.data.tags[4].id
+                ]);
 
                 // 3. The meta object should contain the right details
                 result.meta.should.have.property('pagination');
@@ -493,7 +526,12 @@ describe('Filter Param Spec', function () {
                 }).count.posts.should.eql(0);
 
                 ids = _.map(result.users, 'id');
-                ids.should.eql([3, 2, 1]);
+
+                ids.should.eql([
+                    testUtils.filterData.data.users[2].id,
+                    testUtils.filterData.data.users[1].id,
+                    testUtils.filterData.data.users[0].id
+                ]);
 
                 // 3. The meta object should contain the right details
                 result.meta.should.have.property('pagination');
@@ -534,7 +572,12 @@ describe('Filter Param Spec', function () {
                     result.posts.should.be.an.Array().with.lengthOf(4);
 
                     ids = _.map(result.posts, 'id');
-                    ids.should.eql([11, 9, 3, 2]);
+                    ids.should.eql([
+                        testUtils.filterData.data.posts[10].id,
+                        testUtils.filterData.data.posts[8].id,
+                        testUtils.filterData.data.posts[2].id,
+                        testUtils.filterData.data.posts[1].id
+                    ]);
 
                     // 3. The meta object should contain the right details
                     result.meta.should.have.property('pagination');
@@ -566,7 +609,13 @@ describe('Filter Param Spec', function () {
                     result.posts.should.be.an.Array().with.lengthOf(5);
 
                     ids = _.map(result.posts, 'id');
-                    ids.should.eql([13, 12, 11, 10, 9]);
+                    ids.should.eql([
+                        testUtils.filterData.data.posts[12].id,
+                        testUtils.filterData.data.posts[11].id,
+                        testUtils.filterData.data.posts[10].id,
+                        testUtils.filterData.data.posts[9].id,
+                        testUtils.filterData.data.posts[8].id
+                    ]);
 
                     // 3. The meta object should contain the right details
                     result.meta.should.have.property('pagination');
@@ -600,7 +649,23 @@ describe('Filter Param Spec', function () {
                     result.posts.should.be.an.Array().with.lengthOf(15);
 
                     ids = _.map(result.posts, 'id');
-                    ids.should.eql([20, 18, 17, 16, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4]);
+                    ids.should.eql([
+                        testUtils.filterData.data.posts[19].id,
+                        testUtils.filterData.data.posts[17].id,
+                        testUtils.filterData.data.posts[16].id,
+                        testUtils.filterData.data.posts[15].id,
+                        testUtils.filterData.data.posts[13].id,
+                        testUtils.filterData.data.posts[12].id,
+                        testUtils.filterData.data.posts[11].id,
+                        testUtils.filterData.data.posts[10].id,
+                        testUtils.filterData.data.posts[9].id,
+                        testUtils.filterData.data.posts[8].id,
+                        testUtils.filterData.data.posts[7].id,
+                        testUtils.filterData.data.posts[6].id,
+                        testUtils.filterData.data.posts[5].id,
+                        testUtils.filterData.data.posts[4].id,
+                        testUtils.filterData.data.posts[3].id
+                    ]);
 
                     // 3. The meta object should contain the right details
                     result.meta.should.have.property('pagination');
@@ -637,7 +702,11 @@ describe('Filter Param Spec', function () {
 
                     // Match exact items
                     ids = _.map(result.posts, 'id');
-                    ids.should.eql([14, 8, 5]);
+                    ids.should.eql([
+                        testUtils.filterData.data.posts[13].id,
+                        testUtils.filterData.data.posts[7].id,
+                        testUtils.filterData.data.posts[4].id
+                    ]);
 
                     // 3. The meta object should contain the right details
                     result.meta.should.have.property('pagination');
@@ -674,7 +743,23 @@ describe('Filter Param Spec', function () {
 
                     // Match exact items
                     ids = _.map(result.posts, 'id');
-                    ids.should.eql([20, 18, 17, 16, 13, 12, 11, 10, 9, 7, 6, 4, 3, 2, 1]);
+                    ids.should.eql([
+                        testUtils.filterData.data.posts[19].id,
+                        testUtils.filterData.data.posts[17].id,
+                        testUtils.filterData.data.posts[16].id,
+                        testUtils.filterData.data.posts[15].id,
+                        testUtils.filterData.data.posts[12].id,
+                        testUtils.filterData.data.posts[11].id,
+                        testUtils.filterData.data.posts[10].id,
+                        testUtils.filterData.data.posts[9].id,
+                        testUtils.filterData.data.posts[8].id,
+                        testUtils.filterData.data.posts[6].id,
+                        testUtils.filterData.data.posts[5].id,
+                        testUtils.filterData.data.posts[3].id,
+                        testUtils.filterData.data.posts[2].id,
+                        testUtils.filterData.data.posts[1].id,
+                        testUtils.filterData.data.posts[0].id
+                    ]);
 
                     // 3. The meta object should contain the right details
                     result.meta.should.have.property('pagination');
@@ -713,7 +798,26 @@ describe('Filter Param Spec', function () {
 
                     // Match exact items
                     ids = _.map(result.posts, 'id');
-                    ids.should.eql([20, 18, 17, 16, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]);
+                    ids.should.eql([
+                        testUtils.filterData.data.posts[19].id,
+                        testUtils.filterData.data.posts[17].id,
+                        testUtils.filterData.data.posts[16].id,
+                        testUtils.filterData.data.posts[15].id,
+                        testUtils.filterData.data.posts[13].id,
+                        testUtils.filterData.data.posts[12].id,
+                        testUtils.filterData.data.posts[11].id,
+                        testUtils.filterData.data.posts[10].id,
+                        testUtils.filterData.data.posts[9].id,
+                        testUtils.filterData.data.posts[8].id,
+                        testUtils.filterData.data.posts[7].id,
+                        testUtils.filterData.data.posts[6].id,
+                        testUtils.filterData.data.posts[5].id,
+                        testUtils.filterData.data.posts[4].id,
+                        testUtils.filterData.data.posts[3].id,
+                        testUtils.filterData.data.posts[2].id,
+                        testUtils.filterData.data.posts[1].id,
+                        testUtils.filterData.data.posts[0].id
+                    ]);
 
                     // 3. The meta object should contain the right details
                     result.meta.should.have.property('pagination');
@@ -751,7 +855,10 @@ describe('Filter Param Spec', function () {
 
                     // Match exact items
                     ids = _.map(result.posts, 'id');
-                    ids.should.eql([21, 15]);
+                    ids.should.eql([
+                        testUtils.filterData.data.posts[20].id,
+                        testUtils.filterData.data.posts[14].id
+                    ]);
 
                     // 3. The meta object should contain the right details
                     result.meta.should.have.property('pagination');
