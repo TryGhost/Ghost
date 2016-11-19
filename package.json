@@ -81,7 +81,7 @@
     "sanitize-html": "1.13.0",
     "semver": "5.3.0",
     "showdown-ghost": "0.3.6",
-    "superagent": "2.3.0",
+    "superagent": "3.0.0",
     "unidecode": "0.1.8",
     "validator": "5.7.0",
     "xml": "1.0.1"
