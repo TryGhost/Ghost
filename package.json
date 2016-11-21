@@ -129,7 +129,7 @@
     "should-http": "0.0.4",
     "sinon": "1.17.6",
     "supertest": "2.0.1",
-    "tmp": "0.0.30"
+    "tmp": "0.0.31"
   },
   "greenkeeper": {
     "ignore": [
