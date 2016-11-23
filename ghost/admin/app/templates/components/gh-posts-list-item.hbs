@@ -1,1 +1,31 @@
-{{yield this}}
+{{#link-to (if previewIsHidden 'editor.edit' 'posts.post') post.id class="permalink" title="Edit this post"}}
+    <h3 class="entry-title">{{post.title}}</h3>
+    <section class="entry-meta">
+        <span class="avatar" style={{authorAvatarBackground}}>
+            <img src="{{authorAvatar}}" title="{{authorName}}">
+        </span>
+        <span class="author">{{authorName}}</span>
+        <span class="status">
+            {{#if isPublished}}
+                {{#if post.page}}
+                    <span class="page">Page</span>
+                {{else}}
+                    <time datetime="{{post.publishedAtUTC}}" class="date published">
+                        Published {{gh-format-timeago post.publishedAtUTC}}
+                    </time>
+                {{/if}}
+            {{else}}
+                {{#if isScheduled}}
+                    <span class="scheduled">Scheduled</span>
+                    <span>&ndash;
+                        <time datetime="{{post.publishedAtUTC}}" class-="date scheduled">
+                            {{gh-format-time-scheduled post.publishedAtUTC blogTimezone}}
+                        </time>
+                    </span>
+                {{else}}
+                    <span class="draft">Draft</span>
+                {{/if}}
+            {{/if}}
+        </span>
+    </section>
+{{/link-to}}

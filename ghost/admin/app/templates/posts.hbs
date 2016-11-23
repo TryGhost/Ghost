@@ -11,39 +11,7 @@
         {{#gh-infinite-scroll tagName="section" classNames="content-list-content js-content-scrollbox" fetch="loadNextPage" as |checkScroll|}}
             <ol class="posts-list">
                 {{#each sortedPosts key="id" as |post|}}
-                    {{#gh-posts-list-item post=post onDoubleClick="openEditor" onDelete=(action checkScroll) as |component|}}
-                        {{#link-to (if previewIsHidden 'editor.edit' 'posts.post') post.id class="permalink" title="Edit this post"}}
-                            <h3 class="entry-title">{{post.title}}</h3>
-                            <section class="entry-meta">
-                                <span class="avatar" style={{component.authorAvatarBackground}}>
-                                    <img src="{{component.authorAvatar}}" title="{{component.authorName}}">
-                                </span>
-                                <span class="author">{{component.authorName}}</span>
-                                <span class="status">
-                                    {{#if component.isPublished}}
-                                        {{#if post.page}}
-                                            <span class="page">Page</span>
-                                        {{else}}
-                                            <time datetime="{{post.publishedAtUTC}}" class="date published">
-                                                Published {{gh-format-timeago post.publishedAtUTC}}
-                                            </time>
-                                        {{/if}}
-                                    {{else}}
-                    					{{#if component.isScheduled}}
-                    						<span class="scheduled">Scheduled</span>
-                                            <span>&ndash;
-                                                <time datetime="{{post.publishedAtUTC}}" class-="date scheduled">
-                                                    {{gh-format-time-scheduled post.publishedAtUTC component.blogTimezone}}
-                                                </time>
-                                            </span>
-                    					{{else}}
-                                            <span class="draft">Draft</span>
-                    					{{/if}}
-                                    {{/if}}
-                                </span>
-                            </section>
-                        {{/link-to}}
-                    {{/gh-posts-list-item}}
+                    {{gh-posts-list-item post=post previewIsHidden=previewIsHidden onDoubleClick="openEditor" onDelete=(action checkScroll)}}
                 {{/each}}
             </ol>
         {{/gh-infinite-scroll}}
