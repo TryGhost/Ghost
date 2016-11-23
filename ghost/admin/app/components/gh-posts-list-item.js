@@ -5,7 +5,7 @@ import {htmlSafe} from 'ember-string';
 import computed, {alias, equal} from 'ember-computed';
 import injectService from 'ember-service/inject';
 
-import ActiveLinkWrapper from 'ghost-admin/mixins/active-link-wrapper';
+import ActiveLinkMixin from 'ember-cli-active-link-wrapper/mixins/active-link';
 import {invokeAction} from 'ember-invoke-action';
 
 // ember-cli-shims doesn't export these
@@ -13,7 +13,7 @@ const {Handlebars, ObjectProxy, PromiseProxyMixin} = Ember;
 
 const ObjectPromiseProxy = ObjectProxy.extend(PromiseProxyMixin);
 
-export default Component.extend(ActiveLinkWrapper, {
+export default Component.extend(ActiveLinkMixin, {
     tagName: 'li',
     classNameBindings: ['isFeatured:featured', 'isPage:page'],
 
