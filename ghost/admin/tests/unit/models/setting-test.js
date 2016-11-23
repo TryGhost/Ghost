@@ -1,9 +1,8 @@
-import {
-    describeModel,
-    it
-} from 'ember-mocha';
+import {describe, it} from 'mocha';
+import {setupModelTest} from 'ember-mocha';
 
-describeModel('setting', 'Unit: Model: setting', function () {
+describe('Unit: Model: setting', function () {
+    setupModelTest('setting');
     it('has a validation type of "setting"', function () {
         let model = this.subject();
 

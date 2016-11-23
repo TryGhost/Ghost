@@ -1,20 +1,18 @@
 /* jshint expr:true */
 import {expect} from 'chai';
-import {describeModel, it} from 'ember-mocha';
+import {describe, it} from 'mocha';
+import {setupModelTest} from 'ember-mocha';
 
-describeModel(
-    'subscriber',
-    'Unit: Model: subscriber',
-    {
+describe('Unit: Model: subscriber', function() {
+    setupModelTest('subscriber', {
         // Specify the other units that are required for this test.
         needs: ['model:post']
-    },
-    function() {
-        // Replace this with your real tests.
-        it('exists', function() {
-            let model = this.subject();
-            // var store = this.store();
-            expect(model).to.be.ok;
-        });
-    }
-);
+    });
+
+    // Replace this with your real tests.
+    it('exists', function() {
+        let model = this.subject();
+        // var store = this.store();
+        expect(model).to.be.ok;
+    });
+});

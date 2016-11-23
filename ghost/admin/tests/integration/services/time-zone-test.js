@@ -1,8 +1,6 @@
 import {expect} from 'chai';
-import {
-    describeModule,
-    it
-} from 'ember-mocha';
+import {describe, it} from 'mocha';
+import {setupTest} from 'ember-mocha';
 import Pretender from 'pretender';
 
 function settingsStub(server) {
@@ -20,32 +18,29 @@ function settingsStub(server) {
     });
 }
 
-describeModule(
-    'service:time-zone',
-    'Integration: Service: time-zone',
-    {
+describe('Integration: Service: time-zone', function () {
+    setupTest('service:time-zone', {
         integration: true
-    },
-    function () {
-        let server;
+    });
 
-        beforeEach(function () {
-            server = new Pretender();
+    let server;
+
+    beforeEach(function () {
+        server = new Pretender();
+    });
+
+    afterEach(function () {
+        server.shutdown();
+    });
+
+    it('should return the blogs timezone', function (done) {
+        let service = this.subject();
+
+        settingsStub(server);
+
+        service.get('blogTimezone').then(function (blogTimezone) {
+            expect(blogTimezone).to.equal('Africa/Cairo');
+            done();
         });
-
-        afterEach(function () {
-            server.shutdown();
-        });
-
-        it('should return the blogs timezone', function (done) {
-            let service = this.subject();
-
-            settingsStub(server);
-
-            service.get('blogTimezone').then(function (blogTimezone) {
-                expect(blogTimezone).to.equal('Africa/Cairo');
-                done();
-            });
-        });
-    }
-);
+    });
+});

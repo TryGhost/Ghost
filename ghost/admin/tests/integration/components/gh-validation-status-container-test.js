@@ -1,74 +1,69 @@
 /* jshint expr:true */
 import {expect} from 'chai';
-import {
-    describeComponent,
-    it
-} from 'ember-mocha';
+import {describe, it} from 'mocha';
+import {setupComponentTest} from 'ember-mocha';
 import hbs from 'htmlbars-inline-precompile';
 import EmberObject from 'ember-object';
 import DS from 'ember-data';
 
 const {Errors} = DS;
 
-describeComponent(
-    'gh-validation-status-container',
-    'Integration: Component: gh-validation-status-container',
-    {
+describe('Integration: Component: gh-validation-status-container', function () {
+    setupComponentTest('gh-validation-status-container', {
         integration: true
-    },
-    function () {
-        beforeEach(function () {
-            let testObject = EmberObject.create();
-            testObject.set('name', 'Test');
-            testObject.set('hasValidated', []);
-            testObject.set('errors', Errors.create());
+    });
 
-            this.set('testObject', testObject);
-        });
+    beforeEach(function () {
+        let testObject = EmberObject.create();
+        testObject.set('name', 'Test');
+        testObject.set('hasValidated', []);
+        testObject.set('errors', Errors.create());
 
-        it('has no success/error class by default', function () {
-            this.render(hbs`
-                {{#gh-validation-status-container class="gh-test" property="name" errors=testObject.errors hasValidated=testObject.hasValidated}}
-                {{/gh-validation-status-container}}
-            `);
-            expect(this.$('.gh-test')).to.have.length(1);
-            expect(this.$('.gh-test').hasClass('success')).to.be.false;
-            expect(this.$('.gh-test').hasClass('error')).to.be.false;
-        });
+        this.set('testObject', testObject);
+    });
 
-        it('has success class when valid', function () {
-            this.get('testObject.hasValidated').push('name');
+    it('has no success/error class by default', function () {
+        this.render(hbs`
+            {{#gh-validation-status-container class="gh-test" property="name" errors=testObject.errors hasValidated=testObject.hasValidated}}
+            {{/gh-validation-status-container}}
+        `);
+        expect(this.$('.gh-test')).to.have.length(1);
+        expect(this.$('.gh-test').hasClass('success')).to.be.false;
+        expect(this.$('.gh-test').hasClass('error')).to.be.false;
+    });
 
-            this.render(hbs`
-                {{#gh-validation-status-container class="gh-test" property="name" errors=testObject.errors hasValidated=testObject.hasValidated}}
-                {{/gh-validation-status-container}}
-            `);
-            expect(this.$('.gh-test')).to.have.length(1);
-            expect(this.$('.gh-test').hasClass('success')).to.be.true;
-            expect(this.$('.gh-test').hasClass('error')).to.be.false;
-        });
+    it('has success class when valid', function () {
+        this.get('testObject.hasValidated').push('name');
 
-        it('has error class when invalid', function () {
-            this.get('testObject.hasValidated').push('name');
-            this.get('testObject.errors').add('name', 'has error');
+        this.render(hbs`
+            {{#gh-validation-status-container class="gh-test" property="name" errors=testObject.errors hasValidated=testObject.hasValidated}}
+            {{/gh-validation-status-container}}
+        `);
+        expect(this.$('.gh-test')).to.have.length(1);
+        expect(this.$('.gh-test').hasClass('success')).to.be.true;
+        expect(this.$('.gh-test').hasClass('error')).to.be.false;
+    });
 
-            this.render(hbs`
-                {{#gh-validation-status-container class="gh-test" property="name" errors=testObject.errors hasValidated=testObject.hasValidated}}
-                {{/gh-validation-status-container}}
-            `);
-            expect(this.$('.gh-test')).to.have.length(1);
-            expect(this.$('.gh-test').hasClass('success')).to.be.false;
-            expect(this.$('.gh-test').hasClass('error')).to.be.true;
-        });
+    it('has error class when invalid', function () {
+        this.get('testObject.hasValidated').push('name');
+        this.get('testObject.errors').add('name', 'has error');
 
-        it('still renders if hasValidated is undefined', function () {
-            this.set('testObject.hasValidated', undefined);
+        this.render(hbs`
+            {{#gh-validation-status-container class="gh-test" property="name" errors=testObject.errors hasValidated=testObject.hasValidated}}
+            {{/gh-validation-status-container}}
+        `);
+        expect(this.$('.gh-test')).to.have.length(1);
+        expect(this.$('.gh-test').hasClass('success')).to.be.false;
+        expect(this.$('.gh-test').hasClass('error')).to.be.true;
+    });
 
-            this.render(hbs`
-                {{#gh-validation-status-container class="gh-test" property="name" errors=testObject.errors hasValidated=testObject.hasValidated}}
-                {{/gh-validation-status-container}}
-            `);
-            expect(this.$('.gh-test')).to.have.length(1);
-        });
-    }
-);
+    it('still renders if hasValidated is undefined', function () {
+        this.set('testObject.hasValidated', undefined);
+
+        this.render(hbs`
+            {{#gh-validation-status-container class="gh-test" property="name" errors=testObject.errors hasValidated=testObject.hasValidated}}
+            {{/gh-validation-status-container}}
+        `);
+        expect(this.$('.gh-test')).to.have.length(1);
+    });
+});

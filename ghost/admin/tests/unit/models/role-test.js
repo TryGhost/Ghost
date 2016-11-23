@@ -1,10 +1,9 @@
 import run from 'ember-runloop';
-import {
-    describeModel,
-    it
-} from 'ember-mocha';
+import {describe, it} from 'mocha';
+import {setupModelTest} from 'ember-mocha';
 
-describeModel('role', 'Unit: Model: role', function () {
+describe('Unit: Model: role', function () {
+    setupModelTest('role');
     it('provides a lowercase version of the name', function () {
         let model = this.subject({
             name: 'Author'

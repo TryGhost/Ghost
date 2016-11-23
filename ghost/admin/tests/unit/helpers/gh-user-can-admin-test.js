@@ -1,6 +1,4 @@
-import {
-    it
-} from 'ember-mocha';
+import {it} from 'mocha';
 import {ghUserCanAdmin} from 'ghost-admin/helpers/gh-user-can-admin';
 
 describe('Unit: Helper: gh-user-can-admin', function () {
