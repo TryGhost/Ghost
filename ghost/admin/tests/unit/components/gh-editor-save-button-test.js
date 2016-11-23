@@ -1,14 +1,10 @@
 /* jshint expr:true */
 import {expect} from 'chai';
-import {
-    describeComponent,
-    it
-} from 'ember-mocha';
+import {describe, it} from 'mocha';
+import {setupComponentTest} from 'ember-mocha';
 
-describeComponent(
-    'gh-editor-save-button',
-    'Unit: Component: gh-editor-save-button',
-    {
+describe('Unit: Component: gh-editor-save-button', function () {
+    setupComponentTest('gh-editor-save-button', {
         unit: true,
         needs: [
             'component:gh-dropdown-button',
@@ -16,17 +12,16 @@ describeComponent(
             'component:gh-spin-button',
             'service:dropdown'
         ]
-    },
-    function () {
-        it('renders', function () {
-            // creates the component instance
-            let component = this.subject();
+    });
 
-            expect(component._state).to.equal('preRender');
+    it('renders', function () {
+        // creates the component instance
+        let component = this.subject();
 
-            // renders the component on the page
-            this.render();
-            expect(component._state).to.equal('inDOM');
-        });
-    }
-);
+        expect(component._state).to.equal('preRender');
+
+        // renders the component on the page
+        this.render();
+        expect(component._state).to.equal('inDOM');
+    });
+});
