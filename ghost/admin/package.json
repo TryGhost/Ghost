@@ -66,7 +66,7 @@
     "ember-one-way-controls": "1.1.2",
     "ember-power-select": "1.0.0-beta.22",
     "ember-resolver": "2.1.0",
-    "ember-route-action-helper": "1.0.0",
+    "ember-route-action-helper": "2.0.0",
     "ember-simple-auth": "1.1.0",
     "ember-sinon": "0.5.1",
     "ember-sortable": "1.9.0",
