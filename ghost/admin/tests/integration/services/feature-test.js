@@ -1,7 +1,5 @@
-import {
-    describeModule,
-    it
-} from 'ember-mocha';
+import {describe, it} from 'mocha';
+import {setupTest} from 'ember-mocha';
 import Pretender from 'pretender';
 import wait from 'ember-test-helpers/wait';
 import FeatureService, {feature} from 'ghost-admin/services/feature';
@@ -51,167 +49,164 @@ function addTestFlag() {
     });
 }
 
-describeModule(
-    'service:feature',
-    'Integration: Service: feature',
-    {
+describe('Integration: Service: feature', function () {
+    setupTest('service:feature', {
         integration: true
-    },
-    function () {
-        let server;
+    });
 
-        beforeEach(function () {
-            server = new Pretender();
+    let server;
+
+    beforeEach(function () {
+        server = new Pretender();
+    });
+
+    afterEach(function () {
+        server.shutdown();
+    });
+
+    it('loads labs settings correctly', function (done) {
+        stubSettings(server, {testFlag: true});
+        addTestFlag();
+
+        let service = this.subject();
+
+        service.fetch().then(() => {
+            expect(service.get('testFlag')).to.be.true;
+            done();
         });
+    });
 
-        afterEach(function () {
-            server.shutdown();
+    it('returns false for set flag with config false and labs false', function (done) {
+        stubSettings(server, {testFlag: false});
+        addTestFlag();
+
+        let service = this.subject();
+        service.get('config').set('testFlag', false);
+
+        service.fetch().then(() => {
+            expect(service.get('labs.testFlag')).to.be.false;
+            expect(service.get('testFlag')).to.be.false;
+            done();
         });
+    });
 
-        it('loads labs settings correctly', function (done) {
-            stubSettings(server, {testFlag: true});
-            addTestFlag();
+    it('returns true for set flag with config true and labs false', function (done) {
+        stubSettings(server, {testFlag: false});
+        addTestFlag();
 
-            let service = this.subject();
+        let service = this.subject();
+        service.get('config').set('testFlag', true);
 
-            service.fetch().then(() => {
+        service.fetch().then(() => {
+            expect(service.get('labs.testFlag')).to.be.false;
+            expect(service.get('testFlag')).to.be.true;
+            done();
+        });
+    });
+
+    it('returns true for set flag with config false and labs true', function (done) {
+        stubSettings(server, {testFlag: true});
+        addTestFlag();
+
+        let service = this.subject();
+        service.get('config').set('testFlag', false);
+
+        service.fetch().then(() => {
+            expect(service.get('labs.testFlag')).to.be.true;
+            expect(service.get('testFlag')).to.be.true;
+            done();
+        });
+    });
+
+    it('returns true for set flag with config true and labs true', function (done) {
+        stubSettings(server, {testFlag: true});
+        addTestFlag();
+
+        let service = this.subject();
+        service.get('config').set('testFlag', true);
+
+        service.fetch().then(() => {
+            expect(service.get('labs.testFlag')).to.be.true;
+            expect(service.get('testFlag')).to.be.true;
+            done();
+        });
+    });
+
+    it('saves correctly', function (done) {
+        stubSettings(server, {testFlag: false});
+        addTestFlag();
+
+        let service = this.subject();
+        service.get('config').set('testFlag', false);
+
+        service.fetch().then(() => {
+            expect(service.get('testFlag')).to.be.false;
+
+            run(() => {
+                service.set('testFlag', true);
+            });
+
+            return wait().then(() => {
+                expect(server.handlers[1].numberOfCalls).to.equal(1);
                 expect(service.get('testFlag')).to.be.true;
                 done();
             });
         });
+    });
 
-        it('returns false for set flag with config false and labs false', function (done) {
-            stubSettings(server, {testFlag: false});
-            addTestFlag();
+    it('notifies for server errors', function (done) {
+        stubSettings(server, {testFlag: false}, false);
+        addTestFlag();
 
-            let service = this.subject();
-            service.get('config').set('testFlag', false);
+        let service = this.subject();
+        service.get('config').set('testFlag', false);
 
-            service.fetch().then(() => {
-                expect(service.get('labs.testFlag')).to.be.false;
+        service.fetch().then(() => {
+            expect(service.get('testFlag')).to.be.false;
+
+            run(() => {
+                service.set('testFlag', true);
+            });
+
+            return wait().then(() => {
+                expect(
+                    server.handlers[1].numberOfCalls,
+                    'PUT call is made'
+                ).to.equal(1);
+
+                expect(
+                    service.get('notifications.alerts').length,
+                    'number of alerts shown'
+                ).to.equal(1);
+
                 expect(service.get('testFlag')).to.be.false;
                 done();
             });
         });
+    });
 
-        it('returns true for set flag with config true and labs false', function (done) {
-            stubSettings(server, {testFlag: false});
-            addTestFlag();
+    it('notifies for validation errors', function (done) {
+        stubSettings(server, {testFlag: false}, true, false);
+        addTestFlag();
 
-            let service = this.subject();
-            service.get('config').set('testFlag', true);
+        let service = this.subject();
+        service.get('config').set('testFlag', false);
 
-            service.fetch().then(() => {
-                expect(service.get('labs.testFlag')).to.be.false;
-                expect(service.get('testFlag')).to.be.true;
-                done();
-            });
-        });
+        service.fetch().then(() => {
+            expect(service.get('testFlag')).to.be.false;
 
-        it('returns true for set flag with config false and labs true', function (done) {
-            stubSettings(server, {testFlag: true});
-            addTestFlag();
-
-            let service = this.subject();
-            service.get('config').set('testFlag', false);
-
-            service.fetch().then(() => {
-                expect(service.get('labs.testFlag')).to.be.true;
-                expect(service.get('testFlag')).to.be.true;
-                done();
-            });
-        });
-
-        it('returns true for set flag with config true and labs true', function (done) {
-            stubSettings(server, {testFlag: true});
-            addTestFlag();
-
-            let service = this.subject();
-            service.get('config').set('testFlag', true);
-
-            service.fetch().then(() => {
-                expect(service.get('labs.testFlag')).to.be.true;
-                expect(service.get('testFlag')).to.be.true;
-                done();
-            });
-        });
-
-        it('saves correctly', function (done) {
-            stubSettings(server, {testFlag: false});
-            addTestFlag();
-
-            let service = this.subject();
-            service.get('config').set('testFlag', false);
-
-            service.fetch().then(() => {
-                expect(service.get('testFlag')).to.be.false;
-
-                run(() => {
+            run(() => {
+                expect(() => {
                     service.set('testFlag', true);
-                });
-
-                return wait().then(() => {
-                    expect(server.handlers[1].numberOfCalls).to.equal(1);
-                    expect(service.get('testFlag')).to.be.true;
-                    done();
-                });
+                }, EmberError, 'threw validation error');
             });
-        });
 
-        it('notifies for server errors', function (done) {
-            stubSettings(server, {testFlag: false}, false);
-            addTestFlag();
-
-            let service = this.subject();
-            service.get('config').set('testFlag', false);
-
-            service.fetch().then(() => {
+            return wait().then(() => {
+                // ensure validation is happening before the API is hit
+                expect(server.handlers[1].numberOfCalls).to.equal(0);
                 expect(service.get('testFlag')).to.be.false;
-
-                run(() => {
-                    service.set('testFlag', true);
-                });
-
-                return wait().then(() => {
-                    expect(
-                        server.handlers[1].numberOfCalls,
-                        'PUT call is made'
-                    ).to.equal(1);
-
-                    expect(
-                        service.get('notifications.alerts').length,
-                        'number of alerts shown'
-                    ).to.equal(1);
-
-                    expect(service.get('testFlag')).to.be.false;
-                    done();
-                });
+                done();
             });
         });
-
-        it('notifies for validation errors', function (done) {
-            stubSettings(server, {testFlag: false}, true, false);
-            addTestFlag();
-
-            let service = this.subject();
-            service.get('config').set('testFlag', false);
-
-            service.fetch().then(() => {
-                expect(service.get('testFlag')).to.be.false;
-
-                run(() => {
-                    expect(() => {
-                        service.set('testFlag', true);
-                    }, EmberError, 'threw validation error');
-                });
-
-                return wait().then(() => {
-                    // ensure validation is happening before the API is hit
-                    expect(server.handlers[1].numberOfCalls).to.equal(0);
-                    expect(service.get('testFlag')).to.be.false;
-                    done();
-                });
-            });
-        });
-    }
-);
+    });
+});

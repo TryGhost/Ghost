@@ -1,51 +1,46 @@
 /* jshint expr:true */
 import {expect} from 'chai';
-import {
-    describeComponent,
-    it
-} from 'ember-mocha';
+import {describe, it} from 'mocha';
+import {setupComponentTest} from 'ember-mocha';
 import hbs from 'htmlbars-inline-precompile';
 import run from 'ember-runloop';
 
-describeComponent(
-    'gh-cm-editor',
-    'Integration: Component: gh-cm-editor',
-    {
+describe('Integration: Component: gh-cm-editor', function () {
+    setupComponentTest('gh-cm-editor', {
         integration: true
-    },
-    function () {
-        it('handles editor events', function () {
-            this.set('text', '');
+    });
 
-            this.render(hbs`{{gh-cm-editor text class="gh-input" update=(action (mut text))}}`);
-            let input = this.$('.gh-input');
+    it('handles editor events', function () {
+        this.set('text', '');
 
-            expect(input.hasClass('focused'), 'has focused class on first render')
-                .to.be.false;
+        this.render(hbs`{{gh-cm-editor text class="gh-input" update=(action (mut text))}}`);
+        let input = this.$('.gh-input');
 
-            run(() => {
-                input.find('textarea').trigger('focus');
-            });
+        expect(input.hasClass('focused'), 'has focused class on first render')
+            .to.be.false;
 
-            expect(input.hasClass('focused'), 'has focused class after focus')
-                .to.be.true;
-
-            run(() => {
-                input.find('textarea').trigger('blur');
-            });
-
-            expect(input.hasClass('focused'), 'loses focused class on blur')
-                .to.be.false;
-
-            run(() => {
-                // access CodeMirror directly as it doesn't pick up changes
-                // to the textarea
-                let cm = input.find('.CodeMirror').get(0).CodeMirror;
-                cm.setValue('Testing');
-            });
-
-            expect(this.get('text'), 'text value after CM editor change')
-                .to.equal('Testing');
+        run(() => {
+            input.find('textarea').trigger('focus');
         });
-    }
-);
+
+        expect(input.hasClass('focused'), 'has focused class after focus')
+            .to.be.true;
+
+        run(() => {
+            input.find('textarea').trigger('blur');
+        });
+
+        expect(input.hasClass('focused'), 'loses focused class on blur')
+            .to.be.false;
+
+        run(() => {
+            // access CodeMirror directly as it doesn't pick up changes
+            // to the textarea
+            let cm = input.find('.CodeMirror').get(0).CodeMirror;
+            cm.setValue('Testing');
+        });
+
+        expect(this.get('text'), 'text value after CM editor change')
+            .to.equal('Testing');
+    });
+});

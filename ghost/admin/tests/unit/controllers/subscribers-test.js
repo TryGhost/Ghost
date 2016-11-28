@@ -1,21 +1,16 @@
 /* jshint expr:true */
 import {expect} from 'chai';
-import {
-    describeModule,
-    it
-} from 'ember-mocha';
+import {describe, it} from 'mocha';
+import {setupTest} from 'ember-mocha';
 
-describeModule(
-    'controller:subscribers',
-    'Unit: Controller: subscribers',
-    {
+describe('Unit: Controller: subscribers', function() {
+    setupTest('controller:subscribers', {
         needs: ['service:notifications']
-    },
-    function() {
-        // Replace this with your real tests.
-        it('exists', function() {
-            let controller = this.subject();
-            expect(controller).to.be.ok;
-        });
-    }
-);
+    });
+
+    // Replace this with your real tests.
+    it('exists', function() {
+        let controller = this.subject();
+        expect(controller).to.be.ok;
+    });
+});
