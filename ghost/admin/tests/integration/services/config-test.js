@@ -1,8 +1,6 @@
 import {expect} from 'chai';
-import {
-    describeModule,
-    it
-} from 'ember-mocha';
+import {describe, it} from 'mocha';
+import {setupTest} from 'ember-mocha';
 import Pretender from 'pretender';
 
 function stubAvailableTimezonesEndpoint(server) {
@@ -28,35 +26,32 @@ function stubAvailableTimezonesEndpoint(server) {
     });
 }
 
-describeModule(
-    'service:config',
-    'Integration: Service: config',
-    {
+describe('Integration: Service: config', function () {
+    setupTest('service:config', {
         integration: true
-    },
-    function () {
-        let server;
+    });
 
-        beforeEach(function () {
-            server = new Pretender();
+    let server;
+
+    beforeEach(function () {
+        server = new Pretender();
+    });
+
+    afterEach(function () {
+        server.shutdown();
+    });
+
+    it('returns a list of timezones in the expected format', function (done) {
+        let service = this.subject();
+        stubAvailableTimezonesEndpoint(server);
+
+        service.get('availableTimezones').then(function (timezones) {
+            expect(timezones.length).to.equal(2);
+            expect(timezones[0].name).to.equal('Pacific/Pago_Pago');
+            expect(timezones[0].label).to.equal('(GMT -11:00) Midway Island, Samoa');
+            expect(timezones[1].name).to.equal('Europe/Dublin');
+            expect(timezones[1].label).to.equal('(GMT) Greenwich Mean Time : Dublin, Edinburgh, London');
+            done();
         });
-
-        afterEach(function () {
-            server.shutdown();
-        });
-
-        it('returns a list of timezones in the expected format', function (done) {
-            let service = this.subject();
-            stubAvailableTimezonesEndpoint(server);
-
-            service.get('availableTimezones').then(function (timezones) {
-                expect(timezones.length).to.equal(2);
-                expect(timezones[0].name).to.equal('Pacific/Pago_Pago');
-                expect(timezones[0].label).to.equal('(GMT -11:00) Midway Island, Samoa');
-                expect(timezones[1].name).to.equal('Europe/Dublin');
-                expect(timezones[1].label).to.equal('(GMT) Greenwich Mean Time : Dublin, Edinburgh, London');
-                done();
-            });
-        });
-    }
-);
+    });
+});

@@ -1,10 +1,8 @@
 /* jshint expr:true */
 import sinon from 'sinon';
 import {expect} from 'chai';
-import {
-    describeComponent,
-    it
-} from 'ember-mocha';
+import {describe, it} from 'mocha';
+import {setupComponentTest} from 'ember-mocha';
 import hbs from 'htmlbars-inline-precompile';
 import Pretender from 'pretender';
 import wait from 'ember-test-helpers/wait';
@@ -54,529 +52,526 @@ const stubFailedUpload = function (server, code, error, delay = 0) {
     }, delay);
 };
 
-describeComponent(
-    'gh-image-upload',
-    'Integration: Component: gh-image-uploader',
-    {
+describe('Integration: Component: gh-image-uploader', function() {
+    setupComponentTest('gh-image-upload', {
         integration: true
-    },
-    function() {
-        let server;
+    });
 
-        beforeEach(function () {
-            this.register('service:config', configStub);
-            this.register('service:session', sessionStub);
-            this.register('service:notifications', notificationsStub);
-            this.inject.service('config', {as: 'configService'});
-            this.inject.service('session', {as: 'sessionService'});
-            this.inject.service('notifications', {as: 'notifications'});
-            this.set('update', function () {});
-            server = new Pretender();
+    let server;
+
+    beforeEach(function () {
+        this.register('service:config', configStub);
+        this.register('service:session', sessionStub);
+        this.register('service:notifications', notificationsStub);
+        this.inject.service('config', {as: 'configService'});
+        this.inject.service('session', {as: 'sessionService'});
+        this.inject.service('notifications', {as: 'notifications'});
+        this.set('update', function () {});
+        server = new Pretender();
+    });
+
+    afterEach(function () {
+        server.shutdown();
+    });
+
+    it('renders', function() {
+        this.set('image', 'http://example.com/test.png');
+        this.render(hbs`{{gh-image-uploader image=image}}`);
+        expect(this.$()).to.have.length(1);
+    });
+
+    it('defaults to upload form', function () {
+        this.render(hbs`{{gh-image-uploader image=image}}`);
+        expect(this.$('input[type="file"]').length).to.equal(1);
+    });
+
+    it('defaults to url form with no filestorage config', function () {
+        this.set('configService.fileStorage', false);
+        this.render(hbs`{{gh-image-uploader image=image}}`);
+        expect(this.$('input[type="file"]').length).to.equal(0);
+        expect(this.$('input[type="text"].url').length).to.equal(1);
+    });
+
+    it('can switch between form types', function () {
+        this.render(hbs`{{gh-image-uploader image=image}}`);
+        expect(this.$('input[type="file"]').length).to.equal(1);
+        expect(this.$('input[type="text"].url').length).to.equal(0);
+
+        this.$('a.image-url').click();
+
+        expect(this.$('input[type="file"]').length, 'upload form is visible after switch to url form')
+            .to.equal(0);
+        expect(this.$('input[type="text"].url').length, 'url form is visible after switch to url form')
+            .to.equal(1);
+
+        this.$('a.image-upload').click();
+
+        expect(this.$('input[type="file"]').length, 'upload form is visible after switch to upload form')
+            .to.equal(1);
+        expect(this.$('input[type="text"].url').length, 'url form is visible after switch to upload form')
+            .to.equal(0);
+    });
+
+    it('triggers formChanged action when switching between forms', function () {
+        let formChanged = sinon.spy();
+        this.set('formChanged', formChanged);
+
+        this.render(hbs`{{gh-image-uploader image=image formChanged=(action formChanged)}}`);
+
+        this.$('a.image-url').click();
+        this.$('a.image-upload').click();
+
+        expect(formChanged.calledTwice).to.be.true;
+        expect(formChanged.firstCall.args[0]).to.equal('url-input');
+        expect(formChanged.secondCall.args[0]).to.equal('upload');
+    });
+
+    describe('file upload form', function () {
+        it('renders form with supplied alt text', function () {
+            this.render(hbs`{{gh-image-uploader image=image altText="text test"}}`);
+            expect(this.$('.description').text().trim()).to.equal('Upload image of "text test"');
         });
 
-        afterEach(function () {
-            server.shutdown();
+        it('renders form with supplied text', function () {
+            this.render(hbs`{{gh-image-uploader image=image text="text test"}}`);
+            expect(this.$('.description').text().trim()).to.equal('text test');
         });
 
-        it('renders', function() {
-            this.set('image', 'http://example.com/test.png');
-            this.render(hbs`{{gh-image-uploader image=image}}`);
-            expect(this.$()).to.have.length(1);
+        it('generates request to correct endpoint', function (done) {
+            stubSuccessfulUpload(server);
+
+            this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
+
+            wait().then(() => {
+                expect(server.handledRequests.length).to.equal(1);
+                expect(server.handledRequests[0].url).to.equal('/ghost/api/v0.1/uploads/');
+                expect(server.handledRequests[0].requestHeaders.Authorization).to.be.undefined;
+                done();
+            });
         });
 
-        it('defaults to upload form', function () {
-            this.render(hbs`{{gh-image-uploader image=image}}`);
-            expect(this.$('input[type="file"]').length).to.equal(1);
+        it('adds authentication headers to request', function (done) {
+            stubSuccessfulUpload(server);
+
+            this.get('sessionService').set('isAuthenticated', true);
+
+            this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
+
+            wait().then(() => {
+                let [request] = server.handledRequests;
+                expect(request.requestHeaders.Authorization).to.equal('Bearer token');
+                done();
+            });
         });
 
-        it('defaults to url form with no filestorage config', function () {
-            this.set('configService.fileStorage', false);
-            this.render(hbs`{{gh-image-uploader image=image}}`);
-            expect(this.$('input[type="file"]').length).to.equal(0);
-            expect(this.$('input[type="text"].url').length).to.equal(1);
+        it('fires update action on successful upload', function (done) {
+            let update = sinon.spy();
+            this.set('update', update);
+
+            stubSuccessfulUpload(server);
+
+            this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
+
+            wait().then(() => {
+                expect(update.calledOnce).to.be.true;
+                expect(update.firstCall.args[0]).to.equal('/content/images/test.png');
+                done();
+            });
         });
 
-        it('can switch between form types', function () {
-            this.render(hbs`{{gh-image-uploader image=image}}`);
-            expect(this.$('input[type="file"]').length).to.equal(1);
-            expect(this.$('input[type="text"].url').length).to.equal(0);
+        it('doesn\'t fire update action on failed upload', function (done) {
+            let update = sinon.spy();
+            this.set('update', update);
 
-            this.$('a.image-url').click();
+            stubFailedUpload(server, 500);
 
-            expect(this.$('input[type="file"]').length, 'upload form is visible after switch to url form')
-                .to.equal(0);
-            expect(this.$('input[type="text"].url').length, 'url form is visible after switch to url form')
-                .to.equal(1);
+            this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
 
-            this.$('a.image-upload').click();
-
-            expect(this.$('input[type="file"]').length, 'upload form is visible after switch to upload form')
-                .to.equal(1);
-            expect(this.$('input[type="text"].url').length, 'url form is visible after switch to upload form')
-                .to.equal(0);
+            wait().then(() => {
+                expect(update.calledOnce).to.be.false;
+                done();
+            });
         });
 
-        it('triggers formChanged action when switching between forms', function () {
-            let formChanged = sinon.spy();
-            this.set('formChanged', formChanged);
+        it('fires fileSelected action on file selection', function (done) {
+            let fileSelected = sinon.spy();
+            this.set('fileSelected', fileSelected);
 
-            this.render(hbs`{{gh-image-uploader image=image formChanged=(action formChanged)}}`);
+            stubSuccessfulUpload(server);
 
-            this.$('a.image-url').click();
-            this.$('a.image-upload').click();
+            this.render(hbs`{{gh-image-uploader url=image fileSelected=(action fileSelected) update=(action update)}}`);
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
 
-            expect(formChanged.calledTwice).to.be.true;
-            expect(formChanged.firstCall.args[0]).to.equal('url-input');
-            expect(formChanged.secondCall.args[0]).to.equal('upload');
+            wait().then(() => {
+                expect(fileSelected.calledOnce).to.be.true;
+                expect(fileSelected.args[0]).to.not.be.blank;
+                done();
+            });
         });
 
-        describe('file upload form', function () {
-            it('renders form with supplied alt text', function () {
-                this.render(hbs`{{gh-image-uploader image=image altText="text test"}}`);
-                expect(this.$('.description').text().trim()).to.equal('Upload image of "text test"');
+        it('fires uploadStarted action on upload start', function (done) {
+            let uploadStarted = sinon.spy();
+            this.set('uploadStarted', uploadStarted);
+
+            stubSuccessfulUpload(server);
+
+            this.render(hbs`{{gh-image-uploader image=image uploadStarted=(action uploadStarted) update=(action update)}}`);
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
+
+            wait().then(() => {
+                expect(uploadStarted.calledOnce).to.be.true;
+                done();
             });
+        });
 
-            it('renders form with supplied text', function () {
-                this.render(hbs`{{gh-image-uploader image=image text="text test"}}`);
-                expect(this.$('.description').text().trim()).to.equal('text test');
+        it('fires uploadFinished action on successful upload', function (done) {
+            let uploadFinished = sinon.spy();
+            this.set('uploadFinished', uploadFinished);
+
+            stubSuccessfulUpload(server);
+
+            this.render(hbs`{{gh-image-uploader image=image uploadFinished=(action uploadFinished) update=(action update)}}`);
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
+
+            wait().then(() => {
+                expect(uploadFinished.calledOnce).to.be.true;
+                done();
             });
+        });
 
-            it('generates request to correct endpoint', function (done) {
-                stubSuccessfulUpload(server);
+        it('fires uploadFinished action on failed upload', function (done) {
+            let uploadFinished = sinon.spy();
+            this.set('uploadFinished', uploadFinished);
 
-                this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
-                fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
+            stubFailedUpload(server);
 
-                wait().then(() => {
-                    expect(server.handledRequests.length).to.equal(1);
-                    expect(server.handledRequests[0].url).to.equal('/ghost/api/v0.1/uploads/');
-                    expect(server.handledRequests[0].requestHeaders.Authorization).to.be.undefined;
-                    done();
-                });
+            this.render(hbs`{{gh-image-uploader image=image uploadFinished=(action uploadFinished) update=(action update)}}`);
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
+
+            wait().then(() => {
+                expect(uploadFinished.calledOnce).to.be.true;
+                done();
             });
+        });
 
-            it('adds authentication headers to request', function (done) {
-                stubSuccessfulUpload(server);
+        it('displays invalid file type error', function (done) {
+            stubFailedUpload(server, 415, 'UnsupportedMediaTypeError');
+            this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
 
-                this.get('sessionService').set('isAuthenticated', true);
-
-                this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
-                fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
-
-                wait().then(() => {
-                    let [request] = server.handledRequests;
-                    expect(request.requestHeaders.Authorization).to.equal('Bearer token');
-                    done();
-                });
+            wait().then(() => {
+                expect(this.$('.failed').length, 'error message is displayed').to.equal(1);
+                expect(this.$('.failed').text()).to.match(/The image type you uploaded is not supported/);
+                expect(this.$('.btn-green').length, 'reset button is displayed').to.equal(1);
+                expect(this.$('.btn-green').text()).to.equal('Try Again');
+                done();
             });
+        });
 
-            it('fires update action on successful upload', function (done) {
-                let update = sinon.spy();
-                this.set('update', update);
+        it('displays file too large for server error', function (done) {
+            stubFailedUpload(server, 413, 'RequestEntityTooLargeError');
+            this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
 
-                stubSuccessfulUpload(server);
-
-                this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
-                fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
-
-                wait().then(() => {
-                    expect(update.calledOnce).to.be.true;
-                    expect(update.firstCall.args[0]).to.equal('/content/images/test.png');
-                    done();
-                });
+            wait().then(() => {
+                expect(this.$('.failed').length, 'error message is displayed').to.equal(1);
+                expect(this.$('.failed').text()).to.match(/The image you uploaded was larger/);
+                done();
             });
+        });
 
-            it('doesn\'t fire update action on failed upload', function (done) {
-                let update = sinon.spy();
-                this.set('update', update);
-
-                stubFailedUpload(server, 500);
-
-                this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
-                fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
-
-                wait().then(() => {
-                    expect(update.calledOnce).to.be.false;
-                    done();
-                });
+        it('handles file too large error directly from the web server', function (done) {
+            server.post('/ghost/api/v0.1/uploads/', function () {
+                return [413, {}, ''];
             });
+            this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
 
-            it('fires fileSelected action on file selection', function (done) {
-                let fileSelected = sinon.spy();
-                this.set('fileSelected', fileSelected);
-
-                stubSuccessfulUpload(server);
-
-                this.render(hbs`{{gh-image-uploader url=image fileSelected=(action fileSelected) update=(action update)}}`);
-                fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
-
-                wait().then(() => {
-                    expect(fileSelected.calledOnce).to.be.true;
-                    expect(fileSelected.args[0]).to.not.be.blank;
-                    done();
-                });
+            wait().then(() => {
+                expect(this.$('.failed').length, 'error message is displayed').to.equal(1);
+                expect(this.$('.failed').text()).to.match(/The image you uploaded was larger/);
+                done();
             });
+        });
 
-            it('fires uploadStarted action on upload start', function (done) {
-                let uploadStarted = sinon.spy();
-                this.set('uploadStarted', uploadStarted);
+        it('displays other server-side error with message', function (done) {
+            stubFailedUpload(server, 400, 'UnknownError');
+            this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
 
-                stubSuccessfulUpload(server);
-
-                this.render(hbs`{{gh-image-uploader image=image uploadStarted=(action uploadStarted) update=(action update)}}`);
-                fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
-
-                wait().then(() => {
-                    expect(uploadStarted.calledOnce).to.be.true;
-                    done();
-                });
+            wait().then(() => {
+                expect(this.$('.failed').length, 'error message is displayed').to.equal(1);
+                expect(this.$('.failed').text()).to.match(/Error: UnknownError/);
+                done();
             });
+        });
 
-            it('fires uploadFinished action on successful upload', function (done) {
-                let uploadFinished = sinon.spy();
-                this.set('uploadFinished', uploadFinished);
-
-                stubSuccessfulUpload(server);
-
-                this.render(hbs`{{gh-image-uploader image=image uploadFinished=(action uploadFinished) update=(action update)}}`);
-                fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
-
-                wait().then(() => {
-                    expect(uploadFinished.calledOnce).to.be.true;
-                    done();
-                });
+        it('handles unknown failure', function (done) {
+            server.post('/ghost/api/v0.1/uploads/', function () {
+                return [500, {'Content-Type': 'application/json'}, ''];
             });
+            this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
 
-            it('fires uploadFinished action on failed upload', function (done) {
-                let uploadFinished = sinon.spy();
-                this.set('uploadFinished', uploadFinished);
-
-                stubFailedUpload(server);
-
-                this.render(hbs`{{gh-image-uploader image=image uploadFinished=(action uploadFinished) update=(action update)}}`);
-                fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
-
-                wait().then(() => {
-                    expect(uploadFinished.calledOnce).to.be.true;
-                    done();
-                });
+            wait().then(() => {
+                expect(this.$('.failed').length, 'error message is displayed').to.equal(1);
+                expect(this.$('.failed').text()).to.match(/Something went wrong/);
+                done();
             });
+        });
 
-            it('displays invalid file type error', function (done) {
-                stubFailedUpload(server, 415, 'UnsupportedMediaTypeError');
-                this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
-                fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
+        it('triggers notifications.showAPIError for VersionMismatchError', function (done) {
+            let showAPIError = sinon.spy();
+            this.set('notifications.showAPIError', showAPIError);
 
-                wait().then(() => {
-                    expect(this.$('.failed').length, 'error message is displayed').to.equal(1);
-                    expect(this.$('.failed').text()).to.match(/The image type you uploaded is not supported/);
-                    expect(this.$('.btn-green').length, 'reset button is displayed').to.equal(1);
-                    expect(this.$('.btn-green').text()).to.equal('Try Again');
-                    done();
-                });
+            stubFailedUpload(server, 400, 'VersionMismatchError');
+
+            this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
+
+            wait().then(() => {
+                expect(showAPIError.calledOnce).to.be.true;
+                done();
             });
+        });
 
-            it('displays file too large for server error', function (done) {
-                stubFailedUpload(server, 413, 'RequestEntityTooLargeError');
-                this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
-                fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
+        it('doesn\'t trigger notifications.showAPIError for other errors', function (done) {
+            let showAPIError = sinon.spy();
+            this.set('notifications.showAPIError', showAPIError);
 
-                wait().then(() => {
-                    expect(this.$('.failed').length, 'error message is displayed').to.equal(1);
-                    expect(this.$('.failed').text()).to.match(/The image you uploaded was larger/);
-                    done();
-                });
+            stubFailedUpload(server, 400, 'UnknownError');
+            this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
+
+            wait().then(() => {
+                expect(showAPIError.called).to.be.false;
+                done();
             });
+        });
 
-            it('handles file too large error directly from the web server', function (done) {
-                server.post('/ghost/api/v0.1/uploads/', function () {
-                    return [413, {}, ''];
-                });
-                this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
-                fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
+        it('can be reset after a failed upload', function (done) {
+            stubFailedUpload(server, 400, 'UnknownError');
+            this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+            fileUpload(this.$('input[type="file"]'), ['test'], {type: 'test.png'});
 
-                wait().then(() => {
-                    expect(this.$('.failed').length, 'error message is displayed').to.equal(1);
-                    expect(this.$('.failed').text()).to.match(/The image you uploaded was larger/);
-                    done();
-                });
-            });
-
-            it('displays other server-side error with message', function (done) {
-                stubFailedUpload(server, 400, 'UnknownError');
-                this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
-                fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
-
-                wait().then(() => {
-                    expect(this.$('.failed').length, 'error message is displayed').to.equal(1);
-                    expect(this.$('.failed').text()).to.match(/Error: UnknownError/);
-                    done();
-                });
-            });
-
-            it('handles unknown failure', function (done) {
-                server.post('/ghost/api/v0.1/uploads/', function () {
-                    return [500, {'Content-Type': 'application/json'}, ''];
-                });
-                this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
-                fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
-
-                wait().then(() => {
-                    expect(this.$('.failed').length, 'error message is displayed').to.equal(1);
-                    expect(this.$('.failed').text()).to.match(/Something went wrong/);
-                    done();
-                });
-            });
-
-            it('triggers notifications.showAPIError for VersionMismatchError', function (done) {
-                let showAPIError = sinon.spy();
-                this.set('notifications.showAPIError', showAPIError);
-
-                stubFailedUpload(server, 400, 'VersionMismatchError');
-
-                this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
-                fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
-
-                wait().then(() => {
-                    expect(showAPIError.calledOnce).to.be.true;
-                    done();
-                });
-            });
-
-            it('doesn\'t trigger notifications.showAPIError for other errors', function (done) {
-                let showAPIError = sinon.spy();
-                this.set('notifications.showAPIError', showAPIError);
-
-                stubFailedUpload(server, 400, 'UnknownError');
-                this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
-                fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
-
-                wait().then(() => {
-                    expect(showAPIError.called).to.be.false;
-                    done();
-                });
-            });
-
-            it('can be reset after a failed upload', function (done) {
-                stubFailedUpload(server, 400, 'UnknownError');
-                this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
-                fileUpload(this.$('input[type="file"]'), ['test'], {type: 'test.png'});
-
-                wait().then(() => {
-                    run(() => {
-                        this.$('.btn-green').click();
-                    });
-                });
-
-                wait().then(() => {
-                    expect(this.$('input[type="file"]').length).to.equal(1);
-                    done();
-                });
-            });
-
-            it('displays upload progress', function (done) {
-                this.set('done', done);
-
-                // pretender fires a progress event every 50ms
-                stubSuccessfulUpload(server, 150);
-
-                this.render(hbs`{{gh-image-uploader image=image uploadFinished=(action done) update=(action update)}}`);
-                fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
-
-                // after 75ms we should have had one progress event
-                run.later(this, function () {
-                    expect(this.$('.progress .bar').length).to.equal(1);
-                    let [, percentageWidth] = this.$('.progress .bar').attr('style').match(/width: (\d+)%?/);
-                    expect(percentageWidth).to.be.above(0);
-                    expect(percentageWidth).to.be.below(100);
-                }, 75);
-            });
-
-            it('handles drag over/leave', function () {
-                stubSuccessfulUpload(server);
-
-                this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
-
+            wait().then(() => {
                 run(() => {
-                    // eslint-disable-next-line new-cap
-                    let dragover = $.Event('dragover', {
-                        dataTransfer: {
-                            files: []
-                        }
-                    });
-                    this.$('.gh-image-uploader').trigger(dragover);
+                    this.$('.btn-green').click();
                 });
-
-                expect(this.$('.gh-image-uploader').hasClass('-drag-over'), 'has drag-over class').to.be.true;
-
-                run(() => {
-                    this.$('.gh-image-uploader').trigger('dragleave');
-                });
-
-                expect(this.$('.gh-image-uploader').hasClass('-drag-over'), 'has drag-over class').to.be.false;
             });
 
-            it('triggers file upload on file drop', function (done) {
-                let uploadSuccess = sinon.spy();
+            wait().then(() => {
+                expect(this.$('input[type="file"]').length).to.equal(1);
+                done();
+            });
+        });
+
+        it('displays upload progress', function (done) {
+            this.set('done', done);
+
+            // pretender fires a progress event every 50ms
+            stubSuccessfulUpload(server, 150);
+
+            this.render(hbs`{{gh-image-uploader image=image uploadFinished=(action done) update=(action update)}}`);
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
+
+            // after 75ms we should have had one progress event
+            run.later(this, function () {
+                expect(this.$('.progress .bar').length).to.equal(1);
+                let [, percentageWidth] = this.$('.progress .bar').attr('style').match(/width: (\d+)%?/);
+                expect(percentageWidth).to.be.above(0);
+                expect(percentageWidth).to.be.below(100);
+            }, 75);
+        });
+
+        it('handles drag over/leave', function () {
+            stubSuccessfulUpload(server);
+
+            this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+
+            run(() => {
                 // eslint-disable-next-line new-cap
-                let drop = $.Event('drop', {
+                let dragover = $.Event('dragover', {
                     dataTransfer: {
-                        files: [createFile(['test'], {name: 'test.png'})]
+                        files: []
                     }
                 });
-
-                this.set('uploadSuccess', uploadSuccess);
-
-                stubSuccessfulUpload(server);
-                this.render(hbs`{{gh-image-uploader uploadSuccess=(action uploadSuccess)}}`);
-
-                run(() => {
-                    this.$('.gh-image-uploader').trigger(drop);
-                });
-
-                wait().then(() => {
-                    expect(uploadSuccess.calledOnce).to.be.true;
-                    expect(uploadSuccess.firstCall.args[0]).to.equal('/content/images/test.png');
-                    done();
-                });
+                this.$('.gh-image-uploader').trigger(dragover);
             });
 
-            it('validates extension by default', function (done) {
-                let uploadSuccess = sinon.spy();
-                let uploadFailed = sinon.spy();
+            expect(this.$('.gh-image-uploader').hasClass('-drag-over'), 'has drag-over class').to.be.true;
 
-                this.set('uploadSuccess', uploadSuccess);
-                this.set('uploadFailed', uploadFailed);
-
-                stubSuccessfulUpload(server);
-
-                this.render(hbs`{{gh-image-uploader
-                    uploadSuccess=(action uploadSuccess)
-                    uploadFailed=(action uploadFailed)}}`);
-
-                fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.json'});
-
-                wait().then(() => {
-                    expect(uploadSuccess.called).to.be.false;
-                    expect(uploadFailed.calledOnce).to.be.true;
-                    expect(this.$('.failed').length, 'error message is displayed').to.equal(1);
-                    expect(this.$('.failed').text()).to.match(/The image type you uploaded is not supported/);
-                    done();
-                });
+            run(() => {
+                this.$('.gh-image-uploader').trigger('dragleave');
             });
 
-            it('uploads if validate action supplied and returns true', function (done) {
-                let validate = sinon.stub().returns(true);
-                let uploadSuccess = sinon.spy();
+            expect(this.$('.gh-image-uploader').hasClass('-drag-over'), 'has drag-over class').to.be.false;
+        });
 
-                this.set('validate', validate);
-                this.set('uploadSuccess', uploadSuccess);
-
-                stubSuccessfulUpload(server);
-
-                this.render(hbs`{{gh-image-uploader
-                    uploadSuccess=(action uploadSuccess)
-                    validate=(action validate)}}`);
-
-                fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.txt'});
-
-                wait().then(() => {
-                    expect(validate.calledOnce).to.be.true;
-                    expect(uploadSuccess.calledOnce).to.be.true;
-                    done();
-                });
+        it('triggers file upload on file drop', function (done) {
+            let uploadSuccess = sinon.spy();
+            // eslint-disable-next-line new-cap
+            let drop = $.Event('drop', {
+                dataTransfer: {
+                    files: [createFile(['test'], {name: 'test.png'})]
+                }
             });
 
-            it('skips upload and displays error if validate action supplied and doesn\'t return true', function (done) {
-                let validate = sinon.stub().returns(new UnsupportedMediaTypeError());
-                let uploadSuccess = sinon.spy();
-                let uploadFailed = sinon.spy();
+            this.set('uploadSuccess', uploadSuccess);
 
-                this.set('validate', validate);
-                this.set('uploadSuccess', uploadSuccess);
-                this.set('uploadFailed', uploadFailed);
+            stubSuccessfulUpload(server);
+            this.render(hbs`{{gh-image-uploader uploadSuccess=(action uploadSuccess)}}`);
 
-                stubSuccessfulUpload(server);
+            run(() => {
+                this.$('.gh-image-uploader').trigger(drop);
+            });
 
-                this.render(hbs`{{gh-image-uploader
-                    uploadSuccess=(action uploadSuccess)
-                    uploadFailed=(action uploadFailed)
-                    validate=(action validate)}}`);
-
-                fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
-
-                wait().then(() => {
-                    expect(validate.calledOnce).to.be.true;
-                    expect(uploadSuccess.called).to.be.false;
-                    expect(uploadFailed.calledOnce).to.be.true;
-                    expect(this.$('.failed').length, 'error message is displayed').to.equal(1);
-                    expect(this.$('.failed').text()).to.match(/The image type you uploaded is not supported/);
-                    done();
-                });
+            wait().then(() => {
+                expect(uploadSuccess.calledOnce).to.be.true;
+                expect(uploadSuccess.firstCall.args[0]).to.equal('/content/images/test.png');
+                done();
             });
         });
 
-        describe('URL input form', function () {
-            beforeEach(function () {
-                this.set('configService.fileStorage', false);
-            });
+        it('validates extension by default', function (done) {
+            let uploadSuccess = sinon.spy();
+            let uploadFailed = sinon.spy();
 
-            it('displays save button by default', function () {
-                this.set('image', 'http://example.com/test.png');
-                this.render(hbs`{{gh-image-uploader image=image text="text test"}}`);
-                expect(this.$('button').length).to.equal(1);
-                expect(this.$('input[type="text"]').val()).to.equal('http://example.com/test.png');
-            });
+            this.set('uploadSuccess', uploadSuccess);
+            this.set('uploadFailed', uploadFailed);
 
-            it('can render without a save button', function () {
-                this.render(hbs`{{gh-image-uploader image=image saveButton=false text="text test"}}`);
-                expect(this.$('button').length).to.equal(0);
-                expect(this.$('.description').text().trim()).to.equal('text test');
-            });
+            stubSuccessfulUpload(server);
 
-            it('fires update action when save button clicked', function () {
-                let update = sinon.spy();
-                this.set('update', update);
+            this.render(hbs`{{gh-image-uploader
+                uploadSuccess=(action uploadSuccess)
+                uploadFailed=(action uploadFailed)}}`);
 
-                this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.json'});
 
-                this.$('input[type="text"]').val('saved url');
-                this.$('input[type="text"]').change();
-                this.$('button.btn-blue').click();
-
-                expect(update.calledOnce).to.be.true;
-                expect(update.firstCall.args[0]).to.equal('saved url');
-            });
-
-            it('fires onInput action when typing URL', function () {
-                let onInput = sinon.spy();
-                this.set('onInput', onInput);
-
-                this.render(hbs`{{gh-image-uploader image=image onInput=(action onInput)}}`);
-
-                this.$('input[type="text"]').val('input url');
-                this.$('input[type="text"]').change();
-
-                expect(onInput.calledOnce).to.be.true;
-                expect(onInput.firstCall.args[0]).to.equal('input url');
-            });
-
-            it('saves on enter key', function () {
-                let update = sinon.spy();
-                this.set('update', update);
-
-                this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
-
-                this.$('input[type="text"]').val('saved url');
-                this.$('input[type="text"]').change();
-                this.$('input[type="text"]').trigger(
-                    // eslint-disable-next-line new-cap
-                    $.Event('keyup', {keyCode: keyCodes.enter, which: keyCodes.enter})
-                );
-
-                expect(update.calledOnce).to.be.true;
-                expect(update.firstCall.args[0]).to.equal('saved url');
+            wait().then(() => {
+                expect(uploadSuccess.called).to.be.false;
+                expect(uploadFailed.calledOnce).to.be.true;
+                expect(this.$('.failed').length, 'error message is displayed').to.equal(1);
+                expect(this.$('.failed').text()).to.match(/The image type you uploaded is not supported/);
+                done();
             });
         });
-    }
-);
+
+        it('uploads if validate action supplied and returns true', function (done) {
+            let validate = sinon.stub().returns(true);
+            let uploadSuccess = sinon.spy();
+
+            this.set('validate', validate);
+            this.set('uploadSuccess', uploadSuccess);
+
+            stubSuccessfulUpload(server);
+
+            this.render(hbs`{{gh-image-uploader
+                uploadSuccess=(action uploadSuccess)
+                validate=(action validate)}}`);
+
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.txt'});
+
+            wait().then(() => {
+                expect(validate.calledOnce).to.be.true;
+                expect(uploadSuccess.calledOnce).to.be.true;
+                done();
+            });
+        });
+
+        it('skips upload and displays error if validate action supplied and doesn\'t return true', function (done) {
+            let validate = sinon.stub().returns(new UnsupportedMediaTypeError());
+            let uploadSuccess = sinon.spy();
+            let uploadFailed = sinon.spy();
+
+            this.set('validate', validate);
+            this.set('uploadSuccess', uploadSuccess);
+            this.set('uploadFailed', uploadFailed);
+
+            stubSuccessfulUpload(server);
+
+            this.render(hbs`{{gh-image-uploader
+                uploadSuccess=(action uploadSuccess)
+                uploadFailed=(action uploadFailed)
+                validate=(action validate)}}`);
+
+            fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
+
+            wait().then(() => {
+                expect(validate.calledOnce).to.be.true;
+                expect(uploadSuccess.called).to.be.false;
+                expect(uploadFailed.calledOnce).to.be.true;
+                expect(this.$('.failed').length, 'error message is displayed').to.equal(1);
+                expect(this.$('.failed').text()).to.match(/The image type you uploaded is not supported/);
+                done();
+            });
+        });
+    });
+
+    describe('URL input form', function () {
+        beforeEach(function () {
+            this.set('configService.fileStorage', false);
+        });
+
+        it('displays save button by default', function () {
+            this.set('image', 'http://example.com/test.png');
+            this.render(hbs`{{gh-image-uploader image=image text="text test"}}`);
+            expect(this.$('button').length).to.equal(1);
+            expect(this.$('input[type="text"]').val()).to.equal('http://example.com/test.png');
+        });
+
+        it('can render without a save button', function () {
+            this.render(hbs`{{gh-image-uploader image=image saveButton=false text="text test"}}`);
+            expect(this.$('button').length).to.equal(0);
+            expect(this.$('.description').text().trim()).to.equal('text test');
+        });
+
+        it('fires update action when save button clicked', function () {
+            let update = sinon.spy();
+            this.set('update', update);
+
+            this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+
+            this.$('input[type="text"]').val('saved url');
+            this.$('input[type="text"]').change();
+            this.$('button.btn-blue').click();
+
+            expect(update.calledOnce).to.be.true;
+            expect(update.firstCall.args[0]).to.equal('saved url');
+        });
+
+        it('fires onInput action when typing URL', function () {
+            let onInput = sinon.spy();
+            this.set('onInput', onInput);
+
+            this.render(hbs`{{gh-image-uploader image=image onInput=(action onInput)}}`);
+
+            this.$('input[type="text"]').val('input url');
+            this.$('input[type="text"]').change();
+
+            expect(onInput.calledOnce).to.be.true;
+            expect(onInput.firstCall.args[0]).to.equal('input url');
+        });
+
+        it('saves on enter key', function () {
+            let update = sinon.spy();
+            this.set('update', update);
+
+            this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
+
+            this.$('input[type="text"]').val('saved url');
+            this.$('input[type="text"]').change();
+            this.$('input[type="text"]').trigger(
+                // eslint-disable-next-line new-cap
+                $.Event('keyup', {keyCode: keyCodes.enter, which: keyCodes.enter})
+            );
+
+            expect(update.calledOnce).to.be.true;
+            expect(update.firstCall.args[0]).to.equal('saved url');
+        });
+    });
+});
