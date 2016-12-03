@@ -19,7 +19,10 @@ let GhostOauth2 = Oauth2.extend({
     responseParams: ['code'],
 
     // we want to redirect to the ghost admin app by default
-    redirectUri: window.location.href.replace(/(\/ghost)(.*)/, '$1/'),
+    init() {
+        this._super(...arguments);
+        this.set('redirectUri', `${this.get('config.blogUrl')}/ghost/`);
+    },
 
     open(options) {
         if (options.type) {
