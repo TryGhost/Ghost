@@ -79,7 +79,8 @@
             "oauth": {
                 "invalidClient": "Invalid client.",
                 "invalidRefreshToken": "Invalid refresh token.",
-                "refreshTokenExpired": "Refresh token expired."
+                "refreshTokenExpired": "Refresh token expired.",
+                "tokenExpired": "Token expired."
             },
             "privateblogging": {
                 "wrongPassword": "Wrong password"
