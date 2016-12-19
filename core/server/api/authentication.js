@@ -609,7 +609,7 @@ authentication = {
                         return {
                             access_token: newAccessToken,
                             refresh_token: refreshToken,
-                            expires_in: newAccessExpiry
+                            expires_in: globalUtils.ONE_HOUR_S
                         };
                     });
             });
