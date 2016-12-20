@@ -77,6 +77,8 @@ function storeSubscriber(req, res, next) {
 
     if (_.isEmpty(req.body.email)) {
         return next(new errors.ValidationError('Email cannot be blank.'));
+    } else if (!validator.isEmail(req.body.email)) {
+        return next(new errors.ValidationError('Invalid email.'));
     }
 
     return api.subscribers.add({subscribers: [req.body]}, {context: {external: true}})
