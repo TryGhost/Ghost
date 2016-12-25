@@ -426,6 +426,7 @@ describe('Acceptance: Editor', function() {
             let compareDate = moment().tz('Etc/UTC').add(4, 'minutes').format('DD MMM YY @ HH:mm').toString();
             server.create('post', {published_at: moment.utc().add(4, 'minutes'), status: 'scheduled'});
             server.create('setting', {activeTimezone: 'Europe/Dublin'});
+            clock.restore();
 
             visit('/editor/1');
 
@@ -447,7 +448,6 @@ describe('Acceptance: Editor', function() {
                 expect(find('.gh-notification.gh-notification-schedule').text().trim(), 'notification countdown')
                     .to.contain('Post will be published in');
             });
-            clock.restore();
         });
 
         it('only shows option to unschedule post 2 minutes before scheduled time', function () {
@@ -455,6 +455,7 @@ describe('Acceptance: Editor', function() {
             let clock = sinon.useFakeTimers(moment().valueOf());
             server.create('post', {published_at: moment.utc().add(2, 'minutes'), status: 'scheduled'});
             server.create('setting', {activeTimezone: 'Europe/Dublin'});
+            clock.restore();
 
             visit('/editor/1');
 
@@ -469,8 +470,6 @@ describe('Acceptance: Editor', function() {
                 expect(find('.btn.btn-sm.dropdown-toggle').hasClass('active'), 'no dropdown menu')
                     .to.be.false;
             });
-
-            clock.restore();
         });
 
         it.skip('lets user unschedule the post shortly before scheduled date', function () {
@@ -478,6 +477,7 @@ describe('Acceptance: Editor', function() {
             let clock = sinon.useFakeTimers(moment().valueOf());
             server.create('post', {published_at: moment.utc().add(1, 'minute'), status: 'scheduled'});
             server.create('setting', {activeTimezone: 'Europe/Dublin'});
+            clock.restore();
 
             visit('/editor/1');
 
@@ -512,8 +512,6 @@ describe('Acceptance: Editor', function() {
                 expect(find('.gh-notification.gh-notification-schedule').text().trim(), 'notification countdown')
                     .to.equal('');
             });
-
-            clock.restore();
         });
 
     });
