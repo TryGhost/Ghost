@@ -1,9 +1,9 @@
 /* eslint-disable camelcase */
 export default [
     {
+        id: 1,
         created_at: '2015-09-11T09:44:30.805Z',
         created_by: 1,
-        id: 1,
         key: 'title',
         type: 'blog',
         updated_at: '2015-10-04T16:26:05.195Z',
@@ -11,9 +11,9 @@ export default [
         value: 'Test Blog'
     },
     {
+        id: 2,
         created_at: '2015-09-11T09:44:30.806Z',
         created_by: 1,
-        id: 2,
         key: 'description',
         type: 'blog',
         updated_at: '2015-10-04T16:26:05.198Z',
@@ -51,9 +51,9 @@ export default [
         updated_by: 1
     },
     {
+        id: 6,
         created_at: '2015-09-11T09:44:30.809Z',
         created_by: 1,
-        id: 6,
         key: 'postsPerPage',
         type: 'blog',
         updated_at: '2015-10-04T16:26:05.211Z',
@@ -91,9 +91,9 @@ export default [
         updated_by: 1
     },
     {
+        id: 10,
         created_at: '2015-09-11T09:44:30.809Z',
         created_by: 1,
-        id: 10,
         key: 'ghost_head',
         type: 'blog',
         updated_at: '2015-09-23T13:32:49.858Z',
@@ -101,9 +101,9 @@ export default [
         value: ''
     },
     {
+        id: 11,
         created_at: '2015-09-11T09:44:30.809Z',
         created_by: 1,
-        id: 11,
         key: 'ghost_foot',
         type: 'blog',
         updated_at: '2015-09-23T13:32:49.858Z',
@@ -121,9 +121,9 @@ export default [
         updated_by: 1
     },
     {
+        id: 13,
         created_at: '2015-09-11T09:44:30.810Z',
         created_by: 1,
-        id: 13,
         key: 'navigation',
         type: 'blog',
         updated_at: '2015-09-23T13:32:49.868Z',
@@ -134,9 +134,9 @@ export default [
         ])
     },
     {
+        id: 14,
         created_at: '2015-09-11T09:44:30.810Z',
         created_by: 1,
-        id: 14,
         key: 'isPrivate',
         type: 'blog',
         updated_at: '2015-09-23T13:32:49.868Z',
@@ -144,9 +144,9 @@ export default [
         value: false
     },
     {
+        id: 15,
         created_at: '2015-09-11T09:44:30.810Z',
         created_by: 1,
-        id: 15,
         key: 'password',
         type: 'blog',
         updated_at: '2015-09-23T13:32:49.868Z',
@@ -154,9 +154,9 @@ export default [
         value: ''
     },
     {
+        id: 16,
         created_at: '2016-05-05T15:04:03.115Z',
         created_by: 1,
-        id: 17,
         key: 'slack',
         type: 'blog',
         updated_at: '2016-05-05T18:33:09.168Z',
@@ -164,9 +164,9 @@ export default [
         value: '[{"url":""}]'
     },
     {
+        id: 17,
         created_at: '2016-05-05T15:40:12.133Z',
         created_by: 1,
-        id: 23,
         key: 'facebook',
         type: 'blog',
         updated_at: '2016-05-08T15:20:25.953Z',
@@ -174,9 +174,9 @@ export default [
         value: 'test'
     },
     {
+        id: 18,
         created_at: '2016-05-05T15:40:12.134Z',
         created_by: 1,
-        id: 24,
         key: 'twitter',
         type: 'blog',
         updated_at: '2016-05-08T15:20:25.954Z',
@@ -184,9 +184,9 @@ export default [
         value: '@test'
     },
     {
+        id: 19,
         created_at: '2015-09-11T09:44:30.810Z',
         created_by: 1,
-        id: 16,
         key: 'activeTimezone',
         type: 'blog',
         updated_at: '2015-09-23T13:32:49.868Z',
@@ -194,8 +194,8 @@ export default [
         value: 'Etc/UTC'
     },
     {
+        id: 20,
         key: 'availableThemes',
-        id: 18,
         value: [
             {
                 name: 'casper',

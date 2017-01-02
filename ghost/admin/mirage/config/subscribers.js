@@ -1,19 +1,16 @@
 /* eslint-disable camelcase */
-import Mirage from 'ember-cli-mirage';
+import {Response} from 'ember-cli-mirage';
 import {paginatedResponse} from '../utils';
 
 export default function mockSubscribers(server) {
-    server.get('/subscribers/', function (db, request) {
-        let response = paginatedResponse('subscribers', db.subscribers, request);
-        return response;
-    });
+    server.get('/subscribers/', paginatedResponse('subscribers'));
 
-    server.post('/subscribers/', function (db, request) {
+    server.post('/subscribers/', function ({subscribers}, request) {
         let [attrs] = JSON.parse(request.requestBody).subscribers;
-        let [subscriber] = db.subscribers.where({email: attrs.email});
+        let subscriber = subscribers.findBy({email: attrs.email});
 
         if (subscriber) {
-            return new Mirage.Response(422, {}, {
+            return new Response(422, {}, {
                 errors: [{
                     errorType: 'ValidationError',
                     message: 'Email already exists.',
@@ -24,29 +21,11 @@ export default function mockSubscribers(server) {
             attrs.created_at = new Date();
             attrs.created_by = 0;
 
-            subscriber = db.subscribers.insert(attrs);
-
-            return {
-                subscriber
-            };
+            return subscribers.create(attrs);
         }
     });
 
-    server.put('/subscribers/:id/', function (db, request) {
-        let {id} = request.params;
-        let [attrs] = JSON.parse(request.requestBody).subscribers;
-        let subscriber = db.subscribers.update(id, attrs);
-
-        return {
-            subscriber
-        };
-    });
-
-    server.del('/subscribers/:id/', function (db, request) {
-        db.subscribers.remove(request.params.id);
-
-        return new Mirage.Response(204, {}, {});
-    });
+    server.put('/subscribers/:id/');
 
     server.post('/subscribers/csv/', function () {
         // NB: we get a raw FormData object with no way to inspect it in Chrome
@@ -65,4 +44,6 @@ export default function mockSubscribers(server) {
             }
         };
     });
+
+    server.del('/subscribers/:id/');
 }

@@ -93,7 +93,6 @@ module.exports = function (defaults) {
             },
             codemirror: codemirrorAssets(),
             'jquery-deparam': {
-                enabled: EmberApp.env() === 'test',
                 import: ['jquery-deparam.js']
             },
             moment: {

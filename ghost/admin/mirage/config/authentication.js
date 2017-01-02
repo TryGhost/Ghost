@@ -1,16 +1,16 @@
 /* eslint-disable camelcase */
-import Mirage from 'ember-cli-mirage';
+import {Response} from 'ember-cli-mirage';
 import {isBlank} from 'ember-utils';
 import $ from 'jquery';
 
 export default function mockAuthentication(server) {
-    server.post('/authentication/token', function (db, request) {
-        let params = $.deparam(request.requestBody);
+    server.post('/authentication/token', function ({roles, users}, {requestBody}) {
+        let params = $.deparam(requestBody);
 
         if (params.grant_type === 'authorization_code') {
             // OAuth sign-in
-            if (!db.users.length) {
-                let [role] = db.roles.where({name: 'Owner'});
+            if (!users.all().models.length) {
+                let role = roles.findBy({name: 'Owner'});
                 server.create('user', {email: 'oauthtest@example.com', roles: [role]});
             }
 
@@ -30,13 +30,13 @@ export default function mockAuthentication(server) {
         }
     });
 
-    server.post('/authentication/passwordreset', function (db, request) {
+    server.post('/authentication/passwordreset', function (schema, request) {
         let {passwordreset} = JSON.parse(request.requestBody);
         // eslint-disable-next-line ember-suave/prefer-destructuring
         let email = passwordreset[0].email;
 
         if (email === 'unknown@example.com') {
-            return new Mirage.Response(404, {}, {
+            return new Response(404, {}, {
                 errors: [
                     {
                         message: 'There is no user with that email address.',
@@ -53,10 +53,10 @@ export default function mockAuthentication(server) {
         }
     });
 
-    server.get('/authentication/invitation/', function (db, request) {
+    server.get('/authentication/invitation/', function (schema, request) {
         let {email} = request.queryParams;
-        let [invite] = db.invites.where({email});
-        let user = db.users.find(invite.created_by);
+        let invite = schema.invites.findBy({email});
+        let user = schema.users.find(invite.createdBy);
         let valid = !!invite;
         let invitedBy = user && user.name;
 
@@ -70,14 +70,13 @@ export default function mockAuthentication(server) {
 
     /* Setup ---------------------------------------------------------------- */
 
-    server.post('/authentication/setup', function (db, request) {
+    server.post('/authentication/setup', function ({roles, users}, request) {
         let [attrs] = JSON.parse(request.requestBody).setup;
-        let [role] = db.roles.where({name: 'Owner'});
-        let user;
+        let role = roles.findBy({name: 'Owner'});
 
         // create owner role unless already exists
         if (!role) {
-            role = db.roles.insert({name: 'Owner'});
+            role = roles.create({name: 'Owner'});
         }
         attrs.roles = [role];
 
@@ -85,14 +84,8 @@ export default function mockAuthentication(server) {
             attrs.slug = attrs.email.split('@')[0].dasherize();
         }
 
-        // NOTE: this does not use the user factory to fill in blank fields
-        user = db.users.insert(attrs);
-
-        delete user.roles;
-
-        return {
-            users: [user]
-        };
+        // NOTE: server does not use the user factory to fill in blank fields
+        return users.create(attrs);
     });
 
     server.get('/authentication/setup/', function () {
