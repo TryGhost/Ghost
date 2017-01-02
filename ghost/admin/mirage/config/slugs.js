@@ -1,11 +1,7 @@
-import Ember from 'ember';
-
-const {
-    String: {dasherize}
-} = Ember;
+import {dasherize} from 'ember-string';
 
 export default function mockSlugs(server) {
-    server.get('/slugs/post/:slug/', function (db, request) {
+    server.get('/slugs/post/:slug/', function (schema, request) {
         return {
             slugs: [
                 {slug: dasherize(decodeURIComponent(request.params.slug))}
@@ -13,7 +9,7 @@ export default function mockSlugs(server) {
         };
     });
 
-    server.get('/slugs/user/:slug/', function (db, request) {
+    server.get('/slugs/user/:slug/', function (schema, request) {
         return {
             slugs: [
                 {slug: dasherize(decodeURIComponent(request.params.slug))}

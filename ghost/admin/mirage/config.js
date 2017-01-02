@@ -52,7 +52,7 @@ export function testConfig() {
 
     /* Notifications -------------------------------------------------------- */
 
-    this.get('/notifications/', 'notifications');
+    this.get('/notifications/');
 
     /* Apps - Slack Test Notification --------------------------------------------------------- */
 
