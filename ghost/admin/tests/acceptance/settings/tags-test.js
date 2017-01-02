@@ -13,7 +13,7 @@ import startApp from '../../helpers/start-app';
 import destroyApp from '../../helpers/destroy-app';
 import {invalidateSession, authenticateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import {errorOverride, errorReset} from 'ghost-admin/tests/helpers/adapter-error';
-import Mirage from 'ember-cli-mirage';
+import {Response} from 'ember-cli-mirage';
 
 // Grabbed from keymaster's testing code because Ember's `keyEvent` helper
 // is for some reason not triggering the events in a way that keymaster detects:
@@ -78,10 +78,6 @@ describe('Acceptance: Settings - Tags', function () {
         beforeEach(function () {
             let role = server.create('role', {name: 'Administrator'});
             server.create('user', {roles: [role]});
-
-            // load the settings fixtures
-            // TODO: this should always be run for acceptance tests
-            server.loadFixtures();
 
             return authenticateSession(application);
         });
@@ -308,7 +304,7 @@ describe('Acceptance: Settings - Tags', function () {
 
         it('redirects to 404 when tag does not exist', function () {
             server.get('/tags/slug/unknown/', function () {
-                return new Mirage.Response(404, {'Content-Type': 'application/json'}, {errors: [{message: 'Tag not found.', errorType: 'NotFoundError'}]});
+                return new Response(404, {'Content-Type': 'application/json'}, {errors: [{message: 'Tag not found.', errorType: 'NotFoundError'}]});
             });
 
             errorOverride();

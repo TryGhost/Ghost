@@ -9,16 +9,7 @@ import {expect} from 'chai';
 import startApp from '../helpers/start-app';
 import destroyApp from '../helpers/destroy-app';
 import {authenticateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
-import Mirage from 'ember-cli-mirage';
-
-let versionMismatchResponse = function () {
-    return new Mirage.Response(400, {}, {
-        errors: [{
-            errorType: 'VersionMismatchError',
-            statusCode: 400
-        }]
-    });
-};
+import {versionMismatchResponse} from 'ghost-admin/mirage/utils';
 
 describe('Acceptance: Version Mismatch', function() {
     let application;
@@ -35,8 +26,6 @@ describe('Acceptance: Version Mismatch', function() {
         beforeEach(function () {
             let role = server.create('role', {name: 'Administrator'});
             server.create('user', {roles: [role]});
-
-            server.loadFixtures();
 
             return authenticateSession(application);
         });

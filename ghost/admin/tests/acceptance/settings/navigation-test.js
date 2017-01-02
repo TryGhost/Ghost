@@ -48,10 +48,6 @@ describe('Acceptance: Settings - Navigation', function () {
             let role = server.create('role', {name: 'Administrator'});
             server.create('user', {roles: [role]});
 
-            // load the settings fixtures
-            // TODO: this should always be run for acceptance tests
-            server.loadFixtures();
-
             authenticateSession(application);
         });
 

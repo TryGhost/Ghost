@@ -19,8 +19,6 @@ describe('Acceptance: Signup', function() {
 
     beforeEach(function() {
         application = startApp();
-
-        server.loadFixtures();
     });
 
     afterEach(function() {
@@ -34,15 +32,16 @@ describe('Acceptance: Signup', function() {
             };
         });
 
-        server.post('/authentication/invitation/', function (db, request) {
-            let params = JSON.parse(request.requestBody);
+        server.post('/authentication/invitation/', function ({users}, {requestBody}) {
+            let params = JSON.parse(requestBody);
             expect(params.invitation[0].name).to.equal('Test User');
             expect(params.invitation[0].email).to.equal('kevin+test2@ghost.org');
             expect(params.invitation[0].password).to.equal('ValidPassword');
             expect(params.invitation[0].token).to.equal('MTQ3MDM0NjAxNzkyOXxrZXZpbit0ZXN0MkBnaG9zdC5vcmd8MmNEblFjM2c3ZlFUajluTks0aUdQU0dmdm9ta0xkWGY2OEZ1V2dTNjZVZz0');
 
             // ensure that `/users/me/` request returns a user
-            server.create('user', {email: 'kevin@test2@ghost.org'});
+            let role = server.create('role', {name: 'Author'});
+            users.create({email: 'kevin@test2@ghost.org', roles: [role]});
 
             return {
                 invitation: [{
@@ -148,14 +147,14 @@ describe('Acceptance: Signup', function() {
         beforeEach(function () {
             enableGhostOAuth(server);
 
-            let user = server.create('user', {name: 'Test Invite Creator'});
+            let {invites, users} = server.schema;
 
-            /* eslint-disable camelcase */
-            server.create('invite', {
+            let user = users.create({name: 'Test Invite Creator'});
+
+            invites.create({
                 email: 'kevin+test2@ghost.org',
-                created_by: user.id
+                createdBy: user.id
             });
-            /* eslint-enable camelcase */
         });
 
         it('can sign up sucessfully', function () {

@@ -62,8 +62,6 @@ describe('Acceptance: Settings - General', function () {
             let role = server.create('role', {name: 'Administrator'});
             server.create('user', {roles: [role]});
 
-            server.loadFixtures();
-
             return authenticateSession(application);
         });
 

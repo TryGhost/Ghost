@@ -5,13 +5,13 @@ import {
     beforeEach,
     afterEach
 } from 'mocha';
-import {expect} from 'chai';
 import $ from 'jquery';
+import {expect} from 'chai';
 import startApp from '../helpers/start-app';
 import destroyApp from '../helpers/destroy-app';
 import {invalidateSession, authenticateSession} from '../helpers/ember-simple-auth';
 import {enableGhostOAuth} from '../helpers/configuration';
-import Mirage from 'ember-cli-mirage';
+import {Response} from 'ember-cli-mirage';
 import {
     stubSuccessfulOAuthConnect,
     stubFailedOAuthConnect
@@ -45,14 +45,14 @@ describe('Acceptance: Signin', function() {
             let role = server.create('role', {name: 'Administrator'});
             server.create('user', {roles: [role], slug: 'test-user'});
 
-            server.post('/authentication/token', function (db, request) {
+            server.post('/authentication/token', function (schema, {requestBody}) {
                 /* eslint-disable camelcase */
                 let {
                     grant_type: grantType,
                     username,
                     password,
                     client_id: clientId
-                } = $.deparam(request.requestBody);
+                } = $.deparam(requestBody);
 
                 expect(grantType, 'grant type').to.equal('password');
                 expect(username, 'username').to.equal('test@example.com');
@@ -66,7 +66,7 @@ describe('Acceptance: Signin', function() {
                         token_type: 'Bearer'
                     };
                 } else {
-                    return new Mirage.Response(401, {}, {
+                    return new Response(401, {}, {
                         errors: [{
                             errorType: 'UnauthorizedError',
                             message: 'Invalid Password'

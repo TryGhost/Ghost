@@ -11,7 +11,7 @@ import destroyApp from '../helpers/destroy-app';
 import {invalidateSession, authenticateSession} from '../helpers/ember-simple-auth';
 import {errorOverride, errorReset} from '../helpers/adapter-error';
 import {enableGhostOAuth} from '../helpers/configuration';
-import Mirage from 'ember-cli-mirage';
+import {Response} from 'ember-cli-mirage';
 
 describe('Acceptance: Team', function () {
     let application;
@@ -65,10 +65,10 @@ describe('Acceptance: Team', function () {
         let admin, adminRole;
 
         beforeEach(function () {
-            adminRole = server.create('role', {name: 'Administrator'});
-            admin = server.create('user', {email: 'admin@example.com', roles: [adminRole]});
+            server.loadFixtures('roles');
+            adminRole = server.schema.roles.find(1);
 
-            server.loadFixtures();
+            admin = server.create('user', {email: 'admin@example.com', roles: [adminRole]});
 
             return authenticateSession(application);
         });
@@ -353,8 +353,9 @@ describe('Acceptance: Team', function () {
         it('can delete users', function () {
             let user1 = server.create('user');
             let user2 = server.create('user');
-            // eslint-disable-next-line camelcase
-            server.create('post', {author_id: user2.id});
+            let post = server.create('post');
+
+            user2.posts = [post];
 
             visit('/team');
             click(`a.user-list-item:contains("${user1.name}")`);
@@ -419,8 +420,6 @@ describe('Acceptance: Team', function () {
                     facebook: 'test',
                     twitter: '@test'
                 });
-
-                server.loadFixtures();
             });
 
             it('input fields reset and validate correctly', function () {
@@ -714,7 +713,6 @@ describe('Acceptance: Team', function () {
 
         describe('using Ghost OAuth', function () {
             beforeEach(function () {
-                server.loadFixtures();
                 enableGhostOAuth(server);
             });
 
@@ -744,10 +742,6 @@ describe('Acceptance: Team', function () {
         });
 
         describe('own user', function () {
-            beforeEach(function () {
-                server.loadFixtures();
-            });
-
             it('requires current password when changing password', function () {
                 visit(`/team/${admin.slug}`);
 
@@ -793,7 +787,7 @@ describe('Acceptance: Team', function () {
 
         it('redirects to 404 when user does not exist', function () {
             server.get('/users/slug/unknown/', function () {
-                return new Mirage.Response(404, {'Content-Type': 'application/json'}, {errors: [{message: 'User not found.', errorType: 'NotFoundError'}]});
+                return new Response(404, {'Content-Type': 'application/json'}, {errors: [{message: 'User not found.', errorType: 'NotFoundError'}]});
             });
 
             errorOverride();
@@ -816,10 +810,8 @@ describe('Acceptance: Team', function () {
             authorRole = server.create('role', {name: 'Author'});
             server.create('user', {roles: [authorRole]});
 
-            server.loadFixtures();
-
             server.get('/invites/', function () {
-                return new Mirage.Response(403, {}, {
+                return new Response(403, {}, {
                     errors: [{
                         errorType: 'NoPermissionError',
                         message: 'You do not have permission to perform this action'
