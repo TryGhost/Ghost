@@ -63,8 +63,6 @@ describe('Acceptance: Subscribers', function() {
             let role = server.create('role', {name: 'Administrator'});
             server.create('user', {roles: [role]});
 
-            server.loadFixtures();
-
             return authenticateSession(application);
         });
 

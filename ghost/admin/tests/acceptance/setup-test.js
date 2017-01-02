@@ -10,7 +10,7 @@ import startApp from '../helpers/start-app';
 import destroyApp from '../helpers/destroy-app';
 import {invalidateSession, authenticateSession} from '../helpers/ember-simple-auth';
 import {enableGhostOAuth} from '../helpers/configuration';
-import Mirage from 'ember-cli-mirage';
+import {Response} from 'ember-cli-mirage';
 import {
     stubSuccessfulOAuthConnect,
     stubFailedOAuthConnect
@@ -185,7 +185,7 @@ describe('Acceptance: Setup', function () {
 
                 // validation error
                 if (postCount === 1) {
-                    return new Mirage.Response(422, {}, {
+                    return new Response(422, {}, {
                         errors: [
                             {
                                 errorType: 'ValidationError',
@@ -197,7 +197,7 @@ describe('Acceptance: Setup', function () {
 
                 // server error
                 if (postCount === 2) {
-                    return new Mirage.Response(500, {}, null);
+                    return new Response(500, {}, null);
                 }
             });
 
@@ -238,7 +238,7 @@ describe('Acceptance: Setup', function () {
         it('handles invalid origin error on step 2', function () {
             // mimick the API response for an invalid origin
             server.post('/authentication/token', function () {
-                return new Mirage.Response(401, {}, {
+                return new Response(401, {}, {
                     errors: [
                         {
                             errorType: 'UnauthorizedError',
@@ -271,19 +271,19 @@ describe('Acceptance: Setup', function () {
         it('handles validation errors in step 3', function () {
             let input = '[name="users"]';
             let postCount = 0;
-            let button, formGroup, invite;
+            let button, formGroup;
 
             invalidateSession(application);
             server.loadFixtures('roles');
 
-            server.post('/invites', function (db, request) {
+            server.post('/invites', function ({invites}, request) {
                 let [params] = JSON.parse(request.requestBody).invites;
 
                 postCount++;
 
                 // invalid
                 if (postCount === 1) {
-                    return new Mirage.Response(422, {}, {
+                    return new Response(422, {}, {
                         errors: [
                             {
                                 errorType: 'ValidationError',
@@ -295,7 +295,7 @@ describe('Acceptance: Setup', function () {
 
                 // TODO: duplicated from mirage/config/invites - extract method?
                 /* eslint-disable camelcase */
-                params.token = `${db.invites.length}-token`;
+                params.token = `${invites.all().models.length}-token`;
                 params.expires = moment.utc().add(1, 'day').unix();
                 params.created_at = moment.utc().format();
                 params.created_by = 1;
@@ -304,11 +304,7 @@ describe('Acceptance: Setup', function () {
                 params.status = 'sent';
                 /* eslint-enable camelcase */
 
-                // valid
-                invite = db.invites.insert(params);
-                return {
-                    invites: [invite]
-                };
+                return invites.create(params);
             });
 
             // complete step 2 so we can access step 3

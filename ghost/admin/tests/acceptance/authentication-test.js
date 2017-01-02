@@ -11,7 +11,7 @@ import run from 'ember-runloop';
 import startApp from '../helpers/start-app';
 import destroyApp from '../helpers/destroy-app';
 import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
-import Mirage from 'ember-cli-mirage';
+import {Response} from 'ember-cli-mirage';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 
@@ -36,7 +36,6 @@ describe('Acceptance: Authentication', function () {
                 visit(url);
             };
 
-            server.loadFixtures();
             let role = server.create('role', {name: 'Administrator'});
             server.create('user', {roles: [role], slug: 'test-user'});
         });
@@ -48,7 +47,7 @@ describe('Acceptance: Authentication', function () {
         it('invalidates session on 401 API response', function () {
             // return a 401 when attempting to retrieve users
             server.get('/users/', () => {
-                return new Mirage.Response(401, {}, {
+                return new Response(401, {}, {
                     errors: [
                         {message: 'Access denied.', errorType: 'UnauthorizedError'}
                     ]
@@ -94,6 +93,7 @@ describe('Acceptance: Authentication', function () {
         });
     });
 
+    // TODO: re-enable once modal reappears correctly
     describe.skip('editor', function () {
         let origDebounce = run.debounce;
         let origThrottle = run.throttle;
@@ -109,24 +109,21 @@ describe('Acceptance: Authentication', function () {
             server.create('user', {roles: [role]});
 
             // simulate an invalid session when saving the edited post
-            server.put('/posts/:id/', (db, request) => {
-                let post = db.posts.find(request.params.id);
-                let [attrs] = JSON.parse(request.requestBody).posts;
+            server.put('/posts/:id/', function ({posts}, {params}) {
+                let post = posts.find(params.id);
+                let attrs = this.normalizedRequestAttrs();
 
                 if (attrs.markdown === 'Edited post body') {
-                    return new Mirage.Response(401, {}, {
+                    return new Response(401, {}, {
                         errors: [
                             {message: 'Access denied.', errorType: 'UnauthorizedError'}
                         ]
                     });
                 } else {
-                    return {
-                        posts: [post]
-                    };
+                    return post.update(attrs);
                 }
             });
 
-            server.loadFixtures();
             authenticateSession(application);
 
             visit('/editor');
@@ -164,10 +161,9 @@ describe('Acceptance: Authentication', function () {
         let role = server.create('role', {name: 'Administrator'});
         server.create('user', {roles: [role]});
 
-        server.post('/uploads', (db, request) => {
+        server.post('/uploads', (schema, request) => {
             return request;
         });
-        server.loadFixtures();
 
         /* eslint-disable camelcase */
         authenticateSession(application, {
