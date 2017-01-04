@@ -66,7 +66,6 @@
     "passport-http-bearer": "1.0.1",
     "passport-oauth2-client-password": "0.1.2",
     "path-match": "1.2.4",
-    "prettyjson": "1.2.1",
     "rss": "1.2.1",
     "sanitize-html": "1.13.0",
     "semver": "5.3.0",
