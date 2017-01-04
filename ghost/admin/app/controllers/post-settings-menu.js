@@ -113,6 +113,7 @@ export default Controller.extend(SettingsMenuMixin, {
 
         if (seoURL.length > 70) {
             seoURL = seoURL.substring(0, 70).trim();
+            seoURL = Handlebars.Utils.escapeExpression(seoURL);
             seoURL = htmlSafe(`${seoURL}&hellip;`);
         }
 
