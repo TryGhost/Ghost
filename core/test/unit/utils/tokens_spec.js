@@ -1,4 +1,4 @@
-var uuid = require('node-uuid'),
+var uuid = require('uuid'),
     should = require('should'),
     utils = require('../../../server/utils');
 

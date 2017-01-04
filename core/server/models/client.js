@@ -1,5 +1,5 @@
 var crypto         = require('crypto'),
-    uuid           = require('node-uuid'),
+    uuid           = require('uuid'),
     ghostBookshelf = require('./base'),
     config         = require('../config'),
     Client,
