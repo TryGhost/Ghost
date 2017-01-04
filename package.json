@@ -112,7 +112,7 @@
     "gulp-help": "1.6.1",
     "gulp-jscs": "4.0.0",
     "gulp-jshint": "2.0.3",
-    "gulp-jsonlint": "1.1.2",
+    "gulp-jsonlint": "1.2.0",
     "gulp-livereload": "3.8.1",
     "gulp-nodemon": "2.2.1",
     "gulp-util": "3.0.7",
