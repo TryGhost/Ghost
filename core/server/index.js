@@ -14,7 +14,7 @@ require('./overrides');
 
 // Module dependencies
 var debug = require('debug')('ghost:boot:init'),
-    uuid = require('node-uuid'),
+    uuid = require('uuid'),
     Promise = require('bluebird'),
     KnexMigrator = require('knex-migrator'),
     config = require('./config'),
