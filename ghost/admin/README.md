@@ -7,3 +7,7 @@ This is the home of Ember.js based admin client that ships with [Ghost](https://
 ## Have a bug or issue?
 
 Bugs and issues (even if they only affect the admin client) should be opened on the core [Ghost](https://github.com/tryghost/ghost/issues) repository.
+
+# Copyright & License
+
+Copyright (c) 2013-2017 Ghost Foundation - Released under the [MIT license](LICENSE).
