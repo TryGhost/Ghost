@@ -46,7 +46,7 @@
     "ember-cli-deprecation-workflow": "0.2.3",
     "ember-cli-eslint": "3.0.2",
     "ember-cli-fastclick": "1.3.0",
-    "ember-cli-htmlbars": "1.1.0",
+    "ember-cli-htmlbars": "1.1.1",
     "ember-cli-htmlbars-inline-precompile": "0.3.6",
     "ember-cli-mirage": "0.1.14",
     "ember-cli-mocha": "0.13.1",
