@@ -1,3 +1,4 @@
+import Ember from 'ember';
 import Controller from 'ember-controller';
 import computed, {alias, and, not, or, readOnly} from 'ember-computed';
 import injectService from 'ember-service/inject';
@@ -9,6 +10,9 @@ import {task, taskGroup} from 'ember-concurrency';
 
 import isNumber from 'ghost-admin/utils/isNumber';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
+
+// ember-cli-shims doesn't export this
+const {Handlebars} = Ember;
 
 export default Controller.extend({
     showDeleteUserModal: false,
@@ -62,8 +66,9 @@ export default Controller.extend({
 
     userImageBackground: computed('user.image', 'userDefault', function () {
         let url = this.get('user.image') || this.get('userDefault');
+        let safeUrl = Handlebars.Utils.escapeExpression(url);
 
-        return htmlSafe(`background-image: url(${url})`);
+        return htmlSafe(`background-image: url(${safeUrl})`);
     }),
     // end duplicated
 
@@ -73,8 +78,9 @@ export default Controller.extend({
 
     coverImageBackground: computed('user.cover', 'coverDefault', function () {
         let url = this.get('user.cover') || this.get('coverDefault');
+        let safeUrl = Handlebars.Utils.escapeExpression(url);
 
-        return htmlSafe(`background-image: url(${url})`);
+        return htmlSafe(`background-image: url(${safeUrl})`);
     }),
 
     coverTitle: computed('user.name', function () {

@@ -9,7 +9,7 @@ import ActiveLinkWrapper from 'ghost-admin/mixins/active-link-wrapper';
 import {invokeAction} from 'ember-invoke-action';
 
 // ember-cli-shims doesn't export these
-const {ObjectProxy, PromiseProxyMixin} = Ember;
+const {Handlebars, ObjectProxy, PromiseProxyMixin} = Ember;
 
 const ObjectPromiseProxy = ObjectProxy.extend(PromiseProxyMixin);
 
@@ -37,7 +37,9 @@ export default Component.extend(ActiveLinkWrapper, {
     }),
 
     authorAvatarBackground: computed('authorAvatar', function () {
-        return htmlSafe(`background-image: url(${this.get('authorAvatar')})`);
+        let authorAvatar = this.get('authorAvatar');
+        let safeUrl = Handlebars.Utils.escapeExpression(authorAvatar);
+        return htmlSafe(`background-image: url(${safeUrl})`);
     }),
 
     blogTimezone: computed('timeZone.blogTimezone', function () {
