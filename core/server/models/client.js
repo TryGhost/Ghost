@@ -1,6 +1,6 @@
 var ghostBookshelf = require('./base'),
     crypto         = require('crypto'),
-    uuid           = require('node-uuid'),
+    uuid           = require('uuid'),
 
     Client,
     Clients;

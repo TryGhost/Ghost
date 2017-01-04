@@ -1,7 +1,7 @@
 var testUtils        = require('../../utils'),
     should           = require('should'),
     _                = require('lodash'),
-    uuid             = require('node-uuid'),
+    uuid             = require('uuid'),
 
     // Stuff we are testing
     NotificationsAPI = require('../../../server/api/notifications'),
