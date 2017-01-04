@@ -115,7 +115,7 @@
     "gulp-jsonlint": "1.2.0",
     "gulp-livereload": "3.8.1",
     "gulp-nodemon": "2.2.1",
-    "gulp-util": "3.0.7",
+    "gulp-util": "3.0.8",
     "istanbul": "0.4.5",
     "jshint": "2.9.4",
     "jshint-stylish": "2.2.1",
