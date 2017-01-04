@@ -1,12 +1,5 @@
 /* eslint-env node */
-/* eslint-disable no-var, one-var, object-shorthand, prefer-template */
-var _              = require('lodash'),
-    fs             = require('fs-extra'),
-    path           = require('path'),
-    https          = require('https'),
-    moment         = require('moment'),
-    chalk          = require('chalk'),
-    Promise        = require('bluebird');
+/* eslint-disable object-shorthand */
 
 module.exports = function(grunt) {
 
