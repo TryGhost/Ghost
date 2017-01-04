@@ -1,5 +1,5 @@
 var _             = require('lodash'),
-    uuid          = require('node-uuid'),
+    uuid          = require('uuid'),
     ObjectId      = require('bson-objectid'),
     moment        = require('moment'),
     globalUtils   = require('../../../server/utils'),

@@ -2,7 +2,7 @@ var _           = require('lodash'),
     testUtils   = require('../utils'),
     should      = require('should'),
     rewire      = require('rewire'),
-    uuid        = require('node-uuid'),
+    uuid        = require('uuid'),
 
     // Stuff we are testing
     packageInfo      = require('../../../package'),
