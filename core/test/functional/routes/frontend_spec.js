@@ -748,7 +748,7 @@ describe('Frontend Routing', function () {
             it('with trailing slash', function (done) {
                 request.get('/post/10/a-nice-blog-post')
                     .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect('Cache-Control', testUtils.cacheRules.hour)
                     .end(function (err, res) {
                         res.headers.location.should.eql('/a-nice-blog-post');
                         doEnd(done)(err, res);
@@ -758,7 +758,7 @@ describe('Frontend Routing', function () {
             it('without trailing slash', function (done) {
                 request.get('/post/10/a-nice-blog-post/')
                     .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect('Cache-Control', testUtils.cacheRules.hour)
                     .end(function (err, res) {
                         res.headers.location.should.eql('/a-nice-blog-post');
                         doEnd(done)(err, res);
@@ -779,7 +779,7 @@ describe('Frontend Routing', function () {
             it('with trailing slash', function (done) {
                 request.get('/my-old-blog-post/')
                     .expect(301)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .expect('Cache-Control', testUtils.cacheRules.year)
                     .end(function (err, res) {
                         res.headers.location.should.eql('/revamped-url/');
                         doEnd(done)(err, res);
@@ -789,7 +789,7 @@ describe('Frontend Routing', function () {
             it('without trailing slash', function (done) {
                 request.get('/my-old-blog-post')
                     .expect(301)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .expect('Cache-Control', testUtils.cacheRules.year)
                     .end(function (err, res) {
                         res.headers.location.should.eql('/revamped-url/');
                         doEnd(done)(err, res);
@@ -810,7 +810,7 @@ describe('Frontend Routing', function () {
             it('with trailing slash', function (done) {
                 request.get('/what/')
                     .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect('Cache-Control', testUtils.cacheRules.hour)
                     .end(function (err, res) {
                         res.headers.location.should.eql('/what-does-god-say');
                         doEnd(done)(err, res);
@@ -820,7 +820,7 @@ describe('Frontend Routing', function () {
             it('without trailing slash', function (done) {
                 request.get('/what')
                     .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect('Cache-Control', testUtils.cacheRules.hour)
                     .end(function (err, res) {
                         res.headers.location.should.eql('/what-does-god-say');
                         doEnd(done)(err, res);
@@ -832,7 +832,7 @@ describe('Frontend Routing', function () {
             it('with trailing slash', function (done) {
                 request.get('/search/label/&&&/')
                     .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect('Cache-Control', testUtils.cacheRules.hour)
                     .end(function (err, res) {
                         res.headers.location.should.eql('/tag/&&&/');
                         doEnd(done)(err, res);
@@ -842,7 +842,7 @@ describe('Frontend Routing', function () {
             it('without trailing slash', function (done) {
                 request.get('/search/label/&&&/')
                     .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect('Cache-Control', testUtils.cacheRules.hour)
                     .end(function (err, res) {
                         res.headers.location.should.eql('/tag/&&&/');
                         doEnd(done)(err, res);
@@ -854,7 +854,7 @@ describe('Frontend Routing', function () {
             it('with trailing slash', function (done) {
                 request.get('/topic/')
                     .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect('Cache-Control', testUtils.cacheRules.hour)
                     .end(function (err, res) {
                         res.headers.location.should.eql('/');
                         doEnd(done)(err, res);
@@ -864,7 +864,7 @@ describe('Frontend Routing', function () {
             it('without trailing slash', function (done) {
                 request.get('/topic')
                     .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect('Cache-Control', testUtils.cacheRules.hour)
                     .end(function (err, res) {
                         res.headers.location.should.eql('/');
                         doEnd(done)(err, res);
@@ -876,7 +876,7 @@ describe('Frontend Routing', function () {
             it('with trailing slash', function (done) {
                 request.get('/resources/download/')
                     .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect('Cache-Control', testUtils.cacheRules.hour)
                     .end(function (err, res) {
                         res.headers.location.should.eql('/shubal-stearns');
                         doEnd(done)(err, res);
@@ -886,7 +886,7 @@ describe('Frontend Routing', function () {
             it('without trailing slash', function (done) {
                 request.get('/resources/download')
                     .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect('Cache-Control', testUtils.cacheRules.hour)
                     .end(function (err, res) {
                         res.headers.location.should.eql('/shubal-stearns');
                         doEnd(done)(err, res);
@@ -898,7 +898,7 @@ describe('Frontend Routing', function () {
             it('with trailing slash', function (done) {
                 request.get('/2016/11/welcome.html')
                     .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect('Cache-Control', testUtils.cacheRules.hour)
                     .end(function (err, res) {
                         res.headers.location.should.eql('/welcome');
                         doEnd(done)(err, res);
@@ -910,7 +910,7 @@ describe('Frontend Routing', function () {
             it('default', function (done) {
                 request.get('/prefix/')
                     .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect('Cache-Control', testUtils.cacheRules.hour)
                     .end(function (err, res) {
                         res.headers.location.should.eql('/blog/');
                         doEnd(done)(err, res);
@@ -920,7 +920,7 @@ describe('Frontend Routing', function () {
             it('with a custom path', function (done) {
                 request.get('/prefix/expect-redirect')
                     .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect('Cache-Control', testUtils.cacheRules.hour)
                     .end(function (err, res) {
                         res.headers.location.should.eql('/blog/expect-redirect');
                         doEnd(done)(err, res);
