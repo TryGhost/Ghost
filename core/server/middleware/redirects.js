@@ -1,12 +1,14 @@
-var fs = require('fs-extra');
-var _ = require('lodash');
-var config = require('../config');
-var errors = require('../errors');
-var utils = require('../utils');
+var fs = require('fs-extra'),
+    _ = require('lodash'),
+    config = require('../config'),
+    errors = require('../errors'),
+    utils = require('../utils');
 
-// you can extend Ghost with a custom redirects file
-// see https://github.com/TryGhost/Ghost/issues/7707
-// file loads synchronously, because we need to register the routes before anything else
+/**
+ * you can extend Ghost with a custom redirects file
+ * see https://github.com/TryGhost/Ghost/issues/7707
+ * file loads synchronously, because we need to register the routes before anything else
+ */
 module.exports = function redirects(blogApp) {
     try {
         var redirects = fs.readFileSync(config.paths.dataPath + '/redirects.json', 'utf-8');

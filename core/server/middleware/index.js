@@ -114,7 +114,6 @@ setupMiddleware = function setupMiddleware(blogApp) {
 
     // you can extend Ghost with a custom redirects file
     // see https://github.com/TryGhost/Ghost/issues/7707
-    // file loads synchronously, because we need to register the routes before anything else
     redirects(blogApp);
 
     // Favicon
