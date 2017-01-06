@@ -78,7 +78,7 @@
   },
   "optionalDependencies": {
     "mysql": "2.1.1",
-    "pg": "4.1.1"
+    "pg": "6.1.2"
   },
   "devDependencies": {
     "grunt": "1.0.1",
