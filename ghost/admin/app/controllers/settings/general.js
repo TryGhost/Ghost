@@ -89,14 +89,6 @@ export default Controller.extend(SettingsSaveMixin, {
     },
 
     actions: {
-        checkPostsPerPage() {
-            let postsPerPage = this.get('model.postsPerPage');
-
-            if (postsPerPage < 1 || postsPerPage > 1000 || isNaN(postsPerPage)) {
-                this.set('model.postsPerPage', 5);
-            }
-        },
-
         setTheme(theme) {
             this.set('model.activeTheme', theme.name);
             this.send('save');
