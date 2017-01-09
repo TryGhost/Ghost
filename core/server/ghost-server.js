@@ -131,7 +131,9 @@ GhostServer.prototype.stop = function () {
  * @returns {Promise} Resolves once Ghost has restarted
  */
 GhostServer.prototype.restart = function () {
-    return this.stop().then(this.start.bind(this));
+    return this.stop().then(function (ghostServer) {
+        return ghostServer.start();
+    });
 };
 
 /**
