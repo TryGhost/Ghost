@@ -8,8 +8,9 @@ var request    = require('supertest'),
     should     = require('should'),
     moment     = require('moment'),
     cheerio    = require('cheerio'),
-    testUtils  = require('../../utils'),
-    ghost      = require('../../../../core');
+    testUtils   = require('../../utils'),
+    configUtils = require('../../utils/configUtils'),
+    ghost       = require('../../../../core');
 
 describe('Frontend Routing', function () {
     function doEnd(done) {
@@ -239,6 +240,20 @@ describe('Frontend Routing', function () {
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(404)
                     .expect(/Page not found/)
+                    .end(doEnd(done));
+            });
+
+            it('should not render AMP, when AMP flag in settings is disabled', function (done) {
+                after(function () {
+                    configUtils.restore();
+                });
+
+                configUtils.set({theme: {amp: 'false'}});
+
+                request.get('/welcome-to-ghost/amp/')
+                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .expect(302)
+                    .expect('Location', '/welcome-to-ghost/')
                     .end(doEnd(done));
             });
         });
@@ -474,6 +489,20 @@ describe('Frontend Routing', function () {
         it('/blog/tag/getting-started/ should 200', function (done) {
             request.get('/blog/tag/getting-started/')
                 .expect(200)
+                .end(doEnd(done));
+        });
+
+        it.skip('/blog/welcome-to-ghost/amp/ should 302 when AMP is disabled', function (done) {
+            after(function () {
+                configUtils.restore();
+            });
+
+            configUtils.set({theme: {amp: 'false'}});
+
+            request.get('/blog/welcome-to-ghost/amp/')
+                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect(302)
+                .expect('Location', '/blog/welcome-to-ghost/')
                 .end(doEnd(done));
         });
     });

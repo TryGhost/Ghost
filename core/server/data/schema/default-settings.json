@@ -68,6 +68,9 @@
                 "notContains": "/ghost/"
             }
         },
+        "amp": {
+            "defaultValue": "true"
+        },
         "ghost_head": {
             "defaultValue" : ""
         },
