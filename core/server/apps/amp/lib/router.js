@@ -2,8 +2,10 @@ var path                = require('path'),
     express             = require('express'),
     _                   = require('lodash'),
     ampRouter           = express.Router(),
+    i18n                = require('../../../i18n'),
 
     // Dirty requires
+    config              = require('../../../config'),
     errors              = require('../../../errors'),
     templates           = require('../../../controllers/frontend/templates'),
     postLookup          = require('../../../controllers/frontend/post-lookup'),
@@ -12,7 +14,7 @@ var path                = require('path'),
 function controller(req, res, next) {
     var defaultView = path.resolve(__dirname, 'views', 'amp.hbs'),
         paths = templates.getActiveThemePaths(req.app.get('activeTheme')),
-        data = req.amp;
+        data = req.body || {};
 
     if (res.error) {
         data.error = res.error;
@@ -33,32 +35,53 @@ function controller(req, res, next) {
 }
 
 function getPostData(req, res, next) {
-    // Create a req property where we can store our data
-    req.amp = {};
+    req.body = req.body || {};
     postLookup(res.locals.relativeUrl)
         .then(function (result) {
             if (result && result.post) {
-                req.amp.post = result.post;
+                req.body.post = result.post;
             }
 
             next();
         })
         .catch(function (err) {
-            if (err instanceof errors.NotFoundError) {
-                return next(err);
-            }
-
             next(err);
         });
+}
+
+function checkIfAMPIsEnabled(req, res, next) {
+    var ampIsEnabled = config.get('theme:amp');
+
+    if (ampIsEnabled) {
+        return next();
+    }
+
+    // CASE: we don't support amp pages for static pages
+    if (req.body.post && req.body.post.page) {
+        return next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
+    }
+
+    /**
+     * CASE: amp is disabled, we serve 404
+     *
+     * Alternatively we could redirect to the original post, as the user can enable/disable AMP every time.
+     *
+     * If we would call `next()`, express jumps to the frontend controller (server/controllers/frontend/index.js fn single)
+     * and tries to lookup the post (again) and checks whether the post url equals the requested url (post.url !== req.path).
+     * This check would fail if the blog is setup on a subdirectory.
+     */
+    return next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
 }
 
 // AMP frontend route
 ampRouter.route('/')
     .get(
         getPostData,
+        checkIfAMPIsEnabled,
         controller
     );
 
 module.exports = ampRouter;
 module.exports.controller = controller;
 module.exports.getPostData = getPostData;
+module.exports.checkIfAMPIsEnabled = checkIfAMPIsEnabled;
