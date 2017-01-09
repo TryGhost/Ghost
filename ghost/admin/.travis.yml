@@ -38,4 +38,7 @@ before_script:
   - export DISPLAY=:99; sh -e /etc/init.d/xvfb start; sleep 3;
 
 script:
-  - if [ "$TEST_SUITE" == "lint" ]; then npm run lint; else npm test; fi
+  - COVERAGE=true npm test
+
+after_success:
+  - npm run coverage
