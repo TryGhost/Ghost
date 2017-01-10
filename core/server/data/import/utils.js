@@ -5,7 +5,7 @@ var Promise     = require('bluebird'),
     globalUtils = require('../../utils'),
     i18n        = require('../../i18n'),
 
-    internal    = {context: {internal: true}},
+    internalContext    = {context: {internal: true}},
     utils,
     areEmpty,
     updatedSettingKeys,
@@ -36,7 +36,7 @@ stripProperties = function stripProperties(properties, data) {
 };
 
 utils = {
-    internal: internal,
+    internal: internalContext,
 
     processUsers: function preProcessUsers(tableData, owner, existingUsers, objs) {
         // We need to:
@@ -200,7 +200,7 @@ utils = {
 
             ops.push(models.Tag.findOne({name: tag.name}, {transacting: transaction}).then(function (_tag) {
                 if (!_tag) {
-                    return models.Tag.add(tag, _.extend({}, internal, {transacting: transaction}))
+                    return models.Tag.add(tag, _.extend({}, internalContext, {transacting: transaction}))
                         .catch(function (error) {
                             return Promise.reject({raw: error, model: 'tag', data: tag});
                         });
@@ -232,7 +232,7 @@ utils = {
                 post.created_at = Date.now();
             }
 
-            ops.push(models.Post.add(post, _.extend({}, internal, {transacting: transaction, importing: true}))
+            ops.push(models.Post.add(post, _.extend({}, internalContext, {transacting: transaction, importing: true}))
                     .catch(function (error) {
                         return Promise.reject({raw: error, model: 'post', data: post});
                     }).reflect()
@@ -260,7 +260,7 @@ utils = {
             user.password = globalUtils.uid(50);
             user.status = 'locked';
 
-            ops.push(models.User.add(user, _.extend({}, internal, {transacting: transaction}))
+            ops.push(models.User.add(user, _.extend({}, internalContext, {transacting: transaction}))
                 .catch(function (error) {
                     return Promise.reject({raw: error, model: 'user', data: user});
                 }));
@@ -290,12 +290,37 @@ utils = {
             datum.key = updatedSettingKeys[datum.key] || datum.key;
         });
 
-        ops.push(models.Settings.edit(tableData, _.extend({}, internal, {transacting: transaction})).catch(function (error) {
+        ops.push(models.Settings.edit(tableData, _.extend({}, internalContext, {transacting: transaction})).catch(function (error) {
             // Ignore NotFound errors
             if (!(error instanceof errors.NotFoundError)) {
                 return Promise.reject({raw: error, model: 'setting', data: tableData});
             }
         }).reflect());
+
+        return Promise.all(ops);
+    },
+
+    importSubscribers: function importSubscribers(tableData, transaction) {
+        if (!tableData) {
+            return Promise.resolve();
+        }
+
+        var ops = [];
+        tableData = stripProperties(['id'], tableData);
+
+        _.each(tableData, function (subscriber) {
+            ops.push(models.Subscriber.add(subscriber, _.extend({}, internalContext, {transacting: transaction}))
+                .catch(function (error) {
+                    // ignore duplicates
+                    if (error.code && error.message.toLowerCase().indexOf('unique') === -1) {
+                        return Promise.reject({
+                            raw: error,
+                            model: 'subscriber',
+                            data: subscriber
+                        });
+                    }
+                }).reflect());
+        });
 
         return Promise.all(ops);
     },
@@ -313,7 +338,7 @@ utils = {
             // Avoid duplicates
             ops.push(models.App.findOne({name: app.name}, {transacting: transaction}).then(function (_app) {
                 if (!_app) {
-                    return models.App.add(app, _.extend({}, internal, {transacting: transaction}))
+                    return models.App.add(app, _.extend({}, internalContext, {transacting: transaction}))
                         .catch(function (error) {
                             return Promise.reject({raw: error, model: 'app', data: app});
                         });
