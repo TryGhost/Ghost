@@ -2,7 +2,6 @@
 import Component from 'ember-component';
 import Ember from 'ember';
 import computed, {reads} from 'ember-computed';
-import get from 'ember-metal/get';
 import injectService from 'ember-service/inject';
 import {htmlSafe} from 'ember-string';
 
@@ -86,12 +85,17 @@ export default Component.extend({
         return metaDescription;
     }),
 
-    didReceiveAttrs(attrs) {
+    didReceiveAttrs() {
         this._super(...arguments);
 
-        if (get(attrs, 'newAttrs.tag.value.id') !== get(attrs, 'oldAttrs.tag.value.id')) {
+        let oldTagId = this._oldTagId;
+        let newTagId = this.get('tag.id');
+
+        if (newTagId !== oldTagId) {
             this.reset();
         }
+
+        this._oldTagId = newTagId;
     },
 
     reset() {
