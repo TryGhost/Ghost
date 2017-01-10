@@ -25,9 +25,15 @@ describe('Validation', function () {
         it('isEmptyOrUrl filters javascript urls', function () {
             /*jshint scripturl:true */
             validator.isEmptyOrURL('javascript:alert(0)').should.be.false();
+            validator.isEmptyOrURL('http://example.com/lol/<script>lalala</script>/').should.be.false();
+            validator.isEmptyOrURL('http://example.com/lol?somequery=<script>lalala</script>').should.be.false();
             /*jshint scripturl:false */
             validator.isEmptyOrURL('').should.be.true();
             validator.isEmptyOrURL('http://localhost:2368').should.be.true();
+            validator.isEmptyOrURL('http://example.com/test/').should.be.true();
+            validator.isEmptyOrURL('http://www.example.com/test/').should.be.true();
+            validator.isEmptyOrURL('http://example.com/foo?somequery=bar').should.be.true();
+            validator.isEmptyOrURL('example.com/test/').should.be.true();
         });
     });
 });
