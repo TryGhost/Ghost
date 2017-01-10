@@ -54,9 +54,9 @@ export default Component.extend({
         }
     },
 
-    didReceiveAttrs(attrs) {
+    didReceiveAttrs() {
         this._super(...arguments);
-        let timeout = parseInt(attrs.newAttrs.throttle || this.get('debounce'));
+        let timeout = parseInt(this.get('throttle') || this.get('debounce'));
         run.debounce(this, 'trySetValidEmail', timeout);
     },
 

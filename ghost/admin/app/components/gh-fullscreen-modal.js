@@ -2,7 +2,6 @@ import RSVP from 'rsvp';
 import injectService from 'ember-service/inject';
 import {A as emberA} from 'ember-array/utils';
 import {isBlank} from 'ember-utils';
-import on from 'ember-evented/on';
 import run from 'ember-runloop';
 import {invokeAction} from 'ember-invoke-action';
 import computed from 'ember-computed';
@@ -34,11 +33,11 @@ const FullScreenModalComponent = Component.extend({
         return modalClasses.join(' ');
     }),
 
-    closeDropdowns: on('didInsertElement', function () {
+    didInsertElement() {
         run.schedule('afterRender', this, function () {
             this.get('dropdown').closeDropdowns();
         });
-    }),
+    },
 
     actions: {
         close() {
