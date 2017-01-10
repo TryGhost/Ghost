@@ -61,7 +61,7 @@ navigation = function (options) {
         out.current = _isCurrentUrl(e.url, currentUrl);
         out.label = e.label;
         out.slug = _slugify(e.label);
-        out.url = hbs.handlebars.Utils.escapeExpression(e.url);
+        out.url = e.url;
         out.secure = self.secure;
         return out;
     });
