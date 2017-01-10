@@ -41,7 +41,7 @@ function trimSameAs(data, context) {
 
     if (context === 'post') {
         if (data.post.author.website) {
-            sameAs.push(data.post.author.website);
+            sameAs.push(escapeExpression(data.post.author.website));
         }
         if (data.post.author.facebook) {
             sameAs.push(socialUrls.facebookUrl(data.post.author.facebook));
@@ -51,7 +51,7 @@ function trimSameAs(data, context) {
         }
     } else if (context === 'author') {
         if (data.author.website) {
-            sameAs.push(data.author.website);
+            sameAs.push(escapeExpression(data.author.website));
         }
         if (data.author.facebook) {
             sameAs.push(socialUrls.facebookUrl(data.author.facebook));

@@ -437,7 +437,7 @@ describe('getSchema', function () {
             context: ['author'],
             author: {
                 name: 'Author Name',
-                website: 'http://myblogsite.com/',
+                website: 'http://myblogsite.com/?user=bambedibu&a=<script>alert("bambedibu")</script>',
                 twitter: '@testuser'
             }
         }, schema = getSchema(metadata, data);
@@ -452,7 +452,7 @@ describe('getSchema', function () {
             },
             name: 'Author Name',
             sameAs: [
-                'http://myblogsite.com/',
+                'http://myblogsite.com/?user&#x3D;bambedibu&amp;a&#x3D;&lt;script&gt;alert(&quot;bambedibu&quot;)&lt;/script&gt;',
                 'https://twitter.com/testuser'
             ],
             url: 'http://mysite.com/author/me/'
