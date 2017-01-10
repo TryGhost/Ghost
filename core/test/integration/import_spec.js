@@ -127,17 +127,21 @@ describe('Import', function () {
                     knex('users').select(),
                     knex('posts').select(),
                     knex('settings').select(),
-                    knex('tags').select()
+                    knex('tags').select(),
+                    knex('subscribers').select()
                 ]);
             }).then(function (importedData) {
                 should.exist(importedData);
 
-                importedData.length.should.equal(4, 'Did not get data successfully');
+                importedData.length.should.equal(5, 'Did not get data successfully');
 
                 var users = importedData[0],
                     posts = importedData[1],
                     settings = importedData[2],
-                    tags = importedData[3];
+                    tags = importedData[3],
+                    subscribers = importedData[4];
+
+                subscribers.length.should.equal(2, 'There should be two subscribers');
 
                 // we always have 1 user, the owner user we added
                 users.length.should.equal(1, 'There should only be one user');
