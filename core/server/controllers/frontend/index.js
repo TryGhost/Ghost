@@ -73,6 +73,18 @@ frontendControllers = {
 
             // CASE: permalink is not valid anymore, we redirect him permanently to the correct one
             if (post.url !== req.path) {
+                // CASE: AMP request, when AMP is disabled can't fully get handled by AMP router
+                // This is ugly, but the redirect wouldn't work for static pages in AMP router
+
+                if (req.path.match(/\/amp\/?$/i)) {
+                    // CASE: it's a static page, we return a 404
+                    if (post.page) {
+                        return res.sendStatus(404);
+                    }
+                    // CASE: it's a normal post with disabled AMP, we return a temporary redirect
+                    res.set('Cache-Control', 'public, max-age=0');
+                    return res.redirect(302, (req.originalUrl || req.url).slice(0, -1 * (config.routeKeywords.amp.length + 1)));
+                }
                 return res.redirect(301, post.url);
             }
 

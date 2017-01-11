@@ -1,8 +1,13 @@
-var router           = require('./lib/router'),
-    registerAmpHelpers  = require('./lib/helpers'),
+var router = require('./lib/router'),
+    registerAmpHelpers = require('./lib/helpers'),
+    config = require('../../config'),
+    ampIsEnabled;
 
-    // Dirty requires
-    config     = require('../../config');
+ampIsEnabled = function ampIsEnabled() {
+    var ampSettings = config.theme.amp;
+
+    return ampSettings === 'true' ? true : false;
+};
 
 module.exports = {
     activate: function activate(ghost) {
@@ -10,6 +15,12 @@ module.exports = {
     },
 
     setupRoutes: function setupRoutes(blogRouter) {
-        blogRouter.use('*/' + config.routeKeywords.amp + '/', router);
+        blogRouter.use('*/' + config.routeKeywords.amp + '/', function ampEnabled(req, res, next) {
+            if (ampIsEnabled() === true) {
+                return router.apply(this, arguments);
+            }
+
+            next();
+        });
     }
 };
