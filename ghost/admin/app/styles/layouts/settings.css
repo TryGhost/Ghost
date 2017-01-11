@@ -190,7 +190,6 @@
 .theme-list-item-body .name {
     display: inline-block;
     color: var(--darkgrey);
-    white-space: nowrap;
     font-weight: 400;
     user-select: all;
 }
@@ -201,9 +200,15 @@
 }
 
 .theme-list-item-body {
-    flex: 1 1 auto;
+    flex: 1;
     align-items: stretch;
     line-height: 1;
+}
+
+.theme-list-item-aside {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
 }
 
 .theme-list-action:last-child {
