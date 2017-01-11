@@ -143,6 +143,43 @@ describe('{{navigation}} helper', function () {
         rendered.string.should.containEql('nav-foo nav-current');
         rendered.string.should.containEql('nav-bar"');
     });
+
+    it('doesn\'t html-escape URLs', function () {
+        var firstItem = {label: 'Foo', url: '/?foo=bar&baz=qux'},
+            rendered;
+
+        optionsData.data.blog.navigation = [firstItem];
+        rendered = helpers.navigation(optionsData);
+
+        should.exist(rendered);
+        rendered.string.should.not.containEql('&#x3D;');
+        rendered.string.should.not.containEql('&amp;');
+        rendered.string.should.containEql('/?foo=bar&baz=qux');
+    });
+
+    it('encodes URLs', function () {
+        var firstItem = {label: 'Foo', url: '/?foo=space bar&<script>alert("gotcha")</script>'},
+            rendered;
+
+        optionsData.data.blog.navigation = [firstItem];
+        rendered = helpers.navigation(optionsData);
+
+        should.exist(rendered);
+        rendered.string.should.containEql('foo=space%20bar');
+        rendered.string.should.not.containEql('<script>alert("gotcha")</script>');
+        rendered.string.should.containEql('%3Cscript%3Ealert(%22gotcha%22)%3C/script%3E');
+    });
+
+    it('doesn\'t double-encode URLs', function () {
+        var firstItem = {label: 'Foo', url: '/?foo=space%20bar'},
+            rendered;
+
+        optionsData.data.blog.navigation = [firstItem];
+        rendered = helpers.navigation(optionsData);
+
+        should.exist(rendered);
+        rendered.string.should.not.containEql('foo=space%2520bar');
+    });
 });
 
 describe('{{navigation}} helper with custom template', function () {
