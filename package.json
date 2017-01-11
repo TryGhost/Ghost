@@ -46,7 +46,7 @@
     "downsize": "0.0.8",
     "express": "4.14.0",
     "express-brute": "1.0.1",
-    "express-hbs": "1.0.3",
+    "express-hbs": "1.0.4",
     "extract-zip-fork": "1.5.1",
     "fs-extra": "1.0.0",
     "ghost-editor": "0.1.5",
