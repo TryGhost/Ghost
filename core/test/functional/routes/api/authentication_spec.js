@@ -7,7 +7,7 @@ var supertest = require('supertest'),
     config = require('../../../../../core/server/config'),
     request;
 
-describe.only('Authentication API', function () {
+describe('Authentication API', function () {
     var accesstoken = '';
 
     before(function (done) {
