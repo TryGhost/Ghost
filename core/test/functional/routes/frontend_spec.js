@@ -9,6 +9,7 @@ var request    = require('supertest'),
     moment     = require('moment'),
     cheerio    = require('cheerio'),
     testUtils  = require('../../utils'),
+    configUtils = require('../../utils/configUtils'),
     ghost      = require('../../../../core');
 
 describe('Frontend Routing', function () {
@@ -241,6 +242,20 @@ describe('Frontend Routing', function () {
                     .expect(/Page not found/)
                     .end(doEnd(done));
             });
+
+            it('should not render AMP, when AMP flag in settings is disabled', function (done) {
+                after(function () {
+                    configUtils.restore();
+                });
+
+                configUtils.set({theme: {amp: false}});
+
+                request.get('/welcome-to-ghost/amp/')
+                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .expect(302)
+                    .expect('Location', '/welcome-to-ghost/')
+                    .end(doEnd(done));
+            });
         });
 
         describe('Static assets', function () {
@@ -404,6 +419,7 @@ describe('Frontend Routing', function () {
 
     describe('Subdirectory (no slash)', function () {
         var forkedGhost, request;
+
         before(function (done) {
             var configTest = testUtils.fork.config();
             configTest.url = 'http://localhost/blog';
