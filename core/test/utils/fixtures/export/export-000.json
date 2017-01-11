@@ -173,10 +173,6 @@
             {
                 "id": 2,
                 "email": "subscriber2@test.com"
-            },
-            {
-                "id": 3,
-                "email": "subscriber2@test.com"
             }
         ]
     }
