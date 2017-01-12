@@ -16,7 +16,6 @@ function postLookup(postUrl) {
         postPermalink = config.theme.permalinks,
         pagePermalink = '/:slug/',
         isEditURL = false,
-        isAmpURL = false,
         matchFuncPost,
         matchFuncPage,
         postParams,
@@ -38,23 +37,12 @@ function postLookup(postUrl) {
     }
 
     // If params contains options, and it is equal to 'edit', this is an edit URL
-    // If params contains options, and it is equal to 'amp', this is an amp URL
     if (params.options && params.options.toLowerCase() === 'edit') {
         isEditURL = true;
-    } else if (params.options && params.options.toLowerCase() === 'amp') {
-        isAmpURL = true;
-    } else if (params.options !== undefined) {
-        // Unknown string in URL, return empty
-        return Promise.resolve();
     }
 
-    // Sanitize params we're going to use to lookup the post.
-    params = _.pick(params, 'slug', 'id');
-    // Add author & tag
-    params.include = 'author,tags';
-
     // Query database to find post
-    return api.posts.read(params).then(function then(result) {
+    return api.posts.read(_.extend(_.pick(params, 'slug', 'id'), {include: 'author,tags'})).then(function then(result) {
         var post = result.posts[0];
 
         if (!post) {
@@ -71,15 +59,10 @@ function postLookup(postUrl) {
             return Promise.resolve();
         }
 
-        // We don't support AMP for static pages yet
-        if (post.page && isAmpURL) {
-            return Promise.resolve();
-        }
-
         return {
             post: post,
             isEditURL: isEditURL,
-            isAmpURL: isAmpURL
+            isUnknownOption: isEditURL ? false : params.options ? true : false
         };
     });
 }
