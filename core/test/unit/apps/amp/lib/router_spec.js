@@ -25,12 +25,15 @@ describe('UNIT: Apps Amp Router', function () {
                 }
             }
         }, res = {
-            set: sandbox.stub(),
-            redirect: function (statusCode, url) {
-                res.set.calledOnce.should.eql(true);
-                statusCode.should.eql(302);
-                url.should.eql('/blog/welcome-ghost');
+            send: function (message) {
+                message.should.eql('Page not found');
                 done();
+            },
+            set: sandbox.stub(),
+            status: function (statusCode) {
+                res.set.calledOnce.should.eql(true);
+                statusCode.should.eql(404);
+                return {send: res.send};
             }
         };
 

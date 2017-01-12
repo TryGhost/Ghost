@@ -243,7 +243,7 @@ describe('Frontend Routing', function () {
                     .end(doEnd(done));
             });
 
-            it('should not render AMP, when AMP flag in settings is disabled', function (done) {
+            it('should serve 404, when AMP is disabled', function (done) {
                 after(function () {
                     configUtils.restore();
                 });
@@ -251,9 +251,7 @@ describe('Frontend Routing', function () {
                 configUtils.set({theme: {amp: false}});
 
                 request.get('/welcome-to-ghost/amp/')
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .expect(302)
-                    .expect('Location', '/welcome-to-ghost/')
+                    .expect(404)
                     .end(doEnd(done));
             });
         });

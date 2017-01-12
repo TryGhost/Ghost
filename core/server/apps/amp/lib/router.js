@@ -60,14 +60,15 @@ function checkIfAMPIsEnabled(req, res, next) {
     }
 
     /**
-     * CASE: amp is disabled, we redirect the user to the requested post
+     * CASE: amp is disabled, we serve 404
+     *
+     * Alternatively we could redirect to the original post, as the user can enable/disable AMP every time.
      *
      * If we would call `next()`, express jumps to the frontend controller (server/controllers/frontend/index.js fn single)
      * and tries to lookup the post (again) and checks whether the post url equals the requested url (post.url !== req.path).
      * This check would fail if the blog is setup on a subdirectory.
      */
-    res.set('Cache-Control', 'public, max-age=0');
-    return res.redirect(302, (req.originalUrl || req.url).slice(0, -1 * (config.routeKeywords.amp.length + 1)));
+    errors.error404(req, res, next);
 }
 
 // AMP frontend route
