@@ -52,7 +52,8 @@ describe('{{ghost_head}} helper', function () {
                 theme: {
                     title: 'Ghost',
                     description: 'blog description',
-                    cover: '/content/images/blog-cover.png'
+                    cover: '/content/images/blog-cover.png',
+                    amp: true
                 }
             });
         });
@@ -894,7 +895,8 @@ describe('{{ghost_head}} helper', function () {
                 theme: {
                     title: 'Ghost',
                     description: 'blog description',
-                    cover: '/content/images/blog-cover.png'
+                    cover: '/content/images/blog-cover.png',
+                    amp: true
                 },
                 referrerPolicy: 'origin'
             });
@@ -920,7 +922,8 @@ describe('{{ghost_head}} helper', function () {
                 theme: {
                     title: 'Ghost',
                     description: 'blog description',
-                    cover: '/content/images/blog-cover.png'
+                    cover: '/content/images/blog-cover.png',
+                    amp: true
                 },
                 privacy: {
                     useStructuredData: false
@@ -1089,6 +1092,46 @@ describe('{{ghost_head}} helper', function () {
 
                 done();
             });
+        });
+    });
+
+    describe('amp is disabled', function () {
+        beforeEach(function () {
+            configUtils.set({
+                url: 'http://testurl.com/',
+                theme: {
+                    amp: false
+                }
+            });
+        });
+
+        it('does not contain amphtml link', function (done) {
+            var post = {
+                meta_description: 'blog description',
+                title: 'Welcome to Ghost',
+                image: 'content/images/test-image.png',
+                published_at:  moment('2008-05-31T19:18:15').toISOString(),
+                updated_at: moment('2014-10-06T15:23:54').toISOString(),
+                tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
+                author: {
+                    name: 'Author name',
+                    url: 'http//:testauthorurl.com',
+                    slug: 'Author',
+                    image: 'content/images/test-author-image.png',
+                    website: 'http://authorwebsite.com',
+                    facebook: 'testuser',
+                    twitter: '@testuser'
+                }
+            };
+
+            helpers.ghost_head.call(
+                {relativeUrl: '/post/', safeVersion: '0.3', context: ['post'], post: post},
+                {data: {root: {context: ['post']}}}
+            ).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.not.match(/<link rel="amphtml"/);
+                done();
+            }).catch(done);
         });
     });
 });
