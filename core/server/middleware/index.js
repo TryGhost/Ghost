@@ -27,10 +27,11 @@ var bodyParser      = require('body-parser'),
     staticTheme      = require('./static-theme'),
     themeHandler     = require('./theme-handler'),
     uncapitalise     = require('./uncapitalise'),
-    maintenance     = require('./maintenance'),
+    maintenance      = require('./maintenance'),
     versionMatch     = require('./api/version-match'),
     cors             = require('./cors'),
     validation       = require('./validation'),
+    redirects        = require('./redirects'),
     netjet           = require('netjet'),
     labs             = require('./labs'),
     helpers          = require('../helpers'),
@@ -110,6 +111,10 @@ setupMiddleware = function setupMiddleware(blogApp) {
             }
         }));
     }
+
+    // you can extend Ghost with a custom redirects file
+    // see https://github.com/TryGhost/Ghost/issues/7707
+    redirects(blogApp);
 
     // Favicon
     blogApp.use(serveSharedFile('favicon.ico', 'image/x-icon', utils.ONE_DAY_S));

@@ -144,6 +144,10 @@ apiRoutes = function apiRoutes(middleware) {
         middleware.spamPrevention.forgotten,
         api.http(api.authentication.generateResetToken)
     );
+
+    // ## Endpoint to exchange a one time access-token with a pair of AT/RT
+    router.post('/authentication/setup/three', middleware.api.authenticateClient, api.http(api.authentication.onSetupStep3));
+
     router.put('/authentication/passwordreset', api.http(api.authentication.resetPassword));
     router.post('/authentication/invitation', api.http(api.authentication.acceptInvitation));
     router.get('/authentication/invitation', api.http(api.authentication.isInvitation));

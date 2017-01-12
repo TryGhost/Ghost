@@ -3,7 +3,7 @@ var ghostBookshelf = require('./base'),
     events = require('../events'),
     i18n = require('../i18n'),
     Promise = require('bluebird'),
-    uuid = require('node-uuid'),
+    uuid = require('uuid'),
     Subscriber,
     Subscribers;
 

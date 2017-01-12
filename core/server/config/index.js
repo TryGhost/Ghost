@@ -224,6 +224,7 @@ ConfigManager.prototype.set = function (config) {
             contentPath:      contentPath,
             themePath:        path.resolve(contentPath, 'themes'),
             appPath:          path.resolve(contentPath, 'apps'),
+            dataPath:         path.resolve(contentPath, 'data'),
             imagesPath:       path.resolve(contentPath, 'images'),
             internalAppPath:  path.join(corePath, '/server/apps/'),
             imagesRelPath:    'content/images',

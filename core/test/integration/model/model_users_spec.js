@@ -2,7 +2,7 @@ var testUtils   = require('../../utils'),
     should      = require('should'),
     Promise     = require('bluebird'),
     sinon       = require('sinon'),
-    uuid        = require('node-uuid'),
+    uuid        = require('uuid'),
     _           = require('lodash'),
 
     // Stuff we are testing

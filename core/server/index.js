@@ -15,7 +15,7 @@ require('./overrides');
 // Module dependencies
 var express = require('express'),
     _ = require('lodash'),
-    uuid = require('node-uuid'),
+    uuid = require('uuid'),
     Promise = require('bluebird'),
     i18n = require('./i18n'),
     api = require('./api'),

@@ -1,5 +1,5 @@
 var _             = require('lodash'),
-    uuid          = require('node-uuid'),
+    uuid          = require('uuid'),
     moment        = require('moment'),
     globalUtils   = require('../../../server/utils'),
     DataGenerator = {};

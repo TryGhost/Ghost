@@ -164,6 +164,16 @@
                 "post_id": 1,
                 "tag_id": 1
             }
+        ],
+        "subscribers": [
+            {
+                "id": 1,
+                "email": "subscriber1@test.com"
+            },
+            {
+                "id": 2,
+                "email": "subscriber2@test.com"
+            }
         ]
     }
 }

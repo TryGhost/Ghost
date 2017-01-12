@@ -1,16 +1,16 @@
-var _                = require('lodash'),
-    validator        = require('validator'),
-    pipeline         = require('../utils/pipeline'),
-    dataProvider     = require('../models'),
-    settings         = require('./settings'),
-    mail             = require('./../mail'),
-    apiMail          = require('./mail'),
-    globalUtils      = require('../utils'),
-    utils            = require('./utils'),
-    errors           = require('../errors'),
-    events           = require('../events'),
-    config           = require('../config'),
-    i18n             = require('../i18n'),
+var _ = require('lodash'),
+    validator = require('validator'),
+    pipeline = require('../utils/pipeline'),
+    dataProvider = require('../models'),
+    settings = require('./settings'),
+    mail = require('./../mail'),
+    apiMail = require('./mail'),
+    globalUtils = require('../utils'),
+    utils = require('./utils'),
+    errors = require('../errors'),
+    events = require('../events'),
+    config = require('../config'),
+    i18n = require('../i18n'),
     authentication;
 
 /**
@@ -379,15 +379,17 @@ authentication = {
         }
 
         function formatResponse(isSetup) {
-            return {setup: [
-                {
-                    status: isSetup,
-                    // Pre-populate from config if, and only if the values exist in config.
-                    title: config.title || undefined,
-                    name: config.user_name || undefined,
-                    email: config.user_email || undefined
-                }
-            ]};
+            return {
+                setup: [
+                    {
+                        status: isSetup,
+                        // Pre-populate from config if, and only if the values exist in config.
+                        title: config.title || undefined,
+                        name: config.user_name || undefined,
+                        email: config.user_email || undefined
+                    }
+                ]
+            };
         }
 
         tasks = [
@@ -553,6 +555,64 @@ authentication = {
         ];
 
         return pipeline(tasks, tokenDetails, localOptions);
+    },
+
+    /**
+     * search for token and check expiry
+     *
+     * finally delete old temporary token
+     *
+     * send welcome mail
+     *   --> @TODO: in case user looses the redirect, no welcome mail :(
+     *   --> send email on first login!
+     */
+    onSetupStep3: function (data) {
+        var oldAccessToken, oldAccessTokenData, options = {context: {internal: true}};
+
+        return dataProvider.Accesstoken
+            .findOne({
+                token: data.token
+            })
+            .then(function (_oldAccessToken) {
+                if (!_oldAccessToken) {
+                    throw new errors.NoPermissionError(i18n.t('errors.api.authentication.notTheBlogOwner'));
+                }
+
+                oldAccessToken = _oldAccessToken;
+                oldAccessTokenData = oldAccessToken.toJSON();
+
+                if (oldAccessTokenData.expires < Date.now()) {
+                    throw new errors.NoPermissionError(i18n.t('errors.middleware.oauth.tokenExpired'));
+                }
+
+                var newAccessToken = globalUtils.uid(256),
+                    refreshToken = globalUtils.uid(256),
+                    newAccessExpiry = Date.now() + globalUtils.ONE_HOUR_MS,
+                    refreshExpires = Date.now() + globalUtils.ONE_WEEK_MS;
+
+                return dataProvider.Accesstoken.add({
+                    token: newAccessToken,
+                    user_id: oldAccessTokenData.user_id,
+                    client_id: oldAccessTokenData.client_id,
+                    expires: newAccessExpiry
+                }, options)
+                    .then(function then() {
+                        return dataProvider.Refreshtoken.add({
+                            token: refreshToken,
+                            user_id: oldAccessTokenData.user_id,
+                            client_id: oldAccessTokenData.client_id,
+                            expires: refreshExpires
+                        }, options);
+                    }).then(function then() {
+                        return oldAccessToken.destroy();
+                    }).then(function () {
+                        return {
+                            access_token: newAccessToken,
+                            refresh_token: refreshToken,
+                            expires_in: globalUtils.ONE_HOUR_S
+                        };
+                    });
+            });
     }
 };
 

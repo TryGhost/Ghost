@@ -98,7 +98,8 @@ function ghost_head(options) {
                 escapeExpression(metaData.canonicalUrl) + '" />');
             head.push('<meta name="referrer" content="' + referrerPolicy + '" />');
 
-            if (_.includes(context, 'post') && !_.includes(context, 'amp')) {
+            // show amp link in post when 1. we are not on the amp page and 2. amp is enabled
+            if (_.includes(context, 'post') && !_.includes(context, 'amp') && config.theme.amp) {
                 head.push('<link rel="amphtml" href="' +
                     escapeExpression(metaData.ampUrl) + '" />');
             }

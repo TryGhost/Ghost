@@ -1,6 +1,6 @@
 var Settings,
     ghostBookshelf = require('./base'),
-    uuid           = require('node-uuid'),
+    uuid           = require('uuid'),
     _              = require('lodash'),
     errors         = require('../errors'),
     Promise        = require('bluebird'),

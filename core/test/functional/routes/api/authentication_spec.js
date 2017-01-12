@@ -1,9 +1,10 @@
-var supertest     = require('supertest'),
-    should        = require('should'),
-    testUtils     = require('../../../utils'),
-    user          = testUtils.DataGenerator.forModel.users[0],
-    ghost         = require('../../../../../core'),
-    config        = require('../../../../../core/server/config'),
+var supertest = require('supertest'),
+    should = require('should'),
+    testUtils = require('../../../utils'),
+    user = testUtils.DataGenerator.forModel.users[0],
+    ghost = require('../../../../../core'),
+    models = require('../../../../../core/server/models'),
+    config = require('../../../../../core/server/config'),
     request;
 
 describe('Authentication API', function () {
@@ -38,7 +39,7 @@ describe('Authentication API', function () {
                 client_id: 'ghost-admin',
                 client_secret: 'not_available'
             }).expect('Content-Type', /json/)
-            // TODO: make it possible to override oauth2orize's header so that this is consistent
+        // TODO: make it possible to override oauth2orize's header so that this is consistent
             .expect('Cache-Control', 'no-store')
             .expect(200)
             .end(function (err, res) {
@@ -111,7 +112,7 @@ describe('Authentication API', function () {
                 client_id: 'ghost-admin',
                 client_secret: 'not_available'
             }).expect('Content-Type', /json/)
-            // TODO: make it possible to override oauth2orize's header so that this is consistent
+        // TODO: make it possible to override oauth2orize's header so that this is consistent
             .expect('Cache-Control', 'no-store')
             .expect(200)
             .end(function (err, res) {
@@ -127,7 +128,7 @@ describe('Authentication API', function () {
                         client_id: 'ghost-admin',
                         client_secret: 'not_available'
                     }).expect('Content-Type', /json/)
-                    // TODO: make it possible to override oauth2orize's header so that this is consistent
+                // TODO: make it possible to override oauth2orize's header so that this is consistent
                     .expect('Cache-Control', 'no-store')
                     .expect(200)
                     .end(function (err, res) {
@@ -162,5 +163,91 @@ describe('Authentication API', function () {
                 jsonResponse.errors[0].errorType.should.eql('NoPermissionError');
                 done();
             });
+    });
+
+    it('exchange one time access token on setup', function (done) {
+        testUtils.fixtures.insertAccessToken({
+            expires: Date.now() + 3600000,
+            token: 'one-time-token',
+            user_id: 1,
+            client_id: 2
+        }).then(function () {
+            request.post(testUtils.API.getApiQuery('authentication/setup/three'))
+                .set('Origin', config.url)
+                .send({
+                    token: 'one-time-token',
+                    client_id: 'ghost-admin',
+                    client_secret: 'not_available'
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    should.exist(res.body.access_token);
+                    should.exist(res.body.refresh_token);
+                    should.exist(res.body.expires_in);
+
+                    models.Accesstoken.findOne({
+                        token: 'one-time-token'
+                    }).then(function (found) {
+                        should.not.exist(found);
+                        done();
+                    });
+                });
+        }).catch(done);
+    });
+
+    it('[failure] wrong AT', function (done) {
+        request.post(testUtils.API.getApiQuery('authentication/setup/three'))
+            .set('Origin', config.url)
+            .send({
+                token: 'wrong',
+                client_id: 'ghost-admin',
+                client_secret: 'not_available'
+            })
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(403)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                should.not.exist(res.body.access_token);
+                should.not.exist(res.body.refresh_token);
+                should.not.exist(res.body.expires_in);
+
+                done();
+            });
+    });
+
+    it('[failure] expired AT', function (done) {
+        testUtils.fixtures.insertAccessToken({
+            expires: Date.now() - 1000,
+            token: 'one-time-token',
+            user_id: 1,
+            client_id: 2
+        }).then(function () {
+            request.post(testUtils.API.getApiQuery('authentication/setup/three'))
+                .set('Origin', config.url)
+                .send({
+                    token: 'one-time-token',
+                    client_id: 'ghost-admin',
+                    client_secret: 'not_available'
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(403)
+                .end(function (err) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    done();
+                });
+        }).catch(done);
     });
 });
