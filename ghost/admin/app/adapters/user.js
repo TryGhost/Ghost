@@ -19,5 +19,15 @@ export default ApplicationAdapter.extend(SlugUrl, {
 
     findAll(store, type, id) {
         return this.query(store, type, {id, status: 'all'});
+    },
+
+    queryRecord(store, type, query) {
+        if (!query || query.id !== 'me') {
+            return this._super(...arguments);
+        }
+
+        let url = this.buildURL(type.modelName, 'me', null, 'findRecord');
+
+        return this.ajax(url, 'GET', {data: {include: 'roles'}});
     }
 });

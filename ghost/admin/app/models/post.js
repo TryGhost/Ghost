@@ -72,7 +72,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     title: attr('string', {defaultValue: ''}),
     slug: attr('string'),
     markdown: attr('string', {defaultValue: ''}),
-    mobiledoc: attr('json-string', {defaultValue: BLANK_DOC}),
+    mobiledoc: attr('json-string', {defaultValue: () => BLANK_DOC}),
     html: attr('string'),
     image: attr('string'),
     featured: attr('boolean', {defaultValue: false}),

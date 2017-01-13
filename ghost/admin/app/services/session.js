@@ -7,7 +7,7 @@ export default SessionService.extend({
     feature: injectService(),
 
     user: computed(function () {
-        return this.get('store').findRecord('user', 'me');
+        return this.get('store').queryRecord('user', {id: 'me'});
     }),
 
     authenticate() {
