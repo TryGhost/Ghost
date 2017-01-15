@@ -1,0 +1,58 @@
+/* Loading state */
+.ember-load-indicator {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    overflow: hidden;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    padding-bottom: 8vh;
+}
+
+.gh-loading-content {
+    position: relative;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    flex-direction: column;
+}
+
+.gh-loading-content.basic-auth {
+    z-index: 1000;
+}
+
+.gh-loading-spinner {
+    position: relative;
+    display: inline-block;
+    box-sizing: border-box;
+    margin: -2px 0;
+    width: 50px;
+    height: 50px;
+    border: rgba(0,0,0,0.1) solid 1px;
+    border-radius: 100px;
+    animation: spin 1s linear infinite;
+}
+
+.gh-loading-spinner:before {
+    content: "";
+    display: block;
+    margin-top: 7px;
+    width: 7px;
+    height: 7px;
+    background: #4C5156;
+    border-radius: 100px;
+    z-index: 10;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
