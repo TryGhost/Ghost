@@ -22,16 +22,15 @@ addons:
   apt:
     sources:
       - google-chrome
+      - sourceline: 'deb https://dl.yarnpkg.com/debian/ stable main'
+        key_url: 'https://dl.yarnpkg.com/debian/pubkey.gpg'
     packages:
       - google-chrome-stable
-
-before_install:
-  - npm config --global set spin false
-  - npm install -g npm@^2
+      - yarn
 
 install:
-  - npm install -g bower
-  - npm install
+  - yarn global add bower
+  - yarn
   - bower install
 
 before_script:
