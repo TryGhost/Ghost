@@ -11,12 +11,12 @@ module.exports = {
 
         fs.ensureDirSync(assetsOut);
 
-        fs.copySync(results.directory + '/index.html', templateOut, {clobber: true});
+        fs.copySync(results.directory + '/index.html', templateOut, {overwrite: true});
 
         assets.forEach(function (relativePath) {
             if (relativePath.slice(-1) === '/') { return; }
 
-            fs.copySync(assetsIn + '/' + relativePath, assetsOut + '/' + relativePath, {clobber:true});
+            fs.copySync(assetsIn + '/' + relativePath, assetsOut + '/' + relativePath, {overwrite: true});
         });
     }
 };
