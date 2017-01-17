@@ -8,6 +8,7 @@ var request = require('supertest'),
     moment = require('moment'),
     cheerio = require('cheerio'),
     testUtils = require('../../utils'),
+    configUtils = require('../../utils/configUtils'),
     ghost     = testUtils.startGhost;
 
 describe('Frontend Routing', function () {
@@ -309,6 +310,19 @@ describe('Frontend Routing', function () {
                     .expect(/Page not found/)
                     .end(doEnd(done));
             });
+
+            it('should not render AMP, when AMP is disabled', function (done) {
+                after(function () {
+                    configUtils.restore();
+                });
+
+                configUtils.set('theme:amp', false);
+
+                request.get('/welcome-to-ghost/amp/')
+                .expect(404)
+                .expect(/Page not found/)
+                .end(doEnd(done));
+            });
         });
 
         describe('Static assets', function () {
@@ -534,6 +548,17 @@ describe('Frontend Routing', function () {
                 .expect(200)
                 .end(doEnd(done));
         });
+
+        it('/blog/welcome-to-ghost/amp/ should 200', function (done) {
+            after(function () {
+                configUtils.restore();
+            });
+
+            configUtils.set('theme:amp', true);
+            request.get('/blog/welcome-to-ghost/amp/')
+                .expect(200)
+                .end(doEnd(done));
+        });
     });
 
     describe('Subdirectory (with slash)', function () {
@@ -612,6 +637,11 @@ describe('Frontend Routing', function () {
         });
 
         it('/blog/welcome-to-ghost/amp/ should 200', function (done) {
+            after(function () {
+                configUtils.restore();
+            });
+
+            configUtils.set('theme:amp', true);
             request.get('/blog/welcome-to-ghost/amp/')
                 .expect(200)
                 .end(doEnd(done));

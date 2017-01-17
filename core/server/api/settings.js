@@ -66,6 +66,7 @@ updateConfigCache = function () {
     config.set('theme:facebook', (settingsCache.facebook && settingsCache.facebook.value) || '');
     config.set('theme:timezone', (settingsCache.activeTimezone && settingsCache.activeTimezone.value) || config.get('theme').timezone);
     config.set('theme:url', config.get('url') ? generalUtils.url.urlJoin(config.get('url'), '/') : '');
+    config.set('theme:amp', (settingsCache.amp && settingsCache.amp.value === 'true'));
 
     _.each(labsValue, function (value, key) {
         config.set('labs:' + key, value);

@@ -44,7 +44,8 @@ describe('AMP Controller', function () {
 
         configUtils.set({
             theme: {
-                permalinks: '/:slug/'
+                permalinks: '/:slug/',
+                amp: true
             }
         });
     });
@@ -165,18 +166,16 @@ describe('AMP getPostData', function () {
         postLookupStub.returns(new Promise.resolve({
             post: {
                 id: '1',
-                slug: 'welcome-to-ghost',
-                isAmpURL: true
+                slug: 'welcome-to-ghost'
             }
         }));
 
         ampController.__set__('postLookup', postLookupStub);
 
         ampController.getPostData(req, res, function () {
-            req.amp.post.should.be.eql({
+            req.body.post.should.be.eql({
                     id: '1',
-                    slug: 'welcome-to-ghost',
-                    isAmpURL: true
+                    slug: 'welcome-to-ghost'
                 }
             );
             done();
@@ -197,7 +196,7 @@ describe('AMP getPostData', function () {
             err.message.should.be.eql('not found');
             err.statusCode.should.be.eql(404);
             err.errorType.should.be.eql('NotFoundError');
-            req.amp.should.be.eql({});
+            req.body.should.be.eql({});
             done();
         });
     });
@@ -210,7 +209,7 @@ describe('AMP getPostData', function () {
         ampController.getPostData(req, res, function (err) {
             should.exist(err);
             err.should.be.eql('not found');
-            req.amp.should.be.eql({});
+            req.body.should.be.eql({});
             done();
         });
     });
