@@ -1,0 +1,12 @@
+<section class="gh-view">
+    <header class="view-header">
+        {{#gh-view-title openMobileMenu="openMobileMenu"}}<span>Content</span>{{/gh-view-title}}
+        <section class="view-actions">
+            {{#link-to "editor.new" class="btn btn-green" title="New Post"}}New Post{{/link-to}}
+        </section>
+    </header>
+
+    <div class="view-container">
+        {{gh-loading-spinner}}
+    </div>
+</section>

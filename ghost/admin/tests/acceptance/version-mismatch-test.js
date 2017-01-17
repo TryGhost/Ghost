@@ -63,8 +63,8 @@ describe('Acceptance: Version Mismatch', function() {
             click('.gh-nav-settings-tags');
 
             andThen(() => {
-                // navigation is blocked
-                expect(currentPath()).to.equal('posts.index');
+                // navigation is blocked on loading screen
+                expect(currentPath()).to.equal('settings.tags_loading');
 
                 // has the refresh to update alert
                 expect(find('.gh-alert').length).to.equal(1);
@@ -80,7 +80,7 @@ describe('Acceptance: Version Mismatch', function() {
 
             andThen(() => {
                 // navigation is blocked
-                expect(currentPath()).to.equal('settings.tags.index');
+                expect(currentPath()).to.equal('settings.general_loading');
 
                 // has the refresh to update alert
                 expect(find('.gh-alert').length).to.equal(1);

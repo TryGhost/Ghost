@@ -1,24 +1,16 @@
 /* Loading state */
-.ember-load-indicator {
+.gh-loading-content {
     display: flex;
     flex-direction: row;
-    align-items: stretch;
+    align-items: center;
     overflow: hidden;
-    width: 100%;
-    position: absolute;
     top: 0;
     bottom: 0;
-    padding-bottom: 8vh;
-}
-
-.gh-loading-content {
-    position: relative;
-    flex-grow: 1;
-    display: flex;
-    align-items: center;
+    position: absolute;
+    width: 100%;
     justify-content: center;
-    background: #fff;
-    flex-direction: column;
+    left: 0;
+    padding-bottom: 8vh;
 }
 
 .gh-loading-content.basic-auth {
