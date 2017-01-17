@@ -13,7 +13,9 @@
     }}
         {{#if isLoading}}
             {{#body.loader}}
-                <span class="gh-subscribers-loading">Loading...</span>
+                <div class="gh-loading-content" style="margin-top: 2em;">
+                    <div class="gh-loading-spinner"></div>
+                </div>
             {{/body.loader}}
         {{else}}
             {{#if table.isEmpty}}
