@@ -40,7 +40,6 @@ describe('postLookup', function () {
                 should.exist(lookup.post);
                 lookup.post.should.have.property('url', '/welcome-to-ghost/');
                 lookup.isEditURL.should.be.false();
-                lookup.isAmpURL.should.be.false();
 
                 done();
             }).catch(done);
@@ -54,7 +53,6 @@ describe('postLookup', function () {
                 should.exist(lookup.post);
                 lookup.post.should.have.property('url', '/welcome-to-ghost/');
                 lookup.isEditURL.should.be.false();
-                lookup.isAmpURL.should.be.false();
 
                 done();
             }).catch(done);
@@ -116,7 +114,6 @@ describe('postLookup', function () {
                 should.exist(lookup.post);
                 lookup.post.should.have.property('url', '/2016/01/01/welcome-to-ghost/');
                 lookup.isEditURL.should.be.false();
-                lookup.isAmpURL.should.be.false();
 
                 done();
             }).catch(done);
@@ -130,7 +127,6 @@ describe('postLookup', function () {
                 should.exist(lookup.post);
                 lookup.post.should.have.property('url', '/2016/01/01/welcome-to-ghost/');
                 lookup.isEditURL.should.be.false();
-                lookup.isAmpURL.should.be.false();
 
                 done();
             }).catch(done);
@@ -154,7 +150,6 @@ describe('postLookup', function () {
             postLookup(testUrl).then(function (lookup) {
                 lookup.post.should.have.property('url', '/welcome-to-ghost/');
                 lookup.isEditURL.should.be.true();
-                lookup.isAmpURL.should.be.false();
                 done();
             }).catch(done);
         });
@@ -165,7 +160,6 @@ describe('postLookup', function () {
             postLookup(testUrl).then(function (lookup) {
                 lookup.post.should.have.property('url', '/welcome-to-ghost/');
                 lookup.isEditURL.should.be.true();
-                lookup.isAmpURL.should.be.false();
                 done();
             }).catch(done);
         });
@@ -192,7 +186,8 @@ describe('postLookup', function () {
             var testUrl = '/welcome-to-ghost/notedit/';
 
             postLookup(testUrl).then(function (lookup) {
-                should.not.exist(lookup);
+                lookup.post.should.have.property('url', '/welcome-to-ghost/');
+                lookup.isUnknownOption.should.eql(true);
                 done();
             }).catch(done);
         });
@@ -213,7 +208,6 @@ describe('postLookup', function () {
 
             postLookup(testUrl).then(function (lookup) {
                 lookup.post.should.have.property('url', '/welcome-to-ghost/');
-                lookup.isAmpURL.should.be.true();
                 lookup.isEditURL.should.be.false();
                 done();
             }).catch(done);
@@ -224,7 +218,6 @@ describe('postLookup', function () {
 
             postLookup(testUrl).then(function (lookup) {
                 lookup.post.should.have.property('url', '/welcome-to-ghost/');
-                lookup.isAmpURL.should.be.true();
                 lookup.isEditURL.should.be.false();
                 done();
             }).catch(done);
@@ -241,15 +234,6 @@ describe('postLookup', function () {
 
         it('cannot lookup relative url: /:year/:month/:day/:slug/amp/', function (done) {
             var testUrl = '/2016/01/01/welcome-to-ghost/amp/';
-
-            postLookup(testUrl).then(function (lookup) {
-                should.not.exist(lookup);
-                done();
-            }).catch(done);
-        });
-
-        it('cannot lookup relative url: /:slug/notamp/', function (done) {
-            var testUrl = '/welcome-to-ghost/notamp/';
 
             postLookup(testUrl).then(function (lookup) {
                 should.not.exist(lookup);

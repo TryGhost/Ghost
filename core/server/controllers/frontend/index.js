@@ -69,6 +69,11 @@ frontendControllers = {
                 return next();
             }
 
+            // CASE: postlookup can detect options for example /edit, unknown options get ignored and end in 404
+            if (lookup.isUnknownOption) {
+                return next();
+            }
+
             // CASE: last param is of url is /edit, redirect to admin
             if (lookup.isEditURL) {
                 return res.redirect(utils.url.urlJoin(utils.url.getSubdir(), '/ghost/editor', post.id, '/'));
