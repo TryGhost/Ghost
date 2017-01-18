@@ -35,17 +35,13 @@ var debug = require('debug')('ghost:api'),
     authenticatePublic = [
         auth.authenticate.authenticateClient,
         auth.authenticate.authenticateUser,
-        auth.authorize.requiresAuthorizedUserPublicAPI,
-        // @TODO do we really need this multiple times or should it be global?
-        cors
+        auth.authorize.requiresAuthorizedUserPublicAPI
     ],
     // Require user for private endpoints
     authenticatePrivate = [
         auth.authenticate.authenticateClient,
         auth.authenticate.authenticateUser,
-        auth.authorize.requiresAuthorizedUser,
-        // @TODO do we really need this multiple times or should it be global?
-        cors
+        auth.authorize.requiresAuthorizedUser
     ];
 
 // @TODO refactor/clean this up - how do we want the routing to work long term?
@@ -225,6 +221,8 @@ module.exports = function setupApiApp() {
     // Body parsing
     apiApp.use(bodyParser.json({limit: '1mb'}));
     apiApp.use(bodyParser.urlencoded({extended: true, limit: '1mb'}));
+
+    apiApp.use(cors);
 
     // send 503 json response in case of maintenance
     apiApp.use(maintenance);
