@@ -2386,9 +2386,9 @@ ember-resolver@2.1.1:
     ember-cli-babel "^5.1.6"
     ember-cli-version-checker "^1.1.6"
 
-ember-route-action-helper@2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/ember-route-action-helper/-/ember-route-action-helper-2.0.1.tgz#a317c390d362ece95b854f9ddc448303e65bd811"
+ember-route-action-helper@2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/ember-route-action-helper/-/ember-route-action-helper-2.0.2.tgz#6ca3f6189062f657c0c7a447e0ba12362152790f"
   dependencies:
     ember-cli-babel "^5.1.7"
     ember-getowner-polyfill "^1.1.1"
