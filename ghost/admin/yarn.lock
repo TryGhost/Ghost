@@ -1800,9 +1800,9 @@ ember-cli-chai@0.3.2:
     rollup-plugin-commonjs "^5.0.5"
     rollup-plugin-node-resolve "^2.0.0"
 
-ember-cli-code-coverage@0.3.8:
-  version "0.3.8"
-  resolved "https://registry.yarnpkg.com/ember-cli-code-coverage/-/ember-cli-code-coverage-0.3.8.tgz#b3f8f765f3c9f34d3f2c78e5ace33bc681adad89"
+ember-cli-code-coverage@0.3.10:
+  version "0.3.10"
+  resolved "https://registry.yarnpkg.com/ember-cli-code-coverage/-/ember-cli-code-coverage-0.3.10.tgz#2e0e6fb1b8f414d59d5a50e6f460cf6bebaea464"
   dependencies:
     babel-core "^5.8.38"
     body-parser "^1.15.0"
@@ -1816,6 +1816,7 @@ ember-cli-code-coverage@0.3.8:
     extend "^3.0.0"
     fs-extra "^0.26.7"
     istanbul "^0.4.3"
+    node-dir "^0.1.16"
     source-map "0.5.6"
     string.prototype.startswith "^0.2.0"
 
@@ -4786,6 +4787,12 @@ natural-compare@^1.4.0:
 negotiator@0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/negotiator/-/negotiator-0.6.1.tgz#2b327184e8992101177b28563fb5e7102acd0ca9"
+
+node-dir@^0.1.16:
+  version "0.1.16"
+  resolved "https://registry.yarnpkg.com/node-dir/-/node-dir-0.1.16.tgz#d2ef583aa50b90d93db8cdd26fcea58353957fe4"
+  dependencies:
+    minimatch "^3.0.2"
 
 node-emoji@^1.4.1:
   version "1.5.1"
