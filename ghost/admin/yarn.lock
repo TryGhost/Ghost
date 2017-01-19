@@ -1100,6 +1100,10 @@ center-align@^0.1.1:
     align-text "^0.1.3"
     lazy-cache "^1.0.3"
 
+chai-jquery@2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/chai-jquery/-/chai-jquery-2.0.0.tgz#0f43042308dd746332bd98164aaef4a4f45ba167"
+
 chai@^3.5.0:
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/chai/-/chai-3.5.0.tgz#4d02637b067fe958bdbfdd3a40ec56fef7373247"
