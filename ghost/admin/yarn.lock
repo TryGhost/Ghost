@@ -5215,9 +5215,9 @@ parseurl@~1.3.1:
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/parseurl/-/parseurl-1.3.1.tgz#c8ab8c9223ba34888aa64a297b28853bec18da56"
 
-password-generator@2.0.6:
-  version "2.0.6"
-  resolved "https://registry.yarnpkg.com/password-generator/-/password-generator-2.0.6.tgz#ff4164d6da24ab90ff2fe8183d6555e3d2da1b5e"
+password-generator@2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/password-generator/-/password-generator-2.1.0.tgz#d7580432951b69851e3d8d0a98fb1dc60b5c56da"
   dependencies:
     optimist "0.6.1"
 
