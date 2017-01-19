@@ -5,11 +5,11 @@ import {htmlSafe} from 'ember-string';
 import ModalComponent from 'ghost-admin/components/modals/base';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
+import {task} from 'ember-concurrency';
 
 export default ModalComponent.extend(ValidationEngine, {
     validationType: 'signin',
 
-    submitting: false,
     authenticationError: null,
 
     config: injectService(),
@@ -44,7 +44,7 @@ export default ModalComponent.extend(ValidationEngine, {
 
         this.set('authenticationError', null);
 
-        this.validate({property: 'signin'}).then(() => {
+        return this.validate({property: 'signin'}).then(() => {
             this._authenticate().then(() => {
                 this.get('notifications').closeAlerts();
                 this.send('closeModal');
@@ -74,7 +74,7 @@ export default ModalComponent.extend(ValidationEngine, {
         this.toggleProperty('submitting');
         this.set('authenticationError', '');
 
-        this.get('torii')
+        return this.get('torii')
             .open('ghost-oauth2', {type: 'signin'})
             .then((authentication) => {
                 this.get('session').set('skipAuthSuccessHandler', true);
@@ -93,13 +93,17 @@ export default ModalComponent.extend(ValidationEngine, {
             });
     },
 
+    reauthenticate: task(function* () {
+        if (this.get('config.ghostOAuth')) {
+            yield this._oauthConfirm();
+        } else {
+            yield this._passwordConfirm();
+        }
+    }).drop(),
+
     actions: {
         confirm() {
-            if (this.get('config.ghostOAuth')) {
-                return this._oauthConfirm();
-            } else {
-                return this._passwordConfirm();
-            }
+            this.get('reauthenticate').perform();
         }
     }
 });

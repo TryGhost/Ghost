@@ -1,8 +1,35 @@
 import {A as emberA} from 'ember-array/utils';
 import ModalComponent from 'ghost-admin/components/modals/base';
 import {isInvalidError} from 'ember-ajax/errors';
+import {task} from 'ember-concurrency';
 
 export default ModalComponent.extend({
+
+    addSubscriber: task(function* () {
+        try {
+            yield this.get('confirm')();
+            this.send('closeModal');
+        } catch (error) {
+            // TODO: server-side validation errors should be serialized
+            // properly so that errors are added to the model's errors
+            // property
+            if (error && isInvalidError(error)) {
+                let [firstError] = error.errors;
+                let {message} = firstError;
+
+                if (message && message.match(/email/i)) {
+                    this.get('model.errors').add('email', message);
+                    this.get('model.hasValidated').pushObject('email');
+                    return;
+                }
+            }
+
+            // this is a route action so it should bubble up to the global
+            // error handler
+            throw error;
+        }
+    }).drop(),
+
     actions: {
         updateEmail(newEmail) {
             this.set('model.email', newEmail);
@@ -11,35 +38,7 @@ export default ModalComponent.extend({
         },
 
         confirm() {
-            let confirmAction = this.get('confirm');
-
-            this.set('submitting', true);
-
-            confirmAction().then(() => {
-                this.send('closeModal');
-            }).catch((error) => {
-                // TODO: server-side validation errors should be serialized
-                // properly so that errors are added to the model's errors
-                // property
-                if (error && isInvalidError(error)) {
-                    let [firstError] = error.errors;
-                    let {message} = firstError;
-
-                    if (message && message.match(/email/i)) {
-                        this.get('model.errors').add('email', message);
-                        this.get('model.hasValidated').pushObject('email');
-                        return;
-                    }
-                }
-
-                // this is a route action so it should bubble up to the global
-                // error handler
-                throw error;
-            }).finally(() => {
-                if (!this.get('isDestroying') && !this.get('isDestroyed')) {
-                    this.set('submitting', false);
-                }
-            });
+            this.get('addSubscriber').perform();
         }
     }
 });
