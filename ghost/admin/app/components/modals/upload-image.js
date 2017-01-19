@@ -3,10 +3,10 @@ import injectService from 'ember-service/inject';
 import {isEmpty} from 'ember-utils';
 import ModalComponent from 'ghost-admin/components/modals/base';
 import cajaSanitizers from 'ghost-admin/utils/caja-sanitizers';
+import {task} from 'ember-concurrency';
 
 export default ModalComponent.extend({
     model: null,
-    submitting: false,
 
     url: '',
     newUrl: '',
@@ -65,6 +65,25 @@ export default ModalComponent.extend({
     },
     // end validation
 
+    uploadImage: task(function* () {
+        let model = this.get('model.model');
+        let newUrl = this.get('newUrl');
+        let result = this._validateUrl(newUrl);
+        let notifications = this.get('notifications');
+
+        if (result === true) {
+            this.set('image', newUrl);
+
+            try {
+                yield model.save();
+            } catch (e) {
+                notifications.showAPIError(e, {key: 'image.upload'});
+            } finally {
+                this.send('closeModal');
+            }
+        }
+    }).drop(),
+
     actions: {
         fileUploaded(url) {
             this.set('url', url);
@@ -77,21 +96,7 @@ export default ModalComponent.extend({
         },
 
         confirm() {
-            let model = this.get('model.model');
-            let newUrl = this.get('newUrl');
-            let result = this._validateUrl(newUrl);
-            let notifications = this.get('notifications');
-
-            if (result === true) {
-                this.set('submitting', true);
-                this.set('image', newUrl);
-
-                model.save().catch((err) => {
-                    notifications.showAPIError(err, {key: 'image.upload'});
-                }).finally(() => {
-                    this.send('closeModal');
-                });
-            }
+            this.get('uploadImage').perform();
         }
     }
 });
