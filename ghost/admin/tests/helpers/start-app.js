@@ -6,11 +6,10 @@ import config from '../../config/environment';
 import fileUpload from './file-upload';
 
 export default function startApp(attrs) {
-    let attributes = assign({}, config.APP);
     let application;
 
-    // use defaults, but you can override;
-    attributes = assign(attributes, attrs);
+    let attributes = assign({}, config.APP);
+    attributes = assign(attributes, attrs); // use defaults, but you can override;
 
     run(function () {
         application = Application.create(attributes);
