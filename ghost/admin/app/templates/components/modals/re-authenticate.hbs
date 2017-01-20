@@ -6,13 +6,13 @@
 <div class="modal-body {{if authenticationError 'error'}}">
 
     {{#if config.ghostOAuth}}
-        {{#gh-spin-button class="login btn btn-blue btn-block" type="submit" action="confirm" tabindex="3" submitting=loggingIn autoWidth="false"}}Sign in with Ghost{{/gh-spin-button}}
+        {{#gh-task-button task=reauthenticate class="login btn btn-blue btn-block" tabindex="3" autoWidth="false"}}Sign in with Ghost{{/gh-task-button}}
     {{else}}
         <form id="login" class="login-form" method="post" novalidate="novalidate" {{action "confirm" on="submit"}}>
             {{#gh-validation-status-container class="password-wrap" errors=errors property="password" hasValidated=hasValidated}}
                 {{gh-input password class="password" type="password" placeholder="Password" name="password" update=(action (mut password))}}
             {{/gh-validation-status-container}}
-            {{#gh-spin-button class="btn btn-blue" type="submit" submitting=submitting}}Log in{{/gh-spin-button}}
+            {{#gh-task-button task=reauthenticate class="btn btn-blue" type="submit"}}Log in{{/gh-task-button}}
         </form>
     {{/if}}
 
