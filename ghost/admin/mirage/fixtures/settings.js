@@ -217,5 +217,15 @@ export default [
             }
         ],
         type: 'theme'
+    },
+    {
+        id: 21,
+        created_at: '2017-01-09T08:40:59.000Z',
+        created_by: 1,
+        key: 'amp',
+        type: 'blog',
+        updated_at: '2017-01-09T08:49:42.991Z',
+        updated_by: 1,
+        value: 'true'
     }
 ];

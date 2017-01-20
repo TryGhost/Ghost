@@ -5,5 +5,6 @@ import {alias} from 'ember-computed';
 export default Controller.extend({
     appsController: injectController('settings.apps'),
 
-    slack: alias('appsController.model.slack.firstObject')
+    slack: alias('appsController.model.slack.firstObject'),
+    amp: alias('appsController.model.amp')
 });

@@ -1,0 +1,35 @@
+<header class="view-header">
+    {{#gh-view-title openMobileMenu="openMobileMenu"}}<span style="padding-left:1px">{{#link-to "settings.apps.index"}}Apps{{/link-to}} <i class="icon-arrow-right" style="display:inline"></i> AMP</span>{{/gh-view-title}}
+    <section class="view-actions">
+        {{#gh-spin-button id="saveSlackIntegration" class="btn btn-green" action=(action "save") submitting=isSaving}}
+            Save
+        {{/gh-spin-button}}
+    </section>
+</header>
+<section class="view-container">
+    <section class="view-content">
+        <section class="app-grid">
+            <div class="app-cell">
+                <img class="app-icon" src="{{gh-path 'asset' '/img/ampicon.png'}}" />
+            </div>
+            <div class="app-cell">
+                <h3>AMP</h3>
+                <p>Accelerated Mobile Pages</p>
+            </div>
+        </section>
+        <section class="app-subtitle">
+            <p>Enable <a href="https://ampproject.org">Google Accelerated Mobile Pages </a>for your site?</p>
+        </section>
+        <form class="app-config-form" id="amp-settings" novalidate="novalidate">
+            <div class="form-group for-checkbox">
+                <label for="amp">AMP support for your publications</label>
+                <label class="checkbox" for="amp">
+                    {{one-way-checkbox model id="amp" name="amp" type="checkbox" update=(action "update")}}
+                    <span class="input-toggle-component"></span>
+                    <p>Enable AMP support</p>
+                </label>
+            </div>
+        </form>
+
+    </section>
+</section>
