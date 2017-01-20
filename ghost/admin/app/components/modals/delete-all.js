@@ -1,9 +1,8 @@
 import injectService from 'ember-service/inject';
 import ModalComponent from 'ghost-admin/components/modals/base';
+import {task} from 'ember-concurrency';
 
 export default ModalComponent.extend({
-
-    submitting: false,
 
     ghostPaths: injectService(),
     notifications: injectService(),
@@ -28,18 +27,21 @@ export default ModalComponent.extend({
         this.get('notifications').showAPIError(error, {key: 'all-content.delete'});
     },
 
+    deleteAll: task(function* () {
+        try {
+            yield this._deleteAll();
+            this._unloadData();
+            this._showSuccess();
+        } catch (error) {
+            this._showFailure(error);
+        } finally {
+            this.send('closeModal');
+        }
+    }).drop(),
+
     actions: {
         confirm() {
-            this.set('submitting', true);
-
-            this._deleteAll().then(() => {
-                this._unloadData();
-                this._showSuccess();
-            }).catch((error) => {
-                this._showFailure(error);
-            }).finally(() => {
-                this.send('closeModal');
-            });
+            this.get('deleteAll').perform();
         }
     }
 });
