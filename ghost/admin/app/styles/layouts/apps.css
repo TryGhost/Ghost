@@ -54,6 +54,10 @@
     transition: background 0.3s ease;
 }
 
+.apps-card-app:not(last-child) {
+    border-bottom: rgba(0,0,0,0.1) 1px solid;
+}
+
 .apps-card-app:first-of-type {
     border-top: none;
 }
