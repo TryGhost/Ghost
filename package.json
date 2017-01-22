@@ -30,7 +30,7 @@
     "bcryptjs": "2.3.0",
     "bluebird": "3.4.7",
     "body-parser": "1.15.2",
-    "bookshelf": "https://github.com/kirrg001/bookshelf/tarball/feature/creating-event-attached-models",
+    "bookshelf": "0.10.3",
     "brute-knex": "https://github.com/cobbspur/brute-knex/tarball/0cb28fa8e3230dcbf6bca8b991dbb340b9fff6cc",
     "bson-objectid": "1.1.4",
     "bunyan": "1.8.1",
