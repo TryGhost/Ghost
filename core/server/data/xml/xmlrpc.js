@@ -72,6 +72,7 @@ function ping(post) {
         req.on('error', function handleError(err) {
             logging.error(new errors.GhostError({
                 err: err,
+                message: err.message,
                 context: i18n.t('errors.data.xml.xmlrpc.pingUpdateFailed.error'),
                 help: i18n.t('errors.data.xml.xmlrpc.pingUpdateFailed.help', {url: 'http://support.ghost.org'})
             }));
