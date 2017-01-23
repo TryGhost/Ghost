@@ -220,7 +220,7 @@ http = function http(apiMethod) {
     return function apiHandler(req, res, next) {
         // We define 2 properties for using as arguments in API calls:
         var object = req.body,
-            options = _.extend({}, req.file, req.query, req.params, {
+            options = _.extend({}, req.file, {ip: req.ip}, req.query, req.params, {
                 context: {
                     // @TODO: forward the client and user obj in 1.0 (options.context.user.id)
                     user: ((req.user && req.user.id) || (req.user && models.User.isExternalUser(req.user.id))) ? req.user.id : null,
