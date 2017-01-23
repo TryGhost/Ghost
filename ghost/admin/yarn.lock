@@ -2362,11 +2362,11 @@ ember-new-computed@^1.0.0, ember-new-computed@^1.0.2:
   dependencies:
     ember-cli-babel "^5.1.5"
 
-ember-one-way-controls@1.1.2:
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/ember-one-way-controls/-/ember-one-way-controls-1.1.2.tgz#9ebaba62bb43bf3d5e680f0d13b996353e47ce6d"
+ember-one-way-controls@2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/ember-one-way-controls/-/ember-one-way-controls-2.0.0.tgz#7a79f1a56094c44fe1012fd0f9b75bd92d136fe9"
   dependencies:
-    ember-cli-babel "^5.1.6"
+    ember-cli-babel "^5.1.7"
     ember-cli-htmlbars "^1.0.10"
     ember-get-helper "~1.1.0"
     ember-invoke-action "1.4.0"
