@@ -4,6 +4,7 @@ var _ = require('lodash').runInContext(),
     path = require('path'),
     htmlToText = require('html-to-text'),
     config = require('../config'),
+    utils = require('../utils'),
     templatesDir = path.resolve(__dirname, '..', 'mail', 'templates');
 
 _.templateSettings.interpolate = /{{([\s\S]+?)}}/g;
@@ -13,7 +14,7 @@ exports.generateContent = function generateContent(options) {
         data;
 
     defaults = {
-        siteUrl: config.get('forceAdminSSL') ? (config.get('urlSSL') || config.get('url')) : config.get('url')
+        siteUrl: config.get('forceAdminSSL') ? utils.url.urlFor('home', {secure: true}, true) : utils.url.urlFor('home', true)
     };
 
     data = _.defaults(defaults, options.data);
