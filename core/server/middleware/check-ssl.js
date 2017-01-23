@@ -1,5 +1,6 @@
 var config = require('../config'),
     url    = require('url'),
+    utils  = require('../utils'),
     checkSSL;
 
 function isSSLrequired(isAdmin, configUrl, forceAdminSSL) {
@@ -38,12 +39,12 @@ function sslForbiddenOrRedirect(opt) {
 // Check to see if we should use SSL
 // and redirect if needed
 checkSSL = function checkSSL(req, res, next) {
-    if (isSSLrequired(res.isAdmin, config.get('url'), config.get('forceAdminSSL'))) {
+    if (isSSLrequired(res.isAdmin, utils.url.urlFor('home', true), config.get('forceAdminSSL'))) {
         if (!req.secure) {
             var response = sslForbiddenOrRedirect({
                 forceAdminSSL: config.get('forceAdminSSL'),
                 configUrlSSL: config.get('urlSSL'),
-                configUrl: config.get('url'),
+                configUrl: utils.url.urlFor('home', true),
                 reqUrl: req.originalUrl || req.url
             });
 
