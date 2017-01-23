@@ -23,7 +23,7 @@ ghost().then(function (ghostServer) {
         }
     });
 }).catch(function (error) {
-    if (!(error instanceof errors.GhostError)) {
+    if (!(error instanceof errors.IgnitionError)) {
         error = new errors.GhostError({err: error});
     }
 

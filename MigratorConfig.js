@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 var config = require('./core/server/config'),
     versioning = require('./core/server/data/schema/versioning');
 
@@ -7,4 +5,4 @@ module.exports = {
     currentVersion: versioning.getNewestDatabaseVersion(),
     database: config.get('database'),
     migrationPath: config.get('paths:migrationPath')
-}
+};
