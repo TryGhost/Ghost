@@ -166,9 +166,7 @@ function apiRoutes() {
 
     // ## Authentication
     apiRouter.post('/authentication/passwordreset',
-        // Prevent more than 5 password resets from an ip in an hour for any email address
         brute.globalReset,
-        // Prevent more than 5 password resets in an hour for an email+IP pair
         brute.userReset,
         api.http(api.authentication.generateResetToken)
     );

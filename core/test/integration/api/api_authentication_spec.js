@@ -348,7 +348,7 @@ describe('Authentication API', function () {
                 }).catch(done);
             });
 
-            it('should allow a password reset', function (done) {
+            it('should not allow a password reset', function (done) {
                 AuthAPI.resetPassword(testReset).then(function () {
                     done(new Error('password reset did not fail on token validation'));
                 }).catch(function (err) {
