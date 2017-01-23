@@ -3,12 +3,21 @@ language: node_js
 node_js:
   - "4"
   - "6"
+
 sudo: false
+
 cache:
   directories:
     - node_modules
-    - core/client/node_modules
-    - core/client/bower_components
+
+addons:
+  apt:
+    sources:
+      - sourceline: 'deb https://dl.yarnpkg.com/debian/ stable main'
+        key_url: 'https://dl.yarnpkg.com/debian/pubkey.gpg'
+    packages:
+      - yarn
+
 env:
   global:
     - GITHUB_OAUTH_KEY=003a44d58f12089d0c0261338298af3813330949
@@ -17,16 +26,23 @@ env:
   matrix:
     - DB=sqlite3 NODE_ENV=testing
     - DB=mysql NODE_ENV=testing-mysql
+
 matrix:
   include:
     - node_js: "4"
       env: TEST_SUITE=lint
   fast_finish: true
+
 branches:
   except:
     - /^greenkeeper-.+$/
+
 before_install:
   - if [ $DB == "mysql" ]; then mysql -e 'create database ghost_testing'; fi
+
+install:
+  - yarn
+
 after_success:
   - |
       if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
