@@ -49,7 +49,7 @@ describe('Mail API', function () {
         MailAPI.send(mailData, testUtils.context.internal).then(function () {
             done(new Error('Stub did not error'));
         }).catch(function (error) {
-            error.message.should.startWith('Error: Stub made a boo boo :(');
+            error.stack.should.match(/Error: Stub made a boo boo/);
             error.errorType.should.eql('EmailError');
             done();
         }).catch(done);

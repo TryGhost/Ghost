@@ -18,7 +18,7 @@ describe('Errors', function () {
             someError.help = 'test';
 
             ghostError = new errors.GhostError({err: someError});
-            ghostError.message.should.eql(someError.message);
+            ghostError.stack.should.match(/Error: test/);
             ghostError.context.should.eql(someError.context);
             ghostError.help.should.eql(someError.help);
         });
@@ -26,7 +26,6 @@ describe('Errors', function () {
         it('has nested object', function () {
             var someError = new Error(), ghostError;
 
-            someError.message = 'test';
             someError.obj = {
                 a: 'b'
             };
@@ -35,14 +34,12 @@ describe('Errors', function () {
                 err: someError
             });
 
-            ghostError.message.should.eql(someError.message);
             ghostError.obj.should.eql(someError.obj);
         });
 
         it('with custom attribute', function () {
             var someError = new Error(), ghostError;
 
-            someError.message = 'test';
             someError.context = 'test';
 
             ghostError = new errors.GhostError({
@@ -50,22 +47,18 @@ describe('Errors', function () {
                 context: 'context'
             });
 
-            ghostError.message.should.eql(someError.message);
             ghostError.context.should.eql('test');
         });
 
         it('with custom attribute', function () {
             var someError = new Error(), ghostError;
 
-            someError.message = 'test';
-
             ghostError = new errors.GhostError({
                 err: someError,
-                context: 'context'
+                message: 'test'
             });
 
-            ghostError.message.should.eql(someError.message);
-            ghostError.context.should.eql('context');
+            ghostError.message.should.eql('test');
         });
 
         it('error is string', function () {
@@ -73,7 +66,7 @@ describe('Errors', function () {
                 err: 'string'
             });
 
-            ghostError.message.should.eql('string');
+            ghostError.stack.should.match(/Error: string/);
         });
     });
 });
