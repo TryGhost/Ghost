@@ -67,6 +67,9 @@ updateConfigCache = function () {
     config.set('theme:timezone', (settingsCache.activeTimezone && settingsCache.activeTimezone.value) || config.get('theme').timezone);
     config.set('theme:url', globalUtils.url.urlFor('home', true));
     config.set('theme:amp', (settingsCache.amp && settingsCache.amp.value === 'true'));
+    config.set('theme:favicon', (settingsCache.favicon && settingsCache.favicon.value) ?
+                                {type: 'upload', url: (settingsCache.favicon && settingsCache.favicon.value)} :
+                                {type: 'default', url: config.get('theme:favicon')});
 
     _.each(labsValue, function (value, key) {
         config.set('labs:' + key, value);
