@@ -2,7 +2,10 @@ var supertest     = require('supertest'),
     should        = require('should'),
     testUtils     = require('../../../utils'),
     user          = testUtils.DataGenerator.forModel.users[0],
+    userForKnex   = testUtils.DataGenerator.forKnex.users[0],
+    models        = require('../../../../../core/server/models'),
     config        = require('../../../../../core/server/config'),
+    utils         = require('../../../../../core/server/utils'),
     ghost         = testUtils.startGhost,
     request;
 
@@ -127,7 +130,9 @@ describe('Authentication API', function () {
                 if (err) {
                     return done(err);
                 }
+
                 var refreshToken = res.body.refresh_token;
+
                 request.post(testUtils.API.getApiQuery('authentication/token'))
                     .set('Origin', config.get('url'))
                     .send({
@@ -172,5 +177,40 @@ describe('Authentication API', function () {
                 jsonResponse.errors[0].errorType.should.eql('NoPermissionError');
                 done();
             });
+    });
+
+    it('reset password', function (done) {
+        models.Settings
+            .findOne({key: 'dbHash'})
+            .then(function (response) {
+                var token = utils.tokens.resetToken.generateHash({
+                    expires: Date.now() + (1000 * 60),
+                    email: user.email,
+                    dbHash: response.attributes.value,
+                    password: userForKnex.password
+                });
+
+                request.put(testUtils.API.getApiQuery('authentication/passwordreset'))
+                    .set('Origin', config.get('url'))
+                    .set('Accept', 'application/json')
+                    .send({
+                        passwordreset: [{
+                            token: token,
+                            newPassword: 'abcdefgh',
+                            ne2Password: 'abcdefgh'
+                        }]
+                    })
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .end(function (err) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        done();
+                    });
+            })
+            .catch(done);
     });
 });

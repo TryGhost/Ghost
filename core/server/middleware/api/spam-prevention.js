@@ -74,7 +74,7 @@ globalReset = new ExpressBrute(store,
             }));
         },
         handleStoreError: handleStoreError
-    }, _.pick(spamGlobalBlock, spamConfigKeys))
+    }, _.pick(spamGlobalReset, spamConfigKeys))
 );
 
 // Stops login attempts for a user+IP pair with an increasing time period starting from 10 minutes

@@ -1,11 +1,14 @@
 var supertest     = require('supertest'),
     should        = require('should'),
     testUtils     = require('../../../utils'),
+    db            = require('../../../../../core/server/data/db'),
     config        = require('../../../../../core/server/config'),
     ghost         = testUtils.startGhost,
     failedLoginAttempt,
     count,
+    checkBruteTable,
     tooManyFailedLoginAttempts,
+    successLoginAttempt,
     request;
 
 describe('Spam Prevention API', function () {
@@ -57,7 +60,8 @@ describe('Spam Prevention API', function () {
                     password: 'wrong-password',
                     client_id: 'ghost-admin',
                     client_secret: 'not_available'
-                }).expect('Content-Type', /json/)
+                })
+                .expect('Content-Type', /json/)
                 .expect(429)
                 .end(function (err, res) {
                     if (err) {
@@ -84,12 +88,14 @@ describe('Spam Prevention API', function () {
                     password: 'wrong-password',
                     client_id: 'ghost-admin',
                     client_secret: 'not_available'
-                }).expect('Content-Type', /json/)
+                })
+                .expect('Content-Type', /json/)
                 .expect(401)
                 .end(function (err) {
                     if (err) {
                         return done(err);
                     }
+
                     if (count <  config.get('spam:user_login:freeRetries') + 1) {
                         return failedLoginAttempt(email);
                     }
@@ -155,6 +161,68 @@ describe('Spam Prevention API', function () {
                         return failedLoginAttempt(author.email);
                     }
                     tooManyFailedLoginAttempts(author.email);
+                });
+        };
+
+        failedLoginAttempt(owner.email);
+    });
+
+    it('Ensure reset works: password grant type', function (done) {
+        count = 0;
+
+        checkBruteTable = function checkBruteTable() {
+            return db.knex('brute').select();
+        };
+
+        successLoginAttempt = function successLoginAttempt(email) {
+            request.post(testUtils.API.getApiQuery('authentication/token'))
+                .set('Origin', config.get('url'))
+                .send({
+                    grant_type: 'password',
+                    username: email,
+                    password: 'Sl1m3rson',
+                    client_id: 'ghost-admin',
+                    client_secret: 'not_available'
+                }).expect('Content-Type', /json/)
+                .expect(200)
+                .end(function (err) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    checkBruteTable()
+                        .then(function (rows) {
+                            // if reset works, the key is deleted and only one key remains in the database
+                            // the one key is the key for global block
+                            rows.length.should.eql(1);
+                            done();
+                        });
+                });
+        };
+
+        failedLoginAttempt = function failedLoginAttempt(email) {
+            count += 1;
+
+            request.post(testUtils.API.getApiQuery('authentication/token'))
+                .set('Origin', config.get('url'))
+                .send({
+                    grant_type: 'password',
+                    username: email,
+                    password: 'wrong-password',
+                    client_id: 'ghost-admin',
+                    client_secret: 'not_available'
+                }).expect('Content-Type', /json/)
+                .expect(401)
+                .end(function (err) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    if (count < config.get('spam:user_login:freeRetries') - 1) {
+                        return failedLoginAttempt(email);
+                    }
+
+                    successLoginAttempt(email);
                 });
         };
 
