@@ -4,7 +4,6 @@
 // We use the name subscribe_form to match the helper for consistency:
 // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 var _ = require('lodash'),
-    path = require('path'),
 
     // Dirty requires
     hbs = require('express-hbs'),
@@ -43,7 +42,7 @@ subscribeScript =
 subscribe_form = function (options) {
     var root = options.data.root,
         data = _.merge({}, options.hash, _.pick(root, params), {
-            action: path.join('/', globalUtils.url.getSubdir(), config.get('routeKeywords').subscribe, '/'),
+            action: globalUtils.url.urlJoin('/', globalUtils.url.getSubdir(), config.get('routeKeywords').subscribe, '/'),
             script: new hbs.handlebars.SafeString(subscribeScript),
             hidden: new hbs.handlebars.SafeString(
                 makeHidden('confirm') +

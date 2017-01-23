@@ -28,7 +28,7 @@ describe('Configuration API', function () {
             response.configuration.should.be.an.Array().with.lengthOf(1);
             props = response.configuration[0];
 
-            props.blogUrl.should.eql('http://127.0.0.1:2369');
+            props.blogUrl.should.eql('http://127.0.0.1:2369/');
             props.routeKeywords.should.eql({
                 tag: 'tag',
                 author: 'author',

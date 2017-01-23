@@ -106,7 +106,7 @@ invites = {
                     return settings.read({key: 'title'});
                 })
                 .then(function (response) {
-                    var baseUrl = config.get('forceAdminSSL') ? (config.get('urlSSL') || config.get('url')) : config.get('url');
+                    var baseUrl = config.get('forceAdminSSL') ? globalUtils.url.urlFor('home', {secure: true}, true) : globalUtils.url.urlFor('home', true);
 
                     emailData = {
                         blogName: response.settings[0].value,

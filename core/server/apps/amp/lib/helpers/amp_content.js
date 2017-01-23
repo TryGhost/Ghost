@@ -11,11 +11,11 @@ var hbs                  = require('express-hbs'),
     Amperize             = require('amperize'),
     moment               = require('moment'),
     sanitizeHtml         = require('sanitize-html'),
-    config               = require('../../../../config'),
     logging              = require('../../../../logging'),
     i18n                 = require('../../../../i18n'),
     errors               = require('../../../../errors'),
     makeAbsoluteUrl      = require('../../../../utils/make-absolute-urls'),
+    utils                = require('../../../../utils'),
     cheerio              = require('cheerio'),
     amperize             = new Amperize(),
     amperizeCache        = {},
@@ -121,7 +121,7 @@ function getAmperizeHTML(html, post) {
     }
 
     // make relative URLs abolute
-    html = makeAbsoluteUrl(html, config.get('url'), post.url).html();
+    html = makeAbsoluteUrl(html, utils.url.urlFor('home', true), post.url).html();
 
     if (!amperizeCache[post.id] || moment(new Date(amperizeCache[post.id].updated_at)).diff(new Date(post.updated_at)) < 0) {
         return new Promise(function (resolve) {

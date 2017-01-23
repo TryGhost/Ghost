@@ -5,6 +5,7 @@ var _                  = require('lodash'),
     ghostVersion       = require('../utils/ghost-version'),
     models             = require('../models'),
     Promise            = require('bluebird'),
+    utils              = require('../utils'),
 
     configuration;
 
@@ -27,7 +28,7 @@ function getBaseConfig() {
         fileStorage:    config.get('fileStorage') !== false,
         useGravatar:    !config.isPrivacyDisabled('useGravatar'),
         publicAPI:      config.get('publicAPI') === true,
-        blogUrl:        config.get('url').replace(/\/$/, ''),
+        blogUrl:        utils.url.urlFor('home', true),
         blogTitle:      config.get('theme').title,
         routeKeywords:  config.get('routeKeywords')
     };

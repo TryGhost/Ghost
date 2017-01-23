@@ -8,18 +8,38 @@ var moment            = require('moment-timezone'),
     // @TODO: unify this with routes.apiBaseUrl
     apiPath = '/ghost/api/v0.1';
 
+/** getBaseUrl
+ * Returns the base URL of the blog as set in the config. If called with secure options, returns the ssl URL.
+ * @param {boolean} secure
+ * @return {string} URL returns the url as defined in config, but always with a trailing `/`
+ */
 function getBaseUrl(secure) {
+    var base;
+
+    // CASE: a specified SSL URL is configured (e. g. https://secure.blog.org/)
+    // see: https://github.com/TryGhost/Ghost/issues/6270#issuecomment-168939865
     if (secure && config.get('urlSSL')) {
-        return config.get('urlSSL');
+        base = config.get('urlSSL');
     } else {
+        // CASE: no specified SSL URL configured, but user request is secure. In this case we force SSL
+        // and therefore replace the protocol.
         if (secure) {
-            return config.get('url').replace('http://', 'https://');
+            base = config.get('url').replace('http://', 'https://');
         } else {
-            return config.get('url');
+            base = config.get('url');
         }
     }
+
+    if (!base.match(/\/$/)) {
+        base += '/';
+    }
+    return base;
 }
 
+/** getSubdir
+ * Returns a subdirectory URL, if defined so in the config.
+ * @return {string} URL a subdirectory if configured.
+ */
 function getSubdir() {
     var localPath, subdir;
 
@@ -47,14 +67,11 @@ function getProtectedSlugs() {
     }
 }
 
-// ## urlJoin
-// concats arguments to a path/URL
-// Usage:
-// urlJoin(getBaseUrl(), 'content', '/') -> http://my-ghost-blog.com/content/
-// Returns a URL or relative path
-// Only to use for Ghost URLs and paths
-// TODO: urlJoin needs to be optimised and to validate the URL/path properly.
-// e. g. URLs should end with a trailing `/` at the end of the pathname.
+/** urlJoin
+ * Returns a URL/path for internal use in Ghost.
+ * @param {string} arguments takes arguments and concats those to a valid path/URL.
+ * @return {string} URL concatinated URL/path of arguments.
+ */
 function urlJoin() {
     var args = Array.prototype.slice.call(arguments),
         prefixDoubleSlash = false,
@@ -245,6 +262,8 @@ function urlFor(context, data, absolute) {
                 absolute = true;
             }
         }
+    } else if (context === 'home' && absolute)  {
+        urlPath = getBaseUrl(secure);
         // other objects are recognised but not yet supported
     } else if (_.isString(context) && _.indexOf(_.keys(knownPaths), context) !== -1) {
         // trying to create a url for a named path
@@ -273,7 +292,7 @@ function apiUrl(options) {
     var url;
 
     if (config.get('forceAdminSSL')) {
-        url = (config.get('urlSSL') || config.get('url')).replace(/^.*?:\/\//g, 'https://');
+        url = (config.get('urlSSL') || getBaseUrl(true)).replace(/^.*?:\/\//g, 'https://');
     } else if (config.get('urlSSL')) {
         url = config.get('urlSSL').replace(/^.*?:\/\//g, 'https://');
     } else if (config.get('url').match(/^https:/)) {
