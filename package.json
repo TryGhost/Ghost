@@ -51,6 +51,7 @@
     "fs-extra": "1.0.0",
     "ghost-editor": "0.1.5",
     "ghost-gql": "0.0.6",
+    "ghost-ignition": "2.8.1",
     "glob": "5.0.15",
     "gscan": "0.2.0",
     "html-to-text": "3.0.0",
