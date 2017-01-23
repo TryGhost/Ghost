@@ -29,6 +29,9 @@
         "cover": {
             "defaultValue": ""
         },
+        "favicon": {
+            "defaultValue": ""
+        },
         "defaultLang": {
             "defaultValue": "en_US",
             "validations": {
