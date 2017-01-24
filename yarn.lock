@@ -905,17 +905,6 @@ colors@^1.0.3, colors@^1.1.2, colors@~1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/colors/-/colors-1.1.2.tgz#168a4701756b6a7f51a12ce0c97bfa28c084ed63"
 
-coloured-log@0.9.7:
-  version "0.9.7"
-  resolved "https://registry.yarnpkg.com/coloured-log/-/coloured-log-0.9.7.tgz#fe732bd1a7b63e7e1d5ce2b1797237536542f70d"
-  dependencies:
-    coloured ">= 0.2.0"
-    log ">= 1.2.0"
-
-"coloured@>= 0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/coloured/-/coloured-0.2.0.tgz#85485842a8521cb3780ba4084f2d43772800641c"
-
 combined-stream@^1.0.5, combined-stream@~1.0.5:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/combined-stream/-/combined-stream-1.0.5.tgz#938370a57b4a51dea2c77c15d5c5fdf895164009"
@@ -3346,12 +3335,11 @@ klaw@^1.0.0:
   optionalDependencies:
     graceful-fs "^4.1.9"
 
-knex-migrator@1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-1.1.1.tgz#b44b5d3b721bd4f6efd090b1d64aa0fae6fbbe77"
+knex-migrator@2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-2.0.1.tgz#f38741fc504b70f806342248d01f04c73137d757"
   dependencies:
     bluebird "3.4.6"
-    coloured-log "0.9.7"
     commander "2.9.0"
     debug "2.2.0"
     ghost-ignition "2.8.1"
@@ -3713,10 +3701,6 @@ log-symbols@^1.0.0:
   resolved "https://registry.yarnpkg.com/log-symbols/-/log-symbols-1.0.2.tgz#376ff7b58ea3086a0f09facc74617eca501e1a18"
   dependencies:
     chalk "^1.0.0"
-
-"log@>= 1.2.0":
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/log/-/log-1.4.0.tgz#4ba1d890fde249b031dca03bc37eaaf325656f1c"
 
 loggly@^1.1.0:
   version "1.1.1"
