@@ -42,6 +42,7 @@ before_install:
 
 install:
   - yarn
+  - if [ "$DB" == "sqlite3" ]; then yarn add --force sqlite3; fi # fix sqlite caching issues
 
 after_success:
   - |
