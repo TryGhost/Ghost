@@ -49,12 +49,6 @@ Install grunt
 npm install -g grunt-cli
 ```
 
-Install knex-migrator
-
-```bash
-npm install -g knex-migrator
-```
-
 Install Ghost
 
 ```bash
