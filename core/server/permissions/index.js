@@ -124,7 +124,8 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
         user:       Models.User,
         permission: Models.Permission,
         setting:    Models.Settings,
-        subscriber: Models.Subscriber
+        subscriber: Models.Subscriber,
+        invite:     Models.Invite
     };
 
     // Iterate through the object types, i.e. ['post', 'tag', 'user']
