@@ -73,20 +73,5 @@ describe('Migrations', function () {
                 done();
             }).catch(done);
         });
-
-        it('should fall back to console.log if no logger provided', function (done) {
-            var noopStub = sandbox.stub(_, 'noop');
-
-            backupDatabase().then(function () {
-                exportStub.calledOnce.should.be.true();
-                filenameStub.calledOnce.should.be.true();
-                fsStub.calledOnce.should.be.true();
-                noopStub.calledTwice.should.be.true();
-                // restore early so we get the test output
-                noopStub.restore();
-
-                done();
-            }).catch(done);
-        });
     });
 });
