@@ -1,5 +1,4 @@
-var should = require('should'),
-    sinon = require('sinon'),
+var sinon = require('sinon'),
     rewire = require('rewire'),
     _ = require('lodash'),
     Promise = require('bluebird'),
@@ -10,7 +9,6 @@ var should = require('should'),
     schema = require('../../server/data/schema'),
     backupDatabase = rewire('../../server/data/db/backup'),
     fixtures = require('../../server/data/schema/fixtures'),
-    defaultSettings = schema.defaultSettings,
     sandbox = sinon.sandbox.create();
 
 // Check version integrity
@@ -38,11 +36,8 @@ describe('DB version integrity', function () {
         schemaHash = crypto.createHash('md5').update(JSON.stringify(tablesNoValidation)).digest('hex');
         fixturesHash = crypto.createHash('md5').update(JSON.stringify(fixtures)).digest('hex');
 
-        // by default the database version is null
-        should.not.exist(defaultSettings.core.databaseVersion.defaultValue);
         schemaHash.should.eql(currentSchemaHash);
         fixturesHash.should.eql(currentFixturesHash);
-        schema.versioning.canMigrateFromVersion.should.eql('1.0');
     });
 });
 

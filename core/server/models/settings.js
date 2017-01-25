@@ -167,10 +167,6 @@ Settings = ghostBookshelf.Model.extend({
 
             _.each(getDefaultSettings(), function each(defaultSetting, defaultSettingKey) {
                 var isMissingFromDB = usedKeys.indexOf(defaultSettingKey) === -1;
-                // Temporary code to deal with old databases with currentVersion settings
-                if (defaultSettingKey === 'databaseVersion' && usedKeys.indexOf('currentVersion') !== -1) {
-                    isMissingFromDB = false;
-                }
                 if (isMissingFromDB) {
                     defaultSetting.value = defaultSetting.defaultValue;
                     insertOperations.push(Settings.forge(defaultSetting).save(null, options));
