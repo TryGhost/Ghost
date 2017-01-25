@@ -491,7 +491,7 @@ User = ghostBookshelf.Model.extend({
         }
 
         if (action === 'edit') {
-            // Owner can only be editted by owner
+            // Owner can only be edited by owner
             if (loadedPermissions.user && userModel.hasRole('Owner')) {
                 hasUserPermission = _.some(loadedPermissions.user.roles, {name: 'Owner'});
             }

@@ -9,14 +9,13 @@ var testUtils   = require('../../utils'),
     gravatar    = require('../../../server/utils/gravatar'),
     UserModel   = require('../../../server/models/user').User,
     RoleModel   = require('../../../server/models/role').Role,
-    models      = require('../../../server/models'),
     events      = require('../../../server/events'),
     context     = testUtils.context.admin,
     sandbox     = sinon.sandbox.create();
 
 describe('User Model', function run() {
-    var eventSpy;
-    // Keep the DB clean
+    var eventsTriggered = {};
+
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
     afterEach(function () {
@@ -25,21 +24,6 @@ describe('User Model', function run() {
 
     before(function () {
         should.exist(UserModel);
-    });
-
-    beforeEach(function () {
-        eventSpy = sandbox.spy(events, 'emit');
-
-        /**
-         * @TODO:
-         * - key: migrations-kate
-         * - this is not pretty
-         * - eventSpy get's now more events then expected
-         * - because on migrations.populate we trigger populateDefaults
-         * - how to solve? eventSpy must be local and not global?
-         */
-        models.init();
-        sandbox.stub(models.Settings, 'populateDefaults').returns(Promise.resolve());
     });
 
     describe('Registration', function runRegistration() {
@@ -184,6 +168,17 @@ describe('User Model', function run() {
 
     describe('Basic Operations', function () {
         beforeEach(testUtils.setup('users:roles'));
+
+        beforeEach(function () {
+            eventsTriggered = {};
+            sandbox.stub(events, 'emit', function (eventName, eventObj) {
+                if (!eventsTriggered[eventName]) {
+                    eventsTriggered[eventName] = [];
+                }
+
+                eventsTriggered[eventName].push(eventObj);
+            });
+        });
 
         it('sets last login time on successful login', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[0];
@@ -341,8 +336,8 @@ describe('User Model', function run() {
                 createdUser.attributes.password.should.not.equal(userData.password, 'password was hashed');
                 createdUser.attributes.email.should.eql(userData.email, 'email address correct');
 
-                eventSpy.calledOnce.should.be.true();
-                eventSpy.firstCall.calledWith('user.added').should.be.true();
+                Object.keys(eventsTriggered).length.should.eql(1);
+                should.exist(eventsTriggered['user.added']);
 
                 done();
             }).catch(done);
@@ -361,9 +356,9 @@ describe('User Model', function run() {
                 createdUser.get('email').should.eql(userData.email, 'email address correct');
                 createdUser.related('roles').toJSON()[0].name.should.eql('Administrator', 'role set correctly');
 
-                eventSpy.calledTwice.should.be.true();
-                eventSpy.firstCall.calledWith('user.added').should.be.true();
-                eventSpy.secondCall.calledWith('user.activated').should.be.true();
+                Object.keys(eventsTriggered).length.should.eql(2);
+                should.exist(eventsTriggered['user.added']);
+                should.exist(eventsTriggered['user.activated']);
 
                 done();
             }).catch(done);
@@ -400,9 +395,9 @@ describe('User Model', function run() {
                 should.exist(edited);
                 edited.attributes.website.should.equal('http://some.newurl.com');
 
-                eventSpy.calledTwice.should.be.true();
-                eventSpy.firstCall.calledWith('user.activated.edited').should.be.true();
-                eventSpy.secondCall.calledWith('user.edited').should.be.true();
+                Object.keys(eventsTriggered).length.should.eql(2);
+                should.exist(eventsTriggered['user.activated.edited']);
+                should.exist(eventsTriggered['user.edited']);
 
                 done();
             }).catch(done);
@@ -432,15 +427,16 @@ describe('User Model', function run() {
 
                 userId = createdUser.attributes.id;
 
-                eventSpy.calledOnce.should.be.true();
-                eventSpy.firstCall.calledWith('user.added').should.be.true();
+                Object.keys(eventsTriggered).length.should.eql(1);
+                should.exist(eventsTriggered['user.added']);
 
                 return UserModel.edit({website: 'http://some.newurl.com'}, {id: userId});
             }).then(function (createdUser) {
                 createdUser.attributes.status.should.equal('invited');
 
-                eventSpy.calledTwice.should.be.true();
-                eventSpy.secondCall.calledWith('user.edited').should.be.true();
+                Object.keys(eventsTriggered).length.should.eql(2);
+                should.exist(eventsTriggered['user.edited']);
+
                 done();
             }).catch(done);
         });
@@ -457,16 +453,17 @@ describe('User Model', function run() {
 
                 userId = createdUser.attributes.id;
 
-                eventSpy.calledOnce.should.be.true();
-                eventSpy.firstCall.calledWith('user.added').should.be.true();
+                Object.keys(eventsTriggered).length.should.eql(1);
+                should.exist(eventsTriggered['user.added']);
 
                 return UserModel.edit({status: 'active'}, {id: userId});
             }).then(function (createdUser) {
                 createdUser.attributes.status.should.equal('active');
 
-                eventSpy.calledThrice.should.be.true();
-                eventSpy.secondCall.calledWith('user.activated').should.be.true();
-                eventSpy.thirdCall.calledWith('user.edited').should.be.true();
+                Object.keys(eventsTriggered).length.should.eql(3);
+                should.exist(eventsTriggered['user.activated']);
+                should.exist(eventsTriggered['user.edited']);
+
                 done();
             }).catch(done);
         });
@@ -486,9 +483,9 @@ describe('User Model', function run() {
             }).then(function (response) {
                 response.toJSON().should.be.empty();
 
-                eventSpy.calledTwice.should.be.true();
-                eventSpy.firstCall.calledWith('user.deactivated').should.be.true();
-                eventSpy.secondCall.calledWith('user.deleted').should.be.true();
+                Object.keys(eventsTriggered).length.should.eql(2);
+                should.exist(eventsTriggered['user.deactivated']);
+                should.exist(eventsTriggered['user.deleted']);
 
                 // Double check we can't find the user again
                 return UserModel.findOne(firstUser);
@@ -511,16 +508,16 @@ describe('User Model', function run() {
 
                 userId = {id: createdUser.attributes.id};
 
-                eventSpy.calledOnce.should.be.true();
-                eventSpy.firstCall.calledWith('user.added').should.be.true();
+                Object.keys(eventsTriggered).length.should.eql(1);
+                should.exist(eventsTriggered['user.added']);
 
                 // Destroy the user
                 return UserModel.destroy(userId);
             }).then(function (response) {
                 response.toJSON().should.be.empty();
 
-                eventSpy.calledTwice.should.be.true();
-                eventSpy.secondCall.calledWith('user.deleted').should.be.true();
+                Object.keys(eventsTriggered).length.should.eql(2);
+                should.exist(eventsTriggered['user.deleted']);
 
                 // Double check we can't find the user again
                 return UserModel.findOne(userId);

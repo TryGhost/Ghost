@@ -1,18 +1,12 @@
-var testUtils   = require('../utils'),
-    should      = require('should'),
-    sinon       = require('sinon'),
-    _           = require('lodash'),
-    Promise     = require('bluebird'),
-    fixtures    = require('../../server/data/migration/fixtures'),
-    Models      = require('../../server/models'),
-    sandbox     = sinon.sandbox.create();
+var testUtils = require('../utils'),
+    should = require('should'),
+    sinon = require('sinon'),
+    _ = require('lodash'),
+    Promise = require('bluebird'),
+    Models = require('../../server/models'),
+    sandbox = sinon.sandbox.create();
 
 describe('Database Migration (special functions)', function () {
-    var loggerStub =  {
-        info: sandbox.stub(),
-        warn: sandbox.stub()
-    };
-
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
     afterEach(function () {
@@ -152,69 +146,68 @@ describe('Database Migration (special functions)', function () {
         });
 
         describe('Populate', function () {
-            beforeEach(testUtils.setup());
+            beforeEach(testUtils.setup('default'));
 
             it('should populate all fixtures correctly', function (done) {
-                fixtures.populate(loggerStub, {context:{internal:true}}).then(function () {
-                    var props = {
-                        posts: Models.Post.findAll({include: ['tags']}),
-                        tags: Models.Tag.findAll(),
-                        users: Models.User.findAll({filter: 'status:inactive', context: {internal:true}, include: ['roles']}),
-                        clients: Models.Client.findAll(),
-                        roles: Models.Role.findAll(),
-                        permissions: Models.Permission.findAll({include: ['roles']})
-                    };
+                var props = {
+                    posts: Models.Post.findAll({include: ['tags']}),
+                    tags: Models.Tag.findAll(),
+                    users: Models.User.findAll({
+                        filter: 'status:inactive',
+                        context: {internal: true},
+                        include: ['roles']
+                    }),
+                    clients: Models.Client.findAll(),
+                    roles: Models.Role.findAll(),
+                    permissions: Models.Permission.findAll({include: ['roles']})
+                };
 
-                    loggerStub.info.called.should.be.true();
-                    loggerStub.warn.called.should.be.false();
+                return Promise.props(props).then(function (result) {
+                    should.exist(result);
 
-                    return Promise.props(props).then(function (result) {
-                        should.exist(result);
+                    // Post
+                    should.exist(result.posts);
+                    result.posts.length.should.eql(1);
+                    result.posts.at(0).get('title').should.eql('Welcome to Ghost');
 
-                        // Post
-                        should.exist(result.posts);
-                        result.posts.length.should.eql(1);
-                        result.posts.at(0).get('title').should.eql('Welcome to Ghost');
+                    // Tag
+                    should.exist(result.tags);
+                    result.tags.length.should.eql(1);
+                    result.tags.at(0).get('name').should.eql('Getting Started');
 
-                        // Tag
-                        should.exist(result.tags);
-                        result.tags.length.should.eql(1);
-                        result.tags.at(0).get('name').should.eql('Getting Started');
+                    // Post Tag relation
+                    result.posts.at(0).related('tags').length.should.eql(1);
+                    result.posts.at(0).related('tags').at(0).get('name').should.eql('Getting Started');
 
-                        // Post Tag relation
-                        result.posts.at(0).related('tags').length.should.eql(1);
-                        result.posts.at(0).related('tags').at(0).get('name').should.eql('Getting Started');
+                    // Clients
+                    should.exist(result.clients);
+                    result.clients.length.should.eql(3);
+                    result.clients.at(0).get('name').should.eql('Ghost Admin');
+                    result.clients.at(1).get('name').should.eql('Ghost Frontend');
+                    result.clients.at(2).get('name').should.eql('Ghost Scheduler');
 
-                        // Clients
-                        should.exist(result.clients);
-                        result.clients.length.should.eql(3);
-                        result.clients.at(0).get('name').should.eql('Ghost Admin');
-                        result.clients.at(1).get('name').should.eql('Ghost Frontend');
-                        result.clients.at(2).get('name').should.eql('Ghost Scheduler');
+                    // User (Owner)
+                    should.exist(result.users);
+                    result.users.length.should.eql(1);
+                    result.users.at(0).get('name').should.eql('Ghost Owner');
+                    result.users.at(0).get('status').should.eql('inactive');
+                    result.users.at(0).related('roles').length.should.eql(1);
+                    result.users.at(0).related('roles').at(0).get('name').should.eql('Owner');
 
-                        // User (Owner)
-                        should.exist(result.users);
-                        result.users.length.should.eql(1);
-                        result.users.at(0).get('name').should.eql('Ghost Owner');
-                        result.users.at(0).get('status').should.eql('inactive');
-                        result.users.at(0).related('roles').length.should.eql(1);
-                        result.users.at(0).related('roles').at(0).get('name').should.eql('Owner');
+                    // Roles
+                    should.exist(result.roles);
+                    result.roles.length.should.eql(4);
+                    result.roles.at(0).get('name').should.eql('Administrator');
+                    result.roles.at(1).get('name').should.eql('Editor');
+                    result.roles.at(2).get('name').should.eql('Author');
+                    result.roles.at(3).get('name').should.eql('Owner');
 
-                        // Roles
-                        should.exist(result.roles);
-                        result.roles.length.should.eql(4);
-                        result.roles.at(0).get('name').should.eql('Administrator');
-                        result.roles.at(1).get('name').should.eql('Editor');
-                        result.roles.at(2).get('name').should.eql('Author');
-                        result.roles.at(3).get('name').should.eql('Owner');
+                    // Permissions
+                    result.permissions.length.should.eql(48);
+                    result.permissions.toJSON().should.be.CompletePermissions();
 
-                        // Permissions
-                        result.permissions.length.should.eql(48);
-                        result.permissions.toJSON().should.be.CompletePermissions();
-
-                        done();
-                    });
-                }).catch(done);
+                    done();
+                });
             });
         });
     });

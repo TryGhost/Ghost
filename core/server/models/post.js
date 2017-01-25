@@ -28,6 +28,7 @@ Post = ghostBookshelf.Model.extend({
         if (usePreviousResourceType) {
             resourceType = this.updated('page') ? 'page' : 'post';
         }
+
         events.emit(resourceType + '.' + event, this);
     },
 

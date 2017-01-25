@@ -463,10 +463,6 @@ toDoList = {
   *  * `perms:obj` - initialise permissions for a particular object type
   *  * `users:roles` - create a full suite of users, one per role
  * @param {Object} toDos
- *
- * @TODO:
- *  - key: migrations-kate
- *  - call migration-runner
  */
 getFixtureOps = function getFixtureOps(toDos) {
     // default = default fixtures, if it isn't present, init with tables only

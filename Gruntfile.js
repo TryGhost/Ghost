@@ -405,24 +405,6 @@ var overrides      = require('./core/server/overrides'),
                 cfg.express.test.options.node_env = process.env.NODE_ENV;
             });
 
-        // #### Reset Database to "New" state *(Utility Task)*
-        // Drops all database tables and then runs the migration process to put the database
-        // in a "new" state.
-        grunt.registerTask('cleanDatabase', function () {
-            var done = this.async(),
-                models    = require('./core/server/models'),
-                migration = require('./core/server/data/migration');
-
-            migration.reset().then(function () {
-                models.init();
-                return migration.init();
-            }).then(function () {
-                done();
-            }).catch(function (err) {
-                grunt.fail.fatal(err.stack);
-            });
-        });
-
         // ### Test
         // **Testing utility**
         //
