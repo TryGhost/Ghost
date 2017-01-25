@@ -399,7 +399,8 @@
                     "error": "Error sending email: {message}",
                     "help": "Please check your email settings and resend the invitation."
                 },
-                "notAllowedToInviteOwner": "Not allowed to invire an owner user."
+                "notAllowedToInviteOwner": "Not allowed to invite an owner user.",
+                "notAllowedToInvite": "Not allowed to invite this role."
             }
         },
         "data": {
