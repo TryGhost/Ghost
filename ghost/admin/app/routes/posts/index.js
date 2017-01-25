@@ -1,53 +1,104 @@
-import {reads} from 'ember-computed';
-import injectService from 'ember-service/inject';
+import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
+import InfinityRoute from 'ember-infinity/mixins/route';
+import computed from 'ember-computed';
+import {assign} from 'ember-platform';
+import $ from 'jquery';
 
-import AuthenticatedRouteMixin from 'ember-simple-auth/mixins/authenticated-route-mixin';
-import MobileIndexRoute from 'ghost-admin/routes/mobile-index-route';
+export default AuthenticatedRoute.extend(InfinityRoute, ShortcutsRoute, {
 
-export default MobileIndexRoute.extend(AuthenticatedRouteMixin, {
-    noPosts: false,
+    perPageParam: 'limit',
+    totalPagesParam: 'meta.pagination.pages',
 
-    mediaQueries: injectService(),
-    isMobile: reads('mediaQueries.isMobile'),
+    _type: null,
 
-    // Transition to a specific post if we're not on mobile
-    beforeModel() {
-        this._super(...arguments);
-        if (!this.get('isMobile')) {
-            return this.goToPost();
-        }
-    },
-
-    setupController(controller) {
-        controller.set('noPosts', this.get('noPosts'));
-        this._super(...arguments);
-    },
-
-    goToPost() {
-        // the store has been populated by PostsRoute
-        let posts = this.store.peekAll('post');
-        let post;
+    model(params) {
+        this.set('_type', params.type);
+        let filterSettings = this.get('filterSettings');
 
         return this.get('session.user').then((user) => {
-            post = posts.find(function (post) {
-                // Authors can only see posts they've written
-                if (user.get('isAuthor')) {
-                    return post.isAuthoredByUser(user);
-                }
-
-                return true;
-            });
-
-            if (post) {
-                return this.transitionTo('posts.post', post);
+            if (user.get('isAuthor')) {
+                filterSettings.filter = filterSettings.filter
+                    ? `${filterSettings.filter}+author:${user.get('slug')}` : `author:${user.get('slug')}`;
             }
 
-            this.set('noPosts', true);
+            let paginationSettings = assign({perPage: 15, startingPage: 1}, filterSettings);
+
+            return this.infinityModel('post', paginationSettings);
         });
     },
 
-    // Mobile posts route callback
-    desktopTransition() {
-        this.goToPost();
+    filterSettings: computed('_type', function () {
+        let type = this.get('_type');
+        let status = 'all';
+        let staticPages = 'all';
+
+        switch (type) {
+        case 'draft':
+            status = 'draft';
+            staticPages = false;
+            break;
+        case 'published':
+            status = 'published';
+            staticPages = false;
+            break;
+        case 'scheduled':
+            status = 'scheduled';
+            staticPages = false;
+            break;
+        case 'page':
+            staticPages = true;
+            break;
+        }
+
+        return {
+            status,
+            staticPages
+        };
+    }),
+
+    stepThroughPosts(step) {
+        let currentPost = this.get('controller.currentPost');
+        let posts = this.get('controller.sortedPosts');
+        let length = posts.get('length');
+        let newPosition = posts.indexOf(currentPost) + step;
+
+        // if we are on the first or last item
+        // just do nothing (desired behavior is to not
+        // loop around)
+        if (newPosition >= length) {
+            return;
+        } else if (newPosition < 0) {
+            return;
+        }
+
+        // TODO: highlight post
+        // this.transitionTo('posts.post', posts.objectAt(newPosition));
+    },
+
+    shortcuts: {
+        'up, k': 'moveUp',
+        'down, j': 'moveDown',
+        c: 'newPost'
+    },
+
+    actions: {
+        queryParamsDidChange() {
+            this.refresh();
+            // reset the scroll position
+            $('.content-list-content').scrollTop(0);
+        },
+
+        newPost() {
+            this.transitionTo('editor.new');
+        },
+
+        moveUp() {
+            this.stepThroughPosts(-1);
+        },
+
+        moveDown() {
+            this.stepThroughPosts(1);
+        }
     }
 });

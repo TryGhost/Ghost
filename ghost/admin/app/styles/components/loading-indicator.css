@@ -48,3 +48,12 @@
         transform: rotate(360deg);
     }
 }
+
+/* Infinite scroll */
+.infinity-loader {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    padding: 2em 0;
+}

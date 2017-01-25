@@ -33,6 +33,7 @@ describe('Acceptance: Authentication', function () {
         beforeEach(function () {
             originalReplaceLocation = windowProxy.replaceLocation;
             windowProxy.replaceLocation = function (url) {
+                url = url.replace(/^\/ghost\//, '/');
                 visit(url);
             };
 

@@ -1315,7 +1315,7 @@ commander@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.0.0.tgz#d1b86f901f8b64bd941bdeadaf924530393be928"
 
-commander@2.3.0, commander@^2.1.0:
+commander@2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.3.0.tgz#fd430e889832ec353b9acd1de217c11cb3eef873"
 
@@ -1325,7 +1325,7 @@ commander@2.8.x:
   dependencies:
     graceful-readlink ">= 1.0.0"
 
-commander@^2.5.0, commander@^2.6.0, commander@^2.9.0:
+commander@^2.1.0, commander@^2.5.0, commander@^2.6.0, commander@^2.9.0:
   version "2.9.0"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.9.0.tgz#9c99094176e12240cb22d6c5146098400fe0f7d4"
   dependencies:
@@ -1897,7 +1897,7 @@ ember-cli-htmlbars-inline-precompile@0.3.6:
     ember-cli-htmlbars "^1.0.0"
     hash-for-dep "^1.0.2"
 
-ember-cli-htmlbars@1.1.1, ember-cli-htmlbars@^1.0.0, ember-cli-htmlbars@^1.0.10, ember-cli-htmlbars@^1.0.11, ember-cli-htmlbars@^1.0.3, ember-cli-htmlbars@^1.1.0, ember-cli-htmlbars@^1.1.1:
+ember-cli-htmlbars@1.1.1, ember-cli-htmlbars@^1.0.0, ember-cli-htmlbars@^1.0.1, ember-cli-htmlbars@^1.0.10, ember-cli-htmlbars@^1.0.11, ember-cli-htmlbars@^1.0.3, ember-cli-htmlbars@^1.1.0, ember-cli-htmlbars@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/ember-cli-htmlbars/-/ember-cli-htmlbars-1.1.1.tgz#8776cf59796dac8f32e8625fc6d1ea45ffa55de1"
   dependencies:
@@ -2289,6 +2289,15 @@ ember-in-viewport@2.1.1:
     ember-cli-babel "^5.1.6"
     ember-getowner-polyfill "^1.1.1"
 
+ember-infinity@0.2.8:
+  version "0.2.8"
+  resolved "https://registry.yarnpkg.com/ember-infinity/-/ember-infinity-0.2.8.tgz#813a24d0828446a44d09c21fee5adf371897d8dd"
+  dependencies:
+    ember-cli-babel "^5.1.5"
+    ember-cli-htmlbars "^1.0.1"
+    ember-cli-version-checker "^1.0.2"
+    ember-version-is "0.0.3"
+
 ember-inflector@^1.9.2, ember-inflector@^1.9.4:
   version "1.11.0"
   resolved "https://registry.yarnpkg.com/ember-inflector/-/ember-inflector-1.11.0.tgz#99baae18e2bee53cfa97d8db1d739280289a174f"
@@ -2459,6 +2468,12 @@ ember-test-helpers@^0.6.0-beta.1:
   version "0.6.0"
   resolved "https://registry.yarnpkg.com/ember-test-helpers/-/ember-test-helpers-0.6.0.tgz#1f644fd303437ef4d19430a3e18447d57a97cf36"
 
+ember-test-selectors@0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/ember-test-selectors/-/ember-test-selectors-0.2.0.tgz#d0305d01a96e3a0ad6a53f08f2d7b74975d3296e"
+  dependencies:
+    ember-cli-babel "^5.1.7"
+
 ember-text-measurer@^0.3.3:
   version "0.3.3"
   resolved "https://registry.yarnpkg.com/ember-text-measurer/-/ember-text-measurer-0.3.3.tgz#0762809a71c2e1f2e60ab00c53c6eb1b63c9f963"
@@ -2505,6 +2520,12 @@ ember-try@^0.2.6:
     rsvp "^3.0.17"
     semver "^5.1.0"
     sync-exec "^0.6.2"
+
+ember-version-is@0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/ember-version-is/-/ember-version-is-0.0.3.tgz#7d54ec39ed5e03f0df11cf8a5e22dc20b0810b1a"
+  dependencies:
+    ember-cli-babel "^5.0.0"
 
 ember-weakmap@2.0.0:
   version "2.0.0"
@@ -5505,7 +5526,19 @@ read@1, read@~1.0.1, read@~1.0.7:
   dependencies:
     mute-stream "~0.0.4"
 
-"readable-stream@1 || 2", readable-stream@^2, "readable-stream@^2.0.0 || ^1.1.13", readable-stream@^2.0.2, readable-stream@^2.2.2:
+"readable-stream@1 || 2", readable-stream@^2, readable-stream@^2.0.2, readable-stream@~2.1.5:
+  version "2.1.5"
+  resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-2.1.5.tgz#66fa8b720e1438b364681f2ad1a63c618448c9d0"
+  dependencies:
+    buffer-shims "^1.0.0"
+    core-util-is "~1.0.0"
+    inherits "~2.0.1"
+    isarray "~1.0.0"
+    process-nextick-args "~1.0.6"
+    string_decoder "~0.10.x"
+    util-deprecate "~1.0.1"
+
+"readable-stream@^2.0.0 || ^1.1.13", readable-stream@^2.2.2:
   version "2.2.2"
   resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-2.2.2.tgz#a9e6fec3c7dda85f8bb1b3ba7028604556fc825e"
   dependencies:
@@ -5530,18 +5563,6 @@ readable-stream@~2.0.5:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-2.0.6.tgz#8f90341e68a53ccc928788dacfcd11b36eb9b78e"
   dependencies:
-    core-util-is "~1.0.0"
-    inherits "~2.0.1"
-    isarray "~1.0.0"
-    process-nextick-args "~1.0.6"
-    string_decoder "~0.10.x"
-    util-deprecate "~1.0.1"
-
-readable-stream@~2.1.5:
-  version "2.1.5"
-  resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-2.1.5.tgz#66fa8b720e1438b364681f2ad1a63c618448c9d0"
-  dependencies:
-    buffer-shims "^1.0.0"
     core-util-is "~1.0.0"
     inherits "~2.0.1"
     isarray "~1.0.0"

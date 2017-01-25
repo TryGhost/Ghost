@@ -38,7 +38,6 @@ describe('Acceptance: Version Mismatch', function() {
 
             visit('/');
             click('.posts-list li:nth-of-type(2) a'); // select second post
-            click('.post-edit'); // preview edit button
             click('.js-publish-button'); // "Save post"
 
             andThen(() => {

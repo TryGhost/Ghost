@@ -31,9 +31,7 @@ GhostRouter.map(function () {
     this.route('reset', {path: '/reset/:token'});
     this.route('about', {path: '/about'});
 
-    this.route('posts', {path: '/'}, function () {
-        this.route('post', {path: ':post_id'});
-    });
+    this.route('posts', {path: '/'}, function() {});
 
     this.route('editor', function () {
         this.route('new', {path: ''});

@@ -1,8 +1,40 @@
-<div class="no-posts-box">
-    {{#if noPosts}}
-        <div class="no-posts">
-            <h3>You Haven't Written Any Posts Yet!</h3>
-            {{#link-to "editor.new"}}<button type="button" class="btn btn-green btn-lg" title="New Post">Write a new Post</button>{{/link-to}}
-        </div>
-    {{/if}}
+<div class="view-container">
+    <section class="content-list js-content-list {{if postListFocused 'keyboard-focused'}}">
+        <section class="content-list-content">
+            <ol class="posts-list">
+                {{#each model as |post|}}
+                    {{gh-posts-list-item
+                        post=post
+                        onDoubleClick="openEditor"
+                        data-test-posts-list-item-id=post.id}}
+                {{else}}
+                    <li class="no-posts-box">
+                        <div class="no-posts">
+                            {{#if showingAll}}
+                                <h3>You Haven't Written Any Posts Yet!</h3>
+                                {{#link-to "editor.new"}}<button type="button" class="btn btn-green btn-lg" title="New Post">Write a new Post</button>{{/link-to}}
+                            {{else}}
+                                <h3>No posts that match the current filter</h3>
+                                {{#link-to "posts.index" (query-params type=null)}}<button type="button" class="btn btn-lg">Show all posts</button>{{/link-to}}
+                            {{/if}}
+                        </div>
+                    </li>
+                {{/each}}
+
+                {{infinity-loader
+                    infinityModel=model
+                    scrollable=".content-list-content"
+                    triggerOffset=1000}}
+            </ol>
+        </section>
+    </section>
 </div>
+
+{{#if showDeletePostModal}}
+    {{gh-fullscreen-modal "delete-post"
+                          model=currentPost
+                          close=(action "toggleDeletePostModal")
+                          modifier="action wide"}}
+{{/if}}
+
+{{outlet}}
