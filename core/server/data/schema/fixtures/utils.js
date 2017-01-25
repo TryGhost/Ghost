@@ -96,7 +96,8 @@ fetchRelationData = function fetchRelationData(relation, options) {
  */
 addFixturesForModel = function addFixturesForModel(modelFixture, options) {
     return Promise.mapSeries(modelFixture.entries, function (entry) {
-        return models[modelFixture.name].findOne(entry, options).then(function (found) {
+        // CASE: if id is specified, only query by id
+        return models[modelFixture.name].findOne(entry.id ? {id: entry.id} : entry, options).then(function (found) {
             if (!found) {
                 return models[modelFixture.name].add(entry, options);
             }
