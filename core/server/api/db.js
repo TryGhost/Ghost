@@ -3,7 +3,7 @@
 var Promise          = require('bluebird'),
     exporter         = require('../data/export'),
     importer         = require('../data/importer'),
-    backupDatabase   = require('../data/migration').backupDatabase,
+    backupDatabase   = require('../data/db/backup'),
     models           = require('../models'),
     errors           = require('../errors'),
     utils            = require('./utils'),

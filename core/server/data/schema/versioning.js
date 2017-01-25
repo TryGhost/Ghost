@@ -1,5 +1,4 @@
-var path = require('path'),
-    Promise = require('bluebird'),
+var Promise = require('bluebird'),
     db = require('../db'),
     errors = require('../../errors'),
     ghostVersion = require('../../utils/ghost-version');
@@ -31,7 +30,7 @@ function validateDatabaseVersion(version) {
 
 /**
  * If the database version is null, the database was never seeded.
- * The seed migration script will set your database to current Ghost Version.
+ * The init migration script will set your database to current Ghost Version.
  */
 function getDatabaseVersion(options) {
     options = options || {};
@@ -71,58 +70,9 @@ function setDatabaseVersion(options) {
         });
 }
 
-/**
- * return the versions which need migration
- * when on 1.1 and we update to 1.4, we expect [1.2, 1.3, 1.4]
- */
-function getMigrationVersions(fromVersion, toVersion) {
-    var versions = [],
-        i;
-
-    for (i = (fromVersion * 10) + 1; i <= toVersion * 10; i += 1) {
-        versions.push((i / 10).toString());
-    }
-
-    return versions;
-}
-
-/**
- * ### Get Version Tasks
- * Tries to require a directory matching the version number
- *
- * This was split from update to make testing easier
- *
- * @param {String} version
- * @param {String} relPath
- * @param {Function} logger
- * @returns {Array}
- */
-function getVersionTasks(version, relPath, logger) {
-    var tasks = [];
-
-    try {
-        tasks = require(path.join(relPath, version));
-    } catch (e) {
-        logger.info('No tasks found for version', version);
-    }
-
-    return tasks;
-}
-
-function getUpdateDatabaseTasks(version, logger) {
-    return getVersionTasks(version, '../migration/', logger);
-}
-
-function getUpdateFixturesTasks(version, logger) {
-    return getVersionTasks(version, '../migration/fixtures/', logger);
-}
-
 module.exports = {
     canMigrateFromVersion: '1.0',
     getNewestDatabaseVersion: getNewestDatabaseVersion,
     getDatabaseVersion: getDatabaseVersion,
-    setDatabaseVersion: setDatabaseVersion,
-    getMigrationVersions: getMigrationVersions,
-    getUpdateDatabaseTasks: getUpdateDatabaseTasks,
-    getUpdateFixturesTasks: getUpdateFixturesTasks
+    setDatabaseVersion: setDatabaseVersion
 };
