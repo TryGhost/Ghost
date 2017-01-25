@@ -1,12 +1,12 @@
 // # Backup Database
 // Provides for backing up the database before making potentially destructive changes
-var _        = require('lodash'),
-    fs       = require('fs'),
+var fs       = require('fs'),
     path     = require('path'),
     Promise  = require('bluebird'),
     config   = require('../../config'),
-    exporter = require('../export'),
+    logging  = require('../../logging'),
     utils    = require('../../utils'),
+    exporter = require('../export'),
 
     writeExportFile,
     backup;
@@ -20,15 +20,10 @@ writeExportFile = function writeExportFile(exportResult) {
 /**
  * ## Backup
  * does an export, and stores this in a local file
- *
- * @param {{info: logger.info, warn: logger.warn}} [logger]
  * @returns {Promise<*>}
  */
-backup = function backup(logger) {
-    // If we get passed a function, use it to output notices, else don't do anything
-    logger = logger && _.isFunction(logger.info) ? logger : {info: _.noop};
-
-    logger.info('Creating database backup');
+backup = function backup() {
+    logging.info('Creating database backup');
 
     var props = {
         data: exporter.doExport(),
@@ -38,7 +33,7 @@ backup = function backup(logger) {
     return Promise.props(props)
         .then(writeExportFile)
         .then(function successMessage(filename) {
-            logger.info('Database backup written to: ' + filename);
+            logging.info('Database backup written to: ' + filename);
         });
 };
 
