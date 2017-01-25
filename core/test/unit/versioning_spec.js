@@ -14,25 +14,6 @@ describe('Versioning', function () {
         sandbox.restore();
     });
 
-    describe('getMigrationVersions', function () {
-        it('should output a single item if the from and to versions are the same', function () {
-            should.exist(versioning.getMigrationVersions);
-            versioning.getMigrationVersions('1.0', '1.0').should.eql([]);
-            versioning.getMigrationVersions('1.2', '1.2').should.eql([]);
-        });
-
-        it('should output an empty array if the toVersion is higher than the fromVersion', function () {
-            versioning.getMigrationVersions('1.2', '1.1').should.eql([]);
-        });
-
-        it('should output all the versions between two versions', function () {
-            versioning.getMigrationVersions('1.0', '1.1').should.eql(['1.1']);
-            versioning.getMigrationVersions('1.0', '1.2').should.eql(['1.1', '1.2']);
-            versioning.getMigrationVersions('1.2', '1.5').should.eql(['1.3', '1.4', '1.5']);
-            versioning.getMigrationVersions('2.1', '2.2').should.eql(['2.2']);
-        });
-    });
-
     describe('getNewestDatabaseVersion', function () {
         it('should return the correct version', function () {
             var currentVersion = '1.0';
@@ -111,11 +92,7 @@ describe('Versioning', function () {
             }).catch(done);
         });
 
-        // @TODO change this so we handle a non-existent version?
-        // There is an open bug in Ghost around this:
-        // https://github.com/TryGhost/Ghost/issues/7345
-        // I think it is a timing error
-        it.skip('should throw error if version does not exist', function (done) {
+        it('should throw error if version does not exist', function (done) {
             // Setup
             knexMock.schema.hasTable.returns(new Promise.resolve(true));
             queryMock.first.returns(new Promise.resolve());
@@ -126,6 +103,7 @@ describe('Versioning', function () {
             }).catch(function (err) {
                 should.exist(err);
                 (err instanceof errors.DatabaseVersionError).should.eql(true);
+                err.code.should.eql('VERSION_DOES_NOT_EXIST');
 
                 knexStub.get.calledTwice.should.be.true();
                 knexMock.schema.hasTable.calledOnce.should.be.true();
@@ -137,12 +115,10 @@ describe('Versioning', function () {
             }).catch(done);
         });
 
-        // @TODO decide on a new scheme for database versioning and update
-        // how we validate those versions
-        it.skip('should throw error if version is not a number', function (done) {
+        it('should throw error if version is not a number', function (done) {
             // Setup
             knexMock.schema.hasTable.returns(new Promise.resolve(true));
-            queryMock.first.returns(new Promise.resolve('Eyjafjallajökull'));
+            queryMock.first.returns(new Promise.resolve({value: 'Eyjafjallajökull'}));
 
             // Execute
             versioning.getDatabaseVersion().then(function () {

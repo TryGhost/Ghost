@@ -5,8 +5,8 @@ var should  = require('should'),
 
     models  = require('../../server/models'),
     baseUtils = require('../../server/models/base/utils'),
-    fixtureUtils = rewire('../../server/data/migration/fixtures/utils'),
-    fixtures     = require('../../server/data/migration/fixtures/fixtures'),
+    fixtureUtils = rewire('../../server/data/schema/fixtures/utils'),
+    fixtures     = require('../../server/data/schema/fixtures/fixtures'),
     sandbox = sinon.sandbox.create();
 
 describe('Migration Fixture Utils', function () {
@@ -150,19 +150,19 @@ describe('Migration Fixture Utils', function () {
             fixtureUtils.addFixturesForRelation(fixtures.relations[0]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
-                result.should.have.property('expected',  29);
-                result.should.have.property('done',  29);
+                result.should.have.property('expected',  30);
+                result.should.have.property('done',  30);
 
                 // Permissions & Roles
                 permsAllStub.calledOnce.should.be.true();
                 rolesAllStub.calledOnce.should.be.true();
-                dataMethodStub.filter.callCount.should.eql(29);
+                dataMethodStub.filter.callCount.should.eql(30);
                 dataMethodStub.find.callCount.should.eql(3);
-                baseUtilAttachStub.callCount.should.eql(29);
+                baseUtilAttachStub.callCount.should.eql(30);
 
-                fromItem.related.callCount.should.eql(29);
-                fromItem.findWhere.callCount.should.eql(29);
-                toItem[0].get.callCount.should.eql(58);
+                fromItem.related.callCount.should.eql(30);
+                fromItem.findWhere.callCount.should.eql(30);
+                toItem[0].get.callCount.should.eql(60);
 
                 done();
             }).catch(done);
