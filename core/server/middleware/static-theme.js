@@ -22,7 +22,7 @@ function forwardToExpressStatic(req, res, next) {
     } else {
         express.static(
             path.join(config.getContentPath('themes'), req.app.get('activeTheme')),
-            {maxAge: utils.ONE_YEAR_MS}
+            {maxAge: config.get('env') === 'development' ? 0 : utils.ONE_YEAR_MS}
         )(req, res, next);
     }
 }
