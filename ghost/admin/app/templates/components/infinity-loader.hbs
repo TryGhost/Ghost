@@ -1,0 +1,8 @@
+{{#if hasBlock}}
+    {{yield}}
+{{else}}
+    {{#if infinityModel.reachedInfinity}}
+    {{else}}
+        <div class="gh-loading-spinner"></div>
+    {{/if}}
+{{/if}}

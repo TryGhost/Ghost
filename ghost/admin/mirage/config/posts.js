@@ -1,6 +1,6 @@
 import {Response} from 'ember-cli-mirage';
 import {isBlank} from 'ember-utils';
-import {paginatedResponse} from '../utils';
+import {paginateModelArray} from '../utils';
 import {dasherize} from 'ember-string';
 
 export default function mockPosts(server) {
@@ -11,12 +11,33 @@ export default function mockPosts(server) {
             attrs.slug = dasherize(attrs.title);
         }
 
-        // NOTE: this does not use the post factory to fill in blank fields
         return posts.create(attrs);
     });
 
-    // TODO: handle status/staticPages/author params
-    server.get('/posts/', paginatedResponse('posts'));
+    // TODO: handle author filter
+    server.get('/posts/', function ({posts}, {queryParams}) {
+        let page = +queryParams.page || 1;
+        let limit = +queryParams.limit || 15;
+        let {status, staticPages} = queryParams;
+        let query = {};
+        let models;
+
+        if (status && status !== 'all') {
+            query.status = status;
+        }
+
+        if (staticPages === 'false') {
+            query.page = false;
+        }
+
+        if (staticPages === 'true') {
+            query.page = true;
+        }
+
+        models = posts.where(query).models;
+
+        return paginateModelArray('posts', models, page, limit);
+    });
 
     server.get('/posts/:id/', function ({posts}, {params}) {
         let {id} = params;

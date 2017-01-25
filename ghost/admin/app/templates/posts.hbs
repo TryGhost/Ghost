@@ -1,30 +1,42 @@
-{{#gh-content-view-container as |previewIsHidden|}}
-<header class="view-header">
-    {{#gh-view-title openMobileMenu="openMobileMenu"}}<span>Content</span>{{/gh-view-title}}
-    <section class="view-actions">
-        {{#link-to "editor.new" class="btn btn-green" title="New Post"}}New Post{{/link-to}}
-    </section>
-</header>
+<section class="gh-view gh-content-view-container">
+    <header class="view-header">
+        {{#gh-view-title openMobileMenu="openMobileMenu"}}<span>Content</span>{{/gh-view-title}}
+        <section class="view-actions">
+            {{#link-to "editor.new" class="btn btn-green" title="New Post" data-test-new-post-button=true}}
+                New Post
+            {{/link-to}}
+        </section>
+    </header>
 
-<div class="view-container">
-    <section class="content-list js-content-list {{if postListFocused 'keyboard-focused'}}">
-        {{#gh-infinite-scroll tagName="section" classNames="content-list-content js-content-scrollbox" fetch="loadNextPage" as |checkScroll|}}
-            <ol class="posts-list">
-                {{#each sortedPosts key="id" as |post|}}
-                    {{gh-posts-list-item post=post previewIsHidden=previewIsHidden onDoubleClick="openEditor" onDelete=(action checkScroll)}}
-                {{/each}}
-            </ol>
-        {{/gh-infinite-scroll}}
+    <section class="basic-filter">
+        <ul>
+            <li>
+                {{#link-to "posts.index" (query-params type=null) data-test-all-filter-link=true}}
+                    All
+                {{/link-to}}
+            </li>
+            <li>
+                {{#link-to "posts.index" (query-params type="draft") data-test-drafts-filter-link=true}}
+                    Drafts
+                {{/link-to}}
+            </li>
+            <li>
+                {{#link-to "posts.index" (query-params type="published") data-test-published-filter-link=true}}
+                    Published
+                {{/link-to}}
+            </li>
+            <li>
+                {{#link-to "posts.index" (query-params type="scheduled") data-test-scheduled-filter-link=true}}
+                    Scheduled
+                {{/link-to}}
+            </li>
+            <li>
+                {{#link-to "posts.index" (query-params type="page") data-test-pages-filter-link=true}}
+                    Pages
+                {{/link-to}}
+            </li>
+        </ul>
     </section>
-    <section class="content-preview js-content-preview {{if postContentFocused 'keyboard-focused'}}">
-        {{outlet}}
-    </section>
-</div>
-{{/gh-content-view-container}}
 
-{{#if showDeletePostModal}}
-    {{gh-fullscreen-modal "delete-post"
-                          model=currentPost
-                          close=(action "toggleDeletePostModal")
-                          modifier="action wide"}}
-{{/if}}
+    {{outlet}}
+</section>

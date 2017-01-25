@@ -30,12 +30,17 @@ export default Mixin.create({
     }),
 
     init() {
-        let paginationSettings = this.get('paginationSettings');
-        let settings = assign({}, defaultPaginationSettings, paginationSettings);
+        // don't merge defaults if paginationSettings is a CP
+        if (!this.paginationSettings.isDescriptor) {
+            let paginationSettings = this.get('paginationSettings');
+            let settings = assign({}, defaultPaginationSettings, paginationSettings);
+
+            this.set('paginationSettings', settings);
+        }
+
+        this.set('paginationMeta', {});
 
         this._super(...arguments);
-        this.set('paginationSettings', settings);
-        this.set('paginationMeta', {});
     },
 
     reportLoadError(error) {
