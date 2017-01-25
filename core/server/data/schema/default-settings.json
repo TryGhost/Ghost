@@ -29,7 +29,7 @@
         "cover": {
             "defaultValue": ""
         },
-        "favicon": {
+        "icon": {
             "defaultValue": ""
         },
         "defaultLang": {

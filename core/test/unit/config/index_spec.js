@@ -37,7 +37,7 @@ describe('Config', function () {
                     logo: 'casper',
                     cover: 'casper',
                     timezone: 'Etc/UTC',
-                    favicon: {
+                    icon: {
                         type: 'default',
                         url: 'core/shared/favicon.ico'
                     }
@@ -49,7 +49,7 @@ describe('Config', function () {
             var themeConfig = config.get('theme');
 
             // This will fail if there are any extra keys
-            themeConfig.should.have.keys('title', 'description', 'logo', 'cover', 'timezone', 'favicon');
+            themeConfig.should.have.keys('title', 'description', 'logo', 'cover', 'timezone', 'icon');
         });
 
         it('should have the correct values for each key', function () {
@@ -61,7 +61,7 @@ describe('Config', function () {
             themeConfig.should.have.property('logo', 'casper');
             themeConfig.should.have.property('cover', 'casper');
             themeConfig.should.have.property('timezone', 'Etc/UTC');
-            themeConfig.should.have.property('favicon', {
+            themeConfig.should.have.property('icon', {
                 type: 'default',
                 url: 'core/shared/favicon.ico'
             });
@@ -94,25 +94,25 @@ describe('Config', function () {
     });
 
     describe('Favicon default', function () {
-        it('should use uploaded favicon', function () {
+        it('should use uploaded blog icon', function () {
             var themeConfig = config.get('theme');
 
             // Check values are as we expect
-            themeConfig.should.have.property('favicon', {
+            themeConfig.should.have.property('icon', {
                 type: 'default',
                 url: 'core/shared/favicon.ico'
             });
 
             configUtils.set({
                 theme: {
-                    favicon: {
+                    icon: {
                         type: 'upload',
                         url: 'content/images/favicon.ico'
                     }
                 }
             });
 
-            config.get('theme').should.have.property('favicon', {
+            config.get('theme').should.have.property('icon', {
                 type: 'upload',
                 url: 'content/images/favicon.ico'
             });
@@ -123,7 +123,7 @@ describe('Config', function () {
 
             // Check values are as we expect
             themeConfig.should.have.property('theme');
-            themeConfig.theme.should.have.property('favicon', {
+            themeConfig.theme.should.have.property('icon', {
                 type: 'default',
                 url: 'core/shared/favicon.ico'
             });
