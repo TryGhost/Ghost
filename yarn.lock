@@ -2074,15 +2074,14 @@ ghost-ignition@2.5.0:
     node-uuid "1.4.7"
     prettyjson "1.1.3"
 
-ghost-ignition@2.8.1:
-  version "2.8.1"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-2.8.1.tgz#638956bae2a0249bc08f166c8acdc795d80c5968"
+ghost-ignition@2.8.2:
+  version "2.8.2"
+  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-2.8.2.tgz#2625423fa55ad0b3a7f1462079cc7e520d1db611"
   dependencies:
     bunyan "1.8.5"
     bunyan-loggly "1.1.0"
     caller "1.0.1"
     debug "2.2.0"
-    express "4.14.0"
     find-root "1.0.0"
     json-stringify-safe "5.0.1"
     lodash "4.16.4"
@@ -3351,14 +3350,14 @@ klaw@^1.0.0:
   optionalDependencies:
     graceful-fs "^4.1.9"
 
-knex-migrator@2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-2.0.1.tgz#f38741fc504b70f806342248d01f04c73137d757"
+knex-migrator@2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-2.0.3.tgz#d788815fdf04ad607c38713a6f6f9678107e6f32"
   dependencies:
     bluebird "3.4.6"
     commander "2.9.0"
     debug "2.2.0"
-    ghost-ignition "2.8.1"
+    ghost-ignition "2.8.2"
     knex "0.12.2"
     lodash "4.16.4"
     resolve "1.1.7"
