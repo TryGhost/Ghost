@@ -178,7 +178,7 @@ describe('Invites API', function () {
         }
 
         describe('Owner', function () {
-            it('CANNOT add an Owner', function (done) {
+            it('CANNOT invite an Owner', function (done) {
                 InvitesAPI.add({
                     invites: [
                         {
@@ -191,7 +191,7 @@ describe('Invites API', function () {
                 }).catch(checkForErrorType('NoPermissionError', done));
             });
 
-            it('Can add an Admin', function (done) {
+            it('Can invite an Admin', function (done) {
                 InvitesAPI.add({
                     invites: [
                         {
@@ -206,7 +206,7 @@ describe('Invites API', function () {
                 }).catch(done);
             });
 
-            it('Can add an Editor', function (done) {
+            it('Can invite an Editor', function (done) {
                 InvitesAPI.add({
                     invites: [
                         {
@@ -221,7 +221,7 @@ describe('Invites API', function () {
                 }).catch(done);
             });
 
-            it('Can add an Author', function (done) {
+            it('Can invite an Author', function (done) {
                 InvitesAPI.add({
                     invites: [
                         {
@@ -236,7 +236,7 @@ describe('Invites API', function () {
                 }).catch(done);
             });
 
-            it('Can add with role set as string', function (done) {
+            it('Can invite with role set as string', function (done) {
                 InvitesAPI.add({
                     invites: [
                         {
@@ -253,7 +253,7 @@ describe('Invites API', function () {
         });
 
         describe('Admin', function () {
-            it('CANNOT add an Owner', function (done) {
+            it('CANNOT invite an Owner', function (done) {
                 InvitesAPI.add({
                     invites: [
                         {
@@ -266,7 +266,7 @@ describe('Invites API', function () {
                 }).catch(checkForErrorType('NoPermissionError', done));
             });
 
-            it('Can add an Admin', function (done) {
+            it('Can invite an Admin', function (done) {
                 InvitesAPI.add({
                     invites: [
                         {
@@ -281,7 +281,7 @@ describe('Invites API', function () {
                 }).catch(done);
             });
 
-            it('Can add an Editor', function (done) {
+            it('Can invite an Editor', function (done) {
                 InvitesAPI.add({
                     invites: [
                         {
@@ -296,7 +296,7 @@ describe('Invites API', function () {
                 }).catch(done);
             });
 
-            it('Can add an Author', function (done) {
+            it('Can invite an Author', function (done) {
                 InvitesAPI.add({
                     invites: [
                         {
@@ -313,7 +313,7 @@ describe('Invites API', function () {
         });
 
         describe('Editor', function () {
-            it('CANNOT add an Owner', function (done) {
+            it('CANNOT invite an Owner', function (done) {
                 InvitesAPI.add({
                     invites: [
                         {
@@ -322,11 +322,11 @@ describe('Invites API', function () {
                         }
                     ]
                 }, context.editor).then(function () {
-                    done(new Error('Editor should not be able to add an owner'));
+                    done(new Error('Editor should not be able to invite an owner'));
                 }).catch(checkForErrorType('NoPermissionError', done));
             });
 
-            it('CANNOT add an Adminstrator', function (done) {
+            it('CANNOT invite an Adminstrator', function (done) {
                 InvitesAPI.add({
                     invites: [
                         {
@@ -335,11 +335,24 @@ describe('Invites API', function () {
                         }
                     ]
                 }, context.editor).then(function () {
-                    done(new Error('Editor should not be able to add an owner'));
+                    done(new Error('Editor should not be able to invite an administrator'));
                 }).catch(checkForErrorType('NoPermissionError', done));
             });
 
-            it('CANNOT add an Author', function (done) {
+            it('CANNOT invite an Editor', function (done) {
+                InvitesAPI.add({
+                    invites: [
+                        {
+                            email: 'test@example.com',
+                            role_id: testUtils.roles.ids.editor
+                        }
+                    ]
+                }, context.editor).then(function () {
+                    done(new Error('Editor should not be able to invite an editor'));
+                }).catch(checkForErrorType('NoPermissionError', done));
+            });
+
+            it('Can invite an Author', function (done) {
                 InvitesAPI.add({
                     invites: [
                         {
@@ -347,14 +360,16 @@ describe('Invites API', function () {
                             role_id: testUtils.roles.ids.author
                         }
                     ]
-                }, context.editor).then(function () {
-                    done(new Error('Editor should not be able to add an author'));
-                }).catch(checkForErrorType('NoPermissionError', done));
+                }, context.editor).then(function (response) {
+                    checkAddResponse(response);
+                    response.invites[0].role_id.should.equal(testUtils.roles.ids.author);
+                    done();
+                }).catch(done);
             });
         });
 
         describe('Author', function () {
-            it('CANNOT add an Owner', function (done) {
+            it('CANNOT invite an Owner', function (done) {
                 InvitesAPI.add({
                     invites: [
                         {
@@ -367,7 +382,7 @@ describe('Invites API', function () {
                 }).catch(checkForErrorType('NoPermissionError', done));
             });
 
-            it('CANNOT add an Author', function (done) {
+            it('CANNOT invite an Author', function (done) {
                 InvitesAPI.add({
                     invites: [
                         {
