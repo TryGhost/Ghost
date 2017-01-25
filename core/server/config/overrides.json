@@ -61,7 +61,7 @@
     },
     "theme": {
         "timezone": "Etc/UTC",
-        "favicon": {
+        "icon": {
             "type": "default",
             "url": "core/shared/favicon.ico"
         }
