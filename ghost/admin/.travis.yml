@@ -14,6 +14,7 @@ branches:
     - /^greenkeeper-.+$/
 
 cache:
+  yarn: true
   directories:
     - node_modules
 
@@ -22,13 +23,11 @@ addons:
   apt:
     sources:
       - google-chrome
-      - sourceline: 'deb https://dl.yarnpkg.com/debian/ stable main'
-        key_url: 'https://dl.yarnpkg.com/debian/pubkey.gpg'
     packages:
       - google-chrome-stable
-      - yarn
 
 install:
+  - npm i -g yarn
   - yarn global add bower
   - yarn
   - bower install
