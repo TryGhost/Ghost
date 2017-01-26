@@ -24,8 +24,10 @@ export default Component.extend({
     text: '',
     altText: '',
     saveButton: true,
-    accept: 'image/gif,image/jpg,image/jpeg,image/png,image/svg+xml',
-    extensions: ['gif', 'jpg', 'jpeg', 'png', 'svg'],
+    accept: null,
+    extensions: null,
+    uploadUrl: null,
+    allowUrlInput: true,
     validate: null,
 
     dragClass: null,
@@ -38,6 +40,10 @@ export default Component.extend({
     ajax: injectService(),
     config: injectService(),
     notifications: injectService(),
+
+    _defaultAccept: 'image/gif,image/jpg,image/jpeg,image/png,image/svg+xml',
+    _defaultExtensions: ['gif', 'jpg', 'jpeg', 'png', 'svg'],
+    _defaultUploadUrl: '/uploads/',
 
     // TODO: this wouldn't be necessary if the server could accept direct
     // file uploads
@@ -83,6 +89,16 @@ export default Component.extend({
     didReceiveAttrs() {
         let image = this.get('image');
         this.set('url', image);
+
+        if (!this.get('accept')) {
+            this.set('accept', this.get('_defaultAccept'));
+        }
+        if (!this.get('extensions')) {
+            this.set('extensions', this.get('_defaultExtensions'));
+        }
+        if (!this.get('uploadUrl')) {
+            this.set('uploadUrl', this.get('_defaultUploadUrl'));
+        }
     },
 
     dragOver(event) {
@@ -161,7 +177,10 @@ export default Component.extend({
         }
 
         if (isUnsupportedMediaTypeError(error)) {
-            message = 'The image type you uploaded is not supported. Please use .PNG, .JPG, .GIF, .SVG.';
+            let validExtensions = this.get('extensions').join(', .').toUpperCase();
+            validExtensions = `.${validExtensions}`;
+
+            message = `The image type you uploaded is not supported. Please use ${validExtensions}`;
         } else if (isRequestEntityTooLargeError(error)) {
             message = 'The image you uploaded was larger than the maximum file size your server allows.';
         } else if (error.errors && !isBlank(error.errors[0].message)) {
@@ -177,7 +196,9 @@ export default Component.extend({
     generateRequest() {
         let ajax = this.get('ajax');
         let formData = this.get('formData');
-        let url = `${ghostPaths().apiRoot}/uploads/`;
+        let uploadUrl = this.get('uploadUrl');
+        // CASE: we want to upload an icon and we have to POST it to a different endpoint, expecially for icons
+        let url = `${ghostPaths().apiRoot}${uploadUrl}`;
 
         this._uploadStarted();
 

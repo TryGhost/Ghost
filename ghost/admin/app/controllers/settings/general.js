@@ -14,6 +14,7 @@ export default Controller.extend(SettingsSaveMixin, {
 
     showUploadLogoModal: false,
     showUploadCoverModal: false,
+    showUploadIconModal: false,
     showDeleteThemeModal: notEmpty('themeToDelete'),
 
     ajax: injectService(),
@@ -24,8 +25,15 @@ export default Controller.extend(SettingsSaveMixin, {
     _scratchFacebook: null,
     _scratchTwitter: null,
 
+    iconMimeTypes: 'image/png,image/x-icon',
+    iconExtensions: ['ico', 'png'],
+
     logoImageSource: computed('model.logo', function () {
         return this.get('model.logo') || '';
+    }),
+
+    iconImageSource: computed('model.icon', function () {
+        return this.get('model.icon') || '';
     }),
 
     coverImageSource: computed('model.cover', function () {
@@ -129,6 +137,10 @@ export default Controller.extend(SettingsSaveMixin, {
 
         toggleUploadLogoModal() {
             this.toggleProperty('showUploadLogoModal');
+        },
+
+        toggleUploadIconModal() {
+            this.toggleProperty('showUploadIconModal');
         },
 
         validateFacebookUrl() {

@@ -16,11 +16,11 @@ import mockThemes from 'ghost-admin/mirage/config/themes';
 describe('Acceptance: Settings - General', function () {
     let application;
 
-    beforeEach(function() {
+    beforeEach(function () {
         application = startApp();
     });
 
-    afterEach(function() {
+    afterEach(function () {
         destroyApp(application);
     });
 
@@ -28,7 +28,7 @@ describe('Acceptance: Settings - General', function () {
         invalidateSession(application);
         visit('/settings/general');
 
-        andThen(function() {
+        andThen(function () {
             expect(currentURL(), 'currentURL').to.equal('/signin');
         });
     });
@@ -104,6 +104,27 @@ describe('Acceptance: Settings - General', function () {
 
             andThen(() => {
                 expect(find('.fullscreen-modal .modal-content .gh-image-uploader .description').text()).to.equal('Upload an image');
+                expect(find('.fullscreen-modal .modal-content .gh-image-uploader .image-url').length, 'url upload').to.equal(1);
+            });
+
+            // click cancel button
+            click('.fullscreen-modal .modal-footer .btn.btn-minor');
+
+            andThen(() => {
+                expect(find('.fullscreen-modal').length).to.equal(0);
+            });
+
+            click('.blog-icon');
+
+            andThen(() => {
+                expect(find('.fullscreen-modal .modal-content .gh-image-uploader').length, 'modal selector').to.equal(1);
+            });
+
+            click('.fullscreen-modal .modal-content .gh-image-uploader .image-cancel');
+
+            andThen(() => {
+                expect(find('.fullscreen-modal .modal-content .gh-image-uploader .description').text()).to.equal('Upload an image');
+                expect(find('.fullscreen-modal .modal-content .gh-image-uploader .image-url').length, 'url upload').to.equal(0);
             });
 
             // click cancel button
