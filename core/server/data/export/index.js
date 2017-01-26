@@ -2,8 +2,8 @@ var _ = require('lodash'),
     Promise = require('bluebird'),
     db = require('../../data/db'),
     commands = require('../schema').commands,
-    versioning = require('../schema').versioning,
     serverUtils = require('../../utils'),
+    ghostVersion = require('../../utils/ghost-version'),
     errors      = require('../../errors'),
     logging     = require('../../logging'),
     settings    = require('../../api/settings'),
@@ -36,7 +36,7 @@ exportFileName = function exportFileName() {
 
 getVersionAndTables = function getVersionAndTables() {
     var props = {
-        version: versioning.getDatabaseVersion(),
+        version: ghostVersion.full,
         tables: commands.getTables()
     };
 
