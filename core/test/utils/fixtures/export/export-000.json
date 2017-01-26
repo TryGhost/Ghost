@@ -120,17 +120,6 @@
         ],
         "settings": [
             {
-                "id": 1,
-                "uuid": "f90aa810-4fa2-49fe-a39b-7c0d2ebb473e",
-                "key": "databaseVersion",
-                "value": "000",
-                "type": "core",
-                "created_at": 1388318310829,
-                "created_by": 1,
-                "updated_at": 1388318310829,
-                "updated_by": 1
-            },
-            {
                 "id": 3,
                 "uuid": "c356fbde-0bc5-4fe1-9309-2510291aa34d",
                 "key": "title",

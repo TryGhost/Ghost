@@ -9,12 +9,10 @@ var testUtils   = require('../utils/index'),
 
     // Stuff we are testing
     db              = require('../../server/data/db'),
-    versioning      = require('../../server/data/schema').versioning,
     exporter        = require('../../server/data/export'),
     importer        = require('../../server/data/import'),
     DataImporter    = require('../../server/data/import/data-importer'),
 
-    DEF_DB_VERSION  = versioning.getNewestDatabaseVersion(),
     knex = db.knex,
     sandbox = sinon.sandbox.create();
 
@@ -150,7 +148,6 @@ describe('Import', function () {
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
-                _.find(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
 
                 // test tags
                 tags.length.should.equal(exportData.data.tags.length, 'no new tags');
@@ -204,10 +201,6 @@ describe('Import', function () {
                 // import no longer requires all data to be dropped, and adds posts
                 posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
 
-                // test settings
-                settings.length.should.be.above(0, 'Wrong number of settings');
-                _.find(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
-
                 // activeTheme should NOT have been overridden
                 _.find(settings, {key: 'activeTheme'}).value.should.equal('casper', 'Wrong theme');
 
@@ -246,17 +239,15 @@ describe('Import', function () {
                 Promise.all([
                     knex('users').select(),
                     knex('posts').select(),
-                    knex('settings').select(),
                     knex('tags').select()
                 ]).then(function (importedData) {
                     should.exist(importedData);
 
-                    importedData.length.should.equal(4, 'Did not get data successfully');
+                    importedData.length.should.equal(3, 'Did not get data successfully');
 
                     var users = importedData[0],
                         posts = importedData[1],
-                        settings = importedData[2],
-                        tags = importedData[3];
+                        tags = importedData[2];
 
                     // we always have 1 user, the default user we added
                     users.length.should.equal(1, 'There should only be one user');
@@ -264,10 +255,6 @@ describe('Import', function () {
                     // Nothing should have been imported
                     posts.length.should.equal(0, 'Wrong number of posts');
                     tags.length.should.equal(0, 'no new tags');
-
-                    // test settings
-                    settings.length.should.be.above(0, 'Wrong number of settings');
-                    _.find(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
 
                     done();
                 });
@@ -291,17 +278,15 @@ describe('Import', function () {
                 Promise.all([
                     knex('users').select(),
                     knex('posts').select(),
-                    knex('settings').select(),
                     knex('tags').select()
                 ]).then(function (importedData) {
                     should.exist(importedData);
 
-                    importedData.length.should.equal(4, 'Did not get data successfully');
+                    importedData.length.should.equal(3, 'Did not get data successfully');
 
                     var users = importedData[0],
                         posts = importedData[1],
-                        settings = importedData[2],
-                        tags = importedData[3];
+                        tags = importedData[2];
 
                     // we always have 1 user, the default user we added
                     users.length.should.equal(1, 'There should only be one user');
@@ -309,10 +294,6 @@ describe('Import', function () {
                     // Nothing should have been imported
                     posts.length.should.equal(0, 'Wrong number of posts');
                     tags.length.should.equal(0, 'no new tags');
-
-                    // test settings
-                    settings.length.should.be.above(0, 'Wrong number of settings');
-                    _.find(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
 
                     done();
                 });
@@ -368,10 +349,6 @@ describe('Import', function () {
                 // import no longer requires all data to be dropped, and adds posts
                 posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
 
-                // test settings
-                settings.length.should.be.above(0, 'Wrong number of settings');
-                _.find(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
-
                 // activeTheme should NOT have been overridden
                 _.find(settings, {key: 'activeTheme'}).value.should.equal('casper', 'Wrong theme');
 
@@ -410,27 +387,21 @@ describe('Import', function () {
                 Promise.all([
                     knex('users').select(),
                     knex('posts').select(),
-                    knex('settings').select(),
                     knex('tags').select()
                 ]).then(function (importedData) {
                     should.exist(importedData);
 
-                    importedData.length.should.equal(4, 'Did not get data successfully');
+                    importedData.length.should.equal(3, 'Did not get data successfully');
 
                     var users = importedData[0],
                         posts = importedData[1],
-                        settings = importedData[2],
-                        tags = importedData[3];
+                        tags = importedData[2];
 
                     // we always have 1 user, the owner user we added
                     users.length.should.equal(1, 'There should only be one user');
                     // Nothing should have been imported
                     posts.length.should.equal(0, 'Wrong number of posts');
                     tags.length.should.equal(0, 'no new tags');
-
-                    // test settings
-                    settings.length.should.be.above(0, 'Wrong number of settings');
-                    _.find(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
 
                     done();
                 });
@@ -454,27 +425,21 @@ describe('Import', function () {
                 Promise.all([
                     knex('users').select(),
                     knex('posts').select(),
-                    knex('settings').select(),
                     knex('tags').select()
                 ]).then(function (importedData) {
                     should.exist(importedData);
 
-                    importedData.length.should.equal(4, 'Did not get data successfully');
+                    importedData.length.should.equal(3, 'Did not get data successfully');
 
                     var users = importedData[0],
                         posts = importedData[1],
-                        settings = importedData[2],
-                        tags = importedData[3];
+                        tags = importedData[2];
 
                     // we always have 1 user, the owner user we added
                     users.length.should.equal(1, 'There should only be one user');
                     // Nothing should have been imported
                     posts.length.should.equal(0, 'Wrong number of posts');
                     tags.length.should.equal(0, 'no new tags');
-
-                    // test settings
-                    settings.length.should.be.above(0, 'Wrong number of settings');
-                    _.find(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
 
                     done();
                 });
@@ -496,18 +461,16 @@ describe('Import', function () {
                 return Promise.all([
                     knex('users').select(),
                     knex('posts').select(),
-                    knex('settings').select(),
                     knex('tags').select()
                 ]);
             }).then(function (importedData) {
                 should.exist(importedData);
 
-                importedData.length.should.equal(4, 'Did not get data successfully');
+                importedData.length.should.equal(3, 'Did not get data successfully');
 
                 var users = importedData[0],
                     posts = importedData[1],
-                    settings = importedData[2],
-                    tags = importedData[3];
+                    tags = importedData[2];
 
                 // user should still have the credentials from the original insert, not the import
                 users[0].email.should.equal(testUtils.DataGenerator.Content.users[0].email);
@@ -521,10 +484,6 @@ describe('Import', function () {
                 posts.length.should.equal(1, 'Wrong number of posts');
                 // test tags
                 tags.length.should.equal(1, 'no new tags');
-
-                // test settings
-                settings.length.should.be.above(0, 'Wrong number of settings');
-                _.find(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
 
                 done();
             }).catch(done);
@@ -711,10 +670,6 @@ describe('Import (new test structure)', function () {
 
                 // test tags
                 tags.length.should.equal(3, 'should be 3 tags');
-
-                // test settings
-                settings.length.should.be.above(0, 'Wrong number of settings');
-                _.find(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
 
                 done();
             }).catch(done);
@@ -936,10 +891,6 @@ describe('Import (new test structure)', function () {
 
                 // test tags
                 tags.length.should.equal(3, 'should be 3 tags');
-
-                // test settings
-                settings.length.should.be.above(0, 'Wrong number of settings');
-                _.find(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
 
                 done();
             }).catch(done);
@@ -1173,10 +1124,6 @@ describe('Import (new test structure)', function () {
                 );
 
                 tags[0].name.should.equal(testUtils.DataGenerator.Content.tags[0].name);
-
-                // test settings
-                settings.length.should.be.above(0, 'Wrong number of settings');
-                _.find(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
 
                 done();
             }).catch(done);

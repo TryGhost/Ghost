@@ -153,7 +153,6 @@ describe('Settings Model', function () {
 
         it('can destroy', function (done) {
             SettingsModel.findAll().then(function (allSettings) {
-                // dont't use index 0, since it will delete databaseversion
                 SettingsModel.findOne({id: allSettings.models[1].id}).then(function (results) {
                     should.exist(results);
                     results.attributes.id.should.equal(allSettings.models[1].id);
