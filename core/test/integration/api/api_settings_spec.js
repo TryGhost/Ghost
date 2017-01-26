@@ -88,8 +88,8 @@ describe('Settings API', function () {
     });
 
     it('cannot read core settings if not an internal request', function () {
-        return callApiWithContext(defaultContext, 'read',  {key: 'databaseVersion'}).then(function () {
-            throw new Error('Allowed to read databaseVersion with external request');
+        return callApiWithContext(defaultContext, 'read',  {key: 'dbHash'}).then(function () {
+            throw new Error('Allowed to read dbHash with external request');
         }).catch(function (error) {
             should.exist(error);
             error.errorType.should.eql('NoPermissionError');
@@ -97,7 +97,7 @@ describe('Settings API', function () {
     });
 
     it('can read core settings if an internal request', function () {
-        return callApiWithContext(internalContext, 'read', {key: 'databaseVersion'}).then(function (response) {
+        return callApiWithContext(internalContext, 'read', {key: 'dbHash'}).then(function (response) {
             should.exist(response);
             testUtils.API.checkResponse(response, 'settings');
             response.settings.length.should.equal(1);
@@ -134,7 +134,7 @@ describe('Settings API', function () {
     });
 
     it('cannot edit a core setting if not an internal request', function () {
-        return callApiWithContext(defaultContext, 'edit', {settings: [{key: 'databaseVersion', value: '999'}]}, {})
+        return callApiWithContext(defaultContext, 'edit', {settings: [{key: 'dbHash', value: 'hash'}]}, {})
             .then(function () {
                 throw new Error('Allowed to edit a core setting as external request');
             }).catch(function (err) {
@@ -145,7 +145,7 @@ describe('Settings API', function () {
     });
 
     it('can edit a core setting with an internal request', function () {
-        return callApiWithContext(internalContext, 'edit', {settings: [{key: 'databaseVersion', value: '999'}]}, {})
+        return callApiWithContext(internalContext, 'edit', {settings: [{key: 'dbHash', value: 'hash'}]}, {})
             .then(function (response) {
                 should.exist(response);
                 testUtils.API.checkResponse(response, 'settings');

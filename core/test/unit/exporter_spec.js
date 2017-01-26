@@ -1,16 +1,17 @@
 var should    = require('should'),
     sinon     = require('sinon'),
+    rewire    = require('rewire'),
     Promise   = require('bluebird'),
     db        = require('../../server/data/db'),
     errors    = require('../../server/errors'),
-    exporter  = require('../../server/data/export'),
+    exporter  = rewire('../../server/data/export'),
     schema    = require('../../server/data/schema'),
     settings  = require('../../server/api/settings'),
     schemaTables = Object.keys(schema.tables),
     sandbox = sinon.sandbox.create();
 
 describe('Exporter', function () {
-    var versionStub, tablesStub, queryMock, knexMock, knexStub;
+    var tablesStub, queryMock, knexMock, knexStub;
 
     afterEach(function () {
         sandbox.restore();
@@ -19,7 +20,10 @@ describe('Exporter', function () {
 
     describe('doExport', function () {
         beforeEach(function () {
-            versionStub = sandbox.stub(schema.versioning, 'getDatabaseVersion').returns(new Promise.resolve('004'));
+            exporter.__set__('ghostVersion', {
+                full: '1.0.0'
+            });
+
             tablesStub = sandbox.stub(schema.commands, 'getTables').returns(schemaTables);
 
             queryMock = {
@@ -43,7 +47,8 @@ describe('Exporter', function () {
 
                 should.exist(exportData);
 
-                versionStub.calledOnce.should.be.true();
+                exportData.meta.version.should.eql('1.0.0');
+
                 tablesStub.calledOnce.should.be.true();
                 knexStub.get.called.should.be.true();
                 knexMock.called.should.be.true();

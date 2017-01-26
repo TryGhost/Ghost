@@ -107,7 +107,8 @@ utils = {
     generateAssetHash: require('./asset-hash'),
     url: require('./url'),
     tokens: require('./tokens'),
-    sequence: require('./sequence')
+    sequence: require('./sequence'),
+    ghostVersion: require('./ghost-version')
 };
 
 module.exports = utils;

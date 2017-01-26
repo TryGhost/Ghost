@@ -22,15 +22,15 @@ ghost().then(function (ghostServer) {
             process.send({started: true});
         }
     });
-}).catch(function (error) {
-    if (!(error instanceof errors.IgnitionError)) {
-        error = new errors.GhostError({err: error});
+}).catch(function (err) {
+    if (!errors.utils.isIgnitionError(err)) {
+        err = new errors.GhostError({err: err});
     }
 
     if (process.send) {
-        process.send({started: false, error: error.message});
+        process.send({started: false, error: err.message});
     }
 
-    logging.error(error);
+    logging.error(err);
     process.exit(-1);
 });
