@@ -14,7 +14,6 @@ branches:
     - /^greenkeeper-.+$/
 
 cache:
-  yarn: true
   directories:
     - node_modules
 
@@ -26,14 +25,16 @@ addons:
     packages:
       - google-chrome-stable
 
+before_install:
+  - npm config --global set spin false
+  - npm install -g npm@^2
+
 install:
-  - npm i -g yarn
-  - yarn global add bower
-  - yarn
+  - npm install -g bower
+  - npm install
   - bower install
 
 before_script:
-  - yarn add --force node-sass # temporary, workaround for https://github.com/yarnpkg/yarn/issues/1981
   - export DISPLAY=:99; sh -e /etc/init.d/xvfb start; sleep 3;
 
 script:
