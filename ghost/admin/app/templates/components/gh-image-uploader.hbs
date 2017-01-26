@@ -19,10 +19,11 @@
                 <div class="description">{{description}}</div>
             {{/gh-file-input}}
         </div>
-
-        <a class="image-url" {{action "switchForm" "url-input"}}>
-            <i class="icon-link"><span class="hidden">URL</span></i>
-        </a>
+        {{#if allowUrlInput}}
+            <a class="image-url" {{action "switchForm" "url-input"}}>
+                <i class="icon-link"><span class="hidden">URL</span></i>
+            </a>
+        {{/if}}
     {{else}}
         {{!-- URL input --}}
         <form class="url-form">

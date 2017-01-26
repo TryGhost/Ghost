@@ -227,5 +227,15 @@ export default [
         updated_at: '2017-01-09T08:49:42.991Z',
         updated_by: 1,
         value: 'true'
+    },
+    {
+        id: 22,
+        key: 'icon',
+        value: '/content/images/2014/Feb/favicon.ico',
+        type: 'blog',
+        created_at: '2013-11-25T14:48:11.000Z',
+        created_by: 1,
+        updated_at: '2015-10-27T17:39:58.276Z',
+        updated_by: 1
     }
 ];

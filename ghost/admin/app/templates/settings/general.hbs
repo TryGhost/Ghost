@@ -39,11 +39,30 @@
 
                 {{#if showUploadLogoModal}}
                     {{gh-fullscreen-modal "upload-image"
-                            model=(hash model=model imageProperty="logo")
+                            model=(hash model=model imageProperty="logo" allowUrlInput=true)
                             close=(action "toggleUploadLogoModal")
                             modifier="action wide"}}
                 {{/if}}
             </div>
+
+            {{#if config.fileStorage}}
+                <div class="form-group">
+                    <label>Blog Icon</label>
+                    {{#if model.icon}}
+                        <img class="blog-icon" src="{{model.icon}}" alt="icon" role="button" {{action "toggleUploadIconModal"}}>
+                    {{else}}
+                        <button type="button" class="btn btn-green js-modal-logo" {{action "toggleUploadIconModal"}}>Upload Image</button>
+                    {{/if}}
+                    <p>Upload a square blog icon ('.ico' or '.png', max. 100kb, 32px * 32px up to 1,000px * 1,000px) for your publication</p>
+
+                    {{#if showUploadIconModal}}
+                        {{gh-fullscreen-modal "upload-image"
+                                model=(hash model=model imageProperty="icon" accept=iconMimeTypes extensions=iconExtensions allowUrlInput=false uploadUrl="/uploads/icon/")
+                                close=(action "toggleUploadIconModal")
+                                modifier="action wide"}}
+                    {{/if}}
+                </div>
+            {{/if}}
 
             <div class="form-group">
                 <label>Blog Cover</label>
@@ -56,7 +75,7 @@
 
                 {{#if showUploadCoverModal}}
                     {{gh-fullscreen-modal "upload-image"
-                            model=(hash model=model imageProperty="cover")
+                            model=(hash model=model imageProperty="cover" allowUrlInput=true)
                             close=(action "toggleUploadCoverModal")
                             modifier="action wide"}}
                 {{/if}}
