@@ -36,7 +36,33 @@ describe('{{asset}} helper', function () {
             String(rendered).should.equal('/favicon.ico');
         });
 
+        it('handles custom favicon correctly', function () {
+            configUtils.set('theme:icon', '/content/images/favicon.png');
+            // with ghost set and png
+            rendered = helpers.asset('favicon.png', {hash: {ghost: 'true'}});
+            should.exist(rendered);
+            String(rendered).should.equal('/favicon.ico');
+
+            // without ghost set and png
+            rendered = helpers.asset('favicon.png');
+            should.exist(rendered);
+            String(rendered).should.equal('/content/images/favicon.png');
+
+            configUtils.set('theme:icon', '/content/images/favicon.ico');
+
+            // with ghost set and ico
+            rendered = helpers.asset('favicon.ico', {hash: {ghost: 'true'}});
+            should.exist(rendered);
+            String(rendered).should.equal('/favicon.ico');
+
+            // without ghost set and ico
+            rendered = helpers.asset('favicon.ico');
+            should.exist(rendered);
+            String(rendered).should.equal('/content/images/favicon.ico');
+        });
+
         it('handles shared assets correctly', function () {
+            configUtils.set('theme:icon', '');
             // with ghost set
             rendered = helpers.asset('shared/asset.js', {hash: {ghost: 'true'}});
             should.exist(rendered);
@@ -80,6 +106,31 @@ describe('{{asset}} helper', function () {
             String(rendered).should.equal('/blog/favicon.ico');
         });
 
+        it('handles custom favicon correctly', function () {
+            configUtils.set('theme:icon', '/content/images/favicon.png');
+            // with ghost set and png
+            rendered = helpers.asset('favicon.png', {hash: {ghost: 'true'}});
+            should.exist(rendered);
+            String(rendered).should.equal('/blog/favicon.ico');
+
+            // without ghost set and png
+            rendered = helpers.asset('favicon.png');
+            should.exist(rendered);
+            String(rendered).should.equal('/blog/content/images/favicon.png');
+
+            configUtils.set('theme:icon', '/content/images/favicon.ico');
+
+            // with ghost set and ico
+            rendered = helpers.asset('favicon.ico', {hash: {ghost: 'true'}});
+            should.exist(rendered);
+            String(rendered).should.equal('/blog/favicon.ico');
+
+            // without ghost set and ico
+            rendered = helpers.asset('favicon.ico');
+            should.exist(rendered);
+            String(rendered).should.equal('/blog/content/images/favicon.ico');
+        });
+
         it('handles shared assets correctly', function () {
             // with ghost set
             rendered = helpers.asset('shared/asset.js', {hash: {ghost: 'true'}});
@@ -105,5 +156,7 @@ describe('{{asset}} helper', function () {
             should.exist(rendered);
             String(rendered).should.equal('/blog/assets/js/asset.js?v=abc');
         });
+
+        configUtils.restore();
     });
 });

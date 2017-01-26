@@ -64,11 +64,7 @@
         "publishAPostBySchedulerToleranceInMinutes": 2
     },
     "theme": {
-        "timezone": "Etc/UTC",
-        "icon": {
-            "type": "default",
-            "url": "core/shared/favicon.ico"
-        }
+        "timezone": "Etc/UTC"
     },
     "maintenance": {
         "enabled": false

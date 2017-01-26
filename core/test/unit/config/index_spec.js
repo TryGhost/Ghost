@@ -37,10 +37,7 @@ describe('Config', function () {
                     logo: 'casper',
                     cover: 'casper',
                     timezone: 'Etc/UTC',
-                    icon: {
-                        type: 'default',
-                        url: 'core/shared/favicon.ico'
-                    }
+                    icon: 'core/shared/favicon.ico'
                 }
             });
         });
@@ -61,10 +58,7 @@ describe('Config', function () {
             themeConfig.should.have.property('logo', 'casper');
             themeConfig.should.have.property('cover', 'casper');
             themeConfig.should.have.property('timezone', 'Etc/UTC');
-            themeConfig.should.have.property('icon', {
-                type: 'default',
-                url: 'core/shared/favicon.ico'
-            });
+            themeConfig.should.have.property('icon', 'core/shared/favicon.ico');
         });
     });
 
@@ -90,43 +84,6 @@ describe('Config', function () {
             // Check values are as we expect
             themeConfig.should.have.property('theme');
             themeConfig.theme.should.have.property('timezone', 'Etc/UTC');
-        });
-    });
-
-    describe('Favicon default', function () {
-        it('should use uploaded blog icon', function () {
-            var themeConfig = config.get('theme');
-
-            // Check values are as we expect
-            themeConfig.should.have.property('icon', {
-                type: 'default',
-                url: 'core/shared/favicon.ico'
-            });
-
-            configUtils.set({
-                theme: {
-                    icon: {
-                        type: 'upload',
-                        url: 'content/images/favicon.ico'
-                    }
-                }
-            });
-
-            config.get('theme').should.have.property('icon', {
-                type: 'upload',
-                url: 'content/images/favicon.ico'
-            });
-        });
-
-        it('should set theme object with default favicon', function () {
-            var themeConfig = configUtils.defaultConfig;
-
-            // Check values are as we expect
-            themeConfig.should.have.property('theme');
-            themeConfig.theme.should.have.property('icon', {
-                type: 'default',
-                url: 'core/shared/favicon.ico'
-            });
         });
     });
 

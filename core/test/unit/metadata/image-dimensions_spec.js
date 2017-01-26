@@ -78,7 +78,6 @@ describe('getImageDimensions', function () {
         getImageDimensions.__set__('getCachedImageSizeFromUrl', sizeOfStub);
 
         getImageDimensions(metaData).then(function (result) {
-            console.log('result:', result);
             should.exist(result);
             sizeOfStub.calledWith(metaData.coverImage.url).should.be.true();
             sizeOfStub.calledWith(metaData.authorImage.url).should.be.true();
