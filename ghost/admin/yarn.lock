@@ -1813,9 +1813,9 @@ ember-cli-chai@0.3.2:
     rollup-plugin-commonjs "^5.0.5"
     rollup-plugin-node-resolve "^2.0.0"
 
-ember-cli-code-coverage@0.3.10:
-  version "0.3.10"
-  resolved "https://registry.yarnpkg.com/ember-cli-code-coverage/-/ember-cli-code-coverage-0.3.10.tgz#2e0e6fb1b8f414d59d5a50e6f460cf6bebaea464"
+ember-cli-code-coverage@0.3.11:
+  version "0.3.11"
+  resolved "https://registry.yarnpkg.com/ember-cli-code-coverage/-/ember-cli-code-coverage-0.3.11.tgz#9012e14ec5d6ef27d7c6b89d4c8c22b5a49709be"
   dependencies:
     babel-core "^5.8.38"
     body-parser "^1.15.0"
@@ -1830,6 +1830,7 @@ ember-cli-code-coverage@0.3.10:
     fs-extra "^0.26.7"
     istanbul "^0.4.3"
     node-dir "^0.1.16"
+    rsvp "^3.2.1"
     source-map "0.5.6"
     string.prototype.startswith "^0.2.0"
 
