@@ -194,6 +194,14 @@ function apiRoutes() {
         api.http(api.uploads.add)
     );
 
+    apiRouter.post('/uploads/icon',
+        authenticatePrivate,
+        upload.single('uploadimage'),
+        validation.upload({type: 'icons'}),
+        validation.blogIcon(),
+        api.http(api.uploads.add)
+    );
+
     // ## Invites
     apiRouter.get('/invites', authenticatePrivate, api.http(api.invites.browse));
     apiRouter.get('/invites/:id', authenticatePrivate, api.http(api.invites.read));

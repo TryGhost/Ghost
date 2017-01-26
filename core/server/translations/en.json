@@ -373,6 +373,15 @@
                 "missingFile": "Please select an image.",
                 "invalidFile": "Please select a valid image."
             },
+            "icons": {
+                "missingFile": "Please select an icon.",
+                "fileSizeTooLarge": "Please select an icon file smaller than 100kb.",
+                "iconNotSquare": "The icon needs to be a square.",
+                "fileTooLarge": "Please select an icon file smaller than 1000px.",
+                "fileTooSmall": "Please select an icon file larger than 32px.",
+                "invalidFile": "Please select a valid icon file.",
+                "couldNotGetSize": "Couldn/'t get icon dimensions"
+            },
             "users": {
                 "userNotFound": "User not found.",
                 "cannotChangeOwnRole": "You cannot change your own role.",
