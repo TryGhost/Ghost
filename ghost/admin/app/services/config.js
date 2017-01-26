@@ -17,6 +17,10 @@ export default Service.extend(_ProxyMixin, {
         let configUrl = this.get('ghostPaths.url').api('configuration');
 
         return this.get('ajax').request(configUrl).then((config) => {
+            // normalize blogUrl to non-trailing-slash
+            let [{blogUrl}] = config.configuration;
+            config.configuration[0].blogUrl = blogUrl.replace(/\/$/, '');
+
             this.set('content', config.configuration[0]);
         });
     },

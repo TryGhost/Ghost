@@ -2,6 +2,7 @@ import {expect} from 'chai';
 import {describe, it} from 'mocha';
 import {setupTest} from 'ember-mocha';
 import Pretender from 'pretender';
+import wait from 'ember-test-helpers/wait';
 
 function stubAvailableTimezonesEndpoint(server) {
     server.get('/ghost/api/v0.1/configuration/timezones', function () {
@@ -52,6 +53,43 @@ describe('Integration: Service: config', function () {
             expect(timezones[1].name).to.equal('Europe/Dublin');
             expect(timezones[1].label).to.equal('(GMT) Greenwich Mean Time : Dublin, Edinburgh, London');
             done();
+        });
+    });
+
+    it('normalizes blogUrl to non-trailing-slash', function (done) {
+        let stubBlogUrl = function stubBlogUrl(blogUrl) {
+            server.get('/ghost/api/v0.1/configuration/', function () {
+                return [
+                    200,
+                    {'Content-Type': 'application/json'},
+                    JSON.stringify({
+                        configuration: [{
+                            blogUrl
+                        }]
+                    })
+                ];
+            });
+        };
+        let service = this.subject();
+
+        stubBlogUrl('http://localhost:2368/');
+
+        service.fetch().then(() => {
+            expect(
+                service.get('blogUrl'), 'trailing-slash'
+            ).to.equal('http://localhost:2368');
+        });
+
+        wait().then(() => {
+            stubBlogUrl('http://localhost:2368');
+
+            service.fetch().then(() => {
+                expect(
+                    service.get('blogUrl'), 'non-trailing-slash'
+                ).to.equal('http://localhost:2368');
+
+                done();
+            });
         });
     });
 });
