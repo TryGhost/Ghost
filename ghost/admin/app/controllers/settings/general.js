@@ -28,18 +28,6 @@ export default Controller.extend(SettingsSaveMixin, {
     iconMimeTypes: 'image/png,image/x-icon',
     iconExtensions: ['ico', 'png'],
 
-    logoImageSource: computed('model.logo', function () {
-        return this.get('model.logo') || '';
-    }),
-
-    iconImageSource: computed('model.icon', function () {
-        return this.get('model.icon') || '';
-    }),
-
-    coverImageSource: computed('model.cover', function () {
-        return this.get('model.cover') || '';
-    }),
-
     isDatedPermalinks: computed('model.permalinks', {
         set(key, value) {
             this.set('model.permalinks', value ? '/:year/:month/:day/:slug/' : '/:slug/');
