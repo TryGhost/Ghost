@@ -41,6 +41,10 @@
             "extensions": [".jpg", ".jpeg", ".gif", ".png", ".svg", ".svgz"],
             "contentTypes": ["image/jpeg", "image/png", "image/gif", "image/svg+xml"]
         },
+        "icons": {
+            "extensions": [".png", ".ico"],
+            "contentTypes": ["image/png", "image/x-icon", "image/vnd.microsoft.icon"]
+        },
         "db": {
             "extensions": [".json", ".zip"],
             "contentTypes": ["application/octet-stream", "application/json", "application/zip", "application/x-zip-compressed"]
