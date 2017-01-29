@@ -173,7 +173,7 @@ setupMiddleware = function setupMiddleware(blogApp) {
     // site map
     sitemapHandler(blogApp);
 
-    var maxAge = (config.cacheControl && config.cacheControl.maxAge) ? config.cacheControl.maxAge : utils.ONE_YEAR_S;
+    var maxAge = (config.cacheControl && typeof config.cacheControl.maxAge !== "undefined") ? config.cacheControl.maxAge : utils.ONE_YEAR_S;
 
     // Add in all trailing slashes
     blogApp.use(slashes(true, {
