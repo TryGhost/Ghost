@@ -90,7 +90,7 @@ function ghost_head(options) {
         },
         // CASE: blog icon is not set in config, we serve the default
         iconType = !config.get('theme:icon') ? 'x-icon' : config.get('theme:icon').match(/\/favicon\.ico$/i) ? 'x-icon' : 'png',
-        favicon = !config.get('theme:icon') ? '/favicon.ico' : utils.url.urlFor('image', {image: config.get('theme:icon')}, true);
+        favicon = !config.get('theme:icon') ? '/favicon.ico' : utils.url.urlFor('image', {image: config.get('theme:icon')});
 
     return Promise.props(fetch).then(function (response) {
         client = response.client;
