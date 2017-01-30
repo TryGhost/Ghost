@@ -2179,9 +2179,9 @@ ember-composable-helpers@^1.1.2:
     broccoli-funnel "^1.0.1"
     ember-cli-babel "^5.1.7"
 
-ember-concurrency@0.7.17, ember-concurrency@^0.7.15:
-  version "0.7.17"
-  resolved "https://registry.yarnpkg.com/ember-concurrency/-/ember-concurrency-0.7.17.tgz#28f963c96fa5d1c42bb4b239c0212220d849738f"
+ember-concurrency@0.7.19, ember-concurrency@^0.7.15:
+  version "0.7.19"
+  resolved "https://registry.yarnpkg.com/ember-concurrency/-/ember-concurrency-0.7.19.tgz#095f2ede1b56ab068958cac5b55e77b9de67e1c6"
   dependencies:
     ember-cli-babel "^5.1.5"
     ember-getowner-polyfill "^1.1.0"
