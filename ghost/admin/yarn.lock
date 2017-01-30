@@ -1960,9 +1960,9 @@ ember-cli-mirage@0.2.5:
     pretender "^1.4.2"
     route-recognizer "^0.2.3"
 
-ember-cli-mocha@0.13.1:
-  version "0.13.1"
-  resolved "https://registry.yarnpkg.com/ember-cli-mocha/-/ember-cli-mocha-0.13.1.tgz#c6df304f52a9aaa1be1ba92b220f16b9d097f2f2"
+ember-cli-mocha@0.13.2:
+  version "0.13.2"
+  resolved "https://registry.yarnpkg.com/ember-cli-mocha/-/ember-cli-mocha-0.13.2.tgz#b23d1d19fbd311f8da5b7d8a87616d91f6af039e"
   dependencies:
     broccoli-babel-transpiler "^5.5.0"
     broccoli-concat "^2.1.0"
