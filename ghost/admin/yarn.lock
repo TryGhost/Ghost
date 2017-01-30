@@ -1757,9 +1757,9 @@ ember-ajax@2.5.4:
   dependencies:
     ember-cli-babel "^5.1.5"
 
-ember-basic-dropdown@^0.20.0:
-  version "0.20.0"
-  resolved "https://registry.yarnpkg.com/ember-basic-dropdown/-/ember-basic-dropdown-0.20.0.tgz#6db6b452b7a50b70cbe51a0033e7761ae9d867fe"
+ember-basic-dropdown@^0.22.0:
+  version "0.22.0"
+  resolved "https://registry.yarnpkg.com/ember-basic-dropdown/-/ember-basic-dropdown-0.22.0.tgz#2b160272b7b817efc8218271d5420e0da65f9877"
   dependencies:
     ember-cli-babel "^5.1.10"
     ember-cli-htmlbars "^1.1.1"
@@ -2389,11 +2389,11 @@ ember-one-way-controls@2.0.0:
     ember-invoke-action "1.4.0"
     ember-runtime-enumerable-includes-polyfill "^1.0.1"
 
-ember-power-select@1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/ember-power-select/-/ember-power-select-1.2.0.tgz#eeba47f06824cf5817e590e902f2d8ab9ab09442"
+ember-power-select@1.4.2:
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/ember-power-select/-/ember-power-select-1.4.2.tgz#731037e512e66d92fc0377c4da3336cd0400f9e4"
   dependencies:
-    ember-basic-dropdown "^0.20.0"
+    ember-basic-dropdown "^0.22.0"
     ember-cli-babel "^5.1.10"
     ember-cli-htmlbars "^1.1.1"
     ember-concurrency "^0.7.15"
