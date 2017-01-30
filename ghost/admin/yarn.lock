@@ -1942,9 +1942,9 @@ ember-cli-lodash-subset@^1.0.11, ember-cli-lodash-subset@^1.0.7:
   version "1.0.11"
   resolved "https://registry.yarnpkg.com/ember-cli-lodash-subset/-/ember-cli-lodash-subset-1.0.11.tgz#0149eef9c0c3505ba44ed202f8d034ddbbfb2826"
 
-ember-cli-mirage@0.2.4:
-  version "0.2.4"
-  resolved "https://registry.yarnpkg.com/ember-cli-mirage/-/ember-cli-mirage-0.2.4.tgz#d85ac677dad06658e506ddfd12a6bd7f4ff6b1ff"
+ember-cli-mirage@0.2.5:
+  version "0.2.5"
+  resolved "https://registry.yarnpkg.com/ember-cli-mirage/-/ember-cli-mirage-0.2.5.tgz#2936e0240e0cf7e07c36533b60cd3d30573800be"
   dependencies:
     broccoli-funnel "^1.0.2"
     broccoli-merge-trees "^1.1.0"
@@ -1957,8 +1957,8 @@ ember-cli-mirage@0.2.4:
     exists-sync "0.0.3"
     fake-xml-http-request "^1.4.0"
     faker "^3.0.0"
-    pretender "^1.4.1"
-    route-recognizer "^0.1.11"
+    pretender "^1.4.2"
+    route-recognizer "^0.2.3"
 
 ember-cli-mocha@0.13.1:
   version "0.13.1"
@@ -5355,7 +5355,7 @@ preserve@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/preserve/-/preserve-0.2.0.tgz#815ed1f6ebc65926f865b310c0713bcb3315ce4b"
 
-pretender@^1.4.1, pretender@^1.4.2:
+pretender@^1.4.2:
   version "1.4.2"
   resolved "https://registry.yarnpkg.com/pretender/-/pretender-1.4.2.tgz#dde9995dfdf75b28a3dd7a73cde2f9f612e5e8f4"
   dependencies:
@@ -5925,10 +5925,6 @@ rollup@^0.34.11:
   resolved "https://registry.yarnpkg.com/rollup/-/rollup-0.34.13.tgz#a211cdde31f96cb39e7cb4e35becb15ddc3efa19"
   dependencies:
     source-map-support "^0.4.0"
-
-route-recognizer@^0.1.11:
-  version "0.1.11"
-  resolved "https://registry.yarnpkg.com/route-recognizer/-/route-recognizer-0.1.11.tgz#810d8e5702abb4056d6dcb8e865c5685e7c14eb7"
 
 route-recognizer@^0.2.3:
   version "0.2.9"
