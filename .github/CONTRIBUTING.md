@@ -205,6 +205,14 @@ instructions below this list
     * Usually if you're within vagrant, and have installed the guest plugins and updated that, this will not happen
 1. `grunt init` - updates bower dependencies, copies assets and compiles Handlebars templates
 1. If you're going to run in production mode, you also need to run `grunt prod`
+1. Add a new file in the root directory called `config.development.json` and add the following json to make ghost authenticate locally.
+```
+{
+    "auth": {
+       "type": "password"
+    }
+}
+```
 1. `npm start` - starts Ghost or `grunt dev` will start it in watch mode
 
 If something goes wrong, please see the
