@@ -2469,9 +2469,9 @@ ember-test-helpers@^0.6.0-beta.1:
   version "0.6.0"
   resolved "https://registry.yarnpkg.com/ember-test-helpers/-/ember-test-helpers-0.6.0.tgz#1f644fd303437ef4d19430a3e18447d57a97cf36"
 
-ember-test-selectors@0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/ember-test-selectors/-/ember-test-selectors-0.2.0.tgz#d0305d01a96e3a0ad6a53f08f2d7b74975d3296e"
+ember-test-selectors@0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/ember-test-selectors/-/ember-test-selectors-0.2.1.tgz#92e2b7b4a08831b148f81df93f367f3bf7ff938e"
   dependencies:
     ember-cli-babel "^5.1.7"
 

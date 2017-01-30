@@ -76,7 +76,7 @@
     "ember-simple-auth": "1.1.0",
     "ember-sinon": "0.6.0",
     "ember-sortable": "1.9.1",
-    "ember-test-selectors": "0.2.0",
+    "ember-test-selectors": "0.2.1",
     "ember-wormhole": "0.5.1",
     "emberx-file-input": "1.1.1",
     "eslint-plugin-ember-suave": "1.0.0",
