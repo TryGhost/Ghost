@@ -348,12 +348,14 @@ User = ghostBookshelf.Model.extend({
 
     /**
      * ### Edit
+     *
+     * Note: In case of login the last_login attribute gets updated.
+     *
      * @extends ghostBookshelf.Model.edit to handle returning the full object
      * **See:** [ghostBookshelf.Model.edit](base.js.html#edit)
      */
     edit: function edit(data, options) {
-        var self = this,
-            roleId;
+        var self = this;
 
         if (data.roles && data.roles.length > 1) {
             return Promise.reject(
@@ -363,6 +365,22 @@ User = ghostBookshelf.Model.extend({
 
         options = options || {};
         options.withRelated = _.union(options.withRelated, options.include);
+
+        if (data.email && data.id) {
+            return this.getByEmail(data.email, {id: data.id}).then(function then(user) {
+                if (user) {
+                    return Promise.reject(new errors.ValidationError(i18n.t('errors.models.user.userUpdateError.emailIsAlreadyInUse')));
+                }
+                return self.update.call(self, data, options);
+            });
+        } else {
+            return self.update.call(self, data, options);
+        }
+    },
+
+    update: function update(data, options) {
+        var self = this,
+            roleId;
 
         return ghostBookshelf.Model.edit.call(this, data, options).then(function then(user) {
             if (!data.roles) {
@@ -707,6 +725,9 @@ User = ghostBookshelf.Model.extend({
 
         return Users.forge(options).fetch(options).then(function then(users) {
             var userWithEmail = users.find(function findUser(user) {
+                if (options.id && parseInt(options.id) === user.get('id')) {
+                    return false;
+                }
                 return user.get('email').toLowerCase() === email.toLowerCase();
             });
             if (userWithEmail) {
