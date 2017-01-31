@@ -2070,12 +2070,6 @@ ember-cli-valid-component-name@^1.0.0:
   dependencies:
     silent-error "^1.0.0"
 
-ember-cli-version-checker@1.1.6:
-  version "1.1.6"
-  resolved "https://registry.yarnpkg.com/ember-cli-version-checker/-/ember-cli-version-checker-1.1.6.tgz#d789418b8a3627bd43486da42b9d3d76dbcc0e1d"
-  dependencies:
-    semver "^4.2.2"
-
 ember-cli-version-checker@^1.0.2, ember-cli-version-checker@^1.1.3, ember-cli-version-checker@^1.1.4, ember-cli-version-checker@^1.1.6, ember-cli-version-checker@^1.1.7, ember-cli-version-checker@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/ember-cli-version-checker/-/ember-cli-version-checker-1.2.0.tgz#caa286b77d1b485df5d2f62c67a6f19aa8b582c4"
@@ -2311,16 +2305,22 @@ ember-invoke-action@1.4.0, ember-invoke-action@^1.4.0:
   dependencies:
     ember-cli-babel "^5.1.6"
 
-ember-light-table@1.8.1:
-  version "1.8.1"
-  resolved "https://registry.yarnpkg.com/ember-light-table/-/ember-light-table-1.8.1.tgz#babde691b063736cfa0b983f8434e3779867a568"
+ember-lifeline@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/ember-lifeline/-/ember-lifeline-1.0.0.tgz#ce03101b9844cc69da967f47e11f931042aef018"
+  dependencies:
+    ember-cli-babel "^5.1.7"
+
+ember-light-table@1.8.2:
+  version "1.8.2"
+  resolved "https://registry.yarnpkg.com/ember-light-table/-/ember-light-table-1.8.2.tgz#9cf1d4cf0695eb6b49d96d0145c169042e9b124f"
   dependencies:
     ember-cli-babel "^5.1.7"
     ember-cli-htmlbars "^1.0.11"
     ember-composable-helpers "^1.1.2"
     ember-get-config "0.2.0"
     ember-in-viewport "2.1.1"
-    ember-scrollable "^0.3.5"
+    ember-scrollable "^0.4.0"
     ember-truth-helpers "1.2.0"
     ember-wormhole "^0.5.1"
 
@@ -2427,16 +2427,16 @@ ember-runtime-enumerable-includes-polyfill@^1.0.0, ember-runtime-enumerable-incl
     ember-cli-babel "^5.1.6"
     ember-cli-version-checker "^1.1.6"
 
-ember-scrollable@^0.3.5:
-  version "0.3.5"
-  resolved "https://registry.yarnpkg.com/ember-scrollable/-/ember-scrollable-0.3.5.tgz#67c5acff8dc94c1cb970f678549b89a3c1a16baa"
+ember-scrollable@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/ember-scrollable/-/ember-scrollable-0.4.0.tgz#717b7540f6b3a43b8b60d9b73ceeeed059aab28d"
   dependencies:
     ember-cli-babel "^5.1.6"
     ember-cli-htmlbars "^1.0.3"
     ember-cli-sass "5.3.1"
-    ember-cli-version-checker "1.1.6"
     ember-component-inbound-actions "1.0.1"
     ember-element-resize-detector "0.1.5"
+    ember-lifeline "1.0.0"
 
 ember-simple-auth@1.1.0:
   version "1.1.0"
@@ -5994,7 +5994,7 @@ sass-graph@^2.1.1:
   version "5.3.0"
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.3.0.tgz#9b2ce5d3de02d17c6012ad326aa6b4d0cf54f94f"
 
-semver@^4.1.0, semver@^4.2.2:
+semver@^4.1.0:
   version "4.3.6"
   resolved "https://registry.yarnpkg.com/semver/-/semver-4.3.6.tgz#300bc6e0e86374f7ba61068b5b1ecd57fc6532da"
 
