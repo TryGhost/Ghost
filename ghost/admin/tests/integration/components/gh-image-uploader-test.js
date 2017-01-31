@@ -203,7 +203,7 @@ describe('Integration: Component: gh-image-uploader', function() {
 
             stubSuccessfulUpload(server);
 
-            this.render(hbs`{{gh-image-uploader url=image fileSelected=(action fileSelected) update=(action update)}}`);
+            this.render(hbs`{{gh-image-uploader image=image fileSelected=(action fileSelected) update=(action update)}}`);
             fileUpload(this.$('input[type="file"]'), ['test'], {name: 'test.png'});
 
             wait().then(() => {
