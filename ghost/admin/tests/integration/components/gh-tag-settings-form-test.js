@@ -7,6 +7,7 @@ import Service from 'ember-service';
 import EmberObject from 'ember-object';
 import run from 'ember-runloop';
 import DS from 'ember-data';
+import wait from 'ember-test-helpers/wait';
 
 const {Errors} = DS;
 
@@ -195,24 +196,26 @@ describe('Integration: Component: gh-tag-settings-form', function () {
             {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty')}}
         `);
 
-        let nameFormGroup = this.$('input[name="name"]').closest('.form-group');
-        expect(nameFormGroup.hasClass('error'), 'name form group has error state').to.be.true;
-        expect(nameFormGroup.find('.response').length, 'name form group has error message').to.equal(1);
+        return wait().then(() => {
+            let nameFormGroup = this.$('input[name="name"]').closest('.form-group');
+            expect(nameFormGroup.hasClass('error'), 'name form group has error state').to.be.true;
+            expect(nameFormGroup.find('.response').length, 'name form group has error message').to.equal(1);
 
-        let slugFormGroup = this.$('input[name="slug"]').closest('.form-group');
-        expect(slugFormGroup.hasClass('error'), 'slug form group has error state').to.be.true;
-        expect(slugFormGroup.find('.response').length, 'slug form group has error message').to.equal(1);
+            let slugFormGroup = this.$('input[name="slug"]').closest('.form-group');
+            expect(slugFormGroup.hasClass('error'), 'slug form group has error state').to.be.true;
+            expect(slugFormGroup.find('.response').length, 'slug form group has error message').to.equal(1);
 
-        let descriptionFormGroup = this.$('textarea[name="description"]').closest('.form-group');
-        expect(descriptionFormGroup.hasClass('error'), 'description form group has error state').to.be.true;
+            let descriptionFormGroup = this.$('textarea[name="description"]').closest('.form-group');
+            expect(descriptionFormGroup.hasClass('error'), 'description form group has error state').to.be.true;
 
-        let metaTitleFormGroup = this.$('input[name="metaTitle"]').closest('.form-group');
-        expect(metaTitleFormGroup.hasClass('error'), 'metaTitle form group has error state').to.be.true;
-        expect(metaTitleFormGroup.find('.response').length, 'metaTitle form group has error message').to.equal(1);
+            let metaTitleFormGroup = this.$('input[name="metaTitle"]').closest('.form-group');
+            expect(metaTitleFormGroup.hasClass('error'), 'metaTitle form group has error state').to.be.true;
+            expect(metaTitleFormGroup.find('.response').length, 'metaTitle form group has error message').to.equal(1);
 
-        let metaDescriptionFormGroup = this.$('textarea[name="metaDescription"]').closest('.form-group');
-        expect(metaDescriptionFormGroup.hasClass('error'), 'metaDescription form group has error state').to.be.true;
-        expect(metaDescriptionFormGroup.find('.response').length, 'metaDescription form group has error message').to.equal(1);
+            let metaDescriptionFormGroup = this.$('textarea[name="metaDescription"]').closest('.form-group');
+            expect(metaDescriptionFormGroup.hasClass('error'), 'metaDescription form group has error state').to.be.true;
+            expect(metaDescriptionFormGroup.find('.response').length, 'metaDescription form group has error message').to.equal(1);
+        });
     });
 
     it('displays char count for text fields', function () {

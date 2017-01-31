@@ -4,6 +4,7 @@ import {describe, it} from 'mocha';
 import {setupComponentTest} from 'ember-mocha';
 import hbs from 'htmlbars-inline-precompile';
 import NavItem from 'ghost-admin/models/navigation-item';
+import wait from 'ember-test-helpers/wait';
 
 describe('Integration: Component: gh-navitem', function () {
     setupComponentTest('gh-navitem', {
@@ -100,10 +101,12 @@ describe('Integration: Component: gh-navitem', function () {
         this.render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl}}`);
         let $item = this.$('.gh-blognav-item');
 
-        expect($item.hasClass('gh-blognav-item--error')).to.be.true;
-        expect($item.find('.gh-blognav-label').hasClass('error')).to.be.true;
-        expect($item.find('.gh-blognav-label .response').text().trim()).to.equal('You must specify a label');
-        expect($item.find('.gh-blognav-url').hasClass('error')).to.be.true;
-        expect($item.find('.gh-blognav-url .response').text().trim()).to.equal('You must specify a URL or relative path');
+        return wait().then(() => {
+            expect($item.hasClass('gh-blognav-item--error')).to.be.true;
+            expect($item.find('.gh-blognav-label').hasClass('error')).to.be.true;
+            expect($item.find('.gh-blognav-label .response').text().trim()).to.equal('You must specify a label');
+            expect($item.find('.gh-blognav-url').hasClass('error')).to.be.true;
+            expect($item.find('.gh-blognav-url .response').text().trim()).to.equal('You must specify a URL or relative path');
+        });
     });
 });
