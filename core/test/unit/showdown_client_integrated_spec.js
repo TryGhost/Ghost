@@ -7,8 +7,29 @@
 var should      = require('should'),
 
     // Stuff we are testing
-    Showdown    = require('showdown-ghost'),
-    converter   = new Showdown.converter({extensions: ['ghostimagepreview', 'ghostgfm', 'footnotes', 'highlight']});
+    showdown          = require('showdown'),
+    ghostimagepreview = require('showdown-ghost-imagepreview'),
+    sdGhostExtra      = require('showdown-ghost-extra'),
+    footnotes         = require('showdown-ghost-footnotes'),
+    highlight         = require('showdown-ghost-highlight'),
+    converter         = new showdown.Converter({
+        extensions: [ghostimagepreview, sdGhostExtra, footnotes, highlight],
+        omitExtraWLInCodeBlocks: true,
+        parseImgDimensions: true,
+        simplifiedAutoLink: true,
+        excludeTrailingPunctuationFromURLs: true,
+        literalMidWordUnderscores: true,
+        strikethrough: true,
+        tables: true,
+        tablesHeaderId: true,
+        ghCodeBlocks: true,
+        tasklists: true,
+        smoothLivePreview: true,
+        simpleLineBreaks: true,
+        requireSpaceBeforeHeadingText: true,
+        ghMentions: false,
+        encodeEmails: true
+    });
 
 // To stop jshint complaining
 should.equal(true, true);
@@ -48,7 +69,7 @@ describe('Showdown client side converter', function () {
     // });
 
     it('should not touch underscores in code blocks', function () {
-        var testPhrase = {input: '    foo_bar_baz', output: /^<pre><code>foo_bar_baz\n<\/code><\/pre>$/},
+        var testPhrase = {input: '    foo_bar_baz', output: /^<pre><code>foo_bar_baz<\/code><\/pre>$/},
             processedMarkup = converter.makeHtml(testPhrase.input);
 
         processedMarkup.should.match(testPhrase.output);
@@ -86,8 +107,8 @@ describe('Showdown client side converter', function () {
                 output: /^<pre>\nthis is `a\\_test` and this\\_too and finally_this_is\n<\/pre>$/
             },
             {
-                input: 'hmm<pre>\nthis is `a\\_test` and this\\_too and finally_this_is\n</pre>',
-                output: /^<p>hmm<\/p>\n\n<pre>\nthis is `a\\_test` and this\\_too and finally_this_is\n<\/pre>$/
+                input: 'hmm\n<pre>\nthis is `a\\_test` and this\\_too and finally_this_is\n</pre>',
+                output: /^<p>hmm<\/p>\n<pre>\nthis is `a\\_test` and this\\_too and finally_this_is\n<\/pre>$/
             }
         ],
         processedMarkup;
@@ -119,10 +140,10 @@ describe('Showdown client side converter', function () {
 
     it('should turn newlines into br tags in simple cases', function () {
         var testPhrases = [
-                {input: 'fizz\nbuzz', output: /^<p>fizz <br \/>\nbuzz<\/p>$/},
-                {input: 'Hello world\nIt is a fine day', output: /^<p>Hello world <br \/>\nIt is a fine day<\/p>$/},
-                {input: '\'first\nsecond', output: /^<p>\'first <br \/>\nsecond<\/p>$/},
-                {input: '\'first\nsecond', output: /^<p>\'first <br \/>\nsecond<\/p>$/}
+                {input: 'fizz\nbuzz', output: /^<p>fizz<br \/>\nbuzz<\/p>$/},
+                {input: 'Hello world\nIt is a fine day', output: /^<p>Hello world<br \/>\nIt is a fine day<\/p>$/},
+                {input: '\'first\nsecond', output: /^<p>\'first<br \/>\nsecond<\/p>$/},
+                {input: '\'first\nsecond', output: /^<p>\'first<br \/>\nsecond<\/p>$/}
             ],
             processedMarkup;
 
@@ -136,11 +157,11 @@ describe('Showdown client side converter', function () {
         var testPhrases = [
             {
                 input: 'ruby\npython\nerlang',
-                output: /^<p>ruby <br \/>\npython <br \/>\nerlang<\/p>$/
+                output: /^<p>ruby<br \/>\npython<br \/>\nerlang<\/p>$/
             },
             {
                 input: 'Hello world\nIt is a fine day\nout',
-                output: /^<p>Hello world <br \/>\nIt is a fine day <br \/>\nout<\/p>$/
+                output: /^<p>Hello world<br \/>\nIt is a fine day<br \/>\nout<\/p>$/
             }
         ],
         processedMarkup;
@@ -155,11 +176,11 @@ describe('Showdown client side converter', function () {
         var testPhrases = [
                 {
                     input: 'ruby\npython\nerlang\ngo',
-                    output: /^<p>ruby <br \/>\npython <br \/>\nerlang <br \/>\ngo<\/p>$/
+                    output: /^<p>ruby<br \/>\npython<br \/>\nerlang<br \/>\ngo<\/p>$/
                 },
                 {
                     input: 'Hello world\nIt is a fine day\noutside\nthe window',
-                    output: /^<p>Hello world <br \/>\nIt is a fine day <br \/>\noutside <br \/>\nthe window<\/p>$/
+                    output: /^<p>Hello world<br \/>\nIt is a fine day<br \/>\noutside<br \/>\nthe window<\/p>$/
                 }
             ],
             processedMarkup;
@@ -173,8 +194,8 @@ describe('Showdown client side converter', function () {
     it('should not convert newlines in lists', function () {
         var testPhrases = [
                 {
-                    input: '#fizz\n# buzz\n### baz',
-                    output: /^<h1 id="fizz">fizz<\/h1>\n\n<h1 id="buzz">buzz<\/h1>\n\n<h3 id="baz">baz<\/h3>$/
+                    input: '# fizz\n# buzz\n### baz',
+                    output: /^<h1 id="fizz">fizz<\/h1>\n<h1 id="buzz">buzz<\/h1>\n<h3 id="baz">baz<\/h3>$/
                 },
                 {
                     input: '* foo\n* bar',
@@ -318,7 +339,7 @@ describe('Showdown client side converter', function () {
     it('should NOT escape underscore inside of code/pre blocks', function () {
         var testPhrase = {
                 input: '```\n_____\n```',
-                output: /^<pre><code>_____  \n<\/code><\/pre>$/
+                output: /^<pre><code>_____<\/code><\/pre>$/
             },
             processedMarkup;
 
@@ -330,7 +351,7 @@ describe('Showdown client side converter', function () {
         var testPhrases = [
             {
                 input: '```\nurl: http://google.co.uk\n```',
-                output: /^<pre><code>url: http:\/\/google.co.uk  \n<\/code><\/pre>$/
+                output: /^<pre><code>url: http:\/\/google.co.uk<\/code><\/pre>$/
             },
             {
                 input: '`url: http://google.co.uk`',
@@ -489,7 +510,7 @@ describe('Showdown client side converter', function () {
         var testPhrases = [
             {
                 input: '<table class=\"test\">\n    <tr>\n        <td>Foo</td>\n    </tr>\n    <tr>\n        <td>Bar</td>\n    </tr>\n</table>',
-                output: /^<table class=\"test\">  \n    <tr>\n        <td>Foo<\/td>\n    <\/tr>\n    <tr>\n        <td>Bar<\/td>\n    <\/tr>\n<\/table>$/
+                output: /^<table class=\"test\">\n    <tr>\n        <td>Foo<\/td>\n    <\/tr>\n    <tr>\n        <td>Bar<\/td>\n    <\/tr>\n<\/table>$/
             },
             {
                 input: '<hr />',
@@ -497,7 +518,7 @@ describe('Showdown client side converter', function () {
             },
             {   // audio isn't counted as a block tag by showdown so gets wrapped in <p></p>
                 input: '<audio class=\"podcastplayer\" controls>\n    <source src=\"foobar.mp3\" type=\"audio/mp3\" preload=\"none\"></source>\n    <source src=\"foobar.off\" type=\"audio/ogg\" preload=\"none\"></source>\n</audio>',
-                output: /^<audio class=\"podcastplayer\" controls>  \n    <source src=\"foobar.mp3\" type=\"audio\/mp3\" preload=\"none\"><\/source>\n    <source src=\"foobar.off\" type=\"audio\/ogg\" preload=\"none\"><\/source>\n<\/audio>$/
+                output: /^<audio class=\"podcastplayer\" controls>\n    <source src=\"foobar.mp3\" type=\"audio\/mp3\" preload=\"none\"><\/source>\n    <source src=\"foobar.off\" type=\"audio\/ogg\" preload=\"none\"><\/source>\n<\/audio>$/
             }
         ];
 
@@ -511,7 +532,7 @@ describe('Showdown client side converter', function () {
         var testPhrases = [
             {
                 input: 'Foo![^1](bar)',
-                output: '<p>Foo!<sup id="fnref:1"><a href="#fn:1" rel="footnote">1</a></sup>(bar)</p>'
+                output: /^<p>Foo!<sup id=\"fnref-1\"><a href=\"#fn-1\" rel=\"footnote\" title=\"go to footnote\">1<\/a><\/sup><\/p>\n[\s\S]*/
             },
 
             {
@@ -546,7 +567,7 @@ describe('Showdown client side converter', function () {
             },
             {
                 input: 'My stuff that has a ==multiple word and\n line broken highlight== in the middle.',
-                output: /^<p>My stuff that has a <mark>multiple word and <br \/>\n line broken highlight<\/mark> in the middle.<\/p>$/
+                output: /^<p>My stuff that has a <mark>multiple word and<br \/>\n line broken highlight<\/mark> in the middle.<\/p>$/
             },
             {
                 input: 'Test ==Highlighting with a [link](https://ghost.org) in the middle== of it.',
@@ -562,7 +583,7 @@ describe('Showdown client side converter', function () {
             },
             {
                 input: '====test==test==test====test',
-                output: /^<p><mark>==test<\/mark>test<mark>test<\/mark>==test<\/p>$/
+                output: /^<p>==<mark>test==test==test<\/mark>==test<\/p>$/
             }
         ];
 
@@ -601,11 +622,11 @@ describe('Showdown client side converter', function () {
         var testPhrases = [
             {
                 input: 'Header\n==',
-                output: /^<h1 id="header">Header  <\/h1>$/
+                output: /^<h1 id="header">Header<\/h1>$/
             },
             {
                 input: 'First Header\n==\nSecond Header\n==',
-                output: /^<h1 id="firstheader">First Header  <\/h1>\n\n<h1 id="secondheader">Second Header  <\/h1>$/
+                output: /^<h1 id="firstheader">First Header<\/h1>\n<h1 id="secondheader">Second Header<\/h1>$/
             }
         ];
 
