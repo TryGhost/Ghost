@@ -156,7 +156,6 @@ describe('Config', function () {
                 'contentPath',
                 'corePath',
                 'internalAppPath',
-                'imagesRelPath',
                 'adminViews',
                 'helperTemplates',
                 'clientAssets'
@@ -168,7 +167,6 @@ describe('Config', function () {
                 appRoot = path.resolve(__dirname, '../../../../');
 
             pathConfig.should.have.property('appRoot', appRoot);
-            pathConfig.should.have.property('imagesRelPath', 'content/images');
         });
 
         it('should allow specific properties to be user defined', function () {

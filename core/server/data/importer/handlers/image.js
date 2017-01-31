@@ -16,7 +16,7 @@ ImageHandler = {
     loadFile: function (files, baseDir) {
         var store = storage.getStorage(),
             baseDirRegex = baseDir ? new RegExp('^' + baseDir + '/') : new RegExp(''),
-            imageFolderRegexes = _.map(config.get('paths').imagesRelPath.split('/'), function (dir) {
+            imageFolderRegexes = _.map(utils.url.STATIC_IMAGE_URL_PREFIX.split('/'), function (dir) {
                 return new RegExp('^' + dir + '/');
             });
 
@@ -37,7 +37,7 @@ ImageHandler = {
 
         return Promise.map(files, function (image) {
             return store.getUniqueFileName(store, image, image.targetDir).then(function (targetFilename) {
-                image.newPath = utils.url.urlJoin('/', utils.url.getSubdir(), config.get('paths').imagesRelPath,
+                image.newPath = utils.url.urlJoin('/', utils.url.getSubdir(), utils.url.STATIC_IMAGE_URL_PREFIX,
                     path.relative(config.getContentPath('images'), targetFilename));
 
                 return image;
