@@ -22,5 +22,6 @@
     "indent": 4,
     "predef": [
         "-Promise"
-    ]
+    ],
+    "esversion": "6"
 }
