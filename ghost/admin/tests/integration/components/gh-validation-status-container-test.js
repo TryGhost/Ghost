@@ -5,6 +5,7 @@ import {setupComponentTest} from 'ember-mocha';
 import hbs from 'htmlbars-inline-precompile';
 import EmberObject from 'ember-object';
 import DS from 'ember-data';
+import wait from 'ember-test-helpers/wait';
 
 const {Errors} = DS;
 
@@ -27,9 +28,12 @@ describe('Integration: Component: gh-validation-status-container', function () {
             {{#gh-validation-status-container class="gh-test" property="name" errors=testObject.errors hasValidated=testObject.hasValidated}}
             {{/gh-validation-status-container}}
         `);
-        expect(this.$('.gh-test')).to.have.length(1);
-        expect(this.$('.gh-test').hasClass('success')).to.be.false;
-        expect(this.$('.gh-test').hasClass('error')).to.be.false;
+
+        return wait().then(() => {
+            expect(this.$('.gh-test')).to.have.length(1);
+            expect(this.$('.gh-test').hasClass('success')).to.be.false;
+            expect(this.$('.gh-test').hasClass('error')).to.be.false;
+        });
     });
 
     it('has success class when valid', function () {
@@ -39,9 +43,12 @@ describe('Integration: Component: gh-validation-status-container', function () {
             {{#gh-validation-status-container class="gh-test" property="name" errors=testObject.errors hasValidated=testObject.hasValidated}}
             {{/gh-validation-status-container}}
         `);
-        expect(this.$('.gh-test')).to.have.length(1);
-        expect(this.$('.gh-test').hasClass('success')).to.be.true;
-        expect(this.$('.gh-test').hasClass('error')).to.be.false;
+
+        return wait().then(() => {
+            expect(this.$('.gh-test')).to.have.length(1);
+            expect(this.$('.gh-test').hasClass('success')).to.be.true;
+            expect(this.$('.gh-test').hasClass('error')).to.be.false;
+        });
     });
 
     it('has error class when invalid', function () {
@@ -52,9 +59,12 @@ describe('Integration: Component: gh-validation-status-container', function () {
             {{#gh-validation-status-container class="gh-test" property="name" errors=testObject.errors hasValidated=testObject.hasValidated}}
             {{/gh-validation-status-container}}
         `);
-        expect(this.$('.gh-test')).to.have.length(1);
-        expect(this.$('.gh-test').hasClass('success')).to.be.false;
-        expect(this.$('.gh-test').hasClass('error')).to.be.true;
+
+        return wait().then(() => {
+            expect(this.$('.gh-test')).to.have.length(1);
+            expect(this.$('.gh-test').hasClass('success')).to.be.false;
+            expect(this.$('.gh-test').hasClass('error')).to.be.true;
+        });
     });
 
     it('still renders if hasValidated is undefined', function () {
@@ -64,6 +74,9 @@ describe('Integration: Component: gh-validation-status-container', function () {
             {{#gh-validation-status-container class="gh-test" property="name" errors=testObject.errors hasValidated=testObject.hasValidated}}
             {{/gh-validation-status-container}}
         `);
-        expect(this.$('.gh-test')).to.have.length(1);
+
+        return wait().then(() => {
+            expect(this.$('.gh-test')).to.have.length(1);
+        });
     });
 });
