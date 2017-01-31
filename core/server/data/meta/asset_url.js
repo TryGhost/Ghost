@@ -1,4 +1,5 @@
 var config = require('../../config'),
+    settingsCache = require('../../api/settings').cache,
     utils = require('../../utils');
 
 function getAssetUrl(path, isAdmin, minify) {
@@ -19,7 +20,11 @@ function getAssetUrl(path, isAdmin, minify) {
         if (isAdmin) {
             output = utils.url.urlJoin(utils.url.getSubdir(), '/favicon.ico');
         } else {
-            output = config.get('theme:icon') ? utils.url.urlJoin(utils.url.getSubdir(), utils.url.urlFor('image', {image: config.get('theme:icon')})) : utils.url.urlJoin(utils.url.getSubdir(), '/favicon.ico');
+            if (settingsCache.get('icon')) {
+                output = utils.url.urlJoin(utils.url.getSubdir(), utils.url.urlFor('image', {image: settingsCache.get('icon')}));
+            } else {
+                output = utils.url.urlJoin(utils.url.getSubdir(), '/favicon.ico');
+            }
         }
     }
     // Get rid of any leading slash on the path

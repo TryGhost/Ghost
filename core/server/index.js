@@ -149,10 +149,10 @@ function init(options) {
         auth.init({
             authType: config.get('auth:type'),
             ghostAuthUrl: config.get('auth:url'),
-            redirectUri: utils.url.urlFor('admin', true),
-            clientUri: utils.url.urlFor('home', true),
-            clientName: api.settings.getSettingSync('title'),
-            clientDescription: api.settings.getSettingSync('description')
+            redirectUri: utils.url.urlJoin(utils.url.getBaseUrl(), 'ghost', '/'),
+            clientUri: utils.url.urlJoin(utils.url.getBaseUrl(), '/'),
+            clientName: api.settings.cache.get('title'),
+            clientDescription: api.settings.cache.get('description')
         }).then(function (response) {
             parentApp.use(response.auth);
         }).catch(function onAuthError(err) {

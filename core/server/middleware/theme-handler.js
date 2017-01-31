@@ -3,7 +3,9 @@ var _      = require('lodash'),
     path   = require('path'),
     hbs    = require('express-hbs'),
     api    = require('../api'),
+    settingsCache = api.settings.cache,
     config = require('../config'),
+    utils = require('../utils'),
     logging = require('../logging'),
     errors = require('../errors'),
     i18n = require('../i18n'),
@@ -13,8 +15,21 @@ themeHandler = {
     // ### configHbsForContext Middleware
     // Setup handlebars for the current context (admin or theme)
     configHbsForContext: function configHbsForContext(req, res, next) {
-        var themeData = _.cloneDeep(config.get('theme')),
-            labsData = _.cloneDeep(config.get('labs')),
+        var themeData = {
+                title: settingsCache.get('title'),
+                description: settingsCache.get('description'),
+                url: utils.url.urlFor('home', true),
+                facebook: settingsCache.get('facebook'),
+                twitter: settingsCache.get('twitter'),
+                timezone: settingsCache.get('activeTimezone'),
+                navigation: settingsCache.get('navigation'),
+                posts_per_page: settingsCache.get('postsPerPage'),
+                icon: settingsCache.get('icon'),
+                cover: settingsCache.get('cover'),
+                logo: settingsCache.get('logo'),
+                amp: settingsCache.get('amp')
+            },
+            labsData = _.cloneDeep(settingsCache.get('labs')),
             blogApp = req.app;
 
         if (req.secure && config.get('urlSSL')) {
@@ -22,11 +37,12 @@ themeHandler = {
             themeData.url = config.get('urlSSL').replace(/\/$/, '');
         }
 
-        // Change camelCase to snake_case
-        themeData.posts_per_page = themeData.postsPerPage;
-        delete themeData.postsPerPage;
-
-        hbs.updateTemplateOptions({data: {blog: themeData, labs: labsData}});
+        hbs.updateTemplateOptions({
+            data: {
+                blog: themeData,
+                labs: labsData
+            }
+        });
 
         if (config.getContentPath('themes') && blogApp.get('activeTheme')) {
             blogApp.set('views', path.join(config.getContentPath('themes'), blogApp.get('activeTheme')));
