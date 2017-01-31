@@ -7,7 +7,13 @@ exports.isPrivacyDisabled = function isPrivacyDisabled(privacyFlag) {
         return false;
     }
 
+    // CASE: disable all privacy features
     if (this.get('privacy').useTinfoil === true) {
+        // CASE: you can still enable single features
+        if (this.get('privacy')[privacyFlag] === true) {
+            return false;
+        }
+
         return true;
     }
 

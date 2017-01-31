@@ -3,23 +3,19 @@ var _           = require('lodash'),
     should      = require('should'),
     rewire      = require('rewire'),
     uuid        = require('uuid'),
-
-    // Stuff we are testing
+    configUtils      = require('../utils/configUtils'),
     packageInfo      = require('../../../package'),
     updateCheck      = rewire('../../server/update-check'),
     NotificationsAPI = require('../../server/api/notifications');
 
 describe('Update Check', function () {
     describe('Reporting to UpdateCheck', function () {
-        var environmentsOrig;
-
         before(function () {
-            environmentsOrig = updateCheck.__get__('allowedCheckEnvironments');
-            updateCheck.__set__('allowedCheckEnvironments', ['development', 'production', 'testing']);
+            configUtils.set('privacy:useUpdateCheck', true);
         });
 
         after(function () {
-            updateCheck.__set__('allowedCheckEnvironments', environmentsOrig);
+            configUtils.restore();
         });
 
         beforeEach(testUtils.setup('owner', 'posts', 'perms:setting', 'perms:user', 'perms:init'));
