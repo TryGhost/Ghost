@@ -2036,6 +2036,14 @@ ember-cli-selectize@0.5.12:
     ember-getowner-polyfill "^1.1.1"
     ember-new-computed "^1.0.0"
 
+ember-cli-shims@1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/ember-cli-shims/-/ember-cli-shims-1.0.2.tgz#e2ec1b6687f94df1b68cc0aa66c1d690d9ded02c"
+  dependencies:
+    ember-cli-babel "^5.2.1"
+    ember-cli-version-checker "^1.2.0"
+    silent-error "^1.0.1"
+
 ember-cli-sri@2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/ember-cli-sri/-/ember-cli-sri-2.1.1.tgz#971620934a4b9183cf7923cc03e178b83aa907fd"
@@ -2171,6 +2179,12 @@ ember-composable-helpers@^1.1.2:
   resolved "https://registry.yarnpkg.com/ember-composable-helpers/-/ember-composable-helpers-1.1.3.tgz#807fd837cf5280f4423c2a7b5e577b00450a7837"
   dependencies:
     broccoli-funnel "^1.0.1"
+    ember-cli-babel "^5.1.7"
+
+ember-concurrency-test-waiter@0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/ember-concurrency-test-waiter/-/ember-concurrency-test-waiter-0.2.0.tgz#022108d68058755fb1a589dd33493b3c5f296f89"
+  dependencies:
     ember-cli-babel "^5.1.7"
 
 ember-concurrency@0.7.19, ember-concurrency@^0.7.15:
@@ -2464,6 +2478,23 @@ ember-sortable@1.9.1:
     ember-cli-htmlbars "^1.0.10"
     ember-invoke-action "^1.4.0"
     ember-new-computed "^1.0.2"
+
+ember-source@2.11.0:
+  version "2.11.0"
+  resolved "https://registry.yarnpkg.com/ember-source/-/ember-source-2.11.0.tgz#fada3652feaaa5ed1fffd40c9ec68ca995801d73"
+  dependencies:
+    broccoli-stew "^1.2.0"
+    ember-cli-get-component-path-option "^1.0.0"
+    ember-cli-normalize-entity-name "^1.0.0"
+    ember-cli-path-utils "^1.0.0"
+    ember-cli-string-utils "^1.0.0"
+    ember-cli-test-info "^1.0.0"
+    ember-cli-valid-component-name "^1.0.0"
+    ember-cli-version-checker "^1.1.7"
+    jquery "^3.1.1"
+    resolve "^1.1.7"
+    rsvp "^3.3.3"
+    simple-dom "^0.3.0"
 
 ember-test-helpers@^0.6.0-beta.1:
   version "0.6.0"
@@ -4032,6 +4063,10 @@ jodid25519@^1.0.0:
 jquery-deparam@0.5.3:
   version "0.5.3"
   resolved "https://registry.yarnpkg.com/jquery-deparam/-/jquery-deparam-0.5.3.tgz#51f937c448175445499081b87bf32b241b1e2693"
+
+jquery@^3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.1.1.tgz#347c1c21c7e004115e0a4da32cece041fad3c8a3"
 
 js-base64@~2.1.8:
   version "2.1.9"
@@ -6079,6 +6114,10 @@ silent-error@^1.0.0, silent-error@^1.0.1:
   resolved "https://registry.yarnpkg.com/silent-error/-/silent-error-1.0.1.tgz#71b7d503d1c6f94882b51b56be879b113cb4822c"
   dependencies:
     debug "^2.2.0"
+
+simple-dom@^0.3.0:
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/simple-dom/-/simple-dom-0.3.2.tgz#0663d10f1556f1500551d518f56e3aba0871371d"
 
 simple-fmt@~0.1.0:
   version "0.1.0"
