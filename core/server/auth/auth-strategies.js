@@ -69,13 +69,18 @@ strategies = {
      * - via invite token
      * - via normal auth
      * - via setup
-     *
-     * @TODO: validate GhostAuth profile?
      */
     ghostStrategy: function ghostStrategy(req, ghostAuthAccessToken, ghostAuthRefreshToken, profile, done) {
         var inviteToken = req.body.inviteToken,
             options = {context: {internal: true}},
             handleInviteToken, handleSetup;
+
+        // CASE: socket hangs up for example
+        if (!ghostAuthAccessToken || !profile) {
+            return done(new errors.NoPermissionError({
+                help: 'Please try again.'
+            }));
+        }
 
         handleInviteToken = function handleInviteToken() {
             var user, invite;
