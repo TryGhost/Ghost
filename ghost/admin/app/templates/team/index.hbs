@@ -6,14 +6,14 @@
             <section class="view-actions">
                 <button class="btn btn-green" {{action "toggleInviteUserModal"}} >Invite People</button>
             </section>
-
-            {{#if showInviteUserModal}}
-                {{gh-fullscreen-modal "invite-new-user"
-                                      close=(action "toggleInviteUserModal")
-                                      modifier="action"}}
-            {{/if}}
         {{/unless}}
     </header>
+
+    {{#if showInviteUserModal}}
+        {{gh-fullscreen-modal "invite-new-user"
+                              close=(action "toggleInviteUserModal")
+                              modifier="action"}}
+    {{/if}}
 
     {{#gh-infinite-scroll
         fetch="loadNextPage"
