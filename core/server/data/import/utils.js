@@ -108,17 +108,17 @@ utils = {
 
     preProcessPostTags: function preProcessPostTags(tableData) {
         var postTags,
-            postsWithTags = {};
+            postsWithTags = new Map();
 
         postTags = tableData.posts_tags;
         _.each(postTags, function (postTag) {
-            if (!postsWithTags.hasOwnProperty(postTag.post_id)) {
-                postsWithTags[postTag.post_id] = [];
+            if (!postsWithTags.get(postTag.post_id)) {
+                postsWithTags.set(postTag.post_id, []);
             }
-            postsWithTags[postTag.post_id].push(postTag.tag_id);
+            postsWithTags.get(postTag.post_id).push(postTag.tag_id);
         });
 
-        _.each(postsWithTags, function (tagIds, postId) {
+        postsWithTags.forEach(function (tagIds, postId) {
             var post, tags;
             post = _.find(tableData.posts, function (post) {
                 return post.id === postId;
