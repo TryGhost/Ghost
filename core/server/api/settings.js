@@ -6,15 +6,12 @@ var _            = require('lodash'),
     config       = require('../config'),
     canThis      = require('../permissions').canThis,
     errors       = require('../errors'),
-    logging      = require('../logging'),
     utils        = require('./utils'),
     i18n         = require('../i18n'),
-    globalUtils  = require('../utils'),
 
     docName      = 'settings',
     settings,
 
-    updateConfigCache,
     updateSettingsCache,
     settingsFilter,
     filterPaths,
@@ -32,49 +29,6 @@ var _            = require('lodash'),
     settingsCache = {};
 
 /**
-* ### Updates Config Theme Settings
-* Maintains the cache of theme specific variables that are reliant on settings.
-* @private
-*/
-updateConfigCache = function () {
-    var labsValue = {};
-
-    if (settingsCache.labs && settingsCache.labs.value) {
-        try {
-            labsValue = JSON.parse(settingsCache.labs.value);
-        } catch (err) {
-            logging.error(new errors.GhostError({
-                err: err,
-                message: i18n.t('errors.api.settings.invalidJsonInLabs'),
-                context: i18n.t('errors.api.settings.labsColumnCouldNotBeParsed'),
-                help: i18n.t('errors.api.settings.tryUpdatingLabs')
-            }));
-        }
-    }
-
-    // @TODO: why are we putting the settings cache values into config?we could access the cache directly
-    // @TODO: plus: why do we assign the values to the prefix "theme"?
-    // @TODO: might be related to https://github.com/TryGhost/Ghost/issues/7488
-    config.set('theme:title', (settingsCache.title && settingsCache.title.value) || '');
-    config.set('theme:description', (settingsCache.description && settingsCache.description.value) || '');
-    config.set('theme:logo', (settingsCache.logo && settingsCache.logo.value) || '');
-    config.set('theme:cover', (settingsCache.cover && settingsCache.cover.value) || '');
-    config.set('theme:navigation', (settingsCache.navigation && JSON.parse(settingsCache.navigation.value)) || []);
-    config.set('theme:postsPerPage', (settingsCache.postsPerPage && settingsCache.postsPerPage.value) || config.get('theme').postsPerPage);
-    config.set('theme:permalinks', (settingsCache.permalinks && settingsCache.permalinks.value) || config.get('theme').permalinks);
-    config.set('theme:twitter', (settingsCache.twitter && settingsCache.twitter.value) || '');
-    config.set('theme:facebook', (settingsCache.facebook && settingsCache.facebook.value) || '');
-    config.set('theme:timezone', (settingsCache.activeTimezone && settingsCache.activeTimezone.value) || config.get('theme').timezone);
-    config.set('theme:url', globalUtils.url.urlFor('home', true));
-    config.set('theme:amp', (settingsCache.amp && settingsCache.amp.value === 'true'));
-    config.set('theme:icon', settingsCache.icon && settingsCache.icon.value);
-
-    _.each(labsValue, function (value, key) {
-        config.set('labs:' + key, value);
-    });
-};
-
-/**
  * ### Update Settings Cache
  * Maintain the internal cache of the settings object
  * @public
@@ -90,8 +44,6 @@ updateSettingsCache = function (settings, options) {
             settingsCache[key] = setting;
         });
 
-        updateConfigCache();
-
         return Promise.resolve(settingsCache);
     }
 
@@ -99,7 +51,6 @@ updateSettingsCache = function (settings, options) {
         .then(function (result) {
             // keep reference and update all keys
             _.extend(settingsCache, readSettingsResult(result.models));
-            updateConfigCache();
             return settingsCache;
         });
 };
@@ -187,6 +138,7 @@ readSettingsResult = function (settingsModels) {
         apps = config.get('paths').availableApps,
         res;
 
+    // @TODO: why are availableThemes part of the settings cache?O_O
     if (settings.activeTheme && themes) {
         res = filterPaths(themes, settings.activeTheme.value);
 
@@ -255,7 +207,7 @@ populateDefaultSetting = function (key) {
             return Promise.reject(err);
         }
 
-        // TODO: Different kind of error?
+        // TODO: different kind of error?
         return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.settings.problemFindingSetting', {key: key})}));
     });
 };
@@ -434,19 +386,27 @@ settings = {
 module.exports = settings;
 
 /**
- * synchronous function to get cached settings value
- * returns the value of the settings entry
+ * @TODO:
+ * - move settings cache somewhere else and listen on model changes
+ * - why are the settingsCache keys without type (core|blog)
+ *   1. this is unreadable settingsCache.get('title') vs settingsCache.get('blog:title')
+ *   2. we can't add any duplicate properties (e.g. blog:title, theme:title)
  */
-module.exports.getSettingSync = function getSettingSync(key) {
-    return settingsCache[key] && settingsCache[key].value;
-};
+module.exports.cache = {
+    get: function get(key) {
+        if (!settingsCache[key]) {
+            return;
+        }
 
-/**
- * synchronous function to get all cached settings values
- * returns everything for now
- */
-module.exports.getSettingsSync = function getSettingsSync() {
-    return settingsCache;
+        try {
+            return JSON.parse(settingsCache[key].value);
+        } catch (err) {
+            return settingsCache[key].value;
+        }
+    },
+    getAll: function getAll() {
+        return settingsCache;
+    }
 };
 
 module.exports.updateSettingsCache = updateSettingsCache;
