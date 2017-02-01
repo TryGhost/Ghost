@@ -6,7 +6,13 @@ export default Controller.extend({
     dropdown: injectService(),
     session: injectService(),
 
-    showNavMenu: computed('currentPath', 'session.isAuthenticated', function () {
+    showNavMenu: computed('currentPath', 'session.isAuthenticated', 'session.user.isFulfilled', function () {
+        // we need to defer showing the navigation menu until the session.user
+        // promise has fulfilled so that gh-user-can-admin has the correct data
+        if (!this.get('session.isAuthenticated') || !this.get('session.user.isFulfilled')) {
+            return false;
+        }
+
         return (this.get('currentPath') !== 'error404' || this.get('session.isAuthenticated'))
                 && !this.get('currentPath').match(/(signin|signup|setup|reset)/);
     }),
