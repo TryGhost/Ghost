@@ -1,0 +1,9 @@
+{
+    "database": {
+        "client": "sqlite3",
+        "connection": {
+            "filename": "/test.db"
+        },
+        "debug": false
+    }
+}

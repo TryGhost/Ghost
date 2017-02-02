@@ -28,7 +28,8 @@ exports.makePathsAbsolute = function makePathsAbsolute(obj, parent) {
 
     if (!obj) {
         throw new errors.IncorrectUsageError({
-            message: 'makePathsAbsolute: Object is missing.'
+            message: 'makePathsAbsolute: Can\'t make paths absolute of non existing object.',
+            help: parent
         });
     }
 
