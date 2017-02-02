@@ -1,0 +1,6 @@
+{
+    "paths": {
+        "appRoot": ".",
+        "corePath": "core/"
+    }
+}

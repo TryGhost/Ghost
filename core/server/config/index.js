@@ -1,45 +1,57 @@
 var Nconf = require('nconf'),
-    nconf = new Nconf.Provider(),
     path = require('path'),
+    debug = require('debug')('ghost:config'),
     localUtils = require('./utils'),
-    env = process.env.NODE_ENV || 'development';
+    env = process.env.NODE_ENV || 'development',
+    _private = {};
 
-/**
- * command line arguments
- */
-nconf.argv();
+_private.loadNconf = function loadNconf(options) {
+    options = options || {};
 
-/**
- * env arguments
- */
-nconf.env({
-    separator: '__'
-});
+    var baseConfigPath = options.baseConfigPath || __dirname,
+        customConfigPath = options.customConfigPath || process.cwd(),
+        nconf = new Nconf.Provider();
 
-/**
- * load config files
- * @TODO:
- * - why does this work? i have no idea!
- * - find out why argv override works, when defining these weird keys
- * - i could not find any nconf usages so that all config requirements work
- */
-nconf.file('ghost1', __dirname + '/overrides.json');
-nconf.file('ghost2', path.join(process.cwd(), 'config.' + env + '.json'));
-nconf.file('ghost3', __dirname + '/env/config.' + env + '.json');
-nconf.file('ghost4', __dirname + '/defaults.json');
+    /**
+     * no channel can override the overrides
+     */
+    nconf.file('overrides', path.join(baseConfigPath, 'overrides.json'));
 
-/**
- * transform all relative paths to absolute paths
- * transform sqlite filename path for Ghost-CLI
- */
-localUtils.makePathsAbsolute.bind(nconf)(nconf.get('paths'), 'paths');
-localUtils.makePathsAbsolute.bind(nconf)(nconf.get('database:connection'), 'database:connection');
+    /**
+     * command line arguments
+     */
+    nconf.argv();
 
-/**
- * values we have to set manual
- */
-nconf.set('env', env);
+    /**
+     * env arguments
+     */
+    nconf.env({
+        separator: '__'
+    });
 
-module.exports = nconf;
-module.exports.isPrivacyDisabled = localUtils.isPrivacyDisabled.bind(nconf);
-module.exports.getContentPath = localUtils.getContentPath.bind(nconf);
+    nconf.file('custom-env', path.join(customConfigPath, 'config.' + env + '.json'));
+    nconf.file('default-env', path.join(baseConfigPath, 'env', 'config.' + env + '.json'));
+    nconf.file('defaults', path.join(baseConfigPath, 'defaults.json'));
+
+    /**
+     * transform all relative paths to absolute paths
+     * transform sqlite filename path for Ghost-CLI
+     */
+    nconf.makePathsAbsolute = localUtils.makePathsAbsolute.bind(nconf);
+    nconf.isPrivacyDisabled = localUtils.isPrivacyDisabled.bind(nconf);
+    nconf.getContentPath = localUtils.getContentPath.bind(nconf);
+
+    nconf.makePathsAbsolute(nconf.get('paths'), 'paths');
+    nconf.makePathsAbsolute(nconf.get('database:connection'), 'database:connection');
+
+    /**
+     * values we have to set manual
+     */
+    nconf.set('env', env);
+
+    debug(nconf.get());
+    return nconf;
+};
+
+module.exports = _private.loadNconf();
+module.exports.loadNconf = _private.loadNconf;
