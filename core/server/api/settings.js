@@ -51,6 +51,7 @@ updateSettingsCache = function (settings, options) {
         .then(function (result) {
             // keep reference and update all keys
             _.extend(settingsCache, readSettingsResult(result.models));
+
             return settingsCache;
         });
 };
@@ -138,7 +139,7 @@ readSettingsResult = function (settingsModels) {
         apps = config.get('paths').availableApps,
         res;
 
-    // @TODO: why are availableThemes part of the settings cache?O_O
+    // @TODO: remove availableThemes from settings cache and create an endpoint to fetch themes
     if (settings.activeTheme && themes) {
         res = filterPaths(themes, settings.activeTheme.value);
 
@@ -387,10 +388,19 @@ module.exports = settings;
 
 /**
  * @TODO:
- * - move settings cache somewhere else and listen on model changes
- * - why are the settingsCache keys without type (core|blog)
- *   1. this is unreadable settingsCache.get('title') vs settingsCache.get('blog:title')
- *   2. we can't add any duplicate properties (e.g. blog:title, theme:title)
+ * - move settings cache somewhere else e.q. listen on model changes
+ *
+ * IMPORTANT:
+ * We store settings with a type and a key in the database.
+ *
+ * {
+ *   type: core
+ *   key: dbHash
+ *   value: ...
+ * }
+ *
+ * But the settings cache does not allow requesting a value by type, only by key.
+ * e.g. settings.cache.get('dbHash')
  */
 module.exports.cache = {
     get: function get(key) {

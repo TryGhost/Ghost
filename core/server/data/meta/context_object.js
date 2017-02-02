@@ -3,13 +3,12 @@ var settingsCache = require('../../api/settings').cache,
 
 function getContextObject(data, context) {
     /**
-     * @TODO:
-     *   - the only valid property is cover
-     *   - there was no image property in config.get('theme')
-     *   - there was no author property in config.get('theme')
+     * If the data object does not contain the requested context, we return the fallback object.
      */
     var blog = {
-            cover: settingsCache.get('cover')
+            cover: settingsCache.get('cover'),
+            twitter: settingsCache.get('twitter'),
+            facebook: settingsCache.get('facebook')
         },
         contextObject;
 
