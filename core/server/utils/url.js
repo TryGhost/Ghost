@@ -6,8 +6,7 @@ var moment            = require('moment-timezone'),
     url               = require('url'),
     config            = require('./../config'),
     settingsCache     = require('./../api/settings').cache,
-    // @TODO: unify this with routes.apiBaseUrl
-    apiPath = '/ghost/api/v0.1';
+    API_PATH          = '/ghost/api/v0.1/';
 
 /** getBaseUrl
  * Returns the base URL of the blog as set in the config. If called with secure options, returns the ssl URL.
@@ -192,7 +191,7 @@ function urlPathForPost(post) {
 // - data (optional) - a json object containing data needed to generate a url
 // - absolute (optional, default:false) - boolean whether or not the url should be absolute
 // This is probably not the right place for this, but it's the best place for now
-// @TODO: rewrite, very hard to read!
+// @TODO: rewrite, very hard to read, create private functions!
 function urlFor(context, data, absolute) {
     var urlPath = '/',
         secure, imagePathRe,
@@ -203,7 +202,7 @@ function urlFor(context, data, absolute) {
     knownPaths = {
         home: '/',
         rss: '/rss/',
-        api: apiPath,
+        api: API_PATH,
         sitemap_xsl: '/sitemap.xsl'
     };
 
@@ -279,6 +278,26 @@ function urlFor(context, data, absolute) {
         } else {
             urlPath = '/ghost/';
         }
+    } else if (context === 'api') {
+        if (config.get('forceAdminSSL')) {
+            urlPath = (config.get('urlSSL') || getBaseUrl(true)).replace(/^.*?:\/\//g, 'https://');
+        } else if (config.get('urlSSL')) {
+            urlPath = config.get('urlSSL').replace(/^.*?:\/\//g, 'https://');
+        } else if (config.get('url').match(/^https:/)) {
+            urlPath = config.get('url');
+        } else {
+            if (!data || !data.cors) {
+                urlPath = config.get('url');
+            } else {
+                urlPath = config.get('url').replace(/^.*?:\/\//g, '//');
+            }
+        }
+
+        if (absolute) {
+            urlPath = urlPath.replace(/\/$/, '') + API_PATH;
+        } else {
+            urlPath = API_PATH;
+        }
     } else if (_.isString(context) && _.indexOf(_.keys(knownPaths), context) !== -1) {
         // trying to create a url for a named path
         urlPath = knownPaths[context] || '/';
@@ -293,38 +312,8 @@ function urlFor(context, data, absolute) {
     return createUrl(urlPath, absolute, secure);
 }
 
-/**
- * CASE: generate api url for CORS
- *   - we delete the http protocol if your blog runs with http and https (configured by nginx)
- *   - in that case your config.js configures Ghost with http and no admin ssl force
- *   - the browser then reads the protocol dynamically
- */
-function apiUrl(options) {
-    options = options || {cors: false};
-
-    // @TODO unify this with urlFor
-    var url;
-
-    if (config.get('forceAdminSSL')) {
-        url = (config.get('urlSSL') || getBaseUrl(true)).replace(/^.*?:\/\//g, 'https://');
-    } else if (config.get('urlSSL')) {
-        url = config.get('urlSSL').replace(/^.*?:\/\//g, 'https://');
-    } else if (config.get('url').match(/^https:/)) {
-        url = config.get('url');
-    } else {
-        if (options.cors === false) {
-            url = config.get('url');
-        } else {
-            url = config.get('url').replace(/^.*?:\/\//g, '//');
-        }
-    }
-
-    return url.replace(/\/$/, '') + apiPath + '/';
-}
-
 module.exports.getProtectedSlugs = getProtectedSlugs;
 module.exports.getSubdir = getSubdir;
 module.exports.urlJoin = urlJoin;
 module.exports.urlFor = urlFor;
 module.exports.urlPathForPost = urlPathForPost;
-module.exports.apiUrl = apiUrl;
