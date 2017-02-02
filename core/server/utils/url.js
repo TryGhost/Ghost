@@ -8,31 +8,29 @@ var moment            = require('moment-timezone'),
     settingsCache     = require('./../api/settings').cache,
     API_PATH          = '/ghost/api/v0.1/';
 
-/** getBaseUrl
- * Returns the base URL of the blog as set in the config. If called with secure options, returns the ssl URL.
+/**
+ * Returns the base URL of the blog as set in the config.
+ *
+ * Secure:
+ * If the request is secure, we want to force returning the blog url as https.
+ * Imagine Ghost runs with http, but nginx allows SSL connections.
+ *
  * @param {boolean} secure
  * @return {string} URL returns the url as defined in config, but always with a trailing `/`
  */
 function getBaseUrl(secure) {
     var base;
 
-    // CASE: a specified SSL URL is configured (e. g. https://secure.blog.org/)
-    // see: https://github.com/TryGhost/Ghost/issues/6270#issuecomment-168939865
-    if (secure && config.get('urlSSL')) {
-        base = config.get('urlSSL');
+    if (secure) {
+        base = config.get('url').replace('http://', 'https://');
     } else {
-        // CASE: no specified SSL URL configured, but user request is secure. In this case we force SSL
-        // and therefore replace the protocol.
-        if (secure) {
-            base = config.get('url').replace('http://', 'https://');
-        } else {
-            base = config.get('url');
-        }
+        base = config.get('url');
     }
 
     if (!base.match(/\/$/)) {
         base += '/';
     }
+
     return base;
 }
 
@@ -120,7 +118,7 @@ function urlJoin() {
 // Parameters:
 // - urlPath - string which must start and end with a slash
 // - absolute (optional, default:false) - boolean whether or not the url should be absolute
-// - secure (optional, default:false) - boolean whether or not to use urlSSL or url config
+// - secure (optional, default:false) - boolean whether or not to force SSL
 // Returns:
 //  - a URL which always ends with a slash
 function createUrl(urlPath, absolute, secure) {
@@ -280,9 +278,7 @@ function urlFor(context, data, absolute) {
         }
     } else if (context === 'api') {
         if (config.get('forceAdminSSL')) {
-            urlPath = (config.get('urlSSL') || getBaseUrl(true)).replace(/^.*?:\/\//g, 'https://');
-        } else if (config.get('urlSSL')) {
-            urlPath = config.get('urlSSL').replace(/^.*?:\/\//g, 'https://');
+            urlPath = getBaseUrl(true).replace(/^.*?:\/\//g, 'https://');
         } else if (config.get('url').match(/^https:/)) {
             urlPath = config.get('url');
         } else {

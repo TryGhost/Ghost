@@ -82,9 +82,9 @@ describe('checkSSL', function () {
         req.secure = false;
         configUtils.set({
             url: 'http://default.com:2368/',
-            urlSSL: '',
             forceAdminSSL: true
         });
+
         sandbox.stub(res, 'redirect', function (statusCode, url) {
             statusCode.should.eql(301);
             url.should.not.be.empty();
@@ -103,7 +103,6 @@ describe('checkSSL', function () {
         req.secure = false;
         configUtils.set({
             url: 'http://default.com:2368/blog/',
-            urlSSL: '',
             forceAdminSSL: true
         });
         sandbox.stub(res, 'redirect', function (statusCode, url) {
@@ -127,7 +126,6 @@ describe('checkSSL', function () {
         req.secure = false;
         configUtils.set({
             url: 'http://default.com:2368/',
-            urlSSL: '',
             forceAdminSSL: true
         });
         sandbox.stub(res, 'redirect', function (statusCode, url) {
@@ -147,34 +145,12 @@ describe('checkSSL', function () {
         res.redirect = {};
         configUtils.set({
             url: 'https://default.com:2368',
-            urlSSL: '',
             forceAdminSSL: true
         });
         sandbox.stub(res, 'redirect', function (statusCode, url) {
             statusCode.should.eql(301);
             url.should.not.be.empty();
             url.should.eql('https://default.com:2368/');
-            return;
-        });
-        checkSSL(req, res, next);
-        next.called.should.be.false();
-        done();
-    });
-
-    it('should redirect to urlSSL (admin)', function (done) {
-        req.originalUrl = '/ghost/';
-        res.isAdmin = true;
-        res.redirect = {};
-        req.secure = false;
-        configUtils.set({
-            url: 'http://default.com:2368/',
-            urlSSL: 'https://ssl-domain.com:2368/',
-            forceAdminSSL: true
-        });
-        sandbox.stub(res, 'redirect', function (statusCode, url) {
-            statusCode.should.eql(301);
-            url.should.not.be.empty();
-            url.should.eql('https://ssl-domain.com:2368/ghost/');
             return;
         });
         checkSSL(req, res, next);
@@ -210,7 +186,6 @@ describe('checkSSL', function () {
         req.secure = false;
         configUtils.set({
             url: 'http://default.com:2368/',
-            urlSSL: '',
             forceAdminSSL: true
         });
         sandbox.stub(res, 'redirect', function (statusCode, url) {

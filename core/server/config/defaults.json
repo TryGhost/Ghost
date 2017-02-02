@@ -1,6 +1,5 @@
 {
     "url": "http://localhost:2368",
-    "urlSSL": false,
     "forceAdminSSL": false,
     "server": {
         "host": "127.0.0.1",

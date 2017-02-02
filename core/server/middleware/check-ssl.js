@@ -12,11 +12,11 @@ function isSSLrequired(isAdmin, configUrl, forceAdminSSL) {
 }
 
 // The guts of checkSSL. Indicate forbidden or redirect according to configuration.
-// Required args: forceAdminSSL, url and urlSSL should be passed from config. reqURL from req.url
+// Required args: forceAdminSSL and url should be passed from config. reqURL from req.url
 function sslForbiddenOrRedirect(opt) {
     var forceAdminSSL = opt.forceAdminSSL,
         reqUrl        = url.parse(opt.reqUrl), // expected to be relative-to-root
-        baseUrl       = url.parse(opt.configUrlSSL || opt.configUrl),
+        baseUrl       = url.parse(opt.configUrl),
         response = {
         // Check if forceAdminSSL: { redirect: false } is set, which means
         // we should just deny non-SSL access rather than redirect
@@ -43,7 +43,6 @@ checkSSL = function checkSSL(req, res, next) {
         if (!req.secure) {
             var response = sslForbiddenOrRedirect({
                 forceAdminSSL: config.get('forceAdminSSL'),
-                configUrlSSL: config.get('urlSSL'),
                 configUrl: utils.url.urlFor('home', true),
                 reqUrl: req.originalUrl || req.url
             });

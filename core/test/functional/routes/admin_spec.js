@@ -134,7 +134,7 @@ describe('Admin Routing', function () {
         before(function (done) {
             testUtils.fork.ghost({
                 forceAdminSSL: {redirect: false},
-                urlSSL: 'https://localhost/'
+                url: 'https://localhost/'
             }, 'testhttps')
                 .then(function (child) {
                     forkedGhost = child;
@@ -169,15 +169,19 @@ describe('Admin Routing', function () {
 
     describe('Require HTTPS - redirect', function () {
         var forkedGhost, request;
+
         before(function (done) {
             testUtils.fork.ghost({
                 forceAdminSSL: {redirect: true},
-                urlSSL: 'https://localhost/'
+                url: 'https://localhost/',
+                server: {
+                    port: 2390
+                }
             }, 'testhttps')
                 .then(function (child) {
                     forkedGhost = child;
                     request = require('supertest');
-                    request = request(config.get('url').replace(/\/$/, ''));
+                    request = request('http://localhost:2390');
                 }).then(done)
                 .catch(done);
         });
@@ -192,7 +196,7 @@ describe('Admin Routing', function () {
 
         it('should redirect admin access over non-HTTPS', function (done) {
             request.get('/ghost/')
-                .expect('Location', /^https:\/\/localhost\/ghost\//)
+                .expect('Location', /^https:\/\/localhost:2390\/ghost\//)
                 .expect(301)
                 .end(doEnd(done));
         });

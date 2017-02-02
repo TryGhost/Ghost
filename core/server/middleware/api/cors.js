@@ -35,9 +35,7 @@ function getIPs() {
 function getUrls() {
     var urls = [url.parse(utils.url.urlFor('home', true)).hostname];
 
-    if (config.get('urlSSL')) {
-        urls.push(url.parse(config.get('urlSSL')).hostname);
-    }
+    // @TODO: add admin.url if available
 
     return urls;
 }

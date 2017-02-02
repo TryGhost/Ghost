@@ -32,10 +32,7 @@ themeHandler = {
             labsData = _.cloneDeep(settingsCache.get('labs')),
             blogApp = req.app;
 
-        if (req.secure && config.get('urlSSL')) {
-            // For secure requests override .url property with the SSL version
-            themeData.url = config.get('urlSSL').replace(/\/$/, '');
-        }
+        // @TODO: send req.secure to url: utils.url.urlFor('home'...)
 
         hbs.updateTemplateOptions({
             data: {
@@ -49,7 +46,7 @@ themeHandler = {
         }
 
         // Pass 'secure' flag to the view engine
-        // so that templates can choose 'url' vs 'urlSSL'
+        // so that templates can choose to render https or http 'url', see url utility
         res.locals.secure = req.secure;
 
         next();

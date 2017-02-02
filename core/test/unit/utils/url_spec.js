@@ -104,22 +104,22 @@ describe('Url', function () {
         it('should return home url when asked for', function () {
             var testContext = 'home';
 
-            configUtils.set({url: 'http://my-ghost-blog.com', urlSSL: 'https://my-ghost-blog.com'});
+            configUtils.set({url: 'http://my-ghost-blog.com'});
             utils.url.urlFor(testContext).should.equal('/');
             utils.url.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/');
             utils.url.urlFor(testContext, {secure: true}, true).should.equal('https://my-ghost-blog.com/');
 
-            configUtils.set({url: 'http://my-ghost-blog.com/', urlSSL: 'https://my-ghost-blog.com/'});
+            configUtils.set({url: 'http://my-ghost-blog.com/'});
             utils.url.urlFor(testContext).should.equal('/');
             utils.url.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/');
             utils.url.urlFor(testContext, {secure: true}, true).should.equal('https://my-ghost-blog.com/');
 
-            configUtils.set({url: 'http://my-ghost-blog.com/blog', urlSSL: 'https://my-ghost-blog.com/blog'});
+            configUtils.set({url: 'http://my-ghost-blog.com/blog'});
             utils.url.urlFor(testContext).should.equal('/blog/');
             utils.url.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/');
             utils.url.urlFor(testContext, {secure: true}, true).should.equal('https://my-ghost-blog.com/blog/');
 
-            configUtils.set({url: 'http://my-ghost-blog.com/blog/', urlSSL: 'https://my-ghost-blog.com/blog/'});
+            configUtils.set({url: 'http://my-ghost-blog.com/blog/'});
             utils.url.urlFor(testContext).should.equal('/blog/');
             utils.url.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/');
             utils.url.urlFor(testContext, {secure: true}, true).should.equal('https://my-ghost-blog.com/blog/');
@@ -245,7 +245,7 @@ describe('Url', function () {
             var testContext = 'nav',
                 testData;
 
-            configUtils.set({url: 'http://my-ghost-blog.com', urlSSL: 'https://my-ghost-blog.com'});
+            configUtils.set({url: 'http://my-ghost-blog.com'});
 
             testData = {nav: {url: 'http://my-ghost-blog.com/short-and-sweet/'}};
             utils.url.urlFor(testContext, testData).should.equal('http://my-ghost-blog.com/short-and-sweet/');
@@ -354,45 +354,15 @@ describe('Url', function () {
             utils.url.urlFor('api', true).should.eql('https://my-ghost-blog.com/ghost/api/v0.1/');
         });
 
-        it('should return https config.urlSSL if forceAdminSSL set and urlSSL is misconfigured', function () {
+        it('should return http if config.url is http & forceAdminSSL is NOT set', function () {
             configUtils.set({
-                url: 'http://my-ghost-blog.com',
-                urlSSL: 'http://other-ghost-blog.com',
-                forceAdminSSL: true
+                url: 'http://my-ghost-blog.com'
             });
 
-            utils.url.urlFor('api', true).should.eql('https://other-ghost-blog.com/ghost/api/v0.1/');
+            utils.url.urlFor('api', true).should.eql('http://my-ghost-blog.com/ghost/api/v0.1/');
         });
 
-        it('should return https config.urlSSL if forceAdminSSL set', function () {
-            configUtils.set({
-                url: 'http://my-ghost-blog.com',
-                urlSSL: 'https://other-ghost-blog.com',
-                forceAdminSSL: true
-            });
-
-            utils.url.urlFor('api', true).should.eql('https://other-ghost-blog.com/ghost/api/v0.1/');
-        });
-
-        it('should return https config.urlSSL if set and misconfigured & forceAdminSSL is NOT set', function () {
-            configUtils.set({
-                url: 'http://my-ghost-blog.com',
-                urlSSL: 'http://other-ghost-blog.com'
-            });
-
-            utils.url.urlFor('api', true).should.eql('https://other-ghost-blog.com/ghost/api/v0.1/');
-        });
-
-        it('should return https config.urlSSL if set & forceAdminSSL is NOT set', function () {
-            configUtils.set({
-                url: 'http://my-ghost-blog.com',
-                urlSSL: 'https://other-ghost-blog.com'
-            });
-
-            utils.url.urlFor('api', true).should.eql('https://other-ghost-blog.com/ghost/api/v0.1/');
-        });
-
-        it('should return https config.url if config.url is https & forceAdminSSL is NOT set', function () {
+        it('should return https if config.url is https & forceAdminSSL is NOT set', function () {
             configUtils.set({
                 url: 'https://my-ghost-blog.com'
             });
@@ -400,20 +370,12 @@ describe('Url', function () {
             utils.url.urlFor('api', true).should.eql('https://my-ghost-blog.com/ghost/api/v0.1/');
         });
 
-        it('CORS: should return no protocol config.url if config.url is NOT https & forceAdminSSL/urlSSL is NOT set', function () {
+        it('CORS: should return no protocol', function () {
             configUtils.set({
                 url: 'http://my-ghost-blog.com'
             });
 
             utils.url.urlFor('api', {cors: true}, true).should.eql('//my-ghost-blog.com/ghost/api/v0.1/');
-        });
-
-        it('should return protocol config.url if config.url is NOT https & forceAdminSSL/urlSSL is NOT set', function () {
-            configUtils.set({
-                url: 'http://my-ghost-blog.com'
-            });
-
-            utils.url.urlFor('api', true).should.eql('http://my-ghost-blog.com/ghost/api/v0.1/');
         });
     });
 
