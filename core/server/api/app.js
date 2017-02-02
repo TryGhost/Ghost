@@ -217,7 +217,7 @@ module.exports = function setupApiApp() {
 
     // @TODO finish refactoring this away.
     apiApp.use(function setIsAdmin(req, res, next) {
-        // Api === isAdmin for the purposes of the forceAdminSSL config option.
+        // api === isAdmin
         res.isAdmin = true;
         next();
     });

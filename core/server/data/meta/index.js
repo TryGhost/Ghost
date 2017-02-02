@@ -51,7 +51,7 @@ function getMetaData(data, root) {
 
     metaData.blog.logo = {};
     metaData.blog.logo.url = config.get('theme').logo ?
-        utils.url.urlFor('image', {image: config.get('theme').logo}, true) : utils.url.urlFor({relativeUrl: '/ghost/img/ghosticon.jpg'}, {}, true);
+        utils.url.urlFor('image', {image: config.get('theme').logo}, true) : utils.url.urlJoin(utils.url.urlFor('admin'), 'img/ghosticon.jpg');
 
     // TODO: cleanup these if statements
     if (data.post && data.post.html) {

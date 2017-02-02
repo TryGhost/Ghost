@@ -9,20 +9,19 @@ var express         = require('express'),
 
 frontendRoutes = function frontendRoutes() {
     var router = express.Router(),
-        subdir = utils.url.getSubdir(),
         routeKeywords = config.get('routeKeywords');
 
     // ### Admin routes
     router.get(/^\/(logout|signout)\/$/, function redirectToSignout(req, res) {
-        utils.redirect301(res, utils.url.urlJoin(subdir, '/ghost/signout/'));
+        utils.redirect301(res, utils.url.urlJoin(utils.url.urlFor('admin'), 'signout/'));
     });
     router.get(/^\/signup\/$/, function redirectToSignup(req, res) {
-        utils.redirect301(res, utils.url.urlJoin(subdir, '/ghost/signup/'));
+        utils.redirect301(res, utils.url.urlJoin(utils.url.urlFor('admin'), 'signup/'));
     });
 
     // redirect to /ghost and let that do the authentication to prevent redirects to /ghost//admin etc.
     router.get(/^\/((ghost-admin|admin|wp-admin|dashboard|signin|login)\/?)$/, function redirectToAdmin(req, res) {
-        utils.redirect301(res, utils.url.urlJoin(subdir, '/ghost/'));
+        utils.redirect301(res, utils.url.urlFor('admin'));
     });
 
     // Post Live Preview
