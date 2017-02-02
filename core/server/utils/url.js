@@ -191,6 +191,7 @@ function urlPathForPost(post) {
 // - data (optional) - a json object containing data needed to generate a url
 // - absolute (optional, default:false) - boolean whether or not the url should be absolute
 // This is probably not the right place for this, but it's the best place for now
+// @TODO: rewrite, very hard to read!
 function urlFor(context, data, absolute) {
     var urlPath = '/',
         secure, imagePathRe,
@@ -262,9 +263,21 @@ function urlFor(context, data, absolute) {
                 absolute = true;
             }
         }
-    } else if (context === 'home' && absolute)  {
+    } else if (context === 'home' && absolute) {
         urlPath = getBaseUrl(secure);
         // other objects are recognised but not yet supported
+    } else if (context === 'admin') {
+        if (config.get('forceAdminSSL')) {
+            urlPath = getBaseUrl(true);
+        } else {
+            urlPath = getBaseUrl();
+        }
+
+        if (absolute) {
+            urlPath += 'ghost/';
+        } else {
+            urlPath = '/ghost/';
+        }
     } else if (_.isString(context) && _.indexOf(_.keys(knownPaths), context) !== -1) {
         // trying to create a url for a named path
         urlPath = knownPaths[context] || '/';
@@ -314,4 +327,3 @@ module.exports.urlJoin = urlJoin;
 module.exports.urlFor = urlFor;
 module.exports.urlPathForPost = urlPathForPost;
 module.exports.apiUrl = apiUrl;
-module.exports.getBaseUrl = getBaseUrl;

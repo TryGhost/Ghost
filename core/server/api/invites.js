@@ -9,7 +9,6 @@ var _ = require('lodash'),
     utils = require('./utils'),
     errors = require('../errors'),
     logging = require('../logging'),
-    config = require('../config'),
     i18n = require('../i18n'),
     docName = 'invites',
     allowedIncludes = ['created_by', 'updated_by'],
@@ -98,14 +97,14 @@ invites = {
                     return settings.read({key: 'title'});
                 })
                 .then(function (response) {
-                    var baseUrl = config.get('forceAdminSSL') ? globalUtils.url.urlFor('home', {secure: true}, true) : globalUtils.url.urlFor('home', true);
+                    var adminUrl = globalUtils.url.urlFor('admin', true);
 
                     emailData = {
                         blogName: response.settings[0].value,
                         invitedByName: loggedInUser.get('name'),
                         invitedByEmail: loggedInUser.get('email'),
                         // @TODO: resetLink sounds weird
-                        resetLink: globalUtils.url.urlJoin(baseUrl, 'ghost/signup', globalUtils.encodeBase64URLsafe(invite.get('token')), '/')
+                        resetLink: globalUtils.url.urlJoin(adminUrl, 'signup', globalUtils.encodeBase64URLsafe(invite.get('token')), '/')
                     };
 
                     return mail.utils.generateContent({data: emailData, template: 'invite-user'});

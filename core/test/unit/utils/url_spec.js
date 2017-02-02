@@ -290,6 +290,56 @@ describe('Url', function () {
             utils.url.urlFor('api').should.equal('/ghost/api/v0.1');
             utils.url.urlFor('api', true).should.equal('http://my-ghost-blog.com/ghost/api/v0.1');
         });
+
+        it('admin: relative', function () {
+            configUtils.set({
+                url: 'http://my-ghost-blog.com'
+            });
+
+            utils.url.urlFor('admin').should.equal('/ghost/');
+        });
+
+        it('admin: forceAdminSSL is false', function () {
+            configUtils.set({
+                url: 'http://my-ghost-blog.com'
+            });
+
+            utils.url.urlFor('admin', true).should.equal('http://my-ghost-blog.com/ghost/');
+        });
+
+        it('admin: forceAdminSSL is true', function () {
+            configUtils.set({
+                url: 'http://my-ghost-blog.com',
+                forceAdminSSL: true
+            });
+
+            utils.url.urlFor('admin', true).should.equal('https://my-ghost-blog.com/ghost/');
+        });
+
+        it('admin: forceAdminSSL is true', function () {
+            configUtils.set({
+                url: 'http://my-ghost-blog.com',
+                forceAdminSSL: true
+            });
+
+            utils.url.urlFor('admin', true).should.equal('https://my-ghost-blog.com/ghost/');
+        });
+
+        it('admin: blog is on subdir', function () {
+            configUtils.set({
+                url: 'http://my-ghost-blog.com/blog'
+            });
+
+            utils.url.urlFor('admin', true).should.equal('http://my-ghost-blog.com/blog/ghost/');
+        });
+
+        it('admin: blog is on subdir', function () {
+            configUtils.set({
+                url: 'http://my-ghost-blog.com/blog'
+            });
+
+            utils.url.urlFor('admin').should.equal('/blog/ghost/');
+        });
     });
 
     describe('urlPathForPost', function () {

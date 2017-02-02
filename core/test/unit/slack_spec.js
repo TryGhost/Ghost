@@ -8,6 +8,7 @@ var _               = require('lodash'),
     url             = require('url'),
 
     // Stuff we test
+    configUtils    = require('../utils/configUtils'),
     slack          = rewire('../../server/data/slack'),
     events         = require('../../server/events'),
     api            = require('../../server/api/settings'),
@@ -53,6 +54,7 @@ describe('Slack', function () {
 
     afterEach(function () {
         sandbox.restore();
+        configUtils.restore();
     });
 
     it('listen() should initialise event correctly', function () {
@@ -141,7 +143,7 @@ describe('Slack', function () {
     describe('ping()', function () {
         var makeRequestAssertions,
             isPostStub,
-            urlForStub,
+            urlForSpy,
             settingsAPIStub,
             settingsObj,
             slackReset,
@@ -151,17 +153,18 @@ describe('Slack', function () {
 
         beforeEach(function () {
             isPostStub = sandbox.stub(schema, 'isPost');
-            urlForStub = sandbox.stub(utils.url, 'urlFor');
-            urlForStub.withArgs('post').returns('http://myblog.com/post');
-            urlForStub.returns('http://myblog.com/someImageurl.jpg');
+            urlForSpy = sandbox.spy(utils.url, 'urlFor');
             settingsObj = {settings: [], meta: {}};
             settingsAPIStub = sandbox.stub(api, 'read').returns(Promise.resolve(settingsObj));
 
             makeRequestMock = function () {
                 makeRequestAssertions.apply(this, arguments);
             };
+
             makeRequestSpy = sandbox.spy(makeRequestMock);
             slackReset = slack.__set__('makeRequest', makeRequestMock);
+
+            configUtils.set('url', 'http://myblog.com');
         });
 
         afterEach(function () {
@@ -169,18 +172,17 @@ describe('Slack', function () {
         });
 
         it('makes a request for a post if url is provided', function (done) {
-            // set up
             isPostStub.returns(true);
             settingsObj.settings[0] = slackObjWithUrl;
 
             // assertions
             makeRequestAssertions = function (requestOptions, requestData) {
                 isPostStub.calledOnce.should.be.true();
-                urlForStub.calledTwice.should.be.true();
+                urlForSpy.calledTwice.should.be.true();
                 settingsAPIStub.calledOnce.should.be.true();
                 requestOptions.should.have.property('href').and.be.equal('https://hooks.slack.com/services/a-b-c-d');
-                requestData.should.have.property('text').and.be.equal('http://myblog.com/post');
-                requestData.should.have.property('icon_url').and.be.equal('http://myblog.com/someImageurl.jpg');
+                requestData.should.have.property('text').and.be.equal('http://myblog.com/');
+                requestData.should.have.property('icon_url').and.be.equal('http://myblog.com/ghost/img/ghosticon.jpg');
                 requestData.should.have.property('username').and.be.equal('Ghost');
                 done();
             };
@@ -193,14 +195,16 @@ describe('Slack', function () {
             isPostStub.returns(false);
             settingsObj.settings[0] = slackObjWithUrl;
 
+            configUtils.set('forceAdminSSL', true);
+
             // assertions
             makeRequestAssertions = function (requestOptions, requestData) {
                 isPostStub.calledOnce.should.be.true();
-                urlForStub.calledOnce.should.be.true();
+                urlForSpy.calledOnce.should.be.true();
                 settingsAPIStub.calledOnce.should.be.true();
                 requestOptions.should.have.property('href').and.be.equal('https://hooks.slack.com/services/a-b-c-d');
                 requestData.should.have.property('text').and.be.equal('Hi!');
-                requestData.should.have.property('icon_url').and.be.equal('http://myblog.com/someImageurl.jpg');
+                requestData.should.have.property('icon_url').and.be.equal('https://myblog.com/ghost/img/ghosticon.jpg');
                 requestData.should.have.property('username').and.be.equal('Ghost');
                 done();
             };
@@ -217,7 +221,7 @@ describe('Slack', function () {
             ping({page: true}).then(function (result) {
                 // assertions
                 isPostStub.calledOnce.should.be.true();
-                urlForStub.calledOnce.should.be.true();
+                urlForSpy.calledOnce.should.be.true();
                 settingsAPIStub.calledOnce.should.be.true();
                 makeRequestSpy.called.should.be.false();
                 should.not.exist(result);
@@ -234,7 +238,7 @@ describe('Slack', function () {
             ping({}).then(function (result) {
                 // assertions
                 isPostStub.calledOnce.should.be.true();
-                urlForStub.calledOnce.should.be.true();
+                urlForSpy.calledOnce.should.be.true();
                 settingsAPIStub.calledOnce.should.be.true();
                 makeRequestSpy.called.should.be.false();
                 should.not.exist(result);
@@ -251,7 +255,7 @@ describe('Slack', function () {
             ping({slug: 'welcome-to-ghost'}).then(function (result) {
                 // assertions
                 isPostStub.calledOnce.should.be.true();
-                urlForStub.calledOnce.should.be.true();
+                urlForSpy.calledOnce.should.be.true();
                 settingsAPIStub.calledOnce.should.be.true();
                 makeRequestSpy.called.should.be.false();
                 should.not.exist(result);
@@ -266,7 +270,7 @@ describe('Slack', function () {
                 done('This should not get called');
             }).catch(function () {
                 isPostStub.calledOnce.should.be.true();
-                urlForStub.calledOnce.should.be.false();
+                urlForSpy.calledOnce.should.be.false();
                 settingsAPIStub.calledOnce.should.be.true();
                 makeRequestSpy.called.should.be.false();
                 done();

@@ -149,8 +149,8 @@ function init(options) {
         auth.init({
             authType: config.get('auth:type'),
             ghostAuthUrl: config.get('auth:url'),
-            redirectUri: utils.url.urlJoin(utils.url.getBaseUrl(), 'ghost', '/'),
-            clientUri: utils.url.urlJoin(utils.url.getBaseUrl(), '/'),
+            redirectUri: utils.url.urlFor('admin', true),
+            clientUri: utils.url.urlFor('home', true),
             clientName: api.settings.getSettingSync('title'),
             clientDescription: api.settings.getSettingSync('description')
         }).then(function (response) {
