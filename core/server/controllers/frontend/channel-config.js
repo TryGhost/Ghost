@@ -24,7 +24,7 @@ channelConfig = function channelConfig() {
                 }
             },
             slugTemplate: true,
-            editRedirect: '/ghost/settings/tags/:slug/'
+            editRedirect: utils.url.urlJoin(utils.url.urlFor('admin'), '/settings/tags/:slug/')
         },
         author: {
             name: 'author',
@@ -40,7 +40,7 @@ channelConfig = function channelConfig() {
                 }
             },
             slugTemplate: true,
-            editRedirect: '/ghost/team/:slug/'
+            editRedirect: utils.url.urlJoin(utils.url.urlFor('admin'), '/team/:slug/')
         }
     };
 

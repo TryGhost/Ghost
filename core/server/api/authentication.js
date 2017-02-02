@@ -216,8 +216,8 @@ authentication = {
         }
 
         function sendResetNotification(data) {
-            var baseUrl = config.get('forceAdminSSL') ? globalUtils.url.urlFor('home', {secure: true}, true) : globalUtils.url.urlFor('home', true),
-                resetUrl = globalUtils.url.urlJoin(baseUrl, '/ghost/reset/', globalUtils.encodeBase64URLsafe(data.resetToken), '/');
+            var adminUrl = globalUtils.url.urlFor('admin', true),
+                resetUrl = globalUtils.url.urlJoin(adminUrl, 'reset', globalUtils.encodeBase64URLsafe(data.resetToken), '/');
 
             return mail.utils.generateContent({
                 data: {
