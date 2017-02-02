@@ -8,7 +8,7 @@ function redirectToSetup(req, res, next) {
 
     api.authentication.isSetup().then(function then(exists) {
         if (!exists.setup[0].status && !isSetupRequest && !isOauthAuthorization) {
-            return res.redirect(utils.url.getSubdir() + '/ghost/setup/');
+            return res.redirect(utils.url.urlJoin(utils.url.urlFor('admin') + 'setup/'));
         }
         next();
     }).catch(function handleError(err) {
