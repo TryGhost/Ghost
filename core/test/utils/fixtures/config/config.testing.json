@@ -1,0 +1,14 @@
+{
+    "paths": {
+        "corePath": "try-to-override"
+    },
+    "database": {
+        "connection": {
+            "filename": "/hehe.db"
+        },
+        "debug": true
+    },
+    "logging": {
+        "level": "error"
+    }
+}
