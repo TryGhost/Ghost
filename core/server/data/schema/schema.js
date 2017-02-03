@@ -162,7 +162,7 @@ module.exports = {
         uuid: {type: 'string', maxlength: 50, nullable: false},
         name: {type: 'string', maxlength: 50, nullable: false, unique: true},
         slug: {type: 'string', maxlength: 50, nullable: false, unique: true},
-        secret: {type: 'string', maxlength: 255, nullable: false},
+        secret: {type: 'string', maxlength: 191, nullable: false},
         redirection_uri: {type: 'string', maxlength: 2000, nullable: true},
         client_uri: {type: 'string', maxlength: 2000, nullable: true},
         auth_uri: {type: 'string', maxlength: 2000, nullable: true},
