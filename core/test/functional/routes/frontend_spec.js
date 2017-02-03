@@ -9,6 +9,7 @@ var request = require('supertest'),
     sinon = require('sinon'),
     cheerio = require('cheerio'),
     testUtils = require('../../utils'),
+    config = require('../../../server/config'),
     settingsCache = require('../../../server/api/settings').cache,
     sandbox = sinon.sandbox.create(),
     ghost   = testUtils.startGhost;
@@ -39,13 +40,17 @@ describe('Frontend Routing', function () {
         });
     }
 
+    afterEach(function () {
+        sandbox.restore();
+    });
+
     describe('NO FORK', function () {
         before(function (done) {
             ghost().then(function (_ghostServer) {
                 ghostServer = _ghostServer;
                 return ghostServer.start();
             }).then(function () {
-                request = request(configUtils.config.get('url'));
+                request = request(config.get('url'));
                 done();
             }).catch(function (e) {
                 console.log('Ghost Error: ', e);
