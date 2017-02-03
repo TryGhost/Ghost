@@ -170,7 +170,7 @@ function init(options) {
         return scheduling.init({
             schedulerUrl: config.get('scheduling').schedulerUrl,
             active: config.get('scheduling').active,
-            apiUrl: utils.url.apiUrl(),
+            apiUrl: utils.url.urlFor('api', true),
             internalPath: config.get('paths').internalSchedulingPath,
             contentPath: config.getContentPath('scheduling')
         });

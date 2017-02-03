@@ -159,11 +159,14 @@ describe('cors', function () {
         done();
     });
 
-    it('should be enabled if the origin matches config.urlSSL', function (done) {
-        var origin = 'https://secure.blog';
+    it('should be enabled if the origin matches config.url', function (done) {
+        var origin = 'http://admin:2222';
+
         configUtils.set({
-            url: 'http://my.blog',
-            urlSSL:  origin
+            url: 'https://blog',
+            admin: {
+                url: origin
+            }
         });
 
         req.get = sinon.stub().withArgs('origin').returns(origin);
