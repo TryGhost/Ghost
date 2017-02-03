@@ -5,7 +5,8 @@ import {task} from 'ember-concurrency';
 
 export default ModalComponent.extend({
 
-    post: alias('model'),
+    post: alias('model.post'),
+    onSuccess: alias('model.onSuccess'),
 
     notifications: injectService(),
     routing: injectService('-routing'),
@@ -24,8 +25,10 @@ export default ModalComponent.extend({
         // clear any previous error messages
         this.get('notifications').closeAlerts('post.delete');
 
-        // redirect to content screen
-        this.get('routing').transitionTo('posts');
+        // trigger the success action
+        if (this.get('onSuccess')) {
+            this.get('onSuccess')();
+        }
     },
 
     _failure(error) {

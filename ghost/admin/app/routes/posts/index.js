@@ -12,6 +12,7 @@ export default AuthenticatedRoute.extend(InfinityRoute, ShortcutsRoute, {
     totalPagesParam: 'meta.pagination.pages',
 
     _type: null,
+    _selectedPostIndex: null,
 
     model(params) {
         this.set('_type', params.type);
@@ -60,10 +61,18 @@ export default AuthenticatedRoute.extend(InfinityRoute, ShortcutsRoute, {
     }),
 
     stepThroughPosts(step) {
-        let currentPost = this.get('controller.currentPost');
-        let posts = this.get('controller.sortedPosts');
+        let currentPost = this.get('controller.selectedPost');
+        let posts = this.get('controller.model');
         let length = posts.get('length');
-        let newPosition = posts.indexOf(currentPost) + step;
+        let newPosition;
+
+        // when the currentPost is deleted we won't be able to use indexOf.
+        // we keep track of the index locally so we can select next after deletion
+        if (this._selectedPostIndex !== null && length) {
+            newPosition = this._selectedPostIndex + step;
+        } else {
+            newPosition = posts.indexOf(currentPost) + step;
+        }
 
         // if we are on the first or last item
         // just do nothing (desired behavior is to not
@@ -74,20 +83,40 @@ export default AuthenticatedRoute.extend(InfinityRoute, ShortcutsRoute, {
             return;
         }
 
-        // TODO: highlight post
-        // this.transitionTo('posts.post', posts.objectAt(newPosition));
+        this._selectedPostIndex = newPosition;
+        this.set('controller.selectedPost', posts.objectAt(newPosition));
     },
 
     shortcuts: {
         'up, k': 'moveUp',
         'down, j': 'moveDown',
-        c: 'newPost'
+        'enter': 'editPost',
+        'c': 'newPost',
+        'command+backspace, ctrl+backspace': 'deletePost'
+    },
+
+    resetController() {
+        this.set('controller.selectedPost', null);
+        this.set('controller.showDeletePostModal', false);
     },
 
     actions: {
+        willTransition() {
+            this._selectedPostIndex = null;
+
+            if (this.get('controller')) {
+                this.resetController();
+            }
+        },
+
         queryParamsDidChange() {
-            this.refresh();
-            // reset the scroll position
+            // on direct page load controller won't exist so we want to
+            // avoid a double transition
+            if (this.get('controller')) {
+                this.refresh();
+            }
+
+            // scroll back to the top
             $('.content-list').scrollTop(0);
         },
 
@@ -101,6 +130,23 @@ export default AuthenticatedRoute.extend(InfinityRoute, ShortcutsRoute, {
 
         moveDown() {
             this.stepThroughPosts(1);
+        },
+
+        editPost() {
+            let selectedPost = this.get('controller.selectedPost');
+
+            if (selectedPost) {
+                this.transitionTo('editor.edit', selectedPost.get('id'));
+            }
+        },
+
+        deletePost() {
+            this.get('controller').send('toggleDeletePostModal');
+        },
+
+        onPostDeletion() {
+            // select next post (re-select the current index)
+            this.stepThroughPosts(0);
         }
     }
 });
