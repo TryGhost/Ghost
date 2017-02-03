@@ -1,17 +1,15 @@
 {{#link-to "editor.edit" post.id class="permalink" title="Edit this post"}}
     <h3 class="entry-title">{{post.title}}</h3>
+    <p>{{subText}}</p>
+
     <section class="entry-meta">
-        <span class="avatar" style={{authorAvatarBackground}}>
-            <img src="{{authorAvatar}}" title="{{authorName}}">
-        </span>
-        <span class="author">{{authorName}}</span>
         <span class="status">
             {{#if isPublished}}
                 {{#if post.page}}
                     <span class="page">Page</span>
                 {{else}}
                     <time datetime="{{post.publishedAtUTC}}" class="date published">
-                        Published {{gh-format-timeago post.publishedAtUTC}}
+                        Published {{gh-format-timeago post.publishedAtUTC}}.
                     </time>
                 {{/if}}
             {{else}}
@@ -26,6 +24,9 @@
                     <span class="draft">Draft</span>
                 {{/if}}
             {{/if}}
+
+            Last edited {{gh-format-timeago post.updatedAtUTC}}
+            &ndash; by {{authorName}}
         </span>
     </section>
 {{/link-to}}

@@ -1,30 +1,5 @@
 <section class="gh-view gh-content-view-container">
-    <header class="view-header">
-        {{#gh-view-title openMobileMenu="openMobileMenu"}}<span>Content</span>{{/gh-view-title}}
-        <section class="view-actions">
-            {{link-to "New Post" "editor.new" class="btn btn-green" title="New Post"}}
-        </section>
-    </header>
-
-    <section class="basic-filter">
-        <ul>
-            <li>
-                {{link-to "All" "posts.index" (query-params type=null) data-test-all-filter-link=true}}
-            </li>
-            <li>
-                {{link-to "Drafts" "posts.index" (query-params type="draft") data-test-drafts-filter-link=true}}
-            </li>
-            <li>
-                {{link-to "Published" "posts.index" (query-params type="published") data-test-published-filter-link=true}}
-            </li>
-            <li>
-                {{link-to "Scheduled" "posts.index" (query-params type="scheduled") data-test-scheduled-filter-link=true}}
-            </li>
-            <li>
-                {{link-to "Pages" "posts.index" (query-params type="page") data-test-pages-filter-link=true}}
-            </li>
-        </ul>
-    </section>
+    {{partial "posts-header"}}
 
     <div class="view-container">
         {{gh-loading-spinner}}

@@ -7,6 +7,7 @@ import $ from 'jquery';
 
 export default AuthenticatedRoute.extend(InfinityRoute, ShortcutsRoute, {
 
+    perPage: 30,
     perPageParam: 'limit',
     totalPagesParam: 'meta.pagination.pages',
 
@@ -22,7 +23,8 @@ export default AuthenticatedRoute.extend(InfinityRoute, ShortcutsRoute, {
                     ? `${filterSettings.filter}+author:${user.get('slug')}` : `author:${user.get('slug')}`;
             }
 
-            let paginationSettings = assign({perPage: 15, startingPage: 1}, filterSettings);
+            let perPage = this.get('perPage');
+            let paginationSettings = assign({perPage, startingPage: 1}, filterSettings);
 
             return this.infinityModel('post', paginationSettings);
         });
@@ -86,7 +88,7 @@ export default AuthenticatedRoute.extend(InfinityRoute, ShortcutsRoute, {
         queryParamsDidChange() {
             this.refresh();
             // reset the scroll position
-            $('.content-list-content').scrollTop(0);
+            $('.content-list').scrollTop(0);
         },
 
         newPost() {
