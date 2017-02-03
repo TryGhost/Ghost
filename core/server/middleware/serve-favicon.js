@@ -35,7 +35,7 @@ function serveFavicon() {
             // we are using an express route to skip /content/images and the result is a image path
             // based on config.getContentPath('images') + req.path
             // in this case we don't use path rewrite, that's why we have to make it manually
-            filePath = settingsCache.get('icon').replace(/\/content\/images\//, '');
+            filePath = settingsCache.get('icon').replace(new RegExp(utils.url.STATIC_IMAGE_URL_PREFIX), '');
 
             var originalExtension = path.extname(filePath).toLowerCase(),
                 requestedExtension = path.extname(req.path).toLowerCase();
