@@ -7,7 +7,8 @@ var moment            = require('moment-timezone'),
     config            = require('./../config'),
     settingsCache     = require('./../api/settings').cache,
     // @TODO: unify this with routes.apiBaseUrl
-    apiPath = '/ghost/api/v0.1';
+    apiPath = '/ghost/api/v0.1',
+    STATIC_IMAGE_URL_PREFIX = 'content/images';
 
 /** getBaseUrl
  * Returns the base URL of the blog as set in the config. If called with secure options, returns the ssl URL.
@@ -231,7 +232,7 @@ function urlFor(context, data, absolute) {
             secure = data.author.secure;
         } else if (context === 'image' && data.image) {
             urlPath = data.image;
-            imagePathRe = new RegExp('^' + getSubdir() + '/' + config.get('paths').imagesRelPath);
+            imagePathRe = new RegExp('^' + getSubdir() + '/' + STATIC_IMAGE_URL_PREFIX);
             absolute = imagePathRe.test(data.image) ? absolute : false;
             secure = data.image.secure;
 
@@ -328,3 +329,14 @@ module.exports.urlJoin = urlJoin;
 module.exports.urlFor = urlFor;
 module.exports.urlPathForPost = urlPathForPost;
 module.exports.apiUrl = apiUrl;
+
+/**
+ * If you request **any** image in Ghost, it get's served via
+ * http://your-blog.com/content/images/2017/01/02/author.png
+ *
+ * /content/images/ is a static prefix for serving images!
+ *
+ * But internally the image is located for example in your custom content path:
+ * my-content/another-dir/images/2017/01/02/author.png
+ */
+module.exports.STATIC_IMAGE_URL_PREFIX = STATIC_IMAGE_URL_PREFIX;
