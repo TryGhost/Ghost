@@ -19,7 +19,7 @@ themeHandler = {
         var themeData = {
                 title: settingsCache.get('title'),
                 description: settingsCache.get('description'),
-                url: utils.url.urlFor('home', true),
+                url: utils.url.urlFor('home', {secure: req.secure}, true),
                 facebook: settingsCache.get('facebook'),
                 twitter: settingsCache.get('twitter'),
                 timezone: settingsCache.get('activeTimezone'),
@@ -32,10 +32,6 @@ themeHandler = {
             },
             labsData = _.cloneDeep(settingsCache.get('labs')),
             blogApp = req.app;
-
-        // @TODO: MERGE WITH OPEN PR
-        // https://github.com/TryGhost/Ghost/pull/7924
-        themeData.url = utils.url.urlFor('home', {secure: req.secure}, true);
 
         hbs.updateTemplateOptions({
             data: {
