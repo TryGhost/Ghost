@@ -369,7 +369,7 @@ describe('Server Utilities', function () {
 
     describe('gravatar-lookup', function () {
         beforeEach(function () {
-            configUtils.set('env', 'production');
+            configUtils.set('privacy:useGravatar', true);
         });
 
         afterEach(function () {

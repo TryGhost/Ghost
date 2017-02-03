@@ -2,7 +2,6 @@
 // API for sending Mail
 
 var Promise       = require('bluebird'),
-    config        = require('../config'),
     pipeline      = require('../utils/pipeline'),
     errors        = require('../errors'),
     mail          = require('../mail'),
@@ -11,8 +10,6 @@ var Promise       = require('bluebird'),
     notifications = require('./notifications'),
     i18n          = require('../i18n'),
     docName       = 'mail',
-    mode          = config.get('env'),
-    testing       = mode !== 'production' && mode !== 'development',
     mailer,
     apiMail;
 
@@ -20,7 +17,7 @@ var Promise       = require('bluebird'),
  * Send mail helper
  */
 function sendMail(object) {
-    if (!(mailer instanceof mail.GhostMailer) || testing) {
+    if (!(mailer instanceof mail.GhostMailer)) {
         mailer = new mail.GhostMailer();
     }
 
