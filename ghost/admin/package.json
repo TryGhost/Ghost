@@ -83,7 +83,7 @@
     "emberx-file-input": "1.1.1",
     "eslint-plugin-ember-suave": "1.0.0",
     "fs-extra": "2.0.0",
-    "ghost-editor": "0.1.5",
+    "ghost-editor": "https://github.com/TryGhost/Ghost-Editor/tarball/dev-deps-test",
     "glob": "7.1.1",
     "grunt": "1.0.1",
     "grunt-bg-shell": "2.3.3",

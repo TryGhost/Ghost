@@ -180,9 +180,11 @@
     overflow-y: auto;
     padding: 10vw 4vw;
     width: 100%;
+    height: 100%;
 }
 
 .gh-editor-inner {
     margin: 0 auto;
     max-width: 700px;
+    height: 100%;
 }

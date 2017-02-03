@@ -3327,15 +3327,15 @@ getpass@^0.1.1:
   dependencies:
     assert-plus "^1.0.0"
 
-ghost-editor@0.1.5:
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/ghost-editor/-/ghost-editor-0.1.5.tgz#51bafd71c94bee3b6f15c9baa69b54115435092a"
+"ghost-editor@https://github.com/TryGhost/Ghost-Editor/tarball/dev-deps-test":
+  version "0.1.6"
+  resolved "https://github.com/TryGhost/Ghost-Editor/tarball/dev-deps-test#75a3cf508276bb560b1419a45d76b62ec4d8adad"
   dependencies:
     broccoli-funnel "^1.0.7"
     broccoli-merge-trees "^1.1.4"
     ember-cli-babel "^5.1.6"
     ember-cli-htmlbars "^1.1.0"
-    mobiledoc-kit "^0.10.11"
+    mobiledoc-kit "^0.10.13"
     showdown-ghost "^0.4.0"
 
 git-repo-info@^1.0.4, git-repo-info@^1.1.2:
@@ -4757,7 +4757,7 @@ mobiledoc-html-renderer@^0.3.0:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/mobiledoc-html-renderer/-/mobiledoc-html-renderer-0.3.1.tgz#a411181015c40be26d716d82824691a63fa8ba88"
 
-mobiledoc-kit@^0.10.11:
+mobiledoc-kit@^0.10.13:
   version "0.10.13"
   resolved "https://registry.yarnpkg.com/mobiledoc-kit/-/mobiledoc-kit-0.10.13.tgz#53877edc83f84b2df0bf048f6432ee59a0216b6a"
   dependencies:
