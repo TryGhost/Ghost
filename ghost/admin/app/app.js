@@ -12,7 +12,14 @@ Ember.MODEL_FACTORY_INJECTIONS = true;
 let App = Application.extend({
     Resolver,
     modulePrefix: config.modulePrefix,
-    podModulePrefix: config.podModulePrefix
+    podModulePrefix: config.podModulePrefix,
+
+    customEvents: {
+        touchstart: null,
+        touchmove: null,
+        touchend: null,
+        touchcancel: null
+    }
 });
 
 loadInitializers(App, config.modulePrefix);
