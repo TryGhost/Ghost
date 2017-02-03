@@ -1,7 +1,7 @@
 var url = require('url'),
     debug = require('debug')('ghost:redirects'),
     utils = require('../utils'),
-    checkSSLAndRedirects;
+    urlRedirects;
 
 function redirectUrl(options) {
     var redirectTo = options.redirectTo,
@@ -20,9 +20,8 @@ function redirectUrl(options) {
 
 /**
  * SSL AND REDIRECTS
- * @TODO: rename file
  */
-checkSSLAndRedirects = function checkSSLAndRedirects(req, res, next) {
+urlRedirects = function urlRedirects(req, res, next) {
     var requestedUrl = req.originalUrl || req.url,
         requestedHost = req.get('host'),
         targetHostWithProtocol,
@@ -66,4 +65,4 @@ checkSSLAndRedirects = function checkSSLAndRedirects(req, res, next) {
     next();
 };
 
-module.exports = checkSSLAndRedirects;
+module.exports = urlRedirects;

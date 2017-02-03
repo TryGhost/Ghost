@@ -1,7 +1,7 @@
 var sinon = require('sinon'),
     should = require('should'),
     configUtils = require('../../utils/configUtils'),
-    checkSSL = require('../../../server/middleware/check-ssl'),
+    urlRedirects = require('../../../server/middleware/url-redirects'),
     sandbox = sinon.sandbox.create();
 
 should.equal(true, true);
@@ -36,7 +36,7 @@ describe('checkSSL', function () {
         host = 'default.com:2368';
 
         req.originalUrl = '/';
-        checkSSL(req, res, next);
+        urlRedirects(req, res, next);
         next.called.should.be.true();
         res.redirect.called.should.be.false();
         next.calledWith().should.be.true();
@@ -52,7 +52,7 @@ describe('checkSSL', function () {
 
         req.originalUrl = '/';
         req.secure = true;
-        checkSSL(req, res, next);
+        urlRedirects(req, res, next);
         next.called.should.be.true();
         res.redirect.called.should.be.false();
         next.calledWith().should.be.true();
@@ -67,7 +67,7 @@ describe('checkSSL', function () {
         host = 'default.com:2368';
 
         req.originalUrl = '/';
-        checkSSL(req, res, next);
+        urlRedirects(req, res, next);
         next.called.should.be.false();
         res.redirect.called.should.be.true();
         done();
@@ -82,7 +82,7 @@ describe('checkSSL', function () {
 
         req.originalUrl = '/';
         req.secure = true;
-        checkSSL(req, res, next);
+        urlRedirects(req, res, next);
         next.called.should.be.true();
         res.redirect.called.should.be.false();
         done();
@@ -97,7 +97,7 @@ describe('checkSSL', function () {
 
         req.originalUrl = '/';
         req.secure = true;
-        checkSSL(req, res, next);
+        urlRedirects(req, res, next);
         next.called.should.be.true();
         res.redirect.called.should.be.false();
         done();
@@ -112,7 +112,7 @@ describe('checkSSL', function () {
         res.isAdmin = true;
 
         req.originalUrl = '/ghost';
-        checkSSL(req, res, next);
+        urlRedirects(req, res, next);
         next.called.should.be.true();
         res.redirect.called.should.be.false();
         done();
@@ -130,7 +130,7 @@ describe('checkSSL', function () {
         res.isAdmin = true;
 
         req.originalUrl = '/ghost';
-        checkSSL(req, res, next);
+        urlRedirects(req, res, next);
         next.called.should.be.false();
         res.redirect.calledWith(301, 'https://default.com:2368/ghost').should.be.true();
         done();
@@ -148,7 +148,7 @@ describe('checkSSL', function () {
         res.isAdmin = true;
 
         req.originalUrl = '/ghost';
-        checkSSL(req, res, next);
+        urlRedirects(req, res, next);
         next.called.should.be.false();
         res.redirect.calledWith(301, 'https://admin.default.com:2368/ghost').should.be.true();
         done();
@@ -166,7 +166,7 @@ describe('checkSSL', function () {
         res.isAdmin = true;
 
         req.originalUrl = '/blog/ghost';
-        checkSSL(req, res, next);
+        urlRedirects(req, res, next);
         next.called.should.be.false();
         res.redirect.calledWith(301, 'https://admin.default.com:2368/blog/ghost').should.be.true();
         done();
@@ -188,7 +188,7 @@ describe('checkSSL', function () {
             test: true
         };
 
-        checkSSL(req, res, next);
+        urlRedirects(req, res, next);
         next.called.should.be.false();
         res.redirect.calledWith(301, 'https://admin.default.com:2368/ghost?test=true').should.be.true();
         done();
