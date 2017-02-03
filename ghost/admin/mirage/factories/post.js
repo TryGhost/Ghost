@@ -6,7 +6,7 @@ export default Factory.extend({
     description(i) { return  `Title for post ${i}.`; },
     slug(i) { return  `post-${i}`; },
     markdown(i) { return  `Markdown for post ${i}.`; },
-    html(i) { return  `HTML for post ${i}.`; },
+    html(i) { return  `<p>HTML for post ${i}.</p>`; },
     image(i) { return  `/content/images/2015/10/post-${i}.jpg`; },
     featured: false,
     page: false,

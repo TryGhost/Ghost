@@ -1,0 +1,26 @@
+<header class="view-header">
+    {{#gh-view-title openMobileMenu="openMobileMenu"}}<span>Your stories</span>{{/gh-view-title}}
+    <section class="view-actions">
+        {{link-to "New Story" "editor.new" class="btn btn-green" title="New Story" data-test-new-post-button=true}}
+    </section>
+</header>
+
+<section class="basic-filter">
+    <ul>
+        {{#active-link}}
+            {{link-to "All" "posts.index" (query-params type=null) data-test-all-filter-link=true}}
+        {{/active-link}}
+        {{#active-link}}
+            {{link-to "Drafts" "posts.index" (query-params type="draft") data-test-drafts-filter-link=true}}
+        {{/active-link}}
+        {{#active-link}}
+            {{link-to "Published" "posts.index" (query-params type="published") data-test-published-filter-link=true}}
+        {{/active-link}}
+        {{#active-link}}
+            {{link-to "Scheduled" "posts.index" (query-params type="scheduled") data-test-scheduled-filter-link=true}}
+        {{/active-link}}
+        {{#active-link}}
+            {{link-to "Pages" "posts.index" (query-params type="page") data-test-pages-filter-link=true}}
+        {{/active-link}}
+    </ul>
+</section>
