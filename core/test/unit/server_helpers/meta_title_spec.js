@@ -1,24 +1,27 @@
 var should         = require('should'),
+    sinon          = require('sinon'),
     hbs            = require('express-hbs'),
     utils          = require('./utils'),
     configUtils    = require('../../utils/configUtils'),
-
-// Stuff we are testing
     handlebars     = hbs.handlebars,
-    helpers        = require('../../../server/helpers');
+    sandbox        = sinon.sandbox.create(),
+    helpers        = require('../../../server/helpers'),
+    settingsCache  = require('../../../server/api/settings').cache;
 
 describe('{{meta_title}} helper', function () {
     before(function () {
         utils.loadHelpers();
-        configUtils.set({
-            theme: {
+
+        sandbox.stub(settingsCache, 'get', function (key) {
+            return {
                 title: 'Ghost'
-            }
+            }[key];
         });
     });
 
     after(function () {
         configUtils.restore();
+        sandbox.restore();
     });
 
     it('has loaded meta_title helper', function () {

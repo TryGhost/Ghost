@@ -6,10 +6,12 @@
 var request = require('supertest'),
     should = require('should'),
     moment = require('moment'),
+    sinon = require('sinon'),
     cheerio = require('cheerio'),
     testUtils = require('../../utils'),
-    configUtils = require('../../utils/configUtils'),
-    ghost     = testUtils.startGhost;
+    settingsCache = require('../../../server/api/settings').cache,
+    sandbox = sinon.sandbox.create(),
+    ghost   = testUtils.startGhost;
 
 describe('Frontend Routing', function () {
     function doEnd(done) {
@@ -46,6 +48,10 @@ describe('Frontend Routing', function () {
             console.log(e.stack);
             done(e);
         });
+    });
+
+    afterEach(function () {
+        sandbox.restore();
     });
 
     describe('Date permalinks', function () {
@@ -312,16 +318,20 @@ describe('Frontend Routing', function () {
             });
 
             it('should not render AMP, when AMP is disabled', function (done) {
-                after(function () {
-                    configUtils.restore();
+                var originalFn = settingsCache.get;
+
+                sandbox.stub(settingsCache, 'get', function (key) {
+                    if (key !== 'amp') {
+                        return originalFn(key);
+                    }
+
+                    return false;
                 });
 
-                configUtils.set('theme:amp', false);
-
                 request.get('/welcome-to-ghost/amp/')
-                .expect(404)
-                .expect(/Page not found/)
-                .end(doEnd(done));
+                    .expect(404)
+                    .expect(/Page not found/)
+                    .end(doEnd(done));
             });
         });
 
@@ -550,11 +560,16 @@ describe('Frontend Routing', function () {
         });
 
         it('/blog/welcome-to-ghost/amp/ should 200', function (done) {
-            after(function () {
-                configUtils.restore();
+            var originalFn = settingsCache.get;
+
+            sandbox.stub(settingsCache, 'get', function (key) {
+                if (key !== 'amp') {
+                    return originalFn(key);
+                }
+
+                return true;
             });
 
-            configUtils.set('theme:amp', true);
             request.get('/blog/welcome-to-ghost/amp/')
                 .expect(200)
                 .end(doEnd(done));
@@ -637,11 +652,16 @@ describe('Frontend Routing', function () {
         });
 
         it('/blog/welcome-to-ghost/amp/ should 200', function (done) {
-            after(function () {
-                configUtils.restore();
+            var originalFn = settingsCache.get;
+
+            sandbox.stub(settingsCache, 'get', function (key) {
+                if (key !== 'amp') {
+                    return originalFn(key);
+                }
+
+                return true;
             });
 
-            configUtils.set('theme:amp', true);
             request.get('/blog/welcome-to-ghost/amp/')
                 .expect(200)
                 .end(doEnd(done));

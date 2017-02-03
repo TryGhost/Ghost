@@ -1,9 +1,24 @@
-var getTitle = require('../../../server/data/meta/title'),
-    configUtils = require('../../utils/configUtils');
+
+var sinon = require('sinon'),
+    should = require('should'),
+    getTitle = require('../../../server/data/meta/title'),
+    settingsCache = require('../../../server/api/settings').cache,
+    sandbox = sinon.sandbox.create();
+
+should.equal(true, true);
 
 describe('getTitle', function () {
+    var localSettingsCache = {};
+
+    beforeEach(function () {
+        sandbox.stub(settingsCache, 'get', function (key) {
+            return localSettingsCache[key];
+        });
+    });
+
     afterEach(function () {
-        configUtils.restore();
+        sandbox.restore();
+        localSettingsCache = {};
     });
 
     it('should return meta_title if on data root', function () {
@@ -15,36 +30,26 @@ describe('getTitle', function () {
     });
 
     it('should return blog title if on home', function () {
-        configUtils.set({
-            theme: {
-                title: 'My blog title'
-            }
-        });
+        localSettingsCache.title = 'My blog title';
 
         var title = getTitle({}, {context: 'home'});
         title.should.equal('My blog title');
     });
 
     it('should return author name - blog title if on data author page', function () {
-        configUtils.set({
-            theme: {
-                title: 'My blog title 2'
-            }
-        });
+        localSettingsCache.title = 'My blog title 2';
+
         var title = getTitle({
             author: {
                 name: 'Author Name'
             }
         }, {context: ['author']});
+
         title.should.equal('Author Name - My blog title 2');
     });
 
     it('should return author page title if on data author page with more then one page', function () {
-        configUtils.set({
-            theme: {
-                title: 'My blog title 2'
-            }
-        });
+        localSettingsCache.title = 'My blog title 2';
 
         var title = getTitle({
             author: {
@@ -62,11 +67,7 @@ describe('getTitle', function () {
     });
 
     it('should return tag name - blog title if on data tag page no meta_title', function () {
-        configUtils.set({
-            theme: {
-                title: 'My blog title 3'
-            }
-        });
+        localSettingsCache.title = 'My blog title 3';
 
         var title = getTitle({
             tag: {
@@ -78,11 +79,7 @@ describe('getTitle', function () {
     });
 
     it('should return tag name - page - blog title if on data tag page no meta_title', function () {
-        configUtils.set({
-            theme: {
-                title: 'My blog title 3'
-            }
-        });
+        localSettingsCache.title = 'My blog title 3';
 
         var title = getTitle({
             tag: {
@@ -126,6 +123,7 @@ describe('getTitle', function () {
                 title: 'My awesome post!'
             }
         }, {context: ['amp', 'post']});
+
         title.should.equal('My awesome post!');
     });
 
@@ -135,6 +133,7 @@ describe('getTitle', function () {
                 title: 'My awesome page!'
             }
         }, {context: ['page']});
+
         title.should.equal('My awesome page!');
     });
 
@@ -144,6 +143,7 @@ describe('getTitle', function () {
                 title: 'My awesome page!'
             }
         }, {context: ['amp', 'page']});
+
         title.should.equal('My awesome page!');
     });
 
@@ -154,6 +154,7 @@ describe('getTitle', function () {
                 meta_title: 'My Tag Meta Title Post!  '
             }
         }, {context: ['post']});
+
         title.should.equal('My Tag Meta Title Post!');
     });
 
@@ -164,15 +165,12 @@ describe('getTitle', function () {
                 meta_title: 'My Tag Meta Title Post!  '
             }
         }, {context: ['amp', 'post']});
+
         title.should.equal('My Tag Meta Title Post!');
     });
 
     it('should return blog title with page if unknown type', function () {
-        configUtils.set({
-            theme: {
-                title: 'My blog title 4'
-            }
-        });
+        localSettingsCache.title = 'My blog title 4';
 
         var title = getTitle({}, {
             context: ['paged'],

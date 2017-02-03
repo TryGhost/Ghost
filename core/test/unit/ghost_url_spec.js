@@ -1,4 +1,3 @@
-/* globals describe, beforeEach, afterEach, it */
 var should = require('should'),
     ghostUrl = require('../../shared/ghost-url'),
     configUtils = require('../utils/configUtils'),

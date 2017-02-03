@@ -1,24 +1,23 @@
 var should         = require('should'),
+    sinon          = require('sinon'),
     hbs            = require('express-hbs'),
     utils          = require('./utils'),
     configUtils    = require('../../utils/configUtils'),
-
-// Stuff we are testing
     handlebars     = hbs.handlebars,
-    helpers        = require('../../../server/helpers');
+    sandbox        = sinon.sandbox.create(),
+    helpers        = require('../../../server/helpers'),
+    settingsCache  = require('../../../server/api/settings').cache;
 
 describe('{{meta_description}} helper', function () {
     before(function () {
         utils.loadHelpers();
-        configUtils.set({
-            theme: {
-                description: 'Just a blogging platform.'
-            }
-        });
+
+        sandbox.stub(settingsCache, 'get').returns('Just a blogging platform.');
     });
 
     after(function () {
         configUtils.restore();
+        sandbox.restore();
     });
 
     it('has loaded meta_description helper', function () {
