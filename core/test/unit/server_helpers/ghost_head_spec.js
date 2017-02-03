@@ -3,18 +3,15 @@ var should         = require('should'),
     _              = require('lodash'),
     Promise        = require('bluebird'),
     hbs            = require('express-hbs'),
+    moment         = require('moment'),
     utils          = require('./utils'),
     configUtils    = require('../../utils/configUtils'),
-    moment         = require('moment'),
-
-// Stuff we are testing
-    handlebars     = hbs.handlebars,
     helpers        = require('../../../server/helpers'),
     api            = require('../../../server/api'),
-
     labs           = require('../../../server/utils/labs'),
-
-    sandbox = sinon.sandbox.create();
+    settingsCache  = api.settings.cache,
+    handlebars     = hbs.handlebars,
+    sandbox        = sinon.sandbox.create();
 
 describe('{{ghost_head}} helper', function () {
     var settingsReadStub;
@@ -46,16 +43,19 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('without Code Injection', function () {
+        var localSettingsCache = {
+            title: 'Ghost',
+            description: 'blog description',
+            cover: '/content/images/blog-cover.png',
+            amp: true
+        };
+
         beforeEach(function () {
-            configUtils.set({
-                url: 'http://testurl.com/',
-                theme: {
-                    title: 'Ghost',
-                    description: 'blog description',
-                    cover: '/content/images/blog-cover.png',
-                    amp: true
-                }
+            sandbox.stub(settingsCache, 'get', function (key) {
+                return localSettingsCache[key];
             });
+
+            configUtils.set('url', 'http://testurl.com/');
         });
 
         it('has loaded ghost_head helper', function () {
@@ -882,15 +882,10 @@ describe('{{ghost_head}} helper', function () {
 
         describe('with /blog subdirectory', function () {
             beforeEach(function () {
+                localSettingsCache.icon = '/content/images/favicon.png';
+
                 configUtils.set({
-                    url: 'http://testurl.com/blog/',
-                    theme: {
-                        title: 'Ghost',
-                        description: 'blog description',
-                        cover: '/content/images/blog-cover.png',
-                        amp: true,
-                        icon: '/content/images/favicon.png'
-                    }
+                    url: 'http://testurl.com/blog/'
                 });
             });
 
@@ -912,16 +907,21 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('with changed origin in config file', function () {
+        var localSettingsCache = {
+            title: 'Ghost',
+            description: 'blog description',
+            cover: '/content/images/blog-cover.png',
+            amp: true,
+            icon: '/content/images/favicon.png'
+        };
+
         beforeEach(function () {
+            sandbox.stub(settingsCache, 'get', function (key) {
+                return localSettingsCache[key];
+            });
+
             configUtils.set({
                 url: 'http://testurl.com/blog/',
-                theme: {
-                    title: 'Ghost',
-                    description: 'blog description',
-                    cover: '/content/images/blog-cover.png',
-                    amp: true,
-                    icon: '/content/images/favicon.png'
-                },
                 referrerPolicy: 'origin'
             });
         });
@@ -941,16 +941,21 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('with useStructuredData is set to false in config file', function () {
+        var localSettingsCache = {
+            title: 'Ghost',
+            description: 'blog description',
+            cover: '/content/images/blog-cover.png',
+            amp: true,
+            icon: '/content/images/favicon.png'
+        };
+
         beforeEach(function () {
+            sandbox.stub(settingsCache, 'get', function (key) {
+                return localSettingsCache[key];
+            });
+
             configUtils.set({
                 url: 'http://testurl.com/',
-                theme: {
-                    title: 'Ghost',
-                    description: 'blog description',
-                    cover: '/content/images/blog-cover.png',
-                    amp: true,
-                    icon: '/content/images/favicon.png'
-                },
                 privacy: {
                     useStructuredData: false
                 }
@@ -995,19 +1000,24 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('with Code Injection', function () {
+        var localSettingsCache = {
+            title: 'Ghost',
+            description: 'blog description',
+            cover: '/content/images/blog-cover.png',
+            icon: '/content/images/favicon.png'
+        };
+
         beforeEach(function () {
             settingsReadStub.returns(new Promise.resolve({
                 settings: [{value: '<style>body {background: red;}</style>'}]
             }));
 
+            sandbox.stub(settingsCache, 'get', function (key) {
+                return localSettingsCache[key];
+            });
+
             configUtils.set({
-                url: 'http://testurl.com/',
-                theme: {
-                    title: 'Ghost',
-                    description: 'blog description',
-                    cover: '/content/images/blog-cover.png',
-                    icon: '/content/images/favicon.png'
-                }
+                url: 'http://testurl.com/'
             });
         });
 
@@ -1126,12 +1136,17 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('amp is disabled', function () {
+        var localSettingsCache = {
+            amp: false
+        };
+
         beforeEach(function () {
             configUtils.set({
-                url: 'http://testurl.com/',
-                theme: {
-                    amp: false
-                }
+                url: 'http://testurl.com/'
+            });
+
+            sandbox.stub(settingsCache, 'get', function (key) {
+                return localSettingsCache[key];
             });
         });
 

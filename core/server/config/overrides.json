@@ -62,9 +62,6 @@
         "cannotScheduleAPostBeforeInMinutes": 2,
         "publishAPostBySchedulerToleranceInMinutes": 2
     },
-    "theme": {
-        "timezone": "Etc/UTC"
-    },
     "maintenance": {
         "enabled": false
     }

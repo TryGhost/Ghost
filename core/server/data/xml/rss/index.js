@@ -7,6 +7,7 @@ var crypto      = require('crypto'),
     i18n        = require('../../../i18n'),
     filters     = require('../../../filters'),
     processUrls = require('../../../utils/make-absolute-urls'),
+    settingsCache = require('../../../api/settings').cache,
 
     // Really ugly temporary hack for location of things
     fetchData   = require('../../../controllers/frontend/fetch-data'),
@@ -41,8 +42,8 @@ function getData(channelOpts, slugParam) {
         if (result.data && result.data.tag) { titleStart = result.data.tag[0].name + ' - ' || ''; }
         if (result.data && result.data.author) { titleStart = result.data.author[0].name + ' - ' || ''; }
 
-        response.title = titleStart + config.get('theme').title;
-        response.description = config.get('theme').description;
+        response.title = titleStart + settingsCache.get('title');
+        response.description = settingsCache.get('description');
         response.results = {
             posts: result.posts,
             meta: result.meta

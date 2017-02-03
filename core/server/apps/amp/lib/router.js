@@ -5,8 +5,8 @@ var path                = require('path'),
     i18n                = require('../../../i18n'),
 
     // Dirty requires
-    config              = require('../../../config'),
     errors              = require('../../../errors'),
+    settingsCache       = require('../../../api/settings').cache,
     templates           = require('../../../controllers/frontend/templates'),
     postLookup          = require('../../../controllers/frontend/post-lookup'),
     setResponseContext  = require('../../../controllers/frontend/context');
@@ -36,6 +36,7 @@ function controller(req, res, next) {
 
 function getPostData(req, res, next) {
     req.body = req.body || {};
+
     postLookup(res.locals.relativeUrl)
         .then(function (result) {
             if (result && result.post) {
@@ -50,7 +51,7 @@ function getPostData(req, res, next) {
 }
 
 function checkIfAMPIsEnabled(req, res, next) {
-    var ampIsEnabled = config.get('theme:amp');
+    var ampIsEnabled = settingsCache.get('amp');
 
     if (ampIsEnabled) {
         return next();

@@ -151,8 +151,8 @@ function init(options) {
             ghostAuthUrl: config.get('auth:url'),
             redirectUri: utils.url.urlFor('admin', true),
             clientUri: utils.url.urlFor('home', true),
-            clientName: api.settings.getSettingSync('title'),
-            clientDescription: api.settings.getSettingSync('description')
+            clientName: api.settings.cache.get('title'),
+            clientDescription: api.settings.cache.get('description')
         }).then(function (response) {
             parentApp.use(response.auth);
         }).catch(function onAuthError(err) {

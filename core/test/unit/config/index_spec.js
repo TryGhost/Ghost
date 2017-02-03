@@ -4,14 +4,12 @@ var should = require('should'),
     path = require('path'),
     rewire = require('rewire'),
     _ = require('lodash'),
-    i18n = require('../../../server/i18n'),
     configUtils = require('../../utils/configUtils');
 
 should.equal(true, true);
 
 describe('Config', function () {
     before(function () {
-        i18n.init();
         configUtils.restore();
     });
 
@@ -81,66 +79,6 @@ describe('Config', function () {
             customConfig.get('url').should.eql('http://localhost:2368');
             customConfig.get('logging:level').should.eql('error');
             customConfig.get('logging:transports').should.eql(['stdout']);
-        });
-    });
-
-    describe('Theme', function () {
-        beforeEach(function () {
-            configUtils.set({
-                url: 'http://my-ghost-blog.com',
-                theme: {
-                    title: 'casper',
-                    description: 'casper',
-                    logo: 'casper',
-                    cover: 'casper',
-                    timezone: 'Etc/UTC',
-                    icon: 'core/shared/favicon.ico'
-                }
-            });
-        });
-
-        it('should have exactly the right keys', function () {
-            var themeConfig = configUtils.config.get('theme');
-
-            // This will fail if there are any extra keys
-            themeConfig.should.have.keys('title', 'description', 'logo', 'cover', 'timezone', 'icon');
-        });
-
-        it('should have the correct values for each key', function () {
-            var themeConfig = configUtils.config.get('theme');
-
-            // Check values are as we expect
-            themeConfig.should.have.property('title', 'casper');
-            themeConfig.should.have.property('description', 'casper');
-            themeConfig.should.have.property('logo', 'casper');
-            themeConfig.should.have.property('cover', 'casper');
-            themeConfig.should.have.property('timezone', 'Etc/UTC');
-            themeConfig.should.have.property('icon', 'core/shared/favicon.ico');
-        });
-    });
-
-    describe('Timezone default', function () {
-        it('should use timezone from settings when set', function () {
-            var themeConfig = configUtils.config.get('theme');
-
-            // Check values are as we expect
-            themeConfig.should.have.property('timezone', 'Etc/UTC');
-
-            configUtils.set({
-                theme: {
-                    timezone: 'Africa/Cairo'
-                }
-            });
-
-            configUtils.config.get('theme').should.have.property('timezone', 'Africa/Cairo');
-        });
-
-        it('should set theme object with timezone by default', function () {
-            var themeConfig = configUtils.defaultConfig;
-
-            // Check values are as we expect
-            themeConfig.should.have.property('theme');
-            themeConfig.theme.should.have.property('timezone', 'Etc/UTC');
         });
     });
 

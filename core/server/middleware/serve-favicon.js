@@ -1,7 +1,7 @@
 var fs     = require('fs'),
     path = require('path'),
     storage = require('../storage'),
-    config = require('../config'),
+    settingsCache = require('../api/settings').cache,
     utils  = require('../utils'),
     crypto = require('crypto'),
     buildContentResponse,
@@ -35,13 +35,13 @@ function serveFavicon() {
             // we are using an express route to skip /content/images and the result is a image path
             // based on config.getContentPath('images') + req.path
             // in this case we don't use path rewrite, that's why we have to make it manually
-            filePath = config.get('theme:icon').replace(new RegExp(utils.url.STATIC_IMAGE_URL_PREFIX), '');
+            filePath = settingsCache.get('icon').replace(new RegExp(utils.url.STATIC_IMAGE_URL_PREFIX), '');
 
             var originalExtension = path.extname(filePath).toLowerCase(),
                 requestedExtension = path.extname(req.path).toLowerCase();
 
             // CASE: custom favicon exists, load it from local file storage
-            if (config.get('theme:icon')) {
+            if (settingsCache.get('icon')) {
                 // depends on the uploaded icon extension
                 if (originalExtension !== requestedExtension) {
                     return res.redirect(302, '/favicon' + originalExtension);
@@ -52,8 +52,7 @@ function serveFavicon() {
                         return next(err);
                     }
 
-                    iconType = config.get('theme:icon').match(/\/favicon\.ico$/i) ? 'x-icon' : 'png';
-
+                    iconType = settingsCache.get('icon').match(/\/favicon\.ico$/i) ? 'x-icon' : 'png';
                     content = buildContentResponse(iconType, buf);
 
                     res.writeHead(200, content.headers);

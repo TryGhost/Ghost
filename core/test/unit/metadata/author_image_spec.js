@@ -1,10 +1,11 @@
-var getAuthorImage = require('../../../server/data/meta/author_image'),
-    should = require('should'),
-    configUtils = require('../../utils/configUtils');
+var should = require('should'),
+    sinon = require('sinon'),
+    getAuthorImage = require('../../../server/data/meta/author_image'),
+    sandbox = sinon.sandbox.create();
 
 describe('getAuthorImage', function () {
     afterEach(function () {
-        configUtils.restore();
+        sandbox.restore();
     });
 
     it('should return author image url if post and has url', function () {
@@ -16,6 +17,7 @@ describe('getAuthorImage', function () {
                 }
             }
         }, false);
+
         imageUrl.should.equal('/content/images/2016/01/myimage.jpg');
     });
 
@@ -66,6 +68,7 @@ describe('getAuthorImage', function () {
                 }
             }
         });
+
         should(imageUrl).equal(null);
     });
 
@@ -74,6 +77,7 @@ describe('getAuthorImage', function () {
             context: ['post'],
             post: {}
         });
+
         should(imageUrl).equal(null);
     });
 
@@ -81,21 +85,7 @@ describe('getAuthorImage', function () {
         var imageUrl = getAuthorImage({
             context: ['tag']
         });
+
         should(imageUrl).equal(null);
     });
-
-    it('should return config theme author image if context is a post and no post',
-        function () {
-            configUtils.set({
-                theme: {
-                    author: {
-                        image: '/content/images/2016/01/myimage.jpg'
-                    }
-                }
-            });
-            var imageUrl = getAuthorImage({
-                context: ['post']
-            });
-            imageUrl.should.match(/\/content\/images\/2016\/01\/myimage\.jpg$/);
-        });
 });
