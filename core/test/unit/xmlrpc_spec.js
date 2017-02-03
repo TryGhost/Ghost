@@ -20,7 +20,7 @@ describe('XMLRPC', function () {
         sandbox = sinon.sandbox.create();
         eventStub = sandbox.stub(events, 'on');
 
-        configUtils.set('env', 'production');
+        configUtils.set('privacy:useRpcPing', true);
     });
 
     afterEach(function () {

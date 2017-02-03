@@ -20,9 +20,8 @@ function forwardToExpressStatic(req, res, next) {
     if (!req.app.get('activeTheme')) {
         next();
     } else {
-        express.static(
-            path.join(config.getContentPath('themes'), req.app.get('activeTheme')),
-            {maxAge: config.get('env') === 'development' ? 0 : utils.ONE_YEAR_MS}
+        express.static(path.join(config.getContentPath('themes'), req.app.get('activeTheme')),
+            {maxAge: config.get('caching:theme:maxAge') || utils.ONE_YEAR_MS}
         )(req, res, next);
     }
 }

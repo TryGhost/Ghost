@@ -9,12 +9,7 @@ module.exports.lookup = function lookup(userData, timeout) {
         '?s=250', image;
 
     return new Promise(function gravatarRequest(resolve) {
-        /**
-         * @TODO:
-         *  - mock gravatar in test env globally, do not check for test env!
-         *  - in test/utils/index.js -> mocks.gravatar.enable();
-         */
-        if (config.isPrivacyDisabled('useGravatar') || config.get('env').indexOf('testing') > -1) {
+        if (config.isPrivacyDisabled('useGravatar')) {
             return resolve();
         }
 

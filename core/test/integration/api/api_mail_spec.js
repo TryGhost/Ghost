@@ -1,9 +1,8 @@
-var testUtils       = require('../../utils'),
-    configUtils     = require('../../utils/configUtils'),
-    should          = require('should'),
-    i18n            = require('../../../../core/server/i18n'),
-
-    // test data
+var should = require('should'),
+    _ = require('lodash'),
+    testUtils = require('../../utils'),
+    configUtils = require('../../utils/configUtils'),
+    i18n = require('../../../../core/server/i18n'),
     mailData = {
         mail: [{
             message: {
@@ -21,6 +20,16 @@ describe('Mail API', function () {
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
     beforeEach(testUtils.setup('perms:mail', 'perms:init'));
+
+    beforeEach(function () {
+        _.each(require.cache, function (value, key) {
+            if (key.match(/server\/api\/mail/)) {
+                delete require.cache[key];
+            }
+        });
+
+        require('../../../server/api/mail');
+    });
 
     afterEach(function () {
         configUtils.restore();

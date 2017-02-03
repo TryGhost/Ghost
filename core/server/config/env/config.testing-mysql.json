@@ -48,5 +48,10 @@
             "lifetime": 3600,
             "freeRetries":99
         }
-    }
+    },
+    "privacy": {
+        "useTinfoil": true,
+        "useStructuredData": true
+    },
+    "minifyAssets": false
 }

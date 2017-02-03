@@ -15,9 +15,11 @@ function asset(path, options) {
         isAdmin = options.hash.ghost;
         minify = options.hash.minifyInProduction;
     }
-    if (config.get('env') !== 'production') {
+
+    if (config.get('minifyAssets') === false) {
         minify = false;
     }
+
     return new hbs.handlebars.SafeString(
         getAssetUrl(path, isAdmin, minify)
     );

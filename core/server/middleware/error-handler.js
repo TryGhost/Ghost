@@ -109,8 +109,7 @@ _private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, /*jshint un
             code: err.statusCode
         };
 
-    // @TODO revisit use of config.get('env') as part of #7488
-    if (err.statusCode === 500 && config.get('env') !== 'production') {
+    if (err.statusCode === 500 && config.get('printErrorStack')) {
         templateData.stack = err.stack;
     }
 

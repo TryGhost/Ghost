@@ -36,7 +36,6 @@ var crypto   = require('crypto'),
     i18n     = require('./i18n'),
     currentVersion = require('./utils/ghost-version').full,
     internal = {context: {internal: true}},
-    allowedCheckEnvironments = ['development', 'production'],
     checkEndpoint = 'updates.ghost.org';
 
 function updateCheckError(err) {
@@ -89,7 +88,7 @@ function updateCheckData() {
 
     data.ghost_version   = currentVersion;
     data.node_version    = process.versions.node;
-    data.env             = process.env.NODE_ENV;
+    data.env             = config.get('env');
     data.database_type   = config.get('database').client;
     data.email_transport = mailConfig &&
     (mailConfig.options && mailConfig.options.service ?
@@ -208,13 +207,7 @@ function updateCheckResponse(response) {
 }
 
 function updateCheck() {
-    // The check will not happen if:
-    // 1. updateCheck is defined as false in config.js
-    // 2. we've already done a check this session
-    // 3. we're not in production or development mode
-    // TODO: need to remove config.updateCheck in favor of config.privacy.updateCheck in future version (it is now deprecated)
-    if (config.get('updateCheck') === false || config.isPrivacyDisabled('useUpdateCheck') || _.indexOf(allowedCheckEnvironments, process.env.NODE_ENV) === -1) {
-        // No update check
+    if (config.isPrivacyDisabled('useUpdateCheck')) {
         return Promise.resolve();
     } else {
         return api.settings.read(_.extend({key: 'nextUpdateCheck'}, internal)).then(function then(result) {

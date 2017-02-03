@@ -8,5 +8,16 @@
     },
     "paths": {
         "contentPath": "content/"
+    },
+    "privacy": {
+        "useRpcPing": false,
+        "useUpdateCheck": true
+    },
+    "minifyAssets": false,
+    "printErrorStack": true,
+    "caching": {
+        "theme": {
+            "maxAge": 0
+        }
     }
 }
