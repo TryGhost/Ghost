@@ -23,8 +23,7 @@ function ping(post) {
         title = post.title,
         url = utils.url.urlFor('post', {post: post}, true);
 
-    // Only ping when in production and not a page
-    if (config.get('env') !== 'production' || post.page || config.isPrivacyDisabled('useRpcPing')) {
+    if (post.page || config.isPrivacyDisabled('useRpcPing')) {
         return;
     }
 
