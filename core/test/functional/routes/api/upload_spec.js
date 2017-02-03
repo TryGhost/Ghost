@@ -10,13 +10,17 @@ var testUtils     = require('../../../utils'),
 
 describe('Upload API', function () {
     var accesstoken = '',
-        images = [];
+        images = [],
+        ghostServer;
 
     before(function (done) {
         // starting ghost automatically populates the db
         // TODO: prevent db init, and manage bringing up the DB with fixtures ourselves
-        ghost().then(function (ghostServer) {
-            request = supertest.agent(ghostServer.rootApp);
+        ghost().then(function (_ghostServer) {
+            ghostServer = _ghostServer;
+            return ghostServer.start();
+        }).then(function () {
+            request = supertest.agent(config.get('url'));
         }).then(function () {
             return testUtils.doAuth(request);
         }).then(function (token) {
@@ -25,14 +29,15 @@ describe('Upload API', function () {
         }).catch(done);
     });
 
-    after(function (done) {
+    after(function () {
         images.forEach(function (image) {
             fs.removeSync(config.get('paths').appRoot + image);
         });
 
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
+        return testUtils.clearData()
+            .then(function () {
+                return ghostServer.stop();
+            });
     });
 
     describe('success cases', function () {

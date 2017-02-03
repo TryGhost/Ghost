@@ -14,7 +14,7 @@ var debug = require('debug')('ghost:blog'),
 
     // local middleware
     cacheControl = require('../middleware/cache-control'),
-    checkSSL = require('../middleware/check-ssl'),
+    urlRedirects = require('../middleware/url-redirects'),
     errorHandler = require('../middleware/error-handler'),
     maintenance = require('../middleware/maintenance'),
     prettyURLs = require('../middleware/pretty-urls'),
@@ -75,7 +75,7 @@ module.exports = function setupBlogApp() {
 
     // Force SSL if required
     // must happen AFTER asset loading and BEFORE routing
-    blogApp.use(checkSSL);
+    blogApp.use(urlRedirects);
 
     // Add in all trailing slashes & remove uppercase
     // must happen AFTER asset loading and BEFORE routing
