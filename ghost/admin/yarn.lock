@@ -2181,12 +2181,6 @@ ember-composable-helpers@^1.1.2:
     broccoli-funnel "^1.0.1"
     ember-cli-babel "^5.1.7"
 
-ember-concurrency-test-waiter@0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/ember-concurrency-test-waiter/-/ember-concurrency-test-waiter-0.2.0.tgz#022108d68058755fb1a589dd33493b3c5f296f89"
-  dependencies:
-    ember-cli-babel "^5.1.7"
-
 ember-concurrency@0.7.19, ember-concurrency@^0.7.15:
   version "0.7.19"
   resolved "https://registry.yarnpkg.com/ember-concurrency/-/ember-concurrency-0.7.19.tgz#095f2ede1b56ab068958cac5b55e77b9de67e1c6"
@@ -2518,7 +2512,7 @@ ember-truth-helpers@1.2.0:
   dependencies:
     ember-cli-babel "^5.1.5"
 
-ember-truth-helpers@^1.3.0:
+ember-truth-helpers@1.3.0, ember-truth-helpers@^1.3.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/ember-truth-helpers/-/ember-truth-helpers-1.3.0.tgz#6ed9f83ce9a49f52bb416d55e227426339a64c60"
   dependencies:
