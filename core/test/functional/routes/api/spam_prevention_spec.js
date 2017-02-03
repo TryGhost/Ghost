@@ -13,33 +13,41 @@ var supertest     = require('supertest'),
 
 describe('Spam Prevention API', function () {
     var author,
-        owner = testUtils.DataGenerator.Content.users[0];
+        owner = testUtils.DataGenerator.Content.users[0],
+        ghostServer;
 
     before(function (done) {
         ghost()
-        .then(function (ghostServer) {
-            request = supertest.agent(ghostServer.rootApp);
+            .then(function (_ghostServer) {
+                ghostServer = _ghostServer;
+                return ghostServer.start();
+            })
+            .then(function () {
+                request = supertest.agent(config.get('url'));
 
-            // in functional tests we start Ghost and the database get's migrated/seeded
-            // no need to add or care about any missing data (settings, permissions) except of extra data we would like to add or override
-            // override Ghost fixture owner and add some extra users
-            return testUtils.setup('owner:post')();
-        }).then(function () {
-            return testUtils.createUser({
-                user: testUtils.DataGenerator.forKnex.createUser({email: 'test+1@ghost.org'}),
-                role: testUtils.DataGenerator.Content.roles[1]
-            });
-        }).then(function (user) {
-            author = user;
-            done();
-        })
-        .catch(done);
+                // in functional tests we start Ghost and the database get's migrated/seeded
+                // no need to add or care about any missing data (settings, permissions) except of extra data we would like to add or override
+                // override Ghost fixture owner and add some extra users
+                return testUtils.setup('owner:post')();
+            })
+            .then(function () {
+                return testUtils.createUser({
+                    user: testUtils.DataGenerator.forKnex.createUser({email: 'test+1@ghost.org'}),
+                    role: testUtils.DataGenerator.Content.roles[1]
+                });
+            })
+            .then(function (user) {
+                author = user;
+                done();
+            })
+            .catch(done);
     });
 
-    after(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
+    after(function () {
+        return testUtils.clearData()
+            .then(function () {
+                return ghostServer.stop();
+            });
     });
 
     afterEach(function (done) {
