@@ -159,5 +159,25 @@ describe('cors', function () {
         done();
     });
 
-    //@TODO: add test for admin.url
+    it('should be enabled if the origin matches config.url', function (done) {
+        var origin = 'http://admin:2222';
+
+        configUtils.set({
+            url: 'https://blog',
+            admin: {
+                url: origin
+            }
+        });
+
+        req.get = sinon.stub().withArgs('origin').returns(origin);
+        res.get = sinon.stub().withArgs('origin').returns(origin);
+        req.headers.origin = origin;
+
+        cors(req, res, next);
+
+        next.called.should.be.true();
+        res.headers['Access-Control-Allow-Origin'].should.equal(origin);
+
+        done();
+    });
 });

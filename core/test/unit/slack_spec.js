@@ -195,7 +195,7 @@ describe('Slack', function () {
             isPostStub.returns(false);
             settingsObj.settings[0] = slackObjWithUrl;
 
-            configUtils.set('forceAdminSSL', true);
+            configUtils.set('url', 'https://myblog.com');
 
             // assertions
             makeRequestAssertions = function (requestOptions, requestData) {

@@ -7,9 +7,12 @@ var request    = require('supertest'),
     should     = require('should'),
     cheerio    = require('cheerio'),
     testUtils  = require('../../utils'),
+    config     = require('../../../../core/server/config'),
     ghost      = testUtils.startGhost;
 
 describe('Channel Routes', function () {
+    var ghostServer;
+
     function doEnd(done) {
         return function (err, res) {
             if (err) {
@@ -26,10 +29,11 @@ describe('Channel Routes', function () {
     }
 
     before(function (done) {
-        ghost().then(function (ghostServer) {
-            // Setup the request object with the ghost express app
-            request = request(ghostServer.rootApp);
-
+        ghost().then(function (_ghostServer) {
+            ghostServer = _ghostServer;
+            return ghostServer.start();
+        }).then(function () {
+            request = request(config.get('url'));
             done();
         }).catch(function (e) {
             console.log('Ghost Error: ', e);
@@ -39,6 +43,10 @@ describe('Channel Routes', function () {
     });
 
     after(testUtils.teardown);
+
+    after(function () {
+        return ghostServer.stop();
+    });
 
     describe('Index', function () {
         it('should respond with html', function (done) {

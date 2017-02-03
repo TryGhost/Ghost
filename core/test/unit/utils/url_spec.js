@@ -286,13 +286,10 @@ describe('Url', function () {
             utils.url.urlFor(testContext, testData).should.equal('mailto:marshmallow@my-ghost-blog.com');
         });
 
-        it('should return other known paths when requested', function () {
+        it('sitemap: should return other known paths when requested', function () {
             configUtils.set({url: 'http://my-ghost-blog.com'});
             utils.url.urlFor('sitemap_xsl').should.equal('/sitemap.xsl');
             utils.url.urlFor('sitemap_xsl', true).should.equal('http://my-ghost-blog.com/sitemap.xsl');
-
-            utils.url.urlFor('api').should.equal('/ghost/api/v0.1/');
-            utils.url.urlFor('api', true).should.equal('http://my-ghost-blog.com/ghost/api/v0.1/');
         });
 
         it('admin: relative', function () {
@@ -303,7 +300,7 @@ describe('Url', function () {
             utils.url.urlFor('admin').should.equal('/ghost/');
         });
 
-        it('admin: forceAdminSSL is false', function () {
+        it('admin: url is http', function () {
             configUtils.set({
                 url: 'http://my-ghost-blog.com'
             });
@@ -311,27 +308,28 @@ describe('Url', function () {
             utils.url.urlFor('admin', true).should.equal('http://my-ghost-blog.com/ghost/');
         });
 
-        it('admin: forceAdminSSL is true', function () {
+        it('admin: custom admin url is set', function () {
             configUtils.set({
                 url: 'http://my-ghost-blog.com',
-                forceAdminSSL: true
+                admin: {
+                    url: 'https://admin.my-ghost-blog.com'
+                }
             });
 
-            utils.url.urlFor('admin', true).should.equal('https://my-ghost-blog.com/ghost/');
-        });
-
-        it('admin: forceAdminSSL is true', function () {
-            configUtils.set({
-                url: 'http://my-ghost-blog.com',
-                forceAdminSSL: true
-            });
-
-            utils.url.urlFor('admin', true).should.equal('https://my-ghost-blog.com/ghost/');
+            utils.url.urlFor('admin', true).should.equal('https://admin.my-ghost-blog.com/ghost/');
         });
 
         it('admin: blog is on subdir', function () {
             configUtils.set({
                 url: 'http://my-ghost-blog.com/blog'
+            });
+
+            utils.url.urlFor('admin', true).should.equal('http://my-ghost-blog.com/blog/ghost/');
+        });
+
+        it('admin: blog is on subdir', function () {
+            configUtils.set({
+                url: 'http://my-ghost-blog.com/blog/'
             });
 
             utils.url.urlFor('admin', true).should.equal('http://my-ghost-blog.com/blog/ghost/');
@@ -345,16 +343,70 @@ describe('Url', function () {
             utils.url.urlFor('admin').should.equal('/blog/ghost/');
         });
 
-        it('should return https config.url if forceAdminSSL set', function () {
+        it('admin: blog is on subdir', function () {
             configUtils.set({
-                url: 'http://my-ghost-blog.com',
-                forceAdminSSL: true
+                url: 'http://my-ghost-blog.com/blog',
+                admin: {
+                    url: 'http://something.com'
+                }
             });
 
-            utils.url.urlFor('api', true).should.eql('https://my-ghost-blog.com/ghost/api/v0.1/');
+            utils.url.urlFor('admin', true).should.equal('http://something.com/blog/ghost/');
         });
 
-        it('should return http if config.url is http & forceAdminSSL is NOT set', function () {
+        it('admin: blog is on subdir', function () {
+            configUtils.set({
+                url: 'http://my-ghost-blog.com/blog',
+                admin: {
+                    url: 'http://something.com/blog'
+                }
+            });
+
+            utils.url.urlFor('admin', true).should.equal('http://something.com/blog/ghost/');
+        });
+
+        it('admin: blog is on subdir', function () {
+            configUtils.set({
+                url: 'http://my-ghost-blog.com/blog',
+                admin: {
+                    url: 'http://something.com/blog/'
+                }
+            });
+
+            utils.url.urlFor('admin', true).should.equal('http://something.com/blog/ghost/');
+        });
+
+        it('admin: blog is on subdir', function () {
+            configUtils.set({
+                url: 'http://my-ghost-blog.com/blog/',
+                admin: {
+                    url: 'http://something.com/blog'
+                }
+            });
+
+            utils.url.urlFor('admin', true).should.equal('http://something.com/blog/ghost/');
+        });
+
+        it('api: should return admin url is set', function () {
+            configUtils.set({
+                url: 'http://my-ghost-blog.com',
+                admin: {
+                    url: 'https://something.de'
+                }
+            });
+
+            utils.url.urlFor('api', true).should.eql('https://something.de/ghost/api/v0.1/');
+        });
+
+        it('api: url has subdir', function () {
+            configUtils.set({
+                url: 'http://my-ghost-blog.com/blog'
+            });
+
+            utils.url.urlFor('api', true).should.eql('http://my-ghost-blog.com/blog/ghost/api/v0.1/');
+        });
+
+        it('api: should return http if config.url is http', function () {
             configUtils.set({
                 url: 'http://my-ghost-blog.com'
             });
@@ -362,7 +414,7 @@ describe('Url', function () {
             utils.url.urlFor('api', true).should.eql('http://my-ghost-blog.com/ghost/api/v0.1/');
         });
 
-        it('should return https if config.url is https & forceAdminSSL is NOT set', function () {
+        it('api: should return https if config.url is https', function () {
             configUtils.set({
                 url: 'https://my-ghost-blog.com'
             });
@@ -370,7 +422,7 @@ describe('Url', function () {
             utils.url.urlFor('api', true).should.eql('https://my-ghost-blog.com/ghost/api/v0.1/');
         });
 
-        it('CORS: should return no protocol', function () {
+        it('api: cors should return no protocol', function () {
             configUtils.set({
                 url: 'http://my-ghost-blog.com'
             });

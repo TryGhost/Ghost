@@ -114,10 +114,11 @@ describe('Ghost Ajax Helper', function () {
         configUtils.set({
             url: 'https://testblog.com/'
         });
+
         ghostUrl.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
-            url: utils.url.urlFor('api', {cors: true}, true)
+            url: utils.url.urlFor('api', true)
         });
 
         var rendered = ghostUrl.url.api('posts/', '/tags/', '/count', {include: 'tags,tests', page: 2});
@@ -136,7 +137,7 @@ describe('Ghost Ajax Helper', function () {
         ghostUrl.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
-            url: utils.url.urlFor('api', {cors: true}, true)
+            url: utils.url.urlFor('api', true)
         });
 
         var rendered = ghostUrl.url.api('posts/', '/tags/', '/count', {include: 'tags,tests', page: 2});
