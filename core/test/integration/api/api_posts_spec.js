@@ -1,5 +1,6 @@
 var Promise       = require('bluebird'),
     should        = require('should'),
+    sinon         = require('sinon'),
     _             = require('lodash'),
     ObjectId      = require('bson-objectid'),
     testUtils     = require('../../utils'),
@@ -7,9 +8,13 @@ var Promise       = require('bluebird'),
     errors        = require('../../../server/errors'),
     db            = require('../../../server/data/db'),
     models        = require('../../../server/models'),
-    PostAPI       = require('../../../server/api/posts');
+    PostAPI       = require('../../../server/api/posts'),
+    settingsCache = require('../../../server/api/settings').cache,
+    sandbox       = sinon.sandbox.create();
 
 describe('Post API', function () {
+    var localSettingsCache = {};
+
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
     beforeEach(testUtils.setup('users:roles', 'perms:post', 'perms:init'));
@@ -40,11 +45,22 @@ describe('Post API', function () {
             .catch(done);
     });
 
+    beforeEach(function () {
+        sandbox.stub(settingsCache, 'get', function (key) {
+            return localSettingsCache[key];
+        });
+    });
+
+    afterEach(function () {
+        sandbox.restore();
+        localSettingsCache = {};
+    });
+
     should.exist(PostAPI);
 
     describe('Browse', function () {
         beforeEach(function () {
-            configUtils.set('theme:permalinks', '/:slug/');
+            localSettingsCache.permalinks = '/:slug/';
         });
 
         afterEach(function () {

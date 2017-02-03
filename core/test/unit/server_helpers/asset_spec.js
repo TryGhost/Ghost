@@ -1,22 +1,28 @@
 var should         = require('should'),
     hbs            = require('express-hbs'),
+    sinon          = require('sinon'),
     utils          = require('./utils'),
     configUtils    = require('../../utils/configUtils'),
-
-// Stuff we are testing
-    handlebars     = hbs.handlebars,
-    helpers        = require('../../../server/helpers');
+    helpers        = require('../../../server/helpers'),
+    settingsCache  = require('../../../server/api/settings').cache,
+    sandbox        = sinon.sandbox.create(),
+    handlebars     = hbs.handlebars;
 
 describe('{{asset}} helper', function () {
-    var rendered;
+    var rendered, localSettingsCache = {};
 
     before(function () {
         utils.loadHelpers();
         configUtils.set({assetHash: 'abc'});
+
+        sandbox.stub(settingsCache, 'get', function (key) {
+            return localSettingsCache[key];
+        });
     });
 
     after(function () {
         configUtils.restore();
+        sandbox.restore();
     });
 
     it('has loaded asset helper', function () {
@@ -37,7 +43,8 @@ describe('{{asset}} helper', function () {
         });
 
         it('handles custom favicon correctly', function () {
-            configUtils.set('theme:icon', '/content/images/favicon.png');
+            localSettingsCache.icon = '/content/images/favicon.png';
+
             // with ghost set and png
             rendered = helpers.asset('favicon.png', {hash: {ghost: 'true'}});
             should.exist(rendered);
@@ -48,7 +55,7 @@ describe('{{asset}} helper', function () {
             should.exist(rendered);
             String(rendered).should.equal('/content/images/favicon.png');
 
-            configUtils.set('theme:icon', '/content/images/favicon.ico');
+            localSettingsCache.icon = '/content/images/favicon.ico';
 
             // with ghost set and ico
             rendered = helpers.asset('favicon.ico', {hash: {ghost: 'true'}});
@@ -62,7 +69,8 @@ describe('{{asset}} helper', function () {
         });
 
         it('handles shared assets correctly', function () {
-            configUtils.set('theme:icon', '');
+            localSettingsCache.icon = '';
+
             // with ghost set
             rendered = helpers.asset('shared/asset.js', {hash: {ghost: 'true'}});
             should.exist(rendered);
@@ -107,7 +115,8 @@ describe('{{asset}} helper', function () {
         });
 
         it('handles custom favicon correctly', function () {
-            configUtils.set('theme:icon', '/content/images/favicon.png');
+            localSettingsCache.icon = '/content/images/favicon.png';
+
             // with ghost set and png
             rendered = helpers.asset('favicon.png', {hash: {ghost: 'true'}});
             should.exist(rendered);
@@ -118,7 +127,7 @@ describe('{{asset}} helper', function () {
             should.exist(rendered);
             String(rendered).should.equal('/blog/content/images/favicon.png');
 
-            configUtils.set('theme:icon', '/content/images/favicon.ico');
+            localSettingsCache.icon = '/content/images/favicon.ico';
 
             // with ghost set and ico
             rendered = helpers.asset('favicon.ico', {hash: {ghost: 'true'}});

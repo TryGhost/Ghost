@@ -1,28 +1,29 @@
 var _ = require('lodash'),
-    config = require('../../config');
+    settingsCache = require('../../api/settings').cache;
 
 function getTitle(data, root) {
     var title = '',
         context = root ? root.context : null,
-        blog = config.get('theme'),
+        blogTitle = settingsCache.get('title'),
         pagination = root ? root.pagination : null,
         pageString = '';
 
     if (pagination && pagination.total > 1) {
         pageString = ' - Page ' + pagination.page;
     }
+
     if (data.meta_title) {
         title = data.meta_title;
     } else if (_.includes(context, 'home')) {
-        title = blog.title;
+        title = blogTitle;
     } else if (_.includes(context, 'author') && data.author) {
-        title = data.author.name + pageString + ' - ' + blog.title;
+        title = data.author.name + pageString + ' - ' + blogTitle;
     } else if (_.includes(context, 'tag') && data.tag) {
-        title = data.tag.meta_title || data.tag.name + pageString + ' - ' + blog.title;
+        title = data.tag.meta_title || data.tag.name + pageString + ' - ' + blogTitle;
     } else if ((_.includes(context, 'post') || _.includes(context, 'page')) && data.post) {
         title = data.post.meta_title || data.post.title;
     } else {
-        title = blog.title + pageString;
+        title = blogTitle + pageString;
     }
 
     return (title || '').trim();
