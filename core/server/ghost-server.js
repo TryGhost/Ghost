@@ -42,7 +42,7 @@ GhostServer.prototype.start = function (externalApp) {
     var self = this,
         rootApp = externalApp ? externalApp : self.rootApp,
         socketConfig, socketValues = {
-            path: path.join(config.get('paths').contentPath, process.env.NODE_ENV + '.socket'),
+            path: path.join(config.get('paths').contentPath, config.get('env') + '.socket'),
             permissions: '660'
         };
 
@@ -188,7 +188,7 @@ GhostServer.prototype.closeConnections = function () {
  */
 GhostServer.prototype.logStartMessages = function () {
     // Startup & Shutdown messages
-    if (process.env.NODE_ENV === 'production') {
+    if (config.get('env') === 'production') {
         console.log(
             chalk.red('Currently running Ghost 1.0.0 Alpha, this is NOT suitable for production! \n'),
             chalk.white('Please switch to the stable branch. \n'),
@@ -200,7 +200,7 @@ GhostServer.prototype.logStartMessages = function () {
             chalk.blue('Welcome to the Ghost 1.0.0 Alpha - this version of Ghost is for development only.')
         );
         console.log(
-            chalk.green(i18n.t('notices.httpServer.ghostIsRunningIn', {env: process.env.NODE_ENV})),
+            chalk.green(i18n.t('notices.httpServer.ghostIsRunningIn', {env: config.get('env')})),
             i18n.t('notices.httpServer.listeningOn'),
             config.get('server').socket || config.get('server').host + ':' + config.get('server').port,
             i18n.t('notices.httpServer.urlConfiguredAs', {url: utils.url.urlFor('home', true)}),
@@ -210,7 +210,8 @@ GhostServer.prototype.logStartMessages = function () {
 
     function shutdown() {
         console.log(chalk.red(i18n.t('notices.httpServer.ghostHasShutdown')));
-        if (process.env.NODE_ENV === 'production') {
+
+        if (config.get('env') === 'production') {
             console.log(
                 i18n.t('notices.httpServer.yourBlogIsNowOffline')
             );
@@ -220,6 +221,7 @@ GhostServer.prototype.logStartMessages = function () {
                 moment.duration(process.uptime(), 'seconds').humanize()
             );
         }
+
         process.exit(0);
     }
     // ensure that Ghost exits correctly on Ctrl+C and SIGTERM
