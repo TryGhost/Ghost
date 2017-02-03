@@ -8,6 +8,7 @@ var _      = require('lodash'),
     utils = require('../utils'),
     logging = require('../logging'),
     errors = require('../errors'),
+    utils = require('../utils'),
     i18n = require('../i18n'),
     themeHandler;
 
@@ -32,7 +33,9 @@ themeHandler = {
             labsData = _.cloneDeep(settingsCache.get('labs')),
             blogApp = req.app;
 
-        // @TODO: send req.secure to url: utils.url.urlFor('home'...)
+        // @TODO: MERGE WITH OPEN PR
+        // https://github.com/TryGhost/Ghost/pull/7924
+        themeData.url = utils.url.urlFor('home', {secure: req.secure}, true);
 
         hbs.updateTemplateOptions({
             data: {

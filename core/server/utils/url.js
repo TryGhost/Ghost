@@ -18,23 +18,23 @@ var moment            = require('moment-timezone'),
  * @param {boolean} secure
  * @return {string} URL returns the url as defined in config, but always with a trailing `/`
  */
-function getBaseUrl(secure) {
-    var base;
+function getBlogUrl(secure) {
+    var blogUrl;
 
     if (secure) {
-        base = config.get('url').replace('http://', 'https://');
+        blogUrl = config.get('url').replace('http://', 'https://');
     } else {
-        base = config.get('url');
+        blogUrl = config.get('url');
     }
 
-    if (!base.match(/\/$/)) {
-        base += '/';
+    if (!blogUrl.match(/\/$/)) {
+        blogUrl += '/';
     }
 
-    return base;
+    return blogUrl;
 }
 
-/** getSubdir
+/**
  * Returns a subdirectory URL, if defined so in the config.
  * @return {string} URL a subdirectory if configured.
  */
@@ -55,11 +55,25 @@ function getSubdir() {
     return subdir;
 }
 
-function getProtectedSlugs() {
-    var subdir = getSubdir();
+function deduplicateSubDir(url) {
+    var subDir = getSubdir(),
+        subDirRegex;
 
-    if (!_.isEmpty(subdir)) {
-        return config.get('slugs').protected.concat([subdir.split('/').pop()]);
+    if (!subDir) {
+        return url;
+    }
+
+    subDir = subDir.replace(/^\/|\/+$/, '');
+    subDirRegex = new RegExp(subDir + '\/' + subDir + '\/');
+
+    return url.replace(subDirRegex, subDir + '/');
+}
+
+function getProtectedSlugs() {
+    var subDir = getSubdir();
+
+    if (!_.isEmpty(subDir)) {
+        return config.get('slugs').protected.concat([subDir.split('/').pop()]);
     } else {
         return config.get('slugs').protected;
     }
@@ -73,8 +87,6 @@ function getProtectedSlugs() {
 function urlJoin() {
     var args = Array.prototype.slice.call(arguments),
         prefixDoubleSlash = false,
-        subdir = getSubdir().replace(/^\/|\/+$/, ''),
-        subdirRegex,
         url;
 
     // Remove empty item at the beginning
@@ -98,13 +110,28 @@ function urlJoin() {
         url = url.replace(/^\//, '//');
     }
 
-    // Deduplicate subdirectory
-    if (subdir) {
-        subdirRegex = new RegExp(subdir + '\/' + subdir + '\/');
-        url = url.replace(subdirRegex, subdir + '/');
+    url = deduplicateSubDir(url);
+    return url;
+}
+
+/**
+ * admin:url is optional
+ */
+function getAdminUrl() {
+    var adminUrl = config.get('admin:url'),
+        subDir = getSubdir();
+
+    if (!adminUrl) {
+        return;
     }
 
-    return url;
+    if (!adminUrl.match(/\/$/)) {
+        adminUrl += '/';
+    }
+
+    adminUrl = urlJoin(adminUrl, subDir, '/');
+    adminUrl = deduplicateSubDir(adminUrl);
+    return adminUrl;
 }
 
 // ## createUrl
@@ -128,7 +155,7 @@ function createUrl(urlPath, absolute, secure) {
 
     // create base of url, always ends without a slash
     if (absolute) {
-        base = getBaseUrl(secure);
+        base = getBlogUrl(secure);
     } else {
         base = getSubdir();
     }
@@ -235,7 +262,7 @@ function urlFor(context, data, absolute) {
             if (absolute) {
                 // Remove the sub-directory from the URL because ghostConfig will add it back.
                 urlPath = urlPath.replace(new RegExp('^' + getSubdir()), '');
-                baseUrl = getBaseUrl(secure).replace(/\/$/, '');
+                baseUrl = getBlogUrl(secure).replace(/\/$/, '');
                 urlPath = baseUrl + urlPath;
             }
 
@@ -243,7 +270,7 @@ function urlFor(context, data, absolute) {
         } else if (context === 'nav' && data.nav) {
             urlPath = data.nav.url;
             secure = data.nav.secure || secure;
-            baseUrl = getBaseUrl(secure);
+            baseUrl = getBlogUrl(secure);
             hostname = baseUrl.split('//')[1] + getSubdir();
 
             if (urlPath.indexOf(hostname) > -1
@@ -262,14 +289,15 @@ function urlFor(context, data, absolute) {
             }
         }
     } else if (context === 'home' && absolute) {
-        urlPath = getBaseUrl(secure);
-        // other objects are recognised but not yet supported
-    } else if (context === 'admin') {
-        if (config.get('forceAdminSSL')) {
-            urlPath = getBaseUrl(true);
-        } else {
-            urlPath = getBaseUrl();
+        urlPath = getBlogUrl(secure);
+
+        // CASE: with or without protocol?
+        // @TODO: rename cors
+        if (data && data.cors) {
+            urlPath = urlPath.replace(/^.*?:\/\//g, '//');
         }
+    } else if (context === 'admin') {
+        urlPath = getAdminUrl() || getBlogUrl();
 
         if (absolute) {
             urlPath += 'ghost/';
@@ -277,16 +305,12 @@ function urlFor(context, data, absolute) {
             urlPath = '/ghost/';
         }
     } else if (context === 'api') {
-        if (config.get('forceAdminSSL')) {
-            urlPath = getBaseUrl(true).replace(/^.*?:\/\//g, 'https://');
-        } else if (config.get('url').match(/^https:/)) {
-            urlPath = config.get('url');
-        } else {
-            if (!data || !data.cors) {
-                urlPath = config.get('url');
-            } else {
-                urlPath = config.get('url').replace(/^.*?:\/\//g, '//');
-            }
+        urlPath = getAdminUrl() || getBlogUrl();
+
+        // CASE: with or without protocol?
+        // @TODO: rename cors
+        if (data && data.cors) {
+            urlPath = urlPath.replace(/^.*?:\/\//g, '//');
         }
 
         if (absolute) {
@@ -308,8 +332,14 @@ function urlFor(context, data, absolute) {
     return createUrl(urlPath, absolute, secure);
 }
 
+function isSSL(urlToParse) {
+    var protocol = url.parse(urlToParse).protocol;
+    return protocol === 'https:';
+}
+
 module.exports.getProtectedSlugs = getProtectedSlugs;
 module.exports.getSubdir = getSubdir;
 module.exports.urlJoin = urlJoin;
 module.exports.urlFor = urlFor;
+module.exports.isSSL = isSSL;
 module.exports.urlPathForPost = urlPathForPost;

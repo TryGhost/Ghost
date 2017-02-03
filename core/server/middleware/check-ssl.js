@@ -1,60 +1,69 @@
-var config = require('../config'),
-    url    = require('url'),
-    utils  = require('../utils'),
-    checkSSL;
+var url = require('url'),
+    debug = require('debug')('ghost:redirects'),
+    utils = require('../utils'),
+    checkSSLAndRedirects;
 
-function isSSLrequired(isAdmin, configUrl, forceAdminSSL) {
-    var forceSSL = url.parse(configUrl).protocol === 'https:' ? true : false;
-    if (forceSSL || (isAdmin && forceAdminSSL)) {
-        return true;
-    }
-    return false;
+function redirectUrl(options) {
+    var redirectTo = options.redirectTo,
+        path = options.path,
+        query = options.query,
+        parts = url.parse(redirectTo);
+
+    return url.format({
+        protocol: parts.protocol,
+        hostname: parts.hostname,
+        port: parts.port,
+        pathname: path,
+        query: query
+    });
 }
 
-// The guts of checkSSL. Indicate forbidden or redirect according to configuration.
-// Required args: forceAdminSSL and url should be passed from config. reqURL from req.url
-function sslForbiddenOrRedirect(opt) {
-    var forceAdminSSL = opt.forceAdminSSL,
-        reqUrl        = url.parse(opt.reqUrl), // expected to be relative-to-root
-        baseUrl       = url.parse(opt.configUrl),
-        response = {
-        // Check if forceAdminSSL: { redirect: false } is set, which means
-        // we should just deny non-SSL access rather than redirect
-        isForbidden: (forceAdminSSL && forceAdminSSL.redirect !== undefined && !forceAdminSSL.redirect),
+/**
+ * SSL AND REDIRECTS
+ * @TODO: rename file
+ */
+checkSSLAndRedirects = function checkSSLAndRedirects(req, res, next) {
+    var requestedUrl = req.originalUrl || req.url,
+        requestedHost = req.get('host'),
+        targetHostWithProtocol,
+        targetHostWithoutProtocol;
 
-        redirectUrl: function redirectUrl(query) {
-            return url.format({
-                protocol: 'https:',
-                hostname: baseUrl.hostname,
-                port: baseUrl.port,
-                pathname: reqUrl.pathname,
-                query: query
-            });
-        }
-    };
-
-    return response;
-}
-
-// Check to see if we should use SSL
-// and redirect if needed
-checkSSL = function checkSSL(req, res, next) {
-    if (isSSLrequired(res.isAdmin, utils.url.urlFor('home', true), config.get('forceAdminSSL'))) {
-        if (!req.secure) {
-            var response = sslForbiddenOrRedirect({
-                forceAdminSSL: config.get('forceAdminSSL'),
-                configUrl: utils.url.urlFor('home', true),
-                reqUrl: req.originalUrl || req.url
-            });
-
-            if (response.isForbidden) {
-                return res.sendStatus(403);
-            } else {
-                return res.redirect(301, response.redirectUrl(req.query));
-            }
-        }
+    if (res.isAdmin) {
+        targetHostWithProtocol = utils.url.urlFor('admin', true);
+        targetHostWithoutProtocol = utils.url.urlFor('admin', {cors: true}, true);
+    } else {
+        targetHostWithProtocol = utils.url.urlFor('home', true);
+        targetHostWithoutProtocol = utils.url.urlFor('home', {cors: true}, true);
     }
+
+    debug('requestedUrl', requestedUrl);
+    debug('requestedHost', requestedHost);
+    debug('targetHost', targetHostWithoutProtocol);
+
+    // CASE: custom admin url is configured, but user requests blog domain
+    // CASE: exception: localhost is always allowed
+    if (!targetHostWithoutProtocol.match(new RegExp(requestedHost))) {
+        debug('redirect because host does not match');
+
+        return res.redirect(301, redirectUrl({
+            redirectTo: targetHostWithProtocol,
+            path: requestedUrl,
+            query: req.query
+        }));
+    }
+
+    // CASE: correct admin url, but not the correct protocol
+    if (utils.url.isSSL(targetHostWithProtocol) && !req.secure) {
+        debug('redirect because protocol does not match');
+
+        return res.redirect(301, redirectUrl({
+            redirectTo: targetHostWithProtocol,
+            path: requestedUrl,
+            query: req.query
+        }));
+    }
+
     next();
 };
 
-module.exports = checkSSL;
+module.exports = checkSSLAndRedirects;
