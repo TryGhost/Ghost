@@ -3,7 +3,6 @@
         "appRoot": ".",
         "corePath": "core/",
         "clientAssets": "core/built/assets",
-        "imagesRelPath": "content/images",
         "helperTemplates": "core/server/helpers/tpl/",
         "adminViews": "core/server/views/",
         "internalAppPath": "core/server/apps/",

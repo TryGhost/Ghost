@@ -51,7 +51,7 @@ module.exports = function setupBlogApp() {
     // Serve robots.txt if not found in theme
     blogApp.use(serveSharedFile('robots.txt', 'text/plain', utils.ONE_HOUR_S));
     // Serve blog images using the storage adapter
-    blogApp.use('/content/images', storage.getStorage().serve());
+    blogApp.use('/' + utils.url.STATIC_IMAGE_URL_PREFIX, storage.getStorage().serve());
 
     // Theme static assets/files
     blogApp.use(staticTheme());

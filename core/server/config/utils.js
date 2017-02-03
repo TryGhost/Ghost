@@ -16,7 +16,6 @@ exports.isPrivacyDisabled = function isPrivacyDisabled(privacyFlag) {
 
 /**
  * transform all relative paths to absolute paths
- * @TODO: imagesRelPath is a dirty little attribute (especially when looking at the usages)
  * @TODO: re-write this function a little bit so we don't have to add the parent path - that is hard to understand
  *
  * Path must be string.
@@ -45,8 +44,7 @@ exports.makePathsAbsolute = function makePathsAbsolute(obj, parent) {
         } else {
             if (_.isString(configValue) &&
                 (configValue.match(/\/+|\\+/) || configValue === '.') &&
-                (configValue[0] !== '/' && configValue[0] !== '\\') &&
-                pathsKey !== 'imagesRelPath'
+                (configValue[0] !== '/' && configValue[0] !== '\\')
             ) {
                 self.set(parent + ':' + pathsKey, path.join(__dirname + '/../../../', configValue));
             }

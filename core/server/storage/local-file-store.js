@@ -38,7 +38,7 @@ LocalFileStore.prototype.save = function save(image, targetDir) {
         // For local file system storage can use relative path so add a slash
         var fullUrl = (
             utils.url.urlJoin('/', utils.url.getSubdir(),
-            config.get('paths').imagesRelPath,
+            utils.url.STATIC_IMAGE_URL_PREFIX,
             path.relative(config.getContentPath('images'), targetFilename))
         ).replace(new RegExp('\\' + path.sep, 'g'), '/');
 
