@@ -1,8 +1,8 @@
 module.exports = {
     posts: {
-        id: {type: 'string', nullable: false, primary: true},
-        uuid: {type: 'string', maxlength: 50, nullable: false, validations: {isUUID: true}},
-        title: {type: 'string', maxlength: 1000, nullable: false},
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        uuid: {type: 'string', maxlength: 36, nullable: false, validations: {isUUID: true}},
+        title: {type: 'string', maxlength: 2000, nullable: false},
         slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
         markdown: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         mobiledoc: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
@@ -12,10 +12,10 @@ module.exports = {
         featured: {type: 'bool', nullable: false, defaultTo: false},
         page: {type: 'bool', nullable: false, defaultTo: false},
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'draft'},
-        language: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'en_US'},
+        language: {type: 'string', maxlength: 6, nullable: false, defaultTo: 'en_US'},
         visibility: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'public', validations: {isIn: [['public']]}},
-        meta_title: {type: 'string', maxlength: 1000, nullable: true},
-        meta_description: {type: 'string', maxlength: 1000, nullable: true},
+        meta_title: {type: 'string', maxlength: 2000, nullable: true},
+        meta_description: {type: 'string', maxlength: 2000, nullable: true},
         author_id: {type: 'string', nullable: false},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', nullable: false},
@@ -25,11 +25,11 @@ module.exports = {
         published_by: {type: 'string', nullable: true}
     },
     users: {
-        id: {type: 'string', nullable: false, primary: true},
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         name: {type: 'string', maxlength: 191, nullable: false},
         slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
-        ghost_auth_access_token: {type: 'string', maxlength: 191, nullable: true},
-        password: {type: 'string', maxlength: 191, nullable: false},
+        ghost_auth_access_token: {type: 'string', maxlength: 32, nullable: true},
+        password: {type: 'string', maxlength: 60, nullable: false},
         email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
         image: {type: 'string', maxlength: 2000, nullable: true},
         cover: {type: 'string', maxlength: 2000, nullable: true},
@@ -40,10 +40,10 @@ module.exports = {
         twitter: {type: 'string', maxlength: 2000, nullable: true},
         accessibility: {type: 'text', maxlength: 65535, nullable: true},
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'active'},
-        language: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'en_US'},
+        language: {type: 'string', maxlength: 6, nullable: false, defaultTo: 'en_US'},
         visibility: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'public', validations: {isIn: [['public']]}},
-        meta_title: {type: 'string', maxlength: 1000, nullable: true},
-        meta_description: {type: 'string', maxlength: 1000, nullable: true},
+        meta_title: {type: 'string', maxlength: 2000, nullable: true},
+        meta_description: {type: 'string', maxlength: 2000, nullable: true},
         tour: {type: 'text', maxlength: 65535, nullable: true},
         last_login: {type: 'dateTime', nullable: true},
         created_at: {type: 'dateTime', nullable: false},
@@ -52,21 +52,21 @@ module.exports = {
         updated_by: {type: 'string', nullable: true}
     },
     roles: {
-        id: {type: 'string', nullable: false, primary: true},
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         name: {type: 'string', maxlength: 50, nullable: false, unique: true},
-        description: {type: 'string', maxlength: 50, nullable: true},
+        description: {type: 'string', maxlength: 2000, nullable: true},
         created_at: {type: 'dateTime',  nullable: false},
         created_by: {type: 'string',  nullable: false},
         updated_at: {type: 'dateTime',  nullable: true},
         updated_by: {type: 'string',  nullable: true}
     },
     roles_users: {
-        id: {type: 'string', nullable: false, primary: true},
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         role_id: {type: 'string', nullable: false},
         user_id: {type: 'string', nullable: false}
     },
     permissions: {
-        id: {type: 'string', nullable: false, primary: true},
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         name: {type: 'string', maxlength: 50, nullable: false, unique: true},
         object_type: {type: 'string', maxlength: 50, nullable: false},
         action_type: {type: 'string', maxlength: 50, nullable: false},
@@ -77,22 +77,22 @@ module.exports = {
         updated_by: {type: 'string', nullable: true}
     },
     permissions_users: {
-        id: {type: 'string', nullable: false, primary: true},
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         user_id: {type: 'string', nullable: false},
         permission_id: {type: 'string', nullable: false}
     },
     permissions_roles: {
-        id: {type: 'string', nullable: false, primary: true},
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         role_id: {type: 'string', nullable: false},
         permission_id: {type: 'string', nullable: false}
     },
     permissions_apps: {
-        id: {type: 'string', nullable: false, primary: true},
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         app_id: {type: 'string', nullable: false},
         permission_id: {type: 'string', nullable: false}
     },
     settings: {
-        id: {type: 'string', nullable: false, primary: true},
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         key: {type: 'string', maxlength: 50, nullable: false, unique: true},
         value: {type: 'text', maxlength: 65535, nullable: true},
         type: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'core', validations: {isIn: [['core', 'blog', 'theme', 'app', 'plugin', 'private']]}},
@@ -102,28 +102,28 @@ module.exports = {
         updated_by: {type: 'string', nullable: true}
     },
     tags: {
-        id: {type: 'string', nullable: false, primary: true},
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         name: {type: 'string', maxlength: 191, nullable: false, validations: {matches: /^([^,]|$)/}},
         slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
-        description: {type: 'string', maxlength: 1000, nullable: true},
+        description: {type: 'text', maxlength: 65535, nullable: true},
         image: {type: 'string', maxlength: 2000, nullable: true},
         parent_id: {type: 'string', nullable: true},
         visibility: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'public', validations: {isIn: [['public', 'internal']]}},
-        meta_title: {type: 'string', maxlength: 1000, nullable: true},
-        meta_description: {type: 'string', maxlength: 1000, nullable: true},
+        meta_title: {type: 'string', maxlength: 2000, nullable: true},
+        meta_description: {type: 'string', maxlength: 2000, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', nullable: true}
     },
     posts_tags: {
-        id: {type: 'string', nullable: false, primary: true},
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         post_id: {type: 'string', nullable: false, references: 'posts.id'},
         tag_id: {type: 'string', nullable: false, references: 'tags.id'},
         sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}
     },
     apps: {
-        id: {type: 'string', nullable: false, primary: true},
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         name: {type: 'string', maxlength: 191, nullable: false, unique: true},
         slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
         version: {type: 'string', maxlength: 50, nullable: false},
@@ -134,7 +134,7 @@ module.exports = {
         updated_by: {type: 'string', nullable: true}
     },
     app_settings: {
-        id: {type: 'string', nullable: false, primary: true},
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         key: {type: 'string', maxlength: 50, nullable: false, unique: true},
         value: {type: 'text', maxlength: 65535, nullable: true},
         app_id: {type: 'string', nullable: false, references: 'apps.id'},
@@ -144,7 +144,7 @@ module.exports = {
         updated_by: {type: 'string', nullable: true}
     },
     app_fields: {
-        id: {type: 'string', nullable: false, primary: true},
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         key: {type: 'string', maxlength: 50, nullable: false},
         value: {type: 'text', maxlength: 65535, nullable: true},
         type: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'html'},
@@ -158,7 +158,7 @@ module.exports = {
         updated_by: {type: 'string', nullable: true}
     },
     clients: {
-        id: {type: 'string', nullable: false, primary: true},
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         uuid: {type: 'string', maxlength: 50, nullable: false},
         name: {type: 'string', maxlength: 50, nullable: false, unique: true},
         slug: {type: 'string', maxlength: 50, nullable: false, unique: true},
@@ -169,33 +169,33 @@ module.exports = {
         logo: {type: 'string', maxlength: 2000, nullable: true},
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'development'},
         type: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'ua', validations: {isIn: [['ua', 'web', 'native']]}},
-        description: {type: 'string', maxlength: 50, nullable: true},
+        description: {type: 'string', maxlength: 2000, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', nullable: true}
     },
     client_trusted_domains: {
-        id: {type: 'string', nullable: false, primary: true},
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         client_id: {type: 'string', nullable: false, references: 'clients.id'},
         trusted_domain: {type: 'string', maxlength: 2000, nullable: true}
     },
     accesstokens: {
-        id: {type: 'string', nullable: false, primary: true},
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         token: {type: 'string', maxlength: 191, nullable: false, unique: true},
         user_id: {type: 'string', nullable: false, references: 'users.id'},
         client_id: {type: 'string', nullable: false, references: 'clients.id'},
         expires: {type: 'bigInteger', nullable: false}
     },
     refreshtokens: {
-        id: {type: 'string', nullable: false, primary: true},
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         token: {type: 'string', maxlength: 191, nullable: false, unique: true},
         user_id: {type: 'string', nullable: false, references: 'users.id'},
         client_id: {type: 'string', nullable: false, references: 'clients.id'},
         expires: {type: 'bigInteger', nullable: false}
     },
     subscribers: {
-        id: {type: 'string', nullable: false, primary: true},
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         name: {type: 'string', maxlength: 191, nullable: true},
         email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'pending', validations: {isIn: [['subscribed', 'pending', 'unsubscribed']]}},
@@ -210,7 +210,7 @@ module.exports = {
         updated_by: {type: 'string', nullable: true}
     },
     invites: {
-        id: {type: 'string', nullable: false, primary: true},
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         role_id: {type: 'string', nullable: false},
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'pending', validations: {isIn: [['pending', 'sent']]}},
         token: {type: 'string', maxlength: 191, nullable: false, unique: true},
