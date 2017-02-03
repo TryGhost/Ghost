@@ -58,7 +58,7 @@
 
 {{#if showDeletePostModal}}
     {{gh-fullscreen-modal "delete-post"
-                          model=model
+                          model=(hash post=model onSuccess=(route-action 'redirectToContentScreen'))
                           close=(action "toggleDeletePostModal")
                           modifier="action wide"}}
 {{/if}}

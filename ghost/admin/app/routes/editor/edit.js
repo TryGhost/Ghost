@@ -49,6 +49,10 @@ export default AuthenticatedRoute.extend(base, {
     actions: {
         authorizationFailed() {
             this.get('controller').send('toggleReAuthenticateModal');
+        },
+
+        redirectToContentScreen() {
+            this.transitionTo('posts');
         }
     }
 });

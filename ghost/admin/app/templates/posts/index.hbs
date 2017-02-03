@@ -3,6 +3,7 @@
         {{#each model as |post|}}
             {{gh-posts-list-item
                 post=post
+                active=(eq post selectedPost)
                 onDoubleClick="openEditor"
                 data-test-posts-list-item-id=post.id}}
         {{else}}
@@ -28,7 +29,10 @@
 
 {{#if showDeletePostModal}}
     {{gh-fullscreen-modal "delete-post"
-                          model=currentPost
+                          model=(hash
+                              post=selectedPost
+                              onSuccess=(route-action 'onPostDeletion')
+                          )
                           close=(action "toggleDeletePostModal")
                           modifier="action wide"}}
 {{/if}}

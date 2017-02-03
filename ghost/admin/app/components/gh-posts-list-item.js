@@ -14,9 +14,10 @@ const ObjectPromiseProxy = ObjectProxy.extend(PromiseProxyMixin);
 export default Component.extend({
     tagName: 'li',
     classNames: ['gh-posts-list-item'],
+    classNameBindings: ['active'],
 
     post: null,
-    previewIsHidden: false,
+    active: false,
 
     isFeatured: alias('post.featured'),
     isPage: alias('post.page'),
@@ -63,11 +64,40 @@ export default Component.extend({
         return htmlSafe(`${text.slice(0, 80)}&hellip;`);
     }),
 
+    didReceiveAttrs() {
+        if (this.get('active')) {
+            this.scrollIntoView();
+        }
+    },
+
     click() {
         this.sendAction('onClick', this.get('post'));
     },
 
     doubleClick() {
         this.sendAction('onDoubleClick', this.get('post'));
+    },
+
+    scrollIntoView() {
+        let element = this.$();
+        let offset = element.offset().top;
+        let elementHeight = element.height();
+        let container = $('.content-list');
+        let containerHeight = container.height();
+        let currentScroll = container.scrollTop();
+        let isBelowTop, isAboveBottom, isOnScreen;
+
+        isAboveBottom = offset < containerHeight;
+        isBelowTop = offset > elementHeight;
+
+        isOnScreen = isBelowTop && isAboveBottom;
+
+        if (!isOnScreen) {
+            // Scroll so that element is centered in container
+            // 40 is the amount of padding on the container
+            container.clearQueue().animate({
+                scrollTop: currentScroll + offset - 40 - containerHeight / 2
+            });
+        }
     }
 });
