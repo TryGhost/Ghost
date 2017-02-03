@@ -6,39 +6,37 @@ var moment            = require('moment-timezone'),
     url               = require('url'),
     config            = require('./../config'),
     settingsCache     = require('./../api/settings').cache,
-    // @TODO: unify this with routes.apiBaseUrl
-    apiPath = '/ghost/api/v0.1',
+    // @TODO: unify this with the path in server/app.js
+    API_PATH          = '/ghost/api/v0.1/',
     STATIC_IMAGE_URL_PREFIX = 'content/images';
 
-/** getBaseUrl
- * Returns the base URL of the blog as set in the config. If called with secure options, returns the ssl URL.
+/**
+ * Returns the base URL of the blog as set in the config.
+ *
+ * Secure:
+ * If the request is secure, we want to force returning the blog url as https.
+ * Imagine Ghost runs with http, but nginx allows SSL connections.
+ *
  * @param {boolean} secure
  * @return {string} URL returns the url as defined in config, but always with a trailing `/`
  */
-function getBaseUrl(secure) {
-    var base;
+function getBlogUrl(secure) {
+    var blogUrl;
 
-    // CASE: a specified SSL URL is configured (e. g. https://secure.blog.org/)
-    // see: https://github.com/TryGhost/Ghost/issues/6270#issuecomment-168939865
-    if (secure && config.get('urlSSL')) {
-        base = config.get('urlSSL');
+    if (secure) {
+        blogUrl = config.get('url').replace('http://', 'https://');
     } else {
-        // CASE: no specified SSL URL configured, but user request is secure. In this case we force SSL
-        // and therefore replace the protocol.
-        if (secure) {
-            base = config.get('url').replace('http://', 'https://');
-        } else {
-            base = config.get('url');
-        }
+        blogUrl = config.get('url');
     }
 
-    if (!base.match(/\/$/)) {
-        base += '/';
+    if (!blogUrl.match(/\/$/)) {
+        blogUrl += '/';
     }
-    return base;
+
+    return blogUrl;
 }
 
-/** getSubdir
+/**
  * Returns a subdirectory URL, if defined so in the config.
  * @return {string} URL a subdirectory if configured.
  */
@@ -59,11 +57,25 @@ function getSubdir() {
     return subdir;
 }
 
-function getProtectedSlugs() {
-    var subdir = getSubdir();
+function deduplicateSubDir(url) {
+    var subDir = getSubdir(),
+        subDirRegex;
 
-    if (!_.isEmpty(subdir)) {
-        return config.get('slugs').protected.concat([subdir.split('/').pop()]);
+    if (!subDir) {
+        return url;
+    }
+
+    subDir = subDir.replace(/^\/|\/+$/, '');
+    subDirRegex = new RegExp(subDir + '\/' + subDir + '\/');
+
+    return url.replace(subDirRegex, subDir + '/');
+}
+
+function getProtectedSlugs() {
+    var subDir = getSubdir();
+
+    if (!_.isEmpty(subDir)) {
+        return config.get('slugs').protected.concat([subDir.split('/').pop()]);
     } else {
         return config.get('slugs').protected;
     }
@@ -77,8 +89,6 @@ function getProtectedSlugs() {
 function urlJoin() {
     var args = Array.prototype.slice.call(arguments),
         prefixDoubleSlash = false,
-        subdir = getSubdir().replace(/^\/|\/+$/, ''),
-        subdirRegex,
         url;
 
     // Remove empty item at the beginning
@@ -102,13 +112,28 @@ function urlJoin() {
         url = url.replace(/^\//, '//');
     }
 
-    // Deduplicate subdirectory
-    if (subdir) {
-        subdirRegex = new RegExp(subdir + '\/' + subdir + '\/');
-        url = url.replace(subdirRegex, subdir + '/');
+    url = deduplicateSubDir(url);
+    return url;
+}
+
+/**
+ * admin:url is optional
+ */
+function getAdminUrl() {
+    var adminUrl = config.get('admin:url'),
+        subDir = getSubdir();
+
+    if (!adminUrl) {
+        return;
     }
 
-    return url;
+    if (!adminUrl.match(/\/$/)) {
+        adminUrl += '/';
+    }
+
+    adminUrl = urlJoin(adminUrl, subDir, '/');
+    adminUrl = deduplicateSubDir(adminUrl);
+    return adminUrl;
 }
 
 // ## createUrl
@@ -122,7 +147,7 @@ function urlJoin() {
 // Parameters:
 // - urlPath - string which must start and end with a slash
 // - absolute (optional, default:false) - boolean whether or not the url should be absolute
-// - secure (optional, default:false) - boolean whether or not to use urlSSL or url config
+// - secure (optional, default:false) - boolean whether or not to force SSL
 // Returns:
 //  - a URL which always ends with a slash
 function createUrl(urlPath, absolute, secure) {
@@ -132,7 +157,7 @@ function createUrl(urlPath, absolute, secure) {
 
     // create base of url, always ends without a slash
     if (absolute) {
-        base = getBaseUrl(secure);
+        base = getBlogUrl(secure);
     } else {
         base = getSubdir();
     }
@@ -193,7 +218,7 @@ function urlPathForPost(post) {
 // - data (optional) - a json object containing data needed to generate a url
 // - absolute (optional, default:false) - boolean whether or not the url should be absolute
 // This is probably not the right place for this, but it's the best place for now
-// @TODO: rewrite, very hard to read!
+// @TODO: rewrite, very hard to read, create private functions!
 function urlFor(context, data, absolute) {
     var urlPath = '/',
         secure, imagePathRe,
@@ -204,7 +229,7 @@ function urlFor(context, data, absolute) {
     knownPaths = {
         home: '/',
         rss: '/rss/',
-        api: apiPath,
+        api: API_PATH,
         sitemap_xsl: '/sitemap.xsl'
     };
 
@@ -239,7 +264,7 @@ function urlFor(context, data, absolute) {
             if (absolute) {
                 // Remove the sub-directory from the URL because ghostConfig will add it back.
                 urlPath = urlPath.replace(new RegExp('^' + getSubdir()), '');
-                baseUrl = getBaseUrl(secure).replace(/\/$/, '');
+                baseUrl = getBlogUrl(secure).replace(/\/$/, '');
                 urlPath = baseUrl + urlPath;
             }
 
@@ -247,7 +272,7 @@ function urlFor(context, data, absolute) {
         } else if (context === 'nav' && data.nav) {
             urlPath = data.nav.url;
             secure = data.nav.secure || secure;
-            baseUrl = getBaseUrl(secure);
+            baseUrl = getBlogUrl(secure);
             hostname = baseUrl.split('//')[1] + getSubdir();
 
             if (urlPath.indexOf(hostname) > -1
@@ -266,19 +291,34 @@ function urlFor(context, data, absolute) {
             }
         }
     } else if (context === 'home' && absolute) {
-        urlPath = getBaseUrl(secure);
-        // other objects are recognised but not yet supported
-    } else if (context === 'admin') {
-        if (config.get('forceAdminSSL')) {
-            urlPath = getBaseUrl(true);
-        } else {
-            urlPath = getBaseUrl();
+        urlPath = getBlogUrl(secure);
+
+        // CASE: with or without protocol?
+        // @TODO: rename cors
+        if (data && data.cors) {
+            urlPath = urlPath.replace(/^.*?:\/\//g, '//');
         }
+    } else if (context === 'admin') {
+        urlPath = getAdminUrl() || getBlogUrl();
 
         if (absolute) {
             urlPath += 'ghost/';
         } else {
             urlPath = '/ghost/';
+        }
+    } else if (context === 'api') {
+        urlPath = getAdminUrl() || getBlogUrl();
+
+        // CASE: with or without protocol?
+        // @TODO: rename cors
+        if (data && data.cors) {
+            urlPath = urlPath.replace(/^.*?:\/\//g, '//');
+        }
+
+        if (absolute) {
+            urlPath = urlPath.replace(/\/$/, '') + API_PATH;
+        } else {
+            urlPath = API_PATH;
         }
     } else if (_.isString(context) && _.indexOf(_.keys(knownPaths), context) !== -1) {
         // trying to create a url for a named path
@@ -294,41 +334,17 @@ function urlFor(context, data, absolute) {
     return createUrl(urlPath, absolute, secure);
 }
 
-/**
- * CASE: generate api url for CORS
- *   - we delete the http protocol if your blog runs with http and https (configured by nginx)
- *   - in that case your config.js configures Ghost with http and no admin ssl force
- *   - the browser then reads the protocol dynamically
- */
-function apiUrl(options) {
-    options = options || {cors: false};
-
-    // @TODO unify this with urlFor
-    var url;
-
-    if (config.get('forceAdminSSL')) {
-        url = (config.get('urlSSL') || getBaseUrl(true)).replace(/^.*?:\/\//g, 'https://');
-    } else if (config.get('urlSSL')) {
-        url = config.get('urlSSL').replace(/^.*?:\/\//g, 'https://');
-    } else if (config.get('url').match(/^https:/)) {
-        url = config.get('url');
-    } else {
-        if (options.cors === false) {
-            url = config.get('url');
-        } else {
-            url = config.get('url').replace(/^.*?:\/\//g, '//');
-        }
-    }
-
-    return url.replace(/\/$/, '') + apiPath + '/';
+function isSSL(urlToParse) {
+    var protocol = url.parse(urlToParse).protocol;
+    return protocol === 'https:';
 }
 
 module.exports.getProtectedSlugs = getProtectedSlugs;
 module.exports.getSubdir = getSubdir;
 module.exports.urlJoin = urlJoin;
 module.exports.urlFor = urlFor;
+module.exports.isSSL = isSSL;
 module.exports.urlPathForPost = urlPathForPost;
-module.exports.apiUrl = apiUrl;
 
 /**
  * If you request **any** image in Ghost, it get's served via

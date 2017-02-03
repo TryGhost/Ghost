@@ -21,7 +21,7 @@ var debug = require('debug')('ghost:api'),
     // Shared
     bodyParser = require('body-parser'), // global, shared
     cacheControl = require('../middleware/cache-control'), // global, shared
-    checkSSL = require('../middleware/check-ssl'),
+    urlRedirects = require('../middleware/url-redirects'),
     prettyURLs = require('../middleware/pretty-urls'),
     maintenance = require('../middleware/maintenance'), // global, shared
     errorHandler = require('../middleware/error-handler'), // global, shared
@@ -235,7 +235,7 @@ module.exports = function setupApiApp() {
 
     // Force SSL if required
     // must happen AFTER asset loading and BEFORE routing
-    apiApp.use(checkSSL);
+    apiApp.use(urlRedirects);
 
     // Add in all trailing slashes & remove uppercase
     // must happen AFTER asset loading and BEFORE routing

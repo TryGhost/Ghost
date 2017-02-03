@@ -3,7 +3,6 @@ var cors = require('cors'),
     url = require('url'),
     os = require('os'),
     utils = require('../../utils'),
-    config = require('../../config'),
     whitelist = [],
     ENABLE_CORS = {origin: true, maxAge: 86400},
     DISABLE_CORS = {origin: false};
@@ -33,10 +32,14 @@ function getIPs() {
 }
 
 function getUrls() {
-    var urls = [url.parse(utils.url.urlFor('home', true)).hostname];
+    var blogHost = url.parse(utils.url.urlFor('home', true)).hostname,
+        adminHost = url.parse(utils.url.urlFor('admin', true)).hostname,
+        urls = [];
 
-    if (config.get('urlSSL')) {
-        urls.push(url.parse(config.get('urlSSL')).hostname);
+    urls.push(blogHost);
+
+    if (adminHost !== blogHost) {
+        urls.push(adminHost);
     }
 
     return urls;

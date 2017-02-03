@@ -22,11 +22,14 @@ describe('Themes API', function () {
                 .attach(fieldName, themePath);
         },
         editor: null
-    };
+    }, ghostServer;
 
     before(function (done) {
-        ghost().then(function (ghostServer) {
-            request = supertest.agent(ghostServer.rootApp);
+        ghost().then(function (_ghostServer) {
+            ghostServer = _ghostServer;
+            return ghostServer.start();
+        }).then(function () {
+            request = supertest.agent(config.get('url'));
         }).then(function () {
             return testUtils.doAuth(request);
         }).then(function (token) {
@@ -47,7 +50,7 @@ describe('Themes API', function () {
         }).catch(done);
     });
 
-    after(function (done) {
+    after(function () {
         // clean successful uploaded themes
         fs.removeSync(config.getContentPath('themes') + '/valid');
         fs.removeSync(config.getContentPath('themes') + '/casper.zip');
@@ -55,10 +58,10 @@ describe('Themes API', function () {
         // gscan creates /test/tmp in test mode
         fs.removeSync(config.get('paths').appRoot + '/test');
 
-        testUtils.clearData()
+        return testUtils.clearData()
             .then(function () {
-                done();
-            }).catch(done);
+                return ghostServer.stop();
+            });
     });
 
     describe('success cases', function () {

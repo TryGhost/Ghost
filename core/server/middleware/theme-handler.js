@@ -8,6 +8,7 @@ var _      = require('lodash'),
     utils = require('../utils'),
     logging = require('../logging'),
     errors = require('../errors'),
+    utils = require('../utils'),
     i18n = require('../i18n'),
     themeHandler;
 
@@ -18,7 +19,7 @@ themeHandler = {
         var themeData = {
                 title: settingsCache.get('title'),
                 description: settingsCache.get('description'),
-                url: utils.url.urlFor('home', true),
+                url: utils.url.urlFor('home', {secure: req.secure}, true),
                 facebook: settingsCache.get('facebook'),
                 twitter: settingsCache.get('twitter'),
                 timezone: settingsCache.get('activeTimezone'),
@@ -32,11 +33,6 @@ themeHandler = {
             labsData = _.cloneDeep(settingsCache.get('labs')),
             blogApp = req.app;
 
-        if (req.secure && config.get('urlSSL')) {
-            // For secure requests override .url property with the SSL version
-            themeData.url = config.get('urlSSL').replace(/\/$/, '');
-        }
-
         hbs.updateTemplateOptions({
             data: {
                 blog: themeData,
@@ -49,7 +45,7 @@ themeHandler = {
         }
 
         // Pass 'secure' flag to the view engine
-        // so that templates can choose 'url' vs 'urlSSL'
+        // so that templates can choose to render https or http 'url', see url utility
         res.locals.secure = req.secure;
 
         next();

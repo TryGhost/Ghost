@@ -8,7 +8,7 @@ var debug = require('debug')('ghost:admin'),
 
     // Global/shared middleware?
     cacheControl = require('../middleware/cache-control'),
-    checkSSL = require('../middleware/check-ssl'),
+    urlRedirects = require('../middleware/url-redirects'),
     errorHandler = require('../middleware//error-handler'),
     maintenance = require('../middleware/maintenance'),
     prettyURLs = require('../middleware//pretty-urls'),
@@ -46,7 +46,7 @@ module.exports = function setupAdminApp() {
 
     // Force SSL if required
     // must happen AFTER asset loading and BEFORE routing
-    adminApp.use(checkSSL);
+    adminApp.use(urlRedirects);
 
     // Add in all trailing slashes & remove uppercase
     // must happen AFTER asset loading and BEFORE routing

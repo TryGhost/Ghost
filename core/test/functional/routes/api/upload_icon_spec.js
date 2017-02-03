@@ -12,13 +12,16 @@ var testUtils     = require('../../../utils'),
 describe('Upload Icon API', function () {
     var accesstoken = '',
         getIconDimensions,
-        icons = [];
+        icons = [], ghostServer;
 
     before(function (done) {
         // starting ghost automatically populates the db
         // TODO: prevent db init, and manage bringing up the DB with fixtures ourselves
-        ghost().then(function (ghostServer) {
-            request = supertest.agent(ghostServer.rootApp);
+        ghost().then(function (_ghostServer) {
+            ghostServer = _ghostServer;
+            return ghostServer.start();
+        }).then(function () {
+            request = supertest.agent(config.get('url'));
         }).then(function () {
             return testUtils.doAuth(request);
         }).then(function (token) {
@@ -27,14 +30,15 @@ describe('Upload Icon API', function () {
         }).catch(done);
     });
 
-    after(function (done) {
+    after(function () {
         icons.forEach(function (icon) {
             fs.removeSync(config.get('paths').appRoot + icon);
         });
 
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
+        return testUtils.clearData()
+            .then(function () {
+                return ghostServer.stop();
+            });
     });
 
     describe('success cases for icons', function () {

@@ -67,23 +67,6 @@ describe('Theme Handler', function () {
             next.called.should.be.true();
         });
 
-        it('handles secure context', function () {
-            var themeOptSpy = sandbox.stub(hbs, 'updateTemplateOptions');
-            req.secure = true;
-            res.locals = {};
-            configUtils.set({urlSSL: 'https://secure.blog'});
-
-            themeHandler.configHbsForContext(req, res, next);
-
-            themeOptSpy.calledOnce.should.be.true();
-            themeOptSpy.firstCall.args[0].should.be.an.Object().and.have.property('data');
-            themeOptSpy.firstCall.args[0].data.should.be.an.Object().and.have.property('blog');
-            themeOptSpy.firstCall.args[0].data.blog.should.be.an.Object().and.have.property('url');
-            themeOptSpy.firstCall.args[0].data.blog.url.should.eql('https://secure.blog');
-            res.locals.secure.should.equal(true);
-            next.called.should.be.true();
-        });
-
         it('sets view path', function () {
             req.secure = true;
             res.locals = {};
