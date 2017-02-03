@@ -1,6 +1,5 @@
-var _ = require('lodash'),
-    Promise = require('bluebird'),
-    config = require('../../config'),
+var Promise = require('bluebird'),
+    settingsCache = require('../../api/settings').cache,
     utils = require('../../utils'),
     getUrl = require('./url'),
     getImageDimensions = require('./image-dimensions'),
@@ -46,12 +45,30 @@ function getMetaData(data, root) {
         publishedDate: getPublishedDate(data),
         modifiedDate: getModifiedDate(data),
         ogType: getOgType(data),
-        blog: _.cloneDeep(config.get('theme'))
+        // @TODO: pass into each meta helper - wrap each helper
+        blog: {
+            title: settingsCache.get('title'),
+            description: settingsCache.get('description'),
+            url: utils.url.urlFor('home', true),
+            facebook: settingsCache.get('facebook'),
+            twitter: settingsCache.get('twitter'),
+            timezone: settingsCache.get('activeTimezone'),
+            navigation: settingsCache.get('navigation'),
+            posts_per_page: settingsCache.get('postsPerPage'),
+            icon: settingsCache.get('icon'),
+            cover: settingsCache.get('cover'),
+            logo: settingsCache.get('logo'),
+            amp: settingsCache.get('amp')
+        }
     };
 
     metaData.blog.logo = {};
-    metaData.blog.logo.url = config.get('theme').logo ?
-        utils.url.urlFor('image', {image: config.get('theme').logo}, true) : utils.url.urlJoin(utils.url.urlFor('admin'), 'img/ghosticon.jpg');
+
+    if (settingsCache.get('logo')) {
+        metaData.blog.logo.url = utils.url.urlFor('image', {image: settingsCache.get('logo')}, true);
+    } else {
+        metaData.blog.logo.url = utils.url.urlJoin(utils.url.urlFor('admin'), 'img/ghosticon.jpg');
+    }
 
     // TODO: cleanup these if statements
     if (data.post && data.post.html) {

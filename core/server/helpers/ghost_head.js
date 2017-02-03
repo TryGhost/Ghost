@@ -17,18 +17,21 @@ var getMetaData = require('../data/meta'),
     Promise = require('bluebird'),
     labs = require('../utils/labs'),
     utils = require('../utils'),
-    api = require('../api');
+    api = require('../api'),
+    settingsCache = api.settings.cache;
 
 function getClient() {
     if (labs.isSet('publicAPI') === true) {
         return api.clients.read({slug: 'ghost-frontend'}).then(function (client) {
             client = client.clients[0];
+
             if (client.status === 'enabled') {
                 return {
                     id: client.slug,
                     secret: client.secret
                 };
             }
+
             return {};
         });
     }
@@ -42,6 +45,7 @@ function writeMetaTag(property, content, type) {
 
 function finaliseStructuredData(metaData) {
     var head = [];
+
     _.each(metaData.structuredData, function (content, property) {
         if (property === 'article:tag') {
             _.each(metaData.keywords, function (keyword) {
@@ -57,6 +61,7 @@ function finaliseStructuredData(metaData) {
                 escapeExpression(content)));
         }
     });
+
     return head;
 }
 
@@ -88,9 +93,10 @@ function ghost_head(options) {
             metaData: getMetaData(this, options.data.root),
             client: getClient()
         },
+        blogIcon = settingsCache.get('icon'),
         // CASE: blog icon is not set in config, we serve the default
-        iconType = !config.get('theme:icon') ? 'x-icon' : config.get('theme:icon').match(/\/favicon\.ico$/i) ? 'x-icon' : 'png',
-        favicon = !config.get('theme:icon') ? '/favicon.ico' : utils.url.urlFor('image', {image: config.get('theme:icon')});
+        iconType = !blogIcon ? 'x-icon' : blogIcon.match(/\/favicon\.ico$/i) ? 'x-icon' : 'png',
+        favicon = !blogIcon ? '/favicon.ico' : utils.url.urlFor('image', {image: blogIcon});
 
     return Promise.props(fetch).then(function (response) {
         client = response.client;
@@ -104,7 +110,7 @@ function ghost_head(options) {
             head.push('<meta name="referrer" content="' + referrerPolicy + '" />');
 
             // show amp link in post when 1. we are not on the amp page and 2. amp is enabled
-            if (_.includes(context, 'post') && !_.includes(context, 'amp') && config.get('theme:amp')) {
+            if (_.includes(context, 'post') && !_.includes(context, 'amp') && settingsCache.get('amp')) {
                 head.push('<link rel="amphtml" href="' +
                     escapeExpression(metaData.ampUrl) + '" />');
             }
@@ -138,6 +144,7 @@ function ghost_head(options) {
 
         head.push('<meta name="generator" content="Ghost ' +
             escapeExpression(safeVersion) + '" />');
+
         head.push('<link rel="alternate" type="application/rss+xml" title="' +
             escapeExpression(metaData.blog.title)  + '" href="' +
             escapeExpression(metaData.rssUrl) + '" />');

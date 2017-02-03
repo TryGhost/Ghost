@@ -4,17 +4,16 @@ var testUtils       = require('../../utils'),
     _               = require('lodash'),
     Promise         = require('bluebird'),
     sinon           = require('sinon'),
-
-    // Stuff we are testing
     sequence        = require('../../../server/utils/sequence'),
+    settingsCache   = require('../../../server/api/settings').cache,
     ghostBookshelf  = require('../../../server/models/base'),
     PostModel       = require('../../../server/models/post').Post,
     TagModel        = require('../../../server/models/tag').Tag,
     events          = require('../../../server/events'),
     errors          = require('../../../server/errors'),
+    configUtils     = require('../../utils/configUtils'),
     DataGenerator   = testUtils.DataGenerator,
     context         = testUtils.context.owner,
-    configUtils     = require('../../utils/configUtils'),
     sandbox         = sinon.sandbox.create();
 
 /**
@@ -64,7 +63,11 @@ describe('Post Model', function () {
 
         describe('findAll', function () {
             beforeEach(function () {
-                configUtils.set('theme:permalinks', '/:slug/');
+                sandbox.stub(settingsCache, 'get', function (key) {
+                    return {
+                        permalinks: '/:slug/'
+                    }[key];
+                });
             });
 
             it('can findAll', function (done) {
@@ -94,9 +97,11 @@ describe('Post Model', function () {
 
         describe('findPage', function () {
             beforeEach(function () {
-                configUtils.set({theme: {
-                    permalinks: '/:slug/'
-                }});
+                sandbox.stub(settingsCache, 'get', function (key) {
+                    return {
+                        permalinks: '/:slug/'
+                    }[key];
+                });
             });
 
             it('can findPage (default)', function (done) {
@@ -281,7 +286,11 @@ describe('Post Model', function () {
 
         describe('findOne', function () {
             beforeEach(function () {
-                configUtils.set('theme:permalinks', '/:slug/');
+                sandbox.stub(settingsCache, 'get', function (key) {
+                    return {
+                        permalinks: '/:slug/'
+                    }[key];
+                });
             });
 
             it('can findOne', function (done) {
@@ -328,7 +337,13 @@ describe('Post Model', function () {
             });
 
             it('can findOne, returning a dated permalink', function (done) {
-                configUtils.set('theme:permalinks', '/:year/:month/:day/:slug/');
+                settingsCache.get.restore();
+
+                sandbox.stub(settingsCache, 'get', function (key) {
+                    return {
+                        permalinks: '/:year/:month/:day/:slug/'
+                    }[key];
+                });
 
                 PostModel.findOne({id: testUtils.DataGenerator.Content.posts[0].id})
                     .then(function (result) {
@@ -347,6 +362,7 @@ describe('Post Model', function () {
         describe('edit', function () {
             beforeEach(function () {
                 eventsTriggered = {};
+
                 sandbox.stub(events, 'emit', function (eventName, eventObj) {
                     if (!eventsTriggered[eventName]) {
                         eventsTriggered[eventName] = [];
@@ -827,6 +843,7 @@ describe('Post Model', function () {
         describe('add', function () {
             beforeEach(function () {
                 eventsTriggered = {};
+
                 sandbox.stub(events, 'emit', function (eventName, eventObj) {
                     if (!eventsTriggered[eventName]) {
                         eventsTriggered[eventName] = [];

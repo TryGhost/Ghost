@@ -2,6 +2,7 @@
 // RESTful API for browsing the configuration
 var _                  = require('lodash'),
     config             = require('../config'),
+    settingsCache      = require('../api/settings').cache,
     ghostVersion       = require('../utils/ghost-version'),
     models             = require('../models'),
     Promise            = require('bluebird'),
@@ -29,7 +30,7 @@ function getBaseConfig() {
         useGravatar:    !config.isPrivacyDisabled('useGravatar'),
         publicAPI:      config.get('publicAPI') === true,
         blogUrl:        utils.url.urlFor('home', true),
-        blogTitle:      config.get('theme').title,
+        blogTitle:      settingsCache.get('title'),
         routeKeywords:  config.get('routeKeywords')
     };
 }

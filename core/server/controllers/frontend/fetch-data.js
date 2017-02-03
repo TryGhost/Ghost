@@ -4,8 +4,8 @@
  */
 var api = require('../../api'),
     _   = require('lodash'),
-    config = require('../../config'),
     Promise = require('bluebird'),
+    settingsCache = api.settings.cache,
     queryDefaults,
     defaultPostQuery = {};
 
@@ -33,7 +33,7 @@ _.extend(defaultPostQuery, queryDefaults, {
 function fetchPostsPerPage(options) {
     options = options || {};
 
-    var postsPerPage = parseInt(config.get('theme').postsPerPage);
+    var postsPerPage = parseInt(settingsCache.get('postsPerPage'));
 
     // No negative posts per page, must be number
     if (!isNaN(postsPerPage) && postsPerPage > 0) {
