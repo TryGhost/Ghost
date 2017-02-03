@@ -5,6 +5,7 @@ var _          = require('lodash'),
     nodemailer = require('nodemailer'),
     validator  = require('validator'),
     config     = require('../config'),
+    settingsCache = require('../api/settings').cache,
     i18n       = require('../i18n'),
     utils      = require('../utils');
 
@@ -31,8 +32,7 @@ GhostMailer.prototype.from = function () {
 
     // If we do have a from address, and it's just an email
     if (validator.isEmail(from)) {
-        defaultBlogTitle = config.get('theme').title ? config.get('theme').title : i18n.t('common.mail.title', {domain: this.getDomain()});
-
+        defaultBlogTitle = settingsCache.get('title') || i18n.t('common.mail.title', {domain: this.getDomain()});
         from = '"' + defaultBlogTitle + '" <' + from + '>';
     }
 

@@ -2,28 +2,31 @@ var should         = require('should'),
     sinon          = require('sinon'),
     Promise        = require('bluebird'),
     configUtils    = require('../../../utils/configUtils'),
-
-    // Things we are testing
     api            = require('../../../../server/api'),
     postLookup     = require('../../../../server/controllers/frontend/post-lookup'),
-
+    settingsCache  = api.settings.cache,
     sandbox = sinon.sandbox.create();
 
 describe('postLookup', function () {
-    var postAPIStub;
+    var postAPIStub, localSettingsCache = {};
 
     afterEach(function () {
         sandbox.restore();
         configUtils.restore();
+        localSettingsCache = {};
     });
 
     beforeEach(function () {
         postAPIStub = sandbox.stub(api.posts, 'read');
+
+        sandbox.stub(settingsCache, 'get', function (key) {
+            return localSettingsCache[key];
+        });
     });
 
     describe('Permalinks: /:slug/', function () {
         beforeEach(function () {
-            configUtils.set({theme: {permalinks: '/:slug/'}});
+            localSettingsCache.permalinks = '/:slug/';
 
             postAPIStub.withArgs({slug: 'welcome-to-ghost', include: 'author,tags'})
                 .returns(new Promise.resolve({posts: [{
@@ -79,7 +82,7 @@ describe('postLookup', function () {
 
     describe('Permalinks: /:year/:month/:day/:slug/', function () {
         beforeEach(function () {
-            configUtils.set({theme: {permalinks: '/:year/:month/:day/:slug/'}});
+            localSettingsCache.permalinks = '/:year/:month/:day/:slug/';
 
             postAPIStub.withArgs({slug: 'welcome-to-ghost', include: 'author,tags'})
                 .returns(new Promise.resolve({posts: [{
@@ -135,7 +138,7 @@ describe('postLookup', function () {
 
     describe('Edit URLs', function () {
         beforeEach(function () {
-            configUtils.set({theme: {permalinks: '/:slug/'}});
+            localSettingsCache.permalinks = '/:slug/';
 
             postAPIStub.withArgs({slug: 'welcome-to-ghost', include: 'author,tags'})
                 .returns(new Promise.resolve({posts: [{
@@ -192,9 +195,10 @@ describe('postLookup', function () {
             }).catch(done);
         });
     });
+
     describe('AMP URLs', function () {
         beforeEach(function () {
-            configUtils.set({theme: {permalinks: '/:slug/'}});
+            localSettingsCache.permalinks = '/:slug/';
 
             postAPIStub.withArgs({slug: 'welcome-to-ghost', include: 'author,tags'})
                 .returns(new Promise.resolve({posts: [{

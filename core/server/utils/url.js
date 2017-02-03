@@ -5,6 +5,7 @@ var moment            = require('moment-timezone'),
     _                 = require('lodash'),
     url               = require('url'),
     config            = require('./../config'),
+    settingsCache     = require('./../api/settings').cache,
     // @TODO: unify this with routes.apiBaseUrl
     apiPath = '/ghost/api/v0.1';
 
@@ -146,8 +147,8 @@ function createUrl(urlPath, absolute, secure) {
  */
 function urlPathForPost(post) {
     var output = '',
-        permalinks = config.get('theme').permalinks,
-        publishedAtMoment = moment.tz(post.published_at || Date.now(), config.get('theme').timezone),
+        permalinks = settingsCache.get('permalinks'),
+        publishedAtMoment = moment.tz(post.published_at || Date.now(), settingsCache.get('activeTimezone')),
         tags = {
             year:   function () { return publishedAtMoment.format('YYYY'); },
             month:  function () { return publishedAtMoment.format('MM'); },
