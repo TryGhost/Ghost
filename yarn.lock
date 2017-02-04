@@ -2038,15 +2038,14 @@ getsetdeep@~2.0.0:
   dependencies:
     typechecker "~2.0.1"
 
-ghost-editor@0.1.5:
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/ghost-editor/-/ghost-editor-0.1.5.tgz#51bafd71c94bee3b6f15c9baa69b54115435092a"
+ghost-editor@0.1.6:
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/ghost-editor/-/ghost-editor-0.1.6.tgz#e512bf6518df9c5444e69eba2d24711d8429eb63"
   dependencies:
     broccoli-funnel "^1.0.7"
     broccoli-merge-trees "^1.1.4"
     ember-cli-babel "^5.1.6"
     ember-cli-htmlbars "^1.1.0"
-    mobiledoc-kit "^0.10.11"
     showdown-ghost "^0.4.0"
 
 ghost-gql@0.0.6:
@@ -4057,20 +4056,9 @@ mktemp@~0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/mktemp/-/mktemp-0.4.0.tgz#6d0515611c8a8c84e484aa2000129b98e981ff0b"
 
-mobiledoc-html-renderer@0.3.1, mobiledoc-html-renderer@^0.3.0:
+mobiledoc-html-renderer@0.3.1:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/mobiledoc-html-renderer/-/mobiledoc-html-renderer-0.3.1.tgz#a411181015c40be26d716d82824691a63fa8ba88"
-
-mobiledoc-kit@^0.10.11:
-  version "0.10.13"
-  resolved "https://registry.yarnpkg.com/mobiledoc-kit/-/mobiledoc-kit-0.10.13.tgz#53877edc83f84b2df0bf048f6432ee59a0216b6a"
-  dependencies:
-    mobiledoc-html-renderer "^0.3.0"
-    mobiledoc-text-renderer "^0.3.0"
-
-mobiledoc-text-renderer@^0.3.0:
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/mobiledoc-text-renderer/-/mobiledoc-text-renderer-0.3.1.tgz#08f06f4696925dbacdf1c508144b8caed58e1127"
 
 mocha@3.2.0:
   version "3.2.0"
