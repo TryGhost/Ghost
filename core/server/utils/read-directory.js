@@ -82,6 +82,13 @@ function readDirectory(dir, options) {
             });
 
             return tree;
+        })
+        .catch(function (err) {
+            if (err.code === 'ENOENT') {
+                return;
+            }
+
+            return Promise.reject(err);
         });
 }
 

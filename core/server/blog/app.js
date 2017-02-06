@@ -21,6 +21,7 @@ var debug = require('debug')('ghost:blog'),
     serveSharedFile = require('../middleware/serve-shared-file'),
     staticTheme = require('../middleware/static-theme'),
     themeHandler = require('../middleware/theme-handler'),
+    customRedirects = require('../middleware/redirects'),
     serveFavicon = require('../middleware/serve-favicon');
 
 module.exports = function setupBlogApp() {
@@ -38,6 +39,10 @@ module.exports = function setupBlogApp() {
     blogApp.use(themeHandler.updateActiveTheme);
     blogApp.use(themeHandler.configHbsForContext);
     debug('Themes done');
+
+    // you can extend Ghost with a custom redirects file
+    // see https://github.com/TryGhost/Ghost/issues/7707
+    customRedirects(blogApp);
 
     // Static content/assets
     // @TODO make sure all of these have a local 404 error handler
