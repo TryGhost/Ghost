@@ -1,6 +1,5 @@
 import Route from 'ember-route';
 import injectService from 'ember-service/inject';
-import Configuration from 'ember-simple-auth/configuration';
 import styleBody from 'ghost-admin/mixins/style-body';
 
 export default Route.extend(styleBody, {
@@ -21,7 +20,7 @@ export default Route.extend(styleBody, {
         // with OAuth auth users are authenticated on step 2 so we
         // can't use the session.isAuthenticated shortcut
         if (!this.get('config.ghostOAuth') && this.get('session.isAuthenticated')) {
-            this.transitionTo(Configuration.routeIfAlreadyAuthenticated);
+            this.transitionTo('posts');
             return;
         }
 

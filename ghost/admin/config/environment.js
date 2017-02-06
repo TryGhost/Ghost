@@ -31,9 +31,7 @@ module.exports = function (environment) {
         },
 
         'ember-simple-auth': {
-            authenticationRoute: 'signin',
-            routeAfterAuthentication: 'posts',
-            routeIfAlreadyAuthenticated: 'posts'
+
         },
 
         torii: {

@@ -22,6 +22,8 @@ shortcuts[`${ctrlOrCmd}+s`] = {action: 'save', scope: 'all'};
 export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
     shortcuts,
 
+    routeAfterAuthentication: 'posts',
+
     config: injectService(),
     feature: injectService(),
     dropdown: injectService(),
