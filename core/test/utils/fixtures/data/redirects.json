@@ -1,0 +1,35 @@
+[
+    {
+        "from": "^/post/[0-9]+/([a-z0-9\\-]+)",
+        "to": "/$1"
+    },
+    {
+        "permanent": true,
+        "from": "/my-old-blog-post/",
+        "to": "/revamped-url/"
+    },
+    {
+        "from": "^\\/what(\\/?)$",
+        "to": "/what-does-god-say"
+    },
+    {
+        "from": "^\\/search\\/label\\/([^\\%20]+)$",
+        "to": "/tag/$1"
+    },
+    {
+        "from": "^\\/topic\\/",
+        "to": "/"
+    },
+    {
+        "from": "^/resources\\/download(\\/?)$",
+        "to": "/shubal-stearns"
+    },
+    {
+        "from": "^\\/[0-9]{4}\\/[0-9]{2}\\/([a-z0-9\\-]+)(\\.html)?(\\/)?$",
+        "to": "/$1"
+    },
+    {
+        "from": "^/prefix/([a-z0-9\\-]+)?",
+        "to": "/blog/$1"
+    }
+]

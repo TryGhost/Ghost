@@ -62,6 +62,7 @@ urlRedirects = function urlRedirects(req, res, next) {
         }));
     }
 
+    debug('no url redirect');
     next();
 };
 
