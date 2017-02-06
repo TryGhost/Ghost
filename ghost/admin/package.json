@@ -30,7 +30,7 @@
     "bower": "1.8.0",
     "broccoli-asset-rev": "2.5.0",
     "broccoli-clean-css": "1.1.0",
-    "broccoli-concat": "3.0.5",
+    "broccoli-concat": "3.1.1",
     "broccoli-merge-trees": "1.2.1",
     "broccoli-uglify-js": "0.2.0",
     "chai-jquery": "2.0.0",
