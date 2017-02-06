@@ -2398,9 +2398,9 @@ ember-one-way-controls@2.0.0:
     ember-invoke-action "1.4.0"
     ember-runtime-enumerable-includes-polyfill "^1.0.1"
 
-ember-power-select@1.4.2:
-  version "1.4.2"
-  resolved "https://registry.yarnpkg.com/ember-power-select/-/ember-power-select-1.4.2.tgz#731037e512e66d92fc0377c4da3336cd0400f9e4"
+ember-power-select@1.4.3:
+  version "1.4.3"
+  resolved "https://registry.yarnpkg.com/ember-power-select/-/ember-power-select-1.4.3.tgz#f513567edd800b88968665741dab1cc95eb2485c"
   dependencies:
     ember-basic-dropdown "^0.22.0"
     ember-cli-babel "^5.1.10"
