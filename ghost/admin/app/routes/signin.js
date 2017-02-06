@@ -2,15 +2,15 @@ import Route from 'ember-route';
 import injectService from 'ember-service/inject';
 import EmberObject from 'ember-object';
 import styleBody from 'ghost-admin/mixins/style-body';
-import Configuration from 'ember-simple-auth/configuration';
 import DS from 'ember-data';
 import {
     isVersionMismatchError
 } from 'ghost-admin/services/ajax';
+import UnauthenticatedRouteMixin from 'ember-simple-auth/mixins/unauthenticated-route-mixin';
 
 const {Errors} = DS;
 
-export default Route.extend(styleBody, {
+export default Route.extend(UnauthenticatedRouteMixin, styleBody, {
     titleToken: 'Sign In',
 
     classNames: ['ghost-login'],
@@ -18,13 +18,7 @@ export default Route.extend(styleBody, {
     session: injectService(),
     notifications: injectService(),
 
-    beforeModel() {
-        this._super(...arguments);
-
-        if (this.get('session.isAuthenticated')) {
-            this.transitionTo(Configuration.routeIfAlreadyAuthenticated);
-        }
-    },
+    routeIfAlreadyAuthenticated: 'posts',
 
     model() {
         return EmberObject.create({

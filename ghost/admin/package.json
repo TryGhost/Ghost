@@ -74,7 +74,7 @@
     "ember-power-select": "1.4.3",
     "ember-resolver": "2.1.1",
     "ember-route-action-helper": "2.0.2",
-    "ember-simple-auth": "1.1.0",
+    "ember-simple-auth": "1.2.0",
     "ember-sinon": "0.6.0",
     "ember-sortable": "1.9.1",
     "ember-source": "2.11.0",
