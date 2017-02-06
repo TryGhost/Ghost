@@ -1,0 +1,41 @@
+{{!< default}}
+{{!-- The tag above means - insert everything in this file into the {body} of the default.hbs template --}}
+
+{{!-- The big featured header --}}
+
+{{!-- Everything inside the #author tags pulls data from the author --}}
+{{#author}}
+    <header class="main-header author-head {{#if cover}}" style="background-image: url({{cover}}){{else}}no-cover{{/if}}">
+        <nav class="main-nav overlay clearfix">
+            {{#if @blog.logo}}<a class="blog-logo" href="{{@blog.url}}"><img src="{{@blog.logo}}" alt="{{@blog.title}}" /></a>{{/if}}
+            {{#if @blog.navigation}}
+                <a class="menu-button icon-menu" href="#"><span class="word">Menu</span></a>
+            {{/if}}
+        </nav>
+    </header>
+
+    <section class="author-profile inner">
+        {{#if image}}
+        <figure class="author-image">
+            <div class="img" style="background-image: url({{image}})"><span class="hidden">{{name}}'s Picture</span></div>
+        </figure>
+        {{/if}}
+        <h1 class="author-title">{{name}}</h1>
+        {{#if bio}}
+            <h2 class="author-bio">{{bio}}</h2>
+        {{/if}}
+        <div class="author-meta">
+            {{#if location}}<span class="author-location icon-location">{{location}}</span>{{/if}}
+            {{#if website}}<span class="author-link icon-link"><a href="{{website}}">{{website}}</a></span>{{/if}}
+            <span class="author-stats"><i class="icon-stats"></i> {{plural ../pagination.total empty='No posts' singular='% post' plural='% posts'}}</span>
+        </div>
+    </section>
+{{/author}}
+
+{{!-- The main content area on the homepage --}}
+<main class="content" role="main">
+
+    {{!-- The tag below includes the post loop - partials/loop.hbs --}}
+    {{> "loop"}}
+
+</main>
