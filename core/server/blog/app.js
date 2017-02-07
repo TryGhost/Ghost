@@ -21,7 +21,7 @@ var debug = require('debug')('ghost:blog'),
     serveSharedFile = require('../middleware/serve-shared-file'),
     staticTheme = require('../middleware/static-theme'),
     themeHandler = require('../middleware/theme-handler'),
-    customRedirects = require('../middleware/redirects'),
+    customRedirects = require('../middleware/custom-redirects'),
     serveFavicon = require('../middleware/serve-favicon');
 
 module.exports = function setupBlogApp() {
