@@ -38,6 +38,7 @@ coreHelpers.tags = require('./tags');
 coreHelpers.title = require('./title');
 coreHelpers.twitter_url = require('./twitter_url');
 coreHelpers.url = require('./url');
+coreHelpers.read_time = require('./read_time');
 
 // Specialist helpers for certain templates
 coreHelpers.page_url = require('./page_url');
@@ -110,6 +111,7 @@ registerHelpers = function () {
     registerThemeHelper('twitter_url', coreHelpers.twitter_url);
     registerThemeHelper('facebook_url', coreHelpers.facebook_url);
     registerThemeHelper('url', coreHelpers.url);
+    registerThemeHelper('read_time', coreHelpers.read_time);
 
     // Async theme helpers
     registerAsyncThemeHelper('ghost_foot', coreHelpers.ghost_foot);
