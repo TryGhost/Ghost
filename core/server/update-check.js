@@ -39,16 +39,16 @@ var crypto   = require('crypto'),
     checkEndpoint = 'updates.ghost.org';
 
 function updateCheckError(err) {
+    err = errors.utils.deserialize(err);
+
     api.settings.edit(
         {settings: [{key: 'nextUpdateCheck', value: Math.round(Date.now() / 1000 + 24 * 3600)}]},
         internal
     );
 
-    logging.error(new errors.GhostError({
-        err: err,
-        context: i18n.t('errors.update-check.checkingForUpdatesFailed.error'),
-        help: i18n.t('errors.update-check.checkingForUpdatesFailed.help', {url: 'http://support.ghost.org'})
-    }));
+    err.context = i18n.t('errors.update-check.checkingForUpdatesFailed.error');
+    err.help = i18n.t('errors.update-check.checkingForUpdatesFailed.help', {url: 'http://support.ghost.org'});
+    logging.error(err);
 }
 
 /**
@@ -126,6 +126,7 @@ function updateCheckData() {
         data.user_count      = users && users.users && users.users.length ? users.users.length : 0;
         data.blog_created_at = users && users.users && users.users[0] && users.users[0].created_at ? moment(users.users[0].created_at).unix() : '';
         data.npm_version     = npm.trim();
+        data.lts             = false;
 
         return data;
     }).catch(updateCheckError);
@@ -155,6 +156,11 @@ function updateCheckRequest() {
                 res.on('end', function onEnd() {
                     try {
                         resData = JSON.parse(resData);
+
+                        if (this.statusCode >= 400) {
+                            return reject(resData);
+                        }
+
                         resolve(resData);
                     } catch (e) {
                         reject(i18n.t('errors.update-check.unableToDecodeUpdateResponse.error'));
@@ -202,6 +208,11 @@ function updateCheckResponse(response) {
         api.settings.edit({settings: [{key: 'displayUpdateNotification', value: response.version}]}, internal)
     ]).then(function () {
         var messages = response.messages || [];
+
+        /**
+         * by default the update check service returns messages: []
+         * but the latest release version get's stored anyway, because we adding the `displayUpdateNotification` ^
+         */
         return Promise.map(messages, createCustomNotification);
     });
 }
@@ -229,13 +240,6 @@ function updateCheck() {
 function showUpdateNotification() {
     return api.settings.read(_.extend({key: 'displayUpdateNotification'}, internal)).then(function then(response) {
         var display = response.settings[0];
-
-        // Version 0.4 used boolean to indicate the need for an update. This special case is
-        // translated to the version string.
-        // TODO: remove in future version.
-        if (display.value === 'false' || display.value === 'true' || display.value === '1' || display.value === '0') {
-            display.value = '0.4.0';
-        }
 
         if (display && display.value && currentVersion && semver.gt(display.value, currentVersion)) {
             return display.value;
