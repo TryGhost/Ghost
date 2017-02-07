@@ -421,9 +421,9 @@ bcrypt-pbkdf@^1.0.0:
   dependencies:
     tweetnacl "^0.14.3"
 
-bcryptjs@2.3.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/bcryptjs/-/bcryptjs-2.3.0.tgz#5826900cfef7abaf3425c72e4d464de509b8c2ec"
+bcryptjs@2.4.2:
+  version "2.4.2"
+  resolved "https://registry.yarnpkg.com/bcryptjs/-/bcryptjs-2.4.2.tgz#6faee62ed9cb636fbbb3f4b5a4164bbed5a9ef7e"
 
 beeper@^1.0.0, beeper@^1.1.0:
   version "1.1.1"
