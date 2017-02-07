@@ -1,14 +1,18 @@
 var _           = require('lodash'),
-    testUtils   = require('../utils'),
     should      = require('should'),
     rewire      = require('rewire'),
     uuid        = require('uuid'),
+    testUtils   = require('../utils'),
     configUtils      = require('../utils/configUtils'),
     packageInfo      = require('../../../package'),
     updateCheck      = rewire('../../server/update-check'),
     NotificationsAPI = require('../../server/api/notifications');
 
 describe('Update Check', function () {
+    after(function () {
+        return NotificationsAPI.destroyAll(testUtils.context.internal);
+    });
+
     describe('Reporting to UpdateCheck', function () {
         before(function () {
             configUtils.set('privacy:useUpdateCheck', true);
@@ -40,6 +44,7 @@ describe('Update Check', function () {
                 data.post_count.should.be.above(0);
                 data.npm_version.should.be.a.String();
                 data.npm_version.should.not.be.empty();
+                data.lts.should.eql(false);
 
                 done();
             }).catch(done);

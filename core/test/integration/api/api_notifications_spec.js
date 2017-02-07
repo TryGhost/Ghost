@@ -13,6 +13,10 @@ describe('Notifications API', function () {
 
     should.exist(NotificationsAPI);
 
+    after(function () {
+        return NotificationsAPI.destroyAll(testUtils.context.internal);
+    });
+
     it('can add, adds defaults (internal)', function (done) {
         var msg = {
             type: 'info',
