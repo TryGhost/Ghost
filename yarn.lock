@@ -5644,9 +5644,9 @@ strip-json-comments@1.0.x, strip-json-comments@~1.0.2, strip-json-comments@~1.0.
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-1.0.4.tgz#1e15fbcac97d3ee99bf2d73b4c656b082bbafb91"
 
-superagent@3.3.2:
-  version "3.3.2"
-  resolved "https://registry.yarnpkg.com/superagent/-/superagent-3.3.2.tgz#23b4ed895911215a1f90b44d16638b6492f9c114"
+superagent@3.4.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/superagent/-/superagent-3.4.0.tgz#cf8e40b303d5b2949c0fb036ddc30927e14958c7"
   dependencies:
     component-emitter "^1.2.0"
     cookiejar "^2.0.6"
