@@ -78,6 +78,12 @@ ConfigManager.prototype.init = function (rawConfig) {
     // just the object appropriate for this NODE_ENV
     self.set(rawConfig);
 
+    return Promise.resolve(self._config);
+};
+
+ConfigManager.prototype.loadExtras = function () {
+    var self = this;
+
     return self.loadThemes()
         .then(function () {
             return self.loadApps();
@@ -92,7 +98,7 @@ ConfigManager.prototype.loadThemes = function () {
 
     return readThemes(self._config.paths.themePath)
         .then(function (result) {
-            self._config.paths.availableThemes = result;
+            self.set({paths: {availableThemes: result}});
         });
 };
 

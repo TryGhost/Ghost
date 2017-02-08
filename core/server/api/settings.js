@@ -6,6 +6,7 @@ var _            = require('lodash'),
     config       = require('../config'),
     canThis      = require('../permissions').canThis,
     errors       = require('../errors'),
+    events       = require('../events'),
     utils        = require('./utils'),
     i18n         = require('../i18n'),
 
@@ -425,6 +426,13 @@ settings = {
         });
     }
 };
+
+// @TODO figure out a better way to do this in the alpha
+events.on('server:start', function () {
+    config.loadExtras().then(function () {
+        updateSettingsCache();
+    });
+});
 
 module.exports = settings;
 module.exports.updateSettingsCache = updateSettingsCache;
