@@ -14,7 +14,7 @@ describe('Subscribers API', function () {
     // Keep the DB clean
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
-    beforeEach(testUtils.setup('users:roles', 'perms:subscriber', 'perms:init', 'subscriber'));
+    beforeEach(testUtils.setup('users:roles', 'perms:subscriber', 'perms:init', 'posts', 'subscriber'));
 
     should.exist(SubscribersAPI);
 
