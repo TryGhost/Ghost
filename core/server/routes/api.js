@@ -9,19 +9,24 @@ apiRoutes = function apiRoutes(middleware) {
         authenticatePublic = [
             middleware.api.authenticateClient,
             middleware.api.authenticateUser,
-            middleware.api.requiresAuthorizedUserPublicAPI,
-            middleware.api.cors
+            middleware.api.requiresAuthorizedUserPublicAPI
         ],
         // Require user for private endpoints
         authenticatePrivate = [
             middleware.api.authenticateClient,
             middleware.api.authenticateUser,
-            middleware.api.requiresAuthorizedUser,
-            middleware.api.cors
+            middleware.api.requiresAuthorizedUser
         ];
 
     // alias delete with del
     router.del = router.delete;
+
+    /**
+     * cors middleware need's to be registered before pretty urls
+     * otherwise the cors header information get's lost when a redirect happens
+     */
+    router.use(middleware.api.cors);
+    router.use(middleware.api.prettyUrls);
 
     // send 503 json response in case of maintenance
     router.use(middleware.api.maintenance);

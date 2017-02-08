@@ -8,7 +8,6 @@ var bodyParser      = require('body-parser'),
     path            = require('path'),
     routes          = require('../routes'),
     serveStatic     = require('express').static,
-    slashes         = require('connect-slashes'),
     storage         = require('../storage'),
     passport        = require('passport'),
     utils           = require('../utils'),
@@ -24,9 +23,9 @@ var bodyParser      = require('body-parser'),
     redirectToSetup  = require('./redirect-to-setup'),
     serveSharedFile  = require('./serve-shared-file'),
     spamPrevention   = require('./spam-prevention'),
+    prettyUrls       = require('./pretty-urls'),
     staticTheme      = require('./static-theme'),
     themeHandler     = require('./theme-handler'),
-    uncapitalise     = require('./uncapitalise'),
     maintenance      = require('./maintenance'),
     versionMatch     = require('./api/version-match'),
     cors             = require('./cors'),
@@ -55,6 +54,7 @@ middleware = {
         requiresAuthorizedUserPublicAPI: auth.requiresAuthorizedUserPublicAPI,
         errorHandler: errors.handleAPIError,
         cors: cors,
+        prettyUrls: prettyUrls,
         labs: labs,
         versionMatch: versionMatch,
         maintenance: maintenance
@@ -173,14 +173,6 @@ setupMiddleware = function setupMiddleware(blogApp) {
     // site map
     sitemapHandler(blogApp);
 
-    // Add in all trailing slashes
-    blogApp.use(slashes(true, {
-        headers: {
-            'Cache-Control': 'public, max-age=' + utils.ONE_YEAR_S
-        }
-    }));
-    blogApp.use(uncapitalise);
-
     // Body parsing
     blogApp.use(bodyParser.json({limit: '1mb'}));
     blogApp.use(bodyParser.urlencoded({extended: true, limit: '1mb'}));
@@ -201,6 +193,8 @@ setupMiddleware = function setupMiddleware(blogApp) {
     // ### Routing
     // Set up API routes
     blogApp.use(routes.apiBaseUri, routes.api(middleware));
+
+    blogApp.use(prettyUrls);
 
     // Mount admin express app to /ghost and set up routes
     adminApp.use(redirectToSetup);
