@@ -118,7 +118,18 @@ ConfigManager.prototype.set = function (config) {
         contentPath,
         schedulingPath,
         subdir,
-        assetHash;
+        assetHash,
+        timezone = 'Etc/UTC';
+
+    // CASE: remember existing timezone
+    if (this._config.theme && this._config.theme.timezone) {
+        timezone = this._config.theme.timezone;
+    }
+
+    // CASE: override existing timezone
+    if (config && config.theme && config.theme.timezone) {
+        timezone = config.theme.timezone;
+    }
 
     // Merge passed in config object onto our existing config object.
     // We're using merge here as it doesn't assign `undefined` properties
@@ -135,15 +146,6 @@ ConfigManager.prototype.set = function (config) {
     // Special case for the them.navigation JSON object, which should be overridden not merged
     if (config && config.theme && config.theme.navigation) {
         this._config.theme.navigation = config.theme.navigation;
-    }
-
-    // Special case for theme.timezone, which should be overridden not merged
-    if (config && config.theme && config.theme.timezone) {
-        this._config.theme.timezone = config.theme.timezone;
-    } else {
-        // until we have set the timezone from settings, we use the default
-        this._config.theme = this._config.theme ? this._config.theme : {};
-        this._config.theme.timezone = 'Etc/UTC';
     }
 
     // Protect against accessing a non-existant object.
@@ -243,7 +245,8 @@ ConfigManager.prototype.set = function (config) {
         },
         theme: {
             // normalise the URL by removing any trailing slash
-            url: this._config.url ? this._config.url.replace(/\/$/, '') : ''
+            url: this._config.url ? this._config.url.replace(/\/$/, '') : '',
+            timezone: timezone
         },
         routeKeywords: {
             tag: 'tag',
