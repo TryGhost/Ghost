@@ -5279,9 +5279,9 @@ samsam@1.1.2, samsam@~1.1:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/samsam/-/samsam-1.1.2.tgz#bec11fdc83a9fda063401210e40176c3024d1567"
 
-sanitize-html@1.13.0:
-  version "1.13.0"
-  resolved "https://registry.yarnpkg.com/sanitize-html/-/sanitize-html-1.13.0.tgz#4ee17cbec516bfe32f2ce6686a569d7e6b4f3631"
+sanitize-html@1.14.1:
+  version "1.14.1"
+  resolved "https://registry.yarnpkg.com/sanitize-html/-/sanitize-html-1.14.1.tgz#730ffa2249bdf18333effe45b286173c9c5ad0b8"
   dependencies:
     htmlparser2 "^3.9.0"
     regexp-quote "0.0.0"
