@@ -666,9 +666,9 @@ browserify-zlib@^0.1.4:
     knex "0.12.2"
     lodash "4.16.3"
 
-bson-objectid@1.1.4:
-  version "1.1.4"
-  resolved "https://registry.yarnpkg.com/bson-objectid/-/bson-objectid-1.1.4.tgz#b82b497c40b11a0d3e3768bb70e3bdbb7d535d2b"
+bson-objectid@1.1.5:
+  version "1.1.5"
+  resolved "https://registry.yarnpkg.com/bson-objectid/-/bson-objectid-1.1.5.tgz#4b9e210a98c1c4eaa9edf63aca0784cb30b79b5e"
 
 buffer-crc32@^0.2.1:
   version "0.2.13"
