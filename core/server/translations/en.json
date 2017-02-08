@@ -238,6 +238,7 @@
                 "userIsInactive": "The user with that email address is inactive.",
                 "incorrectPasswordAttempts": "Your password is incorrect. <br /> {remaining} attempt{s} remaining!",
                 "userUpdateError": {
+                    "emailIsAlreadyInUse": "Email is already in use",
                     "context": "Error thrown from user update during login",
                     "help": "Visit and save your profile after logging in to check for problems."
                 },
