@@ -105,7 +105,7 @@
     "rewire": "2.5.2",
     "should": "11.1.2",
     "should-http": "0.0.4",
-    "supertest": "1.2.0",
+    "supertest": "3.0.0",
     "sinon": "1.17.7",
     "tmp": "0.0.31"
   },
