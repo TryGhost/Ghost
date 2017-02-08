@@ -32,7 +32,7 @@
     "body-parser": "1.16.0",
     "bookshelf": "0.10.3",
     "brute-knex": "https://github.com/cobbspur/brute-knex/tarball/0cb28fa8e3230dcbf6bca8b991dbb340b9fff6cc",
-    "bson-objectid": "1.1.4",
+    "bson-objectid": "1.1.5",
     "bunyan": "1.8.1",
     "chalk": "1.1.3",
     "cheerio": "0.22.0",
