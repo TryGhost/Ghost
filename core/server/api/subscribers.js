@@ -239,8 +239,8 @@ subscribers = {
 
         // Export data, otherwise send error 500
         function exportSubscribers() {
-            return dataProvider.Subscriber.findPage(options).then(function (data) {
-                return formatCSV(data.subscribers);
+            return dataProvider.Subscriber.findAll(options).then(function (data) {
+                return formatCSV(data.toJSON(options));
             }).catch(function (err) {
                 return Promise.reject(new errors.GhostError({err: err}));
             });
