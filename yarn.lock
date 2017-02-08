@@ -5434,9 +5434,9 @@ should-util@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/should-util/-/should-util-1.0.0.tgz#c98cda374aa6b190df8ba87c9889c2b4db620063"
 
-should@11.1.2:
-  version "11.1.2"
-  resolved "https://registry.yarnpkg.com/should/-/should-11.1.2.tgz#3cad9c6fc600ffe2e1547d948be3284e984da946"
+should@11.2.0:
+  version "11.2.0"
+  resolved "https://registry.yarnpkg.com/should/-/should-11.2.0.tgz#7afca3182c234781d786d2278a87805b5ecf0409"
   dependencies:
     should-equal "^1.0.0"
     should-format "^3.0.2"
