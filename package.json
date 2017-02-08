@@ -104,7 +104,7 @@
     "nock": "9.0.4",
     "rewire": "2.5.2",
     "should": "11.2.0",
-    "should-http": "0.0.4",
+    "should-http": "0.1.0",
     "supertest": "3.0.0",
     "sinon": "1.17.7",
     "tmp": "0.0.31"
