@@ -247,7 +247,8 @@ DataGenerator.Content = {
 
     subscribers: [
         {
-            email: 'subscriber1@test.com'
+            email: 'subscriber1@test.com',
+            post_id: 1
         },
         {
             email: 'subscriber2@test.com'
