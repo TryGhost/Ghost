@@ -314,6 +314,8 @@ DataGenerator.Content = {
     ]
 };
 
+DataGenerator.Content.subscribers[0].post_id = DataGenerator.Content.posts[0].id;
+
 DataGenerator.forKnex = (function () {
     var posts,
         tags,
