@@ -92,6 +92,7 @@ db = {
 
         function deleteContent() {
             var collections = [
+                models.Subscriber.findAll(queryOpts),
                 models.Post.findAll(queryOpts),
                 models.Tag.findAll(queryOpts)
             ];
