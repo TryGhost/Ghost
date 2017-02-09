@@ -29,6 +29,7 @@ coreHelpers.has = require('./has');
 coreHelpers.meta_description = require('./meta_description');
 coreHelpers.meta_title = require('./meta_title');
 coreHelpers.navigation = require('./navigation');
+coreHelpers.page_url = require('./page_url');
 coreHelpers.pagination = require('./pagination');
 coreHelpers.plural = require('./plural');
 coreHelpers.post_class = require('./post_class');
@@ -38,10 +39,6 @@ coreHelpers.tags = require('./tags');
 coreHelpers.title = require('./title');
 coreHelpers.twitter_url = require('./twitter_url');
 coreHelpers.url = require('./url');
-
-// Specialist helpers for certain templates
-coreHelpers.page_url = require('./page_url');
-coreHelpers.pageUrl = require('./page_url').deprecated;
 
 coreHelpers.helperMissing = function (arg) {
     if (arguments.length === 2) {
@@ -101,7 +98,6 @@ registerHelpers = function () {
     registerThemeHelper('meta_title', coreHelpers.meta_title);
     registerThemeHelper('navigation', coreHelpers.navigation);
     registerThemeHelper('page_url', coreHelpers.page_url);
-    registerThemeHelper('pageUrl', coreHelpers.pageUrl);
     registerThemeHelper('pagination', coreHelpers.pagination);
     registerThemeHelper('plural', coreHelpers.plural);
     registerThemeHelper('post_class', coreHelpers.post_class);
