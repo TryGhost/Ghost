@@ -28,7 +28,7 @@ describe('Accesstoken Model', function () {
             token: 'foobartoken',
             user_id: 1,
             client_id: 1,
-            expires: Date.now() + utils.ONE_HOUR_MS
+            expires: Date.now() + utils.ONE_MONTH_MS
         })
         .then(function (token) {
             should.exist(token);
