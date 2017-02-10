@@ -15,8 +15,8 @@ function exchangeRefreshToken(client, refreshToken, scope, done) {
         } else {
             var token = model.toJSON(),
                 accessToken = utils.uid(256),
-                accessExpires = Date.now() + utils.ONE_HOUR_MS,
-                refreshExpires = Date.now() + utils.ONE_WEEK_MS;
+                accessExpires = Date.now() + utils.ONE_MONTH_MS,
+                refreshExpires = Date.now() + utils.SIX_MONTH_MS;
 
             if (token.expires > Date.now()) {
                 models.Accesstoken.add({
@@ -27,7 +27,7 @@ function exchangeRefreshToken(client, refreshToken, scope, done) {
                 }).then(function then() {
                     return models.Refreshtoken.edit({expires: refreshExpires}, {id: token.id});
                 }).then(function then() {
-                    return done(null, accessToken, {expires_in: utils.ONE_HOUR_S});
+                    return done(null, accessToken, {expires_in: utils.ONE_MONTH_S});
                 }).catch(function handleError(error) {
                     return done(error, false);
                 });
