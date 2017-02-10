@@ -59,7 +59,7 @@ describe('checkSSL', function () {
         done();
     });
 
-    it('blog is https, requester uses http [redirect]', function (done) {
+    it('[redirect] blog is https, requester uses http', function (done) {
         configUtils.set({
             url: 'https://default.com:2368/'
         });
@@ -70,6 +70,7 @@ describe('checkSSL', function () {
         urlRedirects(req, res, next);
         next.called.should.be.false();
         res.redirect.called.should.be.true();
+        res.redirect.calledWith(301, 'https://default.com:2368/').should.be.true();
         done();
     });
 
@@ -103,6 +104,36 @@ describe('checkSSL', function () {
         done();
     });
 
+    it('blog host is !== request host', function (done) {
+        configUtils.set({
+            url: 'https://default.com'
+        });
+
+        host = 'localhost:2368';
+
+        req.originalUrl = '/';
+        req.secure = true;
+        urlRedirects(req, res, next);
+        next.called.should.be.true();
+        res.redirect.called.should.be.false();
+        done();
+    });
+
+    it('[redirect] blog host is !== request host', function (done) {
+        configUtils.set({
+            url: 'https://default.com'
+        });
+
+        host = 'localhost:2368';
+
+        req.originalUrl = '/';
+        urlRedirects(req, res, next);
+        next.called.should.be.false();
+        res.redirect.called.should.be.true();
+        res.redirect.calledWith(301, 'https://localhost:2368/').should.be.true();
+        done();
+    });
+
     it('admin is blog url and http, requester is http', function (done) {
         configUtils.set({
             url: 'http://default.com:2368'
@@ -118,7 +149,7 @@ describe('checkSSL', function () {
         done();
     });
 
-    it('admin is custom url and https, requester is http [redirect]', function (done) {
+    it('[redirect] admin is custom url and https, requester is http', function (done) {
         configUtils.set({
             url: 'http://default.com:2368',
             admin: {
@@ -136,7 +167,7 @@ describe('checkSSL', function () {
         done();
     });
 
-    it('admin is custom url and https, requester is http [redirect]', function (done) {
+    it('[redirect] admin is custom url and https, requester is http', function (done) {
         configUtils.set({
             url: 'http://default.com:2368',
             admin: {
@@ -154,7 +185,7 @@ describe('checkSSL', function () {
         done();
     });
 
-    it('subdirectory [redirect]', function (done) {
+    it('[redirect] subdirectory', function (done) {
         configUtils.set({
             url: 'http://default.com:2368/blog',
             admin: {
@@ -172,7 +203,7 @@ describe('checkSSL', function () {
         done();
     });
 
-    it('keeps query [redirect]', function (done) {
+    it('[redirect] keeps query', function (done) {
         configUtils.set({
             url: 'http://default.com:2368',
             admin: {
