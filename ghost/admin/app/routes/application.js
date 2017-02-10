@@ -42,6 +42,16 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
             transition.send('loadServerNotifications');
             transition.send('checkForOutdatedDesktopApp');
 
+            // trigger a background refresh of the access token to enable
+            // "infinite" sessions. We also trigger a logout if the refresh
+            // token is invalid to prevent attackers with only the access token
+            // from loading the admin
+            let session = this.get('session.session');
+            let authenticator = session._lookupAuthenticator(session.authenticator);
+            if (authenticator && authenticator.onOnline) {
+                authenticator.onOnline();
+            }
+
             // return the feature loading promise so that we block until settings
             // are loaded in order for synchronous access everywhere
             return this.get('feature').fetch();
