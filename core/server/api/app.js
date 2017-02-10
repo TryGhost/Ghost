@@ -208,6 +208,9 @@ function apiRoutes() {
     apiRouter.post('/invites', authenticatePrivate, api.http(api.invites.add));
     apiRouter.del('/invites/:id', authenticatePrivate, api.http(api.invites.destroy));
 
+    // ## Updates
+    apiRouter.post('/update', authenticatePrivate, api.http(api.update))
+
     return apiRouter;
 }
 

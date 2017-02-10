@@ -28,6 +28,7 @@ var _              = require('lodash'),
     uploads        = require('./upload'),
     exporter       = require('../data/export'),
     slack          = require('./slack'),
+    update         = require('./update'),
 
     http,
     addHeaders,
@@ -286,7 +287,8 @@ module.exports = {
     uploads: uploads,
     slack: slack,
     themes: themes,
-    invites: invites
+    invites: invites,
+    update: update
 };
 
 /**

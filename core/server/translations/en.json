@@ -411,6 +411,11 @@
                 },
                 "notAllowedToInviteOwner": "Not allowed to invite an owner user.",
                 "notAllowedToInvite": "Not allowed to invite this role."
+            },
+            "update": {
+                "notAllowedToUpdate": "Not allowed to update Ghost",
+                "noUpdateAvailable": "No update available",
+                "cantUpdate": "Ghost cannot automatically update"
             }
         },
         "data": {
