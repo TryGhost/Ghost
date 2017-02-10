@@ -138,8 +138,8 @@ authentication = {
     createTokens: function createTokens(data, options) {
         var localAccessToken = globalUtils.uid(191),
             localRefreshToken = globalUtils.uid(191),
-            accessExpires = Date.now() + globalUtils.ONE_HOUR_MS,
-            refreshExpires = Date.now() + globalUtils.ONE_WEEK_MS,
+            accessExpires = Date.now() + globalUtils.ONE_MONTH_MS,
+            refreshExpires = Date.now() + globalUtils.SIX_MONTH_MS,
             client = options.context.client_id,
             user = options.context.user;
 
@@ -159,7 +159,7 @@ authentication = {
             return {
                 access_token: localAccessToken,
                 refresh_token: localRefreshToken,
-                expires_in: globalUtils.ONE_HOUR_S
+                expires_in: globalUtils.ONE_MONTH_S
             };
         });
     },
