@@ -9,13 +9,13 @@ import {
 } from 'ghost-admin/services/ajax';
 
 import DS from 'ember-data';
-import Configuration from 'ember-simple-auth/configuration';
+import UnauthenticatedRouteMixin from 'ember-simple-auth/mixins/unauthenticated-route-mixin';
 import styleBody from 'ghost-admin/mixins/style-body';
 
 const {Promise} = RSVP;
 const {Errors} = DS;
 
-export default Route.extend(styleBody, {
+export default Route.extend(styleBody, UnauthenticatedRouteMixin, {
     classNames: ['ghost-signup'],
 
     ghostPaths: injectService(),
@@ -24,12 +24,11 @@ export default Route.extend(styleBody, {
     ajax: injectService(),
 
     beforeModel() {
-        this._super(...arguments);
-
         if (this.get('session.isAuthenticated')) {
             this.get('notifications').showAlert('You need to sign out to register as a new user.', {type: 'warn', delayed: true, key: 'signup.create.already-authenticated'});
-            this.transitionTo(Configuration.routeIfAlreadyAuthenticated);
         }
+
+        this._super(...arguments);
     },
 
     model(params) {
