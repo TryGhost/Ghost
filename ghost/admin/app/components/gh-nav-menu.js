@@ -20,6 +20,7 @@ export default Component.extend({
     session: injectService(),
     ghostPaths: injectService(),
     feature: injectService(),
+    routing: injectService('-routing'),
 
     mouseEnter() {
         this.sendAction('onMouseEnter');

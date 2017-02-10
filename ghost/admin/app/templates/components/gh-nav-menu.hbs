@@ -21,8 +21,15 @@
     <ul class="gh-nav-list gh-nav-main">
         {{!<li><i class="icon-dash"></i>Dashboard</li>}}
         <li>{{#link-to "editor.new" classNames="gh-nav-main-editor"}}<i class="icon-pen"></i>New Post{{/link-to}}</li>
-        <li>{{#link-to "posts" classNames="gh-nav-main-content"}}<i class="icon-content"></i>Content{{/link-to}}</li>
         {{!<li><a href="#"><i class="icon-user"></i>My Posts</a></li>}}
+        <li>
+            {{!-- clicking the Content link whilst on the content screen should reset the filter --}}
+            {{#if (eq routing.currentRouteName "posts.index")}}
+                {{#link-to "posts" (query-params type=null) classNames="gh-nav-main-content active"}}<i class="icon-content"></i>Content{{/link-to}}
+            {{else}}
+                {{#link-to "posts" classNames="gh-nav-main-content"}}<i class="icon-content"></i>Content{{/link-to}}
+            {{/if}}
+        </li>
         <li>{{#link-to "team" classNames="gh-nav-main-users"}}<i class="icon-team"></i>Team{{/link-to}}</li>
         {{!<li><a href="#"><i class="icon-idea"></i>Ideas</a></li>}}
         {{#if feature.subscribers}}
