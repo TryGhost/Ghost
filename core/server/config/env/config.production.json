@@ -1,10 +1,13 @@
 {
     "url": "http://my-ghost-blog.com",
     "database": {
+        "client": "mysql",
         "connection": {
-            "filename": "content/data/ghost.db"
-        },
-        "debug": false
+            "host"     : "127.0.0.1",
+            "user"     : "root",
+            "password" : "",
+            "database" : "ghost"
+        }
     },
     "paths": {
         "contentPath": "content/"
@@ -14,6 +17,6 @@
         "rotation": {
             "enabled": true
         },
-        "transports": ["file"]
+        "transports": ["file", "stdout"]
     }
 }

@@ -4,13 +4,6 @@
         "host": "127.0.0.1",
         "port": 2368
     },
-    "database": {
-        "client": "sqlite3",
-        "debug": false,
-        "connection": {
-            "filename": "content/data/ghost.db"
-        }
-    },
     "privacy": false,
     "paths": {
         "contentPath": "content/"
