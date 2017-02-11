@@ -55,17 +55,10 @@ function initDbHashAndFirstRun() {
 }
 
 // ## Initialise Ghost
-// Sets up the express server instances, runs init on a bunch of stuff, configures views, helpers, routes and more
-// Finally it returns an instance of GhostServer
 function init() {
     debug('Init Start...');
 
     var ghostServer, parentApp;
-
-    // ### Initialisation
-    // The server and its dependencies require a populated config
-    // It returns a promise that is resolved when the application
-    // has finished starting up.
 
     // Initialize Internationalization
     i18n.init();
@@ -77,6 +70,7 @@ function init() {
     }).then(function () {
         debug('Themes & apps done');
 
+        // Hmm... this doesn't return a promise
         models.init();
     }).then(function () {
         debug('models done');
