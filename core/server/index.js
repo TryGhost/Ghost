@@ -61,9 +61,8 @@ function initDbHashAndFirstRun() {
 // ## Initialise Ghost
 // Sets up the express server instances, runs init on a bunch of stuff, configures views, helpers, routes and more
 // Finally it returns an instance of GhostServer
-function init(options) {
+function init() {
     debug('Init Start...');
-    options = options || {};
 
     var ghostServer, parentApp;
 
