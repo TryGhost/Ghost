@@ -18,9 +18,5 @@ module.exports = {
 
             fs.copySync(assetsIn + '/' + relativePath, assetsOut + '/' + relativePath, {overwrite: true});
         });
-
-        // Copy service workers
-        fs.copySync(results.directory + '/sw-registration.js', assetsOut + '/sw-registration.js');
-        fs.copySync(results.directory + '/sw.js', assetsOut + '/sw.js');
     }
 };

@@ -68,14 +68,6 @@ module.exports = function (defaults) {
             optional: ['es6.spec.symbols'],
             includePolyfill: true
         },
-        'ember-service-worker': {
-            rootUrl: '/ghost/'
-        },
-        'esw-cache-fallback': {
-            patterns: [
-                '/ghost/api/(.+)'
-            ],
-        },
         outputPaths: {
             app: {
                 js: assetLocation('ghost.js')
