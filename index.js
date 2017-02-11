@@ -2,13 +2,20 @@
 // Orchestrates the startup of Ghost when run from command line.
 console.time('Ghost boot');
 
-var ghost = require('./core'),
-    debug = require('debug')('ghost:boot:index'),
-    express = require('express'),
-    logging = require('./core/server/logging'),
-    errors = require('./core/server/errors'),
-    utils = require('./core/server/utils'),
-    parentApp = express();
+var debug = require('debug')('ghost:boot:index'),
+    ghost, express, logging, errors, utils, parentApp;
+
+debug('First requires...');
+
+ghost = require('./core');
+
+debug('Required ghost');
+
+express = require('express');
+logging = require('./core/server/logging');
+errors = require('./core/server/errors');
+utils = require('./core/server/utils');
+parentApp = express();
 
 debug('Initialising Ghost');
 ghost().then(function (ghostServer) {
