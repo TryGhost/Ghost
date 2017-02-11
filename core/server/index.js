@@ -63,17 +63,14 @@ function init() {
     // Initialize Internationalization
     i18n.init();
     debug('I18n done');
+    models.init();
+    debug('models done');
 
     return readDirectory(config.getContentPath('apps')).then(function loadThemes(result) {
         config.set('paths:availableApps', result);
         return api.themes.loadThemes();
     }).then(function () {
         debug('Themes & apps done');
-
-        // Hmm... this doesn't return a promise
-        models.init();
-    }).then(function () {
-        debug('models done');
         return dbHealth.check();
     }).then(function () {
         debug('DB health check done');
