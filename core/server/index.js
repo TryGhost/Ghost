@@ -14,8 +14,9 @@ require('./overrides');
 
 // Module dependencies
 var debug = require('debug')('ghost:boot:init'),
-    Promise = require('bluebird'),
+// Config should be first require, as it triggers the initial load of the config files
     config = require('./config'),
+    Promise = require('bluebird'),
     logging = require('./logging'),
     i18n = require('./i18n'),
     api = require('./api'),
