@@ -19,7 +19,7 @@ var gulp                = require('gulp-help')(require('gulp'), {hideEmpty: true
     nodemonServerInit,
     filterParams,
     getGitCommand,
-    checkDirectoryExistance,
+    checkDirectoryExistence,
     ember;
 
 // paramConfig is used to store constant values to check against
@@ -157,7 +157,7 @@ getGitCommand = function (branchToCheckOut, repo) {
 
 // Checks if a directory exists and returns true if so. This is needed to
 // check, if the submodule directories exist.
-checkDirectoryExistance = function (directory) {
+checkDirectoryExistence = function (directory) {
     try {
         return fs.statSync(directory).isDirectory();
     } catch (e) {
@@ -362,8 +362,8 @@ gulp.task('submodules', 'Updates Ghost submodules, if submodule directory is not
         casperBranch = gitBranches.casper.branch || undefined,
         force = (argv.force || argv.f) || undefined;
 
-    if ((!checkDirectoryExistance(paramConfig.admin.path) || adminBranch === 'master') ||
-        (!checkDirectoryExistance(paramConfig.casper.path) || casperBranch === 'master') || force) {
+    if ((!checkDirectoryExistence(paramConfig.admin.path) || adminBranch === 'master') ||
+        (!checkDirectoryExistence(paramConfig.casper.path) || casperBranch === 'master') || force) {
         exec('gulp sm:install', function (err, stdout, stderr) {
             console.info(chalk.cyan('Updating Ghost submodules 🛠 ...'));
             if (stderr) {console.info(chalk.red(stderr));}
