@@ -1,11 +1,13 @@
 var Nconf = require('nconf'),
     path = require('path'),
-    debug = require('debug')('ghost:config'),
+    _debug = require('debug'),
+    debug = _debug('ghost:config'),
     localUtils = require('./utils'),
     env = process.env.NODE_ENV || 'development',
     _private = {};
 
 _private.loadNconf = function loadNconf(options) {
+    debug('config start');
     options = options || {};
 
     var baseConfigPath = options.baseConfigPath || __dirname,
@@ -49,7 +51,13 @@ _private.loadNconf = function loadNconf(options) {
      */
     nconf.set('env', env);
 
-    debug(nconf.get());
+    // Wrap this in a check, because else nconf.get() is executed unnecessarily
+    // To output this, use DEBUG=ghost:*,ghost-config
+    if (_debug.enabled('ghost-config')) {
+        debug(nconf.get());
+    }
+
+    debug('config end');
     return nconf;
 };
 
