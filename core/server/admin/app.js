@@ -41,6 +41,9 @@ module.exports = function setupAdminApp() {
         {maxAge: utils.ONE_YEAR_MS, fallthrough: false}
     ));
 
+    // Service Worker for offline support
+    adminApp.get(/^\/(sw.js|sw-registration.js)$/, require('./serviceworker'));
+
     // Render error page in case of maintenance
     adminApp.use(maintenance);
 
