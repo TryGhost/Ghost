@@ -40,7 +40,9 @@ _private.loadNconf = function loadNconf(options) {
     nconf.makePathsAbsolute = localUtils.makePathsAbsolute.bind(nconf);
     nconf.isPrivacyDisabled = localUtils.isPrivacyDisabled.bind(nconf);
     nconf.getContentPath = localUtils.getContentPath.bind(nconf);
+    nconf.sanitizeDatabaseProperties = localUtils.sanitizeDatabaseProperties.bind(nconf);
 
+    nconf.sanitizeDatabaseProperties();
     nconf.makePathsAbsolute(nconf.get('paths'), 'paths');
     nconf.makePathsAbsolute(nconf.get('database:connection'), 'database:connection');
 

@@ -81,3 +81,25 @@ exports.getContentPath = function getContentPath(type) {
             throw new Error('getContentPath was called with: ' + type);
     }
 };
+
+/**
+ * nconf merges all database keys together and this can be confusing
+ * e.g. production default database is sqlite, but you override the configuration with mysql
+ *
+ * this.clear('key') does not work
+ * https://github.com/indexzero/nconf/issues/235#issuecomment-257606507
+ */
+exports.sanitizeDatabaseProperties = function sanitizeDatabaseProperties() {
+    var database = this.get('database');
+
+    if (this.get('database:client') === 'mysql') {
+        delete database.connection.filename;
+    } else {
+        delete database.connection.host;
+        delete database.connection.user;
+        delete database.connection.password;
+        delete database.connection.database;
+    }
+
+    this.set('database', database);
+};

@@ -1,10 +1,12 @@
 {
     "url": "http://127.0.0.1:2369",
     "database": {
+        "client": "sqlite3",
         "connection": {
             "filename": "content/data/ghost-test.db"
         },
-        "useNullAsDefault": true
+        "useNullAsDefault": true,
+        "debug": false
     },
     "server": {
         "port": 2369
