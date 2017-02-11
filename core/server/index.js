@@ -14,7 +14,6 @@ require('./overrides');
 
 // Module dependencies
 var debug = require('debug')('ghost:boot:init'),
-    uuid = require('uuid'),
     Promise = require('bluebird'),
     config = require('./config'),
     logging = require('./logging'),
@@ -30,29 +29,7 @@ var debug = require('debug')('ghost:boot:init'),
     GhostServer = require('./ghost-server'),
     scheduling = require('./scheduling'),
     readDirectory = require('./utils/read-directory'),
-    utils = require('./utils'),
-    dbHash;
-
-function initDbHashAndFirstRun() {
-    return api.settings.read({key: 'dbHash', context: {internal: true}}).then(function (response) {
-        var hash = response.settings[0].value,
-            initHash;
-
-        dbHash = hash;
-
-        if (dbHash === null) {
-            initHash = uuid.v4();
-            return api.settings.edit({settings: [{key: 'dbHash', value: initHash}]}, {context: {internal: true}})
-                .then(function (response) {
-                    dbHash = response.settings[0].value;
-                    return dbHash;
-                    // Use `then` here to do 'first run' actions
-                });
-        }
-
-        return dbHash;
-    });
-}
+    utils = require('./utils');
 
 // ## Initialise Ghost
 function init() {
@@ -78,18 +55,15 @@ function init() {
         return models.Settings.populateDefaults();
     }).then(function () {
         debug('Models & database done');
-
+        // Refresh the API settings cache
         return api.settings.updateSettingsCache();
     }).then(function () {
         debug('Update settings cache done');
         // Initialize the permissions actions and objects
-        // NOTE: Must be done before initDbHashAndFirstRun calls
         return permissions.init();
     }).then(function () {
         debug('Permissions done');
         return Promise.join(
-            // Check for or initialise a dbHash.
-            initDbHashAndFirstRun(),
             // Initialize apps
             apps.init(),
             // Initialize xmrpc ping

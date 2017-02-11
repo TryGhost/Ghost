@@ -1,12 +1,15 @@
 var Settings,
-    ghostBookshelf = require('./base'),
-    _              = require('lodash'),
-    errors         = require('../errors'),
+    debug          = require('debug')('ghost:models:settings'),
     Promise        = require('bluebird'),
-    validation     = require('../data/validation'),
+    _              = require('lodash'),
+    uuid           = require('uuid'),
+    ghostBookshelf = require('./base'),
+    errors         = require('../errors'),
     events         = require('../events'),
-    internalContext = {context: {internal: true}},
     i18n           = require('../i18n'),
+    validation     = require('../data/validation'),
+
+    internalContext = {context: {internal: true}},
 
     defaultSettings;
 
@@ -163,17 +166,31 @@ Settings = ghostBookshelf.Model.extend({
 
         return this.findAll(options).then(function then(allSettings) {
             var usedKeys = allSettings.models.map(function mapper(setting) { return setting.get('key'); }),
-                insertOperations = [];
+                insertOperations = [],
+                isFirstRun = false;
 
             _.each(getDefaultSettings(), function each(defaultSetting, defaultSettingKey) {
                 var isMissingFromDB = usedKeys.indexOf(defaultSettingKey) === -1;
+
                 if (isMissingFromDB) {
-                    defaultSetting.value = defaultSetting.defaultValue;
+                    debug('isMissingFromDB', defaultSettingKey);
+                    // @TODO revisit this? maybe an even better way to do this with model events etc?
+                    if (defaultSettingKey === 'dbHash') {
+                        isFirstRun = true;
+                        defaultSetting.value = uuid.v4();
+                    } else {
+                        defaultSetting.value = defaultSetting.defaultValue;
+                    }
+
                     insertOperations.push(Settings.forge(defaultSetting).save(null, options));
                 }
             });
 
-            return Promise.all(insertOperations);
+            return Promise.all(insertOperations).tap(function ifFirstRun() {
+                if (isFirstRun === true) {
+                    events.emit('server:first-run');
+                }
+            });
         });
     }
 
