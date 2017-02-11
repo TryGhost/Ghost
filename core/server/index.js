@@ -16,25 +16,21 @@ require('./overrides');
 var debug = require('debug')('ghost:boot:init'),
     uuid = require('uuid'),
     Promise = require('bluebird'),
-    KnexMigrator = require('knex-migrator'),
     config = require('./config'),
     logging = require('./logging'),
-    errors = require('./errors'),
     i18n = require('./i18n'),
     api = require('./api'),
     models = require('./models'),
     permissions = require('./permissions'),
     apps = require('./apps'),
     auth = require('./auth'),
+    dbHealth = require('./data/db/health'),
     xmlrpc = require('./data/xml/xmlrpc'),
     slack = require('./data/slack'),
     GhostServer = require('./ghost-server'),
     scheduling = require('./scheduling'),
     readDirectory = require('./utils/read-directory'),
     utils = require('./utils'),
-    knexMigrator = new KnexMigrator({
-        knexMigratorFilePath: config.get('paths:appRoot')
-    }),
     dbHash;
 
 function initDbHashAndFirstRun() {
@@ -83,36 +79,10 @@ function init() {
 
         models.init();
     }).then(function () {
-        return knexMigrator.isDatabaseOK()
-            .catch(function (outerErr) {
-                if (outerErr.code === 'DB_NOT_INITIALISED') {
-                    throw outerErr;
-                }
-
-                // CASE: migration table does not exist, figure out if database is compatible
-                return models.Settings.findOne({key: 'databaseVersion', context: {internal: true}})
-                    .then(function (response) {
-                        // CASE: no db version key, database is compatible
-                        if (!response) {
-                            throw outerErr;
-                        }
-
-                        throw new errors.DatabaseVersionError({
-                            message: 'Your database version is not compatible with Ghost 1.0.0 Alpha (master branch)',
-                            context: 'Want to keep your DB? Use Ghost < 1.0.0 or the "stable" branch. Otherwise please delete your DB and restart Ghost.',
-                            help: 'More information on the Ghost 1.0.0 Alpha at https://support.ghost.org/v1-0-alpha'
-                        });
-                    })
-                    .catch(function (err) {
-                        // CASE: settings table does not exist
-                        if (err.errno === 1 || err.errno === 1146) {
-                            throw outerErr;
-                        }
-
-                        throw err;
-                    });
-            });
+        debug('models done');
+        return dbHealth.check();
     }).then(function () {
+        debug('DB health check done');
         // Populate any missing default settings
         return models.Settings.populateDefaults();
     }).then(function () {
