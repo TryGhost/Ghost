@@ -44,11 +44,8 @@ function init() {
     models.init();
     debug('models done');
 
-    return readDirectory(config.getContentPath('apps')).then(function loadThemes(result) {
-        config.set('paths:availableApps', result);
-        return api.themes.loadThemes();
-    }).then(function () {
-        debug('Themes & apps done');
+    return api.themes.loadThemes().then(function () {
+        debug('Theme load done');
         return dbHealth.check();
     }).then(function () {
         debug('DB health check done');
