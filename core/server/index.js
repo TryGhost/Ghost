@@ -29,7 +29,7 @@ var debug = require('debug')('ghost:boot:init'),
     slack = require('./data/slack'),
     GhostServer = require('./ghost-server'),
     scheduling = require('./scheduling'),
-    readDirectory = require('./utils/read-directory'),
+    themes = require('./themes'),
     utils = require('./utils');
 
 // ## Initialise Ghost
@@ -44,10 +44,7 @@ function init() {
     models.init();
     debug('models done');
 
-    return api.themes.loadThemes().then(function () {
-        debug('Theme load done');
-        return dbHealth.check();
-    }).then(function () {
+    return dbHealth.check().then(function () {
         debug('DB health check done');
         // Populate any missing default settings
         return models.Settings.populateDefaults();
@@ -62,6 +59,7 @@ function init() {
     }).then(function () {
         debug('Permissions done');
         return Promise.join(
+            themes.init(),
             // Initialize apps
             apps.init(),
             // Initialize xmrpc ping

@@ -2,18 +2,31 @@
  * Dependencies
  */
 
-var readDirectory = require('./read-directory'),
+var readDirectory = require('../utils').readDirectory,
     Promise = require('bluebird'),
+    _ = require('lodash'),
     join = require('path').join,
     fs = require('fs'),
 
-    statFile = Promise.promisify(fs.stat);
+    statFile = Promise.promisify(fs.stat),
+    readOneTheme,
+    readAllThemes;
 
-/**
- * Read themes
- */
+readOneTheme = function readOneTheme(dir, name) {
+    var toRead = join(dir, name),
+        themes = {};
 
-function readThemes(dir) {
+    return readDirectory(toRead)
+        .then(function (tree) {
+            if (!_.isEmpty(tree)) {
+                themes[name] = tree;
+            }
+
+            return themes;
+        });
+};
+
+readAllThemes = function readAllThemes(dir) {
     var originalTree;
 
     return readDirectory(dir)
@@ -37,10 +50,11 @@ function readThemes(dir) {
 
             return themes;
         });
-}
+};
 
 /**
- * Expose `read-themes`
+ * Expose public API
  */
 
-module.exports = readThemes;
+module.exports.all = readAllThemes;
+module.exports.one = readOneTheme;

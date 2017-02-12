@@ -104,9 +104,9 @@ utils = {
     },
 
     readCSV: require('./read-csv'),
+    readDirectory: require('./read-directory'),
     removeOpenRedirectFromUrl: require('./remove-open-redirect-from-url'),
     zipFolder: require('./zip-folder'),
-    readThemes: require('./read-themes'),
     generateAssetHash: require('./asset-hash'),
     url: require('./url'),
     tokens: require('./tokens'),
