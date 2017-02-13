@@ -3786,11 +3786,11 @@ lodash@4.16.3:
   version "4.16.3"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.16.3.tgz#0ba761439529127c7a38c439114ca153efa999a2"
 
-lodash@4.16.4:
+lodash@4.16.4, lodash@~4.16.4:
   version "4.16.4"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.16.4.tgz#01ce306b9bad1319f2a5528674f88297aeb70127"
 
-lodash@4.16.6, lodash@~4.16.4:
+lodash@4.16.6:
   version "4.16.6"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.16.6.tgz#d22c9ac660288f3843e16ba7d2b5d06cca27d777"
 
@@ -4555,9 +4555,9 @@ parseurl@~1.3.0, parseurl@~1.3.1:
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/parseurl/-/parseurl-1.3.1.tgz#c8ab8c9223ba34888aa64a297b28853bec18da56"
 
-passport-ghost@2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/passport-ghost/-/passport-ghost-2.2.0.tgz#17fa80e3ad160c0b6221c8fc1663cb3afdb100dc"
+passport-ghost@2.2.1:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/passport-ghost/-/passport-ghost-2.2.1.tgz#e9ff2b73e9b6b9cfd05c83d5aa1e90a320d1511f"
   dependencies:
     bluebird "3.4.1"
     ghost-ignition "2.5.0"
