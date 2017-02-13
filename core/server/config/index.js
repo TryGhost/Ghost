@@ -9,7 +9,6 @@ var path          = require('path'),
 
     validator     = require('validator'),
     generateAssetHash = require('../utils/asset-hash'),
-    readDirectory = require('../utils/read-directory'),
     readThemes    = require('../utils/read-themes'),
     errors        = require('../errors'),
     configUrl     = require('./url'),
@@ -78,10 +77,13 @@ ConfigManager.prototype.init = function (rawConfig) {
     // just the object appropriate for this NODE_ENV
     self.set(rawConfig);
 
+    return Promise.resolve(self._config);
+};
+
+ConfigManager.prototype.loadExtras = function () {
+    var self = this;
+
     return self.loadThemes()
-        .then(function () {
-            return self.loadApps();
-        })
         .then(function () {
             return self._config;
         });
@@ -92,16 +94,7 @@ ConfigManager.prototype.loadThemes = function () {
 
     return readThemes(self._config.paths.themePath)
         .then(function (result) {
-            self._config.paths.availableThemes = result;
-        });
-};
-
-ConfigManager.prototype.loadApps = function () {
-    var self = this;
-
-    return readDirectory(self._config.paths.appPath)
-        .then(function (result) {
-            self._config.paths.availableApps = result;
+            self.set({paths: {availableThemes: result}});
         });
 };
 

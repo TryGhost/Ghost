@@ -4,6 +4,7 @@ var Promise = require('bluebird'),
     chalk = require('chalk'),
     fs = require('fs'),
     errors = require('./errors'),
+    events = require('./events'),
     config = require('./config'),
     i18n   = require('./i18n'),
     moment = require('moment');
@@ -76,6 +77,7 @@ GhostServer.prototype.start = function (externalApp) {
         });
         self.httpServer.on('connection', self.connection.bind(self));
         self.httpServer.on('listening', function () {
+            events.emit('server:start');
             self.logStartMessages();
             resolve(self);
         });
