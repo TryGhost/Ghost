@@ -168,18 +168,25 @@ exports.init = function initPassport(options) {
             _private.registerEvents();
             return resolve({passport: passport.initialize()});
         }).catch(function onError(err) {
+            debug('Public registration failed:' + err.message);
+
             // @TODO: see https://github.com/TryGhost/Ghost/issues/7627
+            // CASE: can happen if database query fails
             if (_.isArray(err)) {
                 err = err[0];
             }
 
-            debug('Public registration failed:' + err.message);
+            if (!errors.utils.isIgnitionError(err)) {
+                err = new errors.GhostError({
+                    err: err
+                });
+            }
 
-            return reject(new errors.GhostError({
-                err: err,
-                context: 'Public client registration failed',
-                help: 'Please verify the configured url: ' + ghostOAuth2Strategy.url
-            }));
+            err.level = 'critical';
+            err.context = err.context || 'Public client registration failed';
+            err.help = err.help || 'Please verify the configured url: ' + ghostOAuth2Strategy.url;
+
+            return reject(err);
         });
     });
 };
