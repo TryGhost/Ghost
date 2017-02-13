@@ -416,16 +416,17 @@ describe('User Model', function run() {
         });
 
         it('can NOT set an already existing email address', function (done) {
-            var firstUser = testUtils.DataGenerator.Content.users[0].id,
-                secondEmail = testUtils.DataGenerator.Content.users[1].email;
+            var firstUser = testUtils.DataGenerator.Content.users[0],
+                secondUser = testUtils.DataGenerator.Content.users[1];
 
-            UserModel.findOne({id: firstUser}).then(function (user) {
-                return user.edit({email: secondEmail});
-            }).then(function () {
-                done(new Error('Already existing email address was accepted'));
-            }).catch(function () {
-                done();
-            });
+            UserModel.edit({email: secondUser.email}, {id: firstUser.id})
+                .then(function () {
+                    done(new Error('Already existing email address was accepted'));
+                })
+                .catch(function (err) {
+                    (err instanceof errors.ValidationError).should.eql(true);
+                    done();
+                });
         });
 
         it('can edit invited user', function (done) {
