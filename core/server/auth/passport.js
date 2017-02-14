@@ -77,7 +77,8 @@ _private.updateClient = function updateClient(options) {
                         uuid: credentials.client_id,
                         secret: credentials.client_secret,
                         redirection_uri: credentials.redirect_uri,
-                        client_uri: credentials.blog_uri
+                        client_uri: credentials.blog_uri,
+                        auth_uri: ghostOAuth2Strategy.url
                     }, {context: {internal: true}});
                 }).then(function addedLocalClient(client) {
                     debug('Added local client: ' + JSON.stringify(client.toJSON()));
@@ -93,6 +94,7 @@ _private.updateClient = function updateClient(options) {
             if (client.get('redirection_uri') === redirectUri &&
                 client.get('name') === clientName &&
                 client.get('description') === clientDescription &&
+                client.get('auth_uri') === ghostOAuth2Strategy.url &&
                 client.get('client_uri') === clientUri) {
                 debug('Client did not change');
 
@@ -113,6 +115,7 @@ _private.updateClient = function updateClient(options) {
             }, _.isUndefined)).then(function updatedRemoteClient(updatedRemoteClient) {
                 debug('Update remote client: ' + JSON.stringify(updatedRemoteClient));
 
+                client.set('auth_uri', ghostOAuth2Strategy.url);
                 client.set('redirection_uri', updatedRemoteClient.redirect_uri);
                 client.set('client_uri', updatedRemoteClient.blog_uri);
                 client.set('name', updatedRemoteClient.name);
