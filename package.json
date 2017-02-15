@@ -57,7 +57,7 @@
     "image-size": "0.5.1",
     "intl": "1.2.5",
     "intl-messageformat": "1.3.0",
-    "jsonpath": "0.2.9",
+    "jsonpath": "0.2.11",
     "knex": "0.12.5",
     "knex-migrator": "2.0.7",
     "lodash": "4.17.4",
