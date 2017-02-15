@@ -1,32 +1,22 @@
-{{#link-to "editor.edit" post.id class="permalink" title="Edit this post"}}
-    <h3 class="entry-title">{{post.title}}</h3>
-    <p>{{subText}}</p>
+<h3 class="gh-content-entry-title">{{#link-to "editor.edit" post.id class="permalink" title="Edit this post"}}{{post.title}}{{/link-to}}</h3>
+<p>{{subText}}</p>
 
-    <section class="entry-meta">
-        <span class="status">
-            {{#if isPublished}}
-                {{#if post.page}}
-                    <span class="page">Page</span>
-                {{else}}
-                    <time datetime="{{post.publishedAtUTC}}" class="date published">
-                        Published {{gh-format-timeago post.publishedAtUTC}}.
-                    </time>
-                {{/if}}
+<section class="gh-content-entry-meta">
+        {{#if isPublished}}
+            {{#if post.page}}
+                <span class="gh-content-status-draft gh-badge gh-badge-black">Page</span>
             {{else}}
-                {{#if isScheduled}}
-                    <span class="scheduled">Scheduled</span>
-                    <span>&ndash;
-                        <time datetime="{{post.publishedAtUTC}}" class-="date scheduled">
-                            {{gh-format-time-scheduled post.publishedAtUTC blogTimezone}}
-                        </time>
-                    </span>
-                {{else}}
-                    <span class="draft">Draft</span>
-                {{/if}}
+                <span class="gh-content-status-published">Published</span>
             {{/if}}
+        {{else}}
+            {{#if isScheduled}}
+                <span class="gh-content-status-draft gh-badge">Scheduled</span>
+            {{else}}
+                <span class="gh-content-status-draft gh-badge gh-badge-red">Draft</span>
+            {{/if}}
+        {{/if}}
 
-            Last edited {{gh-format-timeago post.updatedAtUTC}}
-            &ndash; by {{authorName}}
-        </span>
-    </section>
-{{/link-to}}
+        by <span class="gh-content-entry-author">{{authorName}}</span> &mdash;
+        Last edited {{gh-format-timeago post.updatedAtUTC}}
+
+</section>
