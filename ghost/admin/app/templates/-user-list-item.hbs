@@ -1,18 +1,25 @@
-<span class="user-list-item-figure" style={{component.userImageBackground}}>
-    <span class="hidden">Photo of {{user.name}}</span>
-</span>
-
-<div class="user-list-item-body">
-    <span class="name">
-        {{user.name}}
-    </span>
-    <br>
-    <span class="description">Last seen: {{component.lastLoginUTC}}</span>
+<div class="apps-grid-cell">
+    {{#link-to 'team.user' user.slug}}
+    <article class="apps-card-app">
+        <div class="apps-card-left">
+            <span class="user-list-item-figure" style={{component.userImageBackground}}>
+                <span class="hidden">Photo of {{user.name}}</span>
+            </span>
+            <div class="apps-card-meta">
+                <h3 class="apps-card-app-title">{{user.name}}</h3>
+                <p class="apps-card-app-desc">Last seen: {{component.lastLoginUTC}}</p>
+            </div>
+        </div>
+        <div class="apps-card-right">
+            <div class="apps-configured">
+                {{#unless session.user.isAuthor}}
+                    {{#each user.roles as |role|}}
+                        <span class="gh-badge {{role.lowerCaseName}}">{{role.name}}</span>
+                    {{/each}}
+                {{/unless}}
+                <i class="icon-arrow-right"></i>
+            </div>
+        </div>
+    </article>
+    {{/link-to}}
 </div>
-<aside class="user-list-item-aside">
-    {{#unless session.user.isAuthor}}
-        {{#each user.roles as |role|}}
-            <span class="role-label {{role.lowerCaseName}}">{{role.name}}</span>
-        {{/each}}
-    {{/unless}}
-</aside>

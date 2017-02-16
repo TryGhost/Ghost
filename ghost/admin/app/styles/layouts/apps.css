@@ -13,6 +13,10 @@
 /* Main Layout
 /* ---------------------------------------------------------- */
 
+.apps-grid-container {
+    margin: 2vw 0;
+}
+
 .apps-grid-title {
     display: block;
     margin-bottom: 5px;
@@ -47,6 +51,9 @@
 }
 
 .apps-card-app {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     overflow: hidden;
     padding: 14px;
     height: 75px;
@@ -54,43 +61,28 @@
     transition: background 0.3s ease;
 }
 
-.apps-card-app:not(last-child) {
-    border-bottom: rgba(0,0,0,0.1) 1px solid;
-}
-
-.apps-card-app:first-of-type {
+.apps-grid-cell:first-child .apps-card-app {
     border-top: none;
 }
 
-.apps-card-content {
-    position: relative;
+.apps-card-left {
     display: flex;
+    align-items: center;
 }
 
-.apps-card-content > .gh-btn {
-    position: absolute;
-    top: 5px;
-    right: 20px;
-}
-.apps-card-content > .apps-configured {
-    position: absolute;
-    top: 13px;
-    right: 29px;
+.apps-card-right {
     display: flex;
+    align-items: center;
+}
+
+.apps-configured {
+    display: flex;
+    align-items: center;
+}
+
+.apps-configured i {
+    margin-left: 15px;
     color: var(--midgrey);
-    white-space: nowrap;
-}
-
-.apps-configured > span {
-    padding-right: 14px;
-    font-size: 1.3rem;
-}
-
-.apps-configured > i {
-    position: absolute;
-    top: 2px;
-    right: 0;
-    font-size: 1.1rem;
 }
 
 .apps-card-app-icon {
@@ -104,15 +96,14 @@
 }
 
 .apps-card-meta {
-    position: relative;
     display: flex;
     flex-direction: column;
+    padding: 0 70px 0 0;
 }
 
 .apps-card-app-title {
+    margin: 0;
     overflow: hidden;
-    margin: 4px 0 0 0;
-    padding: 0 70px 0 0;
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 1.7rem;
@@ -250,8 +241,5 @@
     .apps-card-app .apps-card-footer {
         flex-direction: column;
         align-items: flex-start;
-    }
-    .apps-card-content > .apps-configured {
-        right: 15px;
     }
 }

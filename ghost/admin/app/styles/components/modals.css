@@ -8,7 +8,6 @@
 /* explicit modal container so that background and content can be animated individually */
 .fullscreen-modal-container {
     display: flex;
-    align-items: center;
     justify-content: center;
     visibility: hidden;
     position: fixed;
@@ -58,7 +57,7 @@
 }
 
 .fullscreen-modal-action {
-    margin: 2vh 0 10vh 0;
+    margin: 6vw 0;
 }
 
 
@@ -105,7 +104,7 @@
 
 .modal-header h1 {
     display: inline-block;
-    margin: 0 25px 0 0;
+    margin: -5px 25px 0 0;
     font-size: 2.2rem;
     line-height: 1.15em;
     font-weight: 600;
@@ -145,6 +144,9 @@
 /* Content Modifiers
 /* ---------------------------------------------------------- */
 
+.modal-body fieldset {
+    margin: 0;
+}
 
 /* Login styles */
 .modal-body .login-form {
