@@ -1,6 +1,6 @@
-<section class="gh-view">
-    <header class="view-header">
-        {{#gh-view-title openMobileMenu="openMobileMenu"}}<span>Team</span>{{/gh-view-title}}
+<section class="gh-canvas">
+    <header class="gh-canvas-header">
+        <h2 class="gh-canvas-title">Team Members</h2>
         {{!-- Do not show Invite user button to authors --}}
         {{#unless session.user.isAuthor}}
             <section class="view-actions">
@@ -12,67 +12,79 @@
     {{#if showInviteUserModal}}
         {{gh-fullscreen-modal "invite-new-user"
                               close=(action "toggleInviteUserModal")
-                              modifier="action"}}
+                              modifier="action wide"}}
     {{/if}}
 
     {{#gh-infinite-scroll
         fetch="loadNextPage"
         isLoading=isLoading
         tagName="section"
-        classNames="view-content team"
+        classNames="gh-team"
     }}
-        {{!-- Do not show invited users to authors --}}
-        {{#unless session.user.isAuthor}}
-            {{#if invites}}
-                <section class="user-list invited-users">
-                    <h4 class="user-list-title">Invited users</h4>
-                    {{#each sortedInvites as |invite|}}
-                        {{#gh-user-invited invite=invite reload="reload" as |component|}}
-                            <div class="user-list-item">
-                                <span class="user-list-item-icon icon-mail">ic</span>
-                                <div class="user-list-item-body">
-                                    <span class="name">{{invite.email}}</span><br>
-                                    {{#if invite.pending}}
-                                        <span class="description-error">
-                                            Invitation not sent - please try again
-                                        </span>
-                                    {{else}}
-                                        <span class="description">
-                                            Invitation sent: {{component.createdAt}},
-                                            expires {{component.expiresAt}}
-                                        </span>
-                                    {{/if}}
+
+    {{!-- Show invited users to everyone except authors --}}
+    {{#unless session.user.isAuthor}}
+        {{#if invites}}
+        <section class="apps-grid-container gh-invited-users">
+            <span class="apps-grid-title">Invited users</span>
+            <div class="apps-grid">
+
+                {{#each sortedInvites as |invite|}}
+                    {{#gh-user-invited invite=invite reload="reload" as |component|}}
+                        <div class="apps-grid-cell">
+                            <article class="apps-card-app">
+                                <div class="apps-card-left">
+                                    <span class="user-list-item-icon icon-mail">ic</span>
+                                    <div class="apps-card-meta">
+                                        <h3 class="apps-card-app-title">{{invite.email}}</h3>
+                                        <p class="apps-card-app-desc">
+                                            {{#if invite.pending}}
+                                                <span class="description-error">
+                                                    Invitation not sent - please try again
+                                                </span>
+                                            {{else}}
+                                                <span class="description">
+                                                    Invitation sent: {{component.createdAt}},
+                                                    expires {{component.expiresAt}}
+                                                </span>
+                                            {{/if}}
+                                        </p>
+                                    </div>
                                 </div>
-                                <aside class="user-list-item-aside">
-                                    {{#if component.isSending}}
-                                        <span>Sending Invite...</span>
-                                    {{else}}
-                                        <a class="user-list-action" href="#revoke" {{action "revoke" target=component}}>
-                                            Revoke
-                                        </a>
-                                        <a class="user-list-action" href="#resend" {{action "resend" target=component}}>
-                                            Resend
-                                        </a>
+                                <div class="apps-card-right">
+                                    <div class="apps-configured">
+                                        {{#if component.isSending}}
+                                            <span>Sending Invite...</span>
+                                        {{else}}
+                                            <a class="user-list-action" href="#revoke" {{action "revoke" target=component}}>
+                                                Revoke
+                                            </a>
+                                            <a class="user-list-action" href="#resend" {{action "resend" target=component}}>
+                                                Resend
+                                            </a>
 
-                                        <span class="role-label {{invite.role.lowerCaseName}}">{{invite.role.name}}</span>
-                                    {{/if}}
-                                </aside>
-                            </div>
-                        {{/gh-user-invited}}
-                    {{/each}}
-                </section>
-            {{/if}}
-        {{/unless}}
+                                            <span class="gh-badge {{invite.role.lowerCaseName}}">{{invite.role.name}}</span>
+                                        {{/if}}
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+                    {{/gh-user-invited}}
+                {{/each}}
 
-        <section class="user-list active-users">
-            <h4 class="user-list-title">Active users</h4>
+            </div>
+        </section>
+        {{/if}}
+    {{/unless}}
+
+    <section class="apps-grid-container gh-active-users">
+        <span class="apps-grid-title">Active users</span>
+        <div class="apps-grid">
             {{#each users key="id" as |user|}}
                 {{!-- For authors only shows users as a list, otherwise show users with links to user page --}}
                 {{#unless session.user.isAuthor}}
                     {{#gh-user-active user=user as |component|}}
-                        {{#link-to 'team.user' user.slug class="user-list-item"}}
-                            {{partial 'user-list-item'}}
-                        {{/link-to}}
+                        {{partial 'user-list-item'}}
                     {{/gh-user-active}}
                 {{else}}
                     {{#gh-user-active user=user as |component|}}
@@ -80,6 +92,8 @@
                     {{/gh-user-active}}
                 {{/unless}}
             {{/each}}
-        </section>
+        </div>
+    </section>
+
     {{/gh-infinite-scroll}}
 </section>

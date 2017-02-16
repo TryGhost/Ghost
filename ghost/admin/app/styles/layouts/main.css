@@ -380,11 +380,11 @@ body > .ember-view:not(.liquid-target-container) {
         top: 0;
         left: 0;
         z-index: 1000;
-        width: 205px;
+        width: 250px;
         height: 100%;
         transition: transform 0.20s;
         /* translate3d for GPU accelerated animation - http://bit.ly/1EY1Xhx */
-        transform: translate3d(-190px,0,0);
+        transform: translate3d(-235px,0,0);
     }
 
     /* THE FUTURE: Super sexy background blur for Webkit - http://cl.ly/b1rG */
@@ -462,6 +462,7 @@ body > .ember-view:not(.liquid-target-container) {
     padding: 2.9vw 4vw 3vw 4vw;
     margin: 0 auto;
     overflow-y: auto;
+    max-width: 1200px;
 }
 
 .gh-canvas-header {

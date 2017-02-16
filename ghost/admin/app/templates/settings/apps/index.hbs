@@ -1,55 +1,57 @@
-<header class="view-header">
-    {{#gh-view-title openMobileMenu="openMobileMenu"}}<span style="padding-left:1px">Apps</span>{{/gh-view-title}}
+<header class="gh-canvas-header">
+    <h2 class="gh-canvas-title">Apps</h2>
 </header>
 
-<section class="view-container">
-    <section class="view-content">
-        <span class="apps-grid-title">Available integrations</span>
-        <div class="apps-grid">
-            <div class="apps-grid-cell">
-                {{#link-to "settings.apps.slack" id="slack-link"}}
-                <article class="apps-card-app">
-                    <div class="apps-card-content">
-                        <figure class="apps-card-app-icon" style="background-image:url({{gh-path 'asset' '/img/slackicon.png'}})"></figure>
-                        <div class="apps-card-meta">
-                            <h3 class="apps-card-app-title">Slack</h3>
-                            <p class="apps-card-app-desc">A team communication tool</p>
-                        </div>
-                        <div class="apps-configured">
-                            {{#if slack.isActive}}
-                                <span class="green">Active</span>
-                            {{else}}
-                                <span>Configure</span>
-                            {{/if}}
-                            <i class="icon-arrow-right"></i>
-                        </div>
+<section class="apps-grid-container">
+    <span class="apps-grid-title">Available integrations</span>
+    <div class="apps-grid">
+        <div class="apps-grid-cell">
+            {{#link-to "settings.apps.slack" id="slack-link"}}
+            <article class="apps-card-app">
+                <div class="apps-card-left">
+                    <figure class="apps-card-app-icon" style="background-image:url({{gh-path 'asset' '/img/slackicon.png'}})"></figure>
+                    <div class="apps-card-meta">
+                        <h3 class="apps-card-app-title">Slack</h3>
+                        <p class="apps-card-app-desc">A team communication tool</p>
                     </div>
-                </article>
-                {{/link-to}}
-            </div>
-
-            <div class="apps-grid-cell">
-                {{#link-to "settings.apps.amp" id="amp-link"}}
-                <article class="apps-card-app">
-                    <div class="apps-card-content">
-                        <figure class="apps-card-app-icon" style="background-image:url({{gh-path 'asset' '/img/ampicon.png'}})"></figure>
-                        <div class="apps-card-meta">
-                            <h3 class="apps-card-app-title">AMP</h3>
-                            <p class="apps-card-app-desc">Google Accelerated Mobile Pages</p>
-                        </div>
-                        <div class="apps-configured">
-                            {{#if amp}}
-                                <span class="green">Active</span>
-                            {{else}}
-                                <span>Configure</span>
-                            {{/if}}
-                            <i class="icon-arrow-right"></i>
-                        </div>
+                </div>
+                <div class="gh-card-right">
+                    <div class="apps-configured">
+                        {{#if slack.isActive}}
+                            <span class="green">Active</span>
+                        {{else}}
+                            <span>Configure</span>
+                        {{/if}}
+                        <i class="icon-arrow-right"></i>
                     </div>
-                </article>
-                {{/link-to}}
-            </div>
+                </div>
+            </article>
+            {{/link-to}}
         </div>
-        <p class="apps-grid-note">(More coming soon!)</p>
-    </section>
+
+        <div class="apps-grid-cell">
+            {{#link-to "settings.apps.amp" id="amp-link"}}
+            <article class="apps-card-app">
+                <div class="apps-card-left">
+                    <figure class="apps-card-app-icon" style="background-image:url({{gh-path 'asset' '/img/ampicon.png'}})"></figure>
+                    <div class="apps-card-meta">
+                        <h3 class="apps-card-app-title">AMP</h3>
+                        <p class="apps-card-app-desc">Google Accelerated Mobile Pages</p>
+                    </div>
+                </div>
+                <div class="gh-card-right">
+                    <div class="apps-configured">
+                        {{#if amp}}
+                            <span class="green">Active</span>
+                        {{else}}
+                            <span>Configure</span>
+                        {{/if}}
+                        <i class="icon-arrow-right"></i>
+                    </div>
+                </div>
+            </article>
+            {{/link-to}}
+        </div>
+    </div>
+    <p class="apps-grid-note">(More coming soon!)</p>
 </section>
