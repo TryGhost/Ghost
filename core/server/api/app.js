@@ -119,12 +119,12 @@ function apiRoutes() {
     apiRouter.get('/roles/', authenticatePrivate, api.http(api.roles.browse));
 
     // ## Clients
-    router.get('/clients', authenticatePrivate, api.http(api.clients.browse));
-    router.get('/clients/:id', authenticatePrivate, api.http(api.clients.read));
-    router.get('/clients/slug/:slug', authenticatePrivate, api.http(api.clients.read));
-    router.post('/clients', authenticatePrivate, api.http(api.clients.add));
-    router.put('/clients/:id', authenticatePrivate, api.http(api.clients.edit));
-    router.del('/clients/:id', authenticatePrivate, api.http(api.clients.destroy));
+    apiRouter.get('/clients', authenticatePrivate, api.http(api.clients.browse));
+    apiRouter.get('/clients/:id', authenticatePrivate, api.http(api.clients.read));
+    apiRouter.get('/clients/slug/:slug', authenticatePrivate, api.http(api.clients.read));
+    apiRouter.post('/clients', authenticatePrivate, api.http(api.clients.add));
+    apiRouter.put('/clients/:id', authenticatePrivate, api.http(api.clients.edit));
+    apiRouter.del('/clients/:id', authenticatePrivate, api.http(api.clients.destroy));
 
     // ## Slugs
     apiRouter.get('/slugs/:type/:name', authenticatePrivate, api.http(api.slugs.generate));

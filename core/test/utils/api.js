@@ -32,11 +32,11 @@ var _               = require('lodash'),
         accesstoken: _.keys(schema.accesstokens),
         role:        _.keys(schema.roles),
         permission:  _.keys(schema.permissions),
-        invites:      _(schema.invites).keys().without('token').value()
+        invites:      _(schema.invites).keys().without('token').value(),
         client:         _.keys(schema.clients),
         trusted_domain: _.keys(schema.client_trusted_domains),
         notification: ['type', 'message', 'status', 'id', 'dismissible', 'location'],
-        theme:        ['uuid', 'name', 'version', 'active'],
+        theme:        ['uuid', 'name', 'version', 'active']
     };
 
 function getApiQuery(route) {

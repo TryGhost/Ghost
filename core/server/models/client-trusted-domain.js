@@ -9,17 +9,15 @@ ClientTrustedDomain = ghostBookshelf.Model.extend({
 
     // override for base function since we don't have
     // a created_by field for trusted domains
-    creating: function creating(newObj, attr, options) {
-        ghostBookshelf.Model.prototype.creating.call(this, newObj, attr, options);
-
+    onCreating: function onCreating(model, attr, options) {
+        ghostBookshelf.Model.prototype.onCreating.call(this, model, attr, options);
         this.unset('created_by');
     },
 
     // override for base function since we don't have
     // a updated_by field for trusted domains
-    saving: function saving(newObj, attr, options) {
-        ghostBookshelf.Model.prototype.saving.call(this, newObj, attr, options);
-
+    onSaving: function onSaving(model, attr, options) {
+        ghostBookshelf.Model.prototype.onSaving.call(this, model, attr, options);
         this.unset('updated_by');
     }
 });

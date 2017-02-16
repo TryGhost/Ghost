@@ -548,7 +548,7 @@ DataGenerator.forKnex = (function () {
     clients = [
         createClient({name: 'Ghost Admin', slug: 'ghost-admin', type: 'ua'}),
         createClient({name: 'Ghost Scheduler', slug: 'ghost-scheduler', type: 'web'}),
-        createClient({name: 'Ghost Auth', slug: 'ghost-auth', type: 'web'})
+        createClient({name: 'Ghost Auth', slug: 'ghost-auth', type: 'web'}),
         createBasic(DataGenerator.Content.clients[0]),
         createBasic(DataGenerator.Content.clients[1])
     ];

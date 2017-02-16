@@ -34,29 +34,23 @@ Client = ghostBookshelf.Model.extend({
         };
     },
 
-    initialize: function initialize() {
-        var self = this;
-
-        ghostBookshelf.Model.prototype.initialize.apply(this, arguments);
-
-        this.on('saved', function onSaved(model, response, options) {
-            return self.updateTrustedDomains(model, response, options);
-        });
-
-        this.on('created', function onCreated(model) {
-            model.emitChange('added');
-        });
-
-        this.on('updated', function onUpdated(model) {
-            model.emitChange('edited');
-        });
-
-        this.on('destroyed', function onDestroyed(model) {
-            model.emitChange('deleted');
-        });
+    onSaved: function onSaved(model, response, options) {
+        return this.updateTrustedDomains(model, response, options);
     },
 
-    saving: function saving(model, attr, options) {
+    onCreated: function onCreated(model) {
+        model.emitChange('added');
+    },
+
+    onUpdated: function onUpdated(model) {
+        model.emitChange('edited');
+    },
+
+    onDestroyed: function onDestroyed(model) {
+        model.emitChange('deleted');
+    },
+
+    onSaving: function onSaving(model, attr, options) {
         var self = this,
             secret,
             status,
@@ -83,7 +77,7 @@ Client = ghostBookshelf.Model.extend({
             });
         }
 
-        ghostBookshelf.Model.prototype.saving.call(this, model, attr, options);
+        ghostBookshelf.Model.prototype.onSaving.call(this, model, attr, options);
 
         secret = this.get('secret') || crypto.randomBytes(6).toString('hex');
         this.set('secret', secret.trim());
@@ -146,8 +140,8 @@ Client = ghostBookshelf.Model.extend({
                 });
 
                 // Domains from the new domain array which don't exist in the DB should be created
-                domainsToCreate = _.pluck(_.reject(newDomains, function (newDomain) {
-                    return _.any(existingDomains, function (existingDomain) {
+                domainsToCreate = _.map(_.reject(newDomains, function (newDomain) {
+                    return _.some(existingDomains, function (existingDomain) {
                         return domainUpdate.domainsAreEqual(existingDomain, newDomain);
                     });
                 }), 'trusted_domain');
@@ -179,15 +173,11 @@ Client = ghostBookshelf.Model.extend({
             }).then(function () {
                 // Don't do anything, the transaction processed ok
             }).catch(function failure(error) {
-                errors.logError(
-                    error,
-                    i18n.t('errors.models.client.trustedDomainUpdates.error'),
-                    i18n.t('errors.models.client.trustedDomainUpdates.help')
-                );
-                return Promise.reject(new errors.InternalServerError(
-                    i18n.t('errors.models.client.trustedDomainUpdates.error') + ' ' +
-                        i18n.t('errors.models.client.trustedDomainUpdates.help') + error
-                ));
+                return Promise.reject(new errors.GhostError({
+                    err: error,
+                    context: i18n.t('errors.models.client.trustedDomainUpdates.error'),
+                    help: i18n.t('errors.models.client.trustedDomainUpdates.help')
+                }));
             });
         }
     },

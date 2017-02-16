@@ -137,7 +137,7 @@ trustedDomainUpdate = {
             return false;
         }
         return DomainModel.forge()
-            .query('whereIn', 'trusted_domain', _.pluck(domainsToMatch, 'trusted_domain')).fetchAll(options);
+            .query('whereIn', 'trusted_domain', _.map(domainsToMatch, 'trusted_domain')).fetchAll(options);
     },
 
     removeDomain: function removeDomain(DomainModel, client, domain, options) {

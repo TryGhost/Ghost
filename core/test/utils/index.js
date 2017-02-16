@@ -454,7 +454,7 @@ toDoList = {
     clients: function insertClients() { return fixtures.insertClients(); },
     trusted_domains: function insertTrustedDomains() { return fixtures.insertTrustedDomains(); },
     filter: function createFilterParamFixtures() { return filterData(DataGenerator); },
-    invites: function insertInvites() { return fixtures.insertInvites(); }
+    invites: function insertInvites() { return fixtures.insertInvites(); },
     filter: function createFilterParamFixtures() { return filterData(DataGenerator); }
 };
 
