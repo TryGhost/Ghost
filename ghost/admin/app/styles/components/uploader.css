@@ -113,7 +113,7 @@
     font-size: 1.4rem;
 }
 
-.gh-image-uploader input.url + .btn.btn-blue {
+.gh-image-uploader input.url + .gh-btn.gh-btn-blue {
     color: #fff;
 }
 
@@ -156,7 +156,7 @@
 }
 
 /* Try Again button */
-.gh-image-uploader .btn-green:last-child {
+.gh-image-uploader .gh-btn-green:last-child {
     margin-top: 1em;
     margin-bottom: 3em;
 }

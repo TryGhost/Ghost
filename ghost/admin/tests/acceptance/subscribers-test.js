@@ -132,7 +132,7 @@ describe('Acceptance: Subscribers', function() {
             // });
 
             // click the add subscriber button
-            click('.btn:contains("Add Subscriber")');
+            click('.gh-btn:contains("Add Subscriber")');
 
             andThen(function () {
                 // it displays the add subscriber modal
@@ -141,7 +141,7 @@ describe('Acceptance: Subscribers', function() {
             });
 
             // cancel the modal
-            click('.fullscreen-modal .btn:contains("Cancel")');
+            click('.fullscreen-modal .gh-btn:contains("Cancel")');
 
             andThen(function () {
                 // it closes the add subscriber modal
@@ -150,9 +150,9 @@ describe('Acceptance: Subscribers', function() {
             });
 
             // save a new subscriber
-            click('.btn:contains("Add Subscriber")');
+            click('.gh-btn:contains("Add Subscriber")');
             fillIn('.fullscreen-modal input[name="email"]', 'test@example.com');
-            click('.fullscreen-modal .btn:contains("Add")');
+            click('.fullscreen-modal .gh-btn:contains("Add")');
 
             andThen(function () {
                 // the add subscriber modal is closed
@@ -174,9 +174,9 @@ describe('Acceptance: Subscribers', function() {
             });
 
             // saving a duplicate subscriber
-            click('.btn:contains("Add Subscriber")');
+            click('.gh-btn:contains("Add Subscriber")');
             fillIn('.fullscreen-modal input[name="email"]', 'test@example.com');
-            click('.fullscreen-modal .btn:contains("Add")');
+            click('.fullscreen-modal .gh-btn:contains("Add")');
 
             andThen(function () {
                 // the validation error is displayed
@@ -193,7 +193,7 @@ describe('Acceptance: Subscribers', function() {
             });
 
             // deleting a subscriber
-            click('.fullscreen-modal .btn:contains("Cancel")');
+            click('.fullscreen-modal .gh-btn:contains("Cancel")');
             click('.subscribers-table tbody tr:first-of-type button:last-of-type');
 
             andThen(function () {
@@ -203,7 +203,7 @@ describe('Acceptance: Subscribers', function() {
             });
 
             // cancel the modal
-            click('.fullscreen-modal .btn:contains("Cancel")');
+            click('.fullscreen-modal .gh-btn:contains("Cancel")');
 
             andThen(function () {
                 // it closes the add subscriber modal
@@ -212,7 +212,7 @@ describe('Acceptance: Subscribers', function() {
             });
 
             click('.subscribers-table tbody tr:first-of-type button:last-of-type');
-            click('.fullscreen-modal .btn:contains("Delete")');
+            click('.fullscreen-modal .gh-btn:contains("Delete")');
 
             andThen(function () {
                 // the add subscriber modal is closed
@@ -229,7 +229,7 @@ describe('Acceptance: Subscribers', function() {
             });
 
             // click the import subscribers button
-            click('.btn:contains("Import CSV")');
+            click('.gh-btn:contains("Import CSV")');
 
             andThen(function () {
                 // it displays the import subscribers modal
@@ -240,7 +240,7 @@ describe('Acceptance: Subscribers', function() {
             });
 
             // cancel the modal
-            click('.fullscreen-modal .btn:contains("Cancel")');
+            click('.fullscreen-modal .gh-btn:contains("Cancel")');
 
             andThen(function () {
                 // it closes the import subscribers modal
@@ -248,7 +248,7 @@ describe('Acceptance: Subscribers', function() {
                     .to.equal(0);
             });
 
-            click('.btn:contains("Import CSV")');
+            click('.gh-btn:contains("Import CSV")');
             fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'test.csv'});
 
             andThen(function () {

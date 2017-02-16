@@ -21,11 +21,11 @@
     margin: 0;
 }
 
-.subscribers-table table .btn {
+.subscribers-table table .gh-btn {
     visibility: hidden;
 }
 
-.subscribers-table table tr:hover .btn {
+.subscribers-table table tr:hover .gh-btn {
     visibility: visible;
 }
 
@@ -66,12 +66,12 @@
     flex-direction: row;
 }
 
-.subscribers-import-buttons .btn {
+.subscribers-import-buttons .gh-btn {
     flex-grow: 1;
     margin-right: 10px;
 }
 
-.subscribers-import-buttons .btn:last-of-type {
+.subscribers-import-buttons .gh-btn:last-of-type {
     margin-right: 0;
 }
 

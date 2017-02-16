@@ -12,8 +12,8 @@
                 </header>
 
                 <form id="signup" class="gh-signin" method="post" novalidate="novalidate">
-                    {{#gh-spin-button class="login btn btn-blue btn-block" type="submit" action="authenticateWithGhostOrg" tabindex="3" submitting=loggingIn autoWidth="false"}}
-                        Sign in with Ghost to accept
+                    {{#gh-spin-button class="login gh-btn gh-btn-blue gh-btn-block" type="submit" action="authenticateWithGhostOrg" tabindex="3" submitting=loggingIn autoWidth="false"}}
+                        <span>Sign in with Ghost to accept</span>
                     {{/gh-spin-button}}
                 </form>
             {{else}}
@@ -52,7 +52,7 @@
                     {{/gh-form-group}}
                 </form>
 
-                {{#gh-spin-button tabindex="3" type="submit" class="btn btn-green btn-lg btn-block" action="signup" submitting=submitting autoWidth="false"}}Create Account{{/gh-spin-button}}
+                {{#gh-spin-button tabindex="3" type="submit" class="gh-btn gh-btn-green gh-btn-lg gh-btn-block" action="signup" submitting=submitting autoWidth="false"}}<span>Create Account</span>{{/gh-spin-button}}
             {{/if}}
 
             <p class="main-error">{{{flowErrors}}}</p>

@@ -9,7 +9,7 @@
         </div>
     </div>
     {{#if failureMessage}}
-        <button class="btn btn-green" {{action "reset"}}>Try Again</button>
+        <button class="gh-btn gh-btn-green" {{action "reset"}}><span>Try Again</span></button>
     {{/if}}
 {{else}}
     {{#if showUploadForm}}
@@ -29,7 +29,7 @@
         <form class="url-form">
             {{gh-input url class="url" placeholder="http://" update=(action "onInput") onenter=(action "saveUrl")}}
             {{#if saveButton}}
-                <button class="btn btn-blue gh-input" {{action "saveUrl"}}>Save</button>
+                <button class="gh-btn gh-btn-blue gh-input" {{action "saveUrl"}}><span>Save</span></button>
             {{else}}
                 <div class="description">{{description}}</div>
             {{/if}}

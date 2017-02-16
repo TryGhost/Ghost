@@ -67,7 +67,7 @@
     display: flex;
 }
 
-.apps-card-content > .btn {
+.apps-card-content > .gh-btn {
     position: absolute;
     top: 5px;
     right: 20px;
@@ -197,15 +197,15 @@
     color: #666363;
     font-size: 1.6rem;
 }
-.app-config-form .btn-grey {
+.app-config-form .gh-btn-grey {
     margin-top: 1.6em;
     background-color: #e8e8e8;
     box-shadow: none;
     font-size: 1.1rem;
 }
 
-.app-config-form > .btn-grey:hover,
-.app-config-form > .btn-grey:focus {
+.app-config-form > .gh-btn-grey:hover,
+.app-config-form > .gh-btn-grey:focus {
     border-color: rgb(223, 225, 227);
 }
 /* Media Queries

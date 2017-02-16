@@ -7,9 +7,11 @@
         <section class="view-actions">
             {{#if userActionsAreVisible}}
                 <span class="dropdown">
-                    {{#gh-dropdown-button dropdownName="user-actions-menu" classNames="btn btn-default only-has-icon user-actions-cog" title="User Actions"}}
-                        <i class="icon-settings"></i>
-                        <span class="hidden">User Settings</span>
+                    {{#gh-dropdown-button dropdownName="user-actions-menu" classNames="gh-btn gh-btn-default only-has-icon user-actions-cog" title="User Actions"}}
+                        <span>
+                            <i class="icon-settings"></i>
+                            <span class="hidden">User Settings</span>
+                        </span>
                     {{/gh-dropdown-button}}
                     {{#gh-dropdown name="user-actions-menu" tagName="ul" classNames="user-actions-menu dropdown-menu dropdown-triangle-top-right"}}
                         {{#if canMakeOwner}}
@@ -43,14 +45,14 @@
                 </span>
             {{/if}}
 
-            {{#gh-task-button class="btn btn-blue" task=save}}Save{{/gh-task-button}}
+            {{#gh-task-button class="gh-btn gh-btn-blue" task=save}}<span>Save</span>{{/gh-task-button}}
         </section>
     </header>
 
     <div class="view-container settings-user">
 
         <figure class="user-cover" style={{coverImageBackground}}>
-            <button class="btn btn-default user-cover-edit" {{action "toggleUploadCoverModal"}}>Change Cover</button>
+            <button class="gh-btn gh-btn-default user-cover-edit" {{action "toggleUploadCoverModal"}}><span>Change Cover</span></button>
             {{#if showUploadCoverModal}}
                 {{gh-fullscreen-modal "upload-image"
                                       model=(hash model=user imageProperty="cover" allowUrlInput=true)
@@ -197,7 +199,7 @@
                     {{/gh-form-group}}
 
                     <div class="form-group">
-                        {{#gh-task-button class="btn btn-red button-change-password" task=user.saveNewPassword}}Change Password{{/gh-task-button}}
+                        {{#gh-task-button class="gh-btn gh-btn-red button-change-password" task=user.saveNewPassword}}<span>Change Password</span>{{/gh-task-button}}
                     </div>
                 </fieldset>
             </form> {{! change password form }}

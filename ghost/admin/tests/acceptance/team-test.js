@@ -119,7 +119,7 @@ describe('Acceptance: Team', function () {
             andThen(() => {
                 // invite user button exists
                 expect(
-                    find('.view-actions .btn-green').text().trim(),
+                    find('.view-actions .gh-btn-green').text().trim(),
                     'invite people button text'
                 ).to.equal('Invite People');
 
@@ -142,7 +142,7 @@ describe('Acceptance: Team', function () {
             });
 
             // click the invite people button
-            click('.view-actions .btn-green');
+            click('.view-actions .gh-btn-green');
 
             andThen(() => {
                 let roleOptions = find('.fullscreen-modal select[name="role"] option');
@@ -183,7 +183,7 @@ describe('Acceptance: Team', function () {
 
             // submit valid invite form
             fillIn('.fullscreen-modal input[name="email"]', 'invite1@example.com');
-            click('.fullscreen-modal .btn-green');
+            click('.fullscreen-modal .gh-btn-green');
 
             andThen(() => {
                 // modal closes
@@ -216,10 +216,10 @@ describe('Acceptance: Team', function () {
             });
 
             // submit new invite with different role
-            click('.view-actions .btn-green');
+            click('.view-actions .gh-btn-green');
             fillIn('.fullscreen-modal input[name="email"]', 'invite2@example.com');
             fillIn('.fullscreen-modal select[name="role"]', '2');
-            click('.fullscreen-modal .btn-green');
+            click('.fullscreen-modal .gh-btn-green');
 
             andThen(() => {
                 // number of invites increases
@@ -241,9 +241,9 @@ describe('Acceptance: Team', function () {
             });
 
             // submit invite form with existing user
-            click('.view-actions .btn-green');
+            click('.view-actions .gh-btn-green');
             fillIn('.fullscreen-modal input[name="email"]', 'admin@example.com');
-            click('.fullscreen-modal .btn-green');
+            click('.fullscreen-modal .gh-btn-green');
 
             andThen(() => {
                 // validation message is displayed
@@ -255,7 +255,7 @@ describe('Acceptance: Team', function () {
 
             // submit invite form with existing invite
             fillIn('.fullscreen-modal input[name="email"]', 'invite1@example.com');
-            click('.fullscreen-modal .btn-green');
+            click('.fullscreen-modal .gh-btn-green');
 
             andThen(() => {
                 // validation message is displayed
@@ -267,7 +267,7 @@ describe('Acceptance: Team', function () {
 
             // submit invite form with an invalid email
             fillIn('.fullscreen-modal input[name="email"]', 'test');
-            click('.fullscreen-modal .btn-green');
+            click('.fullscreen-modal .gh-btn-green');
 
             andThen(() => {
                 // validation message is displayed
@@ -302,9 +302,9 @@ describe('Acceptance: Team', function () {
             });
 
             // add another invite to test ordering on resend
-            click('.view-actions .btn-green');
+            click('.view-actions .gh-btn-green');
             fillIn('.fullscreen-modal input[name="email"]', 'invite3@example.com');
-            click('.fullscreen-modal .btn-green');
+            click('.fullscreen-modal .gh-btn-green');
 
             andThen(() => {
                 // new invite should be last in the list

@@ -77,7 +77,7 @@ describe('Acceptance: Settings - Code-Injection', function() {
                 expect($('.gh-nav-settings-code-injection').hasClass('active'), 'highlights nav menu item')
                     .to.be.true;
 
-                expect(find('.view-header .view-actions .btn-blue').text().trim(), 'save button text').to.equal('Save');
+                expect(find('.view-header .view-actions .gh-btn-blue').text().trim(), 'save button text').to.equal('Save');
 
                 expect(find('#ghost-head .CodeMirror').length, 'ghost head codemirror element').to.equal(1);
                 expect($('#ghost-head .CodeMirror').hasClass('cm-s-xq-light'), 'ghost head editor theme').to.be.true;

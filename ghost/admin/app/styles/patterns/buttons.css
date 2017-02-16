@@ -2,218 +2,378 @@
 /* ---------------------------------------------------------- */
 
 /* Base button style */
-.btn {
+/* Should only be applied to <a> tags */
+.gh-btn {
     display: inline-block;
-    margin-bottom: 0;
-    padding: 9px 15px;
-    border: #dfe1e3 1px solid;
-    background: #fff;
-    background-image: none; /* Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214 */
-    border-radius: var(--border-radius);
-    color: #808284;
+    outline: none;
+    border: 1px solid color(var(--lightgrey) l(-4%));
+    color: color(var(--lightgrey) l(-27%) blackness(+15%));
+    text-shadow: 0 1px 0 #fff;
+    text-decoration: none !important;
+    user-select: none;
+    fill: color(var(--lightgrey) l(-27%) blackness(+15%));
+    border-radius: 6px;
+    transition: none;
+
+    -webkit-font-smoothing: subpixel-antialiased;
+}
+
+/* ALL buttons must have a span for content */
+.gh-btn span {
+    display: block;
+    padding: 0 12px;
+    height: 33px;
+    font-size: 1.3rem;
+    line-height: 33px;
+    font-weight: 400;
     text-align: center;
-    text-transform: uppercase;
-    text-shadow: none;
-    white-space: nowrap;
-    font-size: 1.1rem;
-    line-height: 1.428571429;
-    font-weight: 300;
-    cursor: pointer;
-    transition: color 0.2s ease,
-    background 0.2s ease,
-    border-color 0.2s ease;
-}
-
-/* When hovered or clicked */
-.btn:hover,
-.btn:focus {
-    border-color: var(--blue);
-    color: color(var(--blue) lightness(-10%));
-    text-decoration: none;
-}
-
-/* When focused with keyboard */
-.btn:focus,
-.btn:active:focus,
-.btn.active:focus {
-    outline: thin dotted;
-    outline: 0 auto -webkit-focus-ring-color;
-    outline-offset: -2px;
-}
-
-/* When clicked */
-.btn:active,
-.btn.active {
-    outline: 0;
-    background-image: none;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+    letter-spacing: 0.2px;
+    border-radius: 5px;
 }
 
 /* When disabled */
-.btn.disabled,
-.btn[disabled],
-fieldset[disabled] .btn {
+.gh-btn.disabled,
+.gh-btn[disabled],
+fieldset[disabled] .gh-btn {
     box-shadow: none;
-    opacity: 0.65;
+    opacity: 0.8;
     cursor: not-allowed;
     pointer-events: none;
-}
-
-.btn.appear-disabled {
-    box-shadow: none;
-    opacity: 0.65;
-    cursor: not-allowed;
-}
-
-.btn i {
-    display: inline-block;
-    vertical-align: middle;
-}
-
-.btn-hover-green:hover,
-.btn-hover-green:active,
-.btn-hover-green:focus {
-    border-color: var(--green);
-    color: color(var(--green) lightness(-10%));
 }
 
 
 /* Blue button
 /* ---------------------------------------------------------- */
 
-.btn-blue {
-    border-color: color(var(--blue) lightness(-10%));
-    background: var(--blue);
+/* The background of the button creates 1px gradient border */
+.gh-btn-blue {
+    padding: 1px;
+    border: 0;
     color: #fff;
+    text-shadow: 0 -1px 0 rgba(0,0,0,0.1);
+    fill: #fff;
+    background: linear-gradient(
+    color(var(--blue) blackness(+10%)),
+    color(var(--blue) l(-15%) saturation(-15%))
+    );
+    box-shadow: 0 1px 0 rgba(0,0,0,0.12);
+    transition: none !important;
 }
 
-.btn-blue:hover,
-.btn-blue:active,
-.btn-blue:focus {
-    border-color: color(var(--blue) lightness(-20%));
-    background: color(var(--blue) lightness(-10%));
-    color: #fff;
+/* The background of the span is the main visual element */
+.gh-btn-blue span {
+    background: linear-gradient(
+    color(var(--blue) whiteness(+7%)),
+    color(var(--blue) l(-7%) saturation(-10%)) 60%,
+    color(var(--blue) l(-7%) saturation(-10%)) 90%,
+    color(var(--blue) l(-4%) saturation(-10%))
+    );
+    box-shadow: 0 1px 0 inset rgba(255,255,255,0.1);
 }
 
+/* When clicked or focused with keyboard */
+.gh-btn-blue:active,
+.gh-btn-blue:focus {
+    background: color(var(--blue) l(-20%) saturation(-15%));
+}
+.gh-btn-blue:active span,
+.gh-btn-blue:focus span {
+    background: color(var(--blue) l(-7%) saturation(-10%));
+    box-shadow: none;
+}
 
 /* Green button
 /* ---------------------------------------------------------- */
 
-.btn-green {
-    border-color: color(var(--green) lightness(-10%));
-    background: var(--green);
+/* The background of the button creates 1px gradient border */
+.gh-btn-green {
+    padding: 1px;
+    border: 0;
     color: #fff;
+    text-shadow: 0 -1px 0 rgba(0,0,0,0.1);
+    fill: #fff;
+    background: linear-gradient(
+    color(var(--green) blackness(+7%)),
+    color(var(--green) l(-10%) saturation(-10%))
+    );
+    box-shadow: 0 1px 0 rgba(0,0,0,0.12);
+    transition: none !important;
 }
 
-.btn-green:hover,
-.btn-green:active,
-.btn-green:focus {
-    border-color: color(var(--green) lightness(-20%));
-    background: color(var(--green) lightness(-10%));
-    color: #fff;
+/* The background of the span is the main visual element */
+.gh-btn-green span {
+    background: linear-gradient(
+    color(var(--green) whiteness(+5%)),
+    color(var(--green) l(-4%) saturation(-8%)) 60%,
+    color(var(--green) l(-4%) saturation(-8%)) 90%,
+    color(var(--green) l(-4%) saturation(-10%))
+    );
+    box-shadow: 0 1px 0 inset rgba(255,255,255,0.1);
+}
+
+/* When clicked or focused with keyboard */
+.gh-btn-green:active,
+.gh-btn-green:focus {
+    background: color(var(--green) l(-10%) saturation(-10%));
+}
+.gh-btn-green:active span,
+.gh-btn-green:focus span {
+    background: color(var(--green) l(-4%) saturation(-8%));
+    box-shadow: none;
 }
 
 
 /* Red button
 /* ---------------------------------------------------------- */
 
-.btn-red {
-    border-color: color(var(--red) lightness(-10%));
-    background: var(--red);
+/* The background of the button creates 1px gradient border */
+.gh-btn-red {
+    padding: 1px;
+    border: 0;
     color: #fff;
+    text-shadow: 0 -1px 0 rgba(0,0,0,0.1);
+    fill: #fff;
+    background: linear-gradient(
+    color(var(--red) blackness(+10%)),
+    color(var(--red) l(-15%) saturation(-15%))
+    );
+    box-shadow: 0 1px 0 rgba(0,0,0,0.12);
+    transition: none !important;
 }
 
-.btn-red:hover,
-.btn-red:active,
-.btn-red:focus {
-    border-color: color(var(--red) lightness(-20%));
-    background: color(var(--red) lightness(-10%));
-    color: #fff;
+/* The background of the span is the main visual element */
+.gh-btn-red span {
+    background: linear-gradient(
+    color(var(--red) whiteness(+7%)),
+    color(var(--red) l(-7%) saturation(-10%)) 60%,
+    color(var(--red) l(-7%) saturation(-10%)) 90%,
+    color(var(--red) l(-4%) saturation(-10%))
+    );
+    box-shadow: 0 1px 0 inset rgba(255,255,255,0.1);
 }
 
-
-/* Link button
-/* ---------------------------------------------------------- */
-
-/* For styling a button like a link */
-.btn-link {
-    border-color: transparent;
-    background: transparent;
-    color: var(--blue);
+/* When clicked or focused with keyboard */
+.gh-btn-red:active,
+.gh-btn-red:focus {
+    background: color(var(--red) l(-20%) saturation(-15%));
 }
-
-.btn-link:hover,
-.btn-link:active,
-.btn-link:focus {
-    border-color: transparent;
-    background: transparent;
-    color: var(--blue);
-    text-decoration: underline;
-}
-
-.btn-link.disabled,
-.btn-link[disabled] {
+.gh-btn-red:active span,
+.gh-btn-red:focus span {
+    background: color(var(--red) l(-7%) saturation(-10%));
     box-shadow: none;
-    color: #b2b2b2;
-    opacity: 0.65;
-    cursor: not-allowed;
-    pointer-events: none;
 }
 
-
-/* Minor button
+/* Black button
 /* ---------------------------------------------------------- */
 
-/* For buttons with a small/insignificant action for
-// example a "cancel" button. Style is de-emphasised. */
-.btn-minor {
-    padding: 8px 15px;
-    text-transform: none;
-    font-size: 1.2rem;
+/* The background of the button creates 1px gradient border */
+.gh-btn-black {
+    padding: 1px;
+    border: 0;
+    color: #fff;
+    text-shadow: 0 -1px 0 rgba(0,0,0,0.1);
+    fill: #fff;
+    background: linear-gradient(
+    color(var(--darkgrey) blackness(+10%)),
+    color(var(--darkgrey) l(-15%) saturation(-15%))
+    );
+    box-shadow: 0 1px 0 rgba(0,0,0,0.12);
+    transition: none !important;
 }
 
-.btn-minor:hover,
-.btn-minor:active,
-.btn-minor:focus {
-    border-color: #c1c1c1;
+/* The background of the span is the main visual element */
+.gh-btn-black span {
+    background: linear-gradient(
+    color(var(--darkgrey) whiteness(+7%)),
+    color(var(--darkgrey) l(-7%) saturation(-10%)) 60%,
+    color(var(--darkgrey) l(-7%) saturation(-10%)) 90%,
+    color(var(--darkgrey) l(-4%) saturation(-10%))
+    );
+    box-shadow: 0 1px 0 inset rgba(255,255,255,0.1);
+}
+
+/* When clicked or focused with keyboard */
+.gh-btn-black:active,
+.gh-btn-black:focus {
+    background: color(var(--darkgrey) l(-20%) saturation(-15%));
+}
+.gh-btn-black:active span,
+.gh-btn-black:focus span {
+    background: color(var(--darkgrey) l(-7%) saturation(-10%));
+    box-shadow: none;
+}
+
+/* Grey button
+/* ---------------------------------------------------------- */
+
+/* The background of the button creates 1px gradient border */
+.gh-btn-grey {
+    padding: 1px;
+    border: 0;
+    color: color(var(--darkgrey) l(+15%));
+    text-shadow: 0 1px 0 #fff;
+    fill: var(--darkgrey);
+    background: linear-gradient(
+    color(var(--lightgrey) l(-3%)),
+    color(var(--lightgrey) l(-8%))
+    );
+    box-shadow: 0 1px 0 rgba(0,0,0,0.05);
+    transition: none !important;
+}
+
+/* The background of the span is the main visual element */
+.gh-btn-grey span {
+    background: linear-gradient(
+    color(var(--lightgrey) l(+10%)),
+    color(var(--lightgrey) l(+4%))
+    );
+    box-shadow: inset 0 1px 0 #fff;
+}
+
+/* When clicked or focused with keyboard */
+.gh-btn-grey:active,
+.gh-btn-grey:focus {
+    background: color(var(--midgrey) l(+25%));
+}
+.gh-btn-grey:active span,
+.gh-btn-grey:focus span {
+    background: color(var(--lightgrey) l(+15%));
+    box-shadow: none;
+}
+
+/* Special Buttons
+/* ---------------------------------------------------------- */
+
+.gh-btn-white {
     background: #fff;
-    box-shadow: none;
-    color: #808284;
+}
+.gh-btn-white span {
+    height: 38px;
+}
+
+.gh-btn-block {
+    display: block;
+    width: 100%;
+}
+
+.gh-btn-icon span {
+    display: flex;
+    align-items: center;
+}
+.gh-btn-icon svg {
+    margin-right: 10px;
+    height: 15px;
 }
 
 
-/* Button size variations
+/*
+/* Loading Button Spinner
+/* ---------------------------------------------------------- */
+/*
+
+Usage: Swap out button>span text with HTML
+
+<a class="gh-btn gh-btn-blue">
+    <span>
+        <div class="gh-spinner"></div>
+    </span>
+</div>
+
+*/
+
+.gh-spinner {
+    position: relative;
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: rgba(0,0,0,0.2) solid 4px;
+    border-radius: 100%;
+    animation: spin 1s linear infinite;
+}
+
+.gh-spinner:before {
+    content: "";
+    display: block;
+    margin-top: 9px;
+    width: 4px;
+    height: 4px;
+    background: rgba(0,0,0,0.6);
+    border-radius: 100%;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    50% {
+        transform: rotate(180deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+
+/*
+/* Button Variations
 /* ---------------------------------------------------------- */
 
-.btn-lg {
+.gh-btn-block {
+    display: block;
+    width: 100%;
+}
+
+/* Vertically space out multiple block buttons */
+.gh-btn-block + .gh-btn-block {
+    margin-top: 5px;
+}
+
+/* Specificity overrides */
+input[type="submit"].gh-btn-block,
+input[type="reset"].gh-btn-block,
+input[type="button"].gh-btn-block {
+    width: 100%;
+}
+
+
+/*
+/* Button Groups
+/* ---------------------------------------------------------- */
+/*
+
+Usage: CTA buttons grouped together horizontally.
+
+<div class="gh-btn-group">
+    <a class="gh-btn gh-btn-green" href="#"><span>Button 1</span></a>
+    <a class="gh-btn gh-btn-white" href="#"><span>Button 2</span></a>
+</div>
+
+*/
+
+.gh-btn-group .gh-btn {
+    margin-left: 15px;
+}
+
+.gh-btn-group .gh-btn:first-of-type {
+    margin-left: 0;
+}
+
+.gh-btn-block + .gh-btn-block {
+    margin-top: 5px;
+}
+
+.gh-btn-lg {
     padding: 12px 18px;
     border-radius: 4px;
     font-size: 1.4rem;
     line-height: 1.33;
 }
 
-.btn-sm {
+.gh-btn-sm {
     padding: 7px 10px;
     border-radius: 2px;
     font-size: 1rem;
     line-height: 1.5;
-}
-
-.btn-block {
-    display: block;
-    width: 100%;
-}
-
-/* Vertically space out multiple block buttons */
-.btn-block + .btn-block {
-    margin-top: 5px;
-}
-
-/* Specificity overrides */
-input[type="submit"].btn-block,
-input[type="reset"].btn-block,
-input[type="button"].btn-block {
-    width: 100%;
 }
 
 /* Spin Buttons!

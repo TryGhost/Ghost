@@ -72,6 +72,7 @@
     background: rgba(0, 0, 0, 0.3);
     border-radius: var(--border-radius);
     color: rgba(255, 255, 255, 0.8);
+    text-shadow: none;
     transition: color 0.3s ease, background 0.3s ease;
 }
 

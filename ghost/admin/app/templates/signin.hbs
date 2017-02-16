@@ -9,7 +9,7 @@
 
             <form id="login" class="gh-signin" method="post" novalidate="novalidate">
                 {{#if config.ghostOAuth}}
-                    {{#gh-spin-button class="login btn btn-blue btn-block" type="submit" action="authenticateWithGhostOrg" tabindex="3" submitting=loggingIn autoWidth="false"}}Sign in with Ghost{{/gh-spin-button}}
+                    {{#gh-spin-button class="login gh-btn gh-btn-blue gh-btn-block" type="submit" action="authenticateWithGhostOrg" tabindex="3" submitting=loggingIn autoWidth="false"}}<span>Sign in with Ghost</span>{{/gh-spin-button}}
                 {{else}}
                     {{#gh-form-group errors=model.errors hasValidated=hasValidated property="identification"}}
                         <span class="input-icon icon-mail">
@@ -19,10 +19,10 @@
                     {{#gh-form-group errors=model.errors hasValidated=hasValidated property="password"}}
                         <span class="input-icon icon-lock forgotten-wrap">
                             {{gh-input model.password class="password" type="password" placeholder="Password" name="password" tabindex="2" autocorrect="off" update=(action (mut model.password))}}
-                            {{#gh-spin-button class="forgotten-link btn btn-link" type="button" action="forgotten" tabindex="4" submitting=submitting autoWidth="true"}}Forgot?{{/gh-spin-button}}
+                            {{#gh-spin-button class="forgotten-link gh-btn gh-btn-link" type="button" action="forgotten" tabindex="4" submitting=submitting autoWidth="true"}}<span>Forgot?</span>{{/gh-spin-button}}
                         </span>
                     {{/gh-form-group}}
-                    {{#gh-spin-button class="login btn btn-blue btn-block" type="submit" action="validateAndAuthenticate" tabindex="3" submitting=loggingIn autoWidth="false"}}Sign in{{/gh-spin-button}}
+                    {{#gh-spin-button class="login gh-btn gh-btn-blue gh-btn-block" type="submit" action="validateAndAuthenticate" tabindex="3" submitting=loggingIn autoWidth="false"}}<span>Sign in</span>{{/gh-spin-button}}
                 {{/if}}
             </form>
 

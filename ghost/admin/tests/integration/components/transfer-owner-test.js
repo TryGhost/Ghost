@@ -24,7 +24,7 @@ describe('Integration: Component: modals/transfer-owner', function() {
         this.render(hbs`{{modals/transfer-owner confirm=(action 'confirm') closeModal=(action 'closeModal')}}`);
 
         run(() => {
-            this.$('.btn.btn-red').click();
+            this.$('.gh-btn.gh-btn-red').click();
         });
 
         expect(confirm.calledOnce, 'confirm called').to.be.true;

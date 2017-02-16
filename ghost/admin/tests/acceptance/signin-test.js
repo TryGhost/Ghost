@@ -91,7 +91,7 @@ describe('Acceptance: Signin', function() {
                     .to.equal(1);
             });
 
-            click('.btn-blue');
+            click('.gh-btn-blue');
 
             andThen(() => {
                 expect(find('.form-group.error').length, 'number of invalid fields')
@@ -103,7 +103,7 @@ describe('Acceptance: Signin', function() {
 
             fillIn('[name="identification"]', 'test@example.com');
             fillIn('[name="password"]', 'invalid');
-            click('.btn-blue');
+            click('.gh-btn-blue');
 
             andThen(() => {
                 expect(currentURL(), 'current url').to.equal('/signin');
@@ -127,7 +127,7 @@ describe('Acceptance: Signin', function() {
 
             fillIn('[name="identification"]', 'test@example.com');
             fillIn('[name="password"]', 'testpass');
-            click('.btn-blue');
+            click('.gh-btn-blue');
 
             andThen(() => {
                 expect(currentURL(), 'currentURL').to.equal('/');

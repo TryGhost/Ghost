@@ -7,6 +7,9 @@
 
 /* explicit modal container so that background and content can be animated individually */
 .fullscreen-modal-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     visibility: hidden;
     position: fixed;
     top: 0;
@@ -26,7 +29,8 @@
     left: 0;
     z-index: 50;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.6);
+    background: #324750;
+    opacity: 0.86;
 }
 
 .fullscreen-modal {
@@ -49,23 +53,12 @@
 /* ---------------------------------------------------------- */
 
 .fullscreen-modal-wide {
-    width: 550px;
-}
-
-@media (max-width: 900px) {
-    .fullscreen-modal-wide {
-        width: 100%;
-    }
+    width: 100%;
+    max-width: 550px;
 }
 
 .fullscreen-modal-action {
-    margin: 60px auto 30px;
-}
-
-@media (max-width: 900px) {
-    .fullscreen-modal-action {
-        margin: 30px auto;
-    }
+    margin: 2vh 0 10vh 0;
 }
 
 
@@ -78,11 +71,11 @@
 
 .modal-content {
     position: relative;
-    padding: 18px;
+    padding: 40px;
     background-color: #fff;
     background-clip: padding-box;
-    border-radius: var(--border-radius);
-    box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 6px;
+    border-radius: 6px;
+    box-shadow: 0 0 1px rgba(0,0,0,.1), 0 2px 5px rgba(0,0,0,.05);
 }
 
 .modal-content * {
@@ -113,8 +106,10 @@
 .modal-header h1 {
     display: inline-block;
     margin: 0 25px 0 0;
-    font-size: 1.85em;
-    font-weight: 100;
+    font-size: 2.2rem;
+    line-height: 1.15em;
+    font-weight: 600;
+    letter-spacing: 0.4px;
 }
 
 .modal-body {
@@ -122,16 +117,8 @@
     overflow-y: auto;
 }
 
-.modal-body .red {
-    color: var(--red);
-}
-
-.modal-body > *:first-child {
-    margin-top: 0;
-}
-
-.modal-body > *:last-child {
-    margin-bottom: 0;
+.modal-body p {
+    font-size: 1.4rem;
 }
 
 .modal-footer {
@@ -177,7 +164,7 @@
         margin: 0 auto 1em;
         width: 100%;
     }
-    .modal-body .login-form .btn {
+    .modal-body .login-form .gh-btn {
         margin: 0;
         margin-bottom: 1em;
         width: 100%;

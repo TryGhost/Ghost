@@ -266,8 +266,8 @@ describe('Integration: Component: gh-image-uploader', function() {
             wait().then(() => {
                 expect(this.$('.failed').length, 'error message is displayed').to.equal(1);
                 expect(this.$('.failed').text()).to.match(/The image type you uploaded is not supported/);
-                expect(this.$('.btn-green').length, 'reset button is displayed').to.equal(1);
-                expect(this.$('.btn-green').text()).to.equal('Try Again');
+                expect(this.$('.gh-btn-green').length, 'reset button is displayed').to.equal(1);
+                expect(this.$('.gh-btn-green').text()).to.equal('Try Again');
                 done();
             });
         });
@@ -360,7 +360,7 @@ describe('Integration: Component: gh-image-uploader', function() {
 
             wait().then(() => {
                 run(() => {
-                    this.$('.btn-green').click();
+                    this.$('.gh-btn-green').click();
                 });
             });
 
@@ -538,7 +538,7 @@ describe('Integration: Component: gh-image-uploader', function() {
 
             this.$('input[type="text"]').val('saved url');
             this.$('input[type="text"]').change();
-            this.$('button.btn-blue').click();
+            this.$('button.gh-btn-blue').click();
 
             expect(update.calledOnce).to.be.true;
             expect(update.firstCall.args[0]).to.equal('saved url');

@@ -108,7 +108,7 @@ describe('Acceptance: Editor', function() {
             fillIn('input[name="post-setting-date"]', '10 May 16 @ 10:00');
             triggerEvent('input[name="post-setting-date"]', 'blur');
             // saving
-            click('.btn.btn-sm.js-publish-button');
+            click('.gh-btn.gh-btn-sm.js-publish-button');
 
             andThen(() => {
                 expect(find('input[name="post-setting-date"]').val(), 'date after saving')
@@ -126,9 +126,9 @@ describe('Acceptance: Editor', function() {
 
             // checking the flow of the saving button for a draft
             andThen(() => {
-                expect(find('.btn.btn-sm.js-publish-button').hasClass('btn-red'), 'no red button expected')
+                expect(find('.gh-btn.gh-btn-sm.js-publish-button').hasClass('gh-btn-red'), 'no red button expected')
                     .to.be.false;
-                expect(find('.btn.btn-sm.js-publish-button').text().trim(), 'text in save button')
+                expect(find('.gh-btn.gh-btn-sm.js-publish-button').text().trim(), 'text in save button')
                     .to.equal('Save Draft');
                 expect(find('.post-save-draft').hasClass('active'), 'highlights the default active button state for a draft')
                     .to.be.true;
@@ -140,21 +140,21 @@ describe('Acceptance: Editor', function() {
             andThen(() => {
                 expect(find('.post-save-publish').hasClass('active'), 'highlights the selected active button state')
                     .to.be.true;
-                expect(find('.btn.btn-sm.js-publish-button').hasClass('btn-red'), 'red button to change from draft to published')
+                expect(find('.gh-btn.gh-btn-sm.js-publish-button').hasClass('gh-btn-red'), 'red button to change from draft to published')
                     .to.be.true;
-                expect(find('.btn.btn-sm.js-publish-button').text().trim(), 'text in save button after click on \'publish now\'')
+                expect(find('.gh-btn.gh-btn-sm.js-publish-button').text().trim(), 'text in save button after click on \'publish now\'')
                     .to.equal('Publish Now');
             });
 
             // Publish the post
-            click('.btn.btn-sm.js-publish-button');
+            click('.gh-btn.gh-btn-sm.js-publish-button');
 
             andThen(() => {
-                expect(find('.btn.btn-sm.js-publish-button').text().trim(), 'text in save button after publishing')
+                expect(find('.gh-btn.gh-btn-sm.js-publish-button').text().trim(), 'text in save button after publishing')
                     .to.equal('Update Post');
                 expect(find('.post-save-publish').hasClass('active'), 'highlights the default active button state for a published post')
                     .to.be.true;
-                expect(find('.btn.btn-sm.js-publish-button').hasClass('btn-red'), 'no red button expected')
+                expect(find('.gh-btn.gh-btn-sm.js-publish-button').hasClass('gh-btn-red'), 'no red button expected')
                     .to.be.false;
             });
 
@@ -176,7 +176,7 @@ describe('Acceptance: Editor', function() {
             });
 
             // saving
-            click('.btn.btn-sm.js-publish-button');
+            click('.gh-btn.gh-btn-sm.js-publish-button');
 
             andThen(() => {
                 expect(find('input[name="post-setting-date"]').val(), 'date value restored')
@@ -187,7 +187,7 @@ describe('Acceptance: Editor', function() {
             fillIn('input[name="post-setting-date"]', '10 May 16 @ 10:00');
             triggerEvent('input[name="post-setting-date"]', 'blur');
             // saving
-            click('.btn.btn-sm.js-publish-button');
+            click('.gh-btn.gh-btn-sm.js-publish-button');
 
             andThen(() => {
                 expect(find('input[name="post-setting-date"]').val(), 'new date after saving')
@@ -208,7 +208,7 @@ describe('Acceptance: Editor', function() {
 
             triggerEvent('#activeTimezone', 'change');
             // save the settings
-            click('.btn.btn-blue');
+            click('.gh-btn.gh-btn-blue');
 
             andThen(() => {
                 expect(find('#activeTimezone option:selected').text().trim(), 'new timezone after saving')
@@ -240,21 +240,21 @@ describe('Acceptance: Editor', function() {
             andThen(() => {
                 expect(find('.post-save-draft').hasClass('active'), 'highlights the active button state for a draft')
                     .to.be.true;
-                expect(find('.btn.btn-sm.js-publish-button').hasClass('btn-red'), 'red button to change from published to draft')
+                expect(find('.gh-btn.gh-btn-sm.js-publish-button').hasClass('gh-btn-red'), 'red button to change from published to draft')
                     .to.be.true;
-                expect(find('.btn.btn-sm.js-publish-button').text().trim(), 'text in save button for post to unpublish')
+                expect(find('.gh-btn.gh-btn-sm.js-publish-button').text().trim(), 'text in save button for post to unpublish')
                     .to.equal('Unpublish');
             });
 
             // Unpublish the post
-            click('.btn.btn-sm.js-publish-button');
+            click('.gh-btn.gh-btn-sm.js-publish-button');
 
             andThen(() => {
-                expect(find('.btn.btn-sm.js-publish-button').text().trim(), 'text in save button for draft')
+                expect(find('.gh-btn.gh-btn-sm.js-publish-button').text().trim(), 'text in save button for draft')
                     .to.equal('Save Draft');
                 expect(find('.post-save-draft').hasClass('active'), 'highlights the default active button state for a draft')
                     .to.be.true;
-                expect(find('.btn.btn-sm.js-publish-button').hasClass('btn-red'), 'no red button expected')
+                expect(find('.gh-btn.gh-btn-sm.js-publish-button').hasClass('gh-btn-red'), 'no red button expected')
                     .to.be.false;
             });
 
@@ -285,24 +285,24 @@ describe('Acceptance: Editor', function() {
             andThen(() => {
                 expect(find('.post-save-schedule').hasClass('active'), 'highlights the active button state for a draft')
                     .to.be.true;
-                expect(find('.btn.btn-sm.js-publish-button').hasClass('btn-red'), 'red button to change from published to draft')
+                expect(find('.gh-btn.gh-btn-sm.js-publish-button').hasClass('gh-btn-red'), 'red button to change from published to draft')
                     .to.be.true;
-                expect(find('.btn.btn-sm.js-publish-button').text().trim(), 'text in save button for post to schedule')
+                expect(find('.gh-btn.gh-btn-sm.js-publish-button').text().trim(), 'text in save button for post to schedule')
                     .to.equal('Schedule Post');
             });
 
             // click on schedule post and save
-            click('.btn.btn-sm.js-publish-button');
+            click('.gh-btn.gh-btn-sm.js-publish-button');
 
             andThen(() => {
                 // Dropdown menu should be 'Update Post' and 'Unschedule'
-                expect(find('.btn.btn-sm.js-publish-button').text().trim(), 'text in save button for scheduled post')
+                expect(find('.gh-btn.gh-btn-sm.js-publish-button').text().trim(), 'text in save button for scheduled post')
                     .to.equal('Update Post');
                 expect(find('.post-save-schedule').hasClass('active'), 'highlights the default active button state for a scheduled post')
                     .to.be.true;
                 expect(find('.post-save-draft').text().trim(), 'not active option should say \'Unschedule\'')
                     .to.equal('Unschedule');
-                expect(find('.btn.btn-sm.js-publish-button').hasClass('btn-red'), 'no red button expected')
+                expect(find('.gh-btn.gh-btn-sm.js-publish-button').hasClass('gh-btn-red'), 'no red button expected')
                     .to.be.false;
                 // expect countdown to show warning, that post will be published in x minutes
                 expect(find('.gh-notification.gh-notification-schedule').text().trim(), 'notification countdown')
@@ -313,23 +313,23 @@ describe('Acceptance: Editor', function() {
             click('.post-save-draft a');
 
             andThen(() => {
-                expect(find('.btn.btn-sm.js-publish-button').text().trim(), 'text in save button to unscheduled post')
+                expect(find('.gh-btn.gh-btn-sm.js-publish-button').text().trim(), 'text in save button to unscheduled post')
                     .to.equal('Unschedule');
                 expect(find('.post-save-draft').hasClass('active'), 'highlights the default active button state for a scheduled post')
                     .to.be.true;
-                expect(find('.btn.btn-sm.js-publish-button').hasClass('btn-red'), 'red button expected due to status change')
+                expect(find('.gh-btn.gh-btn-sm.js-publish-button').hasClass('gh-btn-red'), 'red button expected due to status change')
                     .to.be.true;
             });
 
             // click on unschedule post and save
-            click('.btn.btn-sm.js-publish-button');
+            click('.gh-btn.gh-btn-sm.js-publish-button');
 
             andThen(() => {
-                expect(find('.btn.btn-sm.js-publish-button').text().trim(), 'text in save button for a draft')
+                expect(find('.gh-btn.gh-btn-sm.js-publish-button').text().trim(), 'text in save button for a draft')
                     .to.equal('Save Draft');
                 expect(find('.post-save-draft').hasClass('active'), 'highlights the default active button state for a draft post')
                     .to.be.true;
-                expect(find('.btn.btn-sm.js-publish-button').hasClass('btn-red'), 'red button expected due to status change')
+                expect(find('.gh-btn.gh-btn-sm.js-publish-button').hasClass('gh-btn-red'), 'red button expected due to status change')
                     .to.be.false;
                 // expect no countdown notification after unscheduling
                 expect(find('.gh-notification.gh-notification-schedule').text().trim(), 'notification countdown')
@@ -368,7 +368,7 @@ describe('Acceptance: Editor', function() {
             fillIn('input[name="post-setting-date"]', plusTenMin);
             triggerEvent('input[name="post-setting-date"]', 'blur');
             click('.post-save-schedule a');
-            click('.btn.btn-sm.js-publish-button');
+            click('.gh-btn.gh-btn-sm.js-publish-button');
 
             andThen(() => {
                 expect(
@@ -397,7 +397,7 @@ describe('Acceptance: Editor', function() {
             // Test title validation
             fillIn('input[id="entry-title"]', Array(160).join('a'));
             triggerEvent('input[id="entry-title"]', 'blur');
-            click('.btn.btn-sm.js-publish-button');
+            click('.gh-btn.gh-btn-sm.js-publish-button');
 
             andThen(() => {
                 expect(
@@ -427,13 +427,13 @@ describe('Acceptance: Editor', function() {
                 expect(find('input[name="post-setting-date"]').val(), 'scheduled date')
                     .to.equal(compareDate);
                 // Dropdown menu should be 'Update Post' and 'Unschedule'
-                expect(find('.btn.btn-sm.js-publish-button').text().trim(), 'text in save button for scheduled post')
+                expect(find('.gh-btn.gh-btn-sm.js-publish-button').text().trim(), 'text in save button for scheduled post')
                     .to.equal('Update Post');
                 expect(find('.post-save-schedule').hasClass('active'), 'highlights the default active button state for a scheduled post')
                     .to.be.true;
                 expect(find('.post-save-draft').text().trim(), 'not active option should say \'Unschedule\'')
                     .to.equal('Unschedule');
-                expect(find('.btn.btn-sm.js-publish-button').hasClass('btn-red'), 'no red button expected')
+                expect(find('.gh-btn.gh-btn-sm.js-publish-button').hasClass('gh-btn-red'), 'no red button expected')
                     .to.be.false;
                 // expect countdown to show warning, that post will be published in x minutes
                 expect(find('.gh-notification.gh-notification-schedule').text().trim(), 'notification countdown')
@@ -451,13 +451,13 @@ describe('Acceptance: Editor', function() {
 
             andThen(() => {
                 // Save button should say 'Unschedule'
-                expect(find('.btn.btn-sm.js-publish-button').text().trim(), 'text in save button for scheduled post in status freeze mode')
+                expect(find('.gh-btn.gh-btn-sm.js-publish-button').text().trim(), 'text in save button for scheduled post in status freeze mode')
                     .to.equal('Unschedule');
                 // expect countdown to show warning, that post will be published in x minutes
                 expect(find('.gh-notification.gh-notification-schedule').text().trim(), 'notification countdown')
                     .to.contain('Post will be published in');
                 // no dropdown menu
-                expect(find('.btn.btn-sm.dropdown-toggle').hasClass('active'), 'no dropdown menu')
+                expect(find('.gh-btn.gh-btn-sm.dropdown-toggle').hasClass('active'), 'no dropdown menu')
                     .to.be.false;
             });
         });
@@ -475,27 +475,27 @@ describe('Acceptance: Editor', function() {
 
             andThen(() => {
                 // Save button should say 'Unschedule'
-                expect(find('.btn.btn-sm.js-publish-button').text().trim(), 'text in save button for scheduled post in status freeze mode')
+                expect(find('.gh-btn.gh-btn-sm.js-publish-button').text().trim(), 'text in save button for scheduled post in status freeze mode')
                     .to.equal('Unschedule');
                 // expect countdown to show warning, that post will be published in x minutes
                 expect(find('.gh-notification.gh-notification-schedule').text().trim(), 'notification countdown')
                     .to.contain('Post will be published in');
                 // no dropdown menu
-                expect(find('.btn.btn-sm.dropdown-toggle').hasClass('active'), 'no dropdown menu')
+                expect(find('.gh-btn.gh-btn-sm.dropdown-toggle').hasClass('active'), 'no dropdown menu')
                     .to.be.false;
             });
 
             // click on Unschedule
-            click('.btn.btn-sm.js-publish-button');
+            click('.gh-btn.gh-btn-sm.js-publish-button');
 
             andThen(() => {
                 expect(find('.markdown-editor').val(), 'changed text in markdown editor')
                     .to.equal('Let\'s make some markdown changes');
-                expect(find('.btn.btn-sm.js-publish-button').text().trim(), 'text in save button for a draft')
+                expect(find('.gh-btn.gh-btn-sm.js-publish-button').text().trim(), 'text in save button for a draft')
                     .to.equal('Save Draft');
                 expect(find('.post-save-draft').hasClass('active'), 'highlights the default active button state for a draft post')
                     .to.be.true;
-                expect(find('.btn.btn-sm.js-publish-button').hasClass('btn-red'), 'red button expected due to status change')
+                expect(find('.gh-btn.gh-btn-sm.js-publish-button').hasClass('gh-btn-red'), 'red button expected due to status change')
                     .to.be.false;
                 // expect no countdown notification after unscheduling
                 expect(find('.gh-notification.gh-notification-schedule').text().trim(), 'notification countdown')

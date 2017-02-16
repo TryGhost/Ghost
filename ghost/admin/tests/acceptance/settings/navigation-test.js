@@ -72,7 +72,7 @@ describe('Acceptance: Settings - Navigation', function () {
             fillIn('.gh-blognav-url:first input', '/test');
             triggerEvent('.gh-blognav-url:first input', 'blur');
 
-            click('.btn-blue');
+            click('.gh-btn-blue');
 
             andThen(function () {
                 let [navSetting] = server.db.settings.where({key: 'navigation'});
@@ -91,7 +91,7 @@ describe('Acceptance: Settings - Navigation', function () {
         it('validates new item correctly on save', function () {
             visit('/settings/navigation');
 
-            click('.btn-blue');
+            click('.gh-btn-blue');
 
             andThen(function () {
                 expect(
@@ -104,7 +104,7 @@ describe('Acceptance: Settings - Navigation', function () {
             fillIn('.gh-blognav-url:last input', 'http://invalid domain/');
             triggerEvent('.gh-blognav-url:last input', 'blur');
 
-            click('.btn-blue');
+            click('.gh-btn-blue');
 
             andThen(function () {
                 expect(
@@ -206,7 +206,7 @@ describe('Acceptance: Settings - Navigation', function () {
                 ).to.equal(3);
             });
 
-            click('.btn-blue');
+            click('.gh-btn-blue');
 
             andThen(function () {
                 let [navSetting] = server.db.settings.where({key: 'navigation'});

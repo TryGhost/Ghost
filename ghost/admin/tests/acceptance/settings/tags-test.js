@@ -178,7 +178,7 @@ describe('Acceptance: Settings - Tags', function () {
             });
 
             // start new tag
-            click('.view-actions .btn-green');
+            click('.view-actions .gh-btn-green');
 
             andThen(() => {
                 // it navigates to the new tag route
@@ -214,7 +214,7 @@ describe('Acceptance: Settings - Tags', function () {
 
             // delete tag
             click('.tag-delete-button');
-            click('.fullscreen-modal .btn-red');
+            click('.fullscreen-modal .gh-btn-red');
 
             andThen(() => {
                 // it redirects to the first tag

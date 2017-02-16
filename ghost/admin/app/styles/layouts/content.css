@@ -31,7 +31,7 @@
 .gh-contentfilter li a {
     display: block;
     padding: 13px 1px 0;
-    color: var(--midgrey);
+    color: color(var(--midgrey) l(+8%));
     font-size: 1.5rem;
     font-weight: 300;
     letter-spacing: 0.3px;
