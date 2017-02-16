@@ -91,7 +91,7 @@ describe('Acceptance: Version Mismatch', function() {
             server.post('/subscribers/csv/', versionMismatchResponse);
 
             visit('/subscribers');
-            click('.btn:contains("Import CSV")');
+            click('.gh-btn:contains("Import CSV")');
             fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'test.csv'});
 
             andThen(() => {
@@ -109,7 +109,7 @@ describe('Acceptance: Version Mismatch', function() {
             visit('/signin');
             fillIn('[name="identification"]', 'test@example.com');
             fillIn('[name="password"]', 'password');
-            click('.btn-blue');
+            click('.gh-btn-blue');
 
             andThen(() => {
                 // has the refresh to update alert

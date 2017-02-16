@@ -84,7 +84,7 @@ describe('Acceptance: Settings - Labs', function() {
                 expect(find('.fullscreen-modal .modal-content').length, 'modal element').to.equal(1);
             });
 
-            click('.fullscreen-modal .modal-footer .btn.btn-minor');
+            click('.fullscreen-modal .modal-footer .gh-btn');
 
             andThen(() => {
                 expect(find('.fullscreen-modal').length, 'modal element').to.equal(0);

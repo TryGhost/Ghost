@@ -4,14 +4,13 @@
 <a class="close icon-x" href="" title="Close" {{action "closeModal"}}><span class="hidden">Close</span></a>
 
 <div class="modal-body">
-    <strong>WARNING:</strong>
     {{#if tag.post_count}}
         <span class="red">This tag is attached to {{tag.count.posts}} {{postInflection}}.</span>
     {{/if}}
-    You're about to delete "<strong>{{tag.name}}</strong>". This is permanent! No backups, no restores, no magic undo button. We warned you, ok?
+    You're about to delete "<strong>{{tag.name}}</strong>". This is permanent! We warned you, k?
 </div>
 
 <div class="modal-footer">
-    <button {{action "closeModal"}} class="btn btn-default btn-minor">Cancel</button>
-    {{#gh-task-button task=deleteTag class="btn btn-red"}}Delete{{/gh-task-button}}
+    <button {{action "closeModal"}} class="gh-btn"><span>Cancel</span></button>
+    {{#gh-task-button task=deleteTag class="gh-btn gh-btn-red"}}<span>Delete</span>{{/gh-task-button}}
 </div>

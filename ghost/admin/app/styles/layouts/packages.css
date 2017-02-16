@@ -145,7 +145,7 @@
     display: flex;
 }
 
-.package-card-content .btn {
+.package-card-content .gh-btn {
     position: absolute;
     right: 20px;
 }

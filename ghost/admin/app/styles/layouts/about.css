@@ -28,9 +28,8 @@
     max-width: 200px;
 }
 
-.gh-env-help .btn {
-    display: block;
-    margin: 5px 0;
+.gh-env-help .gh-btn {
+    margin: 4px 0;
 }
 
 @media (max-width: 670px) {
@@ -42,7 +41,7 @@
         margin: 1em 0;
         max-width: none;
     }
-    .gh-env-help .btn {
+    .gh-env-help .gh-btn {
         display: inline-block;
     }
 }

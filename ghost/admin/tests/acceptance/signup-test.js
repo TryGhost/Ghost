@@ -132,7 +132,7 @@ describe('Acceptance: Signup', function() {
         });
 
         // submitting sends correct details and redirects to content screen
-        click('.btn-green');
+        click('.gh-btn-green');
 
         andThen(function () {
             expect(currentPath()).to.equal('posts.index');

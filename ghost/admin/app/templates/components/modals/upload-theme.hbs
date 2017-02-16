@@ -84,22 +84,22 @@
 </div>
 
 <div class="modal-footer">
-    <button {{action "closeModal"}} disabled={{closeDisabled}} class="btn btn-default btn-minor">
-        {{#if theme}}Close{{else}}Cancel{{/if}}
+    <button {{action "closeModal"}} disabled={{closeDisabled}} class="gh-btn">
+        <span>{{#if theme}}Close{{else}}Cancel{{/if}}</span>
     </button>
     {{#if displayOverwriteWarning}}
-        <button {{action "confirmOverwrite"}} class="btn btn-red">
-            Overwrite
+        <button {{action "confirmOverwrite"}} class="gh-btn gh-btn-red">
+            <span>Overwrite</span>
         </button>
     {{/if}}
     {{#if validationErrors}}
-        <button {{action "reset"}} class="btn btn-green">
-            Try Again
+        <button {{action "reset"}} class="gh-btn gh-btn-green">
+            <span>Try Again</span>
         </button>
     {{/if}}
     {{#if canActivateTheme}}
-        <button {{action "activate"}} class="btn btn-green">
-            Activate Now
+        <button {{action "activate"}} class="gh-btn gh-btn-green">
+            <span>Activate Now</span>
         </button>
     {{/if}}
 </div>

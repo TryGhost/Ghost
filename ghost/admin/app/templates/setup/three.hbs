@@ -11,7 +11,7 @@
         {{gh-textarea users name="users" required="required" focusOut=(action "validate") update=(action (mut users))}}
     {{/gh-form-group}}
 
-    {{#gh-spin-button type="submit" action="invite" classNameBindings=":btn :btn-default :btn-lg :btn-block buttonClass" submitting=submitting autoWidth="false"}}{{buttonText}}{{/gh-spin-button}}
+    {{#gh-spin-button type="submit" action="invite" classNameBindings=":gh-btn :gh-btn-default :gh-btn-lg :gh-btn-block buttonClass" submitting=submitting autoWidth="false"}}<span>{{buttonText}}</span>{{/gh-spin-button}}
 </form>
 
 <button class="gh-flow-skip" {{action "skipInvite"}}>

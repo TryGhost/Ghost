@@ -104,7 +104,7 @@ describe('Acceptance: Setup', function () {
                 expect(find('.gh-flow-content em').text()).to.equal('2');
             });
 
-            click('.btn-green');
+            click('.gh-btn-green');
 
             andThen(() => {
                 // it transitions to step two
@@ -118,7 +118,7 @@ describe('Acceptance: Setup', function () {
                     .to.be.true;
             });
 
-            click('.btn-green');
+            click('.gh-btn-green');
 
             andThen(() => {
                 // it marks fields as invalid
@@ -139,7 +139,7 @@ describe('Acceptance: Setup', function () {
             fillIn('[name="name"]', 'Test User');
             fillIn('[name="password"]', 'password');
             fillIn('[name="blog-title"]', 'Blog Title');
-            click('.btn-green');
+            click('.gh-btn-green');
 
             andThen(() => {
                 // it transitions to step 3
@@ -147,7 +147,7 @@ describe('Acceptance: Setup', function () {
                     .to.equal('/setup/three');
 
                 // submit button is "disabled"
-                expect(find('button[type="submit"]').hasClass('btn-green'), 'invite button with no emails is white')
+                expect(find('button[type="submit"]').hasClass('gh-btn-green'), 'invite button with no emails is white')
                     .to.be.false;
             });
 
@@ -156,7 +156,7 @@ describe('Acceptance: Setup', function () {
 
             andThen(() => {
                 // submit button is "enabled"
-                expect(find('button[type="submit"]').hasClass('btn-green'), 'invite button is green with valid email address')
+                expect(find('button[type="submit"]').hasClass('gh-btn-green'), 'invite button is green with valid email address')
                     .to.be.true;
             });
 
@@ -202,7 +202,7 @@ describe('Acceptance: Setup', function () {
             });
 
             visit('/setup/two');
-            click('.btn-green');
+            click('.gh-btn-green');
 
             andThen(() => {
                 // non-server validation
@@ -216,7 +216,7 @@ describe('Acceptance: Setup', function () {
             fillIn('[name="blog-title"]', 'Blog Title');
 
             // first post - simulated validation error
-            click('.btn-green');
+            click('.gh-btn-green');
 
             andThen(() => {
                 expect(find('.main-error').text().trim(), 'error text')
@@ -224,7 +224,7 @@ describe('Acceptance: Setup', function () {
             });
 
             // second post - simulated server error
-            click('.btn-green');
+            click('.gh-btn-green');
 
             andThen(() => {
                 expect(find('.main-error').text().trim(), 'error text')
@@ -256,11 +256,11 @@ describe('Acceptance: Setup', function () {
             fillIn('[name="name"]', 'Test User');
             fillIn('[name="password"]', 'password');
             fillIn('[name="blog-title"]', 'Blog Title');
-            click('.btn-green');
+            click('.gh-btn-green');
 
             andThen(() => {
                 // button should not be spinning
-                expect(find('.btn-green .spinner').length, 'button has spinner')
+                expect(find('.gh-btn-green .spinner').length, 'button has spinner')
                     .to.equal(0);
                 // we should show an error message
                 expect(find('.main-error').text(), 'error text')
@@ -313,7 +313,7 @@ describe('Acceptance: Setup', function () {
             fillIn('[name="name"]', 'Test User');
             fillIn('[name="password"]', 'password');
             fillIn('[name="blog-title"]', 'Blog Title');
-            click('.btn-green');
+            click('.gh-btn-green');
 
             // default field/button state
             andThen(() => {
@@ -326,7 +326,7 @@ describe('Acceptance: Setup', function () {
                 expect(button.text().trim(), 'default button text')
                     .to.equal('Invite some users');
 
-                expect(button.hasClass('btn-minor'), 'default button is disabled')
+                expect(button.hasClass('gh-btn-minor'), 'default button is disabled')
                     .to.be.true;
             });
 
@@ -340,7 +340,7 @@ describe('Acceptance: Setup', function () {
                 expect(button.text().trim(), 'no users submitted button text')
                     .to.equal('No users to invite');
 
-                expect(button.hasClass('btn-minor'), 'no users submitted button is disabled')
+                expect(button.hasClass('gh-btn-minor'), 'no users submitted button is disabled')
                     .to.be.true;
             });
 
@@ -355,7 +355,7 @@ describe('Acceptance: Setup', function () {
                 expect(button.text().trim(), 'single invalid button text')
                     .to.equal('1 invalid email address');
 
-                expect(button.hasClass('btn-minor'), 'invalid email button is disabled')
+                expect(button.hasClass('gh-btn-minor'), 'invalid email button is disabled')
                     .to.be.true;
             });
 
@@ -379,7 +379,7 @@ describe('Acceptance: Setup', function () {
                 expect(button.text().trim(), 'single valid button text')
                     .to.equal('Invite 1 user');
 
-                expect(button.hasClass('btn-green'), 'valid email button is enabled')
+                expect(button.hasClass('gh-btn-green'), 'valid email button is enabled')
                     .to.be.true;
             });
 
@@ -393,7 +393,7 @@ describe('Acceptance: Setup', function () {
             });
 
             // submit invitations with simulated failure on 1 invite
-            click('.btn-green');
+            click('.gh-btn-green');
 
             andThen(() => {
                 // it redirects to the home / "content" screen
@@ -441,7 +441,7 @@ describe('Acceptance: Setup', function () {
                 ).to.equal('/setup/one');
             });
 
-            click('.btn-green');
+            click('.gh-btn-green');
 
             andThen(() => {
                 expect(
@@ -450,7 +450,7 @@ describe('Acceptance: Setup', function () {
                 ).to.equal('Sign in with Ghost');
             });
 
-            click('.btn-green');
+            click('.gh-btn-green');
 
             andThen(() => {
                 let sessionFG = find('button.login').closest('.form-group');
@@ -497,7 +497,7 @@ describe('Acceptance: Setup', function () {
             });
 
             fillIn('input[name="blog-title"]', 'Ghostbusters');
-            click('.btn-green');
+            click('.gh-btn-green');
 
             andThen(() => {
                 expect(

@@ -2,7 +2,7 @@
     <header class="view-header">
         {{#gh-view-title openMobileMenu="openMobileMenu"}}<span>General</span>{{/gh-view-title}}
         <section class="view-actions">
-            {{#gh-spin-button class="btn btn-blue" action="save" submitting=submitting}}Save{{/gh-spin-button}}
+            {{#gh-spin-button class="gh-btn gh-btn-blue" action="save" submitting=submitting}}<span>Save</span>{{/gh-spin-button}}
         </section>
     </header>
 
@@ -33,7 +33,7 @@
                 {{#if model.logo}}
                     <img class="blog-logo" src="{{model.logo}}" alt="logo" role="button" {{action "toggleUploadLogoModal"}}>
                 {{else}}
-                    <button type="button" class="btn btn-green js-modal-logo" {{action "toggleUploadLogoModal"}}>Upload Image</button>
+                    <button type="button" class="gh-btn gh-btn-green js-modal-logo" {{action "toggleUploadLogoModal"}}><span>Upload Image</span></button>
                 {{/if}}
                 <p>Display a logo for your publication</p>
 
@@ -51,7 +51,7 @@
                     {{#if model.icon}}
                         <img class="blog-icon" src="{{model.icon}}" alt="icon" role="button" {{action "toggleUploadIconModal"}}>
                     {{else}}
-                        <button type="button" class="btn btn-green js-modal-logo" {{action "toggleUploadIconModal"}}>Upload Image</button>
+                        <button type="button" class="gh-btn gh-btn-green js-modal-logo" {{action "toggleUploadIconModal"}}><span>Upload Image</span></button>
                     {{/if}}
                     <p>Upload a square blog icon ('.ico' or '.png', max. 100kb, 32px * 32px up to 1,000px * 1,000px) for your publication</p>
 
@@ -69,7 +69,7 @@
                 {{#if model.cover}}
                     <img class="blog-cover" src="{{model.cover}}" alt="cover photo" role="button" {{action "toggleUploadCoverModal"}}>
                 {{else}}
-                    <button type="button" class="btn btn-green js-modal-cover" {{action "toggleUploadCoverModal"}}>Upload Image</button>
+                    <button type="button" class="gh-btn gh-btn-green js-modal-cover" {{action "toggleUploadCoverModal"}}><span>Upload Image</span></button>
                 {{/if}}
                 <p>Display a cover image on your site</p>
 
@@ -152,8 +152,8 @@
                         deleteTheme=(action "deleteTheme")}}
 
                 <div class="form-group">
-                    {{#link-to "settings.general.uploadtheme" class="btn btn-green"}}
-                        Upload a theme
+                    {{#link-to "settings.general.uploadtheme" class="gh-btn gh-btn-green"}}
+                        <span>Upload a theme</span>
                     {{/link-to}}
                 </div>
 

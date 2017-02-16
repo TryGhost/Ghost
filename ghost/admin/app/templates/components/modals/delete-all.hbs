@@ -4,10 +4,10 @@
 <a class="close icon-x" href="" title="Close" {{action "closeModal"}}><span class="hidden">Close</span></a>
 
 <div class="modal-body">
-    <p>This is permanent! No backups, no restores, no magic undo button. <br /> We warned you, ok?</p>
+    <p>This is permanent! No backups, no restores, no magic undo button. We warned you, k?</p>
 </div>
 
 <div class="modal-footer">
-    <button {{action "closeModal"}} class="btn btn-default btn-minor">Cancel</button>
-    {{#gh-task-button task=deleteAll class="btn btn-red"}}Delete{{/gh-task-button}}
+    <button {{action "closeModal"}} class="gh-btn"><span>Cancel</span></button>
+    {{#gh-task-button task=deleteAll class="gh-btn gh-btn-red"}}<span>Delete</span>{{/gh-task-button}}
 </div>

@@ -61,7 +61,7 @@ body > .ember-view:not(.liquid-target-container) {
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    padding: 15px;
+    padding: 25px;
     cursor: pointer;
 }
 
@@ -115,7 +115,7 @@ body > .ember-view:not(.liquid-target-container) {
 
 .gh-nav-search {
     position: relative;
-    margin: 0 15px 10px;
+    margin: 0 25px 15px;
 }
 
 .gh-nav-search .ember-power-select-trigger {
@@ -147,7 +147,7 @@ body > .ember-view:not(.liquid-target-container) {
 
 .gh-nav-list {
     margin: 0;
-    padding: 0 15px 0 0;
+    padding: 0 25px 0 0;
     list-style: none;
     font-size: 1.3rem;
     line-height: 1.5em;
@@ -160,7 +160,7 @@ body > .ember-view:not(.liquid-target-container) {
 .gh-nav-list .gh-nav-list-h {
     overflow: hidden;
     margin-top: 15px;
-    padding: 5px 10px 5px 15px;
+    padding: 10px 10px 10px 25px;
     color: #808284;
     text-transform: uppercase;
     text-overflow: ellipsis;
@@ -173,7 +173,7 @@ body > .ember-view:not(.liquid-target-container) {
 .gh-nav-list a {
     display: flex;
     align-items: center;
-    padding: 5px 10px 5px 15px;
+    padding: 7px 10px 7px 25px;
     border-radius: 0 4px 4px 0;
     color: var(--darkgrey);
     opacity: 0.9;
@@ -461,6 +461,7 @@ body > .ember-view:not(.liquid-target-container) {
     flex-grow: 1;
     padding: 2.9vw 4vw 3vw 4vw;
     margin: 0 auto;
+    overflow-y: auto;
 }
 
 .gh-canvas-header {
@@ -528,7 +529,7 @@ body > .ember-view:not(.liquid-target-container) {
     align-items: center;
 }
 
-.view-actions .btn {
+.view-actions .gh-btn {
     margin-left: 8px;
 }
 

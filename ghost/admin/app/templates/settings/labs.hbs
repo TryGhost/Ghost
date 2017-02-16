@@ -9,7 +9,7 @@
             <fieldset>
                 <div class="form-group">
                     <label>Export</label>
-                    <button type="button" class="btn btn-blue" {{action "exportData"}}>Export</button>
+                    <button type="button" class="gh-btn gh-btn-blue" {{action "exportData"}}><span>Export</span></button>
                     <p>Export the blog settings and data.</p>
                 </div>
             </fieldset>
@@ -20,7 +20,7 @@
                     <label>Import</label>
                     {{partial "import-errors"}}
                     {{gh-file-upload id="importfile" classNames="flex" uploadButtonText=uploadButtonText onUpload="onUpload" acceptEncoding=importMimeType}}
-                    <p>Import from another Ghost installation. If you import a user, this will replace the current user & log you out.</p>
+                    <p>Import from another Ghost installation. If you import a user, this will replace the current user &amp; log you out.</p>
                 </div>
             </fieldset>
         </form>
@@ -28,7 +28,7 @@
             <fieldset>
                 <div class="form-group">
                     <label>Delete all Content</label>
-                    <button type="button" class="btn btn-red js-delete" {{action "toggleDeleteAllModal"}}>Delete</button>
+                    <button type="button" class="gh-btn gh-btn-red js-delete" {{action "toggleDeleteAllModal"}}><span>Delete</span></button>
                     <p>Delete all posts and tags from the database.</p>
                 </div>
             </fieldset>
@@ -37,7 +37,7 @@
             <fieldset>
                 <div class="form-group">
                     <label>Send a test email</label>
-                    {{#gh-spin-button id="sendtestemail" class="btn btn-blue" action="sendTestEmail" submitting=submitting}}Send{{/gh-spin-button}}
+                    {{#gh-spin-button id="sendtestemail" class="gh-btn gh-btn-blue" action="sendTestEmail" submitting=submitting}}<span>Send</span>{{/gh-spin-button}}
                     <p>Sends a test email to your address.</p>
                 </div>
             </fieldset>

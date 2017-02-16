@@ -123,9 +123,9 @@ export default Controller.extend({
 
     buttonClass: computed('validationResult', 'usersArray.length', function () {
         if (this.get('validationResult') === true && this.get('usersArray.length') > 0) {
-            return 'btn-green';
+            return 'gh-btn-green';
         } else {
-            return 'btn-minor';
+            return 'gh-btn-minor';
         }
     }),
 
