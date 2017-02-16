@@ -4214,6 +4214,15 @@ natural-compare@~1.2.2:
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/natural-compare/-/natural-compare-1.2.2.tgz#1f96d60e3141cac1b6d05653ce0daeac763af6aa"
 
+nconf-fork@0.8.5:
+  version "0.8.5"
+  resolved "https://registry.yarnpkg.com/nconf-fork/-/nconf-fork-0.8.5.tgz#746bb18d34d972386b40ffe371cef0da5e5b4621"
+  dependencies:
+    async "^1.4.0"
+    ini "^1.3.0"
+    secure-keys "^1.0.0"
+    yargs "^3.19.0"
+
 nconf@0.8.4:
   version "0.8.4"
   resolved "https://registry.yarnpkg.com/nconf/-/nconf-0.8.4.tgz#9502234f7ad6238cab7f92d7c068c20434d3ff93"
