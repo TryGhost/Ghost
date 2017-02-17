@@ -13,12 +13,20 @@
 .subscribers-table {
     flex-grow: 1;
     overflow-y: auto;
-    padding: 0 12px; /* ember-light-table has 8px padding on cells */
     max-height: 100%;
 }
 
 .subscribers-table table {
     margin: 0;
+}
+
+.subscribers-table th {
+    padding: 8px 0;
+}
+
+.subscribers-table td {
+    padding: 0;
+    border-top: var(--lightgrey) 1px solid;
 }
 
 .subscribers-table table .gh-btn {

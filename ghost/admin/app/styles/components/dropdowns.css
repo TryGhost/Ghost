@@ -42,6 +42,10 @@
     background: color(#dfe1e3 lightness(+5%));
 }
 
+.dropdown-menu li {
+    margin: 0;
+}
+
 .dropdown-menu > li > a,
 .dropdown-menu > li > button {
     display: flex;

@@ -71,7 +71,7 @@ describe('Acceptance: Settings - Code-Injection', function() {
                 expect(currentURL(), 'currentURL').to.equal('/settings/code-injection');
 
                 // has correct page title
-                expect(document.title, 'page title').to.equal('Settings - Code Injection - Test Blog');
+                expect(document.title, 'page title').to.equal('Settings - Code injection - Test Blog');
 
                 // highlights nav menu
                 expect($('.gh-nav-settings-code-injection').hasClass('active'), 'highlights nav menu item')

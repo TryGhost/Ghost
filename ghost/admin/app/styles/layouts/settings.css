@@ -13,7 +13,6 @@
     display: flex;
     align-items: center;
     margin-bottom: 10px;
-    padding: 0 20px;
 }
 
 .gh-blognav-item--error {
@@ -80,8 +79,7 @@
 }
 
 .gh-blognav-item:not(.gh-blognav-item--sortable) {
-    padding-left: calc(16px + 20px);
-    /* icon-grab + nav-item padding) */
+    padding-left: 16px;
 }
 
 /* Remove space between inputs on smaller screens */
@@ -104,7 +102,7 @@
 }
 
 
-/* Code Injection
+/* Code injection
 /* ---------------------------------------------------------- */
 
 .settings-code {

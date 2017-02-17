@@ -63,10 +63,10 @@ fieldset[disabled] .gh-btn {
 /* The background of the span is the main visual element */
 .gh-btn-blue span {
     background: linear-gradient(
-    color(var(--blue) whiteness(+7%)),
-    color(var(--blue) l(-7%) saturation(-10%)) 60%,
-    color(var(--blue) l(-7%) saturation(-10%)) 90%,
-    color(var(--blue) l(-4%) saturation(-10%))
+    color(var(--blue) whiteness(+5%)),
+    color(var(--blue) l(-5%) saturation(-8%)) 60%,
+    color(var(--blue) l(-5%) saturation(-8%)) 90%,
+    color(var(--blue) l(-3%) saturation(-8%))
     );
     box-shadow: 0 1px 0 inset rgba(255,255,255,0.1);
 }
@@ -374,6 +374,10 @@ Usage: CTA buttons grouped together horizontally.
     border-radius: 2px;
     font-size: 1rem;
     line-height: 1.5;
+}
+
+.gh-btn-link {
+    border: 0;
 }
 
 /* Spin Buttons!

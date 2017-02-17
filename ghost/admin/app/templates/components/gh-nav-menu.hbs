@@ -1,3 +1,4 @@
+{{gh-menu-toggle desktopAction="toggleAutoNav" mobileAction="closeMobileMenu"}}
 {{#gh-dropdown-button tagName="header" class="gh-nav-menu" dropdownName="user-menu"}}
     <div class="gh-nav-menu-icon" style={{navMenuIcon}}></div>
     <div class="gh-nav-menu-details">
@@ -8,9 +9,16 @@
 {{/gh-dropdown-button}}
 {{#gh-dropdown tagName="div" name="user-menu" closeOnClick="true"}}
     <ul class="dropdown-menu dropdown-triangle-top js-user-menu-dropdown-menu" role="menu" style="right:-20px;left:auto;">
+        <li role="presentation"><a href="{{config.blogUrl}}/" target="_blank">View site</a></li>
         <li role="presentation">{{#link-to "about" classNames="gh-nav-menu-about dropdown-item js-nav-item" role="menuitem" tabindex="-1"}}<i class="icon-shop"></i> About Ghost{{/link-to}}</li>
         <li class="divider"></li>
         <li role="presentation">{{#link-to "team.user" session.user.slug classNames="dropdown-item user-menu-profile js-nav-item" role="menuitem" tabindex="-1"}}<i class="icon-user"></i> Your Profile{{/link-to}}</li>
+        <li role="presentation"><a class="dropdown-item help-menu-support" role="menuitem" tabindex="-1" href="http://support.ghost.org/" target="_blank"><i class="icon-ambulance"></i> Support Center</a></li>
+        <li role="presentation"><a class="dropdown-item help-menu-tweet" role="menuitem" tabindex="-1" href="https://twitter.com/intent/tweet?text=%40TryGhost+Hi%21+Can+you+help+me+with+&related=TryGhost" target="_blank" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;"><i class="icon-twitter"></i> Tweet @TryGhost!</a></li>
+        <li class="divider"></li>
+        <li role="presentation"><a class="dropdown-item help-menu-how-to" role="menuitem" tabindex="-1" href="http://support.ghost.org/how-to-use-ghost/" target="_blank"><i class="icon-book"></i> How to Use Ghost</a></li>
+        <li role="presentation"><a class="dropdown-item help-menu-wishlist" role="menuitem" tabindex="-1" href="http://ideas.ghost.org/" target="_blank"><i class="icon-idea"></i> Wishlist</a></li>
+        <li class="divider"></li>
         <li role="presentation">{{#link-to "signout" classNames="dropdown-item user-menu-signout" role="menuitem" tabindex="-1"}}<i class="icon-signout"></i> Sign Out{{/link-to}}</li>
     </ul>
 {{/gh-dropdown}}
@@ -20,12 +28,12 @@
     </section>
     <ul class="gh-nav-list gh-nav-main">
         {{!<li><i class="icon-dash"></i>Dashboard</li>}}
-        <li>{{#link-to "editor.new" classNames="gh-nav-main-editor"}}<i class="icon-pen"></i>New Post{{/link-to}}</li>
+        <li>{{#link-to "editor.new" classNames="gh-nav-main-editor"}}<i class="icon-pen"></i>New story{{/link-to}}</li>
         {{!<li><a href="#"><i class="icon-user"></i>My Posts</a></li>}}
         <li>
             {{!-- clicking the Content link whilst on the content screen should reset the filter --}}
             {{#if (eq routing.currentRouteName "posts.index")}}
-                {{#link-to "posts" (query-params type=null) classNames="gh-nav-main-content active"}}<i class="icon-content"></i>Content{{/link-to}}
+                {{#link-to "posts" (query-params type=null) classNames="gh-nav-main-content active"}}<i class="icon-content"></i>Stories{{/link-to}}
             {{else}}
                 {{#link-to "posts" classNames="gh-nav-main-content"}}<i class="icon-content"></i>Content{{/link-to}}
             {{/if}}
@@ -45,32 +53,10 @@
             {{!<li><i class="icon-design"></i>Themes</li>}}
             <li>{{#link-to "settings.navigation" classNames="gh-nav-settings-navigation"}}<i class="icon-compass"></i>Navigation{{/link-to}}</li>
             <li>{{#link-to "settings.tags" classNames="gh-nav-settings-tags"}}<i class="icon-tag"></i>Tags{{/link-to}}</li>
-            <li>{{#link-to "settings.code-injection" classNames="gh-nav-settings-code-injection"}}<i class="icon-code"></i>Code Injection{{/link-to}}</li>
+            <li>{{#link-to "settings.code-injection" classNames="gh-nav-settings-code-injection"}}<i class="icon-code"></i>Code injection{{/link-to}}</li>
             <li>{{#link-to "settings.apps" classNames="gh-nav-settings-apps"}}<i class="icon-box"></i>Apps{{/link-to}}</li>
             <li>{{#link-to "settings.labs" classNames="gh-nav-settings-labs"}}<i class="icon-labs"></i>Labs{{/link-to}}</li>
         </ul>
     {{/if}}
 </section>
-<footer class="gh-nav-footer">
-    {{gh-menu-toggle desktopAction="toggleAutoNav" mobileAction="closeMobileMenu"}}
-    <a class="gh-nav-footer-sitelink" href="{{config.blogUrl}}/" target="_blank">View blog</a>
-    <div class="gh-help-menu">
-        {{#gh-dropdown-button dropdownName="help-menu" tagName="div"}}
-            <div class="gh-help-button">
-                <i class="icon-question"><span class="hidden">Help</span></i>
-            </div>
-        {{/gh-dropdown-button}}
-        {{#gh-dropdown tagName="div" name="help-menu" closeOnClick="true"}}
-            <ul class="dropdown-menu dropdown-triangle-bottom" role="menu">
-                <li role="presentation"><a class="dropdown-item help-menu-support" role="menuitem" tabindex="-1" href="http://support.ghost.org/" target="_blank"><i class="icon-ambulance"></i> Support Center</a></li>
-                <li role="presentation"><a class="dropdown-item help-menu-tweet" role="menuitem" tabindex="-1" href="https://twitter.com/intent/tweet?text=%40TryGhost+Hi%21+Can+you+help+me+with+&related=TryGhost" target="_blank" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;"><i class="icon-twitter"></i> Tweet @TryGhost!</a></li>
-                <li class="divider"></li>
-                <li role="presentation"><a class="dropdown-item help-menu-how-to" role="menuitem" tabindex="-1" href="http://support.ghost.org/how-to-use-ghost/" target="_blank"><i class="icon-book"></i> How to Use Ghost</a></li>
-                <li role="presentation"><a class="dropdown-item help-menu-markdown" role="menuitem" tabindex="-1" href="" {{action "showMarkdownHelp"}}><i class="icon-markdown"></i> Markdown Help</a></li>
-                <li class="divider"></li>
-                <li role="presentation"><a class="dropdown-item help-menu-wishlist" role="menuitem" tabindex="-1" href="http://ideas.ghost.org/" target="_blank"><i class="icon-idea"></i> Wishlist</a></li>
-            </ul>
-        {{/gh-dropdown}}
-    </div>{{! .help-menu }}
-</footer>
 <div class="gh-autonav-toggle" {{action "openAutoNav" on="mouseEnter"}}></div>

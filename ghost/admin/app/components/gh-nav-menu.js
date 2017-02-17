@@ -10,8 +10,8 @@ export default Component.extend({
 
     open: false,
 
-    navMenuIcon: computed('ghostPaths.subdir', function () {
-        let url = `${this.get('ghostPaths.assetRoot')}/img/ghosticon.jpg`;
+    navMenuIcon: computed('config.blogUrl', function () {
+        let url = `${this.get('config.blogUrl')}/favicon.png`;
 
         return htmlSafe(`background-image: url(${url})`);
     }),
