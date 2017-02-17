@@ -1,12 +1,14 @@
 var Settings,
-    ghostBookshelf = require('./base'),
-    _              = require('lodash'),
-    errors         = require('../errors'),
     Promise        = require('bluebird'),
-    validation     = require('../data/validation'),
+    _              = require('lodash'),
+    uuid           = require('uuid'),
+    ghostBookshelf = require('./base'),
+    errors         = require('../errors'),
     events         = require('../events'),
-    internalContext = {context: {internal: true}},
     i18n           = require('../i18n'),
+    validation     = require('../data/validation'),
+
+    internalContext = {context: {internal: true}},
 
     defaultSettings;
 
@@ -15,12 +17,18 @@ var Settings,
 // instead of iterating those categories every time
 function parseDefaultSettings() {
     var defaultSettingsInCategories = require('../data/schema/').defaultSettings,
-        defaultSettingsFlattened = {};
+        defaultSettingsFlattened = {},
+        dynamicDefault = {
+            dbHash: uuid.v4()
+        };
 
     _.each(defaultSettingsInCategories, function each(settings, categoryName) {
         _.each(settings, function each(setting, settingName) {
             setting.type = categoryName;
             setting.key = settingName;
+            if (dynamicDefault[setting.key]) {
+                setting.defaultValue = dynamicDefault[setting.key];
+            }
 
             defaultSettingsFlattened[settingName] = setting;
         });
