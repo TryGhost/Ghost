@@ -212,7 +212,7 @@ body > .ember-view:not(.liquid-target-container) {
 }
 
 
-/* Mobile Nav
+/* Mobile Nav Menu (Slides out)
 /* ---------------------------------------------------------- */
 
 .gh-mobilemenu-button {
@@ -319,6 +319,23 @@ body > .ember-view:not(.liquid-target-container) {
     color: var(--blue);
 }
 
+.gh-menu-toggle-content {
+    display: none;
+}
+
+@media (max-width: 800px) {
+    .gh-menu-toggle {
+        position: static;
+        height: auto;
+        width: auto;
+        border: none;
+        border-radius: 0;
+    }
+    .gh-menu-toggle-content {
+        display: block;
+    }
+}
+
 /* Autonav is tricky, because hit areas of translated elements aren't in sync
    with the visible element we need to add the hover behaviour to a small,
    non-moving element. The following code positions our hit area and transitions
@@ -382,41 +399,32 @@ body > .ember-view:not(.liquid-target-container) {
 }
 
 
-/* Help (?) Menu
+/* Mobile Nav Bar (Sits at bottom of screen)
 /* ---------------------------------------------------------- */
 
-.gh-help-menu {
-    display: flex;
-    align-items: center;
-    border-left: #dfe1e3 1px solid;
-    cursor: pointer;
-}
+.gh-mobile-nav-bar { display: none; }
 
-.gh-help-button {
-    padding: 5px 15px;
-    color: var(--midgrey);
-    text-align: center;
-    font-size: 1.4rem;
-    line-height: 1.2em;
-    transition: all 0.5s;
-}
+@media (max-width: 800px) {
+    .gh-mobile-nav-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #fff;
+        border-top: var(--lightgrey) 1px solid;
+    }
 
-.gh-help-menu:hover .gh-help-button {
-    color: var(--blue);
-    transition: all 0.3s;
-}
-
-.gh-help-menu .dropdown {
-    bottom: 215px;
-    left: -180px;
-}
-
-.gh-help-menu .dropdown.fade-in-scale {
-    animation-duration: 0.1s;
-}
-
-.gh-help-menu .dropdown.fade-out {
-    animation-duration: 0.01s;
+    .gh-mobile-nav-bar a,
+    .gh-mobile-nav-bar-more {
+        height: 55px;
+        padding: 5px 15px;
+        text-align: center;
+        cursor: pointer;
+        color: var(--darkgrey)
+    }
 }
 
 

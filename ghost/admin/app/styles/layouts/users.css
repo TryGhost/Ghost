@@ -6,6 +6,7 @@
 }
 
 .user-list-item-icon {
+    flex-shrink: 0;
     position: relative;
     display: block;
     overflow: hidden;
