@@ -63,7 +63,7 @@ describe('Acceptance: Settings - Labs', function() {
             return authenticateSession(application);
         });
 
-        it('it renders, loads modals correctly', function () {
+        it.skip('it renders, loads modals correctly', function () {
             visit('/settings/labs');
 
             andThen(() => {
