@@ -25,8 +25,8 @@ legend {
     display: block;
     margin: 2em 0;
     width: 100%;
-    border-bottom: #dfe1e3 1px solid;
-    color: #b1b1b1;
+    border-bottom: color(var(--lightgrey) l(-5%) s(-10%)) 1px solid;
+    color: var(--midgrey);
     font-size: 1.2em;
     line-height: 2.0em;
     user-select: text;
@@ -34,6 +34,16 @@ legend {
 
 input {
     user-select: text;
+}
+
+::-webkit-input-placeholder {
+    color: color(var(--midgrey) l(+18%));
+    font-weight: 200;
+}
+
+:-ms-input-placeholder {
+    color: color(var(--midgrey) l(+18%));
+    font-weight: 200;
 }
 
 .error .response {
@@ -54,7 +64,7 @@ input {
 
 .form-group p {
     margin: 4px 0 0 0;
-    color: #b1b1b1;
+    color: var(--midgrey);
     font-size: 1.3rem;
 }
 
@@ -116,9 +126,9 @@ select {
     display: block;
     padding: 8px 10px;
     width: 100%;
-    border: 1px solid #dfe1e3;
+    border: color(var(--lightgrey) l(-5%) s(-10%)) 1px solid;
     border-radius: var(--border-radius);
-    color: #666;
+    color: color(var(--midgrey) l(-18%));
     font-size: 1.4rem;
     font-weight: normal;
     user-select: text;
@@ -144,7 +154,7 @@ select.error {
 .gh-select:focus,
 select:focus {
     outline: 0;
-    border-color: #b1b1b1;
+    border-color: color(var(--lightgrey) l(-15%) s(-10%));
 }
 
 textarea {
@@ -194,17 +204,17 @@ textarea {
     margin-right: 7px;
     width: 18px;
     height: 18px;
-    border: 1px solid #dfe1e3;
-    background: #f7f7f7;
+    border: 1px solid color(var(--lightgrey) l(-5%) s(-10%));
+    background: color(var(--lightgrey) l(+5%));
 }
 
 .for-checkbox label:hover input:not(:checked) + .input-toggle-component,
 .for-radio label:hover input:not(:checked) + .input-toggle-component {
-    border-color: var(--lightgrey);
+    border-color: color(var(--lightgrey) l(-15%) s(-10%));
 }
 
 .for-checkbox .input-toggle-component {
-    border-radius: var(--border-radius);
+    border-radius: 4px;
 }
 
 .for-checkbox .input-toggle-component {
@@ -321,6 +331,18 @@ textarea {
 }
 
 
+/* File Uploads
+/* ---------------------------------------------------------- */
+
+.gh-input-file {
+    font-size: 1.2rem;
+    width: auto;
+}
+
+.gh-input-file + .gh-btn {
+    margin-left: 10px;
+}
+
 /* FFF: Fucking Firefox Fixes
 /* ---------------------------------------------------------- */
 
@@ -332,6 +354,6 @@ textarea {
         padding: 7px 10px 7px 8px;
     }
     .gh-select:focus {
-        border-color: #b1b1b1;
+        border-color: color(var(--lightgrey) l(-15%) s(-10%));
     }
 }

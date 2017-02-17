@@ -390,6 +390,10 @@ img {
     vertical-align: middle;
 }
 
+.flex {
+    display: flex;
+}
+
 
 /* Animations
 /* ---------------------------------------------------------- */

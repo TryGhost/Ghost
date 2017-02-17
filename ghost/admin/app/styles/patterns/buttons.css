@@ -6,14 +6,14 @@
 .gh-btn {
     display: inline-block;
     outline: none;
-    border: 1px solid color(var(--lightgrey) l(-4%));
+    border: 1px solid color(var(--lightgrey) l(-5%) s(-10%));
     color: color(var(--lightgrey) l(-27%) blackness(+15%));
     text-shadow: 0 1px 0 #fff;
     text-decoration: none !important;
     user-select: none;
     fill: color(var(--lightgrey) l(-27%) blackness(+15%));
-    border-radius: 6px;
-    transition: none;
+    border-radius: 5px;
+    transition: all 0.2s ease;
 
     -webkit-font-smoothing: subpixel-antialiased;
 }
@@ -28,7 +28,11 @@
     font-weight: 400;
     text-align: center;
     letter-spacing: 0.2px;
-    border-radius: 5px;
+    border-radius: 4px;
+}
+
+.gh-btn:hover {
+    border-color: color(var(--lightgrey) l(-15%) s(-10%));
 }
 
 /* When disabled */
@@ -39,6 +43,25 @@ fieldset[disabled] .gh-btn {
     opacity: 0.8;
     cursor: not-allowed;
     pointer-events: none;
+}
+
+
+/* Button highlights
+/* ---------------------------------------------------------- */
+
+.gh-btn-hover-blue:hover {
+    border-color: var(--blue);
+    color: var(--blue);
+}
+
+.gh-btn-hover-green:hover {
+    border-color: var(--green);
+    color: var(--green);
+}
+
+.gh-btn-hover-red:hover {
+    border-color: var(--red);
+    color: var(--red);
 }
 
 
@@ -93,20 +116,20 @@ fieldset[disabled] .gh-btn {
     text-shadow: 0 -1px 0 rgba(0,0,0,0.1);
     fill: #fff;
     background: linear-gradient(
-    color(var(--green) blackness(+7%)),
-    color(var(--green) l(-10%) saturation(-10%))
+    color(var(--green) blackness(+5%)),
+    color(var(--green) l(-9%) saturation(-9%))
     );
-    box-shadow: 0 1px 0 rgba(0,0,0,0.12);
+    box-shadow: 0 1px 1px rgba(0,0,0,0.14);
     transition: none !important;
 }
 
 /* The background of the span is the main visual element */
 .gh-btn-green span {
     background: linear-gradient(
-    color(var(--green) whiteness(+5%)),
-    color(var(--green) l(-4%) saturation(-8%)) 60%,
-    color(var(--green) l(-4%) saturation(-8%)) 90%,
-    color(var(--green) l(-4%) saturation(-10%))
+    color(var(--green) whiteness(+4%)),
+    color(var(--green) l(-3%) saturation(-7%)) 60%,
+    color(var(--green) l(-3%) saturation(-7%)) 90%,
+    color(var(--green) l(-3%) saturation(-9%))
     );
     box-shadow: 0 1px 0 inset rgba(255,255,255,0.1);
 }
@@ -114,11 +137,11 @@ fieldset[disabled] .gh-btn {
 /* When clicked or focused with keyboard */
 .gh-btn-green:active,
 .gh-btn-green:focus {
-    background: color(var(--green) l(-10%) saturation(-10%));
+    background: color(var(--green) l(-9%) saturation(-9%));
 }
 .gh-btn-green:active span,
 .gh-btn-green:focus span {
-    background: color(var(--green) l(-4%) saturation(-8%));
+    background: color(var(--green) l(-3%) saturation(-7%));
     box-shadow: none;
 }
 

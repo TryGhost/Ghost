@@ -74,7 +74,7 @@
     background-color: #fff;
     background-clip: padding-box;
     border-radius: 6px;
-    box-shadow: 0 0 1px rgba(0,0,0,.1), 0 2px 5px rgba(0,0,0,.05);
+    box-shadow: 1px 3px 8px rgba(0,0,0,.09), 8px 14px 38px rgba(0,0,0,.15);
 }
 
 .modal-content * {
@@ -127,7 +127,7 @@
 }
 
 .modal-footer button {
-    margin-left: 8px;
+    margin-left: 12px;
     min-width: 100px;
     text-align: center;
 }
