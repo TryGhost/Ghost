@@ -20,7 +20,7 @@ should.equal(true, true);
 // both of which are required for migrations to work properly.
 describe('DB version integrity', function () {
     // Only these variables should need updating
-    var currentSchemaHash = 'a431e666f9e72b9739177c3293442314',
+    var currentSchemaHash = '07b79c8dee0265888babcba5bface7f8',
         currentFixturesHash = 'b9e684a87353c592df9b23948e364c05';
 
     // If this test is failing, then it is likely a change has been made that requires a DB version bump,
