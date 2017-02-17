@@ -69,6 +69,7 @@ _private.updateClient = function updateClient(options) {
                     description: clientDescription
                 }).then(function registeredRemoteClient(credentials) {
                     debug('Registered remote client: ' + JSON.stringify(credentials));
+                    logging.info('Registered remote client successfully.');
 
                     return models.Client.add({
                         name: credentials.name,
@@ -123,6 +124,8 @@ _private.updateClient = function updateClient(options) {
 
                 return client.save(null, {context: {internal: true}});
             }).then(function updatedLocalClient() {
+                logging.info('Updated remote client successfully.');
+
                 return {
                     client_id: client.get('uuid'),
                     client_secret: client.get('secret')
@@ -156,7 +159,10 @@ exports.init = function initPassport(options) {
             redirectUri: redirectUri,
             blogUri: clientUri,
             url: ghostAuthUrl,
-            passReqToCallback: true
+            passReqToCallback: true,
+            retryHook: function retryHook(err) {
+                logging.error(err);
+            }
         }, authStrategies.ghostStrategy);
 
         _private.updateClient({
