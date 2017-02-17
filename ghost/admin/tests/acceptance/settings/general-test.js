@@ -80,7 +80,7 @@ describe('Acceptance: Settings - General', function () {
                 expect($('.gh-nav-settings-general').hasClass('active'), 'highlights nav menu item')
                     .to.be.true;
 
-                expect(find('.view-header .view-actions .gh-btn-blue').text().trim(), 'save button text').to.equal('Save');
+                expect(find(testSelector('save-button')).text().trim(), 'save button text').to.equal('Save');
 
                 // initial postsPerPage should be 5
                 expect(find('input#postsPerPage').val(), 'post per page value').to.equal('5');
@@ -89,7 +89,7 @@ describe('Acceptance: Settings - General', function () {
             });
 
             fillIn('#settings-general input[name="general[title]"]', 'New Blog Title');
-            click('.view-header .gh-btn.gh-btn-blue');
+            click(testSelector('save-button'));
 
             andThen(() => {
                 expect(document.title, 'page title').to.equal('Settings - General - New Blog Title');
@@ -160,7 +160,7 @@ describe('Acceptance: Settings - General', function () {
             });
 
             triggerEvent('#activeTimezone', 'change');
-            click('.view-header .gh-btn.gh-btn-blue');
+            click(testSelector('save-button'));
 
             andThen(() => {
                 expect(find('#activeTimezone option:selected').text().trim()).to.equal('(GMT +2:00) Cairo, Egypt');

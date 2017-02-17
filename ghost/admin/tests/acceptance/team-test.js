@@ -12,6 +12,7 @@ import {invalidateSession, authenticateSession} from '../helpers/ember-simple-au
 import {errorOverride, errorReset} from '../helpers/adapter-error';
 import {enableGhostOAuth} from '../helpers/configuration';
 import {Response} from 'ember-cli-mirage';
+import testSelector from 'ember-test-selectors';
 
 describe('Acceptance: Team', function () {
     let application;
@@ -87,10 +88,10 @@ describe('Acceptance: Team', function () {
                 expect(document.title, 'page title').to.equal('Team - Test Blog');
 
                 // it shows 3 users in list (includes currently logged in user)
-                expect(find('.user-list .user-list-item').length, 'user list count')
+                expect(find(testSelector('user-id')).length, 'user list count')
                     .to.equal(3);
 
-                click('.user-list-item:last');
+                click(testSelector('user-id', user2.id));
 
                 andThen(() => {
                     // url is correct
@@ -125,18 +126,18 @@ describe('Acceptance: Team', function () {
 
                 // existing users are listed
                 expect(
-                    find('.user-list.active-users .user-list-item').length,
+                    find(testSelector('user-id')).length,
                     'initial number of active users'
                 ).to.equal(1);
 
                 expect(
-                    find('.user-list.active-users .user-list-item:first-of-type .role-label').text().trim(),
+                    find(testSelector('user-id', '1')).find(testSelector('role-name')).text().trim(),
                     'active user\'s role label'
                 ).to.equal('Administrator');
 
                 // no invites are shown
                 expect(
-                    find('.user-list.invited-users .user-list-item').length,
+                    find(testSelector('invite-id')).length,
                     'initial number of invited users'
                 ).to.equal(0);
             });
@@ -194,23 +195,23 @@ describe('Acceptance: Team', function () {
 
                 // invite is displayed, has correct e-mail + role
                 expect(
-                    find('.invited-users .user-list-item').length,
+                    find(testSelector('invite-id')).length,
                     'number of invites after first invite'
                 ).to.equal(1);
 
                 expect(
-                    find('.invited-users span.name').first().text().trim(),
+                    find(testSelector('invite-id', '1')).find(testSelector('email')).text().trim(),
                     'displayed email of first invite'
                 ).to.equal('invite1@example.com');
 
                 expect(
-                    find('.invited-users span.role-label').first().text().trim(),
+                    find(testSelector('invite-id', '1')).find(testSelector('role-name')).text().trim(),
                     'displayed role of first invite'
                 ).to.equal('Author');
 
                 // number of users is unchanged
                 expect(
-                    find('.active-users .user-list-item').length,
+                    find(testSelector('user-id')).length,
                     'number of active users after first invite'
                 ).to.equal(1);
             });
@@ -224,18 +225,18 @@ describe('Acceptance: Team', function () {
             andThen(() => {
                 // number of invites increases
                 expect(
-                    find('.invited-users .user-list-item').length,
+                    find(testSelector('invite-id')).length,
                     'number of invites after second invite'
                 ).to.equal(2);
 
                 // invite has correct e-mail + role
                 expect(
-                    find('.invited-users span.name').last().text().trim(),
+                    find(testSelector('invite-id', '2')).find(testSelector('email')).text().trim(),
                     'displayed email of second invite'
                 ).to.equal('invite2@example.com');
 
                 expect(
-                    find('.invited-users span.role-label').last().text().trim(),
+                    find(testSelector('invite-id', '2')).find(testSelector('role-name')).text().trim(),
                     'displayed role of second invite'
                 ).to.equal('Editor');
             });
@@ -279,12 +280,12 @@ describe('Acceptance: Team', function () {
 
             click('.fullscreen-modal a.close');
             // revoke latest invite
-            click('.invited-users .user-list-item:last-of-type a[href="#revoke"]');
+            click(`${testSelector('invite-id', '2')} ${testSelector('revoke-button')}`);
 
             andThen(() => {
                 // number of invites decreases
                 expect(
-                    find('.invited-users .user-list-item').length,
+                    find(testSelector('invite-id')).length,
                     'number of invites after revoke'
                 ).to.equal(1);
 
@@ -296,7 +297,7 @@ describe('Acceptance: Team', function () {
 
                 // correct invite is removed
                 expect(
-                    find('.invited-users span.name').text().trim(),
+                    find(testSelector('invite-id')).find(testSelector('email')).text().trim(),
                     'displayed email of remaining invite'
                 ).to.equal('invite1@example.com');
             });
@@ -309,13 +310,13 @@ describe('Acceptance: Team', function () {
             andThen(() => {
                 // new invite should be last in the list
                 expect(
-                    find('.invited-users span.name').last().text().trim(),
+                    find(`${testSelector('invite-id')}:last`).find(testSelector('email')).text().trim(),
                     'last invite email in list'
                 ).to.equal('invite3@example.com');
             });
 
             // resend first invite
-            click('.invited-users .user-list-item:first-of-type a[href="#resend"]');
+            click(`${testSelector('invite-id', '1')} ${testSelector('resend-button')}`);
 
             andThen(() => {
                 // notification is displayed
@@ -326,19 +327,19 @@ describe('Acceptance: Team', function () {
 
                 // first invite is still at the top
                 expect(
-                    find('.invited-users span.name').first().text().trim(),
+                    find(`${testSelector('invite-id')}:first-of-type`).find(testSelector('email')).text().trim(),
                     'first invite email in list'
                 ).to.equal('invite1@example.com');
             });
 
             // regression test: can revoke a resent invite
-            click('.invited-users .user-list-item:first-of-type a[href="#resend"]');
-            click('.invited-users .user-list-item:first-of-type a[href="#revoke"]');
+            click(`${testSelector('invite-id')}:first-of-type ${testSelector('resend-button')}`);
+            click(`${testSelector('invite-id')}:first-of-type ${testSelector('revoke-button')}`);
 
             andThen(() => {
                 // number of invites decreases
                 expect(
-                    find('.invited-users .user-list-item').length,
+                    find(testSelector('invite-id')).length,
                     'number of invites after resend/revoke'
                 ).to.equal(1);
 
@@ -358,7 +359,7 @@ describe('Acceptance: Team', function () {
             user2.posts = [post];
 
             visit('/team');
-            click(`a.user-list-item:contains("${user1.name}")`);
+            click(testSelector('user-id', user1.id));
 
             // user deletion displays modal
             click('button.delete');
@@ -386,7 +387,7 @@ describe('Acceptance: Team', function () {
 
             // deleting a user with posts
             visit('/team');
-            click(`a.user-list-item:contains("${user2.name}")`);
+            click(testSelector('user-id', user2.id));
 
             click('button.delete');
             andThen(() => {
@@ -404,7 +405,7 @@ describe('Acceptance: Team', function () {
 
                 // deleted user is not in list
                 expect(
-                    find(`.user-list-item .name:contains("${user2.name}")`).length,
+                    find(testSelector('user-id', user2.id)).length,
                     'deleted user is not in user list after deletion'
                 ).to.equal(0);
             });

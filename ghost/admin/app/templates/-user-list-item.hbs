@@ -1,5 +1,5 @@
 <div class="apps-grid-cell">
-    {{#link-to 'team.user' user.slug}}
+    {{#link-to 'team.user' user.slug data-test-user-id=user.id}}
     <article class="apps-card-app">
         <div class="apps-card-left">
             <span class="user-list-item-figure" style={{component.userImageBackground}}>
@@ -14,7 +14,7 @@
             <div class="apps-configured">
                 {{#unless session.user.isAuthor}}
                     {{#each user.roles as |role|}}
-                        <span class="gh-badge {{role.lowerCaseName}}">{{role.name}}</span>
+                        <span class="gh-badge {{role.lowerCaseName}}" data-test-role-name>{{role.name}}</span>
                     {{/each}}
                 {{/unless}}
                 <i class="icon-arrow-right"></i>
