@@ -8,5 +8,6 @@ module.exports = logging({
     mode: config.get('logging:mode'),
     level: config.get('logging:level'),
     transports: config.get('logging:transports'),
-    loggly: config.get('logging:loggly')
+    loggly: config.get('logging:loggly'),
+    rotation: config.get('logging:rotation')
 });
