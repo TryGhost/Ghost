@@ -3412,9 +3412,9 @@ jsonlint@1.6.2, jsonlint@~1.6.2:
     JSV ">= 4.0.x"
     nomnom ">= 1.5.x"
 
-jsonpath@0.2.9:
-  version "0.2.9"
-  resolved "https://registry.yarnpkg.com/jsonpath/-/jsonpath-0.2.9.tgz#5ef40bc2b1ac8144fd648a8ff4b0d83dc2788e40"
+jsonpath@0.2.11:
+  version "0.2.11"
+  resolved "https://registry.yarnpkg.com/jsonpath/-/jsonpath-0.2.11.tgz#bfe22e0665b9712f8e7bdf7e2e1f8c08b594c60e"
   dependencies:
     esprima "1.2.2"
     jison "0.4.13"
