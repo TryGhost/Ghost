@@ -1,0 +1,116 @@
+/* Stop: Normalize.
+/* ---------------------------------------------------------- */
+@import "../../bower_components/normalize.css/normalize.css";
+
+
+/* Patterns: Groups of Styles
+/* ---------------------------------------------------------- */
+@import "patterns/global.css";
+@import "patterns/_shame.css";
+@import "patterns/icons.css";
+@import "patterns/forms.css";
+@import "patterns/buttons.css";
+@import "patterns/labels.css";
+@import "patterns/tables.css";
+@import "patterns/navlist.css";
+@import "patterns/boxes.css";
+
+
+/* Components: Groups of Patterns
+/* ---------------------------------------------------------- */
+@import "components/loading-indicator.css";
+@import "components/modals.css";
+@import "components/notifications.css";
+@import "components/uploader.css";
+@import "components/splitbuttons.css";
+@import "components/dropdowns.css";
+@import "components/pagination.css";
+@import "components/badges.css";
+@import "components/popovers.css";
+@import "components/settings-menu.css";
+@import "components/selectize.css";
+@import "components/power-select.css";
+
+
+/* Layouts: Groups of Components
+/* ---------------------------------------------------------- */
+@import "layouts/main.css";
+@import "layouts/flow.css";
+@import "layouts/auth.css";
+@import "layouts/content.css";
+@import "layouts/editor.css";
+@import "layouts/settings.css";
+@import "layouts/users.css";
+@import "layouts/user.css";
+@import "layouts/about.css";
+@import "layouts/tags.css";
+@import "layouts/error.css";
+@import "layouts/apps.css";
+@import "layouts/packages.css";
+@import "layouts/subscribers.css";
+
+
+:root {
+    --darkgrey: #e5eff5;
+    --midgrey: #738a94;
+    --lightgrey: #333F44;
+}
+
+body {
+    color: #e5eff5;
+}
+
+input,
+.gh-input,
+.gh-select {
+    color: var(--darkgrey);
+    border-color: color(var(--lightgrey));
+    background: color(var(--lightgrey));
+}
+
+.gh-nav,
+.settings-menu-container {
+    background: #212A2E;
+}
+.gh-menu-toggle {
+    border-color: #212A2E;
+}
+
+.gh-nav-search .ember-power-select-trigger {
+    border-color: color(var(--lightgrey));
+    background: color(var(--lightgrey));
+}
+.ember-power-select-options:not([role="group"]),
+.ember-power-select-dropdown.ember-basic-dropdown-content--in-place {
+    border-color: color(var(--lightgrey));
+    background: color(var(--lightgrey));
+}
+
+.gh-nav-list i {
+    color: var(--darkgrey);
+}
+
+.gh-main {
+    background: #263238;
+}
+
+.gh-btn {
+    border: color(var(--darkgrey) l(-27%) blackness(+15%)) 1px solid ;
+    color: color(var(--darkgrey) l(-27%) blackness(+15%));
+    text-shadow: none;
+}
+.gh-btn-blue,
+.gh-btn-green,
+.gh-btn-red {
+    color: #fff;
+    border: 0;
+}
+
+.dropdown-menu > li > a,
+.dropdown-menu > li > button {
+    color: color(var(--lightgrey) lightness(+20%));
+}
+
+.dropdown-menu > li > a:hover, .dropdown-menu > li > a:focus, .dropdown-menu > li > button:hover, .dropdown-menu > li > button:focus {
+    color: var(--lightgrey);
+}

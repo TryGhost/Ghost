@@ -9,7 +9,7 @@
     position: relative;
     display: block;
     padding: 0 45px 0 0;
-    border-bottom: 1px solid #dfe1e3;
+    border-bottom: var(--lightgrey) 1px solid;
 }
 
 .settings-tag .tag-edit-button {
@@ -44,7 +44,7 @@
 
 .settings-tag .tag-description {
     margin: 0;
-    color: color(#dfe1e3 lightness(-10%));
+    color: var(--midgrey);
     word-wrap: break-word;
     font-size: 13px;
 }
@@ -53,7 +53,7 @@
     position: absolute;
     top: 20px;
     right: 12px;
-    color: color(#dfe1e3 lightness(-10%));
+    color: var(--midgrey);
     font-size: 16px;
 }
 
@@ -68,8 +68,7 @@
     overflow: auto;
     max-width: calc(100% - 350px);
     width: 66%;
-    border-right: #dfe1e3 1px solid;
-    background: #fff;
+    border-right: var(--lightgrey) 1px solid;
 }
 
 @media (max-width: 600px) {
@@ -97,7 +96,6 @@
     min-width: 350px;
     width: 34%;
     border: none;
-    background: #fff;
     transform: none;
 }
 
