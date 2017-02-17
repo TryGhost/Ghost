@@ -1,12 +1,21 @@
 // # Ghost Startup
 // Orchestrates the startup of Ghost when run from command line.
-var ghost = require('./core'),
-    debug = require('debug')('ghost:boot:index'),
-    express = require('express'),
-    logging = require('./core/server/logging'),
-    errors = require('./core/server/errors'),
-    utils = require('./core/server/utils'),
-    parentApp = express();
+console.time('Ghost boot');
+
+var debug = require('debug')('ghost:boot:index'),
+    ghost, express, logging, errors, utils, parentApp;
+
+debug('First requires...');
+
+ghost = require('./core');
+
+debug('Required ghost');
+
+express = require('express');
+logging = require('./core/server/logging');
+errors = require('./core/server/errors');
+utils = require('./core/server/utils');
+parentApp = express();
 
 debug('Initialising Ghost');
 ghost().then(function (ghostServer) {
@@ -16,6 +25,7 @@ ghost().then(function (ghostServer) {
     debug('Starting Ghost');
     // Let Ghost handle starting our server instance.
     return ghostServer.start(parentApp).then(function afterStart() {
+        console.timeEnd('Ghost boot');
         // if IPC messaging is enabled, ensure ghost sends message to parent
         // process on successful start
         if (process.send) {
