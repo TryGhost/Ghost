@@ -26,6 +26,7 @@
     "node": "~0.12.0 || ^4.2.0"
   },
   "devDependencies": {
+    "autoprefixer": "6.7.3",
     "blueimp-md5": "2.6.0",
     "bower": "1.8.0",
     "broccoli-asset-rev": "2.5.0",
@@ -37,6 +38,7 @@
     "codemirror": "5.23.0",
     "coveralls": "2.11.16",
     "csscomb": "3.1.8",
+    "cssnano": "3.10.0",
     "ember-ajax": "2.5.4",
     "ember-cli": "2.11.0",
     "ember-cli-active-link-wrapper": "0.3.2",
@@ -54,6 +56,7 @@
     "ember-cli-mirage": "0.2.5",
     "ember-cli-mocha": "0.13.2",
     "ember-cli-node-assets": "0.1.6",
+    "ember-cli-postcss": "3.1.1",
     "ember-cli-pretender": "1.0.1",
     "ember-cli-selectize": "0.5.12",
     "ember-cli-shims": "1.0.2",
@@ -69,7 +72,6 @@
     "ember-light-table": "1.8.2",
     "ember-load": "0.0.11",
     "ember-load-initializers": "0.6.3",
-    "ember-myth": "0.1.1",
     "ember-one-way-controls": "2.0.0",
     "ember-power-select": "1.4.3",
     "ember-resolver": "2.1.1",
@@ -97,6 +99,9 @@
     "moment": "2.17.1",
     "moment-timezone": "0.5.11",
     "password-generator": "2.1.0",
+    "postcss-color-function": "3.0.0",
+    "postcss-custom-properties": "5.0.2",
+    "postcss-easy-import": "2.0.0",
     "top-gh-contribs": "2.0.4",
     "torii": "0.8.1",
     "walk-sync": "0.3.1"
