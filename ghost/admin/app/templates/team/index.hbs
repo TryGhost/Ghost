@@ -31,12 +31,12 @@
 
                 {{#each sortedInvites as |invite|}}
                     {{#gh-user-invited invite=invite reload="reload" as |component|}}
-                        <div class="apps-grid-cell">
+                        <div class="apps-grid-cell" data-test-invite-id="{{invite.id}}">
                             <article class="apps-card-app">
                                 <div class="apps-card-left">
                                     <span class="user-list-item-icon icon-mail">ic</span>
                                     <div class="apps-card-meta">
-                                        <h3 class="apps-card-app-title">{{invite.email}}</h3>
+                                        <h3 class="apps-card-app-title" data-test-email>{{invite.email}}</h3>
                                         <p class="apps-card-app-desc">
                                             {{#if invite.pending}}
                                                 <span class="description-error">
@@ -56,14 +56,14 @@
                                         {{#if component.isSending}}
                                             <span>Sending Invite...</span>
                                         {{else}}
-                                            <a class="user-list-action" href="#revoke" {{action "revoke" target=component}}>
+                                            <a class="user-list-action" href="#revoke" {{action "revoke" target=component}} data-test-revoke-button>
                                                 Revoke
                                             </a>
-                                            <a class="user-list-action" href="#resend" {{action "resend" target=component}}>
+                                            <a class="user-list-action" href="#resend" {{action "resend" target=component}} data-test-resend-button>
                                                 Resend
                                             </a>
 
-                                            <span class="gh-badge {{invite.role.lowerCaseName}}">{{invite.role.name}}</span>
+                                            <span class="gh-badge {{invite.role.lowerCaseName}}" data-test-role-name>{{invite.role.name}}</span>
                                         {{/if}}
                                     </div>
                                 </div>
