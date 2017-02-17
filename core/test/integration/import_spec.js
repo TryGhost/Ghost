@@ -220,47 +220,6 @@ describe('Import', function () {
             }).catch(done);
         });
 
-        it('doesn\'t import invalid post data from 001', function (done) {
-            var exportData;
-
-            testUtils.fixtures.loadExportFixture('export-001').then(function (exported) {
-                exportData = exported;
-
-                // change title to 151 characters
-                exportData.data.posts[0].title = new Array(152).join('a');
-                exportData.data.posts[0].tags = 'Tag';
-                return importer.doImport(exportData);
-            }).then(function () {
-                (1).should.eql(0, 'Data import should not resolve promise.');
-            }, function (error) {
-                error[0].message.should.eql('Value in [posts.title] exceeds maximum length of 150 characters.');
-                error[0].errorType.should.eql('ValidationError');
-
-                Promise.all([
-                    knex('users').select(),
-                    knex('posts').select(),
-                    knex('tags').select()
-                ]).then(function (importedData) {
-                    should.exist(importedData);
-
-                    importedData.length.should.equal(3, 'Did not get data successfully');
-
-                    var users = importedData[0],
-                        posts = importedData[1],
-                        tags = importedData[2];
-
-                    // we always have 1 user, the default user we added
-                    users.length.should.equal(1, 'There should only be one user');
-
-                    // Nothing should have been imported
-                    posts.length.should.equal(0, 'Wrong number of posts');
-                    tags.length.should.equal(0, 'no new tags');
-
-                    done();
-                });
-            }).catch(done);
-        });
-
         it('doesn\'t import invalid settings data from 001', function (done) {
             var exportData;
 
@@ -365,46 +324,6 @@ describe('Import', function () {
                 assert.equal(moment(posts[0].published_at).valueOf(), timestamp);
 
                 done();
-            }).catch(done);
-        });
-
-        it('doesn\'t import invalid post data from 002', function (done) {
-            var exportData;
-
-            testUtils.fixtures.loadExportFixture('export-002').then(function (exported) {
-                exportData = exported;
-
-                // change title to 151 characters
-                exportData.data.posts[0].title = new Array(152).join('a');
-                exportData.data.posts[0].tags = 'Tag';
-                return importer.doImport(exportData);
-            }).then(function () {
-                (1).should.eql(0, 'Data import should not resolve promise.');
-            }, function (error) {
-                error[0].message.should.eql('Value in [posts.title] exceeds maximum length of 150 characters.');
-                error[0].errorType.should.eql('ValidationError');
-
-                Promise.all([
-                    knex('users').select(),
-                    knex('posts').select(),
-                    knex('tags').select()
-                ]).then(function (importedData) {
-                    should.exist(importedData);
-
-                    importedData.length.should.equal(3, 'Did not get data successfully');
-
-                    var users = importedData[0],
-                        posts = importedData[1],
-                        tags = importedData[2];
-
-                    // we always have 1 user, the owner user we added
-                    users.length.should.equal(1, 'There should only be one user');
-                    // Nothing should have been imported
-                    posts.length.should.equal(0, 'Wrong number of posts');
-                    tags.length.should.equal(0, 'no new tags');
-
-                    done();
-                });
             }).catch(done);
         });
 
@@ -604,6 +523,51 @@ describe('Import', function () {
                 assert.equal(validator.isUUID(importedData[2].uuid), true, 'Missing UUID NOT fixed');
                 assert.equal(validator.isUUID(importedData[3].uuid), true, 'Malformed UUID NOT fixed');
                 done();
+            }).catch(done);
+        });
+    });
+
+    describe('Validation', function () {
+        beforeEach(testUtils.setup('roles', 'owner', 'settings'));
+
+        it('doesn\'t import a title which is too long', function (done) {
+            var exportData;
+
+            testUtils.fixtures.loadExportFixture('export-001').then(function (exported) {
+                exportData = exported;
+
+                // change title to 1001 characters
+                exportData.data.posts[0].title = new Array(2002).join('a');
+                exportData.data.posts[0].tags = 'Tag';
+                return importer.doImport(exportData);
+            }).then(function () {
+                (1).should.eql(0, 'Data import should not resolve promise.');
+            }, function (error) {
+                error[0].message.should.eql('Value in [posts.title] exceeds maximum length of 2000 characters.');
+                error[0].errorType.should.eql('ValidationError');
+
+                Promise.all([
+                    knex('users').select(),
+                    knex('posts').select(),
+                    knex('tags').select()
+                ]).then(function (importedData) {
+                    should.exist(importedData);
+
+                    importedData.length.should.equal(3, 'Did not get data successfully');
+
+                    var users = importedData[0],
+                        posts = importedData[1],
+                        tags = importedData[2];
+
+                    // we always have 1 user, the default user we added
+                    users.length.should.equal(1, 'There should only be one user');
+
+                    // Nothing should have been imported
+                    posts.length.should.equal(0, 'Wrong number of posts');
+                    tags.length.should.equal(0, 'no new tags');
+
+                    done();
+                });
             }).catch(done);
         });
     });

@@ -529,12 +529,42 @@ DataGenerator.forKnex = (function () {
     // this is not pretty, but the fastest
     // it relies on the created posts/tags
     posts_tags = [
-        {id: ObjectId.generate(), post_id: DataGenerator.Content.posts[0].id, tag_id: DataGenerator.Content.tags[0].id},
-        {id: ObjectId.generate(), post_id: DataGenerator.Content.posts[0].id, tag_id: DataGenerator.Content.tags[1].id},
-        {id: ObjectId.generate(), post_id: DataGenerator.Content.posts[1].id, tag_id: DataGenerator.Content.tags[0].id},
-        {id: ObjectId.generate(), post_id: DataGenerator.Content.posts[1].id, tag_id: DataGenerator.Content.tags[1].id},
-        {id: ObjectId.generate(), post_id: DataGenerator.Content.posts[2].id, tag_id: DataGenerator.Content.tags[2].id},
-        {id: ObjectId.generate(), post_id: DataGenerator.Content.posts[3].id, tag_id: DataGenerator.Content.tags[3].id}
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[0].id,
+            tag_id: DataGenerator.Content.tags[0].id,
+            sort_order: 0
+        },
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[0].id,
+            tag_id: DataGenerator.Content.tags[1].id,
+            sort_order: 1
+        },
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[1].id,
+            tag_id: DataGenerator.Content.tags[0].id,
+            sort_order: 2
+        },
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[1].id,
+            tag_id: DataGenerator.Content.tags[1].id,
+            sort_order: 3
+        },
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[2].id,
+            tag_id: DataGenerator.Content.tags[2].id,
+            sort_order: 4
+        },
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[3].id,
+            tag_id: DataGenerator.Content.tags[3].id,
+            sort_order: 5
+        }
     ];
 
     apps = [
