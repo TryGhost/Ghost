@@ -28,7 +28,7 @@
     flex-flow: row wrap;
     align-items: flex-start;
     max-width: 1200px;
-    border: rgba(0,0,0,0.1) 1px solid;
+    border: var(--lightgrey) 1px solid;
     border-radius: 5px;
 }
 
@@ -47,7 +47,7 @@
     flex: 1 1 100%;
 }
 .apps-grid-cell:hover {
-    background: #f5f7f8;
+    background: color(var(--lightgrey) l(+5%));
 }
 
 .apps-card-app {
@@ -57,7 +57,7 @@
     overflow: hidden;
     padding: 14px;
     height: 75px;
-    border-top: rgba(0,0,0,0.1) 1px solid;
+    border-top: var(--lightgrey) 1px solid;
     transition: background 0.3s ease;
 }
 
@@ -171,21 +171,21 @@
 
 .app-cell h3 {
     margin: 0;
-    color: #393939;
+    color: var(--darkgrey);
     font-size: 2.4rem;
 }
 
 .app-cell p {
     margin: 0;
     margin-bottom: 5px;
-    color: #a3a3a3;
+    color: var(--midgrey);
     font-size: 1.6rem;
     line-height: 1.4em;
 }
 
 .app-subtitle {
     max-width: 550px;
-    color: #666363;
+    color: var(--midgrey);
     font-size: 1.6rem;
 }
 .app-config-form .gh-btn-grey {

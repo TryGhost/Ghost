@@ -394,7 +394,7 @@ body > .ember-view:not(.liquid-target-container) {
 
     /* Move main content over for the closed-nav trigger bar */
     .gh-autonav .gh-main {
-        margin-left: 15px;
+        margin-left: 10px;
     }
 }
 
