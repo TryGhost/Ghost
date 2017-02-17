@@ -55,9 +55,14 @@ const CmEditorComponent =  Component.extend(InvokeActionMixin, {
     willDestroyElement() {
         this._super(...arguments);
 
-        let editor = this._editor.getWrapperElement();
-        editor.parentNode.removeChild(editor);
-        this._editor = null;
+        // Ensure the editor exists before trying to destroy it. This fixes
+        // an error that occurs if codemirror hasn't finished loading before
+        // the component is destroyed.
+        if (this._editor) {
+            let editor = this._editor.getWrapperElement();
+            editor.parentNode.removeChild(editor);
+            this._editor = null;
+        }
     }
 });
 
