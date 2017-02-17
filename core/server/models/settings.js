@@ -1,5 +1,4 @@
 var Settings,
-    debug          = require('debug')('ghost:models:settings'),
     Promise        = require('bluebird'),
     _              = require('lodash'),
     uuid           = require('uuid'),
@@ -18,12 +17,18 @@ var Settings,
 // instead of iterating those categories every time
 function parseDefaultSettings() {
     var defaultSettingsInCategories = require('../data/schema/').defaultSettings,
-        defaultSettingsFlattened = {};
+        defaultSettingsFlattened = {},
+        dynamicDefault = {
+            dbHash: uuid.v4()
+        };
 
     _.each(defaultSettingsInCategories, function each(settings, categoryName) {
         _.each(settings, function each(setting, settingName) {
             setting.type = categoryName;
             setting.key = settingName;
+            if (dynamicDefault[setting.key]) {
+                setting.defaultValue = dynamicDefault[setting.key];
+            }
 
             defaultSettingsFlattened[settingName] = setting;
         });
@@ -166,31 +171,17 @@ Settings = ghostBookshelf.Model.extend({
 
         return this.findAll(options).then(function then(allSettings) {
             var usedKeys = allSettings.models.map(function mapper(setting) { return setting.get('key'); }),
-                insertOperations = [],
-                isFirstRun = false;
+                insertOperations = [];
 
             _.each(getDefaultSettings(), function each(defaultSetting, defaultSettingKey) {
                 var isMissingFromDB = usedKeys.indexOf(defaultSettingKey) === -1;
-
                 if (isMissingFromDB) {
-                    debug('isMissingFromDB', defaultSettingKey);
-                    // @TODO revisit this? maybe an even better way to do this with model events etc?
-                    if (defaultSettingKey === 'dbHash') {
-                        isFirstRun = true;
-                        defaultSetting.value = uuid.v4();
-                    } else {
-                        defaultSetting.value = defaultSetting.defaultValue;
-                    }
-
+                    defaultSetting.value = defaultSetting.defaultValue;
                     insertOperations.push(Settings.forge(defaultSetting).save(null, options));
                 }
             });
 
-            return Promise.all(insertOperations).tap(function ifFirstRun() {
-                if (isFirstRun === true) {
-                    events.emit('server:first-run');
-                }
-            });
+            return Promise.all(insertOperations);
         });
     }
 
