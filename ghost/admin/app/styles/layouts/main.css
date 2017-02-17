@@ -35,6 +35,7 @@ body > .ember-view:not(.liquid-target-container) {
     flex-grow: 1;
     display: flex;
     background: #fff;
+    overflow-y: auto;
 }
 
 /*  Flexbox fix. https://github.com/TryGhost/Ghost/issues/5804#issuecomment-141416812 */
@@ -210,35 +211,6 @@ body > .ember-view:not(.liquid-target-container) {
     color: var(--darkgrey);
 }
 
-.gh-nav-footer {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    height: 40px;
-    padding-bottom: 5px;
-    color: var(--midgrey);
-}
-
-.gh-nav-footer-sitelink {
-    flex-grow: 1;
-    padding: 12px;
-    color: color(var(--midgrey) lightness(-10%));
-    text-align: center;
-    text-transform: uppercase;
-    font-size: 1rem;
-    line-height: 1;
-    font-weight: 200;
-}
-
-.gh-nav-footer-sitelink i {
-    margin-left: 5px;
-    font-size: 1rem;
-}
-
-.gh-nav-footer-sitelink:hover {
-    color: var(--blue);
-}
-
 
 /* Mobile Nav
 /* ---------------------------------------------------------- */
@@ -324,14 +296,14 @@ body > .ember-view:not(.liquid-target-container) {
 /* ---------------------------------------------------------- */
 
 .gh-menu-toggle {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 5px 10px;
-    width: 45px;
-    height: 27px;
-    border-right: #dfe1e3 1px solid;
-    line-height: 1;
+    display: block;
+    position: absolute;
+    top: 25px;
+    right: -8px;
+    height: 34px;
+    width: 25px;
+    border: color(var(--lightgrey) l(+4%)) 5px solid;
+    border-radius: 4px;
     cursor: pointer;
 }
 
@@ -370,7 +342,7 @@ body > .ember-view:not(.liquid-target-container) {
 
 .gh-nav.open .gh-autonav-toggle {
     transition: transform 0.15s;
-    transform: translate3d(-205px,0,0);
+    transform: translate3d(-240px,0,0);
 }
 
 @media (min-width: 801px) {
@@ -384,7 +356,7 @@ body > .ember-view:not(.liquid-target-container) {
         height: 100%;
         transition: transform 0.20s;
         /* translate3d for GPU accelerated animation - http://bit.ly/1EY1Xhx */
-        transform: translate3d(-235px,0,0);
+        transform: translate3d(-240px,0,0);
     }
 
     /* THE FUTURE: Super sexy background blur for Webkit - http://cl.ly/b1rG */
@@ -461,7 +433,6 @@ body > .ember-view:not(.liquid-target-container) {
     flex-grow: 1;
     padding: 2.9vw 4vw 3vw 4vw;
     margin: 0 auto;
-    overflow-y: auto;
     max-width: 1200px;
 }
 
@@ -470,6 +441,7 @@ body > .ember-view:not(.liquid-target-container) {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin: 0 0 2vw 0;
 }
 
 .gh-canvas-title {

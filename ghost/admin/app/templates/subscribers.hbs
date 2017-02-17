@@ -1,7 +1,9 @@
-<section class="gh-view view-subscribers">
-    <header class="view-header">
-        {{#gh-view-title openMobileMenu="openMobileMenu"}}<span>Subscribers</span>{{/gh-view-title}}
+<section class="gh-canvas">
+    <header class="gh-canvas-header">
+        <h2 class="gh-canvas-title">Subscribers <span style="font-weight:200;margin-left:10px;display:inline-block;"> ({{total}})</span></h2>
         <div class="view-actions">
+            {{#link-to "subscribers.import" class="gh-btn gh-btn-hover-green"}}<span>Import CSV</span>{{/link-to}}
+            <a {{action 'exportData'}} class="gh-btn"><span>Export CSV</span></a>
             {{#link-to "subscribers.new" class="gh-btn gh-btn-green"}}<span>Add Subscriber</span>{{/link-to}}
         </div>
     </header>
@@ -13,28 +15,6 @@
                 loadNextPage=(action 'loadNextPage')
                 sortByColumn=(action 'sortByColumn')
                 delete=(action 'deleteSubscriber')}}
-
-        <div class="subscribers-sidebar">
-            <div class="settings-menu-header">
-                <h4>Import Subscribers</h4>
-            </div>
-            <div class="settings-menu-content subscribers-import-buttons">
-                {{#link-to "subscribers.import" class="gh-btn gh-btn-hover-green"}}<span>Import CSV</span>{{/link-to}}
-                <a {{action 'exportData'}} class="gh-btn"><span>Export CSV</span></a>
-            </div>
-
-            <div class="settings-menu-header">
-                <h4>Quick Stats</h4>
-            </div>
-            <div class="settings-menu-content">
-                <ul>
-                    <li>
-                        Total Subscribers:
-                        <span id="total-subscribers">{{total}}</span>
-                    </li>
-                </ul>
-            </div>
-        </div>
     </section>
 </section>
 
