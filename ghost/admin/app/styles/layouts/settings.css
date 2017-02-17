@@ -1,6 +1,56 @@
 /* Settings
 /* ---------------------------------------------------------- */
 
+.gh-setting-header {
+    margin: 3vw 0 5px 0;
+    color: var(--midgrey);
+}
+
+.gh-setting {
+    display: flex;
+    justify-content: space-between;
+    padding: 25px 0;
+    border-top: var(--lightgrey) 1px solid;
+}
+
+.gh-setting-content {
+    margin-right: 0 20px 0 0;
+}
+
+.gh-setting-title {
+    margin-bottom: 2px;
+    font-size: 1.8rem;
+    line-height: 1.15em;
+    font-weight: 600;
+    color: var(--darkgrey);
+}
+
+.gh-setting-desc {
+    line-height: 1.3em;
+    color: var(--midgrey);
+    font-weight: 200;
+    letter-spacing: 0.3px;
+}
+
+.gh-setting-action {
+    flex-shrink: 0;
+    margin: 1px 0 0 0;
+}
+
+.gh-setting-action .input-toggle-component {
+    float: none;
+    margin-right: 0;
+    width: 30px;
+    height: 30px;
+}
+
+.gh-setting-action .input-toggle-component:before {
+    top: 7px;
+    left: 6px;
+    width: 15px;
+    height: 9px;
+}
+
 
 /* Navigation
 /* ---------------------------------------------------------- */

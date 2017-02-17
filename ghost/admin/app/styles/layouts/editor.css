@@ -19,6 +19,19 @@
     color: var(--darkgrey);
     font-size: 3.2rem;
     font-weight: bold;
+    letter-spacing: 0.8px;
+}
+
+.gh-editor-title input::-webkit-input-placeholder {
+    color: color(var(--midgrey) l(+25%));
+    font-weight: 400;
+    letter-spacing: 1.2px;
+}
+
+.gh-editor-title input:-ms-input-placeholder {
+    color: color(var(--midgrey) l(+25%));
+    font-weight: 400;
+    letter-spacing: 1.2px;
 }
 
 .gh-editor-title input:focus {

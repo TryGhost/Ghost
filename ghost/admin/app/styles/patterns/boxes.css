@@ -1,0 +1,27 @@
+/* Alerts
+/* ---------------------------------------------------------- */
+
+.gh-box {
+    padding: 12px 10px 14px 40px;
+    border: 1px solid var(--lightgrey);
+    border-left-width: 5px;
+    color: var(--midgrey);
+    line-height: 1.4em;
+    letter-spacing: 0.2px;
+    background: #fff;
+    border-radius: 5px;
+}
+
+.gh-box i:first-of-type {
+    position: absolute;
+    top: 13px;
+    left: 15px;
+    font-size: 2.1rem;
+}
+
+.gh-box-info {
+    border-left-color: var(--blue);
+}
+.gh-box-info i {
+    color: var(--blue);
+}
