@@ -8,7 +8,6 @@ var EmberApp = require('ember-cli/lib/broccoli/ember-app'),
     cleanCSS = require('broccoli-clean-css'),
     environment = EmberApp.env(),
     isProduction = environment === 'production',
-    mythCompress = isProduction || environment === 'test',
     disabled = {enabled: false},
     assetLocation, codemirrorAssets;
 
@@ -62,29 +61,53 @@ codemirrorAssets = function () {
     };
 };
 
+function postcssPlugins() {
+    var plugins = [{
+        module: require('postcss-easy-import')
+    }, {
+        module: require('postcss-custom-properties')
+    }, {
+        module: require('postcss-color-function')
+    }, {
+        module: require('autoprefixer'),
+        options: {
+            browsers: ['last 2 versions']
+        }
+    }];
+
+    if (isProduction) {
+        plugins.push({
+            module: require('cssnano')
+        });
+    }
+
+    return plugins;
+}
+
 module.exports = function (defaults) {
     var app = new EmberApp(defaults, {
-        "ember-cli-babel": {
+        'ember-cli-babel': {
             optional: ['es6.spec.symbols'],
             includePolyfill: true
         },
         outputPaths: {
             app: {
-                js: assetLocation('ghost.js')
+                js: assetLocation('ghost.js'),
+                css: {
+                    app: assetLocation('ghost.css'),
+                    'app-dark': assetLocation('ghost-dark.css')
+                }
             },
             vendor: {
                 js:  assetLocation('vendor.js'),
                 css: assetLocation('vendor.css')
             }
         },
-        mythOptions: {
-            source: './app/styles/app.css',
-            inputFile: 'app.css',
-            browsers: 'last 2 versions',
-            // @TODO: enable sourcemaps for development without including them in the release
-            sourcemap: false,
-            compress: mythCompress,
-            outputFile: isProduction ? 'ghost.min.css' : 'ghost.css'
+        postcssOptions: {
+            compile: {
+                enabled: true,
+                plugins: postcssPlugins()
+            }
         },
         fingerprint: disabled,
         nodeAssets: {
@@ -135,8 +158,6 @@ module.exports = function (defaults) {
     app.import('bower_components/jquery-file-upload/js/jquery.fileupload-image.js');
     app.import('bower_components/google-caja/html-css-sanitizer-bundle.js');
     app.import('bower_components/jqueryui-touch-punch/jquery.ui.touch-punch.js');
-
-
 
     if (app.env === 'test') {
         app.import(app.bowerDirectory + '/jquery.simulate.drag-sortable/jquery.simulate.drag-sortable.js', {type: 'test'});
