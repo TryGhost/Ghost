@@ -91,11 +91,18 @@ _private.updateClient = function updateClient(options) {
                 });
             }
 
+            // CASE: auth url has changed, create client
+            if (client.get('auth_uri') !== ghostOAuth2Strategy.url) {
+                return models.Client.destroy({id: client.id})
+                    .then(function () {
+                        return _private.updateClient(options);
+                    });
+            }
+
             // CASE: nothing changed
             if (client.get('redirection_uri') === redirectUri &&
                 client.get('name') === clientName &&
                 client.get('description') === clientDescription &&
-                client.get('auth_uri') === ghostOAuth2Strategy.url &&
                 client.get('client_uri') === clientUri) {
                 debug('Client did not change');
 
