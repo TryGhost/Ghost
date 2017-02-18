@@ -47,7 +47,7 @@ utils = {
             charlen = chars.length,
             i;
 
-        for (i = 1; i < len; i = i + 1) {
+        for (i = 0; i < len; i = i + 1) {
             buf.push(chars[getRandomInt(0, charlen - 1)]);
         }
 
