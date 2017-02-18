@@ -16,10 +16,6 @@
     "scheduling": {
         "active": "SchedulingDefault"
     },
-    "auth": {
-        "type": "ghost",
-        "url": "http://devauth.ghost.org:8080"
-    },
     "logging": {
         "level": "info",
         "rotation": {
