@@ -7,6 +7,10 @@
         },
         "debug": false
     },
+    "auth": {
+        "type": "ghost",
+        "url": "http://devauth.ghost.org:8080"
+    },
     "paths": {
         "contentPath": "content/"
     },
