@@ -14,6 +14,7 @@ branches:
     - /^greenkeeper-.+$/
 
 cache:
+  yarn: true
   directories:
     - node_modules
     - broccoli-persistent-cache
@@ -26,16 +27,14 @@ addons:
     packages:
       - google-chrome-stable
 
-before_install:
-  - npm config --global set spin false
-  - npm install -g npm@^2
-
 install:
-  - npm install -g bower
-  - npm install
+  - npm i -g yarn
+  - yarn global add bower
+  - yarn
   - bower install
 
 before_script:
+  - yarn add --force node-sass # temporary, workaround for https://github.com/yarnpkg/yarn/issues/1981
   - export DISPLAY=:99; sh -e /etc/init.d/xvfb start; sleep 3;
   - export BROCCOLI_PERSISTENT_FILTER_CACHE_ROOT=/home/travis/build/TryGhost/Ghost-Admin/broccoli-persistent-cache
 
