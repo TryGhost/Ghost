@@ -16,6 +16,7 @@ branches:
 cache:
   directories:
     - node_modules
+    - broccoli-persistent-cache
 
 addons:
   firefox: "latest"
@@ -36,6 +37,7 @@ install:
 
 before_script:
   - export DISPLAY=:99; sh -e /etc/init.d/xvfb start; sleep 3;
+  - export BROCCOLI_PERSISTENT_FILTER_CACHE_ROOT=/home/travis/build/TryGhost/Ghost-Admin/broccoli-persistent-cache
 
 script:
   - COVERAGE=true npm test
