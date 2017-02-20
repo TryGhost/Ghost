@@ -1,7 +1,8 @@
 var passport = require('./passport'),
     authorize = require('./authorize'),
     authenticate = require('./authenticate'),
-    oauth = require('./oauth');
+    oauth = require('./oauth'),
+    ghostAuth = require('./ghost-auth');
 
 exports.init = function (options) {
     oauth.init();
@@ -15,3 +16,4 @@ exports.init = function (options) {
 exports.oauth = oauth;
 exports.authorize = authorize;
 exports.authenticate = authenticate;
+exports.ghostAuth = ghostAuth;

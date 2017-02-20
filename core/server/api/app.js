@@ -9,8 +9,10 @@ var debug = require('debug')('ghost:api'),
     // Include the middleware
 
     // API specific
+    config = require('../config'),
     auth = require('../auth'),
     cors = require('../middleware/api/cors'),   // routes only?!
+    syncGhost = require('../middleware/api/sync-ghost'),
     brute = require('../middleware/brute'),  // routes only
     versionMatch = require('../middleware/api/version-match'), // global
 
@@ -81,7 +83,7 @@ function apiRoutes() {
 
     // ## Users
     apiRouter.get('/users', authenticatePublic, api.http(api.users.browse));
-    apiRouter.get('/users/:id', authenticatePublic, api.http(api.users.read));
+    apiRouter.get('/users/:id', authenticatePublic, syncGhost, api.http(api.users.read));
     apiRouter.get('/users/slug/:slug', authenticatePublic, api.http(api.users.read));
     apiRouter.get('/users/email/:email', authenticatePublic, api.http(api.users.read));
 
@@ -219,6 +221,11 @@ module.exports = function setupApiApp() {
     apiApp.use(function setIsAdmin(req, res, next) {
         // api === isAdmin
         res.isAdmin = true;
+        next();
+    });
+
+    apiApp.use(function isGhostAuth(req, res, next) {
+        req.isGhostAuth = config.get('auth:type') === 'ghost';
         next();
     });
 
