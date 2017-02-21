@@ -2,40 +2,83 @@
     <header class="gh-canvas-header">
         <h2 class="gh-canvas-title">General</h2>
         <section class="view-actions">
-            {{#gh-spin-button class="gh-btn gh-btn-blue" action="save" submitting=submitting data-test-save-button=true}}<span>Save</span>{{/gh-spin-button}}
+            {{#gh-spin-button class="gh-btn gh-btn-blue" action="save" submitting=submitting data-test-save-button=true}}<span>Save settings</span>{{/gh-spin-button}}
         </section>
     </header>
 
     <section class="view-container">
-        <form id="settings-general" novalidate="novalidate">
-            <fieldset>
 
-                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="title"}}
-                    <label for="blog-title">Blog Title</label>
-                    {{gh-input model.title id="blog-title" name="general[title]" type="text" focusOut=(action "validate" "title" target=model) update=(action (mut model.title))}}
-                    {{gh-error-message errors=model.errors property="title"}}
-                    <p>The name of your blog</p>
-                {{/gh-form-group}}
+        <div class="gh-setting-header">Publication info</div>
+        <div class="gh-setting">
+            <div class="gh-setting-content">
+                <div class="gh-setting-title">Title &amp; description</div>
+                <div class="gh-setting-desc">The details used to identify your publication around the web</div>
+                <div class="gh-setting-content-extended">
+                    {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="title"}}
+                        {{gh-input model.title id="blog-title" name="general[title]" type="text" focusOut=(action "validate" "title" target=model) update=(action (mut model.title))}}
+                        {{gh-error-message errors=model.errors property="title"}}
+                        <p>The name of your site</p>
+                    {{/gh-form-group}}
 
-                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="description" class="description-container"}}
-                    <label for="blog-description">Blog Description</label>
-                    {{gh-textarea model.description id="blog-description" name="general[description]" focusOut=(action "validate" "description" target=model) update=(action (mut model.description))}}
-                    {{gh-error-message errors=model.errors property="description"}}
-                    <p>
-                        Describe what your blog is about
-                        {{gh-count-characters model.description}}
-                    </p>
-                {{/gh-form-group}}
-            </fieldset>
+                    {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="description" class="description-container"}}
+                        {{gh-input model.description id="blog-description" name="general[description]" type="text" focusOut=(action "validate" "description" target=model) update=(action (mut model.description))}}
+                        {{gh-error-message errors=model.errors property="description"}}
+                        <p>Used in your theme, meta data and search results</p>
+                    {{/gh-form-group}}
+                </div>
+            </div>
+            <div class="gh-setting-action">
+                <button type="button" class="gh-btn gh-btn-hover-blue" {{action "exportData"}}><span>Close</span></button>
+            </div>
+        </div>
+        <div class="gh-setting">
+            <div class="gh-setting-content">
+                <div class="gh-setting-title">Site timezone</div>
+                <div class="gh-setting-desc">Set the time and date of your publication, used for all published posts</div>
+                <div class="gh-setting-content-extended">
+                    {{gh-timezone-select
+                            activeTimezone=model.activeTimezone
+                            availableTimezones=availableTimezones
+                            update=(action "setTimezone")}}
+                </div>
+            </div>
+            <div class="gh-setting-action">
+                <button type="button" class="gh-btn gh-btn-hover-blue" {{action "exportData"}}><span>Close</span></button>
+            </div>
+        </div>
 
-            <div class="form-group">
-                <label>Blog Logo</label>
+        <div class="gh-setting-header">Publication identity</div>
+        <div class="gh-setting">
+            <div class="gh-setting-content">
+                <div class="gh-setting-title">Publication icon</div>
+                <div class="gh-setting-desc">A square, social icon used in the UI of your publication, at least 60x60px</div>
+            </div>
+            <div class="gh-setting-action">
+                {{#if model.icon}}
+                    <img class="blog-icon" src="{{model.icon}}" alt="icon" role="button" {{action "toggleUploadIconModal"}}>
+                {{else}}
+                    <button type="button" class="gh-btn js-modal-logo" {{action "toggleUploadIconModal"}}><span>Upload Image</span></button>
+                {{/if}}
+
+                {{#if showUploadIconModal}}
+                    {{gh-fullscreen-modal "upload-image"
+                            model=(hash model=model imageProperty="icon" accept=iconMimeTypes extensions=iconExtensions allowUrlInput=false uploadUrl="/uploads/icon/")
+                            close=(action "toggleUploadIconModal")
+                            modifier="action wide"}}
+                {{/if}}
+            </div>
+        </div>
+        <div class="gh-setting">
+            <div class="gh-setting-content">
+                <div class="gh-setting-title">Publication logo</div>
+                <div class="gh-setting-desc">The primary logo for your brand displayed across your theme, should be transparent and at least 600px x 72px</div>
+            </div>
+            <div class="gh-setting-action">
                 {{#if model.logo}}
                     <img class="blog-logo" src="{{model.logo}}" alt="logo" role="button" {{action "toggleUploadLogoModal"}}>
                 {{else}}
-                    <button type="button" class="gh-btn gh-btn-green js-modal-logo" {{action "toggleUploadLogoModal"}}><span>Upload Image</span></button>
+                    <button type="button" class="gh-btn js-modal-logo" {{action "toggleUploadLogoModal"}}><span>Upload Image</span></button>
                 {{/if}}
-                <p>Display a logo for your publication</p>
 
                 {{#if showUploadLogoModal}}
                     {{gh-fullscreen-modal "upload-image"
@@ -44,34 +87,18 @@
                             modifier="action wide"}}
                 {{/if}}
             </div>
-
-            {{#if config.fileStorage}}
-                <div class="form-group">
-                    <label>Blog Icon</label>
-                    {{#if model.icon}}
-                        <img class="blog-icon" src="{{model.icon}}" alt="icon" role="button" {{action "toggleUploadIconModal"}}>
-                    {{else}}
-                        <button type="button" class="gh-btn gh-btn-green js-modal-logo" {{action "toggleUploadIconModal"}}><span>Upload Image</span></button>
-                    {{/if}}
-                    <p>Upload a square blog icon ('.ico' or '.png', max. 100kb, 32px * 32px up to 1,000px * 1,000px) for your publication</p>
-
-                    {{#if showUploadIconModal}}
-                        {{gh-fullscreen-modal "upload-image"
-                                model=(hash model=model imageProperty="icon" accept=iconMimeTypes extensions=iconExtensions allowUrlInput=false uploadUrl="/uploads/icon/")
-                                close=(action "toggleUploadIconModal")
-                                modifier="action wide"}}
-                    {{/if}}
-                </div>
-            {{/if}}
-
-            <div class="form-group">
-                <label>Blog Cover</label>
+        </div>
+        <div class="gh-setting">
+            <div class="gh-setting-content">
+                <div class="gh-setting-title">Publication cover</div>
+                <div class="gh-setting-desc">An optional large background image for your site</div>
+            </div>
+            <div class="gh-setting-action">
                 {{#if model.cover}}
                     <img class="blog-cover" src="{{model.cover}}" alt="cover photo" role="button" {{action "toggleUploadCoverModal"}}>
                 {{else}}
-                    <button type="button" class="gh-btn gh-btn-green js-modal-cover" {{action "toggleUploadCoverModal"}}><span>Upload Image</span></button>
+                    <button type="button" class="gh-btn js-modal-cover" {{action "toggleUploadCoverModal"}}><span>Upload Image</span></button>
                 {{/if}}
-                <p>Display a cover image on your site</p>
 
                 {{#if showUploadCoverModal}}
                     {{gh-fullscreen-modal "upload-image"
@@ -80,67 +107,65 @@
                             modifier="action wide"}}
                 {{/if}}
             </div>
+        </div>
 
-            <fieldset>
-
-                <div class="form-group">
-                    {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="postsPerPage"}}
-                        <label for="postsPerPage">Posts per page</label>
-                        {{! `pattern` brings up numeric keypad allowing any number of digits}}
-                        {{gh-input model.postsPerPage id="postsPerPage" name="general[postsPerPage]" focusOut=(action "validate" "postsPerPage" target=model) min="1" max="1000" type="number" pattern="[0-9]*" update=(action (mut model.postsPerPage))}}
-                        {{gh-error-message errors=model.errors property="postsPerPage"}}
-                        <p>How many posts should be displayed on each page</p>
-                    {{/gh-form-group}}
-                </div>
-
-                <div class="form-group for-checkbox">
-                    <label for="permalinks">Dated Permalinks</label>
-                    <label class="checkbox" for="permalinks">
-                        {{one-way-checkbox isDatedPermalinks id="permalinks" class="gh-input" name="general[permalinks]" update=(action (mut isDatedPermalinks))}}
-                        <span class="input-toggle-component"></span>
-                        <p>Include the date in your post URLs</p>
-                    </label>
-                </div>
-
-                <div class="form-group">
+        <div class="gh-setting-header">Social accounts</div>
+        <div class="gh-setting">
+            <div class="gh-setting-content">
+                <div class="gh-setting-title">Social accounts</div>
+                <div class="gh-setting-desc">Link your social accounts for full structured data and rich card support</div>
+                <div class="gh-setting-content-extended">
                     {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="facebook"}}
-                        <label for="facebook">Facebook Page</label>
                         <input value={{model.facebook}} oninput={{action (mut _scratchFacebook) value="target.value"}} {{action "validateFacebookUrl" on="focusOut"}} type="url" class="gh-input" id="facebook" name="general[facebook]"  placeholder="https://www.facebook.com/ghost" autocorrect="off" />
                         {{gh-error-message errors=model.errors property="facebook"}}
-                        <p>URL of your blog's Facebook Page</p>
+                        <p>URL of your publication's Facebook Page</p>
                     {{/gh-form-group}}
-                </div>
-                <div class="form-group">
                     {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="twitter"}}
-                        <label for="twitter">Twitter Profile</label>
                         <input value={{model.twitter}} oninput={{action (mut _scratchTwitter) value="target.value"}} {{action "validateTwitterUrl" on="focusOut"}} type="url" class="gh-input" id="facebook" name="general[twitter]"  placeholder="https://twitter.com/tryghost" autocorrect="off" />
                         {{gh-error-message errors=model.errors property="twitter"}}
-                        <p>URL of your blog's Twitter profile</p>
+                        <p>URL of your publication's Twitter profile</p>
                     {{/gh-form-group}}
                 </div>
+            </div>
+            <div class="gh-setting-action">
+                <button type="button" class="gh-btn gh-btn-hover-blue" {{action "exportData"}}><span>Close</span></button>
+            </div>
+        </div>
 
-                {{gh-timezone-select
-                        activeTimezone=model.activeTimezone
-                        availableTimezones=availableTimezones
-                        update=(action "setTimezone")}}
-
-                <div class="form-group for-checkbox">
-                    <label for="isPrivate">Make this blog private</label>
-                    <label class="checkbox" for="isPrivate">
-                        {{one-way-checkbox model.isPrivate id="isPrivate" name="general[isPrivate]" type="checkbox" update=(action (mut model.isPrivate))}}
-                        <span class="input-toggle-component"></span>
-                        <p>Enable password protection</p>
-                    </label>
-                </div>
-
+        <div class="gh-setting-header">Advanced settings</div>
+        <div class="gh-setting">
+            <div class="gh-setting-content">
+                <div class="gh-setting-title">Use dated permalinks</div>
+                <div class="gh-setting-desc">Include the date in your post URLs, eg. <strong>blogurl.com/2017/01/post-title/</strong></div>
+            </div>
+            <div class="gh-setting-action">
+                {{one-way-checkbox isDatedPermalinks id="permalinks" name="general[permalinks]" type="checkbox" update=(action (mut isDatedPermalinks))}}
+                <span class="input-toggle-component"></span>
+            </div>
+        </div>
+        <div class="gh-setting">
+            <div class="gh-setting-content">
+                <div class="gh-setting-title">Make this site private</div>
+                <div class="gh-setting-desc">Enable protection with simple shared password, All search engine optimization and social features will be disabled.</div>
                 {{#if model.isPrivate}}
+                <div class="gh-setting-content-extended">
                     {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="password"}}
                         {{gh-input model.password name="general[password]" type="text" focusOut=(action "validate" "password" target=model) update=(action (mut model.password))}}
                         {{gh-error-message errors=model.errors property="password"}}
-                        <p>This password will be needed to access your blog. All search engine optimization and social features are now disabled. This password is stored in plaintext.</p>
+                        <p>Set the password for this site</p>
                     {{/gh-form-group}}
+                </div>
                 {{/if}}
-            </fieldset>
+            </div>
+            <div class="gh-setting-action">
+                {{one-way-checkbox model.isPrivate id="isPrivate" name="general[isPrivate]" type="checkbox" update=(action (mut model.isPrivate))}}
+                <span class="input-toggle-component"></span>
+            </div>
+        </div>
+
+
+        <form id="settings-general" novalidate="novalidate">
+
 
             <div class="settings-themes">
                 <h3 id="themes">Themes</h3>
@@ -169,6 +194,7 @@
                 {{/if}}
             </div>
         </form>
+
     </section>
 </section>
 

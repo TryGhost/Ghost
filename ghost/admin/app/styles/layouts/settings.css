@@ -14,7 +14,8 @@
 }
 
 .gh-setting-content {
-    margin-right: 0 20px 0 0;
+    width: 100%;
+    margin: 0 50px 0 0;
 }
 
 .gh-setting-title {
@@ -49,6 +50,11 @@
     left: 6px;
     width: 15px;
     height: 9px;
+}
+
+.gh-setting-content-extended {
+    width: 100%;
+    margin-top: 25px;
 }
 
 
