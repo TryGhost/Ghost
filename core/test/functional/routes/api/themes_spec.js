@@ -108,7 +108,7 @@ describe('Themes API', function () {
                 });
         });
 
-        it('get all available themes', function (done) {
+        it('get all available themes + new theme', function (done) {
             request.get(testUtils.API.getApiQuery('settings/'))
                 .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
                 .end(function (err, res) {

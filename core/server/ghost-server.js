@@ -7,6 +7,7 @@ var debug = require('debug')('ghost:server'),
     path = require('path'),
     _ = require('lodash'),
     errors = require('./errors'),
+    events = require('./events'),
     config = require('./config'),
     utils = require('./utils'),
     i18n   = require('./i18n'),
@@ -96,6 +97,7 @@ GhostServer.prototype.start = function (externalApp) {
         self.httpServer.on('connection', self.connection.bind(self));
         self.httpServer.on('listening', function () {
             debug('...Started');
+            events.emit('server:start');
             self.logStartMessages();
             resolve(self);
         });
@@ -116,6 +118,7 @@ GhostServer.prototype.stop = function () {
             resolve(self);
         } else {
             self.httpServer.close(function () {
+                events.emit('server:stop');
                 self.httpServer = null;
                 self.logShutdownMessages();
                 resolve(self);

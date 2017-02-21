@@ -15,6 +15,7 @@ var Promise       = require('bluebird'),
     SettingsAPI   = require('../../server/api/settings'),
     permissions   = require('../../server/permissions'),
     sequence      = require('../../server/utils/sequence'),
+    themes        = require('../../server/themes'),
     DataGenerator = require('./fixtures/data-generator'),
     filterData    = require('./fixtures/filter-param'),
     API           = require('./api'),
@@ -449,7 +450,8 @@ toDoList = {
     },
     clients: function insertClients() { return fixtures.insertClients(); },
     filter: function createFilterParamFixtures() { return filterData(DataGenerator); },
-    invites: function insertInvites() { return fixtures.insertInvites(); }
+    invites: function insertInvites() { return fixtures.insertInvites(); },
+    themes: function loadThemes() { return themes.load(); }
 };
 
 /**

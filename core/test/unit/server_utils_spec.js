@@ -7,7 +7,6 @@ var should          = require('should'),
     configUtils     = require('../utils/configUtils'),
     parsePackageJson = require('../../server/utils/parse-package-json'),
     readDirectory   = require('../../server/utils/read-directory'),
-    readThemes      = require('../../server/utils/read-themes'),
     gravatar        = require('../../server/utils/gravatar'),
     utils           = require('../../server/utils');
 
@@ -332,38 +331,6 @@ describe('Server Utilities', function () {
                 })
                 .catch(done)
                 .finally(themePath.removeCallback);
-        });
-    });
-
-    describe('read-themes', function () {
-        it('should read directory and include only folders', function (done) {
-            var themesPath = tmp.dirSync({unsafeCleanup: true});
-
-            // create trash
-            fs.writeFileSync(join(themesPath.name, 'casper.zip'));
-            fs.writeFileSync(join(themesPath.name, '.DS_Store'));
-
-            // create actual theme
-            fs.mkdirSync(join(themesPath.name, 'casper'));
-            fs.mkdirSync(join(themesPath.name, 'casper', 'partials'));
-            fs.writeFileSync(join(themesPath.name, 'casper', 'index.hbs'));
-            fs.writeFileSync(join(themesPath.name, 'casper', 'partials', 'navigation.hbs'));
-
-            readThemes(themesPath.name)
-                .then(function (tree) {
-                    tree.should.eql({
-                        casper: {
-                            partials: {
-                                'navigation.hbs': join(themesPath.name, 'casper', 'partials', 'navigation.hbs')
-                            },
-                            'index.hbs': join(themesPath.name, 'casper', 'index.hbs')
-                        }
-                    });
-
-                    done();
-                })
-                .catch(done)
-                .finally(themesPath.removeCallback);
         });
     });
 
