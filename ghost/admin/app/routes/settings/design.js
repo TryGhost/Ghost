@@ -2,11 +2,17 @@ import $ from 'jquery';
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
 import styleBody from 'ghost-admin/mixins/style-body';
+import RSVP from 'rsvp';
 
 export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
-    titleToken: 'Settings - Navigation',
+    titleToken: 'Settings - Design',
 
-    classNames: ['settings-view-navigation'],
+    classNames: ['settings-view-design'],
+
+    // TODO: replace with a synchronous settings service
+    querySettings() {
+        return this.store.queryRecord('setting', {type: 'blog,theme,private'});
+    },
 
     beforeModel() {
         this._super(...arguments);
@@ -15,13 +21,15 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     },
 
     model() {
-        return this.store.query('setting', {type: 'blog,theme,private'}).then((records) => {
-            return records.get('firstObject');
+        return RSVP.hash({
+            settings: this.querySettings(),
+            themes: this.get('store').findAll('theme')
         });
     },
 
-    setupController() {
-        this._super(...arguments);
+    setupController(controller, models) {
+        controller.set('model', models.settings);
+        controller.set('themes', this.get('store').peekAll('theme'));
         this.get('controller').send('reset');
     },
 
@@ -39,6 +47,14 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
             // persisted across transitions
             this.set('controller.model', null);
             return this._super(...arguments);
+        },
+
+        reloadThemes() {
+            return this.get('store').findAll('theme');
+        },
+
+        activateTheme(theme) {
+            return this.get('controller').send('setTheme', theme);
         }
     }
 });
