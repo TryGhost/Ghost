@@ -21,8 +21,8 @@ const {
 //     {"label":"No Protocol","url":"//example.com"}
 // ]`;
 
-describe('Unit: Controller: settings/navigation', function () {
-    setupTest('controller:settings/navigation', {
+describe('Unit: Controller: settings/design', function () {
+    setupTest('controller:settings/design', {
         // Specify the other units that are required for this test.
         needs: [
             'service:config',
@@ -102,7 +102,7 @@ describe('Unit: Controller: settings/navigation', function () {
         });
     });
 
-    it('action - addItem: adds item to navigationItems', function () {
+    it('action - addNavItem: adds item to navigationItems', function () {
         let ctrl = this.subject();
 
         run(() => {
@@ -117,7 +117,7 @@ describe('Unit: Controller: settings/navigation', function () {
         ctrl.set('newNavItem.url', '/new');
 
         run(() => {
-            ctrl.send('addItem');
+            ctrl.send('addNavItem');
         });
 
         expect(ctrl.get('model.navigation.length')).to.equal(2);
@@ -129,7 +129,7 @@ describe('Unit: Controller: settings/navigation', function () {
         expect(ctrl.get('newNavItem.isNew')).to.be.true;
     });
 
-    it('action - addItem: doesn\'t insert new item if last object is incomplete', function () {
+    it('action - addNavItem: doesn\'t insert new item if last object is incomplete', function () {
         let ctrl = this.subject();
 
         run(() => {
@@ -137,12 +137,12 @@ describe('Unit: Controller: settings/navigation', function () {
                 NavItem.create({label: '', url: '', last: true})
             ]}));
             expect(ctrl.get('model.navigation.length')).to.equal(1);
-            ctrl.send('addItem');
+            ctrl.send('addNavItem');
             expect(ctrl.get('model.navigation.length')).to.equal(1);
         });
     });
 
-    it('action - deleteItem: removes item from navigationItems', function () {
+    it('action - deleteNavItem: removes item from navigationItems', function () {
         let ctrl = this.subject();
         let navItems = [
             NavItem.create({label: 'First', url: '/first'}),
@@ -152,7 +152,7 @@ describe('Unit: Controller: settings/navigation', function () {
         run(() => {
             ctrl.set('model', EmberObject.create({navigation: navItems}));
             expect(ctrl.get('model.navigation').mapBy('label')).to.deep.equal(['First', 'Second']);
-            ctrl.send('deleteItem', ctrl.get('model.navigation.firstObject'));
+            ctrl.send('deleteNavItem', ctrl.get('model.navigation.firstObject'));
             expect(ctrl.get('model.navigation').mapBy('label')).to.deep.equal(['Second']);
         });
     });

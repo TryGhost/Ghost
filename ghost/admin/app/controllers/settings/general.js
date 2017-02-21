@@ -1,24 +1,19 @@
 import Controller from 'ember-controller';
-import computed, {notEmpty} from 'ember-computed';
+import computed from 'ember-computed';
 import injectService from 'ember-service/inject';
 import observer from 'ember-metal/observer';
 import run from 'ember-runloop';
 import SettingsSaveMixin from 'ghost-admin/mixins/settings-save';
 import randomPassword from 'ghost-admin/utils/random-password';
-import $ from 'jquery';
 
 export default Controller.extend(SettingsSaveMixin, {
 
-    themes: null,
     availableTimezones: null,
-    themeToDelete: null,
 
     showUploadLogoModal: false,
     showUploadCoverModal: false,
     showUploadIconModal: false,
-    showDeleteThemeModal: notEmpty('themeToDelete'),
 
-    ajax: injectService(),
     config: injectService(),
     ghostPaths: injectService(),
     notifications: injectService(),
@@ -83,36 +78,6 @@ export default Controller.extend(SettingsSaveMixin, {
     },
 
     actions: {
-        setTheme(theme) {
-            this.set('model.activeTheme', theme.name);
-            this.send('save');
-        },
-
-        downloadTheme(theme) {
-            let themeURL = `${this.get('ghostPaths.apiRoot')}/themes/${theme.name}`;
-            let accessToken = this.get('session.data.authenticated.access_token');
-            let downloadURL = `${themeURL}/download/?access_token=${accessToken}`;
-            let iframe = $('#iframeDownload');
-
-            if (iframe.length === 0) {
-                iframe = $('<iframe>', {id: 'iframeDownload'}).hide().appendTo('body');
-            }
-
-            iframe.attr('src', downloadURL);
-        },
-
-        deleteTheme(theme) {
-            if (theme) {
-                return this.set('themeToDelete', theme);
-            }
-
-            return this._deleteTheme();
-        },
-
-        hideDeleteThemeModal() {
-            this.set('themeToDelete', null);
-        },
-
         setTimezone(timezone) {
             this.set('model.activeTimezone', timezone.name);
         },

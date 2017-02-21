@@ -26,7 +26,6 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     model() {
         return RSVP.hash({
             settings: this.querySettings(),
-            themes: this.get('store').findAll('theme'),
             availableTimezones: this.get('config.availableTimezones')
         });
     },
@@ -46,14 +45,6 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
             return this.querySettings((settings) => {
                 this.get('controller').set('model', settings);
             });
-        },
-
-        reloadThemes() {
-            return this.get('store').findAll('theme');
-        },
-
-        activateTheme(theme) {
-            return this.get('controller').send('setTheme', theme);
         }
     }
 });

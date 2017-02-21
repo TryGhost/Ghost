@@ -8,7 +8,7 @@ export default AuthenticatedRoute.extend({
 
     actions: {
         cancel() {
-            this.transitionTo('settings.general');
+            this.transitionTo('settings.design');
         }
     }
 });

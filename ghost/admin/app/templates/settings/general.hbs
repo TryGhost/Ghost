@@ -169,37 +169,6 @@
             </div>
         </div>
 
-
-        <form id="settings-general" novalidate="novalidate">
-            <div class="settings-themes">
-                <h3 id="themes">Themes</h3>
-
-                {{gh-theme-table
-                        themes=themes
-                        activeTheme=model.activeTheme
-                        activateTheme=(action "setTheme")
-                        downloadTheme=(action "downloadTheme")
-                        deleteTheme=(action "deleteTheme")}}
-
-                <div class="form-group">
-                    {{#link-to "settings.general.uploadtheme" class="gh-btn gh-btn-green" data-test-upload-theme-button=true}}
-                        <span>Upload a theme</span>
-                    {{/link-to}}
-                </div>
-
-                {{#if showDeleteThemeModal}}
-                    {{gh-fullscreen-modal "delete-theme"
-                            model=(hash
-                                theme=themeToDelete
-                                download=(action "downloadTheme" themeToDelete)
-                            )
-                            close=(action "hideDeleteThemeModal")
-                            confirm=(action "deleteTheme")
-                            modifier="action wide"}}
-                {{/if}}
-            </div>
-        </form>
-
     </section>
 </section>
 

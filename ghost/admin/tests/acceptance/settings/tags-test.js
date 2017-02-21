@@ -67,7 +67,7 @@ describe('Acceptance: Settings - Tags', function () {
         server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
-        visit('/settings/navigation');
+        visit('/settings/design');
 
         andThen(() => {
             expect(currentURL(), 'currentURL').to.equal('/team/test-user');
