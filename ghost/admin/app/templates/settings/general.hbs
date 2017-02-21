@@ -15,20 +15,20 @@
                 <div class="gh-setting-desc">The details used to identify your publication around the web</div>
                 <div class="gh-setting-content-extended">
                     {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="title"}}
-                        {{gh-input model.title id="blog-title" name="general[title]" type="text" focusOut=(action "validate" "title" target=model) update=(action (mut model.title))}}
+                        {{gh-input model.title type="text" focusOut=(action "validate" "title" target=model) update=(action (mut model.title)) data-test-title-input=true}}
                         {{gh-error-message errors=model.errors property="title"}}
                         <p>The name of your site</p>
                     {{/gh-form-group}}
 
                     {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="description" class="description-container"}}
-                        {{gh-input model.description id="blog-description" name="general[description]" type="text" focusOut=(action "validate" "description" target=model) update=(action (mut model.description))}}
+                        {{gh-input model.description type="text" focusOut=(action "validate" "description" target=model) update=(action (mut model.description)) data-test-description-input=true}}
                         {{gh-error-message errors=model.errors property="description"}}
                         <p>Used in your theme, meta data and search results</p>
                     {{/gh-form-group}}
                 </div>
             </div>
             <div class="gh-setting-action">
-                <button type="button" class="gh-btn gh-btn-hover-blue" {{action "exportData"}}><span>Close</span></button>
+                <button type="button" class="gh-btn gh-btn-hover-blue"><span>Close</span></button>
             </div>
         </div>
         <div class="gh-setting">
@@ -43,7 +43,7 @@
                 </div>
             </div>
             <div class="gh-setting-action">
-                <button type="button" class="gh-btn gh-btn-hover-blue" {{action "exportData"}}><span>Close</span></button>
+                <button type="button" class="gh-btn gh-btn-hover-blue"><span>Close</span></button>
             </div>
         </div>
 
@@ -57,7 +57,7 @@
                 {{#if model.icon}}
                     <img class="blog-icon" src="{{model.icon}}" alt="icon" role="button" {{action "toggleUploadIconModal"}}>
                 {{else}}
-                    <button type="button" class="gh-btn js-modal-logo" {{action "toggleUploadIconModal"}}><span>Upload Image</span></button>
+                    <button type="button" class="gh-btn" {{action "toggleUploadIconModal"}}><span>Upload Image</span></button>
                 {{/if}}
 
                 {{#if showUploadIconModal}}
@@ -77,7 +77,7 @@
                 {{#if model.logo}}
                     <img class="blog-logo" src="{{model.logo}}" alt="logo" role="button" {{action "toggleUploadLogoModal"}}>
                 {{else}}
-                    <button type="button" class="gh-btn js-modal-logo" {{action "toggleUploadLogoModal"}}><span>Upload Image</span></button>
+                    <button type="button" class="gh-btn" {{action "toggleUploadLogoModal"}}><span>Upload Image</span></button>
                 {{/if}}
 
                 {{#if showUploadLogoModal}}
@@ -97,7 +97,7 @@
                 {{#if model.cover}}
                     <img class="blog-cover" src="{{model.cover}}" alt="cover photo" role="button" {{action "toggleUploadCoverModal"}}>
                 {{else}}
-                    <button type="button" class="gh-btn js-modal-cover" {{action "toggleUploadCoverModal"}}><span>Upload Image</span></button>
+                    <button type="button" class="gh-btn" {{action "toggleUploadCoverModal"}}><span>Upload Image</span></button>
                 {{/if}}
 
                 {{#if showUploadCoverModal}}
@@ -116,19 +116,19 @@
                 <div class="gh-setting-desc">Link your social accounts for full structured data and rich card support</div>
                 <div class="gh-setting-content-extended">
                     {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="facebook"}}
-                        <input value={{model.facebook}} oninput={{action (mut _scratchFacebook) value="target.value"}} {{action "validateFacebookUrl" on="focusOut"}} type="url" class="gh-input" id="facebook" name="general[facebook]"  placeholder="https://www.facebook.com/ghost" autocorrect="off" />
-                        {{gh-error-message errors=model.errors property="facebook"}}
+                        <input value={{model.facebook}} oninput={{action (mut _scratchFacebook) value="target.value"}} {{action "validateFacebookUrl" on="focusOut"}} type="url" class="gh-input" placeholder="https://www.facebook.com/ghost" autocorrect="off" data-test-facebook-input />
+                        {{gh-error-message errors=model.errors property="facebook" data-test-facebook-error=true}}
                         <p>URL of your publication's Facebook Page</p>
                     {{/gh-form-group}}
                     {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="twitter"}}
-                        <input value={{model.twitter}} oninput={{action (mut _scratchTwitter) value="target.value"}} {{action "validateTwitterUrl" on="focusOut"}} type="url" class="gh-input" id="facebook" name="general[twitter]"  placeholder="https://twitter.com/tryghost" autocorrect="off" />
-                        {{gh-error-message errors=model.errors property="twitter"}}
+                        <input value={{model.twitter}} oninput={{action (mut _scratchTwitter) value="target.value"}} {{action "validateTwitterUrl" on="focusOut"}} type="url" class="gh-input" placeholder="https://twitter.com/tryghost" autocorrect="off" data-test-twitter-input />
+                        {{gh-error-message errors=model.errors property="twitter" data-test-twitter-error=true}}
                         <p>URL of your publication's Twitter profile</p>
                     {{/gh-form-group}}
                 </div>
             </div>
             <div class="gh-setting-action">
-                <button type="button" class="gh-btn gh-btn-hover-blue" {{action "exportData"}}><span>Close</span></button>
+                <button type="button" class="gh-btn gh-btn-hover-blue"><span>Close</span></button>
             </div>
         </div>
 
@@ -139,7 +139,7 @@
                 <div class="gh-setting-desc">Include the date in your post URLs, eg. <strong>blogurl.com/2017/01/post-title/</strong></div>
             </div>
             <div class="gh-setting-action">
-                {{one-way-checkbox isDatedPermalinks id="permalinks" name="general[permalinks]" type="checkbox" update=(action (mut isDatedPermalinks))}}
+                {{one-way-checkbox isDatedPermalinks type="checkbox" update=(action (mut isDatedPermalinks)) data-test-dated-permalinks-checkbox=true}}
                 <span class="input-toggle-component"></span>
             </div>
         </div>
@@ -150,23 +150,21 @@
                 {{#if model.isPrivate}}
                 <div class="gh-setting-content-extended">
                     {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="password"}}
-                        {{gh-input model.password name="general[password]" type="text" focusOut=(action "validate" "password" target=model) update=(action (mut model.password))}}
-                        {{gh-error-message errors=model.errors property="password"}}
+                        {{gh-input model.password name="general[password]" type="text" focusOut=(action "validate" "password" target=model) update=(action (mut model.password)) data-test-password-input=true}}
+                        {{gh-error-message errors=model.errors property="password" data-test-password-error=true}}
                         <p>Set the password for this site</p>
                     {{/gh-form-group}}
                 </div>
                 {{/if}}
             </div>
             <div class="gh-setting-action">
-                {{one-way-checkbox model.isPrivate id="isPrivate" name="general[isPrivate]" type="checkbox" update=(action (mut model.isPrivate))}}
+                {{one-way-checkbox model.isPrivate type="checkbox" update=(action (mut model.isPrivate)) data-test-private-checkbox=true}}
                 <span class="input-toggle-component"></span>
             </div>
         </div>
 
 
         <form id="settings-general" novalidate="novalidate">
-
-
             <div class="settings-themes">
                 <h3 id="themes">Themes</h3>
 
@@ -177,7 +175,7 @@
                         deleteTheme=(action "deleteTheme")}}
 
                 <div class="form-group">
-                    {{#link-to "settings.general.uploadtheme" class="gh-btn gh-btn-green"}}
+                    {{#link-to "settings.general.uploadtheme" class="gh-btn gh-btn-green" data-test-upload-theme-button=true}}
                         <span>Upload a theme</span>
                     {{/link-to}}
                 </div>
