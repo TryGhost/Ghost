@@ -443,6 +443,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         data = this.filterData(data);
         options = this.filterOptions(options, 'findOne');
 
+        // Handle related objects
+        // TODO: this should just be done for all methods @ the API level
+        options.withRelated = _.union(options.withRelated, options.include);
+
         // We pass include to forge so that toJSON has access
         return this.forge(data, {include: options.include}).fetch(options);
     },

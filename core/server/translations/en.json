@@ -220,6 +220,16 @@
                     "help": "Your post was saved, but your tags were not updated."
                 }
             },
+            "client": {
+                "trustedDomainUpdates": {
+                    "error": "Unable to save trusted domains.",
+                    "help": "Your client was saved, but your trusted domains were not updated."
+                },
+                "noClientFound": "Client not found.",
+                "cantEditGhostAdmin": "Cannot edit 'ghost-admin' client.",
+                "cantEditGhostFrontend": "Cannot edit 'ghost-frontend' fields other than 'status' and 'secret'",
+                "cantDeleteProtectedClients": "Cannot delete 'ghost-admin' or 'ghost-frontend' clients"
+            },
             "role": {
                 "notEnoughPermission": "You do not have permission to perform this action"
             },

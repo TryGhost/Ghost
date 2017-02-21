@@ -9,6 +9,7 @@ var Promise      = require('bluebird'),
     i18n         = require('../i18n'),
 
     docName      = 'clients',
+    allowedIncludes = ['trusted_domains'],
     clients;
 
 /**
@@ -17,6 +18,35 @@ var Promise      = require('bluebird'),
  * **See:** [API Methods](index.js.html#api%20methods)
  */
 clients = {
+    /**
+     * ## Browse
+     * @param {{context}} options
+     * @returns {Promise<Clients>} Clients Collection
+     */
+    browse: function browse(options) {
+        var tasks;
+
+        /**
+         * ### Model Query
+         * Make the call to the Model layer
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function modelQuery(options) {
+            return dataProvider.Client.findPage(options);
+        }
+
+        // Push all of our tasks into a `tasks` array in the correct order
+        tasks = [
+            utils.validate(docName, {opts: utils.browseDefaultOptions}),
+            utils.handlePublicPermissions(docName, 'browse'),
+            utils.convertOptions(allowedIncludes),
+            modelQuery
+        ];
+
+        // Pipeline calls each task passing the result of one to be the arguments for the next
+        return pipeline(tasks, options);
+    },
 
     /**
      * ## Read
@@ -33,7 +63,7 @@ clients = {
          * @param {Object} options
          * @returns {Object} options
          */
-        function doQuery(options) {
+        function modelQuery(options) {
             // only User Agent (type = `ua`) clients are available at the moment.
             options.data = _.extend(options.data, {type: 'ua'});
             return dataProvider.Client.findOne(options.data, _.omit(options, ['data']));
@@ -42,9 +72,9 @@ clients = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             utils.validate(docName, {attrs: attrs}),
-            // TODO: add permissions
-            // utils.handlePublicPermissions(docName, 'read'),
-            doQuery
+            utils.handlePermissions(docName, 'read'),
+            utils.convertOptions(allowedIncludes),
+            modelQuery
         ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
@@ -53,8 +83,118 @@ clients = {
                 return {clients: [result.toJSON(options)]};
             }
 
-            return Promise.reject(new errors.NotFoundError({message: i18n.t('common.api.clients.clientNotFound')}));
+            return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.clients.clientNotFound')}));
         });
+    },
+
+    /**
+     * ## Add
+     * @param {Client} object the client to create
+     * @returns {Promise(Client)} Newly created Client
+     */
+    add: function add(object, options) {
+        var tasks;
+
+        /**
+         * ### Model Query
+         * Make the call to the Model layer
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function doQuery(options) {
+            return dataProvider.Client.add(options.data.clients[0], _.omit(options, ['data']));
+        }
+
+        // Push all of our tasks into a `tasks` array in the correct order
+        tasks = [
+            utils.validate(docName),
+            utils.handlePermissions(docName, 'add'),
+            utils.convertOptions(allowedIncludes),
+            doQuery
+        ];
+
+        // Pipeline calls each task passing the result of one to be the arguments for the next
+        return pipeline(tasks, object, options).then(function formatResponse(result) {
+            var client = result.toJSON(options);
+
+            return {clients: [client]};
+        });
+    },
+
+    /**
+     * ## Edit
+     *
+     * @public
+     * @param {Client} object Client or specific properties to update
+     * @param {{id, context, include}} options
+     * @return {Promise<Client>} Edited Client
+     */
+    edit: function edit(object, options) {
+        var tasks;
+
+        /**
+         * Make the call to the Model layer
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function modelQuery(options) {
+            return dataProvider.Client.edit(options.data.clients[0], _.omit(options, ['data']));
+        }
+
+        // Push all of our tasks into a `tasks` array in the correct order
+        tasks = [
+            utils.validate(docName, {opts: utils.idDefaultOptions}),
+            utils.handlePermissions(docName, 'edit'),
+            utils.convertOptions(allowedIncludes),
+            modelQuery
+        ];
+
+        // Pipeline calls each task passing the result of one to be the arguments for the next
+        return pipeline(tasks, object, options).then(function formatResponse(result) {
+            if (result) {
+                var client = result.toJSON(options);
+
+                return {clients: [client]};
+            }
+
+            return Promise.reject(new errors.NotFoundError(i18n.t('errors.api.clients.clientNotFound')));
+        });
+    },
+
+    /**
+     * ## Destroy
+     *
+     * @public
+     * @param {{id, context}} options
+     * @return {Promise<Client>} Deleted Client
+     */
+    destroy: function destroy(options) {
+        var tasks;
+
+        /**
+         * ### Model Query
+         * Make the call to the Model layer
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function modelQuery(options) {
+            return clients.read(options).then(function (result) {
+                return dataProvider.Client.destroy(options).then(function () {
+                    return result;
+                });
+            });
+        }
+
+        // Push all of our tasks into a `tasks` array in the correct order
+        tasks = [
+            utils.validate(docName, {opts: utils.idDefaultOptions}),
+            utils.handlePermissions(docName, 'destroy'),
+            utils.convertOptions(allowedIncludes),
+            modelQuery
+        ];
+
+        // Pipeline calls each task passing the result of one to be the arguments for the next
+        return pipeline(tasks, options);
     }
 };
 

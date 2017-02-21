@@ -35,7 +35,8 @@ slugs = {
             post: dataProvider.Post,
             tag: dataProvider.Tag,
             user: dataProvider.User,
-            app: dataProvider.App
+            app: dataProvider.App,
+            client: dataProvider.Client
         };
 
         /**
