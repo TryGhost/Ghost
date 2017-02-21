@@ -8,6 +8,6 @@
 </div>
 
 <div class="modal-footer">
-    <button {{action "closeModal"}} class="gh-btn"><span>Cancel</span></button>
-    {{#gh-task-button task=deleteTheme class="gh-btn gh-btn-red"}}<span>Delete</span>{{/gh-task-button}}
+    <button {{action "closeModal"}} class="gh-btn" data-test-cancel-button><span>Cancel</span></button>
+    {{#gh-task-button task=deleteTheme class="gh-btn gh-btn-red" data-test-delete-button=true}}<span>Delete</span>{{/gh-task-button}}
 </div>

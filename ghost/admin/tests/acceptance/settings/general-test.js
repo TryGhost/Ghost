@@ -80,15 +80,12 @@ describe('Acceptance: Settings - General', function () {
                 expect($('.gh-nav-settings-general').hasClass('active'), 'highlights nav menu item')
                     .to.be.true;
 
-                expect(find(testSelector('save-button')).text().trim(), 'save button text').to.equal('Save');
+                expect(find(testSelector('save-button')).text().trim(), 'save button text').to.equal('Save settings');
 
-                // initial postsPerPage should be 5
-                expect(find('input#postsPerPage').val(), 'post per page value').to.equal('5');
-
-                expect(find('input#permalinks').prop('checked'), 'date permalinks checkbox').to.be.false;
+                expect(find(testSelector('dated-permalinks-checkbox')).prop('checked'), 'date permalinks checkbox').to.be.false;
             });
 
-            fillIn('#settings-general input[name="general[title]"]', 'New Blog Title');
+            fillIn(testSelector('title-input'), 'New Blog Title');
             click(testSelector('save-button'));
 
             andThen(() => {
@@ -172,30 +169,30 @@ describe('Acceptance: Settings - General', function () {
 
             // handles private blog settings correctly
             andThen(() => {
-                expect(find('input#isPrivate').prop('checked'), 'isPrivate checkbox').to.be.false;
+                expect(find(testSelector('private-checkbox')).prop('checked'), 'isPrivate checkbox').to.be.false;
             });
 
-            click('input#isPrivate');
+            click(testSelector('private-checkbox'));
 
             andThen(() => {
-                expect(find('input#isPrivate').prop('checked'), 'isPrivate checkbox').to.be.true;
-                expect(find('#settings-general input[name="general[password]"]').length, 'password input').to.equal(1);
-                expect(find('#settings-general input[name="general[password]"]').val(), 'password default value').to.not.equal('');
+                expect(find(testSelector('private-checkbox')).prop('checked'), 'isPrivate checkbox').to.be.true;
+                expect(find(testSelector('password-input')).length, 'password input').to.equal(1);
+                expect(find(testSelector('password-input')).val(), 'password default value').to.not.equal('');
             });
 
-            fillIn('#settings-general input[name="general[password]"]', '');
-            triggerEvent('#settings-general input[name="general[password]"]', 'blur');
+            fillIn(testSelector('password-input'), '');
+            triggerEvent(testSelector('password-input'), 'blur');
 
             andThen(() => {
-                expect(find('#settings-general .error .response').text().trim(), 'inline validation response')
+                expect(find(testSelector('password-error')).text().trim(), 'empty password error')
                     .to.equal('Password must be supplied');
             });
 
-            fillIn('#settings-general input[name="general[password]"]', 'asdfg');
-            triggerEvent('#settings-general input[name="general[password]"]', 'blur');
+            fillIn(testSelector('password-input'), 'asdfg');
+            triggerEvent(testSelector('password-input'), 'blur');
 
             andThen(() => {
-                expect(find('#settings-general .error .response').text().trim(), 'inline validation response')
+                expect(find(testSelector('password-error')).text().trim(), 'present password error')
                     .to.equal('');
             });
 
@@ -203,96 +200,96 @@ describe('Acceptance: Settings - General', function () {
 
             andThen(() => {
                 // loads fixtures and performs transform
-                expect(find('input[name="general[facebook]"]').val(), 'initial facebook value')
+                expect(find(testSelector('facebook-input')).val(), 'initial facebook value')
                     .to.equal('https://www.facebook.com/test');
             });
 
-            triggerEvent('#settings-general input[name="general[facebook]"]', 'focus');
-            triggerEvent('#settings-general input[name="general[facebook]"]', 'blur');
+            triggerEvent(testSelector('facebook-input'), 'focus');
+            triggerEvent(testSelector('facebook-input'), 'blur');
 
             andThen(() => {
                 // regression test: we still have a value after the input is
                 // focused and then blurred without any changes
-                expect(find('input[name="general[facebook]"]').val(), 'facebook value after blur with no change')
+                expect(find(testSelector('facebook-input')).val(), 'facebook value after blur with no change')
                     .to.equal('https://www.facebook.com/test');
             });
 
-            fillIn('#settings-general input[name="general[facebook]"]', 'facebook.com/username');
-            triggerEvent('#settings-general input[name="general[facebook]"]', 'blur');
+            fillIn(testSelector('facebook-input'), 'facebook.com/username');
+            triggerEvent(testSelector('facebook-input'), 'blur');
 
             andThen(() => {
-                expect(find('#settings-general input[name="general[facebook]"]').val()).to.be.equal('https://www.facebook.com/username');
-                expect(find('#settings-general .error .response').text().trim(), 'inline validation response')
+                expect(find(testSelector('facebook-input')).val()).to.be.equal('https://www.facebook.com/username');
+                expect(find(testSelector('facebook-error')).text().trim(), 'inline validation response')
                     .to.equal('');
             });
 
-            fillIn('#settings-general input[name="general[facebook]"]', 'facebook.com/pages/some-facebook-page/857469375913?ref=ts');
-            triggerEvent('#settings-general input[name="general[facebook]"]', 'blur');
+            fillIn(testSelector('facebook-input'), 'facebook.com/pages/some-facebook-page/857469375913?ref=ts');
+            triggerEvent(testSelector('facebook-input'), 'blur');
 
             andThen(() => {
-                expect(find('#settings-general input[name="general[facebook]"]').val()).to.be.equal('https://www.facebook.com/pages/some-facebook-page/857469375913?ref=ts');
-                expect(find('#settings-general .error .response').text().trim(), 'inline validation response')
+                expect(find(testSelector('facebook-input')).val()).to.be.equal('https://www.facebook.com/pages/some-facebook-page/857469375913?ref=ts');
+                expect(find(testSelector('facebook-error')).text().trim(), 'inline validation response')
                     .to.equal('');
             });
 
-            fillIn('#settings-general input[name="general[facebook]"]', '*(&*(%%))');
-            triggerEvent('#settings-general input[name="general[facebook]"]', 'blur');
+            fillIn(testSelector('facebook-input'), '*(&*(%%))');
+            triggerEvent(testSelector('facebook-input'), 'blur');
 
             andThen(() => {
-                expect(find('#settings-general .error .response').text().trim(), 'inline validation response')
+                expect(find(testSelector('facebook-error')).text().trim(), 'inline validation response')
                     .to.equal('The URL must be in a format like https://www.facebook.com/yourPage');
             });
 
-            fillIn('#settings-general input[name="general[facebook]"]', 'http://github.com/username');
-            triggerEvent('#settings-general input[name="general[facebook]"]', 'blur');
+            fillIn(testSelector('facebook-input'), 'http://github.com/username');
+            triggerEvent(testSelector('facebook-input'), 'blur');
 
             andThen(() => {
-                expect(find('#settings-general input[name="general[facebook]"]').val()).to.be.equal('https://www.facebook.com/username');
-                expect(find('#settings-general .error .response').text().trim(), 'inline validation response')
+                expect(find(testSelector('facebook-input')).val()).to.be.equal('https://www.facebook.com/username');
+                expect(find(testSelector('facebook-error')).text().trim(), 'inline validation response')
                     .to.equal('');
             });
 
-            fillIn('#settings-general input[name="general[facebook]"]', 'http://github.com/pages/username');
-            triggerEvent('#settings-general input[name="general[facebook]"]', 'blur');
+            fillIn(testSelector('facebook-input'), 'http://github.com/pages/username');
+            triggerEvent(testSelector('facebook-input'), 'blur');
 
             andThen(() => {
-                expect(find('#settings-general input[name="general[facebook]"]').val()).to.be.equal('https://www.facebook.com/pages/username');
-                expect(find('#settings-general .error .response').text().trim(), 'inline validation response')
+                expect(find(testSelector('facebook-input')).val()).to.be.equal('https://www.facebook.com/pages/username');
+                expect(find(testSelector('facebook-error')).text().trim(), 'inline validation response')
                     .to.equal('');
             });
 
-            fillIn('#settings-general input[name="general[facebook]"]', 'testuser');
-            triggerEvent('#settings-general input[name="general[facebook]"]', 'blur');
+            fillIn(testSelector('facebook-input'), 'testuser');
+            triggerEvent(testSelector('facebook-input'), 'blur');
 
             andThen(() => {
-                expect(find('#settings-general input[name="general[facebook]"]').val()).to.be.equal('https://www.facebook.com/testuser');
-                expect(find('#settings-general .error .response').text().trim(), 'inline validation response')
+                expect(find(testSelector('facebook-input')).val()).to.be.equal('https://www.facebook.com/testuser');
+                expect(find(testSelector('facebook-error')).text().trim(), 'inline validation response')
                     .to.equal('');
             });
 
-            fillIn('#settings-general input[name="general[facebook]"]', 'ab99');
-            triggerEvent('#settings-general input[name="general[facebook]"]', 'blur');
+            fillIn(testSelector('facebook-input'), 'ab99');
+            triggerEvent(testSelector('facebook-input'), 'blur');
 
             andThen(() => {
-                expect(find('#settings-general .error .response').text().trim(), 'inline validation response')
+                expect(find(testSelector('facebook-error')).text().trim(), 'inline validation response')
                     .to.equal('Your Page name is not a valid Facebook Page name');
             });
 
-            fillIn('#settings-general input[name="general[facebook]"]', 'page/ab99');
-            triggerEvent('#settings-general input[name="general[facebook]"]', 'blur');
+            fillIn(testSelector('facebook-input'), 'page/ab99');
+            triggerEvent(testSelector('facebook-input'), 'blur');
 
             andThen(() => {
-                expect(find('#settings-general input[name="general[facebook]"]').val()).to.be.equal('https://www.facebook.com/page/ab99');
-                expect(find('#settings-general .error .response').text().trim(), 'inline validation response')
+                expect(find(testSelector('facebook-input')).val()).to.be.equal('https://www.facebook.com/page/ab99');
+                expect(find(testSelector('facebook-error')).text().trim(), 'inline validation response')
                     .to.equal('');
             });
 
-            fillIn('#settings-general input[name="general[facebook]"]', 'page/*(&*(%%))');
-            triggerEvent('#settings-general input[name="general[facebook]"]', 'blur');
+            fillIn(testSelector('facebook-input'), 'page/*(&*(%%))');
+            triggerEvent(testSelector('facebook-input'), 'blur');
 
             andThen(() => {
-                expect(find('#settings-general input[name="general[facebook]"]').val()).to.be.equal('https://www.facebook.com/page/*(&*(%%))');
-                expect(find('#settings-general .error .response').text().trim(), 'inline validation response')
+                expect(find(testSelector('facebook-input')).val()).to.be.equal('https://www.facebook.com/page/*(&*(%%))');
+                expect(find(testSelector('facebook-error')).text().trim(), 'inline validation response')
                     .to.equal('');
             });
 
@@ -300,60 +297,60 @@ describe('Acceptance: Settings - General', function () {
 
             andThen(() => {
                 // loads fixtures and performs transform
-                expect(find('input[name="general[twitter]"]').val(), 'initial twitter value')
+                expect(find(testSelector('twitter-input')).val(), 'initial twitter value')
                     .to.equal('https://twitter.com/test');
             });
 
-            triggerEvent('#settings-general input[name="general[twitter]"]', 'focus');
-            triggerEvent('#settings-general input[name="general[twitter]"]', 'blur');
+            triggerEvent(testSelector('twitter-input'), 'focus');
+            triggerEvent(testSelector('twitter-input'), 'blur');
 
             andThen(() => {
                 // regression test: we still have a value after the input is
                 // focused and then blurred without any changes
-                expect(find('input[name="general[twitter]"]').val(), 'twitter value after blur with no change')
+                expect(find(testSelector('twitter-input')).val(), 'twitter value after blur with no change')
                     .to.equal('https://twitter.com/test');
             });
 
-            fillIn('#settings-general input[name="general[twitter]"]', 'twitter.com/username');
-            triggerEvent('#settings-general input[name="general[twitter]"]', 'blur');
+            fillIn(testSelector('twitter-input'), 'twitter.com/username');
+            triggerEvent(testSelector('twitter-input'), 'blur');
 
             andThen(() => {
-                expect(find('#settings-general input[name="general[twitter]"]').val()).to.be.equal('https://twitter.com/username');
-                expect(find('#settings-general .error .response').text().trim(), 'inline validation response')
+                expect(find(testSelector('twitter-input')).val()).to.be.equal('https://twitter.com/username');
+                expect(find(testSelector('twitter-error')).text().trim(), 'inline validation response')
                     .to.equal('');
             });
 
-            fillIn('#settings-general input[name="general[twitter]"]', '*(&*(%%))');
-            triggerEvent('#settings-general input[name="general[twitter]"]', 'blur');
+            fillIn(testSelector('twitter-input'), '*(&*(%%))');
+            triggerEvent(testSelector('twitter-input'), 'blur');
 
             andThen(() => {
-                expect(find('#settings-general .error .response').text().trim(), 'inline validation response')
+                expect(find(testSelector('twitter-error')).text().trim(), 'inline validation response')
                     .to.equal('The URL must be in a format like https://twitter.com/yourUsername');
             });
 
-            fillIn('#settings-general input[name="general[twitter]"]', 'http://github.com/username');
-            triggerEvent('#settings-general input[name="general[twitter]"]', 'blur');
+            fillIn(testSelector('twitter-input'), 'http://github.com/username');
+            triggerEvent(testSelector('twitter-input'), 'blur');
 
             andThen(() => {
-                expect(find('#settings-general input[name="general[twitter]"]').val()).to.be.equal('https://twitter.com/username');
-                expect(find('#settings-general .error .response').text().trim(), 'inline validation response')
+                expect(find(testSelector('twitter-input')).val()).to.be.equal('https://twitter.com/username');
+                expect(find(testSelector('twitter-error')).text().trim(), 'inline validation response')
                     .to.equal('');
             });
 
-            fillIn('#settings-general input[name="general[twitter]"]', 'thisusernamehasmorethan15characters');
-            triggerEvent('#settings-general input[name="general[twitter]"]', 'blur');
+            fillIn(testSelector('twitter-input'), 'thisusernamehasmorethan15characters');
+            triggerEvent(testSelector('twitter-input'), 'blur');
 
             andThen(() => {
-                expect(find('#settings-general .error .response').text().trim(), 'inline validation response')
+                expect(find(testSelector('twitter-error')).text().trim(), 'inline validation response')
                     .to.equal('Your Username is not a valid Twitter Username');
             });
 
-            fillIn('#settings-general input[name="general[twitter]"]', 'testuser');
-            triggerEvent('#settings-general input[name="general[twitter]"]', 'blur');
+            fillIn(testSelector('twitter-input'), 'testuser');
+            triggerEvent(testSelector('twitter-input'), 'blur');
 
             andThen(() => {
-                expect(find('#settings-general input[name="general[twitter]"]').val()).to.be.equal('https://twitter.com/testuser');
-                expect(find('#settings-general .error .response').text().trim(), 'inline validation response')
+                expect(find(testSelector('twitter-input')).val()).to.be.equal('https://twitter.com/testuser');
+                expect(find(testSelector('twitter-error')).text().trim(), 'inline validation response')
                     .to.equal('');
             });
         });
@@ -393,7 +390,7 @@ describe('Acceptance: Settings - General', function () {
             });
 
             // theme upload displays modal
-            click('a:contains("Upload a theme")');
+            click(testSelector('upload-theme-button'));
             andThen(() => {
                 expect(
                     find('.fullscreen-modal .modal-content:contains("Upload a theme")').length,
@@ -402,7 +399,7 @@ describe('Acceptance: Settings - General', function () {
             });
 
             // cancelling theme upload closes modal
-            click('.fullscreen-modal button:contains("Cancel")');
+            click(`.fullscreen-modal ${testSelector('close-button')}`);
             andThen(() => {
                 expect(
                     find('.fullscreen-modal').length === 0,
@@ -411,7 +408,7 @@ describe('Acceptance: Settings - General', function () {
             });
 
             // theme upload validates mime type
-            click('a:contains("Upload a theme")');
+            click(testSelector('upload-theme-button'));
             fileUpload('.fullscreen-modal input[type="file"]', ['test'], {type: 'text/csv'});
             andThen(() => {
                 expect(
@@ -421,7 +418,7 @@ describe('Acceptance: Settings - General', function () {
             });
 
             // theme upload validates casper.zip
-            click('button:contains("Try Again")');
+            click(testSelector('upload-try-again-button'));
             fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'casper.zip', type: 'application/zip'});
             andThen(() => {
                 expect(
@@ -440,7 +437,7 @@ describe('Acceptance: Settings - General', function () {
                     });
                 });
             });
-            click('button:contains("Try Again")');
+            click(testSelector('upload-try-again-button'));
             fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'error.zip', type: 'application/zip'});
             andThen(() => {
                 expect(
@@ -491,7 +488,7 @@ describe('Acceptance: Settings - General', function () {
                     });
                 });
             });
-            click('button:contains("Try Again")');
+            click(testSelector('upload-try-again-button'));
             fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'bad-theme.zip', type: 'application/zip'});
             andThen(() => {
                 expect(
@@ -517,7 +514,7 @@ describe('Acceptance: Settings - General', function () {
                 // reset to default mirage handlers
                 mockThemes(server);
             });
-            click('button:contains("Try Again")');
+            click(`.fullscreen-modal ${testSelector('try-again-button')}`);
             andThen(() => {
                 expect(
                     find('.theme-validation-errors').length,
@@ -593,10 +590,10 @@ describe('Acceptance: Settings - General', function () {
                 // reset to default mirage handlers
                 mockThemes(server);
             });
-            click('button:contains("Close")');
+            click(`.fullscreen-modal ${testSelector('close-button')}`);
 
             // theme upload handles success then close
-            click('a:contains("Upload a theme")');
+            click(testSelector('upload-theme-button'));
             fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'theme-1.zip', type: 'application/zip'});
             andThen(() => {
                 expect(
@@ -619,12 +616,12 @@ describe('Acceptance: Settings - General', function () {
                     'newly uploaded theme is active'
                 ).to.be.false;
             });
-            click('.fullscreen-modal button:contains("Close")');
+            click(`.fullscreen-modal ${testSelector('close-button')}`);
 
             // theme upload handles success then activate
-            click('a:contains("Upload a theme")');
+            click(testSelector('upload-theme-button'));
             fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'theme-2.zip', type: 'application/zip'});
-            click('button:contains("Activate Now")');
+            click(`.fullscreen-modal ${testSelector('activate-now-button')}`);
             andThen(() => {
                 expect(
                     find('.theme-list-item').length,
@@ -661,7 +658,7 @@ describe('Acceptance: Settings - General', function () {
             });
 
             // cancelling theme deletion closes modal
-            click('.fullscreen-modal button:contains("Cancel")');
+            click(`.fullscreen-modal ${testSelector('cancel-button')}`);
             andThen(() => {
                 expect(
                     find('.fullscreen-modal').length === 0,
@@ -671,7 +668,7 @@ describe('Acceptance: Settings - General', function () {
 
             // confirming theme deletion closes modal and refreshes list
             click('.theme-list-item:contains("Test 1") a:contains("Delete")');
-            click('.fullscreen-modal button:contains("Delete")');
+            click(`.fullscreen-modal ${testSelector('delete-button')}`);
             andThen(() => {
                 expect(
                     find('.fullscreen-modal').length === 0,
@@ -702,7 +699,7 @@ describe('Acceptance: Settings - General', function () {
                 });
             });
             click('.theme-list-item:contains("Test 2") a:contains("Delete")');
-            click('.fullscreen-modal button:contains("Delete")');
+            click(`.fullscreen-modal ${testSelector('delete-button')}`);
             andThen(() => {
                 expect(
                     find('.fullscreen-modal').length === 0,
