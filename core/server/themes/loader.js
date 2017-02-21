@@ -1,22 +1,22 @@
 var debug = require('debug')('ghost:themes:loader'),
     config = require('../config'),
     events = require('../events'),
+    list = require('./list'),
     read = require('./read'),
-    settingsApi = require('../api/settings'),
     settingsCache = require('../settings/cache'),
-    updateConfigAndCache,
+    updateThemeList,
     loadThemes,
     initThemes;
 
-updateConfigAndCache = function updateConfigAndCache(themes) {
+updateThemeList = function updateThemeList(themes) {
     debug('loading themes', Object.keys(themes));
-    config.set('paths:availableThemes', themes);
+    list.init(themes);
 };
 
 loadThemes = function loadThemes() {
     return read
         .all(config.getContentPath('themes'))
-        .then(updateConfigAndCache);
+        .then(updateThemeList);
 };
 
 initThemes = function initThemes() {
@@ -30,7 +30,7 @@ initThemes = function initThemes() {
     // Just read the active theme for now
     return read
         .one(config.getContentPath('themes'), settingsCache.get('activeTheme'))
-        .then(updateConfigAndCache);
+        .then(updateThemeList);
 };
 
 module.exports = {

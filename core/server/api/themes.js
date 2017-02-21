@@ -25,7 +25,7 @@ var debug = require('debug')('ghost:api:themes'),
 themes = {
     browse: function browse() {
         debug('browsing');
-        var result = packageUtils.filterPackages(config.get('paths:availableThemes'));
+        var result = packageUtils.filterPackages(themeUtils.list.getAll());
         debug('got result');
         return Promise.resolve({themes: result});
     },
@@ -83,16 +83,12 @@ themes = {
                 }, config.getContentPath('themes'));
             })
             .then(function () {
-                // force reload of availableThemes
-                // right now the logic is in the ConfigManager
-                // if we create a theme collection, we don't have to read them from disk
-                return themeUtils.load();
+                // @TODO improve the API here for loading in a single theme & adding it to the list
+                return themeUtils.read.one(config.getContentPath('themes'), zip.shortName);
             })
-            .then(function () {
+            .then(function (readThemes) {
                 // gscan theme structure !== ghost theme structure
-                // @TODO reduce this unnecessary work
-                var result = packageUtils.filterPackages(config.get('paths:availableThemes')),
-                    themeObject = _.find(result, {name: zip.shortName}) || {};
+                var themeObject = themeUtils.list.set(zip.shortName, readThemes[zip.shortName]);
                 if (theme.results.warning.length > 0) {
                     themeObject.warnings = _.cloneDeep(theme.results.warning);
                 }
@@ -119,7 +115,7 @@ themes = {
 
     download: function download(options) {
         var themeName = options.name,
-            theme = config.get('paths').availableThemes[themeName],
+            theme = themeUtils.list.get(themeName),
             storageAdapter = storage.getStorage('themes');
 
         if (!theme) {
@@ -148,17 +144,15 @@ themes = {
                     throw new errors.ValidationError({message: i18n.t('errors.api.themes.destroyCasper')});
                 }
 
-                theme = config.get('paths').availableThemes[name];
+                theme = themeUtils.list.get(name);
 
                 if (!theme) {
                     throw new errors.NotFoundError({message: i18n.t('errors.api.themes.themeDoesNotExist')});
                 }
 
+                themeUtils.list.del(name);
                 events.emit('theme.deleted', name);
                 return storageAdapter.delete(name, config.getContentPath('themes'));
-            })
-            .then(function () {
-                return themeUtils.load();
             });
     }
 };
