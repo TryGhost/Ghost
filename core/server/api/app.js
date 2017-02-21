@@ -125,6 +125,8 @@ function apiRoutes() {
     apiRouter.get('/slugs/:type/:name', authenticatePrivate, api.http(api.slugs.generate));
 
     // ## Themes
+    apiRouter.get('/themes/', authenticatePrivate, api.http(api.themes.browse));
+
     apiRouter.get('/themes/:name/download',
         authenticatePrivate,
         api.http(api.themes.download)
