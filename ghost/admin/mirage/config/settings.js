@@ -32,19 +32,6 @@ export default function mockSettings(server) {
             db.settings.update({key}, newSetting);
         });
 
-        let [activeTheme] = db.settings.where({key: 'activeTheme'});
-        let [availableThemes] = db.settings.where({key: 'availableThemes'});
-
-        availableThemes.value.forEach((theme) => {
-            if (theme.name === activeTheme.value) {
-                theme.active = true;
-            } else {
-                theme.active = false;
-            }
-        });
-
-        db.settings.update({key: 'availableThemes'}, availableThemes);
-
         return {
             meta: {},
             settings: db.settings

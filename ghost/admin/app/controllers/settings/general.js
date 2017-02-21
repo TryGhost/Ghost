@@ -9,6 +9,7 @@ import $ from 'jquery';
 
 export default Controller.extend(SettingsSaveMixin, {
 
+    themes: null,
     availableTimezones: null,
     themeToDelete: null,
 
@@ -51,16 +52,13 @@ export default Controller.extend(SettingsSaveMixin, {
     }),
 
     _deleteTheme() {
-        let theme = this.get('themeToDelete');
-        let themeURL = `${this.get('ghostPaths.apiRoot')}/themes/${theme.name}/`;
+        let theme = this.get('store').peekRecord('theme', this.get('themeToDelete').name);
 
         if (!theme) {
             return;
         }
 
-        return this.get('ajax').del(themeURL).then(() => {
-            this.send('reloadSettings');
-        }).catch((error) => {
+        return theme.destroyRecord().catch((error) => {
             this.get('notifications').showAPIError(error);
         });
     },

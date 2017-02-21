@@ -3,8 +3,9 @@ import {Response} from 'ember-cli-mirage';
 let themeCount = 1;
 
 export default function mockThemes(server) {
-    server.post('/themes/upload/', function ({db}) {
-        let [availableThemes] = db.settings.where({key: 'availableThemes'});
+    server.get('/themes');
+
+    server.post('/themes/upload/', function ({themes}) {
         // pretender/mirage doesn't currently process FormData so we can't use
         // any info passed in through the request
         let theme = {
@@ -12,28 +13,20 @@ export default function mockThemes(server) {
             package: {
                 name: `Test ${themeCount}`,
                 version: '0.1'
-            },
-            active: false
+            }
         };
 
         themeCount++;
 
-        availableThemes.value.pushObject(theme);
-        db.settings.update({key: 'availableThemes'}, availableThemes);
+        theme = themes.create(theme);
 
         return {
             themes: [theme]
         };
     });
 
-    server.del('/themes/:theme/', function ({db}, {params}) {
-        let [availableThemes] = db.settings.where({key: 'availableThemes'});
-
-        availableThemes.value = availableThemes.value.filter((theme) => {
-            return theme.name !== params.theme;
-        });
-
-        db.settings.update({key: 'availableThemes'}, availableThemes);
+    server.del('/themes/:theme/', function ({themes}, {params}) {
+        themes.findBy({name: params.theme}).destroy();
 
         return new Response(204, {}, null);
     });

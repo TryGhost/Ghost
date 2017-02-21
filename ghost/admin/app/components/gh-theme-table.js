@@ -1,18 +1,22 @@
 import Component from 'ember-component';
 import computed from 'ember-computed';
+import get from 'ember-metal/get';
 
 export default Component.extend({
 
-    availableThemes: null,
+    themes: null,
+    activeTheme: null,
 
-    themes: computed('availableThemes', function () {
-        let themes = this.get('availableThemes').map((t) => {
+    sortedThemes: computed('themes.[]', 'activeTheme', function () {
+        let activeTheme = get(this, 'activeTheme');
+        let themes = get(this, 'themes').map((t) => {
             let theme = {};
+            let themePackage = get(t, 'package');
 
-            theme.name = t.name;
-            theme.label = t.package ? `${t.package.name} - ${t.package.version}` : t.name;
-            theme.package = t.package;
-            theme.active = !!t.active;
+            theme.name = get(t, 'name');
+            theme.label = themePackage ? `${themePackage.name} - ${themePackage.version}` : theme.name;
+            theme.package = themePackage;
+            theme.active = theme.name === activeTheme;
             theme.isDeletable = !theme.active;
 
             return theme;

@@ -380,6 +380,7 @@ describe('Acceptance: Settings - General', function () {
             // - displays modal
             // - deletes theme and refreshes list
 
+            server.loadFixtures('themes');
             visit('/settings/general');
 
             // lists available themes (themes are specified in mirage/fixtures/settings)

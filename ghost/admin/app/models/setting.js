@@ -16,7 +16,6 @@ export default Model.extend(ValidationEngine, {
     forceI18n: attr('boolean'),
     permalinks: attr('string'),
     activeTheme: attr('string'),
-    availableThemes: attr(),
     activeTimezone: attr('string', {defaultValue: 'Etc/UTC'}),
     ghost_head: attr('string'),
     ghost_foot: attr('string'),
