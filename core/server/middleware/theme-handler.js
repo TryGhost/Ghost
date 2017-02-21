@@ -8,7 +8,6 @@ var _      = require('lodash'),
     utils = require('../utils'),
     logging = require('../logging'),
     errors = require('../errors'),
-    utils = require('../utils'),
     i18n = require('../i18n'),
     themeHandler;
 

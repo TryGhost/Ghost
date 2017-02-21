@@ -9,9 +9,9 @@ var debug = require('debug')('ghost:admin'),
     // Global/shared middleware?
     cacheControl = require('../middleware/cache-control'),
     urlRedirects = require('../middleware/url-redirects'),
-    errorHandler = require('../middleware//error-handler'),
+    errorHandler = require('../middleware/error-handler'),
     maintenance = require('../middleware/maintenance'),
-    prettyURLs = require('../middleware//pretty-urls'),
+    prettyURLs = require('../middleware/pretty-urls'),
     serveStatic = require('express').static,
     utils = require('../utils');
 
