@@ -3,7 +3,7 @@ import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 export default AuthenticatedRoute.extend({
 
     model() {
-        return this.modelFor('settings.general').settings.get('availableThemes');
+        return this.get('store').findAll('theme');
     },
 
     actions: {

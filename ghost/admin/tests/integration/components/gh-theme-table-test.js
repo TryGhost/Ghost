@@ -13,8 +13,8 @@ describe('Integration: Component: gh-theme-table', function() {
     });
 
     it('renders', function() {
-        this.set('availableThemes', [
-            {name: 'Daring', package: {name: 'Daring', version: '0.1.4'}, active: true},
+        this.set('themes', [
+            {name: 'Daring', package: {name: 'Daring', version: '0.1.4'}},
             {name: 'casper', package: {name: 'Casper', version: '1.3.1'}},
             {name: 'oscar-ghost-1.1.0', package: {name: 'Lanyon', version: '1.1.0'}},
             {name: 'foo'}
@@ -22,7 +22,8 @@ describe('Integration: Component: gh-theme-table', function() {
         this.set('actionHandler', sinon.spy());
 
         this.render(hbs`{{gh-theme-table
-            availableThemes=availableThemes
+            themes=themes
+            activeTheme="Daring"
             activateTheme=(action actionHandler)
             downloadTheme=(action actionHandler)
             deleteTheme=(action actionHandler)
@@ -85,7 +86,7 @@ describe('Integration: Component: gh-theme-table', function() {
         let deleteAction = sinon.spy();
         let actionHandler = sinon.spy();
 
-        this.set('availableThemes', [
+        this.set('themes', [
             {name: 'Foo', active: true},
             {name: 'Bar'}
         ]);
@@ -93,7 +94,7 @@ describe('Integration: Component: gh-theme-table', function() {
         this.set('actionHandler', actionHandler);
 
         this.render(hbs`{{gh-theme-table
-            availableThemes=availableThemes
+            themes=themes
             activateTheme=(action actionHandler)
             downloadTheme=(action actionHandler)
             deleteTheme=(action deleteAction)
@@ -111,7 +112,7 @@ describe('Integration: Component: gh-theme-table', function() {
         let downloadAction = sinon.spy();
         let actionHandler = sinon.spy();
 
-        this.set('availableThemes', [
+        this.set('themes', [
             {name: 'Foo', active: true},
             {name: 'Bar'}
         ]);
@@ -119,7 +120,7 @@ describe('Integration: Component: gh-theme-table', function() {
         this.set('actionHandler', actionHandler);
 
         this.render(hbs`{{gh-theme-table
-            availableThemes=availableThemes
+            themes=themes
             activateTheme=(action actionHandler)
             downloadTheme=(action downloadAction)
             deleteTheme=(action actionHandler)
@@ -137,7 +138,7 @@ describe('Integration: Component: gh-theme-table', function() {
         let activateAction = sinon.spy();
         let actionHandler = sinon.spy();
 
-        this.set('availableThemes', [
+        this.set('themes', [
             {name: 'Foo', active: true},
             {name: 'Bar'}
         ]);
@@ -145,7 +146,7 @@ describe('Integration: Component: gh-theme-table', function() {
         this.set('actionHandler', actionHandler);
 
         this.render(hbs`{{gh-theme-table
-            availableThemes=availableThemes
+            themes=themes
             activateTheme=(action activateAction)
             downloadTheme=(action actionHandler)
             deleteTheme=(action actionHandler)
@@ -160,7 +161,7 @@ describe('Integration: Component: gh-theme-table', function() {
     });
 
     it('displays folder names if there are duplicate package names', function () {
-        this.set('availableThemes', [
+        this.set('themes', [
             {name: 'daring', package: {name: 'Daring', version: '0.1.4'}, active: true},
             {name: 'daring-0.1.5', package: {name: 'Daring', version: '0.1.4'}},
             {name: 'casper', package: {name: 'Casper', version: '1.3.1'}},
@@ -171,7 +172,7 @@ describe('Integration: Component: gh-theme-table', function() {
         this.set('actionHandler', sinon.spy());
 
         this.render(hbs`{{gh-theme-table
-            availableThemes=availableThemes
+            themes=themes
             activateTheme=(action actionHandler)
             downloadTheme=(action actionHandler)
             deleteTheme=(action actionHandler)

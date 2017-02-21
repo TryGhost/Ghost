@@ -14,7 +14,7 @@ export default ModalComponent.extend({
 
     accept: ['application/zip', 'application/x-zip-compressed'],
     extensions: ['zip'],
-    availableThemes: null,
+    themes: null,
     closeDisabled: false,
     file: null,
     theme: false,
@@ -34,7 +34,7 @@ export default ModalComponent.extend({
         return t.package ? `${t.package.name} - ${t.package.version}` : t.name;
     }),
 
-    availableThemeNames: mapBy('model.availableThemes', 'name'),
+    currentThemeNames: mapBy('model.themes', 'name'),
 
     fileThemeName: computed('file', function () {
         let file = this.get('file');
@@ -43,6 +43,7 @@ export default ModalComponent.extend({
 
     canActivateTheme: computed('theme', function () {
         let theme = this.get('theme');
+        // TODO: do we still get theme.active back or do we need to check settings.activeTheme?
         return theme && !theme.active;
     }),
 
@@ -50,7 +51,7 @@ export default ModalComponent.extend({
         validateTheme(file) {
             let themeName = file.name.replace(/\.zip$/, '').replace(/[^\w@.]/gi, '-');
 
-            let availableThemeNames = this.get('availableThemeNames');
+            let currentThemeNames = this.get('currentThemeNames');
 
             this.set('file', file);
 
@@ -65,7 +66,7 @@ export default ModalComponent.extend({
                 return {errors: [{message: 'Sorry, the default Casper theme cannot be overwritten.<br>Please rename your zip file and try again.'}]};
             }
 
-            if (!this._allowOverwrite && availableThemeNames.includes(themeName)) {
+            if (!this._allowOverwrite && currentThemeNames.includes(themeName)) {
                 this.set('displayOverwriteWarning', true);
                 return false;
             }

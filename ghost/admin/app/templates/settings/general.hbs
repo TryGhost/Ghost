@@ -175,7 +175,8 @@
                 <h3 id="themes">Themes</h3>
 
                 {{gh-theme-table
-                        availableThemes=model.availableThemes
+                        themes=themes
+                        activeTheme=model.activeTheme
                         activateTheme=(action "setTheme")
                         downloadTheme=(action "downloadTheme")
                         deleteTheme=(action "deleteTheme")}}

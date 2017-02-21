@@ -194,31 +194,6 @@ export default [
         value: 'Etc/UTC'
     },
     {
-        id: 20,
-        key: 'availableThemes',
-        value: [
-            {
-                name: 'casper',
-                package: {
-                    name: 'Blog',
-                    version: '1.0'
-                },
-                active: true
-            },
-            {
-                name: 'foo',
-                package: {
-                    name: 'Foo',
-                    version: '0.1'
-                }
-            },
-            {
-                name: 'bar'
-            }
-        ],
-        type: 'theme'
-    },
-    {
         id: 21,
         created_at: '2017-01-09T08:40:59.000Z',
         created_by: 1,

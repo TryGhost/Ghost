@@ -1,6 +1,6 @@
-{{#if themes}}
+{{#if sortedThemes}}
     <div class="theme-list">
-        {{#each themes as |theme|}}
+        {{#each sortedThemes as |theme|}}
             <div class="theme-list-item {{if theme.active "theme-list-item--active"}}">
                 <div class="theme-list-item-body">
                     <span class="name">{{theme.label}}</span>
