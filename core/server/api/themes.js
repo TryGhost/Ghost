@@ -28,6 +28,10 @@ themes = {
             });
     },
 
+    browse: function browse() {
+        return Promise.resolve({themes: settings.cache.get('availableThemes')});
+    },
+
     upload: function upload(options) {
         options = options || {};
 
