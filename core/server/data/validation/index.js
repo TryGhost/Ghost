@@ -6,15 +6,12 @@ var schema    = require('../schema').tables,
     Promise   = require('bluebird'),
     errors    = require('../../errors'),
     config    = require('../../config'),
-    readThemes  = require('../../utils/read-themes'),
     i18n        = require('../../i18n'),
 
     validateSchema,
     validateSettings,
     validateActiveTheme,
-    validate,
-
-    availableThemes;
+    validate;
 
 function assertString(input) {
     assert(typeof input === 'string', 'Validator js validates strings only');
@@ -131,24 +128,17 @@ validateSettings = function validateSettings(defaultSettings, model) {
 };
 
 validateActiveTheme = function validateActiveTheme(themeName) {
-    // If Ghost is running and its availableThemes collection exists
-    // give it priority.
-    if (config.get('paths').availableThemes && Object.keys(config.get('paths').availableThemes).length > 0) {
-        availableThemes = Promise.resolve(config.get('paths').availableThemes);
+    // @TODO come up with something way better here - we should probably attempt to read the theme from the
+    // File system at this point and validate the theme using gscan rather than just checking if it's in a cache object
+    if (!config.get('paths').availableThemes || Object.keys(config.get('paths').availableThemes).length === 0) {
+        // We haven't yet loaded all themes, this is probably being called early?
+        return Promise.resolve();
     }
 
-    if (!availableThemes) {
-        // A Promise that will resolve to an object with a property for each installed theme.
-        // This is necessary because certain configuration data is only available while Ghost
-        // is running and at times the validations are used when it's not (e.g. tests)
-        availableThemes = readThemes(config.getContentPath('themes'));
+    // Else, if we have a list, check if the theme is in it
+    if (!config.get('paths').availableThemes.hasOwnProperty(themeName)) {
+        return Promise.reject(new errors.ValidationError({message: i18n.t('notices.data.validation.index.themeCannotBeActivated', {themeName: themeName}), context: 'activeTheme'}));
     }
-
-    return availableThemes.then(function then(themes) {
-        if (!themes.hasOwnProperty(themeName)) {
-            return Promise.reject(new errors.ValidationError({message: i18n.t('notices.data.validation.index.themeCannotBeActivated', {themeName: themeName}), context: 'activeTheme'}));
-        }
-    });
 };
 
 // Validate default settings using the validator module.
