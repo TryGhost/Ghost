@@ -13,6 +13,7 @@
             <div class="gh-setting-content">
                 <div class="gh-setting-title">Title &amp; description</div>
                 <div class="gh-setting-desc">The details used to identify your publication around the web</div>
+                {{#liquid-if pubInfoOpen}}
                 <div class="gh-setting-content-extended">
                     {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="title"}}
                         {{gh-input model.title type="text" focusOut=(action "validate" "title" target=model) update=(action (mut model.title)) data-test-title-input=true}}
@@ -26,24 +27,27 @@
                         <p>Used in your theme, meta data and search results</p>
                     {{/gh-form-group}}
                 </div>
+                {{/liquid-if}}
             </div>
             <div class="gh-setting-action">
-                <button type="button" class="gh-btn gh-btn-hover-blue"><span>Close</span></button>
+                <button type="button" class="gh-btn gh-btn-hover-blue" {{action (toggle "pubInfoOpen" this)}} data-test-toggle-pub-info><span>{{if pubInfoOpen "Close" "Open"}}</span></button>
             </div>
         </div>
         <div class="gh-setting">
             <div class="gh-setting-content">
                 <div class="gh-setting-title">Site timezone</div>
                 <div class="gh-setting-desc">Set the time and date of your publication, used for all published posts</div>
+                {{#liquid-if timezoneOpen}}
                 <div class="gh-setting-content-extended">
                     {{gh-timezone-select
                             activeTimezone=model.activeTimezone
                             availableTimezones=availableTimezones
                             update=(action "setTimezone")}}
                 </div>
+                {{/liquid-if}}
             </div>
             <div class="gh-setting-action">
-                <button type="button" class="gh-btn gh-btn-hover-blue"><span>Close</span></button>
+                <button type="button" class="gh-btn gh-btn-hover-blue" {{action (toggle "timezoneOpen" this)}} data-test-toggle-timezone><span>{{if timezoneOpen "Close" "Open"}}</span></button>
             </div>
         </div>
 
@@ -114,6 +118,7 @@
             <div class="gh-setting-content">
                 <div class="gh-setting-title">Social accounts</div>
                 <div class="gh-setting-desc">Link your social accounts for full structured data and rich card support</div>
+                {{#liquid-if socialOpen}}
                 <div class="gh-setting-content-extended">
                     {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="facebook"}}
                         <input value={{model.facebook}} oninput={{action (mut _scratchFacebook) value="target.value"}} {{action "validateFacebookUrl" on="focusOut"}} type="url" class="gh-input" placeholder="https://www.facebook.com/ghost" autocorrect="off" data-test-facebook-input />
@@ -126,9 +131,10 @@
                         <p>URL of your publication's Twitter profile</p>
                     {{/gh-form-group}}
                 </div>
+                {{/liquid-if}}
             </div>
             <div class="gh-setting-action">
-                <button type="button" class="gh-btn gh-btn-hover-blue"><span>Close</span></button>
+                <button type="button" class="gh-btn gh-btn-hover-blue" {{action (toggle "socialOpen" this)}} data-test-toggle-social><span>{{if socialOpen "Close" "Open"}}</span></button>
             </div>
         </div>
 

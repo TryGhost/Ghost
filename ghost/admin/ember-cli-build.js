@@ -90,6 +90,9 @@ module.exports = function (defaults) {
             optional: ['es6.spec.symbols'],
             includePolyfill: true
         },
+        'ember-composable-helpers': {
+            only: ['toggle']
+        },
         outputPaths: {
             app: {
                 js: assetLocation('ghost.js'),

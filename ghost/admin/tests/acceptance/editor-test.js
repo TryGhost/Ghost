@@ -11,6 +11,7 @@ import destroyApp from '../helpers/destroy-app';
 import {invalidateSession, authenticateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import Mirage from 'ember-cli-mirage';
 import sinon from 'sinon';
+import testSelector from 'ember-test-selectors';
 
 describe('Acceptance: Editor', function() {
     let application;
@@ -196,6 +197,7 @@ describe('Acceptance: Editor', function() {
 
             // go to settings to change the timezone
             visit('/settings/general');
+            click(testSelector('toggle-timezone'));
 
             andThen(() => {
                 expect(currentURL(), 'currentURL for settings')

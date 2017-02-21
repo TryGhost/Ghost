@@ -1364,7 +1364,7 @@ commander@2.8.x:
   dependencies:
     graceful-readlink ">= 1.0.0"
 
-commander@^2.1.0, commander@^2.5.0, commander@^2.6.0, commander@^2.9.0:
+commander@^2.5.0, commander@^2.6.0, commander@^2.9.0:
   version "2.9.0"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.9.0.tgz#9c99094176e12240cb22d6c5146098400fe0f7d4"
   dependencies:
@@ -2256,6 +2256,13 @@ ember-component-inbound-actions@1.0.1:
 ember-composable-helpers@^1.1.2:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/ember-composable-helpers/-/ember-composable-helpers-1.2.0.tgz#9826bfca0039629a4a78ff392531213d365cca65"
+  dependencies:
+    broccoli-funnel "^1.0.1"
+    ember-cli-babel "^5.1.7"
+
+ember-composable-helpers@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/ember-composable-helpers/-/ember-composable-helpers-2.0.0.tgz#8ca13c36c33b15f7d2ded05e9e1c9587814cee5a"
   dependencies:
     broccoli-funnel "^1.0.1"
     ember-cli-babel "^5.1.7"
@@ -4212,9 +4219,16 @@ js-tokens@^3.0.0:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-3.0.1.tgz#08e9f132484a2c45a30907e9dc4d5567b7f114d7"
 
-js-yaml@3.6.1, js-yaml@3.x, js-yaml@^3.2.5, js-yaml@^3.2.7, js-yaml@^3.5.1, js-yaml@^3.6.1:
+js-yaml@3.6.1, js-yaml@3.x, js-yaml@^3.2.5, js-yaml@^3.6.1:
   version "3.6.1"
   resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.6.1.tgz#6e5fe67d8b205ce4d22fad05b7781e8dadcc4b30"
+  dependencies:
+    argparse "^1.0.7"
+    esprima "^2.6.0"
+
+js-yaml@^3.2.7, js-yaml@^3.5.1, js-yaml@~3.7.0:
+  version "3.7.0"
+  resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.7.0.tgz#5c967ddd837a9bfdca5f2de84253abe8a1c03b80"
   dependencies:
     argparse "^1.0.7"
     esprima "^2.6.0"
@@ -4224,13 +4238,6 @@ js-yaml@~3.5.2:
   resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.5.5.tgz#0377c38017cabc7322b0d1fbcd25a491641f2fbe"
   dependencies:
     argparse "^1.0.2"
-    esprima "^2.6.0"
-
-js-yaml@~3.7.0:
-  version "3.7.0"
-  resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.7.0.tgz#5c967ddd837a9bfdca5f2de84253abe8a1c03b80"
-  dependencies:
-    argparse "^1.0.7"
     esprima "^2.6.0"
 
 jsbn@~0.1.0:
