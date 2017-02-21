@@ -57,7 +57,7 @@ input {
 .form-group {
     position: relative;
     margin-bottom: 1.6em;
-    max-width: 500px;
+    max-width: 700px;
     width: 100%;
     user-select: text;
 }
@@ -124,13 +124,13 @@ input {
 .gh-select,
 select {
     display: block;
-    padding: 8px 10px;
+    padding: 10px 12px;
     width: 100%;
     border: color(var(--lightgrey) l(-5%) s(-10%)) 1px solid;
     border-radius: var(--border-radius);
     color: color(var(--midgrey) l(-18%));
-    font-size: 1.4rem;
-    font-weight: normal;
+    font-size: 1.6rem;
+    font-weight: 300;
     user-select: text;
     transition: border-color 0.15s linear;
 

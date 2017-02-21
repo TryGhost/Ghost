@@ -405,6 +405,12 @@ body > .ember-view:not(.liquid-target-container) {
 .gh-mobile-nav-bar { display: none; }
 
 @media (max-width: 800px) {
+
+    /* Make space for the mobile nav bar */
+    .gh-viewport {
+        padding-bottom: 55px;
+    }
+
     .gh-mobile-nav-bar {
         display: flex;
         align-items: center;
@@ -518,9 +524,7 @@ body > .ember-view:not(.liquid-target-container) {
 .view-content {
     position: relative;
     flex-grow: 1;
-    overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4vw;
 }
 
 .view-content {
