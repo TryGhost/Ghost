@@ -138,6 +138,7 @@
 
 .modal-body .gh-image-uploader {
     margin: 0;
+    background: color(var(--lightgrey) l(+4%));
 }
 
 

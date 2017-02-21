@@ -78,6 +78,8 @@
 .apps-configured {
     display: flex;
     align-items: center;
+    color: var(--midgrey);
+    font-weight: 300;
 }
 
 .apps-configured i {
