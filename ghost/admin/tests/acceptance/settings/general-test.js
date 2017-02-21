@@ -85,6 +85,7 @@ describe('Acceptance: Settings - General', function () {
                 expect(find(testSelector('dated-permalinks-checkbox')).prop('checked'), 'date permalinks checkbox').to.be.false;
             });
 
+            click(testSelector('toggle-pub-info'));
             fillIn(testSelector('title-input'), 'New Blog Title');
             click(testSelector('save-button'));
 
@@ -147,6 +148,7 @@ describe('Acceptance: Settings - General', function () {
 
         it('renders timezone selector correctly', function () {
             visit('/settings/general');
+            click(testSelector('toggle-timezone'));
 
             andThen(() => {
                 expect(currentURL(), 'currentURL').to.equal('/settings/general');
@@ -195,9 +197,13 @@ describe('Acceptance: Settings - General', function () {
                 expect(find(testSelector('password-error')).text().trim(), 'present password error')
                     .to.equal('');
             });
+        });
+
+        it('handles social blog settings correctly', function () {
+            visit('/settings/general');
+            click(testSelector('toggle-social'));
 
             // validates a facebook url correctly
-
             andThen(() => {
                 // loads fixtures and performs transform
                 expect(find(testSelector('facebook-input')).val(), 'initial facebook value')

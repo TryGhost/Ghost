@@ -63,6 +63,7 @@
     "ember-cli-sri": "2.1.1",
     "ember-cli-test-loader": "1.1.1",
     "ember-cli-uglify": "1.2.0",
+    "ember-composable-helpers": "2.0.0",
     "ember-concurrency": "0.7.19",
     "ember-data": "2.11.1",
     "ember-data-filter": "1.13.0",
