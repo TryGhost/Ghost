@@ -205,7 +205,7 @@ textarea {
     width: 18px;
     height: 18px;
     border: 1px solid color(var(--lightgrey) l(-5%) s(-10%));
-    background: color(var(--lightgrey) l(+5%));
+    background: #fff;
 }
 
 .for-checkbox label:hover input:not(:checked) + .input-toggle-component,
@@ -309,7 +309,7 @@ textarea {
 }
 
 .gh-select select {
-    padding: 8px 10px;
+    padding: 10px 12px;
     outline: none;
     background: #fff;
     text-indent: 0.01px;

@@ -14,8 +14,7 @@
     overflow: hidden;
     max-width: 100%;
     width: 350px;
-    border-left: #dfe1e3 1px solid;
-    background: #fff;
+    background: color(var(--lightgrey) l(+4%));
     transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
     transform: translate3d(350px, 0px, 0px);
 }

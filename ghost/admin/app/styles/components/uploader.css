@@ -10,10 +10,11 @@
     margin: 1.6em 0;
     min-height: 130px;
     width: 100%;
-    background: #f6f7f8;
+    background: #fff;
     border-radius: 4px;
-    color: #808284;
+    color: color(var(--midgrey) l(-18%));
     text-align: center;
+    border-radius: 4px;
 }
 
 .gh-image-uploader.-drag-over {

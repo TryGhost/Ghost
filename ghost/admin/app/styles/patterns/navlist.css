@@ -4,7 +4,7 @@
 .nav-list {
     padding: 0;
     max-width: 500px;
-    border: 1px solid #e0dfd7;
+    border: 1px solid color(var(--lightgrey) l(-5%) s(-10%));
     background: #fff;
     border-radius: var(--border-radius);
 }
@@ -16,12 +16,13 @@
 .nav-list-item {
     position: relative;
     display: block;
-    padding: 8px 40px 8px 12px;
+    margin: 0;
+    padding: 9px 40px 10px 12px;
     color: var(--darkgrey);
 }
 
 .nav-list-item:hover {
-    background: color(#dfe1e3 lightness(+10%));
+    background: color(var(--lightgrey) l(+6%));
     cursor: pointer;
 }
 
@@ -36,7 +37,7 @@
 }
 
 .nav-list-item:not(:last-of-type) {
-    border-bottom: 1px solid #e0dfd7;
+    border-bottom: 1px solid color(var(--lightgrey) l(-5%) s(-10%));
 }
 
 .nav-list-item button {
@@ -59,6 +60,7 @@
     color: var(--midgrey);
     font-size: 1.1rem;
     line-height: 1.375;
+    letter-spacing: 0.2px;
 }
 
 .nav-list-item i {
