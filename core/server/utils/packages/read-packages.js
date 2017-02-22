@@ -11,10 +11,10 @@ var parsePackageJson = require('./parse-package-json'),
     readDir = Promise.promisify(fs.readdir);
 
 /**
- * Recursively read directory
+ * Recursively read directory and find the packages in it
  */
 
-function readDirectory(dir, options) {
+function readPackages(dir, options) {
     var ignore;
 
     if (!options) {
@@ -61,7 +61,7 @@ function readDirectory(dir, options) {
             }
 
             if (item.stat.isDirectory()) {
-                return readDirectory(item.path).then(function (files) {
+                return readPackages(item.path).then(function (files) {
                     item.content = files;
 
                     return item;
@@ -93,7 +93,7 @@ function readDirectory(dir, options) {
 }
 
 /**
- * Expose `readDirectory`
+ * Expose `readPackages`
  */
 
-module.exports = readDirectory;
+module.exports = readPackages;

@@ -2,7 +2,7 @@
  * Dependencies
  */
 
-var readDirectory = require('../utils').readDirectory,
+var readPackages = require('../utils/packages').readPackages,
     Promise = require('bluebird'),
     _ = require('lodash'),
     join = require('path').join,
@@ -16,7 +16,7 @@ readOneTheme = function readOneTheme(dir, name) {
     var toRead = join(dir, name),
         themes = {};
 
-    return readDirectory(toRead)
+    return readPackages(toRead)
         .then(function (tree) {
             if (!_.isEmpty(tree)) {
                 themes[name] = tree;
@@ -29,7 +29,7 @@ readOneTheme = function readOneTheme(dir, name) {
 readAllThemes = function readAllThemes(dir) {
     var originalTree;
 
-    return readDirectory(dir)
+    return readPackages(dir)
         .tap(function (tree) {
             originalTree = tree;
         })
