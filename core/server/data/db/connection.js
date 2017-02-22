@@ -1,4 +1,5 @@
 var knex = require('knex'),
+    _ = require('lodash'),
     config = require('../../config'),
     knexInstance;
 
@@ -30,13 +31,13 @@ function configure(dbConfig) {
 
         // https://github.com/tgriesser/knex/issues/97
         // this sets the timezone to UTC only for the connection!
-        dbConfig.pool = {
+        dbConfig.pool = _.defaults({
             afterCreate: function (connection, callback) {
                 connection.query('set timezone=\'UTC\'', function (err) {
                     callback(err, connection);
                 });
             }
-        };
+        }, dbConfig.pool);
     }
 
     if (client === 'sqlite3') {

@@ -11,6 +11,7 @@ var testUtils   = require('../../utils'),
     UserModel   = require('../../../server/models/user').User,
     RoleModel   = require('../../../server/models/role').Role,
     models      = require('../../../server/models'),
+    errors      = require('../../../server/errors'),
     events      = require('../../../server/events'),
     context     = testUtils.context.admin,
     sandbox     = sinon.sandbox.create();
@@ -424,6 +425,19 @@ describe('User Model', function run() {
             }).catch(function () {
                 done();
             });
+        });
+
+        it('can NOT set an already existing email address', function (done) {
+            var secondEmail = testUtils.DataGenerator.Content.users[1].email;
+
+            UserModel.edit({email: secondEmail}, {id: 1})
+                .then(function () {
+                    done(new Error('Already existing email address was accepted'));
+                })
+                .catch(function (err) {
+                    (err instanceof errors.ValidationError).should.eql(true);
+                    done();
+                });
         });
 
         it('can edit invited user', function (done) {

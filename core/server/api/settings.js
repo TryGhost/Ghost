@@ -6,8 +6,10 @@ var _            = require('lodash'),
     config       = require('../config'),
     canThis      = require('../permissions').canThis,
     errors       = require('../errors'),
+    events       = require('../events'),
     utils        = require('./utils'),
     i18n         = require('../i18n'),
+    readThemes   = require('../utils/read-themes'),
 
     docName      = 'settings',
     settings,
@@ -29,6 +31,20 @@ var _            = require('lodash'),
      * @type {{}}
      */
     settingsCache = {};
+
+// @TODO figure out a better way to do this in the alpha
+function initActiveTheme(theme) {
+    return readThemes.active(config.paths.themePath, theme).then(function (result) {
+        config.set({paths: {availableThemes: result}});
+    });
+}
+
+// @TODO figure out a better way to do this in the alpha
+events.on('server:start', function () {
+    config.loadExtras().then(function () {
+        updateSettingsCache();
+    });
+});
 
 /**
 * ### Updates Config Theme Settings
@@ -182,7 +198,7 @@ readSettingsResult = function (settingsModels) {
         apps = config.paths.availableApps,
         res;
 
-    if (settings.activeTheme && themes) {
+    if (settings.activeTheme && !_.isEmpty(themes)) {
         res = filterPaths(themes, settings.activeTheme.value);
 
         settings.availableThemes = {
@@ -190,6 +206,8 @@ readSettingsResult = function (settingsModels) {
             value: res,
             type: 'theme'
         };
+    } else if (settings.activeTheme) {
+        initActiveTheme(settings.activeTheme.value);
     }
 
     if (settings.activeApps && apps) {

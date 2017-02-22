@@ -59,7 +59,9 @@ DataImporter.prototype.doUserImport = function (t, tableData, owner, users, erro
         return Promise.all(userOps).then(function (descriptors) {
             descriptors.forEach(function (d) {
                 if (!d.isFulfilled()) {
-                    errors = errors.concat(d.reason());
+                    if (!d.reason().raw || (d.reason().raw.errno !== 19 && d.reason().raw.errno !== 1062)) {
+                        errors = errors.concat(d.reason());
+                    }
                 } else {
                     imported.push(d.value().toJSON(internal));
                 }

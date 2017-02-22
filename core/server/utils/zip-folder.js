@@ -5,16 +5,23 @@ module.exports = function zipFolder(folderToZip, destination, callback) {
     var output = fs.createWriteStream(destination),
         archive = archiver.create('zip', {});
 
-    output.on('close', function () {
-        callback(null, archive.pointer());
-    });
+    // CASE: always ask for the real path, because the target folder could be a symlink
+    fs.realpath(folderToZip, function (err, realpath) {
+        if (err) {
+            return callback(err);
+        }
 
-    archive.on('error', function (err) {
-        callback(err, null);
-    });
+        output.on('close', function () {
+            callback(null, archive.pointer());
+        });
 
-    archive.directory(folderToZip, '/');
-    archive.pipe(output);
-    archive.finalize();
+        archive.on('error', function (err) {
+            callback(err, null);
+        });
+
+        archive.directory(realpath, '/');
+        archive.pipe(output);
+        archive.finalize();
+    });
 };
 
