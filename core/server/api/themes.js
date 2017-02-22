@@ -1,6 +1,7 @@
 // # Themes API
 // RESTful API for Themes
-var Promise = require('bluebird'),
+var debug = require('debug')('ghost:api:themes'),
+    Promise = require('bluebird'),
     _ = require('lodash'),
     gscan = require('gscan'),
     fs = require('fs-extra'),
@@ -10,11 +11,11 @@ var Promise = require('bluebird'),
     logging = require('../logging'),
     storage = require('../storage'),
     settings = require('./settings'),
-    settingsCache = require('../settings/cache'),
     apiUtils = require('./utils'),
     utils = require('./../utils'),
     i18n = require('../i18n'),
     themeUtils = require('../themes'),
+    packageUtils = require('../utils/packages'),
     themes;
 
 /**
@@ -24,7 +25,10 @@ var Promise = require('bluebird'),
  */
 themes = {
     browse: function browse() {
-        return Promise.resolve({themes: settingsCache.get('availableThemes')});
+        debug('browsing');
+        var result = packageUtils.filterPackages(config.get('paths:availableThemes'));
+        debug('got result');
+        return Promise.resolve({themes: result});
     },
 
     upload: function upload(options) {
@@ -90,9 +94,11 @@ themes = {
                 // so we have to force updating the in process cache
                 return settings.updateSettingsCache();
             })
-            .then(function (settings) {
+            .then(function () {
                 // gscan theme structure !== ghost theme structure
-                var themeObject = _.find(settings.availableThemes.value, {name: zip.shortName}) || {};
+                // @TODO reduce this unnecessary work
+                var result = packageUtils.filterPackages(config.get('paths:availableThemes')),
+                    themeObject = _.find(result, {name: zip.shortName}) || {};
                 if (theme.results.warning.length > 0) {
                     themeObject.warnings = _.cloneDeep(theme.results.warning);
                 }
