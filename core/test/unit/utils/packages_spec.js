@@ -6,7 +6,11 @@ var should = require('should'),
     // Things we are testing
     packages = require('../../../server/utils/packages'),
     parsePackageJson = packages.parsePackageJSON,
-    readPackages = packages.readPackages;
+    readPackages = packages.readPackages,
+    filterPackages = packages.filterPackages;
+
+// To stop jshint complaining
+should.equal(true, true);
 
 describe('Package Utils', function () {
     describe('Parse Package.json', function () {
@@ -244,7 +248,139 @@ describe('Package Utils', function () {
     });
 
     describe('Filter Packages', function () {
-        it('should filter packages correctly?');
+        // @TODO: introduce some non-theme package examples
+        var casper = {
+                '.gitignore': '~/content/themes/casper/.gitignore',
+                LICENSE: '~/content/themes/casper/LICENSE',
+                'README.md': '~/content/themes/casper/README.md',
+                assets: {
+                    css: {},
+                    fonts: {},
+                    js: {},
+                    'screenshot-desktop.jpg': '~/content/themes/casper/assets/screenshot-desktop.jpg',
+                    'screenshot-mobile.jpg': '~/content/themes/casper/assets/screenshot-mobile.jpg'
+                },
+                'author.hbs': '~/content/themes/casper/author.hbs',
+                'default.hbs': '~/content/themes/casper/default.hbs',
+                'index.hbs': '~/content/themes/casper/index.hbs',
+                'package.json': {
+                    name: 'casper',
+                    description: 'The default personal blogging theme for Ghost. Beautiful, minimal and responsive.',
+                    demo: 'https://demo.ghost.io',
+                    version: '1.3.5',
+                    engines: {},
+                    license: 'MIT',
+                    screenshots: {},
+                    author: {},
+                    gpm: {},
+                    keywords: {},
+                    repository: {},
+                    bugs: 'https://github.com/TryGhost/Casper/issues',
+                    contributors: 'https://github.com/TryGhost/Casper/graphs/contributors'
+                },
+                'page.hbs': '~/content/themes/casper/page.hbs',
+                partials: {
+                    'loop.hbs': '~/content/themes/casper/partials/loop.hbs',
+                    'navigation.hbs': '~/content/themes/casper/partials/navigation.hbs'
+                },
+                'post-test-thing.hbs': '~/content/themes/casper/post-test-thing.hbs',
+                'post.hbs': '~/content/themes/casper/post.hbs',
+                'tag.hbs': '~/content/themes/casper/tag.hbs'
+            },
+            simplePackage = {
+                'default.hbs': '~/content/themes/casper/default.hbs',
+                'index.hbs': '~/content/themes/casper/index.hbs',
+                'package.json': {
+                    name: 'simple',
+                    version: '0.1.0'
+                }
+            },
+            missingPackageJson = {
+                'default.hbs': '~/content/themes/casper/default.hbs',
+                'index.hbs': '~/content/themes/casper/index.hbs'
+            };
+
+        it('should filter packages correctly', function () {
+            var result = filterPackages({casper: casper}),
+                package1;
+
+            result.should.be.an.Array().with.lengthOf(1);
+            package1 = result[0];
+
+            package1.should.be.an.Object().with.properties('name', 'package');
+            Object.keys(package1).should.be.an.Array().with.lengthOf(2);
+            package1.name.should.eql('casper');
+            package1.package.should.be.an.Object().with.properties('name', 'version');
+        });
+
+        it('should filter packages and handle a single active package string', function () {
+            var result = filterPackages({casper: casper, simple: simplePackage}, 'casper'),
+                package1, package2;
+
+            result.should.be.an.Array().with.lengthOf(2);
+            package1 = result[0];
+            package2 = result[1];
+
+            package1.should.be.an.Object().with.properties('name', 'package', 'active');
+            Object.keys(package1).should.be.an.Array().with.lengthOf(3);
+            package1.name.should.eql('casper');
+            package1.package.should.be.an.Object().with.properties('name', 'version');
+            package1.active.should.be.true();
+
+            package2.should.be.an.Object().with.properties('name', 'package');
+            Object.keys(package2).should.be.an.Array().with.lengthOf(2);
+            package2.name.should.eql('simple');
+            package2.package.should.be.an.Object().with.properties('name', 'version');
+            should.not.exist(package2.active);
+        });
+
+        it('should filter packages and handle an array of active packages', function () {
+            var result = filterPackages({casper: casper, simple: simplePackage}, ['casper', 'simple']),
+                package1, package2;
+
+            result.should.be.an.Array().with.lengthOf(2);
+            package1 = result[0];
+            package2 = result[1];
+
+            package1.should.be.an.Object().with.properties('name', 'package', 'active');
+            Object.keys(package1).should.be.an.Array().with.lengthOf(3);
+            package1.name.should.eql('casper');
+            package1.package.should.be.an.Object().with.properties('name', 'version');
+            package1.active.should.be.true();
+
+            package2.should.be.an.Object().with.properties('name', 'package', 'active');
+            Object.keys(package2).should.be.an.Array().with.lengthOf(3);
+            package2.name.should.eql('simple');
+            package2.package.should.be.an.Object().with.properties('name', 'version');
+            package2.active.should.be.true();
+        });
+
+        it('handles packages with no package.json even though this makes us sad', function () {
+            var result = filterPackages({casper: casper, missing: missingPackageJson}, ['casper']),
+                package1, package2;
+
+            result.should.be.an.Array().with.lengthOf(2);
+            package1 = result[0];
+            package2 = result[1];
+
+            package1.should.be.an.Object().with.properties('name', 'package', 'active');
+            Object.keys(package1).should.be.an.Array().with.lengthOf(3);
+            package1.name.should.eql('casper');
+            package1.package.should.be.an.Object().with.properties('name', 'version');
+            package1.active.should.be.true();
+
+            package2.should.be.an.Object().with.properties('name', 'package');
+            Object.keys(package2).should.be.an.Array().with.lengthOf(2);
+            package2.name.should.eql('missing');
+            package2.package.should.be.false();
+            should.not.exist(package2.active);
+        });
+
+        it('filters out things which are not packages', function () {
+            var result = filterPackages({
+                '.git': {}, '.anything': {}, 'README.md': {}, _messages: {}
+            });
+            result.should.be.an.Array().with.lengthOf(0);
+        });
     });
 });
-
