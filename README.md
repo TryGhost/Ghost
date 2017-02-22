@@ -24,15 +24,16 @@ The project is maintained by a non-profit organisation called the **Ghost Founda
 If you get stuck, come say hi over [on slack](https://slack.ghost.org)!
 
 ```bash
-- clone
-- npm install
-- git submodule update --init
-- cd into core/client
-- npm install
-- bower install
-- cd back
-- gulp setup
-- gulp dev
+git clone [Ghost's repo URL or your Ghost Fork's URL]
+npm install
+git submodule update --init
+cd core/client
+npm install
+bower install
+cd ../..
+gulp setup
+knex-migrator init
+gulp dev
 ```
 
 To run tests
