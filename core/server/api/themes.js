@@ -10,7 +10,6 @@ var debug = require('debug')('ghost:api:themes'),
     events = require('../events'),
     logging = require('../logging'),
     storage = require('../storage'),
-    settings = require('./settings'),
     apiUtils = require('./utils'),
     utils = require('./../utils'),
     i18n = require('../i18n'),
@@ -90,11 +89,6 @@ themes = {
                 return themeUtils.load();
             })
             .then(function () {
-                // the settings endpoint is used to fetch the availableThemes
-                // so we have to force updating the in process cache
-                return settings.updateSettingsCache();
-            })
-            .then(function () {
                 // gscan theme structure !== ghost theme structure
                 // @TODO reduce this unnecessary work
                 var result = packageUtils.filterPackages(config.get('paths:availableThemes')),
@@ -165,9 +159,6 @@ themes = {
             })
             .then(function () {
                 return themeUtils.load();
-            })
-            .then(function () {
-                return settings.updateSettingsCache();
             });
     }
 };

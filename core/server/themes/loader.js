@@ -11,7 +11,6 @@ var debug = require('debug')('ghost:themes:loader'),
 updateConfigAndCache = function updateConfigAndCache(themes) {
     debug('loading themes', Object.keys(themes));
     config.set('paths:availableThemes', themes);
-    settingsApi.updateSettingsCache();
 };
 
 loadThemes = function loadThemes() {
