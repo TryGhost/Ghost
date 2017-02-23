@@ -35,6 +35,9 @@ module.exports.getImageSizeFromUrl = function getImageSizeFromUrl(imagePath, tim
         var imageObject = {},
             options;
 
+        // set default timeout if called without option. Otherwise node will use default timeout of 120 sec.
+        timeout = timeout ? timeout : 10000;
+
         imageObject.url = imagePath;
 
         // check if we got an url without any protocol
@@ -71,20 +74,19 @@ module.exports.getImageSizeFromUrl = function getImageSizeFromUrl(imagePath, tim
 
                         return resolve(imageObject);
                     } catch (err) {
-                        // @ToDo: add real error handling here as soon as we have error logging
+                        err.context = imagePath;
+
                         return reject(err);
                     }
                 } else {
-                    // @ToDo: add real error handling here as soon as we have error logging
                     var err = new Error();
-                    err.message = imagePath;
+                    err.context = imagePath;
                     err.statusCode = res.statusCode;
 
                     return reject(err);
                 }
             });
         }).on('socket', function (socket) {
-            // don't set timeout if no timeout give as argument
             if (timeout) {
                 socket.setTimeout(timeout);
                 socket.on('timeout', function () {
@@ -92,7 +94,7 @@ module.exports.getImageSizeFromUrl = function getImageSizeFromUrl(imagePath, tim
                 });
             }
         }).on('error', function (err) {
-            // @ToDo: add real error handling here as soon as we have error logging
+            err.context = imagePath;
 
             return reject(err);
         });
