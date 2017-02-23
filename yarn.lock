@@ -2078,9 +2078,9 @@ getsetdeep@~2.0.0:
   dependencies:
     typechecker "~2.0.1"
 
-ghost-editor@0.1.9:
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/ghost-editor/-/ghost-editor-0.1.9.tgz#ef064847e3c3e86988fbdb3238e52a82fea65d30"
+ghost-editor@0.1.10:
+  version "0.1.10"
+  resolved "https://registry.yarnpkg.com/ghost-editor/-/ghost-editor-0.1.10.tgz#3ad796f333b381851f0f481985e052de2b0cd9ab"
   dependencies:
     broccoli-funnel "^1.0.7"
     broccoli-merge-trees "^1.1.4"
