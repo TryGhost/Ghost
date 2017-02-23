@@ -31,7 +31,7 @@ if (process.env.GHOST_NODE_VERSION_CHECK === 'false') {
                 (matchChar === '~' && currentVersion === versionString)
                 || (matchChar === '^'
                     && currentVersion.match(majorRegex)[0] === versionString.match(majorRegex)[0]
-                    && currentVersion.match(minorRegex)[0] >= versionString.match(minorRegex)[0]
+                    && parseInt(currentVersion.match(minorRegex)[0]) >= parseInt(versionString.match(minorRegex)[0])
                 )
             ) {
                 foundMatch = true;
