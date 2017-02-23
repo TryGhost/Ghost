@@ -1,7 +1,28 @@
 <section class="gh-canvas">
-    {{partial "posts-header"}}
+    <header class="gh-canvas-header">
+        <h2 class="gh-canvas-title">Your stories</h2>
+        <section class="view-actions">
+            {{#link-to "editor.new" class="gh-btn gh-btn-green" data-test-new-post-button=true}}<span>New story</span>{{/link-to}}
+        </section>
+    </header>
 
-    <section class="content-list">
-        {{gh-loading-spinner}}
-    </section>
+    <div class="gh-contentfilter">
+        {{#active-link}}
+            {{link-to "All" "posts.index" (query-params type=null) data-test-all-filter-link=true}}
+        {{/active-link}}
+        {{#active-link}}
+            {{link-to "Drafts" "posts.index" (query-params type="draft") data-test-drafts-filter-link=true}}
+        {{/active-link}}
+        {{#active-link}}
+            {{link-to "Published" "posts.index" (query-params type="published") data-test-published-filter-link=true}}
+        {{/active-link}}
+        {{#active-link}}
+            {{link-to "Scheduled" "posts.index" (query-params type="scheduled") data-test-scheduled-filter-link=true}}
+        {{/active-link}}
+        {{#active-link}}
+            {{link-to "Pages" "posts.index" (query-params type="page") data-test-pages-filter-link=true}}
+        {{/active-link}}
+    </div>
+
+    {{gh-loading-spinner}}
 </section>
