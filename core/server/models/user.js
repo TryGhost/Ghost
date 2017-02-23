@@ -370,7 +370,7 @@ User = ghostBookshelf.Model.extend({
 
         if (data.email) {
             ops.push(function checkForDuplicateEmail() {
-                return self.getByEmail(data.email).then(function then(user) {
+                return self.getByEmail(data.email, options).then(function then(user) {
                     if (user && user.id !== options.id) {
                         return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.userUpdateError.emailIsAlreadyInUse')}));
                     }
