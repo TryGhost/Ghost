@@ -18,8 +18,6 @@ var _            = require('lodash'),
     readSettingsResult,
     settingsResult,
     canEditAllSettings,
-    populateDefaultSetting,
-    hasPopulatedDefaults = false,
 
     /**
      * ## Cache
@@ -176,33 +174,6 @@ settingsResult = function (settings, type) {
 };
 
 /**
- * ### Populate Default Setting
- * @private
- * @param {String} key
- * @returns Promise(Setting)
- */
-populateDefaultSetting = function (key) {
-    // Call populateDefault and update the settings cache
-    return dataProvider.Settings.populateDefault(key).then(function (defaultSetting) {
-        // Process the default result and add to settings cache
-        var readResult = readSettingsResult([defaultSetting]);
-
-        // Add to the settings cache
-        return updateSettingsCache(readResult).then(function () {
-            // Get the result from the cache with permission checks
-        });
-    }).catch(function (err) {
-        // Pass along NotFoundError
-        if (typeof err === errors.NotFoundError) {
-            return Promise.reject(err);
-        }
-
-        // TODO: different kind of error?
-        return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.settings.problemFindingSetting', {key: key})}));
-    });
-};
-
-/**
  * ### Can Edit All Settings
  * Check that this edit request is allowed for all settings requested to be updated
  * @private
@@ -210,7 +181,7 @@ populateDefaultSetting = function (key) {
  * @returns {*}
  */
 canEditAllSettings = function (settingsInfo, options) {
-    var checkSettingPermissions = function (setting) {
+    var checkSettingPermissions = function checkSettingPermissions(setting) {
             if (setting.type === 'core' && !(options.context && options.context.internal)) {
                 return Promise.reject(
                     new errors.NoPermissionError({message: i18n.t('errors.api.settings.accessCoreSettingFromExtReq')})
@@ -225,11 +196,9 @@ canEditAllSettings = function (settingsInfo, options) {
             var setting = settingsCache[settingInfo.key];
 
             if (!setting) {
-                // Try to populate a default setting if not in the cache
-                return populateDefaultSetting(settingInfo.key).then(function (defaultSetting) {
-                    // Get the result from the cache with permission checks
-                    return checkSettingPermissions(defaultSetting);
-                });
+                return Promise.reject(new errors.NotFoundError(
+                    {message: i18n.t('errors.api.settings.problemFindingSetting', {key: settingInfo.key})}
+                ));
             }
 
             return checkSettingPermissions(setting);
@@ -251,14 +220,6 @@ settings = {
      * @returns {*}
      */
     browse: function browse(options) {
-        // First, check if we have populated the settings from default-settings yet
-        if (!hasPopulatedDefaults) {
-            return dataProvider.Settings.populateDefaults().then(function () {
-                hasPopulatedDefaults = true;
-                return settings.browse(options);
-            });
-        }
-
         options = options || {};
 
         var result = settingsResult(settingsCache, options.type);
@@ -289,40 +250,32 @@ settings = {
             options = {key: options};
         }
 
-        var getSettingsResult = function () {
-                var setting = settingsCache[options.key],
-                    result = {};
+        var setting = settingsCache[options.key],
+            result = {};
 
-                result[options.key] = setting;
-
-                if (setting.type === 'core' && !(options.context && options.context.internal)) {
-                    return Promise.reject(
-                        new errors.NoPermissionError({message: i18n.t('errors.api.settings.accessCoreSettingFromExtReq')})
-                    );
-                }
-
-                if (setting.type === 'blog') {
-                    return Promise.resolve(settingsResult(result));
-                }
-
-                return canThis(options.context).read.setting(options.key).then(function () {
-                    return settingsResult(result);
-                }, function () {
-                    return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.api.settings.noPermissionToReadSettings')}));
-                });
-            };
-
-        // If the setting is not already in the cache
-        if (!settingsCache[options.key]) {
-            // Try to populate the setting from default-settings file
-            return populateDefaultSetting(options.key).then(function () {
-                // Get the result from the cache with permission checks
-                return getSettingsResult();
-            });
+        if (!setting) {
+            return Promise.reject(new errors.NotFoundError(
+                {message: i18n.t('errors.api.settings.problemFindingSetting', {key: options.key})}
+            ));
         }
 
-        // Get the result from the cache with permission checks
-        return getSettingsResult();
+        result[options.key] = setting;
+
+        if (setting.type === 'core' && !(options.context && options.context.internal)) {
+            return Promise.reject(
+                new errors.NoPermissionError({message: i18n.t('errors.api.settings.accessCoreSettingFromExtReq')})
+            );
+        }
+
+        if (setting.type === 'blog') {
+            return Promise.resolve(settingsResult(result));
+        }
+
+        return canThis(options.context).read.setting(options.key).then(function () {
+            return settingsResult(result);
+        }, function () {
+            return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.api.settings.noPermissionToReadSettings')}));
+        });
     },
 
     /**
