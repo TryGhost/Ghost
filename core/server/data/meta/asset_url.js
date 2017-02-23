@@ -1,5 +1,5 @@
 var config = require('../../config'),
-    settingsCache = require('../../api/settings').cache,
+    settingsCache = require('../../settings/cache'),
     utils = require('../../utils');
 
 function getAssetUrl(path, isAdmin, minify) {

@@ -19,7 +19,6 @@ var debug = require('debug')('ghost:boot:init'),
     Promise = require('bluebird'),
     logging = require('./logging'),
     i18n = require('./i18n'),
-    api = require('./api'),
     models = require('./models'),
     permissions = require('./permissions'),
     apps = require('./apps'),
@@ -30,6 +29,7 @@ var debug = require('debug')('ghost:boot:init'),
     GhostServer = require('./ghost-server'),
     scheduling = require('./scheduling'),
     settings = require('./settings'),
+    settingsCache = require('./settings/cache'),
     themes = require('./themes'),
     utils = require('./utils');
 
@@ -79,8 +79,8 @@ function init() {
             ghostAuthUrl: config.get('auth:url'),
             redirectUri: utils.url.urlFor('admin', true),
             clientUri: utils.url.urlFor('home', true),
-            clientName: api.settings.cache.get('title'),
-            clientDescription: api.settings.cache.get('description')
+            clientName: settingsCache.get('title'),
+            clientDescription: settingsCache.get('description')
         }).then(function (response) {
             parentApp.use(response.auth);
         }).catch(function onAuthError(err) {

@@ -12,6 +12,8 @@ var _            = require('lodash'),
     docName      = 'settings',
     settings,
 
+    settingsCache = require('../settings/cache'),
+
     updateSettingsCache,
     settingsFilter,
     filterPaths,
@@ -19,38 +21,27 @@ var _            = require('lodash'),
     settingsResult,
     canEditAllSettings,
 
-    /**
-     * ## Cache
-     * Holds cached settings
-     * @type {{}}
-     */
-    settingsCache = {};
-
-/**
- * ### Update Settings Cache
- * Maintain the internal cache of the settings object
- * @public
- * @param {Object} settings
- * @returns {Settings}
- */
-updateSettingsCache = function (settings, options) {
+// @TODO simplify this!
+updateSettingsCache = function updateSettingsCache(settings, options) {
     options = options || {};
     settings = settings || {};
 
     if (!_.isEmpty(settings)) {
         _.map(settings, function (setting, key) {
-            settingsCache[key] = setting;
+            settingsCache.set(key, setting);
         });
 
-        return Promise.resolve(settingsCache);
+        return Promise.resolve(settingsCache.getAll());
     }
 
     return dataProvider.Settings.findAll(options)
         .then(function (result) {
             // keep reference and update all keys
-            _.extend(settingsCache, readSettingsResult(result.models));
+            _.each(readSettingsResult(result.models), function (setting, key) {
+                settingsCache.set(key, setting);
+            });
 
-            return settingsCache;
+            return settingsCache.getAll();
         });
 };
 
@@ -193,7 +184,7 @@ canEditAllSettings = function (settingsInfo, options) {
             });
         },
         checks = _.map(settingsInfo, function (settingInfo) {
-            var setting = settingsCache[settingInfo.key];
+            var setting = settingsCache.get(settingInfo.key, {resolve: false});
 
             if (!setting) {
                 return Promise.reject(new errors.NotFoundError(
@@ -222,7 +213,7 @@ settings = {
     browse: function browse(options) {
         options = options || {};
 
-        var result = settingsResult(settingsCache, options.type);
+        var result = settingsResult(settingsCache.getAll(), options.type);
 
         // If there is no context, return only blog settings
         if (!options.context) {
@@ -250,7 +241,7 @@ settings = {
             options = {key: options};
         }
 
-        var setting = settingsCache[options.key],
+        var setting = settingsCache.get(options.key, {resolve: false}),
             result = {};
 
         if (!setting) {
@@ -327,38 +318,5 @@ settings = {
 };
 
 module.exports = settings;
-
-/**
- * @TODO:
- * - move settings cache somewhere else e.q. listen on model changes
- *
- * IMPORTANT:
- * We store settings with a type and a key in the database.
- *
- * {
- *   type: core
- *   key: dbHash
- *   value: ...
- * }
- *
- * But the settings cache does not allow requesting a value by type, only by key.
- * e.g. settings.cache.get('dbHash')
- */
-module.exports.cache = {
-    get: function get(key) {
-        if (!settingsCache[key]) {
-            return;
-        }
-
-        try {
-            return JSON.parse(settingsCache[key].value);
-        } catch (err) {
-            return settingsCache[key].value;
-        }
-    },
-    getAll: function getAll() {
-        return settingsCache;
-    }
-};
 
 module.exports.updateSettingsCache = updateSettingsCache;

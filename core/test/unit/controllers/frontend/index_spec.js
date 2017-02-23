@@ -6,7 +6,7 @@ var moment   = require('moment'),
     api      = require('../../../../server/api'),
     frontend = require('../../../../server/controllers/frontend'),
     configUtils = require('../../../utils/configUtils'),
-    settingsCache = api.settings.cache,
+    settingsCache = require('../../../../server/settings/cache'),
     sandbox = sinon.sandbox.create();
 
 describe('Frontend Controller', function () {
