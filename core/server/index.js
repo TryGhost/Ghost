@@ -29,6 +29,7 @@ var debug = require('debug')('ghost:boot:init'),
     slack = require('./data/slack'),
     GhostServer = require('./ghost-server'),
     scheduling = require('./scheduling'),
+    settings = require('./settings'),
     themes = require('./themes'),
     utils = require('./utils');
 
@@ -47,11 +48,8 @@ function init() {
     return dbHealth.check().then(function () {
         debug('DB health check done');
         // Populate any missing default settings
-        return models.Settings.populateDefaults();
-    }).then(function () {
-        debug('Models & database done');
         // Refresh the API settings cache
-        return api.settings.updateSettingsCache();
+        return settings.init();
     }).then(function () {
         debug('Update settings cache done');
         // Initialize the permissions actions and objects
