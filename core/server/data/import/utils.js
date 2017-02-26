@@ -232,6 +232,11 @@ utils = {
                 post.created_at = Date.now();
             }
 
+            _.each(['created_at', 'updated_at', 'published_at'], function (fieldName) {
+                var date = new Date(post[fieldName]);
+                post[fieldName] = date.toISOString();
+            });
+
             ops.push(models.Post.add(post, _.extend({}, internalContext, {transacting: transaction, importing: true}))
                     .catch(function (error) {
                         return Promise.reject({raw: error, model: 'post', data: post});

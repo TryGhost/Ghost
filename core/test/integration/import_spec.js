@@ -647,6 +647,29 @@ describe('Import', function () {
                 done();
             }).catch(done);
         });
+
+        it('handles exotic date formats', function (done) {
+            var exportData;
+
+            testUtils.fixtures.loadExportFixture('export-003-exoticDateParsing').then(function (exported) {
+                exportData = exported;
+
+                exportData.data.posts.length.should.be.above(0);
+
+                return importer.doImport(exportData);
+            }).then(function () {
+                // Grab the data from tables
+                return knex('posts').select();
+            }).then(function (importedData) {
+                should.exist(importedData);
+
+                var post = importedData[0];
+                assert.equal(post.created_at, '2016-10-18 23:58:44');
+                assert.equal(post.updated_at, '2016-10-19 22:00:00');
+                assert.equal(post.published_at, '2016-11-25 03:20:00');
+                done();
+            }).catch(done);
+        });
     });
 });
 
