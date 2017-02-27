@@ -4,6 +4,7 @@ var testUtils           = require('../../utils'),
 
     // Stuff we are testing
     SettingsAPI         = require('../../../server/api/settings'),
+    settingsCache       = require('../../../server/settings/cache'),
     defaultContext      = {user: 1},
     internalContext     = {internal: true},
     callApiWithContext,
@@ -115,10 +116,10 @@ describe('Settings API', function () {
     });
 
     it('can edit', function () {
-        var testReference = SettingsAPI.cache.getAll();
+        var testReference = settingsCache.getAll();
 
         // see default-settings.json
-        SettingsAPI.cache.get('title').should.eql('Ghost');
+        settingsCache.get('title').should.eql('Ghost');
         testReference.title.value.should.eql('Ghost');
 
         return callApiWithContext(defaultContext, 'edit', {settings: [{key: 'title', value: 'UpdatedGhost'}]}, {})
@@ -128,7 +129,7 @@ describe('Settings API', function () {
                 response.settings.length.should.equal(1);
                 testUtils.API.checkResponse(response.settings[0], 'setting');
 
-                SettingsAPI.cache.get('title').should.eql('UpdatedGhost');
+                settingsCache.get('title').should.eql('UpdatedGhost');
                 testReference.title.value.should.eql('UpdatedGhost');
             });
     });

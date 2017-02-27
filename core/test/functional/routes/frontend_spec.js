@@ -8,9 +8,11 @@ var request = require('supertest'),
     moment = require('moment'),
     sinon = require('sinon'),
     cheerio = require('cheerio'),
+    _ = require('lodash'),
     testUtils = require('../../utils'),
     config = require('../../../server/config'),
-    settingsCache = require('../../../server/api/settings').cache,
+    settingsCache = require('../../../server/settings/cache'),
+    origCache = _.cloneDeep(settingsCache),
     sandbox = sinon.sandbox.create(),
     ghost   = testUtils.startGhost;
 
@@ -327,14 +329,11 @@ describe('Frontend Routing', function () {
                 });
 
                 it('should not render AMP, when AMP is disabled', function (done) {
-                    var originalFn = settingsCache.get;
-
-                    sandbox.stub(settingsCache, 'get', function (key) {
-                        if (key !== 'amp') {
-                            return originalFn(key);
+                    sandbox.stub(settingsCache, 'get', function (key, options) {
+                        if (key === 'amp' && !options) {
+                            return false;
                         }
-
-                        return false;
+                        return origCache.get(key, options);
                     });
 
                     request.get('/welcome-to-ghost/amp/')
@@ -618,15 +617,6 @@ describe('Frontend Routing', function () {
             });
 
             it('/blog/welcome-to-ghost/amp/ should 200', function (done) {
-                var originalFn = settingsCache.get;
-
-                sandbox.stub(settingsCache, 'get', function (key) {
-                    if (key !== 'amp') {
-                        return originalFn(key);
-                    }
-
-                    return true;
-                });
                 request.get('/blog/welcome-to-ghost/amp/')
                     .expect(200)
                     .end(doEnd(done));
@@ -709,16 +699,6 @@ describe('Frontend Routing', function () {
             });
 
             it('/blog/welcome-to-ghost/amp/ should 200', function (done) {
-                var originalFn = settingsCache.get;
-
-                sandbox.stub(settingsCache, 'get', function (key) {
-                    if (key !== 'amp') {
-                        return originalFn(key);
-                    }
-
-                    return true;
-                });
-
                 request.get('/blog/welcome-to-ghost/amp/')
                     .expect(200)
                     .end(doEnd(done));

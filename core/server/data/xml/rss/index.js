@@ -7,7 +7,7 @@ var crypto      = require('crypto'),
     i18n        = require('../../../i18n'),
     filters     = require('../../../filters'),
     processUrls = require('../../../utils/make-absolute-urls'),
-    settingsCache = require('../../../api/settings').cache,
+    settingsCache = require('../../../settings/cache'),
 
     // Really ugly temporary hack for location of things
     fetchData   = require('../../../controllers/frontend/fetch-data'),

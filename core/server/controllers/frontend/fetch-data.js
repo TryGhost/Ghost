@@ -5,7 +5,7 @@
 var api = require('../../api'),
     _   = require('lodash'),
     Promise = require('bluebird'),
-    settingsCache = api.settings.cache,
+    settingsCache = require('../../settings/cache'),
     queryDefaults,
     defaultPostQuery = {};
 

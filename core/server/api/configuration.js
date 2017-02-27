@@ -2,7 +2,7 @@
 // RESTful API for browsing the configuration
 var _                  = require('lodash'),
     config             = require('../config'),
-    settingsCache      = require('../api/settings').cache,
+    settingsCache      = require('../settings/cache'),
     ghostVersion       = require('../utils/ghost-version'),
     models             = require('../models'),
     Promise            = require('bluebird'),

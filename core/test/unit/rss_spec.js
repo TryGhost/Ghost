@@ -6,6 +6,7 @@ var should          = require('should'),
     testUtils       = require('../utils'),
     channelConfig   = require('../../server/controllers/frontend/channel-config'),
     api             = require('../../server/api'),
+    settingsCache   = require('../../server/settings/cache'),
     rss             = rewire('../../server/data/xml/rss'),
     configUtils     = require('../utils/configUtils');
 
@@ -303,7 +304,7 @@ describe('RSS', function () {
                 set: sinon.stub()
             };
 
-            sandbox.stub(api.settings.cache, 'get', function (key) {
+            sandbox.stub(settingsCache, 'get', function (key) {
                 var obj = {
                     title: 'Test',
                     description: 'Some Text',

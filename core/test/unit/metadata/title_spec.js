@@ -2,7 +2,7 @@
 var sinon = require('sinon'),
     should = require('should'),
     getTitle = require('../../../server/data/meta/title'),
-    settingsCache = require('../../../server/api/settings').cache,
+    settingsCache = require('../../../server/settings/cache'),
     sandbox = sinon.sandbox.create();
 
 should.equal(true, true);

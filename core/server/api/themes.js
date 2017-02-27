@@ -10,6 +10,7 @@ var Promise = require('bluebird'),
     logging = require('../logging'),
     storage = require('../storage'),
     settings = require('./settings'),
+    settingsCache = require('../settings/cache'),
     apiUtils = require('./utils'),
     utils = require('./../utils'),
     i18n = require('../i18n'),
@@ -30,7 +31,7 @@ themes = {
     },
 
     browse: function browse() {
-        return Promise.resolve({themes: settings.cache.get('availableThemes')});
+        return Promise.resolve({themes: settingsCache.get('availableThemes')});
     },
 
     upload: function upload(options) {

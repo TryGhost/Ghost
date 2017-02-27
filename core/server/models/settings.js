@@ -147,23 +147,6 @@ Settings = ghostBookshelf.Model.extend({
         });
     },
 
-    populateDefault: function (key) {
-        if (!getDefaultSettings()[key]) {
-            return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.models.settings.unableToFindDefaultSetting', {key: key})}));
-        }
-
-        return this.findOne({key: key}).then(function then(foundSetting) {
-            if (foundSetting) {
-                return foundSetting;
-            }
-
-            var defaultSetting = _.clone(getDefaultSettings()[key]);
-            defaultSetting.value = defaultSetting.defaultValue;
-
-            return Settings.forge(defaultSetting).save(null, internalContext);
-        });
-    },
-
     populateDefaults: function populateDefaults(options) {
         options = options || {};
 

@@ -9,7 +9,7 @@ var Promise       = require('bluebird'),
     db            = require('../../../server/data/db'),
     models        = require('../../../server/models'),
     PostAPI       = require('../../../server/api/posts'),
-    settingsCache = require('../../../server/api/settings').cache,
+    settingsCache = require('../../../server/settings/cache'),
     sandbox       = sinon.sandbox.create();
 
 describe('Post API', function () {

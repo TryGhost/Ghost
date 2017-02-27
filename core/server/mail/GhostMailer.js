@@ -5,7 +5,7 @@ var _          = require('lodash'),
     nodemailer = require('nodemailer'),
     validator  = require('validator'),
     config     = require('../config'),
-    settingsCache = require('../api/settings').cache,
+    settingsCache = require('../settings/cache'),
     i18n       = require('../i18n'),
     utils      = require('../utils');
 

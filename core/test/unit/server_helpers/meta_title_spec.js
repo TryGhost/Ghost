@@ -6,7 +6,7 @@ var should         = require('should'),
     handlebars     = hbs.handlebars,
     sandbox        = sinon.sandbox.create(),
     helpers        = require('../../../server/helpers'),
-    settingsCache  = require('../../../server/api/settings').cache;
+    settingsCache  = require('../../../server/settings/cache');
 
 describe('{{meta_title}} helper', function () {
     before(function () {

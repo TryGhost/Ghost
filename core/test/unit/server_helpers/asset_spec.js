@@ -4,7 +4,7 @@ var should         = require('should'),
     utils          = require('./utils'),
     configUtils    = require('../../utils/configUtils'),
     helpers        = require('../../../server/helpers'),
-    settingsCache  = require('../../../server/api/settings').cache,
+    settingsCache  = require('../../../server/settings/cache'),
     sandbox        = sinon.sandbox.create(),
     handlebars     = hbs.handlebars;
 

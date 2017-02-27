@@ -9,7 +9,7 @@ var should         = require('should'),
     helpers        = require('../../../server/helpers'),
     api            = require('../../../server/api'),
     labs           = require('../../../server/utils/labs'),
-    settingsCache  = api.settings.cache,
+    settingsCache  = require('../../../server/settings/cache'),
     handlebars     = hbs.handlebars,
     sandbox        = sinon.sandbox.create();
 

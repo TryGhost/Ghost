@@ -1,4 +1,4 @@
-var settingsCache = require('../../api/settings').cache,
+var settingsCache = require('../../settings/cache'),
     _ = require('lodash');
 
 function getContextObject(data, context) {
