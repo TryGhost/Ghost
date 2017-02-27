@@ -4384,9 +4384,9 @@ load-json-file@^1.0.0:
     pinkie-promise "^2.0.0"
     strip-bom "^2.0.0"
 
-loader.js@4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/loader.js/-/loader.js-4.1.0.tgz#1d0897a62f8b7375d3d9cd1ae6acf798c36c1ffe"
+loader.js@4.2.2:
+  version "4.2.2"
+  resolved "https://registry.yarnpkg.com/loader.js/-/loader.js-4.2.2.tgz#b94baffedc1496b9b20201e54a8df3859a0b17e9"
 
 lockfile@~1.0.1:
   version "1.0.3"
