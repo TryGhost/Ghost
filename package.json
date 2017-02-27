@@ -19,6 +19,7 @@
   "main": "./core/index",
   "scripts": {
     "start": "node index",
+    "dbinit": "knex-migrator init",
     "test": "grunt validate --verbose"
   },
   "engines": {

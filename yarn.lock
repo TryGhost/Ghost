@@ -3450,7 +3450,7 @@ klaw@^1.0.0:
   optionalDependencies:
     graceful-fs "^4.1.9"
 
-knex-migrator@2.0.7:
+knex-migrator@^2.0.7:
   version "2.0.7"
   resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-2.0.7.tgz#9e58b4a9a828a4dcc16a1900eafcd6880a1da57d"
   dependencies:
