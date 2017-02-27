@@ -69,13 +69,14 @@ function init(options) {
 
     // Initialize Internationalization
     i18n.init();
-    // Load models, no need to wait
-    models.init();
 
     // Load our config.js file from the local file system.
     return config.load(options.config).then(function () {
         return config.checkDeprecated();
     }).then(function () {
+        // Load models, no need to wait
+        models.init();
+
         /**
          * fresh install:
          * - getDatabaseVersion will throw an error and we will create all tables (including populating settings)
