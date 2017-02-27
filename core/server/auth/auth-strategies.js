@@ -115,7 +115,7 @@ strategies = {
         };
 
         handleSetup = function handleSetup() {
-            return models.User.findOne({slug: 'ghost-owner', status: 'all'}, options)
+            return models.User.findOne({slug: 'ghost-owner', status: 'inactive'}, options)
                 .then(function fetchedOwner(owner) {
                     if (!owner) {
                         throw new errors.NotFoundError({message: i18n.t('errors.models.user.userNotFound')});
