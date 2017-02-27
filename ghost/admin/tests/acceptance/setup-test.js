@@ -296,7 +296,7 @@ describe('Acceptance: Setup', function () {
                 // TODO: duplicated from mirage/config/invites - extract method?
                 /* eslint-disable camelcase */
                 params.token = `${invites.all().models.length}-token`;
-                params.expires = moment.utc().add(1, 'day').unix();
+                params.expires = moment.utc().add(1, 'day').valueOf();
                 params.created_at = moment.utc().format();
                 params.created_by = 1;
                 params.updated_at = moment.utc().format();

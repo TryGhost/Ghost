@@ -43,9 +43,9 @@
                                                     Invitation not sent - please try again
                                                 </span>
                                             {{else}}
-                                                <span class="description">
+                                                <span class="description" data-test-invite-description>
                                                     Invitation sent: {{component.createdAt}},
-                                                    expires {{component.expiresAt}}
+                                                    {{if component.isExpired "expired" "expires"}} {{component.expiresAt}}
                                                 </span>
                                             {{/if}}
                                         </p>

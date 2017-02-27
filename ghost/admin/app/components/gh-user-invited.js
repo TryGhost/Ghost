@@ -24,6 +24,13 @@ export default Component.extend({
         return expires ? moment(expires).fromNow() : '';
     }),
 
+    isExpired: computed('invite.expires', function () {
+        let expires = this.get('invite.expires');
+        let now = (new Date()).valueOf();
+
+        return expires < now;
+    }),
+
     actions: {
         resend() {
             let invite = this.get('invite');

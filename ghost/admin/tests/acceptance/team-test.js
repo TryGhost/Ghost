@@ -71,6 +71,9 @@ describe('Acceptance: Team', function () {
 
             admin = server.create('user', {email: 'admin@example.com', roles: [adminRole]});
 
+            // add an expired invite
+            server.create('invite', {expires: moment.utc().subtract(1, 'day').valueOf()});
+
             return authenticateSession(application);
         });
 
@@ -135,7 +138,22 @@ describe('Acceptance: Team', function () {
                     'active user\'s role label'
                 ).to.equal('Administrator');
 
-                // no invites are shown
+                // existing invites are shown
+                expect(
+                    find(testSelector('invite-id')).length,
+                    'initial number of invited users'
+                ).to.equal(1);
+
+                expect(
+                    find(testSelector('invite-id', '1')).find(testSelector('invite-description')).text(),
+                    'expired invite description'
+                ).to.match(/expired/);
+            });
+
+            // remove expired invite
+            click(`${testSelector('invite-id', '1')} ${testSelector('revoke-button')}`);
+
+            andThen(() => {
                 expect(
                     find(testSelector('invite-id')).length,
                     'initial number of invited users'
@@ -200,14 +218,19 @@ describe('Acceptance: Team', function () {
                 ).to.equal(1);
 
                 expect(
-                    find(testSelector('invite-id', '1')).find(testSelector('email')).text().trim(),
+                    find(testSelector('invite-id', '2')).find(testSelector('email')).text().trim(),
                     'displayed email of first invite'
                 ).to.equal('invite1@example.com');
 
                 expect(
-                    find(testSelector('invite-id', '1')).find(testSelector('role-name')).text().trim(),
+                    find(testSelector('invite-id', '2')).find(testSelector('role-name')).text().trim(),
                     'displayed role of first invite'
                 ).to.equal('Author');
+
+                expect(
+                    find(testSelector('invite-id', '2')).find(testSelector('invite-description')).text(),
+                    'new invite description'
+                ).to.match(/expires/);
 
                 // number of users is unchanged
                 expect(
@@ -231,12 +254,12 @@ describe('Acceptance: Team', function () {
 
                 // invite has correct e-mail + role
                 expect(
-                    find(testSelector('invite-id', '2')).find(testSelector('email')).text().trim(),
+                    find(testSelector('invite-id', '3')).find(testSelector('email')).text().trim(),
                     'displayed email of second invite'
                 ).to.equal('invite2@example.com');
 
                 expect(
-                    find(testSelector('invite-id', '2')).find(testSelector('role-name')).text().trim(),
+                    find(testSelector('invite-id', '3')).find(testSelector('role-name')).text().trim(),
                     'displayed role of second invite'
                 ).to.equal('Editor');
             });
@@ -280,7 +303,7 @@ describe('Acceptance: Team', function () {
 
             click('.fullscreen-modal a.close');
             // revoke latest invite
-            click(`${testSelector('invite-id', '2')} ${testSelector('revoke-button')}`);
+            click(`${testSelector('invite-id', '3')} ${testSelector('revoke-button')}`);
 
             andThen(() => {
                 // number of invites decreases
@@ -316,7 +339,7 @@ describe('Acceptance: Team', function () {
             });
 
             // resend first invite
-            click(`${testSelector('invite-id', '1')} ${testSelector('resend-button')}`);
+            click(`${testSelector('invite-id', '2')} ${testSelector('resend-button')}`);
 
             andThen(() => {
                 // notification is displayed
