@@ -1,9 +1,11 @@
 {{#if isLink}}
     {{input keyDown=(action "linkKeyDown") keyPress=(action "linkKeyPress") autofocus=true placeholder="Enter a link"}}
 {{else}}
-<ul>
     {{#each toolbar as |tool|}}
         {{ghost-toolbar-button tool=tool editor=editor iconURL=iconURL assetPath=assetPath}}
     {{/each}}
-</ul>
+    <div class="gh-toolbar-divider" role="presentation"></div>
+    {{#each toolbarBlocks as |tool|}}
+        {{ghost-toolbar-button tool=tool editor=editor iconURL=iconURL assetPath=assetPath}}
+    {{/each}}
 {{/if}}

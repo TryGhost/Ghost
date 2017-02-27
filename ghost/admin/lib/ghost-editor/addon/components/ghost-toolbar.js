@@ -5,7 +5,7 @@ import Tools from '../options/default-tools';
 
 export default Ember.Component.extend({
     layout,
-    classNames: ['toolbar'],
+    classNames: ['gh-toolbar'],
     classNameBindings: ['isVisible'],
     isVisible: false,
     tools: [],
@@ -29,9 +29,23 @@ export default Ember.Component.extend({
                 visibleTools.push(tool);
             }
         });
-
         return visibleTools;
     }).property('tools.@each.selected'),
+
+    toolbarBlocks: Ember.computed(function () {
+        // TODO if a block section other than a primary section is selected then
+        // the returned list removes one of the primary sections to compensate,
+        // so that there are only ever four primary sections.
+        let visibleTools = [ ];
+
+        this.tools.forEach(tool => {
+            if (tool.toolbar) {
+                visibleTools.push(tool);
+            }
+        });
+        return visibleTools;
+    }).property('tools.@each.selected'),
+
     init() {
         this._super(...arguments);
         this.tools =new Tools(this.get('editor'), this);
@@ -93,6 +107,7 @@ function updateToolbarToRange(self, $holder, $editor, isMouseDown) {
             return;
         }
         self.propertyWillChange('toolbar');
+        self.propertyWillChange('toolbarBlocks');
 
         if(!editor.range.isCollapsed) {
             // if we have a selection, then the toolbar appears just below said selection:
@@ -131,5 +146,6 @@ function updateToolbarToRange(self, $holder, $editor, isMouseDown) {
         }
 
         self.propertyDidChange('toolbar');
+        self.propertyDidChange('toolbarBlocks');
 }
 
