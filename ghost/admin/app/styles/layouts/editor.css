@@ -179,8 +179,11 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 20px;
-    height: 65px;
+    padding: 0 30px;
+    height: 80px;
+}
+@media (max-width: 750px) {
+    .gh-editor-header { padding: 0 4vw; }
 }
 
 .gh-editor-status {
@@ -198,6 +201,6 @@
 
 .gh-editor-inner {
     margin: 0 auto;
-    max-width: 700px;
+    max-width: 740px;
     height: 100%;
 }
