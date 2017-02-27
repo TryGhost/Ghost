@@ -111,7 +111,6 @@ describe('Config', function () {
                 'adminViews',
                 'helperTemplates',
                 'availableThemes',
-                'availableApps',
                 'clientAssets'
             );
         });

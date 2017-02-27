@@ -187,7 +187,6 @@ readSettingsResult = function (settingsModels) {
             return memo;
         }, {}),
         themes = config.paths.availableThemes,
-        apps = config.paths.availableApps,
         res;
 
     if (settings.activeTheme && !_.isEmpty(themes)) {
@@ -197,16 +196,6 @@ readSettingsResult = function (settingsModels) {
             key: 'availableThemes',
             value: res,
             type: 'theme'
-        };
-    }
-
-    if (settings.activeApps && apps) {
-        res = filterPaths(apps, JSON.parse(settings.activeApps.value));
-
-        settings.availableApps = {
-            key: 'availableApps',
-            value: res,
-            type: 'app'
         };
     }
 
@@ -416,7 +405,7 @@ settings = {
         }
 
         object.settings = _.reject(object.settings, function (setting) {
-            return setting.key === 'type' || setting.key === 'availableThemes' || setting.key === 'availableApps';
+            return setting.key === 'type' || setting.key === 'availableThemes';
         });
 
         return canEditAllSettings(object.settings, options).then(function () {

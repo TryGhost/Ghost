@@ -228,7 +228,6 @@ ConfigManager.prototype.set = function (config) {
             helperTemplates:  path.join(corePath, '/server/helpers/tpl/'),
 
             availableThemes:  this._config.paths.availableThemes || {},
-            availableApps:    this._config.paths.availableApps || {},
             clientAssets:     path.join(corePath, '/built/assets/')
         },
         maintenance: {},
