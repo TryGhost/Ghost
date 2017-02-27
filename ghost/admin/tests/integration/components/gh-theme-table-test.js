@@ -6,6 +6,7 @@ import hbs from 'htmlbars-inline-precompile';
 import $ from 'jquery';
 import sinon from 'sinon';
 import run from 'ember-runloop';
+import testSelector from 'ember-test-selectors';
 
 describe('Integration: Component: gh-theme-table', function() {
     setupComponentTest('gh-theme-table', {
@@ -29,55 +30,55 @@ describe('Integration: Component: gh-theme-table', function() {
             deleteTheme=(action actionHandler)
         }}`);
 
-        expect(this.$('.theme-list').length, '.theme-list is present').to.equal(1);
-        expect(this.$('.theme-list-item').length, 'number of rows').to.equal(4);
+        expect(this.$(testSelector('themes-list')).length, 'themes list is present').to.equal(1);
+        expect(this.$(testSelector('theme-id')).length, 'number of rows').to.equal(4);
 
-        let packageNames = this.$('.theme-list-item-body .name').map((i, name) => {
+        let packageNames = this.$(testSelector('theme-title')).map((i, name) => {
             return $(name).text().trim();
         }).toArray();
 
         expect(
             packageNames,
-            'themes are ordered by label, casper has "default", package versions are shown'
+            'themes are ordered by label, casper has "default"'
         ).to.deep.equal([
-            'Casper - 1.3.1 (default)',
-            'Daring - 0.1.4',
+            'Casper (default)',
+            'Daring',
             'foo',
-            'Lanyon - 1.1.0'
+            'Lanyon'
         ]);
 
         expect(
-            this.$('.theme-list-item:contains("Daring")').hasClass('theme-list-item--active'),
+            this.$(testSelector('theme-active', 'true')).find(testSelector('theme-title')).text().trim(),
             'active theme is highlighted'
-        ).to.be.true;
+        ).to.equal('Daring');
 
         expect(
-            this.$('.theme-list-item:not(:contains("Daring"))').find('a:contains("Activate")').length === 3,
+            this.$(testSelector('theme-activate-button')).length === 3,
             'non-active themes have an activate link'
         ).to.be.true;
 
         expect(
-            this.$('.theme-list-item:contains("Daring")').find('a:contains("Activate")').length === 0,
+            this.$(testSelector('theme-active', 'true')).find(testSelector('theme-activate-button')).length === 0,
             'active theme doesn\'t have an activate link'
         ).to.be.true;
 
         expect(
-            this.$('a:contains("Download")').length,
+            this.$(testSelector('theme-download-button')).length,
             'all themes have a download link'
         ).to.equal(4);
 
         expect(
-            this.$('.theme-list-item:contains("foo")').find('a:contains("Delete")').length === 1,
+            this.$(testSelector('theme-id', 'foo')).find(testSelector('theme-delete-button')).length === 1,
             'non-active, non-casper theme has delete link'
         ).to.be.true;
 
         expect(
-            this.$('.theme-list-item:contains("Casper")').find('a:contains("Delete")').length === 0,
+            this.$(testSelector('theme-id', 'casper')).find(testSelector('theme-delete-button')).length === 0,
             'casper doesn\'t have delete link'
         ).to.be.true;
 
         expect(
-            this.$('.theme-list-item--active').find('a:contains("Delete")').length === 0,
+            this.$(testSelector('theme-active', 'true')).find(testSelector('theme-delete-button')).length === 0,
             'active theme doesn\'t have delete link'
         ).to.be.true;
     });
@@ -101,7 +102,7 @@ describe('Integration: Component: gh-theme-table', function() {
         }}`);
 
         run(() => {
-            this.$('.theme-list-item:contains("Bar") a:contains("Delete")').click();
+            this.$(`${testSelector('theme-id', 'Bar')} ${testSelector('theme-delete-button')}`).click();
         });
 
         expect(deleteAction.calledOnce).to.be.true;
@@ -127,7 +128,7 @@ describe('Integration: Component: gh-theme-table', function() {
         }}`);
 
         run(() => {
-            this.$('.theme-list-item:contains("Foo") a:contains("Download")').click();
+            this.$(`${testSelector('theme-id', 'Foo')} ${testSelector('theme-download-button')}`).click();
         });
 
         expect(downloadAction.calledOnce).to.be.true;
@@ -153,7 +154,7 @@ describe('Integration: Component: gh-theme-table', function() {
         }}`);
 
         run(() => {
-            this.$('.theme-list-item:contains("Bar") a:contains("Activate")').click();
+            this.$(`${testSelector('theme-id', 'Bar')} ${testSelector('theme-activate-button')}`).click();
         });
 
         expect(activateAction.calledOnce).to.be.true;
@@ -178,7 +179,7 @@ describe('Integration: Component: gh-theme-table', function() {
             deleteTheme=(action actionHandler)
         }}`);
 
-        let packageNames = this.$('.theme-list-item-body .name').map((i, name) => {
+        let packageNames = this.$(testSelector('theme-title')).map((i, name) => {
             return $(name).text().trim();
         }).toArray();
 
@@ -186,11 +187,11 @@ describe('Integration: Component: gh-theme-table', function() {
             packageNames,
             'themes are ordered by label, folder names shown for duplicates'
         ).to.deep.equal([
-            'Casper - 1.3.1 (another)',
-            'Casper - 1.3.1 (default)',
-            'Casper - 1.3.1 (mine)',
-            'Daring - 0.1.4 (daring)',
-            'Daring - 0.1.4 (daring-0.1.5)',
+            'Casper (another)',
+            'Casper (default)',
+            'Casper (mine)',
+            'Daring (daring)',
+            'Daring (daring-0.1.5)',
             'foo'
         ]);
     });
