@@ -1,0 +1,8 @@
+<button {{action "click"}}>
+    {{#if tool.icon}}
+        <img src="{{iconURL}}{{tool.icon}}" />
+    {{else}}
+        {{tool.name}}
+    {{/if}}
+    <label>{{tool.label}}</label>
+</button>

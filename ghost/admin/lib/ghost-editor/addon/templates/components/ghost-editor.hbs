@@ -1,0 +1,14 @@
+{{#each emberCards as |card|}}
+    {{#ember-wormhole to=card.id}}
+        {{ghost-card card=card apiRoot=apiRoot assetPath=assetPath}}
+    {{/ember-wormhole}}
+{{/each}}
+<div class='ghost-editor'>
+    <div class='surface' tabindex="{{tabindex}}"/>
+</div>
+
+{{yield}}
+
+{{ghost-toolbar-blockitem editor=editor assetPath=assetPath}}
+{{ghost-toolbar editor=editor assetPath=assetPath}}
+{{slash-menu editor=editor assetPath=assetPath}}
