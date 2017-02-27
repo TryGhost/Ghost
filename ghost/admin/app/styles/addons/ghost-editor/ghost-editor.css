@@ -1,0 +1,150 @@
+@import "ghost-toolbar.css";
+@import "ghost-toolbar-blockitem.css";
+@import "slash-menu.css";
+
+.editor-holder {
+    height: 100%;
+}
+.ghost-editor {
+    height: 100%;
+    -webkit-overflow-scrolling: touch;
+}
+
+.__mobiledoc-editor {
+    width: 100%;
+    min-height: 100%;
+    outline: none;
+    font-family: var(--font-family);
+    font-size: 1.7rem;
+    resize: none;
+}
+
+.dropper-bottom {
+    border-bottom: 66px solid #5ba4e5;
+}
+
+.dropper-top {
+    border-top: 66px solid #5ba4e5;
+}
+
+.dropper-left {
+    border-left: 66px solid #5ba4e5;
+}
+
+.dropper-right {
+    border-right: 66px solid #5ba4e5;
+}
+
+.__mobiledoc-card {
+    border: 1px solid #5ba4e5;
+    min-height: 100px;
+    display: inline-block;
+    width:calc(100% - 4px);
+    margin:2px;
+    padding:0;
+}
+.__mobiledoc-card .ghost-card {
+    position: relative;
+}
+
+.__mobiledoc-card .card-handle {
+    position: absolute;
+    right:0px;
+    top:0px;
+    margin-top:-25px;
+    height:20px;
+    display:none;
+}
+
+.__mobiledoc-card:hover .card-handle {
+    display:block;
+}
+
+.__mobiledoc-card .card-handle label {
+    font-size:10px;
+}
+
+
+.__mobiledoc-card .card-handle button {
+    background-color: var(--lightgrey);
+    border:1px solid var(--grey);
+    font-size:10px;
+    min-width: 80px;
+}
+
+.__mobiledoc-card textarea {
+    min-height:333px;
+    max-width:900px;
+    outline:none;
+    border:none;
+    resize: none;
+}
+
+.card-handle button:hover {
+    background-color: #718087;
+    color: #fff;
+}
+
+.card-handle button.confirm {
+    animation-duration: 1s;
+    animation-name: rotate;
+    background-color: red;
+    color: #e9e8dd;
+}
+
+.card-handle button.move {
+    background-image: url('http://localhost:4200/assets/move.png');
+    background-color: #9fbb58;
+    margin-left: -10px;
+    margin-right: 20px;
+
+    cursor: -webkit-grab;
+    cursor: -moz-grab;
+}
+
+
+
+textarea.ed_code {
+    width:100%;
+    height:100%;
+    border:none;
+}
+
+
+
+/**
+ * Tooltip
+ */
+
+
+@keyframes tooltip-fadein {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+.__mobiledoc-tooltip {
+    white-space: nowrap;
+    position: absolute;
+    background-color: #5ba4e5;
+    border-radius: 3px;
+    padding:5px 10px 5px 10px;
+    color: #FFF;
+    -webkit-animation: tooltip-fadein 0.333s;
+    animation: tooltip-fadein 0.333s;
+}
+.__mobiledoc-tooltip a {
+    color: #FFF;
+}
+.__mobiledoc-tooltip:before {
+    content: '';
+    position: absolute;
+
+    left: 50%;
+    top: -9px;
+
+    margin-left: -10px;
+
+    border-bottom: 10px solid #5ba4e5;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+}

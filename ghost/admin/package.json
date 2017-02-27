@@ -88,7 +88,6 @@
     "emberx-file-input": "1.1.1",
     "eslint-plugin-ember-suave": "1.0.0",
     "fs-extra": "2.0.0",
-    "ghost-editor": "0.1.10",
     "glob": "7.1.1",
     "grunt": "1.0.1",
     "grunt-bg-shell": "2.3.3",
@@ -110,7 +109,8 @@
   },
   "ember-addon": {
     "paths": [
-      "lib/asset-delivery"
+      "lib/asset-delivery",
+      "lib/ghost-editor"
     ]
   },
   "greenkeeper": {

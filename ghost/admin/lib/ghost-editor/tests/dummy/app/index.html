@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Dummy</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {{content-for "head"}}
+
+    <link rel="stylesheet" href="{{rootURL}}assets/vendor.css">
+    <link rel="stylesheet" href="{{rootURL}}assets/dummy.css">
+
+    {{content-for "head-footer"}}
+  </head>
+  <body>
+    <div class="gh-editor-container">
+      <div class="gh-editor-inner">
+        {{content-for "body"}}
+      </div>
+    </div>
+    <script src="{{rootURL}}assets/vendor.js"></script>
+    <script src="{{rootURL}}assets/dummy.js"></script>
+
+    {{content-for "body-footer"}}
+  </body>
+</html>

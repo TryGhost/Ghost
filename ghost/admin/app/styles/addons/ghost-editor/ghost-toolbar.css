@@ -1,0 +1,107 @@
+/* Variables
+/* ---------------------------------------------------------- */
+
+:root {
+
+    --button-size-selection: 48px;
+    --button-size-newline:32px;
+}
+
+
+.toolbar {
+    position: absolute;
+    margin: 0;
+    padding:5px;
+    -webkit-border-radius:var(--border-radius);
+    -moz-border-radius:var(--border-radius);
+    border-radius:var(--border-radius);
+    background-color: var(--lightgrey);
+    border:1px var(--lightgrey) solid;
+}
+
+
+.toolbar.is-visible {
+ /*   animation: toolbar-fadein 111ms;*/
+}
+
+.toolbar input {
+    height: 64px;
+    width: 180px;
+    outline: none;
+}
+
+.toolbar ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.toolbar ul li {
+    float: left;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+
+    display: block;
+    width: var(--button-size-selection);
+}
+
+
+.toolbar ul li button {
+    border-radius: 2px;
+    font-family: var(--font-family);
+    font-size: 10px;
+    line-height: 15px;
+    text-transform: uppercase;
+    padding:0;
+    margin:0;
+    height:var(--button-size-selection);
+    min-width:var(--button-size-selection);
+    color: var(--darkgrey);
+    background-color: var(--lightgrey);
+    border: none;
+}
+
+.toolbar ul li button label {
+    display:none;
+}
+
+.toolbar ul li:hover button, .toolbar ul li.selected button {
+    background-color: var(--darkgrey);
+    color: var(--darkgrey);
+    transition: 300ms;
+}
+
+.toolbar ul li button img {
+    width:20px;
+    height:20px;
+}
+
+
+
+    /* tick */
+
+.toolbar:after {
+    content: "";
+    border-top: 13px solid var(--lightgrey);
+    border-top-color: inherit;
+    border-left: 13px solid transparent;
+    border-right: 13px solid transparent;
+    left: 50px;
+    left: calc(50% - 13px);
+    top:100%;
+    position:absolute;
+}
+
+
+
+@keyframes toolbar-fadein {
+    from {
+        opacity: 0;
+        /*transform: translateY(-13px);*/
+    }
+    to   {
+        opacity: 1;
+        /*transform: translateY(0px);*/
+    }
+}
