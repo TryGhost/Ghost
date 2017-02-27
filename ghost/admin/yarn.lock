@@ -2333,13 +2333,6 @@ ember-getowner-polyfill@1.0.1:
   dependencies:
     ember-cli-babel "^5.1.5"
 
-ember-getowner-polyfill@1.1.1, ember-getowner-polyfill@~1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/ember-getowner-polyfill/-/ember-getowner-polyfill-1.1.1.tgz#6bb6603827dd2f8f33be2434570a86cc9e5273ff"
-  dependencies:
-    ember-cli-babel "^5.1.6"
-    ember-cli-version-checker "^1.2.0"
-
 ember-getowner-polyfill@^1.1.0, ember-getowner-polyfill@^1.1.1:
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/ember-getowner-polyfill/-/ember-getowner-polyfill-1.2.2.tgz#cdab739e89cc8f25af0f78735422df1a61193e92"
@@ -2347,6 +2340,13 @@ ember-getowner-polyfill@^1.1.0, ember-getowner-polyfill@^1.1.1:
     ember-cli-babel "^5.1.6"
     ember-cli-version-checker "^1.2.0"
     ember-factory-for-polyfill "^1.1.0"
+
+ember-getowner-polyfill@~1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/ember-getowner-polyfill/-/ember-getowner-polyfill-1.1.1.tgz#6bb6603827dd2f8f33be2434570a86cc9e5273ff"
+  dependencies:
+    ember-cli-babel "^5.1.6"
+    ember-cli-version-checker "^1.2.0"
 
 ember-hash-helper-polyfill@^0.1.2:
   version "0.1.2"
@@ -4317,16 +4317,16 @@ linkify-it@~1.2.0:
   dependencies:
     uc.micro "^1.0.1"
 
-liquid-fire@0.27.0:
-  version "0.27.0"
-  resolved "https://registry.yarnpkg.com/liquid-fire/-/liquid-fire-0.27.0.tgz#17eac44de48638fca74fb734adf6cb9834764b1a"
+liquid-fire@0.27.1:
+  version "0.27.1"
+  resolved "https://registry.yarnpkg.com/liquid-fire/-/liquid-fire-0.27.1.tgz#bbcc1ac863a3dbdee1223b00c9457dbffb5d02b9"
   dependencies:
     broccoli-funnel "^1.0.1"
     broccoli-merge-trees "^1.0.0"
     ember-cli-babel "^5.1.7"
-    ember-cli-htmlbars "^1.0.10"
+    ember-cli-htmlbars "^1.1.1"
     ember-cli-version-checker "^1.1.6"
-    ember-getowner-polyfill "1.1.1"
+    ember-getowner-polyfill "^1.1.1"
     ember-hash-helper-polyfill "^0.1.2"
     match-media "^0.2.0"
     velocity-animate ">= 0.11.8"
