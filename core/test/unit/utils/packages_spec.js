@@ -6,7 +6,6 @@ var should = require('should'),
     // Things we are testing
     packages = require('../../../server/utils/packages'),
     parsePackageJson = packages.parsePackageJSON,
-    readPackages = packages.readPackages,
     filterPackages = packages.filterPackages;
 
 // To stop jshint complaining
@@ -130,139 +129,261 @@ describe('Package Utils', function () {
     });
 
     describe('Read Packages', function () {
-        it('should read directory recursively', function (done) {
-            var themePath = tmp.dirSync({unsafeCleanup: true});
-
-            // create example theme
-            fs.mkdirSync(join(themePath.name, 'partials'));
-            fs.writeFileSync(join(themePath.name, 'index.hbs'));
-            fs.writeFileSync(join(themePath.name, 'partials', 'navigation.hbs'));
-
-            readPackages(themePath.name)
-                .then(function (tree) {
-                    tree.should.eql({
-                        partials: {
-                            'navigation.hbs': join(themePath.name, 'partials', 'navigation.hbs')
-                        },
-                        'index.hbs': join(themePath.name, 'index.hbs')
-                    });
-
-                    done();
-                })
-                .catch(done)
-                .finally(themePath.removeCallback);
-        });
-
         it('should read directory and ignore unneeded items', function (done) {
-            var themePath = tmp.dirSync({unsafeCleanup: true});
+            var packagePath = tmp.dirSync({unsafeCleanup: true});
 
             // create example theme
-            fs.mkdirSync(join(themePath.name, 'partials'));
-            fs.writeFileSync(join(themePath.name, 'index.hbs'));
-            fs.writeFileSync(join(themePath.name, 'partials', 'navigation.hbs'));
+            fs.mkdirSync(join(packagePath.name, 'casper'));
+            fs.writeFileSync(join(packagePath.name, 'casper', 'index.hbs'));
 
             // create some trash
-            fs.mkdirSync(join(themePath.name, 'node_modules'));
-            fs.mkdirSync(join(themePath.name, 'bower_components'));
-            fs.mkdirSync(join(themePath.name, '.git'));
-            fs.writeFileSync(join(themePath.name, '.DS_Store'));
+            fs.mkdirSync(join(packagePath.name, 'node_modules'));
+            fs.mkdirSync(join(packagePath.name, 'bower_components'));
+            fs.mkdirSync(join(packagePath.name, '.git'));
+            fs.writeFileSync(join(packagePath.name, '.DS_Store'));
 
-            readPackages(themePath.name, {ignore: ['.git']})
-                .then(function (tree) {
-                    tree.should.eql({
-                        partials: {
-                            'navigation.hbs': join(themePath.name, 'partials', 'navigation.hbs')
-                        },
-                        'index.hbs': join(themePath.name, 'index.hbs')
-                    });
-
-                    done();
-                })
-                .catch(done)
-                .finally(themePath.removeCallback);
-        });
-
-        it('should read directory and parse package.json files', function (done) {
-            var themePath, pkgJson;
-
-            themePath = tmp.dirSync({unsafeCleanup: true});
-            pkgJson = JSON.stringify({
-                name: 'test',
-                version: '0.0.0'
-            });
-
-            // create example theme
-            fs.mkdirSync(join(themePath.name, 'partials'));
-            fs.writeFileSync(join(themePath.name, 'package.json'), pkgJson);
-            fs.writeFileSync(join(themePath.name, 'index.hbs'));
-            fs.writeFileSync(join(themePath.name, 'partials', 'navigation.hbs'));
-
-            readPackages(themePath.name)
-                .then(function (tree) {
-                    tree.should.eql({
-                        partials: {
-                            'navigation.hbs': join(themePath.name, 'partials', 'navigation.hbs')
-                        },
-                        'index.hbs': join(themePath.name, 'index.hbs'),
-                        'package.json': {
-                            name: 'test',
-                            version: '0.0.0'
+            packages.read.all(packagePath.name)
+                .then(function (pkgs) {
+                    pkgs.should.eql({
+                        casper: {
+                            name: 'casper',
+                            path: join(packagePath.name, 'casper'),
+                            'package.json': null
                         }
                     });
 
                     done();
                 })
                 .catch(done)
-                .finally(themePath.removeCallback);
+                .finally(packagePath.removeCallback);
         });
 
-        it('should read directory and ignore invalid package.json files', function (done) {
-            var themePath, pkgJson;
+        it('should read directory and parse package.json files', function (done) {
+            var packagePath, pkgJson;
 
-            themePath = tmp.dirSync({unsafeCleanup: true});
+            packagePath = tmp.dirSync({unsafeCleanup: true});
             pkgJson = JSON.stringify({
-                name: 'test'
+                name: 'test',
+                version: '0.0.0'
             });
 
             // create example theme
-            fs.mkdirSync(join(themePath.name, 'partials'));
-            fs.writeFileSync(join(themePath.name, 'package.json'), pkgJson);
-            fs.writeFileSync(join(themePath.name, 'index.hbs'));
-            fs.writeFileSync(join(themePath.name, 'partials', 'navigation.hbs'));
+            fs.mkdirSync(join(packagePath.name, 'testtheme'));
+            fs.writeFileSync(join(packagePath.name, 'testtheme', 'package.json'), pkgJson);
+            fs.writeFileSync(join(packagePath.name, 'testtheme', 'index.hbs'));
 
-            readPackages(themePath.name)
-                .then(function (tree) {
-                    tree.should.eql({
-                        partials: {
-                            'navigation.hbs': join(themePath.name, 'partials', 'navigation.hbs')
-                        },
-                        'index.hbs': join(themePath.name, 'index.hbs'),
-                        'package.json': null
+            packages.read.all(packagePath.name)
+                .then(function (pkgs) {
+                    pkgs.should.eql({
+                        testtheme: {
+                            name: 'testtheme',
+                            path: join(packagePath.name, 'testtheme'),
+                            'package.json': {
+                                name: 'test',
+                                version: '0.0.0'
+                            }
+                        }
                     });
 
                     done();
                 })
                 .catch(done)
-                .finally(themePath.removeCallback);
+                .finally(packagePath.removeCallback);
+        });
+
+        it('should read directory and ignore invalid package.json files', function (done) {
+            var packagePath, pkgJson;
+
+            packagePath = tmp.dirSync({unsafeCleanup: true});
+            pkgJson = JSON.stringify({
+                name: 'test'
+            });
+
+            // create example theme
+            fs.mkdirSync(join(packagePath.name, 'testtheme'));
+            fs.writeFileSync(join(packagePath.name, 'testtheme', 'package.json'), pkgJson);
+            fs.writeFileSync(join(packagePath.name, 'testtheme', 'index.hbs'));
+
+            packages.read.all(packagePath.name)
+                .then(function (pkgs) {
+                    pkgs.should.eql({
+                        testtheme: {
+                            name: 'testtheme',
+                            path: join(packagePath.name, 'testtheme'),
+                            'package.json': null
+                        }
+                    });
+
+                    done();
+                })
+                .catch(done)
+                .finally(packagePath.removeCallback);
+        });
+    });
+
+    describe('Read Package', function () {
+        it('should read directory and ignore unneeded items', function (done) {
+            var packagePath = tmp.dirSync({unsafeCleanup: true});
+
+            // create example theme
+            fs.mkdirSync(join(packagePath.name, 'casper'));
+            fs.writeFileSync(join(packagePath.name, 'casper', 'index.hbs'));
+
+            // create some trash
+            fs.mkdirSync(join(packagePath.name, 'node_modules'));
+            fs.mkdirSync(join(packagePath.name, 'bower_components'));
+            fs.mkdirSync(join(packagePath.name, '.git'));
+            fs.writeFileSync(join(packagePath.name, '.DS_Store'));
+
+            packages.read.one(packagePath.name, 'casper')
+                .then(function (pkgs) {
+                    pkgs.should.eql({
+                        casper: {
+                            name: 'casper',
+                            path: join(packagePath.name, 'casper'),
+                            'package.json': null
+                        }
+                    });
+
+                    done();
+                })
+                .catch(done)
+                .finally(packagePath.removeCallback);
+        });
+
+        it('should read directory and parse package.json files', function (done) {
+            var packagePath, pkgJson;
+
+            packagePath = tmp.dirSync({unsafeCleanup: true});
+            pkgJson = JSON.stringify({
+                name: 'test',
+                version: '0.0.0'
+            });
+
+            // create example theme
+            fs.mkdirSync(join(packagePath.name, 'testtheme'));
+            fs.writeFileSync(join(packagePath.name, 'testtheme', 'package.json'), pkgJson);
+            fs.writeFileSync(join(packagePath.name, 'testtheme', 'index.hbs'));
+
+            packages.read.one(packagePath.name, 'testtheme')
+                .then(function (pkgs) {
+                    pkgs.should.eql({
+                        testtheme: {
+                            name: 'testtheme',
+                            path: join(packagePath.name, 'testtheme'),
+                            'package.json': {
+                                name: 'test',
+                                version: '0.0.0'
+                            }
+                        }
+                    });
+
+                    done();
+                })
+                .catch(done)
+                .finally(packagePath.removeCallback);
+        });
+
+        it('should read directory and ignore invalid package.json files', function (done) {
+            var packagePath, pkgJson;
+
+            packagePath = tmp.dirSync({unsafeCleanup: true});
+            pkgJson = JSON.stringify({
+                name: 'test'
+            });
+
+            // create example theme
+            fs.mkdirSync(join(packagePath.name, 'testtheme'));
+            fs.writeFileSync(join(packagePath.name, 'testtheme', 'package.json'), pkgJson);
+            fs.writeFileSync(join(packagePath.name, 'testtheme', 'index.hbs'));
+
+            packages.read.one(packagePath.name, 'testtheme')
+                .then(function (pkgs) {
+                    pkgs.should.eql({
+                        testtheme: {
+                            name: 'testtheme',
+                            path: join(packagePath.name, 'testtheme'),
+                            'package.json': null
+                        }
+                    });
+
+                    done();
+                })
+                .catch(done)
+                .finally(packagePath.removeCallback);
+        });
+
+        it('should read directory and include only single requested package', function (done) {
+            var packagePath = tmp.dirSync({unsafeCleanup: true});
+
+            // create trash
+            fs.writeFileSync(join(packagePath.name, 'casper.zip'));
+            fs.writeFileSync(join(packagePath.name, '.DS_Store'));
+
+            // create actual theme
+            fs.mkdirSync(join(packagePath.name, 'casper'));
+            fs.mkdirSync(join(packagePath.name, 'casper', 'partials'));
+            fs.writeFileSync(join(packagePath.name, 'casper', 'index.hbs'));
+            fs.writeFileSync(join(packagePath.name, 'casper', 'partials', 'navigation.hbs'));
+            fs.mkdirSync(join(packagePath.name, 'not-casper'));
+            fs.writeFileSync(join(packagePath.name, 'not-casper', 'index.hbs'));
+
+            packages.read.one(packagePath.name, 'casper')
+                .then(function (pkgs) {
+                    pkgs.should.eql({
+                        casper: {
+                            name: 'casper',
+                            path: join(packagePath.name, 'casper'),
+                            'package.json': null
+                        }
+                    });
+
+                    done();
+                })
+                .catch(done)
+                .finally(packagePath.removeCallback);
+        });
+
+        it('should return empty object if package cannot be found', function (done) {
+            var packagePath = tmp.dirSync({unsafeCleanup: true});
+
+            // create trash
+            fs.writeFileSync(join(packagePath.name, 'casper.zip'));
+            fs.writeFileSync(join(packagePath.name, '.DS_Store'));
+
+            packages.read.one(packagePath.name, 'casper')
+                .then(function (pkg) {
+                    pkg.should.eql({});
+
+                    done();
+                })
+                .catch(done)
+                .finally(packagePath.removeCallback);
+        });
+
+        it('should return empty object if package is not a directory', function (done) {
+            var packagePath = tmp.dirSync({unsafeCleanup: true});
+
+            // create trash
+            fs.writeFileSync(join(packagePath.name, 'casper.zip'));
+            fs.writeFileSync(join(packagePath.name, '.DS_Store'));
+
+            packages.read.one(packagePath.name, 'casper.zip')
+                .then(function (pkg) {
+                    pkg.should.eql({});
+
+                    done();
+                })
+                .catch(done)
+                .finally(packagePath.removeCallback);
         });
     });
 
     describe('Filter Packages', function () {
         // @TODO: introduce some non-theme package examples
         var casper = {
-                '.gitignore': '~/content/themes/casper/.gitignore',
-                LICENSE: '~/content/themes/casper/LICENSE',
-                'README.md': '~/content/themes/casper/README.md',
-                assets: {
-                    css: {},
-                    fonts: {},
-                    js: {},
-                    'screenshot-desktop.jpg': '~/content/themes/casper/assets/screenshot-desktop.jpg',
-                    'screenshot-mobile.jpg': '~/content/themes/casper/assets/screenshot-mobile.jpg'
-                },
-                'author.hbs': '~/content/themes/casper/author.hbs',
-                'default.hbs': '~/content/themes/casper/default.hbs',
-                'index.hbs': '~/content/themes/casper/index.hbs',
+                name: 'casper',
+                path: '~/content/themes/casper',
                 'package.json': {
                     name: 'casper',
                     description: 'The default personal blogging theme for Ghost. Beautiful, minimal and responsive.',
@@ -277,27 +398,20 @@ describe('Package Utils', function () {
                     repository: {},
                     bugs: 'https://github.com/TryGhost/Casper/issues',
                     contributors: 'https://github.com/TryGhost/Casper/graphs/contributors'
-                },
-                'page.hbs': '~/content/themes/casper/page.hbs',
-                partials: {
-                    'loop.hbs': '~/content/themes/casper/partials/loop.hbs',
-                    'navigation.hbs': '~/content/themes/casper/partials/navigation.hbs'
-                },
-                'post-test-thing.hbs': '~/content/themes/casper/post-test-thing.hbs',
-                'post.hbs': '~/content/themes/casper/post.hbs',
-                'tag.hbs': '~/content/themes/casper/tag.hbs'
+                }
             },
             simplePackage = {
-                'default.hbs': '~/content/themes/casper/default.hbs',
-                'index.hbs': '~/content/themes/casper/index.hbs',
+                name: 'simple',
+                path: '~/content/themes/simple',
                 'package.json': {
                     name: 'simple',
                     version: '0.1.0'
                 }
             },
             missingPackageJson = {
-                'default.hbs': '~/content/themes/casper/default.hbs',
-                'index.hbs': '~/content/themes/casper/index.hbs'
+                name: 'missing',
+                path: '~/content/themes/missing',
+                'package.json': null
             };
 
         it('should filter packages correctly', function () {

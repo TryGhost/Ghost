@@ -11,7 +11,7 @@
  */
 
 module.exports = {
-    readPackages: require('./read-packages'),
+    read: require('./read-packages'),
     parsePackageJSON: require('./parse-package-json'),
     filterPackages: require('./filter-packages')
 };
