@@ -94,7 +94,7 @@
     "grunt-bg-shell": "2.3.3",
     "grunt-shell": "1.3.1",
     "jquery-deparam": "0.5.3",
-    "liquid-fire": "0.27.0",
+    "liquid-fire": "0.27.1",
     "liquid-wormhole": "2.0.2",
     "loader.js": "4.1.0",
     "matchdep": "1.0.1",
