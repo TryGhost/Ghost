@@ -1807,9 +1807,9 @@ element-resize-detector@1.1.4:
   dependencies:
     batch-processor "^1.0.0"
 
-ember-ajax@2.5.4:
-  version "2.5.4"
-  resolved "https://registry.yarnpkg.com/ember-ajax/-/ember-ajax-2.5.4.tgz#bee6c3945c5e6a792272438742d48513bdf3cd86"
+ember-ajax@2.5.5:
+  version "2.5.5"
+  resolved "https://registry.yarnpkg.com/ember-ajax/-/ember-ajax-2.5.5.tgz#9b59e415997012bc0f91cb302d3cf0db941e38ab"
   dependencies:
     ember-cli-babel "^5.1.5"
 
