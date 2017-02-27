@@ -13,10 +13,13 @@
 .__mobiledoc-editor {
     width: 100%;
     min-height: 100%;
+    padding-bottom: 10vw;
     outline: none;
     font-family: var(--font-family);
     font-size: 1.7rem;
     resize: none;
+    font-weight: 200;
+    letter-spacing: 0.1px;
 }
 
 .dropper-bottom {
@@ -36,12 +39,7 @@
 }
 
 .__mobiledoc-card {
-    border: 1px solid #5ba4e5;
-    min-height: 100px;
-    display: inline-block;
-    width:calc(100% - 4px);
-    margin:2px;
-    padding:0;
+    display: block;
 }
 .__mobiledoc-card .ghost-card {
     position: relative;

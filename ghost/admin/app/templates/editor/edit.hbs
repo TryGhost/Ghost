@@ -12,9 +12,6 @@
 
         </div>
         <section class="view-actions">
-            <button type="button" class="post-settings" title="Post Settings" {{action "openSettingsMenu"}}>
-                <i class="icon-settings"></i>
-            </button>
             {{gh-editor-save-button
                 isPublished=model.isPublished
                 isScheduled=model.isScheduled
@@ -30,6 +27,9 @@
                 delete="toggleDeletePostModal"
                 submitting=submitting
             }}
+            <button type="button" class="post-settings" title="Settings" {{action "openSettingsMenu"}}>
+                <i class="icon-settings"></i>
+            </button>
         </section>
     </header>
     <div class="gh-editor-container">
