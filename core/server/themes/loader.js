@@ -9,7 +9,7 @@ var debug = require('debug')('ghost:themes:loader'),
     initThemes;
 
 updateConfigAndCache = function updateConfigAndCache(themes) {
-    debug('loading themes', themes);
+    debug('loading themes', Object.keys(themes));
     config.set('paths:availableThemes', themes);
     settingsApi.updateSettingsCache();
 };
