@@ -2324,9 +2324,9 @@ ember-factory-for-polyfill@^1.1.0:
     ember-cli-babel "^5.1.7"
     ember-cli-version-checker "^1.2.0"
 
-ember-get-config@0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/ember-get-config/-/ember-get-config-0.2.0.tgz#01da4d86eec66c38876daa58de5e42ee406c3725"
+ember-get-config@0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/ember-get-config/-/ember-get-config-0.2.1.tgz#a1325cceefcb4534c78fc6ccb2be87a3feda6817"
   dependencies:
     broccoli-file-creator "^1.1.1"
     ember-cli-babel "^5.1.6"
@@ -2416,16 +2416,16 @@ ember-lifeline@1.0.0:
   dependencies:
     ember-cli-babel "^5.1.7"
 
-ember-light-table@1.8.2:
-  version "1.8.2"
-  resolved "https://registry.yarnpkg.com/ember-light-table/-/ember-light-table-1.8.2.tgz#9cf1d4cf0695eb6b49d96d0145c169042e9b124f"
+ember-light-table@1.8.3:
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/ember-light-table/-/ember-light-table-1.8.3.tgz#b72c637c600f40c866362068d4ec2875fe42f70f"
   dependencies:
     ember-cli-babel "^5.1.7"
     ember-cli-htmlbars "^1.0.11"
     ember-composable-helpers "^1.1.2"
-    ember-get-config "0.2.0"
+    ember-get-config "0.2.1"
     ember-in-viewport "2.1.1"
-    ember-scrollable "^0.4.0"
+    ember-scrollable "^0.4.2"
     ember-truth-helpers "1.2.0"
     ember-wormhole "^0.5.1"
 
@@ -2532,7 +2532,7 @@ ember-runtime-enumerable-includes-polyfill@^1.0.0, ember-runtime-enumerable-incl
     ember-cli-babel "^5.1.6"
     ember-cli-version-checker "^1.1.6"
 
-ember-scrollable@^0.4.0:
+ember-scrollable@^0.4.2:
   version "0.4.3"
   resolved "https://registry.yarnpkg.com/ember-scrollable/-/ember-scrollable-0.4.3.tgz#5ca4a17937f25f8585488c5b0cbb3503a59f48d1"
   dependencies:
