@@ -23,13 +23,6 @@ var Promise = require('bluebird'),
  * **See:** [API Methods](index.js.html#api%20methods)
  */
 themes = {
-    loadThemes: function () {
-        return utils.readThemes(config.getContentPath('themes'))
-            .then(function (result) {
-                config.set('paths:availableThemes', result);
-            });
-    },
-
     browse: function browse() {
         return Promise.resolve({themes: settingsCache.get('availableThemes')});
     },
