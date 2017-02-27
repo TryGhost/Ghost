@@ -65,7 +65,7 @@
     "ember-cli-uglify": "1.2.0",
     "ember-composable-helpers": "2.0.0",
     "ember-concurrency": "0.7.19",
-    "ember-data": "2.11.1",
+    "ember-data": "2.11.3",
     "ember-data-filter": "1.13.0",
     "ember-export-application-global": "1.1.1",
     "ember-infinity": "0.2.8",
