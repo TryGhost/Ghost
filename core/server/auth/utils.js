@@ -1,5 +1,4 @@
-var Promise = require('bluebird'),
-    debug = require('ghost-ignition').debug('auth:utils'),
+var debug = require('ghost-ignition').debug('auth:utils'),
     models = require('../models'),
     globalUtils = require('../utils'),
     knex = require('../data/db').knex,
