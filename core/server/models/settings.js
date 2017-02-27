@@ -7,6 +7,7 @@ var Settings,
     events         = require('../events'),
     i18n           = require('../i18n'),
     validation     = require('../data/validation'),
+    themes         = require('../themes'),
 
     internalContext = {context: {internal: true}},
 
@@ -89,7 +90,7 @@ Settings = ghostBookshelf.Model.extend({
                 return;
             }
 
-            return validation.validateActiveTheme(themeName);
+            return themes.validate.activeTheme(themeName);
         });
     }
 }, {

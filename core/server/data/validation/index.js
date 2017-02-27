@@ -5,12 +5,10 @@ var schema    = require('../schema').tables,
     assert    = require('assert'),
     Promise   = require('bluebird'),
     errors    = require('../../errors'),
-    config    = require('../../config'),
-    i18n        = require('../../i18n'),
+    i18n      = require('../../i18n'),
 
     validateSchema,
     validateSettings,
-    validateActiveTheme,
     validate;
 
 function assertString(input) {
@@ -127,20 +125,6 @@ validateSettings = function validateSettings(defaultSettings, model) {
     return Promise.resolve();
 };
 
-validateActiveTheme = function validateActiveTheme(themeName) {
-    // @TODO come up with something way better here - we should probably attempt to read the theme from the
-    // File system at this point and validate the theme using gscan rather than just checking if it's in a cache object
-    if (!config.get('paths').availableThemes || Object.keys(config.get('paths').availableThemes).length === 0) {
-        // We haven't yet loaded all themes, this is probably being called early?
-        return Promise.resolve();
-    }
-
-    // Else, if we have a list, check if the theme is in it
-    if (!config.get('paths').availableThemes.hasOwnProperty(themeName)) {
-        return Promise.reject(new errors.ValidationError({message: i18n.t('notices.data.validation.index.themeCannotBeActivated', {themeName: themeName}), context: 'activeTheme'}));
-    }
-};
-
 // Validate default settings using the validator module.
 // Each validation's key is a method name and its value is an array of options
 //
@@ -191,6 +175,5 @@ module.exports = {
     validate: validate,
     validator: validator,
     validateSchema: validateSchema,
-    validateSettings: validateSettings,
-    validateActiveTheme: validateActiveTheme
+    validateSettings: validateSettings
 };
