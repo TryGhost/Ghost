@@ -1267,9 +1267,9 @@ code-point-at@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/code-point-at/-/code-point-at-1.1.0.tgz#0d070b4d043a5bea33a2f1a40e2edb3d9a4ccf77"
 
-codemirror@5.23.0:
-  version "5.23.0"
-  resolved "https://registry.yarnpkg.com/codemirror/-/codemirror-5.23.0.tgz#ac9b6b2e163a79e915b44cf0f43cd115cf6982dc"
+codemirror@5.24.2:
+  version "5.24.2"
+  resolved "https://registry.yarnpkg.com/codemirror/-/codemirror-5.24.2.tgz#b55ca950fa009709c37df68eb133310ed89cf2fe"
 
 coffee-script@~1.10.0:
   version "1.10.0"
@@ -4812,13 +4812,13 @@ minimatch@0.3:
     lru-cache "2"
     sigmund "~1.0.0"
 
-"minimatch@2 || 3", minimatch@^3.0.0, minimatch@^3.0.2, minimatch@^3.0.3, minimatch@~3.0.0:
+"minimatch@2 || 3", minimatch@^3.0.3:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-3.0.3.tgz#2a4e4090b96b2db06a9d7df01055a62a77c9b774"
   dependencies:
     brace-expansion "^1.0.0"
 
-minimatch@3.0.2:
+minimatch@3.0.2, minimatch@^3.0.0, minimatch@^3.0.2, minimatch@~3.0.0:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-3.0.2.tgz#0f398a7300ea441e9c348c83d98ab8c9dbf9c40a"
   dependencies:
