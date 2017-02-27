@@ -2010,18 +2010,18 @@ ember-cli-lodash-subset@^1.0.11, ember-cli-lodash-subset@^1.0.7:
   version "1.0.12"
   resolved "https://registry.yarnpkg.com/ember-cli-lodash-subset/-/ember-cli-lodash-subset-1.0.12.tgz#af2e77eba5dcb0d77f3308d3a6fd7d3450f6e537"
 
-ember-cli-mirage@0.2.5:
-  version "0.2.5"
-  resolved "https://registry.yarnpkg.com/ember-cli-mirage/-/ember-cli-mirage-0.2.5.tgz#2936e0240e0cf7e07c36533b60cd3d30573800be"
+ember-cli-mirage@0.2.6:
+  version "0.2.6"
+  resolved "https://registry.yarnpkg.com/ember-cli-mirage/-/ember-cli-mirage-0.2.6.tgz#d8aecfbd47a6cbfcaf9531f920e04acb782a78c2"
   dependencies:
     broccoli-funnel "^1.0.2"
     broccoli-merge-trees "^1.1.0"
     broccoli-unwatched-tree "^0.1.1"
     chalk "^1.1.1"
-    ember-cli-babel "^5.1.5"
+    ember-cli-babel "^5.1.7"
     ember-cli-node-assets "^0.1.4"
     ember-inflector "^1.9.2"
-    ember-lodash "0.0.9"
+    ember-lodash "^4.0"
     exists-sync "0.0.3"
     fake-xml-http-request "^1.4.0"
     faker "^3.0.0"
@@ -2457,13 +2457,15 @@ ember-load@0.0.11:
     ember-cli-htmlbars "^1.0.10"
     ember-cli-version-checker "^1.1.4"
 
-ember-lodash@0.0.9:
-  version "0.0.9"
-  resolved "https://registry.yarnpkg.com/ember-lodash/-/ember-lodash-0.0.9.tgz#5cc559a10c2fb4e89de6df3951cfd9a691aff6b4"
+ember-lodash@^4.0:
+  version "4.17.0"
+  resolved "https://registry.yarnpkg.com/ember-lodash/-/ember-lodash-4.17.0.tgz#15ffb72b050131f28c8dd6bf00146c64ff7496c7"
   dependencies:
+    broccoli-funnel "^1.1.0"
     broccoli-merge-trees "^1.1.1"
-    ember-cli-babel "^5.1.5"
-    lodash-es "^3.10.0"
+    broccoli-string-replace "^0.1.1"
+    ember-cli-babel "^5.1.6"
+    lodash-es "^4.17.2"
 
 ember-maybe-import-regenerator@^0.1.4:
   version "0.1.4"
@@ -4392,9 +4394,9 @@ lockfile@~1.0.1:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/lockfile/-/lockfile-1.0.3.tgz#2638fc39a0331e9cac1a04b71799931c9c50df79"
 
-lodash-es@^3.10.0:
-  version "3.10.1"
-  resolved "https://registry.yarnpkg.com/lodash-es/-/lodash-es-3.10.1.tgz#a1c85d9829c9009004339dc3846dbabb46cf4e19"
+lodash-es@^4.17.2:
+  version "4.17.4"
+  resolved "https://registry.yarnpkg.com/lodash-es/-/lodash-es-4.17.4.tgz#dcc1d7552e150a0640073ba9cb31d70f032950e7"
 
 lodash-node@^2.4.1:
   version "2.4.1"
