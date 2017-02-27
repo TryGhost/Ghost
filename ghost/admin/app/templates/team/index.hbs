@@ -56,14 +56,14 @@
                                         {{#if component.isSending}}
                                             <span>Sending Invite...</span>
                                         {{else}}
-                                            <a class="user-list-action" href="#revoke" {{action "revoke" target=component}} data-test-revoke-button>
+                                            <a class="apps-configured-action red-hover" href="#revoke" {{action "revoke" target=component}} data-test-revoke-button>
                                                 Revoke
                                             </a>
-                                            <a class="user-list-action" href="#resend" {{action "resend" target=component}} data-test-resend-button>
+                                            <a class="apps-configured-action green-hover" href="#resend" {{action "resend" target=component}} data-test-resend-button>
                                                 Resend
                                             </a>
 
-                                            <span class="gh-badge {{invite.role.lowerCaseName}}" data-test-role-name>{{invite.role.name}}</span>
+                                            <span class="apps-configured-action gh-badge {{invite.role.lowerCaseName}}" data-test-role-name>{{invite.role.name}}</span>
                                         {{/if}}
                                     </div>
                                 </div>

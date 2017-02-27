@@ -30,7 +30,7 @@
                 {{/liquid-if}}
             </div>
             <div class="gh-setting-action">
-                <button type="button" class="gh-btn gh-btn-hover-blue" {{action (toggle "pubInfoOpen" this)}} data-test-toggle-pub-info><span>{{if pubInfoOpen "Close" "Open"}}</span></button>
+                <button type="button" class="gh-btn gh-btn-hover-blue" {{action (toggle "pubInfoOpen" this)}} data-test-toggle-pub-info><span>{{if pubInfoOpen "Close" "Expand"}}</span></button>
             </div>
         </div>
         <div class="gh-setting">
@@ -47,7 +47,7 @@
                 {{/liquid-if}}
             </div>
             <div class="gh-setting-action">
-                <button type="button" class="gh-btn gh-btn-hover-blue" {{action (toggle "timezoneOpen" this)}} data-test-toggle-timezone><span>{{if timezoneOpen "Close" "Open"}}</span></button>
+                <button type="button" class="gh-btn gh-btn-hover-blue" {{action (toggle "timezoneOpen" this)}} data-test-toggle-timezone><span>{{if timezoneOpen "Close" "Expand"}}</span></button>
             </div>
         </div>
 
@@ -57,7 +57,7 @@
                 <div class="gh-setting-title">Publication icon</div>
                 <div class="gh-setting-desc">A square, social icon used in the UI of your publication, at least 60x60px</div>
             </div>
-            <div class="gh-setting-action">
+            <div class="gh-setting-action gh-setting-action-smallimg">
                 {{#if model.icon}}
                     <img class="blog-icon" src="{{model.icon}}" alt="icon" role="button" {{action "toggleUploadIconModal"}}>
                 {{else}}
@@ -77,7 +77,7 @@
                 <div class="gh-setting-title">Publication logo</div>
                 <div class="gh-setting-desc">The primary logo for your brand displayed across your theme, should be transparent and at least 600px x 72px</div>
             </div>
-            <div class="gh-setting-action">
+            <div class="gh-setting-action gh-setting-action-smallimg">
                 {{#if model.logo}}
                     <img class="blog-logo" src="{{model.logo}}" alt="logo" role="button" {{action "toggleUploadLogoModal"}}>
                 {{else}}
@@ -97,7 +97,7 @@
                 <div class="gh-setting-title">Publication cover</div>
                 <div class="gh-setting-desc">An optional large background image for your site</div>
             </div>
-            <div class="gh-setting-action">
+            <div class="gh-setting-action gh-setting-action-largeimg">
                 {{#if model.cover}}
                     <img class="blog-cover" src="{{model.cover}}" alt="cover photo" role="button" {{action "toggleUploadCoverModal"}}>
                 {{else}}
@@ -134,7 +134,7 @@
                 {{/liquid-if}}
             </div>
             <div class="gh-setting-action">
-                <button type="button" class="gh-btn gh-btn-hover-blue" {{action (toggle "socialOpen" this)}} data-test-toggle-social><span>{{if socialOpen "Close" "Open"}}</span></button>
+                <button type="button" class="gh-btn gh-btn-hover-blue" {{action (toggle "socialOpen" this)}} data-test-toggle-social><span>{{if socialOpen "Close" "Expand"}}</span></button>
             </div>
         </div>
 

@@ -8,49 +8,43 @@
 
     <section class="view-container">
         <div class="gh-setting-header">Navigation</div>
-        <div class="gh-setting">
-            <div class="gh-setting-content">
-                <form id="settings-navigation" class="gh-blognav" novalidate="novalidate">
-                    {{#sortable-group onChange=(action 'reorderItems') as |group|}}
-                        {{#each model.navigation as |navItem|}}
-                            {{gh-navitem navItem=navItem baseUrl=blogUrl addItem="addNavItem" deleteItem="deleteNavItem" updateUrl="updateUrl" group=group}}
-                        {{/each}}
-                    {{/sortable-group}}
-                    {{gh-navitem navItem=newNavItem baseUrl=blogUrl addItem="addNavItem" updateUrl="updateUrl"}}
-                </form>
-            </div>
+        <div class="gh-blognav-container">
+            <form id="settings-navigation" class="gh-blognav" novalidate="novalidate">
+                {{#sortable-group onChange=(action 'reorderItems') as |group|}}
+                    {{#each model.navigation as |navItem|}}
+                        {{gh-navitem navItem=navItem baseUrl=blogUrl addItem="addNavItem" deleteItem="deleteNavItem" updateUrl="updateUrl" group=group}}
+                    {{/each}}
+                {{/sortable-group}}
+                {{gh-navitem navItem=newNavItem baseUrl=blogUrl addItem="addNavItem" updateUrl="updateUrl"}}
+            </form>
         </div>
 
         <div class="gh-setting-header">Themes</div>
-        <div class="gh-setting">
-            <div class="gh-setting-content">
-                <div class="settings-themes">
-                    {{gh-theme-table
-                            themes=themes
-                            activeTheme=model.activeTheme
-                            activateTheme=(action "setTheme")
-                            downloadTheme=(action "downloadTheme")
-                            deleteTheme=(action "deleteTheme")}}
+        <div class="gh-themes-container">
+            {{gh-theme-table
+                themes=themes
+                activeTheme=model.activeTheme
+                activateTheme=(action "setTheme")
+                downloadTheme=(action "downloadTheme")
+                deleteTheme=(action "deleteTheme")}}
 
-                    <div class="form-group">
-                        {{#link-to "settings.design.uploadtheme" class="gh-btn gh-btn-green" data-test-upload-theme-button=true}}
-                            <span>Upload a theme</span>
-                        {{/link-to}}
-                    </div>
+            {{#link-to "settings.design.uploadtheme" class="gh-btn gh-btn-green gh-themes-uploadbtn" data-test-upload-theme-button=true}}
+                <span>Upload a theme</span>
+            {{/link-to}}
 
-                    {{#if showDeleteThemeModal}}
-                        {{gh-fullscreen-modal "delete-theme"
-                                model=(hash
-                                    theme=themeToDelete
-                                    download=(action "downloadTheme" themeToDelete)
-                                )
-                                close=(action "hideDeleteThemeModal")
-                                confirm=(action "deleteTheme")
-                                modifier="action wide"}}
-                    {{/if}}
-                </div>
-            </div>
+
+            {{#if showDeleteThemeModal}}
+                {{gh-fullscreen-modal "delete-theme"
+                    model=(hash
+                        theme=themeToDelete
+                        download=(action "downloadTheme" themeToDelete)
+                    )
+                    close=(action "hideDeleteThemeModal")
+                    confirm=(action "deleteTheme")
+                    modifier="action wide"}}
+            {{/if}}
         </div>
+
     </section>
 </section>
 

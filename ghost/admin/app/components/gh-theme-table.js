@@ -14,7 +14,8 @@ export default Component.extend({
             let themePackage = get(t, 'package');
 
             theme.name = get(t, 'name');
-            theme.label = themePackage ? `${themePackage.name} - ${themePackage.version}` : theme.name;
+            theme.label = themePackage ? `${themePackage.name}` : theme.name;
+            theme.version = themePackage ? `${themePackage.version}` : '1.0';
             theme.package = themePackage;
             theme.active = theme.name === activeTheme;
             theme.isDeletable = !theme.active;

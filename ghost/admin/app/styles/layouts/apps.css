@@ -87,6 +87,16 @@
     color: var(--midgrey);
 }
 
+.apps-configured a {
+    text-decoration: underline;
+}
+
+.apps-configured-action {
+    margin-left: 15px;
+    text-transform: uppercase;
+    font-size: 11px;
+}
+
 .apps-card-app-icon {
     flex: 0 0 47px;
     margin: 0 15px 0 0;
@@ -200,48 +210,4 @@
 .app-config-form > .gh-btn-grey:hover,
 .app-config-form > .gh-btn-grey:focus {
     border-color: rgb(223, 225, 227);
-}
-/* Media Queries
-/* ---------------------------------------------------------- */
-
-@media (max-width: 800px) {
-    .apps-grid-apps {
-        overflow: hidden;
-        margin: 0 0 4vw 0;
-        border: #dfe1e3 1px solid;
-        border-radius: 5px;
-    }
-
-    .apps-card-app {
-        margin: 0;
-        border: none;
-        border-top: #dfe1e3 1px solid;
-        border-radius: 0;
-    }
-    .apps-grid-cell:first-of-type .apps-card-app {
-        border-top: none;
-    }
-}
-
-@media (max-width: 760px) {
-    .apps-card-app {
-        padding: 15px;
-    }
-    .apps-card-app .apps-card-footer {
-        justify-content: flex-end;
-    }
-    .apps-card-theme .apps-card-footer {
-        margin: 0;
-        padding: 15px;
-    }
-}
-
-@media (max-width: 540px) {
-    .apps-card-footer {
-        justify-content: flex-end;
-    }
-    .apps-card-app .apps-card-footer {
-        flex-direction: column;
-        align-items: flex-start;
-    }
 }

@@ -19,7 +19,6 @@
 
 .gh-signin .gh-btn {
     margin: 0;
-    padding: 12px;
 }
 
 .forgotten-wrap {
@@ -35,17 +34,19 @@
     top: 10px;
     right: 1px;
     bottom: 10px;
-    padding: 0 11px 0 12px;
-    border-left: #dae1e3 1px solid;
+    border-left: color(var(--lightgrey) l(-5%) s(-10%)) 1px solid;
     border-radius: 0;
-    text-transform: none;
+}
+.forgotten-link span {
+    height: 24px;
     font-size: 1.1rem;
-    line-height: 1.2rem;
+    line-height: 24px;
+    padding: 0 11px 0 12px;
 }
 
 .forgotten-link:hover {
-    border-left: #dae1e3 1px solid;
-    color: color(var(--blue) lightness(-20%));
+    border-left: color(var(--lightgrey) l(-15%) s(-10%)) 1px solid;
+    color: color(var(--blue) l(-10%));
     text-decoration: none;
 }
 

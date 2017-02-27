@@ -91,7 +91,7 @@ fieldset[disabled] .gh-btn {
     color(var(--blue) l(-5%) saturation(-8%)) 90%,
     color(var(--blue) l(-3%) saturation(-8%))
     );
-    box-shadow: 0 1px 0 inset rgba(255,255,255,0.1);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.1) inset;
 }
 
 /* When clicked or focused with keyboard */
@@ -131,7 +131,7 @@ fieldset[disabled] .gh-btn {
     color(var(--green) l(-3%) saturation(-7%)) 90%,
     color(var(--green) l(-3%) saturation(-9%))
     );
-    box-shadow: 0 1px 0 inset rgba(255,255,255,0.1);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.1) inset;
 }
 
 /* When clicked or focused with keyboard */
@@ -172,7 +172,7 @@ fieldset[disabled] .gh-btn {
     color(var(--red) l(-7%) saturation(-10%)) 90%,
     color(var(--red) l(-4%) saturation(-10%))
     );
-    box-shadow: 0 1px 0 inset rgba(255,255,255,0.1);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.1) inset;
 }
 
 /* When clicked or focused with keyboard */
@@ -212,7 +212,7 @@ fieldset[disabled] .gh-btn {
     color(var(--darkgrey) l(-7%) saturation(-10%)) 90%,
     color(var(--darkgrey) l(-4%) saturation(-10%))
     );
-    box-shadow: 0 1px 0 inset rgba(255,255,255,0.1);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.1) inset;
 }
 
 /* When clicked or focused with keyboard */
@@ -250,7 +250,7 @@ fieldset[disabled] .gh-btn {
     color(var(--lightgrey) l(+10%)),
     color(var(--lightgrey) l(+4%))
     );
-    box-shadow: inset 0 1px 0 #fff;
+    box-shadow: 0 1px 0 #fff inset;
 }
 
 /* When clicked or focused with keyboard */

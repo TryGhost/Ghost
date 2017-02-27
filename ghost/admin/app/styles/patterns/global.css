@@ -22,6 +22,7 @@
 
 /* Colour classes
 /* ---------------------------------------------------------- */
+
 .darkgrey {
     color: var(--darkgrey);
 }
@@ -49,6 +50,40 @@
 .green {
     color: var(--green);
 }
+
+
+/* Colour classes (hover)
+/* ---------------------------------------------------------- */
+
+.darkgrey-hover:hover {
+    color: var(--darkgrey);
+}
+
+.midgrey-hover:hover {
+    color: var(--midgrey);
+}
+
+.lightgrey-hover:hover {
+    color: var(--lightgrey);
+}
+
+.blue-hover:hover {
+    color: var(--blue);
+}
+
+.red-hover:hover {
+    color: var(--red);
+}
+
+.orange-hover:hover {
+    color: var(--orange);
+}
+
+.green-hover:hover {
+    color: var(--green);
+}
+
+
 
 /* Layout
 /* ---------------------------------------------------------- */
