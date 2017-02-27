@@ -4,96 +4,87 @@
 
 var parsePackageJson = require('./parse-package-json'),
     Promise = require('bluebird'),
+    _ = require('lodash'),
     join = require('path').join,
     fs = require('fs'),
 
+    notAPackageRegex = /^\.|_messages|README.md|node_modules|bower_components/i,
+    packageJSONPath = 'package.json',
+
     statFile = Promise.promisify(fs.stat),
-    readDir = Promise.promisify(fs.readdir);
+    readDir = Promise.promisify(fs.readdir),
+
+    readPackage,
+    readPackages,
+    processPackage;
 
 /**
  * Recursively read directory and find the packages in it
  */
-
-function readPackages(dir, options) {
-    var ignore;
-
-    if (!options) {
-        options = {};
-    }
-
-    ignore = options.ignore || [];
-    ignore.push('node_modules', 'bower_components', '.DS_Store', '.git');
-
-    return readDir(dir)
-        .filter(function (filename) {
-            return ignore.indexOf(filename) === -1;
+processPackage = function processPackage(absolutePath, packageName) {
+    var pkg = {
+        name: packageName,
+        path: absolutePath
+    };
+    return parsePackageJson(join(absolutePath, packageJSONPath))
+        .then(function gotPackageJSON(packageJSON) {
+            pkg['package.json'] = packageJSON;
+            return pkg;
         })
-        .map(function (filename) {
-            var absolutePath = join(dir, filename);
+        .catch(function noPackageJSON() {
+            // ignore invalid package.json for now,
+            // because Ghost does not rely/use them at the moment
+            // in the future, this .catch() will need to be removed,
+            // so that error is thrown on invalid json syntax
+            pkg['package.json'] = null;
+            return pkg;
+        });
+};
 
-            return statFile(absolutePath).then(function (stat) {
-                var item = {
-                    name: filename,
-                    path: absolutePath,
-                    stat: stat
-                };
-
-                return item;
-            });
-        })
-        .map(function (item) {
-            if (item.name === 'package.json') {
-                return parsePackageJson(item.path)
-                    .then(function (pkg) {
-                        item.content = pkg;
-
-                        return item;
-                    })
-                    .catch(function () {
-                        // ignore invalid package.json for now,
-                        // because Ghost does not rely/use them at the moment
-                        // in the future, this .catch() will need to be removed,
-                        // so that error is thrown on invalid json syntax
-                        item.content = null;
-
-                        return item;
-                    });
+readPackage = function readPackage(packagePath, packageName) {
+    var absolutePath = join(packagePath, packageName);
+    return statFile(absolutePath)
+        .then(function (stat) {
+            if (!stat.isDirectory()) {
+                return {};
             }
 
-            if (item.stat.isDirectory()) {
-                return readPackages(item.path).then(function (files) {
-                    item.content = files;
-
-                    return item;
+            return processPackage(absolutePath, packageName)
+                .then(function gotPackage(pkg) {
+                    var res = {};
+                    res[packageName] = pkg;
+                    return res;
                 });
-            }
-
-            // if there's no custom handling needed
-            // set absolute path as `item`'s `content`
-            item.content = item.path;
-
-            return item;
         })
-        .then(function (items) {
-            var tree = {};
+        .catch(function () {
+            // @TODO: maybe log the error here?
+            return {};
+        });
+};
 
-            items.forEach(function (item) {
-                tree[item.name] = item.content;
-            });
-
-            return tree;
-        })
-        .catch(function (err) {
-            if (err.code === 'ENOENT') {
+readPackages = function readPackages(packagePath) {
+    return readDir(packagePath)
+        .filter(function (packageName) {
+            // Filter out things which are not packages by regex
+            if (packageName.match(notAPackageRegex)) {
                 return;
             }
-
-            return Promise.reject(err);
+            // Check the remaining items to ensure they are a directory
+            return statFile(join(packagePath, packageName)).then(function (stat) {
+                return stat.isDirectory();
+            });
+        })
+        .map(function readPackageJson(packageName) {
+            var absolutePath = join(packagePath, packageName);
+            return processPackage(absolutePath, packageName);
+        })
+        .then(function (packages) {
+            return _.keyBy(packages, 'name');
         });
-}
+};
 
 /**
- * Expose `readPackages`
+ * Expose Public API
  */
-
-module.exports = readPackages;
+module.exports.all = readPackages;
+module.exports.one = readPackage;
