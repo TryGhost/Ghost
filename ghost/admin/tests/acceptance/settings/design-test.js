@@ -245,14 +245,14 @@ describe('Acceptance: Settings - Design', function () {
             // lists available themes (themes are specified in mirage/fixtures/settings)
             andThen(() => {
                 expect(
-                    find('.theme-list-item').length,
+                    find(testSelector('theme-id')).length,
                     'shows correct number of themes'
                 ).to.equal(3);
 
                 expect(
-                    find('.theme-list-item:contains("Blog")').hasClass('theme-list-item--active'),
+                    find(`${testSelector('theme-active', 'true')} ${testSelector('theme-title')}`).text().trim(),
                     'Blog theme marked as active'
-                );
+                ).to.equal('Blog (default)');
             });
 
             // theme upload displays modal
@@ -473,14 +473,14 @@ describe('Acceptance: Settings - Design', function () {
                 ).to.match(/"Test 1 - 0\.1" uploaded successfully/);
 
                 expect(
-                    find('.theme-list-item').length,
+                    find(testSelector('theme-id')).length,
                     'number of themes in list grows after upload'
                 ).to.equal(4);
 
                 expect(
-                    find('.theme-list-item:contains("Test 1 - 0.1")').hasClass('theme-list-item--active'),
-                    'newly uploaded theme is active'
-                ).to.be.false;
+                    find(`${testSelector('theme-active', 'true')} ${testSelector('theme-title')}`).text().trim(),
+                    'newly uploaded theme is not active'
+                ).to.equal('Blog (default)');
             });
             click(`.fullscreen-modal ${testSelector('close-button')}`);
 
@@ -490,32 +490,32 @@ describe('Acceptance: Settings - Design', function () {
             click(`.fullscreen-modal ${testSelector('activate-now-button')}`);
             andThen(() => {
                 expect(
-                    find('.theme-list-item').length,
+                    find(testSelector('theme-id')).length,
                     'number of themes in list grows after upload and activate'
                 ).to.equal(5);
 
                 expect(
-                    find('.theme-list-item:contains("Test 2 - 0.1")').hasClass('theme-list-item--active'),
+                    find(`${testSelector('theme-active', 'true')} ${testSelector('theme-title')}`).text().trim(),
                     'newly uploaded+activated theme is active'
-                ).to.be.true;
+                ).to.equal('Test 2');
             });
 
             // theme activation switches active theme
-            click('.theme-list-item:contains("Blog") a:contains("Activate")');
+            click(`${testSelector('theme-id', 'casper')} ${testSelector('theme-activate-button')}`);
             andThen(() => {
                 expect(
-                    find('.theme-list-item:contains("Test 2 - 0.1")').hasClass('theme-list-item--active'),
+                    find(`${testSelector('theme-id', 'test-2')} .apps-card-app`).hasClass('theme-list-item--active'),
                     'previously active theme is not active'
                 ).to.be.false;
 
                 expect(
-                    find('.theme-list-item:contains("Blog")').hasClass('theme-list-item--active'),
+                    find(`${testSelector('theme-id', 'casper')} .apps-card-app`).hasClass('theme-list-item--active'),
                     'activated theme is active'
                 ).to.be.true;
             });
 
             // theme deletion displays modal
-            click('.theme-list-item:contains("Test 1") a:contains("Delete")');
+            click(`${testSelector('theme-id', 'test-1')} ${testSelector('theme-delete-button')}`);
             andThen(() => {
                 expect(
                     find(testSelector('delete-theme-modal')).length,
@@ -533,7 +533,7 @@ describe('Acceptance: Settings - Design', function () {
             });
 
             // confirming theme deletion closes modal and refreshes list
-            click('.theme-list-item:contains("Test 1") a:contains("Delete")');
+            click(`${testSelector('theme-id', 'test-1')} ${testSelector('theme-delete-button')}`);
             click(`.fullscreen-modal ${testSelector('delete-button')}`);
             andThen(() => {
                 expect(
@@ -544,12 +544,12 @@ describe('Acceptance: Settings - Design', function () {
 
             andThen(() => {
                 expect(
-                    find('.theme-list-item').length,
+                    find(testSelector('theme-id')).length,
                     'number of themes in list shrinks after delete'
                 ).to.equal(4);
 
                 expect(
-                    find('.theme-list-item .name').text(),
+                    find(testSelector('theme-title')).text(),
                     'correct theme is removed from theme list after deletion'
                 ).to.not.match(/Test 1/);
             });
@@ -564,7 +564,7 @@ describe('Acceptance: Settings - Design', function () {
                     });
                 });
             });
-            click('.theme-list-item:contains("Test 2") a:contains("Delete")');
+            click(`${testSelector('theme-id', 'test-2')} ${testSelector('theme-delete-button')}`);
             click(`.fullscreen-modal ${testSelector('delete-button')}`);
             andThen(() => {
                 expect(
