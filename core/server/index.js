@@ -69,12 +69,12 @@ function init(options) {
 
     // Initialize Internationalization
     i18n.init();
+    // Load models, no need to wait
+    models.init();
 
     // Load our config.js file from the local file system.
     return config.load(options.config).then(function () {
         return config.checkDeprecated();
-    }).then(function () {
-        models.init();
     }).then(function () {
         /**
          * fresh install:
