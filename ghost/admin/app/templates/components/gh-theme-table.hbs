@@ -1,32 +1,45 @@
+<div class="apps-grid">
 {{#if sortedThemes}}
-    <div class="theme-list">
-        {{#each sortedThemes as |theme|}}
-            <div class="theme-list-item {{if theme.active "theme-list-item--active"}}">
-                <div class="theme-list-item-body">
-                    <span class="name">{{theme.label}}</span>
+
+    {{#each sortedThemes as |theme|}}
+    <div class="apps-grid-cell">
+        <div class="apps-card-app {{if theme.active "theme-list-item--active"}}">
+            <div class="apps-card-left">
+                <div class="apps-card-meta">
+                    <h3 class="apps-card-app-title">{{theme.label}}</h3>
+                    <p class="apps-card-app-desc"><span class="description">Version {{theme.version}}</span></p>
                 </div>
-                <div class="theme-list-item-aside">
+            </div>
+            <div class="apps-card-right">
+                <div class="apps-configured">
+                    {{!--Delete--}}
                     {{#if theme.isDeletable}}
-                        <a href="#" {{action deleteTheme theme}} disabled={{theme.active}} class="theme-list-action">
-                            Delete
-                        </a>
+                        <a href="#" {{action deleteTheme theme}} disabled={{theme.active}} class="apps-configured-action red-hover">Delete</a>
                     {{/if}}
-
-                    <a href="#" {{action downloadTheme theme}} class="theme-list-action">
-                        Download
-                    </a>
-
+                    {{!--Download--}}
+                    <a href="#" {{action downloadTheme theme}} class="apps-configured-action darkgrey-hover">Download</a>
+                    {{!--Active Label / Activate Button--}}
                     {{#if theme.active}}
-                        <span class="theme-list-action theme-list-action-activate">Active</span>
+                        <span class="gh-badge gh-badge-black apps-configured-action">Active</span>
                     {{else}}
-                        <a href="#" {{action activateTheme theme}} class="theme-list-action theme-list-action-activate">
+                        <a href="#" {{action activateTheme theme}} class="apps-configured-action apps-configured-action-activate green-hover">
                             Activate
                         </a>
                     {{/if}}
                 </div>
             </div>
-        {{/each}}
+        </div>
     </div>
+    {{/each}}
+
 {{else}}
-    No theme found!
+    <div class="apps-card-app">
+        <div class="apps-card-left">
+            <div class="apps-card-meta">
+                <h3 class="apps-card-app-title">No themes found</h3>
+                <p class="apps-card-app-desc"><span class="description">Please upload a theme to continue</span></p>
+            </div>
+        </div>
+    </div>
 {{/if}}
+</div>

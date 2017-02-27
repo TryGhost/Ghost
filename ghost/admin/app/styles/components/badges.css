@@ -11,6 +11,7 @@
     font-weight: 400;
     text-align: center;
     text-shadow: 0 -1px 0 rgba(0,0,0,0.1);
+    text-decoration: none;
     white-space: nowrap;
     user-select: none;
     background: linear-gradient(
@@ -50,4 +51,5 @@
     font-weight: 400;
     background: transparent;
     box-shadow: none;
+    text-shadow: none;
 }
