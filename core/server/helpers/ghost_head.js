@@ -18,7 +18,7 @@ var getMetaData = require('../data/meta'),
     labs = require('../utils/labs'),
     utils = require('../utils'),
     api = require('../api'),
-    settingsCache = api.settings.cache;
+    settingsCache = require('../settings/cache');
 
 function getClient() {
     if (labs.isSet('publicAPI') === true) {

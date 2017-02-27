@@ -6,7 +6,7 @@ var path                = require('path'),
 
     // Dirty requires
     errors              = require('../../../errors'),
-    settingsCache       = require('../../../api/settings').cache,
+    settingsCache       = require('../../../settings/cache'),
     templates           = require('../../../controllers/frontend/templates'),
     postLookup          = require('../../../controllers/frontend/post-lookup'),
     setResponseContext  = require('../../../controllers/frontend/context');

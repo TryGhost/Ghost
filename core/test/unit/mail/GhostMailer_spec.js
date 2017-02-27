@@ -2,7 +2,7 @@ var should          = require('should'),
     Promise         = require('bluebird'),
     sinon           = require('sinon'),
     mail            = require('../../../server/mail'),
-    api             = require('../../../server/api'),
+    settingsCache   = require('../../../server/settings/cache'),
     configUtils     = require('../../utils/configUtils'),
     i18n            = require('../../../server/i18n'),
     sandbox         = sinon.sandbox.create(),
@@ -178,7 +178,7 @@ describe('Mail: Ghostmailer', function () {
         });
 
         it('should fall back to [blog.title] <ghost@[blog.url]>', function () {
-            sandbox.stub(api.settings.cache, 'get').returns('Test');
+            sandbox.stub(settingsCache, 'get').returns('Test');
 
             // Standard domain
             configUtils.set({url: 'http://default.com', mail: {from: null}});
@@ -207,7 +207,7 @@ describe('Mail: Ghostmailer', function () {
         });
 
         it('should attach blog title if from or fromaddress are only email addresses', function () {
-            sandbox.stub(api.settings.cache, 'get').returns('Test');
+            sandbox.stub(settingsCache, 'get').returns('Test');
 
             // from and fromaddress are both set
             configUtils.set({mail: {from: 'from@default.com', fromaddress: 'fa@default.com'}});
