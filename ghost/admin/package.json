@@ -35,7 +35,7 @@
     "broccoli-merge-trees": "1.2.1",
     "broccoli-uglify-js": "0.2.0",
     "chai-jquery": "2.0.0",
-    "codemirror": "5.23.0",
+    "codemirror": "5.24.2",
     "coveralls": "2.11.16",
     "csscomb": "4.0.0",
     "cssnano": "3.10.0",
