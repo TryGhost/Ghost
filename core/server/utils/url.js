@@ -5,7 +5,7 @@ var moment            = require('moment-timezone'),
     _                 = require('lodash'),
     url               = require('url'),
     config            = require('./../config'),
-    settingsCache     = require('./../api/settings').cache,
+    settingsCache     = require('./../settings/cache'),
     // @TODO: unify this with the path in server/app.js
     API_PATH          = '/ghost/api/v0.1/',
     STATIC_IMAGE_URL_PREFIX = 'content/images';

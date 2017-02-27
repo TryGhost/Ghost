@@ -1,5 +1,5 @@
 var Promise = require('bluebird'),
-    settingsCache = require('../../api/settings').cache,
+    settingsCache = require('../../settings/cache'),
     utils = require('../../utils'),
     getUrl = require('./url'),
     getImageDimensions = require('./image-dimensions'),

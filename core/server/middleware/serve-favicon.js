@@ -1,7 +1,7 @@
 var fs     = require('fs'),
     path = require('path'),
     storage = require('../storage'),
-    settingsCache = require('../api/settings').cache,
+    settingsCache = require('../settings/cache'),
     utils  = require('../utils'),
     crypto = require('crypto'),
     buildContentResponse,

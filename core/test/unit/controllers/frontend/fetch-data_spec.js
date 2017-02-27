@@ -3,6 +3,7 @@ var should   = require('should'),
     Promise  = require('bluebird'),
     // Stuff we are testing
     api      = require('../../../../server/api'),
+    settingsCache = require('../../../../server/settings/cache'),
     fetchData = require('../../../../server/controllers/frontend/fetch-data'),
     configUtils = require('../../../utils/configUtils'),
     sandbox = sinon.sandbox.create();
@@ -27,7 +28,7 @@ describe('fetchData', function () {
 
     describe('channel config', function () {
         beforeEach(function () {
-            sandbox.stub(api.settings.cache, 'get').returns(10);
+            sandbox.stub(settingsCache, 'get').returns(10);
         });
 
         it('should handle no post options', function (done) {
@@ -154,7 +155,7 @@ describe('fetchData', function () {
 
     describe('valid postsPerPage', function () {
         beforeEach(function () {
-            sandbox.stub(api.settings.cache, 'get').returns(10);
+            sandbox.stub(settingsCache, 'get').returns(10);
         });
 
         it('Adds limit & includes to options by default', function (done) {
@@ -170,7 +171,7 @@ describe('fetchData', function () {
 
     describe('invalid postsPerPage', function () {
         beforeEach(function () {
-            sandbox.stub(api.settings.cache, 'get').returns(-1);
+            sandbox.stub(settingsCache, 'get').returns(-1);
         });
 
         it('Will not add limit if postsPerPage is not valid', function (done) {

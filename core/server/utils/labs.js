@@ -1,4 +1,4 @@
-var settingsCache = require('../api/settings').cache,
+var settingsCache = require('../settings/cache'),
     flagIsSet;
 
 flagIsSet = function flagIsSet(flag) {
