@@ -656,13 +656,12 @@ browserify-zlib@^0.1.4:
   dependencies:
     pako "~0.2.0"
 
-"brute-knex@https://github.com/cobbspur/brute-knex/tarball/0cb28fa8e3230dcbf6bca8b991dbb340b9fff6cc":
+"brute-knex@https://github.com/cobbspur/brute-knex/tarball/37439f56965b17d29bb4ff9b3f3222b2f4bd6ce3":
   version "2.0.0"
-  resolved "https://github.com/cobbspur/brute-knex/tarball/0cb28fa8e3230dcbf6bca8b991dbb340b9fff6cc#3117ac6510166acb2c6c483717c9baddd65f1067"
+  resolved "https://github.com/cobbspur/brute-knex/tarball/37439f56965b17d29bb4ff9b3f3222b2f4bd6ce3#1a7aff22aa22c1a9809310676d527d49ef9be47f"
   dependencies:
     express "4.14.0"
     express-brute "1.0.0"
-    ghost-ignition "2.0.0"
     knex "0.12.2"
     lodash "4.16.3"
 
@@ -692,15 +691,6 @@ bunyan-loggly@1.1.0:
   dependencies:
     clone "^1.0.2"
     loggly "^1.1.0"
-
-bunyan@1.8.1:
-  version "1.8.1"
-  resolved "https://registry.yarnpkg.com/bunyan/-/bunyan-1.8.1.tgz#68c6a4a502d5620bc9f72d6736810c1b1898097f"
-  optionalDependencies:
-    dtrace-provider "~0.6"
-    moment "^2.10.6"
-    mv "~2"
-    safe-json-stringify "~1"
 
 bunyan@1.8.5:
   version "1.8.5"
@@ -1358,12 +1348,6 @@ downsize@0.0.8:
   resolved "https://registry.yarnpkg.com/downsize/-/downsize-0.0.8.tgz#21435a610c8c68220f5cc31474979b4d025f038e"
   dependencies:
     xregexp "2.0.0"
-
-dtrace-provider@~0.6:
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/dtrace-provider/-/dtrace-provider-0.6.0.tgz#0b078d5517937d873101452d9146737557b75e51"
-  dependencies:
-    nan "^2.0.8"
 
 dtrace-provider@~0.8:
   version "0.8.0"
@@ -2094,21 +2078,6 @@ ghost-gql@0.0.6:
   resolved "https://registry.yarnpkg.com/ghost-gql/-/ghost-gql-0.0.6.tgz#be811bc95f8f72671009c33100fc85d2d02758ee"
   dependencies:
     lodash "^4.17.4"
-
-ghost-ignition@2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-2.0.0.tgz#ab26f951d0d5c22a4dede9b22da56310926039c9"
-  dependencies:
-    bunyan "1.8.1"
-    caller "1.0.1"
-    debug "2.2.0"
-    express "4.14.0"
-    find-root "1.0.0"
-    lodash "4.16.4"
-    moment "2.15.2"
-    nconf "0.8.4"
-    node-uuid "1.4.7"
-    prettyjson "1.1.3"
 
 ghost-ignition@2.8.7, ghost-ignition@^2.8.2, ghost-ignition@^2.8.7:
   version "2.8.7"
@@ -3741,11 +3710,11 @@ lodash@4.16.3:
   version "4.16.3"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.16.3.tgz#0ba761439529127c7a38c439114ca153efa999a2"
 
-lodash@4.16.4, lodash@~4.16.4:
+lodash@4.16.4:
   version "4.16.4"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.16.4.tgz#01ce306b9bad1319f2a5528674f88297aeb70127"
 
-lodash@4.16.6:
+lodash@4.16.6, lodash@~4.16.4:
   version "4.16.6"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.16.6.tgz#d22c9ac660288f3843e16ba7d2b5d06cca27d777"
 
@@ -4164,7 +4133,7 @@ mysql@2.13.0:
     readable-stream "1.1.14"
     sqlstring "2.2.0"
 
-nan@^2.0.8, nan@^2.3.0, nan@^2.3.3, nan@~2.4.0:
+nan@^2.3.0, nan@^2.3.3, nan@~2.4.0:
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.4.0.tgz#fb3c59d45fe4effe215f0b890f8adf6eb32d2232"
 
