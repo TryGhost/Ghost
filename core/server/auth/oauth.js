@@ -22,7 +22,8 @@ function exchangeRefreshToken(client, refreshToken, scope, body, authInfo, done)
                     authUtils.createTokens({
                         clientId: token.client_id,
                         userId: token.user_id,
-                        refreshToken: refreshToken
+                        oldAccessToken: authInfo.accessToken,
+                        oldRefreshToken: refreshToken
                     }).then(function (response) {
                         return done(null, response.access_token, {expires_in: response.expires_in});
                     }).catch(function handleError(error) {
@@ -68,6 +69,7 @@ function exchangeAuthorizationCode(req, res, next) {
             message: i18n.t('errors.middleware.auth.accessDenied')
         }));
     }
+
     req.query.code = req.body.authorizationCode;
 
     passport.authenticate('ghost', {session: false, failWithError: false}, function authenticate(err, user) {
@@ -153,7 +155,8 @@ oauth = {
          * Important: only used for resetting the brute count (access to req.ip)
          */
         req.authInfo = {
-            ip: req.ip
+            ip: req.ip,
+            accessToken: authUtils.getBearerAutorizationToken(req)
         };
 
         return oauthServer.token()(req, res, next);

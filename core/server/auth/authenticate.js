@@ -1,38 +1,16 @@
 var passport = require('passport'),
+    authUtils = require('./utils'),
     errors = require('../errors'),
     models = require('../models'),
     events = require('../events'),
     i18n = require('../i18n'),
     authenticate;
 
-function isBearerAutorizationHeader(req) {
-    var parts,
-        scheme,
-        credentials;
-
-    if (req.headers && req.headers.authorization) {
-        parts = req.headers.authorization.split(' ');
-    } else if (req.query && req.query.access_token) {
-        return true;
-    } else {
-        return false;
-    }
-
-    if (parts.length === 2) {
-        scheme = parts[0];
-        credentials = parts[1];
-        if (/^Bearer$/i.test(scheme)) {
-            return true;
-        }
-    }
-    return false;
-}
-
 authenticate = {
     // ### Authenticate Client Middleware
     authenticateClient: function authenticateClient(req, res, next) {
         // skip client authentication if bearer token is present
-        if (isBearerAutorizationHeader(req)) {
+        if (authUtils.getBearerAutorizationToken(req)) {
             return next();
         }
 
@@ -92,7 +70,7 @@ authenticate = {
 
                     events.emit('user.authenticated', user);
                     return next(null, user, info);
-                } else if (isBearerAutorizationHeader(req)) {
+                } else if (authUtils.getBearerAutorizationToken(req)) {
                     return next(new errors.UnauthorizedError({
                         message: i18n.t('errors.middleware.auth.accessDenied')
                     }));

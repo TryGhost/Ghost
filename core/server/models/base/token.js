@@ -54,21 +54,6 @@ Basetoken = ghostBookshelf.Model.extend({
         return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.models.base.token.noUserFound')}));
     },
 
-    destroyByUserAndClient: function destroyByUserAndClient(data, options) {
-        var userId = data.userId,
-            clientId = data.clientId;
-
-        options = this.filterOptions(options, 'destroyByUserAndClient');
-
-        return ghostBookshelf.Collection.forge([], {model: this})
-            .query('where', 'user_id', '=', userId)
-            .query('where', 'client_id', '=', clientId)
-            .fetch(options)
-            .then(function then(collection) {
-                return collection.invokeThen('destroy', options);
-            });
-    },
-
     /**
      * ### destroyByToken
      * @param  {[type]} options has token where token is the token to destroy
