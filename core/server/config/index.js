@@ -94,7 +94,7 @@ ConfigManager.prototype.loadThemes = function () {
 
     return readThemes(self._config.paths.themePath)
         .then(function (result) {
-            self.set({paths: {availableThemes: result}});
+            self._config.paths.availableThemes = result;
         });
 };
 

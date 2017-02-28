@@ -93,7 +93,27 @@ describe('Themes API', function () {
 
                             // ensure contains two files (zip and extracted theme)
                             fs.readdirSync(config.paths.themePath).join().match(/valid/gi).length.should.eql(1);
-                            done();
+
+                            // Check the settings API returns the correct result
+                            request.get(testUtils.API.getApiQuery('settings/'))
+                                .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
+                                .expect(200)
+                                .end(function (err, res) {
+                                    if (err) {
+                                        return done(err);
+                                    }
+
+                                    var availableThemes, addedTheme;
+
+                                    availableThemes = _.find(res.body.settings, {key: 'availableThemes'}).value;
+                                    should.exist(availableThemes);
+
+                                    // The added theme should be here
+                                    addedTheme = _.find(availableThemes, {name: 'valid'});
+                                    should.exist(addedTheme);
+
+                                    done();
+                                });
                         });
                 });
         });
@@ -141,7 +161,27 @@ describe('Themes API', function () {
 
                     fs.existsSync(config.paths.themePath + '/valid').should.eql(false);
                     fs.existsSync(config.paths.themePath + '/valid.zip').should.eql(false);
-                    done();
+
+                    // Check the settings API returns the correct result
+                    request.get(testUtils.API.getApiQuery('settings/'))
+                        .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
+                        .expect(200)
+                        .end(function (err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            var availableThemes, deletedTheme;
+
+                            availableThemes = _.find(res.body.settings, {key: 'availableThemes'}).value;
+                            should.exist(availableThemes);
+
+                            // The deleted theme should not be here
+                            deletedTheme = _.find(availableThemes, {name: 'valid'});
+                            should.not.exist(deletedTheme);
+
+                            done();
+                        });
                 });
         });
     });
