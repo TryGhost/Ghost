@@ -348,7 +348,7 @@ describe('Package Utils', function () {
                 .finally(packagePath.removeCallback);
         });
 
-        it('should return empty object if package cannot be found', function (done) {
+        it('should return an error if package cannot be found', function (done) {
             var packagePath = tmp.dirSync({unsafeCleanup: true});
 
             // create trash
@@ -356,12 +356,13 @@ describe('Package Utils', function () {
             fs.writeFileSync(join(packagePath.name, '.DS_Store'));
 
             packages.read.one(packagePath.name, 'casper')
-                .then(function (pkg) {
-                    pkg.should.eql({});
-
+                .then(function () {
+                    done('Should have thrown an error');
+                })
+                .catch(function (err) {
+                    err.message.should.eql('Package not found');
                     done();
                 })
-                .catch(done)
                 .finally(packagePath.removeCallback);
         });
 

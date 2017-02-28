@@ -57,8 +57,7 @@ readPackage = function readPackage(packagePath, packageName) {
                 });
         })
         .catch(function () {
-            // @TODO: maybe log the error here?
-            return {};
+            return Promise.reject(new Error('Package not found'));
         });
 };
 
