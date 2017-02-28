@@ -27,6 +27,8 @@ filterPackages = function filterPackages(packages, active) {
                 package: pkg['package.json'] || false
             };
 
+            // At the moment we only support themes. This property is used in Ghost-Admin LTS
+            // It is not used in Ghost-Admin 1.0, and therefore this can be removed.
             if (_.indexOf(active, key) !== -1) {
                 item.active = true;
             }
