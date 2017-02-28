@@ -421,10 +421,11 @@ describe('Package Utils', function () {
             result.should.be.an.Array().with.lengthOf(1);
             package1 = result[0];
 
-            package1.should.be.an.Object().with.properties('name', 'package');
-            Object.keys(package1).should.be.an.Array().with.lengthOf(2);
+            package1.should.be.an.Object().with.properties('name', 'package', 'active');
+            Object.keys(package1).should.be.an.Array().with.lengthOf(3);
             package1.name.should.eql('casper');
             package1.package.should.be.an.Object().with.properties('name', 'version');
+            package1.active.should.be.false();
         });
 
         it('should filter packages and handle a single active package string', function () {
@@ -441,11 +442,11 @@ describe('Package Utils', function () {
             package1.package.should.be.an.Object().with.properties('name', 'version');
             package1.active.should.be.true();
 
-            package2.should.be.an.Object().with.properties('name', 'package');
-            Object.keys(package2).should.be.an.Array().with.lengthOf(2);
+            package2.should.be.an.Object().with.properties('name', 'package', 'active');
+            Object.keys(package2).should.be.an.Array().with.lengthOf(3);
             package2.name.should.eql('simple');
             package2.package.should.be.an.Object().with.properties('name', 'version');
-            should.not.exist(package2.active);
+            package2.active.should.be.false();
         });
 
         it('should filter packages and handle an array of active packages', function () {
@@ -483,11 +484,11 @@ describe('Package Utils', function () {
             package1.package.should.be.an.Object().with.properties('name', 'version');
             package1.active.should.be.true();
 
-            package2.should.be.an.Object().with.properties('name', 'package');
-            Object.keys(package2).should.be.an.Array().with.lengthOf(2);
+            package2.should.be.an.Object().with.properties('name', 'package', 'active');
+            Object.keys(package2).should.be.an.Array().with.lengthOf(3);
             package2.name.should.eql('missing');
             package2.package.should.be.false();
-            should.not.exist(package2.active);
+            package2.active.should.be.false();
         });
 
         it('filters out things which are not packages', function () {
