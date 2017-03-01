@@ -110,7 +110,7 @@
   "ember-addon": {
     "paths": [
       "lib/asset-delivery",
-      "lib/ghost-editor"
+      "lib/gh-koenig"
     ]
   },
   "greenkeeper": {
