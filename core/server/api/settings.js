@@ -8,6 +8,7 @@ var _            = require('lodash'),
     errors       = require('../errors'),
     utils        = require('./utils'),
     i18n         = require('../i18n'),
+    filterPackages = require('../utils/packages').filterPackages,
 
     docName      = 'settings',
     settings,
@@ -16,7 +17,6 @@ var _            = require('lodash'),
 
     updateSettingsCache,
     settingsFilter,
-    filterPaths,
     readSettingsResult,
     settingsResult,
     canEditAllSettings,
@@ -67,50 +67,6 @@ settingsFilter = function (settings, filter) {
 };
 
 /**
- * ### Filter Paths
- * Normalizes paths read by require-tree so that the apps and themes modules can use them. Creates an empty
- * array (res), and populates it with useful info about the read packages like name, whether they're active
- * (comparison with the second argument), and if they have a package.json, that, otherwise false
- * @private
- * @param   {object}            paths       as returned by require-tree()
- * @param   {array/string}      active      as read from the settings object
- * @returns {Array}                         of objects with useful info about apps / themes
- */
-filterPaths = function (paths, active) {
-    var pathKeys = Object.keys(paths),
-        res = [],
-        item;
-
-    // turn active into an array (so themes and apps can be checked the same)
-    if (!Array.isArray(active)) {
-        active = [active];
-    }
-
-    _.each(pathKeys, function (key) {
-        // do not include hidden files or _messages
-        if (key.indexOf('.') !== 0 &&
-                key !== '_messages' &&
-                key !== 'README.md'
-                ) {
-            item = {
-                name: key
-            };
-            if (paths[key].hasOwnProperty('package.json')) {
-                item.package = paths[key]['package.json'];
-            } else {
-                item.package = false;
-            }
-
-            if (_.indexOf(active, key) !== -1) {
-                item.active = true;
-            }
-            res.push(item);
-        }
-    });
-    return res;
-};
-
-/**
  * ### Read Settings Result
  * @private
  * @param {Array} settingsModels
@@ -129,7 +85,7 @@ readSettingsResult = function (settingsModels) {
 
     // @TODO: remove availableThemes from settings cache and create an endpoint to fetch themes
     if (settings.activeTheme && themes) {
-        res = filterPaths(themes, settings.activeTheme.value);
+        res = filterPackages(themes, settings.activeTheme.value);
 
         settings.availableThemes = {
             key: 'availableThemes',

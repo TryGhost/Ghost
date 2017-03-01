@@ -1,55 +1,27 @@
 /**
- * Dependencies
+ * # Read Themes
+ *
+ * Util that wraps packages.read
  */
+var packages = require('../utils/packages'),
+    logging = require('../logging'),
+    i18n = require('../i18n'),
 
-var readDirectory = require('../utils').readDirectory,
-    Promise = require('bluebird'),
-    _ = require('lodash'),
-    join = require('path').join,
-    fs = require('fs'),
-
-    statFile = Promise.promisify(fs.stat),
     readOneTheme,
     readAllThemes;
 
 readOneTheme = function readOneTheme(dir, name) {
-    var toRead = join(dir, name),
-        themes = {};
-
-    return readDirectory(toRead)
-        .then(function (tree) {
-            if (!_.isEmpty(tree)) {
-                themes[name] = tree;
-            }
-
-            return themes;
+    return packages
+        .read.one(dir, name)
+        .catch(function () {
+            // For now we return an empty object as this is not fatal unless the frontend of the blog is requested
+            logging.warn(i18n.t('errors.middleware.themehandler.missingTheme', {theme: name}));
+            return {};
         });
 };
 
 readAllThemes = function readAllThemes(dir) {
-    var originalTree;
-
-    return readDirectory(dir)
-        .tap(function (tree) {
-            originalTree = tree;
-        })
-        .then(Object.keys)
-        .filter(function (file) {
-            var path = join(dir, file);
-
-            return statFile(path).then(function (stat) {
-                return stat.isDirectory();
-            });
-        })
-        .then(function (directories) {
-            var themes = {};
-
-            directories.forEach(function (name) {
-                themes[name] = originalTree[name];
-            });
-
-            return themes;
-        });
+    return packages.read.all(dir);
 };
 
 /**
