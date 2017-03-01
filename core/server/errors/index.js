@@ -3,7 +3,6 @@
 var _                          = require('lodash'),
     chalk                      = require('chalk'),
     path                       = require('path'),
-    fs                         = require('fs'),
     Promise                    = require('bluebird'),
     hbs                        = require('express-hbs'),
     NotFoundError              = require('./not-found-error'),
@@ -70,9 +69,7 @@ function getStatusCode(error) {
  */
 errors = {
     updateActiveTheme: function (activeTheme) {
-        fs.stat(path.join(getConfigModule().paths.themePath, activeTheme, 'error.hbs'), function stat(err, stats) {
-            userErrorTemplateExists = !err && stats.isFile();
-        });
+        userErrorTemplateExists = getConfigModule().paths.availableThemes[activeTheme].hasOwnProperty('error.hbs');
     },
 
     throwError: function (err) {
