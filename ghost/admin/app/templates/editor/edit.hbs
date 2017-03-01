@@ -42,7 +42,7 @@
                     Post will be published {{scheduleCountdown}}.
                 </time>
             {{/if}}
-            {{ghost-editor
+            {{gh-koenig
                 value=(readonly model.scratch)
                 onChange=(action (mut model.scratch))
                 onFirstChange=(action "autoSaveNew")

@@ -9,7 +9,7 @@ import {belongsTo, hasMany} from 'ember-data/relationships';
 
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 
-import {BLANK_DOC} from 'ghost-admin/components/ghost-editor';  // a blank mobile doc
+import {BLANK_DOC} from 'ghost-admin/components/gh-koenig';  // a blank mobile doc
 
 // ember-cli-shims doesn't export these so we must get them manually
 const {Comparable, compare} = Ember;
