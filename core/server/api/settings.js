@@ -70,14 +70,14 @@ settingsFilter = function (settings, filter) {
  * @param {Array} settingsModels
  * @returns {Settings}
  */
-readSettingsResult = function (settingsModels) {
-    var settings = _.reduce(settingsModels, function (memo, member) {
-            if (!memo.hasOwnProperty(member.attributes.key)) {
-                memo[member.attributes.key] = member.attributes;
-            }
+readSettingsResult = function readSettingsResult(settingsModels) {
+    var settings;
 
-            return memo;
-        }, {});
+    if (Array.isArray(settingsModels)) {
+        settings = _.keyBy(_.invokeMap(settingsModels, 'toJSON'), 'key');
+    } else {
+        settings = _.keyBy(settingsModels.toJSON(), 'key');
+    }
 
     return settings;
 };
