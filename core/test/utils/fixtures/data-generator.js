@@ -265,7 +265,8 @@ DataGenerator.forKnex = (function () {
         roles,
         users,
         roles_users,
-        clients;
+        clients,
+        trustedDomains;
 
     function createBasic(overrides) {
         var newObj = _.cloneDeep(overrides);
@@ -431,6 +432,14 @@ DataGenerator.forKnex = (function () {
         createClient({name: 'Ghost Scheduler', slug: 'ghost-scheduler', type: 'web'})
     ];
 
+    trustedDomains = [
+        {
+            uuid: '117084d0-d660-11e6-8b46-f7d235f120db',
+            client_id: 1,
+            trusted_domain: 'https://example.com'
+        }
+    ];
+
     roles_users = [
         {user_id: 1, role_id: 4},
         {user_id: 2, role_id: 1},
@@ -475,6 +484,7 @@ DataGenerator.forKnex = (function () {
         createToken: createToken,
         createSubscriber: createBasic,
 
+        trustedDomains: trustedDomains,
         posts: posts,
         tags: tags,
         posts_tags: posts_tags,
