@@ -10,7 +10,7 @@
   by moving the gh-app component functionality into the application component
   which would remove the extra div that this targets.
 */
-body > .ember-view:not(.liquid-target-container) {
+body > .ember-view:not(.default-liquid-destination) {
     height: 100%;
 }
 
