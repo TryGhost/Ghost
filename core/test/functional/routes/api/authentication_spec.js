@@ -1,5 +1,6 @@
 var supertest = require('supertest'),
     should = require('should'),
+    moment = require('moment'),
     testUtils = require('../../../utils'),
     user = testUtils.DataGenerator.forModel.users[0],
     ghost = require('../../../../../core'),
@@ -112,7 +113,7 @@ describe('Authentication API', function () {
                 client_id: 'ghost-admin',
                 client_secret: 'not_available'
             }).expect('Content-Type', /json/)
-        // TODO: make it possible to override oauth2orize's header so that this is consistent
+            // TODO: make it possible to override oauth2orize's header so that this is consistent
             .expect('Cache-Control', 'no-store')
             .expect(200)
             .end(function (err, res) {
@@ -128,7 +129,7 @@ describe('Authentication API', function () {
                         client_id: 'ghost-admin',
                         client_secret: 'not_available'
                     }).expect('Content-Type', /json/)
-                // TODO: make it possible to override oauth2orize's header so that this is consistent
+                    // TODO: make it possible to override oauth2orize's header so that this is consistent
                     .expect('Cache-Control', 'no-store')
                     .expect(200)
                     .end(function (err, res) {
@@ -140,6 +141,65 @@ describe('Authentication API', function () {
                         should.exist(jsonResponse.expires_in);
                         done();
                     });
+            });
+    });
+
+    it('can request new access token', function (done) {
+        request.post(testUtils.API.getApiQuery('authentication/token'))
+            .set('Origin', config.get('url'))
+            .send({
+                grant_type: 'password',
+                username: user.email,
+                password: user.password,
+                client_id: 'ghost-admin',
+                client_secret: 'not_available'
+            })
+            .expect('Content-Type', /json/)
+            // TODO: make it possible to override oauth2orize's header so that this is consistent
+            .expect('Cache-Control', 'no-store')
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                var refreshToken = res.body.refresh_token;
+
+                models.Accesstoken.findOne({
+                    token: accesstoken
+                }).then(function (oldAccessToken) {
+                    moment(oldAccessToken.get('expires')).diff(moment(), 'minutes').should.be.above(6);
+
+                    request.post(testUtils.API.getApiQuery('authentication/token'))
+                        .set('Origin', config.get('url'))
+                        .set('Authorization', 'Bearer ' + accesstoken)
+                        .send({
+                            grant_type: 'refresh_token',
+                            refresh_token: refreshToken,
+                            client_id: 'ghost-admin',
+                            client_secret: 'not_available'
+                        })
+                        .expect('Content-Type', /json/)
+                        // TODO: make it possible to override oauth2orize's header so that this is consistent
+                        .expect('Cache-Control', 'no-store')
+                        .expect(200)
+                        .end(function (err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            var jsonResponse = res.body;
+                            should.exist(jsonResponse.access_token);
+                            should.exist(jsonResponse.expires_in);
+
+                            models.Accesstoken.findOne({
+                                token: accesstoken
+                            }).then(function (oldAccessToken) {
+                                moment(oldAccessToken.get('expires')).diff(moment(), 'minutes').should.be.below(6);
+                                done();
+                            });
+                        });
+                });
             });
     });
 
