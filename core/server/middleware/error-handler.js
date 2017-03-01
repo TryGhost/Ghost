@@ -99,11 +99,8 @@ _private.JSONErrorRenderer = function JSONErrorRenderer(err, req, res, /*jshint 
 };
 
 _private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, /*jshint unused:false */ next) {
-    // @TODO reconsider this
-    var availableTheme = config.get('paths').availableThemes[req.app.get('activeTheme')] || {},
-        defaultTemplate = availableTheme['error.hbs'] ||
-            path.resolve(config.get('paths').adminViews, 'user-error.hbs') ||
-            'error',
+    // @TODO re-implement custom error templates see #8079
+    var defaultTemplate = path.resolve(config.get('paths').adminViews, 'user-error.hbs'),
         templateData = {
             message: err.message,
             code: err.statusCode

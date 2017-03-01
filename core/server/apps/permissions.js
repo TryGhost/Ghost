@@ -1,7 +1,7 @@
 var fs = require('fs'),
     Promise = require('bluebird'),
     path = require('path'),
-    parsePackageJson = require('../utils/parse-package-json');
+    parsePackageJson = require('../utils/packages').parsePackageJSON;
 
 function AppPermissions(appPath) {
     this.appPath = appPath;

@@ -4,7 +4,7 @@
 
 var Promise = require('bluebird'),
     fs = require('fs'),
-    i18n = require('../i18n'),
+    i18n = require('../../i18n'),
 
     readFile = Promise.promisify(fs.readFile);
 
