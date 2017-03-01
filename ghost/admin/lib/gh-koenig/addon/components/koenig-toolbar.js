@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import layout from '../templates/components/ghost-toolbar';
+import layout from '../templates/components/koenig-toolbar';
 
 import Tools from '../options/default-tools';
 

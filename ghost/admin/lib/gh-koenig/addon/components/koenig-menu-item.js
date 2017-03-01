@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import layout from '../templates/components/slash-menu-item';
+import layout from '../templates/components/koenig-menu-item';
 import Range from 'mobiledoc-kit/utils/cursor/range';
 
 export default Ember.Component.extend({

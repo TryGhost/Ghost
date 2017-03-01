@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import layout from '../templates/components/ghost-toolbar-button';
+import layout from '../templates/components/koenig-toolbar-button';
 
 export default Ember.Component.extend({
     layout,

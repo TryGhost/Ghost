@@ -1,6 +1,6 @@
 {{#each emberCards as |card|}}
     {{#ember-wormhole to=card.id}}
-        {{ghost-card card=card apiRoot=apiRoot assetPath=assetPath}}
+        {{koenig-card card=card apiRoot=apiRoot assetPath=assetPath}}
     {{/ember-wormhole}}
 {{/each}}
 <div class='gh-koenig'>
@@ -9,5 +9,5 @@
 
 {{yield}}
 
-{{ghost-toolbar editor=editor assetPath=assetPath}}
-{{slash-menu editor=editor assetPath=assetPath}}
+{{koenig-toolbar editor=editor assetPath=assetPath}}
+{{koenig-menu editor=editor assetPath=assetPath}}
