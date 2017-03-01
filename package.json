@@ -29,7 +29,7 @@
     "archiver": "1.3.0",
     "bcryptjs": "2.4.3",
     "bluebird": "3.4.7",
-    "body-parser": "1.16.0",
+    "body-parser": "1.17.0",
     "bookshelf": "0.10.3",
     "brute-knex": "https://github.com/cobbspur/brute-knex/tarball/37439f56965b17d29bb4ff9b3f3222b2f4bd6ce3",
     "bson-objectid": "1.1.5",
