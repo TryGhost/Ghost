@@ -1,2 +1,0 @@
-slashmenu:
-    when close restore keys
