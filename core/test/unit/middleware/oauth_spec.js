@@ -120,6 +120,10 @@ describe('OAuth', function () {
                 .withArgs({email: 'username', password: 'password'}).returns(new Promise.resolve({
                     id: 1
                 }));
+
+            sandbox.stub(Models.Accesstoken, 'findOne')
+                .returns(new Promise.resolve(null));
+
             sandbox.stub(Models.Accesstoken, 'add')
                 .returns(new Promise.reject({
                     message: 'DB error'
@@ -147,6 +151,10 @@ describe('OAuth', function () {
                 slug: 'test'
             };
 
+            req.headers = {
+                authentication: 'Bearer token'
+            };
+
             req.body.grant_type = 'refresh_token';
             req.body.refresh_token = 'token';
             res.setHeader = {};
@@ -160,6 +168,12 @@ describe('OAuth', function () {
                         };
                     }
                 }));
+
+            sandbox.stub(Models.Accesstoken, 'findOne')
+                .returns(new Promise.resolve({id: 1, token: 'token'}));
+
+            sandbox.stub(Models.Accesstoken, 'edit')
+                .returns(new Promise.resolve());
 
             sandbox.stub(Models.Accesstoken, 'add')
                 .returns(new Promise.resolve());
@@ -182,6 +196,7 @@ describe('OAuth', function () {
                     done(err);
                 }
             });
+
             oAuth.init();
             oAuth.generateAccessToken(req, res, next);
         });
@@ -253,6 +268,11 @@ describe('OAuth', function () {
                         };
                     }
                 }));
+
+            sandbox.stub(Models.Accesstoken, 'findOne')
+                .returns(
+                    new Promise.resolve()
+                );
 
             sandbox.stub(Models.Accesstoken, 'add')
                 .returns(new Promise.reject({
