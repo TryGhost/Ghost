@@ -259,11 +259,7 @@ settings = {
                 options.user = self.user;
                 return dataProvider.Settings.edit(checkedData.settings, options);
             }).then(function (result) {
-                var readResult = readSettingsResult(result);
-
-                return updateSettingsCache(readResult).then(function () {
-                    return settingsResult(readResult, type);
-                });
+                return settingsResult(readSettingsResult(result), type);
             });
         });
     }
