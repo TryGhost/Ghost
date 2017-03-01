@@ -133,38 +133,6 @@ function setupTasks(setupData) {
  */
 authentication = {
     /**
-     * Generate a pair of tokens
-     */
-    createTokens: function createTokens(data, options) {
-        var localAccessToken = globalUtils.uid(191),
-            localRefreshToken = globalUtils.uid(191),
-            accessExpires = Date.now() + globalUtils.ONE_MONTH_MS,
-            refreshExpires = Date.now() + globalUtils.SIX_MONTH_MS,
-            client = options.context.client_id,
-            user = options.context.user;
-
-        return models.Accesstoken.add({
-            token: localAccessToken,
-            user_id: user,
-            client_id: client,
-            expires: accessExpires
-        }).then(function () {
-            return models.Refreshtoken.add({
-                token: localRefreshToken,
-                user_id: user,
-                client_id: client,
-                expires: refreshExpires
-            });
-        }).then(function () {
-            return {
-                access_token: localAccessToken,
-                refresh_token: localRefreshToken,
-                expires_in: globalUtils.ONE_MONTH_S
-            };
-        });
-    },
-
-    /**
      * @description generate a reset token for a given email address
      * @param {Object} object
      * @returns {Promise<Object>} message

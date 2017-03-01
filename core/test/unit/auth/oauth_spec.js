@@ -4,8 +4,8 @@ var sinon = require('sinon'),
     passport = require('passport'),
     testUtils = require('../../utils'),
     oAuth = require('../../../server/auth/oauth'),
+    authUtils = require('../../../server/auth/utils'),
     spamPrevention = require('../../../server/middleware/api/spam-prevention'),
-    api = require('../../../server/api'),
     errors = require('../../../server/errors'),
     models = require('../../../server/models');
 
@@ -62,11 +62,12 @@ describe('OAuth', function () {
                 id: 1
             }));
 
-            sandbox.stub(models.Accesstoken, 'add')
-                .returns(new Promise.resolve());
-
-            sandbox.stub(models.Refreshtoken, 'add')
-                .returns(new Promise.resolve());
+            sandbox.stub(authUtils, 'createTokens')
+                .returns(new Promise.resolve({
+                    access_token: 'AT',
+                    refresh_token: 'RT',
+                    expires_in: Date.now() + 1000
+                }));
 
             sandbox.stub(res, 'setHeader', function () {});
 
@@ -134,7 +135,7 @@ describe('OAuth', function () {
                 id: 1
             }));
 
-            sandbox.stub(models.Accesstoken, 'add')
+            sandbox.stub(authUtils, 'createTokens')
                 .returns(new Promise.reject({
                     message: 'DB error'
                 }));
@@ -177,11 +178,12 @@ describe('OAuth', function () {
                 }
             }));
 
-            sandbox.stub(models.Accesstoken, 'add')
-                .returns(new Promise.resolve());
-
-            sandbox.stub(models.Refreshtoken, 'edit')
-                .returns(new Promise.resolve());
+            sandbox.stub(authUtils, 'createTokens')
+                .returns(new Promise.resolve({
+                    access_token: 'AT',
+                    refresh_token: 'RT',
+                    expires_in: Date.now() + 1000
+                }));
 
             sandbox.stub(res, 'setHeader', function () {});
 
@@ -271,7 +273,7 @@ describe('OAuth', function () {
                 }
             }));
 
-            sandbox.stub(models.Accesstoken, 'add')
+            sandbox.stub(authUtils, 'createTokens')
                 .returns(new Promise.reject({
                     message: 'DB error'
                 }));
@@ -314,11 +316,12 @@ describe('OAuth', function () {
                 done();
             };
 
-            sandbox.stub(api.authentication, 'createTokens').returns(Promise.resolve({
-                access_token: 'access-token',
-                refresh_token: 'refresh-token',
-                expires_in: 10
-            }));
+            sandbox.stub(authUtils, 'createTokens')
+                .returns(new Promise.resolve({
+                    access_token: 'access-token',
+                    refresh_token: 'refresh-token',
+                    expires_in: 10
+                }));
 
             sandbox.stub(passport, 'authenticate', function (name, options, onSuccess) {
                 return function () {
