@@ -133,6 +133,18 @@ module.exports = function (defaults) {
         },
         'ember-cli-selectize': {
             theme: false
+        },
+        svg: {
+            paths: [
+                'public/assets/icons'
+            ],
+            optimize: {
+                plugins: [
+                    {removeDimensions: true},
+                    {removeTitle: true},
+                    {removeXMLNS: true}
+                ]
+            }
         }
     });
 

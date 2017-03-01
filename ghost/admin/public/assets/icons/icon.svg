@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="85px" height="87px" viewBox="0 0 85 87" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 39.1 (31720) - http://www.bohemiancoding.com/sketch -->
+    <title>Slice 1</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" opacity="1">
+        <g id="logo" fill="currentColor">
+            <g id="Group">
+                <g id="Rectangle-path">
+                    <rect x="0.209" y="69.017" width="33.643" height="17.014" rx="4"></rect>
+                    <rect x="50.672" y="69.017" width="33.622" height="17.014" rx="4"></rect>
+                    <rect x="0.184" y="34.99" width="84.121" height="17.014" rx="4"></rect>
+                    <rect x="0.209" y="0.964" width="50.469" height="17.013" rx="4"></rect>
+                    <rect x="67.494" y="0.964" width="16.821" height="17.013" rx="4"></rect>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
