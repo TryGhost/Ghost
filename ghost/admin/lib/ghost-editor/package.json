@@ -3,13 +3,11 @@
   "version": "0.1.10",
   "description": "A mobiledoc-kit based editor for Ghost. WARNING DO NOT USE!",
   "directories": {
-    "doc": "doc",
-    "test": "tests"
+    "doc": "doc"
   },
   "scripts": {
     "build": "ember build",
-    "start": "ember server",
-    "test": "ember try:each"
+    "start": "ember server"
   },
   "repository": "",
   "engines": {
