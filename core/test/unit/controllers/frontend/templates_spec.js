@@ -104,7 +104,6 @@ describe('templates', function () {
 
         it('will fall back to post even if no index.hbs', function () {
             configUtils.set({paths: {availableThemes: {casper: {
-                assets: null,
                 'default.hbs': '/content/themes/casper/default.hbs'
             }}}});
 
@@ -118,7 +117,6 @@ describe('templates', function () {
         describe('without tag templates', function () {
             beforeEach(function () {
                 configUtils.set({paths: {availableThemes: {casper: {
-                    assets: null,
                     'default.hbs': '/content/themes/casper/default.hbs',
                     'index.hbs': '/content/themes/casper/index.hbs'
                 }}}});
@@ -134,7 +132,6 @@ describe('templates', function () {
         describe('with tag templates', function () {
             beforeEach(function () {
                 configUtils.set({paths: {availableThemes: {casper: {
-                    assets: null,
                     'default.hbs': '/content/themes/casper/default.hbs',
                     'index.hbs': '/content/themes/casper/index.hbs',
                     'tag.hbs': '/content/themes/casper/tag.hbs',
@@ -157,7 +154,6 @@ describe('templates', function () {
 
         it('will fall back to index even if no index.hbs', function () {
             configUtils.set({paths: {availableThemes: {casper: {
-                assets: null,
                 'default.hbs': '/content/themes/casper/default.hbs'
             }}}});
 

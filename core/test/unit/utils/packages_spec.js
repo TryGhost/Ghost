@@ -408,7 +408,7 @@ describe('Package Utils', function () {
                                 name: 'casper',
                                 path: join(themePath.name, 'casper'),
                                 'package.json': null,
-                                'index.hbs': 'index.hbs'
+                                'index.hbs': join(themePath.name, 'casper', 'index.hbs')
                             }
                         });
 
@@ -480,7 +480,7 @@ describe('Package Utils', function () {
                                 name: 'casper',
                                 path: join(themePath.name, 'casper'),
                                 'package.json': {name: 'casper', version: '0.1.2'},
-                                'index.hbs': 'index.hbs'
+                                'index.hbs': join(themePath.name, 'casper', 'index.hbs')
                             }
                         });
 

@@ -6,6 +6,7 @@
 var _ = require('lodash'),
     packages = require('../utils/packages'),
     Promise = require('bluebird'),
+    join = require('path').join,
     errors = require('../errors'),
     i18n = require('../i18n'),
 
@@ -20,7 +21,7 @@ function populateTemplates(themes) {
                 .then(function gotTemplates(templates) {
                     // Update the original themes object
                     _.each(templates, function (template) {
-                        themes[themeName][template] = template;
+                        themes[themeName][template] = join(themes[themeName].path, template);
                     });
                 });
         })
