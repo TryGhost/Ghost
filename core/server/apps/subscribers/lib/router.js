@@ -78,6 +78,8 @@ function storeSubscriber(req, res, next) {
     if (_.isEmpty(req.body.email)) {
         return next(new errors.ValidationError('Email cannot be blank.'));
     } else if (!validator.isEmail(req.body.email)) {
+        // sanitize email
+        req.body.email = '';
         return next(new errors.ValidationError('Invalid email.'));
     }
 
@@ -110,3 +112,4 @@ subscribeRouter.use(errorHandler);
 
 module.exports = subscribeRouter;
 module.exports.controller = controller;
+module.exports.storeSubscriber = storeSubscriber;

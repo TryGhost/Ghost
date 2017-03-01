@@ -74,8 +74,9 @@ function init(options) {
     return config.load(options.config).then(function () {
         return config.checkDeprecated();
     }).then(function () {
+        // Load models, no need to wait
         models.init();
-    }).then(function () {
+
         /**
          * fresh install:
          * - getDatabaseVersion will throw an error and we will create all tables (including populating settings)
@@ -162,14 +163,14 @@ function init(options) {
             return Promise.reject(response.error);
         }
     }).then(function () {
+        // Initialize the permissions actions and objects
+        // NOTE: Must be done before initDbHashAndFirstRun calls
+        return permissions.init();
+    }).then(function () {
         // Initialize the settings cache now,
         // This is an optimisation, so that further reads from settings are fast.
         // We do also do this after boot
         return api.init();
-    }).then(function () {
-        // Initialize the permissions actions and objects
-        // NOTE: Must be done before initDbHashAndFirstRun calls
-        return permissions.init();
     }).then(function () {
         return Promise.join(
             // Check for or initialise a dbHash.

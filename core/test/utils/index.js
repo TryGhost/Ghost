@@ -379,6 +379,10 @@ fixtures = {
         });
     },
 
+    insertTrustedDomains: function insertTrustedDomains() {
+        return db.knex('client_trusted_domains').insert(DataGenerator.forKnex.trustedDomains);
+    },
+
     insertClients: function insertClients() {
         return db.knex('clients').insert(DataGenerator.forKnex.clients);
     },
@@ -436,7 +440,10 @@ toDoList = {
         return function permissionsForObj() { return fixtures.permissionsFor(obj); };
     },
     clients: function insertClients() { return fixtures.insertClients(); },
-    filter: function createFilterParamFixtures() { return filterData(DataGenerator); }
+    filter: function createFilterParamFixtures() { return filterData(DataGenerator); },
+    trusted_domains: function trustedDomains() {
+        return fixtures.insertTrustedDomains();
+    }
 };
 
 /**

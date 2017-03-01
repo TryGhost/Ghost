@@ -94,7 +94,7 @@ ConfigManager.prototype.loadThemes = function () {
 
     return readThemes(self._config.paths.themePath)
         .then(function (result) {
-            self.set({paths: {availableThemes: result}});
+            self._config.paths.availableThemes = result;
         });
 };
 
@@ -228,7 +228,6 @@ ConfigManager.prototype.set = function (config) {
             helperTemplates:  path.join(corePath, '/server/helpers/tpl/'),
 
             availableThemes:  this._config.paths.availableThemes || {},
-            availableApps:    this._config.paths.availableApps || {},
             clientAssets:     path.join(corePath, '/built/assets/')
         },
         maintenance: {},
