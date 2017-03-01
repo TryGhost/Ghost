@@ -14,7 +14,6 @@ describe('{{body_class}} helper', function () {
         configUtils.set({paths: {
             availableThemes: {
                 casper: {
-                    assets: null,
                     'default.hbs': '/content/themes/casper/default.hbs',
                     'index.hbs': '/content/themes/casper/index.hbs',
                     'page.hbs': '/content/themes/casper/page.hbs',

@@ -388,7 +388,7 @@ describe('Package Utils', function () {
         // NOTE: this probably shouldn't be here, but it makes more sense than in
         // The server utils spec.js and has its own home in 1.0/alpha already.
         describe('Read Themes', function () {
-            it('should read directory and include only folders', function (done) {
+            it('should read directory and include folders, package.json & templates', function (done) {
                 var themePath = tmp.dirSync({unsafeCleanup: true});
 
                 // create trash
@@ -407,7 +407,8 @@ describe('Package Utils', function () {
                             casper: {
                                 name: 'casper',
                                 path: join(themePath.name, 'casper'),
-                                'package.json': null
+                                'package.json': null,
+                                'index.hbs': join(themePath.name, 'casper', 'index.hbs')
                             }
                         });
 
@@ -478,7 +479,8 @@ describe('Package Utils', function () {
                             casper: {
                                 name: 'casper',
                                 path: join(themePath.name, 'casper'),
-                                'package.json': {name: 'casper', version: '0.1.2'}
+                                'package.json': {name: 'casper', version: '0.1.2'},
+                                'index.hbs': join(themePath.name, 'casper', 'index.hbs')
                             }
                         });
 
