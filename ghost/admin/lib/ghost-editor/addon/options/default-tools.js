@@ -12,7 +12,7 @@ export default function (editor, toolbar) {
             type: 'block',
             toolbar: true,
             onClick: (editor) => {
-                editor.run(postEditor => {
+                editor.run((postEditor) => {
                     postEditor.toggleSection('h1');
                 });
             },
@@ -30,7 +30,7 @@ export default function (editor, toolbar) {
             visibility: 'primary',
             toolbar: true,
             onClick: (editor) => {
-                editor.run(postEditor => {
+                editor.run((postEditor) => {
                     postEditor.toggleSection('h2');
                 });
             },
@@ -46,7 +46,7 @@ export default function (editor, toolbar) {
             type: 'block',
             visibility: 'primary',
             onClick: (editor) => {
-                editor.run(postEditor => {
+                editor.run((postEditor) => {
                     postEditor.toggleSection('h3');
                 });
             },
@@ -61,7 +61,7 @@ export default function (editor, toolbar) {
             selected: false,
             type: 'block',
             onClick: (editor) => {
-                editor.run(postEditor => {
+                editor.run((postEditor) => {
                     postEditor.toggleSection('p');
                 });
             },
@@ -78,7 +78,7 @@ export default function (editor, toolbar) {
             type: 'block',
             toolbar: true,
             onClick: (editor) => {
-                editor.run(postEditor => {
+                editor.run((postEditor) => {
                     postEditor.toggleSection('blockquote');
                 });
             },
@@ -93,7 +93,7 @@ export default function (editor, toolbar) {
             selected: false,
             type: 'block',
             onClick: (editor) => {
-                editor.run(postEditor => {
+                editor.run((postEditor) => {
                     postEditor.toggleSection('ul');
                 });
             },
@@ -108,7 +108,7 @@ export default function (editor, toolbar) {
             selected: false,
             type: 'block',
             onClick: (editor) => {
-                editor.run(postEditor => {
+                editor.run((postEditor) => {
                     postEditor.toggleSection('ol');
                 });
             },
@@ -125,7 +125,7 @@ export default function (editor, toolbar) {
             type: 'markup',
             visibility: 'primary',
             onClick: (editor) => {
-                editor.run(postEditor => {
+                editor.run((postEditor) => {
                     postEditor.toggleMarkup('strong');
                 });
             },
@@ -142,7 +142,7 @@ export default function (editor, toolbar) {
             type: 'markup',
             visibility: 'primary',
             onClick: (editor) => {
-                editor.run(postEditor => {
+                editor.run((postEditor) => {
                     postEditor.toggleMarkup('em');
                 });
             },
@@ -158,7 +158,7 @@ export default function (editor, toolbar) {
             selected: false,
             type: 'markup',
             onClick: (editor) => {
-                editor.run(postEditor => {
+                editor.run((postEditor) => {
                     postEditor.toggleMarkup('s');
                 });
             },
@@ -191,7 +191,7 @@ export default function (editor, toolbar) {
             icon: 'file-picture-add.svg',
             visibility: 'primary',
             onClick: (editor) => {
-                editor.run(postEditor => {
+                editor.run((postEditor) => {
                     let card = postEditor.builder.createCardSection('image-card', {pos: 'top'});
                     postEditor.replaceSection(editor.range.headSection, card);
 
@@ -209,7 +209,7 @@ export default function (editor, toolbar) {
             icon: 'html-five.svg',
             visibility: 'primary',
             onClick: (editor) => {
-                editor.run(postEditor => {
+                editor.run((postEditor) => {
                     let card = postEditor.builder.createCardSection('html-card', {pos: 'top'});
                     postEditor.replaceSection(editor.range.headSection, card);
                 });
@@ -226,7 +226,7 @@ export default function (editor, toolbar) {
             visibility: 'primary',
             icon: 'file-code-1.svg',
             onClick: (editor) => {
-                editor.run(postEditor => {
+                editor.run((postEditor) => {
                     let card = postEditor.builder.createCardSection('markdown-card', {pos: 'top'});
                     postEditor.replaceSection(editor.range.headSection, card);
                 });
