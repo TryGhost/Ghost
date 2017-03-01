@@ -1,10 +1,10 @@
 import Ember from 'ember';
 import Tools from '../options/default-tools';
-import layout from '../templates/components/slash-menu';
+import layout from '../templates/components/koenig-menu';
 
 export default Ember.Component.extend({
     layout,
-    classNames: ['slash-menu'],
+    classNames: ['koenig-menu'],
     classNameBindings: ['isVisible'],
     range: null,
     menuSelectedItem: 0,

@@ -1,4 +1,4 @@
-.slash-menu {
+.koenig-menu {
     border:1px solid var(--darkgrey);
     position:absolute;
     background-color: #fff;
@@ -8,15 +8,15 @@
     min-width:300px;
     border-radius: 4px;
 }
-.slash-menu.is-visible {
-    animation: slash-menu-fadein 111ms;
+.koenig-menu.is-visible {
+    animation: koenig-menu-fadein 111ms;
 }
-.slash-menu ul {
+.koenig-menu ul {
     margin:0;
     padding:0;
     list-style: none;
 }
-.slash-menu ul li button {
+.koenig-menu ul li button {
     padding:5px;
     width:100%;
     text-align: left;
@@ -24,18 +24,18 @@
     border-radius: 4px;
 }
 
-.slash-menu ul li button img {
+.koenig-menu ul li button img {
     width:14px;
 }
 
-.slash-menu ul li button:hover, .slash-menu ul li button.selected {
+.koenig-menu ul li button:hover, .koenig-menu ul li button.selected {
     background-color: var(--darkgrey);
 
 }
 
 
 
-@keyframes slash-menu-fadein {
+@keyframes koenig-menu-fadein {
     from {
         opacity: 0;
         transform: scale(0.7);

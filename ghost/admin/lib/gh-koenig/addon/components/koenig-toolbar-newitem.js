@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import layout from '../templates/components/ghost-toolbar-newitem';
+import layout from '../templates/components/koenig-toolbar-newitem';
 import Tools from '../options/default-tools';
 
 export default Ember.Component.extend({

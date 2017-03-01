@@ -1,9 +1,9 @@
 import Ember from 'ember';
-import layout from '../templates/components/ghost-card';
+import layout from '../templates/components/koenig-card';
 
 export default Ember.Component.extend({
     layout,
-    classNames: ['ghost-card'],
+    classNames: ['koenig-card'],
     actions: {
         save() {
             this.set('doSave', Date.now());

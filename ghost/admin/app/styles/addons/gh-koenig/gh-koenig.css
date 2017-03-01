@@ -1,5 +1,5 @@
-@import "ghost-toolbar.css";
-@import "slash-menu.css";
+@import "koenig-toolbar.css";
+@import "koenig-menu.css";
 
 .editor-holder {
     height: 100%;
@@ -40,7 +40,7 @@
 .__mobiledoc-card {
     display: block;
 }
-.__mobiledoc-card .ghost-card {
+.__mobiledoc-card .koenig-card {
     position: relative;
 }
 
