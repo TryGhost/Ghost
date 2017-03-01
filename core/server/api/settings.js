@@ -20,19 +20,8 @@ var _            = require('lodash'),
     canEditAllSettings,
 
 // @TODO simplify this!
-updateSettingsCache = function updateSettingsCache(settings, options) {
-    options = options || {};
-    settings = settings || {};
-
-    if (!_.isEmpty(settings)) {
-        _.map(settings, function (setting, key) {
-            settingsCache.set(key, setting);
-        });
-
-        return Promise.resolve(settingsCache.getAll());
-    }
-
-    return dataProvider.Settings.findAll(options)
+updateSettingsCache = function updateSettingsCache() {
+    return dataProvider.Settings.findAll()
         .then(function (result) {
             // keep reference and update all keys
             _.each(readSettingsResult(result.models), function (setting, key) {
