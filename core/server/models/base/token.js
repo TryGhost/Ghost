@@ -32,6 +32,7 @@ Basetoken = ghostBookshelf.Model.extend({
                 return collection.invokeThen('destroy', options);
             });
     },
+
     /**
      * ### destroyByUser
      * @param  {[type]} options has context and id. Context is the user doing the destroy, id is the user to destroy

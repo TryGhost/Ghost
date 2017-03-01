@@ -1,9 +1,8 @@
 var oauth2orize = require('oauth2orize'),
     passport = require('passport'),
     models = require('../models'),
-    utils = require('../utils'),
     errors = require('../errors'),
-    authenticationAPI = require('../api/authentication'),
+    authUtils = require('./utils'),
     spamPrevention = require('../middleware/api/spam-prevention'),
     i18n = require('../i18n'),
     oauthServer,
@@ -15,23 +14,18 @@ function exchangeRefreshToken(client, refreshToken, scope, body, authInfo, done)
             if (!model) {
                 return done(new errors.NoPermissionError({message: i18n.t('errors.middleware.oauth.invalidRefreshToken')}), false);
             } else {
-                var token = model.toJSON(),
-                    accessToken = utils.uid(191),
-                    accessExpires = Date.now() + utils.ONE_MONTH_MS,
-                    refreshExpires = Date.now() + utils.SIX_MONTH_MS;
+                var token = model.toJSON();
 
                 if (token.expires > Date.now()) {
                     spamPrevention.userLogin.reset(authInfo.ip, body.refresh_token + 'login');
 
-                    models.Accesstoken.add({
-                        token: accessToken,
-                        user_id: token.user_id,
-                        client_id: token.client_id,
-                        expires: accessExpires
-                    }).then(function then() {
-                        return models.Refreshtoken.edit({expires: refreshExpires}, {id: token.id});
-                    }).then(function then() {
-                        return done(null, accessToken, {expires_in: utils.ONE_MONTH_S});
+                    authUtils.createTokens({
+                        clientId: token.client_id,
+                        userId: token.user_id,
+                        oldAccessToken: authInfo.accessToken,
+                        oldRefreshToken: refreshToken
+                    }).then(function (response) {
+                        return done(null, response.access_token, {expires_in: response.expires_in});
                     }).catch(function handleError(error) {
                         return done(error, false);
                     });
@@ -54,7 +48,10 @@ function exchangePassword(client, username, password, scope, body, authInfo, don
             // Validate the user
             return models.User.check({email: username, password: password})
                 .then(function then(user) {
-                    return authenticationAPI.createTokens({}, {context: {client_id: client.id, user: user.id}});
+                    return authUtils.createTokens({
+                        clientId: client.id,
+                        userId: user.id
+                    });
                 })
                 .then(function then(response) {
                     spamPrevention.userLogin.reset(authInfo.ip, username + 'login');
@@ -72,6 +69,7 @@ function exchangeAuthorizationCode(req, res, next) {
             message: i18n.t('errors.middleware.auth.accessDenied')
         }));
     }
+
     req.query.code = req.body.authorizationCode;
 
     passport.authenticate('ghost', {session: false, failWithError: false}, function authenticate(err, user) {
@@ -89,17 +87,18 @@ function exchangeAuthorizationCode(req, res, next) {
 
         spamPrevention.userLogin.reset(req.authInfo.ip, req.body.authorizationCode + 'login');
 
-        authenticationAPI.createTokens({}, {context: {client_id: req.client.id, user: user.id}})
-            .then(function then(response) {
-                res.json({
-                    access_token: response.access_token,
-                    refresh_token: response.refresh_token,
-                    expires_in: response.expires_in
-                });
-            })
-            .catch(function (err) {
-                next(err);
+        authUtils.createTokens({
+            clientId: req.client.id,
+            userId: user.id
+        }).then(function then(response) {
+            res.json({
+                access_token: response.access_token,
+                refresh_token: response.refresh_token,
+                expires_in: response.expires_in
             });
+        }).catch(function (err) {
+            next(err);
+        });
     })(req, res, next);
 }
 
@@ -156,7 +155,8 @@ oauth = {
          * Important: only used for resetting the brute count (access to req.ip)
          */
         req.authInfo = {
-            ip: req.ip
+            ip: req.ip,
+            accessToken: authUtils.getBearerAutorizationToken(req)
         };
 
         return oauthServer.token()(req, res, next);
