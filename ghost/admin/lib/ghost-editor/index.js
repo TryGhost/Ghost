@@ -3,9 +3,6 @@
 var MergeTrees = require('broccoli-merge-trees');
 var Funnel = require('broccoli-funnel');
 var path = require('path');
-var cards = require('./addon/cards/common.js');
-
-
 
 module.exports = {
     name: 'ghost-editor',
@@ -31,37 +28,6 @@ module.exports = {
          });
     },
     included: function (app) {
-        // app.import('app/styles/globals.css');
         app.import('vendor/mobiledoc-kit/amd/mobiledoc-kit.js');
-        // app.import('app/styles/ghost-editor.css');
-        // app.import('app/styles/ghost-toolbar.css');
-        // app.import('app/styles/ghost-toolbar-blockitem.css');
-        // app.import('app/styles/slash-menu.css');
-
-    },
-
-    // temp
-    htmlOptions:
-        {
-            cards: cards.html,
-            atoms: [{
-                name: 'soft-return',
-                type: 'html',
-                render: function() {
-                    return "<br />";
-                }
-            }
-            ]
-        }
-/*
-        [
-             {
-                name: 'html-card',
-                type: 'html',
-                render: function(opts) {
-                    return opts.payload.html;
-                }
-            }
-        ]
-*/
+    }
 };
