@@ -15,7 +15,6 @@ var _            = require('lodash'),
 
     updateSettingsCache,
     settingsFilter,
-    readSettingsResult,
     settingsResult,
     canEditAllSettings,
 
@@ -54,35 +53,6 @@ settingsFilter = function (settings, filter) {
         }
         return true;
     }));
-};
-
-/**
- * ### Read Settings Result
- *
- * Converts the models to keyed JSON
- * E.g.
- * dbHash: {
- *   id: '123abc',
- *   key: 'dbash',
- *   value: 'xxxx',
- *   type: 'core',
- *   timestamps
- *  }
- *
- * @private
- * @param {Array} settingsModels
- * @returns {Settings}
- */
-readSettingsResult = function readSettingsResult(settingsModels) {
-    var settings;
-
-    if (Array.isArray(settingsModels)) {
-        settings = _.keyBy(_.invokeMap(settingsModels, 'toJSON'), 'key');
-    } else {
-        settings = _.keyBy(settingsModels.toJSON(), 'key');
-    }
-
-    return settings;
 };
 
 /**
