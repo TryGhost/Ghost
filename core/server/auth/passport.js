@@ -158,8 +158,21 @@ exports.init = function initPassport(options) {
         passport.use(new ClientPasswordStrategy(authStrategies.clientPasswordStrategy));
         passport.use(new BearerStrategy(authStrategies.bearerStrategy));
 
+        // CASE: use switches from password to ghost and back
+        // If we don't clean up the database, it can happen that the auth switch validation fails
         if (authType !== 'ghost') {
-            return resolve({passport: passport.initialize()});
+            return models.Client.findOne({slug: 'ghost-auth'})
+                .then(function (client) {
+                    if (!client) {
+                        return;
+                    }
+
+                    return models.Client.destroy({id: client.id});
+                })
+                .then(function () {
+                    resolve({passport: passport.initialize()});
+                })
+                .catch(reject);
         }
 
         var ghostOAuth2Strategy = new GhostOAuth2Strategy({

@@ -487,6 +487,21 @@ User = ghostBookshelf.Model.extend({
         return self.edit.call(self, userData, options);
     },
 
+    /**
+     * Right now the setup of the blog depends on the user status.
+     * @TODO: see https://github.com/TryGhost/Ghost/issues/8003
+     */
+    isSetup: function isSetup() {
+        var validStatuses = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'];
+
+        return this
+            .where('status', 'in', validStatuses)
+            .count('id')
+            .then(function (count) {
+                return !!count;
+            });
+    },
+
     permissible: function permissible(userModelOrId, action, context, loadedPermissions, hasUserPermission, hasAppPermission) {
         var self = this,
             userModel = userModelOrId,

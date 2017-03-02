@@ -504,16 +504,10 @@ authentication = {
      * @return {Promise}
      */
     isSetup: function isSetup() {
-        var tasks,
-            validStatuses = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'];
+        var tasks;
 
         function checkSetupStatus() {
-            return models.User
-                .where('status', 'in', validStatuses)
-                .count('id')
-                .then(function (count) {
-                    return !!count;
-                });
+            return models.User.isSetup();
         }
 
         function formatResponse(isSetup) {
