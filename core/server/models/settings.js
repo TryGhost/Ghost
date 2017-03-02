@@ -153,22 +153,29 @@ Settings = ghostBookshelf.Model.extend({
 
         options = _.merge({}, options, internalContext);
 
-        return this.findAll(options).then(function then(allSettings) {
-            var usedKeys = allSettings.models.map(function mapper(setting) { return setting.get('key'); }),
-                insertOperations = [];
+        return this
+            .findAll(options)
+            .then(function checkAllSettings(allSettings) {
+                var usedKeys = allSettings.models.map(function mapper(setting) { return setting.get('key'); }),
+                    insertOperations = [];
 
-            _.each(getDefaultSettings(), function each(defaultSetting, defaultSettingKey) {
-                var isMissingFromDB = usedKeys.indexOf(defaultSettingKey) === -1;
-                if (isMissingFromDB) {
-                    defaultSetting.value = defaultSetting.defaultValue;
-                    insertOperations.push(Settings.forge(defaultSetting).save(null, options));
+                _.each(getDefaultSettings(), function forEachDefault(defaultSetting, defaultSettingKey) {
+                    var isMissingFromDB = usedKeys.indexOf(defaultSettingKey) === -1;
+                    if (isMissingFromDB) {
+                        defaultSetting.value = defaultSetting.defaultValue;
+                        insertOperations.push(Settings.forge(defaultSetting).save(null, options));
+                    }
+                });
+
+                if (insertOperations > 0) {
+                    return Promise.all(insertOperations).then(function fetchAllToReturn() {
+                        return this.findAll(options);
+                    });
                 }
+
+                return allSettings;
             });
-
-            return Promise.all(insertOperations);
-        });
     }
-
 });
 
 module.exports = {
