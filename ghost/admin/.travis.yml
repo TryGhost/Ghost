@@ -32,7 +32,6 @@ install:
   - yarn global add bower
   - yarn
   - bower install
-  - cd lib/gh-koenig && yarn && bower install
 
 before_script:
   - yarn add --force node-sass # temporary, workaround for https://github.com/yarnpkg/yarn/issues/1981
