@@ -58,20 +58,20 @@
 
 {{#if showDeletePostModal}}
     {{gh-fullscreen-modal "delete-post"
-                          model=(hash post=model onSuccess=(route-action 'redirectToContentScreen'))
-                          close=(action "toggleDeletePostModal")
-                          modifier="action wide"}}
+        model=(hash post=model onSuccess=(route-action 'redirectToContentScreen'))
+        close=(action "toggleDeletePostModal")
+        modifier="action wide"}}
 {{/if}}
 
 {{#if showLeaveEditorModal}}
     {{gh-fullscreen-modal "leave-editor"
-                          confirm=(action "leaveEditor")
-                          close=(action "toggleLeaveEditorModal")
-                          modifier="action wide"}}
+        confirm=(action "leaveEditor")
+        close=(action "toggleLeaveEditorModal")
+        modifier="action wide"}}
 {{/if}}
 
 {{#if showReAuthenticateModal}}
     {{gh-fullscreen-modal "re-authenticate"
-                          close=(action "toggleReAuthenticateModal")
-                          modifier="action wide"}}
+        close=(action "toggleReAuthenticateModal")
+        modifier="action wide"}}
 {{/if}}

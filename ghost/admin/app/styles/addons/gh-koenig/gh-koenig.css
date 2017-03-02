@@ -1,5 +1,6 @@
 @import "koenig-toolbar.css";
 @import "koenig-menu.css";
+@import "cardmenu.css";
 
 .editor-holder {
     height: 100%;
@@ -47,38 +48,38 @@
 
 .__mobiledoc-card .card-handle {
     position: absolute;
-    right:0px;
-    top:0px;
-    margin-top:-25px;
-    height:20px;
-    display:none;
+    right: 0px;
+    top: 0px;
+    margin-top: -25px;
+    height: 20px;
+    display: none;
 }
 
-.__mobiledoc-card:hover .card-handle {
-    display:block;
+.__mobiledoc-card: hover .card-handle {
+    display: block;
 }
 
 .__mobiledoc-card .card-handle label {
-    font-size:10px;
+    font-size: 10px;
 }
 
 
 .__mobiledoc-card .card-handle button {
     background-color: var(--lightgrey);
-    border:1px solid var(--lightgrey);
-    font-size:10px;
+    border: 1px solid var(--midgrey);
+    font-size: 10px;
     min-width: 80px;
 }
 
 .__mobiledoc-card textarea {
-    min-height:333px;
-    max-width:900px;
-    outline:none;
-    border:none;
+    min-height: 333px;
+    max-width: 900px;
+    outline: none;
+    border: none;
     resize: none;
 }
 
-.card-handle button:hover {
+.card-handle button: hover {
     background-color: #718087;
     color: #fff;
 }
@@ -91,7 +92,7 @@
 }
 
 .card-handle button.move {
-    background-image: url('http://localhost:4200/assets/move.png');
+    background-image: url('http: //localhost: 4200/assets/move.png');
     background-color: #9fbb58;
     margin-left: -10px;
     margin-right: 20px;
@@ -103,9 +104,9 @@
 
 
 textarea.ed_code {
-    width:100%;
-    height:100%;
-    border:none;
+    width: 100%;
+    height: 100%;
+    border: none;
 }
 
 
@@ -125,7 +126,7 @@ textarea.ed_code {
     position: absolute;
     background-color: #5ba4e5;
     border-radius: 3px;
-    padding:5px 10px 5px 10px;
+    padding: 5px 10px 5px 10px;
     color: #FFF;
     -webkit-animation: tooltip-fadein 0.333s;
     animation: tooltip-fadein 0.333s;
@@ -133,7 +134,7 @@ textarea.ed_code {
 .__mobiledoc-tooltip a {
     color: #FFF;
 }
-.__mobiledoc-tooltip:before {
+.__mobiledoc-tooltip: before {
     content: '';
     position: absolute;
 
@@ -146,4 +147,3 @@ textarea.ed_code {
     border-left: 10px solid transparent;
     border-right: 10px solid transparent;
 }
-
