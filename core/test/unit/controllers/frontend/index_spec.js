@@ -6,6 +6,7 @@ var moment   = require('moment'),
     api      = require('../../../../server/api'),
     frontend = require('../../../../server/controllers/frontend'),
     configUtils = require('../../../utils/configUtils'),
+    themeList = require('../../../../server/themes').list,
     settingsCache = require('../../../../server/settings/cache'),
     sandbox = sinon.sandbox.create();
 
@@ -121,7 +122,7 @@ describe('Frontend Controller', function () {
         describe('static pages', function () {
             describe('custom page templates', function () {
                 it('it will render a custom page-slug template if it exists', function (done) {
-                    configUtils.set({paths: {availableThemes: {casper: casper}}});
+                    themeList.init({casper: casper});
                     req.path = '/' + mockPosts[2].posts[0].slug + '/';
                     req.route = {path: '*'};
                     res.render = function (view, context) {
@@ -136,7 +137,7 @@ describe('Frontend Controller', function () {
 
                 it('it will use page.hbs if it exists and no page-slug template is present', function (done) {
                     delete casper['page-about.hbs'];
-                    configUtils.set({paths: {availableThemes: {casper: casper}}});
+                    themeList.init({casper: casper});
                     req.path = '/' + mockPosts[2].posts[0].slug + '/';
                     req.route = {path: '*'};
                     res.render = function (view, context) {
@@ -152,7 +153,7 @@ describe('Frontend Controller', function () {
                 it('defaults to post.hbs without a page.hbs or page-slug template', function (done) {
                     delete casper['page-about.hbs'];
                     delete casper['page.hbs'];
-                    configUtils.set({paths: {availableThemes: {casper: casper}}});
+                    themeList.init({casper: casper});
                     req.path = '/' + mockPosts[2].posts[0].slug + '/';
                     req.route = {path: '*'};
                     res.render = function (view, context) {
@@ -168,7 +169,7 @@ describe('Frontend Controller', function () {
 
             describe('permalink set to slug', function () {
                 it('will render static page via /:slug/', function (done) {
-                    configUtils.set({paths: {availableThemes: {casper: casper}}});
+                    themeList.init({casper: casper});
 
                     req.path = '/' + mockPosts[0].posts[0].slug + '/';
                     req.route = {path: '*'};
@@ -237,7 +238,7 @@ describe('Frontend Controller', function () {
                 });
 
                 it('will render static page via /:slug', function (done) {
-                    configUtils.set({paths: {availableThemes: {casper: casper}}});
+                    themeList.init({casper: casper});
 
                     req.path = '/' + mockPosts[0].posts[0].slug + '/';
                     req.route = {path: '*'};
@@ -293,7 +294,7 @@ describe('Frontend Controller', function () {
                 });
 
                 it('will render post via /:slug/', function (done) {
-                    configUtils.set({paths: {availableThemes: {casper: casper}}});
+                    themeList.init({casper: casper});
 
                     req.path = '/' + mockPosts[1].posts[0].slug + '/';
                     req.route = {path: '*'};
@@ -382,7 +383,7 @@ describe('Frontend Controller', function () {
                 });
 
                 it('will render post via /YYYY/MM/DD/:slug/', function (done) {
-                    configUtils.set({paths: {availableThemes: {casper: casper}}});
+                    themeList.init({casper: casper});
                     var date = moment(mockPosts[1].posts[0].published_at).format('YYYY/MM/DD');
                     req.path = '/' + [date, mockPosts[1].posts[0].slug].join('/') + '/';
                     req.route = {path: '*'};
@@ -459,7 +460,7 @@ describe('Frontend Controller', function () {
                 });
 
                 it('will render post via /:author/:slug/', function (done) {
-                    configUtils.set({paths: {availableThemes: {casper: casper}}});
+                    themeList.init({casper: casper});
 
                     req.path = '/' + ['test', mockPosts[1].posts[0].slug].join('/') + '/';
                     req.route = {path: '*'};
@@ -540,7 +541,7 @@ describe('Frontend Controller', function () {
                 beforeEach(function () {
                     localSettingsCache.permalinks = '/:year/:slug/';
 
-                    configUtils.set({paths: {availableThemes: {casper: casper}}});
+                    themeList.init({casper: casper});
 
                     var date = moment(mockPosts[1].posts[0].published_at).format('YYYY');
                     mockPosts[1].posts[0].url = '/' + date + '/' + mockPosts[1].posts[0].slug + '/';
@@ -752,7 +753,7 @@ describe('Frontend Controller', function () {
                 redirect: sinon.spy()
             };
 
-            configUtils.set({paths: {availableThemes: {casper: {}}}});
+            themeList.init({casper: {}});
         });
 
         it('should render draft post', function (done) {
@@ -768,7 +769,7 @@ describe('Frontend Controller', function () {
         });
 
         it('should render draft page', function (done) {
-            configUtils.set({paths: {availableThemes: {casper: {'page.hbs': '/content/themes/casper/page.hbs'}}}});
+            themeList.init({casper:  {'page.hbs': '/content/themes/casper/page.hbs'}});
             req.params = {uuid: 'abc-1234-01'};
             res.render = function (view, context) {
                 view.should.equal('page');

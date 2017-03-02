@@ -1,7 +1,7 @@
 var should         = require('should'),
     hbs            = require('express-hbs'),
     utils          = require('./utils'),
-    configUtils    = require('../../utils/configUtils'),
+    themeList     = require('../../../server/themes').list,
 
 // Stuff we are testing
     handlebars     = hbs.handlebars,
@@ -11,18 +11,16 @@ describe('{{body_class}} helper', function () {
     var options = {};
     before(function () {
         utils.loadHelpers();
-        configUtils.set({paths: {
-            availableThemes: {
-                casper: {
-                    assets: null,
-                    'default.hbs': '/content/themes/casper/default.hbs',
-                    'index.hbs': '/content/themes/casper/index.hbs',
-                    'page.hbs': '/content/themes/casper/page.hbs',
-                    'page-about.hbs': '/content/themes/casper/page-about.hbs',
-                    'post.hbs': '/content/themes/casper/post.hbs'
-                }
+        themeList.init({
+            casper: {
+                assets: null,
+                'default.hbs': '/content/themes/casper/default.hbs',
+                'index.hbs': '/content/themes/casper/index.hbs',
+                'page.hbs': '/content/themes/casper/page.hbs',
+                'page-about.hbs': '/content/themes/casper/page-about.hbs',
+                'post.hbs': '/content/themes/casper/post.hbs'
             }
-        }});
+        });
     });
 
     beforeEach(function () {
@@ -37,7 +35,7 @@ describe('{{body_class}} helper', function () {
     });
 
     after(function () {
-        configUtils.restore();
+        themeList.init();
     });
 
     it('has loaded body_class helper', function () {
