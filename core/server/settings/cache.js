@@ -2,11 +2,14 @@
 // As this cache is used in SO many other areas, we may open ourselves to
 // circular dependency bugs.
 var debug = require('debug')('ghost:settings:cache'),
+    _ = require('lodash'),
     events = require('../events'),
     /**
      * ## Cache
      * Holds cached settings
-     * @type {{}}
+     * Keyed by setting.key
+     * Contains the JSON version of the model
+     * @type {{}} - object of objects
      */
     settingsCache = {};
 
@@ -25,6 +28,15 @@ var debug = require('debug')('ghost:settings:cache'),
  * e.g. settingsCache.get('dbHash')
  */
 module.exports = {
+    /**
+     * Get a key from the settingsCache
+     * Will resolve to the value, including parsing JSON, unless {resolve: false} is passed in as an option
+     * In which case the full JSON version of the model will be resolved
+     *
+     * @param {string} key
+     * @param {object} options
+     * @return {*}
+     */
     get: function get(key, options) {
         if (!settingsCache[key]) {
             return;
@@ -42,20 +54,49 @@ module.exports = {
             return settingsCache[key].value;
         }
     },
+    /**
+     * Set a key on the cache
+     * The only way to get an object into the cache
+     * Uses clone to prevent modifications from being reflected
+     * @param {string} key
+     * @param {object} value json version of settings model
+     */
     set: function set(key, value) {
-        settingsCache[key] = value;
+        settingsCache[key] = _.cloneDeep(value);
     },
+    /**
+     * Get the entire cache object
+     * Uses clone to prevent modifications from being reflected
+     * @return {{}} cache
+     */
     getAll: function getAll() {
-        return settingsCache;
+        return _.cloneDeep(settingsCache);
     },
-    init: function init() {
-        var self = this,
-            updateSettingFromModel = function updateSettingFromModel(settingModel) {
-                debug('Auto updating', settingModel.get('key'));
-                self.set(settingModel.get('key'), settingModel.toJSON());
-            };
+    /**
+     * Initialise the cache
+     *
+     * Optionally takes a collection of settings & can populate the cache with these.
+     *
+     * @param {Bookshelf.Collection<Settings>} [settingsCollection]
+     * @return {{}}
+     */
+    init: function init(settingsCollection) {
+        var self = this;
+
+        // Local function, only ever used for initialising
+        // We deliberately call "set" on each model so that set is a consistent interface
+        function updateSettingFromModel(settingModel) {
+            debug('Auto updating', settingModel.get('key'));
+            self.set(settingModel.get('key'), settingModel.toJSON());
+        }
+
         // First, reset the cache
         settingsCache = {};
+
+        // // if we have been passed a collection of settings, use this to populate the cache
+        if (settingsCollection && settingsCollection.models) {
+            _.each(settingsCollection.models, updateSettingFromModel);
+        }
 
         // Bind to events to automatically keep up-to-date
         events.on('settings.edited', updateSettingFromModel);
