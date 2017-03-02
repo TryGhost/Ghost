@@ -3,6 +3,7 @@ var passport = require('./passport'),
     authenticate = require('./authenticate'),
     sync = require('./sync'),
     oauth = require('./oauth'),
+    validation = require('./validation'),
     ghostAuth = require('./ghost-auth');
 
 exports.init = function (options) {
@@ -15,6 +16,7 @@ exports.init = function (options) {
         });
 };
 
+exports.validation = validation;
 exports.oauth = oauth;
 exports.authorize = authorize;
 exports.authenticate = authenticate;

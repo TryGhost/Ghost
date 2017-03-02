@@ -72,7 +72,11 @@ function init() {
         parentApp = require('./app')();
 
         debug('Express Apps done');
-
+    }).then(function () {
+        return auth.validation.switch({
+            authType: config.get('auth:type')
+        });
+    }).then(function () {
         // runs asynchronous
         auth.init({
             authType: config.get('auth:type'),
