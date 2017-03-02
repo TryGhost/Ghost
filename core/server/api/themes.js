@@ -13,6 +13,8 @@ var debug = require('debug')('ghost:api:themes'),
     apiUtils = require('./utils'),
     utils = require('./../utils'),
     i18n = require('../i18n'),
+    settings = require('./settings'),
+    settingsCache = require('../settings/cache'),
     themeUtils = require('../themes'),
     themeList = themeUtils.list,
     packageUtils = require('../utils/packages'),
@@ -26,9 +28,22 @@ var debug = require('debug')('ghost:api:themes'),
 themes = {
     browse: function browse() {
         debug('browsing');
-        var result = packageUtils.filterPackages(themeList.getAll());
+        var result = packageUtils.filterPackages(themeList.getAll(), settingsCache.get('activeTheme'));
         debug('got result');
         return Promise.resolve({themes: result});
+    },
+
+    activate: function activate(options) {
+        var themeName = options.name,
+            newSettings = [{
+                key: 'activeTheme',
+                value: themeName
+            }];
+
+        return settings.edit({settings: newSettings}, options).then(function () {
+            var result = packageUtils.filterPackages(themeList.getAll(), themeName);
+            return Promise.resolve({themes: result});
+        });
     },
 
     upload: function upload(options) {
@@ -90,7 +105,7 @@ themes = {
                 // @TODO fix this craziness
                 var toFilter = {};
                 toFilter[zip.shortName] = themeObject;
-                themeObject = packageUtils.filterPackages(toFilter);
+                themeObject = packageUtils.filterPackages(toFilter, zip.shortName);
                 // gscan theme structure !== ghost theme structure
                 if (theme.results.warning.length > 0) {
                     themeObject.warnings = _.cloneDeep(theme.results.warning);
