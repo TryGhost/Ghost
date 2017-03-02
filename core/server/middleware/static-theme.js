@@ -20,8 +20,10 @@ function forwardToExpressStatic(req, res, next) {
     if (!req.app.get('activeTheme')) {
         next();
     } else {
+        var configMaxAge = config.get('caching:theme:maxAge');
+
         express.static(path.join(config.getContentPath('themes'), req.app.get('activeTheme')),
-            {maxAge: config.get('caching:theme:maxAge') || utils.ONE_YEAR_MS}
+            {maxAge: (configMaxAge || configMaxAge === 0) ? configMaxAge : utils.ONE_YEAR_MS}
         )(req, res, next);
     }
 }
