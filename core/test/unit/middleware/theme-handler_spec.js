@@ -4,10 +4,10 @@ var sinon        = require('sinon'),
     Promise      = require('bluebird'),
     fs           = require('fs'),
     hbs          = require('express-hbs'),
+    themeList   = require('../../../server/themes').list,
     themeHandler = require('../../../server/middleware/theme-handler'),
     logging      = require('../../../server/logging'),
     api          = require('../../../server/api'),
-    configUtils  = require('../../utils/configUtils'),
     sandbox      = sinon.sandbox.create();
 
 describe('Theme Handler', function () {
@@ -23,7 +23,7 @@ describe('Theme Handler', function () {
 
     afterEach(function () {
         sandbox.restore();
-        configUtils.restore();
+        themeList.init();
     });
 
     describe('activateTheme', function () {
@@ -89,6 +89,10 @@ describe('Theme Handler', function () {
     });
 
     describe('updateActiveTheme', function () {
+        beforeEach(function () {
+            themeList.init({casper: {}});
+        });
+
         it('updates the active theme if changed', function (done) {
             var activateThemeSpy = sandbox.spy(themeHandler, 'activateTheme');
 
@@ -99,7 +103,6 @@ describe('Theme Handler', function () {
                 }]
             }));
             blogApp.set('activeTheme', 'not-casper');
-            configUtils.set({paths: {availableThemes: {casper: {}}}});
 
             themeHandler.updateActiveTheme(req, res, function () {
                 activateThemeSpy.called.should.be.true();
@@ -116,7 +119,6 @@ describe('Theme Handler', function () {
                 }]
             }));
             blogApp.set('activeTheme', 'casper');
-            configUtils.set({paths: {availableThemes: {casper: {}}}});
 
             themeHandler.updateActiveTheme(req, res, function () {
                 activateThemeSpy.called.should.be.false();
@@ -135,7 +137,6 @@ describe('Theme Handler', function () {
             }));
 
             blogApp.set('activeTheme', 'not-casper');
-            configUtils.set({paths: {availableThemes: {casper: {}}}});
 
             themeHandler.updateActiveTheme(req, res, function (err) {
                 should.exist(err);
@@ -158,7 +159,6 @@ describe('Theme Handler', function () {
 
             res.isAdmin = true;
             blogApp.set('activeTheme', 'not-casper');
-            configUtils.set({paths: {availableThemes: {casper: {}}}});
 
             themeHandler.updateActiveTheme(req, res, function () {
                 activateThemeSpy.called.should.be.false();
