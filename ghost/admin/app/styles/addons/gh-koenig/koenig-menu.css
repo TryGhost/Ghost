@@ -7,6 +7,7 @@
     box-shadow: rbga(0,0,0,0.10) 0 2px 6px;
     min-width:300px;
     border-radius: 4px;
+    display: none;
 }
 .koenig-menu.is-visible {
     animation: koenig-menu-fadein 111ms;
@@ -34,6 +35,13 @@
 }
 
 
+#koenig-menu-button {
+    position: absolute;
+    display:none;
+    width:100px;
+    height: 100px;
+    background-color: deeppink;
+}
 
 @keyframes koenig-menu-fadein {
     from {
