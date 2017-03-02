@@ -8,11 +8,8 @@ var Promise          = require('bluebird'),
     errors           = require('../errors'),
     utils            = require('./utils'),
     pipeline         = require('../utils/pipeline'),
-    api              = {},
-    docName      = 'db',
+    docName          = 'db',
     db;
-
-api.settings         = require('./settings');
 
 /**
  * ## DB API Methods
@@ -28,8 +25,8 @@ db = {
      * @param {{context}} options
      * @returns {Promise} Ghost Export JSON format
      */
-    exportContent: function (options) {
-        var tasks = [];
+    exportContent: function exportContent(options) {
+        var tasks;
 
         options = options || {};
 
@@ -57,8 +54,8 @@ db = {
      * @param {{context}} options
      * @returns {Promise} Success
      */
-    importContent: function (options) {
-        var tasks = [];
+    importContent: function importContent(options) {
+        var tasks;
         options = options || {};
 
         function importContent(options) {
@@ -81,7 +78,7 @@ db = {
      * @param {{context}} options
      * @returns {Promise} Success
      */
-    deleteAllContent: function (options) {
+    deleteAllContent: function deleteAllContent(options) {
         var tasks,
             queryOpts = {columns: 'id', context: {internal: true}};
 

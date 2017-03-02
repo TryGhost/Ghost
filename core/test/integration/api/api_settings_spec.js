@@ -116,11 +116,8 @@ describe('Settings API', function () {
     });
 
     it('can edit', function () {
-        var testReference = settingsCache.getAll();
-
         // see default-settings.json
         settingsCache.get('title').should.eql('Ghost');
-        testReference.title.value.should.eql('Ghost');
 
         return callApiWithContext(defaultContext, 'edit', {settings: [{key: 'title', value: 'UpdatedGhost'}]}, {})
             .then(function (response) {
@@ -130,7 +127,6 @@ describe('Settings API', function () {
                 testUtils.API.checkResponse(response.settings[0], 'setting');
 
                 settingsCache.get('title').should.eql('UpdatedGhost');
-                testReference.title.value.should.eql('UpdatedGhost');
             });
     });
 
