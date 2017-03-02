@@ -23,6 +23,9 @@
     "caching": {
         "theme": {
             "maxAge": 0
+        },
+        "admin": {
+            "maxAge": 0
         }
     }
 }

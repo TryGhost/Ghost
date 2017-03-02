@@ -17,7 +17,8 @@ var debug = require('debug')('ghost:admin'),
 
 module.exports = function setupAdminApp() {
     debug('Admin setup start');
-    var adminApp = express();
+    var adminApp = express(),
+        configMaxAge;
 
     // First determine whether we're serving admin or theme content
     // @TODO finish refactoring this away.
@@ -36,9 +37,10 @@ module.exports = function setupAdminApp() {
 
     // Admin assets
     // @TODO ensure this gets a local 404 error handler
+    configMaxAge = config.get('caching:admin:maxAge');
     adminApp.use('/assets', serveStatic(
         config.get('paths').clientAssets,
-        {maxAge: utils.ONE_YEAR_MS, fallthrough: false}
+        {maxAge: (configMaxAge || configMaxAge === 0) ? configMaxAge : utils.ONE_YEAR_MS, fallthrough: false}
     ));
 
     // Service Worker for offline support
