@@ -112,7 +112,7 @@ body {
     width: 100%;
     /* Prevent elastic scrolling on the whole page */
     height: 100%;
-    color: color(var(--darkgrey) lightness(+10%));
+    color: var(--darkgrey);
     font-size: 1.4rem;
 }
 
@@ -182,7 +182,6 @@ ul,
 ol,
 dl {
     margin: 0 0 1.7em 0;
-    font-size: 1.6rem;
 }
 
 ol,

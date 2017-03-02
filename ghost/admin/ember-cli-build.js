@@ -121,6 +121,9 @@ module.exports = function (defaults) {
             'jquery-deparam': {
                 import: ['jquery-deparam.js']
             },
+            'mobiledoc-kit': {
+                import: ['dist/amd/mobiledoc-kit.js', 'dist/amd/mobiledoc-kit.map']
+            },
             moment: {
                 import: ['moment.js']
             },

@@ -1,0 +1,5 @@
+{{#if isEditing}}
+    {{{preview}}}
+{{else}}
+    {{textarea value=value key-up="updateValue"}}
+{{/if}}

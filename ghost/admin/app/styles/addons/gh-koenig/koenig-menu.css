@@ -1,0 +1,57 @@
+.koenig-menu {
+    border:1px solid var(--darkgrey);
+    position:absolute;
+    background-color: #fff;
+    background-clip: padding-box;
+    padding:10px;
+    box-shadow: rbga(0,0,0,0.10) 0 2px 6px;
+    min-width:300px;
+    border-radius: 4px;
+    display: none;
+}
+.koenig-menu.is-visible {
+    animation: koenig-menu-fadein 111ms;
+}
+.koenig-menu ul {
+    margin:0;
+    padding:0;
+    list-style: none;
+}
+.koenig-menu ul li button {
+    padding:5px;
+    width:100%;
+    text-align: left;
+    font-size:1.3rem;
+    border-radius: 4px;
+}
+
+.koenig-menu ul li button img {
+    width:14px;
+}
+
+.koenig-menu ul li button:hover, .koenig-menu ul li button.selected {
+    background-color: var(--darkgrey);
+
+}
+
+
+#koenig-menu-button {
+    position: absolute;
+    display:none;
+    width:100px;
+    height: 100px;
+    background-color: deeppink;
+}
+
+@keyframes koenig-menu-fadein {
+    from {
+        opacity: 0;
+        transform: scale(0.7);
+        transform-origin:top;
+    }
+    to   {
+        opacity: 1;
+        transform: scale(1);
+        transform-origin:top;
+    }
+}
