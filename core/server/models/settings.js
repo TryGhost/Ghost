@@ -149,9 +149,9 @@ Settings = ghostBookshelf.Model.extend({
     },
 
     populateDefaults: function populateDefaults(options) {
-        options = options || {};
+        var self = this;
 
-        options = _.merge({}, options, internalContext);
+        options = _.merge({}, options || {}, internalContext);
 
         return this
             .findAll(options)
@@ -167,9 +167,9 @@ Settings = ghostBookshelf.Model.extend({
                     }
                 });
 
-                if (insertOperations > 0) {
+                if (insertOperations.length > 0) {
                     return Promise.all(insertOperations).then(function fetchAllToReturn() {
-                        return this.findAll(options);
+                        return self.findAll(options);
                     });
                 }
 

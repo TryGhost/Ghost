@@ -15,9 +15,9 @@ module.exports = {
         SettingsCache.init();
         // Update the defaults
         return SettingsModel.populateDefaults()
-            .then(function () {
+            .then(function (allSettings) {
                 // Reset the cache
-                return SettingsAPI.updateSettingsCache();
+                return SettingsAPI.updateSettingsCache(allSettings);
             });
     }
 };
