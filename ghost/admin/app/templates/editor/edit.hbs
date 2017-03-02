@@ -12,9 +12,6 @@
 
         </div>
         <section class="view-actions">
-            <button type="button" class="post-settings" title="Post Settings" {{action "openSettingsMenu"}}>
-                <i class="icon-settings"></i>
-            </button>
             {{gh-editor-save-button
                 isPublished=model.isPublished
                 isScheduled=model.isScheduled
@@ -30,6 +27,9 @@
                 delete="toggleDeletePostModal"
                 submitting=submitting
             }}
+            <button type="button" class="post-settings" title="Settings" {{action "openSettingsMenu"}}>
+                <i class="icon-settings"></i>
+            </button>
         </section>
     </header>
     <div class="gh-editor-container">
@@ -42,7 +42,7 @@
                     Post will be published {{scheduleCountdown}}.
                 </time>
             {{/if}}
-            {{ghost-editor
+            {{gh-koenig
                 value=(readonly model.scratch)
                 onChange=(action (mut model.scratch))
                 onFirstChange=(action "autoSaveNew")
@@ -58,20 +58,20 @@
 
 {{#if showDeletePostModal}}
     {{gh-fullscreen-modal "delete-post"
-                          model=(hash post=model onSuccess=(route-action 'redirectToContentScreen'))
-                          close=(action "toggleDeletePostModal")
-                          modifier="action wide"}}
+        model=(hash post=model onSuccess=(route-action 'redirectToContentScreen'))
+        close=(action "toggleDeletePostModal")
+        modifier="action wide"}}
 {{/if}}
 
 {{#if showLeaveEditorModal}}
     {{gh-fullscreen-modal "leave-editor"
-                          confirm=(action "leaveEditor")
-                          close=(action "toggleLeaveEditorModal")
-                          modifier="action wide"}}
+        confirm=(action "leaveEditor")
+        close=(action "toggleLeaveEditorModal")
+        modifier="action wide"}}
 {{/if}}
 
 {{#if showReAuthenticateModal}}
     {{gh-fullscreen-modal "re-authenticate"
-                          close=(action "toggleReAuthenticateModal")
-                          modifier="action wide"}}
+        close=(action "toggleReAuthenticateModal")
+        modifier="action wide"}}
 {{/if}}

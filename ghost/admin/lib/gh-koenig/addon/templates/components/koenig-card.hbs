@@ -1,0 +1,24 @@
+{{component
+    card.card.name
+    env=card.env
+    payload=card.payload
+    options=card.options
+    apiRoot=apiRoot
+    assetPath=assetPath
+    doSave=doSave
+    isEditing=isEditing
+}}
+<div class="card-handle">
+    {{#if card.card.buttons.preview}}
+        <button {{action "toggleState"}}>
+            {{#if isEditing}}
+                Edit
+            {{else}}
+                Preview
+            {{/if}}
+        </button>
+    {{/if}}
+    {{#if card.card.buttons.save}}
+        <button {{action "save"}}>Save</button>
+    {{/if}}
+</div>

@@ -1,0 +1,8 @@
+{
+  "name": "gh-koenig",
+  "description": "A mobiledoc-kit based editor for Ghost.",
+  "keywords": [
+    "ember-addon"
+  ],
+  "readmeFilename": "README.md"
+}

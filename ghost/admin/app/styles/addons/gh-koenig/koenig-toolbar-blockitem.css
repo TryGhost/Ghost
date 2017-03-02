@@ -1,0 +1,122 @@
+
+
+.toolbar-block {
+    position: absolute;
+    margin: 0;
+    background-color: #fff;
+    border:1px var(--lightgrey) solid;
+    transition: margin-left 0.1s;
+}
+
+
+.toolbar-block ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.toolbar-block ul li {
+    margin:0;
+    padding: 0;
+    width:0;
+    opacity:0;
+    overflow:hidden;
+    transition: width 0.3s;
+    float:left;
+}
+
+.toolbar-block ul li:first-child {
+    display:block;
+    width:32px;
+    opacity:0.3;
+}
+
+.toolbar-block:hover ul li {
+    display:block;
+    width:32px;
+    opacity:0.3;
+    animation-delay: 2s;
+    transition: width 0.3s;
+}
+
+.toolbar-block ul li.selected {
+    display:block;
+    opacity:0.1;
+    width:32px;
+}
+
+
+.toolbar-block:hover ul li.selected {
+    opacity:1;
+}
+
+
+.toolbar-block ul li button {
+    border-radius: 2px;
+    font-family: var(--font-family);
+    font-size: 10px;
+    line-height: 15px;
+    text-transform: uppercase;
+    padding:0;
+    margin:0;
+    height:32px;
+    min-width:32px;
+    color: var(--darkgrey);
+    background-color: #fff;
+    border: none;
+    transition: 0.3s;
+}
+
+.toolbar-block ul li.primary button {
+    opacity:1;
+}
+
+.toolbar-block ul li:hover {
+    opacity:1;
+}
+
+.toolbar-block ul li:hover button, .toolbar-block ul li.selected button {
+    background-color: var(--lightgrey);
+    color: var(--darkgrey);
+    transition: 0.3s;
+}
+
+.toolbar-block ul li button img {
+    width:20px;
+    height:20px;
+}
+
+/**flag **/
+.toolbar-block ul li button label {
+    display:none;
+}
+
+.toolbar-block ul li:hover button:hover label {
+    display:block;
+    position:absolute;
+    margin-top:20px;
+    transform:translateX(calc(-50% + 16px));
+
+    white-space: nowrap;
+    background-color: #5ba4e5;
+    border-radius: 3px;
+    padding:5px 10px 5px 10px;
+    color: #FFF;
+    -webkit-animation: fade-in 0.333s;
+    animation: fade-in 0.333s;
+
+}
+.toolbar-block ul li button:hover label:before {
+    content: '';
+    position: absolute;
+
+    left: 50%;
+    top: -9px;
+
+    margin-left: -10px;
+
+    border-bottom: 10px solid #5ba4e5;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+}
+

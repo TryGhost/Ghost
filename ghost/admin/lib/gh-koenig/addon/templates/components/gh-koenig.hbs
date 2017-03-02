@@ -1,0 +1,13 @@
+{{#each emberCards as |card|}}
+    {{#ember-wormhole to=card.id}}
+        {{koenig-card card=card apiRoot=apiRoot assetPath=assetPath}}
+    {{/ember-wormhole}}
+{{/each}}
+<div class='gh-koenig'>
+    <div class='surface' tabindex="{{tabindex}}"/>
+</div>
+
+{{yield}}
+
+{{koenig-toolbar editor=editor assetPath=assetPath}}
+{{koenig-menu editor=editor assetPath=assetPath}}

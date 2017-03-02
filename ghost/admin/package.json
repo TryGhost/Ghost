@@ -30,8 +30,8 @@
     "blueimp-md5": "2.7.0",
     "bower": "1.8.0",
     "broccoli-asset-rev": "2.5.0",
-    "broccoli-clean-css": "2.0.1",
     "broccoli-concat": "3.2.2",
+    "broccoli-funnel": "1.1.0",
     "broccoli-merge-trees": "1.2.1",
     "broccoli-uglify-js": "0.2.0",
     "chai-jquery": "2.0.0",
@@ -88,7 +88,6 @@
     "emberx-file-input": "1.1.1",
     "eslint-plugin-ember-suave": "1.0.0",
     "fs-extra": "2.0.0",
-    "ghost-editor": "0.1.10",
     "glob": "7.1.1",
     "grunt": "1.0.1",
     "grunt-bg-shell": "2.3.3",
@@ -98,6 +97,7 @@
     "liquid-wormhole": "2.0.3",
     "loader.js": "4.2.2",
     "matchdep": "1.0.1",
+    "mobiledoc-kit": "0.10.14",
     "moment": "2.17.1",
     "moment-timezone": "0.5.11",
     "password-generator": "2.1.0",
@@ -110,7 +110,8 @@
   },
   "ember-addon": {
     "paths": [
-      "lib/asset-delivery"
+      "lib/asset-delivery",
+      "lib/gh-koenig"
     ]
   },
   "greenkeeper": {

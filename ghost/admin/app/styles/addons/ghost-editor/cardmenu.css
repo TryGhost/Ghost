@@ -1,0 +1,68 @@
+/* Chrome has a bug with its scrollbars on this element which has been reported here: https://bugs.chromium.org/p/chromium/issues/detail?id=697381 */
+.gh-cardmenu {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 12px 15px;
+    width: 350px;
+    max-height: 460px;
+    overflow-y: auto;
+    background-color: #fff;
+    background-clip: padding-box;
+    border-radius: 4px;
+    box-shadow: 0 0 0 1px rgba(99,114,130,0.16), 0 8px 16px rgba(27,39,51,0.08);
+    text-transform: none;
+    font-size: 1.4rem;
+    font-weight: normal;
+}
+
+.gh-cardmenu-search {
+    position: relative;
+    width: 350px;
+    height: 40px;
+    margin: -12px 0 -12px -15px;
+}
+
+.gh-cardmenu-search-input {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 40px;
+    font-size: 1.4rem;
+    line-height: 40px;
+    padding: 10px 0 10px 15px;
+    border: none;
+    border-radius: 4px 4px 0 0;
+}
+
+.gh-cardmenu-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 80px;
+    height: 80px;
+    border-radius: 4px;
+}
+
+.gh-cardmenu-card:hover {
+    cursor: pointer;
+    background: color(var(--lightgrey) l(+5%));
+}
+
+.gh-cardmenu-label {
+    font-size: 1.2rem;
+}
+
+.gh-cardmenu-divider {
+    position: sticky;
+    top: -12px;
+    width: 350px;
+    padding: 5px 0;
+    margin: 12px -15px;
+    font-size: 1.2rem;
+    text-align: center;
+    background: color(var(--lightgrey) l(+3%) s(-10%));
+}
