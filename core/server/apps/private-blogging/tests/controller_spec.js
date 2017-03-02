@@ -3,6 +3,7 @@ var privateController = require('../lib/router').controller,
     path              = require('path'),
     sinon             = require('sinon'),
     configUtils       = require('../../../../test/utils/configUtils'),
+    themeList        = require('../../../themes').list,
     sandbox = sinon.sandbox.create();
 
 describe('Private Controller', function () {
@@ -42,10 +43,11 @@ describe('Private Controller', function () {
     afterEach(function () {
         sandbox.restore();
         configUtils.restore();
+        themeList.init();
     });
 
     it('Should render default password page when theme has no password template', function (done) {
-        configUtils.set({paths: {availableThemes: {casper: {}}}});
+        themeList.init({casper: {}});
 
         res.render = function (view) {
             view.should.eql(defaultPath);
@@ -56,9 +58,9 @@ describe('Private Controller', function () {
     });
 
     it('Should render theme password page when it exists', function (done) {
-        configUtils.set({paths: {availableThemes: {casper: {
+        themeList.init({casper: {
             'private.hbs': '/content/themes/casper/private.hbs'
-        }}}});
+        }});
 
         res.render = function (view) {
             view.should.eql('private');
@@ -69,7 +71,7 @@ describe('Private Controller', function () {
     });
 
     it('Should render with error when error is passed in', function (done) {
-        configUtils.set({paths: {availableThemes: {casper: {}}}});
+        themeList.init({casper: {}});
         res.error = 'Test Error';
 
         res.render = function (view, context) {

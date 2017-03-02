@@ -4,11 +4,11 @@ var should   = require('should'),
 // Stuff we are testing
     templates = rewire('../../../../server/controllers/frontend/templates'),
 
-    configUtils = require('../../../utils/configUtils');
+    themeList = require('../../../../server/themes').list;
 
 describe('templates', function () {
     afterEach(function () {
-        configUtils.restore();
+        themeList.init();
     });
 
     describe('utils', function () {
@@ -48,21 +48,16 @@ describe('templates', function () {
     describe('single', function () {
         describe('with many templates', function () {
             beforeEach(function () {
-                configUtils.set({
-                    paths: {
-                        availableThemes: {
-                            casper: {
-                                assets: null,
-                                'default.hbs': '/content/themes/casper/default.hbs',
-                                'index.hbs': '/content/themes/casper/index.hbs',
-                                'page.hbs': '/content/themes/casper/page.hbs',
-                                'page-about.hbs': '/content/themes/casper/page-about.hbs',
-                                'post.hbs': '/content/themes/casper/post.hbs',
-                                'post-welcome-to-ghost.hbs': '/content/themes/casper/post-welcome-to-ghost.hbs'
-                            }
-                        }
-                    }
-                });
+                themeList.init({casper: {
+                    assets: null,
+                    'default.hbs': '/content/themes/casper/default.hbs',
+                    'index.hbs': '/content/themes/casper/index.hbs',
+                    'page.hbs': '/content/themes/casper/page.hbs',
+                    'page-about.hbs': '/content/themes/casper/page-about.hbs',
+                    'post.hbs': '/content/themes/casper/post.hbs',
+                    'post-welcome-to-ghost.hbs': '/content/themes/casper/post-welcome-to-ghost.hbs'
+
+                }});
             });
 
             it('will return correct template for a post WITHOUT custom template', function () {
@@ -103,10 +98,10 @@ describe('templates', function () {
         });
 
         it('will fall back to post even if no index.hbs', function () {
-            configUtils.set({paths: {availableThemes: {casper: {
+            themeList.init({casper: {
                 assets: null,
                 'default.hbs': '/content/themes/casper/default.hbs'
-            }}}});
+            }});
 
             var view = templates.single('casper', {page: 1});
             should.exist(view);
@@ -117,11 +112,11 @@ describe('templates', function () {
     describe('channel', function () {
         describe('without tag templates', function () {
             beforeEach(function () {
-                configUtils.set({paths: {availableThemes: {casper: {
+                themeList.init({casper: {
                     assets: null,
                     'default.hbs': '/content/themes/casper/default.hbs',
                     'index.hbs': '/content/themes/casper/index.hbs'
-                }}}});
+                }});
             });
 
             it('will return correct view for a tag', function () {
@@ -133,13 +128,13 @@ describe('templates', function () {
 
         describe('with tag templates', function () {
             beforeEach(function () {
-                configUtils.set({paths: {availableThemes: {casper: {
+                themeList.init({casper: {
                     assets: null,
                     'default.hbs': '/content/themes/casper/default.hbs',
                     'index.hbs': '/content/themes/casper/index.hbs',
                     'tag.hbs': '/content/themes/casper/tag.hbs',
                     'tag-design.hbs': '/content/themes/casper/tag-about.hbs'
-                }}}});
+                }});
             });
 
             it('will return correct view for a tag', function () {
@@ -156,10 +151,10 @@ describe('templates', function () {
         });
 
         it('will fall back to index even if no index.hbs', function () {
-            configUtils.set({paths: {availableThemes: {casper: {
+            themeList.init({casper: {
                 assets: null,
                 'default.hbs': '/content/themes/casper/default.hbs'
-            }}}});
+            }});
 
             var view = templates.channel('casper', {name: 'tag', slugParam: 'development', slugTemplate: true});
             should.exist(view);
