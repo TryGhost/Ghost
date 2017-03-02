@@ -25,6 +25,7 @@ describe('Acceptance: Editor', function() {
     });
 
     it('redirects to signin when not authenticated', function () {
+        server.create('user'); // necessray for post-author association
         server.create('post');
 
         invalidateSession(application);

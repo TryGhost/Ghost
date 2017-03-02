@@ -1,8 +1,8 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import InfinityRoute from 'ember-infinity/mixins/route';
-import computed from 'ember-computed';
 import {assign} from 'ember-platform';
+import {isBlank} from 'ember-utils';
 import $ from 'jquery';
 
 export default AuthenticatedRoute.extend(InfinityRoute, ShortcutsRoute, {
@@ -12,28 +12,49 @@ export default AuthenticatedRoute.extend(InfinityRoute, ShortcutsRoute, {
     perPageParam: 'limit',
     totalPagesParam: 'meta.pagination.pages',
 
+    queryParams: {
+        type: {
+            refreshModel: true,
+            replace: true
+        },
+        author: {
+            refreshModel: true,
+            replace: true
+        },
+        tag: {
+            refreshModel: true,
+            replace: true
+        }
+    },
+
     _type: null,
     _selectedPostIndex: null,
 
     model(params) {
-        this.set('_type', params.type);
-        let filterSettings = this.get('filterSettings');
-
         return this.get('session.user').then((user) => {
+            let queryParams = this._typeParams(params.type);
+            let filterParams = {tag: params.tag};
+
             if (user.get('isAuthor')) {
-                filterSettings.filter = filterSettings.filter
-                    ? `${filterSettings.filter}+author:${user.get('slug')}` : `author:${user.get('slug')}`;
+                // authors can only view their own posts
+                filterParams.author = user.get('slug');
+            } else if (params.author) {
+                filterParams.author = params.author;
+            }
+
+            let filter = this._filterString(filterParams);
+            if (!isBlank(filter)) {
+                queryParams.filter = filter;
             }
 
             let perPage = this.get('perPage');
-            let paginationSettings = assign({perPage, startingPage: 1}, filterSettings);
+            let paginationSettings = assign({perPage, startingPage: 1}, queryParams);
 
             return this.infinityModel('post', paginationSettings);
         });
     },
 
-    filterSettings: computed('_type', function () {
-        let type = this.get('_type');
+    _typeParams(type) {
         let status = 'all';
         let staticPages = 'all';
 
@@ -59,7 +80,36 @@ export default AuthenticatedRoute.extend(InfinityRoute, ShortcutsRoute, {
             status,
             staticPages
         };
-    }),
+    },
+
+    _filterString(filter) {
+        return Object.keys(filter).map((key) => {
+            let value = filter[key];
+
+            if (!isBlank(value)) {
+                return `${key}:${filter[key]}`;
+            }
+        }).compact().join('+');
+    },
+
+    // trigger a background load of all tags and authors for use in the filter dropdowns
+    setupController(controller) {
+        this._super(...arguments);
+
+        if (!controller._hasLoadedTags) {
+            this.get('store').query('tag', {limit: 'all'}).then(() => {
+                controller._hasLoadedTags = true;
+            });
+        }
+
+        this.get('session.user').then((user) => {
+            if (!user.get('isAuthor') && !controller._hasLoadedAuthors) {
+                this.get('store').query('user', {limit: 'all'}).then(() => {
+                    controller._hasLoadedAuthors = true;
+                });
+            }
+        });
+    },
 
     stepThroughPosts(step) {
         let currentPost = this.get('controller.selectedPost');
@@ -111,14 +161,10 @@ export default AuthenticatedRoute.extend(InfinityRoute, ShortcutsRoute, {
         },
 
         queryParamsDidChange() {
-            // on direct page load controller won't exist so we want to
-            // avoid a double transition
-            if (this.get('controller')) {
-                this.refresh();
-            }
-
             // scroll back to the top
             $('.content-list').scrollTop(0);
+
+            this._super(...arguments);
         },
 
         newPost() {
