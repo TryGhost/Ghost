@@ -7,21 +7,46 @@
     </header>
 
     <div class="gh-contentfilter">
-        {{#active-link}}
-            {{link-to "All" "posts.index" (query-params type=null) data-test-all-filter-link=true}}
-        {{/active-link}}
-        {{#active-link}}
-            {{link-to "Drafts" "posts.index" (query-params type="draft") data-test-drafts-filter-link=true}}
-        {{/active-link}}
-        {{#active-link}}
-            {{link-to "Published" "posts.index" (query-params type="published") data-test-published-filter-link=true}}
-        {{/active-link}}
-        {{#active-link}}
-            {{link-to "Scheduled" "posts.index" (query-params type="scheduled") data-test-scheduled-filter-link=true}}
-        {{/active-link}}
-        {{#active-link}}
-            {{link-to "Pages" "posts.index" (query-params type="page") data-test-pages-filter-link=true}}
-        {{/active-link}}
+        {{#power-select
+            placeholder="All posts"
+            selected=selectedType
+            options=availableTypes
+            searchField="name"
+            onchange=(action (mut k))
+            tagName="div"
+            data-test-type-select=true
+            as |type|
+        }}
+            {{type.name}}
+        {{/power-select}}
+
+        {{#unless session.user.isAuthor}}
+        {{#power-select
+            placeholder="All authors"
+            selected=selectedAuthor
+            options=availableAuthors
+            searchField="name"
+            onchange=(action (mut k))
+            tagName="div"
+            data-test-author-select=true
+            as |author|
+        }}
+            {{author.name}}
+        {{/power-select}}
+        {{/unless}}
+
+        {{#power-select
+            placeholder="All tags"
+            selected=selectedTag
+            options=availableTags
+            searchField="name"
+            onchange=(action (mut k))
+            tagName="div"
+            data-test-tag-select=true
+            as |tag|
+        }}
+            {{tag.name}}
+        {{/power-select}}
     </div>
 
     {{gh-loading-spinner}}

@@ -55,10 +55,13 @@ describe('Acceptance: Version Mismatch', function() {
         });
 
         it('displays alert and aborts the transition when navigating', function () {
-            // mock the tags endpoint to return version mismatch
-            server.get('/tags/', versionMismatchResponse);
-
             visit('/');
+
+            andThen(() => {
+                // mock the tags endpoint to return version mismatch
+                server.get('/tags/', versionMismatchResponse);
+            });
+
             click('.gh-nav-settings-tags');
 
             andThen(() => {

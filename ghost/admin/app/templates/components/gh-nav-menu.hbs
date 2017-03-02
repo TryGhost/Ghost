@@ -33,7 +33,7 @@
         <li>
             {{!-- clicking the Content link whilst on the content screen should reset the filter --}}
             {{#if (eq routing.currentRouteName "posts.index")}}
-                {{#link-to "posts" (query-params type=null) classNames="gh-nav-main-content active"}}<i class="icon-content"></i>Stories{{/link-to}}
+                {{#link-to "posts" (query-params type=null author=null tag=null) classNames="gh-nav-main-content active"}}<i class="icon-content"></i>Stories{{/link-to}}
             {{else}}
                 {{#link-to "posts" classNames="gh-nav-main-content"}}<i class="icon-content"></i>Stories{{/link-to}}
             {{/if}}
