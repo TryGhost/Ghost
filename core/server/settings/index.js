@@ -8,11 +8,11 @@ var SettingsModel = require('../models/settings').Settings,
 
 module.exports = {
     init: function init() {
-        // Bind to events
-
         // Update the defaults
         return SettingsModel.populateDefaults()
             .then(function (settingsCollection) {
+                // Initialise the cache with the result
+                // This will bind to events for further updates
                 SettingsCache.init(settingsCollection);
             });
     }
