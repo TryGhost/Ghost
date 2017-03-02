@@ -13,35 +13,9 @@ var _            = require('lodash'),
 
     settingsCache = require('../settings/cache'),
 
-    updateSettingsCache,
     settingsFilter,
-    readSettingsResult,
     settingsResult,
     canEditAllSettings,
-
-// @TODO simplify this!
-updateSettingsCache = function updateSettingsCache(settings, options) {
-    options = options || {};
-    settings = settings || {};
-
-    if (!_.isEmpty(settings)) {
-        _.map(settings, function (setting, key) {
-            settingsCache.set(key, setting);
-        });
-
-        return Promise.resolve(settingsCache.getAll());
-    }
-
-    return dataProvider.Settings.findAll(options)
-        .then(function (result) {
-            // keep reference and update all keys
-            _.each(readSettingsResult(result.models), function (setting, key) {
-                settingsCache.set(key, setting);
-            });
-
-            return settingsCache.getAll();
-        });
-};
 
 // ## Helpers
 
@@ -65,9 +39,9 @@ settingsFilter = function (settings, filter) {
 };
 
 /**
- * ### Read Settings Result
+ * ### Settings Result
  *
- * Converts the models to keyed JSON
+ * Takes a keyed JSON object
  * E.g.
  * dbHash: {
  *   id: '123abc',
@@ -77,30 +51,15 @@ settingsFilter = function (settings, filter) {
  *   timestamps
  *  }
  *
+ *  Performs a filter, based on the `type`
+ *  And converts the remaining items to our API format by adding a `setting` and `meta` keys.
+ *
  * @private
- * @param {Array} settingsModels
- * @returns {Settings}
- */
-readSettingsResult = function (settingsModels) {
-    var settings = _.reduce(settingsModels, function (memo, member) {
-            if (!memo.hasOwnProperty(member.attributes.key)) {
-                memo[member.attributes.key] = member.attributes;
-            }
-
-            return memo;
-        }, {});
-
-    return settings;
-};
-
-/**
- * ### Settings Result
- * @private
- * @param {Object} settings
+ * @param {Object} settings - a keyed JSON object
  * @param {String} type
  * @returns {{settings: *}}
  */
-settingsResult = function (settings, type) {
+settingsResult = function settingsResult(settings, type) {
     var filteredSettings = _.values(settingsFilter(settings, type)),
         result = {
             settings: filteredSettings,
@@ -258,17 +217,15 @@ settings = {
             return utils.checkObject(object, docName).then(function (checkedData) {
                 options.user = self.user;
                 return dataProvider.Settings.edit(checkedData.settings, options);
-            }).then(function (result) {
-                var readResult = readSettingsResult(result);
-
-                return updateSettingsCache(readResult).then(function () {
-                    return settingsResult(readResult, type);
-                });
+            }).then(function (settingsModelsArray) {
+                // Instead of a standard bookshelf collection, Settings.edit returns an array of Settings Models.
+                // We convert this to JSON, by calling toJSON on each Model (using invokeMap for ease)
+                // We use keyBy to create an object that uses the 'key' as a key for each setting.
+                var settingsKeyedJSON = _.keyBy(_.invokeMap(settingsModelsArray, 'toJSON'), 'key');
+                return settingsResult(settingsKeyedJSON, type);
             });
         });
     }
 };
 
 module.exports = settings;
-
-module.exports.updateSettingsCache = updateSettingsCache;
