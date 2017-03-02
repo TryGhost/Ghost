@@ -1,14 +1,18 @@
-/* jshint node: true */
+/* eslint-env node */
+'use strict';
 
-var Funnel = require('broccoli-funnel');
-var path = require('path');
+const Funnel = require('broccoli-funnel');
 
 module.exports = {
     name: 'gh-koenig',
 
-    treeForPublic: function () {
-         return new Funnel(__dirname + '/public/tools/', {
-             destDir: 'assets/tools/'
-         });
+    isDevelopingAddon() {
+        return true;
+    },
+
+    treeForPublic() {
+        return new Funnel(`${__dirname}/public/tools/`, {
+            destDir: 'assets/tools/'
+        });
     }
 };

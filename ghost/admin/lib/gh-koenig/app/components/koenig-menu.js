@@ -1,1 +1,1 @@
-export { default } from 'gh-koenig/components/koenig-menu';
+export {default} from 'gh-koenig/components/koenig-menu';

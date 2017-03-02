@@ -8,7 +8,7 @@ import run from 'ember-runloop';
 import layout from '../../templates/components/image-card';
 
 import {invokeAction} from 'ember-invoke-action';
-//import ghostPaths from 'ghost-admin/utils/ghost-paths';
+
 import {
     isRequestEntityTooLargeError,
     isUnsupportedMediaTypeError,
@@ -44,7 +44,7 @@ export default Component.extend({
     // TODO: this wouldn't be necessary if the server could accept direct
     // file uploads
     formData: computed('file', function () {
-        const file = this.get('file');
+        let file = this.get('file');
         let formData = new FormData();
         formData.append('file', file);
 
@@ -52,13 +52,13 @@ export default Component.extend({
     }),
 
     description: computed('text', 'altText', function () {
-        const altText = this.get('altText');
+        let altText = this.get('altText');
 
         return this.get('text') || (altText ? `Upload image of "${altText}"` : 'Upload an image');
     }),
 
     progressStyle: computed('uploadPercentage', function () {
-        const percentage = this.get('uploadPercentage');
+        let percentage = this.get('uploadPercentage');
         let width = '';
 
         if (percentage > 0) {
@@ -75,17 +75,17 @@ export default Component.extend({
     }),
 
     showUploadForm: computed('formType', function () {
-        const canShowUploadForm = this.get('canShowUploadForm');
+        let canShowUploadForm = this.get('canShowUploadForm');
         let formType = this.get('formType');
 
         return formType === 'upload' && canShowUploadForm;
     }),
 
     didReceiveAttrs() {
-        const image = this.get('payload');
-        if(image.img) {
+        let image = this.get('payload');
+        if (image.img) {
             this.set('url', image.img);
-        } else if(image.file) {
+        } else if (image.file) {
             this.send('fileSelected', image.file);
             delete image.file;
 
@@ -93,7 +93,7 @@ export default Component.extend({
     },
 
     dragOver(event) {
-        const showUploadForm = this.get('showUploadForm');
+        let showUploadForm = this.get('showUploadForm');
 
         if (!event.dataTransfer) {
             return;
@@ -113,7 +113,7 @@ export default Component.extend({
     },
 
     dragLeave(event) {
-        const showUploadForm = this.get('showUploadForm');
+        let showUploadForm = this.get('showUploadForm');
 
         event.preventDefault();
 
@@ -123,7 +123,7 @@ export default Component.extend({
     },
 
     drop(event) {
-        const showUploadForm = this.get('showUploadForm');
+        let showUploadForm = this.get('showUploadForm');
 
         event.preventDefault();
 
@@ -156,7 +156,7 @@ export default Component.extend({
     _uploadSuccess(response) {
         this.set('url', response);
 
-        this.get('payload').img =response;
+        this.get('payload').img = response;
         this.get('env').save(this.get('payload'), false);
 
         this.send('saveUrl');
@@ -187,8 +187,7 @@ export default Component.extend({
 
     generateRequest() {
         let ajax = this.get('ajax');
-        //let formData = this.get('formData');
-
+        // let formData = this.get('formData');
 
         let file = this.get('file');
         let formData = new FormData();
@@ -209,8 +208,11 @@ export default Component.extend({
                     this._uploadProgress(event);
                 }, false);
 
-                xhr.addEventListener('error', event => console.log("error", event));
-                xhr.upload.addEventListener('error', event => console.log("errorupload", event));
+                // TODO: remove console.logs
+                /* eslint-disable no-console */
+                xhr.addEventListener('error', (event) => console.log('error', event));
+                xhr.upload.addEventListener('error', (event) => console.log('errorupload', event));
+                /* eslint-enabled no-console */
 
                 return xhr;
             }
@@ -251,7 +253,7 @@ export default Component.extend({
         fileSelected(fileList) {
             // can't use array destructuring here as FileList is not a strict
             // array and fails in Safari
-            // jscs:disable requireArrayDestructuring
+            // eslint-disable-next-line ember-suave/prefer-destructuring
             let file = fileList[0];
 
             // jscs:enable requireArrayDestructuring
