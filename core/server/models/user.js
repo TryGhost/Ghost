@@ -492,10 +492,8 @@ User = ghostBookshelf.Model.extend({
      * @TODO: see https://github.com/TryGhost/Ghost/issues/8003
      */
     isSetup: function isSetup() {
-        var validStatuses = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'];
-
         return this
-            .where('status', 'in', validStatuses)
+            .where('status', 'in', activeStates)
             .count('id')
             .then(function (count) {
                 return !!count;

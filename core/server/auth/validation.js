@@ -22,7 +22,7 @@ exports.switch = function validate(options) {
                         return Promise.reject(new errors.InternalServerError({
                             code: 'AUTH_SWITCH',
                             message: 'Switching the auth strategy is not allowed.',
-                            context: 'Please reset your database and start from stretch.',
+                            context: 'Please reset your database and start from scratch.',
                             help: 'NODE_ENV=production|development knex-migrator reset && NODE_ENV=production|development knex-migrator init\n'
                         }));
                     }
