@@ -5,7 +5,8 @@ var debug = require('debug')('ghost:themes:loader'),
     read = require('./read'),
     settingsCache = require('../settings/cache'),
     updateThemeList,
-    loadThemes,
+    loadAllThemes,
+    loadOneTheme,
     initThemes;
 
 updateThemeList = function updateThemeList(themes) {
@@ -13,10 +14,19 @@ updateThemeList = function updateThemeList(themes) {
     list.init(themes);
 };
 
-loadThemes = function loadThemes() {
+loadAllThemes = function loadAllThemes() {
     return read
         .all(config.getContentPath('themes'))
         .then(updateThemeList);
+};
+
+loadOneTheme = function loadOneTheme(themeName) {
+    return read
+        .one(config.getContentPath('themes'), themeName)
+        .then(function (readThemes) {
+            // @TODO change read one to not return a keyed object
+            return list.set(themeName, readThemes[themeName]);
+        });
 };
 
 initThemes = function initThemes() {
@@ -24,7 +34,7 @@ initThemes = function initThemes() {
 
     // Register a listener for server-start to load all themes
     events.on('server:start', function readAllThemesOnServerStart() {
-        loadThemes();
+        loadAllThemes();
     });
 
     // Just read the active theme for now
@@ -35,5 +45,6 @@ initThemes = function initThemes() {
 
 module.exports = {
     init: initThemes,
-    load: loadThemes
+    loadAllThemes: loadAllThemes,
+    loadOneTheme: loadOneTheme
 };

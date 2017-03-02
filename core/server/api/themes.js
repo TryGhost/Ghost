@@ -83,16 +83,18 @@ themes = {
                 }, config.getContentPath('themes'));
             })
             .then(function () {
-                // @TODO improve the API here for loading in a single theme & adding it to the list
-                return themeUtils.read.one(config.getContentPath('themes'), zip.shortName);
+                return themeUtils.loadOne(zip.shortName);
             })
-            .then(function (readThemes) {
+            .then(function (themeObject) {
+                // @TODO fix this craziness
+                var toFilter = {};
+                toFilter[zip.shortName] = themeObject;
+                themeObject = packageUtils.filterPackages(toFilter);
                 // gscan theme structure !== ghost theme structure
-                var themeObject = themeUtils.list.set(zip.shortName, readThemes[zip.shortName]);
                 if (theme.results.warning.length > 0) {
                     themeObject.warnings = _.cloneDeep(theme.results.warning);
                 }
-                return {themes: [themeObject]};
+                return {themes: themeObject};
             })
             .finally(function () {
                 // remove zip upload from multer
