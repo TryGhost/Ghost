@@ -7,6 +7,7 @@ var rewire            = require('rewire'),
     errors            = require('../../../errors'),
     should            = require('should'),
     configUtils       = require('../../../../test/utils/configUtils'),
+    themeList        = require('../../../themes').list,
     sandbox           = sinon.sandbox.create();
 
 // Helper function to prevent unit tests
@@ -53,10 +54,11 @@ describe('AMP Controller', function () {
     afterEach(function () {
         sandbox.restore();
         configUtils.restore();
+        themeList.init();
     });
 
     it('should render default amp page when theme has no amp template', function (done) {
-        configUtils.set({paths: {availableThemes: {casper: {}}}});
+        themeList.init({casper: {}});
 
         setResponseContextStub = sandbox.stub();
         ampController.__set__('setResponseContext', setResponseContextStub);
@@ -70,9 +72,9 @@ describe('AMP Controller', function () {
     });
 
     it('should render theme amp page when theme has amp template', function (done) {
-        configUtils.set({paths: {availableThemes: {casper: {
+        themeList.init({casper: {
             'amp.hbs': '/content/themes/casper/amp.hbs'
-        }}}});
+        }});
 
         setResponseContextStub = sandbox.stub();
         ampController.__set__('setResponseContext', setResponseContextStub);
@@ -86,7 +88,7 @@ describe('AMP Controller', function () {
     });
 
     it('should render with error when error is passed in', function (done) {
-        configUtils.set({paths: {availableThemes: {casper: {}}}});
+        themeList.init({casper: {}});
         res.error = 'Test Error';
 
         setResponseContextStub = sandbox.stub();
@@ -103,7 +105,7 @@ describe('AMP Controller', function () {
 
     it('does not render amp page when amp context is missing', function (done) {
         var renderSpy;
-        configUtils.set({paths: {availableThemes: {casper: {}}}});
+        themeList.init({casper: {}});
 
         setResponseContextStub = sandbox.stub();
         ampController.__set__('setResponseContext', setResponseContextStub);
@@ -121,7 +123,7 @@ describe('AMP Controller', function () {
 
     it('does not render amp page when context is other than amp and post', function (done) {
         var renderSpy;
-        configUtils.set({paths: {availableThemes: {casper: {}}}});
+        themeList.init({casper: {}});
 
         setResponseContextStub = sandbox.stub();
         ampController.__set__('setResponseContext', setResponseContextStub);

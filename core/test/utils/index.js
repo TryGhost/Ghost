@@ -449,7 +449,7 @@ toDoList = {
     clients: function insertClients() { return fixtures.insertClients(); },
     filter: function createFilterParamFixtures() { return filterData(DataGenerator); },
     invites: function insertInvites() { return fixtures.insertInvites(); },
-    themes: function loadThemes() { return themes.load(); }
+    themes: function loadThemes() { return themes.loadAll(); }
 };
 
 /**

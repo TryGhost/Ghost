@@ -1,6 +1,7 @@
 // # Themes API
 // RESTful API for Themes
-var Promise = require('bluebird'),
+var debug = require('debug')('ghost:api:themes'),
+    Promise = require('bluebird'),
     _ = require('lodash'),
     gscan = require('gscan'),
     fs = require('fs-extra'),
@@ -9,12 +10,12 @@ var Promise = require('bluebird'),
     events = require('../events'),
     logging = require('../logging'),
     storage = require('../storage'),
-    settings = require('./settings'),
-    settingsCache = require('../settings/cache'),
     apiUtils = require('./utils'),
     utils = require('./../utils'),
     i18n = require('../i18n'),
     themeUtils = require('../themes'),
+    themeList = themeUtils.list,
+    packageUtils = require('../utils/packages'),
     themes;
 
 /**
@@ -24,7 +25,10 @@ var Promise = require('bluebird'),
  */
 themes = {
     browse: function browse() {
-        return Promise.resolve({themes: settingsCache.get('availableThemes')});
+        debug('browsing');
+        var result = packageUtils.filterPackages(themeList.getAll());
+        debug('got result');
+        return Promise.resolve({themes: result});
     },
 
     upload: function upload(options) {
@@ -80,23 +84,18 @@ themes = {
                 }, config.getContentPath('themes'));
             })
             .then(function () {
-                // force reload of availableThemes
-                // right now the logic is in the ConfigManager
-                // if we create a theme collection, we don't have to read them from disk
-                return themeUtils.load();
+                return themeUtils.loadOne(zip.shortName);
             })
-            .then(function () {
-                // the settings endpoint is used to fetch the availableThemes
-                // so we have to force updating the in process cache
-                return settings.updateSettingsCache();
-            })
-            .then(function (settings) {
+            .then(function (themeObject) {
+                // @TODO fix this craziness
+                var toFilter = {};
+                toFilter[zip.shortName] = themeObject;
+                themeObject = packageUtils.filterPackages(toFilter);
                 // gscan theme structure !== ghost theme structure
-                var themeObject = _.find(settings.availableThemes.value, {name: zip.shortName}) || {};
                 if (theme.results.warning.length > 0) {
                     themeObject.warnings = _.cloneDeep(theme.results.warning);
                 }
-                return {themes: [themeObject]};
+                return {themes: themeObject};
             })
             .finally(function () {
                 // remove zip upload from multer
@@ -119,7 +118,7 @@ themes = {
 
     download: function download(options) {
         var themeName = options.name,
-            theme = config.get('paths').availableThemes[themeName],
+            theme = themeList.get(themeName),
             storageAdapter = storage.getStorage('themes');
 
         if (!theme) {
@@ -148,20 +147,17 @@ themes = {
                     throw new errors.ValidationError({message: i18n.t('errors.api.themes.destroyCasper')});
                 }
 
-                theme = config.get('paths').availableThemes[name];
+                theme = themeList.get(name);
 
                 if (!theme) {
                     throw new errors.NotFoundError({message: i18n.t('errors.api.themes.themeDoesNotExist')});
                 }
 
-                events.emit('theme.deleted', name);
                 return storageAdapter.delete(name, config.getContentPath('themes'));
             })
             .then(function () {
-                return themeUtils.load();
-            })
-            .then(function () {
-                return settings.updateSettingsCache();
+                themeList.del(name);
+                events.emit('theme.deleted', name);
             });
     }
 };

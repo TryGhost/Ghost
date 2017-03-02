@@ -65,17 +65,18 @@ describe('Themes API', function () {
     });
 
     describe('success cases', function () {
-        it('get all available themes', function (done) {
-            request.get(testUtils.API.getApiQuery('settings/'))
+        it('get all themes', function (done) {
+            request.get(testUtils.API.getApiQuery('themes/'))
                 .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
 
-                    var availableThemes = _.find(res.body.settings, {key: 'availableThemes'});
-                    should.exist(availableThemes);
-                    availableThemes.value.length.should.be.above(0);
+                    var jsonResponse = res.body;
+                    should.exist(jsonResponse.themes);
+                    testUtils.API.checkResponse(jsonResponse, 'themes');
+                    jsonResponse.themes.length.should.be.above(0);
                     done();
                 });
         });
@@ -108,19 +109,21 @@ describe('Themes API', function () {
                 });
         });
 
-        it('get all available themes + new theme', function (done) {
-            request.get(testUtils.API.getApiQuery('settings/'))
+        it('get all themes + new theme', function (done) {
+            request.get(testUtils.API.getApiQuery('themes/'))
                 .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
 
-                    var availableThemes = _.find(res.body.settings, {key: 'availableThemes'});
-                    should.exist(availableThemes);
+                    var jsonResponse = res.body;
+                    should.exist(jsonResponse.themes);
+                    testUtils.API.checkResponse(jsonResponse, 'themes');
+                    jsonResponse.themes.length.should.be.above(0);
 
                     // ensure the new 'valid' theme is available
-                    should.exist(_.find(availableThemes.value, {name: 'valid'}));
+                    should.exist(_.find(jsonResponse.themes, {name: 'valid'}));
                     done();
                 });
         });

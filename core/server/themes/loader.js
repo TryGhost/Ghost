@@ -1,23 +1,32 @@
 var debug = require('debug')('ghost:themes:loader'),
     config = require('../config'),
     events = require('../events'),
+    themeList = require('./list'),
     read = require('./read'),
-    settingsApi = require('../api/settings'),
     settingsCache = require('../settings/cache'),
-    updateConfigAndCache,
-    loadThemes,
+    updateThemeList,
+    loadAllThemes,
+    loadOneTheme,
     initThemes;
 
-updateConfigAndCache = function updateConfigAndCache(themes) {
+updateThemeList = function updateThemeList(themes) {
     debug('loading themes', Object.keys(themes));
-    config.set('paths:availableThemes', themes);
-    settingsApi.updateSettingsCache();
+    themeList.init(themes);
 };
 
-loadThemes = function loadThemes() {
+loadAllThemes = function loadAllThemes() {
     return read
         .all(config.getContentPath('themes'))
-        .then(updateConfigAndCache);
+        .then(updateThemeList);
+};
+
+loadOneTheme = function loadOneTheme(themeName) {
+    return read
+        .one(config.getContentPath('themes'), themeName)
+        .then(function (readThemes) {
+            // @TODO change read one to not return a keyed object
+            return themeList.set(themeName, readThemes[themeName]);
+        });
 };
 
 initThemes = function initThemes() {
@@ -25,16 +34,17 @@ initThemes = function initThemes() {
 
     // Register a listener for server-start to load all themes
     events.on('server:start', function readAllThemesOnServerStart() {
-        loadThemes();
+        loadAllThemes();
     });
 
     // Just read the active theme for now
     return read
         .one(config.getContentPath('themes'), settingsCache.get('activeTheme'))
-        .then(updateConfigAndCache);
+        .then(updateThemeList);
 };
 
 module.exports = {
     init: initThemes,
-    load: loadThemes
+    loadAllThemes: loadAllThemes,
+    loadOneTheme: loadOneTheme
 };

@@ -3,12 +3,10 @@
 var _            = require('lodash'),
     dataProvider = require('../models'),
     Promise      = require('bluebird'),
-    config       = require('../config'),
     canThis      = require('../permissions').canThis,
     errors       = require('../errors'),
     utils        = require('./utils'),
     i18n         = require('../i18n'),
-    filterPackages = require('../utils/packages').filterPackages,
 
     docName      = 'settings',
     settings,
@@ -68,6 +66,17 @@ settingsFilter = function (settings, filter) {
 
 /**
  * ### Read Settings Result
+ *
+ * Converts the models to keyed JSON
+ * E.g.
+ * dbHash: {
+ *   id: '123abc',
+ *   key: 'dbash',
+ *   value: 'xxxx',
+ *   type: 'core',
+ *   timestamps
+ *  }
+ *
  * @private
  * @param {Array} settingsModels
  * @returns {Settings}
@@ -79,20 +88,7 @@ readSettingsResult = function (settingsModels) {
             }
 
             return memo;
-        }, {}),
-        themes = config.get('paths').availableThemes,
-        res;
-
-    // @TODO: remove availableThemes from settings cache and create an endpoint to fetch themes
-    if (settings.activeTheme && themes) {
-        res = filterPackages(themes, settings.activeTheme.value);
-
-        settings.availableThemes = {
-            key: 'availableThemes',
-            value: res,
-            type: 'theme'
-        };
-    }
+        }, {});
 
     return settings;
 };
@@ -255,7 +251,7 @@ settings = {
         }
 
         object.settings = _.reject(object.settings, function (setting) {
-            return setting.key === 'type' || setting.key === 'availableThemes';
+            return setting.key === 'type';
         });
 
         return canEditAllSettings(object.settings, options).then(function () {
