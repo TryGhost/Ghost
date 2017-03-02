@@ -14,6 +14,7 @@ var debug = require('debug')('ghost:api:themes'),
     utils = require('./../utils'),
     i18n = require('../i18n'),
     themeUtils = require('../themes'),
+    themeList = themeUtils.list,
     packageUtils = require('../utils/packages'),
     themes;
 
@@ -25,7 +26,7 @@ var debug = require('debug')('ghost:api:themes'),
 themes = {
     browse: function browse() {
         debug('browsing');
-        var result = packageUtils.filterPackages(themeUtils.list.getAll());
+        var result = packageUtils.filterPackages(themeList.getAll());
         debug('got result');
         return Promise.resolve({themes: result});
     },
@@ -117,7 +118,7 @@ themes = {
 
     download: function download(options) {
         var themeName = options.name,
-            theme = themeUtils.list.get(themeName),
+            theme = themeList.get(themeName),
             storageAdapter = storage.getStorage('themes');
 
         if (!theme) {
@@ -146,13 +147,13 @@ themes = {
                     throw new errors.ValidationError({message: i18n.t('errors.api.themes.destroyCasper')});
                 }
 
-                theme = themeUtils.list.get(name);
+                theme = themeList.get(name);
 
                 if (!theme) {
                     throw new errors.NotFoundError({message: i18n.t('errors.api.themes.themeDoesNotExist')});
                 }
 
-                themeUtils.list.del(name);
+                themeList.del(name);
                 events.emit('theme.deleted', name);
                 return storageAdapter.delete(name, config.getContentPath('themes'));
             });

@@ -1,7 +1,7 @@
 var debug = require('debug')('ghost:themes:loader'),
     config = require('../config'),
     events = require('../events'),
-    list = require('./list'),
+    themeList = require('./list'),
     read = require('./read'),
     settingsCache = require('../settings/cache'),
     updateThemeList,
@@ -11,7 +11,7 @@ var debug = require('debug')('ghost:themes:loader'),
 
 updateThemeList = function updateThemeList(themes) {
     debug('loading themes', Object.keys(themes));
-    list.init(themes);
+    themeList.init(themes);
 };
 
 loadAllThemes = function loadAllThemes() {
@@ -25,7 +25,7 @@ loadOneTheme = function loadOneTheme(themeName) {
         .one(config.getContentPath('themes'), themeName)
         .then(function (readThemes) {
             // @TODO change read one to not return a keyed object
-            return list.set(themeName, readThemes[themeName]);
+            return themeList.set(themeName, readThemes[themeName]);
         });
 };
 

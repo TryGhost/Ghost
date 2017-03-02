@@ -9,7 +9,7 @@ var _      = require('lodash'),
     logging = require('../logging'),
     errors = require('../errors'),
     i18n = require('../i18n'),
-    themes = require('../themes'),
+    themeList = require('../themes').list,
     themeHandler;
 
 themeHandler = {
@@ -96,7 +96,7 @@ themeHandler = {
             // Check if the theme changed
             if (activeTheme.value !== blogApp.get('activeTheme')) {
                 // Change theme
-                if (!themes.list.get(activeTheme.value)) {
+                if (!themeList.get(activeTheme.value)) {
                     if (!res.isAdmin) {
                         return next(new errors.NotFoundError({
                             message: i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeTheme.value})
