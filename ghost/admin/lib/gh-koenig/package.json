@@ -4,5 +4,8 @@
   "keywords": [
     "ember-addon"
   ],
-  "readmeFilename": "README.md"
+  "readmeFilename": "README.md",
+  "dependencies": {
+    "ember-cli-htmlbars": "1.1.1"
+  }
 }
