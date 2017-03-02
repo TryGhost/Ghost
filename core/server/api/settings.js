@@ -22,10 +22,13 @@ var _            = require('lodash'),
 // @TODO simplify this!
 updateSettingsCache = function updateSettingsCache() {
     return dataProvider.Settings.findAll()
-        .then(function (result) {
-            // keep reference and update all keys
-            _.each(readSettingsResult(result.models), function (setting, key) {
-                settingsCache.set(key, setting);
+        .then(function (settingsCollection) {
+            // FindAll returns us a bookshelf Collection of Settings Models.
+            // We want to iterate over the models, and for each model:
+            // Get the key, and the JSON version of the model, and call settingsCache.set()
+            // This is identical to the updateSettingFromModel code inside of settings/cache.init()
+            _.each(settingsCollection.models, function updateSettingFromModel(settingModel) {
+                settingsCache.set(settingModel.get('key'), settingModel.toJSON());
             });
 
             return settingsCache.getAll();
