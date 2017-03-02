@@ -1,12 +1,10 @@
 /**
  * Settings Lib
  * A collection of utilities for handling settings including a cache
- * @TODO: eventually much of this logic will move into this lib
- * For now we are providing a unified interface
  */
 
-var SettingsModel = require('../models/settings').Settings,
-    SettingsAPI = require('../api').settings,
+var _ = require('lodash'),
+    SettingsModel = require('../models/settings').Settings,
     SettingsCache = require('./cache');
 
 module.exports = {
@@ -15,9 +13,17 @@ module.exports = {
         SettingsCache.init();
         // Update the defaults
         return SettingsModel.populateDefaults()
-            .then(function (allSettings) {
+            .then(function (settingsCollection) {
                 // Reset the cache
-                return SettingsAPI.updateSettingsCache(allSettings);
+                // PopulateDefaults returns us a bookshelf Collection of Settings Models.
+                // We want to iterate over the models, and for each model:
+                // Get the key, and the JSON version of the model, and call settingsCache.set()
+                // This is identical to the updateSettingFromModel code inside of settings/cache.init()
+                _.each(settingsCollection.models, function updateSettingFromModel(settingModel) {
+                    SettingsCache.set(settingModel.get('key'), settingModel.toJSON());
+                });
+
+                return SettingsCache.getAll();
             });
     }
 };
