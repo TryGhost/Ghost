@@ -1,13 +1,13 @@
 var sinon        = require('sinon'),
     should       = require('should'),
     express      = require('express'),
-    Promise      = require('bluebird'),
     fs           = require('fs'),
     hbs          = require('express-hbs'),
     themeList   = require('../../../server/themes').list,
     themeHandler = require('../../../server/middleware/theme-handler'),
     logging      = require('../../../server/logging'),
-    api          = require('../../../server/api'),
+    settingsCache  = require('../../../server/settings/cache'),
+
     sandbox      = sinon.sandbox.create();
 
 describe('Theme Handler', function () {
@@ -96,12 +96,7 @@ describe('Theme Handler', function () {
         it('updates the active theme if changed', function (done) {
             var activateThemeSpy = sandbox.spy(themeHandler, 'activateTheme');
 
-            sandbox.stub(api.settings, 'read').withArgs(sandbox.match.has('key', 'activeTheme')).returns(Promise.resolve({
-                settings: [{
-                    key: 'activeKey',
-                    value: 'casper'
-                }]
-            }));
+            sandbox.stub(settingsCache, 'get').withArgs('activeTheme').returns('casper');
             blogApp.set('activeTheme', 'not-casper');
 
             themeHandler.updateActiveTheme(req, res, function () {
@@ -112,12 +107,8 @@ describe('Theme Handler', function () {
 
         it('does not update the active theme if not changed', function (done) {
             var activateThemeSpy = sandbox.spy(themeHandler, 'activateTheme');
-            sandbox.stub(api.settings, 'read').withArgs(sandbox.match.has('key', 'activeTheme')).returns(Promise.resolve({
-                settings: [{
-                    key: 'activeKey',
-                    value: 'casper'
-                }]
-            }));
+
+            sandbox.stub(settingsCache, 'get').withArgs('activeTheme').returns('casper');
             blogApp.set('activeTheme', 'casper');
 
             themeHandler.updateActiveTheme(req, res, function () {
@@ -129,13 +120,7 @@ describe('Theme Handler', function () {
         it('throws error if theme is missing', function (done) {
             var activateThemeSpy = sandbox.spy(themeHandler, 'activateTheme');
 
-            sandbox.stub(api.settings, 'read').withArgs(sandbox.match.has('key', 'activeTheme')).returns(Promise.resolve({
-                settings: [{
-                    key: 'activeKey',
-                    value: 'rasper'
-                }]
-            }));
-
+            sandbox.stub(settingsCache, 'get').withArgs('activeTheme').returns('rasper');
             blogApp.set('activeTheme', 'not-casper');
 
             themeHandler.updateActiveTheme(req, res, function (err) {
@@ -150,12 +135,7 @@ describe('Theme Handler', function () {
             var activateThemeSpy = sandbox.spy(themeHandler, 'activateTheme'),
                 loggingWarnStub = sandbox.spy(logging, 'warn');
 
-            sandbox.stub(api.settings, 'read').withArgs(sandbox.match.has('key', 'activeTheme')).returns(Promise.resolve({
-                settings: [{
-                    key: 'activeKey',
-                    value: 'rasper'
-                }]
-            }));
+            sandbox.stub(settingsCache, 'get').withArgs('activeTheme').returns('rasper');
 
             res.isAdmin = true;
             blogApp.set('activeTheme', 'not-casper');
