@@ -56,7 +56,7 @@
     display: none;
 }
 
-.__mobiledoc-card: hover .card-handle {
+.__mobiledoc-card:hover .card-handle {
     display: block;
 }
 
@@ -80,7 +80,7 @@
     resize: none;
 }
 
-.card-handle button: hover {
+.card-handle button:hover {
     background-color: #718087;
     color: #fff;
 }
@@ -135,7 +135,7 @@ textarea.ed_code {
 .__mobiledoc-tooltip a {
     color: #FFF;
 }
-.__mobiledoc-tooltip: before {
+.__mobiledoc-tooltip:before {
     content: '';
     position: absolute;
 
