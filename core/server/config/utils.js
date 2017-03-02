@@ -1,6 +1,5 @@
 var path = require('path'),
-    _ = require('lodash'),
-    errors = require('../errors');
+    _ = require('lodash');
 
 exports.isPrivacyDisabled = function isPrivacyDisabled(privacyFlag) {
     if (!this.get('privacy')) {
@@ -30,19 +29,6 @@ exports.isPrivacyDisabled = function isPrivacyDisabled(privacyFlag) {
  */
 exports.makePathsAbsolute = function makePathsAbsolute(obj, parent) {
     var self = this;
-
-    if (!obj) {
-        throw new errors.IncorrectUsageError({
-            message: 'makePathsAbsolute: Can\'t make paths absolute of non existing object.',
-            help: parent
-        });
-    }
-
-    if (!parent) {
-        throw new errors.IncorrectUsageError({
-            message: 'makePathsAbsolute: Parent is missing.'
-        });
-    }
 
     _.each(obj, function (configValue, pathsKey) {
         if (_.isObject(configValue)) {
