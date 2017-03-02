@@ -84,12 +84,26 @@ readSettingsResult = function readSettingsResult(settingsModels) {
 
 /**
  * ### Settings Result
+ *
+ * Takes a keyed JSON object
+ * E.g.
+ * dbHash: {
+ *   id: '123abc',
+ *   key: 'dbash',
+ *   value: 'xxxx',
+ *   type: 'core',
+ *   timestamps
+ *  }
+ *
+ *  Performs a filter, based on the `type`
+ *  And converts the remaining items to our API format by adding a `setting` and `meta` keys.
+ *
  * @private
- * @param {Object} settings
+ * @param {Object} settings - a keyed JSON object
  * @param {String} type
  * @returns {{settings: *}}
  */
-settingsResult = function (settings, type) {
+settingsResult = function settingsResult(settings, type) {
     var filteredSettings = _.values(settingsFilter(settings, type)),
         result = {
             settings: filteredSettings,
@@ -247,8 +261,12 @@ settings = {
             return utils.checkObject(object, docName).then(function (checkedData) {
                 options.user = self.user;
                 return dataProvider.Settings.edit(checkedData.settings, options);
-            }).then(function (result) {
-                return settingsResult(readSettingsResult(result), type);
+            }).then(function (settingsModelsArray) {
+                // Instead of a standard bookshelf collection, Settings.edit returns an array of Settings Models.
+                // We convert this to JSON, by calling toJSON on each Model (using invokeMap for ease)
+                // We use keyBy to create an object that uses the 'key' as a key for each setting.
+                var settingsKeyedJSON = _.keyBy(_.invokeMap(settingsModelsArray, 'toJSON'), 'key');
+                return settingsResult(settingsKeyedJSON, type);
             });
         });
     }
