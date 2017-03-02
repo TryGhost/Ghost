@@ -153,9 +153,11 @@ themes = {
                     throw new errors.NotFoundError({message: i18n.t('errors.api.themes.themeDoesNotExist')});
                 }
 
+                return storageAdapter.delete(name, config.getContentPath('themes'));
+            })
+            .then(function () {
                 themeList.del(name);
                 events.emit('theme.deleted', name);
-                return storageAdapter.delete(name, config.getContentPath('themes'));
             });
     }
 };
