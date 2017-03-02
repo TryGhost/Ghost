@@ -4,9 +4,9 @@ import markdownCard from 'gh-koenig/cards/markdown-card_dom';
 
 let cards = [];
 
-[htmlCard, imageCard, markdownCard].forEach(_card => {
-        _card.type = 'dom';
-        cards.push(_card);
+[htmlCard, imageCard, markdownCard].forEach((_card) => {
+    _card.type = 'dom';
+    cards.push(_card);
 });
 
 export default cards;

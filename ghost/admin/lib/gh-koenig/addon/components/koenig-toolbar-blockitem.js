@@ -1,19 +1,20 @@
-import Ember from 'ember';
+import Component from 'ember-component';
+import computed from 'ember-computed';
+import $ from 'jquery';
 import layout from '../templates/components/koenig-toolbar-blockitem';
-
 import Tools from '../options/default-tools';
 
-export default Ember.Component.extend({
+export default Component.extend({
     layout,
     classNames: ['toolbar-block'],
     tools: [],
     isBlank: false,
-    toolbar: Ember.computed(function () {
-        let postTools = [ ];
-        let selectedPostTools = [ ];
 
-        this.tools.forEach(tool => {
+    toolbar: computed('tools.@each.selected', function () {
+        let postTools = [];
+        let selectedPostTools = [];
 
+        this.tools.forEach((tool) => {
             if (tool.type === 'block' || (tool.type === 'card' && this.isBlank)) {
                 if (tool.selected) {
                     selectedPostTools.push(tool);
@@ -23,38 +24,39 @@ export default Ember.Component.extend({
             }
 
         });
-        return selectedPostTools.concat(postTools);
 
-    }).property('tools.@each.selected'),
+        return selectedPostTools.concat(postTools);
+    }),
 
     init() {
         this._super(...arguments);
         let editor = this.editor = this.get('editor');
         this.tools = new Tools(editor, this);
 
-        this.iconURL = this.get('assetPath') + '/tools/';
+        this.iconURL = `${this.get('assetPath')}/tools/`;
     },
+
     didRender() {
         let $this = this.$();
-        let editor = this.editor;
-        let $editor = Ember.$('.gh-editor-container'); // TODO this is part of Ghost-Admin
+        let {editor} = this;
+        let $editor = $('.gh-editor-container'); // TODO this is part of Ghost-Admin
 
         editor.cursorDidChange(() => {
 
             // if there is no cursor:
-            if(!editor.range || !editor.range.head.section) {
+            if (!editor.range || !editor.range.head.section) {
                 $this.fadeOut();
                 return;
             }
 
             let element = editor.range.head.section.renderNode._element;
 
-            if(this._element === element) {
+            if (this._element === element) {
                 return;
             }
 
             // if the section is a blank section then we can change it to a card, otherwise we can't.
-            if(editor.range.head.section.isBlank) {
+            if (editor.range.head.section.isBlank) {
                 this.set('isBlank', true);
             } else {
                 this.set('isBlank', false);
@@ -68,19 +70,17 @@ export default Ember.Component.extend({
             let edOffset = $editor.offset();
 
             $this.css('top', offset.top + $editor.scrollTop() - edOffset.top - 5);
-            if(element.tagName.toLowerCase()==='li') {
+            if (element.tagName.toLowerCase() === 'li') {
                 $this.css('left', this.$(element.parentNode).position().left + $editor.scrollLeft() - 90);
             } else {
                 $this.css('left', offset.left + $editor.scrollLeft() - 90);
             }
 
-
             $this.fadeIn();
 
             this._element = element;
 
-
-            this.tools.forEach(tool => {
+            this.tools.forEach((tool) => {
                 if (tool.hasOwnProperty('checkElements')) {
                     // if its a list we want to know what type
                     let sectionTagName = editor.activeSection._tagName === 'li' ? editor.activeSection.parent._tagName : editor.activeSection._tagName;
@@ -92,6 +92,7 @@ export default Ember.Component.extend({
 
         });
     },
+
     willDestroy() {
         this.editor.destroy();
     }

@@ -1,19 +1,22 @@
-import Ember from 'ember';
+import Component from 'ember-component';
 import layout from '../templates/components/koenig-card';
 
-export default Ember.Component.extend({
+export default Component.extend({
     layout,
     classNames: ['koenig-card'],
+
+    init() {
+        this._super(...arguments);
+        this.set('isEditing', false);
+    },
+
     actions: {
         save() {
             this.set('doSave', Date.now());
         },
+
         toggleState() {
             this.set('isEditing', !this.get('isEditing'));
         }
-    },
-    init() {
-        this._super(...arguments);
-        this.set('isEditing', false);
     }
 });

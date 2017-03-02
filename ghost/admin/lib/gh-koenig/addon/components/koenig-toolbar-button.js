@@ -1,7 +1,7 @@
-import Ember from 'ember';
+import Component from 'ember-component';
 import layout from '../templates/components/koenig-toolbar-button';
 
-export default Ember.Component.extend({
+export default Component.extend({
     layout,
     tagName: 'button',
     classNameBindings: ['selected', 'primary', 'secondary',
@@ -9,23 +9,27 @@ export default Ember.Component.extend({
     classNames: ['gh-toolbar-btn'],
     attributesBindings: ['title'],
     title: 'bold',
+
     // todo title="Bold", https://github.com/TryGhost/Ghost-Editor/commit/1133a9a7506f409b1b4fae6639c84c94c74dcebf
-    //actions: {
-        click: function () {
-             this.tool.onClick(this.editor);
-        },
-   // },
-    willRender: function() {
-        console.log('gh-toolbar-btn-' + this.tool.class);
-        this.set('gh-toolbar-btn-' + this.tool.class, true);
-        if(this.tool.selected) {
+    // actions: {
+    click() {
+        this.tool.onClick(this.editor);
+    },
+    // },
+    //
+    willRender() {
+        // TODO: remove console.log
+        // eslint-disable-next-line no-console
+        console.log(`gh-toolbar-btn-${this.tool.class}`);
+        this.set(`gh-toolbar-btn-${this.tool.class}`, true);
+        if (this.tool.selected) {
             this.set('selected', true);
         } else {
             this.set('selected', false);
         }
 
-        if(this.tool.visibility) {
-            this.set(this.tool.visibility,true);
+        if (this.tool.visibility) {
+            this.set(this.tool.visibility, true);
         }
 
     }

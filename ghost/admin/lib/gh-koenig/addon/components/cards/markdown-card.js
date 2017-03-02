@@ -1,10 +1,12 @@
-import Ember from 'ember';
+import Component from 'ember-component';
 import layout from '../../templates/components/markdown-card';
 import {formatMarkdown} from '../../libs/format-markdown';
 import injectService from 'ember-service/inject';
 import {invokeAction} from 'ember-invoke-action';
 import {isEmberArray} from 'ember-array/utils';
 import {isBlank} from 'ember-utils';
+import computed from 'ember-computed';
+import observer from 'ember-metal/observer';
 import run from 'ember-runloop';
 import {
     isRequestEntityTooLargeError,
@@ -12,22 +14,23 @@ import {
     isVersionMismatchError,
     UnsupportedMediaTypeError
 } from 'ghost-admin/services/ajax';
-/* legacyConverter.makeHtml(_.toString(this.get('markdown')))
- */
+/* legacyConverter.makeHtml(_.toString(this.get('markdown'))) */
 
-
-export default Ember.Component.extend({
-  layout,
+export default Component.extend({
+    layout,
     isEditing: true,
     accept: 'image/gif,image/jpg,image/jpeg,image/png,image/svg+xml',
     extensions: ['gif', 'jpg', 'jpeg', 'png', 'svg'],
+
     ajax: injectService(),
-    editing: function () {
-        if(!this.isEditing) {
+
+    editing: observer('isEditing', function () {
+        if (!this.isEditing) {
             this.set('preview', formatMarkdown([this.get('payload').markdown]));
         }
-    }.observes('isEditing'),
-    value : Ember.computed('payload', {
+    }),
+
+    value: computed('payload', {
         get() {
             return this.get('payload').markdown || '';
         },
@@ -60,7 +63,7 @@ export default Ember.Component.extend({
     _uploadSuccess(response) {
         this.set('url', response.url);
 
-        this.get('payload').img =response.url;
+        this.get('payload').img = response.url;
         this.get('env').save(this.get('payload'), false);
 
         this.send('saveUrl');
@@ -68,7 +71,7 @@ export default Ember.Component.extend({
         invokeAction(this, 'uploadSuccess', response);
         let placeholderText = `![uploading:${response.file.name}]()`;
         let imageText = `![](${response.url})`;
-        const el = this.$('textarea')[0];
+        let [el] = this.$('textarea');
 
         el.value = el.value.replace(placeholderText, imageText);
         this.sendAction('updateValue');
@@ -81,7 +84,6 @@ export default Ember.Component.extend({
             return this._defaultValidator(file);
         }
     },
-
 
     _uploadFailed(error) {
         let message;
@@ -102,7 +104,9 @@ export default Ember.Component.extend({
 
         this.set('failureMessage', message);
         invokeAction(this, 'uploadFailed', error);
-        alert("upload failed");
+        alert('upload failed');
+        // TODO: remove console.log
+        // eslint-disable-next-line no-console
         console.log(error);
     },
 
@@ -121,10 +125,9 @@ export default Ember.Component.extend({
         return true;
     },
 
-
     generateRequest() {
         let ajax = this.get('ajax');
-        //let formData = this.get('formData');
+        // let formData = this.get('formData');
 
         let file = this.get('file');
         let formData = new FormData();
@@ -145,8 +148,11 @@ export default Ember.Component.extend({
                     this._uploadProgress(event);
                 }, false);
 
-                xhr.addEventListener('error', event => console.log("error", event));
-                xhr.upload.addEventListener('error', event => console.log("errorupload", event));
+                // TODO: remove console.logs
+                /* eslint-disable no-console */
+                xhr.addEventListener('error', (event) => console.log('error', event));
+                xhr.upload.addEventListener('error', (event) => console.log('errorupload', event));
+                /* eslint-enabled no-console */
 
                 return xhr;
             }
@@ -160,16 +166,45 @@ export default Ember.Component.extend({
         });
     },
 
+    drop(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        let [el] = this.$('textarea');
+        let start = el.selectionStart;
+        let end = el.selectionEnd;
+
+        let {files} = event.dataTransfer;
+        let combinedLength = 0;
+        // for(let i = 0; i < files.length; i++) {
+        //     let file = files[i];
+        //     let placeholderText = `\r\n![uploading:${file.name}]()\r\n`;
+        //     el.value = el.value.substring(0, start) + placeholderText + el.value.substring(end, el.value.length);
+        //     combinedLength += placeholderText.length;
+        // }
+
+        // eslint-disable-next-line ember-suave/prefer-destructuring
+        let file = files[0];
+        let placeholderText = `\r\n![uploading:${file.name}]()\r\n`;
+        el.value = el.value.substring(0, start) + placeholderText + el.value.substring(end, el.value.length);
+        combinedLength += placeholderText.length;
+
+        el.selectionStart = start;
+        el.selectionEnd = end + combinedLength;
+
+        this.send('fileSelected', event.dataTransfer.files);
+    },
+
     actions: {
-        updateValue( ) {
+        updateValue() {
             this.get('payload').markdown = this.$('textarea').val();
             this.get('env').save(this.get('payload'), false);
             this.set('preview', formatMarkdown([this.get('payload').markdown]));
         },
+
         fileSelected(fileList) {
             // can't use array destructuring here as FileList is not a strict
             // array and fails in Safari
-            // jscs:disable requireArrayDestructuring
+            // eslint-disable-next-line ember-suave/prefer-destructuring
             let file = fileList[0];
 
             // jscs:enable requireArrayDestructuring
@@ -187,6 +222,7 @@ export default Ember.Component.extend({
                 this._uploadFailed(validationResult);
             }
         },
+
         reset() {
             this.set('file', null);
             this.set('uploadPercentage', 0);
@@ -196,37 +232,6 @@ export default Ember.Component.extend({
             let url = this.get('url');
             invokeAction(this, 'update', url);
         }
-    },
-    drop(event) {
-        event.preventDefault();
-        event.stopPropagation();
-        const el = this.$('textarea')[0];
-        const start = el.selectionStart;
-        const end = el.selectionEnd;
-
-        let files = event.dataTransfer.files;
-        let combinedLength = 0;
-        // for(let i = 0; i < files.length; i++) {
-        //     let file = files[i];
-        //     let placeholderText = `\r\n![uploading:${file.name}]()\r\n`;
-        //     el.value = el.value.substring(0, start) + placeholderText + el.value.substring(end, el.value.length);
-        //     combinedLength += placeholderText.length;
-        // }
-
-        let file = files[0];
-        let placeholderText = `\r\n![uploading:${file.name}]()\r\n`;
-        el.value = el.value.substring(0, start) + placeholderText + el.value.substring(end, el.value.length);
-        combinedLength += placeholderText.length;
-
-        el.selectionStart = start;
-        el.selectionEnd = end + combinedLength;
-
-
-
-
-        this.send('fileSelected', event.dataTransfer.files);
-
-
     }
 
 });

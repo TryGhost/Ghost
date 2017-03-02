@@ -3,6 +3,7 @@ import {helper} from 'ember-helper';
 import {htmlSafe} from 'ember-string';
 import cajaSanitizers from './caja-sanitizers';
 
+// eslint-disable-next-line new-cap
 let showdown = new Showdown.converter({extensions: ['ghostimagepreview', 'ghostgfm', 'footnotes', 'highlight']});
 
 export function formatMarkdown(params) {

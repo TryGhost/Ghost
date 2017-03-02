@@ -1,1 +1,1 @@
-export { default } from 'gh-koenig/components/koenig-toolbar-blockitem';
+export {default} from 'gh-koenig/components/koenig-toolbar-blockitem';

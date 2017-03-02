@@ -1,4 +1,4 @@
-import Ember from 'ember';
+import set from 'ember-metal/set';
 
 export default function (editor, toolbar) {
     return [
@@ -16,13 +16,13 @@ export default function (editor, toolbar) {
                     postEditor.toggleSection('h1');
                 });
             },
-            checkElements: function (elements) {
-                Ember.set(this, 'selected', elements.filter(element => element.tagName === 'h1').length > 0);
+            checkElements(elements) {
+                set(this, 'selected', elements.filter((element) => element.tagName === 'h1').length > 0);
             }
         },
         {
             name: 'H2',
-            class:'h2',
+            class: 'h2',
             label: 'Heading Two',
             icon: '',
             selected: false,
@@ -34,8 +34,8 @@ export default function (editor, toolbar) {
                     postEditor.toggleSection('h2');
                 });
             },
-            checkElements: function (elements) {
-                Ember.set(this, 'selected', elements.filter(element => element.tagName === 'h2').length > 0);
+            checkElements(elements) {
+                set(this, 'selected', elements.filter((element) => element.tagName === 'h2').length > 0);
             }
         },
         {
@@ -50,8 +50,8 @@ export default function (editor, toolbar) {
                     postEditor.toggleSection('h3');
                 });
             },
-            checkElements: function (elements) {
-                Ember.set(this, 'selected', elements.filter(element => element.tagName === 'h3').length > 0);
+            checkElements(elements) {
+                set(this, 'selected', elements.filter((element) => element.tagName === 'h3').length > 0);
             }
         },
         {
@@ -65,8 +65,8 @@ export default function (editor, toolbar) {
                     postEditor.toggleSection('p');
                 });
             },
-            checkElements: function (elements) {
-                Ember.set(this, 'selected', elements.filter(element => element.tagName === 'p').length > 0);
+            checkElements(elements) {
+                set(this, 'selected', elements.filter((element) => element.tagName === 'p').length > 0);
             }
         },
         {
@@ -82,11 +82,11 @@ export default function (editor, toolbar) {
                     postEditor.toggleSection('blockquote');
                 });
             },
-            checkElements: function (elements) {
-                Ember.set(this, 'selected', elements.filter(element => element.tagName === 'blockquote').length > 0);
+            checkElements(elements) {
+                set(this, 'selected', elements.filter((element) => element.tagName === 'blockquote').length > 0);
             }
         },
-       {
+        {
             name: 'ul',
             label: 'List Unordered',
             icon: 'list-bullets.svg',
@@ -97,8 +97,8 @@ export default function (editor, toolbar) {
                     postEditor.toggleSection('ul');
                 });
             },
-            checkElements: function (elements) {
-                Ember.set(this, 'selected', elements.filter(element => element.tagName === 'ul').length > 0);
+            checkElements(elements) {
+                set(this, 'selected', elements.filter((element) => element.tagName === 'ul').length > 0);
             }
         },
         {
@@ -112,8 +112,8 @@ export default function (editor, toolbar) {
                     postEditor.toggleSection('ol');
                 });
             },
-            checkElements: function (elements) {
-                Ember.set(this, 'selected', elements.filter(element => element.tagName === 'ol').length > 0);
+            checkElements(elements) {
+                set(this, 'selected', elements.filter((element) => element.tagName === 'ol').length > 0);
             }
         },
         {
@@ -129,8 +129,8 @@ export default function (editor, toolbar) {
                     postEditor.toggleMarkup('strong');
                 });
             },
-            checkElements: function (elements) {
-                Ember.set(this, 'selected', elements.filter(element => element.tagName === 'strong').length > 0);
+            checkElements(elements) {
+                set(this, 'selected', elements.filter((element) => element.tagName === 'strong').length > 0);
             }
         },
         {
@@ -146,8 +146,8 @@ export default function (editor, toolbar) {
                     postEditor.toggleMarkup('em');
                 });
             },
-            checkElements: function (elements) {
-                Ember.set(this, 'selected', elements.filter(element => element.tagName === 'em').length > 0);
+            checkElements(elements) {
+                set(this, 'selected', elements.filter((element) => element.tagName === 'em').length > 0);
             }
         },
         {
@@ -162,8 +162,8 @@ export default function (editor, toolbar) {
                     postEditor.toggleMarkup('s');
                 });
             },
-            checkElements: function (elements) {
-                Ember.set(this, 'selected', elements.filter(element => element.tagName === 's').length > 0);
+            checkElements(elements) {
+                set(this, 'selected', elements.filter((element) => element.tagName === 's').length > 0);
             }
         },
         {
@@ -177,12 +177,10 @@ export default function (editor, toolbar) {
             onClick: (editor) => {
                 toolbar.doLink(editor.range);
             },
-            checkElements: function (elements) {
-                Ember.set(this, 'selected', elements.filter(element => element.tagName === 'a').length > 0);
+            checkElements(elements) {
+                set(this, 'selected', elements.filter((element) => element.tagName === 'a').length > 0);
             }
         },
-
-
         {
             name: 'img',
             label: 'Image',
@@ -197,8 +195,8 @@ export default function (editor, toolbar) {
 
                 });
             },
-            checkElements: function (elements) {
-                Ember.set(this, 'selected', elements.filter(element => element.tagName === 'sup').length > 0);
+            checkElements(elements) {
+                set(this, 'selected', elements.filter((element) => element.tagName === 'sup').length > 0);
             }
         },
         {
@@ -214,7 +212,7 @@ export default function (editor, toolbar) {
                     postEditor.replaceSection(editor.range.headSection, card);
                 });
             },
-            checkElements: function () {
+            checkElements() {
 
             }
         },
@@ -231,10 +229,9 @@ export default function (editor, toolbar) {
                     postEditor.replaceSection(editor.range.headSection, card);
                 });
             },
-            checkElements: function () {
+            checkElements() {
 
             }
         }
     ];
 }
-

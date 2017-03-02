@@ -1,1 +1,1 @@
-export { default } from 'gh-koenig/components/cards/markdown-card';
+export {default} from 'gh-koenig/components/cards/markdown-card';

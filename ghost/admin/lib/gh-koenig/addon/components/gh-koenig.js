@@ -1,13 +1,13 @@
-import Ember from 'ember';
+import Component from 'ember-component';
+import {A as emberA} from 'ember-array/utils';
+import run from 'ember-runloop';
 import layout from '../templates/components/gh-koenig';
 import Mobiledoc from 'mobiledoc-kit';
 import {MOBILEDOC_VERSION} from 'mobiledoc-kit/renderers/mobiledoc';
 import createCardFactory from '../libs/card-factory';
 import defaultCommands from '../options/default-commands';
 import editorCards  from '../cards/index';
-//import { VALID_MARKUP_SECTION_TAGNAMES } from 'mobiledoc-kit/models/markup-section'; //the block elements supported by mobile-doc
-
-
+// import { VALID_MARKUP_SECTION_TAGNAMES } from 'mobiledoc-kit/models/markup-section'; //the block elements supported by mobile-doc
 
 export const BLANK_DOC = {
     version: MOBILEDOC_VERSION,
@@ -17,32 +17,32 @@ export const BLANK_DOC = {
     sections: []
 };
 
-export default Ember.Component.extend({
+export default Component.extend({
     layout,
     classNames: ['editor-holder'],
-    emberCards: Ember.A([]),
+    emberCards: emberA([]),
+
     init() {
         this._super(...arguments);
-        this.container = document.querySelector(".gh-editor-container")[0];
+        this.container = document.querySelector('.gh-editor-container')[0];
 
         let mobiledoc = this.get('value') || BLANK_DOC;
         let userCards = this.get('cards') || [];
 
-        if (typeof mobiledoc === "string") {
+        if (typeof mobiledoc === 'string') {
             mobiledoc = JSON.parse(mobiledoc);
         }
 
-        //if the doc is cached then the editor is loaded and we don't need to continue.
-        if (this._cached_doc && this._cached_doc === mobiledoc) {
+        // if the doc is cached then the editor is loaded and we don't need to continue.
+        if (this._cachedDoc && this._cachedDoc === mobiledoc) {
             return;
         }
 
+        let createCard = createCardFactory.apply(this, {}); // need to pass the toolbar
 
-        let createCard = createCardFactory.apply(this, {}); //need to pass the toolbar
-
-        const options = {
-            mobiledoc: mobiledoc,
-            //temp
+        let options = {
+            mobiledoc,
+            // temp
             cards: createCard(editorCards.concat(userCards)),
             atoms: [{
                 name: 'soft-return',
@@ -55,49 +55,48 @@ export default Ember.Component.extend({
             autofocus: this.get('shouldFocusEditor'),
             placeholder: 'Click here to start ...'
         };
+
         this.editor = new Mobiledoc.Editor(options);
     },
+
     willRender() {
-        if(this._rendered) {
+        if (this._rendered) {
             return;
         }
-        let editor =this.editor;
-
+        let {editor} = this;
 
         editor.willRender(() => {
-            //console.log(Ember.run.currentRunLoop);
-            //if (!Ember.run.currentRunLoop) {
-              //  this._startedRunLoop = true;
-              //  Ember.run.begin();
-            //}
+            // console.log(Ember.run.currentRunLoop);
+            // if (!Ember.run.currentRunLoop) {
+            //     this._startedRunLoop = true;
+            //     Ember.run.begin();
+            // }
         });
 
         editor.didRender(() => {
 
             this.sendAction('loaded', editor);
-                //Ember.run.end();
-
+                // Ember.run.end();
 
         });
         editor.postDidChange(()=> {
-            Ember.run.join(() => {
-                //store a cache of the local doc so that we don't need to reinitialise it.
-                this._cached_doc = editor.serialize(MOBILEDOC_VERSION);
-                this.sendAction('onChange', this._cached_doc);
-                if (this._cached_doc !== BLANK_DOC && !this._firstChange) {
+            run.join(() => {
+                // store a cache of the local doc so that we don't need to reinitialise it.
+                this._cachedDoc = editor.serialize(MOBILEDOC_VERSION);
+                this.sendAction('onChange', this._cachedDoc);
+                if (this._cachedDoc !== BLANK_DOC && !this._firstChange) {
                     this._firstChange = true;
-                    this.sendAction('onFirstChange', this._cached_doc);
+                    this.sendAction('onFirstChange', this._cachedDoc);
                 }
             });
         });
-
     },
-    didRender() {
 
-        if(this._rendered) {
+    didRender() {
+        if (this._rendered) {
             return;
         }
-        let editorDom = this.$('.surface')[0];
+        let [editorDom] = this.$('.surface');
         this.domContainer = editorDom.parentNode.parentNode.parentNode.parentNode; // nasty nasty nasty.
         this.editor.render(editorDom);
         this._rendered = true;
@@ -108,10 +107,10 @@ export default Ember.Component.extend({
         // therefore, if it's true it's after the first lot of content is entered and we expect the caret to be at the
         // end of the document.
         if (this.get('shouldFocusEditor')) {
-            var range = document.createRange();
+            let range = document.createRange();
             range.selectNodeContents(this.editor.element);
             range.collapse(false);
-            var sel = window.getSelection();
+            let sel = window.getSelection();
             sel.removeAllRanges();
             sel.addRange(range);
             this.editor._ensureFocus();
@@ -120,9 +119,10 @@ export default Ember.Component.extend({
         this.editor.cursorDidChange(() => this.cursorMoved());
 
     },
+
     // drag and drop images onto the editor
     drop(event) {
-        if(event.dataTransfer.files.length) {
+        if (event.dataTransfer.files.length) {
             event.preventDefault();
             for (let i = 0; i < event.dataTransfer.files.length; i++) {
                 let file = [event.dataTransfer.files[i]];
@@ -133,14 +133,14 @@ export default Ember.Component.extend({
 
     // makes sure the cursor is on screen.
     cursorMoved() {
-        const scrollBuffer = 33; // the extra buffer to scroll.
-        const range = window.getSelection().getRangeAt(0); // get the actual range within the DOM.
-        const position =  range.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
+        let scrollBuffer = 33; // the extra buffer to scroll.
+        let range = window.getSelection().getRangeAt(0); // get the actual range within the DOM.
+        let position =  range.getBoundingClientRect();
+        let windowHeight = window.innerHeight;
 
-        if(position.bottom > windowHeight ) {
+        if (position.bottom > windowHeight) {
             this.domContainer.scrollTop += position.bottom - windowHeight + scrollBuffer;
-        } else if(position.top < 0) {
+        } else if (position.top < 0) {
             this.domContainer.scrollTop += position.top - scrollBuffer;
         }
     },
@@ -150,5 +150,3 @@ export default Ember.Component.extend({
     }
 
 });
-
-
