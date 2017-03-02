@@ -39,6 +39,7 @@
 
 .__mobiledoc-card {
     display: block;
+    border: 1px solid;
 }
 .__mobiledoc-card .koenig-card {
     position: relative;
@@ -64,7 +65,7 @@
 
 .__mobiledoc-card .card-handle button {
     background-color: var(--lightgrey);
-    border:1px solid var(--grey);
+    border:1px solid var(--lightgrey);
     font-size:10px;
     min-width: 80px;
 }
@@ -145,3 +146,4 @@ textarea.ed_code {
     border-left: 10px solid transparent;
     border-right: 10px solid transparent;
 }
+
