@@ -8,13 +8,13 @@ import run from 'ember-runloop';
 import layout from '../../templates/components/image-card';
 
 import {invokeAction} from 'ember-invoke-action';
-//import ghostPaths from 'gh-koenig/utils/ghost-paths';
+//import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {
     isRequestEntityTooLargeError,
     isUnsupportedMediaTypeError,
     isVersionMismatchError,
     UnsupportedMediaTypeError
-} from 'gh-koenig/services/ajax';
+} from 'ghost-admin/services/ajax';
 
 export default Component.extend({
     layout,
