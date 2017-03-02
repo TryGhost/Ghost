@@ -1,6 +1,7 @@
 @import "koenig-toolbar.css";
 @import "koenig-menu.css";
-@import "cardmenu.css";
+/* TODO: move/rename to match koenig naming */
+@import "../ghost-editor/cardmenu.css";
 
 .editor-holder {
     height: 100%;
