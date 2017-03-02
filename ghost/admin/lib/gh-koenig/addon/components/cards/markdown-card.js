@@ -11,7 +11,7 @@ import {
     isUnsupportedMediaTypeError,
     isVersionMismatchError,
     UnsupportedMediaTypeError
-} from 'gh-koenig/services/ajax';
+} from 'ghost-admin/services/ajax';
 /* legacyConverter.makeHtml(_.toString(this.get('markdown')))
  */
 
