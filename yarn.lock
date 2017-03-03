@@ -1184,13 +1184,7 @@ debug@2.2.0, debug@~2.2.0:
   dependencies:
     ms "0.7.1"
 
-debug@2.6.0, debug@2.x.x, debug@^2.1.0, debug@^2.1.1, debug@^2.1.3, debug@^2.2.0:
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.0.tgz#bc596bcabe7617f11d9fa15361eded5608b8499b"
-  dependencies:
-    ms "0.7.2"
-
-debug@2.6.1:
+debug@2.6.1, debug@2.x.x, debug@^2.1.0, debug@^2.1.1, debug@^2.1.3, debug@^2.2.0:
   version "2.6.1"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.1.tgz#79855090ba2c4e3115cc7d8769491d58f0491351"
   dependencies:
@@ -1934,7 +1928,7 @@ formatio@1.1.1:
   dependencies:
     samsam "~1.1"
 
-formidable@^1.0.17, formidable@^1.1.1:
+formidable@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/formidable/-/formidable-1.1.1.tgz#96b8886f7c3c3508b932d6bd70c4d3a88f35f1a9"
 
@@ -2097,25 +2091,9 @@ ghost-gql@0.0.6:
   dependencies:
     lodash "^4.17.4"
 
-ghost-ignition@2.8.8:
+ghost-ignition@2.8.8, ghost-ignition@^2.8.2, ghost-ignition@^2.8.7:
   version "2.8.8"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-2.8.8.tgz#84b783de984a60a38d57bae9210e3a29c92a5450"
-  dependencies:
-    bunyan "1.8.5"
-    bunyan-loggly "1.1.0"
-    caller "1.0.1"
-    debug "2.2.0"
-    find-root "1.0.0"
-    json-stringify-safe "5.0.1"
-    lodash "4.16.4"
-    moment "2.15.2"
-    nconf "0.8.4"
-    node-uuid "1.4.7"
-    prettyjson "1.1.3"
-
-ghost-ignition@^2.8.2, ghost-ignition@^2.8.7:
-  version "2.8.7"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-2.8.7.tgz#5339bb01dfe3938f4420e69300b17c8397080a0c"
   dependencies:
     bunyan "1.8.5"
     bunyan-loggly "1.1.0"
@@ -3453,9 +3431,9 @@ knex@0.12.2:
     tildify "~1.0.0"
     v8flags "^2.0.2"
 
-knex@0.12.5:
-  version "0.12.5"
-  resolved "https://registry.yarnpkg.com/knex/-/knex-0.12.5.tgz#47ea9595c83da8d57236eda01938a83320ad5249"
+knex@0.12.7:
+  version "0.12.7"
+  resolved "https://registry.yarnpkg.com/knex/-/knex-0.12.7.tgz#5793f579f07a2938bf9874693d74bba55c5baa1c"
   dependencies:
     babel-runtime "^6.11.6"
     bluebird "^3.4.6"
@@ -3469,10 +3447,11 @@ knex@0.12.5:
     lodash "^4.6.0"
     minimist "~1.1.0"
     mkdirp "^0.5.0"
-    node-uuid "^1.4.7"
     pg-connection-string "^0.1.3"
     readable-stream "^1.1.12"
+    safe-buffer "^5.0.1"
     tildify "~1.0.0"
+    uuid "^3.0.0"
     v8flags "^2.0.2"
 
 latest-version@^1.0.0:
@@ -4028,13 +4007,13 @@ mkdirp@0.3.2:
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.3.2.tgz#4bfb891e9c48b93d6b567f2c3cf2dd3f56bcdef8"
 
-mkdirp@0.5.0, mkdirp@^0.5.0:
+mkdirp@0.5.0:
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.0.tgz#1d73076a6df986cd9344e15e71fcc05a4c9abf12"
   dependencies:
     minimist "0.0.8"
 
-mkdirp@0.5.1, mkdirp@0.5.x, mkdirp@0.x.x, "mkdirp@>=0.5 0", mkdirp@^0.5.1, mkdirp@~0.5.0, mkdirp@~0.5.1:
+mkdirp@0.5.1, mkdirp@0.5.x, mkdirp@0.x.x, "mkdirp@>=0.5 0", mkdirp@^0.5.0, mkdirp@^0.5.1, mkdirp@~0.5.0, mkdirp@~0.5.1:
   version "0.5.1"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.1.tgz#30057438eac6cf7f8c4767f38648d6697d75c903"
   dependencies:
@@ -4239,22 +4218,9 @@ netjet@1.1.3:
     lru-cache "^4.0.0"
     posthtml "^0.9.0"
 
-nock@9.0.9:
+nock@9.0.9, nock@^9.0.2:
   version "9.0.9"
   resolved "https://registry.yarnpkg.com/nock/-/nock-9.0.9.tgz#ca4cd923352e206ae3c7d6595cfd7fb223299ec0"
-  dependencies:
-    chai ">=1.9.2 <4.0.0"
-    debug "^2.2.0"
-    deep-equal "^1.0.0"
-    json-stringify-safe "^5.0.1"
-    lodash "~4.17.2"
-    mkdirp "^0.5.0"
-    propagate "0.4.0"
-    qs "^6.0.2"
-
-nock@^9.0.2:
-  version "9.0.4"
-  resolved "https://registry.yarnpkg.com/nock/-/nock-9.0.4.tgz#56156e7d0c19980e294d932312e25859d1e3409b"
   dependencies:
     chai ">=1.9.2 <4.0.0"
     debug "^2.2.0"
@@ -4829,15 +4795,11 @@ qs@5.2.0:
   version "5.2.0"
   resolved "https://registry.yarnpkg.com/qs/-/qs-5.2.0.tgz#a9f31142af468cb72b25b30136ba2456834916be"
 
-qs@6.2.0, qs@^6.0.2, qs@^6.1.0, qs@~6.2.0:
+qs@6.2.0, qs@~6.2.0:
   version "6.2.0"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.2.0.tgz#3b7848c03c2dece69a9522b0fae8c4126d745f3b"
 
-qs@6.3.1:
-  version "6.3.1"
-  resolved "https://registry.yarnpkg.com/qs/-/qs-6.3.1.tgz#918c0b3bcd36679772baf135b1acb4c1651ed79d"
-
-qs@6.3.1:
+qs@6.3.1, qs@^6.0.2, qs@^6.1.0, qs@~6.3.0:
   version "6.3.1"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.3.1.tgz#918c0b3bcd36679772baf135b1acb4c1651ed79d"
 
@@ -4848,10 +4810,6 @@ qs@~2.2.3:
 qs@~5.1.0:
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/qs/-/qs-5.1.0.tgz#4d932e5c7ea411cca76a312d39a606200fd50cd9"
-
-qs@~6.3.0:
-  version "6.3.0"
-  resolved "https://registry.yarnpkg.com/qs/-/qs-6.3.0.tgz#f403b264f23bc01228c74131b407f18d5ea5d442"
 
 quick-temp@^0.1.3:
   version "0.1.6"
@@ -5238,6 +5196,10 @@ run-sequence@1.2.2:
   dependencies:
     chalk "*"
     gulp-util "*"
+
+safe-buffer@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.0.1.tgz#d263ca54696cd8a306b5ca6551e92de57918fbe7"
 
 safe-json-stringify@~1:
   version "1.0.3"
@@ -5707,7 +5669,7 @@ strip-json-comments@1.0.x, strip-json-comments@~1.0.2, strip-json-comments@~1.0.
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-1.0.4.tgz#1e15fbcac97d3ee99bf2d73b4c656b082bbafb91"
 
-superagent@3.5.0:
+superagent@3.5.0, superagent@^3.0.0:
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/superagent/-/superagent-3.5.0.tgz#56872b8e1ee6de994035ada2e53266899af95a6d"
   dependencies:
@@ -5717,21 +5679,6 @@ superagent@3.5.0:
     extend "^3.0.0"
     form-data "^2.1.1"
     formidable "^1.1.1"
-    methods "^1.1.1"
-    mime "^1.3.4"
-    qs "^6.1.0"
-    readable-stream "^2.0.5"
-
-superagent@^3.0.0:
-  version "3.4.1"
-  resolved "https://registry.yarnpkg.com/superagent/-/superagent-3.4.1.tgz#4bd12741224d0ece6d9f757f1c3becbe7f24c115"
-  dependencies:
-    component-emitter "^1.2.0"
-    cookiejar "^2.0.6"
-    debug "^2.2.0"
-    extend "^3.0.0"
-    form-data "^2.1.1"
-    formidable "^1.0.17"
     methods "^1.1.1"
     mime "^1.3.4"
     qs "^6.1.0"
