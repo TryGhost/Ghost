@@ -5,7 +5,7 @@ var EmberApp = require('ember-cli/lib/broccoli/ember-app'),
     concat = require('broccoli-concat'),
     mergeTrees = require('broccoli-merge-trees'),
     uglify = require('broccoli-uglify-js'),
-    cleanCSS = require('broccoli-clean-css'),
+    CleanCSS = require('broccoli-clean-css'),
     environment = EmberApp.env(),
     isProduction = environment === 'production',
     disabled = {enabled: false},
@@ -52,7 +52,7 @@ codemirrorAssets = function () {
 
                 if (isProduction) {
                     jsTree = uglify(jsTree);
-                    cssTree = cleanCSS(cssTree);
+                    cssTree = new CleanCSS(cssTree);
                 }
 
                 return mergeTrees([jsTree, cssTree]);
