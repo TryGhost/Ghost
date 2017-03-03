@@ -406,6 +406,7 @@ DataGenerator.forKnex = (function () {
             secret: 'not_available',
             redirection_uri: 'http://localhost:9999',
             client_uri: 'http://localhost:9000',
+            slug: 'client',
             name: 'client',
             type: 'ua',
             status: 'enabled'
@@ -477,6 +478,16 @@ DataGenerator.forKnex = (function () {
             created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
             status: 'sent'
+        });
+    }
+
+    function createTrustedDomain(overrides) {
+        var newObj = _.cloneDeep(overrides);
+
+        return _.defaults(newObj, {
+            id: ObjectId.generate(),
+            client_id: clients[0].id,
+            trusted_domain: 'https://example.com'
         });
     }
 
@@ -600,6 +611,7 @@ DataGenerator.forKnex = (function () {
         createToken: createToken,
         createSubscriber: createBasic,
         createInvite: createInvite,
+        createTrustedDomain: createTrustedDomain,
 
         invites: invites,
         posts: posts,
