@@ -2,6 +2,7 @@
 import Component from 'ember-component';
 import run, {bind, scheduleOnce} from 'ember-runloop';
 import injectService from 'ember-service/inject';
+import RSVP from 'rsvp';
 
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import {InvokeActionMixin} from 'ember-invoke-action';
@@ -25,9 +26,12 @@ const CmEditorComponent =  Component.extend(InvokeActionMixin, {
     didInsertElement() {
         this._super(...arguments);
 
-        this.get('lazyLoader').loadStyle('codemirror', 'assets/codemirror/codemirror.css');
+        let loader = this.get('lazyLoader');
 
-        this.get('lazyLoader').loadScript('codemirror', 'assets/codemirror/codemirror.js').then(() => {
+        RSVP.all([
+            loader.loadStyle('codemirror', 'assets/codemirror/codemirror.css'),
+            loader.loadScript('codemirror', 'assets/codemirror/codemirror.js')
+        ]).then(() => {
             scheduleOnce('afterRender', this, function () {
                 this._initCodeMirror();
             });
