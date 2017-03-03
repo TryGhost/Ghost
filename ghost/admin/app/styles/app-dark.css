@@ -50,6 +50,11 @@
 @import "layouts/subscribers.css";
 
 
+/* Addons: gh-koenig
+/* ---------------------------------------------------------- */
+@import "addons/gh-koenig/gh-koenig.css";
+
+
 :root {
     --darkgrey: #e5eff5;
     --midgrey: #738a94;
@@ -113,4 +118,8 @@ input,
 
 .dropdown-menu > li > a:hover, .dropdown-menu > li > a:focus, .dropdown-menu > li > button:hover, .dropdown-menu > li > button:focus {
     color: var(--lightgrey);
+}
+
+.gh-cardmenu {
+    background: var(--lightgrey);
 }
