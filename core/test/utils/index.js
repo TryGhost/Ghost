@@ -387,6 +387,17 @@ fixtures = {
         return db.knex('clients').insert(DataGenerator.forKnex.clients);
     },
 
+    insertClientWithTrustedDomain: function insertClientWithTrustedDomain() {
+        var client = DataGenerator.forKnex.createClient({slug: 'ghost-test'});
+
+        return db.knex('clients')
+            .insert(client)
+            .then(function () {
+                return db.knex('client_trusted_domains')
+                    .insert(DataGenerator.forKnex.createTrustedDomain({client_id: client.id}));
+            });
+    },
+
     insertAccessToken: function insertAccessToken(override) {
         return db.knex('accesstokens').insert(DataGenerator.forKnex.createToken(override));
     },
@@ -447,6 +458,7 @@ toDoList = {
         return function permissionsForObj() { return fixtures.permissionsFor(obj); };
     },
     clients: function insertClients() { return fixtures.insertClients(); },
+    'client:trusted-domain': function insertClients() { return fixtures.insertClientWithTrustedDomain(); },
     filter: function createFilterParamFixtures() { return filterData(DataGenerator); },
     invites: function insertInvites() { return fixtures.insertInvites(); },
     themes: function loadThemes() { return themes.loadAll(); }
