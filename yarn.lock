@@ -2810,9 +2810,9 @@ hosted-git-info@^2.1.4:
   version "2.1.5"
   resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.1.5.tgz#0ba81d90da2e25ab34a332e6ec77936e1598118b"
 
-html-to-text@3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/html-to-text/-/html-to-text-3.1.0.tgz#7f07ef2173e5a0441e7315c192013a00a52d5e4a"
+html-to-text@3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/html-to-text/-/html-to-text-3.2.0.tgz#0dfa5d27ff816b07281c79eaf60d408744ac6d89"
   dependencies:
     he "^1.0.0"
     htmlparser2 "^3.9.2"
