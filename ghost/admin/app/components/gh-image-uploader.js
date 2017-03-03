@@ -5,7 +5,6 @@ import {htmlSafe} from 'ember-string';
 import {isBlank} from 'ember-utils';
 import {isEmberArray} from 'ember-array/utils';
 import run from 'ember-runloop';
-
 import {invokeAction} from 'ember-invoke-action';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {
@@ -27,18 +26,15 @@ export default Component.extend({
     accept: null,
     extensions: null,
     uploadUrl: null,
-    allowUrlInput: true,
     validate: null,
 
     dragClass: null,
     failureMessage: null,
     file: null,
-    formType: 'upload',
     url: null,
     uploadPercentage: 0,
 
     ajax: injectService(),
-    config: injectService(),
     notifications: injectService(),
 
     _defaultAccept: 'image/gif,image/jpg,image/jpeg,image/png,image/svg+xml',
@@ -75,17 +71,6 @@ export default Component.extend({
         return htmlSafe(`width: ${width}`);
     }),
 
-    canShowUploadForm: computed('config.fileStorage', function () {
-        return this.get('config.fileStorage') !== false;
-    }),
-
-    showUploadForm: computed('formType', function () {
-        let canShowUploadForm = this.get('canShowUploadForm');
-        let formType = this.get('formType');
-
-        return formType === 'upload' && canShowUploadForm;
-    }),
-
     didReceiveAttrs() {
         let image = this.get('image');
         this.set('url', image);
@@ -102,8 +87,6 @@ export default Component.extend({
     },
 
     dragOver(event) {
-        let showUploadForm = this.get('showUploadForm');
-
         if (!event.dataTransfer) {
             return;
         }
@@ -116,32 +99,21 @@ export default Component.extend({
         event.stopPropagation();
         event.preventDefault();
 
-        if (showUploadForm) {
-            this.set('dragClass', '-drag-over');
-        }
+        this.set('dragClass', '-drag-over');
     },
 
     dragLeave(event) {
-        let showUploadForm = this.get('showUploadForm');
-
         event.preventDefault();
-
-        if (showUploadForm) {
-            this.set('dragClass', null);
-        }
+        this.set('dragClass', null);
     },
 
     drop(event) {
-        let showUploadForm = this.get('showUploadForm');
-
         event.preventDefault();
 
         this.set('dragClass', null);
 
-        if (showUploadForm) {
-            if (event.dataTransfer.files) {
-                this.send('fileSelected', event.dataTransfer.files);
-            }
+        if (event.dataTransfer.files) {
+            this.send('fileSelected', event.dataTransfer.files);
         }
     },
 
@@ -269,22 +241,9 @@ export default Component.extend({
             }
         },
 
-        onInput(url) {
-            this.set('url', url);
-            invokeAction(this, 'onInput', url);
-        },
-
         reset() {
             this.set('file', null);
             this.set('uploadPercentage', 0);
-        },
-
-        switchForm(formType) {
-            this.set('formType', formType);
-
-            run.scheduleOnce('afterRender', this, function () {
-                invokeAction(this, 'formChanged', formType);
-            });
         },
 
         saveUrl() {

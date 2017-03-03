@@ -66,7 +66,7 @@
 
                 {{#if showUploadIconModal}}
                     {{gh-fullscreen-modal "upload-image"
-                            model=(hash model=model imageProperty="icon" accept=iconMimeTypes extensions=iconExtensions allowUrlInput=false uploadUrl="/uploads/icon/")
+                            model=(hash model=model imageProperty="icon" accept=iconMimeTypes extensions=iconExtensions uploadUrl="/uploads/icon/")
                             close=(action "toggleUploadIconModal")
                             modifier="action wide"}}
                 {{/if}}
@@ -86,7 +86,7 @@
 
                 {{#if showUploadLogoModal}}
                     {{gh-fullscreen-modal "upload-image"
-                            model=(hash model=model imageProperty="logo" allowUrlInput=true)
+                            model=(hash model=model imageProperty="logo")
                             close=(action "toggleUploadLogoModal")
                             modifier="action wide"}}
                 {{/if}}
@@ -106,7 +106,7 @@
 
                 {{#if showUploadCoverModal}}
                     {{gh-fullscreen-modal "upload-image"
-                            model=(hash model=model imageProperty="cover" allowUrlInput=true)
+                            model=(hash model=model imageProperty="cover")
                             close=(action "toggleUploadCoverModal")
                             modifier="action wide"}}
                 {{/if}}

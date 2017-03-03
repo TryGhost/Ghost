@@ -61,17 +61,6 @@ describe('Integration: Component: gh-profile-image', function () {
         expect(this.$()).to.have.length(1);
     });
 
-    it('renders and tears down ok with fileStorage:false', function () {
-        this.set('fileStorage', false);
-
-        this.render(hbs`
-            {{gh-profile-image fileStorage=fileStorage}}
-        `);
-
-        expect(this.$()).to.have.length(1);
-        expect(this.$('input')).to.have.length(0);
-    }),
-
     it('renders default image if no email supplied', function () {
         this.set('email', null);
 

@@ -101,7 +101,6 @@ describe('Acceptance: Settings - General', function () {
 
             andThen(() => {
                 expect(find('.fullscreen-modal .modal-content .gh-image-uploader .description').text()).to.equal('Upload an image');
-                expect(find('.fullscreen-modal .modal-content .gh-image-uploader .image-url').length, 'url upload').to.equal(1);
             });
 
             // click cancel button
@@ -121,7 +120,6 @@ describe('Acceptance: Settings - General', function () {
 
             andThen(() => {
                 expect(find('.fullscreen-modal .modal-content .gh-image-uploader .description').text()).to.equal('Upload an image');
-                expect(find('.fullscreen-modal .modal-content .gh-image-uploader .image-url').length, 'url upload').to.equal(0);
             });
 
             // click cancel button

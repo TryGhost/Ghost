@@ -9,12 +9,6 @@ export default Component.extend({
             }
         },
 
-        onInput() {
-            if (typeof this.attrs.onInput === 'function') {
-                this.attrs.onInput(...arguments);
-            }
-        },
-
         uploadStarted() {
             if (typeof this.attrs.uploadStarted === 'function') {
                 this.attrs.uploadStarted(...arguments);
@@ -24,12 +18,6 @@ export default Component.extend({
         uploadFinished() {
             if (typeof this.attrs.uploadFinished === 'function') {
                 this.attrs.uploadFinished(...arguments);
-            }
-        },
-
-        formChanged() {
-            if (typeof this.attrs.formChanged === 'function') {
-                this.attrs.formChanged(...arguments);
             }
         },
 

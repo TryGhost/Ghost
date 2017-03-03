@@ -29,7 +29,6 @@ export default Component.extend({
 
     validEmail: '',
     hasUploadedImage: false,
-    fileStorage: true,
     ajax: AjaxService.create(),
 
     config: injectService(),

@@ -15,32 +15,10 @@
         <button class="btn btn-green" {{action "reset"}}>Try Again</button>
     {{/if}}
 {{else}}
-    {{#if showUploadForm}}
     {{!-- file selection/drag-n-drop  --}}
-        <div class="upload-form">
-            {{#gh-file-input multiple=false alt=description action=(action 'fileSelected') accept=accept}}
-                <div class="description">{{description}}</div>
-            {{/gh-file-input}}
-        </div>
-
-        <a class="image-url" {{action 'switchForm' 'url-input'}}>
-            <i class="icon-link"><span class="hidden">URL</span></i>
-        </a>
-    {{else}}
-    {{!-- URL input --}}
-        <form class="url-form">
-            {{gh-input url class="url" placeholder="http://" update=(action "onInput") onenter=(action "saveUrl")}}
-            {{#if saveButton}}
-                <button class="btn btn-blue gh-input" {{action 'saveUrl'}}>Save</button>
-            {{else}}
-                <div class="description">{{description}}</div>
-            {{/if}}
-        </form>
-
-        {{#if canShowUploadForm}}
-            <a class="image-upload icon-photos" title="Add image" {{action 'switchForm' 'upload'}}>
-                <span class="hidden">Upload</span>
-            </a>
-        {{/if}}
-    {{/if}}
+    <div class="upload-form">
+        {{#gh-file-input multiple=false alt=description action=(action 'fileSelected') accept=accept}}
+            <div class="description">{{description}}</div>
+        {{/gh-file-input}}
+    </div>
 {{/if}}
