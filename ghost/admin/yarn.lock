@@ -665,15 +665,6 @@ broccoli-caching-writer@^2.0.4, broccoli-caching-writer@^2.2.0, broccoli-caching
     rsvp "^3.0.17"
     walk-sync "^0.2.5"
 
-broccoli-clean-css@2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/broccoli-clean-css/-/broccoli-clean-css-2.0.1.tgz#1bf48a43d7626522621351c696e5f9441f628db2"
-  dependencies:
-    broccoli-persistent-filter "^1.2.13"
-    clean-css-promise "^2.0.1"
-    json-stable-stringify "^1.0.1"
-    source-map-to-comment "^1.1.0"
-
 broccoli-clean-css@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/broccoli-clean-css/-/broccoli-clean-css-1.1.0.tgz#9db143d9af7e0ae79c26e3ac5a9bb2d720ea19fa"
@@ -682,6 +673,15 @@ broccoli-clean-css@^1.1.0:
     clean-css-promise "^0.1.0"
     inline-source-map-comment "^1.0.5"
     json-stable-stringify "^1.0.0"
+
+broccoli-clean-css@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/broccoli-clean-css/-/broccoli-clean-css-2.0.1.tgz#1bf48a43d7626522621351c696e5f9441f628db2"
+  dependencies:
+    broccoli-persistent-filter "^1.2.13"
+    clean-css-promise "^2.0.1"
+    json-stable-stringify "^1.0.1"
+    source-map-to-comment "^1.1.0"
 
 broccoli-concat@3.2.2, broccoli-concat@^3.0.4:
   version "3.2.2"

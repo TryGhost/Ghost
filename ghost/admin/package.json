@@ -30,6 +30,7 @@
     "blueimp-md5": "2.7.0",
     "bower": "1.8.0",
     "broccoli-asset-rev": "2.5.0",
+    "broccoli-clean-css": "^2.0.1",
     "broccoli-concat": "3.2.2",
     "broccoli-funnel": "1.1.0",
     "broccoli-merge-trees": "1.2.1",
