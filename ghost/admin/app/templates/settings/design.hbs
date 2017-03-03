@@ -23,8 +23,7 @@
         <div class="gh-themes-container">
             {{gh-theme-table
                 themes=themes
-                activeTheme=model.activeTheme
-                activateTheme=(action "setTheme")
+                activateTheme=(action "activateTheme")
                 downloadTheme=(action "downloadTheme")
                 deleteTheme=(action "deleteTheme")}}
 

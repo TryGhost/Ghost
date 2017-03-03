@@ -49,12 +49,8 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
             return this._super(...arguments);
         },
 
-        reloadThemes() {
-            return this.get('store').findAll('theme');
-        },
-
         activateTheme(theme) {
-            return this.get('controller').send('setTheme', theme);
+            return this.get('controller').send('activateTheme', theme);
         }
     }
 });

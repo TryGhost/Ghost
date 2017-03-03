@@ -15,7 +15,7 @@ describe('Integration: Component: gh-theme-table', function() {
 
     it('renders', function() {
         this.set('themes', [
-            {name: 'Daring', package: {name: 'Daring', version: '0.1.4'}},
+            {name: 'Daring', package: {name: 'Daring', version: '0.1.4'}, active: true},
             {name: 'casper', package: {name: 'Casper', version: '1.3.1'}},
             {name: 'oscar-ghost-1.1.0', package: {name: 'Lanyon', version: '1.1.0'}},
             {name: 'foo'}
@@ -24,7 +24,6 @@ describe('Integration: Component: gh-theme-table', function() {
 
         this.render(hbs`{{gh-theme-table
             themes=themes
-            activeTheme="Daring"
             activateTheme=(action actionHandler)
             downloadTheme=(action actionHandler)
             deleteTheme=(action actionHandler)

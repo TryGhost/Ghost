@@ -21,6 +21,7 @@ export default ModalComponent.extend({
     displayOverwriteWarning: false,
 
     eventBus: injectService(),
+    store: injectService(),
 
     hideUploader: or('theme', 'displayOverwriteWarning'),
 
@@ -29,9 +30,10 @@ export default ModalComponent.extend({
     }),
 
     themeName: computed('theme.{name,package.name}', function () {
-        let t = this.get('theme');
+        let themePackage = this.get('theme.package');
+        let name = this.get('theme.name');
 
-        return t.package ? `${t.package.name} - ${t.package.version}` : t.name;
+        return themePackage ? `${themePackage.name} - ${themePackage.version}` : name;
     }),
 
     currentThemeNames: mapBy('model.themes', 'name'),
@@ -43,13 +45,12 @@ export default ModalComponent.extend({
 
     canActivateTheme: computed('theme', function () {
         let theme = this.get('theme');
-        // TODO: do we still get theme.active back or do we need to check settings.activeTheme?
-        return theme && !theme.active;
+        return theme && !theme.get('active');
     }),
 
     actions: {
         validateTheme(file) {
-            let themeName = file.name.replace(/\.zip$/, '').replace(/[^\w@.]/gi, '-');
+            let themeName = file.name.replace(/\.zip$/, '').replace(/[^\w@.]/gi, '-').toLowerCase();
 
             let currentThemeNames = this.get('currentThemeNames');
 
@@ -94,16 +95,18 @@ export default ModalComponent.extend({
         },
 
         uploadSuccess(response) {
-            let [theme] = response.themes;
+            this.get('store').pushPayload(response);
+
+            let theme = this.get('store').peekRecord('theme', response.themes[0].name);
 
             this.set('theme', theme);
 
             if (get(theme, 'warnings.length') > 0) {
-                this.set('validationWarnings', theme.warnings);
+                this.set('validationWarnings', get(theme, 'warnings'));
             }
 
             // invoke the passed in confirm action
-            invokeAction(this, 'model.uploadSuccess', this.get('theme'));
+            invokeAction(this, 'model.uploadSuccess', theme);
         },
 
         uploadFailed(error) {

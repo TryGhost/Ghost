@@ -4,7 +4,8 @@ export default [
         package: {
             name: 'Blog',
             version: '1.0'
-        }
+        },
+        active: true
     },
     {
         name: 'foo',
