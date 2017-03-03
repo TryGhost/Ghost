@@ -3,6 +3,8 @@ import {htmlSafe} from 'ember-string';
 import injectService from 'ember-service/inject';
 import run from 'ember-runloop';
 import {isEmberArray} from 'ember-array/utils';
+import observer from 'ember-metal/observer';
+import $ from 'jquery';
 
 import AuthConfiguration from 'ember-simple-auth/configuration';
 import ApplicationRouteMixin from 'ember-simple-auth/mixins/application-route-mixin';
@@ -27,6 +29,7 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
     config: injectService(),
     feature: injectService(),
     dropdown: injectService(),
+    lazyLoader: injectService(),
     notifications: injectService(),
     upgradeNotification: injectService(),
 
@@ -54,7 +57,11 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
 
             // return the feature loading promise so that we block until settings
             // are loaded in order for synchronous access everywhere
-            return this.get('feature').fetch();
+            return this.get('feature').fetch().then(() => {
+                if (this.get('feature.nightShift')) {
+                    return this._setAdminTheme();
+                }
+            });
         }
     },
 
@@ -88,6 +95,19 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
         }
     },
 
+    _nightShift: observer('feature.nightShift', function () {
+        this._setAdminTheme();
+    }),
+
+    _setAdminTheme() {
+        let nightShift = this.get('feature.nightShift');
+
+        return this.get('lazyLoader').loadStyle('dark', 'assets/ghost-dark.css', true).then(() => {
+            $('link[title=dark]').prop('disabled', !nightShift);
+            $('link[title=light]').prop('disabled', nightShift);
+        });
+    },
+
     actions: {
         openMobileMenu() {
             this.controller.set('showMobileMenu', true);
@@ -113,6 +133,10 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
         signedIn() {
             this.get('notifications').clearAll();
             this.send('loadServerNotifications', true);
+
+            if (this.get('feature.nightShift')) {
+                this._setAdminTheme();
+            }
         },
 
         invalidateSession() {

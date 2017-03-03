@@ -3,13 +3,20 @@ import Service from 'ember-service';
 import computed from 'ember-computed';
 import injectService from 'ember-service/inject';
 import set from 'ember-metal/set';
+import RSVP from 'rsvp';
 
 // ember-cli-shims doesn't export Error
 const {Error: EmberError} = Ember;
 
-export function feature(name) {
-    return computed(`config.${name}`, `labs.${name}`, {
+export function feature(name, user = false) {
+    let watchedProps = user ? [`accessibility.${name}`] : [`config.${name}`, `labs.${name}`];
+
+    return computed.apply(Ember, watchedProps.concat({
         get() {
+            if (user) {
+                return this.get(`accessibility.${name}`);
+            }
+
             if (this.get(`config.${name}`)) {
                 return this.get(`config.${name}`);
             }
@@ -17,21 +24,24 @@ export function feature(name) {
             return this.get(`labs.${name}`) || false;
         },
         set(key, value) {
-            this.update(key, value);
+            this.update(key, value, user);
             return value;
         }
-    });
+    }));
 }
 
 export default Service.extend({
     store: injectService(),
     config: injectService(),
+    session: injectService(),
     notifications: injectService(),
 
     publicAPI: feature('publicAPI'),
     subscribers: feature('subscribers'),
+    nightShift: feature('nightShift', true),
 
     _settings: null,
+    _user: null,
 
     labs: computed('_settings.labs', function () {
         let labs = this.get('_settings.labs');
@@ -43,40 +53,57 @@ export default Service.extend({
         }
     }),
 
+    accessibility: computed('_user.accessibility', function () {
+        let accessibility = this.get('_user.accessibility');
+
+        try {
+            return JSON.parse(accessibility) || {};
+        } catch (e) {
+            return {};
+        }
+    }),
+
     fetch() {
-        return this.get('store').queryRecord('setting', {type: 'blog,theme,private'}).then((settings) => {
+        return RSVP.hash({
+            settings: this.get('store').queryRecord('setting', {type: 'blog,theme,private'}),
+            user: this.get('session.user')
+        }).then(({settings, user}) => {
             this.set('_settings', settings);
+            this.set('_user', user);
+
             return true;
         });
     },
 
-    update(key, value) {
-        let settings = this.get('_settings');
-        let labs = this.get('labs');
+    update(key, value, user = false) {
+        let serviceProperty = user ? 'accessibility' : 'labs';
+        let model = this.get(user ? '_user' : '_settings');
+        let featureObject = this.get(serviceProperty);
 
-        // set the new labs key value
-        set(labs, key, value);
-        // update the 'labs' key of the settings model
-        settings.set('labs', JSON.stringify(labs));
+        // set the new key value for either the labs property or the accessibility property
+        set(featureObject, key, value);
 
-        return settings.save().then(() => {
+        // update the 'labs' or 'accessibility' key of the model
+        model.set(serviceProperty, JSON.stringify(featureObject));
+
+        return model.save().then(() => {
             // return the labs key value that we get from the server
-            this.notifyPropertyChange('labs');
-            return this.get(`labs.${key}`);
+            this.notifyPropertyChange(serviceProperty);
+            return this.get(`${serviceProperty}.${key}`);
 
         }).catch((error) => {
-            settings.rollbackAttributes();
-            this.notifyPropertyChange('labs');
+            model.rollbackAttributes();
+            this.notifyPropertyChange(serviceProperty);
 
             // we'll always have an errors object unless we hit a
             // validation error
             if (!error) {
-                throw new EmberError('Validation of the feature service settings model failed when updating labs.');
+                throw new EmberError(`Validation of the feature service ${user ? 'user' : 'settings'} model failed when updating ${serviceProperty}.`);
             }
 
             this.get('notifications').showAPIError(error);
 
-            return this.get(`labs.${key}`);
+            return this.get(`${serviceProperty}.${key}`);
         });
     }
 });
