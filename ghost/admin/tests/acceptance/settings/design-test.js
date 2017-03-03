@@ -400,39 +400,40 @@ describe('Acceptance: Settings - Design', function () {
 
             // theme upload handles validation warnings
             andThen(() => {
-                server.post('/themes/upload/', function () {
-                    return new Mirage.Response(200, {}, {
-                        themes: [
+                server.post('/themes/upload/', function ({themes}) {
+                    let theme = {
+                        name: 'blackpalm',
+                        package: {
+                            name: 'BlackPalm',
+                            version: '1.0.0'
+                        }
+                    };
+
+                    themes.create(theme);
+
+                    theme.warnings = [{
+                        level: 'warning',
+                        rule: 'Assets such as CSS & JS must use the <code>{{asset}}</code> helper',
+                        details: '<p>The listed files should be included using the <code>{{asset}}</code> helper.  For more information, please see the <a href="http://themes.ghost.org/docs/asset">asset helper documentation</a>.</p>',
+                        failures: [
                             {
-                                name: 'blackpalm',
-                                package: {
-                                    name: 'BlackPalm',
-                                    version: '1.0.0'
-                                },
-                                warnings: [
-                                    {
-                                        level: 'warning',
-                                        rule: 'Assets such as CSS & JS must use the <code>{{asset}}</code> helper',
-                                        details: '<p>The listed files should be included using the <code>{{asset}}</code> helper.  For more information, please see the <a href="http://themes.ghost.org/docs/asset">asset helper documentation</a>.</p>',
-                                        failures: [
-                                            {
-                                                ref: '/assets/dist/img/apple-touch-icon.png'
-                                            },
-                                            {
-                                                ref: '/assets/dist/img/favicon.ico'
-                                            },
-                                            {
-                                                ref: '/assets/dist/css/blackpalm.min.css'
-                                            },
-                                            {
-                                                ref: '/assets/dist/js/blackpalm.min.js'
-                                            }
-                                        ],
-                                        code: 'GS030-ASSET-REQ'
-                                    }
-                                ]
+                                ref: '/assets/dist/img/apple-touch-icon.png'
+                            },
+                            {
+                                ref: '/assets/dist/img/favicon.ico'
+                            },
+                            {
+                                ref: '/assets/dist/css/blackpalm.min.css'
+                            },
+                            {
+                                ref: '/assets/dist/js/blackpalm.min.js'
                             }
-                        ]
+                        ],
+                        code: 'GS030-ASSET-REQ'
+                    }];
+
+                    return new Mirage.Response(200, {}, {
+                        themes: [theme]
                     });
                 });
             });
@@ -461,6 +462,7 @@ describe('Acceptance: Settings - Design', function () {
             // theme upload handles success then close
             click(testSelector('upload-theme-button'));
             fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'theme-1.zip', type: 'application/zip'});
+
             andThen(() => {
                 expect(
                     find('.fullscreen-modal h1').text().trim(),
@@ -475,7 +477,7 @@ describe('Acceptance: Settings - Design', function () {
                 expect(
                     find(testSelector('theme-id')).length,
                     'number of themes in list grows after upload'
-                ).to.equal(4);
+                ).to.equal(5);
 
                 expect(
                     find(`${testSelector('theme-active', 'true')} ${testSelector('theme-title')}`).text().trim(),
@@ -492,7 +494,7 @@ describe('Acceptance: Settings - Design', function () {
                 expect(
                     find(testSelector('theme-id')).length,
                     'number of themes in list grows after upload and activate'
-                ).to.equal(5);
+                ).to.equal(6);
 
                 expect(
                     find(`${testSelector('theme-active', 'true')} ${testSelector('theme-title')}`).text().trim(),
@@ -546,7 +548,7 @@ describe('Acceptance: Settings - Design', function () {
                 expect(
                     find(testSelector('theme-id')).length,
                     'number of themes in list shrinks after delete'
-                ).to.equal(4);
+                ).to.equal(5);
 
                 expect(
                     find(testSelector('theme-title')).text(),

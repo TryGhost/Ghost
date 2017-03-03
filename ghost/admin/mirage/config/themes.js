@@ -30,4 +30,11 @@ export default function mockThemes(server) {
 
         return new Response(204, {}, null);
     });
+
+    server.put('/themes/:theme/activate/', function ({themes}, {params}) {
+        themes.all().update('active', false);
+        themes.findBy({name: params.theme}).update({active: true});
+
+        return themes.all();
+    });
 }

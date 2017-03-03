@@ -1,7 +1,6 @@
 {{gh-fullscreen-modal "upload-theme"
     model=(hash
         themes=model
-        uploadSuccess=(route-action 'reloadThemes')
         activate=(route-action 'activateTheme')
     )
     close=(route-action "cancel")

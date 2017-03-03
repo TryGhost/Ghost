@@ -109,9 +109,8 @@ export default Controller.extend(SettingsSaveMixin, {
             navItem.set('url', url);
         },
 
-        setTheme(theme) {
-            this.set('model.activeTheme', theme.name);
-            this.send('save');
+        activateTheme(theme) {
+            return theme.activate();
         },
 
         downloadTheme(theme) {

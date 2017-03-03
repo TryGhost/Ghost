@@ -71,16 +71,6 @@ export default [
         updated_by: 1
     },
     {
-        id: 8,
-        key: 'activeTheme',
-        value: 'casper',
-        type: 'theme',
-        created_at: '2013-11-25T14:48:11.000Z',
-        created_by: 1,
-        updated_at: '2015-10-27T17:39:58.284Z',
-        updated_by: 1
-    },
-    {
         id: 9,
         key: 'permalinks',
         value: '/:slug/',
