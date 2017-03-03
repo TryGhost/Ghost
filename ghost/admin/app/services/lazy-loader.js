@@ -40,14 +40,18 @@ export default Service.extend({
     },
 
     loadStyle(key, url) {
-        if (this.get('testing')) {
+        if (this.get('testing') || $(`#${key}-styles`).length) {
             return RSVP.resolve();
         }
 
-        if (!$(`#${key}-styles`).length) {
-            let $style = $(`<link rel="stylesheet" id="${key}-styles" />`);
-            $style.attr('href', `${this.get('ghostPaths.adminRoot')}${url}`);
-            $('head').append($style);
-        }
+        return new RSVP.Promise((resolve, reject) => {
+            let link = document.createElement('link');
+            link.id = `${key}-styles`;
+            link.rel = 'stylesheet';
+            link.href = `${this.get('ghostPaths.adminRoot')}${url}`;
+            link.onload = resolve;
+            link.onerror = reject;
+            $('head').append($(link));
+        });
     }
 });

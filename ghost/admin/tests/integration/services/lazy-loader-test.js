@@ -20,7 +20,7 @@ describe('Integration: Service: lazy-loader', function() {
         server.shutdown();
     });
 
-    it('loads a script correctly and only once', function (done) {
+    it('loads a script correctly and only once', function () {
         let subject = this.subject({
             ghostPaths,
             scriptPromises: {},
@@ -33,7 +33,7 @@ describe('Integration: Service: lazy-loader', function() {
             return [200, {'Content-Type': 'text/javascript'}, 'window.testLoadScript = \'testvalue\''];
         });
 
-        subject.loadScript('test-script', 'test.js').then(() => {
+        return subject.loadScript('test-script', 'test.js').then(() => {
             expect(subject.get('scriptPromises.test-script')).to.exist;
             expect(window.testLoadScript).to.equal('testvalue');
             expect(server.handlers[0].numberOfCalls).to.equal(1);
@@ -41,8 +41,6 @@ describe('Integration: Service: lazy-loader', function() {
             return subject.loadScript('test-script', 'test.js');
         }).then(() => {
             expect(server.handlers[0].numberOfCalls).to.equal(1);
-
-            done();
         });
     });
 
@@ -52,9 +50,10 @@ describe('Integration: Service: lazy-loader', function() {
             testing: false
         });
 
-        subject.loadStyle('testing', 'style.css');
-
-        expect($('#testing-styles').length).to.equal(1);
-        expect($('#testing-styles').attr('href')).to.equal('/assets/style.css');
+        return subject.loadStyle('testing', 'style.css').catch(() => {
+            // we add a catch handler here because `/assets/style.css` doesn't exist
+            expect($('#testing-styles').length).to.equal(1);
+            expect($('#testing-styles').attr('href')).to.equal('/assets/style.css');
+        });
     });
 });
