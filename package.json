@@ -73,7 +73,7 @@
     "superagent": "3.4.1",
     "unidecode": "0.1.8",
     "uuid": "3.0.0",
-    "validator": "6.2.1",
+    "validator": "6.3.0",
     "xml": "1.0.1"
   },
   "optionalDependencies": {
