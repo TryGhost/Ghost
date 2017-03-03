@@ -43,8 +43,17 @@ export default Controller.extend({
     rolesDropdownIsVisible: and('isNotOwnProfile', 'canAssignRoles', 'isNotOwnersProfile'),
     userActionsAreVisible: or('deleteUserActionIsVisible', 'canMakeOwner'),
 
-    isNotOwnProfile: computed('user.id', 'currentUser.id', function () {
-        return this.get('user.id') !== this.get('currentUser.id');
+    isOwnProfile: computed('user.id', 'currentUser.id', function () {
+        return this.get('user.id') === this.get('currentUser.id');
+    }),
+    isNotOwnProfile: not('isOwnProfile'),
+    showMyGhostLink: and('config.ghostOAuth', 'isOwnProfile'),
+
+    canChangeEmail: computed('config.ghostOAuth', 'isAdminUserOnOwnerProfile', function () {
+        let ghostOAuth = this.get('config.ghostOAuth');
+        let isAdminUserOnOwnerProfile = this.get('isAdminUserOnOwnerProfile');
+
+        return !ghostOAuth && !isAdminUserOnOwnerProfile;
     }),
 
     deleteUserActionIsVisible: computed('currentUser', 'canAssignRoles', 'user', function () {

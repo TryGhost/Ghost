@@ -104,12 +104,12 @@
                 {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="email"}}
                     <label for="user-email">Email</label>
                     {{!-- Administrators only see text of Owner's email address but not input --}}
-                    {{#unless isAdminUserOnOwnerProfile}}
+                    {{#if canChangeEmail}}
                         {{gh-input user.email type="email" id="user-email" name="email" placeholder="Email Address" autocapitalize="off" autocorrect="off" autocomplete="off" focusOut=(action "validate" "email" target=user) update=(action (mut user.email))}}
                         {{gh-error-message errors=user.errors property="email"}}
                     {{else}}
                         <span>{{user.email}}</span>
-                    {{/unless}}
+                    {{/if}}
                     <p>Used for notifications</p>
                 {{/gh-form-group}}
 
@@ -203,6 +203,13 @@
                     </div>
                 </fieldset>
             </form> {{! change password form }}
+        {{/if}}
+
+        {{!-- when using Ghost OAuth, users trying to change email/pass need to visit my.ghost.org --}}
+        {{#if showMyGhostLink}}
+            <div class="user-profile">
+                <p class="gh-box gh-box-info"><i class="icon-lock"></i> To change your login details please visit <a href="https://my.ghost.org/account" target="_blank">https://my.ghost.org/account</a></p>
+            </div>
         {{/if}}
     </div>
 </section>
