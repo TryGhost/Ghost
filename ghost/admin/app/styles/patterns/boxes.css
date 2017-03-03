@@ -2,6 +2,7 @@
 /* ---------------------------------------------------------- */
 
 .gh-box {
+    position: relative;
     padding: 12px 10px 14px 40px;
     border: 1px solid var(--lightgrey);
     border-left-width: 5px;
