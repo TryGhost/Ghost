@@ -39,7 +39,7 @@ export default Service.extend({
         return scriptPromise;
     },
 
-    loadStyle(key, url) {
+    loadStyle(key, url, alternate = false) {
         if (this.get('testing') || $(`#${key}-styles`).length) {
             return RSVP.resolve();
         }
@@ -47,10 +47,22 @@ export default Service.extend({
         return new RSVP.Promise((resolve, reject) => {
             let link = document.createElement('link');
             link.id = `${key}-styles`;
-            link.rel = 'stylesheet';
+            link.rel = alternate ? 'alternate stylesheet' : 'stylesheet';
             link.href = `${this.get('ghostPaths.adminRoot')}${url}`;
-            link.onload = resolve;
+            link.onload = () => {
+                if (alternate) {
+                    // If stylesheet is alternate and we disable the stylesheet before injecting into the DOM,
+                    // the onload handler never gets called. Thus, we should disable the link after it has finished loading
+                    link.disabled = true;
+                }
+                resolve();
+            };
             link.onerror = reject;
+
+            if (alternate) {
+                link.title = key;
+            }
+
             $('head').append($(link));
         });
     }
