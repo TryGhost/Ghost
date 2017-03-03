@@ -30,18 +30,28 @@ var debug = require('debug')('ghost:api'),
     // @TODO find a more appy way to do this!
     labs = require('../middleware/labs'),
 
-    // @TODO find a better way to bundle these authentication packages
-    // Authentication for public endpoints
+    /**
+     * Authentication for public endpoints
+     * @TODO find a better way to bundle these authentication packages
+     *
+     * IMPORTANT
+     * - cors middleware MUST happen before pretty urls, because otherwise cors header can get lost
+     * - cors middleware MUST happen after authenticateClient, because authenticateClient reads the trusted domains
+     */
     authenticatePublic = [
         auth.authenticate.authenticateClient,
         auth.authenticate.authenticateUser,
-        auth.authorize.requiresAuthorizedUserPublicAPI
+        auth.authorize.requiresAuthorizedUserPublicAPI,
+        cors,
+        prettyURLs
     ],
     // Require user for private endpoints
     authenticatePrivate = [
         auth.authenticate.authenticateClient,
         auth.authenticate.authenticateUser,
-        auth.authorize.requiresAuthorizedUser
+        auth.authorize.requiresAuthorizedUser,
+        cors,
+        prettyURLs
     ];
 
 // @TODO refactor/clean this up - how do we want the routing to work long term?
@@ -230,18 +240,12 @@ module.exports = function setupApiApp() {
     apiApp.use(bodyParser.json({limit: '1mb'}));
     apiApp.use(bodyParser.urlencoded({extended: true, limit: '1mb'}));
 
-    apiApp.use(cors);
-
     // send 503 json response in case of maintenance
     apiApp.use(maintenance);
 
     // Force SSL if required
     // must happen AFTER asset loading and BEFORE routing
     apiApp.use(urlRedirects);
-
-    // Add in all trailing slashes & remove uppercase
-    // must happen AFTER asset loading and BEFORE routing
-    apiApp.use(prettyURLs);
 
     // Check version matches for API requests, depends on res.locals.safeVersion being set
     // Therefore must come after themeHandler.ghostLocals, for now
