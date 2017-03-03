@@ -73,51 +73,6 @@
     font-size: 1.6rem;
 }
 
-.gh-image-uploader .image-upload,
-.gh-image-uploader .image-url {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    display: block;
-    padding: 10px;
-    color: var(--midgrey);
-    text-decoration: none;
-    font-size: 14px;
-    line-height: 12px;
-}
-
-.gh-image-uploader a {
-    color: var(--midgrey);
-    text-decoration: none;
-}
-
-.gh-image-uploader a:hover {
-    color: var(--darkgrey);
-}
-.gh-image-uploader .image-upload:hover,
-.gh-image-uploader .image-url:hover {
-    cursor: pointer;
-}
-
-.gh-image-uploader form {
-    padding: 55px 60px;
-    width: 100%;
-}
-
-.gh-image-uploader input.url {
-    margin: 0 0 10px 0;
-    padding: 9px 7px;
-    outline: 0;
-    background: #fff;
-    vertical-align: middle;
-    font: -webkit-small-control;
-    font-size: 1.4rem;
-}
-
-.gh-image-uploader input.url + .gh-btn.gh-btn-blue {
-    color: #fff;
-}
-
 .gh-image-uploader .image-cancel:hover {
     background: var(--red);
     color: #fff;
