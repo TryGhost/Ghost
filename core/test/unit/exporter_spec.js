@@ -6,7 +6,7 @@ var should    = require('should'),
     errors    = require('../../server/errors'),
     exporter  = rewire('../../server/data/export'),
     schema    = require('../../server/data/schema'),
-    settings  = require('../../server/api/settings'),
+    models    = require('../../server/models'),
     schemaTables = Object.keys(schema.tables),
     sandbox = sinon.sandbox.create();
 
@@ -99,8 +99,8 @@ describe('Exporter', function () {
 
     describe('exportFileName', function () {
         it('should return a correctly structured filename', function (done) {
-            var settingsStub = sandbox.stub(settings, 'read').returns(
-                new Promise.resolve({settings: [{value: 'testblog'}]})
+            var settingsStub = sandbox.stub(models.Settings, 'findOne').returns(
+                new Promise.resolve({attributes: {value: 'testblog'}})
             );
 
             exporter.fileName().then(function (result) {
@@ -113,7 +113,7 @@ describe('Exporter', function () {
         });
 
         it('should return a correctly structured filename if settings is empty', function (done) {
-            var settingsStub = sandbox.stub(settings, 'read').returns(
+            var settingsStub = sandbox.stub(models.Settings, 'findOne').returns(
                 new Promise.resolve()
             );
 
@@ -127,7 +127,7 @@ describe('Exporter', function () {
         });
 
         it('should return a correctly structured filename if settings errors', function (done) {
-            var settingsStub = sandbox.stub(settings, 'read').returns(
+            var settingsStub = sandbox.stub(models.Settings, 'findOne').returns(
                 new Promise.reject()
             );
 
