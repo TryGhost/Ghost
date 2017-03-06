@@ -31,7 +31,7 @@ var _               = require('lodash'),
         role:        _.keys(schema.roles),
         permission:  _.keys(schema.permissions),
         notification: ['type', 'message', 'status', 'id', 'dismissible', 'location'],
-        theme:        ['uuid', 'name', 'version', 'active'],
+        theme:        ['name', 'package', 'active'],
         themes:       ['themes'],
         invites:      _(schema.invites).keys().without('token').value()
     };
