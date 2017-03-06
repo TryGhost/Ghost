@@ -58,7 +58,7 @@ _private.prepareError = function prepareError(err, req, res, next) {
         err = err[0];
     }
 
-    if (!(err instanceof errors.GhostError)) {
+    if (!errors.utils.isIgnitionError(err)) {
         // We need a special case for 404 errors
         // @TODO look at adding this to the GhostError class
         if (err.statusCode && err.statusCode === 404) {
