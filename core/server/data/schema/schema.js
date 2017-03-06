@@ -29,6 +29,7 @@ module.exports = {
         name: {type: 'string', maxlength: 191, nullable: false},
         slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
         ghost_auth_access_token: {type: 'string', maxlength: 32, nullable: true},
+        ghost_auth_id: {type: 'string', maxlength: 24, nullable: true},
         password: {type: 'string', maxlength: 60, nullable: false},
         email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
         image: {type: 'string', maxlength: 2000, nullable: true},
