@@ -255,6 +255,12 @@ describe('Themes API', function () {
                     }
 
                     res.statusCode.should.eql(403);
+
+                    should.exist(res.body.errors);
+                    res.body.errors.should.be.an.Array().with.lengthOf(1);
+                    res.body.errors[0].errorType.should.eql('NoPermissionError');
+                    res.body.errors[0].message.should.eql('You do not have permission to add themes');
+
                     done();
                 });
             });
@@ -263,10 +269,15 @@ describe('Themes API', function () {
                 request.del(testUtils.API.getApiQuery('themes/test'))
                     .set('Authorization', 'Bearer ' + scope.editorAccessToken)
                     .expect(403)
-                    .end(function (err) {
+                    .end(function (err, res) {
                         if (err) {
                             return done(err);
                         }
+
+                        should.exist(res.body.errors);
+                        res.body.errors.should.be.an.Array().with.lengthOf(1);
+                        res.body.errors[0].errorType.should.eql('NoPermissionError');
+                        res.body.errors[0].message.should.eql('You do not have permission to destroy themes');
 
                         done();
                     });
@@ -276,10 +287,15 @@ describe('Themes API', function () {
                 request.get(testUtils.API.getApiQuery('themes/casper/download/'))
                     .set('Authorization', 'Bearer ' + scope.editorAccessToken)
                     .expect(403)
-                    .end(function (err) {
+                    .end(function (err, res) {
                         if (err) {
                             return done(err);
                         }
+
+                        should.exist(res.body.errors);
+                        res.body.errors.should.be.an.Array().with.lengthOf(1);
+                        res.body.errors[0].errorType.should.eql('NoPermissionError');
+                        res.body.errors[0].message.should.eql('You do not have permission to read themes');
 
                         done();
                     });
