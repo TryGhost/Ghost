@@ -17,7 +17,6 @@ var debug = require('debug')('ghost:api:themes'),
     settingsCache = require('../settings/cache'),
     themeUtils = require('../themes'),
     themeList = themeUtils.list,
-    packageUtils = require('../utils/packages'),
     themes;
 
 /**
@@ -28,7 +27,7 @@ var debug = require('debug')('ghost:api:themes'),
 themes = {
     browse: function browse() {
         debug('browsing');
-        var result = packageUtils.filterPackages(themeList.getAll(), settingsCache.get('activeTheme'));
+        var result = themeList.toAPI(themeList.getAll(), settingsCache.get('activeTheme'));
         debug('got result');
         return Promise.resolve({themes: result});
     },
@@ -41,7 +40,7 @@ themes = {
             }];
 
         return settings.edit({settings: newSettings}, options).then(function () {
-            var result = packageUtils.filterPackages(themeList.getAll(), themeName);
+            var result = themeList.toAPI(themeList.getAll(), themeName);
             return Promise.resolve({themes: result});
         });
     },
@@ -102,14 +101,12 @@ themes = {
                 return themeUtils.loadOne(zip.shortName);
             })
             .then(function (themeObject) {
-                // @TODO fix this craziness
-                var toFilter = {};
-                toFilter[zip.shortName] = themeObject;
-                themeObject = packageUtils.filterPackages(toFilter, zip.shortName);
+                themeObject = themeList.toAPI(themeObject, zip.shortName);
                 // gscan theme structure !== ghost theme structure
                 if (theme.results.warning.length > 0) {
                     themeObject.warnings = _.cloneDeep(theme.results.warning);
                 }
+
                 return {themes: themeObject};
             })
             .finally(function () {
@@ -173,6 +170,7 @@ themes = {
             .then(function () {
                 themeList.del(name);
                 events.emit('theme.deleted', name);
+                // Delete returns an empty 204 response
             });
     }
 };
