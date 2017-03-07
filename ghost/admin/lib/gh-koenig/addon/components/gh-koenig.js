@@ -4,7 +4,7 @@ import run from 'ember-runloop';
 import layout from '../templates/components/gh-koenig';
 import Mobiledoc from 'mobiledoc-kit';
 import {MOBILEDOC_VERSION} from 'mobiledoc-kit/renderers/mobiledoc';
-import createCardFactory from '../libs/card-factory';
+import createCardFactory from '../lib/card-factory';
 import defaultCommands from '../options/default-commands';
 import editorCards  from '../cards/index';
 // import { VALID_MARKUP_SECTION_TAGNAMES } from 'mobiledoc-kit/models/markup-section'; //the block elements supported by mobile-doc

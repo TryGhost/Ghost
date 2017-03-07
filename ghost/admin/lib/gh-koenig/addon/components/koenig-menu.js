@@ -187,6 +187,7 @@ export default Component.extend({
         this.$('.koenig-menu').hide();
         // note: below is using a mobiledoc Private API.
         // there is no way to unregister a keycommand when it's registered so we have to remove it ourselves.
+        // edit: I've put a PR in place and there is now a public API to remove, will add when released.
         for (let i = this.editor._keyCommands.length - 1; i > -1; i--) {
             let keyCommand = this.editor._keyCommands[i];
 

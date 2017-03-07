@@ -9,7 +9,7 @@ export default Component.extend({
 
     init() {
         this._super(...arguments);
-        let editor = this.editor = this.get('editor');
+        let editor = this.get('editor');
         let tools = new Tools(editor, this);
         this.tools = [];
 
@@ -20,19 +20,10 @@ export default Component.extend({
         });
 
         this.iconURL = `${this.get('assetPath')}/tools/`;
-        // this.set('toolbar') =
-        //     this.tools =new Tools(this.get('editor'), this);
-        //     let tools = [ ];
-        // let match = (this.query || "").trim().toLowerCase();
-        // this.tools.forEach((tool) => {
-        //     if ((tool.type === 'block' || tool.type === 'newline') && tool.name.startsWith(match)) {
-        //         tools.push(tool);
-        //     }
-        // });
     },
     didRender() {
         let $this = this.$();
-        let {editor} = this;
+        let editor = this.get('editor');
         let $editor = $('.gh-editor-container');
 
         if (!editor.range || !editor.range.head.section || !editor.range.head.section.isBlank
@@ -41,8 +32,8 @@ export default Component.extend({
         }
 
         editor.cursorDidChange(() => {
-            // if there is no cursor:
 
+            // if there is no cursor:
             if (!editor.range || !editor.range.head.section || !editor.range.head.section.isBlank
                 || editor.range.head.section.renderNode._element.tagName.toLowerCase() !== 'p') {
                 $this.hide();
