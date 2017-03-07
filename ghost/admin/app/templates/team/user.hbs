@@ -45,7 +45,7 @@
                 </span>
             {{/if}}
 
-            {{#gh-task-button class="gh-btn gh-btn-blue" task=save}}<span>Save</span>{{/gh-task-button}}
+            {{gh-task-button class="gh-btn gh-btn-blue" task=save}}
         </section>
     </header>
 
@@ -199,7 +199,7 @@
                     {{/gh-form-group}}
 
                     <div class="form-group">
-                        {{#gh-task-button class="gh-btn gh-btn-red button-change-password" task=user.saveNewPassword}}<span>Change Password</span>{{/gh-task-button}}
+                        {{gh-task-button "Change Password" class="gh-btn gh-btn-red button-change-password" task=user.saveNewPassword}}
                     </div>
                 </fieldset>
             </form> {{! change password form }}

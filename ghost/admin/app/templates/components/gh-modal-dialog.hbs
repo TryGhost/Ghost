@@ -9,7 +9,7 @@
             {{#if confirm}}
             <footer class="modal-footer">
                 {{! Buttons must be on one line to prevent white-space errors }}
-                <button type="button" class="{{rejectButtonClass}} btn-minor js-button-reject" {{action "confirm" "reject"}}>{{confirm.reject.text}}</button><button type="button" class="{{acceptButtonClass}} js-button-accept" {{action "confirm" "accept"}}>{{confirm.accept.text}}</button>
+                <button type="button" class="{{rejectButtonClass}} btn-minor" {{action "confirm" "reject"}} data-test-modal-reject-button>{{confirm.reject.text}}</button><button type="button" class="{{acceptButtonClass}}" {{action "confirm" "accept"}} data-test-modal-accept-button>{{confirm.accept.text}}</button>
             </footer>
             {{/if}}
         </section>

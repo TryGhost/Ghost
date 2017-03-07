@@ -25,5 +25,5 @@
 
 <div class="modal-footer">
     <button {{action "closeModal"}} class="gh-btn"><span>Cancel</span></button>
-    {{#gh-task-button task=addSubscriber class="gh-btn gh-btn-green"}}<span>Add</span>{{/gh-task-button}}
+    {{gh-task-button "Add" successText="Added" task=addSubscriber class="gh-btn gh-btn-green"}}
 </div>

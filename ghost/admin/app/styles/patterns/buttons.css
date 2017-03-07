@@ -45,6 +45,10 @@ fieldset[disabled] .gh-btn {
     pointer-events: none;
 }
 
+/* TODO: replace with svg icons */
+.gh-btn i {
+    display: inline-block;
+}
 
 /* Button highlights
 /* ---------------------------------------------------------- */

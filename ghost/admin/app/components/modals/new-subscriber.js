@@ -11,8 +11,7 @@ export default ModalComponent.extend({
             this.send('closeModal');
         } catch (error) {
             // TODO: server-side validation errors should be serialized
-            // properly so that errors are added to the model's errors
-            // property
+            // properly so that errors are added to model.errors automatically
             if (error && isInvalidError(error)) {
                 let [firstError] = error.errors;
                 let {message} = firstError;
@@ -24,9 +23,10 @@ export default ModalComponent.extend({
                 }
             }
 
-            // this is a route action so it should bubble up to the global
-            // error handler
-            throw error;
+            // route action so it should bubble up to the global error handler
+            if (error) {
+                throw error;
+            }
         }
     }).drop(),
 

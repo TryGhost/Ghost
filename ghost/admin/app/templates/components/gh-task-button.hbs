@@ -1,9 +1,15 @@
-{{#if isRunning}}
-    <span class="spinner"></span>
+{{#if hasBlock}}
+    {{yield (hash
+        isIdle=isIdle
+        isRunning=isRunning
+        isSuccess=isSuccess
+        isFailure=isFailure
+    )}}
 {{else}}
-    {{#if buttonText}}
-        {{buttonText}}
-    {{else}}
-        {{{yield}}}
-    {{/if}}
+    <span>
+    {{#if isRunning}}<span class="spinner"></span>{{/if}}
+    {{if (or isIdle isRunning) buttonText}}
+    {{#if isSuccess}}<i class="icon-check"></i> {{successText}}{{/if}}
+    {{#if isFailure}}<i class="icon-x"></i> {{failureText}}{{/if}}
+    </span>
 {{/if}}

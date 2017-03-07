@@ -135,7 +135,7 @@ describe('Acceptance: Settings - General', function () {
                 expect(find('.fullscreen-modal .modal-content .gh-image-uploader').length, 'modal selector').to.equal(1);
             });
 
-            click('.fullscreen-modal .modal-footer .js-button-accept');
+            click(testSelector('modal-accept-button'));
 
             andThen(() => {
                 expect(find('.fullscreen-modal').length).to.equal(0);
