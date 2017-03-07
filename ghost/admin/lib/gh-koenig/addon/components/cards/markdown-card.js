@@ -1,6 +1,6 @@
 import Component from 'ember-component';
 import layout from '../../templates/components/markdown-card';
-import {formatMarkdown} from '../../libs/format-markdown';
+import {formatMarkdown} from '../../lib/format-markdown';
 import injectService from 'ember-service/inject';
 import {invokeAction} from 'ember-invoke-action';
 import {isEmberArray} from 'ember-array/utils';
