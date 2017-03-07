@@ -101,7 +101,7 @@ themes = {
                 return themeUtils.loadOne(zip.shortName);
             })
             .then(function (themeObject) {
-                themeObject = themeList.toAPI(themeObject, zip.shortName);
+                themeObject = themeList.toAPI(themeObject, settingsCache.get('activeTheme'));
                 // gscan theme structure !== ghost theme structure
                 if (theme.results.warning.length > 0) {
                     themeObject.warnings = _.cloneDeep(theme.results.warning);

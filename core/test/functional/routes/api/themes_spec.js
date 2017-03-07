@@ -139,6 +139,7 @@ describe('Themes API (Forked)', function () {
                     jsonResponse.themes.length.should.eql(1);
                     testUtils.API.checkResponse(jsonResponse.themes[0], 'theme');
                     jsonResponse.themes[0].name.should.eql('valid');
+                    jsonResponse.themes[0].active.should.be.false();
 
                     // upload same theme again to force override
                     scope.uploadTheme({themePath: join(__dirname, '/../../../utils/fixtures/themes/valid.zip')})
@@ -154,6 +155,7 @@ describe('Themes API (Forked)', function () {
                             jsonResponse.themes.length.should.eql(1);
                             testUtils.API.checkResponse(jsonResponse.themes[0], 'theme');
                             jsonResponse.themes[0].name.should.eql('valid');
+                            jsonResponse.themes[0].active.should.be.false();
 
                             // ensure tmp theme folder contains two themes now
                             var tmpFolderContents = fs.readdirSync(join(tmpContentPath.name, 'themes'));
