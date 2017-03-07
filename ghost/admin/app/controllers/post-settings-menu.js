@@ -68,22 +68,14 @@ export default Controller.extend(SettingsMenuMixin, {
         return metaTitle;
     }),
 
-    seoDescription: computed('model.scratch', 'metaDescriptionScratch', function () {
+    seoDescription: computed('model.html', 'metaDescriptionScratch', function () {
         let metaDescription = this.get('metaDescriptionScratch') || '';
-        let html = '';
-        let el, placeholder;
+        let placeholder;
 
         if (metaDescription.length > 0) {
             placeholder = metaDescription;
         } else {
-            el = $('.rendered-markdown');
-
-            // Get rendered markdown
-            if (el !== undefined && el.length > 0) {
-                html = el.clone();
-                html.find('.js-drop-zone').remove();
-                html = html[0].innerHTML;
-            }
+            let html = this.get('model.html');
 
             // Strip HTML
             placeholder = $('<div />', {html}).text();
