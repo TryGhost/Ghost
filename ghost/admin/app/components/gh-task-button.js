@@ -1,6 +1,7 @@
 import Component from 'ember-component';
 import observer from 'ember-metal/observer';
-import {reads} from 'ember-computed';
+import computed, {reads} from 'ember-computed';
+import {isBlank} from 'ember-utils';
 import {invokeAction} from 'ember-invoke-action';
 
 /**
@@ -14,15 +15,40 @@ import {invokeAction} from 'ember-invoke-action';
  * component, all running promises will automatically be cancelled when this
  * component is removed from the DOM
  */
-export default Component.extend({
+const GhTaskButton = Component.extend({
     tagName: 'button',
-    classNameBindings: ['isRunning:appear-disabled'],
+    classNameBindings: ['isRunning:appear-disabled', 'isSuccess:gh-btn-green', 'isFailure:gh-btn-red'],
     attributeBindings: ['disabled', 'type', 'tabindex'],
 
     task: null,
     disabled: false,
+    buttonText: 'Save',
+    runningText: reads('buttonText'),
+    successText: 'Saved',
+    failureText: 'Retry',
 
     isRunning: reads('task.last.isRunning'),
+
+    isSuccess: computed('isRunning', 'task.last.value', function () {
+        if (this.get('isRunning')) {
+            return false;
+        }
+
+        let value = this.get('task.last.value');
+        return !isBlank(value) && value !== false;
+    }),
+
+    isFailure: computed('isRunning', 'isSuccess', 'task.last.error', function () {
+        if (this.get('isRunning') || this.get('isSuccess')) {
+            return false;
+        }
+
+        return this.get('task.last.error') !== undefined;
+    }),
+
+    isIdle: computed('isRunning', 'isSuccess', 'isFailure', function () {
+        return !this.get('isRunning') && !this.get('isSuccess') && !this.get('isFailure');
+    }),
 
     click() {
         // do nothing if disabled externally
@@ -56,3 +82,9 @@ export default Component.extend({
         }
     })
 });
+
+GhTaskButton.reopenClass({
+    positionalParams: ['buttonText']
+});
+
+export default GhTaskButton;

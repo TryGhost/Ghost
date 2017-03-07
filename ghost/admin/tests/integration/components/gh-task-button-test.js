@@ -13,21 +13,29 @@ describe('Integration: Component: gh-task-button', function() {
     });
 
     it('renders', function () {
-        this.render(hbs`{{#gh-task-button}}Test{{/gh-task-button}}`);
+        // sets button text using positional param
+        this.render(hbs`{{gh-task-button "Test"}}`);
         expect(this.$('button')).to.exist;
         expect(this.$('button')).to.contain('Test');
         expect(this.$('button')).to.have.prop('disabled', false);
 
-        this.render(hbs`{{#gh-task-button class="testing"}}Test{{/gh-task-button}}`);
+        this.render(hbs`{{gh-task-button class="testing"}}`);
         expect(this.$('button')).to.have.class('testing');
+        // default button text is "Save"
+        expect(this.$('button')).to.contain('Save');
 
-        this.render(hbs`{{#gh-task-button disabled=true}}Test{{/gh-task-button}}`);
+        // passes disabled attr
+        this.render(hbs`{{gh-task-button disabled=true buttonText="Test"}}`);
         expect(this.$('button')).to.have.prop('disabled', true);
+        // allows button text to be set via hash param
+        expect(this.$('button')).to.contain('Test');
 
-        this.render(hbs`{{#gh-task-button type="submit"}}Test{{/gh-task-button}}`);
+        // passes type attr
+        this.render(hbs`{{gh-task-button type="submit"}}`);
         expect(this.$('button')).to.have.attr('type', 'submit');
 
-        this.render(hbs`{{#gh-task-button tabindex="-1"}}Test{{/gh-task-button}}`);
+        // passes tabindex attr
+        this.render(hbs`{{gh-task-button tabindex="-1"}}`);
         expect(this.$('button')).to.have.attr('tabindex', '-1');
     });
 
@@ -36,7 +44,7 @@ describe('Integration: Component: gh-task-button', function() {
             yield timeout(50);
         }));
 
-        this.render(hbs`{{#gh-task-button task=myTask}}Test{{/gh-task-button}}`);
+        this.render(hbs`{{gh-task-button task=myTask}}`);
 
         this.get('myTask').perform();
 
@@ -52,7 +60,7 @@ describe('Integration: Component: gh-task-button', function() {
             yield timeout(50);
         }));
 
-        this.render(hbs`{{#gh-task-button task=myTask}}Test{{/gh-task-button}}`);
+        this.render(hbs`{{gh-task-button task=myTask}}`);
         expect(this.$('button'), 'initial class').to.not.have.class('appear-disabled');
 
         this.get('myTask').perform();
@@ -68,6 +76,64 @@ describe('Integration: Component: gh-task-button', function() {
         wait().then(done);
     });
 
+    it('shows success on success', function (done) {
+        this.set('myTask', task(function* () {
+            yield timeout(50);
+            return true;
+        }));
+
+        this.render(hbs`{{gh-task-button task=myTask}}`);
+
+        this.get('myTask').perform();
+
+        run.later(this, function () {
+            expect(this.$('button')).to.have.class('gh-btn-green');
+            expect(this.$('button')).to.contain('Saved');
+        }, 70);
+
+        wait().then(done);
+    });
+
+    it('shows failure when task errors', function (done) {
+        this.set('myTask', task(function* () {
+            try {
+                yield timeout(50);
+                throw new ReferenceError('test error');
+            } catch (error) {
+                // noop, prevent mocha triggering unhandled error assert
+            }
+        }));
+
+        this.render(hbs`{{gh-task-button task=myTask}}`);
+
+        this.get('myTask').perform();
+
+        run.later(this, function () {
+            expect(this.$('button')).to.have.class('gh-btn-red');
+            expect(this.$('button')).to.contain('Retry');
+        }, 70);
+
+        wait().then(done);
+    });
+
+    it('shows failure on falsy response', function (done) {
+        this.set('myTask', task(function* () {
+            yield timeout(50);
+            return false;
+        }));
+
+        this.render(hbs`{{gh-task-button task=myTask}}`);
+
+        this.get('myTask').perform();
+
+        run.later(this, function () {
+            expect(this.$('button')).to.have.class('gh-btn-red');
+            expect(this.$('button')).to.contain('Retry');
+        }, 70);
+
+        wait().then(done);
+    });
+
     it('performs task on click', function (done) {
         let taskCount = 0;
 
@@ -76,7 +142,7 @@ describe('Integration: Component: gh-task-button', function() {
             taskCount = taskCount + 1;
         }));
 
-        this.render(hbs`{{#gh-task-button task=myTask}}Test{{/gh-task-button}}`);
+        this.render(hbs`{{gh-task-button task=myTask}}`);
         this.$('button').click();
 
         wait().then(() => {
@@ -90,7 +156,7 @@ describe('Integration: Component: gh-task-button', function() {
             yield timeout(50);
         }));
 
-        this.render(hbs`{{#gh-task-button task=myTask}}Test{{/gh-task-button}}`);
+        this.render(hbs`{{gh-task-button task=myTask}}`);
         let width = this.$('button').width();
         let height = this.$('button').height();
         expect(this.$('button')).to.not.have.attr('style');
