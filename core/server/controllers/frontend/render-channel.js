@@ -40,7 +40,7 @@ function renderChannel(req, res, next) {
 
         // @TODO: properly design these filters
         filters.doFilter('prePostsRender', result.posts, res.locals).then(function then(posts) {
-            var view = templates.channel(req.app.get('activeTheme'), channelOpts);
+            var view = templates.channel(channelOpts);
 
             // Do final data formatting and then render
             result.posts = posts;
