@@ -8,10 +8,11 @@ export default Controller.extend({
     session: injectService(),
     store: injectService(),
 
-    queryParams: ['type', 'author', 'tag'],
+    queryParams: ['type', 'author', 'tag', 'order'],
     type: null,
     author: null,
     tag: null,
+    order: null,
 
     _hasLoadedTags: false,
     _hasLoadedAuthors: false,
@@ -35,6 +36,14 @@ export default Controller.extend({
         value: 'page'
     }],
 
+    availableOrders: [{
+        name: 'Latest',
+        value: null
+    }, {
+        name: 'Earliest',
+        value: 'published_at asc'
+    }],
+
     showingAll: computed('type', 'author', 'tag', function () {
         let {type, author, tag} = this.getProperties(['type', 'author', 'tag']);
 
@@ -44,6 +53,11 @@ export default Controller.extend({
     selectedType: computed('type', function () {
         let types = this.get('availableTypes');
         return types.findBy('value', this.get('type'));
+    }),
+
+    selectedOrder: computed('order', function () {
+        let orders = this.get('availableOrders');
+        return orders.findBy('value', this.get('order'));
     }),
 
     _availableTags: computed(function () {
@@ -101,6 +115,10 @@ export default Controller.extend({
 
         changeTag(tag) {
             this.set('tag', get(tag, 'slug'));
+        },
+
+        changeOrder(order) {
+            this.set('order', get(order, 'value'));
         }
     }
 });

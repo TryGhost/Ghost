@@ -47,6 +47,19 @@
         }}
             {{tag.name}}
         {{/power-select}}
+
+        Sort by:
+        {{#power-select
+            selected=selectedOrder
+            options=availableOrders
+            searchEnabled=false
+            onchange=(action (mut k))
+            tagName="div"
+            data-test-order-select=true
+            as |order|
+        }}
+            {{order.name}}
+        {{/power-select}}
     </div>
 
     {{gh-loading-spinner}}

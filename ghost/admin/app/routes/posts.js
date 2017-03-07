@@ -24,6 +24,10 @@ export default AuthenticatedRoute.extend(InfinityRoute, ShortcutsRoute, {
         tag: {
             refreshModel: true,
             replace: true
+        },
+        order: {
+            refreshModel: true,
+            replace: true
         }
     },
 
@@ -45,6 +49,10 @@ export default AuthenticatedRoute.extend(InfinityRoute, ShortcutsRoute, {
             let filter = this._filterString(filterParams);
             if (!isBlank(filter)) {
                 queryParams.filter = filter;
+            }
+
+            if (!isBlank(params.order)) {
+                queryParams.order = params.order;
             }
 
             let perPage = this.get('perPage');
