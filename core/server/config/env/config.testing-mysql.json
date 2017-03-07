@@ -52,6 +52,5 @@
     "privacy": {
         "useTinfoil": true,
         "useStructuredData": true
-    },
-    "minifyAssets": false
+    }
 }

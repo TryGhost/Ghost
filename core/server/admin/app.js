@@ -1,7 +1,7 @@
 var debug = require('debug')('ghost:admin'),
     config = require('../config'),
     express = require('express'),
-    adminHbs = require('express-hbs').create(),
+    adminHbs = require('./handlebars'),
 
     // Admin only middleware
     redirectToSetup = require('../middleware/redirect-to-setup'),
@@ -31,9 +31,7 @@ module.exports = function setupAdminApp() {
     // Create a hbs instance for admin and init view engine
     adminApp.set('view engine', 'hbs');
     adminApp.set('views', config.get('paths').adminViews);
-    adminApp.engine('hbs', adminHbs.express3({}));
-    // Register our `asset` helper
-    adminHbs.registerHelper('asset', require('../helpers/asset'));
+    adminApp.engine('hbs', adminHbs.engine());
 
     // Admin assets
     // @TODO ensure this gets a local 404 error handler
