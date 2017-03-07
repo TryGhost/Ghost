@@ -202,7 +202,7 @@ ConfigManager.prototype.set = function (config) {
         schedulingPath = path.join(contentPath, '/scheduling/');
     }
 
-    _.merge(this._config, {
+    _.defaultsDeep(this._config, {
         ghostVersion: packageInfo.version,
         paths: {
             appRoot:          appRoot,
