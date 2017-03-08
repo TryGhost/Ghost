@@ -57,7 +57,7 @@
     "ember-cli-mirage": "0.2.6",
     "ember-cli-mocha": "0.13.2",
     "ember-cli-node-assets": "0.1.6",
-    "ember-cli-postcss": "3.1.1",
+    "ember-cli-postcss": "3.1.2",
     "ember-cli-pretender": "1.0.1",
     "ember-cli-selectize": "0.5.12",
     "ember-cli-shims": "1.0.2",
