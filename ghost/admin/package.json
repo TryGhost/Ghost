@@ -33,7 +33,7 @@
     "broccoli-clean-css": "^2.0.1",
     "broccoli-concat": "3.2.2",
     "broccoli-funnel": "1.1.0",
-    "broccoli-merge-trees": "1.2.1",
+    "broccoli-merge-trees": "2.0.0",
     "broccoli-uglify-js": "0.2.0",
     "chai-jquery": "2.0.0",
     "codemirror": "5.24.2",
