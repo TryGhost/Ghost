@@ -40,7 +40,7 @@
     "coveralls": "2.12.0",
     "csscomb": "4.0.1",
     "cssnano": "3.10.0",
-    "ember-ajax": "2.5.5",
+    "ember-ajax": "2.5.6",
     "ember-cli": "2.11.1",
     "ember-cli-active-link-wrapper": "0.3.2",
     "ember-cli-app-version": "2.0.1",
