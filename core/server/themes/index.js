@@ -22,6 +22,9 @@ module.exports = {
         // Just read the active theme for now
         return themeLoader
             .loadOneTheme(activeThemeName)
+            .then(function activeThemeHasLoaded() {
+                debug('Activating theme (method A on boot)', activeThemeName);
+            })
             .catch(function () {
                 // Active theme is missing, we don't want to exit because the admin panel will still work
                 logging.warn(i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeThemeName}));

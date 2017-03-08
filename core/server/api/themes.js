@@ -1,6 +1,7 @@
 // # Themes API
 // RESTful API for Themes
-var Promise = require('bluebird'),
+var debug = require('debug')('ghost:api:themes'),
+    Promise = require('bluebird'),
     fs = require('fs-extra'),
     config = require('../config'),
     errors = require('../errors'),
@@ -56,6 +57,7 @@ themes = {
             })
             .then(function hasEditedSetting() {
                 // @TODO actually do things to activate the theme, other than just the setting?
+                debug('Activating theme (method B on API "activate")', themeName);
                 return themeUtils.toJSON(themeName, checkedTheme);
             });
     },
@@ -108,6 +110,12 @@ themes = {
                 return themeUtils.loadOne(zip.shortName);
             })
             .then(function () {
+                // If this is the active theme, we are overridding
+                // This is a special case of activation
+                if (zip.shortName === settingsCache.get('activeTheme')) {
+                    debug('Activating theme (method C, on API "override")', zip.shortName);
+                }
+
                 // @TODO: unify the name across gscan and Ghost!
                 return themeUtils.toJSON(zip.shortName, checkedTheme);
             })
