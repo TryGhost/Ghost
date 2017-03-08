@@ -37,7 +37,7 @@
     "broccoli-uglify-js": "0.2.0",
     "chai-jquery": "2.0.0",
     "codemirror": "5.24.2",
-    "coveralls": "2.11.16",
+    "coveralls": "2.12.0",
     "csscomb": "4.0.0",
     "cssnano": "3.10.0",
     "ember-ajax": "2.5.5",
