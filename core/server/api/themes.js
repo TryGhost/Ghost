@@ -3,7 +3,6 @@
 var debug = require('debug')('ghost:api:themes'),
     Promise = require('bluebird'),
     _ = require('lodash'),
-    gscan = require('gscan'),
     fs = require('fs-extra'),
     config = require('../config'),
     errors = require('../errors'),
@@ -13,7 +12,7 @@ var debug = require('debug')('ghost:api:themes'),
     apiUtils = require('./utils'),
     utils = require('./../utils'),
     i18n = require('../i18n'),
-    settings = require('./settings'),
+    settingsModel = require('../models/settings').Settings,
     settingsCache = require('../settings/cache'),
     themeUtils = require('../themes'),
     themeList = themeUtils.list,
@@ -42,13 +41,24 @@ themes = {
         return apiUtils
             .handlePermissions('themes', 'activate')(options)
             .then(function activateTheme() {
-                // @TODO validate the theme using gscan
-                // @TODO use the settings model, not API (&move validation off of the model)
-                // @TODO actually do things to activate the theme, other than just the setting?
-                return settings.edit({settings: newSettings}, options);
+                var theme = themeList.get(themeName);
+
+                if (!theme) {
+                    return Promise.reject(new errors.ValidationError({
+                        message: i18n.t('notices.data.validation.index.themeCannotBeActivated', {themeName: themeName}),
+                        context: 'activeTheme'
+                    }));
+                }
+
+                return themeUtils.validate.check(theme);
+            })
+            .then(function haveValidTheme(/* checkedTheme */) {
+                // We use the model, not the API here, as we don't want to trigger permissions
+                return settingsModel.edit(newSettings, options);
             })
             .then(function hasEditedSetting() {
                 var result = themeList.toAPI(themeList.getAll(), themeName);
+                // @TODO actually do things to activate the theme, other than just the setting?
                 return Promise.resolve({themes: result});
             });
     },
@@ -64,7 +74,8 @@ themes = {
                 path: options.path,
                 name: options.originalname,
                 shortName: storageAdapter.getSanitizedFileName(options.originalname.split('.zip')[0])
-            }, theme;
+            },
+            theme;
 
         // check if zip name is casper.zip
         if (zip.name === 'casper.zip') {
@@ -72,23 +83,12 @@ themes = {
         }
 
         return apiUtils.handlePermissions('themes', 'add')(options)
-            .then(function () {
-                return gscan.checkZip(zip, {keepExtractedDir: true});
+            .then(function validateTheme() {
+                return themeUtils.validate.check(zip, true);
             })
-            .then(function (_theme) {
-                theme = _theme;
-                theme = gscan.format(theme);
+            .then(function checkExists(checkedTheme) {
+                theme = checkedTheme;
 
-                if (!theme.results.error.length) {
-                    return;
-                }
-
-                throw new errors.ThemeValidationError({
-                    message: i18n.t('errors.api.themes.invalidTheme'),
-                    errorDetails: theme.results.error
-                });
-            })
-            .then(function () {
                 return storageAdapter.exists(utils.url.urlJoin(config.getContentPath('themes'), zip.shortName));
             })
             .then(function (themeExists) {
@@ -111,6 +111,7 @@ themes = {
             .then(function (themeObject) {
                 themeObject = themeList.toAPI(themeObject, settingsCache.get('activeTheme'));
                 // gscan theme structure !== ghost theme structure
+                // @TODO consider a different way to build this result from the validations
                 if (theme.results.warning.length > 0) {
                     themeObject.warnings = _.cloneDeep(theme.results.warning);
                 }
@@ -118,6 +119,7 @@ themes = {
                 return {themes: themeObject};
             })
             .finally(function () {
+                // @TODO we should probably do this as part of saving the theme
                 // remove zip upload from multer
                 // happens in background
                 Promise.promisify(fs.removeSync)(zip.path)
@@ -125,6 +127,7 @@ themes = {
                         logging.error(new errors.GhostError({err: err}));
                     });
 
+                // @TODO we should probably do this as part of saving the theme
                 // remove extracted dir from gscan
                 // happens in background
                 if (theme) {

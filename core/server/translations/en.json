@@ -105,7 +105,8 @@
                 }
             },
             "themehandler": {
-                "missingTheme": "The currently active theme \"{theme}\" is missing."
+                "missingTheme": "The currently active theme \"{theme}\" is missing.",
+                "invalidTheme": "The currently active theme \"{theme}\" is invalid."
             }
         },
         "utils": {
@@ -114,18 +115,6 @@
                 "nameOrVersionMissing": "\"name\" or \"version\" is missing from theme package.json file.",
                 "willBeRequired": "This will be required in future. Please see {url}",
                 "themeFileIsMalformed": "Theme package.json file is malformed"
-            },
-            "validatethemes": {
-                "themeWithNoPackage": {
-                    "message": "Found a theme with no package.json file",
-                    "context": "Theme name: {name}",
-                    "help": "This will be required in future. Please see {url}"
-                },
-                "malformedPackage": {
-                    "message": "Found a malformed package.json",
-                    "context": "Theme name: {name}",
-                    "help": "Valid package.json will be required in future. Please see {url}"
-                }
             }
         },
         "config": {
