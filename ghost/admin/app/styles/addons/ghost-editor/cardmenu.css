@@ -20,7 +20,16 @@
     position: relative;
     width: 350px;
     height: 40px;
-    margin: -12px 0 -12px -15px;
+    margin: -12px -15px;
+}
+
+.gh-cardmenu-search svg {
+    position: absolute;
+    top: 11px;
+    left: 10px;
+    z-index: 100;
+    width: 20px;
+    height: 19px;
 }
 
 .gh-cardmenu-search-input {
@@ -32,7 +41,7 @@
     height: 40px;
     font-size: 1.4rem;
     line-height: 40px;
-    padding: 10px 0 10px 15px;
+    padding: 10px 0 10px 40px;
     border: none;
     border-radius: 4px 4px 0 0;
 }
@@ -47,17 +56,34 @@
     border-radius: 4px;
 }
 
-.gh-cardmenu-card:hover {
-    cursor: pointer;
-    background: color(var(--lightgrey) l(+5%));
+.gh-cardmenu-icon {
+    display: flex;
+    align-items: center;
+}
+.gh-cardmenu-icon svg {
+    width: 27px;
+    height: 27px;
+    fill: var(--darkgrey);
 }
 
 .gh-cardmenu-label {
-    font-size: 1.2rem;
+    margin: 7px 0 0 0;
+    font-size: 1.1rem;
+    color: var(--midgrey);
+    letter-spacing: 0.2px;
+    font-weight: 200;
+}
+
+.gh-cardmenu-card:hover {
+    cursor: pointer;
+    background: color(var(--lightgrey) l(+3%) s(-10%));
+}
+.gh-cardmenu-card:hover .gh-cardmenu-label {
+    color: var(--darkgrey);
+    font-weight: 300;
 }
 
 .gh-cardmenu-divider {
-    position: sticky;
     top: -12px;
     width: 350px;
     padding: 5px 0;
