@@ -25,7 +25,7 @@
     {{!-- Show invited users to everyone except authors --}}
     {{#unless session.user.isAuthor}}
         {{#if invites}}
-        <section class="apps-grid-container gh-invited-users">
+        <section class="apps-grid-container gh-invited-users" data-test-invited-users>
             <span class="apps-grid-title">Invited users</span>
             <div class="apps-grid">
 
@@ -77,10 +77,10 @@
         {{/if}}
     {{/unless}}
 
-    <section class="apps-grid-container gh-active-users">
+    <section class="apps-grid-container gh-active-users" data-test-active-users>
         <span class="apps-grid-title">Active users</span>
         <div class="apps-grid">
-            {{#each users key="id" as |user|}}
+            {{#each sortedActiveUsers key="id" as |user|}}
                 {{!-- For authors only shows users as a list, otherwise show users with links to user page --}}
                 {{#unless session.user.isAuthor}}
                     {{#gh-user-active user=user as |component|}}
@@ -96,4 +96,24 @@
     </section>
 
     {{/gh-infinite-scroll}}
+
+    {{#if suspendedUsers}}
+    <section class="apps-grid-container gh-active-users" data-test-suspended-users>
+        <span class="apps-grid-title">Suspended users</span>
+        <div class="apps-grid">
+            {{#each sortedSuspendedUsers key="id" as |user|}}
+                {{!-- For authors only shows users as a list, otherwise show users with links to user page --}}
+                {{#unless session.user.isAuthor}}
+                    {{#gh-user-active user=user as |component|}}
+                        {{partial 'user-list-item'}}
+                    {{/gh-user-active}}
+                {{else}}
+                    {{#gh-user-active user=user as |component|}}
+                        <li class="ember-view active user-list-item">{{partial 'user-list-item'}}</li>
+                    {{/gh-user-active}}
+                {{/unless}}
+            {{/each}}
+        </div>
+    </section>
+    {{/if}}
 </section>
