@@ -3394,9 +3394,9 @@ klaw@^1.0.0:
   optionalDependencies:
     graceful-fs "^4.1.9"
 
-knex-migrator@2.0.8:
-  version "2.0.8"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-2.0.8.tgz#d4cd867a4141a8dd52be441aa3aeef42ef0caa1a"
+knex-migrator@2.0.9:
+  version "2.0.9"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-2.0.9.tgz#737750592f3e182e02346ba8008d0a54624a07be"
   dependencies:
     bluebird "3.4.6"
     commander "2.9.0"
@@ -3407,7 +3407,7 @@ knex-migrator@2.0.8:
     resolve "1.1.7"
   optionalDependencies:
     mysql "2.11.1"
-    sqlite3 "3.1.6"
+    sqlite3 "3.1.8"
 
 knex@0.12.2:
   version "0.12.2"
@@ -4007,13 +4007,13 @@ mkdirp@0.3.2:
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.3.2.tgz#4bfb891e9c48b93d6b567f2c3cf2dd3f56bcdef8"
 
-mkdirp@0.5.0:
+mkdirp@0.5.0, mkdirp@^0.5.0:
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.0.tgz#1d73076a6df986cd9344e15e71fcc05a4c9abf12"
   dependencies:
     minimist "0.0.8"
 
-mkdirp@0.5.1, mkdirp@0.5.x, mkdirp@0.x.x, "mkdirp@>=0.5 0", mkdirp@^0.5.0, mkdirp@^0.5.1, mkdirp@~0.5.0, mkdirp@~0.5.1:
+mkdirp@0.5.1, mkdirp@0.5.x, mkdirp@0.x.x, "mkdirp@>=0.5 0", mkdirp@^0.5.1, mkdirp@~0.5.0, mkdirp@~0.5.1:
   version "0.5.1"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.1.tgz#30057438eac6cf7f8c4767f38648d6697d75c903"
   dependencies:
@@ -4159,10 +4159,6 @@ nan@^2.3.0, nan@^2.3.3, nan@~2.4.0:
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.4.0.tgz#fb3c59d45fe4effe215f0b890f8adf6eb32d2232"
 
-nan@~2.3.3:
-  version "2.3.5"
-  resolved "https://registry.yarnpkg.com/nan/-/nan-2.3.5.tgz#822a0dc266290ce4cd3a12282ca3e7e364668a08"
-
 natives@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/natives/-/natives-1.1.0.tgz#e9ff841418a6b2ec7a495e939984f78f163e6e31"
@@ -4231,7 +4227,7 @@ nock@9.0.9, nock@^9.0.2:
     propagate "0.4.0"
     qs "^6.0.2"
 
-node-pre-gyp@^0.6.29, node-pre-gyp@~0.6.28, node-pre-gyp@~0.6.31:
+node-pre-gyp@^0.6.29, node-pre-gyp@~0.6.31:
   version "0.6.32"
   resolved "https://registry.yarnpkg.com/node-pre-gyp/-/node-pre-gyp-0.6.32.tgz#fc452b376e7319b3d255f5f34853ef6fd8fe1fd5"
   dependencies:
@@ -5516,13 +5512,6 @@ split@0.3:
 sprintf-js@~1.0.2:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
-
-sqlite3@3.1.6:
-  version "3.1.6"
-  resolved "https://registry.yarnpkg.com/sqlite3/-/sqlite3-3.1.6.tgz#fc65af46fcb63aee7b36035c9e6d5cfe9ee1fab1"
-  dependencies:
-    nan "~2.3.3"
-    node-pre-gyp "~0.6.28"
 
 sqlite3@3.1.8:
   version "3.1.8"
