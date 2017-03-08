@@ -839,7 +839,10 @@ module.exports = {
             owner: DataGenerator.Content.users[0].id,
             admin: DataGenerator.Content.users[1].id,
             editor: DataGenerator.Content.users[2].id,
-            author: DataGenerator.Content.users[3].id
+            author: DataGenerator.Content.users[3].id,
+            admin2: DataGenerator.Content.users[6].id,
+            editor2: DataGenerator.Content.users[4].id,
+            author2: DataGenerator.Content.users[5].id
         }
     },
     roles: {
