@@ -389,23 +389,10 @@ Usage: CTA buttons grouped together horizontally.
     margin-top: 5px;
 }
 
-.gh-btn-lg {
-    padding: 12px 18px;
-    border-radius: 4px;
-    font-size: 1.4rem;
-    line-height: 1.33;
-}
-
-.gh-btn-sm {
-    padding: 7px 10px;
-    border-radius: 2px;
-    font-size: 1rem;
-    line-height: 1.5;
-}
-
 .gh-btn-link {
     border: 0;
 }
+
 
 /* Spin Buttons!
 /* ---------------------------------------------------------- */

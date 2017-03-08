@@ -7,164 +7,49 @@
         <p class="gh-box gh-box-info"><i class="icon-idea"></i>This is a testing ground for experimental features which aren't quite ready for primetime. They may change, break or inexplicably disappear at any time.</p>
 
         {{!-- START: Card Menu Template --}}
-        {{!--
         <div class="gh-setting-header">Card menu</div>
         <div class="gh-setting">
+            <p>This is the intended output of the Ghost 1.0 editor card menu</p>
+
             <div class="gh-cardmenu">
                 <div class="gh-cardmenu-search">
+                    {{inline-svg "search.svg"}}
                     <input class="gh-input gh-cardmenu-search-input" type="text" placeholder="Search for a card..."/>
                 </div>
                 <div class="gh-cardmenu-divider">
-                    Section
+                    Primary
                 </div>
                 <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
+                    <div class="gh-cardmenu-icon">{{inline-svg "text.svg"}}</div>
+                    <div class="gh-cardmenu-label">Text</div>
+                </div>
+                <div class="gh-cardmenu-card">
+                    <div class="gh-cardmenu-icon">{{inline-svg "markdown.svg"}}</div>
+                    <div class="gh-cardmenu-label">Markdown</div>
+                </div>
+                <div class="gh-cardmenu-card">
+                    <div class="gh-cardmenu-icon">{{inline-svg "photos.svg"}}</div>
                     <div class="gh-cardmenu-label">Image</div>
                 </div>
                 <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
+                    <div class="gh-cardmenu-icon">{{inline-svg "brackets.svg"}}</div>
+                    <div class="gh-cardmenu-label">Embed</div>
                 </div>
                 <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
+                    <div class="gh-cardmenu-icon">{{inline-svg "line.svg"}}</div>
+                    <div class="gh-cardmenu-label">Divider</div>
                 </div>
                 <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-divider">
-                    Section
+                    <div class="gh-cardmenu-icon">{{inline-svg "list-bullet.svg"}}</div>
+                    <div class="gh-cardmenu-label">Bullet list</div>
                 </div>
                 <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-divider">
-                    Section
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-divider">
-                    Section
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
-                </div>
-                <div class="gh-cardmenu-card">
-                    <div class="gh-cardmenu-icon">Icon</div>
-                    <div class="gh-cardmenu-label">Image</div>
+                    <div class="gh-cardmenu-icon">{{inline-svg "list-number.svg"}}</div>
+                    <div class="gh-cardmenu-label">Number list</div>
                 </div>
             </div>
+
         </div>
-        --}}
         {{!-- END: Card Menu Template --}}
 
         <div class="gh-setting-header">Migration options</div>

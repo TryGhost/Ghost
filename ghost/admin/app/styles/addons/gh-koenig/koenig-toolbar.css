@@ -30,6 +30,9 @@
 }
 
 .gh-toolbar-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     height: 40px;
     width: 32px;
     font-size: 1.6rem;
@@ -46,10 +49,23 @@
     padding-right: 8px;
 }
 
+.gh-toolbar-btn svg {
+    height: 1.4rem;
+}
+
+.gh-toolbar-btn svg g {
+    stroke-width: 2px;
+    stroke: color(var(--lightgrey) l(-10%));
+}
+
 .gh-toolbar-btn:hover {
     color: #fff;
     cursor: pointer;
     text-shadow: #000 0 1px 6px;
+}
+
+.gh-toolbar-btn:hover svg g {
+    stroke: #fff;
 }
 
 .gh-toolbar-btn-bold {
