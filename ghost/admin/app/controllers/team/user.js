@@ -16,6 +16,7 @@ const {Handlebars} = Ember;
 
 export default Controller.extend({
     showDeleteUserModal: false,
+    showSuspendUserModal: false,
     showTransferOwnerModal: false,
     showUploadCoverModal: false,
     showUplaodImageModal: false,
@@ -190,7 +191,6 @@ export default Controller.extend({
                 window.history.replaceState({path: newPath}, '', newPath);
             }
 
-            this.toggleProperty('submitting');
             this.get('notifications').closeAlerts('user.update');
 
             return model;
@@ -219,6 +219,28 @@ export default Controller.extend({
         toggleDeleteUserModal() {
             if (this.get('deleteUserActionIsVisible')) {
                 this.toggleProperty('showDeleteUserModal');
+            }
+        },
+
+        suspendUser() {
+            this.get('model').set('status', 'inactive');
+            return this.get('save').perform();
+        },
+
+        toggleSuspendUserModal() {
+            if (this.get('deleteUserActionIsVisible')) {
+                this.toggleProperty('showSuspendUserModal');
+            }
+        },
+
+        unsuspendUser() {
+            this.get('model').set('status', 'active');
+            return this.get('save').perform();
+        },
+
+        toggleUnsuspendUserModal() {
+            if (this.get('deleteUserActionIsVisible')) {
+                this.toggleProperty('showUnsuspendUserModal');
             }
         },
 

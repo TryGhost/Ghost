@@ -53,9 +53,12 @@ export default Model.extend(ValidationEngine, {
         return this.get('id') === this.get('session.user.id');
     }),
 
-    active: computed('status', function () {
+    isActive: computed('status', function () {
+        // TODO: review "locked" as an "active" status
         return ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'].indexOf(this.get('status')) > -1;
     }),
+
+    isSuspended: equal('status', 'inactive'),
 
     role: computed('roles', {
         get() {

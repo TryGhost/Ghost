@@ -1,13 +1,17 @@
 <section class="gh-view">
     <header class="view-header">
         {{#gh-view-title openMobileMenu="openMobileMenu"}}
-            {{link-to "Team" "team"}}
+            {{link-to "Team" "team" data-test-team-link=true}}
             <i class="icon-arrow-right"></i> <span>{{user.name}}</span>
+
+            {{#if user.isSuspended}}
+            <i></i> <span class="gh-badge administrator" data-test-suspended-badge>Suspended</span>
+            {{/if}}
         {{/gh-view-title}}
         <section class="view-actions">
             {{#if userActionsAreVisible}}
                 <span class="dropdown">
-                    {{#gh-dropdown-button dropdownName="user-actions-menu" classNames="gh-btn gh-btn-default only-has-icon user-actions-cog" title="User Actions"}}
+                    {{#gh-dropdown-button dropdownName="user-actions-menu" classNames="gh-btn gh-btn-default only-has-icon user-actions-cog" title="User Actions" data-test-user-actions=true}}
                         <span>
                             <i class="icon-settings"></i>
                             <span class="hidden">User Settings</span>
@@ -29,23 +33,54 @@
                         {{/if}}
                         {{#if deleteUserActionIsVisible}}
                             <li>
-                                <button {{action "toggleDeleteUserModal"}} class="delete">
+                                <button {{action "toggleDeleteUserModal"}} class="delete" data-test-delete-button>
                                     Delete User
                                 </button>
-                                {{#if showDeleteUserModal}}
-                                    {{gh-fullscreen-modal "delete-user"
-                                                          model=user
-                                                          confirm=(action "deleteUser")
-                                                          close=(action "toggleDeleteUserModal")
-                                                          modifier="action wide"}}
-                                {{/if}}
                             </li>
+                            {{#if user.isActive}}
+                                <li>
+                                    <button {{action "toggleSuspendUserModal"}} class="suspend" data-test-suspend-button>
+                                        Suspend User
+                                    </button>
+                                </li>
+                            {{/if}}
+                            {{#if user.isSuspended}}
+                                <li>
+                                    <button {{action "toggleUnsuspendUserModal"}} class="unsuspend" data-test-unsuspend-button>
+                                        Un-suspend User
+                                    </button>
+                                </li>
+                            {{/if}}
                         {{/if}}
                     {{/gh-dropdown}}
                 </span>
             {{/if}}
 
             {{gh-task-button class="gh-btn gh-btn-blue" task=save}}
+
+            {{#if showDeleteUserModal}}
+                {{gh-fullscreen-modal "delete-user"
+                                      model=user
+                                      confirm=(action "deleteUser")
+                                      close=(action "toggleDeleteUserModal")
+                                      modifier="action wide"}}
+            {{/if}}
+
+            {{#if showSuspendUserModal}}
+                {{gh-fullscreen-modal "suspend-user"
+                                      model=user
+                                      confirm=(action "suspendUser")
+                                      close=(action "toggleSuspendUserModal")
+                                      modifier="action wide"}}
+            {{/if}}
+
+            {{#if showUnsuspendUserModal}}
+                {{gh-fullscreen-modal "unsuspend-user"
+                                      model=user
+                                      confirm=(action "unsuspendUser")
+                                      close=(action "toggleUnsuspendUserModal")
+                                      modifier="action wide"}}
+            {{/if}}
         </section>
     </header>
 

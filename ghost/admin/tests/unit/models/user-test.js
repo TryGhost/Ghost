@@ -13,29 +13,27 @@ describe('Unit: Model: user', function () {
         expect(model.get('validationType')).to.equal('user');
     });
 
-    it('active property is correct', function () {
+    it('isActive/isSuspended properties are correct', function () {
         let model = this.subject({
             status: 'active'
         });
 
-        expect(model.get('active')).to.be.ok;
+        expect(model.get('isActive')).to.be.ok;
+        expect(model.get('isSuspended')).to.not.be.ok;
 
         ['warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'].forEach(function (status) {
             run(() => {
                 model.set('status', status);
             });
-            expect(model.get('status')).to.be.ok;
+            expect(model.get('isActive')).to.be.ok;
+            expect(model.get('isSuspended')).to.not.be.ok;
         });
 
         run(() => {
             model.set('status', 'inactive');
         });
-        expect(model.get('active')).to.not.be.ok;
-
-        run(() => {
-            model.set('status', 'invited');
-        });
-        expect(model.get('active')).to.not.be.ok;
+        expect(model.get('isSuspended')).to.be.ok;
+        expect(model.get('isActive')).to.not.be.ok;
     });
 
     it('role property is correct', function () {
