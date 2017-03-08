@@ -3,6 +3,7 @@ var debug = require('debug')('ghost:themes'),
     logging = require('../logging'),
     i18n = require('../i18n'),
     themeLoader = require('./loader'),
+    validate = require('./validate'),
     settingsCache = require('../settings/cache');
 
 // @TODO: reduce the amount of things we expose to the outside world
@@ -22,8 +23,17 @@ module.exports = {
         // Just read the active theme for now
         return themeLoader
             .loadOneTheme(activeThemeName)
-            .then(function activeThemeHasLoaded() {
-                debug('Activating theme (method A on boot)', activeThemeName);
+            .then(function activeThemeHasLoaded(theme) {
+                // Validate
+                return validate
+                    .check(theme)
+                    .then(function resultHandler(/* checkedTheme */) {
+                        debug('Activating theme (method A on boot)', activeThemeName);
+                    })
+                    .catch(function () {
+                        // Active theme is not valid, we don't want to exit because the admin panel will still work
+                        logging.warn(i18n.t('errors.middleware.themehandler.invalidTheme', {theme: activeThemeName}));
+                    });
             })
             .catch(function () {
                 // Active theme is missing, we don't want to exit because the admin panel will still work
@@ -34,6 +44,6 @@ module.exports = {
     loadAll: themeLoader.loadAllThemes,
     loadOne: themeLoader.loadOneTheme,
     list: require('./list'),
-    validate: require('./validate'),
+    validate: validate,
     toJSON: require('./to-json')
 };
