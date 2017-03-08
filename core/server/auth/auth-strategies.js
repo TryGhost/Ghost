@@ -128,7 +128,7 @@ strategies = {
                 });
         };
 
-        models.User.getByEmail(profile.email, options)
+        models.User.findOne({ghost_auth_id: profile.id}, options)
             .then(function fetchedUser(user) {
                 if (user) {
                     return user;
@@ -142,7 +142,12 @@ strategies = {
             })
             .then(function updateGhostAuthToken(user) {
                 options.id = user.id;
-                return models.User.edit({ghost_auth_access_token: ghostAuthAccessToken}, options);
+
+                return models.User.edit({
+                    email: profile.email,
+                    ghost_auth_id: profile.id,
+                    ghost_auth_access_token: ghostAuthAccessToken
+                }, options);
             })
             .then(function returnResponse(user) {
                 done(null, user, profile);
