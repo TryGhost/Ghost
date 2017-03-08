@@ -2,11 +2,11 @@ import RSVP from 'rsvp';
 import Controller from 'ember-controller';
 import computed, {notEmpty} from 'ember-computed';
 import injectService from 'ember-service/inject';
-import SettingsSaveMixin from 'ghost-admin/mixins/settings-save';
+import {task} from 'ember-concurrency';
 import NavigationItem from 'ghost-admin/models/navigation-item';
 import $ from 'jquery';
 
-export default Controller.extend(SettingsSaveMixin, {
+export default Controller.extend({
     config: injectService(),
     ghostPaths: injectService(),
     notifications: injectService(),
@@ -29,7 +29,7 @@ export default Controller.extend(SettingsSaveMixin, {
         this.set('newNavItem', NavigationItem.create({isNew: true}));
     },
 
-    save() {
+    save: task(function* () {
         let navItems = this.get('model.navigation');
         let newNavItem = this.get('newNavItem');
         let notifications = this.get('notifications');
@@ -43,14 +43,17 @@ export default Controller.extend(SettingsSaveMixin, {
             validationPromises.pushObject(item.validate());
         });
 
-        return RSVP.all(validationPromises).then(() => {
-            return this.get('model').save().catch((err) => {
-                notifications.showAPIError(err);
-            });
-        }).catch(() => {
-            // TODO: noop - needed to satisfy spinner button
-        });
-    },
+        try {
+            yield RSVP.all(validationPromises);
+            return yield this.get('model').save();
+
+        } catch (error) {
+            if (error) {
+                notifications.showAPIError(error);
+                throw error;
+            }
+        }
+    }),
 
     addNewNavItem() {
         let navItems = this.get('model.navigation');

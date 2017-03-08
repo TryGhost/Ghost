@@ -10,6 +10,7 @@ import startApp from '../../helpers/start-app';
 import destroyApp from '../../helpers/destroy-app';
 import Mirage from 'ember-cli-mirage';
 import {invalidateSession, authenticateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
+import testSelector from 'ember-test-selectors';
 
 describe('Acceptance: Settings - Apps - Slack', function () {
     let application;
@@ -73,7 +74,7 @@ describe('Acceptance: Settings - Apps - Slack', function () {
             });
 
             fillIn('#slack-settings input[name="slack[url]"]', 'notacorrecturl');
-            click('#saveSlackIntegration');
+            click(testSelector('save-button'));
 
             andThen(() => {
                 expect(find('#slack-settings .error .response').text().trim(), 'inline validation response')
@@ -81,7 +82,7 @@ describe('Acceptance: Settings - Apps - Slack', function () {
             });
 
             fillIn('#slack-settings input[name="slack[url]"]', 'https://hooks.slack.com/services/1275958430');
-            click('#sendTestNotification');
+            click(testSelector('send-notification-button'));
 
             andThen(() => {
                 expect(find('.gh-alert-blue').length, 'modal element').to.equal(1);
@@ -91,7 +92,7 @@ describe('Acceptance: Settings - Apps - Slack', function () {
 
             andThen(() => {
                 server.put('/settings/', function () {
-                    return new Mirage.Response(402, {}, {
+                    return new Mirage.Response(422, {}, {
                         errors: [
                             {
                                 errorType: 'ValidationError',
@@ -103,7 +104,7 @@ describe('Acceptance: Settings - Apps - Slack', function () {
             });
 
             click('.gh-alert-blue .gh-alert-close');
-            click('#sendTestNotification');
+            click(testSelector('send-notification-button'));
 
             // we shouldn't try to send the test request if the save fails
             andThen(() => {

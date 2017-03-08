@@ -91,7 +91,7 @@
                 <div class="gh-setting-desc">Send yourself a test email to make sure everything is working</div>
             </div>
             <div class="gh-setting-action">
-                {{#gh-spin-button id="sendtestemail" class="gh-btn gh-btn-hover-blue" action="sendTestEmail" submitting=submitting}}<span>Send</span>{{/gh-spin-button}}
+                {{gh-task-button "Send" successText="Sent" task=sendTestEmail class="gh-btn gh-btn-hover-blue"}}
             </div>
         </div>
 

@@ -69,6 +69,45 @@ fieldset[disabled] .gh-btn {
 }
 
 
+/* Grey button - First so that other colors will override
+/* ---------------------------------------------------------- */
+
+/* The background of the button creates 1px gradient border */
+.gh-btn-grey {
+    padding: 1px;
+    border: 0;
+    color: color(var(--darkgrey) l(+15%));
+    text-shadow: 0 1px 0 #fff;
+    fill: var(--darkgrey);
+    background: linear-gradient(
+    color(var(--lightgrey) l(-3%)),
+    color(var(--lightgrey) l(-8%))
+    );
+    box-shadow: 0 1px 0 rgba(0,0,0,0.05);
+    transition: none !important;
+}
+
+/* The background of the span is the main visual element */
+.gh-btn-grey span {
+    background: linear-gradient(
+    color(var(--lightgrey) l(+10%)),
+    color(var(--lightgrey) l(+4%))
+    );
+    box-shadow: 0 1px 0 #fff inset;
+}
+
+/* When clicked or focused with keyboard */
+.gh-btn-grey:active,
+.gh-btn-grey:focus {
+    background: color(var(--midgrey) l(+25%));
+}
+.gh-btn-grey:active span,
+.gh-btn-grey:focus span {
+    background: color(var(--lightgrey) l(+15%));
+    box-shadow: none;
+}
+
+
 /* Blue button
 /* ---------------------------------------------------------- */
 
@@ -230,43 +269,6 @@ fieldset[disabled] .gh-btn {
     box-shadow: none;
 }
 
-/* Grey button
-/* ---------------------------------------------------------- */
-
-/* The background of the button creates 1px gradient border */
-.gh-btn-grey {
-    padding: 1px;
-    border: 0;
-    color: color(var(--darkgrey) l(+15%));
-    text-shadow: 0 1px 0 #fff;
-    fill: var(--darkgrey);
-    background: linear-gradient(
-    color(var(--lightgrey) l(-3%)),
-    color(var(--lightgrey) l(-8%))
-    );
-    box-shadow: 0 1px 0 rgba(0,0,0,0.05);
-    transition: none !important;
-}
-
-/* The background of the span is the main visual element */
-.gh-btn-grey span {
-    background: linear-gradient(
-    color(var(--lightgrey) l(+10%)),
-    color(var(--lightgrey) l(+4%))
-    );
-    box-shadow: 0 1px 0 #fff inset;
-}
-
-/* When clicked or focused with keyboard */
-.gh-btn-grey:active,
-.gh-btn-grey:focus {
-    background: color(var(--midgrey) l(+25%));
-}
-.gh-btn-grey:active span,
-.gh-btn-grey:focus span {
-    background: color(var(--lightgrey) l(+15%));
-    box-shadow: none;
-}
 
 /* Special Buttons
 /* ---------------------------------------------------------- */

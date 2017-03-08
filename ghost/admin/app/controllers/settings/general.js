@@ -3,10 +3,10 @@ import computed from 'ember-computed';
 import injectService from 'ember-service/inject';
 import observer from 'ember-metal/observer';
 import run from 'ember-runloop';
-import SettingsSaveMixin from 'ghost-admin/mixins/settings-save';
 import randomPassword from 'ghost-admin/utils/random-password';
+import {task} from 'ember-concurrency';
 
-export default Controller.extend(SettingsSaveMixin, {
+export default Controller.extend({
 
     availableTimezones: null,
 
@@ -58,10 +58,12 @@ export default Controller.extend(SettingsSaveMixin, {
         });
     },
 
-    save() {
+    save: task(function* () {
         let notifications = this.get('notifications');
         let config = this.get('config');
-        return this.get('model').save().then((model) => {
+
+        try {
+            let model = yield this.get('model').save();
             config.set('blogTitle', model.get('title'));
 
             // this forces the document title to recompute after
@@ -69,13 +71,14 @@ export default Controller.extend(SettingsSaveMixin, {
             this.send('collectTitleTokens', []);
 
             return model;
-        }).catch((error) => {
+
+        } catch (error) {
             if (error) {
                 notifications.showAPIError(error, {key: 'settings.save'});
             }
             throw error;
-        });
-    },
+        }
+    }),
 
     actions: {
         setTimezone(timezone) {
@@ -146,7 +149,7 @@ export default Controller.extend(SettingsSaveMixin, {
                 this.get('model.hasValidated').pushObject('facebook');
 
                 // User input is validated
-                return this.save().then(() => {
+                return this.get('save').perform().then(() => {
                     this.set('model.facebook', '');
                     run.schedule('afterRender', this, function () {
                         this.set('model.facebook', newUrl);
@@ -209,7 +212,7 @@ export default Controller.extend(SettingsSaveMixin, {
                 this.get('model.hasValidated').pushObject('twitter');
 
                 // User input is validated
-                return this.save().then(() => {
+                return this.get('save').perform().then(() => {
                     this.set('model.twitter', '');
                     run.schedule('afterRender', this, function () {
                         this.set('model.twitter', newUrl);

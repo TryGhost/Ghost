@@ -1,5 +1,6 @@
 import Controller from 'ember-controller';
 import injectService from 'ember-service/inject';
+import {task} from 'ember-concurrency';
 
 export default Controller.extend({
     notifications: injectService(),
@@ -7,31 +8,24 @@ export default Controller.extend({
     // will be set by route
     settings: null,
 
-    isSaving: false,
+    save: task(function* () {
+        let amp = this.get('model');
+        let settings = this.get('settings');
+
+        settings.set('amp', amp);
+
+        try {
+            return yield settings.save();
+
+        } catch (error) {
+            this.get('notifications').showAPIError(error);
+            throw error;
+        }
+    }).drop(),
 
     actions: {
         update(value) {
             this.set('model', value);
-        },
-
-        save() {
-            let amp = this.get('model');
-            let settings = this.get('settings');
-
-            if (this.get('isSaving')) {
-                return;
-            }
-
-            settings.set('amp', amp);
-
-            this.set('isSaving', true);
-
-            return settings.save().catch((err) => {
-                this.get('notifications').showAPIError(err);
-                throw err;
-            }).finally(() => {
-                this.set('isSaving', false);
-            });
         }
     }
 });

@@ -4,6 +4,7 @@ import Controller from 'ember-controller';
 import injectService from 'ember-service/inject';
 import {isBlank} from 'ember-utils';
 import {isEmberArray} from 'ember-array/utils';
+import {task} from 'ember-concurrency';
 import {UnsupportedMediaTypeError, isUnsupportedMediaTypeError} from 'ghost-admin/services/ajax';
 
 const {Promise} = RSVP;
@@ -62,6 +63,20 @@ export default Controller.extend({
         return RSVP.resolve();
     },
 
+    sendTestEmail: task(function* () {
+        let notifications = this.get('notifications');
+        let emailUrl = this.get('ghostPaths.url').api('mail', 'test');
+
+        try {
+            yield this.get('ajax').post(emailUrl);
+            notifications.showAlert('Check your email for the test message.', {type: 'info', key: 'test-email.send.success'});
+            return true;
+
+        } catch (error) {
+            notifications.showAPIError(error, {key: 'test-email:send'});
+        }
+    }).drop(),
+
     actions: {
         onUpload(file) {
             let formData = new FormData();
@@ -116,21 +131,6 @@ export default Controller.extend({
             }
 
             iframe.attr('src', downloadURL);
-        },
-
-        sendTestEmail() {
-            let notifications = this.get('notifications');
-            let emailUrl = this.get('ghostPaths.url').api('mail', 'test');
-
-            this.toggleProperty('submitting');
-
-            this.get('ajax').post(emailUrl).then(() => {
-                notifications.showAlert('Check your email for the test message.', {type: 'info', key: 'test-email.send.success'});
-                this.toggleProperty('submitting');
-            }).catch((error) => {
-                notifications.showAPIError(error, {key: 'test-email:send'});
-                this.toggleProperty('submitting');
-            });
         },
 
         toggleDeleteAllModal() {
