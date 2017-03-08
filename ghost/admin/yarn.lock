@@ -2460,9 +2460,9 @@ ember-lifeline@1.0.0:
   dependencies:
     ember-cli-babel "^5.1.7"
 
-ember-light-table@1.8.3:
-  version "1.8.3"
-  resolved "https://registry.yarnpkg.com/ember-light-table/-/ember-light-table-1.8.3.tgz#b72c637c600f40c866362068d4ec2875fe42f70f"
+ember-light-table@1.8.4:
+  version "1.8.4"
+  resolved "https://registry.yarnpkg.com/ember-light-table/-/ember-light-table-1.8.4.tgz#73f361ccab3bbb84835d99e508ef3c576813b215"
   dependencies:
     ember-cli-babel "^5.1.7"
     ember-cli-htmlbars "^1.0.11"
