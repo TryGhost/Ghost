@@ -2381,15 +2381,7 @@ ember-get-helper@~1.1.0:
     ember-cli-babel "^5.1.6"
     ember-cli-version-checker "^1.1.3"
 
-ember-getowner-polyfill@1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/ember-getowner-polyfill/-/ember-getowner-polyfill-1.2.1.tgz#606559ce8f81afa0e2c0a46a6b63a093987a4be8"
-  dependencies:
-    ember-cli-babel "^5.1.6"
-    ember-cli-version-checker "^1.2.0"
-    ember-factory-for-polyfill "^1.1.0"
-
-ember-getowner-polyfill@^1.1.0, ember-getowner-polyfill@^1.1.1:
+ember-getowner-polyfill@^1.1.0, ember-getowner-polyfill@^1.1.1, ember-getowner-polyfill@^1.2.1:
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/ember-getowner-polyfill/-/ember-getowner-polyfill-1.2.2.tgz#cdab739e89cc8f25af0f78735422df1a61193e92"
   dependencies:
@@ -4393,13 +4385,13 @@ liquid-fire@0.27.1:
     match-media "^0.2.0"
     velocity-animate ">= 0.11.8"
 
-liquid-wormhole@2.0.3:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/liquid-wormhole/-/liquid-wormhole-2.0.3.tgz#5c3154975105983d8d168a3e9b6372f780a28d67"
+liquid-wormhole@2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/liquid-wormhole/-/liquid-wormhole-2.0.4.tgz#8121e9f7594297a4833f6afb0f0a8a3e0b092844"
   dependencies:
     ember-cli-babel "^5.1.7"
     ember-cli-htmlbars "^1.1.1"
-    ember-getowner-polyfill "1.2.1"
+    ember-getowner-polyfill "^1.2.1"
     ember-weakmap "2.0.0"
     perf-primitives "0.0.4"
 
