@@ -6,7 +6,7 @@ var _ = require('lodash'),
     ghostVersion = require('../../utils/ghost-version'),
     errors      = require('../../errors'),
     logging     = require('../../logging'),
-    settings    = require('../../api/settings'),
+    models      = require('../../models'),
     i18n        = require('../../i18n'),
     excludedTables = ['accesstokens', 'refreshtokens', 'clients', 'client_trusted_domains'],
     modelOptions = {context: {internal: true}},
@@ -23,10 +23,11 @@ exportFileName = function exportFileName() {
     var datetime = (new Date()).toJSON().substring(0, 10),
         title = '';
 
-    return settings.read(_.extend({}, {key: 'title'}, modelOptions)).then(function (result) {
+    return models.Settings.findOne(_.merge({key: 'title'}, modelOptions)).then(function (result) {
         if (result) {
-            title = serverUtils.safeString(result.settings[0].value) + '.';
+            title = serverUtils.safeString(result.get('value')) + '.';
         }
+
         return title + 'ghost.' + datetime + '.json';
     }).catch(function (err) {
         logging.error(new errors.GhostError({err: err}));
