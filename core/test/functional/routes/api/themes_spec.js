@@ -2,13 +2,12 @@ var testUtils = require('../../../utils'),
     should = require('should'),
     supertest = require('supertest'),
     fs = require('fs-extra'),
-    path = require('path'),
+    join = require('path').join,
+    tmp = require('tmp'),
     _ = require('lodash'),
-    ghost = testUtils.startGhost,
-    config = require('../../../../../core/server/config'),
     request;
 
-describe('Themes API', function () {
+describe('Themes API (Forked)', function () {
     var scope = {
         ownerAccessToken: '',
         editorAccessToken: '',
@@ -22,46 +21,68 @@ describe('Themes API', function () {
                 .attach(fieldName, themePath);
         },
         editor: null
-    }, ghostServer;
+    }, forkedGhost, tmpContentPath;
+
+    function setupThemesFolder() {
+        tmpContentPath = tmp.dirSync({unsafeCleanup: true});
+
+        fs.mkdirSync(join(tmpContentPath.name, 'themes'));
+        fs.mkdirSync(join(tmpContentPath.name, 'themes', 'casper'));
+        fs.writeFileSync(
+            join(tmpContentPath.name, 'themes', 'casper', 'package.json'),
+            JSON.stringify({name: 'casper', version: '0.1.2'})
+        );
+    }
+
+    function teardownThemesFolder() {
+        return tmpContentPath.removeCallback();
+    }
 
     before(function (done) {
-        ghost().then(function (_ghostServer) {
-            ghostServer = _ghostServer;
-            return ghostServer.start();
-        }).then(function () {
-            request = supertest.agent(config.get('url'));
-        }).then(function () {
-            return testUtils.doAuth(request);
-        }).then(function (token) {
-            scope.ownerAccessToken = token;
+        // Setup a temporary themes directory
+        setupThemesFolder();
+        // Fork Ghost to read from the temp directory, not the developer's themes
+        testUtils.fork.ghost({
+            paths: {
+                contentPath: tmpContentPath.name
+            }
+        }, 'themetests')
+            .then(function (child) {
+                forkedGhost = child;
+                request = supertest('http://127.0.0.1:' + child.port);
+            })
+            .then(function () {
+                return testUtils.doAuth(request);
+            })
+            .then(function (token) {
+                scope.ownerAccessToken = token;
 
-            return testUtils.createUser({
-                user: testUtils.DataGenerator.forKnex.createUser({email: 'test+1@ghost.org'}),
-                role: testUtils.DataGenerator.Content.roles[1]
-            });
-        }).then(function (user) {
-            scope.editor = user;
+                return testUtils.createUser({
+                    user: testUtils.DataGenerator.forKnex.createUser({email: 'test+1@ghost.org'}),
+                    role: testUtils.DataGenerator.Content.roles[1]
+                });
+            })
+            .then(function (user) {
+                scope.editor = user;
 
-            request.user = scope.editor;
-            return testUtils.doAuth(request);
-        }).then(function (token) {
-            scope.editorAccessToken = token;
-            done();
-        }).catch(done);
+                request.user = scope.editor;
+                return testUtils.doAuth(request);
+            })
+            .then(function (token) {
+                scope.editorAccessToken = token;
+                done();
+            })
+            .catch(done);
     });
 
-    after(function () {
-        // clean successful uploaded themes
-        fs.removeSync(config.getContentPath('themes') + '/valid');
-        fs.removeSync(config.getContentPath('themes') + '/casper.zip');
+    after(function (done) {
+        teardownThemesFolder();
 
-        // gscan creates /test/tmp in test mode
-        fs.removeSync(config.get('paths').appRoot + '/test');
-
-        return testUtils.clearData()
-            .then(function () {
-                return ghostServer.stop();
-            });
+        if (forkedGhost) {
+            forkedGhost.kill(done);
+        } else {
+            done(new Error('No forked ghost process exists, test setup must have failed.'));
+        }
     });
 
     describe('success cases', function () {
@@ -76,59 +97,18 @@ describe('Themes API', function () {
                     var jsonResponse = res.body;
                     should.exist(jsonResponse.themes);
                     testUtils.API.checkResponse(jsonResponse, 'themes');
-                    jsonResponse.themes.length.should.be.above(0);
+                    jsonResponse.themes.length.should.eql(1);
+
+                    testUtils.API.checkResponse(jsonResponse.themes[0], 'theme');
+                    jsonResponse.themes[0].name.should.eql('casper');
+                    jsonResponse.themes[0].package.should.be.an.Object().with.properties('name', 'version');
+                    jsonResponse.themes[0].active.should.be.true();
+
                     done();
                 });
         });
 
-        it('upload theme', function (done) {
-            scope.uploadTheme({themePath: path.join(__dirname, '/../../../utils/fixtures/themes/valid.zip')})
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    res.statusCode.should.eql(200);
-                    should.exist(res.body.themes);
-                    res.body.themes.length.should.eql(1);
-
-                    should.exist(res.body.themes[0].name);
-                    should.exist(res.body.themes[0].package);
-
-                    // upload same theme again to force override
-                    scope.uploadTheme({themePath: path.join(__dirname, '/../../../utils/fixtures/themes/valid.zip')})
-                        .end(function (err) {
-                            if (err) {
-                                return done(err);
-                            }
-
-                            // ensure contains two files (zip and extracted theme)
-                            fs.readdirSync(config.getContentPath('themes')).join().match(/valid/gi).length.should.eql(1);
-                            done();
-                        });
-                });
-        });
-
-        it('get all themes + new theme', function (done) {
-            request.get(testUtils.API.getApiQuery('themes/'))
-                .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    var jsonResponse = res.body;
-                    should.exist(jsonResponse.themes);
-                    testUtils.API.checkResponse(jsonResponse, 'themes');
-                    jsonResponse.themes.length.should.be.above(0);
-
-                    // ensure the new 'valid' theme is available
-                    should.exist(_.find(jsonResponse.themes, {name: 'valid'}));
-                    done();
-                });
-        });
-
-        it('download theme uuid', function (done) {
+        it('download theme', function (done) {
             request.get(testUtils.API.getApiQuery('themes/casper/download/'))
                 .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
                 .expect('Content-Type', /application\/zip/)
@@ -143,25 +123,137 @@ describe('Themes API', function () {
                 });
         });
 
-        it('delete theme uuid', function (done) {
-            request.del(testUtils.API.getApiQuery('themes/valid'))
-                .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
-                .expect(204)
-                .end(function (err) {
+        it('upload theme', function (done) {
+            var jsonResponse;
+
+            scope.uploadTheme({themePath: join(__dirname, '/../../../utils/fixtures/themes/valid.zip')})
+                .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
 
-                    fs.existsSync(config.getContentPath('themes') + '/valid').should.eql(false);
-                    fs.existsSync(config.getContentPath('themes') + '/valid.zip').should.eql(false);
-                    done();
+                    jsonResponse = res.body;
+
+                    should.exist(jsonResponse.themes);
+                    testUtils.API.checkResponse(jsonResponse, 'themes');
+                    jsonResponse.themes.length.should.eql(1);
+                    testUtils.API.checkResponse(jsonResponse.themes[0], 'theme');
+                    jsonResponse.themes[0].name.should.eql('valid');
+                    jsonResponse.themes[0].active.should.be.false();
+
+                    // upload same theme again to force override
+                    scope.uploadTheme({themePath: join(__dirname, '/../../../utils/fixtures/themes/valid.zip')})
+                        .end(function (err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            jsonResponse = res.body;
+
+                            should.exist(jsonResponse.themes);
+                            testUtils.API.checkResponse(jsonResponse, 'themes');
+                            jsonResponse.themes.length.should.eql(1);
+                            testUtils.API.checkResponse(jsonResponse.themes[0], 'theme');
+                            jsonResponse.themes[0].name.should.eql('valid');
+                            jsonResponse.themes[0].active.should.be.false();
+
+                            // ensure tmp theme folder contains two themes now
+                            var tmpFolderContents = fs.readdirSync(join(tmpContentPath.name, 'themes'));
+                            tmpFolderContents.should.be.an.Array().with.lengthOf(2);
+                            tmpFolderContents[0].should.eql('casper');
+                            tmpFolderContents[1].should.eql('valid');
+
+                            // Check the Themes API returns the correct result
+                            request.get(testUtils.API.getApiQuery('themes/'))
+                                .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
+                                .expect(200)
+                                .end(function (err, res) {
+                                    if (err) {
+                                        return done(err);
+                                    }
+
+                                    var addedTheme, casperTheme;
+                                    jsonResponse = res.body;
+
+                                    should.exist(jsonResponse.themes);
+                                    testUtils.API.checkResponse(jsonResponse, 'themes');
+                                    jsonResponse.themes.length.should.eql(2);
+
+                                    // Casper should be present and still active
+                                    casperTheme = _.find(jsonResponse.themes, {name: 'casper'});
+                                    should.exist(casperTheme);
+                                    testUtils.API.checkResponse(casperTheme, 'theme');
+                                    casperTheme.active.should.be.true();
+
+                                    // The added theme should be here
+                                    addedTheme = _.find(jsonResponse.themes, {name: 'valid'});
+                                    should.exist(addedTheme);
+                                    testUtils.API.checkResponse(addedTheme, 'theme');
+                                    addedTheme.active.should.be.false();
+
+                                    done();
+                                });
+                        });
+                });
+        });
+
+        // NOTE: This test requires the previous upload test
+        // @TODO make this test independent
+        it('delete theme', function (done) {
+            var jsonResponse;
+
+            request.del(testUtils.API.getApiQuery('themes/valid'))
+                .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
+                .expect(204)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    jsonResponse = res.body;
+                    // Delete requests have empty bodies
+                    jsonResponse.should.eql({});
+
+                    // ensure tmp theme folder contains one theme again now
+                    var tmpFolderContents = fs.readdirSync(join(tmpContentPath.name, 'themes'));
+                    tmpFolderContents.should.be.an.Array().with.lengthOf(1);
+                    tmpFolderContents[0].should.eql('casper');
+
+                    // Check the settings API returns the correct result
+                    request.get(testUtils.API.getApiQuery('themes/'))
+                        .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
+                        .expect(200)
+                        .end(function (err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            var deletedTheme, casperTheme;
+                            jsonResponse = res.body;
+
+                            should.exist(jsonResponse.themes);
+                            testUtils.API.checkResponse(jsonResponse, 'themes');
+                            jsonResponse.themes.length.should.eql(1);
+
+                            // Casper should be present and still active
+                            casperTheme = _.find(jsonResponse.themes, {name: 'casper'});
+                            should.exist(casperTheme);
+                            testUtils.API.checkResponse(casperTheme, 'theme');
+                            casperTheme.active.should.be.true();
+
+                            // The deleted theme should not be here
+                            deletedTheme = _.find(jsonResponse.themes, {name: 'valid'});
+                            should.not.exist(deletedTheme);
+
+                            done();
+                        });
                 });
         });
     });
 
     describe('error cases', function () {
         it('upload invalid theme', function (done) {
-            scope.uploadTheme({themePath: path.join(__dirname, '/../../../utils/fixtures/themes/invalid.zip')})
+            scope.uploadTheme({themePath: join(__dirname, '/../../../utils/fixtures/themes/invalid.zip')})
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -176,7 +268,7 @@ describe('Themes API', function () {
         });
 
         it('upload casper.zip', function (done) {
-            scope.uploadTheme({themePath: path.join(__dirname, '/../../../utils/fixtures/themes/casper.zip')})
+            scope.uploadTheme({themePath: join(__dirname, '/../../../utils/fixtures/themes/casper.zip')})
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -194,10 +286,14 @@ describe('Themes API', function () {
             request.del(testUtils.API.getApiQuery('themes/casper'))
                 .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
                 .expect(422)
-                .end(function (err) {
+                .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
+
+                    res.body.errors.length.should.eql(1);
+                    res.body.errors[0].errorType.should.eql('ValidationError');
+                    res.body.errors[0].message.should.eql('Deleting the default casper theme is not allowed.');
 
                     done();
                 });
@@ -207,31 +303,39 @@ describe('Themes API', function () {
             request.del(testUtils.API.getApiQuery('themes/not-existent'))
                 .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
                 .expect(404)
-                .end(function (err) {
+                .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
+
+                    res.body.errors.length.should.eql(1);
+                    res.body.errors[0].errorType.should.eql('NotFoundError');
+                    res.body.errors[0].message.should.eql('Theme does not exist.');
 
                     done();
                 });
         });
 
         it('upload non application/zip', function (done) {
-            scope.uploadTheme({themePath: path.join(__dirname, '/../../../utils/fixtures/csv/single-column-with-header.csv')})
+            scope.uploadTheme({themePath: join(__dirname, '/../../../utils/fixtures/csv/single-column-with-header.csv')})
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
 
                     res.statusCode.should.eql(415);
+                    res.body.errors.length.should.eql(1);
+                    res.body.errors[0].errorType.should.eql('UnsupportedMediaTypeError');
+                    res.body.errors[0].message.should.eql('Please select a valid zip file.');
+
                     done();
                 });
         });
 
-        // @TODO: does not pass in travis with 0.10.x, but local it works
+        // @TODO: make this a nicer error!
         it.skip('upload different field name', function (done) {
             scope.uploadTheme({
-                themePath: path.join(__dirname, '/../../../utils/fixtures/csv/single-column-with-header.csv'),
+                themePath: join(__dirname, '/../../../utils/fixtures/csv/single-column-with-header.csv'),
                 fieldName: 'wrong'
             }).end(function (err, res) {
                 if (err) {
@@ -247,7 +351,7 @@ describe('Themes API', function () {
         describe('As Editor', function () {
             it('no permissions to upload theme', function (done) {
                 scope.uploadTheme({
-                    themePath: path.join(__dirname, '/../../../utils/fixtures/themes/valid.zip'),
+                    themePath: join(__dirname, '/../../../utils/fixtures/themes/valid.zip'),
                     accessToken: scope.editorAccessToken
                 }).end(function (err, res) {
                     if (err) {

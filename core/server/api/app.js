@@ -149,6 +149,11 @@ function apiRoutes() {
         api.http(api.themes.upload)
     );
 
+    apiRouter.put('/themes/:name/activate',
+        authenticatePrivate,
+        api.http(api.themes.activate)
+    );
+
     apiRouter.del('/themes/:name',
         authenticatePrivate,
         api.http(api.themes.destroy)
