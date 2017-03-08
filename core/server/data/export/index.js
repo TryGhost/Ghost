@@ -25,7 +25,7 @@ exportFileName = function exportFileName() {
 
     return models.Settings.findOne(_.merge({key: 'title'}, modelOptions)).then(function (result) {
         if (result) {
-            title = serverUtils.safeString(result.attributes.value) + '.';
+            title = serverUtils.safeString(result.get('value')) + '.';
         }
 
         return title + 'ghost.' + datetime + '.json';
