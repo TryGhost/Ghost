@@ -1,24 +1,44 @@
 var testUtils       = require('../../utils'),
     should          = require('should'),
+    sinon           = require('sinon'),
     Promise         = require('bluebird'),
     _               = require('lodash'),
     models          = require('../../../server/models'),
     errors          = require('../../../server/errors'),
+    events          = require('../../../server/events'),
     UserAPI         = require('../../../server/api/users'),
     db              = require('../../../server/data/db'),
+    sandbox         = sinon.sandbox.create(),
     context         = testUtils.context,
     userIdFor       = testUtils.users.ids,
     roleIdFor       = testUtils.roles.ids;
 
 describe('Users API', function () {
+    var eventsTriggered;
+
     // Keep the DB clean
     before(testUtils.teardown);
+
+    beforeEach(function () {
+        eventsTriggered = {};
+
+        sandbox.stub(events, 'emit', function (eventName, eventObj) {
+            if (!eventsTriggered[eventName]) {
+                eventsTriggered[eventName] = [];
+            }
+
+            eventsTriggered[eventName].push(eventObj);
+        });
+    });
 
     beforeEach(testUtils.setup(
         'users:roles', 'users', 'user:token', 'perms:user', 'perms:role', 'perms:setting', 'perms:init', 'posts'
     ));
 
-    afterEach(testUtils.teardown);
+    afterEach(function () {
+        sandbox.restore();
+        return testUtils.teardown();
+    });
 
     function checkForErrorType(type, done) {
         return function checkForErrorType(error) {
@@ -473,6 +493,10 @@ describe('Users API', function () {
                             ]
                         }, _.extend({}, context.owner, {id: userIdFor.admin})
                     ).then(function () {
+                        Object.keys(eventsTriggered).length.should.eql(2);
+                        should.exist(eventsTriggered['user.edited']);
+                        should.exist(eventsTriggered['user.deactivated']);
+
                         return models.User.findOne({id: userIdFor.admin, status: 'all'}).then(function (response) {
                             response.get('status').should.eql('inactive');
                         });

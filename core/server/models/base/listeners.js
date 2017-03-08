@@ -17,6 +17,25 @@ events.on('token.added', function (tokenModel) {
 });
 
 /**
+ * WHEN user get's suspended (status=inactive), we delete his tokens to ensure
+ * he can't login anymore
+ */
+events.on('user.deactivated', function (userModel) {
+    var options = {id: userModel.id};
+
+    models.Accesstoken.destroyByUser(options)
+        .then(function () {
+            return models.Refreshtoken.destroyByUser(options);
+        })
+        .catch(function (err) {
+            logging.error(new errors.GhostError({
+                err: err,
+                level: 'critical'
+            }));
+        });
+});
+
+/**
  * WHEN timezone changes, we will:
  * - reschedule all scheduled posts
  * - draft scheduled posts, when the published_at would be in the past
