@@ -1,5 +1,4 @@
 var _ = require('lodash'),
-    Promise = require('bluebird'),
     models = require('../models'),
     utils = require('../utils'),
     i18n = require('../i18n'),
@@ -154,7 +153,7 @@ strategies = {
         handleSignIn = function handleSignIn() {
             var user;
 
-            return models.User.findOne({ghost_auth_id: profile.id, status: 'all'}, options)
+            return models.User.findOne({ghost_auth_id: profile.id}, options)
                 .then(function (_user) {
                     user = _user;
 

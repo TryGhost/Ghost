@@ -18,6 +18,7 @@ var _              = require('lodash'),
     bcryptCompare  = Promise.promisify(bcrypt.compare),
 
     activeStates   = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'],
+    allStates      = activeStates.concat(['inactive']),
     User,
     Users;
 
@@ -214,7 +215,7 @@ User = ghostBookshelf.Model.extend({
             return null;
         }
 
-        return this.isPublicContext() ? 'status:[' + activeStates.join(',') + ']' : null;
+        return this.isPublicContext() ? 'status:[' + allStates.join(',') + ']' : null;
     },
 
     defaultFilters: function defaultFilters() {
@@ -222,7 +223,7 @@ User = ghostBookshelf.Model.extend({
             return null;
         }
 
-        return this.isPublicContext() ? null : 'status:[' + activeStates.join(',') + ']';
+        return this.isPublicContext() ? null : 'status:[' + allStates.join(',') + ']';
     }
 }, {
     orderDefaultOptions: function orderDefaultOptions() {
@@ -244,7 +245,7 @@ User = ghostBookshelf.Model.extend({
         // This is the only place that 'options.where' is set now
         options.where = {statements: []};
 
-        var allStates = activeStates, value;
+        var value;
 
         // Filter on the status.  A status of 'all' translates to no filter since we want all statuses
         if (options.status !== 'all') {
@@ -309,7 +310,7 @@ User = ghostBookshelf.Model.extend({
 
         delete data.role;
         data = _.defaults(data || {}, {
-            status: 'active'
+            status: 'all'
         });
 
         status = data.status;
