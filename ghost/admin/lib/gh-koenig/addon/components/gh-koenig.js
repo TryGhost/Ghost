@@ -24,7 +24,6 @@ export default Component.extend({
 
     init() {
         this._super(...arguments);
-        this.container = document.querySelector('.gh-editor-container')[0];
 
         let mobiledoc = this.get('value') || BLANK_DOC;
         let userCards = this.get('cards') || [];

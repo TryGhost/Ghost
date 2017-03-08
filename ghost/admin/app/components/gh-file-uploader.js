@@ -6,7 +6,7 @@ import {isBlank} from 'ember-utils';
 import run from 'ember-runloop';
 import {isEmberArray} from 'ember-array/utils';
 
-import {invoke, invokeAction} from 'ember-invoke-action';
+import {invokeAction} from 'ember-invoke-action';
 import {
     isVersionMismatchError,
     isRequestEntityTooLargeError,
@@ -120,7 +120,7 @@ export default Component.extend({
         event.preventDefault();
         this.set('dragClass', null);
         if (event.dataTransfer.files) {
-            invoke(this, 'fileSelected', event.dataTransfer.files);
+            this.send('fileSelected', event.dataTransfer.files);
         }
     },
 
@@ -165,7 +165,7 @@ export default Component.extend({
 
     _uploadSuccess(response) {
         invokeAction(this, 'uploadSuccess', response);
-        invoke(this, 'reset');
+        this.send('reset');
     },
 
     _uploadFailed(error) {
