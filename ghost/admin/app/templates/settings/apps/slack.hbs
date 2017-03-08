@@ -1,9 +1,7 @@
 <header class="view-header">
     {{#gh-view-title openMobileMenu="openMobileMenu"}}<span style="padding-left:1px">{{#link-to "settings.apps.index"}}Apps{{/link-to}} <i class="icon-arrow-right" style="display:inline"></i> Slack</span>{{/gh-view-title}}
     <section class="view-actions">
-        {{#gh-spin-button id="saveSlackIntegration" class="gh-btn gh-btn-green" action=(action "save") submitting=isSaving}}
-            <span>Save</span>
-        {{/gh-spin-button}}
+        {{gh-task-button task=save class="gh-btn gh-btn-blue" data-test-save-button=true}}
     </section>
 </header>
 <section class="view-container">
@@ -33,10 +31,7 @@
             {{/gh-form-group}}
         </form>
 
-        <form class="app-config-form">
-            {{#gh-spin-button id="sendTestNotification" class="gh-btn gh-btn-grey" disabled=testNotificationDisabled action=(action "sendTestNotification") submitting=isSendingTest}}
-                <span>Send Test Notification</span>
-            {{/gh-spin-button}}
-        </form>
+        {{gh-task-button "Send Test Notification" task=sendTestNotification successText="Sent" class="gh-btn gh-btn-grey" disabled=testNotificationDisabled data-test-send-notification-button=true}}
+
     </section>
 </section>

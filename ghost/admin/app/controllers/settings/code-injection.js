@@ -1,15 +1,18 @@
 import Controller from 'ember-controller';
 import injectService from 'ember-service/inject';
-import SettingsSaveMixin from 'ghost-admin/mixins/settings-save';
+import {task} from 'ember-concurrency';
 
-export default Controller.extend(SettingsSaveMixin, {
+export default Controller.extend({
     notifications: injectService(),
 
-    save() {
+    save: task(function* () {
         let notifications = this.get('notifications');
 
-        return this.get('model').save().catch((error) => {
+        try {
+            return yield this.get('model').save();
+        } catch (error) {
             notifications.showAPIError(error, {key: 'code-injection.save'});
-        });
-    }
+            throw error;
+        }
+    })
 });

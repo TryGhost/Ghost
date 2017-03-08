@@ -67,7 +67,7 @@ describe('Unit: Controller: settings/design', function () {
             // blank item won't get added because the last item is incomplete
             expect(ctrl.get('model.navigation.length')).to.equal(3);
 
-            ctrl.save().then(function passedValidation() {
+            ctrl.get('save').perform().then(function passedValidation() {
                 assert(false, 'navigationItems weren\'t validated on save');
                 done();
             }).catch(function failedValidation() {
@@ -91,7 +91,7 @@ describe('Unit: Controller: settings/design', function () {
 
             expect(ctrl.get('model.navigation.length')).to.equal(2);
 
-            ctrl.save().then(function passedValidation() {
+            ctrl.get('save').perform().then(function passedValidation() {
                 assert(false, 'navigationItems weren\'t validated on save');
                 done();
             }).catch(function failedValidation() {
