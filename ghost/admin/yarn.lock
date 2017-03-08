@@ -867,7 +867,14 @@ broccoli-merge-trees@1.1.1:
     rimraf "^2.4.3"
     symlink-or-copy "^1.0.0"
 
-broccoli-merge-trees@1.2.1, broccoli-merge-trees@^1.0.0, broccoli-merge-trees@^1.1.0, broccoli-merge-trees@^1.1.1, broccoli-merge-trees@^1.1.3, broccoli-merge-trees@^1.1.5, broccoli-merge-trees@^1.2.1:
+broccoli-merge-trees@2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/broccoli-merge-trees/-/broccoli-merge-trees-2.0.0.tgz#10aea46dd5cebcc8b8f7d5a54f0a84a4f0bb90b9"
+  dependencies:
+    broccoli-plugin "^1.3.0"
+    merge-trees "^1.0.1"
+
+broccoli-merge-trees@^1.0.0, broccoli-merge-trees@^1.1.0, broccoli-merge-trees@^1.1.1, broccoli-merge-trees@^1.1.3, broccoli-merge-trees@^1.1.5, broccoli-merge-trees@^1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/broccoli-merge-trees/-/broccoli-merge-trees-1.2.1.tgz#16a7494ed56dbe61611f6c2d4817cfbaad2a3055"
   dependencies:
@@ -879,13 +886,6 @@ broccoli-merge-trees@1.2.1, broccoli-merge-trees@^1.0.0, broccoli-merge-trees@^1
     heimdalljs-logger "^0.1.7"
     rimraf "^2.4.3"
     symlink-or-copy "^1.0.0"
-
-broccoli-merge-trees@2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/broccoli-merge-trees/-/broccoli-merge-trees-2.0.0.tgz#10aea46dd5cebcc8b8f7d5a54f0a84a4f0bb90b9"
-  dependencies:
-    broccoli-plugin "^1.3.0"
-    merge-trees "^1.0.1"
 
 broccoli-middleware@^0.18.1:
   version "0.18.1"
@@ -2094,11 +2094,11 @@ ember-cli-path-utils@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/ember-cli-path-utils/-/ember-cli-path-utils-1.0.0.tgz#4e39af8b55301cddc5017739b77a804fba2071ed"
 
-ember-cli-postcss@3.1.1:
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/ember-cli-postcss/-/ember-cli-postcss-3.1.1.tgz#cb6797bda2f0e1899b2a5424c57f92a4264a20f1"
+ember-cli-postcss@3.1.2:
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/ember-cli-postcss/-/ember-cli-postcss-3.1.2.tgz#0297a4a097a692cfa7e2000284fae8f0d226082f"
   dependencies:
-    broccoli-merge-trees "1.2.1"
+    broccoli-merge-trees "2.0.0"
     broccoli-postcss "3.2.1"
     broccoli-postcss-single "1.2.1"
     ember-cli-dependency-checker "1.3.0"
