@@ -1,12 +1,9 @@
 var debug = require('debug')('ghost:themes:loader'),
     config = require('../config'),
-    events = require('../events'),
     themeList = require('./list'),
     read = require('./read'),
-    settingsCache = require('../settings/cache'),
     loadAllThemes,
-    loadOneTheme,
-    initThemes;
+    loadOneTheme;
 
 loadAllThemes = function loadAllThemes() {
     return read
@@ -28,21 +25,7 @@ loadOneTheme = function loadOneTheme(themeName) {
         });
 };
 
-initThemes = function initThemes() {
-    var activeThemeName = settingsCache.get('activeTheme');
-    debug('init themes', activeThemeName);
-
-    // Register a listener for server-start to load all themes
-    events.on('server:start', function readAllThemesOnServerStart() {
-        loadAllThemes();
-    });
-
-    // Just read the active theme for now
-    return loadOneTheme(activeThemeName);
-};
-
 module.exports = {
-    init: initThemes,
     loadAllThemes: loadAllThemes,
     loadOneTheme: loadOneTheme
 };
