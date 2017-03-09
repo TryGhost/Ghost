@@ -17,7 +17,7 @@ import {invokeAction} from 'ember-invoke-action';
  */
 const GhTaskButton = Component.extend({
     tagName: 'button',
-    classNameBindings: ['isRunning:appear-disabled', 'isSuccess:gh-btn-green', 'isFailure:gh-btn-red'],
+    classNameBindings: ['isRunning:appear-disabled', 'isSuccessClass', 'isFailureClass'],
     attributeBindings: ['disabled', 'type', 'tabindex'],
 
     task: null,
@@ -25,7 +25,9 @@ const GhTaskButton = Component.extend({
     buttonText: 'Save',
     runningText: reads('buttonText'),
     successText: 'Saved',
+    successClass: 'gh-btn-green',
     failureText: 'Retry',
+    failureClass: 'gh-btn-red',
 
     isRunning: reads('task.last.isRunning'),
 
@@ -38,12 +40,24 @@ const GhTaskButton = Component.extend({
         return !isBlank(value) && value !== false;
     }),
 
+    isSuccessClass: computed('isSuccess', function () {
+        if (this.get('isSuccess')) {
+            return this.get('successClass');
+        }
+    }),
+
     isFailure: computed('isRunning', 'isSuccess', 'task.last.error', function () {
         if (this.get('isRunning') || this.get('isSuccess')) {
             return false;
         }
 
         return this.get('task.last.error') !== undefined;
+    }),
+
+    isFailureClass: computed('isFailure', function () {
+        if (this.get('isFailure')) {
+            return this.get('failureClass');
+        }
     }),
 
     isIdle: computed('isRunning', 'isSuccess', 'isFailure', function () {
@@ -68,8 +82,10 @@ const GhTaskButton = Component.extend({
         }
 
         invokeAction(this, 'action');
+        task.perform();
 
-        return task.perform();
+        // prevent the click from bubbling and triggering form actions
+        return false;
     },
 
     setSize: observer('isRunning', function () {

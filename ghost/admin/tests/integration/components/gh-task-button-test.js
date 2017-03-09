@@ -94,6 +94,25 @@ describe('Integration: Component: gh-task-button', function() {
         wait().then(done);
     });
 
+    it('assigns specified success class on success', function (done) {
+        this.set('myTask', task(function* () {
+            yield timeout(50);
+            return true;
+        }));
+
+        this.render(hbs`{{gh-task-button task=myTask successClass="im-a-success"}}`);
+
+        this.get('myTask').perform();
+
+        run.later(this, function () {
+            expect(this.$('button')).to.not.have.class('gh-btn-green');
+            expect(this.$('button')).to.have.class('im-a-success');
+            expect(this.$('button')).to.contain('Saved');
+        }, 70);
+
+        wait().then(done);
+    });
+
     it('shows failure when task errors', function (done) {
         this.set('myTask', task(function* () {
             try {
@@ -128,6 +147,25 @@ describe('Integration: Component: gh-task-button', function() {
 
         run.later(this, function () {
             expect(this.$('button')).to.have.class('gh-btn-red');
+            expect(this.$('button')).to.contain('Retry');
+        }, 70);
+
+        wait().then(done);
+    });
+
+    it('assigns specified failure class on failure', function (done) {
+        this.set('myTask', task(function* () {
+            yield timeout(50);
+            return false;
+        }));
+
+        this.render(hbs`{{gh-task-button task=myTask failureClass="im-a-failure"}}`);
+
+        this.get('myTask').perform();
+
+        run.later(this, function () {
+            expect(this.$('button')).to.not.have.class('gh-btn-red');
+            expect(this.$('button')).to.have.class('im-a-failure');
             expect(this.$('button')).to.contain('Retry');
         }, 70);
 
