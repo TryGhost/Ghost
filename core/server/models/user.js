@@ -770,7 +770,8 @@ User = ghostBookshelf.Model.extend({
                 return userWithEmail;
             }
         });
-    }
+    },
+    inactiveStates: inactiveStates
 });
 
 Users = ghostBookshelf.Collection.extend({

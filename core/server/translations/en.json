@@ -387,6 +387,7 @@
             "users": {
                 "userNotFound": "User not found.",
                 "cannotChangeOwnRole": "You cannot change your own role.",
+                "cannotChangeStatus": "You cannot change your own status.",
                 "cannotChangeOwnersRole": "Cannot change Owner's role",
                 "noPermissionToEditUser": "You do not have permission to edit this user",
                 "noPermissionToAddUser": "You do not have permission to add this user",
