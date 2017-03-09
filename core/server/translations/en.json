@@ -244,6 +244,7 @@
                 },
                 "incorrectPassword": "Your password is incorrect.",
                 "accountLocked": "Your account is locked. Please reset your password to log in again by clicking the \"Forgotten password?\" link!",
+                "accountSuspended": "Your account was suspended.",
                 "newPasswordsDoNotMatch": "Your new passwords do not match",
                 "passwordRequiredForOperation": "Password is required for this operation",
                 "expiredToken": "Expired token",

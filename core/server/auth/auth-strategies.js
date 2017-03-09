@@ -51,7 +51,7 @@ strategies = {
 
                                 if (!model.isActive()) {
                                     throw new errors.NoPermissionError({
-                                        message: 'You were suspended from this blog.'
+                                        message: i18n.t('errors.models.user.accountSuspended')
                                     });
                                 }
 
@@ -163,7 +163,7 @@ strategies = {
 
                     if (!user.isActive()) {
                         throw new errors.NoPermissionError({
-                            message: 'You were suspended from this blog.'
+                            message: i18n.t('errors.models.user.accountSuspended')
                         });
                     }
 
