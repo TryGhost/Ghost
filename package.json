@@ -117,7 +117,7 @@
     "nock": "9.0.11",
     "rewire": "2.5.2",
     "run-sequence": "1.2.2",
-    "should": "11.2.0",
+    "should": "11.2.1",
     "should-http": "0.1.1",
     "sinon": "2.1.0",
     "supertest": "3.0.0",
