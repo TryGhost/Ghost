@@ -175,20 +175,4 @@ describe('Settings API', function () {
     it('set activeTimezone: known timezone', function () {
         return callApiWithContext(defaultContext, 'edit', {settings: [{key: 'activeTimezone', value: 'Etc/UTC'}]}, {});
     });
-
-    describe('Themes (to be removed from settings)', function () {
-        beforeEach(testUtils.setup('themes'));
-
-        it('does not allow an active theme which is not installed', function () {
-            return callApiWithContext(defaultContext, 'edit', 'activeTheme', {
-                settings: [{key: 'activeTheme', value: 'rasper'}]
-            }).then(function () {
-                throw new Error('Allowed to set an active theme which is not installed');
-            }).catch(function (err) {
-                should.exist(err);
-
-                err.errorType.should.eql('ValidationError');
-            });
-        });
-    });
 });
