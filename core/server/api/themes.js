@@ -39,6 +39,11 @@ themes = {
                 value: themeName
             }];
 
+        // @TODO use theme permissions, not settings permissions
+        // @TODO validate the theme using gscan
+        // @TODO use the settings model, not API (&move validation off of the model)
+        // @TODO actually do things to activate the theme, other than just the setting?
+
         return settings.edit({settings: newSettings}, options).then(function () {
             var result = themeList.toAPI(themeList.getAll(), themeName);
             return Promise.resolve({themes: result});
