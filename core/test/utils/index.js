@@ -285,12 +285,16 @@ fixtures = {
         });
     },
 
-    // Creates a client, and access and refresh tokens for user 3 (author)
-    createTokensForUser: function createTokensForUser() {
+    // Creates a client, and access and refresh tokens for user with index or 2 by default
+    createTokensForUser: function createTokensForUser(index) {
         return db.knex('clients').insert(DataGenerator.forKnex.clients).then(function () {
-            return db.knex('accesstokens').insert(DataGenerator.forKnex.createToken({user_id: DataGenerator.Content.users[2].id}));
+            return db.knex('accesstokens').insert(DataGenerator.forKnex.createToken({
+                user_id: DataGenerator.Content.users[index || 2].id
+            }));
         }).then(function () {
-            return db.knex('refreshtokens').insert(DataGenerator.forKnex.createToken({user_id: DataGenerator.Content.users[2].id}));
+            return db.knex('refreshtokens').insert(DataGenerator.forKnex.createToken({
+                user_id: DataGenerator.Content.users[index || 2].id
+            }));
         });
     },
 
@@ -480,8 +484,8 @@ toDoList = {
     users: function createExtraUsers() {
         return fixtures.createExtraUsers();
     },
-    'user:token': function createTokensForUser() {
-        return fixtures.createTokensForUser();
+    'user-token': function createTokensForUser(index) {
+        return fixtures.createTokensForUser(index);
     },
     owner: function insertOwnerUser() {
         return fixtures.insertOwnerUser();
@@ -553,9 +557,12 @@ getFixtureOps = function getFixtureOps(toDos) {
     _.each(toDos, function (value, toDo) {
         var tmp;
 
-        if (toDo !== 'perms:init' && toDo.indexOf('perms:') !== -1) {
+        if ((toDo !== 'perms:init' && toDo.indexOf('perms:') !== -1) || toDo.indexOf('user-token:') !== -1) {
             tmp = toDo.split(':');
-            fixtureOps.push(toDoList[tmp[0]](tmp[1]));
+
+            fixtureOps.push(function addCustomFixture() {
+                return toDoList[tmp[0]](tmp[1]);
+            });
         } else {
             if (!toDoList[toDo]) {
                 throw new Error('setup todo does not exist - spell mistake?');
