@@ -7,9 +7,9 @@
                 </header>
             {{/if}}
 
-            <form id="login" class="gh-signin" method="post" novalidate="novalidate">
+            <form id="login" method="post" class="gh-signin" novalidate="novalidate" {{action "authenticate" on="submit"}}>
                 {{#if config.ghostOAuth}}
-                    {{#gh-spin-button class="login gh-btn gh-btn-blue gh-btn-block" type="submit" action="authenticateWithGhostOrg" tabindex="3" submitting=loggingIn autoWidth="false"}}<span>Sign in with Ghost</span>{{/gh-spin-button}}
+                    {{gh-task-button "Sign in with Ghost" task=authenticateWithGhostOrg class="login gh-btn gh-btn-blue gh-btn-block" tabindex="3"}}
                 {{else}}
                     {{#gh-form-group errors=model.errors hasValidated=hasValidated property="identification"}}
                         <span class="input-icon icon-mail">
@@ -19,10 +19,12 @@
                     {{#gh-form-group errors=model.errors hasValidated=hasValidated property="password"}}
                         <span class="input-icon icon-lock forgotten-wrap">
                             {{gh-input model.password class="password" type="password" placeholder="Password" name="password" tabindex="2" autocorrect="off" update=(action (mut model.password))}}
-                            {{#gh-spin-button class="forgotten-link gh-btn gh-btn-link" type="button" action="forgotten" tabindex="4" submitting=submitting autoWidth="true"}}<span>Forgot?</span>{{/gh-spin-button}}
+                            {{#gh-task-button task=forgotten class="forgotten-link gh-btn gh-btn-link" successClass="" failureClass="" tabindex="4" type="button" as |task|}}
+                                <span>{{#if task.isRunning}}<span class="spinner"></span>{{else}}Forgot?{{/if}}</span>
+                            {{/gh-task-button}}
                         </span>
                     {{/gh-form-group}}
-                    {{#gh-spin-button class="login gh-btn gh-btn-blue gh-btn-block" type="submit" action="validateAndAuthenticate" tabindex="3" submitting=loggingIn autoWidth="false"}}<span>Sign in</span>{{/gh-spin-button}}
+                    {{gh-task-button "Sign in" task=validateAndAuthenticate class="login gh-btn gh-btn-blue gh-btn-block" type="submit" tabindex="3"}}
                 {{/if}}
             </form>
 
