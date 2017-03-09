@@ -439,7 +439,7 @@ var overrides      = require('./core/server/overrides'),
 
             cfg.mochacli.single.src = [test];
             grunt.initConfig(cfg);
-            grunt.task.run('knex-migrator', 'test-setup', 'mochacli:single');
+            grunt.task.run('test-setup', 'mochacli:single');
         });
 
         // #### Stub out ghost files *(Utility Task)*
@@ -490,10 +490,10 @@ var overrides      = require('./core/server/overrides'),
         // details of each of the test suites.
         //
         grunt.registerTask('test-all', 'Run tests for both server and client',
-            ['knex-migrator', 'test-server', 'test-client']);
+            ['test-server', 'test-client']);
 
         grunt.registerTask('test-server', 'Run server tests',
-            ['knex-migrator', 'test-routes', 'test-module', 'test-unit', 'test-integration']);
+            ['test-routes', 'test-module', 'test-unit', 'test-integration']);
 
         grunt.registerTask('test-client', 'Run client tests',
             ['subgrunt:test']);
@@ -512,7 +512,7 @@ var overrides      = require('./core/server/overrides'),
         // ### test-setup *(utility)(
         // `grunt test-setup` will run all the setup tasks required for running tests
         grunt.registerTask('test-setup', 'Setup ready to run tests',
-            ['clean:test', 'setTestEnv']
+            ['knex-migrator', 'clean:test', 'setTestEnv']
         );
 
         // ### Unit Tests *(sub task)*
@@ -531,7 +531,7 @@ var overrides      = require('./core/server/overrides'),
         // Unit tests do **not** touch the database.
         // A coverage report can be generated for these tests using the `grunt test-coverage` task.
         grunt.registerTask('test-unit', 'Run unit tests (mocha)',
-            ['knex-migrator', 'test-setup', 'mochacli:unit']
+            ['test-setup', 'mochacli:unit']
         );
 
         // ### Integration tests *(sub task)*
@@ -559,7 +559,7 @@ var overrides      = require('./core/server/overrides'),
         //
         // A coverage report can be generated for these tests using the `grunt test-coverage` task.
         grunt.registerTask('test-integration', 'Run integration tests (mocha + db access)',
-            ['knex-migrator', 'test-setup', 'mochacli:integration']
+            ['test-setup', 'mochacli:integration']
         );
 
         // ### Route tests *(sub task)*
@@ -580,7 +580,7 @@ var overrides      = require('./core/server/overrides'),
         // are working as expected, including checking the headers and status codes received. It is very easy and
         // quick to test many permutations of routes / urls in the system.
         grunt.registerTask('test-routes', 'Run functional route tests (mocha)',
-            ['knex-migrator', 'test-setup', 'mochacli:routes']
+            ['test-setup', 'mochacli:routes']
         );
 
         // ### Module tests *(sub task)*
