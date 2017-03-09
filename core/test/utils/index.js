@@ -1,28 +1,31 @@
-var Promise       = require('bluebird'),
-    _             = require('lodash'),
-    fs            = require('fs-extra'),
-    path          = require('path'),
-    Module        = require('module'),
-    debug         = require('debug')('ghost:test'),
-    ObjectId      = require('bson-objectid'),
-    uuid          = require('uuid'),
-    KnexMigrator  = require('knex-migrator'),
-    ghost         = require('../../server'),
-    errors        = require('../../server/errors'),
-    db            = require('../../server/data/db'),
-    fixtureUtils  = require('../../server/data/schema/fixtures/utils'),
-    models        = require('../../server/models'),
-    SettingsLib   = require('../../server/settings'),
-    permissions   = require('../../server/permissions'),
-    sequence      = require('../../server/utils/sequence'),
-    themes        = require('../../server/themes'),
+/*jshint expr:true*/
+var Promise = require('bluebird'),
+    _ = require('lodash'),
+    fs = require('fs-extra'),
+    path = require('path'),
+    Module = require('module'),
+    debug = require('debug')('ghost:test'),
+    ObjectId = require('bson-objectid'),
+    uuid = require('uuid'),
+    KnexMigrator = require('knex-migrator'),
+    ghost = require('../../server'),
+    errors = require('../../server/errors'),
+    db = require('../../server/data/db'),
+    fixtureUtils = require('../../server/data/schema/fixtures/utils'),
+    schema = require('../../server/data/schema').tables,
+    schemaTables = Object.keys(schema),
+    models = require('../../server/models'),
+    SettingsLib = require('../../server/settings'),
+    permissions = require('../../server/permissions'),
+    sequence = require('../../server/utils/sequence'),
+    themes = require('../../server/themes'),
     DataGenerator = require('./fixtures/data-generator'),
-    filterData    = require('./fixtures/filter-param'),
-    API           = require('./api'),
-    fork          = require('./fork'),
-    mocks         = require('./mocks'),
-    config        = require('../../server/config'),
-    knexMigrator  = new KnexMigrator(),
+    filterData = require('./fixtures/filter-param'),
+    API = require('./api'),
+    fork = require('./fork'),
+    mocks = require('./mocks'),
+    config = require('../../server/config'),
+    knexMigrator = new KnexMigrator(),
     fixtures,
     getFixtureOps,
     toDoList,
@@ -293,7 +296,7 @@ fixtures = {
 
     insertOne: function insertOne(obj, fn, index) {
         return db.knex(obj)
-           .insert(DataGenerator.forKnex[fn](DataGenerator.Content[obj][index || 0]));
+            .insert(DataGenerator.forKnex[fn](DataGenerator.Content[obj][index || 0]));
     },
 
     insertApps: function insertApps() {
@@ -423,7 +426,9 @@ clearData = function clearData() {
 };
 
 toDoList = {
-    app: function insertApp() { return fixtures.insertOne('apps', 'createApp'); },
+    app: function insertApp() {
+        return fixtures.insertOne('apps', 'createApp');
+    },
     app_field: function insertAppField() {
         // TODO: use the actual app ID to create the field
         return fixtures.insertOne('apps', 'createApp').then(function () {
@@ -436,32 +441,80 @@ toDoList = {
             return fixtures.insertOne('app_settings', 'createAppSetting');
         });
     },
-    permission: function insertPermission() { return fixtures.insertOne('permissions', 'createPermission'); },
-    role: function insertRole() { return fixtures.insertOne('roles', 'createRole'); },
-    roles: function insertRoles() { return fixtures.insertRoles(); },
-    tag: function insertTag() { return fixtures.insertOne('tags', 'createTag'); },
-    subscriber: function insertSubscriber() { return fixtures.insertOne('subscribers', 'createSubscriber'); },
-    posts: function insertPostsAndTags() { return fixtures.insertPostsAndTags(); },
-    'posts:mu': function insertMultiAuthorPosts() { return fixtures.insertMultiAuthorPosts(); },
-    tags: function insertMoreTags() { return fixtures.insertMoreTags(); },
-    apps: function insertApps() { return fixtures.insertApps(); },
-    settings: function populateSettings() { return SettingsLib.init(); },
-    'users:roles': function createUsersWithRoles() { return fixtures.createUsersWithRoles(); },
-    'users:no-owner': function createUsersWithoutOwner() { return fixtures.createUsersWithoutOwner(); },
-    users: function createExtraUsers() { return fixtures.createExtraUsers(); },
-    'user:token': function createTokensForUser() { return fixtures.createTokensForUser(); },
-    owner: function insertOwnerUser() { return fixtures.insertOwnerUser(); },
-    'owner:pre': function initOwnerUser() { return fixtures.initOwnerUser(); },
-    'owner:post': function overrideOwnerUser() { return fixtures.overrideOwnerUser(); },
-    'perms:init': function initPermissions() { return permissions.init(); },
-    perms: function permissionsFor(obj) {
-        return function permissionsForObj() { return fixtures.permissionsFor(obj); };
+    permission: function insertPermission() {
+        return fixtures.insertOne('permissions', 'createPermission');
     },
-    clients: function insertClients() { return fixtures.insertClients(); },
-    'client:trusted-domain': function insertClients() { return fixtures.insertClientWithTrustedDomain(); },
-    filter: function createFilterParamFixtures() { return filterData(DataGenerator); },
-    invites: function insertInvites() { return fixtures.insertInvites(); },
-    themes: function loadThemes() { return themes.loadAll(); }
+    role: function insertRole() {
+        return fixtures.insertOne('roles', 'createRole');
+    },
+    roles: function insertRoles() {
+        return fixtures.insertRoles();
+    },
+    tag: function insertTag() {
+        return fixtures.insertOne('tags', 'createTag');
+    },
+    subscriber: function insertSubscriber() {
+        return fixtures.insertOne('subscribers', 'createSubscriber');
+    },
+    posts: function insertPostsAndTags() {
+        return fixtures.insertPostsAndTags();
+    },
+    'posts:mu': function insertMultiAuthorPosts() {
+        return fixtures.insertMultiAuthorPosts();
+    },
+    tags: function insertMoreTags() {
+        return fixtures.insertMoreTags();
+    },
+    apps: function insertApps() {
+        return fixtures.insertApps();
+    },
+    settings: function populateSettings() {
+        return SettingsLib.init();
+    },
+    'users:roles': function createUsersWithRoles() {
+        return fixtures.createUsersWithRoles();
+    },
+    'users:no-owner': function createUsersWithoutOwner() {
+        return fixtures.createUsersWithoutOwner();
+    },
+    users: function createExtraUsers() {
+        return fixtures.createExtraUsers();
+    },
+    'user:token': function createTokensForUser() {
+        return fixtures.createTokensForUser();
+    },
+    owner: function insertOwnerUser() {
+        return fixtures.insertOwnerUser();
+    },
+    'owner:pre': function initOwnerUser() {
+        return fixtures.initOwnerUser();
+    },
+    'owner:post': function overrideOwnerUser() {
+        return fixtures.overrideOwnerUser();
+    },
+    'perms:init': function initPermissions() {
+        return permissions.init();
+    },
+    perms: function permissionsFor(obj) {
+        return function permissionsForObj() {
+            return fixtures.permissionsFor(obj);
+        };
+    },
+    clients: function insertClients() {
+        return fixtures.insertClients();
+    },
+    'client:trusted-domain': function insertClients() {
+        return fixtures.insertClientWithTrustedDomain();
+    },
+    filter: function createFilterParamFixtures() {
+        return filterData(DataGenerator);
+    },
+    invites: function insertInvites() {
+        return fixtures.insertInvites();
+    },
+    themes: function loadThemes() {
+        return themes.loadAll();
+    }
 };
 
 /**
@@ -470,10 +523,10 @@ toDoList = {
  * Takes the arguments from a setup function and turns them into an array of promises to fullfil
  *
  * This is effectively a list of instructions with regard to which fixtures should be setup for this test.
-  *  * `default` - a special option which will cause the full suite of normal fixtures to be initialised
-  *  * `perms:init` - initialise the permissions object after having added permissions
-  *  * `perms:obj` - initialise permissions for a particular object type
-  *  * `users:roles` - create a full suite of users, one per role
+ *  * `default` - a special option which will cause the full suite of normal fixtures to be initialised
+ *  * `perms:init` - initialise the permissions object after having added permissions
+ *  * `perms:obj` - initialise permissions for a particular object type
+ *  * `users:roles` - create a full suite of users, one per role
  * @param {Object} toDos
  */
 getFixtureOps = function getFixtureOps(toDos) {
@@ -614,14 +667,14 @@ login = function login(request) {
                 client_id: 'ghost-admin',
                 client_secret: 'not_available'
             }).then(function then(res) {
-                if (res.statusCode !== 200) {
-                    return reject(new errors.GhostError({
-                        message: res.body.errors[0].message
-                    }));
-                }
+            if (res.statusCode !== 200) {
+                return reject(new errors.GhostError({
+                    message: res.body.errors[0].message
+                }));
+            }
 
-                resolve(res.body.access_token);
-            }, reject);
+            resolve(res.body.access_token);
+        }, reject);
     });
 };
 
@@ -632,18 +685,20 @@ togglePermalinks = function togglePermalinks(request, toggle) {
         doAuth(request).then(function (token) {
             request.put('/ghost/api/v0.1/settings/')
                 .set('Authorization', 'Bearer ' + token)
-                .send({settings: [
-                    {
-                        uuid: '75e994ae-490e-45e6-9207-0eab409c1c04',
-                        key: 'permalinks',
-                        value: permalinkString,
-                        type: 'blog',
-                        created_at: '2014-10-16T17:39:16.005Z',
-                        created_by: 1,
-                        updated_at: '2014-10-20T19:44:18.077Z',
-                        updated_by: 1
-                    }
-                ]})
+                .send({
+                    settings: [
+                        {
+                            uuid: '75e994ae-490e-45e6-9207-0eab409c1c04',
+                            key: 'permalinks',
+                            value: permalinkString,
+                            type: 'blog',
+                            created_at: '2014-10-16T17:39:16.005Z',
+                            created_by: 1,
+                            updated_at: '2014-10-20T19:44:18.077Z',
+                            updated_by: 1
+                        }
+                    ]
+                })
                 .end(function (err, res) {
                     if (err) {
                         return reject(err);
@@ -659,18 +714,55 @@ togglePermalinks = function togglePermalinks(request, toggle) {
     });
 };
 
+/**
+ * Has to run in a transaction for MySQL, otherwise the foreign key check does not work.
+ * Sqlite3 has no truncate command.
+ */
 teardown = function teardown(done) {
-    debug('Database reset');
+    debug('Database teardown');
+    var tables = schemaTables.concat(['migrations']);
 
-    if (done) {
-        knexMigrator.reset()
-            .then(function () {
-                done();
+    if (config.get('database:client') === 'sqlite3') {
+        return Promise
+            .mapSeries(tables, function createTable(table) {
+                return db.knex.raw('DELETE FROM ' + table + ';');
             })
-            .catch(done);
-    } else {
-        return knexMigrator.reset();
+            .then(function () {
+                done && done();
+            })
+            .catch(function (err) {
+                // CASE: table does not exist
+                if (err.errno === 1) {
+                    return done && done();
+                }
+
+                done && done(err);
+            });
     }
+
+    return db.knex.transaction(function (trx) {
+        return db.knex.raw('SET FOREIGN_KEY_CHECKS=0;').transacting(trx)
+            .then(function () {
+                return Promise
+                    .each(tables, function createTable(table) {
+                        return db.knex.raw('TRUNCATE ' + table + ';').transacting(trx);
+                    });
+            })
+            .then(function () {
+                return db.knex.raw('SET FOREIGN_KEY_CHECKS=1;').transacting(trx);
+            })
+            .then(function () {
+                done && done();
+            })
+            .catch(function (err) {
+                // CASE: table does not exist
+                if (err.errno === 1146) {
+                    return done && done();
+                }
+
+                return done ? done(err) : Promise.reject(err);
+            });
+    });
 };
 
 /**
@@ -735,12 +827,12 @@ module.exports = {
 
     // Helpers to make it easier to write tests which are easy to read
     context: {
-        internal:   {context: {internal: true}},
-        external:   {context: {external: true}},
-        owner:      {context: {user: DataGenerator.Content.users[0].id}},
-        admin:      {context: {user: DataGenerator.Content.users[1].id}},
-        editor:     {context: {user: DataGenerator.Content.users[2].id}},
-        author:     {context: {user: DataGenerator.Content.users[3].id}}
+        internal: {context: {internal: true}},
+        external: {context: {external: true}},
+        owner: {context: {user: DataGenerator.Content.users[0].id}},
+        admin: {context: {user: DataGenerator.Content.users[1].id}},
+        editor: {context: {user: DataGenerator.Content.users[2].id}},
+        author: {context: {user: DataGenerator.Content.users[3].id}}
     },
     users: {
         ids: {
@@ -761,9 +853,9 @@ module.exports = {
 
     cacheRules: {
         public: 'public, max-age=0',
-        hour:  'public, max-age=' + 3600,
+        hour: 'public, max-age=' + 3600,
         day: 'public, max-age=' + 86400,
-        year:  'public, max-age=' + 31536000,
+        year: 'public, max-age=' + 31536000,
         private: 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
     }
 };

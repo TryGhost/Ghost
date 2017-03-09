@@ -8,9 +8,15 @@
 
 // jshint unused: false
 var overrides      = require('./core/server/overrides'),
+    config         = require('./core/server/config'),
     _              = require('lodash'),
     chalk          = require('chalk'),
     fs             = require('fs-extra'),
+    KnexMigrator   = require('knex-migrator'),
+    knexMigrator = new KnexMigrator({
+        knexMigratorFilePath: config.get('paths:appRoot')
+    }),
+
     path           = require('path'),
 
     escapeChar     = process.platform.match(/^win/) ? '^' : '\\',
@@ -433,7 +439,7 @@ var overrides      = require('./core/server/overrides'),
 
             cfg.mochacli.single.src = [test];
             grunt.initConfig(cfg);
-            grunt.task.run('test-setup', 'mochacli:single');
+            grunt.task.run('knex-migrator', 'test-setup', 'mochacli:single');
         });
 
         // #### Stub out ghost files *(Utility Task)*
@@ -444,6 +450,13 @@ var overrides      = require('./core/server/overrides'),
                 var filePath = path.resolve(cwd + '/core/' + file);
                 fs.ensureFileSync(filePath);
             });
+        });
+
+        /**
+         * Ensures the target database get's automatically created.
+         */
+        grunt.registerTask('knex-migrator', function () {
+            return knexMigrator.init({noScripts: true});
         });
 
         // ### Validate
@@ -477,10 +490,10 @@ var overrides      = require('./core/server/overrides'),
         // details of each of the test suites.
         //
         grunt.registerTask('test-all', 'Run tests for both server and client',
-            ['test-server', 'test-client']);
+            ['knex-migrator', 'test-server', 'test-client']);
 
         grunt.registerTask('test-server', 'Run server tests',
-            ['test-routes', 'test-module', 'test-unit', 'test-integration']);
+            ['knex-migrator', 'test-routes', 'test-module', 'test-unit', 'test-integration']);
 
         grunt.registerTask('test-client', 'Run client tests',
             ['subgrunt:test']);
@@ -518,7 +531,7 @@ var overrides      = require('./core/server/overrides'),
         // Unit tests do **not** touch the database.
         // A coverage report can be generated for these tests using the `grunt test-coverage` task.
         grunt.registerTask('test-unit', 'Run unit tests (mocha)',
-            ['test-setup', 'mochacli:unit']
+            ['knex-migrator', 'test-setup', 'mochacli:unit']
         );
 
         // ### Integration tests *(sub task)*
@@ -546,7 +559,7 @@ var overrides      = require('./core/server/overrides'),
         //
         // A coverage report can be generated for these tests using the `grunt test-coverage` task.
         grunt.registerTask('test-integration', 'Run integration tests (mocha + db access)',
-            ['test-setup', 'mochacli:integration']
+            ['knex-migrator', 'test-setup', 'mochacli:integration']
         );
 
         // ### Route tests *(sub task)*
@@ -567,7 +580,7 @@ var overrides      = require('./core/server/overrides'),
         // are working as expected, including checking the headers and status codes received. It is very easy and
         // quick to test many permutations of routes / urls in the system.
         grunt.registerTask('test-routes', 'Run functional route tests (mocha)',
-            ['test-setup', 'mochacli:routes']
+            ['knex-migrator', 'test-setup', 'mochacli:routes']
         );
 
         // ### Module tests *(sub task)*
