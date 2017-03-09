@@ -49,6 +49,9 @@ function forkGhost(newConfig) {
         .then(function (_port) {
             port = _port;
 
+            return knexMigrator.reset();
+        })
+        .then(function () {
             return knexMigrator.init();
         })
         .then(function () {
