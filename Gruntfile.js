@@ -8,9 +8,15 @@
 
 // jshint unused: false
 var overrides      = require('./core/server/overrides'),
+    config         = require('./core/server/config'),
     _              = require('lodash'),
     chalk          = require('chalk'),
     fs             = require('fs-extra'),
+    KnexMigrator   = require('knex-migrator'),
+    knexMigrator = new KnexMigrator({
+        knexMigratorFilePath: config.get('paths:appRoot')
+    }),
+
     path           = require('path'),
 
     escapeChar     = process.platform.match(/^win/) ? '^' : '\\',
@@ -446,6 +452,13 @@ var overrides      = require('./core/server/overrides'),
             });
         });
 
+        /**
+         * Ensures the target database get's automatically created.
+         */
+        grunt.registerTask('knex-migrator', function () {
+            return knexMigrator.init({noScripts: true});
+        });
+
         // ### Validate
         // **Main testing task**
         //
@@ -499,7 +512,7 @@ var overrides      = require('./core/server/overrides'),
         // ### test-setup *(utility)(
         // `grunt test-setup` will run all the setup tasks required for running tests
         grunt.registerTask('test-setup', 'Setup ready to run tests',
-            ['clean:test', 'setTestEnv']
+            ['knex-migrator', 'clean:test', 'setTestEnv']
         );
 
         // ### Unit Tests *(sub task)*
