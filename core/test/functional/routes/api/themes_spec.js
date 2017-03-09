@@ -445,6 +445,41 @@ describe('Themes API (Forked)', function () {
                 });
         });
 
+        it('delete active theme', function (done) {
+            var jsonResponse, testTheme;
+            // ensure test-theme is active
+            request.put(testUtils.API.getApiQuery('themes/test-theme/activate'))
+                .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    jsonResponse = res.body;
+
+                    testTheme = _.find(jsonResponse.themes, {name: 'test-theme'});
+                    should.exist(testTheme);
+                    testUtils.API.checkResponse(testTheme, 'theme');
+                    testTheme.active.should.be.true();
+
+                    request.del(testUtils.API.getApiQuery('themes/test-theme'))
+                        .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
+                        .expect(422)
+                        .end(function (err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            res.body.errors.length.should.eql(1);
+                            res.body.errors[0].errorType.should.eql('ValidationError');
+                            res.body.errors[0].message.should.eql('Deleting the active theme is not allowed.');
+
+                            done();
+                        });
+                });
+        });
+
         it('upload non application/zip', function (done) {
             scope.uploadTheme({themePath: join(__dirname, '/../../../utils/fixtures/csv/single-column-with-header.csv')})
                 .end(function (err, res) {

@@ -170,6 +170,10 @@ themes = {
                     throw new errors.ValidationError({message: i18n.t('errors.api.themes.destroyCasper')});
                 }
 
+                if (name === settingsCache.get('activeTheme')) {
+                    throw new errors.ValidationError({message: i18n.t('errors.api.themes.destroyActive')});
+                }
+
                 theme = themeList.get(name);
 
                 if (!theme) {
