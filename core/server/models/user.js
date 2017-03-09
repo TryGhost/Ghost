@@ -17,8 +17,9 @@ var _              = require('lodash'),
     bcryptHash     = Promise.promisify(bcrypt.hash),
     bcryptCompare  = Promise.promisify(bcrypt.compare),
 
-    activeStates   = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'],
-    allStates      = activeStates.concat(['inactive']),
+    activeStates   = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'],
+    inactiveStates = ['inactive', 'locked'],
+    allStates      = activeStates.concat(inactiveStates),
     User,
     Users;
 
@@ -81,6 +82,10 @@ User = ghostBookshelf.Model.extend({
         }
 
         model.emitChange('edited');
+    },
+
+    isActive: function isActive() {
+        return inactiveStates.indexOf(this.get('status')) === -1;
     },
 
     /**

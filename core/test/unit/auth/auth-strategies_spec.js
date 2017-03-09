@@ -114,7 +114,7 @@ describe('Auth Strategies', function () {
     });
 
     describe('Bearer Strategy', function () {
-        var tokenStub, userStub, userStatus;
+        var tokenStub, userStub, userIsActive;
 
         beforeEach(function () {
             tokenStub = sandbox.stub(Models.Accesstoken, 'findOne');
@@ -137,8 +137,8 @@ describe('Auth Strategies', function () {
                 toJSON: function () {
                     return {id: 3};
                 },
-                get: function () {
-                    return userStatus;
+                isActive: function () {
+                    return userIsActive;
                 }
             }));
         });
@@ -147,7 +147,7 @@ describe('Auth Strategies', function () {
             var accessToken = 'valid-token',
                 userId = 3;
 
-            userStatus = 'active';
+            userIsActive = true;
 
             authStrategies.bearerStrategy(accessToken, next).then(function () {
                 tokenStub.calledOnce.should.be.true();
@@ -165,7 +165,7 @@ describe('Auth Strategies', function () {
             var accessToken = 'valid-token',
                 userId = 3;
 
-            userStatus = 'inactive';
+            userIsActive = false;
 
             authStrategies.bearerStrategy(accessToken, next).then(function () {
                 tokenStub.calledOnce.should.be.true();
@@ -351,8 +351,8 @@ describe('Auth Strategies', function () {
             var ghostAuthAccessToken = '12345',
                 req = {body: {}},
                 ownerProfile = {email: 'test@example.com', id: '12345'},
-                owner = {id: 2, get: function () {
-                    return 'active'
+                owner = {id: 2, isActive: function () {
+                    return true;
                 }};
 
             userFindOneStub.returns(Promise.resolve(owner));
@@ -383,8 +383,8 @@ describe('Auth Strategies', function () {
             var ghostAuthAccessToken = '12345',
                 req = {body: {}},
                 ownerProfile = {email: 'test@example.com', id: '12345'},
-                owner = {id: 2, get: function () {
-                    return 'inactive'
+                owner = {id: 2, isActive: function () {
+                    return false;
                 }};
 
             userFindOneStub.returns(Promise.resolve(owner));

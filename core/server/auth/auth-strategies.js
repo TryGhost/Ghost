@@ -49,7 +49,7 @@ strategies = {
                                     return done(null, false);
                                 }
 
-                                if (model.get('status') === 'inactive') {
+                                if (!model.isActive()) {
                                     throw new errors.NoPermissionError({
                                         message: 'You were suspended from this blog.'
                                     });
@@ -161,7 +161,7 @@ strategies = {
                         throw new errors.NotFoundError();
                     }
 
-                    if (user.get('status') === 'inactive') {
+                    if (!user.isActive()) {
                         throw new errors.NoPermissionError({
                             message: 'You were suspended from this blog.'
                         });
