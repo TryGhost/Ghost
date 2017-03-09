@@ -330,6 +330,10 @@
             "settings": {
                 "problemFindingSetting": "Problem finding setting: {key}",
                 "accessCoreSettingFromExtReq": "Attempted to access core setting from external request",
+                "activeThemeSetViaAPI": {
+                    "error": "Attempted to change activeTheme via settings API",
+                    "help": "Please activate theme via the themes API endpoints instead"
+                },
                 "invalidJsonInLabs": "Error: Invalid JSON in settings.labs",
                 "labsColumnCouldNotBeParsed": "The column with key \"labs\" could not be parsed as JSON",
                 "tryUpdatingLabs": "Please try updating a setting on the labs page, or manually editing your DB",
