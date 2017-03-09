@@ -175,7 +175,7 @@ describe('Auth Strategies', function () {
                 next.calledOnce.should.be.true();
                 next.firstCall.args.length.should.eql(1);
                 (next.firstCall.args[0] instanceof errors.NoPermissionError).should.eql(true);
-                next.firstCall.args[0].message.should.eql('You were suspended from this blog.');
+                next.firstCall.args[0].message.should.eql('Your account was suspended.');
                 done();
             }).catch(done);
         });
@@ -399,7 +399,7 @@ describe('Auth Strategies', function () {
 
             authStrategies.ghostStrategy(req, ghostAuthAccessToken, null, ownerProfile, function (err, user, profile) {
                 should.exist(err);
-                err.message.should.eql('You were suspended from this blog.');
+                err.message.should.eql('Your account was suspended.');
 
                 userFindOneStub.calledOnce.should.be.true();
                 userEditStub.calledOnce.should.be.false();

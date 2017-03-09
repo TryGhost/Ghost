@@ -25,7 +25,7 @@ describe('Models: listeners', function () {
         };
 
     before(testUtils.teardown);
-    beforeEach(testUtils.setup('user-token:0'));
+    beforeEach(testUtils.setup('owner', 'user-token:0'));
 
     beforeEach(function () {
         sinon.stub(events, 'on', function (eventName, callback) {
