@@ -429,10 +429,6 @@ beeper@^1.0.0, beeper@^1.1.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/beeper/-/beeper-1.1.1.tgz#e6d5ea8c5dad001304a70b22638447f69cb2f809"
 
-bignumber.js@2.3.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-2.3.0.tgz#597a02d791edc3d64f17850e21789e7a4095df66"
-
 bignumber.js@3.1.2:
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-3.1.2.tgz#f3bdb99ad5268a15fc1f0bed2fb018e2693fe236"
@@ -3394,20 +3390,20 @@ klaw@^1.0.0:
   optionalDependencies:
     graceful-fs "^4.1.9"
 
-knex-migrator@2.0.12:
-  version "2.0.12"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-2.0.12.tgz#23b8463cd4cd87cb0dfcde151511a11ee20ba660"
+knex-migrator@2.0.13:
+  version "2.0.13"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-2.0.13.tgz#0f7c11e0720bb406e79bf3f9868dbef4603ef1e8"
   dependencies:
-    bluebird "3.4.6"
+    bluebird "^3.4.6"
     commander "2.9.0"
-    debug "2.2.0"
+    debug "^2.2.0"
     ghost-ignition "^2.8.2"
-    knex "0.12.2"
-    lodash "4.16.4"
+    knex "^0.12.2"
+    lodash "^4.16.4"
     resolve "1.1.7"
   optionalDependencies:
-    mysql "2.11.1"
-    sqlite3 "3.1.8"
+    mysql "^2.11.1"
+    sqlite3 "^3.1.8"
 
 knex@0.12.2:
   version "0.12.2"
@@ -3431,7 +3427,7 @@ knex@0.12.2:
     tildify "~1.0.0"
     v8flags "^2.0.2"
 
-knex@0.12.7:
+knex@0.12.7, knex@^0.12.2:
   version "0.12.7"
   resolved "https://registry.yarnpkg.com/knex/-/knex-0.12.7.tgz#5793f579f07a2938bf9874693d74bba55c5baa1c"
   dependencies:
@@ -3740,7 +3736,7 @@ lodash@4.16.6, lodash@~4.16.4:
   version "4.16.6"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.16.6.tgz#d22c9ac660288f3843e16ba7d2b5d06cca27d777"
 
-lodash@4.17.4, lodash@^4.0.0, lodash@^4.12.0, lodash@^4.13.1, lodash@^4.14.0, lodash@^4.17.4, lodash@^4.6.0, lodash@^4.7.0, lodash@^4.8.0, lodash@~4.17.2:
+lodash@4.17.4, lodash@^4.0.0, lodash@^4.12.0, lodash@^4.13.1, lodash@^4.14.0, lodash@^4.16.4, lodash@^4.17.4, lodash@^4.6.0, lodash@^4.7.0, lodash@^4.8.0, lodash@~4.17.2:
   version "4.17.4"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.4.tgz#78203a4d1c328ae1d86dca6460e369b57f4055ae"
 
@@ -4139,15 +4135,7 @@ mv@~2:
     ncp "~2.0.0"
     rimraf "~2.4.0"
 
-mysql@2.11.1:
-  version "2.11.1"
-  resolved "https://registry.yarnpkg.com/mysql/-/mysql-2.11.1.tgz#7bdbfda477141fd15eeec2b710320c0d20ce7d08"
-  dependencies:
-    bignumber.js "2.3.0"
-    readable-stream "1.1.14"
-    sqlstring "2.0.1"
-
-mysql@2.13.0:
+mysql@2.13.0, mysql@^2.11.1:
   version "2.13.0"
   resolved "https://registry.yarnpkg.com/mysql/-/mysql-2.13.0.tgz#998f1f8ca46e2e3dd7149ce982413653986aae47"
   dependencies:
@@ -5513,16 +5501,12 @@ sprintf-js@~1.0.2:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
 
-sqlite3@3.1.8:
+sqlite3@3.1.8, sqlite3@^3.1.8:
   version "3.1.8"
   resolved "https://registry.yarnpkg.com/sqlite3/-/sqlite3-3.1.8.tgz#4cbcf965d8b901d1b1015cbc7fc415aae157dfaa"
   dependencies:
     nan "~2.4.0"
     node-pre-gyp "~0.6.31"
-
-sqlstring@2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/sqlstring/-/sqlstring-2.0.1.tgz#bcd3c3931af1a5ab7d54a558eb3563ca3d378b98"
 
 sqlstring@2.2.0:
   version "2.2.0"
