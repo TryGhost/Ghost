@@ -27,8 +27,9 @@ describe('Themes API (Forked)', function () {
 
     /**
      * Create a temporary folder that contains:
-     * - 2 valid themes: casper & test-theme
-     * - 1 invalid theme:  broken-theme
+     * - 1 valid theme: casper
+     * - 1 valid theme that has warnings: test-theme
+     * - 1 invalid theme: broken-theme
      */
     function setupThemesFolder() {
         tmpContentPath = tmp.dirSync({unsafeCleanup: true});
@@ -45,7 +46,7 @@ describe('Themes API (Forked)', function () {
         fs.mkdirSync(join(tmpContentPath.name, 'themes', 'test-theme'));
         fs.writeFileSync(
             join(tmpContentPath.name, 'themes', 'test-theme', 'package.json'),
-            JSON.stringify({name: 'test-theme', version: '0.5.7'})
+            JSON.stringify({name: 'test-theme', version: '0.5'})
         );
         fs.writeFileSync(join(tmpContentPath.name, 'themes', 'test-theme', 'index.hbs'));
         fs.writeFileSync(join(tmpContentPath.name, 'themes', 'test-theme', 'post.hbs'));
@@ -287,7 +288,39 @@ describe('Themes API (Forked)', function () {
                 });
         });
 
-        it('activate "test-theme" valid theme', function (done) {
+        it('upload new "warnings" theme that has validation warnings', function (done) {
+            var jsonResponse;
+
+            scope.uploadTheme({themePath: join(__dirname, '/../../../utils/fixtures/themes/warnings.zip')})
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    jsonResponse = res.body;
+
+                    should.exist(jsonResponse.themes);
+                    testUtils.API.checkResponse(jsonResponse, 'themes');
+                    jsonResponse.themes.length.should.eql(1);
+                    testUtils.API.checkResponse(jsonResponse.themes[0], 'theme', ['warnings']);
+                    jsonResponse.themes[0].name.should.eql('warnings');
+                    jsonResponse.themes[0].active.should.be.false();
+                    jsonResponse.themes[0].warnings.should.be.an.Array();
+
+                    // Delete the theme to clean up after the test
+                    request.del(testUtils.API.getApiQuery('themes/warnings'))
+                        .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
+                        .expect(204)
+                        .end(function (err) {
+                            if (err) {
+                                return done(err);
+                            }
+                            done();
+                        });
+                });
+        });
+
+        it('activate "test-theme" valid theme that has warnings', function (done) {
             var jsonResponse, casperTheme, testTheme;
 
             // First check the browse response to see that casper is the active theme
@@ -328,17 +361,16 @@ describe('Themes API (Forked)', function () {
 
                             should.exist(jsonResponse.themes);
                             testUtils.API.checkResponse(jsonResponse, 'themes');
-                            jsonResponse.themes.length.should.eql(3);
+                            jsonResponse.themes.length.should.eql(1);
 
                             casperTheme = _.find(jsonResponse.themes, {name: 'casper'});
-                            should.exist(casperTheme);
-                            testUtils.API.checkResponse(casperTheme, 'theme');
-                            casperTheme.active.should.be.false();
+                            should.not.exist(casperTheme);
 
                             testTheme = _.find(jsonResponse.themes, {name: 'test-theme'});
                             should.exist(testTheme);
-                            testUtils.API.checkResponse(testTheme, 'theme');
+                            testUtils.API.checkResponse(testTheme, 'theme', ['warnings']);
                             testTheme.active.should.be.true();
+                            testTheme.warnings.should.be.an.Array();
 
                             done();
                         });
@@ -460,8 +492,9 @@ describe('Themes API (Forked)', function () {
 
                     testTheme = _.find(jsonResponse.themes, {name: 'test-theme'});
                     should.exist(testTheme);
-                    testUtils.API.checkResponse(testTheme, 'theme');
+                    testUtils.API.checkResponse(testTheme, 'theme', ['warnings']);
                     testTheme.active.should.be.true();
+                    testTheme.warnings.should.be.an.Array();
 
                     request.del(testUtils.API.getApiQuery('themes/test-theme'))
                         .set('Authorization', 'Bearer ' + scope.ownerAccessToken)

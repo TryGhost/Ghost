@@ -36,30 +36,40 @@ themes = {
             newSettings = [{
                 key: 'activeTheme',
                 value: themeName
-            }];
+            }],
+            loadedTheme,
+            checkedTheme;
 
         return apiUtils
             .handlePermissions('themes', 'activate')(options)
             .then(function activateTheme() {
-                var theme = themeList.get(themeName);
+                loadedTheme = themeList.get(themeName);
 
-                if (!theme) {
+                if (!loadedTheme) {
                     return Promise.reject(new errors.ValidationError({
                         message: i18n.t('notices.data.validation.index.themeCannotBeActivated', {themeName: themeName}),
                         context: 'activeTheme'
                     }));
                 }
 
-                return themeUtils.validate.check(theme);
+                return themeUtils.validate.check(loadedTheme);
             })
-            .then(function haveValidTheme(/* checkedTheme */) {
+            .then(function haveValidTheme(_checkedTheme) {
+                checkedTheme = _checkedTheme;
                 // We use the model, not the API here, as we don't want to trigger permissions
                 return settingsModel.edit(newSettings, options);
             })
             .then(function hasEditedSetting() {
-                var result = themeList.toAPI(themeList.getAll(), themeName);
                 // @TODO actually do things to activate the theme, other than just the setting?
-                return Promise.resolve({themes: result});
+
+                var themeResult = themeList.toAPI(loadedTheme, settingsCache.get('activeTheme'));
+                // gscan theme structure !== ghost theme structure
+                // @TODO consider a different way to build this result from the validations
+                if (checkedTheme.results.warning.length > 0) {
+                    themeResult[0].warnings = _.cloneDeep(checkedTheme.results.warning);
+                }
+
+                return {themes: themeResult};
             });
     },
 
@@ -75,7 +85,7 @@ themes = {
                 name: options.originalname,
                 shortName: storageAdapter.getSanitizedFileName(options.originalname.split('.zip')[0])
             },
-            theme;
+            checkedTheme;
 
         // check if zip name is casper.zip
         if (zip.name === 'casper.zip') {
@@ -86,8 +96,8 @@ themes = {
             .then(function validateTheme() {
                 return themeUtils.validate.check(zip, true);
             })
-            .then(function checkExists(checkedTheme) {
-                theme = checkedTheme;
+            .then(function checkExists(_checkedTheme) {
+                checkedTheme = _checkedTheme;
 
                 return storageAdapter.exists(utils.url.urlJoin(config.getContentPath('themes'), zip.shortName));
             })
@@ -102,21 +112,21 @@ themes = {
                 // store extracted theme
                 return storageAdapter.save({
                     name: zip.shortName,
-                    path: theme.path
+                    path: checkedTheme.path
                 }, config.getContentPath('themes'));
             })
             .then(function () {
                 return themeUtils.loadOne(zip.shortName);
             })
-            .then(function (themeObject) {
-                themeObject = themeList.toAPI(themeObject, settingsCache.get('activeTheme'));
+            .then(function (loadedTheme) {
+                var themeResult = themeList.toAPI(loadedTheme, settingsCache.get('activeTheme'));
                 // gscan theme structure !== ghost theme structure
                 // @TODO consider a different way to build this result from the validations
-                if (theme.results.warning.length > 0) {
-                    themeObject.warnings = _.cloneDeep(theme.results.warning);
+                if (checkedTheme.results.warning.length > 0) {
+                    themeResult[0].warnings = _.cloneDeep(checkedTheme.results.warning);
                 }
 
-                return {themes: themeObject};
+                return {themes: themeResult};
             })
             .finally(function () {
                 // @TODO we should probably do this as part of saving the theme
@@ -130,8 +140,8 @@ themes = {
                 // @TODO we should probably do this as part of saving the theme
                 // remove extracted dir from gscan
                 // happens in background
-                if (theme) {
-                    Promise.promisify(fs.removeSync)(theme.path)
+                if (checkedTheme) {
+                    Promise.promisify(fs.removeSync)(checkedTheme.path)
                         .catch(function (err) {
                             logging.error(new errors.GhostError({err: err}));
                         });
