@@ -6,7 +6,6 @@ var debug = require('debug')('ghost:boot:index'),
     ghost, express, logging, errors, utils, parentApp;
 
 debug('First requires...');
-
 ghost = require('./core');
 
 debug('Required ghost');

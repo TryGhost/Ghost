@@ -22,7 +22,7 @@ describe('OAuth', function () {
         res = {};
         next = sandbox.spy();
 
-        sandbox.stub(spamPrevention.userLogin, 'reset');
+        sandbox.stub(spamPrevention.userLogin(), 'reset');
     });
 
     afterEach(function () {
@@ -80,7 +80,7 @@ describe('OAuth', function () {
                     json.should.have.property('expires_in');
                     json.should.have.property('token_type', 'Bearer');
                     next.called.should.eql(false);
-                    spamPrevention.userLogin.reset.called.should.eql(true);
+                    spamPrevention.userLogin().reset.called.should.eql(true);
                     done();
                 } catch (err) {
                     done(err);

@@ -17,7 +17,7 @@ function exchangeRefreshToken(client, refreshToken, scope, body, authInfo, done)
                 var token = model.toJSON();
 
                 if (token.expires > Date.now()) {
-                    spamPrevention.userLogin.reset(authInfo.ip, body.refresh_token + 'login');
+                    spamPrevention.userLogin().reset(authInfo.ip, body.refresh_token + 'login');
 
                     authUtils.createTokens({
                         clientId: token.client_id,
@@ -54,7 +54,7 @@ function exchangePassword(client, username, password, scope, body, authInfo, don
                     });
                 })
                 .then(function then(response) {
-                    spamPrevention.userLogin.reset(authInfo.ip, username + 'login');
+                    spamPrevention.userLogin().reset(authInfo.ip, username + 'login');
                     return done(null, response.access_token, response.refresh_token, {expires_in: response.expires_in});
                 });
         })
@@ -85,7 +85,7 @@ function exchangeAuthorizationCode(req, res, next) {
             }));
         }
 
-        spamPrevention.userLogin.reset(req.authInfo.ip, req.body.authorizationCode + 'login');
+        spamPrevention.userLogin().reset(req.authInfo.ip, req.body.authorizationCode + 'login');
 
         authUtils.createTokens({
             clientId: req.client.id,
