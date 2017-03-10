@@ -82,25 +82,25 @@ describe('Admin Routing', function () {
         });
 
         describe('Legacy Redirects', function () {
-            it('should redirect /logout/ to /ghost/signout/', function (done) {
+            it('should redirect /logout/ to /ghost/#/signout/', function (done) {
                 request.get('/logout/')
-                    .expect('Location', '/ghost/signout/')
+                    .expect('Location', '/ghost/#/signout/')
                     .expect('Cache-Control', testUtils.cacheRules.year)
                     .expect(301)
                     .end(doEndNoAuth(done));
             });
 
-            it('should redirect /signout/ to /ghost/signout/', function (done) {
+            it('should redirect /signout/ to /ghost/#/signout/', function (done) {
                 request.get('/signout/')
-                    .expect('Location', '/ghost/signout/')
+                    .expect('Location', '/ghost/#/signout/')
                     .expect('Cache-Control', testUtils.cacheRules.year)
                     .expect(301)
                     .end(doEndNoAuth(done));
             });
 
-            it('should redirect /signup/ to /ghost/signup/', function (done) {
+            it('should redirect /signup/ to /ghost/#/signup/', function (done) {
                 request.get('/signup/')
-                    .expect('Location', '/ghost/signup/')
+                    .expect('Location', '/ghost/#/signup/')
                     .expect('Cache-Control', testUtils.cacheRules.year)
                     .expect(301)
                     .end(doEndNoAuth(done));
@@ -194,7 +194,7 @@ describe('Admin Routing', function () {
             });
 
             it('should allow admin access over HTTPS', function (done) {
-                request.get('/ghost/setup/')
+                request.get('/ghost/')
                     .set('X-Forwarded-Proto', 'https')
                     .expect(200)
                     .end(doEnd(done));
