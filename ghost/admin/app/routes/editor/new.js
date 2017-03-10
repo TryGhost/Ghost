@@ -17,25 +17,6 @@ export default AuthenticatedRoute.extend(base, {
             controller,
             model
         });
-
-        this.render('post-settings-menu', {
-            model,
-            into: 'application',
-            outlet: 'settings-menu'
-        });
-    },
-
-    setupController() {
-        let psm = this.controllerFor('post-settings-menu');
-
-        // make sure there are no titleObserver functions hanging around
-        // from previous posts
-        psm.removeObserver('titleScratch', psm, 'titleObserver');
-
-        // Ensure that the PSM Publish Date selector resets
-        psm.send('resetPubDate');
-
-        this._super(...arguments);
     },
 
     actions: {

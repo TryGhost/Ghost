@@ -1,29 +1,29 @@
-import $ from 'jquery';
 import Ember from 'ember';
-import Controller from 'ember-controller';
-import computed from 'ember-computed';
+import Component from 'ember-component';
+import computed, {alias} from 'ember-computed';
 import {guidFor} from 'ember-metal/utils';
 import injectService from 'ember-service/inject';
-import injectController from 'ember-controller/inject';
 import {htmlSafe} from 'ember-string';
 import observer from 'ember-metal/observer';
 
+import {invokeAction} from 'ember-invoke-action';
+
 import {parseDateString} from 'ghost-admin/utils/date-formatting';
-import SettingsMenuMixin from 'ghost-admin/mixins/settings-menu-controller';
+import SettingsMenuMixin from 'ghost-admin/mixins/settings-menu-component';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import isNumber from 'ghost-admin/utils/isNumber';
 
 const {ArrayProxy, Handlebars, PromiseProxyMixin} = Ember;
 
-export default Controller.extend(SettingsMenuMixin, {
+export default Component.extend(SettingsMenuMixin, {
     selectedAuthor: null,
 
-    application: injectController(),
+    store: injectService(),
     config: injectService(),
     ghostPaths: injectService(),
     notifications: injectService(),
-    session: injectService(),
     slugGenerator: injectService(),
+    session: injectService(),
     timeZone: injectService(),
 
     initializeSelectedAuthor: observer('model', function () {
@@ -37,7 +37,7 @@ export default Controller.extend(SettingsMenuMixin, {
         // Loaded asynchronously, so must use promise proxies.
         let deferred = {};
 
-        deferred.promise = this.store.query('user', {limit: 'all'}).then((users) => {
+        deferred.promise = this.get('store').query('user', {limit: 'all'}).then((users) => {
             return users.rejectBy('id', 'me').sortBy('name');
         }).then((users) => {
             return users.filter((user) => {
@@ -51,8 +51,8 @@ export default Controller.extend(SettingsMenuMixin, {
     }),
 
     slugValue: boundOneWay('model.slug'),
-    metaTitleScratch: boundOneWay('model.metaTitle'),
-    metaDescriptionScratch: boundOneWay('model.metaDescription'),
+    metaTitleScratch: alias('model.metaTitleScratch'),
+    metaDescriptionScratch: alias('model.metaDescriptionScratch'),
 
     seoTitle: computed('model.titleScratch', 'metaTitleScratch', function () {
         let metaTitle = this.get('metaTitleScratch') || '';
@@ -78,7 +78,7 @@ export default Controller.extend(SettingsMenuMixin, {
             let html = this.get('model.html');
 
             // Strip HTML
-            placeholder = $('<div />', {html}).text();
+            placeholder = this.$('<div />', {html}).text();
             // Replace new lines and trim
             placeholder = placeholder.replace(/\n+/g, ' ').trim();
         }
@@ -383,12 +383,12 @@ export default Controller.extend(SettingsMenuMixin, {
             });
         },
 
-        resetPubDate() {
-            this.set('publishedAtUTCValue', '');
+        closeNavMenu() {
+            invokeAction(this, 'closeNavMenu');
         },
 
-        closeNavMenu() {
-            this.get('application').send('closeNavMenu');
+        closeMenus() {
+            invokeAction(this, 'closeMenus');
         },
 
         changeAuthor(newAuthor) {

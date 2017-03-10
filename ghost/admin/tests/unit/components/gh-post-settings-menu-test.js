@@ -3,163 +3,170 @@ import run from 'ember-runloop';
 import RSVP from 'rsvp';
 import EmberObject from 'ember-object';
 import {describe, it} from 'mocha';
-import {setupTest} from 'ember-mocha';
+import {setupComponentTest} from 'ember-mocha';
+
+import boundOneWay from 'ghost-admin/utils/bound-one-way';
 
 function K() {
     return this;
 }
 
-describe('Unit: Controller: post-settings-menu', function () {
-    setupTest('controller:post-settings-menu', {
-        needs: ['controller:application', 'service:notifications', 'service:slug-generator', 'service:timeZone']
+describe('Unit: Component: post-settings-menu', function () {
+    setupComponentTest('gh-post-settings-menu', {
+        needs: ['service:notifications', 'service:slug-generator', 'service:timeZone']
     });
 
     it('slugValue is one-way bound to model.slug', function () {
-        let controller = this.subject({
+        let component = this.subject({
             model: EmberObject.create({
                 slug: 'a-slug'
             })
         });
 
-        expect(controller.get('model.slug')).to.equal('a-slug');
-        expect(controller.get('slugValue')).to.equal('a-slug');
+        expect(component.get('model.slug')).to.equal('a-slug');
+        expect(component.get('slugValue')).to.equal('a-slug');
 
         run(function () {
-            controller.set('model.slug', 'changed-slug');
+            component.set('model.slug', 'changed-slug');
 
-            expect(controller.get('slugValue')).to.equal('changed-slug');
+            expect(component.get('slugValue')).to.equal('changed-slug');
         });
 
         run(function () {
-            controller.set('slugValue', 'changed-directly');
+            component.set('slugValue', 'changed-directly');
 
-            expect(controller.get('model.slug')).to.equal('changed-slug');
-            expect(controller.get('slugValue')).to.equal('changed-directly');
+            expect(component.get('model.slug')).to.equal('changed-slug');
+            expect(component.get('slugValue')).to.equal('changed-directly');
         });
 
         run(function () {
             // test that the one-way binding is still in place
-            controller.set('model.slug', 'should-update');
+            component.set('model.slug', 'should-update');
 
-            expect(controller.get('slugValue')).to.equal('should-update');
+            expect(component.get('slugValue')).to.equal('should-update');
         });
     });
 
     it('metaTitleScratch is one-way bound to model.metaTitle', function () {
-        let controller = this.subject({
-            model: EmberObject.create({
-                metaTitle: 'a title'
-            })
+        let component = this.subject({
+            model: EmberObject.extend({
+                metaTitle: 'a title',
+                metaTitleScratch: boundOneWay('metaTitle')
+            }).create()
         });
 
-        expect(controller.get('model.metaTitle')).to.equal('a title');
-        expect(controller.get('metaTitleScratch')).to.equal('a title');
+        expect(component.get('model.metaTitle')).to.equal('a title');
+        expect(component.get('metaTitleScratch')).to.equal('a title');
 
         run(function () {
-            controller.set('model.metaTitle', 'a different title');
+            component.set('model.metaTitle', 'a different title');
 
-            expect(controller.get('metaTitleScratch')).to.equal('a different title');
+            expect(component.get('metaTitleScratch')).to.equal('a different title');
         });
 
         run(function () {
-            controller.set('metaTitleScratch', 'changed directly');
+            component.set('metaTitleScratch', 'changed directly');
 
-            expect(controller.get('model.metaTitle')).to.equal('a different title');
-            expect(controller.get('metaTitleScratch')).to.equal('changed directly');
+            expect(component.get('model.metaTitle')).to.equal('a different title');
+            expect(component.get('model.metaTitleScratch')).to.equal('changed directly');
         });
 
         run(function () {
             // test that the one-way binding is still in place
-            controller.set('model.metaTitle', 'should update');
+            component.set('model.metaTitle', 'should update');
 
-            expect(controller.get('metaTitleScratch')).to.equal('should update');
+            expect(component.get('metaTitleScratch')).to.equal('should update');
         });
     });
 
     it('metaDescriptionScratch is one-way bound to model.metaDescription', function () {
-        let controller = this.subject({
-            model: EmberObject.create({
-                metaDescription: 'a description'
-            })
+        let component = this.subject({
+            model: EmberObject.extend({
+                metaDescription: 'a description',
+                metaDescriptionScratch: boundOneWay('metaDescription')
+            }).create()
         });
 
-        expect(controller.get('model.metaDescription')).to.equal('a description');
-        expect(controller.get('metaDescriptionScratch')).to.equal('a description');
+        expect(component.get('model.metaDescription')).to.equal('a description');
+        expect(component.get('metaDescriptionScratch')).to.equal('a description');
 
         run(function () {
-            controller.set('model.metaDescription', 'a different description');
+            component.set('model.metaDescription', 'a different description');
 
-            expect(controller.get('metaDescriptionScratch')).to.equal('a different description');
+            expect(component.get('metaDescriptionScratch')).to.equal('a different description');
         });
 
         run(function () {
-            controller.set('metaDescriptionScratch', 'changed directly');
+            component.set('metaDescriptionScratch', 'changed directly');
 
-            expect(controller.get('model.metaDescription')).to.equal('a different description');
-            expect(controller.get('metaDescriptionScratch')).to.equal('changed directly');
+            expect(component.get('model.metaDescription')).to.equal('a different description');
+            expect(component.get('metaDescriptionScratch')).to.equal('changed directly');
         });
 
         run(function () {
             // test that the one-way binding is still in place
-            controller.set('model.metaDescription', 'should update');
+            component.set('model.metaDescription', 'should update');
 
-            expect(controller.get('metaDescriptionScratch')).to.equal('should update');
+            expect(component.get('metaDescriptionScratch')).to.equal('should update');
         });
     });
 
     describe('seoTitle', function () {
         it('should be the metaTitle if one exists', function () {
-            let controller = this.subject({
-                model: EmberObject.create({
+            let component = this.subject({
+                model: EmberObject.extend({
                     metaTitle: 'a meta-title',
+                    metaTitleScratch: boundOneWay('metaTitle'),
                     titleScratch: 'should not be used'
-                })
+                }).create()
             });
 
-            expect(controller.get('seoTitle')).to.equal('a meta-title');
+            expect(component.get('seoTitle')).to.equal('a meta-title');
         });
 
         it('should default to the title if an explicit meta-title does not exist', function () {
-            let controller = this.subject({
+            let component = this.subject({
                 model: EmberObject.create({
                     titleScratch: 'should be the meta-title'
                 })
             });
 
-            expect(controller.get('seoTitle')).to.equal('should be the meta-title');
+            expect(component.get('seoTitle')).to.equal('should be the meta-title');
         });
 
         it('should be the metaTitle if both title and metaTitle exist', function () {
-            let controller = this.subject({
-                model: EmberObject.create({
+            let component = this.subject({
+                model: EmberObject.extend({
                     metaTitle: 'a meta-title',
+                    metaTitleScratch: boundOneWay('metaTitle'),
                     titleScratch: 'a title'
-                })
+                }).create()
             });
 
-            expect(controller.get('seoTitle')).to.equal('a meta-title');
+            expect(component.get('seoTitle')).to.equal('a meta-title');
         });
 
         it('should revert to the title if explicit metaTitle is removed', function () {
-            let controller = this.subject({
-                model: EmberObject.create({
+            let component = this.subject({
+                model: EmberObject.extend({
                     metaTitle: 'a meta-title',
+                    metaTitleScratch: boundOneWay('metaTitle'),
                     titleScratch: 'a title'
-                })
+                }).create()
             });
 
-            expect(controller.get('seoTitle')).to.equal('a meta-title');
+            expect(component.get('seoTitle')).to.equal('a meta-title');
 
             run(function () {
-                controller.set('model.metaTitle', '');
+                component.set('model.metaTitle', '');
 
-                expect(controller.get('seoTitle')).to.equal('a title');
+                expect(component.get('seoTitle')).to.equal('a title');
             });
         });
 
         it('should truncate to 70 characters with an appended ellipsis', function () {
             let longTitle = new Array(100).join('a');
-            let controller = this.subject({
+            let component = this.subject({
                 model: EmberObject.create()
             });
 
@@ -168,23 +175,24 @@ describe('Unit: Controller: post-settings-menu', function () {
             run(function () {
                 let expected = `${longTitle.substr(0, 70)}&hellip;`;
 
-                controller.set('metaTitleScratch', longTitle);
+                component.set('metaTitleScratch', longTitle);
 
-                expect(controller.get('seoTitle').toString().length).to.equal(78);
-                expect(controller.get('seoTitle').toString()).to.equal(expected);
+                expect(component.get('seoTitle').toString().length).to.equal(78);
+                expect(component.get('seoTitle').toString()).to.equal(expected);
             });
         });
     });
 
     describe('seoDescription', function () {
         it('should be the metaDescription if one exists', function () {
-            let controller = this.subject({
-                model: EmberObject.create({
-                    metaDescription: 'a description'
-                })
+            let component = this.subject({
+                model: EmberObject.extend({
+                    metaDescription: 'a description',
+                    metaDescriptionScratch: boundOneWay('metaDescription')
+                }).create()
             });
 
-            expect(controller.get('seoDescription')).to.equal('a description');
+            expect(component.get('seoDescription')).to.equal('a description');
         });
 
         it.skip('should be generated from the rendered markdown if not explicitly set', function () {
@@ -194,7 +202,7 @@ describe('Unit: Controller: post-settings-menu', function () {
 
         it('should truncate to 156 characters with an appended ellipsis', function () {
             let longDescription = new Array(200).join('a');
-            let controller = this.subject({
+            let component = this.subject({
                 model: EmberObject.create()
             });
 
@@ -203,52 +211,52 @@ describe('Unit: Controller: post-settings-menu', function () {
             run(function () {
                 let expected = `${longDescription.substr(0, 156)}&hellip;`;
 
-                controller.set('metaDescriptionScratch', longDescription);
+                component.set('metaDescriptionScratch', longDescription);
 
-                expect(controller.get('seoDescription').toString().length).to.equal(164);
-                expect(controller.get('seoDescription').toString()).to.equal(expected);
+                expect(component.get('seoDescription').toString().length).to.equal(164);
+                expect(component.get('seoDescription').toString()).to.equal(expected);
             });
         });
     });
 
     describe('seoURL', function () {
         it('should be the URL of the blog if no post slug exists', function () {
-            let controller = this.subject({
+            let component = this.subject({
                 config: EmberObject.create({blogUrl: 'http://my-ghost-blog.com'}),
                 model: EmberObject.create()
             });
 
-            expect(controller.get('seoURL')).to.equal('http://my-ghost-blog.com/');
+            expect(component.get('seoURL')).to.equal('http://my-ghost-blog.com/');
         });
 
         it('should be the URL of the blog plus the post slug', function () {
-            let controller = this.subject({
+            let component = this.subject({
                 config: EmberObject.create({blogUrl: 'http://my-ghost-blog.com'}),
                 model: EmberObject.create({slug: 'post-slug'})
             });
 
-            expect(controller.get('seoURL')).to.equal('http://my-ghost-blog.com/post-slug/');
+            expect(component.get('seoURL')).to.equal('http://my-ghost-blog.com/post-slug/');
         });
 
         it('should update when the post slug changes', function () {
-            let controller = this.subject({
+            let component = this.subject({
                 config: EmberObject.create({blogUrl: 'http://my-ghost-blog.com'}),
                 model: EmberObject.create({slug: 'post-slug'})
             });
 
-            expect(controller.get('seoURL')).to.equal('http://my-ghost-blog.com/post-slug/');
+            expect(component.get('seoURL')).to.equal('http://my-ghost-blog.com/post-slug/');
 
             run(function () {
-                controller.set('model.slug', 'changed-slug');
+                component.set('model.slug', 'changed-slug');
 
-                expect(controller.get('seoURL')).to.equal('http://my-ghost-blog.com/changed-slug/');
+                expect(component.get('seoURL')).to.equal('http://my-ghost-blog.com/changed-slug/');
             });
         });
 
         it('should truncate a long URL to 70 characters with an appended ellipsis', function () {
             let blogURL = 'http://my-ghost-blog.com';
             let longSlug = new Array(75).join('a');
-            let controller = this.subject({
+            let component = this.subject({
                 config: EmberObject.create({blogUrl: blogURL}),
                 model: EmberObject.create({slug: longSlug})
             });
@@ -259,31 +267,31 @@ describe('Unit: Controller: post-settings-menu', function () {
             expected = `${blogURL}/${longSlug}/`;
             expected = `${expected.substr(0, 70)}&hellip;`;
 
-            expect(controller.get('seoURL').toString().length).to.equal(78);
-            expect(controller.get('seoURL').toString()).to.equal(expected);
+            expect(component.get('seoURL').toString().length).to.equal(78);
+            expect(component.get('seoURL').toString()).to.equal(expected);
         });
     });
 
     describe('togglePage', function () {
         it('should toggle the page property', function () {
-            let controller = this.subject({
+            let component = this.subject({
                 model: EmberObject.create({
                     page: false,
                     isNew: true
                 })
             });
 
-            expect(controller.get('model.page')).to.not.be.ok;
+            expect(component.get('model.page')).to.not.be.ok;
 
             run(function () {
-                controller.send('togglePage');
+                component.send('togglePage');
 
-                expect(controller.get('model.page')).to.be.ok;
+                expect(component.get('model.page')).to.be.ok;
             });
         });
 
         it('should not save the post if it is still new', function () {
-            let controller = this.subject({
+            let component = this.subject({
                 model: EmberObject.create({
                     page: false,
                     isNew: true,
@@ -295,15 +303,15 @@ describe('Unit: Controller: post-settings-menu', function () {
             });
 
             run(function () {
-                controller.send('togglePage');
+                component.send('togglePage');
 
-                expect(controller.get('model.page')).to.be.ok;
-                expect(controller.get('model.saved')).to.not.be.ok;
+                expect(component.get('model.page')).to.be.ok;
+                expect(component.get('model.saved')).to.not.be.ok;
             });
         });
 
         it('should save the post if it is not new', function () {
-            let controller = this.subject({
+            let component = this.subject({
                 model: EmberObject.create({
                     page: false,
                     isNew: false,
@@ -315,17 +323,17 @@ describe('Unit: Controller: post-settings-menu', function () {
             });
 
             run(function () {
-                controller.send('togglePage');
+                component.send('togglePage');
 
-                expect(controller.get('model.page')).to.be.ok;
-                expect(controller.get('model.saved')).to.equal(1);
+                expect(component.get('model.page')).to.be.ok;
+                expect(component.get('model.saved')).to.equal(1);
             });
         });
     });
 
     describe('toggleFeatured', function () {
         it('should toggle the featured property', function () {
-            let controller = this.subject({
+            let component = this.subject({
                 model: EmberObject.create({
                     featured: false,
                     isNew: true
@@ -333,14 +341,14 @@ describe('Unit: Controller: post-settings-menu', function () {
             });
 
             run(function () {
-                controller.send('toggleFeatured');
+                component.send('toggleFeatured');
 
-                expect(controller.get('model.featured')).to.be.ok;
+                expect(component.get('model.featured')).to.be.ok;
             });
         });
 
         it('should not save the post if it is still new', function () {
-            let controller = this.subject({
+            let component = this.subject({
                 model: EmberObject.create({
                     featured: false,
                     isNew: true,
@@ -352,15 +360,15 @@ describe('Unit: Controller: post-settings-menu', function () {
             });
 
             run(function () {
-                controller.send('toggleFeatured');
+                component.send('toggleFeatured');
 
-                expect(controller.get('model.featured')).to.be.ok;
-                expect(controller.get('model.saved')).to.not.be.ok;
+                expect(component.get('model.featured')).to.be.ok;
+                expect(component.get('model.saved')).to.not.be.ok;
             });
         });
 
         it('should save the post if it is not new', function () {
-            let controller = this.subject({
+            let component = this.subject({
                 model: EmberObject.create({
                     featured: false,
                     isNew: false,
@@ -372,17 +380,17 @@ describe('Unit: Controller: post-settings-menu', function () {
             });
 
             run(function () {
-                controller.send('toggleFeatured');
+                component.send('toggleFeatured');
 
-                expect(controller.get('model.featured')).to.be.ok;
-                expect(controller.get('model.saved')).to.equal(1);
+                expect(component.get('model.featured')).to.be.ok;
+                expect(component.get('model.saved')).to.equal(1);
             });
         });
     });
 
     describe('updateSlug', function () {
         it('should reset slugValue to the previous slug when the new slug is blank or unchanged', function () {
-            let controller = this.subject({
+            let component = this.subject({
                 model: EmberObject.create({
                     slug: 'slug'
                 })
@@ -390,34 +398,34 @@ describe('Unit: Controller: post-settings-menu', function () {
 
             run(function () {
                 // unchanged
-                controller.set('slugValue', 'slug');
-                controller.send('updateSlug', controller.get('slugValue'));
+                component.set('slugValue', 'slug');
+                component.send('updateSlug', component.get('slugValue'));
 
-                expect(controller.get('model.slug')).to.equal('slug');
-                expect(controller.get('slugValue')).to.equal('slug');
+                expect(component.get('model.slug')).to.equal('slug');
+                expect(component.get('slugValue')).to.equal('slug');
             });
 
             run(function () {
                 // unchanged after trim
-                controller.set('slugValue', 'slug  ');
-                controller.send('updateSlug', controller.get('slugValue'));
+                component.set('slugValue', 'slug  ');
+                component.send('updateSlug', component.get('slugValue'));
 
-                expect(controller.get('model.slug')).to.equal('slug');
-                expect(controller.get('slugValue')).to.equal('slug');
+                expect(component.get('model.slug')).to.equal('slug');
+                expect(component.get('slugValue')).to.equal('slug');
             });
 
             run(function () {
                 // blank
-                controller.set('slugValue', '');
-                controller.send('updateSlug', controller.get('slugValue'));
+                component.set('slugValue', '');
+                component.send('updateSlug', component.get('slugValue'));
 
-                expect(controller.get('model.slug')).to.equal('slug');
-                expect(controller.get('slugValue')).to.equal('slug');
+                expect(component.get('model.slug')).to.equal('slug');
+                expect(component.get('slugValue')).to.equal('slug');
             });
         });
 
         it('should not set a new slug if the server-generated slug matches existing slug', function (done) {
-            let controller = this.subject({
+            let component = this.subject({
                 slugGenerator: EmberObject.create({
                     generateSlug(slugType, str) {
                         let promise = RSVP.resolve(str.split('#')[0]);
@@ -431,11 +439,11 @@ describe('Unit: Controller: post-settings-menu', function () {
             });
 
             run(function () {
-                controller.set('slugValue', 'whatever#slug');
-                controller.send('updateSlug', controller.get('slugValue'));
+                component.set('slugValue', 'whatever#slug');
+                component.send('updateSlug', component.get('slugValue'));
 
-                RSVP.resolve(controller.get('lastPromise')).then(function () {
-                    expect(controller.get('model.slug')).to.equal('whatever');
+                RSVP.resolve(component.get('lastPromise')).then(function () {
+                    expect(component.get('model.slug')).to.equal('whatever');
 
                     done();
                 }).catch(done);
@@ -443,7 +451,7 @@ describe('Unit: Controller: post-settings-menu', function () {
         });
 
         it('should not set a new slug if the only change is to the appended increment value', function (done) {
-            let controller = this.subject({
+            let component = this.subject({
                 slugGenerator: EmberObject.create({
                     generateSlug(slugType, str) {
                         let sanitizedStr = str.replace(/[^a-zA-Z]/g, '');
@@ -458,11 +466,11 @@ describe('Unit: Controller: post-settings-menu', function () {
             });
 
             run(function () {
-                controller.set('slugValue', 'whatever!');
-                controller.send('updateSlug', controller.get('slugValue'));
+                component.set('slugValue', 'whatever!');
+                component.send('updateSlug', component.get('slugValue'));
 
-                RSVP.resolve(controller.get('lastPromise')).then(function () {
-                    expect(controller.get('model.slug')).to.equal('whatever');
+                RSVP.resolve(component.get('lastPromise')).then(function () {
+                    expect(component.get('model.slug')).to.equal('whatever');
 
                     done();
                 }).catch(done);
@@ -470,7 +478,7 @@ describe('Unit: Controller: post-settings-menu', function () {
         });
 
         it('should set the slug if the new slug is different', function (done) {
-            let controller = this.subject({
+            let component = this.subject({
                 slugGenerator: EmberObject.create({
                     generateSlug(slugType, str) {
                         let promise = RSVP.resolve(str);
@@ -485,11 +493,11 @@ describe('Unit: Controller: post-settings-menu', function () {
             });
 
             run(function () {
-                controller.set('slugValue', 'changed');
-                controller.send('updateSlug', controller.get('slugValue'));
+                component.set('slugValue', 'changed');
+                component.send('updateSlug', component.get('slugValue'));
 
-                RSVP.resolve(controller.get('lastPromise')).then(function () {
-                    expect(controller.get('model.slug')).to.equal('changed');
+                RSVP.resolve(component.get('lastPromise')).then(function () {
+                    expect(component.get('model.slug')).to.equal('changed');
 
                     done();
                 }).catch(done);
@@ -497,7 +505,7 @@ describe('Unit: Controller: post-settings-menu', function () {
         });
 
         it('should save the post when the slug changes and the post is not new', function (done) {
-            let controller = this.subject({
+            let component = this.subject({
                 slugGenerator: EmberObject.create({
                     generateSlug(slugType, str) {
                         let promise = RSVP.resolve(str);
@@ -516,12 +524,12 @@ describe('Unit: Controller: post-settings-menu', function () {
             });
 
             run(function () {
-                controller.set('slugValue', 'changed');
-                controller.send('updateSlug', controller.get('slugValue'));
+                component.set('slugValue', 'changed');
+                component.send('updateSlug', component.get('slugValue'));
 
-                RSVP.resolve(controller.get('lastPromise')).then(function () {
-                    expect(controller.get('model.slug')).to.equal('changed');
-                    expect(controller.get('model.saved')).to.equal(1);
+                RSVP.resolve(component.get('lastPromise')).then(function () {
+                    expect(component.get('model.slug')).to.equal('changed');
+                    expect(component.get('model.saved')).to.equal(1);
 
                     done();
                 }).catch(done);
@@ -529,7 +537,7 @@ describe('Unit: Controller: post-settings-menu', function () {
         });
 
         it('should not save the post when the slug changes and the post is new', function (done) {
-            let controller = this.subject({
+            let component = this.subject({
                 slugGenerator: EmberObject.create({
                     generateSlug(slugType, str) {
                         let promise = RSVP.resolve(str);
@@ -548,12 +556,12 @@ describe('Unit: Controller: post-settings-menu', function () {
             });
 
             run(function () {
-                controller.set('slugValue', 'changed');
-                controller.send('updateSlug', controller.get('slugValue'));
+                component.set('slugValue', 'changed');
+                component.send('updateSlug', component.get('slugValue'));
 
-                RSVP.resolve(controller.get('lastPromise')).then(function () {
-                    expect(controller.get('model.slug')).to.equal('changed');
-                    expect(controller.get('model.saved')).to.equal(0);
+                RSVP.resolve(component.get('lastPromise')).then(function () {
+                    expect(component.get('model.slug')).to.equal('changed');
+                    expect(component.get('model.saved')).to.equal(0);
 
                     done();
                 }).catch(done);
