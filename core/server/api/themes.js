@@ -1,8 +1,6 @@
 // # Themes API
 // RESTful API for Themes
-var debug = require('debug')('ghost:api:themes'),
-    Promise = require('bluebird'),
-    _ = require('lodash'),
+var Promise = require('bluebird'),
     fs = require('fs-extra'),
     config = require('../config'),
     errors = require('../errors'),
@@ -25,10 +23,7 @@ var debug = require('debug')('ghost:api:themes'),
  */
 themes = {
     browse: function browse() {
-        debug('browsing');
-        var result = themeList.toAPI(themeList.getAll(), settingsCache.get('activeTheme'));
-        debug('got result');
-        return Promise.resolve({themes: result});
+        return Promise.resolve(themeUtils.toJSON());
     },
 
     activate: function activate(options) {
@@ -61,15 +56,7 @@ themes = {
             })
             .then(function hasEditedSetting() {
                 // @TODO actually do things to activate the theme, other than just the setting?
-
-                var themeResult = themeList.toAPI(loadedTheme, settingsCache.get('activeTheme'));
-                // gscan theme structure !== ghost theme structure
-                // @TODO consider a different way to build this result from the validations
-                if (checkedTheme.results.warning.length > 0) {
-                    themeResult[0].warnings = _.cloneDeep(checkedTheme.results.warning);
-                }
-
-                return {themes: themeResult};
+                return themeUtils.toJSON(themeName, checkedTheme);
             });
     },
 
@@ -116,17 +103,13 @@ themes = {
                 }, config.getContentPath('themes'));
             })
             .then(function () {
+                // Loads the theme from the filesystem
+                // Sets the theme on the themeList
                 return themeUtils.loadOne(zip.shortName);
             })
-            .then(function (loadedTheme) {
-                var themeResult = themeList.toAPI(loadedTheme, settingsCache.get('activeTheme'));
-                // gscan theme structure !== ghost theme structure
-                // @TODO consider a different way to build this result from the validations
-                if (checkedTheme.results.warning.length > 0) {
-                    themeResult[0].warnings = _.cloneDeep(checkedTheme.results.warning);
-                }
-
-                return {themes: themeResult};
+            .then(function () {
+                // @TODO: unify the name across gscan and Ghost!
+                return themeUtils.toJSON(zip.shortName, checkedTheme);
             })
             .finally(function () {
                 // @TODO we should probably do this as part of saving the theme
