@@ -5,7 +5,7 @@ import run from 'ember-runloop';
 import {isEmberArray} from 'ember-array/utils';
 import observer from 'ember-metal/observer';
 import $ from 'jquery';
-
+import {isUnauthorizedError} from 'ember-ajax/errors';
 import AuthConfiguration from 'ember-simple-auth/configuration';
 import ApplicationRouteMixin from 'ember-simple-auth/mixins/application-route-mixin';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
@@ -195,6 +195,11 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
         save: K,
 
         error(error, transition) {
+            // unauthoirized errors are already handled in the ajax service
+            if (isUnauthorizedError(error)) {
+                return false;
+            }
+
             if (error && isEmberArray(error.errors)) {
                 switch (error.errors[0].errorType) {
                 case 'NotFoundError': {

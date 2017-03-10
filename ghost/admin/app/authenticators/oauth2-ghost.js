@@ -32,8 +32,8 @@ export default Oauth2Authenticator.extend({
                     }
                     resolve(response);
                 });
-            }, (xhr) => {
-                run(null, reject, xhr.responseJSON || xhr.responseText);
+            }, (error) => {
+                reject(error);
             });
         });
     }
