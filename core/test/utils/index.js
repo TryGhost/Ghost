@@ -500,9 +500,7 @@ toDoList = {
         return permissions.init();
     },
     perms: function permissionsFor(obj) {
-        return function permissionsForObj() {
-            return fixtures.permissionsFor(obj);
-        };
+        return fixtures.permissionsFor(obj);
     },
     clients: function insertClients() {
         return fixtures.insertClients();
