@@ -8,6 +8,7 @@ import attr from 'ember-data/attr';
 import {belongsTo, hasMany} from 'ember-data/relationships';
 
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
+import boundOneWay from 'ghost-admin/utils/bound-one-way';
 
 import {BLANK_DOC} from 'ghost-admin/components/gh-koenig';  // a blank mobile doc
 
@@ -119,6 +120,8 @@ export default Model.extend(Comparable, ValidationEngine, {
 
     scratch: null,
     titleScratch: null,
+    metaTitleScratch: boundOneWay('metaTitle'),
+    metaDescriptionScratch: boundOneWay('metaDescription'),
 
     // Computed post properties
 

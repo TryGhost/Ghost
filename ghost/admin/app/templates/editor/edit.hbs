@@ -75,3 +75,12 @@
         close=(action "toggleReAuthenticateModal")
         modifier="action wide"}}
 {{/if}}
+
+{{#liquid-wormhole}}
+    {{gh-post-settings-menu
+        model=model
+        showSettingsMenu=application.showSettingsMenu
+        closeNavMenu=(action "closeNavMenu")
+        closeMenus=(action "closeMenus")
+    }}
+{{/liquid-wormhole}}

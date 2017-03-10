@@ -37,7 +37,7 @@ export default Mixin.create({
     showLeaveEditorModal: false,
     showReAuthenticateModal: false,
 
-    postSettingsMenuController: injectController('post-settings-menu'),
+    application: injectController(),
     notifications: injectService(),
     clock: injectService(),
     slugGenerator: injectService(),
@@ -398,7 +398,6 @@ export default Mixin.create({
         save(options) {
             let prevStatus = this.get('model.status');
             let isNew = this.get('model.isNew');
-            let psmController = this.get('postSettingsMenuController');
             let promise, status;
 
             options = options || {};
@@ -433,8 +432,8 @@ export default Mixin.create({
             }
 
             this.set('model.title', this.get('model.titleScratch'));
-            this.set('model.metaTitle', psmController.get('metaTitleScratch'));
-            this.set('model.metaDescription', psmController.get('metaDescriptionScratch'));
+            this.set('model.metaTitle', this.get('model.metaTitleScratch'));
+            this.set('model.metaDescription', this.get('model.metaDescriptionScratch'));
 
             if (!this.get('model.slug')) {
                 this.get('updateTitle').cancelAll();
@@ -494,6 +493,14 @@ export default Mixin.create({
             if (this.get('model.isNew')) {
                 this.send('save', {silent: true, backgroundSave: true});
             }
+        },
+
+        closeNavMenu() {
+            this.get('application').send('closeAutoNav');
+        },
+
+        closeMenus() {
+            this.get('application').send('closeMenus');
         },
 
         toggleLeaveEditorModal(transition) {
