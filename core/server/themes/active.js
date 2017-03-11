@@ -18,8 +18,20 @@
  */
 var _ = require('lodash'),
     join = require('path').join,
+    defaultConfig = require('./defaults.json'),
     // Current instance of ActiveTheme
     currentActiveTheme;
+
+function tempConfigHandler(packageJson) {
+    var config = _.cloneDeep(defaultConfig),
+        allowedKeys = ['posts_per_page'];
+
+    if (packageJson && packageJson.hasOwnProperty('config')) {
+        config = _.assign(config, _.pick(packageJson.config, allowedKeys));
+    }
+
+    return config;
+}
 
 class ActiveTheme {
     /**
@@ -43,6 +55,9 @@ class ActiveTheme {
             }
             return templates;
         }, []);
+
+        // Do something with config here
+        this._config = tempConfigHandler(this._packageInfo);
     }
 
     get name() {
@@ -63,6 +78,10 @@ class ActiveTheme {
 
     hasTemplate(templateName) {
         return this._templates.indexOf(templateName) > -1;
+    }
+
+    config(key) {
+        return this._config[key];
     }
 }
 
