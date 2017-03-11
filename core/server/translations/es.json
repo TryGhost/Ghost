@@ -1,0 +1,586 @@
+{
+    "common": {
+        "mail": {
+            "title": "Ghost en {domain}"
+        },
+        "seeLinkForInstructions": "Revisa {link} para instrucciones.",
+        "time": {
+            "seconds": "segundos"
+        },
+        "api": {
+            "authentication": {
+                "sampleBlogDescription": "Pensamientos, historias e ideas.",
+                "mail": {
+                    "resetPassword": "Resetear Contraseña",
+                    "checkEmailForInstructions": "Revisa tu email para las instrucciones.",
+                    "passwordChanged": "Contraseña cambiada de manera correcta.",
+                    "invitationAccepted": "Invitación aceptada.",
+                    "yourNewGhostBlog": "Tu nuevo Ghost Blog"
+                }
+            },
+            "mail": {
+                "testGhostEmail": "Prueba de Ghost Email"
+            },
+            "users": {
+                "mail": {
+                    "invitedByName": "{invitedByName} te ha invitado para unirte a {blogName}"
+                }
+            },
+            "clients": {
+                "clientNotFound": "Cliente no encontrado"
+            }
+        }
+    },
+    "errors": {
+        "apps": {
+            "failedToParseActiveAppsSettings": {
+                "error": "Falló el análisis de activeApps con el valor de configuracion: {message}",
+                "context": "Tu apps no puede ser cargada.",
+                "help": "Revisa la tabla de configuracion para tipos de los valores para activeApps. Debe ser como: [\"app-1\", \"app2\"] (comillas dobles son necesarias)."
+            },
+            "appWillNotBeLoaded": {
+                "error": "La pp no puede ser cargada",
+                "help": "Revisar el app creator, o mira la documentacion de la app para mas detalles y requirimientos"
+            },
+            "permissionsErrorLoadingApp": {
+                "error": "Error en la carga de la app {name}; problemas leyendo los permisos: {message}"
+            },
+            "noInstallMethodLoadingApp": {
+                "error": "Error al cargar de la app {name}; no install() method definido."
+            },
+            "noActivateMethodLoadingApp": {
+                "error": "Error cargando la app {name}; no activate() method definido."
+            },
+            "accessResourceWithoutPermission": {
+                "error": "La App \"{name}\" al intentar acceder a un recurso ({perm}.{method}) sin permisos."
+            },
+            "mustProvideAppName": {
+                "error": "Debe proveer un nombre para la app para el contexto del api"
+            },
+            "mustProvideAppPermissions": {
+                "error": "Debe proveer los permisos para la app"
+            },
+            "unsafeAppRequire": {
+                "error": "Inseguro App requirimiento: {msg}"
+            }
+        },
+        "middleware": {
+            "api": {
+                "versionMismatch": "La solicitud para la versión {requestVersion} no es igual a la actual versión {currentVersion}."
+            },
+            "auth": {
+                "clientAuthenticationFailed": "Autentificación fallida del Cliente",
+                "clientCredentialsNotProvided": "Las credenciales de Cliente no han sido provistas",
+                "clientCredentialsNotValid": "Client con credenciales invalidas",
+                "forInformationRead": "Para conocer información como solucionar esto, por favor revisa {url}.",
+                "accessDenied": "Acceso denegado.",
+                "pleaseSignIn": "Por favor, ingresa"
+            },
+            "oauth": {
+                "invalidClient": "Cliente inválido.",
+                "invalidRefreshToken": "Token inválido.",
+                "refreshTokenExpired": "El token ha expirado."
+            },
+            "privateblogging": {
+                "wrongPassword": "Contraseña erronea"
+            },
+            "spamprevention": {
+                "tooManyAttempts": "Demasiado intentos.",
+                "noUsername": "No username.",
+                "noPassword": "La password debe ingresarse",
+                "tooManySigninAttempts": {
+                    "error": "Solo {rateSigninAttempts} intentos por dirección IP cada {rateSigninPeriod} segundos.",
+                    "context": "Demasiados intentos de login."
+                },
+                "tryAgainLater": "Por favor intenta en unos minutos",
+                "waitOneHour": " Por favor espera 1 hora.",
+                "noEmail": "No email.",
+                "forgottenPasswordEmail": {
+                    "error": "Solo {rfa} intentos de contraseña olvidada por email cada {rfp} segundos.",
+                    "context": "La recuperación por reseteo de la contraseña ha fallado"
+                },
+                "forgottenPasswordIp": {
+                    "error": "Solo {rfa} intentos por dirección IP cada {rfp} segundos.",
+                    "context": "Reseto por olvido de contraseña ha fallado"
+                }
+            },
+            "themehandler": {
+                "missingTheme": "El tema activo \"{theme}\" no existe."
+            }
+        },
+        "utils": {
+            "parsepackagejson": {
+                "couldNotReadPackage": "No puede ser leido el archivo package.json",
+                "nameOrVersionMissing": "\"name\" o \"version\" faltante del tema en el archivo package.json.",
+                "willBeRequired": "Esto será requerido en un futuro. Por favor visita {url}",
+                "themeFileIsMalformed": "El archivo package.json del tema no está bien formado"
+            },
+            "validatethemes": {
+                "themeWithNoPackage": {
+                    "message": "Encontrado un tema sin archivo package.json",
+                    "context": "Tema: {name}",
+                    "help": "Esto será requerido en un futuro. Por favor visita {url}"
+                },
+                "malformedPackage": {
+                    "message": "Archivo package.json incorrecto",
+                    "context": "Tema: {name}",
+                    "help": "Archivo package.json deberá ser válido en un futuro. Por favor visita {url}"
+                }
+            }
+        },
+        "config": {
+            "couldNotLocateConfigFile": {
+                "error": "No puede ser encontrado el archivo de configuración.",
+                "help": "Por favor revisa tu archivo para  deployment config.js o config.example.js."
+            },
+            "couldNotOpenForReading": {
+                "error": "No puede abrirse el archivo {file} para ser leído.",
+                "help": "Por favor revisa tu archivo para deployment config.js o config.example.js."
+            },
+            "couldNotOpenForWriting": {
+                "error": "No puede abrirse el archivo {file} para ser escrito.",
+                "help": "Por favor revisa tu archivo para deployment config.js o config.example.js."
+            },
+            "invalidUrlInConfig": {
+                "error": "url del sitio inválida",
+                "description": "Tu url del sitio en el archivo config.js es inválida.",
+                "help": "Por favor asegurate que la url sea válida antes de reiniciar"
+            },
+            "urlCannotContainGhostSubdir": {
+                "error": "subdirectorio ghost no habilitado",
+                "description": "Tu url del sitio en config.js no puede tener un subdirectorio llamado ghost.",
+                "help": "Por favor renombra el subdirectorio antes de reiniciar"
+            },
+            "urlCannotContainPrivateSubdir": {
+                "error": "directorio private no habilitado",
+                "description": "Tu url del sitio en config.js no puede tener un subdirectorio llamado private.",
+                "help": "Por favor renombra el subdirectorio antes de reiniciar"
+            },
+            "dbConfigInvalid": {
+                "error": "Configuración de la base de datos inválida",
+                "description": "La configuración presente en el archivo config.js es inválida.",
+                "help": "Asegurate que sea válida la configuración Bookshelf base de datos sea válida"
+            },
+            "deprecatedProperty": {
+                "error": "La configuración property [{property}] ha sido deprecada.",
+                "explanation": "Esto será removido en una futura versión, por favor actualiza tu archivo config.js.",
+                "help": "Revisa {url} para ejemplos actualizado."
+            },
+            "invalidServerValues": {
+                "error": "Configuración del servidor inválida",
+                "description": "Los valores del servidor (socket, o host y port) en el archivo config.js no son válidos.",
+                "help": "Por favor provee los correctos antes de reiniciar."
+            }
+        },
+        "general": {
+            "maintenance": "Ghost se encuentra actualmente en mantención, por favor espera unos momentos antes de volver a intentar.",
+            "moreInfo": "\nMas información: {info}",
+            "requiredOnFuture": "Esto será requerido en un futuro. Visita {link}",
+            "internalError": "Algo falló."
+        },
+        "httpServer": {
+            "addressInUse": {
+                "error": "(EADDRINUSE) Ghost no puede iniciar.",
+                "context": "El puerto {port} se encuentra en uso por otro programa.",
+                "help": "¿Es otra instancia de Ghost funcionando?"
+            },
+            "otherError": {
+                "error": "(Code: {errorNumber})",
+                "context": "Hay un error al iniciar el servidor.",
+                "help": "Por favor usa este código de error para buscar una solución."
+            }
+        },
+        "mail": {
+            "incompleteMessageData": {
+                "error": "Error: Datos del mensaje incompleto."
+            },
+            "failedSendingEmail": {
+                "error": "Error: Falló al enviar el email"
+            },
+            "noMailServerAtAddress": {
+                "error": " - servidor de mail no encontrado en {domain}"
+            },
+            "messageNotSent": {
+                "error": "Error: El Mensaje no pude ser enviado"
+            }
+        },
+        "models": {
+            "subscriber": {
+                "notEnoughPermission": "No tienes permisos para realizar esta operación"
+            },
+            "post": {
+                "untitled": "(Sin Título)",
+                "valueCannotBeBlank": "Valor para {key} no puede estar en blanco.",
+                "isAlreadyPublished": "Tu post se encuentra publicado, por favor recarga la página.",
+                "expectedPublishedAtInFuture": "La fecha debe ser menor {cannotScheduleAPostBeforeInMinutes} minutos del futuro.",
+                "noUserFound": "Usuario no encontrado",
+                "notEnoughPermission": "No tienes permisos para realizar esta operación",
+                "tagUpdates": {
+                    "error": "No pudieron guardarse las tags.",
+                    "help": "Tu post ha sido guardado pero las targs no se actualizaron."
+                }
+            },
+            "role": {
+                "notEnoughPermission": "No tienes permisos para realizar esta operación"
+            },
+            "settings": {
+                "valueCannotBeBlank": "Valor para {key} no puede estar en blanco.",
+                "unableToFindSetting": "No puede encontrarse la actualización para: {key}",
+                "unableToFindDefaultSetting": "No encontrada un valor por defecto para: {key}"
+            },
+            "user": {
+                "missingContext": "context no encontrado",
+                "onlyOneRolePerUserSupported": "Solo un rol por usuario es soportado hasta ahora.",
+                "methodDoesNotSupportOwnerRole": "Este metodo no es soportado para un rol owner",
+                "passwordDoesNotComplyLength": "La contraseña debe tener más de 8 caracteres.",
+                "notEnoughPermission": "No tienes permisos para realizar esta operación",
+                "noUserWithEnteredEmailAddr": "No existe un usuario con esa dirección de email.",
+                "userIsInactive": "La dirección de email de ese usuario está inactiva.",
+                "incorrectPasswordAttempts": "¡Contraseña es incorrecta. <br /> {remaining} intento{s} faltantes!",
+                "userUpdateError": {
+                    "emailIsAlreadyInUse": "Email está en uso",
+                    "context": "Error al actualizar el usuario en el login",
+                    "help": "Visita y guarda tu perfil después del login para verificar problemas."
+                },
+                "incorrectPassword": "La Contraseña es incorrecta.",
+                "accountLocked": "Tu cuenta está bloqueada. Por favor, resetea tu password y luego hace login haciendo click en el enlace \"¿Olvidaste la contraseña?\"!",
+                "newPasswordsDoNotMatch": "La nueva contraseña no es igual",
+                "passwordRequiredForOperation": "Contraseña es requerida para esta operación",
+                "expiredToken": "Token expirado",
+                "tokenLocked": "Token bloqueado",
+                "invalidToken": "Token invalido",
+                "userNotFound": "Userio no encontrado",
+                "onlyOwnerCanTransferOwnerRole": "Solo los owners están habilitados para transferir un rol owner.",
+                "onlyAdmCanBeAssignedOwnerRole": "Solo los administrators pueden asignar este rol."
+            },
+            "base": {
+                "index": {
+                    "missingContext": "missing context"
+                },
+                "token": {
+                    "noUserFound": "No usuario no encontrado",
+                    "tokenNotFound": "Token no encontrado"
+                }
+            },
+            "plugins": {
+                "filter": {
+                    "errorParsing": "Error al realizar el filtro",
+                    "forInformationRead": "Para mas información como usar filtros, Visita {url}"
+                }
+            }
+        },
+        "permissions": {
+            "noActionsMapFound": {
+                "error": "Acciones map no encontrada, asegurate de tener los permisos en la base de datos antes de ejecutar permissions.init()."
+            },
+            "applyStatusRules": {
+                "error": "No tienes permisos para recibir {docName} con este estado"
+            },
+            "noPermissionToAction": "No tienes permisos para ejecutar esta acción"
+        },
+        "update-check": {
+            "checkingForUpdatesFailed": {
+                "error": "El chequeo de actualizaciones falló, tu blog puede continuar con esta función.",
+                "help": "Si obtiene este error de manera constante, por favor sigue el siguiente enlace para una solución {url}."
+            },
+            "unableToDecodeUpdateResponse": {
+                "error": "No puede decodificarse la respuesta de actualización"
+            }
+        },
+        "api": {
+            "common": {
+                "invalidTokenStructure": "Estructura del token es inválida"
+            },
+            "authentication": {
+                "setupUnableToRun": "El fixture de datos para la base datos no existe. Por favor, resetea la base de datos y trata de nuevo.",
+                "setupMustBeCompleted": "El Setup debe estar completo antes de realizar esta solicitud.",
+                "noEmailProvided": "No email provisto.",
+                "noTokenProvided": "No token provisto.",
+                "noPasswordProvided": "No contraseña provista.",
+                "noNameProvided": "Nombre no provisto.",
+                "invalidEmailReceived": "El servidor no recibió un email válido",
+                "setupAlreadyCompleted": "Setup está completado.",
+                "unableToSendWelcomeEmail": "No se ha podido enviar email de bienvenida, tu blog puede continuar funcionando.",
+                "checkEmailConfigInstructions": "Por favor, revisa el siguiente link {url} para instrucciones para la Configuración del email.",
+                "notLoggedIn": "No estás logeado.",
+                "notTheBlogOwner": "Tu no eras owner del blog.",
+                "invalidTokenTypeHint": "token_type_hint inválido.",
+                "invalidTokenProvided": "Token inválido",
+                "tokenRevocationFailed": "Token revocación falló"
+            },
+            "clients": {
+                "clientNotFound": "Cliente no encontrado."
+            },
+            "configuration": {
+                "invalidKey": "Llave inválida"
+            },
+            "db": {
+                "missingFile": "Selecciona un archivo de la base de datos a importar.",
+                "invalidFile": "Archivo no soportado. Por favor intenta usar los siguientes formatos: {extensions}",
+                "noPermissionToExportData": "No tienes permisos para exportar datos (sin permisos).",
+                "noPermissionToImportData": "No tienes permisos para importar datos (sin permisos)."
+            },
+            "mail": {
+                "noPermissionToSendEmail": "No tienes permisos para enviar email.",
+                "cannotFindCurrentUser": "No se ha podido encontrar al usuario actual"
+            },
+            "notifications": {
+                "noPermissionToBrowseNotif": "No tienes permisos para navegar por las notificaciones.",
+                "noPermissionToAddNotif": "No tienes permisos para agregar notificaciones.",
+                "noPermissionToDestroyNotif": "No tienes permisos para eliminar notificaciones.",
+                "noPermissionToDismissNotif": "No tienes permisos para eliminar las notificaciones.",
+                "notificationDoesNotExist": "Notificacion no existe."
+            },
+            "posts": {
+                "postNotFound": "Post no existe."
+            },
+            "job": {
+                "notFound": "Job no existe.",
+                "publishInThePast": "Usa la opción force para publicar un post en el pasado."
+            },
+            "settings": {
+                "problemFindingSetting": "Hubo un problema al buscar la configuración: {key}",
+                "accessCoreSettingFromExtReq": "Intento para acceder a las configuraciones del core por una solicitud externa",
+                "invalidJsonInLabs": "Error: JSON inválido en settings.labs",
+                "labsColumnCouldNotBeParsed": "La columna con la clave \"labs\" no puede ser procesada como JSON",
+                "tryUpdatingLabs": "Por favor intenta actualizar la configuración de la página labs, o manualmente desde la base de datos",
+                "noPermissionToEditSettings": "No tienes permisos para editar las configuraciones.",
+                "noPermissionToReadSettings": "No tienes permisos para leer las configuraciones."
+            },
+            "slugs": {
+                "couldNotGenerateSlug": "No puedo generado el slug.",
+                "unknownSlugType": "Desconocido slug tipo '{type}'."
+            },
+            "subscribers": {
+                "missingFile": "Por favor selecciona un  csv.",
+                "invalidFile": "Por favor Selecciona un archivo CSV válido para ser importado.",
+                "subscriberNotFound": "Subscriber no encontrado.",
+                "subscriberAlreadyExists": "Email ya está suscrita."
+            },
+            "tags": {
+                "tagNotFound": "Tag no encontrado."
+            },
+            "themes": {
+                "noPermissionToBrowseThemes": "No tienes permisos para navegar por los temas.",
+                "noPermissionToEditThemes": "No tienes permisos para editar los temas.",
+                "themeDoesNotExist": "Tema no existe.",
+                "invalidTheme": "Tema no es compatible o contiene errores.",
+                "missingFile": "Por favor selecciona un tema.",
+                "invalidFile": "Por favor selecciona un archivo zip válido.",
+                "overrideCasper": "Por favor renombra tu archivp zip, no está permitido sobreescribir el tema casper.",
+                "destroyCasper": "Eliminar el tema por defecto casper no está permitido."
+            },
+            "images": {
+                "missingFile": "Por favor selecciona una imagen.",
+                "invalidFile": "Por favor selecciona una imagen válida."
+            },
+            "icons": {
+                "missingFile": "Por favor selecciona un icono.",
+                "fileSizeTooLarge": "Por favor selecciona un icono no mayor a 100kb.",
+                "iconNotSquare": "El icono debe ser cuadrado.",
+                "fileTooLarge": "Por favor selecciona un archivo de icono no mayor a 1000px.",
+                "fileTooSmall": "Por favor selecciona un archivo de icono mayor a 32px.",
+                "invalidFile": "Por favor selecciona un archivo de icono válido",
+                "couldNotGetSize": "No pueden leerse las dimenciones del icono"
+            },
+            "users": {
+                "userNotFound": "Usuario no encontrado.",
+                "cannotChangeOwnRole": "No puedes cambiar tu propio rol.",
+                "cannotChangeOwnersRole": "No puedes cambiar los roles del owner",
+                "noPermissionToEditUser": "No tienes permisos para editar a este usuario",
+                "noPermissionToAddUser": "No tienes permisos para agrega a este usuario",
+                "noEmailProvided": "Email no ingresado.",
+                "userAlreadyRegistered": "El usuario ya está registrado.",
+                "noPermissionToDestroyUser": "No tienes permisos para eliminar a este usuario.",
+                "noPermissionToChangeUsersPwd": "No tienes permisoa para cambiar la contraseña a este usuario"
+            },
+            "utils": {
+                "noPermissionToCall": "No tienes permisos para {method} {docName}",
+                "noRootKeyProvided": "No hay clave ('{docName}') provided.",
+                "invalidIdProvided": "El ID ingresado no es válido."
+            },
+            "invites": {
+                "inviteNotFound": "Invitación no encontrada.",
+                "inviteExpired": "Invitación expiró.",
+                "emailIsRequired": "E-Mail es requerido.",
+                "roleIsRequired": "Rol es requerido",
+                "roleNotFound": "Rol no encontrado",
+                "errorSendingEmail": {
+                    "error": "Error al enviar el email: {message}",
+                    "help": "Por favor revisar la configuración del email y re-envia la invitación."
+                },
+                "notAllowedToInviteOwner": "No está permitido invitar a un usuario owner.",
+                "notAllowedToInvite": "No está permitido invitar a este rol."
+            }
+        },
+        "data": {
+            "export": {
+                "errorExportingData": "Error exportando los datos"
+            },
+            "import": {
+                "dataImporter": {
+                    "unableToFindOwner": "No es posible encontrar al owner"
+                },
+                "index": {
+                    "duplicateEntryFound": "Entidad duplicada. Multiples valores para '{value}' se encontraron para {offendingProperty}."
+                },
+                "utils": {
+                    "dataLinkedToUnknownUser": "Intento de importar la data linqueda por un usuario desconocido id {userToMap}"
+                }
+            },
+            "importer": {
+                "index": {
+                    "couldNotCleanUpFile": {
+                        "error": "Importación no ha podido limpiar el archivo",
+                        "context": "Tu blog continua trabajando como esperabas"
+                    },
+                    "unsupportedRoonExport": "Tu archivo zip contiene un formato antiguo Roon export, por favor re-exporta tu Roon blog e intenta nuevamente.",
+                    "noContentToImport": "El archivo Zip no incluye ningún contenido a importar.",
+                    "invalidZipStructure": "Estructuta invalida del archivo zip.",
+                    "invalidZipFileBaseDirectory": "Archivo zip inválido: directorio base falló al leer",
+                    "zipContainsMultipleDataFormats": "El archivo zip contiene multiples formatos de datas. Por favor separa los archivo a importalos de manera de separada."
+                },
+                "handlers": {
+                    "json": {
+                        "invalidJsonFormat": "Formato JSON invalido, se esperaba `{ db: [exportedData] }`",
+                        "apiDbImportContent": "API DB importación de contenido",
+                        "checkImportJsonIsValid": "Revisar si el archivo a importar es JSON válido.",
+                        "failedToParseImportJson": "Falló al procesar en la importación el archivo JSON."
+                    }
+                }
+            },
+            "xml": {
+                "xmlrpc": {
+                    "pingUpdateFailed": {
+                        "error": "Pinging services para actualizaciones de tu blog falló, tu blog sigue funcionando si esta función.",
+						"help": "Si obtiene este error de manera constante, por favor sigue el siguiente enlace para una solución {url}."
+                    }
+                }
+            }
+        },
+        "errors": {
+            "noMessageSupplied": "no message supplied",
+            "error": "\nERROR:",
+            "warning": "\nWarning:",
+            "anErrorOccurred": "A ocurrido un error",
+            "unknownErrorOccurred": "Un error desconocido a ocurrido.",
+            "unknownError": "Error Desconocido",
+            "unknownApiError": "DesconocidoAPI Error",
+            "databaseIsReadOnly": "Tu base de datos está en modo solo lectura. Los visitantes podrán leer el blog pero no podrán agregar post.",
+            "checkDatabase": "Revisa tu archivo de base de datos y asegurate que contenga los permisos de manera correcta.",
+            "notEnoughPermission": "No tienes permisos para realizar esta operación",
+            "errorWhilstRenderingError": "Error whilst rendering error page",
+            "errorTemplateHasError": "Error template tiene un error",
+            "oopsErrorTemplateHasError": "Ups, al parecer existe un error en el template.",
+            "encounteredError": "Se encontró el error error: ",
+            "whilstTryingToRender": "whilst trying to render an error page for the error: ",
+            "renderingErrorPage": "Rendering Error Page",
+            "caughtProcessingError": "Ghost detectó un error en la capa  middleware.",
+            "pageNotFound": "Page no encontrada",
+            "resourceNotFound": "Recurso no encontrado"
+        }
+    },
+    "warnings": {
+        "index": {
+            "usingDirectMethodToSendEmail": "Ghost está intentando usar un metodo directo de envio de email. \nEs recomendable configurar un servicio de email.",
+            "unableToSendEmail": "Ghost actualmente no puede enviar email."
+        },
+        "helpers": {
+            "helperNotAvailable": "El helper \\{\\{{helperName}\\}\\} no está disponible.",
+            "apiMustBeEnabled": "El labs flag {flagName} debe estar habilitado si deseas usar el helper  \\{\\{{helperName}\\}\\}.",
+            "seeLink": "Mira {url}",
+            "foreach": {
+                "iteratorNeeded": "Necesitas pasar el iterador para  #foreach"
+            },
+            "get": {
+                "mustBeCalledAsBlock": "Get helper debe llamar como bloque",
+                "invalidResource": "Recurso inválido para este helper",
+                "helperNotAvailable": "El \\{\\{get\\}\\} del helper no está disponible.",
+                "apiMustBeEnabled": "El acceso a la API publica debe estar habilitada si deseas usar el  \\{\\{get\\}\\} del helper.",
+                "seeLink": "Mira {url}"
+            },
+            "has": {
+                "invalidAttribute": "Invalido o no se ha establecido el atributo del helper"
+            },
+            "index": {
+                "missingHelper": "Missing helper: '{arg}'"
+            },
+            "is": {
+                "invalidAttribute": "Inválido o no se ha establecido el atributo del helper"
+            },
+            "navigation": {
+                "invalidData": "navigation data es un objecto o una función",
+                "valuesMustBeDefined": "Para todos los valores deben ser definidos label, url and current",
+                "valuesMustBeString": "Valor inválido. La Url y Label deben ser strings"
+            },
+            "page_url": {
+                "isDeprecated": "Warning: pageUrl está descontinuado, por favor usa page_url instead\nEl helperr pageUrl fue marcado como descontinuado por page_url en Ghost 0.4.2, y será removido de manera completa en Ghost 0.6\nSi tu tema contiene esto en pagination.hbs, pageUrl debe renombrarse a to page_url"
+            },
+            "pagination": {
+                "invalidData": "navigation data es un objecto o una función",
+                "valuesMustBeDefined": "Todos los valores deben ser definidos para for page, pages, limit y total",
+                "nextPrevValuesMustBeNumeric": "Valor inválido, Next/Prev debe ser un númeror",
+                "valuesMustBeNumeric": "Valor inválido, check page, pages, limit y total son numeros"
+            },
+            "plural": {
+                "valuesMustBeDefined": "Todos los valores deben ser definido en vacio, singular y plural"
+            },
+            "template": {
+                "templateNotFound": "Template {name} no encontrado."
+            }
+        }
+    },
+    "notices": {
+        "controllers": {
+            "newVersionAvailable": "¡Ghost {version} está disponible!. Uguy! {link} enlace para actualizar."
+        },
+        "index": {
+            "welcomeToGhost": "Bivenvenidos a  Ghost.",
+            "youAreRunningUnderEnvironment": "Estás utilizando baso el entorno  <strong> {environment} </strong>.",
+            "yourURLisSetTo": "Tu URL está configurar a <strong> {url} </strong>."
+        },
+        "httpServer": {
+            "cantTouchThis": "No puedes tocar esto",
+            "ghostIsRunning": "Ghost está corriendo...",
+            "yourBlogIsAvailableOn": "\nTu blog está ahora disponible en {url}",
+            "ctrlCToShutDown": "\nCtrl+C para apagar",
+            "ghostIsRunningIn": "Ghost está corriendo en modo {env}...",
+            "listeningOn": "\nEscuchando en",
+            "urlConfiguredAs": "\nUrl configurada como: {url}",
+            "ghostHasShutdown": "\nGhost ha sido apagado",
+            "yourBlogIsNowOffline": "\nTu blog ahora está offline",
+            "ghostWasRunningFor": "\nGhost fue ejecutado para",
+            "ghostIsClosingConnections": "Ghost está cerrando las conecciones"
+        },
+        "mail": {
+            "messageSent": "Mensaje enviado. ¡Doble revisión, en inbox y spam!"
+        },
+        "api": {
+            "users": {
+                "pwdChangedSuccessfully": "Contraseña cambiada de manera correcta."
+            }
+        },
+        "data": {
+            "fixtures": {
+                "canSafelyDelete": "<!-- Puedes eliminar de manera segura esta linea si tu tema no require usar jQuery -->\n",
+                "jQueryRemoved": "jQuery fue removido por el core de Ghost core y ahora es usado desde CDN de jQuery Foundation's.",
+                "canBeChanged": "Esto puede ser cambiado o removido en tu <strong>Code Injection</strong> en el area de configuración."
+            },
+            "utils": {
+                "index": {
+                    "noSupportForDatabase": "No hay soporte para la base de datos cliente {client}"
+                }
+            },
+            "validation": {
+                "index": {
+                    "valueCannotBeBlank": "Valor en [{tableName}.{columnKey}] no puede ser en blanco.",
+                    "valueMustBeBoolean": "Valor en [settings.key] debe ser true, false, 0 o 1.",
+                    "valueExceedsMaxLength": "Valor en [{tableName}.{columnKey}] excede el máximo de longitud de {maxlength} caracteres.",
+                    "valueIsNotInteger": "Valor en [{tableName}.{columnKey}] no es entero.",
+                    "themeCannotBeActivated": "{themeName} no puede ser activida porque actualmente no está instalado.",
+                    "validationFailed": "Validación ({validationName}) falló para  {key}"
+                }
+            }
+        }
+    }
+}
