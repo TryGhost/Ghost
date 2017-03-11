@@ -23,7 +23,7 @@ function handlePageParam(req, res, next, page) {
         } else {
             return utils.redirect301(res, req.originalUrl.replace(pageRegex, '/'));
         }
-    } else if (page < 1 || isNaN(page)) {
+    } else if (page < 1 || isNaN(page) || page.toString().length > 18) {
         // Nothing less than 1 is a valid page number, go straight to a 404
         return next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
     } else {
