@@ -5,6 +5,8 @@
 
 .gh-contentfilter {
     display: flex;
+    align-items: center;
+    justify-content: space-between;
     margin: 2vw 0 1vw;
     padding: 0;
     border-top: color(var(--lightgrey)) 1px solid;

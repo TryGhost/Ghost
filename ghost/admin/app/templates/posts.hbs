@@ -5,58 +5,61 @@
             {{#link-to "editor.new" class="gh-btn gh-btn-green" data-test-new-post-button=true}}<span>New story</span>{{/link-to}}
         </section>
     </header>
-
     <div class="gh-contentfilter">
-        {{#power-select
-            selected=selectedType
-            options=availableTypes
-            searchField="name"
-            onchange=(action "changeType")
-            tagName="div"
-            data-test-type-select=true
-            as |type|
-        }}
-            {{type.name}}
-        {{/power-select}}
+        <div class="gh-contentfilter-left">
+            {{#power-select
+                selected=selectedType
+                options=availableTypes
+                searchField="name"
+                onchange=(action "changeType")
+                tagName="div"
+                data-test-type-select=true
+                as |type|
+            }}
+                {{type.name}}
+            {{/power-select}}
 
-        {{#unless session.user.isAuthor}}
-        {{#power-select
-            selected=selectedAuthor
-            options=availableAuthors
-            searchField="name"
-            onchange=(action "changeAuthor")
-            tagName="div"
-            data-test-author-select=true
-            as |author|
-        }}
-            {{author.name}}
-        {{/power-select}}
-        {{/unless}}
+            {{#unless session.user.isAuthor}}
+            {{#power-select
+                selected=selectedAuthor
+                options=availableAuthors
+                searchField="name"
+                onchange=(action "changeAuthor")
+                tagName="div"
+                data-test-author-select=true
+                as |author|
+            }}
+                {{author.name}}
+            {{/power-select}}
+            {{/unless}}
 
-        {{#power-select
-            selected=selectedTag
-            options=availableTags
-            searchField="name"
-            onchange=(action "changeTag")
-            tagName="div"
-            data-test-tag-select=true
-            as |tag|
-        }}
-            {{tag.name}}
-        {{/power-select}}
+            {{#power-select
+                selected=selectedTag
+                options=availableTags
+                searchField="name"
+                onchange=(action "changeTag")
+                tagName="div"
+                data-test-tag-select=true
+                as |tag|
+            }}
+                {{tag.name}}
+            {{/power-select}}
+        </div>
 
-        Sort by:
-        {{#power-select
-            selected=selectedOrder
-            options=availableOrders
-            searchEnabled=false
-            onchange=(action "changeOrder")
-            tagName="div"
-            data-test-order-select=true
-            as |order|
-        }}
-            {{order.name}}
-        {{/power-select}}
+        <div class="gh-contentfilter-right">
+            Sort by:
+            {{#power-select
+                selected=selectedOrder
+                options=availableOrders
+                searchEnabled=false
+                onchange=(action "changeOrder")
+                tagName="div"
+                data-test-order-select=true
+                as |order|
+            }}
+                {{order.name}}
+            {{/power-select}}
+        </div>
     </div>
 
     <section class="content-list">
