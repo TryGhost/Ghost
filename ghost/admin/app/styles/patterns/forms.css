@@ -126,10 +126,12 @@ select {
     display: block;
     padding: 10px 12px;
     width: 100%;
+    height: 40px;
     border: color(var(--lightgrey) l(-5%) s(-10%)) 1px solid;
     border-radius: var(--border-radius);
     color: color(var(--midgrey) l(-18%));
     font-size: 1.6rem;
+    line-height: 1em;
     font-weight: 300;
     user-select: text;
     transition: border-color 0.15s linear;

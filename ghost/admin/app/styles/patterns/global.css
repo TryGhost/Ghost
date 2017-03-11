@@ -102,6 +102,7 @@ html {
     font-family: var(--font-family);
     font-size: 62.5%;
     line-height: 1.65;
+    letter-spacing: 0.2px;
 
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
