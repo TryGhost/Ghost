@@ -25,7 +25,7 @@ If you get stuck, come say hi over [on slack](https://slack.ghost.org)!
 
 ```bash
 git clone [Ghost's repo URL or your Ghost Fork's URL]
-npm install -g knex-migrator gulp
+npm install -g knex-migrator gulp bower ember-cli
 npm install
 git submodule update --init
 cd core/client
