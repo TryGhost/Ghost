@@ -4,7 +4,6 @@ var _      = require('lodash'),
     hbs    = require('express-hbs'),
     config = require('../config'),
     utils = require('../utils'),
-    logging = require('../logging'),
     errors = require('../errors'),
     i18n = require('../i18n'),
     settingsCache = require('../settings/cache'),
@@ -91,32 +90,18 @@ themeHandler = {
             activeThemeName = settingsCache.get('activeTheme'),
             mountedThemeName = blogApp.get('activeTheme');
 
-        // Check if the theme changed
-        if (activeThemeName !== mountedThemeName) {
-            // Change theme
-            // This means that the theme hasn't been loaded yet
-            if (!themeList.get(activeThemeName)) {
-                // Can this even happen now the apps are split up?
-                if (!res.isAdmin) {
-                    // Trying to start up without the active theme present, setup a simple hbs instance
-                    // and render an error page straight away.
-                    blogApp.engine('hbs', hbs.express3());
-                    return next(new errors.NotFoundError({
-                        message: i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeThemeName})
-                    }));
-                } else {
-                    // At this point the activated theme is not present and the current
-                    // request is for the admin client.  In order to allow the user access
-                    // to the admin client we set an hbs instance on the app so that middleware
-                    // processing can continue.
-                    blogApp.engine('hbs', hbs.express3());
-                    logging.warn(i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeThemeName}));
-                    return next();
-                }
-            } else {
-                // This is effectively "mounting" a theme into express, the theme is already "active"
-                themeHandler.activateTheme(blogApp, activeThemeName);
-            }
+        // This means that the theme hasn't been loaded yet i.e. there is no active theme
+        if (!themeList.get(activeThemeName)) {
+            // This is the one place we ACTUALLY throw an error for a missing theme
+            // As it's a request we cannot serve
+            return next(new errors.InternalServerError({
+                message: i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeThemeName})
+            }));
+
+            // If there is an active theme AND it has changed, call activate
+        } else if (activeThemeName !== mountedThemeName) {
+            // This is effectively "mounting" a theme into express, the theme is already "active"
+            themeHandler.activateTheme(blogApp, activeThemeName);
         }
 
         next();

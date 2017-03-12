@@ -1,5 +1,7 @@
 var debug = require('debug')('ghost:themes'),
     events = require('../events'),
+    logging = require('../logging'),
+    i18n = require('../i18n'),
     themeLoader = require('./loader'),
     settingsCache = require('../settings/cache');
 
@@ -18,7 +20,12 @@ module.exports = {
         });
 
         // Just read the active theme for now
-        return themeLoader.loadOneTheme(activeThemeName);
+        return themeLoader
+            .loadOneTheme(activeThemeName)
+            .catch(function () {
+                // Active theme is missing, we don't want to exit because the admin panel will still work
+                logging.warn(i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeThemeName}));
+            });
     },
     // Load themes, soon to be removed and exposed via specific function.
     loadAll: themeLoader.loadAllThemes,
