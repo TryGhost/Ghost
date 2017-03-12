@@ -69,7 +69,7 @@ themeHandler = {
         });
 
         // reset the asset hash
-        config.assetHash = null;
+        config.set('assetHash', null);
         // clear the view cache
         blogApp.cache = {};
         // Set the views and engine
