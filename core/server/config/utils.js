@@ -48,23 +48,13 @@ exports.makePathsAbsolute = function makePathsAbsolute(obj, parent) {
  * we can later support setting folder names via custom config values
  */
 exports.getContentPath = function getContentPath(type) {
-    switch (type) {
-        case 'storage':
-            return path.join(this.get('paths:contentPath'), 'storage/');
-        case 'images':
-            return path.join(this.get('paths:contentPath'), 'images/');
-        case 'apps':
-            return path.join(this.get('paths:contentPath'), 'apps/');
-        case 'themes':
-            return path.join(this.get('paths:contentPath'), 'themes/');
-        case 'scheduling':
-            return path.join(this.get('paths:contentPath'), 'scheduling/');
-        case 'logs':
-            return path.join(this.get('paths:contentPath'), 'logs/');
-        case 'data':
-            return path.join(this.get('paths:contentPath'), 'data/');
-        default:
-            throw new Error('getContentPath was called with: ' + type);
+
+    var support_types = ['storage', 'images', 'apps', 'themes',
+                         'scheduling', 'logs', 'data']
+    if (support_types.indexOf(type) >= 0) {
+        return path.join(this.get('paths:contentPath'), type + "/");
+    } else {
+        throw new Error('getContentPath was called with: ' + type);
     }
 };
 
