@@ -79,6 +79,7 @@ themeHandler = {
         blogApp.engine('hbs', hbs.express3(hbsOptions));
 
         // Set active theme variable on the express server
+        // Note: this is effectively the "mounted" theme, which has been loaded into the express app
         blogApp.set('activeTheme', activeTheme);
     },
 
@@ -88,18 +89,21 @@ themeHandler = {
     // is not yet activated.
     updateActiveTheme: function updateActiveTheme(req, res, next) {
         var blogApp = req.app,
-            activeTheme = settingsCache.get('activeTheme');
+            activeThemeName = settingsCache.get('activeTheme'),
+            mountedThemeName = blogApp.get('activeTheme');
 
         // Check if the theme changed
-        if (activeTheme !== blogApp.get('activeTheme')) {
+        if (activeThemeName !== mountedThemeName) {
             // Change theme
-            if (!themeList.get(activeTheme)) {
+            // This means that the theme hasn't been loaded yet
+            if (!themeList.get(activeThemeName)) {
+                // Can this even happen now the apps are split up?
                 if (!res.isAdmin) {
                     // Trying to start up without the active theme present, setup a simple hbs instance
                     // and render an error page straight away.
                     blogApp.engine('hbs', hbs.express3());
                     return next(new errors.NotFoundError({
-                        message: i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeTheme})
+                        message: i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeThemeName})
                     }));
                 } else {
                     // At this point the activated theme is not present and the current
@@ -107,11 +111,12 @@ themeHandler = {
                     // to the admin client we set an hbs instance on the app so that middleware
                     // processing can continue.
                     blogApp.engine('hbs', hbs.express3());
-                    logging.warn(i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeTheme}));
+                    logging.warn(i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeThemeName}));
                     return next();
                 }
             } else {
-                themeHandler.activateTheme(blogApp, activeTheme);
+                // This is effectively "mounting" a theme into express, the theme is already "active"
+                themeHandler.activateTheme(blogApp, activeThemeName);
             }
         }
 
