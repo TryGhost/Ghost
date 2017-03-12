@@ -36,8 +36,18 @@ var _              = require('lodash'),
     contentDispositionHeaderExport,
     contentDispositionHeaderSubscribers;
 
-function isActiveThemeOverride(method, endpoint, result) {
-    return method === 'POST' && endpoint === 'themes' && result.themes && result.themes[0] && result.themes[0].active === true;
+function isActiveThemeUpdate(method, endpoint, result) {
+    if (endpoint === 'themes') {
+        if (method === 'PUT') {
+            return true;
+        }
+
+        if (method === 'POST' && result.themes && result.themes[0] && result.themes[0].active === true) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 /**
@@ -64,7 +74,7 @@ cacheInvalidationHeader = function cacheInvalidationHeader(req, result) {
         hasStatusChanged,
         wasPublishedUpdated;
 
-    if (isActiveThemeOverride(method, endpoint, result)) {
+    if (isActiveThemeUpdate(method, endpoint, result)) {
         // Special case for if we're overwriting an active theme
         // @TODO: remove this crazy DIRTY HORRIBLE HACK
         req.app.set('activeTheme', null);
