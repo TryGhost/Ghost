@@ -1,16 +1,16 @@
 var sinon = require('sinon'),
     should = require('should'),
     express = require('express'),
-    fs = require('fs'),
     hbs = require('express-hbs'),
-    themeList = require('../../../server/themes').list,
+    themeUtils = require('../../../server/themes'),
+    themeList = themeUtils.list,
     themeHandler = require('../../../server/middleware/theme-handler'),
     settingsCache = require('../../../server/settings/cache'),
 
     sandbox = sinon.sandbox.create();
 
 describe('Theme Handler', function () {
-    var req, res, next, blogApp;
+    var req, res, next, blogApp, getActiveThemeStub;
 
     beforeEach(function () {
         req = sinon.spy();
@@ -18,6 +18,8 @@ describe('Theme Handler', function () {
         next = sinon.spy();
         blogApp = express();
         req.app = blogApp;
+
+        getActiveThemeStub = sandbox.stub(themeUtils, 'getActive').returns({});
     });
 
     afterEach(function () {
@@ -26,15 +28,20 @@ describe('Theme Handler', function () {
     });
 
     describe('activateTheme', function () {
+        var hbsStub;
+
+        beforeEach(function () {
+            hbsStub = sandbox.spy(hbs, 'express3');
+        });
+
         it('should activate new theme with partials', function () {
-            var fsStub = sandbox.stub(fs, 'stat', function (path, cb) {
-                    cb(null, {isDirectory: function () { return true; }});
-                }),
-                hbsStub = sandbox.spy(hbs, 'express3');
+            getActiveThemeStub.returns({
+                name: 'casper',
+                hasPartials: function () {return true;}
+            });
 
-            themeHandler.activateTheme(blogApp, 'casper');
+            themeHandler.activateTheme(blogApp);
 
-            fsStub.calledOnce.should.be.true();
             hbsStub.calledOnce.should.be.true();
             hbsStub.firstCall.args[0].should.be.an.Object().and.have.property('partialsDir');
             hbsStub.firstCall.args[0].partialsDir.should.have.lengthOf(2);
@@ -42,14 +49,13 @@ describe('Theme Handler', function () {
         });
 
         it('should activate new theme without partials', function () {
-            var fsStub = sandbox.stub(fs, 'stat', function (path, cb) {
-                    cb(null, null);
-                }),
-                hbsStub = sandbox.spy(hbs, 'express3');
+            getActiveThemeStub.returns({
+                name: 'casper',
+                hasPartials: function () {return false;}
+            });
 
-            themeHandler.activateTheme(blogApp, 'casper');
+            themeHandler.activateTheme(blogApp);
 
-            fsStub.calledOnce.should.be.true();
             hbsStub.calledOnce.should.be.true();
             hbsStub.firstCall.args[0].should.be.an.Object().and.have.property('partialsDir');
             hbsStub.firstCall.args[0].partialsDir.should.have.lengthOf(1);
@@ -88,44 +94,57 @@ describe('Theme Handler', function () {
     });
 
     describe('updateActiveTheme', function () {
+        var activateThemeStub,
+            settingsCacheStub;
+
         beforeEach(function () {
-            themeList.init({casper: {}});
+            activateThemeStub = sandbox.stub(themeHandler, 'activateTheme');
+            settingsCacheStub = sandbox.stub(settingsCache, 'get').withArgs('activeTheme').returns('casper');
         });
 
         it('updates the active theme if changed', function (done) {
-            var activateThemeSpy = sandbox.spy(themeHandler, 'activateTheme');
-
-            sandbox.stub(settingsCache, 'get').withArgs('activeTheme').returns('casper');
             blogApp.set('activeTheme', 'not-casper');
 
-            themeHandler.updateActiveTheme(req, res, function () {
-                activateThemeSpy.called.should.be.true();
+            themeHandler.updateActiveTheme(req, res, function (err) {
+                // Did not throw an error
+                should.not.exist(err);
+
+                settingsCacheStub.calledWith('activeTheme').should.be.true();
+                getActiveThemeStub.called.should.be.true();
+                activateThemeStub.called.should.be.true();
+                activateThemeStub.calledWith(blogApp).should.be.true();
+
                 done();
             });
         });
 
         it('does not update the active theme if not changed', function (done) {
-            var activateThemeSpy = sandbox.spy(themeHandler, 'activateTheme');
-
-            sandbox.stub(settingsCache, 'get').withArgs('activeTheme').returns('casper');
             blogApp.set('activeTheme', 'casper');
 
-            themeHandler.updateActiveTheme(req, res, function () {
-                activateThemeSpy.called.should.be.false();
+            themeHandler.updateActiveTheme(req, res, function (err) {
+                // Did not throw an error
+                should.not.exist(err);
+
+                settingsCacheStub.calledWith('activeTheme').should.be.true();
+                getActiveThemeStub.called.should.be.true();
+                activateThemeStub.called.should.be.false();
+
                 done();
             });
         });
 
         it('throws error if theme is missing', function (done) {
-            var activateThemeSpy = sandbox.spy(themeHandler, 'activateTheme');
-
-            sandbox.stub(settingsCache, 'get').withArgs('activeTheme').returns('rasper');
-            blogApp.set('activeTheme', 'not-casper');
+            getActiveThemeStub.returns(undefined);
 
             themeHandler.updateActiveTheme(req, res, function (err) {
+                // Did throw an error
                 should.exist(err);
-                activateThemeSpy.called.should.be.false();
-                err.message.should.eql('The currently active theme "rasper" is missing.');
+                err.message.should.eql('The currently active theme "casper" is missing.');
+
+                settingsCacheStub.calledWith('activeTheme').should.be.true();
+                getActiveThemeStub.called.should.be.true();
+                activateThemeStub.called.should.be.false();
+
                 done();
             });
         });

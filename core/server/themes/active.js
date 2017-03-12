@@ -17,6 +17,7 @@
  *
  */
 var _ = require('lodash'),
+    join = require('path').join,
     // Current instance of ActiveTheme
     currentActiveTheme;
 
@@ -50,6 +51,10 @@ class ActiveTheme {
 
     get path() {
         return this._path;
+    }
+
+    get partialsPath() {
+        return join(this.path, 'partials');
     }
 
     hasPartials() {
