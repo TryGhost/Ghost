@@ -110,6 +110,12 @@ _private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, /*jshint un
         templateData.stack = err.stack;
     }
 
+    // It can be that something went wrong with the theme or otherwise loading handlebars
+    // This ensures that no matter what res.render will work here
+    if (_.isEmpty(req.app.engines)) {
+        req.app.engine('hbs', hbs.express3());
+    }
+
     res.render(defaultTemplate, templateData, function renderResponse(err, html) {
         if (!err) {
             return res.send(html);

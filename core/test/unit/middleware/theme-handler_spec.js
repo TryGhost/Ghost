@@ -1,14 +1,13 @@
-var sinon        = require('sinon'),
-    should       = require('should'),
-    express      = require('express'),
-    fs           = require('fs'),
-    hbs          = require('express-hbs'),
-    themeList   = require('../../../server/themes').list,
+var sinon = require('sinon'),
+    should = require('should'),
+    express = require('express'),
+    fs = require('fs'),
+    hbs = require('express-hbs'),
+    themeList = require('../../../server/themes').list,
     themeHandler = require('../../../server/middleware/theme-handler'),
-    logging      = require('../../../server/logging'),
-    settingsCache  = require('../../../server/settings/cache'),
+    settingsCache = require('../../../server/settings/cache'),
 
-    sandbox      = sinon.sandbox.create();
+    sandbox = sinon.sandbox.create();
 
 describe('Theme Handler', function () {
     var req, res, next, blogApp;
@@ -127,23 +126,6 @@ describe('Theme Handler', function () {
                 should.exist(err);
                 activateThemeSpy.called.should.be.false();
                 err.message.should.eql('The currently active theme "rasper" is missing.');
-                done();
-            });
-        });
-
-        it('throws only warns if theme is missing for admin req', function (done) {
-            var activateThemeSpy = sandbox.spy(themeHandler, 'activateTheme'),
-                loggingWarnStub = sandbox.spy(logging, 'warn');
-
-            sandbox.stub(settingsCache, 'get').withArgs('activeTheme').returns('rasper');
-
-            res.isAdmin = true;
-            blogApp.set('activeTheme', 'not-casper');
-
-            themeHandler.updateActiveTheme(req, res, function () {
-                activateThemeSpy.called.should.be.false();
-                loggingWarnStub.called.should.be.true();
-                loggingWarnStub.calledWith('The currently active theme "rasper" is missing.').should.be.true();
                 done();
             });
         });

@@ -1,11 +1,12 @@
-var should          = require('should'),
-    sinon           = require('sinon'),
-    _               = require('lodash'),
-    fs              = require('fs'),
-    tmp             = require('tmp'),
-    join            = require('path').join,
-    themeList      = require('../../server/themes').list,
-    readThemes      = require('../../server/themes/read'),
+var should = require('should'),
+    sinon = require('sinon'),
+    _ = require('lodash'),
+    fs = require('fs'),
+    tmp = require('tmp'),
+    join = require('path').join,
+    config = require('../../server/config'),
+    themes = require('../../server/themes'),
+    themeList = themes.list,
 
     sandbox = sinon.sandbox.create();
 
@@ -13,126 +14,133 @@ var should          = require('should'),
 should.equal(true, true);
 
 describe('Themes', function () {
-    afterEach(function () {
-        sandbox.restore();
-    });
+    describe('Loader', function () {
+        var themePath;
 
-    describe('Read All', function () {
-        it('should read directory and include only folders', function (done) {
-            var themePath = tmp.dirSync({unsafeCleanup: true});
-
-            // create trash
-            fs.writeFileSync(join(themePath.name, 'casper.zip'));
-            fs.writeFileSync(join(themePath.name, '.DS_Store'));
-
-            // create actual theme
-            fs.mkdirSync(join(themePath.name, 'casper'));
-            fs.mkdirSync(join(themePath.name, 'casper', 'partials'));
-            fs.writeFileSync(join(themePath.name, 'casper', 'index.hbs'));
-            fs.writeFileSync(join(themePath.name, 'casper', 'partials', 'navigation.hbs'));
-
-            readThemes.all(themePath.name)
-                .then(function (themeList) {
-                    themeList.should.eql({
-                        casper: {
-                            name: 'casper',
-                            path: join(themePath.name, 'casper'),
-                            'package.json': null
-                        }
-                    });
-
-                    done();
-                })
-                .catch(done)
-                .finally(themePath.removeCallback);
+        beforeEach(function () {
+            themePath = tmp.dirSync({unsafeCleanup: true});
+            sandbox.stub(config, 'getContentPath').withArgs('themes').returns(themePath.name);
         });
 
-        it('should read directory and read package.json if present', function (done) {
-            var themePath = tmp.dirSync({unsafeCleanup: true});
+        afterEach(function () {
+            themePath.removeCallback();
+            sandbox.restore();
+        });
 
-            // create trash
-            fs.writeFileSync(join(themePath.name, 'README.md'));
-            fs.writeFileSync(join(themePath.name, 'Thumbs.db'));
+        describe('Load All', function () {
+            it('should load directory and include only folders', function (done) {
+                // create trash
+                fs.writeFileSync(join(themePath.name, 'casper.zip'));
+                fs.writeFileSync(join(themePath.name, '.DS_Store'));
 
-            // create actual theme
-            fs.mkdirSync(join(themePath.name, 'casper'));
-            fs.mkdirSync(join(themePath.name, 'not-casper'));
-            fs.writeFileSync(
-                join(themePath.name, 'casper', 'package.json'),
-                JSON.stringify({name: 'casper', version: '0.1.2'})
-            );
+                // create actual theme
+                fs.mkdirSync(join(themePath.name, 'casper'));
+                fs.mkdirSync(join(themePath.name, 'casper', 'partials'));
+                fs.writeFileSync(join(themePath.name, 'casper', 'index.hbs'));
+                fs.writeFileSync(join(themePath.name, 'casper', 'partials', 'navigation.hbs'));
 
-            readThemes.all(themePath.name)
-                .then(function (themeList) {
-                    themeList.should.eql({
-                        casper: {
+                themes.loadAll()
+                    .then(function (result) {
+                        var themeResult = themeList.getAll();
+
+                        // Loader doesn't return anything
+                        should.not.exist(result);
+
+                        themeResult.should.eql({
+                            casper: {
+                                name: 'casper',
+                                path: join(themePath.name, 'casper'),
+                                'package.json': null
+                            }
+                        });
+
+                        done();
+                    })
+                    .catch(done);
+            });
+
+            it('should read directory and read package.json if present', function (done) {
+                // create trash
+                fs.writeFileSync(join(themePath.name, 'README.md'));
+                fs.writeFileSync(join(themePath.name, 'Thumbs.db'));
+
+                // create actual theme
+                fs.mkdirSync(join(themePath.name, 'casper'));
+                fs.mkdirSync(join(themePath.name, 'not-casper'));
+                fs.writeFileSync(
+                    join(themePath.name, 'casper', 'package.json'),
+                    JSON.stringify({name: 'casper', version: '0.1.2'})
+                );
+
+                themes.loadAll()
+                    .then(function (result) {
+                        var themeResult = themeList.getAll();
+
+                        // Loader doesn't return anything
+                        should.not.exist(result);
+
+                        themeResult.should.eql({
+                            casper: {
+                                name: 'casper',
+                                path: join(themePath.name, 'casper'),
+                                'package.json': {name: 'casper', version: '0.1.2'}
+                            },
+                            'not-casper': {
+                                name: 'not-casper',
+                                path: join(themePath.name, 'not-casper'),
+                                'package.json': null
+                            }
+                        });
+
+                        done();
+                    })
+                    .catch(done);
+            });
+        });
+
+        describe('Load One', function () {
+            it('should read directory and include only single requested theme', function (done) {
+                // create trash
+                fs.writeFileSync(join(themePath.name, 'casper.zip'));
+                fs.writeFileSync(join(themePath.name, '.DS_Store'));
+
+                // create actual theme
+                fs.mkdirSync(join(themePath.name, 'casper'));
+                fs.writeFileSync(join(themePath.name, 'casper', 'index.hbs'));
+                fs.writeFileSync(
+                    join(themePath.name, 'casper', 'package.json'),
+                    JSON.stringify({name: 'casper', version: '0.1.2'})
+                );
+                fs.mkdirSync(join(themePath.name, 'not-casper'));
+                fs.writeFileSync(join(themePath.name, 'not-casper', 'index.hbs'));
+
+                themes.loadOne('casper')
+                    .then(function (themeResult) {
+                        themeResult.should.eql({
                             name: 'casper',
                             path: join(themePath.name, 'casper'),
                             'package.json': {name: 'casper', version: '0.1.2'}
-                        },
-                        'not-casper': {
-                            name: 'not-casper',
-                            path: join(themePath.name, 'not-casper'),
-                            'package.json': null
-                        }
+                        });
+
+                        done();
+                    })
+                    .catch(done);
+            });
+
+            it('should throw an error if theme cannot be found', function (done) {
+                // create trash
+                fs.writeFileSync(join(themePath.name, 'casper.zip'));
+                fs.writeFileSync(join(themePath.name, '.DS_Store'));
+
+                themes.loadOne('casper')
+                    .then(function () {
+                        done('Should have thrown an error');
+                    })
+                    .catch(function (err) {
+                        err.message.should.eql('Package not found');
+                        done();
                     });
-
-                    done();
-                })
-                .catch(done)
-                .finally(themePath.removeCallback);
-        });
-    });
-
-    describe('Read One', function () {
-        it('should read directory and include only single requested theme', function (done) {
-            var themePath = tmp.dirSync({unsafeCleanup: true});
-
-            // create trash
-            fs.writeFileSync(join(themePath.name, 'casper.zip'));
-            fs.writeFileSync(join(themePath.name, '.DS_Store'));
-
-            // create actual theme
-            fs.mkdirSync(join(themePath.name, 'casper'));
-            fs.writeFileSync(join(themePath.name, 'casper', 'index.hbs'));
-            fs.writeFileSync(
-                join(themePath.name, 'casper', 'package.json'),
-                JSON.stringify({name: 'casper', version: '0.1.2'})
-            );
-            fs.mkdirSync(join(themePath.name, 'not-casper'));
-            fs.writeFileSync(join(themePath.name, 'not-casper', 'index.hbs'));
-
-            readThemes.one(themePath.name, 'casper')
-                .then(function (themeList) {
-                    themeList.should.eql({
-                        casper: {
-                            name: 'casper',
-                            path: join(themePath.name, 'casper'),
-                            'package.json': {name: 'casper', version: '0.1.2'}
-                        }
-                    });
-
-                    done();
-                })
-                .catch(done)
-                .finally(themePath.removeCallback);
-        });
-
-        it('should return empty object if theme cannot be found', function (done) {
-            var themePath = tmp.dirSync({unsafeCleanup: true});
-
-            // create trash
-            fs.writeFileSync(join(themePath.name, 'casper.zip'));
-            fs.writeFileSync(join(themePath.name, '.DS_Store'));
-
-            readThemes.one(themePath.name, 'casper')
-                .then(function (themeList) {
-                    themeList.should.eql({});
-
-                    done();
-                })
-                .catch(done)
-                .finally(themePath.removeCallback);
+            });
         });
     });
 
