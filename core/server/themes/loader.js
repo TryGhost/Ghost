@@ -1,7 +1,7 @@
 var debug = require('debug')('ghost:themes:loader'),
     config = require('../config'),
     themeList = require('./list'),
-    read = require('./read'),
+    read = require('../utils/packages').read,
     loadAllThemes,
     loadOneTheme;
 
@@ -20,7 +20,6 @@ loadOneTheme = function loadOneTheme(themeName) {
         .one(config.getContentPath('themes'), themeName)
         .then(function (readThemes) {
             debug('loaded one theme', themeName);
-            // @TODO change read one to not return a keyed object
             return themeList.set(themeName, readThemes[themeName]);
         });
 };
