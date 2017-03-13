@@ -1,8 +1,12 @@
 var debug = require('debug')('ghost:themes'),
+    _ = require('lodash'),
     events = require('../events'),
+    errors = require('../errors'),
     logging = require('../logging'),
     i18n = require('../i18n'),
     themeLoader = require('./loader'),
+    active = require('./active'),
+    validate = require('./validate'),
     settingsCache = require('../settings/cache');
 
 // @TODO: reduce the amount of things we expose to the outside world
@@ -11,7 +15,9 @@ module.exports = {
     // Init themes module
     // TODO: move this once we're clear what needs to happen here
     init: function initThemes() {
-        var activeThemeName = settingsCache.get('activeTheme');
+        var activeThemeName = settingsCache.get('activeTheme'),
+            self = this;
+
         debug('init themes', activeThemeName);
 
         // Register a listener for server-start to load all themes
@@ -22,6 +28,20 @@ module.exports = {
         // Just read the active theme for now
         return themeLoader
             .loadOneTheme(activeThemeName)
+            .then(function activeThemeHasLoaded(theme) {
+                // Validate
+                return validate
+                    .check(theme)
+                    .then(function resultHandler(checkedTheme) {
+                        // Activate! (sort of)
+                        debug('Activating theme (method A on boot)', activeThemeName);
+                        self.activate(theme, checkedTheme);
+                    })
+                    .catch(function () {
+                        // Active theme is not valid, we don't want to exit because the admin panel will still work
+                        logging.warn(i18n.t('errors.middleware.themehandler.invalidTheme', {theme: activeThemeName}));
+                    });
+            })
             .catch(function () {
                 // Active theme is missing, we don't want to exit because the admin panel will still work
                 logging.warn(i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeThemeName}));
@@ -31,6 +51,17 @@ module.exports = {
     loadAll: themeLoader.loadAllThemes,
     loadOne: themeLoader.loadOneTheme,
     list: require('./list'),
-    validate: require('./validate'),
-    toJSON: require('./to-json')
+    validate: validate,
+    toJSON: require('./to-json'),
+    getActive: active.get,
+    activate: function activate(loadedTheme, checkedTheme) {
+        if (!_.has(checkedTheme, 'results.score.level') || checkedTheme.results.score.level !== 'passing') {
+            throw new errors.InternalServerError({
+                message: i18n.t('errors.middleware.themehandler.invalidTheme', {theme: loadedTheme.name})
+            });
+        }
+
+        // Use the two theme objects to set the current active theme
+        active.set(loadedTheme, checkedTheme);
+    }
 };
