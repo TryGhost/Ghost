@@ -12,8 +12,8 @@ var path                = require('path'),
     setResponseContext  = require('../../../controllers/frontend/context');
 
 function controller(req, res, next) {
-    var defaultView = path.resolve(__dirname, 'views', 'amp.hbs'),
-        paths = templates.getActiveThemePaths(req.app.get('activeTheme')),
+    var templateName = 'amp',
+        defaultTemplate = path.resolve(__dirname, 'views', templateName + '.hbs'),
         data = req.body || {};
 
     if (res.error) {
@@ -24,14 +24,10 @@ function controller(req, res, next) {
 
     // we have to check the context. Our context must be ['post', 'amp'], otherwise we won't render the template
     if (_.includes(res.locals.context, 'post') && _.includes(res.locals.context, 'amp')) {
-        if (paths.hasOwnProperty('amp.hbs')) {
-            return res.render('amp', data);
-        } else {
-            return res.render(defaultView, data);
-        }
-    } else {
-        return next();
+        return res.render(templates.pickTemplate(templateName, defaultTemplate), data);
     }
+
+    return next();
 }
 
 function getPostData(req, res, next) {

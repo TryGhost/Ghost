@@ -13,16 +13,13 @@ var path                = require('path'),
     setResponseContext  = require('../../../controllers/frontend/context');
 
 function controller(req, res) {
-    var defaultView = path.resolve(__dirname, 'views', 'subscribe.hbs'),
-        paths = templates.getActiveThemePaths(req.app.get('activeTheme')),
+    var templateName = 'subscribe',
+        defaultTemplate = path.resolve(__dirname, 'views', templateName + '.hbs'),
         data = req.body;
 
     setResponseContext(req, res);
-    if (paths.hasOwnProperty('subscribe.hbs')) {
-        return res.render('subscribe', data);
-    } else {
-        return res.render(defaultView, data);
-    }
+
+    return res.render(templates.pickTemplate(templateName, defaultTemplate), data);
 }
 
 function errorHandler(error, req, res, next) {
