@@ -8,9 +8,27 @@
     align-items: center;
     justify-content: space-between;
     margin: 2vw 0 1vw;
-    padding: 0;
+    padding: 10px 0 0 0;
     border-top: color(var(--lightgrey)) 1px solid;
     list-style: none;
+}
+
+.gh-contentfilter-left {
+    display: flex;
+    align-items: center;
+}
+
+.gh-contentfilter-left .gh-contentfilter-menu {
+    margin-right: 10px;
+}
+
+.gh-contentfilter-right {
+    display: flex;
+    align-items: center;
+}
+
+.gh-contentfilter-right .gh-contentfilter-menu {
+    margin-left: 10px;
 }
 
 .gh-contentfilter li {
