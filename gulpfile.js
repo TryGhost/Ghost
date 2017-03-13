@@ -198,13 +198,13 @@ gulp.task('_admin:build', function () {
     });
 });
 
-// Deletes all dependencies and installs npm modules for ghost again, to
+// Deletes all dependencies and installs modules for ghost again, to
 // make gulp work again 😛).
 gulp.task('_FFS', function (cb) {
     console.info(chalk.cyan('Please be patient my young Padawan. This will take a little while ⏲ ...'));
     exec('rm -rf node_modules && rm -rf core/client/node_modules ' +
-        '&& rm -rf core/client/bower_components && npm cache clean ' +
-        '&& bower cache clean && npm install', function (err, stdout, stderr) {
+        '&& rm -rf core/client/bower_components && yarn cache clean ' +
+        '&& bower cache clean && yarn install', function (err, stdout, stderr) {
             if (stdout) {console.info(chalk.green(stdout));}
             if (stderr) {console.info(chalk.red(stderr));}
             if (err) {swallowError(err, false);}
@@ -275,7 +275,7 @@ gulp.task('_checkout:branches', function (cb) {
 
 gulp.task('_deps:client', function (cb) {
     console.info(chalk.cyan('Updating Ghost-Admin dependencies 🛠 ...'));
-    exec('cd ' + paramConfig.admin.path + ' && npm install && bower install', function (err, stdout, stderr) {
+    exec('cd ' + paramConfig.admin.path + ' && yarn install && bower install', function (err, stdout, stderr) {
         if (stdout) {console.info(chalk.green(stdout));}
         if (stderr) {console.info(chalk.red(stderr));}
         if (err) {swallowError(err, false);}
@@ -285,7 +285,7 @@ gulp.task('_deps:client', function (cb) {
 
 gulp.task('_deps:ghost', function (cb) {
     console.info(chalk.cyan('Updating Ghost dependencies 🛠 ...'));
-    exec('npm install', function (err, stdout, stderr) {
+    exec('yarn install', function (err, stdout, stderr) {
         if (stdout) {console.info(chalk.green(stdout));}
         if (stderr) {console.info(chalk.red(stderr));}
         if (err) {swallowError(err, false);}
