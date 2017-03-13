@@ -111,7 +111,8 @@ utils = {
     url: require('./url'),
     tokens: require('./tokens'),
     sequence: require('./sequence'),
-    ghostVersion: require('./ghost-version')
+    ghostVersion: require('./ghost-version'),
+    mobiledocConverter: require('./mobiledoc-converter')
 };
 
 module.exports = utils;
