@@ -2,6 +2,7 @@ var _       = require('lodash'),
     express = require('express'),
     path    = require('path'),
     config  = require('../config'),
+    themeUtils = require('../themes'),
     utils   = require('../utils');
 
 function isBlackListedFileType(file) {
@@ -17,12 +18,12 @@ function isWhiteListedFile(file) {
 }
 
 function forwardToExpressStatic(req, res, next) {
-    if (!req.app.get('activeTheme')) {
+    if (!themeUtils.getActive()) {
         next();
     } else {
         var configMaxAge = config.get('caching:theme:maxAge');
 
-        express.static(path.join(config.getContentPath('themes'), req.app.get('activeTheme')),
+        express.static(themeUtils.getActive().path,
             {maxAge: (configMaxAge || configMaxAge === 0) ? configMaxAge : utils.ONE_YEAR_MS}
         )(req, res, next);
     }
