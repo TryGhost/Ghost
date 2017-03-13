@@ -25,7 +25,6 @@ describe('staticTheme', function () {
         sandbox.restore();
     });
 
-
     it('should skip for .hbs file', function (done) {
         req.path = 'mytemplate.hbs';
 
@@ -35,7 +34,6 @@ describe('staticTheme', function () {
 
             done();
         });
-
     });
 
     it('should skip for .md file', function (done) {
