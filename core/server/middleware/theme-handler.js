@@ -4,7 +4,6 @@ var _      = require('lodash'),
     hbs    = require('express-hbs'),
     config = require('../config'),
     utils = require('../utils'),
-    logging = require('../logging'),
     errors = require('../errors'),
     i18n = require('../i18n'),
     settingsCache = require('../settings/cache'),
@@ -15,10 +14,11 @@ themeHandler = {
     // ### configHbsForContext Middleware
     // Setup handlebars for the current context (admin or theme)
     configHbsForContext: function configHbsForContext(req, res, next) {
+        // Static information, same for every request unless the settings change
+        // @TODO: bind this once and then update based on events?
         var themeData = {
                 title: settingsCache.get('title'),
                 description: settingsCache.get('description'),
-                url: utils.url.urlFor('home', {secure: req.secure}, true),
                 facebook: settingsCache.get('facebook'),
                 twitter: settingsCache.get('twitter'),
                 timezone: settingsCache.get('activeTimezone'),
@@ -29,9 +29,17 @@ themeHandler = {
                 logo: settingsCache.get('logo'),
                 amp: settingsCache.get('amp')
             },
-            labsData = _.cloneDeep(settingsCache.get('labs')),
-            blogApp = req.app;
+            labsData = _.cloneDeep(settingsCache.get('labs'));
 
+        // Request-specific information
+        // These things are super dependent on the request, so they need to be in middleware
+        themeData.url = utils.url.urlFor('home', {secure: req.secure}, true);
+
+        // Pass 'secure' flag to the view engine
+        // so that templates can choose to render https or http 'url', see url utility
+        res.locals.secure = req.secure;
+
+        // @TODO: only do this if something changed?
         hbs.updateTemplateOptions({
             data: {
                 blog: themeData,
@@ -39,47 +47,38 @@ themeHandler = {
             }
         });
 
-        if (config.getContentPath('themes') && blogApp.get('activeTheme')) {
-            blogApp.set('views', path.join(config.getContentPath('themes'), blogApp.get('activeTheme')));
-        }
-
-        // Pass 'secure' flag to the view engine
-        // so that templates can choose to render https or http 'url', see url utility
-        res.locals.secure = req.secure;
-
         next();
     },
 
     // ### Activate Theme
     // Helper for updateActiveTheme
-    activateTheme: function activateTheme(blogApp, activeTheme) {
-        var hbsOptions,
-            themePartials = path.join(config.getContentPath('themes'), activeTheme, 'partials');
+    activateTheme: function activateTheme(blogApp, activeThemeName) {
+        var themePartialsPath = path.join(config.getContentPath('themes'), activeThemeName, 'partials'),
+            hbsOptions = {
+                partialsDir: [config.get('paths').helperTemplates],
+                onCompile: function onCompile(exhbs, source) {
+                    return exhbs.handlebars.compile(source, {preventIndent: true});
+                }
+            };
 
-        // clear the view cache
-        blogApp.cache = {};
-        // reset the asset hash
-        config.assetHash = null;
-
-        // set view engine
-        hbsOptions = {
-            partialsDir: [config.get('paths').helperTemplates],
-            onCompile: function onCompile(exhbs, source) {
-                return exhbs.handlebars.compile(source, {preventIndent: true});
-            }
-        };
-
-        fs.stat(themePartials, function stat(err, stats) {
+        fs.stat(themePartialsPath, function stat(err, stats) {
             // Check that the theme has a partials directory before trying to use it
             if (!err && stats && stats.isDirectory()) {
-                hbsOptions.partialsDir.push(themePartials);
+                hbsOptions.partialsDir.push(themePartialsPath);
             }
         });
 
+        // reset the asset hash
+        config.set('assetHash', null);
+        // clear the view cache
+        blogApp.cache = {};
+        // Set the views and engine
+        blogApp.set('views', path.join(config.getContentPath('themes'), activeThemeName));
         blogApp.engine('hbs', hbs.express3(hbsOptions));
 
         // Set active theme variable on the express server
-        blogApp.set('activeTheme', activeTheme);
+        // Note: this is effectively the "mounted" theme, which has been loaded into the express app
+        blogApp.set('activeTheme', activeThemeName);
     },
 
     // ### updateActiveTheme
@@ -88,31 +87,21 @@ themeHandler = {
     // is not yet activated.
     updateActiveTheme: function updateActiveTheme(req, res, next) {
         var blogApp = req.app,
-            activeTheme = settingsCache.get('activeTheme');
+            activeThemeName = settingsCache.get('activeTheme'),
+            mountedThemeName = blogApp.get('activeTheme');
 
-        // Check if the theme changed
-        if (activeTheme !== blogApp.get('activeTheme')) {
-            // Change theme
-            if (!themeList.get(activeTheme)) {
-                if (!res.isAdmin) {
-                    // Trying to start up without the active theme present, setup a simple hbs instance
-                    // and render an error page straight away.
-                    blogApp.engine('hbs', hbs.express3());
-                    return next(new errors.NotFoundError({
-                        message: i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeTheme})
-                    }));
-                } else {
-                    // At this point the activated theme is not present and the current
-                    // request is for the admin client.  In order to allow the user access
-                    // to the admin client we set an hbs instance on the app so that middleware
-                    // processing can continue.
-                    blogApp.engine('hbs', hbs.express3());
-                    logging.warn(i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeTheme}));
-                    return next();
-                }
-            } else {
-                themeHandler.activateTheme(blogApp, activeTheme);
-            }
+        // This means that the theme hasn't been loaded yet i.e. there is no active theme
+        if (!themeList.get(activeThemeName)) {
+            // This is the one place we ACTUALLY throw an error for a missing theme
+            // As it's a request we cannot serve
+            return next(new errors.InternalServerError({
+                message: i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeThemeName})
+            }));
+
+            // If there is an active theme AND it has changed, call activate
+        } else if (activeThemeName !== mountedThemeName) {
+            // This is effectively "mounting" a theme into express, the theme is already "active"
+            themeHandler.activateTheme(blogApp, activeThemeName);
         }
 
         next();

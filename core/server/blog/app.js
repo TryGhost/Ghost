@@ -33,13 +33,6 @@ module.exports = function setupBlogApp() {
     // set the view engine
     blogApp.set('view engine', 'hbs');
 
-    // Theme middleware
-    // rightly or wrongly currently comes before theme static assets
-    // @TODO revisit where and when these are needed
-    blogApp.use(themeHandler.updateActiveTheme);
-    blogApp.use(themeHandler.configHbsForContext);
-    debug('Themes done');
-
     // you can extend Ghost with a custom redirects file
     // see https://github.com/TryGhost/Ghost/issues/7707
     customRedirects(blogApp);
@@ -57,6 +50,14 @@ module.exports = function setupBlogApp() {
     blogApp.use(serveSharedFile('robots.txt', 'text/plain', utils.ONE_HOUR_S));
     // Serve blog images using the storage adapter
     blogApp.use('/' + utils.url.STATIC_IMAGE_URL_PREFIX, storage.getStorage().serve());
+
+    // Theme middleware
+    // This should happen AFTER any shared assets are served, as it only changes things to do with templates
+    // At this point the active theme object is already updated, so we have the right path, so it can probably
+    // go after staticTheme() as well, however I would really like to simplify this and be certain
+    blogApp.use(themeHandler.updateActiveTheme);
+    blogApp.use(themeHandler.configHbsForContext);
+    debug('Themes done');
 
     // Theme static assets/files
     blogApp.use(staticTheme());
