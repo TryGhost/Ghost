@@ -2,12 +2,13 @@ var debug         = require('debug')('ghost:admin:controller'),
     _             = require('lodash'),
     api           = require('../api'),
     updateCheck   = require('../update-check'),
+    logging       = require('../logging'),
     i18n          = require('../i18n');
 
 // Route: index
 // Path: /ghost/
 // Method: GET
-module.exports = function adminController(req, res, next) {
+module.exports = function adminController(req, res) {
     /*jslint unparam:true*/
     debug('index called');
 
@@ -34,6 +35,6 @@ module.exports = function adminController(req, res, next) {
     }).finally(function noMatterWhat() {
         res.render('default');
     }).catch(function (err) {
-        next(err);
+        logging.error(err);
     });
 };
