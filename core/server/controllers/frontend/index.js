@@ -26,7 +26,7 @@ var debug = require('debug')('ghost:channels:single'),
 function renderPost(req, res) {
     debug('renderPost called');
     return function renderPost(post) {
-        var view = templates.single(req.app.get('activeTheme'), post),
+        var view = templates.single(post),
             response = formatResponse.single(post);
 
         setResponseContext(req, res, response);

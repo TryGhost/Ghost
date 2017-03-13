@@ -7,7 +7,7 @@ var rewire            = require('rewire'),
     errors            = require('../../../errors'),
     should            = require('should'),
     configUtils       = require('../../../../test/utils/configUtils'),
-    themeList        = require('../../../themes').list,
+    themes            = require('../../../themes'),
     sandbox           = sinon.sandbox.create();
 
 // Helper function to prevent unit tests
@@ -23,9 +23,17 @@ describe('AMP Controller', function () {
     var res,
         req,
         defaultPath,
-        setResponseContextStub;
+        setResponseContextStub,
+        hasTemplateStub;
 
     beforeEach(function () {
+        hasTemplateStub = sandbox.stub().returns(false);
+        hasTemplateStub.withArgs('index').returns(true);
+
+        sandbox.stub(themes, 'getActive').returns({
+            hasTemplate: hasTemplateStub
+        });
+
         res = {
             render: sandbox.spy(),
             locals: {
@@ -34,7 +42,6 @@ describe('AMP Controller', function () {
         };
 
         req = {
-            app: {get: function () { return 'casper'; }},
             route: {path: '/'},
             query: {r: ''},
             params: {},
@@ -54,12 +61,9 @@ describe('AMP Controller', function () {
     afterEach(function () {
         sandbox.restore();
         configUtils.restore();
-        themeList.init();
     });
 
     it('should render default amp page when theme has no amp template', function (done) {
-        themeList.init({casper: {}});
-
         setResponseContextStub = sandbox.stub();
         ampController.__set__('setResponseContext', setResponseContextStub);
 
@@ -72,9 +76,7 @@ describe('AMP Controller', function () {
     });
 
     it('should render theme amp page when theme has amp template', function (done) {
-        themeList.init({casper: {
-            'amp.hbs': '/content/themes/casper/amp.hbs'
-        }});
+        hasTemplateStub.withArgs('amp').returns(true);
 
         setResponseContextStub = sandbox.stub();
         ampController.__set__('setResponseContext', setResponseContextStub);
@@ -88,7 +90,6 @@ describe('AMP Controller', function () {
     });
 
     it('should render with error when error is passed in', function (done) {
-        themeList.init({casper: {}});
         res.error = 'Test Error';
 
         setResponseContextStub = sandbox.stub();
@@ -105,7 +106,6 @@ describe('AMP Controller', function () {
 
     it('does not render amp page when amp context is missing', function (done) {
         var renderSpy;
-        themeList.init({casper: {}});
 
         setResponseContextStub = sandbox.stub();
         ampController.__set__('setResponseContext', setResponseContextStub);
@@ -123,7 +123,6 @@ describe('AMP Controller', function () {
 
     it('does not render amp page when context is other than amp and post', function (done) {
         var renderSpy;
-        themeList.init({casper: {}});
 
         setResponseContextStub = sandbox.stub();
         ampController.__set__('setResponseContext', setResponseContextStub);
