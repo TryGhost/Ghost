@@ -25,7 +25,7 @@ _private.syncUser = function syncUser(loggedInUserModel) {
     }
 
     return ghostAuth.getUser({
-        token: loggedInUserModel.get('ghost_auth_access_token')
+        id: loggedInUserModel.get('ghost_auth_id')
     }).then(function (ghostUser) {
         debug('ghost_email', ghostUser.email);
         debug('user_email', loggedInUserModel.get('email'));
