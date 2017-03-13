@@ -112,7 +112,7 @@ themes = {
                 return themeUtils.loadOne(zip.shortName);
             })
             .then(function (loadedTheme) {
-                // If this is the active theme, we are overridding
+                // If this is the active theme, we are overriding
                 // This is a special case of activation
                 if (zip.shortName === settingsCache.get('activeTheme')) {
                     // Activate! (sort of)
