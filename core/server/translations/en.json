@@ -233,6 +233,7 @@
                 },
                 "incorrectPassword": "Your password is incorrect.",
                 "accountLocked": "Your account is locked. Please reset your password to log in again by clicking the \"Forgotten password?\" link!",
+                "accountSuspended": "Your account was suspended.",
                 "newPasswordsDoNotMatch": "Your new passwords do not match",
                 "passwordRequiredForOperation": "Password is required for this operation",
                 "expiredToken": "Expired token",
@@ -380,6 +381,7 @@
             "users": {
                 "userNotFound": "User not found.",
                 "cannotChangeOwnRole": "You cannot change your own role.",
+                "cannotChangeStatus": "You cannot change your own status.",
                 "cannotChangeOwnersRole": "Cannot change Owner's role",
                 "noPermissionToEditUser": "You do not have permission to edit this user",
                 "noPermissionToAddUser": "You do not have permission to add this user",

@@ -10,7 +10,7 @@ describe('User API', function () {
     var ownerAccessToken = '',
         editorAccessToken = '',
         authorAccessToken = '',
-        editor, author, ghostServer;
+        editor, author, ghostServer, inactiveUser;
 
     before(function (done) {
         // starting ghost automatically populates the db
@@ -36,6 +36,14 @@ describe('User API', function () {
             });
         }).then(function (_user2) {
             author = _user2;
+
+            // create inactive user
+            return testUtils.createUser({
+                user: testUtils.DataGenerator.forKnex.createUser({email: 'test+3@ghost.org', status: 'inactive'}),
+                role: testUtils.DataGenerator.Content.roles[2]
+            });
+        }).then(function (_user3) {
+            inactiveUser = _user3;
 
             // by default we login with the owner
             return testUtils.doAuth(request);
@@ -81,7 +89,7 @@ describe('User API', function () {
 
                         // owner use when Ghost starts
                         // and two extra users, see createUser in before
-                        jsonResponse.users.should.have.length(3);
+                        jsonResponse.users.should.have.length(4);
 
                         testUtils.API.checkResponse(jsonResponse.users[0], 'user');
                         testUtils.API.isISO8601(jsonResponse.users[0].last_login).should.be.true();
@@ -112,8 +120,9 @@ describe('User API', function () {
                         should.exist(jsonResponse.users);
                         testUtils.API.checkResponse(jsonResponse, 'users');
 
-                        jsonResponse.users.should.have.length(3);
+                        jsonResponse.users.should.have.length(4);
                         testUtils.API.checkResponse(jsonResponse.users[0], 'user');
+                        jsonResponse.users[3].status.should.eql(inactiveUser.status);
                         done();
                     });
             });
@@ -134,7 +143,7 @@ describe('User API', function () {
                         should.exist(jsonResponse.users);
                         testUtils.API.checkResponse(jsonResponse, 'users');
 
-                        jsonResponse.users.should.have.length(3);
+                        jsonResponse.users.should.have.length(4);
                         testUtils.API.checkResponse(jsonResponse.users[0], 'user', 'roles');
                         done();
                     });

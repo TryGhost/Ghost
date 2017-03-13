@@ -74,9 +74,7 @@ function exchangeAuthorizationCode(req, res, next) {
 
     passport.authenticate('ghost', {session: false, failWithError: false}, function authenticate(err, user) {
         if (err) {
-            return next(new errors.UnauthorizedError({
-                err: err
-            }));
+            return next(err);
         }
 
         if (!user) {
