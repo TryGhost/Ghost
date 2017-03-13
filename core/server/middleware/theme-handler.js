@@ -15,10 +15,11 @@ themeHandler = {
     // ### configHbsForContext Middleware
     // Setup handlebars for the current context (admin or theme)
     configHbsForContext: function configHbsForContext(req, res, next) {
+        // Static information, same for every request unless the settings change
+        // @TODO: bind this once and then update based on events?
         var themeData = {
                 title: settingsCache.get('title'),
                 description: settingsCache.get('description'),
-                url: utils.url.urlFor('home', {secure: req.secure}, true),
                 facebook: settingsCache.get('facebook'),
                 twitter: settingsCache.get('twitter'),
                 timezone: settingsCache.get('activeTimezone'),
@@ -29,9 +30,17 @@ themeHandler = {
                 logo: settingsCache.get('logo'),
                 amp: settingsCache.get('amp')
             },
-            labsData = _.cloneDeep(settingsCache.get('labs')),
-            blogApp = req.app;
+            labsData = _.cloneDeep(settingsCache.get('labs'));
 
+        // Request-specific information
+        // These things are super dependent on the request, so they need to be in middleware
+        themeData.url = utils.url.urlFor('home', {secure: req.secure}, true);
+
+        // Pass 'secure' flag to the view engine
+        // so that templates can choose to render https or http 'url', see url utility
+        res.locals.secure = req.secure;
+
+        // @TODO: only do this if something changed?
         hbs.updateTemplateOptions({
             data: {
                 blog: themeData,
@@ -39,48 +48,38 @@ themeHandler = {
             }
         });
 
-        if (config.getContentPath('themes') && blogApp.get('activeTheme')) {
-            blogApp.set('views', path.join(config.getContentPath('themes'), blogApp.get('activeTheme')));
-        }
-
-        // Pass 'secure' flag to the view engine
-        // so that templates can choose to render https or http 'url', see url utility
-        res.locals.secure = req.secure;
-
         next();
     },
 
     // ### Activate Theme
     // Helper for updateActiveTheme
-    activateTheme: function activateTheme(blogApp, activeTheme) {
-        var hbsOptions,
-            themePartials = path.join(config.getContentPath('themes'), activeTheme, 'partials');
+    activateTheme: function activateTheme(blogApp, activeThemeName) {
+        var themePartialsPath = path.join(config.getContentPath('themes'), activeThemeName, 'partials'),
+            hbsOptions = {
+                partialsDir: [config.get('paths').helperTemplates],
+                onCompile: function onCompile(exhbs, source) {
+                    return exhbs.handlebars.compile(source, {preventIndent: true});
+                }
+            };
 
-        // clear the view cache
-        blogApp.cache = {};
-        // reset the asset hash
-        config.assetHash = null;
-
-        // set view engine
-        hbsOptions = {
-            partialsDir: [config.get('paths').helperTemplates],
-            onCompile: function onCompile(exhbs, source) {
-                return exhbs.handlebars.compile(source, {preventIndent: true});
-            }
-        };
-
-        fs.stat(themePartials, function stat(err, stats) {
+        fs.stat(themePartialsPath, function stat(err, stats) {
             // Check that the theme has a partials directory before trying to use it
             if (!err && stats && stats.isDirectory()) {
-                hbsOptions.partialsDir.push(themePartials);
+                hbsOptions.partialsDir.push(themePartialsPath);
             }
         });
 
+        // reset the asset hash
+        config.assetHash = null;
+        // clear the view cache
+        blogApp.cache = {};
+        // Set the views and engine
+        blogApp.set('views', path.join(config.getContentPath('themes'), activeThemeName));
         blogApp.engine('hbs', hbs.express3(hbsOptions));
 
         // Set active theme variable on the express server
         // Note: this is effectively the "mounted" theme, which has been loaded into the express app
-        blogApp.set('activeTheme', activeTheme);
+        blogApp.set('activeTheme', activeThemeName);
     },
 
     // ### updateActiveTheme
