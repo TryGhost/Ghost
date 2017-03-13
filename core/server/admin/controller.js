@@ -1,8 +1,8 @@
 var debug         = require('debug')('ghost:admin:controller'),
     _             = require('lodash'),
     api           = require('../api'),
-    logging       = require('../logging'),
     updateCheck   = require('../update-check'),
+    logging       = require('../logging'),
     i18n          = require('../i18n');
 
 // Route: index
@@ -34,5 +34,7 @@ module.exports = function adminController(req, res) {
         });
     }).finally(function noMatterWhat() {
         res.render('default');
-    }).catch(logging.logError);
+    }).catch(function (err) {
+        logging.error(err);
+    });
 };

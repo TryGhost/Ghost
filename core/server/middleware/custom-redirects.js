@@ -2,6 +2,7 @@ var fs = require('fs-extra'),
     _ = require('lodash'),
     config = require('../config'),
     errors = require('../errors'),
+    logging = require('../logging'),
     utils = require('../utils');
 
 /**
@@ -16,7 +17,13 @@ module.exports = function redirects(blogApp) {
 
         _.each(redirects, function (redirect) {
             if (!redirect.from || !redirect.to) {
-                errors.logError(null, 'Your redirects.json file is in a wrong format');
+                logging.warn(new errors.IncorrectUsageError({
+                    message: 'One of your custom redirects is in a wrong format.',
+                    level: 'normal',
+                    help: JSON.stringify(redirect),
+                    context: 'redirects.json'
+                }));
+
                 return;
             }
 
@@ -46,7 +53,10 @@ module.exports = function redirects(blogApp) {
         });
     } catch (err) {
         if (err.code !== 'ENOENT') {
-            errors.logAndThrowError(err, 'Your redirects.json is broken.', 'Check if your JSON is valid.');
+            logging.error(new errors.IncorrectUsageError({
+                message: 'Your redirects.json is broken.',
+                help: 'Check if your JSON is valid.'
+            }));
         }
     }
 };
