@@ -2,7 +2,6 @@
  * Store themes after loading them from the file system
  */
 var _ = require('lodash'),
-    packages = require('../utils/packages'),
     themeListCache = {};
 
 module.exports = {
@@ -33,17 +32,5 @@ module.exports = {
         });
 
         return themeListCache;
-    },
-    toAPI: function toAPI(themes, active) {
-        var toFilter;
-
-        if (themes.hasOwnProperty('name')) {
-            toFilter = {};
-            toFilter[themes.name] = themes;
-        } else {
-            toFilter = themes;
-        }
-
-        return packages.filterPackages(toFilter, active);
     }
 };

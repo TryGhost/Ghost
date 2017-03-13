@@ -7,5 +7,6 @@ module.exports = {
     loadAll: themeLoader.loadAllThemes,
     loadOne: themeLoader.loadOneTheme,
     list: require('./list'),
-    validate: require('./validate')
+    validate: require('./validate'),
+    toJSON: require('./to-json')
 };

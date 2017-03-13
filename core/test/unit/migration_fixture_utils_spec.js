@@ -112,7 +112,7 @@ describe('Migration Fixture Utils', function () {
                 postAddStub.calledOnce.should.be.true();
 
                 done();
-            });
+            }).catch(done);
         });
 
         it('should not call add for main post fixture if it is already found', function (done) {
@@ -128,7 +128,7 @@ describe('Migration Fixture Utils', function () {
                 postAddStub.calledOnce.should.be.false();
 
                 done();
-            });
+            }).catch(done);
         });
     });
 

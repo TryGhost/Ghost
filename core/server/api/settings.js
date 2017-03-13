@@ -103,6 +103,15 @@ canEditAllSettings = function (settingsInfo, options) {
                 ));
             }
 
+            if (setting.key === 'activeTheme') {
+                return Promise.reject(
+                    new errors.BadRequestError({
+                        message: i18n.t('errors.api.settings.activeThemeSetViaAPI.error'),
+                        help: i18n.t('errors.api.settings.activeThemeSetViaAPI.help')
+                    })
+                );
+            }
+
             return checkSettingPermissions(setting);
         });
 
