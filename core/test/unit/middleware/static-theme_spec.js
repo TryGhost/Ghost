@@ -1,104 +1,124 @@
-var sinon        = require('sinon'),
-    should       = require('should'),
+var sinon = require('sinon'),
+    should = require('should'),
 
-    express      = require('express'),
-    staticTheme  = require('../../../server/middleware/static-theme');
+    express = require('express'),
+    themeUtils = require('../../../server/themes'),
+    staticTheme = require('../../../server/middleware/static-theme'),
+
+    sandbox = sinon.sandbox.create();
 
 describe('staticTheme', function () {
-    var next;
+    var expressStaticStub, activeThemeStub, req, res;
 
     beforeEach(function () {
-        next = sinon.spy();
+        req = {};
+        res = {};
+
+        activeThemeStub = sandbox.stub(themeUtils, 'getActive').returns({
+            path: 'my/fake/path'
+        });
+
+        expressStaticStub = sandbox.spy(express, 'static');
     });
 
-    it('should call next if hbs file type', function () {
-        var req = {
-            path: 'mytemplate.hbs'
-        };
-
-        staticTheme(null)(req, null, next);
-        next.called.should.be.true();
+    afterEach(function () {
+        sandbox.restore();
     });
 
-    it('should call next if md file type', function () {
-        var req = {
-            path: 'README.md'
-        };
+    it('should skip for .hbs file', function (done) {
+        req.path = 'mytemplate.hbs';
 
-        staticTheme(null)(req, null, next);
-        next.called.should.be.true();
+        staticTheme()(req, res, function next() {
+            activeThemeStub.called.should.be.false();
+            expressStaticStub.called.should.be.false();
+
+            done();
+        });
     });
 
-    it('should call next if json file type', function () {
-        var req = {
-            path: 'sample.json'
-        };
+    it('should skip for .md file', function (done) {
+        req.path = 'README.md';
 
-        staticTheme(null)(req, null, next);
-        next.called.should.be.true();
+        staticTheme()(req, res, function next() {
+            activeThemeStub.called.should.be.false();
+            expressStaticStub.called.should.be.false();
+
+            done();
+        });
     });
 
-    it('should call express.static if valid file type', function (done) {
-        var req = {
-                path: 'myvalidfile.css',
-                app: {
-                    get: function () { return 'casper'; }
-                }
-            },
-            activeThemeStub,
-            sandbox = sinon.sandbox.create(),
-            expressStatic = sinon.spy(express, 'static');
+    it('should skip for .json file', function (done) {
+        req.path = 'sample.json';
 
-        activeThemeStub = sandbox.spy(req.app, 'get');
+        staticTheme()(req, res, function next() {
+            activeThemeStub.called.should.be.false();
+            expressStaticStub.called.should.be.false();
 
-        staticTheme(null)(req, null, function (reqArg, res, next2) {
-            /*jshint unused:false */
-            sandbox.restore();
-            next.called.should.be.false();
-            activeThemeStub.called.should.be.true();
-            expressStatic.called.should.be.true();
-            should.exist(expressStatic.args[0][1].maxAge);
+            done();
+        });
+    });
+
+    it('should call express.static for .css file', function (done) {
+        req.path = 'myvalidfile.css';
+
+        staticTheme()(req, res, function next() {
+            // Specifically gets called twice
+            activeThemeStub.calledTwice.should.be.true();
+            expressStaticStub.called.should.be.true();
+
+            // Check that express static gets called with the theme path + maxAge
+            should.exist(expressStaticStub.firstCall.args);
+            expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+            expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
+
+            done();
+        });
+    });
+
+    it('should call express.static for .js file', function (done) {
+        req.path = 'myvalidfile.js';
+
+        staticTheme()(req, res, function next() {
+            // Specifically gets called twice
+            activeThemeStub.calledTwice.should.be.true();
+            expressStaticStub.called.should.be.true();
+
+            // Check that express static gets called with the theme path + maxAge
+            should.exist(expressStaticStub.firstCall.args);
+            expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+            expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
+
             done();
         });
     });
 
     it('should not error if active theme is missing', function (done) {
-        var req = {
-                path: 'myvalidfile.css',
-                app: {
-                    get: function () { return undefined; }
-                }
-            },
-            activeThemeStub,
-            sandbox = sinon.sandbox.create();
+        req.path = 'myvalidfile.css';
 
-        activeThemeStub = sandbox.spy(req.app, 'get');
+        // make the active theme not exist
+        activeThemeStub.returns(undefined);
 
-        staticTheme(null)(req, null, function (reqArg, res, next2) {
-            /*jshint unused:false */
-            sandbox.restore();
-            next.called.should.be.false();
+        staticTheme()(req, res, function next() {
+            activeThemeStub.calledOnce.should.be.true();
+            expressStaticStub.called.should.be.false();
+
             done();
         });
     });
 
-    it('should not call next if file is on whitelist', function (done) {
-        var req = {
-                path: 'manifest.json',
-                app: {
-                    get: function () { return 'casper'; }
-                }
-            },
-            activeThemeStub,
-            sandbox = sinon.sandbox.create();
+    it('should NOT skip if file is on whitelist', function (done) {
+        req.path = 'manifest.json';
 
-        activeThemeStub = sandbox.spy(req.app, 'get');
+        staticTheme()(req, res, function next() {
+            // Specifically gets called twice
+            activeThemeStub.calledTwice.should.be.true();
+            expressStaticStub.called.should.be.true();
 
-        staticTheme(null)(req, null, function (reqArg, res, next2) {
-            /*jshint unused:false */
-            sandbox.restore();
-            next.called.should.be.false();
-            activeThemeStub.called.should.be.true();
+            // Check that express static gets called with the theme path + maxAge
+            should.exist(expressStaticStub.firstCall.args);
+            expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+            expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
+
             done();
         });
     });
