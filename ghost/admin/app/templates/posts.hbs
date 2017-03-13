@@ -13,6 +13,7 @@
                 searchField="name"
                 onchange=(action "changeType")
                 tagName="div"
+                classNames="gh-contentfilter-menu gh-contentfilter-type"
                 data-test-type-select=true
                 as |type|
             }}
@@ -26,6 +27,7 @@
                 searchField="name"
                 onchange=(action "changeAuthor")
                 tagName="div"
+                classNames="gh-contentfilter-menu gh-contentfilter-author"
                 data-test-author-select=true
                 as |author|
             }}
@@ -39,6 +41,7 @@
                 searchField="name"
                 onchange=(action "changeTag")
                 tagName="div"
+                classNames="gh-contentfilter-menu gh-contentfilter-tag"
                 data-test-tag-select=true
                 as |tag|
             }}
@@ -54,6 +57,7 @@
                 searchEnabled=false
                 onchange=(action "changeOrder")
                 tagName="div"
+                classNames="gh-contentfilter-menu gh-contentfilter-sort"
                 data-test-order-select=true
                 as |order|
             }}
@@ -93,12 +97,12 @@
 
     {{#if showDeletePostModal}}
         {{gh-fullscreen-modal "delete-post"
-                              model=(hash
-                                  post=selectedPost
-                                  onSuccess=(route-action 'onPostDeletion')
-                              )
-                              close=(action "toggleDeletePostModal")
-                              modifier="action wide"}}
+            model=(hash
+                post=selectedPost
+                onSuccess=(route-action 'onPostDeletion')
+            )
+            close=(action "toggleDeletePostModal")
+            modifier="action wide"}}
     {{/if}}
 
     {{outlet}}
