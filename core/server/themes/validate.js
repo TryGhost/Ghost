@@ -1,11 +1,12 @@
 var Promise = require('bluebird'),
-    gscan = require('gscan'),
     errors = require('../errors'),
     i18n = require('../i18n'),
     checkTheme;
 
 checkTheme = function checkTheme(theme, isZip) {
-    var checkPromise;
+    var checkPromise,
+        // gscan can slow down boot time if we require on boot, for now nest the require.
+        gscan = require('gscan');
 
     if (isZip) {
         checkPromise = gscan.checkZip(theme, {keepExtractedDir: true});
