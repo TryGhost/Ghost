@@ -8,19 +8,16 @@
 // there if available. The cacheId is a combination of `updated_at` and the `slug`.
 var hbs                  = require('express-hbs'),
     Promise              = require('bluebird'),
-    Amperize             = require('amperize'),
     moment               = require('moment'),
-    sanitizeHtml         = require('sanitize-html'),
     logging              = require('../../../../logging'),
     i18n                 = require('../../../../i18n'),
     errors               = require('../../../../errors'),
     makeAbsoluteUrl      = require('../../../../utils/make-absolute-urls'),
     utils                = require('../../../../utils'),
-    cheerio              = require('cheerio'),
-    amperize             = new Amperize(),
     amperizeCache        = {},
     allowedAMPTags       = [],
     allowedAMPAttributes = {},
+    amperize,
     cleanHTML,
     ampHTML;
 
@@ -120,6 +117,9 @@ function getAmperizeHTML(html, post) {
         return;
     }
 
+    var Amperize = require('amperize');
+    amperize = amperize || new Amperize();
+
     // make relative URLs abolute
     html = makeAbsoluteUrl(html, utils.url.urlFor('home', true), post.url).html();
 
@@ -154,7 +154,9 @@ function getAmperizeHTML(html, post) {
 }
 
 function ampContent() {
-    var amperizeHTML = {
+    var sanitizeHtml = require('sanitize-html'),
+        cheerio = require('cheerio'),
+        amperizeHTML = {
             amperize: getAmperizeHTML(this.html, this)
         };
 

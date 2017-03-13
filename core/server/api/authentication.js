@@ -309,7 +309,7 @@ authentication = {
                         }));
                     }
 
-                    spamPrevention.userLogin.reset(opts.ip, tokenParts.email + 'login');
+                    spamPrevention.userLogin().reset(opts.ip, tokenParts.email + 'login');
 
                     return models.User.changePassword({
                         oldPassword: oldPassword,

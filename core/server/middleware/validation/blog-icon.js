@@ -1,6 +1,5 @@
 var errors = require('../../errors'),
     config = require('../../config'),
-    ICO = require('icojs'),
     fs = require('fs'),
     Promise = require('bluebird'),
     sizeOf = require('image-size'),
@@ -15,7 +14,8 @@ validIconSize = function validIconSize(size) {
 
 getIconDimensions = function getIconDimensions(icon) {
     return new Promise(function getImageSize(resolve, reject) {
-        var arrayBuffer;
+        var arrayBuffer,
+            ICO = require('icojs');
 
         // image-size doesn't support .ico files
         if (icon.name.match(/.ico$/i)) {
