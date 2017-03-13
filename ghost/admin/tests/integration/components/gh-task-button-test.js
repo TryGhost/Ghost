@@ -71,7 +71,7 @@ describe('Integration: Component: gh-task-button', function() {
 
         run.later(this, function () {
             expect(this.$('button'), 'ended class').to.not.have.class('appear-disabled');
-        }, 70);
+        }, 100);
 
         wait().then(done);
     });
@@ -89,7 +89,7 @@ describe('Integration: Component: gh-task-button', function() {
         run.later(this, function () {
             expect(this.$('button')).to.have.class('gh-btn-green');
             expect(this.$('button')).to.contain('Saved');
-        }, 70);
+        }, 100);
 
         wait().then(done);
     });
@@ -108,7 +108,7 @@ describe('Integration: Component: gh-task-button', function() {
             expect(this.$('button')).to.not.have.class('gh-btn-green');
             expect(this.$('button')).to.have.class('im-a-success');
             expect(this.$('button')).to.contain('Saved');
-        }, 70);
+        }, 100);
 
         wait().then(done);
     });
@@ -130,7 +130,7 @@ describe('Integration: Component: gh-task-button', function() {
         run.later(this, function () {
             expect(this.$('button')).to.have.class('gh-btn-red');
             expect(this.$('button')).to.contain('Retry');
-        }, 70);
+        }, 100);
 
         wait().then(done);
     });
@@ -148,7 +148,7 @@ describe('Integration: Component: gh-task-button', function() {
         run.later(this, function () {
             expect(this.$('button')).to.have.class('gh-btn-red');
             expect(this.$('button')).to.contain('Retry');
-        }, 70);
+        }, 100);
 
         wait().then(done);
     });
@@ -167,7 +167,7 @@ describe('Integration: Component: gh-task-button', function() {
             expect(this.$('button')).to.not.have.class('gh-btn-red');
             expect(this.$('button')).to.have.class('im-a-failure');
             expect(this.$('button')).to.contain('Retry');
-        }, 70);
+        }, 100);
 
         wait().then(done);
     });
@@ -216,7 +216,7 @@ describe('Integration: Component: gh-task-button', function() {
             // chai-jquery test doesn't work because Firefox outputs blank string
             // expect(this.$('button')).to.not.have.attr('style');
             expect(this.$('button').attr('style')).to.be.blank;
-        }, 70);
+        }, 100);
 
         wait().then(done);
     });
