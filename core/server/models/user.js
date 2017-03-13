@@ -17,7 +17,9 @@ var _              = require('lodash'),
     bcryptHash     = Promise.promisify(bcrypt.hash),
     bcryptCompare  = Promise.promisify(bcrypt.compare),
 
-    activeStates   = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'],
+    activeStates   = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'],
+    inactiveStates = ['inactive', 'locked'],
+    allStates      = activeStates.concat(inactiveStates),
     User,
     Users;
 
@@ -80,6 +82,18 @@ User = ghostBookshelf.Model.extend({
         }
 
         model.emitChange('edited');
+    },
+
+    isActive: function isActive() {
+        return inactiveStates.indexOf(this.get('status')) === -1;
+    },
+
+    isLocked: function isLocked() {
+        return this.get('status') === 'locked';
+    },
+
+    isInactive: function isInactive() {
+        return this.get('status') === 'inactive';
     },
 
     /**
@@ -214,7 +228,7 @@ User = ghostBookshelf.Model.extend({
             return null;
         }
 
-        return this.isPublicContext() ? 'status:[' + activeStates.join(',') + ']' : null;
+        return this.isPublicContext() ? 'status:[' + allStates.join(',') + ']' : null;
     },
 
     defaultFilters: function defaultFilters() {
@@ -222,7 +236,7 @@ User = ghostBookshelf.Model.extend({
             return null;
         }
 
-        return this.isPublicContext() ? null : 'status:[' + activeStates.join(',') + ']';
+        return this.isPublicContext() ? null : 'status:[' + allStates.join(',') + ']';
     }
 }, {
     orderDefaultOptions: function orderDefaultOptions() {
@@ -244,7 +258,7 @@ User = ghostBookshelf.Model.extend({
         // This is the only place that 'options.where' is set now
         options.where = {statements: []};
 
-        var allStates = activeStates, value;
+        var value;
 
         // Filter on the status.  A status of 'all' translates to no filter since we want all statuses
         if (options.status !== 'all') {
@@ -309,7 +323,7 @@ User = ghostBookshelf.Model.extend({
 
         delete data.role;
         data = _.defaults(data || {}, {
-            status: 'active'
+            status: 'all'
         });
 
         status = data.status;
@@ -595,35 +609,45 @@ User = ghostBookshelf.Model.extend({
 
         return this.getByEmail(object.email).then(function then(user) {
             if (!user) {
-                return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.models.user.noUserWithEnteredEmailAddr')}));
+                return Promise.reject(new errors.NotFoundError({
+                    message: i18n.t('errors.models.user.noUserWithEnteredEmailAddr')
+                }));
             }
 
-            if (user.get('status') !== 'locked') {
-                return self.isPasswordCorrect({plainPassword: object.password, hashedPassword: user.get('password')})
-                    .then(function then() {
-                        return Promise.resolve(user.set({status: 'active', last_login: new Date()}).save({validate: false}))
-                            .catch(function handleError(err) {
-                                // If we get a validation or other error during this save, catch it and log it, but don't
-                                // cause a login error because of it. The user validation is not important here.
-                                logging.error(new errors.GhostError({
-                                    err: err,
-                                    context: i18n.t('errors.models.user.userUpdateError.context'),
-                                    help: i18n.t('errors.models.user.userUpdateError.help')
-                                }));
-
-                                return user;
-                            });
-                    })
-                    .catch(function onError(err) {
-                        return Promise.reject(new errors.UnauthorizedError({
-                            err: err,
-                            context: i18n.t('errors.models.user.incorrectPassword'),
-                            help: i18n.t('errors.models.user.userUpdateError.help')
-                        }));
-                    });
+            if (user.isLocked()) {
+                return Promise.reject(new errors.NoPermissionError({
+                    message: i18n.t('errors.models.user.accountLocked')
+                }));
             }
 
-            return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.models.user.accountLocked')}));
+            if (user.isInactive()) {
+                return Promise.reject(new errors.NoPermissionError({
+                    message: i18n.t('errors.models.user.accountSuspended')
+                }));
+            }
+
+            return self.isPasswordCorrect({plainPassword: object.password, hashedPassword: user.get('password')})
+                .then(function then() {
+                    return Promise.resolve(user.set({status: 'active', last_login: new Date()}).save({validate: false}))
+                        .catch(function handleError(err) {
+                            // If we get a validation or other error during this save, catch it and log it, but don't
+                            // cause a login error because of it. The user validation is not important here.
+                            logging.error(new errors.GhostError({
+                                err: err,
+                                context: i18n.t('errors.models.user.userUpdateError.context'),
+                                help: i18n.t('errors.models.user.userUpdateError.help')
+                            }));
+
+                            return user;
+                        });
+                })
+                .catch(function onError(err) {
+                    return Promise.reject(new errors.UnauthorizedError({
+                        err: err,
+                        context: i18n.t('errors.models.user.incorrectPassword'),
+                        help: i18n.t('errors.models.user.userUpdateError.help')
+                    }));
+                });
         }, function handleError(error) {
             if (error.message === 'NotFound' || error.message === 'EmptyResponse') {
                 return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.models.user.noUserWithEnteredEmailAddr')}));
@@ -746,7 +770,8 @@ User = ghostBookshelf.Model.extend({
                 return userWithEmail;
             }
         });
-    }
+    },
+    inactiveStates: inactiveStates
 });
 
 Users = ghostBookshelf.Collection.extend({

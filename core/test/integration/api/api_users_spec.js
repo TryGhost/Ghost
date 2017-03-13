@@ -1,23 +1,44 @@
 var testUtils       = require('../../utils'),
     should          = require('should'),
+    sinon           = require('sinon'),
     Promise         = require('bluebird'),
     _               = require('lodash'),
     models          = require('../../../server/models'),
+    errors          = require('../../../server/errors'),
+    events          = require('../../../server/events'),
     UserAPI         = require('../../../server/api/users'),
     db              = require('../../../server/data/db'),
+    sandbox         = sinon.sandbox.create(),
     context         = testUtils.context,
     userIdFor       = testUtils.users.ids,
     roleIdFor       = testUtils.roles.ids;
 
 describe('Users API', function () {
+    var eventsTriggered;
+
     // Keep the DB clean
     before(testUtils.teardown);
 
+    beforeEach(function () {
+        eventsTriggered = {};
+
+        sandbox.stub(events, 'emit', function (eventName, eventObj) {
+            if (!eventsTriggered[eventName]) {
+                eventsTriggered[eventName] = [];
+            }
+
+            eventsTriggered[eventName].push(eventObj);
+        });
+    });
+
     beforeEach(testUtils.setup(
-        'users:roles', 'users', 'user:token', 'perms:user', 'perms:role', 'perms:setting', 'perms:init', 'posts'
+        'users:roles', 'users', 'user-token', 'perms:user', 'perms:role', 'perms:setting', 'perms:init', 'posts'
     ));
 
-    afterEach(testUtils.teardown);
+    afterEach(function () {
+        sandbox.restore();
+        return testUtils.teardown();
+    });
 
     function checkForErrorType(type, done) {
         return function checkForErrorType(error) {
@@ -458,6 +479,292 @@ describe('Users API', function () {
                     done();
                 });
             }).catch(done);
+        });
+
+        describe('Change status', function () {
+            describe('as owner', function () {
+                it('[success] can change status to inactive for admin', function () {
+                    return UserAPI.edit(
+                        {
+                            users: [
+                                {
+                                    status: 'inactive'
+                                }
+                            ]
+                        }, _.extend({}, context.owner, {id: userIdFor.admin})
+                    ).then(function () {
+                        Object.keys(eventsTriggered).length.should.eql(2);
+                        should.exist(eventsTriggered['user.edited']);
+                        should.exist(eventsTriggered['user.deactivated']);
+
+                        return models.User.findOne({id: userIdFor.admin, status: 'all'}).then(function (response) {
+                            response.get('status').should.eql('inactive');
+                        });
+                    });
+                });
+
+                it('[success] can change status to inactive for editor', function () {
+                    return UserAPI.edit(
+                        {
+                            users: [
+                                {
+                                    status: 'inactive'
+                                }
+                            ]
+                        }, _.extend({}, context.owner, {id: userIdFor.editor})
+                    ).then(function () {
+                        return models.User.findOne({id: userIdFor.editor, status: 'all'}).then(function (response) {
+                            response.get('status').should.eql('inactive');
+                        });
+                    });
+                });
+
+                it('[failure] can\' change my own status to inactive', function () {
+                    return UserAPI.edit(
+                        {
+                            users: [
+                                {
+                                    status: 'inactive'
+                                }
+                            ]
+                        }, _.extend({}, context.owner, {id: userIdFor.owner})
+                    ).then(function () {
+                        throw new Error('this is not allowed');
+                    }).catch(function (err) {
+                        (err instanceof errors.NoPermissionError).should.eql(true);
+                    });
+                });
+            });
+
+            describe('as admin', function () {
+                it('[failure] can\'t change status to inactive for owner', function () {
+                    return UserAPI.edit(
+                        {
+                            users: [
+                                {
+                                    status: 'inactive'
+                                }
+                            ]
+                        }, _.extend({}, context.admin, {id: userIdFor.owner})
+                    ).then(function () {
+                        throw new Error('this is not allowed');
+                    }).catch(function (err) {
+                        (err instanceof errors.NoPermissionError).should.eql(true);
+                    });
+                });
+
+                it('[failure] can\'t change status to inactive for admin', function () {
+                    return UserAPI.edit(
+                        {
+                            users: [
+                                {
+                                    status: 'inactive'
+                                }
+                            ]
+                        }, _.extend({}, context.admin, {id: userIdFor.admin2})
+                    ).then(function () {
+                        throw new Error('this is not allowed');
+                    }).catch(function (err) {
+                        (err instanceof errors.NoPermissionError).should.eql(true);
+                    });
+                });
+
+                it('[failure] can\' change my own status to inactive', function () {
+                    return UserAPI.edit(
+                        {
+                            users: [
+                                {
+                                    status: 'inactive'
+                                }
+                            ]
+                        }, _.extend({}, context.admin, {id: userIdFor.admin})
+                    ).then(function () {
+                        throw new Error('this is not allowed');
+                    }).catch(function (err) {
+                        (err instanceof errors.NoPermissionError).should.eql(true);
+                    });
+                });
+
+                it('[success] can change status to inactive for editor', function () {
+                    return UserAPI.edit(
+                        {
+                            users: [
+                                {
+                                    status: 'inactive'
+                                }
+                            ]
+                        }, _.extend({}, context.admin, {id: userIdFor.editor})
+                    ).then(function () {
+                        return models.User.findOne({id: userIdFor.editor, status: 'all'}).then(function (response) {
+                            response.get('status').should.eql('inactive');
+                        });
+                    });
+                });
+            });
+
+            describe('as editor', function () {
+                it('[failure] can\'t change status to inactive for owner', function () {
+                    return UserAPI.edit(
+                        {
+                            users: [
+                                {
+                                    status: 'inactive'
+                                }
+                            ]
+                        }, _.extend({}, context.editor, {id: userIdFor.owner})
+                    ).then(function () {
+                        throw new Error('this is not allowed');
+                    }).catch(function (err) {
+                        (err instanceof errors.NoPermissionError).should.eql(true);
+                    });
+                });
+
+                it('[failure] can\' change my own status to inactive', function () {
+                    return UserAPI.edit(
+                        {
+                            users: [
+                                {
+                                    status: 'inactive'
+                                }
+                            ]
+                        }, _.extend({}, context.editor, {id: userIdFor.editor})
+                    ).then(function () {
+                        throw new Error('this is not allowed');
+                    }).catch(function (err) {
+                        (err instanceof errors.NoPermissionError).should.eql(true);
+                    });
+                });
+
+                it('[failure] can\'t change status to inactive for admin', function () {
+                    return UserAPI.edit(
+                        {
+                            users: [
+                                {
+                                    status: 'inactive'
+                                }
+                            ]
+                        }, _.extend({}, context.editor, {id: userIdFor.admin})
+                    ).then(function () {
+                        throw new Error('this is not allowed');
+                    }).catch(function (err) {
+                        (err instanceof errors.NoPermissionError).should.eql(true);
+                    });
+                });
+
+                it('[failure] can\'t change status to inactive for editor', function () {
+                    return UserAPI.edit(
+                        {
+                            users: [
+                                {
+                                    status: 'inactive'
+                                }
+                            ]
+                        }, _.extend({}, context.editor, {id: userIdFor.editor2})
+                    ).then(function () {
+                        throw new Error('this is not allowed');
+                    }).catch(function (err) {
+                        (err instanceof errors.NoPermissionError).should.eql(true);
+                    });
+                });
+
+                it('[success] can change status to inactive for author', function () {
+                    return UserAPI.edit(
+                        {
+                            users: [
+                                {
+                                    status: 'inactive'
+                                }
+                            ]
+                        }, _.extend({}, context.editor, {id: userIdFor.author})
+                    ).then(function () {
+                        return models.User.findOne({id: userIdFor.author, status: 'all'}).then(function (response) {
+                            response.get('status').should.eql('inactive');
+                        });
+                    });
+                });
+            });
+
+            describe('as author', function () {
+                it('[failure] can\'t change status to inactive for owner', function () {
+                    return UserAPI.edit(
+                        {
+                            users: [
+                                {
+                                    status: 'inactive'
+                                }
+                            ]
+                        }, _.extend({}, context.author, {id: userIdFor.owner})
+                    ).then(function () {
+                        throw new Error('this is not allowed');
+                    }).catch(function (err) {
+                        (err instanceof errors.NoPermissionError).should.eql(true);
+                    });
+                });
+
+                it('[failure] can\' change my own status to inactive', function () {
+                    return UserAPI.edit(
+                        {
+                            users: [
+                                {
+                                    status: 'inactive'
+                                }
+                            ]
+                        }, _.extend({}, context.author, {id: userIdFor.author})
+                    ).then(function () {
+                        throw new Error('this is not allowed');
+                    }).catch(function (err) {
+                        (err instanceof errors.NoPermissionError).should.eql(true);
+                    });
+                });
+
+                it('[failure] can\'t change status to inactive for admin', function () {
+                    return UserAPI.edit(
+                        {
+                            users: [
+                                {
+                                    status: 'inactive'
+                                }
+                            ]
+                        }, _.extend({}, context.author, {id: userIdFor.admin})
+                    ).then(function () {
+                        throw new Error('this is not allowed');
+                    }).catch(function (err) {
+                        (err instanceof errors.NoPermissionError).should.eql(true);
+                    });
+                });
+
+                it('[failure] can\'t change status to inactive for editor', function () {
+                    return UserAPI.edit(
+                        {
+                            users: [
+                                {
+                                    status: 'inactive'
+                                }
+                            ]
+                        }, _.extend({}, context.author, {id: userIdFor.editor})
+                    ).then(function () {
+                        throw new Error('this is not allowed');
+                    }).catch(function (err) {
+                        (err instanceof errors.NoPermissionError).should.eql(true);
+                    });
+                });
+
+                it('[failure] can change status to inactive for author', function () {
+                    return UserAPI.edit(
+                        {
+                            users: [
+                                {
+                                    status: 'inactive'
+                                }
+                            ]
+                        }, _.extend({}, context.author, {id: userIdFor.author2})
+                    ).then(function () {
+                        throw new Error('this is not allowed');
+                    }).catch(function (err) {
+                        (err instanceof errors.NoPermissionError).should.eql(true);
+                    });
+                });
+            });
         });
     });
 

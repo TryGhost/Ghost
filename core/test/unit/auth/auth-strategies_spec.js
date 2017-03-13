@@ -114,7 +114,7 @@ describe('Auth Strategies', function () {
     });
 
     describe('Bearer Strategy', function () {
-        var tokenStub, userStub;
+        var tokenStub, userStub, userIsActive;
 
         beforeEach(function () {
             tokenStub = sandbox.stub(Models.Accesstoken, 'findOne');
@@ -124,6 +124,7 @@ describe('Auth Strategies', function () {
                     return fakeValidToken;
                 }
             }));
+
             tokenStub.withArgs({token: fakeInvalidToken.token}).returns(new Promise.resolve({
                 toJSON: function () {
                     return fakeInvalidToken;
@@ -135,6 +136,9 @@ describe('Auth Strategies', function () {
             userStub.withArgs({id: 3}).returns(new Promise.resolve({
                 toJSON: function () {
                     return {id: 3};
+                },
+                isActive: function () {
+                    return userIsActive;
                 }
             }));
         });
@@ -142,6 +146,8 @@ describe('Auth Strategies', function () {
         it('should find user with valid token', function (done) {
             var accessToken = 'valid-token',
                 userId = 3;
+
+            userIsActive = true;
 
             authStrategies.bearerStrategy(accessToken, next).then(function () {
                 tokenStub.calledOnce.should.be.true();
@@ -151,6 +157,25 @@ describe('Auth Strategies', function () {
                 next.calledOnce.should.be.true();
                 next.firstCall.args.length.should.eql(3);
                 next.calledWith(null, {id: userId}, {scope: '*'}).should.be.true();
+                done();
+            }).catch(done);
+        });
+
+        it('should find user with valid token, but user is suspended', function (done) {
+            var accessToken = 'valid-token',
+                userId = 3;
+
+            userIsActive = false;
+
+            authStrategies.bearerStrategy(accessToken, next).then(function () {
+                tokenStub.calledOnce.should.be.true();
+                tokenStub.calledWith({token: accessToken}).should.be.true();
+                userStub.calledOnce.should.be.true();
+                userStub.calledWith({id: userId}).should.be.true();
+                next.calledOnce.should.be.true();
+                next.firstCall.args.length.should.eql(1);
+                (next.firstCall.args[0] instanceof errors.NoPermissionError).should.eql(true);
+                next.firstCall.args[0].message.should.eql('Your account was suspended.');
                 done();
             }).catch(done);
         });
@@ -221,7 +246,7 @@ describe('Auth Strategies', function () {
             authStrategies.ghostStrategy(req, ghostAuthAccessToken, null, profile, function (err) {
                 should.exist(err);
                 (err instanceof errors.NotFoundError).should.eql(true);
-                userFindOneStub.calledOnce.should.be.true();
+                userFindOneStub.calledOnce.should.be.false();
                 inviteStub.calledOnce.should.be.true();
                 done();
             });
@@ -242,7 +267,7 @@ describe('Auth Strategies', function () {
             authStrategies.ghostStrategy(req, ghostAuthAccessToken, null, profile, function (err) {
                 should.exist(err);
                 (err instanceof errors.NotFoundError).should.eql(true);
-                userFindOneStub.calledOnce.should.be.true();
+                userFindOneStub.calledOnce.should.be.false();
                 inviteStub.calledOnce.should.be.true();
                 done();
             });
@@ -272,7 +297,7 @@ describe('Auth Strategies', function () {
                 user.should.eql(invitedUser);
                 profile.should.eql(invitedProfile);
 
-                userFindOneStub.calledOnce.should.be.true();
+                userFindOneStub.calledOnce.should.be.false();
                 inviteStub.calledOnce.should.be.true();
                 done();
             });
@@ -290,7 +315,12 @@ describe('Auth Strategies', function () {
             userFindOneStub.withArgs({slug: 'ghost-owner', status: 'inactive'})
                 .returns(Promise.resolve(_.merge({}, {status: 'inactive'}, owner)));
 
-            userEditStub.withArgs({status: 'active', email: 'test@example.com'}, {
+            userEditStub.withArgs({
+                status: 'active',
+                email: 'test@example.com',
+                ghost_auth_id: ownerProfile.id,
+                ghost_auth_access_token: ghostAuthAccessToken
+            }, {
                 context: {internal: true},
                 id: owner.id
             }).returns(Promise.resolve(owner));
@@ -317,11 +347,13 @@ describe('Auth Strategies', function () {
             });
         });
 
-        it('auth', function (done) {
+        it('sign in', function (done) {
             var ghostAuthAccessToken = '12345',
                 req = {body: {}},
                 ownerProfile = {email: 'test@example.com', id: '12345'},
-                owner = {id: 2};
+                owner = {id: 2, isActive: function () {
+                    return true;
+                }};
 
             userFindOneStub.returns(Promise.resolve(owner));
             userEditStub.withArgs({
@@ -343,6 +375,38 @@ describe('Auth Strategies', function () {
                 should.exist(profile);
                 user.should.eql(owner);
                 profile.should.eql(ownerProfile);
+                done();
+            });
+        });
+
+        it('sign in, but user is suspended', function (done) {
+            var ghostAuthAccessToken = '12345',
+                req = {body: {}},
+                ownerProfile = {email: 'test@example.com', id: '12345'},
+                owner = {id: 2, isActive: function () {
+                    return false;
+                }};
+
+            userFindOneStub.returns(Promise.resolve(owner));
+            userEditStub.withArgs({
+                ghost_auth_access_token: ghostAuthAccessToken,
+                ghost_auth_id: ownerProfile.id,
+                email: ownerProfile.email
+            }, {
+                context: {internal: true},
+                id: owner.id
+            }).returns(Promise.resolve(owner));
+
+            authStrategies.ghostStrategy(req, ghostAuthAccessToken, null, ownerProfile, function (err, user, profile) {
+                should.exist(err);
+                err.message.should.eql('Your account was suspended.');
+
+                userFindOneStub.calledOnce.should.be.true();
+                userEditStub.calledOnce.should.be.false();
+                inviteStub.calledOnce.should.be.false();
+
+                should.not.exist(user);
+                should.not.exist(profile);
                 done();
             });
         });
