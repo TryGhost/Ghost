@@ -1,8 +1,8 @@
-var archiver = require('archiver'),
-    fs = require('fs');
+var fs = require('fs');
 
 module.exports = function zipFolder(folderToZip, destination, callback) {
-    var output = fs.createWriteStream(destination),
+    var archiver = require('archiver'),
+        output = fs.createWriteStream(destination),
         archive = archiver.create('zip', {});
 
     output.on('close', function () {
@@ -17,4 +17,3 @@ module.exports = function zipFolder(folderToZip, destination, callback) {
     archive.pipe(output);
     archive.finalize();
 };
-

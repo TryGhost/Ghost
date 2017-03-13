@@ -2,7 +2,6 @@
 // Handles sending email for Ghost
 var _          = require('lodash'),
     Promise    = require('bluebird'),
-    nodemailer = require('nodemailer'),
     validator  = require('validator'),
     config     = require('../config'),
     settingsCache = require('../settings/cache'),
@@ -10,13 +9,12 @@ var _          = require('lodash'),
     utils      = require('../utils');
 
 function GhostMailer() {
-    var transport = config.get('mail') && config.get('mail').transport || 'direct',
+    var nodemailer = require('nodemailer'),
+        transport = config.get('mail') && config.get('mail').transport || 'direct',
         options = config.get('mail') && _.clone(config.get('mail').options) || {};
 
     this.state = {};
-
     this.transport = nodemailer.createTransport(transport, options);
-
     this.state.usingDirect = transport === 'direct';
 }
 
