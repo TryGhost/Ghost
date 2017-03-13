@@ -1,13 +1,14 @@
 /*globals describe, beforeEach, afterEach, it*/
 var privateController = require('../lib/router').controller,
+    should            = require('should'),
     path              = require('path'),
     sinon             = require('sinon'),
     configUtils       = require('../../../../test/utils/configUtils'),
-    themeList        = require('../../../themes').list,
+    themes            = require('../../../themes'),
     sandbox = sinon.sandbox.create();
 
 describe('Private Controller', function () {
-    var res, req, defaultPath;
+    var res, req, defaultPath, hasTemplateStub;
 
     // Helper function to prevent unit tests
     // from failing via timeout when they
@@ -19,13 +20,19 @@ describe('Private Controller', function () {
     }
 
     beforeEach(function () {
+        hasTemplateStub = sandbox.stub().returns(false);
+        hasTemplateStub.withArgs('index').returns(true);
+
+        sandbox.stub(themes, 'getActive').returns({
+            hasTemplate: hasTemplateStub
+        });
+
         res = {
             locals: {version: ''},
             render: sandbox.spy()
         };
 
         req = {
-            app: {get: function () { return 'casper'; }},
             route: {path: '/private/?r=/'},
             query: {r: ''},
             params: {}
@@ -43,14 +50,12 @@ describe('Private Controller', function () {
     afterEach(function () {
         sandbox.restore();
         configUtils.restore();
-        themeList.init();
     });
 
     it('Should render default password page when theme has no password template', function (done) {
-        themeList.init({casper: {}});
-
-        res.render = function (view) {
+        res.render = function (view, context) {
             view.should.eql(defaultPath);
+            should.exist(context);
             done();
         };
 
@@ -58,12 +63,11 @@ describe('Private Controller', function () {
     });
 
     it('Should render theme password page when it exists', function (done) {
-        themeList.init({casper: {
-            'private.hbs': '/content/themes/casper/private.hbs'
-        }});
+        hasTemplateStub.withArgs('private').returns(true);
 
-        res.render = function (view) {
+        res.render = function (view, context) {
             view.should.eql('private');
+            should.exist(context);
             done();
         };
 
@@ -71,7 +75,6 @@ describe('Private Controller', function () {
     });
 
     it('Should render with error when error is passed in', function (done) {
-        themeList.init({casper: {}});
         res.error = 'Test Error';
 
         res.render = function (view, context) {

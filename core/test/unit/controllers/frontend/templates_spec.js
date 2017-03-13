@@ -1,17 +1,21 @@
 var should   = require('should'),
+    sinon    = require('sinon'),
     rewire   = require('rewire'),
 
 // Stuff we are testing
     templates = rewire('../../../../server/controllers/frontend/templates'),
+    themes = require('../../../../server/themes'),
 
-    themeList = require('../../../../server/themes').list;
+    sandbox = sinon.sandbox.create();
 
 describe('templates', function () {
+    var getActiveThemeStub, hasTemplateStub;
+
     afterEach(function () {
-        themeList.init();
+        sandbox.restore();
     });
 
-    describe('utils', function () {
+    describe('[private] getChannelTemplateHierarchy', function () {
         var channelTemplateList = templates.__get__('getChannelTemplateHierarchy');
 
         it('should return just index for empty channelOpts', function () {
@@ -45,23 +49,73 @@ describe('templates', function () {
         });
     });
 
-    describe('single', function () {
+    describe('pickTemplate', function () {
+        beforeEach(function () {
+            hasTemplateStub = sandbox.stub().returns(false);
+
+            getActiveThemeStub = sandbox.stub(themes, 'getActive').returns({
+                hasTemplate: hasTemplateStub
+            });
+        });
+
+        it('returns fallback if there is no activeTheme', function () {
+            getActiveThemeStub.returns(undefined);
+
+            templates.pickTemplate(['tag-test', 'tag', 'index'], 'fallback').should.eql('fallback');
+            templates.pickTemplate(['page-my-post', 'page', 'post'], 'fallback').should.eql('fallback');
+        });
+
+        it('returns fallback if activeTheme has no templates', function () {
+            templates.pickTemplate(['tag-test', 'tag', 'index'], 'fallback').should.eql('fallback');
+            templates.pickTemplate(['page-about', 'page', 'post'], 'fallback').should.eql('fallback');
+        });
+
         describe('with many templates', function () {
             beforeEach(function () {
-                themeList.init({casper: {
-                    assets: null,
-                    'default.hbs': '/content/themes/casper/default.hbs',
-                    'index.hbs': '/content/themes/casper/index.hbs',
-                    'page.hbs': '/content/themes/casper/page.hbs',
-                    'page-about.hbs': '/content/themes/casper/page-about.hbs',
-                    'post.hbs': '/content/themes/casper/post.hbs',
-                    'post-welcome-to-ghost.hbs': '/content/themes/casper/post-welcome-to-ghost.hbs'
+                // Set available Templates
+                hasTemplateStub.withArgs('default').returns(true);
+                hasTemplateStub.withArgs('index').returns(true);
+                hasTemplateStub.withArgs('page').returns(true);
+                hasTemplateStub.withArgs('page-about').returns(true);
+                hasTemplateStub.withArgs('post').returns(true);
+                hasTemplateStub.withArgs('amp').returns(true);
+            });
 
-                }});
+            it('returns first matching template', function () {
+                templates.pickTemplate(['page-about', 'page', 'post'], 'fallback').should.eql('page-about');
+                templates.pickTemplate(['page-magic', 'page', 'post'], 'fallback').should.eql('page');
+                templates.pickTemplate(['page', 'post'], 'fallback').should.eql('page');
+            });
+
+            it('returns correctly if template list is a string', function () {
+                templates.pickTemplate('amp', 'fallback').should.eql('amp');
+                templates.pickTemplate('subscribe', 'fallback').should.eql('fallback');
+                templates.pickTemplate('post', 'fallback').should.eql('post');
+            });
+        });
+    });
+
+    describe('single', function () {
+        beforeEach(function () {
+            hasTemplateStub = sandbox.stub().returns(false);
+
+            getActiveThemeStub = sandbox.stub(themes, 'getActive').returns({
+                hasTemplate: hasTemplateStub
+            });
+        });
+
+        describe('with many templates', function () {
+            beforeEach(function () {
+                // Set available Templates
+                hasTemplateStub.withArgs('default').returns(true);
+                hasTemplateStub.withArgs('index').returns(true);
+                hasTemplateStub.withArgs('page').returns(true);
+                hasTemplateStub.withArgs('page-about').returns(true);
+                hasTemplateStub.withArgs('post').returns(true);
             });
 
             it('will return correct template for a post WITHOUT custom template', function () {
-                var view = templates.single('casper', {
+                var view = templates.single({
                     page: 0,
                     slug: 'test-post'
                 });
@@ -70,7 +124,8 @@ describe('templates', function () {
             });
 
             it('will return correct template for a post WITH custom template', function () {
-                var view = templates.single('casper', {
+                hasTemplateStub.withArgs('post-welcome-to-ghost').returns(true);
+                var view = templates.single({
                     page: 0,
                     slug: 'welcome-to-ghost'
                 });
@@ -79,7 +134,7 @@ describe('templates', function () {
             });
 
             it('will return correct template for a page WITHOUT custom template', function () {
-                var view = templates.single('casper', {
+                var view = templates.single({
                     page: 1,
                     slug: 'contact'
                 });
@@ -88,7 +143,7 @@ describe('templates', function () {
             });
 
             it('will return correct template for a page WITH custom template', function () {
-                var view = templates.single('casper', {
+                var view = templates.single({
                     page: 1,
                     slug: 'about'
                 });
@@ -98,29 +153,31 @@ describe('templates', function () {
         });
 
         it('will fall back to post even if no index.hbs', function () {
-            themeList.init({casper: {
-                assets: null,
-                'default.hbs': '/content/themes/casper/default.hbs'
-            }});
+            hasTemplateStub.returns(false);
 
-            var view = templates.single('casper', {page: 1});
+            var view = templates.single({page: 1});
             should.exist(view);
             view.should.eql('post');
         });
     });
 
     describe('channel', function () {
+        beforeEach(function () {
+            hasTemplateStub = sandbox.stub().returns(false);
+
+            getActiveThemeStub = sandbox.stub(themes, 'getActive').returns({
+                hasTemplate: hasTemplateStub
+            });
+        });
+
         describe('without tag templates', function () {
             beforeEach(function () {
-                themeList.init({casper: {
-                    assets: null,
-                    'default.hbs': '/content/themes/casper/default.hbs',
-                    'index.hbs': '/content/themes/casper/index.hbs'
-                }});
+                hasTemplateStub.withArgs('default').returns(true);
+                hasTemplateStub.withArgs('index').returns(true);
             });
 
             it('will return correct view for a tag', function () {
-                var view = templates.channel('casper', {name: 'tag', slugParam: 'development', slugTemplate: true});
+                var view = templates.channel({name: 'tag', slugParam: 'development', slugTemplate: true});
                 should.exist(view);
                 view.should.eql('index');
             });
@@ -128,35 +185,27 @@ describe('templates', function () {
 
         describe('with tag templates', function () {
             beforeEach(function () {
-                themeList.init({casper: {
-                    assets: null,
-                    'default.hbs': '/content/themes/casper/default.hbs',
-                    'index.hbs': '/content/themes/casper/index.hbs',
-                    'tag.hbs': '/content/themes/casper/tag.hbs',
-                    'tag-design.hbs': '/content/themes/casper/tag-about.hbs'
-                }});
+                hasTemplateStub.withArgs('default').returns(true);
+                hasTemplateStub.withArgs('index').returns(true);
+                hasTemplateStub.withArgs('tag').returns(true);
+                hasTemplateStub.withArgs('tag-design').returns(true);
             });
 
             it('will return correct view for a tag', function () {
-                var view = templates.channel('casper', {name: 'tag', slugParam: 'design', slugTemplate: true});
+                var view = templates.channel({name: 'tag', slugParam: 'design', slugTemplate: true});
                 should.exist(view);
                 view.should.eql('tag-design');
             });
 
             it('will return correct view for a tag', function () {
-                var view = templates.channel('casper', {name: 'tag', slugParam: 'development', slugTemplate: true});
+                var view = templates.channel({name: 'tag', slugParam: 'development', slugTemplate: true});
                 should.exist(view);
                 view.should.eql('tag');
             });
         });
 
         it('will fall back to index even if no index.hbs', function () {
-            themeList.init({casper: {
-                assets: null,
-                'default.hbs': '/content/themes/casper/default.hbs'
-            }});
-
-            var view = templates.channel('casper', {name: 'tag', slugParam: 'development', slugTemplate: true});
+            var view = templates.channel({name: 'tag', slugParam: 'development', slugTemplate: true});
             should.exist(view);
             view.should.eql('index');
         });

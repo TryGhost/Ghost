@@ -6,19 +6,16 @@ var should   = require('should'),
     // Stuff we are testing
     channels = require('../../../../server/controllers/frontend/channels'),
     api      = require('../../../../server/api'),
-    themeList = require('../../../../server/themes').list,
+    themes = require('../../../../server/themes'),
     sandbox = sinon.sandbox.create();
 
 describe('Channels', function () {
-    var channelRouter, req, res;
+    var channelRouter, req, res, hasTemplateStub;
 
     // Initialise 'req' with the bare minimum properties
     function setupRequest() {
         req = {
-            method: 'get',
-            app: {
-                get: sandbox.stub().returns('casper')
-            }
+            method: 'get'
         };
     }
 
@@ -98,13 +95,22 @@ describe('Channels', function () {
         }, done);
     }
 
+    // Ensure hasTemplate returns values
+    function setupActiveTheme() {
+        hasTemplateStub = sandbox.stub().returns(false);
+        hasTemplateStub.withArgs('index').returns(true);
+
+        sandbox.stub(themes, 'getActive').returns({
+            hasTemplate: hasTemplateStub
+        });
+    }
+
     before(function () {
         // We don't overwrite this, so only do it once
         channelRouter = channels.router();
     });
 
     afterEach(function () {
-        themeList.init();
         sandbox.restore();
     });
 
@@ -116,13 +122,6 @@ describe('Channels', function () {
             postAPIStub = sandbox.stub(api.posts, 'browse', function () {
                 return Promise.resolve({posts: [{}], meta: {pagination: {pages: 3}}});
             });
-        }
-
-        // Return basic paths for the activeTheme
-        function setupActiveTheme() {
-            themeList.init({casper: {
-                'index.hbs': '/content/themes/casper/index.hbs'
-            }});
         }
 
         beforeEach(function () {
@@ -141,10 +140,7 @@ describe('Channels', function () {
         });
 
         it('should render the first page of the index channel using home.hbs if available', function (done) {
-            themeList.init({casper: {
-                'index.hbs': '/content/themes/casper/index.hbs',
-                'home.hbs': '/content/themes/casper/home.hbs'
-            }});
+            hasTemplateStub.withArgs('home').returns(true);
 
             testChannelRender({url: '/'}, function (view) {
                 should.exist(view);
@@ -163,11 +159,6 @@ describe('Channels', function () {
             });
 
             it('should use index.hbs for second page even if home.hbs is available', function (done) {
-                themeList.init({casper: {
-                    'index.hbs': '/content/themes/casper/index.hbs',
-                    'home.hbs': '/content/themes/casper/home.hbs'
-                }});
-
                 testChannelRender({url: '/page/2/'}, function (view) {
                     should.exist(view);
                     view.should.eql('index');
@@ -253,13 +244,6 @@ describe('Channels', function () {
             });
         }
 
-        // Return basic paths for the activeTheme
-        function setupActiveTheme() {
-            themeList.init({casper: {
-                'index.hbs': '/content/themes/casper/index.hbs'
-            }});
-        }
-
         beforeEach(function () {
             // Setup Env for tests
             setupAPIStubs();
@@ -277,10 +261,7 @@ describe('Channels', function () {
         });
 
         it('should render the first page of the tag channel using tag.hbs by default', function (done) {
-            themeList.init({casper: {
-                'index.hbs': '/content/themes/casper/index.hbs',
-                'tag.hbs': '/content/themes/casper/tag.hbs'
-            }});
+            hasTemplateStub.withArgs('tag').returns(true);
 
             testChannelRender({url: '/tag/my-tag/'}, function (view) {
                 should.exist(view);
@@ -291,11 +272,8 @@ describe('Channels', function () {
         });
 
         it('should render the first page of the tag channel using tag-:slug.hbs if available', function (done) {
-            themeList.init({casper: {
-                'index.hbs': '/content/themes/casper/index.hbs',
-                'tag.hbs': '/content/themes/casper/tag.hbs',
-                'tag-my-tag.hbs': '/content/themes/casper/tag-my-tag.hbs'
-            }});
+            hasTemplateStub.withArgs('tag').returns(true);
+            hasTemplateStub.withArgs('tag-my-tag').returns(true);
 
             testChannelRender({url: '/tag/my-tag/'}, function (view) {
                 should.exist(view);
@@ -315,10 +293,7 @@ describe('Channels', function () {
             });
 
             it('should use tag.hbs to render the tag channel if available', function (done) {
-                themeList.init({casper: {
-                    'index.hbs': '/content/themes/casper/index.hbs',
-                    'tag.hbs': '/content/themes/casper/tag.hbs'
-                }});
+                hasTemplateStub.withArgs('tag').returns(true);
 
                 testChannelRender({url: '/tag/my-tag/page/2/'}, function (view) {
                     should.exist(view);
@@ -328,11 +303,8 @@ describe('Channels', function () {
             });
 
             it('should use tag-:slug.hbs to render the tag channel if available', function (done) {
-                themeList.init({casper: {
-                    'index.hbs': '/content/themes/casper/index.hbs',
-                    'tag.hbs': '/content/themes/casper/tag.hbs',
-                    'tag-my-tag.hbs': '/content/themes/casper/tag-my-tag.hbs'
-                }});
+                hasTemplateStub.withArgs('tag').returns(true);
+                hasTemplateStub.withArgs('tag-my-tag').returns(true);
 
                 testChannelRender({url: '/tag/my-tag/page/2/'}, function (view) {
                     should.exist(view);
