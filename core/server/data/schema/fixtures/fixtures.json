@@ -191,6 +191,11 @@
                     "object_type": "theme"
                 },
                 {
+                    "name": "Activate themes",
+                    "action_type": "activate",
+                    "object_type": "theme"
+                },
+                {
                     "name": "Upload themes",
                     "action_type": "add",
                     "object_type": "theme"
@@ -301,13 +306,13 @@
                     "object_type": "invite"
                 },
                 {
-                    "name": "Add invites",
-                    "action_type": "add",
+                    "name": "Edit invites",
+                    "action_type": "edit",
                     "object_type": "invite"
                 },
                 {
-                    "name": "Edit invites",
-                    "action_type": "edit",
+                    "name": "Add invites",
+                    "action_type": "add",
                     "object_type": "invite"
                 },
                 {

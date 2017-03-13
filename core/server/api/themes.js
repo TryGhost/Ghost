@@ -1,9 +1,6 @@
 // # Themes API
 // RESTful API for Themes
-var debug = require('debug')('ghost:api:themes'),
-    Promise = require('bluebird'),
-    _ = require('lodash'),
-    gscan = require('gscan'),
+var Promise = require('bluebird'),
     fs = require('fs-extra'),
     config = require('../config'),
     errors = require('../errors'),
@@ -13,7 +10,7 @@ var debug = require('debug')('ghost:api:themes'),
     apiUtils = require('./utils'),
     utils = require('./../utils'),
     i18n = require('../i18n'),
-    settings = require('./settings'),
+    settingsModel = require('../models/settings').Settings,
     settingsCache = require('../settings/cache'),
     themeUtils = require('../themes'),
     themeList = themeUtils.list,
@@ -26,10 +23,7 @@ var debug = require('debug')('ghost:api:themes'),
  */
 themes = {
     browse: function browse() {
-        debug('browsing');
-        var result = themeList.toAPI(themeList.getAll(), settingsCache.get('activeTheme'));
-        debug('got result');
-        return Promise.resolve({themes: result});
+        return Promise.resolve(themeUtils.toJSON());
     },
 
     activate: function activate(options) {
@@ -37,12 +31,33 @@ themes = {
             newSettings = [{
                 key: 'activeTheme',
                 value: themeName
-            }];
+            }],
+            loadedTheme,
+            checkedTheme;
 
-        return settings.edit({settings: newSettings}, options).then(function () {
-            var result = themeList.toAPI(themeList.getAll(), themeName);
-            return Promise.resolve({themes: result});
-        });
+        return apiUtils
+            .handlePermissions('themes', 'activate')(options)
+            .then(function activateTheme() {
+                loadedTheme = themeList.get(themeName);
+
+                if (!loadedTheme) {
+                    return Promise.reject(new errors.ValidationError({
+                        message: i18n.t('notices.data.validation.index.themeCannotBeActivated', {themeName: themeName}),
+                        context: 'activeTheme'
+                    }));
+                }
+
+                return themeUtils.validate.check(loadedTheme);
+            })
+            .then(function haveValidTheme(_checkedTheme) {
+                checkedTheme = _checkedTheme;
+                // We use the model, not the API here, as we don't want to trigger permissions
+                return settingsModel.edit(newSettings, options);
+            })
+            .then(function hasEditedSetting() {
+                // @TODO actually do things to activate the theme, other than just the setting?
+                return themeUtils.toJSON(themeName, checkedTheme);
+            });
     },
 
     upload: function upload(options) {
@@ -56,7 +71,8 @@ themes = {
                 path: options.path,
                 name: options.originalname,
                 shortName: storageAdapter.getSanitizedFileName(options.originalname.split('.zip')[0])
-            }, theme;
+            },
+            checkedTheme;
 
         // check if zip name is casper.zip
         if (zip.name === 'casper.zip') {
@@ -64,23 +80,12 @@ themes = {
         }
 
         return apiUtils.handlePermissions('themes', 'add')(options)
-            .then(function () {
-                return gscan.checkZip(zip, {keepExtractedDir: true});
+            .then(function validateTheme() {
+                return themeUtils.validate.check(zip, true);
             })
-            .then(function (_theme) {
-                theme = _theme;
-                theme = gscan.format(theme);
+            .then(function checkExists(_checkedTheme) {
+                checkedTheme = _checkedTheme;
 
-                if (!theme.results.error.length) {
-                    return;
-                }
-
-                throw new errors.ThemeValidationError({
-                    message: i18n.t('errors.api.themes.invalidTheme'),
-                    errorDetails: theme.results.error
-                });
-            })
-            .then(function () {
                 return storageAdapter.exists(utils.url.urlJoin(config.getContentPath('themes'), zip.shortName));
             })
             .then(function (themeExists) {
@@ -94,22 +99,20 @@ themes = {
                 // store extracted theme
                 return storageAdapter.save({
                     name: zip.shortName,
-                    path: theme.path
+                    path: checkedTheme.path
                 }, config.getContentPath('themes'));
             })
             .then(function () {
+                // Loads the theme from the filesystem
+                // Sets the theme on the themeList
                 return themeUtils.loadOne(zip.shortName);
             })
-            .then(function (themeObject) {
-                themeObject = themeList.toAPI(themeObject, settingsCache.get('activeTheme'));
-                // gscan theme structure !== ghost theme structure
-                if (theme.results.warning.length > 0) {
-                    themeObject.warnings = _.cloneDeep(theme.results.warning);
-                }
-
-                return {themes: themeObject};
+            .then(function () {
+                // @TODO: unify the name across gscan and Ghost!
+                return themeUtils.toJSON(zip.shortName, checkedTheme);
             })
             .finally(function () {
+                // @TODO we should probably do this as part of saving the theme
                 // remove zip upload from multer
                 // happens in background
                 Promise.promisify(fs.removeSync)(zip.path)
@@ -117,10 +120,11 @@ themes = {
                         logging.error(new errors.GhostError({err: err}));
                     });
 
+                // @TODO we should probably do this as part of saving the theme
                 // remove extracted dir from gscan
                 // happens in background
-                if (theme) {
-                    Promise.promisify(fs.removeSync)(theme.path)
+                if (checkedTheme) {
+                    Promise.promisify(fs.removeSync)(checkedTheme.path)
                         .catch(function (err) {
                             logging.error(new errors.GhostError({err: err}));
                         });
@@ -157,6 +161,10 @@ themes = {
             .then(function () {
                 if (name === 'casper') {
                     throw new errors.ValidationError({message: i18n.t('errors.api.themes.destroyCasper')});
+                }
+
+                if (name === settingsCache.get('activeTheme')) {
+                    throw new errors.ValidationError({message: i18n.t('errors.api.themes.destroyActive')});
                 }
 
                 theme = themeList.get(name);
