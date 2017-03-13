@@ -346,7 +346,7 @@ describe('OAuth', function () {
 
             sandbox.stub(passport, 'authenticate', function (name, options, onSuccess) {
                 return function () {
-                    onSuccess(new Error('validation error'));
+                    onSuccess(new errors.UnauthorizedError());
                 };
             });
 

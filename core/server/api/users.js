@@ -135,7 +135,16 @@ users = {
             }
 
             return canThis(options.context).edit.user(options.id).then(function () {
-                // if roles aren't in the payload, proceed with the edit
+                // CASE: can't edit my own status to inactive or locked
+                if (options.id === options.context.user) {
+                    if (dataProvider.User.inactiveStates.indexOf(options.data.users[0].status) !== -1) {
+                        return Promise.reject(new errors.NoPermissionError({
+                            message: i18n.t('errors.api.users.cannotChangeStatus')
+                        }));
+                    }
+                }
+
+                // CASE: if roles aren't in the payload, proceed with the edit
                 if (!(options.data.users[0].roles && options.data.users[0].roles[0])) {
                     return options;
                 }
@@ -151,14 +160,18 @@ users = {
                     var contextRoleId = contextUser.related('roles').toJSON(options)[0].id;
 
                     if (roleId !== contextRoleId && editedUserId === contextUser.id) {
-                        return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.api.users.cannotChangeOwnRole')}));
+                        return Promise.reject(new errors.NoPermissionError({
+                            message: i18n.t('errors.api.users.cannotChangeOwnRole')
+                        }));
                     }
 
                     return dataProvider.User.findOne({role: 'Owner'}).then(function (owner) {
                         if (contextUser.id !== owner.id) {
                             if (editedUserId === owner.id) {
                                 if (owner.related('roles').at(0).id !== roleId) {
-                                    return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.api.users.cannotChangeOwnersRole')}));
+                                    return Promise.reject(new errors.NoPermissionError({
+                                        message: i18n.t('errors.api.users.cannotChangeOwnersRole')
+                                    }));
                                 }
                             } else if (roleId !== contextRoleId) {
                                 return canThis(options.context).assign.role(role).then(function () {
