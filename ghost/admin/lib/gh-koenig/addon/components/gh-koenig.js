@@ -7,7 +7,6 @@ import {MOBILEDOC_VERSION} from 'mobiledoc-kit/renderers/mobiledoc';
 import createCardFactory from '../lib/card-factory';
 import defaultCommands from '../options/default-commands';
 import editorCards  from '../cards/index';
-import $ from 'jquery';
 // import { VALID_MARKUP_SECTION_TAGNAMES } from 'mobiledoc-kit/models/markup-section'; //the block elements supported by mobile-doc
 
 export const BLANK_DOC = {
@@ -118,30 +117,6 @@ export default Component.extend({
 
         this.editor.cursorDidChange(() => this.cursorMoved());
 
-        // hack to track key up to focus back on the title when the up key is pressed
-        this.editor.element.addEventListener('keydown', (event) => {
-            if (event.keyCode === 38) {
-                let range = window.getSelection().getRangeAt(0); // get the actual range within the DOM.
-                let cursorPositionOnScreen = range.getBoundingClientRect();
-                let topOfEditor = this.editor.element.getBoundingClientRect().top;
-                if (cursorPositionOnScreen.top < topOfEditor + 33) {
-                    let $title = $(this.titleQuery);
-
-                    // let offset = findCursorPositionFromPixel($title[0].firstChild,  cursorPositionOnScreen.left);
-
-                    // let newRange = document.createRange();
-                    // newRange.collapse(true);
-                    // newRange.setStart($title[0].firstChild, offset);
-                    // newRange.setEnd($title[0].firstChild, offset);
-                    // updateCursor(newRange);
-
-                    $title[0].focus();
-
-                    return false;
-                }
-            }
-        });
-
     },
 
     // drag and drop images onto the editor
@@ -174,33 +149,3 @@ export default Component.extend({
     }
 
 });
-
-// // code for moving the cursor into the correct position of the title: (is buggy)
-
-// // find the cursor position based on a pixel offset of an element.
-// // used to move the cursor vertically into the title.
-// function findCursorPositionFromPixel(el, horizontal_offset) {
-//     let len = el.textContent.length;
-//     let range = document.createRange();
-//     for(let i = len -1; i > -1; i--) {
-//         range.setStart(el, i);
-//         range.setEnd(el, i + 1);
-//         let rect = range.getBoundingClientRect();
-//         if (rect.top === rect.bottom) {
-//             continue;
-//         }
-//         if(rect.left <= horizontal_offset && rect.right >= horizontal_offset) {
-//             return  i + (horizontal_offset >= (rect.left + rect.right) / 2 ? 1 : 0);    // if the horizontal_offset is on the left hand side of the
-//                                                                                         // character then return `i`, if it's on the right return `i + 1`
-//         }
-//     }
-
-//     return el.length;
-// }
-
-// // update the cursor position.
-// function updateCursor(range) {
-//     let selection = window.getSelection();
-//      selection.removeAllRanges();
-//     selection.addRange(range);
-// }
