@@ -22,6 +22,7 @@ var _ = require('lodash'),
     // Current instance of ActiveTheme
     currentActiveTheme;
 
+// @TODO: will clean this code up later, honest! (and add tests)
 function tempConfigHandler(packageJson) {
     var config = _.cloneDeep(defaultConfig),
         allowedKeys = ['posts_per_page'];
