@@ -317,6 +317,7 @@ var overrides      = require('./core/server/overrides'),
                 options: {
                     npmInstall: false
                 },
+
                 init: {
                     options: {
                         npmInstall: true
@@ -336,14 +337,6 @@ var overrides      = require('./core/server/overrides'),
 
                 watch: {
                     'core/client': ['bgShell:ember', 'watch']
-                },
-
-                lint: {
-                    'core/client': 'lint'
-                },
-
-                test: {
-                    'core/client': 'shell:test'
                 }
             }
         };
@@ -470,7 +463,7 @@ var overrides      = require('./core/server/overrides'),
         // `grunt validate` is called by `npm test` and is used by Travis.
         grunt.registerTask('validate', 'Run tests and lint code', function () {
             if (process.env.TEST_SUITE === 'server') {
-                grunt.task.run(['stubClientFiles', 'test-server']);
+                grunt.task.run(['stubClientFiles', 'test-all']);
             } else if (process.env.TEST_SUITE === 'lint') {
                 grunt.task.run(['lint']);
             } else {
@@ -486,27 +479,14 @@ var overrides      = require('./core/server/overrides'),
         //
         // `grunt test-all` will lint and test your pre-built local Ghost codebase.
         //
-        // `grunt test-all` runs all 6 test suites. See the individual sub tasks below for
-        // details of each of the test suites.
-        //
-        grunt.registerTask('test-all', 'Run tests for both server and client',
-            ['test-server', 'test-client']);
-
-        grunt.registerTask('test-server', 'Run server tests',
+        grunt.registerTask('test-all', 'Run all server tests',
             ['test-routes', 'test-module', 'test-unit', 'test-integration']);
-
-        grunt.registerTask('test-client', 'Run client tests',
-            ['subgrunt:test']);
 
         // ### Lint
         //
         // `grunt lint` will run the linter and the code style checker so you can make sure your code is pretty
         grunt.registerTask('lint', 'Run the code style checks and linter for server',
             ['jshint', 'jscs']
-        );
-
-        grunt.registerTask('lint-all', 'Run the code style checks and linter for server and client',
-            ['lint', 'subgrunt:lint']
         );
 
         // ### test-setup *(utility)(
