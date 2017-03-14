@@ -42,6 +42,26 @@
                     confirm=(action "deleteTheme")
                     modifier="action wide"}}
             {{/if}}
+
+            {{#if showThemeWarningsModal}}
+                {{gh-fullscreen-modal "theme-warnings"
+                    model=(hash
+                        title="Theme activated with warnings"
+                        warnings=themeWarnings
+                    )
+                    close=(action "hideThemeWarningsModal")
+                    modifier="action wide"}}
+            {{/if}}
+
+            {{#if showThemeErrorsModal}}
+                {{gh-fullscreen-modal "theme-warnings"
+                    model=(hash
+                        title="Theme activation failed"
+                        warnings=themeWarnings
+                    )
+                    close=(action "hideThemeWarningsModal")
+                    modifier="action wide"}}
+            {{/if}}
         </div>
 
     </section>

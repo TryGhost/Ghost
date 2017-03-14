@@ -20,9 +20,7 @@ export default function mockThemes(server) {
 
         theme = themes.create(theme);
 
-        return {
-            themes: [theme]
-        };
+        return {themes: [theme]};
     });
 
     server.del('/themes/:theme/', function ({themes}, {params}) {
@@ -33,8 +31,8 @@ export default function mockThemes(server) {
 
     server.put('/themes/:theme/activate/', function ({themes}, {params}) {
         themes.all().update('active', false);
-        themes.findBy({name: params.theme}).update({active: true});
+        let theme = themes.findBy({name: params.theme}).update({active: true});
 
-        return themes.all();
+        return {themes: [theme]};
     });
 }
