@@ -24,7 +24,7 @@ export default Component.extend({
     didRender() {
         let $this = this.$();
         let editor = this.get('editor');
-        let $editor = $('.gh-editor-container');
+        let $editor = $(this.get('containerSelector'));
 
         if (!editor.range || !editor.range.head.section || !editor.range.head.section.isBlank
             || editor.range.head.section.renderNode._element.tagName.toLowerCase() !== 'p') {

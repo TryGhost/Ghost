@@ -56,10 +56,12 @@ export default function (editor, toolbar) {
         },
         {
             name: 'p',
-            label: 'Paragraph',
-            icon: 'paragraph.svg',
+            label: 'Text',
+            icon: 'text.svg',
             selected: false,
             type: 'block',
+            order: 0,
+            cardMenu: true,
             onClick: (editor) => {
                 editor.run((postEditor) => {
                     postEditor.toggleSection('p');
@@ -88,10 +90,12 @@ export default function (editor, toolbar) {
         },
         {
             name: 'ul',
-            label: 'List Unordered',
-            icon: 'list-bullets.svg',
+            label: 'Bullet List',
+            icon: 'list-bullet.svg',
             selected: false,
             type: 'block',
+            order: 5,
+            cardMenu: true,
             onClick: (editor) => {
                 editor.run((postEditor) => {
                     postEditor.toggleSection('ul');
@@ -103,10 +107,12 @@ export default function (editor, toolbar) {
         },
         {
             name: 'ol',
-            label: 'List Ordered',
+            label: 'Number List',
             icon: 'list-number.svg',
             selected: false,
             type: 'block',
+            order: 6,
+            cardMenu: true,
             onClick: (editor) => {
                 editor.run((postEditor) => {
                     postEditor.toggleSection('ol');
@@ -129,8 +135,9 @@ export default function (editor, toolbar) {
                     postEditor.toggleMarkup('strong');
                 });
             },
-            checkElements(elements) {
-                set(this, 'selected', elements.filter((element) => element.tagName === 'strong').length > 0);
+            checkElements(/* elements */) {
+                set(this, 'selected', true);
+                // set(this, 'selected', elements.filter((element) => element.tagName === 'strong').length > 0);
             }
         },
         {
@@ -186,12 +193,14 @@ export default function (editor, toolbar) {
             label: 'Image',
             selected: false,
             type: 'card',
-            icon: 'file-picture-add.svg',
+            icon: 'photos.svg',
             visibility: 'primary',
+            order: 2,
+            cardMenu: true,
             onClick: (editor) => {
                 editor.run((postEditor) => {
                     let card = postEditor.builder.createCardSection('image-card', {pos: 'top'});
-                    postEditor.replaceSection(editor.range.headSection, card);
+                    postEditor.insertSection(card);
 
                 });
             },
@@ -201,15 +210,17 @@ export default function (editor, toolbar) {
         },
         {
             name: 'html',
-            label: 'Embed HTML',
+            label: 'Embed',
             selected: false,
             type: 'card',
-            icon: 'html-five.svg',
+            icon: 'brackets.svg',
             visibility: 'primary',
-            onClick: (editor) => {
+            order: 3,
+            cardMenu: true,
+            onClick: (editor, section) => {
                 editor.run((postEditor) => {
-                    let card = postEditor.builder.createCardSection('html-card', {pos: 'top'});
-                    postEditor.replaceSection(editor.range.headSection, card);
+                    let card = postEditor.builder.createCardSection('html-card', {pos: 'top', html: editor.range.headSection.text});
+                    postEditor.replaceSection(section || editor.range.headSection, card);
                 });
             },
             checkElements() {
@@ -217,16 +228,36 @@ export default function (editor, toolbar) {
             }
         },
         {
+            name: 'hr',
+            label: 'Divider',
+            selected: false,
+            type: 'card',
+            icon: 'line.svg',
+            visibility: 'primary',
+            order: 4,
+            cardMenu: true,
+            onClick: (editor) => {
+                editor.run((postEditor) => {
+                    let card = postEditor.builder.createCardSection('hr-card', {pos: 'top'});
+                    postEditor.insertSection(card);
+                });
+            },
+            checkElements() {
+            }
+        },
+        {
             name: 'md',
-            label: 'Embed Markdown',
+            label: 'Markdown',
             selected: false,
             type: 'card',
             visibility: 'primary',
-            icon: 'file-code-1.svg',
-            onClick: (editor) => {
+            icon: 'markdown.svg',
+            order: 1,
+            cardMenu: true,
+            onClick: (editor, section) => {
                 editor.run((postEditor) => {
-                    let card = postEditor.builder.createCardSection('markdown-card', {pos: 'top'});
-                    postEditor.replaceSection(editor.range.headSection, card);
+                    let card = postEditor.builder.createCardSection('markdown-card', {pos: 'top', markdown: editor.range.headSection.text});
+                    postEditor.replaceSection(section || editor.range.headSection, card);
                 });
             },
             checkElements() {

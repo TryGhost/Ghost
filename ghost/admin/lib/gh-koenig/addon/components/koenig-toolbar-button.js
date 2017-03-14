@@ -18,9 +18,6 @@ export default Component.extend({
     // },
     //
     willRender() {
-        // TODO: remove console.log
-        // eslint-disable-next-line no-console
-
         this.set(`gh-toolbar-btn-${this.tool.class}`, true);
         if (this.tool.selected) {
             this.set('selected', true);

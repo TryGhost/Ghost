@@ -14,7 +14,24 @@
     text-transform: none;
     font-size: 1.4rem;
     font-weight: normal;
+    position: absolute;
+    z-index: 9999999; /* have to compete with codemirror */
 }
+
+#gh-cardmenu-button {
+    position:absolute;
+    width: 40px;
+    height: 40px;
+    background-color:pink;
+    font-size:40px;
+    line-height: 40px;
+    color: powderblue;
+    font-family: "Comic Sans MS", cursive, sans-serif;
+}
+#gh-cardmenu-button:hover {
+    background-color:red;
+    color: yellow;
+} 
 
 .gh-cardmenu-search {
     position: relative;
@@ -74,11 +91,11 @@
     font-weight: 200;
 }
 
-.gh-cardmenu-card:hover {
+.gh-cardmenu-card:hover, .gh-cardmenu-card.selected {
     cursor: pointer;
     background: color(var(--lightgrey) l(+3%) s(-10%));
 }
-.gh-cardmenu-card:hover .gh-cardmenu-label {
+.gh-cardmenu-card:hover .gh-cardmenu-label, .gh-cardmenu-card.selected .gh-cardmenu-label {
     color: var(--darkgrey);
     font-weight: 300;
 }

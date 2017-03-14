@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import $ from 'jquery';
 
 // polls the editor until it's started.
 export function editorRendered() {
@@ -41,5 +42,25 @@ export function testInput(input, output, expect) {
             }
         });
         inputText(window.editor, input);
+    });
+}
+
+export function waitForRender(selector) {
+    let isRejected = false;
+    return Ember.Test.promise(function (resolve, reject) { // eslint-disable-line
+        let rejectTimeout = window.setTimeout(() => {
+            reject('element didn\'t render');
+            isRejected = true;
+        }, 1500);
+
+        function checkIsRendered() {
+            if ($(selector)[0] && !isRejected) {
+                window.clearTimeout(rejectTimeout);
+                return resolve();
+            } else {
+                window.requestAnimationFrame(checkIsRendered);
+            }
+        }
+        checkIsRendered();
     });
 }
