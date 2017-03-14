@@ -218,10 +218,10 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {filter: 'tags:none'}, fn: fn, inverse: inverse}
             ).then(function () {
-                fn.called.should.be.false();
-                inverse.calledOnce.should.be.true();
-                inverse.firstCall.args[1].should.be.an.Object().and.have.property('data');
-                inverse.firstCall.args[1].data.should.be.an.Object().and.not.have.property('error');
+                fn.calledOnce.should.be.true();
+                fn.firstCall.args[0].should.be.an.Object().with.property('posts');
+                fn.firstCall.args[0].posts.should.have.lengthOf(0);
+                inverse.called.should.be.false();
 
                 done();
             }).catch(done);
