@@ -19,7 +19,9 @@ describe('Theme Handler', function () {
         blogApp = express();
         req.app = blogApp;
 
-        getActiveThemeStub = sandbox.stub(themeUtils, 'getActive').returns({});
+        getActiveThemeStub = sandbox.stub(themeUtils, 'getActive').returns({
+            config: sandbox.stub()
+        });
     });
 
     afterEach(function () {

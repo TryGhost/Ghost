@@ -3,7 +3,7 @@ var should   = require('should'),
     Promise  = require('bluebird'),
     // Stuff we are testing
     api      = require('../../../../server/api'),
-    settingsCache = require('../../../../server/settings/cache'),
+    themes = require('../../../../server/themes'),
     fetchData = require('../../../../server/controllers/frontend/fetch-data'),
     configUtils = require('../../../utils/configUtils'),
     sandbox = sinon.sandbox.create();
@@ -11,7 +11,8 @@ var should   = require('should'),
 describe('fetchData', function () {
     var apiPostsStub,
         apiTagStub,
-        apiUserStub;
+        apiUserStub,
+        themeConfigStub;
 
     beforeEach(function () {
         apiPostsStub = sandbox.stub(api.posts, 'browse')
@@ -19,6 +20,12 @@ describe('fetchData', function () {
 
         apiTagStub = sandbox.stub(api.tags, 'read').returns(new Promise.resolve({tags: []}));
         apiUserStub = sandbox.stub(api.users, 'read').returns(new Promise.resolve({users: []}));
+
+        themeConfigStub = sandbox.stub().withArgs('posts_per_page').returns(10);
+
+        sandbox.stub(themes, 'getActive').returns({
+            config: themeConfigStub
+        });
     });
 
     afterEach(function () {
@@ -27,10 +34,6 @@ describe('fetchData', function () {
     });
 
     describe('channel config', function () {
-        beforeEach(function () {
-            sandbox.stub(settingsCache, 'get').returns(10);
-        });
-
         it('should handle no post options', function (done) {
             fetchData({}).then(function (result) {
                 should.exist(result);
@@ -154,10 +157,6 @@ describe('fetchData', function () {
     });
 
     describe('valid postsPerPage', function () {
-        beforeEach(function () {
-            sandbox.stub(settingsCache, 'get').returns(10);
-        });
-
         it('Adds limit & includes to options by default', function (done) {
             fetchData({}).then(function () {
                 apiPostsStub.calledOnce.should.be.true();
@@ -171,7 +170,7 @@ describe('fetchData', function () {
 
     describe('invalid postsPerPage', function () {
         beforeEach(function () {
-            sandbox.stub(settingsCache, 'get').returns(-1);
+            themeConfigStub.withArgs('posts_per_page').returns(-1);
         });
 
         it('Will not add limit if postsPerPage is not valid', function (done) {

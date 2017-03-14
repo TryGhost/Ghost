@@ -14,24 +14,28 @@ themeHandler = {
     configHbsForContext: function configHbsForContext(req, res, next) {
         // Static information, same for every request unless the settings change
         // @TODO: bind this once and then update based on events?
-        var themeData = {
+        var blogData = {
                 title: settingsCache.get('title'),
                 description: settingsCache.get('description'),
                 facebook: settingsCache.get('facebook'),
                 twitter: settingsCache.get('twitter'),
                 timezone: settingsCache.get('activeTimezone'),
                 navigation: settingsCache.get('navigation'),
-                posts_per_page: settingsCache.get('postsPerPage'),
                 icon: settingsCache.get('icon'),
                 cover: settingsCache.get('cover'),
                 logo: settingsCache.get('logo'),
                 amp: settingsCache.get('amp')
             },
-            labsData = _.cloneDeep(settingsCache.get('labs'));
+            labsData = _.cloneDeep(settingsCache.get('labs')),
+            themeData = {};
+
+        if (themeUtils.getActive()) {
+            themeData.posts_per_page = themeUtils.getActive().config('posts_per_page');
+        }
 
         // Request-specific information
         // These things are super dependent on the request, so they need to be in middleware
-        themeData.url = utils.url.urlFor('home', {secure: req.secure}, true);
+        blogData.url = utils.url.urlFor('home', {secure: req.secure}, true);
 
         // Pass 'secure' flag to the view engine
         // so that templates can choose to render https or http 'url', see url utility
@@ -40,8 +44,9 @@ themeHandler = {
         // @TODO: only do this if something changed?
         hbs.updateTemplateOptions({
             data: {
-                blog: themeData,
-                labs: labsData
+                blog: blogData,
+                labs: labsData,
+                config: themeData
             }
         });
 
