@@ -105,7 +105,7 @@ var overrides      = require('./core/server/overrides'),
 
                 server: [
                     '*.js',
-                    '!config*.js', // note: i added this, do we want this linted?
+                    '!config.*.json', // note: i added this, do we want this linted?
                     'core/*.js',
                     'core/server/**/*.js',
                     'core/test/**/*.js',
@@ -123,7 +123,7 @@ var overrides      = require('./core/server/overrides'),
                     files: {
                         src: [
                             '*.js',
-                            '!config*.js', // note: i added this, do we want this linted?
+                            '!config.*.json', // note: i added this, do we want this linted?
                             'core/*.js',
                             'core/server/**/*.js',
                             'core/test/**/*.js',
@@ -508,7 +508,7 @@ var overrides      = require('./core/server/overrides'),
         // ### Integration tests *(sub task)*
         // `grunt test-integration` will run just the integration tests
         //
-        // Provided you already have a `config.js` file, you can run just the model integration tests by running:
+        // Provided you already have a `config.*.json` file, you can run just the model integration tests by running:
         //
         // `grunt test:integration/model`
         //
