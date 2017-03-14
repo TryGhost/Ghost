@@ -24,15 +24,6 @@ module.exports = function(grunt) {
             }
         },
 
-        // ### grunt-bg-shell
-        // Used to run ember-cli watch in the background
-        bgShell: {
-            ember: {
-                cmd: 'npm run build -- --watch',
-                bg: true
-            }
-        },
-
         watch: {
             csscomb: {
                 files: ['app/styles/**/*.css'],
@@ -56,6 +47,8 @@ module.exports = function(grunt) {
                         return 'npm run build -- --environment=production --silent';
                     case 'dev':
                         return 'npm run build';
+                     case 'watch':
+                        return 'npm run build -- --watch';
                     }
                 },
                 options: {
