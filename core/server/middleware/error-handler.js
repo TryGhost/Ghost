@@ -1,9 +1,9 @@
 var _ = require('lodash'),
-    path = require('path'),
     hbs = require('express-hbs'),
     config = require('../config'),
     errors = require('../errors'),
     i18n = require('../i18n'),
+    templates = require('../controllers/frontend/templates'),
     _private = {},
     errorHandler = {};
 
@@ -99,9 +99,7 @@ _private.JSONErrorRenderer = function JSONErrorRenderer(err, req, res, /*jshint 
 };
 
 _private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, /*jshint unused:false */ next) {
-    // @TODO re-implement custom error templates see #8079
-    var defaultTemplate = path.resolve(config.get('paths').adminViews, 'user-error.hbs'),
-        templateData = {
+    var templateData = {
             message: err.message,
             code: err.statusCode
         };
@@ -116,7 +114,7 @@ _private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, /*jshint un
         req.app.engine('hbs', hbs.express3());
     }
 
-    res.render(defaultTemplate, templateData, function renderResponse(err, html) {
+    res.render(templates.error(err.statusCode), templateData, function renderResponse(err, html) {
         if (!err) {
             return res.send(html);
         }

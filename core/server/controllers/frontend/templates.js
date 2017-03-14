@@ -2,8 +2,34 @@
 //
 // Figure out which template should be used to render a request
 // based on the templates which are allowed, and what is available in the theme
+// TODO: consider where this should live as it deals with channels, singles, and errors
 var _ = require('lodash'),
+    path = require('path'),
+    config = require('../../config'),
     themes = require('../../themes');
+
+/**
+ * ## Get Error Template Hierarchy
+ *
+ * Fetch the ordered list of templates that can be used to render this error statusCode.
+ *
+ * The default is the
+ *
+ * @param {integer} statusCode
+ * @returns {String[]}
+ */
+function getErrorTemplateHierarchy(statusCode) {
+    var errorCode = _.toString(statusCode),
+        templateList = ['error'];
+
+    // Add error class template: E.g. error-4xx.hbs or error-5xx.hbs
+    templateList.unshift('error-' + errorCode[0] + 'xx');
+
+    // Add statusCode specific template: E.g. error-404.hbs
+    templateList.unshift('error-' + errorCode);
+
+    return templateList;
+}
 
 /**
  * ## Get Channel Template Hierarchy
@@ -103,8 +129,15 @@ function getTemplateForChannel(channelOpts) {
     return pickTemplate(templateList, fallback);
 }
 
+function getTemplateForError(statusCode) {
+    var templateList = getErrorTemplateHierarchy(statusCode),
+        fallback = path.resolve(config.get('paths').defaultViews, 'error.hbs');
+    return pickTemplate(templateList, fallback);
+}
+
 module.exports = {
     channel: getTemplateForChannel,
     single: getTemplateForSingle,
+    error: getTemplateForError,
     pickTemplate: pickTemplate
 };

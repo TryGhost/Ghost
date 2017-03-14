@@ -77,8 +77,8 @@ function getAjaxHelper(clientId, clientSecret) {
 }
 
 function ghost_head(options) {
-    // if error page do nothing
-    if (this.statusCode >= 400) {
+    // if server error page do nothing
+    if (this.statusCode >= 500) {
         return;
     }
 
