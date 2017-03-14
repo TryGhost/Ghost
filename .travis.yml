@@ -22,7 +22,6 @@ env:
   global:
     - GITHUB_OAUTH_KEY=003a44d58f12089d0c0261338298af3813330949
     - GHOST_NODE_VERSION_CHECK=false
-    - TEST_SUITE=server
   matrix:
     - DB=sqlite3 NODE_ENV=testing
     - DB=mysql NODE_ENV=testing-mysql
