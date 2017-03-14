@@ -489,7 +489,6 @@ body > .ember-view:not(.default-liquid-destination) {
     margin: 0;
     padding: 0;
     text-overflow: ellipsis;
-    white-space: nowrap;
     font-size: 2rem;
     line-height: 1.2em;
     font-weight: 400;

@@ -15,6 +15,21 @@ export function editorRendered() {
     });
 }
 
+// polls the title until it's started.
+export function titleRendered() {
+    return Ember.Test.promise(function (resolve) { // eslint-disable-line
+        function checkTitle() {
+            let title = $('#gh-title div');
+            if (title[0]) {
+                return resolve();
+            } else {
+                window.requestAnimationFrame(checkTitle);
+            }
+        }
+        checkTitle();
+    });
+}
+
 // simulates text inputs into the editor, unfortunately the helper Ember helper functions
 // don't work on content editable so we have to manipuate the text input event manager
 // in mobiledoc-kit directly. This is a private API.
