@@ -46,7 +46,7 @@ var overrides      = require('./core/server/overrides'),
             pkg: grunt.file.readJSON('package.json'),
 
             clientFiles: [
-                'server/views/default.hbs',
+                'server/admin/views/default.hbs',
                 'built/assets/ghost.js',
                 'built/assets/ghost.css',
                 'built/assets/vendor.js',
@@ -465,7 +465,7 @@ var overrides      = require('./core/server/overrides'),
                 return grunt.task.run(['lint']);
             }
 
-            grunt.task.run(['stubClientFiles', 'test-all']);
+            grunt.task.run(['test-all']);
         });
 
         // ### Test-All
@@ -486,7 +486,7 @@ var overrides      = require('./core/server/overrides'),
         // ### test-setup *(utility)(
         // `grunt test-setup` will run all the setup tasks required for running tests
         grunt.registerTask('test-setup', 'Setup ready to run tests',
-            ['knex-migrator', 'clean:test', 'setTestEnv']
+            ['knex-migrator', 'clean:test', 'setTestEnv', 'stubClientFiles']
         );
 
         // ### Unit Tests *(sub task)*

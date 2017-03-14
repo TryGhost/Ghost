@@ -82,25 +82,25 @@ describe('Admin Routing', function () {
         });
 
         describe('Legacy Redirects', function () {
-            it('should redirect /logout/ to /ghost/signout/', function (done) {
+            it('should redirect /logout/ to /ghost/#/signout/', function (done) {
                 request.get('/logout/')
-                    .expect('Location', '/ghost/signout/')
+                    .expect('Location', '/ghost/#/signout/')
                     .expect('Cache-Control', testUtils.cacheRules.year)
                     .expect(301)
                     .end(doEndNoAuth(done));
             });
 
-            it('should redirect /signout/ to /ghost/signout/', function (done) {
+            it('should redirect /signout/ to /ghost/#/signout/', function (done) {
                 request.get('/signout/')
-                    .expect('Location', '/ghost/signout/')
+                    .expect('Location', '/ghost/#/signout/')
                     .expect('Cache-Control', testUtils.cacheRules.year)
                     .expect(301)
                     .end(doEndNoAuth(done));
             });
 
-            it('should redirect /signup/ to /ghost/signup/', function (done) {
+            it('should redirect /signup/ to /ghost/#/signup/', function (done) {
                 request.get('/signup/')
-                    .expect('Location', '/ghost/signup/')
+                    .expect('Location', '/ghost/#/signup/')
                     .expect('Cache-Control', testUtils.cacheRules.year)
                     .expect(301)
                     .end(doEndNoAuth(done));
@@ -128,32 +128,6 @@ describe('Admin Routing', function () {
                     .expect('Location', '/ghost/')
                     .expect(301)
                     .end(doEndNoAuth(done));
-            });
-        });
-
-        describe('Ghost Admin Setup', function () {
-            it('should redirect from /ghost/ to /ghost/setup/ when no user/not installed yet', function (done) {
-                request.get('/ghost/')
-                    .expect('Location', /ghost\/setup/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(302)
-                    .end(doEnd(done));
-            });
-
-            it('should redirect from /ghost/signin/ to /ghost/setup/ when no user', function (done) {
-                request.get('/ghost/signin/')
-                    .expect('Location', /ghost\/setup/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(302)
-                    .end(doEnd(done));
-            });
-
-            it('should respond with html for /ghost/setup/', function (done) {
-                request.get('/ghost/setup/')
-                    .expect('Content-Type', /html/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(200)
-                    .end(doEnd(done));
             });
         });
     });
@@ -194,7 +168,7 @@ describe('Admin Routing', function () {
             });
 
             it('should allow admin access over HTTPS', function (done) {
-                request.get('/ghost/setup/')
+                request.get('/ghost/')
                     .set('X-Forwarded-Proto', 'https')
                     .expect(200)
                     .end(doEnd(done));
