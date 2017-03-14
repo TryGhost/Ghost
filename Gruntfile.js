@@ -455,24 +455,15 @@ var overrides      = require('./core/server/overrides'),
         // ### Validate
         // **Main testing task**
         //
-        // `grunt validate` will build, lint and test your local Ghost codebase.
-        //
-        // `grunt validate` is one of the most important and useful grunt tasks that we have available to use. It
-        // manages the build of your environment and then calls `grunt test`
-        //
+        // `grunt validate` will either run all tests or run linting
         // `grunt validate` is called by `npm test` and is used by Travis.
-        grunt.registerTask('validate', 'Run tests and lint code', function () {
-            if (process.env.TEST_SUITE === 'server') {
-                grunt.task.run(['stubClientFiles', 'test-all']);
-            } else if (process.env.TEST_SUITE === 'lint') {
-                grunt.task.run(['lint']);
-            } else {
-                grunt.task.run(['validate-all']);
+        grunt.registerTask('validate', 'Run tests or lint code', function () {
+            if (process.env.TEST_SUITE === 'lint') {
+                return grunt.task.run(['lint']);
             }
-        });
 
-        grunt.registerTask('validate-all', 'Lint code and run all tests',
-            ['init', 'lint', 'test-all']);
+            grunt.task.run(['stubClientFiles', 'test-all']);
+        });
 
         // ### Test-All
         // **Main testing task**
