@@ -130,32 +130,6 @@ describe('Admin Routing', function () {
                     .end(doEndNoAuth(done));
             });
         });
-
-        describe('Ghost Admin Setup', function () {
-            it('should redirect from /ghost/ to /ghost/setup/ when no user/not installed yet', function (done) {
-                request.get('/ghost/')
-                    .expect('Location', /ghost\/setup/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(302)
-                    .end(doEnd(done));
-            });
-
-            it('should redirect from /ghost/signin/ to /ghost/setup/ when no user', function (done) {
-                request.get('/ghost/signin/')
-                    .expect('Location', /ghost\/setup/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(302)
-                    .end(doEnd(done));
-            });
-
-            it('should respond with html for /ghost/setup/', function (done) {
-                request.get('/ghost/setup/')
-                    .expect('Content-Type', /html/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(200)
-                    .end(doEnd(done));
-            });
-        });
     });
 
     describe('FORK', function () {
