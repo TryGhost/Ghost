@@ -120,11 +120,6 @@ get = function get(resource, options) {
     return apiMethod(apiOptions).then(function success(result) {
         var blockParams;
 
-        // If no result is found, call the inverse or `{{else}}` function
-        if (_.isEmpty(result[resource])) {
-            return options.inverse(self, {data: data});
-        }
-
         // block params allows the theme developer to name the data using something like
         // `{{#get "posts" as |result pageInfo|}}`
         blockParams = [result[resource]];
