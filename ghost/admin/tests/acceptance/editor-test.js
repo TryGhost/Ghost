@@ -506,5 +506,31 @@ describe('Acceptance: Editor', function() {
             });
         });
 
+        it('shows author list and allows switching of author in PSM', function () {
+            server.create('post', {authorId: 1});
+            let role = server.create('role', {name: 'Author'});
+            let author = server.create('user', {name: 'Waldo', roles: [role]});
+
+            visit('/editor/1');
+
+            andThen(() => {
+                expect(currentURL(), 'currentURL')
+                    .to.equal('/editor/1');
+            });
+
+            click('button.post-settings');
+
+            andThen(() => {
+                expect(find('select[name="post-setting-author"]').val()).to.equal('1');
+                expect(find('select[name="post-setting-author"] option[value="2"]')).to.be.ok;
+            });
+
+            fillIn('select[name="post-setting-author"]', '2');
+
+            andThen(() => {
+                expect(find('select[name="post-setting-author"]').val()).to.equal('2');
+                expect(server.db.posts[0].authorId).to.equal(author.id);
+            });
+        });
     });
 });

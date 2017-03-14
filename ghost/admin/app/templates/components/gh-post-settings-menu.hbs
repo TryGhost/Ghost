@@ -68,12 +68,12 @@
                 <span class="input-icon icon-user">
                     <span class="gh-select" tabindex="0">
                     {{one-way-select
+                        selectedAuthor
                         id="author-list"
                         name="post-setting-author"
                         options=authors
                         optionValuePath="id"
                         optionLabelPath="name"
-                        value=selectedAuthor
                         update=(action "changeAuthor")
                     }}
                     </span>

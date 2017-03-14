@@ -4,7 +4,6 @@ import computed, {alias} from 'ember-computed';
 import {guidFor} from 'ember-metal/utils';
 import injectService from 'ember-service/inject';
 import {htmlSafe} from 'ember-string';
-import observer from 'ember-metal/observer';
 
 import {invokeAction} from 'ember-invoke-action';
 
@@ -13,10 +12,11 @@ import SettingsMenuMixin from 'ghost-admin/mixins/settings-menu-component';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import isNumber from 'ghost-admin/utils/isNumber';
 
-const {ArrayProxy, Handlebars, PromiseProxyMixin} = Ember;
+const {Handlebars} = Ember;
 
 export default Component.extend(SettingsMenuMixin, {
     selectedAuthor: null,
+    authors: [],
 
     store: injectService(),
     config: injectService(),
@@ -26,33 +26,21 @@ export default Component.extend(SettingsMenuMixin, {
     session: injectService(),
     timeZone: injectService(),
 
-    initializeSelectedAuthor: observer('model', function () {
-        return this.get('model.author').then((author) => {
-            this.set('selectedAuthor', author);
-            return author;
-        });
-    }),
-
-    authors: computed(function () {
-        // Loaded asynchronously, so must use promise proxies.
-        let deferred = {};
-
-        deferred.promise = this.get('store').query('user', {limit: 'all'}).then((users) => {
-            return users.rejectBy('id', 'me').sortBy('name');
-        }).then((users) => {
-            return users.filter((user) => {
-                return user.get('active');
-            });
-        });
-
-        return ArrayProxy
-            .extend(PromiseProxyMixin)
-            .create(deferred);
-    }),
-
     slugValue: boundOneWay('model.slug'),
     metaTitleScratch: alias('model.metaTitleScratch'),
     metaDescriptionScratch: alias('model.metaDescriptionScratch'),
+
+    didReceiveAttrs() {
+        this._super(...arguments);
+
+        this.get('store').query('user', {limit: 'all'}).then((users) => {
+            this.set('authors', users.sortBy('name'));
+        });
+
+        this.get('model.author').then((author) => {
+            this.set('selectedAuthor', author);
+        });
+    },
 
     seoTitle: computed('model.titleScratch', 'metaTitleScratch', function () {
         let metaTitle = this.get('metaTitleScratch') || '';

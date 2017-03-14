@@ -51,7 +51,18 @@ export default function mockPosts(server) {
         });
     });
 
-    server.put('/posts/:id/');
+    // Handle embedded author in post
+    server.put('/posts/:id/', ({posts}, request) => {
+        let {posts: [post]} = JSON.parse(request.requestBody);
+        let {author} = post;
+        delete post.author;
+
+        let savedPost = posts.find(request.params.id).update(post);
+        savedPost.authorId = author;
+        savedPost.save();
+
+        return savedPost;
+    });
 
     server.del('/posts/:id/');
 }
