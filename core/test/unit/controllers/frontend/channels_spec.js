@@ -10,7 +10,7 @@ var should   = require('should'),
     sandbox = sinon.sandbox.create();
 
 describe('Channels', function () {
-    var channelRouter, req, res, hasTemplateStub;
+    var channelRouter, req, res, hasTemplateStub, themeConfigStub;
 
     // Initialise 'req' with the bare minimum properties
     function setupRequest() {
@@ -100,8 +100,11 @@ describe('Channels', function () {
         hasTemplateStub = sandbox.stub().returns(false);
         hasTemplateStub.withArgs('index').returns(true);
 
+        themeConfigStub = sandbox.stub().withArgs('posts_per_page').returns(5);
+
         sandbox.stub(themes, 'getActive').returns({
-            hasTemplate: hasTemplateStub
+            hasTemplate: hasTemplateStub,
+            config: themeConfigStub
         });
     }
 
