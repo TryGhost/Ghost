@@ -54,7 +54,6 @@ function getMetaData(data, root) {
             twitter: settingsCache.get('twitter'),
             timezone: settingsCache.get('activeTimezone'),
             navigation: settingsCache.get('navigation'),
-            posts_per_page: settingsCache.get('postsPerPage'),
             icon: settingsCache.get('icon'),
             cover: settingsCache.get('cover'),
             logo: settingsCache.get('logo'),
