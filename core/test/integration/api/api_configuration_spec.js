@@ -40,7 +40,6 @@ describe('Configuration API', function () {
                 amp: 'amp'
             });
 
-            props.fileStorage.should.eql(true);
             props.useGravatar.should.eql(false);
             props.publicAPI.should.eql(false);
             props.clientId.should.eql('ghost-admin');
