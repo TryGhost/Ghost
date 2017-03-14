@@ -4,7 +4,7 @@ var debug = require('debug')('ghost:admin'),
     adminHbs = require('express-hbs').create(),
 
     // Admin only middleware
-    redirectToSetup = require('../middleware/redirect-to-setup'),
+    adminMiddleware = require('./middleware'),
 
     // Global/shared middleware?
     cacheControl = require('../middleware/cache-control'),
@@ -61,7 +61,7 @@ module.exports = function setupAdminApp() {
     // Admin is currently set to not be cached at all
     adminApp.use(cacheControl('private'));
     // Special redirects for the admin (these should have their own cache-control headers)
-    adminApp.use(redirectToSetup);
+    adminApp.use(adminMiddleware);
 
     // Finally, routing
     adminApp.get('*', require('./controller'));

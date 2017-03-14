@@ -13,10 +13,10 @@ frontendRoutes = function frontendRoutes() {
 
     // ### Admin routes
     router.get(/^\/(logout|signout)\/$/, function redirectToSignout(req, res) {
-        utils.redirect301(res, utils.url.urlJoin(utils.url.urlFor('admin'), 'signout/'));
+        utils.redirect301(res, utils.url.urlJoin(utils.url.urlFor('admin'), '#/signout/'));
     });
     router.get(/^\/signup\/$/, function redirectToSignup(req, res) {
-        utils.redirect301(res, utils.url.urlJoin(utils.url.urlFor('admin'), 'signup/'));
+        utils.redirect301(res, utils.url.urlJoin(utils.url.urlFor('admin'), '#/signup/'));
     });
 
     // redirect to /ghost and let that do the authentication to prevent redirects to /ghost//admin etc.

@@ -1,5 +1,6 @@
 var debug         = require('debug')('ghost:admin:controller'),
     _             = require('lodash'),
+    config        = require('../config'),
     api           = require('../api'),
     updateCheck   = require('../update-check'),
     logging       = require('../logging'),
@@ -33,7 +34,9 @@ module.exports = function adminController(req, res) {
             }
         });
     }).finally(function noMatterWhat() {
-        res.render('default');
+        var defaultTemplate = config.get('env') === 'production' ? 'default-prod' : 'default';
+
+        res.render(defaultTemplate);
     }).catch(function (err) {
         logging.error(err);
     });
