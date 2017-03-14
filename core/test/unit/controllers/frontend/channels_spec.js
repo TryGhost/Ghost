@@ -381,7 +381,7 @@ describe('Channels', function () {
         describe('Edit', function () {
             it('should redirect /edit/ to ghost admin', function (done) {
                 testChannelRedirect({url: '/tag/my-tag/edit/'}, function (path) {
-                    path.should.eql('/ghost/settings/tags/my-tag/');
+                    path.should.eql('/ghost/#/settings/tags/my-tag/');
                     postAPIStub.called.should.be.false();
                 }, done);
             });
