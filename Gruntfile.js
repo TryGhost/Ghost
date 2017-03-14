@@ -69,10 +69,11 @@ var overrides      = require('./core/server/overrides'),
                     }
                 },
                 express: {
-                    files:  ['core/ghost-server.js', 'core/server/**/*.js'],
+                    files:  ['core/ghost-server.js', 'core/server/**/*.js', 'config.*.json'],
                     tasks:  ['express:dev'],
                     options: {
-                        spawn: false
+                        nospawn: true,
+                        livereload: true
                     }
                 }
             },
@@ -105,7 +106,7 @@ var overrides      = require('./core/server/overrides'),
 
                 server: [
                     '*.js',
-                    '!config*.js', // note: i added this, do we want this linted?
+                    '!config.*.json', // note: i added this, do we want this linted?
                     'core/*.js',
                     'core/server/**/*.js',
                     'core/test/**/*.js',
@@ -123,7 +124,7 @@ var overrides      = require('./core/server/overrides'),
                     files: {
                         src: [
                             '*.js',
-                            '!config*.js', // note: i added this, do we want this linted?
+                            '!config.*.json', // note: i added this, do we want this linted?
                             'core/*.js',
                             'core/server/**/*.js',
                             'core/test/**/*.js',
@@ -217,7 +218,9 @@ var overrides      = require('./core/server/overrides'),
             bgShell: {
                 client: {
                     cmd: 'grunt subgrunt:watch',
-                    bg: true
+                    bg: true,
+                    stdout: true,
+                    stderr: true
                 }
             },
 
@@ -246,8 +249,8 @@ var overrides      = require('./core/server/overrides'),
                     options: {
                         onlyUpdated: true,
                         exclude: 'node_modules,bower_components,content,core/client,*test,*doc*,' +
-                        '*vendor,config.js,*buil*,.dist*,.idea,.git*,.travis.yml,.bower*,.editorconfig,.js*,*.md',
-                        extras: ['fileSearch']
+                        '*vendor,config.*.json,*buil*,.dist*,.idea,.git*,.travis.yml,.bower*,.editorconfig,.js*,*.md,' +
+                        'MigratorConfig.js'
                     }
                 }
             },
@@ -317,6 +320,7 @@ var overrides      = require('./core/server/overrides'),
                 options: {
                     npmInstall: false
                 },
+
                 init: {
                     options: {
                         npmInstall: true
@@ -335,15 +339,7 @@ var overrides      = require('./core/server/overrides'),
                 },
 
                 watch: {
-                    'core/client': ['bgShell:ember', 'watch']
-                },
-
-                lint: {
-                    'core/client': 'lint'
-                },
-
-                test: {
-                    'core/client': 'shell:test'
+                    'core/client': 'shell:ember:watch'
                 }
             }
         };
@@ -376,12 +372,12 @@ var overrides      = require('./core/server/overrides'),
         // Run `grunt docs` to generate annotated source code using the documentation described in the code comments.
         grunt.registerTask('docs', 'Generate Docs', ['docker']);
 
-        // Runun `grunt watch-docs` to setup livereload & watch whilst you're editing the docs
+        // Run `grunt watch-docs` to setup livereload & watch whilst you're editing the docs
         grunt.registerTask('watch-docs', function () {
             grunt.config.merge({
                 watch: {
                     docs: {
-                        files: ['core/server/**/*', 'index.js', 'Gruntfile.js', 'config.example.js'],
+                        files: ['core/server/**/*', 'index.js', 'Gruntfile.js'],
                         tasks: ['docker'],
                         options: {
                             livereload: true
@@ -462,51 +458,29 @@ var overrides      = require('./core/server/overrides'),
         // ### Validate
         // **Main testing task**
         //
-        // `grunt validate` will build, lint and test your local Ghost codebase.
-        //
-        // `grunt validate` is one of the most important and useful grunt tasks that we have available to use. It
-        // manages the build of your environment and then calls `grunt test`
-        //
+        // `grunt validate` will either run all tests or run linting
         // `grunt validate` is called by `npm test` and is used by Travis.
-        grunt.registerTask('validate', 'Run tests and lint code', function () {
-            if (process.env.TEST_SUITE === 'server') {
-                grunt.task.run(['stubClientFiles', 'test-server']);
-            } else if (process.env.TEST_SUITE === 'lint') {
-                grunt.task.run(['lint']);
-            } else {
-                grunt.task.run(['validate-all']);
+        grunt.registerTask('validate', 'Run tests or lint code', function () {
+            if (process.env.TEST_SUITE === 'lint') {
+                return grunt.task.run(['lint']);
             }
-        });
 
-        grunt.registerTask('validate-all', 'Lint code and run all tests',
-            ['init', 'lint', 'test-all']);
+            grunt.task.run(['stubClientFiles', 'test-all']);
+        });
 
         // ### Test-All
         // **Main testing task**
         //
         // `grunt test-all` will lint and test your pre-built local Ghost codebase.
         //
-        // `grunt test-all` runs all 6 test suites. See the individual sub tasks below for
-        // details of each of the test suites.
-        //
-        grunt.registerTask('test-all', 'Run tests for both server and client',
-            ['test-server', 'test-client']);
-
-        grunt.registerTask('test-server', 'Run server tests',
+        grunt.registerTask('test-all', 'Run all server tests',
             ['test-routes', 'test-module', 'test-unit', 'test-integration']);
-
-        grunt.registerTask('test-client', 'Run client tests',
-            ['subgrunt:test']);
 
         // ### Lint
         //
         // `grunt lint` will run the linter and the code style checker so you can make sure your code is pretty
         grunt.registerTask('lint', 'Run the code style checks and linter for server',
             ['jshint', 'jscs']
-        );
-
-        grunt.registerTask('lint-all', 'Run the code style checks and linter for server and client',
-            ['lint', 'subgrunt:lint']
         );
 
         // ### test-setup *(utility)(
@@ -537,7 +511,7 @@ var overrides      = require('./core/server/overrides'),
         // ### Integration tests *(sub task)*
         // `grunt test-integration` will run just the integration tests
         //
-        // Provided you already have a `config.js` file, you can run just the model integration tests by running:
+        // Provided you already have a `config.*.json` file, you can run just the model integration tests by running:
         //
         // `grunt test:integration/model`
         //
