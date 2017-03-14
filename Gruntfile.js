@@ -246,8 +246,8 @@ var overrides      = require('./core/server/overrides'),
                     options: {
                         onlyUpdated: true,
                         exclude: 'node_modules,bower_components,content,core/client,*test,*doc*,' +
-                        '*vendor,config.js,*buil*,.dist*,.idea,.git*,.travis.yml,.bower*,.editorconfig,.js*,*.md',
-                        extras: ['fileSearch']
+                        '*vendor,config.*.json,*buil*,.dist*,.idea,.git*,.travis.yml,.bower*,.editorconfig,.js*,*.md,' +
+                        'MigratorConfig.js'
                     }
                 }
             },
