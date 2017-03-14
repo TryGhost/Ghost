@@ -12,7 +12,6 @@ export default Model.extend(ValidationEngine, {
     cover: attr('string'),
     icon: attr('string'),
     defaultLang: attr('string'),
-    postsPerPage: attr('number'),
     forceI18n: attr('boolean'),
     permalinks: attr('string'),
     activeTimezone: attr('string', {defaultValue: 'Etc/UTC'}),

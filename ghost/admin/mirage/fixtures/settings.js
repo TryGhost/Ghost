@@ -51,16 +51,6 @@ export default [
         updated_by: 1
     },
     {
-        id: 6,
-        created_at: '2015-09-11T09:44:30.809Z',
-        created_by: 1,
-        key: 'postsPerPage',
-        type: 'blog',
-        updated_at: '2015-10-04T16:26:05.211Z',
-        updated_by: 1,
-        value: '5'
-    },
-    {
         id: 7,
         key: 'forceI18n',
         value: 'true',

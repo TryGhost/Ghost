@@ -8,7 +8,7 @@ import run from 'ember-runloop';
 
 const {Error: EmberError} = Ember;
 
-function stubSettings(server, labs, validSave = true, validSettings = true) {
+function stubSettings(server, labs, validSave = true) {
     let settings = [
         {
             id: '1',
@@ -17,15 +17,6 @@ function stubSettings(server, labs, validSave = true, validSettings = true) {
             value: JSON.stringify(labs)
         }
     ];
-
-    if (validSettings) {
-        settings.push({
-            id: '2',
-            type: 'blog',
-            key: 'postsPerPage',
-            value: 1
-        });
-    }
 
     server.get('/ghost/api/v0.1/settings/', function () {
         return [200, {'Content-Type': 'application/json'}, JSON.stringify({settings})];
