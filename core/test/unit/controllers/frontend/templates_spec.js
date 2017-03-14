@@ -210,4 +210,83 @@ describe('templates', function () {
             view.should.eql('index');
         });
     });
+
+    describe('error', function () {
+        beforeEach(function () {
+            hasTemplateStub = sandbox.stub().returns(false);
+
+            getActiveThemeStub = sandbox.stub(themes, 'getActive').returns({
+                hasTemplate: hasTemplateStub
+            });
+        });
+
+        it('will fall back to default if there is no activeTheme', function () {
+            getActiveThemeStub.returns(undefined);
+
+            templates.error(500).should.match(/core\/server\/views\/error.hbs$/);
+        });
+
+        it('will fall back to default for all statusCodes with no custom error templates', function () {
+            templates.error(500).should.match(/core\/server\/views\/error.hbs$/);
+            templates.error(503).should.match(/core\/server\/views\/error.hbs$/);
+            templates.error(422).should.match(/core\/server\/views\/error.hbs$/);
+            templates.error(404).should.match(/core\/server\/views\/error.hbs$/);
+        });
+
+        it('will use custom error.hbs for all statusCodes if there are no other templates', function () {
+            hasTemplateStub.withArgs('error').returns(true);
+
+            templates.error(500).should.eql('error');
+            templates.error(503).should.eql('error');
+            templates.error(422).should.eql('error');
+            templates.error(404).should.eql('error');
+        });
+
+        it('will use more specific error-4xx.hbs for all 4xx statusCodes if available', function () {
+            hasTemplateStub.withArgs('error').returns(true);
+            hasTemplateStub.withArgs('error-4xx').returns(true);
+
+            templates.error(500).should.eql('error');
+            templates.error(503).should.eql('error');
+            templates.error(422).should.eql('error-4xx');
+            templates.error(404).should.eql('error-4xx');
+        });
+
+        it('will use explicit error-404.hbs for 404 statusCode if available', function () {
+            hasTemplateStub.withArgs('error').returns(true);
+            hasTemplateStub.withArgs('error-4xx').returns(true);
+            hasTemplateStub.withArgs('error-404').returns(true);
+
+            templates.error(500).should.eql('error');
+            templates.error(503).should.eql('error');
+            templates.error(422).should.eql('error-4xx');
+            templates.error(404).should.eql('error-404');
+        });
+
+        it('cascade works the same for 500 errors', function () {
+            hasTemplateStub.withArgs('error').returns(true);
+            hasTemplateStub.withArgs('error-5xx').returns(true);
+            hasTemplateStub.withArgs('error-503').returns(true);
+
+            templates.error(500).should.eql('error-5xx');
+            templates.error(503).should.eql('error-503');
+            templates.error(422).should.eql('error');
+            templates.error(404).should.eql('error');
+        });
+
+        it('cascade works with many specific templates', function () {
+            hasTemplateStub.withArgs('error').returns(true);
+            hasTemplateStub.withArgs('error-5xx').returns(true);
+            hasTemplateStub.withArgs('error-503').returns(true);
+            hasTemplateStub.withArgs('error-4xx').returns(true);
+            hasTemplateStub.withArgs('error-404').returns(true);
+
+            templates.error(500).should.eql('error-5xx');
+            templates.error(503).should.eql('error-503');
+            templates.error(422).should.eql('error-4xx');
+            templates.error(404).should.eql('error-404');
+            templates.error(401).should.eql('error-4xx');
+            templates.error(501).should.eql('error-5xx');
+        });
+    });
 });
