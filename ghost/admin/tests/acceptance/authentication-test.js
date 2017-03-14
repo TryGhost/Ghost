@@ -30,6 +30,22 @@ describe('Acceptance: Authentication', function () {
         destroyApp(application);
     });
 
+    describe('setup redirect', function () {
+        beforeEach(function () {
+            server.get('authentication/setup', function () {
+                return {setup: [{status: false}]};
+            });
+        });
+
+        it('redirects to setup when setup isn\'t complete', function () {
+            visit('settings/labs');
+
+            andThen(() => {
+                expect(currentURL()).to.equal('/setup/one');
+            });
+        });
+    });
+
     describe('token handling', function () {
         beforeEach(function () {
             // replace the default test authenticator with our own authenticator
@@ -93,6 +109,11 @@ describe('Acceptance: Authentication', function () {
 
             authenticateSession(application);
             visit('/team');
+
+            andThen(() => {
+                // NOTE: seems to be a test issue where this is running
+                // mid transition
+            });
 
             andThen(() => {
                 expect(currentURL(), 'url after 401').to.equal('/signin');

@@ -1,6 +1,6 @@
-import HistoryLocation from 'ember-locations/history';
+import HashLocation from 'ember-locations/hash';
 
-let trailingHistory = HistoryLocation.extend({
+let trailingHash = HashLocation.extend({
     formatURL() {
         let url = this._super(...arguments);
 
@@ -13,9 +13,9 @@ let trailingHistory = HistoryLocation.extend({
 });
 
 export default {
-    name: 'registerTrailingLocationHistory',
+    name: 'registerTrailingHashLocation',
 
     initialize(application) {
-        application.register('location:trailing-history', trailingHistory);
+        application.register('location:trailing-hash', trailingHash);
     }
 };

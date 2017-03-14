@@ -95,6 +95,7 @@ module.exports = function (defaults) {
         },
         outputPaths: {
             app: {
+                html: isProduction ? 'index.min.html' : 'index.html',
                 js: assetLocation('ghost.js'),
                 css: {
                     app: assetLocation('ghost.css'),
@@ -112,7 +113,7 @@ module.exports = function (defaults) {
                 plugins: postcssPlugins()
             }
         },
-        fingerprint: disabled,
+        fingerprint: {enabled: true},
         nodeAssets: {
             'blueimp-md5': {
                 import: ['js/md5.js']
