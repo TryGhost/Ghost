@@ -376,12 +376,12 @@ var overrides      = require('./core/server/overrides'),
         // Run `grunt docs` to generate annotated source code using the documentation described in the code comments.
         grunt.registerTask('docs', 'Generate Docs', ['docker']);
 
-        // Runun `grunt watch-docs` to setup livereload & watch whilst you're editing the docs
+        // Run `grunt watch-docs` to setup livereload & watch whilst you're editing the docs
         grunt.registerTask('watch-docs', function () {
             grunt.config.merge({
                 watch: {
                     docs: {
-                        files: ['core/server/**/*', 'index.js', 'Gruntfile.js', 'config.example.js'],
+                        files: ['core/server/**/*', 'index.js', 'Gruntfile.js'],
                         tasks: ['docker'],
                         options: {
                             livereload: true
