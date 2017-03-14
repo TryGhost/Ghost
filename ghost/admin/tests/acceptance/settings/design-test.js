@@ -516,6 +516,133 @@ describe('Acceptance: Settings - Design', function () {
                 ).to.be.true;
             });
 
+            // theme activation shows errors
+            andThen(() => {
+                server.put('themes/:theme/activate', function () {
+                    return new Mirage.Response(422, {}, {
+                        errors: [
+                            {
+                                message: 'Theme is not compatible or contains errors.',
+                                errorType: 'ThemeValidationError',
+                                errorDetails: [
+                                    {
+                                        level: 'error',
+                                        rule: 'Templates must contain valid Handlebars.',
+                                        failures: [
+                                            {
+                                                ref: 'index.hbs',
+                                                message: 'The partial index_meta could not be found'
+                                            },
+                                            {
+                                                ref: 'tag.hbs',
+                                                message: 'The partial index_meta could not be found'
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        level: 'error',
+                                        rule: 'Assets such as CSS & JS must use the <code>{{asset}}</code> helper',
+                                        details: '<p>The listed files should be included using the <code>{{asset}}</code> helper.</p>',
+                                        failures: [
+                                            {
+                                                ref: '/assets/javascripts/ui.js'
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    });
+                });
+            });
+            click(`${testSelector('theme-id', 'test-2')} ${testSelector('theme-activate-button')}`);
+            andThen(() => {
+                expect(find(testSelector('theme-warnings-modal'))).to.exist;
+
+                expect(
+                    find(testSelector('theme-warnings-title')).text().trim(),
+                    'modal title after activating invalid theme'
+                ).to.equal('Theme activation failed');
+
+                expect(
+                    find(testSelector('theme-warnings')).text(),
+                    'top-level errors are displayed in activation errors'
+                ).to.match(/Templates must contain valid Handlebars/);
+
+                expect(
+                    find(testSelector('theme-warnings')).text(),
+                    'top-level errors do not escape HTML in activation errors'
+                ).to.match(/The listed files should be included using the {{asset}} helper/);
+
+                expect(
+                    find(testSelector('theme-warnings')).text(),
+                    'individual failures are displayed in activation errors'
+                ).to.match(/index\.hbs: The partial index_meta could not be found/);
+
+                // restore default mirage handlers
+                mockThemes(server);
+            });
+            click(testSelector('modal-close-button'));
+            andThen(() => {
+                expect(find(testSelector('theme-warnings-modal'))).to.not.exist;
+            });
+
+            // theme activation shows warnings
+            andThen(() => {
+                server.put('themes/:theme/activate', function ({themes}, {params}) {
+                    themes.all().update('active', false);
+                    let theme = themes.findBy({name: params.theme}).update({active: true});
+
+                    theme.update({warnings: [{
+                        level: 'warning',
+                        rule: 'Assets such as CSS & JS must use the <code>{{asset}}</code> helper',
+                        details: '<p>The listed files should be included using the <code>{{asset}}</code> helper.  For more information, please see the <a href="http://themes.ghost.org/docs/asset">asset helper documentation</a>.</p>',
+                        failures: [
+                            {
+                                ref: '/assets/dist/img/apple-touch-icon.png'
+                            },
+                            {
+                                ref: '/assets/dist/img/favicon.ico'
+                            },
+                            {
+                                ref: '/assets/dist/css/blackpalm.min.css'
+                            },
+                            {
+                                ref: '/assets/dist/js/blackpalm.min.js'
+                            }
+                        ],
+                        code: 'GS030-ASSET-REQ'
+                    }]});
+
+                    return {themes: [theme]};
+                });
+            });
+            click(`${testSelector('theme-id', 'test-2')} ${testSelector('theme-activate-button')}`);
+            andThen(() => {
+                expect(find(testSelector('theme-warnings-modal'))).to.exist;
+
+                expect(
+                    find(testSelector('theme-warnings-title')).text().trim(),
+                    'modal title after activating theme with warnings'
+                ).to.equal('Theme activated with warnings');
+
+                expect(
+                    find(testSelector('theme-warnings')).text(),
+                    'top-level warnings are displayed in activation warnings'
+                ).to.match(/The listed files should be included using the {{asset}} helper/);
+
+                expect(
+                    find(testSelector('theme-warnings')).text(),
+                    'individual warning failures are displayed in activation warnings'
+                ).to.match(/\/assets\/dist\/img\/apple-touch-icon\.png/);
+
+                // restore default mirage handlers
+                mockThemes(server);
+            });
+            click(testSelector('modal-close-button'));
+            // reactivate casper to continue tests
+            click(`${testSelector('theme-id', 'casper')} ${testSelector('theme-activate-button')}`);
+
             // theme deletion displays modal
             click(`${testSelector('theme-id', 'test-1')} ${testSelector('theme-delete-button')}`);
             andThen(() => {

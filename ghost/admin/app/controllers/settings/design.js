@@ -1,9 +1,11 @@
 import RSVP from 'rsvp';
 import Controller from 'ember-controller';
 import computed, {notEmpty} from 'ember-computed';
+import {isEmpty} from 'ember-utils';
 import injectService from 'ember-service/inject';
 import {task} from 'ember-concurrency';
 import NavigationItem from 'ghost-admin/models/navigation-item';
+import {isThemeValidationError} from 'ghost-admin/services/ajax';
 import $ from 'jquery';
 
 export default Controller.extend({
@@ -113,7 +115,20 @@ export default Controller.extend({
         },
 
         activateTheme(theme) {
-            return theme.activate();
+            return theme.activate().then((theme) => {
+                if (!isEmpty(theme.get('warnings'))) {
+                    this.set('themeWarnings', theme.get('warnings'));
+                    this.set('showThemeWarningsModal', true);
+                }
+            }).catch((error) => {
+                if (isThemeValidationError(error)) {
+                    this.set('themeWarnings', error.errors[0].errorDetails);
+                    this.set('showThemeErrorsModal', true);
+                    return;
+                }
+
+                throw error;
+            });
         },
 
         downloadTheme(theme) {
@@ -139,6 +154,12 @@ export default Controller.extend({
 
         hideDeleteThemeModal() {
             this.set('themeToDelete', null);
+        },
+
+        hideThemeWarningsModal() {
+            this.set('themeWarnings', null);
+            this.set('showThemeWarningsModal', false);
+            this.set('showThemeErrorsModal', false);
         },
 
         reset() {

@@ -1,0 +1,23 @@
+<header class="modal-header">
+    <h1 data-test-theme-warnings-title>{{title}}</h1>
+</header>
+<a class="close icon-x" href="#" title="Close" {{action "closeModal"}}><span class="hidden">Close</span></a>
+
+<div class="modal-body">
+    <ul class="theme-validation-errors" data-test-theme-warnings>
+        {{#if message}}
+            <li>
+                <p data-test-theme-warnings-message>{{message}}</p>
+            </li>
+        {{/if}}
+        {{#each warnings as |error|}}
+            {{gh-theme-error-li error=error}}
+        {{/each}}
+    </ul>
+</div>
+
+<div class="modal-footer">
+    <button {{action "closeModal"}} class="gh-btn" data-test-modal-close-button>
+        <span>Close</span>
+    </button>
+</div>
