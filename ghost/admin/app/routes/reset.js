@@ -1,6 +1,6 @@
 import Route from 'ember-route';
 import injectService from 'ember-service/inject';
-import UnauthenticatedRouteMixin from 'ember-simple-auth/mixins/unauthenticated-route-mixin';
+import UnauthenticatedRouteMixin from 'ghost-admin/mixins/unauthenticated-route-mixin';
 import styleBody from 'ghost-admin/mixins/style-body';
 
 export default Route.extend(styleBody, UnauthenticatedRouteMixin, {

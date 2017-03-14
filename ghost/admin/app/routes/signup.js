@@ -9,7 +9,7 @@ import {
 } from 'ghost-admin/services/ajax';
 
 import DS from 'ember-data';
-import UnauthenticatedRouteMixin from 'ember-simple-auth/mixins/unauthenticated-route-mixin';
+import UnauthenticatedRouteMixin from 'ghost-admin/mixins/unauthenticated-route-mixin';
 import styleBody from 'ghost-admin/mixins/style-body';
 
 const {Promise} = RSVP;
