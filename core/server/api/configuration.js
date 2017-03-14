@@ -26,7 +26,6 @@ function getAboutConfig() {
 
 function getBaseConfig() {
     return {
-        fileStorage:    config.get('fileStorage') !== false,
         useGravatar:    !config.isPrivacyDisabled('useGravatar'),
         publicAPI:      config.get('publicAPI') === true,
         blogUrl:        utils.url.urlFor('home', true),
