@@ -7,9 +7,6 @@ var _               = require('lodash'),
     errors          = require('../errors'),
     Showdown        = require('showdown-ghost'),
     legacyConverter = new Showdown.converter({extensions: ['ghostgfm', 'footnotes', 'highlight']}),
-    Mobiledoc       = require('mobiledoc-html-renderer').default,
-    mobileDocOptions = require('ghost-editor').htmlOptions,
-    converter       = new Mobiledoc(mobileDocOptions),
     ghostBookshelf  = require('./base'),
     events          = require('../events'),
     config          = require('../config'),
@@ -204,7 +201,7 @@ Post = ghostBookshelf.Model.extend({
         ghostBookshelf.Model.prototype.onSaving.call(this, model, attr, options);
 
         if (mobiledoc) {
-            this.set('html', converter.render(JSON.parse(mobiledoc)).result);
+            this.set('html', utils.mobiledocConverter.render(JSON.parse(mobiledoc)));
         } else {
             // legacy showdown mode
             this.set('html', legacyConverter.makeHtml(_.toString(this.get('markdown'))));
