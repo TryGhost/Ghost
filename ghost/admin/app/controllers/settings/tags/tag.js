@@ -18,7 +18,9 @@ export default Controller.extend({
         let tag = this.get('tag');
         let currentValue = tag.get(propKey);
 
-        newValue = newValue.trim();
+        if (newValue) {
+            newValue = newValue.trim();
+        }
 
         // Quit if there was no change
         if (newValue === currentValue) {
