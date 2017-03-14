@@ -26,6 +26,7 @@ export default Component.extend({
         this._super(...arguments);
         let payload = this.get('payload');
         this.isEditing = !payload.hasOwnProperty('html');
+        this.isEditing = true;
     },
 
     didRender() {

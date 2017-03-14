@@ -39,7 +39,7 @@ export default Component.extend({
     didRender() {
         let $this = this.$();
         let {editor} = this;
-        let $editor = $('.gh-editor-container'); // TODO this is part of Ghost-Admin
+        let $editor = $(this.get('containerSelector')); // TODO this is part of Ghost-Admin
 
         editor.cursorDidChange(() => {
 

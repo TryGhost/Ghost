@@ -1,0 +1,17 @@
+{{#if showButton}}
+<button id="gh-cardmenu-button" {{action "openMenu"}}>+</button>
+{{/if}}
+{{#if isOpen}}
+<div class="gh-cardmenu">
+    <div class="gh-cardmenu-search">
+        {{inline-svg "search.svg"}}
+        {{gh-input query class="gh-input gh-cardmenu-search-input" placeholder="Search for a card..." type="text" update=(action (mut query)) key-press=(action "updateSelection")}}
+    </div>
+    <div class="gh-cardmenu-divider">
+        Primary
+    </div>
+    {{#each toolbar as |tool index|}}
+        {{koenig-menu-item tool=tool editor=editor range=range selected=tool.selected clicked=(action "closeMenu")}}
+    {{/each}}
+</div>
+{{/if}}

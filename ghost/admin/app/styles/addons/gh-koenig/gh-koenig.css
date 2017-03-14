@@ -1,6 +1,5 @@
 @import "koenig-toolbar.css";
 @import "koenig-menu.css";
-/* TODO: move/rename to match koenig naming */
 @import "../ghost-editor/cardmenu.css";
 
 .editor-holder {
@@ -39,13 +38,16 @@
     border-right: 66px solid #5ba4e5;
 }
 
+.__mobiledoc-editor div {
+
+}
+
 .__mobiledoc-card {
-    display: block;
+    display: inline-block; /* required for cursor movement around card */
     border: 1px solid;
-}
-.__mobiledoc-card .koenig-card {
-    position: relative;
-}
+    width: calc(100% - 20px); /* required for obvious cursor placmenet around card */
+    margin:5px;
+ }
 
 .__mobiledoc-card .card-handle {
     position: absolute;

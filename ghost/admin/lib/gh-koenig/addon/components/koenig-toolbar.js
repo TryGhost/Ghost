@@ -60,7 +60,7 @@ export default Component.extend({
     didRender() {
         let $this = this.$();
         let {editor} = this;
-        let $editor = $('.gh-editor-container'); // TODO - this element is part of ghost-admin, we need to separate them more.
+        let $editor = $(this.get('containerSelector')); // TODO - this element is part of ghost-admin, we need to separate them more.
         let isMousedown = false;
         if (!editor.range || editor.range.head.isBlank) {
             this.set('isVisible', false);
@@ -101,7 +101,6 @@ export default Component.extend({
         }
     },
     doLink(range) {
-
         this.set('isLink', true);
         this.set('linkRange', range);
     }
