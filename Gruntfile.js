@@ -69,10 +69,11 @@ var overrides      = require('./core/server/overrides'),
                     }
                 },
                 express: {
-                    files:  ['core/ghost-server.js', 'core/server/**/*.js'],
+                    files:  ['core/ghost-server.js', 'core/server/**/*.js', 'config.*.json'],
                     tasks:  ['express:dev'],
                     options: {
-                        spawn: false
+                        nospawn: true,
+                        livereload: true
                     }
                 }
             },
@@ -217,7 +218,9 @@ var overrides      = require('./core/server/overrides'),
             bgShell: {
                 client: {
                     cmd: 'grunt subgrunt:watch',
-                    bg: true
+                    bg: true,
+                    stdout: true,
+                    stderr: true
                 }
             },
 
@@ -336,7 +339,7 @@ var overrides      = require('./core/server/overrides'),
                 },
 
                 watch: {
-                    'core/client': ['bgShell:ember', 'watch']
+                    'core/client': 'shell:ember:watch'
                 }
             }
         };
