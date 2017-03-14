@@ -1,5 +1,5 @@
 /*jshint expr:true*/
-var should   = require('should'),
+var should = require('should'),
     channelConfig = require('../../../../server/controllers/frontend/channel-config').get;
 
 describe('Channel Config', function () {

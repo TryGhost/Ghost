@@ -1,11 +1,8 @@
-
-var sinon = require('sinon'),
-    should = require('should'),
+var should = require('should'), // jshint ignore:line
+    sinon = require('sinon'),
     getTitle = require('../../../server/data/meta/title'),
     settingsCache = require('../../../server/settings/cache'),
     sandbox = sinon.sandbox.create();
-
-should.equal(true, true);
 
 describe('getTitle', function () {
     var localSettingsCache = {};

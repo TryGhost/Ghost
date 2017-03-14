@@ -1,16 +1,15 @@
-var fs              = require('fs-extra'),
-    moment          = require('moment'),
-    path            = require('path'),
-    should          = require('should'),
-    sinon           = require('sinon'),
-    errors          = require('../../../server/errors'),
-    LocalFileStore  = require('../../../server/storage/local-file-store'),
+var should = require('should'), // jshint ignore:line
+    sinon = require('sinon'),
+    fs = require('fs-extra'),
+    moment = require('moment'),
+    path = require('path'),
+    errors = require('../../../server/errors'),
+    LocalFileStore = require('../../../server/storage/local-file-store'),
     localFileStore,
 
-    configUtils     = require('../../utils/configUtils');
+    configUtils = require('../../utils/configUtils'),
 
-// To stop jshint complaining
-should.equal(true, true);
+    sandbox = sinon.sandbox.create();
 
 describe('Local File System Storage', function () {
     var image,
@@ -25,18 +24,25 @@ describe('Local File System Storage', function () {
     }
 
     before(function () {
+        // Fake a date, do this once for all tests in this file
         momentStub = sinon.stub(moment.fn, 'format');
     });
 
     after(function () {
+        // Moment stub requires it's own restore after all the tests
         momentStub.restore();
     });
 
+    afterEach(function () {
+        sandbox.restore();
+        configUtils.restore();
+    });
+
     beforeEach(function () {
-        sinon.stub(fs, 'mkdirs').yields();
-        sinon.stub(fs, 'copy').yields();
-        sinon.stub(fs, 'stat').yields(true);
-        sinon.stub(fs, 'unlink').yields();
+        sandbox.stub(fs, 'mkdirs').yields();
+        sandbox.stub(fs, 'copy').yields();
+        sandbox.stub(fs, 'stat').yields(true);
+        sandbox.stub(fs, 'unlink').yields();
 
         image = {
             path: 'tmp/123456.jpg',
@@ -47,14 +53,6 @@ describe('Local File System Storage', function () {
         localFileStore = new LocalFileStore();
 
         fakeDate(9, 2013);
-    });
-
-    afterEach(function () {
-        fs.mkdirs.restore();
-        fs.copy.restore();
-        fs.stat.restore();
-        fs.unlink.restore();
-        configUtils.restore();
     });
 
     it('should send correct path to image when date is in Sep 2013', function (done) {
@@ -233,14 +231,11 @@ describe('Local File System Storage', function () {
         var truePathSep = path.sep;
 
         beforeEach(function () {
-            sinon.stub(path, 'join');
-            sinon.stub(configUtils.config, 'getContentPath').returns('content/images/');
+            sandbox.stub(path, 'join');
+            sandbox.stub(configUtils.config, 'getContentPath').returns('content/images/');
         });
 
         afterEach(function () {
-            path.join.restore();
-            configUtils.config.getContentPath.restore();
-
             path.sep = truePathSep;
         });
 

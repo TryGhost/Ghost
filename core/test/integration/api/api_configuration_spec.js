@@ -1,7 +1,7 @@
-var testUtils = require('../../utils'),
-    configUtils = require('../../utils/configUtils'),
-    should = require('should'),
+var should = require('should'),
+    testUtils = require('../../utils'),
     rewire = require('rewire'),
+    configUtils = require('../../utils/configUtils'),
 
     // Stuff we are testing
     ConfigurationAPI = rewire('../../../server/api/configuration');

@@ -1,6 +1,6 @@
-var testUtils = require('../utils'),
-    should = require('should'),
+var should = require('should'),
     sinon = require('sinon'),
+    testUtils = require('../utils'),
     _ = require('lodash'),
     Promise = require('bluebird'),
     Models = require('../../server/models'),

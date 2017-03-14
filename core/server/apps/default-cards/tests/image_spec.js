@@ -1,9 +1,8 @@
-var should  = require('should'),
-    card    = require('../cards/image'),
-    SimpleDom   = require('simple-dom'),
+var should = require('should'),  // jshint ignore:line
+    card = require('../cards/image'),
+    SimpleDom = require('simple-dom'),
     opts;
 
-should = should;
 describe('Image card', function () {
     it('generates an image', function () {
         opts = {

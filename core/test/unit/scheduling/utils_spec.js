@@ -1,4 +1,3 @@
-
 var should = require('should'),
     fs = require('fs'),
     config = require(__dirname + '/../../../server/config'),

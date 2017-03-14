@@ -1,9 +1,9 @@
-var testUtils = require('../../utils'),
-    should    = require('should'),
-    _         = require('lodash'),
-    dbAPI          = require('../../../server/api/db'),
-    ModelTag       = require('../../../server/models/tag'),
-    ModelPost      = require('../../../server/models/post');
+var should = require('should'),
+    testUtils = require('../../utils'),
+    _ = require('lodash'),
+    dbAPI = require('../../../server/api/db'),
+    ModelTag = require('../../../server/models/tag'),
+    ModelPost = require('../../../server/models/post');
 
 describe('DB API', function () {
     // Keep the DB clean

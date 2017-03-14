@@ -1,10 +1,10 @@
-var should         = require('should'),
-    hbs            = require('express-hbs'),
-    utils          = require('./utils'),
+var should = require('should'),
+    hbs = require('express-hbs'),
+    utils = require('./utils'),
 
 // Stuff we are testing
-    handlebars     = hbs.handlebars,
-    helpers        = require('../../../server/helpers');
+    handlebars = hbs.handlebars,
+    helpers = require('../../../server/helpers');
 
 describe('{{excerpt}} Helper', function () {
     before(function () {
@@ -47,9 +47,9 @@ describe('{{excerpt}} Helper', function () {
 
     it('strips inline and bottom footnotes', function () {
         var html = '<p>Testing<sup id="fnref:1"><a href="#fn:1" rel="footnote">1</a></sup> a very short post with a single footnote.</p>\n' +
-            '<div class="footnotes"><ol><li class="footnote" id="fn:1"><p><a href="https://ghost.org">https://ghost.org</a> <a href="#fnref:1" title="return to article">↩</a></p></li></ol></div>',
-        expected = 'Testing a very short post with a single footnote.',
-        rendered = helpers.excerpt.call({html: html});
+                '<div class="footnotes"><ol><li class="footnote" id="fn:1"><p><a href="https://ghost.org">https://ghost.org</a> <a href="#fnref:1" title="return to article">↩</a></p></li></ol></div>',
+            expected = 'Testing a very short post with a single footnote.',
+            rendered = helpers.excerpt.call({html: html});
 
         should.exist(rendered);
         rendered.string.should.equal(expected);
@@ -63,7 +63,7 @@ describe('{{excerpt}} Helper', function () {
                     {html: html},
                     {hash: {words: '2'}}
                 )
-                );
+            );
 
         should.exist(rendered);
         rendered.string.should.equal(expected);
@@ -77,7 +77,7 @@ describe('{{excerpt}} Helper', function () {
                     {html: html},
                     {hash: {words: '2'}}
                 )
-                );
+            );
 
         should.exist(rendered);
         rendered.string.should.equal(expected);
@@ -91,7 +91,7 @@ describe('{{excerpt}} Helper', function () {
                     {html: html},
                     {hash: {characters: '8'}}
                 )
-                );
+            );
 
         should.exist(rendered);
         rendered.string.should.equal(expected);

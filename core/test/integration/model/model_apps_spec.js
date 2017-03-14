@@ -1,11 +1,11 @@
-var testUtils    = require('../../utils'),
-    should       = require('should'),
-    sequence     = require('../../../server/utils/sequence'),
-    _            = require('lodash'),
+var should = require('should'),
+    testUtils = require('../../utils'),
+    sequence = require('../../../server/utils/sequence'),
+    _ = require('lodash'),
 
     // Stuff we are testing
-    AppModel     = require('../../../server/models/app').App,
-    context      = testUtils.context.admin;
+    AppModel = require('../../../server/models/app').App,
+    context = testUtils.context.admin;
 
 describe('App Model', function () {
     // Keep the DB clean

@@ -1,11 +1,11 @@
-var should         = require('should'),
-    hbs            = require('express-hbs'),
-    utils          = require('./utils'),
+var should = require('should'),
+    hbs = require('express-hbs'),
+    utils = require('./utils'),
 
 // Stuff we are testing
-    handlebars     = hbs.handlebars,
-    helpers        = require('../../../server/helpers'),
-    moment         = require('moment-timezone');
+    handlebars = hbs.handlebars,
+    helpers = require('../../../server/helpers'),
+    moment = require('moment-timezone');
 
 describe('{{date}} helper', function () {
     before(function () {

@@ -2,19 +2,20 @@
 // As it stands, these tests depend on the database, and as such are integration tests.
 // Mocking out the models to not touch the DB would turn these into unit tests, and should probably be done in future,
 // But then again testing real code, rather than mock code, might be more useful...
-
-var request = require('supertest'),
-    should = require('should'),
-    moment = require('moment'),
+var should = require('should'),
     sinon = require('sinon'),
+    supertest = require('supertest'),
+    testUtils = require('../../utils'),
+    moment = require('moment'),
     cheerio = require('cheerio'),
     _ = require('lodash'),
-    testUtils = require('../../utils'),
     config = require('../../../server/config'),
     settingsCache = require('../../../server/settings/cache'),
     origCache = _.cloneDeep(settingsCache),
-    sandbox = sinon.sandbox.create(),
-    ghost   = testUtils.startGhost;
+    ghost = testUtils.startGhost,
+    request,
+
+    sandbox = sinon.sandbox.create();
 
 describe('Frontend Routing', function () {
     var ghostServer;
@@ -54,7 +55,7 @@ describe('Frontend Routing', function () {
                 ghostServer = _ghostServer;
                 return ghostServer.start();
             }).then(function () {
-                request = request(config.get('url'));
+                request = supertest.agent(config.get('url'));
                 done();
             }).catch(function (e) {
                 console.log('Ghost Error: ', e);
@@ -543,27 +544,28 @@ describe('Frontend Routing', function () {
     });
 
     describe('FORK', function () {
-        describe('Subdirectory (no slash)', function () {
-            var forkedGhost, request;
+        var forkedGhost;
 
+        function killFork(done) {
+            if (forkedGhost) {
+                forkedGhost.kill(done);
+            } else {
+                done(new Error('No forked ghost process exists, test setup must have failed.'));
+            }
+        }
+
+        describe('Subdirectory (no slash)', function () {
             before(function (done) {
                 testUtils.fork.ghost({
                     url: 'http://localhost/blog'
                 }, 'testsubdir')
                     .then(function (child) {
                         forkedGhost = child;
-                        request = require('supertest');
-                        request = request('http://localhost:' + child.port);
+                        request = supertest.agent('http://localhost:' + child.port);
                     }).then(done).catch(done);
             });
 
-            after(function (done) {
-                if (forkedGhost) {
-                    forkedGhost.kill(done);
-                } else {
-                    done(new Error('No forked ghost process exists, test setup must have failed.'));
-                }
-            });
+            after(killFork);
 
             it('http://localhost should 404', function (done) {
                 request.get('/')
@@ -626,26 +628,17 @@ describe('Frontend Routing', function () {
         });
 
         describe('Subdirectory (with slash)', function () {
-            var forkedGhost, request;
-
             before(function (done) {
                 testUtils.fork.ghost({
                     url: 'http://localhost/blog/'
                 }, 'testsubdir')
                     .then(function (child) {
                         forkedGhost = child;
-                        request = require('supertest');
-                        request = request('http://localhost:' + child.port);
+                        request = supertest.agent('http://localhost:' + child.port);
                     }).then(done).catch(done);
             });
 
-            after(function (done) {
-                if (forkedGhost) {
-                    forkedGhost.kill(done);
-                } else {
-                    done(new Error('No forked ghost process exists, test setup must have failed.'));
-                }
-            });
+            after(killFork);
 
             it('http://localhost should 404', function (done) {
                 request.get('/')
@@ -717,8 +710,6 @@ describe('Frontend Routing', function () {
 
         // we'll use X-Forwarded-Proto: https to simulate an 'https://' request behind a proxy
         describe('HTTPS', function () {
-            var forkedGhost, request;
-
             before(function (done) {
                 testUtils.fork.ghost({
                     url: 'http://localhost:2370/',
@@ -728,18 +719,11 @@ describe('Frontend Routing', function () {
                 }, 'testhttps')
                     .then(function (child) {
                         forkedGhost = child;
-                        request = require('supertest');
-                        request = request('http://localhost:2370');
+                        request = supertest.agent('http://localhost:2370');
                     }).then(done).catch(done);
             });
 
-            after(function (done) {
-                if (forkedGhost) {
-                    forkedGhost.kill(done);
-                } else {
-                    done(new Error('No forked ghost process exists, test setup must have failed.'));
-                }
-            });
+            after(killFork);
 
             it('should set links to url over non-HTTPS', function (done) {
                 request.get('/')
@@ -760,8 +744,6 @@ describe('Frontend Routing', function () {
         });
 
         describe('Redirects (use redirects.json from test/utils/fixtures/data)', function () {
-            var forkedGhost, request;
-
             before(function (done) {
                 testUtils.fork.ghost({
                     url: 'http://localhost:2370/',
@@ -774,18 +756,11 @@ describe('Frontend Routing', function () {
                 }, 'testredirects')
                     .then(function (child) {
                         forkedGhost = child;
-                        request = require('supertest');
-                        request = request('http://localhost:2370');
+                        request = supertest.agent('http://localhost:2370');
                     }).then(done).catch(done);
             });
 
-            after(function (done) {
-                if (forkedGhost) {
-                    forkedGhost.kill(done);
-                } else {
-                    done(new Error('No forked ghost process exists, test setup must have failed.'));
-                }
-            });
+            after(killFork);
 
             describe('1 case', function () {
                 it('with trailing slash', function (done) {

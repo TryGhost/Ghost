@@ -1,17 +1,18 @@
-var testUtils       = require('../../utils'),
-    should          = require('should'),
-    sinon           = require('sinon'),
-    Promise         = require('bluebird'),
-    _               = require('lodash'),
-    models          = require('../../../server/models'),
-    errors          = require('../../../server/errors'),
-    events          = require('../../../server/events'),
-    UserAPI         = require('../../../server/api/users'),
-    db              = require('../../../server/data/db'),
-    sandbox         = sinon.sandbox.create(),
-    context         = testUtils.context,
-    userIdFor       = testUtils.users.ids,
-    roleIdFor       = testUtils.roles.ids;
+var should = require('should'),
+    sinon = require('sinon'),
+    testUtils = require('../../utils'),
+    Promise = require('bluebird'),
+    _ = require('lodash'),
+    models = require('../../../server/models'),
+    errors = require('../../../server/errors'),
+    events = require('../../../server/events'),
+    UserAPI = require('../../../server/api/users'),
+    db = require('../../../server/data/db'),
+    context = testUtils.context,
+    userIdFor = testUtils.users.ids,
+    roleIdFor = testUtils.roles.ids,
+
+    sandbox = sinon.sandbox.create();
 
 describe('Users API', function () {
     var eventsTriggered;
@@ -120,7 +121,10 @@ describe('Users API', function () {
         });
 
         it('Can browse with roles', function (done) {
-            UserAPI.browse(_.extend({}, testUtils.context.admin, {status: 'all', include: 'roles'})).then(function (response) {
+            UserAPI.browse(_.extend({}, testUtils.context.admin, {
+                status: 'all',
+                include: 'roles'
+            })).then(function (response) {
                 should.exist(response);
                 testUtils.API.checkResponse(response, 'users');
                 should.exist(response.users);
@@ -310,17 +314,17 @@ describe('Users API', function () {
 
                     return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.owner, {id: userIdFor.admin}));
                 }).then(function (response) {
-                    checkEditResponse(response);
-                    return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.owner, {id: userIdFor.editor}));
-                }).then(function (response) {
-                    checkEditResponse(response);
+                checkEditResponse(response);
+                return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.owner, {id: userIdFor.editor}));
+            }).then(function (response) {
+                checkEditResponse(response);
 
-                    return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.owner, {id: userIdFor.author}));
-                }).then(function (response) {
-                    checkEditResponse(response);
+                return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.owner, {id: userIdFor.author}));
+            }).then(function (response) {
+                checkEditResponse(response);
 
-                    done();
-                }).catch(done);
+                done();
+            }).catch(done);
         });
 
         it('Admin can edit Admin, Editor and Author roles', function (done) {
@@ -329,14 +333,14 @@ describe('Users API', function () {
                     checkEditResponse(response);
                     return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.admin, {id: userIdFor.editor}));
                 }).then(function (response) {
-                    checkEditResponse(response);
+                checkEditResponse(response);
 
-                    return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.admin, {id: userIdFor.author}));
-                }).then(function (response) {
-                    checkEditResponse(response);
+                return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.admin, {id: userIdFor.author}));
+            }).then(function (response) {
+                checkEditResponse(response);
 
-                    done();
-                }).catch(done);
+                done();
+            }).catch(done);
         });
 
         it('Admin CANNOT edit Owner role', function (done) {
@@ -344,19 +348,34 @@ describe('Users API', function () {
                 .then(function () {
                     done(new Error('Admin should not be able to edit owner account'));
                 }).catch(function (error) {
-                    error.errorType.should.eql('NoPermissionError');
-                    done();
-                });
+                error.errorType.should.eql('NoPermissionError');
+                done();
+            });
         });
 
         it('Admin can edit Admin, Editor and Author roles with roles in payload', function (done) {
-            UserAPI.edit({users: [{name: newName, roles: [roleIdFor.admin]}]}, _.extend({}, context.admin, {id: userIdFor.admin})).then(function (response) {
+            UserAPI.edit({
+                users: [{
+                    name: newName,
+                    roles: [roleIdFor.admin]
+                }]
+            }, _.extend({}, context.admin, {id: userIdFor.admin})).then(function (response) {
                 checkEditResponse(response);
-                return UserAPI.edit({users: [{name: newName, roles: [roleIdFor.editor]}]}, _.extend({}, context.admin, {id: userIdFor.editor}));
+                return UserAPI.edit({
+                    users: [{
+                        name: newName,
+                        roles: [roleIdFor.editor]
+                    }]
+                }, _.extend({}, context.admin, {id: userIdFor.editor}));
             }).then(function (response) {
                 checkEditResponse(response);
 
-                return UserAPI.edit({users: [{name: newName, roles: [roleIdFor.author]}]}, _.extend({}, context.admin, {id: userIdFor.author}));
+                return UserAPI.edit({
+                    users: [{
+                        name: newName,
+                        roles: [roleIdFor.author]
+                    }]
+                }, _.extend({}, context.admin, {id: userIdFor.author}));
             }).then(function (response) {
                 checkEditResponse(response);
 
@@ -452,7 +471,12 @@ describe('Users API', function () {
         it('Author can edit self with role set', function (done) {
             // Next test that author CAN edit self
             UserAPI.edit(
-                {users: [{name: newName, roles: [roleIdFor.author]}]}, _.extend({}, context.author, {id: userIdFor.author})
+                {
+                    users: [{
+                        name: newName,
+                        roles: [roleIdFor.author]
+                    }]
+                }, _.extend({}, context.author, {id: userIdFor.author})
             ).then(function (response) {
                 checkEditResponse(response);
                 done();
@@ -462,7 +486,12 @@ describe('Users API', function () {
         it('Author can edit self with role set as string', function (done) {
             // Next test that author CAN edit self
             UserAPI.edit(
-                {users: [{name: newName, roles: [roleIdFor.author.toString()]}]}, _.extend({}, context.author, {id: userIdFor.author})
+                {
+                    users: [{
+                        name: newName,
+                        roles: [roleIdFor.author.toString()]
+                    }]
+                }, _.extend({}, context.author, {id: userIdFor.author})
             ).then(function (response) {
                 checkEditResponse(response);
                 done();
@@ -471,7 +500,12 @@ describe('Users API', function () {
 
         it('Does not allow password to be set', function (done) {
             UserAPI.edit(
-                {users: [{name: 'newname', password: 'newpassword'}]}, _.extend({}, context.author, {id: userIdFor.author})
+                {
+                    users: [{
+                        name: 'newname',
+                        password: 'newpassword'
+                    }]
+                }, _.extend({}, context.author, {id: userIdFor.author})
             ).then(function () {
                 return models.User.findOne({id: userIdFor.author}).then(function (response) {
                     response.get('name').should.eql('newname');
@@ -876,15 +910,15 @@ describe('Users API', function () {
                         // Editor
                         return UserAPI.destroy(_.extend({}, context.owner, {id: userIdFor.editor}));
                     }).then(function (response) {
-                        should.not.exist(response);
+                    should.not.exist(response);
 
-                        // Author
-                        return UserAPI.destroy(_.extend({}, context.owner, {id: userIdFor.author}));
-                    }).then(function (response) {
-                        should.not.exist(response);
+                    // Author
+                    return UserAPI.destroy(_.extend({}, context.owner, {id: userIdFor.author}));
+                }).then(function (response) {
+                    should.not.exist(response);
 
-                        done();
-                    }).catch(done);
+                    done();
+                }).catch(done);
             });
         });
 
@@ -905,15 +939,15 @@ describe('Users API', function () {
                         // Editor
                         return UserAPI.destroy(_.extend({}, context.admin, {id: testUtils.DataGenerator.Content.extraUsers[1].id}));
                     }).then(function (response) {
-                        should.not.exist(response);
+                    should.not.exist(response);
 
-                        // Author
-                        return UserAPI.destroy(_.extend({}, context.admin, {id: testUtils.DataGenerator.Content.extraUsers[2].id}));
-                    }).then(function (response) {
-                        should.not.exist(response);
+                    // Author
+                    return UserAPI.destroy(_.extend({}, context.admin, {id: testUtils.DataGenerator.Content.extraUsers[2].id}));
+                }).then(function (response) {
+                    should.not.exist(response);
 
-                        done();
-                    }).catch(done);
+                    done();
+                }).catch(done);
             });
         });
 

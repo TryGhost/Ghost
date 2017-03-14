@@ -1,9 +1,9 @@
-var testUtils   = require('../../utils'),
-    should      = require('should'),
+var should = require('should'),
+    testUtils = require('../../utils'),
 
     // Stuff we are testing
-    RoleModel   = require('../../../server/models/role').Role,
-    context     = testUtils.context.admin;
+    RoleModel = require('../../../server/models/role').Role,
+    context = testUtils.context.admin;
 
 describe('Role Model', function () {
     // Keep the DB clean

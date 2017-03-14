@@ -1,4 +1,5 @@
-var getAssetUrl = require('../../../server/data/meta/asset_url'),
+var should = require('should'), // jshint ignore:line
+    getAssetUrl = require('../../../server/data/meta/asset_url'),
     config = require('../../../server/config');
 
 describe('getAssetUrl', function () {

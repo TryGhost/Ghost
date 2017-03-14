@@ -1,8 +1,6 @@
-var uuid = require('uuid'),
-    should = require('should'),
+var should = require('should'), // jshint ignore:line
+    uuid = require('uuid'),
     utils = require('../../../server/utils');
-
-should.equal(true, true);
 
 describe('Utils: tokens', function () {
     it('generate', function () {

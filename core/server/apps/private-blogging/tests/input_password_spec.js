@@ -1,6 +1,6 @@
 // We use the name input_password to match the helper for consistency:
 // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
-var should         = require('should'),
+var should = require('should'),
 
 // Stuff we are testing
     input_password = require('../lib/helpers/input_password');

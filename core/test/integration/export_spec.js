@@ -1,11 +1,11 @@
-var testUtils   = require('../utils/index'),
-    should      = require('should'),
-    sinon       = require('sinon'),
-    _           = require('lodash'),
+var should = require('should'),
+    sinon = require('sinon'),
+    testUtils = require('../utils/index'),
+    _ = require('lodash'),
 
     // Stuff we are testing
-    exporter    = require('../../server/data/export'),
-    utils       = require('../../server/utils'),
+    exporter = require('../../server/data/export'),
+    utils = require('../../server/utils'),
 
     sandbox = sinon.sandbox.create();
 
