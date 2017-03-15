@@ -12,12 +12,12 @@ export default Component.extend({
         this.set('selected', this.get('tool').selected);
     },
     click: function () { // eslint-disable-line
-        let {section} = this.get('range');
+        let {section, startOffset, endOffset} = this.get('range');
         let editor = this.get('editor');
 
-        editor.range = Range.create(section, 0, section, 0);
+        editor.range = Range.create(section, startOffset, section, endOffset);
 
-        this.get('tool').onClick(editor, section);
         this.sendAction('clicked');
+        this.get('tool').onClick(editor, section);
     }
 });
