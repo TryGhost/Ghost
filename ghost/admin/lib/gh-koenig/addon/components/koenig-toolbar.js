@@ -12,7 +12,7 @@ export default Component.extend({
     classNameBindings: ['isVisible'],
     isVisible: false,
     tools: [],
-
+    hasRendered: false,
     isLink: computed({
         get() {
             return this._isLink;
@@ -58,19 +58,21 @@ export default Component.extend({
     },
 
     didRender() {
-        let $this = this.$();
+        if (this.get('hasRendered')) {
+            return;
+        }
+        let toolbar = this.$();
         let {editor} = this;
         let $editor = $(this.get('containerSelector')); // TODO - this element is part of ghost-admin, we need to separate them more.
         let isMousedown = false;
-        if (!editor.range || editor.range.head.isBlank) {
-            this.set('isVisible', false);
-        }
+
         $editor.mousedown(() => isMousedown = true);
         $editor.mouseup(() => {
             isMousedown = false;
-            updateToolbarToRange(this, $this, $editor, isMousedown);
+            updateToolbarToRange(this, toolbar, $editor, isMousedown);
         });
-        editor.cursorDidChange(() => updateToolbarToRange(this, $this, $editor, isMousedown));
+        editor.cursorDidChange(() => updateToolbarToRange(this, toolbar, $editor, isMousedown));
+        this.set('hasRendered', true);
     },
 
     willDestroyElement() {
@@ -89,7 +91,7 @@ export default Component.extend({
             // if enter run link
             if (event.keyCode === 13) {
                 this.set('isLink', false);
-
+                this.set('isVisible', false);
                 this.editor.run((postEditor) => {
                     let markup = postEditor.builder.createMarkup('a', {href: event.target.value});
                     postEditor.addMarkupToRange(this.get('linkRange'), markup);
