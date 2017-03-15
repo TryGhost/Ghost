@@ -46,8 +46,9 @@ export default Component.extend({
             this.set('selectedTool', selectedTool);
             selectedTool.selected = true;
         }
+
         if (i === 0) {
-            alert('close');
+         //   this.send('closeMenu');
         }
         return tools;
     }),
@@ -86,7 +87,8 @@ export default Component.extend({
         if (this.get('isOpen')) {
             let queryString = editor.range.head.section.text.substring(range.startOffset, editor.range.head.offset);
             this.set('query', queryString);
-            if (queryString.length > 10) {
+            // if we've typed 5 characters and have no tools then close.
+            if (queryString.length > 5 && !this.get('toolLength')) {
                 this.send('closeMenu');
             }
         }
@@ -99,7 +101,6 @@ export default Component.extend({
 
             this.set('query', '');
             this.set('isOpen', true);
-
             this.set('range', {
                 section: editor.range.head.section,
                 startOffset: editor.range.head.offset,
