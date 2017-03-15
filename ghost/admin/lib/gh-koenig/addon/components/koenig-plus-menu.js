@@ -68,6 +68,7 @@ export default Component.extend({
         let $editor = $(this.get('containerSelector'));
 
         input.blur(() => {
+            // nasty hack - give the tool time to execute before removing this from the dom.
             window.setTimeout(() => {
                 this.send('closeMenuKeepButton');
             }, 200);
