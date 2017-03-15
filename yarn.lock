@@ -2586,7 +2586,7 @@ knex-migrator@2.0.14:
     mysql "^2.11.1"
     sqlite3 "^3.1.8"
 
-knex@0.12.2:
+knex@0.12.2, knex@^0.12.2:
   version "0.12.2"
   resolved "https://registry.yarnpkg.com/knex/-/knex-0.12.2.tgz#ab28e3a67033711949663b13b854007e045ead7c"
   dependencies:
@@ -2608,9 +2608,9 @@ knex@0.12.2:
     tildify "~1.0.0"
     v8flags "^2.0.2"
 
-knex@0.12.7, knex@^0.12.2:
-  version "0.12.7"
-  resolved "https://registry.yarnpkg.com/knex/-/knex-0.12.7.tgz#5793f579f07a2938bf9874693d74bba55c5baa1c"
+knex@0.12.8:
+  version "0.12.8"
+  resolved "https://registry.yarnpkg.com/knex/-/knex-0.12.8.tgz#77374309ede1f0a238c9f9312694968bfec2e7d4"
   dependencies:
     babel-runtime "^6.11.6"
     bluebird "^3.4.6"
@@ -3090,13 +3090,13 @@ mkdirp@0.3.2:
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.3.2.tgz#4bfb891e9c48b93d6b567f2c3cf2dd3f56bcdef8"
 
-mkdirp@0.5.0, mkdirp@^0.5.0:
+mkdirp@0.5.0:
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.0.tgz#1d73076a6df986cd9344e15e71fcc05a4c9abf12"
   dependencies:
     minimist "0.0.8"
 
-mkdirp@0.5.1, mkdirp@0.5.x, mkdirp@0.x.x, "mkdirp@>=0.5 0", mkdirp@^0.5.1, mkdirp@~0.5.0, mkdirp@~0.5.1:
+mkdirp@0.5.1, mkdirp@0.5.x, mkdirp@0.x.x, "mkdirp@>=0.5 0", mkdirp@^0.5.0, mkdirp@^0.5.1, mkdirp@~0.5.0, mkdirp@~0.5.1:
   version "0.5.1"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.1.tgz#30057438eac6cf7f8c4767f38648d6697d75c903"
   dependencies:
