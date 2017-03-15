@@ -2571,15 +2571,15 @@ klaw@^1.0.0:
   optionalDependencies:
     graceful-fs "^4.1.9"
 
-knex-migrator@2.0.14:
-  version "2.0.14"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-2.0.14.tgz#b314f80a85054009feef4ce1727f1403eaa0b467"
+knex-migrator@2.0.15:
+  version "2.0.15"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-2.0.15.tgz#68f3f1f89a8ba0b9255bb4ee4cd13a822c05251f"
   dependencies:
     bluebird "^3.4.6"
     commander "2.9.0"
     debug "^2.2.0"
     ghost-ignition "^2.8.2"
-    knex "^0.12.2"
+    knex "0.12.2"
     lodash "^4.16.4"
     resolve "1.1.7"
   optionalDependencies:
@@ -2608,7 +2608,7 @@ knex@0.12.2:
     tildify "~1.0.0"
     v8flags "^2.0.2"
 
-knex@0.12.7, knex@^0.12.2:
+knex@0.12.7:
   version "0.12.7"
   resolved "https://registry.yarnpkg.com/knex/-/knex-0.12.7.tgz#5793f579f07a2938bf9874693d74bba55c5baa1c"
   dependencies:
