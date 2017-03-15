@@ -30,7 +30,7 @@ describe('HTML card', function () {
         var serializer = new SimpleDom.HTMLSerializer([]);
         serializer.serialize(card.render(opts)).should.match('<div class="kg-card-html">CONTENT</div>');
     });
-    it.skip('Invalid HTML returns', function () {
+    it('Unbalanced HTML renders', function () {
         opts = {
             env: {
                 dom: new SimpleDom.Document()
@@ -41,6 +41,6 @@ describe('HTML card', function () {
         };
 
         var serializer = new SimpleDom.HTMLSerializer([]);
-        serializer.serialize(card.render(opts)).should.match('<div class="kg-card-html"><h1>HEADING<</div>');
+        serializer.serialize(card.render(opts)).should.match('<div><h1>HEADING&lt;</h1></div>');
     });
 });
