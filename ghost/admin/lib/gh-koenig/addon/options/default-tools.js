@@ -220,7 +220,15 @@ export default function (editor, toolbar) {
             onClick: (editor, section) => {
                 editor.run((postEditor) => {
                     let card = postEditor.builder.createCardSection('html-card', {pos: 'top', html: editor.range.headSection.text});
-                    postEditor.replaceSection(section || editor.range.headSection, card);
+                    // we can't replace a list item so we insert a card after it and then delete it.
+                    if (editor.range.headSection.isListItem) {
+                        // postEditor.toggleSection('p');
+                        // postEditor.insertSection(card);
+                        // postEditor.removeSection(editor.range.head.section);
+                        editor.insertCard('html-card');
+                    } else {
+                        postEditor.replaceSection(section || editor.range.headSection, card);
+                    }
                 });
             },
             checkElements() {
@@ -257,7 +265,12 @@ export default function (editor, toolbar) {
             onClick: (editor, section) => {
                 editor.run((postEditor) => {
                     let card = postEditor.builder.createCardSection('markdown-card', {pos: 'top', markdown: editor.range.headSection.text});
-                    postEditor.replaceSection(section || editor.range.headSection, card);
+                    // we can't replace a list item so we insert a card after it and then delete it.
+                    if (editor.range.headSection.isListItem) {
+                        editor.insertCard('markdown-card');
+                    } else {
+                        postEditor.replaceSection(section || editor.range.headSection, card);
+                    }
                 });
             },
             checkElements() {
