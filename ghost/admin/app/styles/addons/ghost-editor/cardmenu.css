@@ -18,20 +18,24 @@
     z-index: 9999999; /* have to compete with codemirror */
 }
 
-#gh-cardmenu-button {
-    position:absolute;
-    width: 40px;
-    height: 40px;
-    background-color:pink;
-    font-size:40px;
-    line-height: 40px;
-    color: powderblue;
-    font-family: "Comic Sans MS", cursive, sans-serif;
+.gh-cardmenu-button {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    padding: 6px;
+    border: var(--midgrey) 1px solid;
+    background: #fff;
+    border-radius: 100%;
+    font-size: 16px;
+    line-height: 16px;
+    text-align: center;
+    color: var(--midgrey);
 }
-#gh-cardmenu-button:hover {
-    background-color:red;
-    color: yellow;
-} 
+
+.gh-cardmenu-button svg path {
+    stroke: var(--midgrey);
+    stroke-width: 2px;
+}
 
 .gh-cardmenu-search {
     position: relative;
