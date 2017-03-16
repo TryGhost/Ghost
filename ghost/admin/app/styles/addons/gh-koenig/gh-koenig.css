@@ -43,11 +43,14 @@
 }
 
 .__mobiledoc-card {
-    display: inline-block; /* required for cursor movement around card */
-    border: 1px solid;
-    width: calc(100% - 20px); /* required for obvious cursor placmenet around card */
-    margin:5px;
- }
+    position: relative;
+    display: block; /* required for cursor movement around card */
+    width: 100%;
+}
+
+.__mobiledoc-card:hover {
+    box-shadow: var(--blue) 0 0 0 1px;
+}
 
 .__mobiledoc-card .card-handle {
     position: absolute;
@@ -149,4 +152,13 @@ textarea.ed_code {
     border-bottom: 10px solid #5ba4e5;
     border-left: 10px solid transparent;
     border-right: 10px solid transparent;
+}
+
+
+.__mobiledoc-card .gh-image-uploader .upload-form {
+    width: 100%;
+    height: 350px;
+    background: color(var(--lightgrey) l(+4%));
+    box-shadow: var(--lightgrey) 0 0 0 1px inset, #fff 0 0 0 15px inset;
+    border-radius: 3px;
 }

@@ -47,7 +47,7 @@ module.exports = function(grunt) {
                         return 'npm run build -- --environment=production --silent';
                     case 'dev':
                         return 'npm run build';
-                     case 'watch':
+                    case 'watch':
                         return 'npm run build -- --watch';
                     }
                 },
