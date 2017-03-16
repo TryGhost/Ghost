@@ -22,11 +22,15 @@ The project is maintained by a non-profit organisation called the **Ghost Founda
 **Please note:** These are the install instructions for Ghost 1.0-alpha, which is **not** stable. If you're looking for the latest release of Ghost, check out the [stable branch](https://github.com/TryGhost/Ghost/tree/stable) or the [latest release](https://github.com/TryGhost/Ghost/releases). If you get stuck, come say hi over [on slack](https://slack.ghost.org)!
 
 Install and run Ghost.
-```bash
-git clone git@github.com:TryGhost/Ghost.git [or your Ghost Fork's URL]
-npm run init
-grunt dev
-```
+<pre>
+<b>git clone git@github.com:TryGhost/Ghost.git</b> [or your Ghost Fork's URL]
+<b>npm run init</b>
+    <span style="color:grey">Short command for: npm install -g knex-migrator ember-cli grunt-cli && npm install && grunt init</span>
+<b>knex-migrator init</b>
+    <span style="color:grey">Creates and initialises your database</span> 
+<b>grunt dev</b>
+    <span style="color:grey">Starts the express server and ember build</span> 
+</pre>
 
 Run server tests
 
@@ -40,6 +44,8 @@ cd core/client
 ember test
 ```
 
+
+Read more about the [development workflows](https://github.com/TryGhost/Ghost/wiki/%5BHOLD%5D-Contributing-Workflow-for-1.0.0).
 
 # Deploying Ghost
 
