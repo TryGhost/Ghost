@@ -19,26 +19,24 @@ The project is maintained by a non-profit organisation called the **Ghost Founda
 
 # Ghost 1.0-alpha Developer Install
 
-**Please note:** These are the install instructions for Ghost 1.0-alpha, which is **not** stable. If you're looking for the latest release of Ghost, check out the [stable branch](https://github.com/TryGhost/Ghost/tree/stable) or the [latest release](https://github.com/TryGhost/Ghost/releases).
+**Please note:** These are the install instructions for Ghost 1.0-alpha, which is **not** stable. If you're looking for the latest release of Ghost, check out the [stable branch](https://github.com/TryGhost/Ghost/tree/stable) or the [latest release](https://github.com/TryGhost/Ghost/releases). If you get stuck, come say hi over [on slack](https://slack.ghost.org)!
 
-If you get stuck, come say hi over [on slack](https://slack.ghost.org)!
-
+Install and run Ghost.
 ```bash
-git clone [Ghost's repo URL or your Ghost Fork's URL]
-npm install -g knex-migrator grunt
-npm install
-git submodule update --init
-cd core/client
-npm install
-bower install
-cd ../..
-grunt build
-knex-migrator init
+git clone git@github.com:TryGhost/Ghost.git [or your Ghost Fork's URL]
+npm run init
 grunt dev
 ```
 
-To run tests
+Run server tests
+
 ```bash
+grunt test-all
+```
+
+Run client tests
+```bash
+cd core/client
 ember test
 ```
 
