@@ -69,7 +69,7 @@ export default Component.extend({
 
         input.blur(() => {
             window.setTimeout(() => {
-                this.send('closeMenu');
+                this.send('closeMenuKeepButton');
             }, 200);
         });
 
@@ -165,8 +165,11 @@ export default Component.extend({
             this.set('isOpen', false);
             this.set('isButton', false);
         },
+        closeMenuKeepButton: function () { // eslint-disable-line
+            this.set('isOpen', false);
+        },
         updateSelection: function (event) { // eslint-disable-line
-            alert(event);
+            // alert(event);
         }
     }
 });
