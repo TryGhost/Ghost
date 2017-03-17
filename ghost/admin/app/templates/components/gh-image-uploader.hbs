@@ -15,7 +15,7 @@
     {{!-- file selection/drag-n-drop  --}}
     <div class="upload-form">
         {{#gh-file-input multiple=false alt=description action=(action "fileSelected") accept=accept}}
-            <div class="gh-btn gh-btn-outline"><span>{{description}}</span></div>
+            <div class="gh-btn gh-btn-outline" data-test-file-input-description><span>{{description}}</span></div>
         {{/gh-file-input}}
     </div>
 {{/if}}
