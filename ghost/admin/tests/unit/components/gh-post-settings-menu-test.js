@@ -14,7 +14,7 @@ function K() {
 // TODO: convert to integration tests
 describe.skip('Unit: Component: post-settings-menu', function () {
     setupComponentTest('gh-post-settings-menu', {
-        needs: ['service:notifications', 'service:slug-generator', 'service:timeZone']
+        needs: ['service:notifications', 'service:slug-generator', 'service:settings']
     });
 
     it('slugValue is one-way bound to model.slug', function () {

@@ -34,17 +34,17 @@ export default Service.extend({
     store: injectService(),
     config: injectService(),
     session: injectService(),
+    settings: injectService(),
     notifications: injectService(),
 
     publicAPI: feature('publicAPI'),
     subscribers: feature('subscribers'),
     nightShift: feature('nightShift', true),
 
-    _settings: null,
     _user: null,
 
-    labs: computed('_settings.labs', function () {
-        let labs = this.get('_settings.labs');
+    labs: computed('settings.labs', function () {
+        let labs = this.get('settings.labs');
 
         try {
             return JSON.parse(labs) || {};
@@ -65,10 +65,9 @@ export default Service.extend({
 
     fetch() {
         return RSVP.hash({
-            settings: this.get('store').queryRecord('setting', {type: 'blog,theme,private'}),
+            settings: this.get('settings').fetch(),
             user: this.get('session.user')
-        }).then(({settings, user}) => {
-            this.set('_settings', settings);
+        }).then(({user}) => {
             this.set('_user', user);
 
             return true;
@@ -77,7 +76,7 @@ export default Service.extend({
 
     update(key, value, user = false) {
         let serviceProperty = user ? 'accessibility' : 'labs';
-        let model = this.get(user ? '_user' : '_settings');
+        let model = this.get(user ? '_user' : 'settings');
         let featureObject = this.get(serviceProperty);
 
         // set the new key value for either the labs property or the accessibility property

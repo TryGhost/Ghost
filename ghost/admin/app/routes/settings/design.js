@@ -3,16 +3,13 @@ import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
 import styleBody from 'ghost-admin/mixins/style-body';
 import RSVP from 'rsvp';
+import injectService from 'ember-service/inject';
 
 export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
+    settings: injectService(),
+
     titleToken: 'Settings - Design',
-
     classNames: ['settings-view-design'],
-
-    // TODO: replace with a synchronous settings service
-    querySettings() {
-        return this.store.queryRecord('setting', {type: 'blog,theme,private'});
-    },
 
     beforeModel() {
         this._super(...arguments);
@@ -22,7 +19,7 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
 
     model() {
         return RSVP.hash({
-            settings: this.querySettings(),
+            settings: this.get('settings').reload(),
             themes: this.get('store').findAll('theme')
         });
     },

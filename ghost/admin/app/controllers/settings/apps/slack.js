@@ -3,15 +3,15 @@ import {empty} from 'ember-computed';
 import injectService from 'ember-service/inject';
 import {task} from 'ember-concurrency';
 import {isInvalidError} from 'ember-ajax/errors';
+import {alias} from 'ember-computed';
 
 export default Controller.extend({
     ghostPaths: injectService(),
     ajax: injectService(),
     notifications: injectService(),
+    settings: injectService(),
 
-    // will be set by route
-    settings: null,
-
+    model: alias('settings.slack.firstObject'),
     testNotificationDisabled: empty('model.url'),
 
     save: task(function* () {

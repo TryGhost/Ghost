@@ -11,6 +11,7 @@ import ApplicationRouteMixin from 'ember-simple-auth/mixins/application-route-mi
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
+import RSVP from 'rsvp';
 
 function K() {
     return this;
@@ -31,6 +32,7 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
     dropdown: injectService(),
     lazyLoader: injectService(),
     notifications: injectService(),
+    settings: injectService(),
     upgradeNotification: injectService(),
 
     beforeModel() {
@@ -55,13 +57,20 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
                 authenticator.onOnline();
             }
 
-            // return the feature loading promise so that we block until settings
-            // are loaded in order for synchronous access everywhere
-            return this.get('feature').fetch().then(() => {
+            let featurePromise = this.get('feature').fetch().then(() => {
                 if (this.get('feature.nightShift')) {
                     return this._setAdminTheme();
                 }
             });
+
+            let settingsPromise = this.get('settings').fetch();
+
+            // return the feature/settings load promises so that we block until
+            // they are loaded to enable synchronous access everywhere
+            return RSVP.all([
+                featurePromise,
+                settingsPromise
+            ]);
         }
     },
 

@@ -1,5 +1,7 @@
 import {helper} from 'ember-helper';
 
+// TODO: this isn't used currently - safe to delete?
+
 export function timeToSchedule(params) {
     if (!params || !params.length) {
         return;

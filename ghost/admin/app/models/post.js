@@ -98,7 +98,6 @@ export default Model.extend(Comparable, ValidationEngine, {
 
     config: injectService(),
     ghostPaths: injectService(),
-    timeZone: injectService(),
     clock: injectService(),
 
     absoluteUrl: computed('url', 'ghostPaths.url', 'config.blogUrl', function () {

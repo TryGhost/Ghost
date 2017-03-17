@@ -1,0 +1,64 @@
+import Ember from 'ember';
+import Service from 'ember-service';
+import injectService from 'ember-service/inject';
+import RSVP from 'rsvp';
+import ValidationEngine from 'ghost-admin/mixins/validation-engine';
+
+// ember-cli-shims doesn't export _ProxyMixin
+const {_ProxyMixin} = Ember;
+
+export default Service.extend(_ProxyMixin, ValidationEngine, {
+    store: injectService(),
+
+    // will be set to the single Settings model, it's a reference so any later
+    // changes to the settings object in the store will be reflected
+    content: null,
+
+    validationType: 'setting',
+    _loadingPromise: null,
+
+    // the settings API endpoint is a little weird as it's singular and we have
+    // to pass in all types - if we ever fetch settings without all types then
+    // save we have problems with the missing settings being removed or reset
+    _loadSettings() {
+        if (!this._loadingPromise) {
+            this._loadingPromise = this.get('store')
+                .queryRecord('setting', {type: 'blog,theme,private'})
+                .then((settings) => {
+                    this._loadingPromise = null;
+                    return settings;
+                });
+        }
+
+        return this._loadingPromise;
+    },
+
+    fetch() {
+        if (!this.get('content')) {
+            return this.reload();
+        } else {
+            return RSVP.resolve(this);
+        }
+    },
+
+    reload() {
+        return this._loadSettings().then((settings) => {
+            this.set('content', settings);
+            return this;
+        });
+    },
+
+    save() {
+        let settings = this.get('content');
+
+        if (!settings) {
+            return false;
+        }
+
+        return settings.save();
+    },
+
+    rollbackAttributes() {
+        return this.get('content').rollbackAttributes();
+    }
+});

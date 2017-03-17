@@ -3,7 +3,6 @@ import RSVP from 'rsvp';
 import injectService from 'ember-service/inject';
 import injectController from 'ember-controller/inject';
 import {isInvalidError} from 'ember-ajax/errors';
-
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 
 const {Promise} = RSVP;
@@ -24,6 +23,7 @@ export default Controller.extend(ValidationEngine, {
     application: injectController(),
     config: injectService(),
     session: injectService(),
+    settings: injectService(),
     ajax: injectService(),
 
     // ValidationEngine settings
@@ -79,14 +79,22 @@ export default Controller.extend(ValidationEngine, {
             return this.sendImage(result.users[0])
             .then(() => {
                 this.toggleProperty('submitting');
-                return this.transitionToRoute('setup.three');
+
+                // fetch settings for synchronous access before transitioning
+                return this.get('settings').fetch().then(() => {
+                    return this.transitionToRoute('setup.three');
+                });
             }).catch((resp) => {
                 this.toggleProperty('submitting');
                 this.get('notifications').showAPIError(resp, {key: 'setup.blog-details'});
             });
         } else {
             this.toggleProperty('submitting');
-            return this.transitionToRoute('setup.three');
+
+            // fetch settings for synchronous access before transitioning
+            return this.get('settings').fetch().then(() => {
+                return this.transitionToRoute('setup.three');
+            });
         }
     },
 
@@ -151,7 +159,7 @@ export default Controller.extend(ValidationEngine, {
         this.get('hasValidated').addObjects(['blogTitle', 'session']);
 
         return this.validate().then(() => {
-            return this.store.queryRecord('setting', {type: 'blog,theme,private'})
+            return this.get('settings').fetch()
                 .then((settings) => {
                     settings.set('title', blogTitle);
 

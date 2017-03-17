@@ -1,12 +1,13 @@
 import Controller from 'ember-controller';
 import injectService from 'ember-service/inject';
 import {task} from 'ember-concurrency';
+import {alias} from 'ember-computed';
 
 export default Controller.extend({
     notifications: injectService(),
+    settings: injectService(),
 
-    // will be set by route
-    settings: null,
+    model: alias('settings.amp'),
 
     save: task(function* () {
         let amp = this.get('model');

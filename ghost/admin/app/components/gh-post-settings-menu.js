@@ -24,7 +24,7 @@ export default Component.extend(SettingsMenuMixin, {
     notifications: injectService(),
     slugGenerator: injectService(),
     session: injectService(),
-    timeZone: injectService(),
+    settings: injectService(),
 
     slugValue: boundOneWay('model.slug'),
     metaTitleScratch: alias('model.metaTitleScratch'),
@@ -227,75 +227,74 @@ export default Component.extend(SettingsMenuMixin, {
             }
 
             // The user inputs a date which he expects to be in his timezone. Therefore, from now on
-            // we have to work with the timezone offset which we get from the timeZone Service.
-            this.get('timeZone.blogTimezone').then((blogTimezone) => {
-                let newPublishedAt = parseDateString(userInput, blogTimezone);
-                let publishedAtUTC = moment.utc(this.get('model.publishedAtUTC'));
-                let errMessage = '';
-                let newPublishedAtUTC;
+            // we have to work with the timezone offset which we get from the settings Service.
+            let blogTimezone = this.get('settings.activeTimezone');
+            let newPublishedAt = parseDateString(userInput, blogTimezone);
+            let publishedAtUTC = moment.utc(this.get('model.publishedAtUTC'));
+            let errMessage = '';
+            let newPublishedAtUTC;
 
-                // Clear previous errors
-                this.get('model.errors').remove('post-setting-date');
+            // Clear previous errors
+            this.get('model.errors').remove('post-setting-date');
 
-                // Validate new Published date
-                if (!newPublishedAt.isValid()) {
-                    errMessage = 'Published Date must be a valid date with format: '
-                               + 'DD MMM YY @ HH:mm (e.g. 6 Dec 14 @ 15:00)';
-                }
+            // Validate new Published date
+            if (!newPublishedAt.isValid()) {
+                errMessage = 'Published Date must be a valid date with format: '
+                           + 'DD MMM YY @ HH:mm (e.g. 6 Dec 14 @ 15:00)';
+            }
 
-                // Date is a valid date, so now make it UTC
-                newPublishedAtUTC = moment.utc(newPublishedAt);
+            // Date is a valid date, so now make it UTC
+            newPublishedAtUTC = moment.utc(newPublishedAt);
 
-                if (newPublishedAtUTC.diff(moment.utc(new Date()), 'hours', true) > 0) {
+            if (newPublishedAtUTC.diff(moment.utc(new Date()), 'hours', true) > 0) {
 
-                    // We have to check that the time from now is not shorter than 2 minutes,
-                    // otherwise we'll have issues with the serverside scheduling procedure
-                    if (newPublishedAtUTC.diff(moment.utc(new Date()), 'minutes', true) < 2) {
-                        errMessage = 'Must be at least 2 minutes from now.';
-                    } else {
-                        // in case the post is already published and the user sets the date
-                        // afterwards to a future time, we stop here, and he has to unpublish
-                        // his post first
-                        if (this.get('model.isPublished')) {
-                            errMessage = 'Your post is already published.';
-                            // this is the indicator for the different save button layout
-                            this.set('timeScheduled', false);
-                        }
-                        // everything fine, we can start the schedule workflow and change
-                        // the save buttons according to it
-                        this.set('timeScheduled', true);
+                // We have to check that the time from now is not shorter than 2 minutes,
+                // otherwise we'll have issues with the serverside scheduling procedure
+                if (newPublishedAtUTC.diff(moment.utc(new Date()), 'minutes', true) < 2) {
+                    errMessage = 'Must be at least 2 minutes from now.';
+                } else {
+                    // in case the post is already published and the user sets the date
+                    // afterwards to a future time, we stop here, and he has to unpublish
+                    // his post first
+                    if (this.get('model.isPublished')) {
+                        errMessage = 'Your post is already published.';
+                        // this is the indicator for the different save button layout
+                        this.set('timeScheduled', false);
                     }
-                    // if the post is already scheduled and the user changes the date back into the
-                    // past, we'll set the status of the post back to draft, so he can start all over
-                    // again
-                } else if (this.get('model.isScheduled')) {
-                    this.set('model.status', 'draft');
+                    // everything fine, we can start the schedule workflow and change
+                    // the save buttons according to it
+                    this.set('timeScheduled', true);
                 }
+                // if the post is already scheduled and the user changes the date back into the
+                // past, we'll set the status of the post back to draft, so he can start all over
+                // again
+            } else if (this.get('model.isScheduled')) {
+                this.set('model.status', 'draft');
+            }
 
-                // If errors, notify and exit.
-                if (errMessage) {
-                    this.get('model.errors').add('post-setting-date', errMessage);
-                    return;
-                }
+            // If errors, notify and exit.
+            if (errMessage) {
+                this.get('model.errors').add('post-setting-date', errMessage);
+                return;
+            }
 
-                // Do nothing if the user didn't actually change the date
-                if (publishedAtUTC && publishedAtUTC.isSame(newPublishedAtUTC)) {
-                    return;
-                }
+            // Do nothing if the user didn't actually change the date
+            if (publishedAtUTC && publishedAtUTC.isSame(newPublishedAtUTC)) {
+                return;
+            }
 
-                // Validation complete
-                this.set('model.publishedAtUTC', newPublishedAtUTC);
+            // Validation complete
+            this.set('model.publishedAtUTC', newPublishedAtUTC);
 
-                // If this is a new post.  Don't save the model.  Defer the save
-                // to the user pressing the save button
-                if (this.get('model.isNew')) {
-                    return;
-                }
+            // If this is a new post.  Don't save the model.  Defer the save
+            // to the user pressing the save button
+            if (this.get('model.isNew')) {
+                return;
+            }
 
-                this.get('model').save().catch((error) => {
-                    this.showError(error);
-                    this.get('model').rollbackAttributes();
-                });
+            this.get('model').save().catch((error) => {
+                this.showError(error);
+                this.get('model').rollbackAttributes();
             });
         },
 

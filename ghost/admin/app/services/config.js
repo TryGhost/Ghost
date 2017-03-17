@@ -4,7 +4,7 @@ import computed from 'ember-computed';
 import injectService from 'ember-service/inject';
 import {isBlank} from 'ember-utils';
 
-// ember-cli-shims doesn't export _ProxyMixin ot testing
+// ember-cli-shims doesn't export _ProxyMixin
 const {_ProxyMixin} = Ember;
 
 export default Service.extend(_ProxyMixin, {

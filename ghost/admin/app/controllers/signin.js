@@ -18,6 +18,7 @@ export default Controller.extend(ValidationEngine, {
     ghostPaths: injectService(),
     notifications: injectService(),
     session: injectService(),
+    settings: injectService(),
     torii: injectService(),
 
     flowErrors: '',
@@ -27,8 +28,13 @@ export default Controller.extend(ValidationEngine, {
 
     authenticate: task(function* (authStrategy, authentication) {
         try {
-            return yield this.get('session')
+            let authResult = yield this.get('session')
                 .authenticate(authStrategy, ...authentication);
+
+            // fetch settings for synchronous access
+            yield this.get('settings').fetch();
+
+            return authResult;
 
         } catch (error) {
             if (error && error.errors) {

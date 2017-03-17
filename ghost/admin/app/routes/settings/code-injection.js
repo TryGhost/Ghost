@@ -1,10 +1,13 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
 import styleBody from 'ghost-admin/mixins/style-body';
+import injectService from 'ember-service/inject';
 
 export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     titleToken: 'Settings - Code injection',
     classNames: ['settings-view-code'],
+
+    settings: injectService(),
 
     beforeModel() {
         this._super(...arguments);
@@ -14,9 +17,7 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     },
 
     model() {
-        return this.store.query('setting', {type: 'blog,theme,private'}).then((records) => {
-            return records.get('firstObject');
-        });
+        return this.get('settings').reload();
     },
 
     actions: {
