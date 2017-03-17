@@ -100,7 +100,7 @@ describe('Acceptance: Settings - General', function () {
             click('.fullscreen-modal .modal-content .gh-image-uploader .image-cancel');
 
             andThen(() => {
-                expect(find('.fullscreen-modal .modal-content .gh-image-uploader .description').text()).to.equal('Upload an image');
+                expect(find(testSelector('file-input-description')).text()).to.equal('Upload an image');
             });
 
             // click cancel button
@@ -119,7 +119,7 @@ describe('Acceptance: Settings - General', function () {
             click('.fullscreen-modal .modal-content .gh-image-uploader .image-cancel');
 
             andThen(() => {
-                expect(find('.fullscreen-modal .modal-content .gh-image-uploader .description').text()).to.equal('Upload an image');
+                expect(find(testSelector('file-input-description')).text()).to.equal('Upload an image');
             });
 
             // click cancel button
