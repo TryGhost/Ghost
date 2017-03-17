@@ -7,9 +7,7 @@ import $ from 'jquery';
 import {isBlank} from 'ember-utils';
 
 // ember-cli-shims doesn't export these
-const {Handlebars, ObjectProxy, PromiseProxyMixin} = Ember;
-
-const ObjectPromiseProxy = ObjectProxy.extend(PromiseProxyMixin);
+const {Handlebars} = Ember;
 
 export default Component.extend({
     tagName: 'li',
@@ -25,7 +23,6 @@ export default Component.extend({
     isScheduled: equal('post.status', 'scheduled'),
 
     ghostPaths: injectService(),
-    timeZone: injectService(),
 
     authorName: computed('post.author.name', 'post.author.email', function () {
         return this.get('post.author.name') || this.get('post.author.email');
@@ -39,12 +36,6 @@ export default Component.extend({
         let authorAvatar = this.get('authorAvatar');
         let safeUrl = Handlebars.Utils.escapeExpression(authorAvatar);
         return htmlSafe(`background-image: url(${safeUrl})`);
-    }),
-
-    blogTimezone: computed('timeZone.blogTimezone', function () {
-        return ObjectPromiseProxy.create({
-            promise: this.get('timeZone.blogTimezone')
-        });
     }),
 
     // HACK: this is intentionally awful due to time constraints

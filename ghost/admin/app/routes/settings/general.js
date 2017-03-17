@@ -5,16 +5,11 @@ import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
 import styleBody from 'ghost-admin/mixins/style-body';
 
 export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
-    titleToken: 'Settings - General',
-
-    classNames: ['settings-view-general'],
-
     config: injectService(),
+    settings: injectService(),
 
-    // TODO: replace with a synchronous settings service
-    querySettings() {
-        return this.store.queryRecord('setting', {type: 'blog,theme,private'});
-    },
+    titleToken: 'Settings - General',
+    classNames: ['settings-view-general'],
 
     beforeModel() {
         this._super(...arguments);
@@ -25,7 +20,7 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
 
     model() {
         return RSVP.hash({
-            settings: this.querySettings(),
+            settings: this.get('settings').reload(),
             availableTimezones: this.get('config.availableTimezones')
         });
     },
@@ -42,9 +37,7 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
         },
 
         reloadSettings() {
-            return this.querySettings((settings) => {
-                this.get('controller').set('model', settings);
-            });
+            return this.get('settings').reload();
         }
     }
 });
