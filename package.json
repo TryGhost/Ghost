@@ -80,7 +80,7 @@
     "showdown-ghost": "0.3.6",
     "simple-dom": "0.3.2",
     "simple-html-tokenizer": "0.4.0",
-    "superagent": "3.5.0",
+    "superagent": "3.5.1",
     "unidecode": "0.1.8",
     "uuid": "3.0.0",
     "validator": "6.3.0",
