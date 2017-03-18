@@ -1,6 +1,5 @@
 var _      = require('lodash'),
     hbs    = require('express-hbs'),
-    config = require('../config'),
     utils = require('../utils'),
     errors = require('../errors'),
     i18n = require('../i18n'),
@@ -53,56 +52,23 @@ themeHandler = {
         next();
     },
 
-    // ### Activate Theme
-    // Helper for updateActiveTheme
-    activateTheme: function activateTheme(blogApp) {
-        var hbsOptions = {
-                partialsDir: [config.get('paths').helperTemplates],
-                onCompile: function onCompile(exhbs, source) {
-                    return exhbs.handlebars.compile(source, {preventIndent: true});
-                }
-            };
-
-        if (themeUtils.getActive().hasPartials()) {
-            hbsOptions.partialsDir.push(themeUtils.getActive().partialsPath);
-        }
-
-        // reset the asset hash
-        config.set('assetHash', null);
-        // clear the view cache
-        blogApp.cache = {};
-        // Set the views and engine
-        blogApp.set('views', themeUtils.getActive().path);
-        blogApp.engine('hbs', hbs.express3(hbsOptions));
-
-        // Set active theme variable on the express server
-        // Note: this is effectively the "mounted" theme, which has been loaded into the express app
-        blogApp.set('activeTheme', themeUtils.getActive().name);
-    },
-
     // ### updateActiveTheme
-    // Updates the blogApp's activeTheme variable and subsequently
-    // activates that theme's views with the hbs templating engine if it
-    // is not yet activated.
+    // If there is no active theme, throw an error
+    // Else, ensure the active theme is mounted
     updateActiveTheme: function updateActiveTheme(req, res, next) {
-        var blogApp = req.app,
-            // We use the settingsCache here, because the setting will be set, even if the theme itself is
-            // not usable because it is invalid or missing.
-            activeThemeName = settingsCache.get('activeTheme'),
-            mountedThemeName = blogApp.get('activeTheme');
-
         // This means that the theme hasn't been loaded yet i.e. there is no active theme
         if (!themeUtils.getActive()) {
-            // This is the one place we ACTUALLY throw an error for a missing theme
-            // As it's a request we cannot serve
+            // This is the one place we ACTUALLY throw an error for a missing theme as it's a request we cannot serve
             return next(new errors.InternalServerError({
-                message: i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeThemeName})
+                // We use the settingsCache here, because the setting will be set,
+                // even if the theme itself is not usable because it is invalid or missing.
+                message: i18n.t('errors.middleware.themehandler.missingTheme', {theme: settingsCache.get('activeTheme')})
             }));
+        }
 
-            // If there is an active theme AND it has changed, call activate
-        } else if (activeThemeName !== mountedThemeName) {
-            // This is effectively "mounting" a theme into express, the theme is already "active"
-            themeHandler.activateTheme(blogApp);
+        // If the active theme has not yet been mounted, mount it into express
+        if (!themeUtils.getActive().mounted) {
+            themeUtils.getActive().mount(req.app);
         }
 
         next();
