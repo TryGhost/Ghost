@@ -7,10 +7,11 @@ var _  = require('lodash'),
     activeTheme = require('./active'),
     themeMiddleware = {};
 
-// ### updateActiveTheme
+// ### Ensure Active Theme
+// Ensure there's a properly set & mounted active theme before attempting to serve a blog request
 // If there is no active theme, throw an error
 // Else, ensure the active theme is mounted
-themeMiddleware.updateActiveTheme = function updateActiveTheme(req, res, next) {
+themeMiddleware.ensureActiveTheme = function ensureActiveTheme(req, res, next) {
     // This means that the theme hasn't been loaded yet i.e. there is no active theme
     if (!activeTheme.get()) {
         // This is the one place we ACTUALLY throw an error for a missing theme as it's a request we cannot serve
@@ -29,9 +30,9 @@ themeMiddleware.updateActiveTheme = function updateActiveTheme(req, res, next) {
     next();
 };
 
-// ### configHbsForContext Middleware
-// Setup handlebars for the current context (admin or theme)
-themeMiddleware.configHbsForContext = function configHbsForContext(req, res, next) {
+// ### Update Template Data
+// Updates handlebars with the contextual data for the current request
+themeMiddleware.updateTemplateData = function updateTemplateData(req, res, next) {
     // Static information, same for every request unless the settings change
     // @TODO: bind this once and then update based on events?
     var blogData = {
@@ -74,6 +75,6 @@ themeMiddleware.configHbsForContext = function configHbsForContext(req, res, nex
 };
 
 module.exports = [
-    themeMiddleware.updateActiveTheme,
-    themeMiddleware.configHbsForContext
+    themeMiddleware.ensureActiveTheme,
+    themeMiddleware.updateTemplateData
 ];
