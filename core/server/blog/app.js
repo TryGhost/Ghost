@@ -20,9 +20,11 @@ var debug = require('debug')('ghost:blog'),
     prettyURLs = require('../middleware/pretty-urls'),
     serveSharedFile = require('../middleware/serve-shared-file'),
     staticTheme = require('../middleware/static-theme'),
-    themeHandler = require('../middleware/theme-handler'),
     customRedirects = require('../middleware/custom-redirects'),
-    serveFavicon = require('../middleware/serve-favicon');
+    serveFavicon = require('../middleware/serve-favicon'),
+
+    // middleware for themes
+    themeMiddleware = require('../themes').middleware;
 
 module.exports = function setupBlogApp() {
     debug('Blog setup start');
@@ -55,8 +57,7 @@ module.exports = function setupBlogApp() {
     // This should happen AFTER any shared assets are served, as it only changes things to do with templates
     // At this point the active theme object is already updated, so we have the right path, so it can probably
     // go after staticTheme() as well, however I would really like to simplify this and be certain
-    blogApp.use(themeHandler.updateActiveTheme);
-    blogApp.use(themeHandler.configHbsForContext);
+    blogApp.use(themeMiddleware);
     debug('Themes done');
 
     // Theme static assets/files
