@@ -3147,7 +3147,11 @@ moment-timezone@0.5.9:
   dependencies:
     moment ">= 2.6.0"
 
-moment@2.17.1, "moment@>= 2.6.0", moment@^2.10.6, moment@^2.15.2:
+moment@2.18.0:
+  version "2.18.0"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.18.0.tgz#6cfec6a495eca915d02600a67020ed994937252c"
+
+"moment@>= 2.6.0", moment@^2.10.6, moment@^2.15.2:
   version "2.17.1"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.17.1.tgz#fed9506063f36b10f066c8b59a144d7faebe1d82"
 
