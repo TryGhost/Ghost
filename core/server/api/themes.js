@@ -24,6 +24,8 @@ var debug = require('debug')('ghost:api:themes'),
  */
 themes = {
     browse: function browse() {
+        // @TODO missing permissions!
+        // Return JSON result
         return Promise.resolve(themeUtils.toJSON());
     },
 
@@ -37,8 +39,10 @@ themes = {
             checkedTheme;
 
         return apiUtils
+            // Permissions
             .handlePermissions('themes', 'activate')(options)
-            .then(function activateTheme() {
+            // Validation
+            .then(function validateTheme() {
                 loadedTheme = themeList.get(themeName);
 
                 if (!loadedTheme) {
@@ -50,16 +54,19 @@ themes = {
 
                 return themeUtils.validate.check(loadedTheme);
             })
-            .then(function haveValidTheme(_checkedTheme) {
+            // Update setting
+            .then(function changeActiveThemeSetting(_checkedTheme) {
                 checkedTheme = _checkedTheme;
                 // We use the model, not the API here, as we don't want to trigger permissions
                 return settingsModel.edit(newSettings, options);
             })
+            // Call activate
             .then(function hasEditedSetting() {
                 // Activate! (sort of)
                 debug('Activating theme (method B on API "activate")', themeName);
                 themeUtils.activate(loadedTheme, checkedTheme);
 
+                // Return JSON result
                 return themeUtils.toJSON(themeName, checkedTheme);
             });
     },
@@ -83,22 +90,27 @@ themes = {
             throw new errors.ValidationError({message: i18n.t('errors.api.themes.overrideCasper')});
         }
 
-        return apiUtils.handlePermissions('themes', 'add')(options)
+        return apiUtils
+            // Permissions
+            .handlePermissions('themes', 'add')(options)
+            // Validation
             .then(function validateTheme() {
                 return themeUtils.validate.check(zip, true);
             })
+            // More validation (existence check)
             .then(function checkExists(_checkedTheme) {
                 checkedTheme = _checkedTheme;
 
                 return storageAdapter.exists(utils.url.urlJoin(config.getContentPath('themes'), zip.shortName));
             })
-            .then(function (themeExists) {
+            // If the theme existed we need to delete it
+            .then(function removeOldTheme(themeExists) {
                 // delete existing theme
                 if (themeExists) {
                     return storageAdapter.delete(zip.shortName, config.getContentPath('themes'));
                 }
             })
-            .then(function () {
+            .then(function storeNewTheme() {
                 events.emit('theme.uploaded', zip.shortName);
                 // store extracted theme
                 return storageAdapter.save({
@@ -106,12 +118,12 @@ themes = {
                     path: checkedTheme.path
                 }, config.getContentPath('themes'));
             })
-            .then(function () {
+            .then(function loadNewTheme() {
                 // Loads the theme from the filesystem
                 // Sets the theme on the themeList
                 return themeUtils.loadOne(zip.shortName);
             })
-            .then(function (loadedTheme) {
+            .then(function activateAndReturn(loadedTheme) {
                 // If this is the active theme, we are overriding
                 // This is a special case of activation
                 if (zip.shortName === settingsCache.get('activeTheme')) {
@@ -153,8 +165,10 @@ themes = {
             return Promise.reject(new errors.BadRequestError({message: i18n.t('errors.api.themes.invalidRequest')}));
         }
 
-        return apiUtils.handlePermissions('themes', 'read')(options)
-            .then(function () {
+        return apiUtils
+            // Permissions
+            .handlePermissions('themes', 'read')(options)
+            .then(function sendTheme() {
                 events.emit('theme.downloaded', themeName);
                 return storageAdapter.serve({isTheme: true, name: themeName});
             });
@@ -165,31 +179,36 @@ themes = {
      * remove theme folder
      */
     destroy: function destroy(options) {
-        var name = options.name,
+        var themeName = options.name,
             theme,
             storageAdapter = storage.getStorage('themes');
 
-        return apiUtils.handlePermissions('themes', 'destroy')(options)
-            .then(function () {
-                if (name === 'casper') {
+        return apiUtils
+            // Permissions
+            .handlePermissions('themes', 'destroy')(options)
+            // Validation
+            .then(function validateTheme() {
+                if (themeName === 'casper') {
                     throw new errors.ValidationError({message: i18n.t('errors.api.themes.destroyCasper')});
                 }
 
-                if (name === settingsCache.get('activeTheme')) {
+                if (themeName === settingsCache.get('activeTheme')) {
                     throw new errors.ValidationError({message: i18n.t('errors.api.themes.destroyActive')});
                 }
 
-                theme = themeList.get(name);
+                theme = themeList.get(themeName);
 
                 if (!theme) {
                     throw new errors.NotFoundError({message: i18n.t('errors.api.themes.themeDoesNotExist')});
                 }
 
-                return storageAdapter.delete(name, config.getContentPath('themes'));
+                // Actually do the deletion here
+                return storageAdapter.delete(themeName, config.getContentPath('themes'));
             })
-            .then(function () {
-                themeList.del(name);
-                events.emit('theme.deleted', name);
+            // And some extra stuff to maintain state here
+            .then(function deleteTheme() {
+                themeList.del(themeName);
+                events.emit('theme.deleted', themeName);
                 // Delete returns an empty 204 response
             });
     }
