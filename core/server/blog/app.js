@@ -32,7 +32,6 @@ module.exports = function setupBlogApp() {
     // ## App - specific code
     // set the view engine
     blogApp.set('view engine', 'hbs');
-
     // you can extend Ghost with a custom redirects file
     // see https://github.com/TryGhost/Ghost/issues/7707
     customRedirects(blogApp);
@@ -48,6 +47,11 @@ module.exports = function setupBlogApp() {
     blogApp.use(serveSharedFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
     // Serve robots.txt if not found in theme
     blogApp.use(serveSharedFile('robots.txt', 'text/plain', utils.ONE_HOUR_S));
+
+    // Serve stylesheets for default templates
+    blogApp.use(serveSharedFile('normalizer.css', 'text/css', utils.ONE_HOUR_S));
+    blogApp.use(serveSharedFile('ghost.css', 'text/css', utils.ONE_HOUR_S));
+
     // Serve blog images using the storage adapter
     blogApp.use('/' + utils.url.STATIC_IMAGE_URL_PREFIX, storage.getStorage().serve());
 
