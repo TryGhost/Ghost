@@ -130,17 +130,20 @@ export default Component.extend({
         }
     },
 
-    // makes sure the cursor is on screen.
+    // makes sure the cursor is on screen except when selection is happening in which case the browser mostly ensures it.
+    // there is an issue with keyboard selection on some browsers though so the next step will be to record mouse and touch events.
     cursorMoved() {
-        let scrollBuffer = 33; // the extra buffer to scroll.
-        let range = window.getSelection().getRangeAt(0); // get the actual range within the DOM.
-        let position =  range.getBoundingClientRect();
-        let windowHeight = window.innerHeight;
+        if (this.get('editor').range.isCollapsed) {
+            let scrollBuffer = 33; // the extra buffer to scroll.
+            let range = window.getSelection().getRangeAt(0); // get the actual range within the DOM.
+            let position =  range.getBoundingClientRect();
+            let windowHeight = window.innerHeight;
 
-        if (position.bottom > windowHeight) {
-            this.domContainer.scrollTop += position.bottom - windowHeight + scrollBuffer;
-        } else if (position.top < 0) {
-            this.domContainer.scrollTop += position.top - scrollBuffer;
+            if (position.bottom > windowHeight) {
+                this.domContainer.scrollTop += position.bottom - windowHeight + scrollBuffer;
+            } else if (position.top < 0) {
+                this.domContainer.scrollTop += position.top - scrollBuffer;
+            }
         }
     },
 
