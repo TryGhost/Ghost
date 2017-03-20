@@ -192,7 +192,7 @@
 }
 
 .gh-editor-container {
-    position: relative;
+    position: absolute;
     overflow-y: auto;
     padding: 10vw 4vw;
     width: 100%;
