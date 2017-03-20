@@ -5,7 +5,16 @@
 <div class="gh-cardmenu">
     <div class="gh-cardmenu-search">
         {{inline-svg "search.svg"}}
-        {{gh-input query class="gh-input gh-cardmenu-search-input" placeholder="Search for a card..." type="text" update=(action (mut query)) key-press=(action "updateSelection")}}
+        {{gh-input query class="gh-input gh-cardmenu-search-input" placeholder="Search for a card..." type="text" update=(action (mut query)) 
+            keyEvents=(hash
+                27=(action "closeMenu")
+                13=(action "selectTool")
+                37=(action "moveSelectionLeft")
+                38=(action "moveSelectionUp")
+                39=(action "moveSelectionRight")
+                40=(action "moveSelectionDown")
+            )
+        }}
     </div>
     <div class="gh-cardmenu-divider">
         Primary

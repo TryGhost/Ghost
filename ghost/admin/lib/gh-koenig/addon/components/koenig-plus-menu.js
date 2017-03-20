@@ -3,6 +3,7 @@ import computed from 'ember-computed';
 import run from 'ember-runloop';
 import Tools from '../options/default-tools';
 import layout from '../templates/components/koenig-plus-menu';
+import Range from 'mobiledoc-kit/utils/cursor/range';
 import $ from 'jquery';
 
 const ROW_LENGTH = 4;
@@ -15,7 +16,7 @@ export default Component.extend({
         return this.get('isOpen') || this.get('isButton');
     }),
     toolsLength: 0,
-    selected: 0,
+    selected: -1,
     selectedTool: null,
     query: '',
     range: null,
@@ -44,13 +45,13 @@ export default Component.extend({
         });
         this.set('toolsLength', i);
         tools.sort((a, b) => a.order > b.order);
-
-        let selectedTool = tools[selected] || tools[0];
-        if (selectedTool) {
-            this.set('selectedTool', selectedTool);
-            selectedTool.selected = true;
+        if (selected > -1) {
+            let selectedTool = tools[selected] || tools[0];
+            if (selectedTool) {
+                this.set('selectedTool', selectedTool);
+                selectedTool.selected = true;
+            }
         }
-
         return tools;
     }),
     init() {
@@ -72,45 +73,6 @@ export default Component.extend({
             window.setTimeout(() => {
                 this.send('closeMenuKeepButton');
             }, 200);
-        });
-
-        input.keydown(({keyCode}) => {
-            let item = this.get('selected');
-            let length = this.get('toolsLength');
-            switch (keyCode) {
-            case 27: // escape
-                return this.send('closeMenu');
-            case 37: // left
-                if (item > 0) {
-                    this.set('selected', item - 1);
-                } else {
-                    this.set('selected', length - 1);
-                }
-                break;
-            case 38: // up
-                if (item > ROW_LENGTH) {
-                    this.set('selected', item - ROW_LENGTH);
-                } else {
-                    this.set('selected', 0);
-                }
-                break;
-            case 39: // right
-                if (item < length) {
-                    this.set('selected', item + 1);
-                } else {
-                    this.set('selected', 1);
-                }
-                break;
-            case 40: // down
-                if (item + ROW_LENGTH < length) {
-                    this.set('selected', item + ROW_LENGTH);
-                } else {
-                    this.set('selected', length - 1);
-                }
-                break;
-            case 13: // enter
-                alert('enter');
-            }
         });
 
         editor.cursorDidChange(() => {
@@ -152,6 +114,10 @@ export default Component.extend({
                 startOffset: editor.range.head.offset,
                 endOffset: editor.range.head.offset
             });
+
+            this.set('selected', -1);
+            this.set('selectedTool', null);
+
             this.propertyDidChange('toolbar');
 
             run.schedule('afterRender', this,
@@ -169,8 +135,50 @@ export default Component.extend({
         closeMenuKeepButton: function () { // eslint-disable-line
             this.set('isOpen', false);
         },
-        updateSelection: function (event) { // eslint-disable-line
-            // alert(event);
+        selectTool: function () { // eslint-disable-line
+            let {section} = this.get('range');
+            let editor = this.get('editor');
+            editor.range = Range.create(section, 0, section, 0);
+            this.get('selectedTool').onClick(editor);
+            this.send('closeMenuKeepButton');
+        },
+        moveSelectionLeft: function () { // eslint-disable-line
+            let item = this.get('selected');
+            let length = this.get('toolsLength');
+            if (item > 0) {
+                this.set('selected', item - 1);
+            } else {
+                this.set('selected', length - 1);
+            }
+        },
+        moveSelectionUp: function () { // eslint-disable-line
+            let item = this.get('selected');
+            if (item > ROW_LENGTH) {
+                this.set('selected', item - ROW_LENGTH);
+            } else {
+                this.set('selected', 0);
+            }
+        },
+        moveSelectionRight: function () { // eslint-disable-line
+            let item = this.get('selected');
+            let length = this.get('toolsLength');
+            if (item < length) {
+                this.set('selected', item + 1);
+            } else {
+                this.set('selected', 0);
+            }
+        },
+        moveSelectionDown: function () { // eslint-disable-line
+            let item = this.get('selected');
+            if (item < 0) {
+                item = 0;
+            }
+            let length = this.get('toolsLength');
+            if (item + ROW_LENGTH < length) {
+                this.set('selected', item + ROW_LENGTH);
+            } else {
+                this.set('selected', length - 1);
+            }
         }
     }
 });
