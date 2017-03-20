@@ -46,7 +46,7 @@ var overrides      = require('./core/server/overrides'),
             pkg: grunt.file.readJSON('package.json'),
 
             clientFiles: [
-                'server/admin/views/default.hbs',
+                'server/admin/views/default.html',
                 'built/assets/ghost.js',
                 'built/assets/ghost.css',
                 'built/assets/vendor.js',
