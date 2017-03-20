@@ -37,9 +37,9 @@ module.exports = {
         fs.ensureDirSync(assetsOut);
 
         if (fs.existsSync(results.directory + '/index.min.html')) {
-            fs.copySync(results.directory + '/index.min.html', `${templateOutDir}/default-prod.hbs`, {overwrite: true});
+            fs.copySync(results.directory + '/index.min.html', `${templateOutDir}/default-prod.html`, {overwrite: true});
         } else {
-            fs.copySync(results.directory + '/index.html', `${templateOutDir}/default.hbs`, {overwrite: true});
+            fs.copySync(results.directory + '/index.html', `${templateOutDir}/default.html`, {overwrite: true});
         }
 
         assets.forEach(function (relativePath) {
