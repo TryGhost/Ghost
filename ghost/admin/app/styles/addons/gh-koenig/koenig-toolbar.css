@@ -29,6 +29,18 @@
     border-top: color(var(--darkgrey) l(-10%)) 8px solid;
 }
 
+.gh-toolbar.is-link {
+    width: 263px;
+    height: 40px;
+}
+.gh-toolbar.is-link input {
+    width: 100%;
+    background-color: transparent;
+    outline: none;
+    border: none;
+    padding:5px;
+}
+
 .gh-toolbar-btn {
     display: flex;
     justify-content: center;
