@@ -20,6 +20,7 @@ var sizeOf       = require('image-size'),
     http         = require('http'),
     https        = require('https'),
     utils        = require('../utils'),
+    errors       = require('../errors'),
     dimensions,
     request,
     requestHandler;
@@ -34,6 +35,9 @@ module.exports.getImageSizeFromUrl = function getImageSizeFromUrl(imagePath, tim
     return new Promise(function imageSizeRequest(resolve, reject) {
         var imageObject = {},
             options;
+
+        // set default timeout if called without option. Otherwise node will use default timeout of 120 sec.
+        timeout = timeout ? timeout : 10000;
 
         imageObject.url = imagePath;
 
@@ -71,20 +75,21 @@ module.exports.getImageSizeFromUrl = function getImageSizeFromUrl(imagePath, tim
 
                         return resolve(imageObject);
                     } catch (err) {
-                        // @ToDo: add real error handling here as soon as we have error logging
-                        return reject(err);
+                        return reject(new errors.InternalServerError({
+                            code: 'IMAGE_SIZE',
+                            err: err,
+                            context: imagePath
+                        }));
                     }
                 } else {
-                    // @ToDo: add real error handling here as soon as we have error logging
-                    var err = new Error();
-                    err.message = imagePath;
-                    err.statusCode = res.statusCode;
-
-                    return reject(err);
+                    return reject(new errors.InternalServerError({
+                        code: 'IMAGE_SIZE',
+                        statusCode: res.statusCode,
+                        context: imagePath
+                    }));
                 }
             });
         }).on('socket', function (socket) {
-            // don't set timeout if no timeout give as argument
             if (timeout) {
                 socket.setTimeout(timeout);
                 socket.on('timeout', function () {
@@ -92,9 +97,11 @@ module.exports.getImageSizeFromUrl = function getImageSizeFromUrl(imagePath, tim
                 });
             }
         }).on('error', function (err) {
-            // @ToDo: add real error handling here as soon as we have error logging
-
-            return reject(err);
+            return reject(new errors.InternalServerError({
+                code: 'IMAGE_SIZE',
+                err: err,
+                context: imagePath
+            }));
         });
     });
 };
