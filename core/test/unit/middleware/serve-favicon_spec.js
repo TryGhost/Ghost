@@ -88,8 +88,6 @@ describe('Serve Favicon', function () {
             it('default favicon.ico', function (done) {
                 var middleware = serveFavicon();
                 req.path = '/favicon.ico';
-
-                configUtils.set('paths:corePath', path.join(__dirname, '../../../test/utils/fixtures/'));
                 localSettingsCache.icon = '';
 
                 res = {
