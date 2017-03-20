@@ -1,8 +1,6 @@
 var debug = require('debug')('ghost:admin'),
     config = require('../config'),
     express = require('express'),
-    adminHbs = require('express-hbs').create(),
-
     // Admin only middleware
     adminMiddleware = require('./middleware'),
 
@@ -26,14 +24,6 @@ module.exports = function setupAdminApp() {
         res.isAdmin = true;
         next();
     });
-
-    // @TODO replace all this with serving ember's index.html
-    // Create a hbs instance for admin and init view engine
-    adminApp.set('view engine', 'hbs');
-    adminApp.set('views', config.get('paths').adminViews);
-    adminApp.engine('hbs', adminHbs.express3({}));
-    // Register our `asset` helper
-    adminHbs.registerHelper('asset', require('../helpers/asset'));
 
     // Admin assets
     // @TODO ensure this gets a local 404 error handler

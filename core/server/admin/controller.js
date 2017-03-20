@@ -1,10 +1,11 @@
-var debug         = require('debug')('ghost:admin:controller'),
-    _             = require('lodash'),
-    config        = require('../config'),
-    api           = require('../api'),
-    updateCheck   = require('../update-check'),
-    logging       = require('../logging'),
-    i18n          = require('../i18n');
+var debug = require('debug')('ghost:admin:controller'),
+    _ = require('lodash'),
+    path = require('path'),
+    config = require('../config'),
+    api = require('../api'),
+    updateCheck = require('../update-check'),
+    logging = require('../logging'),
+    i18n = require('../i18n');
 
 // Route: index
 // Path: /ghost/
@@ -34,9 +35,10 @@ module.exports = function adminController(req, res) {
             }
         });
     }).finally(function noMatterWhat() {
-        var defaultTemplate = config.get('env') === 'production' ? 'default-prod' : 'default';
+        var defaultTemplate = config.get('env') === 'production' ? 'default-prod.html' : 'default.html',
+            templatePath = path.resolve(config.get('paths').adminViews, defaultTemplate);
 
-        res.render(defaultTemplate);
+        res.sendFile(templatePath);
     }).catch(function (err) {
         logging.error(err);
     });
