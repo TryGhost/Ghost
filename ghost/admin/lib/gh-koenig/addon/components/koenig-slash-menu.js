@@ -41,10 +41,12 @@ export default Component.extend({
         this.set('toolsLength', i);
         tools.sort((a, b) => a.order > b.order);
 
-        let selectedTool = tools[selected] || tools[0];
-        if (selectedTool) {
-            this.set('selectedTool', selectedTool);
-            selectedTool.selected = true;
+        let selectedTool = tools[selected];
+        if (selected > -1) {
+            if (selectedTool) {
+                this.set('selectedTool', selectedTool);
+                selectedTool.selected = true;
+            }
         }
 
         return tools;
@@ -109,6 +111,8 @@ export default Component.extend({
                 startOffset: editor.range.head.offset,
                 endOffset: editor.range.head.offset
             });
+            this.set('selected', -1);
+            this.set('selectedTool', null);
 
             editor.registerKeyCommand({
                 str: 'LEFT',
@@ -156,6 +160,9 @@ export default Component.extend({
                 name: 'slash',
                 run() {
                     let item = self.get('selected');
+                    if (item < 0) {
+                        item = 0;
+                    }
                     let length = self.get('toolsLength');
                     if (item + ROW_LENGTH < length) {
                         self.set('selected', item + ROW_LENGTH);
