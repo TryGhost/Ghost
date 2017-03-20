@@ -1,5 +1,6 @@
 {{#if isLink}}
     {{input keyDown=(action "linkKeyDown") keyPress=(action "linkKeyPress") autofocus=true placeholder="Enter a link"}}
+    <button class="gh-toolbar-btn" {{action 'closeLink'}}>x</button>
 {{else}}
     {{#each toolbar as |tool|}}
         {{koenig-toolbar-button tool=tool editor=editor iconURL=iconURL assetPath=assetPath}}
