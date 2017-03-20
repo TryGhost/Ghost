@@ -23,10 +23,15 @@ var debug = require('debug')('ghost:api:themes'),
  * **See:** [API Methods](index.js.html#api%20methods)
  */
 themes = {
-    browse: function browse() {
-        // @TODO missing permissions!
-        // Return JSON result
-        return Promise.resolve(themeUtils.toJSON());
+    browse: function browse(options) {
+        return apiUtils
+            // Permissions
+            .handlePermissions('themes', 'browse')(options)
+            // Main action
+            .then(function makeApiResult() {
+                // Return JSON result
+                return themeUtils.toJSON();
+            });
     },
 
     activate: function activate(options) {
