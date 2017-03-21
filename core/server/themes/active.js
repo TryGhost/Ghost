@@ -19,6 +19,9 @@
 var _ = require('lodash'),
     join = require('path').join,
     defaultConfig = require('./defaults.json'),
+    config = require('../config'),
+    // @TODO: remove this require
+    hbs = require('express-hbs'),
     // Current instance of ActiveTheme
     currentActiveTheme;
 
@@ -44,6 +47,7 @@ class ActiveTheme {
         // Assign some data, mark it all as pseudo-private
         this._name = loadedTheme.name;
         this._path = loadedTheme.path;
+        this._mounted = false;
 
         // @TODO: get gscan to return validated, useful package.json fields for us!
         this._packageInfo = loadedTheme['package.json'];
@@ -73,6 +77,10 @@ class ActiveTheme {
         return join(this.path, 'partials');
     }
 
+    get mounted() {
+        return this._mounted;
+    }
+
     hasPartials() {
         return this._partials.length > 0;
     }
@@ -83,6 +91,30 @@ class ActiveTheme {
 
     config(key) {
         return this._config[key];
+    }
+
+    mount(blogApp) {
+        let hbsOptions = {
+            partialsDir: [config.get('paths').helperTemplates],
+            onCompile: function onCompile(exhbs, source) {
+                return exhbs.handlebars.compile(source, {preventIndent: true});
+            }
+        };
+
+        if (this.hasPartials()) {
+            hbsOptions.partialsDir.push(this.partialsPath);
+        }
+
+        // reset the asset hash
+        // @TODO: set this on the theme instead of globally, or use proper file-based hash
+        config.set('assetHash', null);
+        // clear the view cache
+        blogApp.cache = {};
+        // Set the views and engine
+        blogApp.set('views', this.path);
+        blogApp.engine('hbs', hbs.express3(hbsOptions));
+
+        this._mounted = true;
     }
 }
 
