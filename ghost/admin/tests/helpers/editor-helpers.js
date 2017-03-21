@@ -1,6 +1,5 @@
 import Ember from 'ember';
 import $ from 'jquery';
-
 // polls the editor until it's started.
 export function editorRendered() {
     return Ember.Test.promise(function (resolve) { // eslint-disable-line
@@ -12,6 +11,21 @@ export function editorRendered() {
             }
         }
         checkEditor();
+    });
+}
+
+// polls the title until it's started.
+export function titleRendered() {
+    return Ember.Test.promise(function (resolve) { // eslint-disable-line
+        function checkTitle() {
+            let title = $('#gh-editor-title div');
+            if (title[0]) {
+                return resolve();
+            } else {
+                window.requestAnimationFrame(checkTitle);
+            }
+        }
+        checkTitle();
     });
 }
 
