@@ -20,9 +20,32 @@ var sizeOf       = require('image-size'),
     http         = require('http'),
     https        = require('https'),
     config       = require('../config'),
-    dimensions,
-    request,
-    requestHandler;
+    errors       = require('../errors'),
+
+    _private = {};
+
+_private.prepareImagePath = function prepareImagePath(imagePath) {
+    // check if we got an url without any protocol
+    if (imagePath.indexOf('http') === -1) {
+        // our gravatar urls start with '//' in that case add 'https:'
+        if (imagePath.indexOf('//') === 0) {
+            // it's a gravatar url
+            imagePath = 'https:' + imagePath;
+        } else {
+            // get absolute url for image
+            imagePath = config.urlFor('image', {image: imagePath}, true);
+        }
+    }
+
+    return imagePath;
+};
+
+_private.error = function error(error, imagePath) {
+    var error = new errors.InternalServerError(error);
+    error.context = imagePath;
+
+    return reject(error)
+};
 
 /**
  * @description read image dimensions from URL
@@ -30,73 +53,64 @@ var sizeOf       = require('image-size'),
  * @param {Number} timeout (optional)
  * @returns {Promise<Object>} imageObject or error
  */
-module.exports.getImageSizeFromUrl = function getImageSizeFromUrl(imagePath, timeout) {
+module.exports.getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
     return new Promise(function imageSizeRequest(resolve, reject) {
-        var imageObject = {},
-            options;
+        var imageObject = {
+                // store the original value
+                url: imagePath
+            },
+            options,
+            // set default timeout if called without option. Otherwise node will use default timeout of 120 sec.
+            timeout = config.times.imageSizeLookupTimeout || 10000,
+            timer,
+            timerEnded = false,
+            request,
+            requestHandler;
 
-        // set default timeout if called without option. Otherwise node will use default timeout of 120 sec.
-        timeout = timeout ? timeout : 10000;
-
-        imageObject.url = imagePath;
-
-        // check if we got an url without any protocol
-        if (imagePath.indexOf('http') === -1) {
-            // our gravatar urls start with '//' in that case add 'http:'
-            if (imagePath.indexOf('//') === 0) {
-                // it's a gravatar url
-                imagePath = 'http:' + imagePath;
-            } else {
-                // get absolute url for image
-                imagePath = config.urlFor('image', {image: imagePath}, true);
-            }
-        }
-
-        options = url.parse(imagePath);
-
-        requestHandler = imagePath.indexOf('https') === 0 ? https : http;
+        // Get our options for the request
+        options = url.parse(_private.prepareImagePath(imagePath));
         options.headers = {'User-Agent': 'Mozilla/5.0'};
 
-        request = requestHandler.get(options, function (res) {
+        requestHandler = options.protocol.indexOf('https') === 0 ? https : http;
+
+        request = requestHandler.get(options, function (response) {
+            clearTimeout(timer);
             var chunks = [];
 
-            res.on('data', function (chunk) {
+            response.on('data', function (chunk) {
                 chunks.push(chunk);
             });
 
-            res.on('end', function () {
-                if (res.statusCode === 200) {
+            response.on('end', function () {
+                if (response.statusCode === 200) {
                     try {
-                        dimensions = sizeOf(Buffer.concat(chunks));
+                        var dimensions = sizeOf(Buffer.concat(chunks));
 
                         imageObject.width = dimensions.width;
                         imageObject.height = dimensions.height;
 
                         return resolve(imageObject);
                     } catch (err) {
-                        err.context = imagePath;
-
-                        return reject(err);
+                        return reject(_private.error(err, imagePath));
                     }
                 } else {
-                    var err = new Error();
-                    err.context = imagePath;
-                    err.statusCode = res.statusCode;
-
-                    return reject(err);
+                    return reject(_private.error('Request returned bad statusCode: ' + response.statusCode, imagePath));
                 }
             });
-        }).on('socket', function (socket) {
-            if (timeout) {
-                socket.setTimeout(timeout);
-                socket.on('timeout', function () {
-                    request.abort();
-                });
-            }
-        }).on('error', function (err) {
-            err.context = imagePath;
-
-            return reject(err);
         });
+
+        request.on('error', function (err) {
+            clearTimeout(timer);
+            // reject with error
+            if (!timerEnded) {
+                return reject(_private.error(err, imagePath));
+            }
+        });
+
+        timer = setTimeout(function () {
+            timerEnded = true;
+            request.abort();
+            return reject(_private.error('Timeout: request took longer than: ' + timeout, imagePath));
+        }, timeout);
     });
 };
