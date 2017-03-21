@@ -47,6 +47,10 @@ export default Component.extend({
                 this.set('selectedTool', selectedTool);
                 selectedTool.selected = true;
             }
+        } else {
+            // even if the range is out of bounds (as in the starting state where the selection prompt is not shown)
+            // we still need a selected item for the enter key.
+            this.set('selectedTool', tools[0]);
         }
 
         return tools;
