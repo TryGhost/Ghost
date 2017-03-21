@@ -1,17 +1,17 @@
-var testUtils   = require('../../utils'),
-    should      = require('should'),
-    Promise     = require('bluebird'),
-    sinon       = require('sinon'),
-    _           = require('lodash'),
+var should = require('should'),
+    sinon = require('sinon'),
+    testUtils = require('../../utils'),
+    Promise = require('bluebird'),
+    _ = require('lodash'),
 
     // Stuff we are testing
-    errors      = require('../../../server/errors'),
-    gravatar    = require('../../../server/utils/gravatar'),
-    UserModel   = require('../../../server/models/user').User,
-    RoleModel   = require('../../../server/models/role').Role,
-    events      = require('../../../server/events'),
-    context     = testUtils.context.admin,
-    sandbox     = sinon.sandbox.create();
+    errors = require('../../../server/errors'),
+    gravatar = require('../../../server/utils/gravatar'),
+    UserModel = require('../../../server/models/user').User,
+    RoleModel = require('../../../server/models/role').Role,
+    events = require('../../../server/events'),
+    context = testUtils.context.admin,
+    sandbox = sinon.sandbox.create();
 
 describe('User Model', function run() {
     var eventsTriggered = {};

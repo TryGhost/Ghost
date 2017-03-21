@@ -1,10 +1,9 @@
-var sinon = require('sinon'),
-    should = require('should'),
+var should = require('should'), // jshint ignore:line
+    sinon = require('sinon'),
     configUtils = require('../../utils/configUtils'),
     urlRedirects = require('../../../server/middleware/url-redirects'),
-    sandbox = sinon.sandbox.create();
 
-should.equal(true, true);
+    sandbox = sinon.sandbox.create();
 
 describe('checkSSL', function () {
     var res, req, next, host;

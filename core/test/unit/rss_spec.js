@@ -1,14 +1,16 @@
-var should          = require('should'),
-    sinon           = require('sinon'),
-    rewire          = require('rewire'),
-    _               = require('lodash'),
-    Promise         = require('bluebird'),
-    testUtils       = require('../utils'),
-    channelConfig   = require('../../server/controllers/frontend/channel-config'),
-    api             = require('../../server/api'),
-    settingsCache   = require('../../server/settings/cache'),
-    rss             = rewire('../../server/data/xml/rss'),
-    configUtils     = require('../utils/configUtils');
+var should = require('should'),
+    sinon = require('sinon'),
+    rewire = require('rewire'),
+    _ = require('lodash'),
+    Promise = require('bluebird'),
+    testUtils = require('../utils'),
+    channelConfig = require('../../server/controllers/frontend/channel-config'),
+    api = require('../../server/api'),
+    settingsCache = require('../../server/settings/cache'),
+    rss = rewire('../../server/data/xml/rss'),
+    configUtils = require('../utils/configUtils'),
+
+    sandbox = sinon.sandbox.create();
 
 // Helper function to prevent unit tests
 // from failing via timeout when they
@@ -20,7 +22,7 @@ function failTest(done) {
 }
 
 describe('RSS', function () {
-    var sandbox, req, res, posts;
+    var req, res, posts;
 
     before(function () {
         posts = _.cloneDeep(testUtils.DataGenerator.forKnex.posts);
@@ -33,10 +35,6 @@ describe('RSS', function () {
             post.url = '/' + post.slug + '/';
             post.author = {name: 'Joe Bloggs'};
         });
-    });
-
-    beforeEach(function () {
-        sandbox = sinon.sandbox.create();
     });
 
     afterEach(function () {
@@ -342,7 +340,11 @@ describe('RSS', function () {
             // test
             res.send = function send(xmlData) {
                 apiBrowseStub.calledOnce.should.be.true();
-                apiBrowseStub.calledWith({page: 1, filter: 'tags:\'magic\'+tags.visibility:\'public\'', include: 'author,tags'}).should.be.true();
+                apiBrowseStub.calledWith({
+                    page: 1,
+                    filter: 'tags:\'magic\'+tags.visibility:\'public\'',
+                    include: 'author,tags'
+                }).should.be.true();
                 apiTagStub.calledOnce.should.be.true();
                 xmlData.should.match(/<channel><title><!\[CDATA\[Magic - Test\]\]><\/title>/);
                 done();

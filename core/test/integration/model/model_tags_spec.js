@@ -1,15 +1,15 @@
-var testUtils   = require('../../utils'),
-    should      = require('should'),
-    sinon       = require('sinon'),
+var should = require('should'),
+    sinon = require('sinon'),
+    testUtils = require('../../utils'),
 
     // Stuff we are testing
-    ModelsTag   = require('../../../server/models/tag'),
-    ModelsPost  = require('../../../server/models/post'),
-    events      = require('../../../server/events'),
-    context     = testUtils.context.admin,
+    ModelsTag = require('../../../server/models/tag'),
+    ModelsPost = require('../../../server/models/post'),
+    events = require('../../../server/events'),
+    context = testUtils.context.admin,
     TagModel,
     PostModel,
-    sandbox         = sinon.sandbox.create();
+    sandbox = sinon.sandbox.create();
 
 describe('Tag Model', function () {
     var eventSpy;
@@ -27,8 +27,8 @@ describe('Tag Model', function () {
     });
 
     before(function () {
-        TagModel    = ModelsTag.Tag;
-        PostModel   = ModelsPost.Post;
+        TagModel = ModelsTag.Tag;
+        PostModel = ModelsPost.Post;
 
         should.exist(TagModel);
         should.exist(PostModel);

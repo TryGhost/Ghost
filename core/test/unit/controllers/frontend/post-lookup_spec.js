@@ -1,10 +1,10 @@
-var should         = require('should'),
-    sinon          = require('sinon'),
-    Promise        = require('bluebird'),
-    configUtils    = require('../../../utils/configUtils'),
-    api            = require('../../../../server/api'),
-    postLookup     = require('../../../../server/controllers/frontend/post-lookup'),
-    settingsCache  = require('../../../../server/settings/cache'),
+var should = require('should'),
+    sinon = require('sinon'),
+    Promise = require('bluebird'),
+    configUtils = require('../../../utils/configUtils'),
+    api = require('../../../../server/api'),
+    postLookup = require('../../../../server/controllers/frontend/post-lookup'),
+    settingsCache = require('../../../../server/settings/cache'),
     sandbox = sinon.sandbox.create();
 
 describe('postLookup', function () {
@@ -29,10 +29,12 @@ describe('postLookup', function () {
             localSettingsCache.permalinks = '/:slug/';
 
             postAPIStub.withArgs({slug: 'welcome-to-ghost', include: 'author,tags'})
-                .returns(new Promise.resolve({posts: [{
-                    url: '/welcome-to-ghost/',
-                    published_at: new Date('2016-01-01').valueOf()
-                }]}));
+                .returns(new Promise.resolve({
+                    posts: [{
+                        url: '/welcome-to-ghost/',
+                        published_at: new Date('2016-01-01').valueOf()
+                    }]
+                }));
         });
 
         it('can lookup absolute url: /:slug/', function (done) {
@@ -85,10 +87,12 @@ describe('postLookup', function () {
             localSettingsCache.permalinks = '/:year/:month/:day/:slug/';
 
             postAPIStub.withArgs({slug: 'welcome-to-ghost', include: 'author,tags'})
-                .returns(new Promise.resolve({posts: [{
-                    url: '/2016/01/01/welcome-to-ghost/',
-                    published_at: new Date('2016-01-01').valueOf()
-                }]}));
+                .returns(new Promise.resolve({
+                    posts: [{
+                        url: '/2016/01/01/welcome-to-ghost/',
+                        published_at: new Date('2016-01-01').valueOf()
+                    }]
+                }));
         });
 
         it('cannot lookup absolute url: /:slug/', function (done) {
@@ -141,10 +145,12 @@ describe('postLookup', function () {
             localSettingsCache.permalinks = '/:slug/';
 
             postAPIStub.withArgs({slug: 'welcome-to-ghost', include: 'author,tags'})
-                .returns(new Promise.resolve({posts: [{
-                    url: '/welcome-to-ghost/',
-                    published_at: new Date('2016-01-01').valueOf()
-                }]}));
+                .returns(new Promise.resolve({
+                    posts: [{
+                        url: '/welcome-to-ghost/',
+                        published_at: new Date('2016-01-01').valueOf()
+                    }]
+                }));
         });
 
         it('can lookup absolute url: /:slug/edit/', function (done) {
@@ -201,10 +207,12 @@ describe('postLookup', function () {
             localSettingsCache.permalinks = '/:slug/';
 
             postAPIStub.withArgs({slug: 'welcome-to-ghost', include: 'author,tags'})
-                .returns(new Promise.resolve({posts: [{
-                    url: '/welcome-to-ghost/',
-                    published_at: new Date('2016-01-01').valueOf()
-                }]}));
+                .returns(new Promise.resolve({
+                    posts: [{
+                        url: '/welcome-to-ghost/',
+                        published_at: new Date('2016-01-01').valueOf()
+                    }]
+                }));
         });
 
         it('can lookup absolute url: /:slug/amp/', function (done) {

@@ -1,12 +1,12 @@
-var should         = require('should'),
-    hbs            = require('express-hbs'),
-    utils          = require('./utils'),
-    configUtils    = require('../../utils/configUtils'),
-    path           = require('path'),
+var should = require('should'),
+    hbs = require('express-hbs'),
+    utils = require('./utils'),
+    configUtils = require('../../utils/configUtils'),
+    path = require('path'),
 
 // Stuff we are testing
-    handlebars     = hbs.handlebars,
-    helpers        = require('../../../server/helpers');
+    handlebars = hbs.handlebars,
+    helpers = require('../../../server/helpers');
 
 describe('{{pagination}} helper', function () {
     before(function (done) {
@@ -35,7 +35,8 @@ describe('{{pagination}} helper', function () {
         };
 
         runHelper('not an object').should.throwError('pagination data is not an object or is a function');
-        runHelper(function () {}).should.throwError('pagination data is not an object or is a function');
+        runHelper(function () {
+        }).should.throwError('pagination data is not an object or is a function');
     });
 
     it('can render single page with no pagination necessary', function () {

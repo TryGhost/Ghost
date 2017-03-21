@@ -1,9 +1,11 @@
-var makeAbsoluteUrls    = require('../../../server/utils/make-absolute-urls'),
-    configUtils         = require('../../utils/configUtils');
+var should = require('should'), // jshint ignore:line
+    makeAbsoluteUrls = require('../../../server/utils/make-absolute-urls'),
+    configUtils = require('../../utils/configUtils');
 
 describe('Make absolute URLs ', function () {
     var siteUrl = 'http://my-ghost-blog.com',
         itemUrl = 'my-awesome-post';
+
     beforeEach(function () {
         configUtils.set({url: 'http://my-ghost-blog.com'});
     });

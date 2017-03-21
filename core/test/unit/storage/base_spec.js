@@ -1,8 +1,5 @@
-var should = require('should'),
+var should = require('should'), // jshint ignore:line
     storage = require('../../../server/storage');
-
-// to stop jshint complaining
-should.equal(true, true);
 
 describe('storage: base_spec', function () {
     it('escape non accepted characters in filenames', function () {

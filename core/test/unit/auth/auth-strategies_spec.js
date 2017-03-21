@@ -351,9 +351,11 @@ describe('Auth Strategies', function () {
             var ghostAuthAccessToken = '12345',
                 req = {body: {}},
                 ownerProfile = {email: 'test@example.com', id: '12345'},
-                owner = {id: 2, isActive: function () {
-                    return true;
-                }};
+                owner = {
+                    id: 2, isActive: function () {
+                        return true;
+                    }
+                };
 
             userFindOneStub.returns(Promise.resolve(owner));
             userEditStub.withArgs({
@@ -383,9 +385,11 @@ describe('Auth Strategies', function () {
             var ghostAuthAccessToken = '12345',
                 req = {body: {}},
                 ownerProfile = {email: 'test@example.com', id: '12345'},
-                owner = {id: 2, isActive: function () {
-                    return false;
-                }};
+                owner = {
+                    id: 2, isActive: function () {
+                        return false;
+                    }
+                };
 
             userFindOneStub.returns(Promise.resolve(owner));
             userEditStub.withArgs({

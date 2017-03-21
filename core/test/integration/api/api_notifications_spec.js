@@ -1,9 +1,9 @@
-var testUtils        = require('../../utils'),
-    should           = require('should'),
-    _                = require('lodash'),
-    ObjectId         = require('bson-objectid'),
+var should = require('should'),
+    testUtils = require('../../utils'),
+    _ = require('lodash'),
+    ObjectId = require('bson-objectid'),
     NotificationsAPI = require('../../../server/api/notifications'),
-    SettingsAPI      = require('../../../server/api/settings');
+    SettingsAPI = require('../../../server/api/settings');
 
 describe('Notifications API', function () {
     // Keep the DB clean
@@ -166,7 +166,7 @@ describe('Notifications API', function () {
             var notification = result.notifications[0];
 
             NotificationsAPI.destroy(
-            _.extend({}, testUtils.context.internal, {id: notification.id})
+                _.extend({}, testUtils.context.internal, {id: notification.id})
             ).then(function () {
                 return SettingsAPI.read(_.extend({key: 'seenNotifications'}, testUtils.context.internal));
             }).then(function (response) {

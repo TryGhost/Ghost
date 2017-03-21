@@ -1,16 +1,16 @@
-var passport = require('passport'),
+var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
+    passport = require('passport'),
     Promise = require('bluebird'),
     rewire = require('rewire'),
-    should = require('should'),
-    sandbox = sinon.sandbox.create(),
+
     testUtils = require('../../utils'),
     GhostPassport = rewire('../../../server/auth/passport'),
     models = require('../../../server/models'),
     utils = require('../../../server/utils'),
-    errors = require('../../../server/errors');
+    errors = require('../../../server/errors'),
 
-should.equal(true, true);
+    sandbox = sinon.sandbox.create();
 
 describe('Ghost Passport', function () {
     var client, events, registeredEvents = {};
@@ -60,8 +60,10 @@ describe('Ghost Passport', function () {
         });
 
         FakeGhostOAuth2Strategy.prototype.setClient = sandbox.stub();
-        FakeGhostOAuth2Strategy.prototype.registerClient = function () {};
-        FakeGhostOAuth2Strategy.prototype.updateClient = function () {};
+        FakeGhostOAuth2Strategy.prototype.registerClient = function () {
+        };
+        FakeGhostOAuth2Strategy.prototype.updateClient = function () {
+        };
 
         sandbox.stub(FakeGhostOAuth2Strategy.prototype, 'registerClient', function (options) {
             return Promise.resolve({

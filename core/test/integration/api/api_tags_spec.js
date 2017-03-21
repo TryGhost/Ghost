@@ -1,11 +1,11 @@
-var testUtils   = require('../../utils'),
-    should      = require('should'),
-    Promise     = require('bluebird'),
-    _           = require('lodash'),
+var should = require('should'),
+    testUtils = require('../../utils'),
+    Promise = require('bluebird'),
+    _ = require('lodash'),
     // Stuff we are testing
-    context     = testUtils.context,
+    context = testUtils.context,
 
-    TagAPI      = require('../../../server/api/tags');
+    TagAPI = require('../../../server/api/tags');
 
 // there are some random generated tags in test database
 // which can't be sorted easily using _.sortBy()
@@ -68,9 +68,9 @@ describe('Tags API', function () {
                 .then(function () {
                     done(new Error('Adding a tag with an invalid name is not rejected.'));
                 }).catch(function (errors) {
-                    errors.should.have.enumerable(0).with.property('errorType', 'ValidationError');
-                    done();
-                }).catch(done);
+                errors.should.have.enumerable(0).with.property('errorType', 'ValidationError');
+                done();
+            }).catch(done);
         });
     });
 
@@ -100,11 +100,11 @@ describe('Tags API', function () {
 
         it('No-auth CANNOT edit tag', function (done) {
             TagAPI.edit({tags: [{name: newTagName}]}, _.extend({}, {id: firstTag}))
-            .then(function () {
-                done(new Error('Add tag is not denied without authentication.'));
-            }, function () {
-                done();
-            }).catch(done);
+                .then(function () {
+                    done(new Error('Add tag is not denied without authentication.'));
+                }, function () {
+                    done();
+                }).catch(done);
         });
 
         it('rejects invalid names with ValidationError', function (done) {
@@ -114,9 +114,9 @@ describe('Tags API', function () {
                 .then(function () {
                     done(new Error('Adding a tag with an invalid name is not rejected.'));
                 }).catch(function (errors) {
-                    errors.should.have.enumerable(0).with.property('errorType', 'ValidationError');
-                    done();
-                }).catch(done);
+                errors.should.have.enumerable(0).with.property('errorType', 'ValidationError');
+                done();
+            }).catch(done);
         });
     });
 

@@ -1,6 +1,6 @@
-var getKeywords = require('../../../server/data/meta/keywords'),
-    sinon   = require('sinon'),
-    should = require('should'),
+var should = require('should'),
+    sinon = require('sinon'),
+    getKeywords = require('../../../server/data/meta/keywords'),
     sandbox = sinon.sandbox.create();
 
 describe('getKeywords', function () {

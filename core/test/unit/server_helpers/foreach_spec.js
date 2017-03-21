@@ -1,15 +1,17 @@
-var should         = require('should'),
-    sinon          = require('sinon'),
-    _              = require('lodash'),
-    hbs            = require('express-hbs'),
-    utils          = require('./utils'),
+var should = require('should'),
+    sinon = require('sinon'),
+    _ = require('lodash'),
+    hbs = require('express-hbs'),
+    utils = require('./utils'),
 
 // Stuff we are testing
-    handlebars     = hbs.handlebars,
-    helpers        = require('../../../server/helpers');
+    handlebars = hbs.handlebars,
+    helpers = require('../../../server/helpers'),
+
+    sandbox = sinon.sandbox.create();
 
 describe('{{#foreach}} helper', function () {
-    var options, context, _this, resultData, sandbox = sinon.sandbox.create();
+    var options, context, _this, resultData;
 
     before(function () {
         utils.loadHelpers();
@@ -259,14 +261,25 @@ describe('{{#foreach}} helper', function () {
     });
 
     describe('(compile)', function () {
-        var objectHash = {posts: {
-                first: {title: 'first'}, second: {title: 'second'}, third: {title: 'third'}, fourth: {title: 'fourth'}, fifth: {title: 'fifth'}
-            }},
-            arrayHash = {posts: [
-                {title: 'first'}, {title: 'second'}, {title: 'third'}, {title: 'fourth'}, {title: 'fifth'}
-            ]},
+        var objectHash = {
+                posts: {
+                    first: {title: 'first'},
+                    second: {title: 'second'},
+                    third: {title: 'third'},
+                    fourth: {title: 'fourth'},
+                    fifth: {title: 'fifth'}
+                }
+            },
+            arrayHash = {
+                posts: [
+                    {title: 'first'}, {title: 'second'}, {title: 'third'}, {title: 'fourth'}, {title: 'fifth'}
+                ]
+            },
             arrayHash2 = {goodbyes: [{text: 'goodbye'}, {text: 'Goodbye'}, {text: 'GOODBYE'}], world: 'world'},
-            objectHash2 = {goodbyes: {foo: {text: 'goodbye'}, bar: {text: 'Goodbye'}, baz: {text: 'GOODBYE'}}, world: 'world'};
+            objectHash2 = {
+                goodbyes: {foo: {text: 'goodbye'}, bar: {text: 'Goodbye'}, baz: {text: 'GOODBYE'}},
+                world: 'world'
+            };
 
         function shouldCompileToExpected(templateString, hash, expected) {
             var template = handlebars.compile(templateString),

@@ -1,6 +1,6 @@
-var testUtils = require('../../../utils'),
-    should = require('should'),
+var should = require('should'),
     supertest = require('supertest'),
+    testUtils = require('../../../utils'),
     fs = require('fs-extra'),
     join = require('path').join,
     tmp = require('tmp'),

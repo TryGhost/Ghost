@@ -1,8 +1,8 @@
-var should   = require('should'),
-    sinon    = require('sinon'),
-    Promise  = require('bluebird'),
+var should = require('should'),
+    sinon = require('sinon'),
+    Promise = require('bluebird'),
     // Stuff we are testing
-    api      = require('../../../../server/api'),
+    api = require('../../../../server/api'),
     themes = require('../../../../server/themes'),
     fetchData = require('../../../../server/controllers/frontend/fetch-data'),
     configUtils = require('../../../utils/configUtils'),

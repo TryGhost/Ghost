@@ -1,25 +1,23 @@
-var sinon                   = require('sinon'),
-    should                  = require('should'),
-    passport                = require('passport'),
-    rewire                  = require('rewire'),
-    errors                  = require('../../../server/errors'),
-    auth                    = rewire('../../../server/auth'),
-    logging                 = require('../../../server/logging'),
-    BearerStrategy          = require('passport-http-bearer').Strategy,
-    ClientPasswordStrategy  = require('passport-oauth2-client-password').Strategy,
-    user                    = {id: 1},
-    info                    = {scope: '*'},
-    token                   = 'test_token',
-    testClient              = 'test_client',
-    testSecret              = 'not_available',
-    client                  = {
+var should = require('should'), // jshint ignore:line
+    sinon = require('sinon'),
+    passport = require('passport'),
+    rewire = require('rewire'),
+    errors = require('../../../server/errors'),
+    auth = rewire('../../../server/auth'),
+    logging = require('../../../server/logging'),
+    BearerStrategy = require('passport-http-bearer').Strategy,
+    ClientPasswordStrategy = require('passport-oauth2-client-password').Strategy,
+    user = {id: 1},
+    info = {scope: '*'},
+    token = 'test_token',
+    testClient = 'test_client',
+    testSecret = 'not_available',
+    client = {
         id: 2,
         type: 'ua'
     },
 
     sandbox = sinon.sandbox.create();
-
-should.equal(true, true);
 
 function registerSuccessfulBearerStrategy() {
     // register fake BearerStrategy which always authenticates

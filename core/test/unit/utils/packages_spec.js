@@ -1,4 +1,4 @@
-var should = require('should'),
+var should = require('should'), // jshint ignore:line
     tmp = require('tmp'),
     join = require('path').join,
     fs = require('fs'),
@@ -7,9 +7,6 @@ var should = require('should'),
     packages = require('../../../server/utils/packages'),
     parsePackageJson = packages.parsePackageJSON,
     filterPackages = packages.filterPackages;
-
-// To stop jshint complaining
-should.equal(true, true);
 
 describe('Package Utils', function () {
     describe('Parse Package.json', function () {

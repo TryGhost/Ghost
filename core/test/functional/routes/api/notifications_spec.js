@@ -1,8 +1,8 @@
-var testUtils     = require('../../../utils'),
-    supertest     = require('supertest'),
-    should        = require('should'),
-    config        = require('../../../../../core/server/config'),
-    ghost         = testUtils.startGhost,
+var should = require('should'),
+    supertest = require('supertest'),
+    testUtils = require('../../../utils'),
+    config = require('../../../../../core/server/config'),
+    ghost = testUtils.startGhost,
     request;
 
 describe('Notifications API', function () {

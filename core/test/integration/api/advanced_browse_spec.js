@@ -1,11 +1,11 @@
-var testUtils = require('../../utils'),
-    should    = require('should'),
-    _         = require('lodash'),
+var should = require('should'),
+    testUtils = require('../../utils'),
+    _ = require('lodash'),
 
 // Stuff we are testing
-    PostAPI   = require('../../../server/api/posts'),
-    TagAPI    = require('../../../server/api/tags'),
-    UserAPI   = require('../../../server/api/users');
+    PostAPI = require('../../../server/api/posts'),
+    TagAPI = require('../../../server/api/tags'),
+    UserAPI = require('../../../server/api/users');
 
 describe('Advanced Browse', function () {
     // Initialise the DB just once, the tests are fetch-only
@@ -20,7 +20,11 @@ describe('Advanced Browse', function () {
     describe('Advanced Use Cases', function () {
         describe('1. Posts - filter: "tags: [photo, video] + id: -4", limit: "3", include: "tags"', function () {
             it('Will fetch 3 posts with tags which match `photo` or `video` and are not the post with id 4.', function (done) {
-                PostAPI.browse({filter: 'tags: [photo, video] + id: -' + testUtils.filterData.data.posts[3].id, limit: 3, include: 'tags'}).then(function (result) {
+                PostAPI.browse({
+                    filter: 'tags: [photo, video] + id: -' + testUtils.filterData.data.posts[3].id,
+                    limit: 3,
+                    include: 'tags'
+                }).then(function (result) {
                     var ids;
                     // 1. Result should have the correct base structure
                     should.exist(result);
@@ -69,7 +73,10 @@ describe('Advanced Browse', function () {
 
         describe('2. Posts - filter: "tag:photo,featured:true,image:-null", include: "tags"', function () {
             it('Will fetch posts which have either a tag of `photo`, are marked `featured` or have an image.', function (done) {
-                PostAPI.browse({filter: 'tag:photo,featured:true,image:-null', include: 'tags'}).then(function (result) {
+                PostAPI.browse({
+                    filter: 'tag:photo,featured:true,image:-null',
+                    include: 'tags'
+                }).then(function (result) {
                     var ids;
 
                     // 1. Result should have the correct base structure
@@ -119,7 +126,12 @@ describe('Advanced Browse', function () {
         describe.skip('3. Tags - filter="count.posts:>=1" order="count.posts DESC" limit="all"', function () {
             // @TODO add support for counts/aggregates in order & filter params
             it('Will fetch all tags, ordered by post count, where the post count is at least 1.', function (done) {
-                TagAPI.browse({filter: 'count.posts:>=1', order: 'count.posts DESC', limit: 'all', include: 'count.posts'}).then(function (result) {
+                TagAPI.browse({
+                    filter: 'count.posts:>=1',
+                    order: 'count.posts DESC',
+                    limit: 'all',
+                    include: 'count.posts'
+                }).then(function (result) {
                     // 1. Result should have the correct base structure
                     should.exist(result);
                     result.should.have.property('tags');
@@ -145,7 +157,10 @@ describe('Advanced Browse', function () {
         describe('4. Posts - filter="author:[leslie,pat]+(tag:audio,image:-null)"', function () {
             // Note that `pat` doesn't exist (it's `pat-smith`)
             it('Will fetch posts by the author `leslie` or `pat` which are either have tag `audio` or an image.', function (done) {
-                PostAPI.browse({filter: 'author:[leslie,pat]+(tag:audio,image:-null)', include: 'author,tags'}).then(function (result) {
+                PostAPI.browse({
+                    filter: 'author:[leslie,pat]+(tag:audio,image:-null)',
+                    include: 'author,tags'
+                }).then(function (result) {
                     var ids, authors;
                     // 1. Result should have the correct base structure
                     should.exist(result);
@@ -202,7 +217,11 @@ describe('Advanced Browse', function () {
         describe.skip('5. Users - filter="posts.tags:photo" order="count.posts DESC" limit="3"', function () {
             // @TODO: add support for joining through posts and tags for users
             it('Will fetch the 3 most prolific users who write posts with the tag `photo` ordered by most posts.', function (done) {
-                UserAPI.browse({filter: 'posts.tags:special', order: 'count.posts DESC', limit: 3}).then(function (result) {
+                UserAPI.browse({
+                    filter: 'posts.tags:special',
+                    order: 'count.posts DESC',
+                    limit: 3
+                }).then(function (result) {
                     var ids;
                     // 1. Result should have the correct base structure
                     should.exist(result);
@@ -240,7 +259,11 @@ describe('Advanced Browse', function () {
 
         describe.skip('6. Posts filter="published_at:>\'2015-07-20\'" limit="5"}}', function () {
             it('Will fetch 5 posts after a given date.', function (done) {
-                PostAPI.browse({filter: 'published_at:>\'2015-07-20\'', limit: 5, include: 'tags'}).then(function (result) {
+                PostAPI.browse({
+                    filter: 'published_at:>\'2015-07-20\'',
+                    limit: 5,
+                    include: 'tags'
+                }).then(function (result) {
                     // 1. Result should have the correct base structure
                     should.exist(result);
                     result.should.have.property('posts');
@@ -597,7 +620,12 @@ describe('Advanced Browse', function () {
             });
 
             it('Will fetch posts with a given author', function (done) {
-                PostAPI.browse({filter: 'author:leslie', include: 'tag,author', limit: 5, page: 2}).then(function (result) {
+                PostAPI.browse({
+                    filter: 'author:leslie',
+                    include: 'tag,author',
+                    limit: 5,
+                    page: 2
+                }).then(function (result) {
                     var ids;
                     // 1. Result should have the correct base structure
                     should.exist(result);

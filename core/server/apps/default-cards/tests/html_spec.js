@@ -1,9 +1,8 @@
-var should  = require('should'),
-    card    = require('../cards/html'),
-    SimpleDom   = require('simple-dom'),
+var should = require('should'), // jshint ignore:line
+    card = require('../cards/html'),
+    SimpleDom = require('simple-dom'),
     opts;
 
-should = should;
 describe('HTML card', function () {
     it('HTML Card renders', function () {
         opts = {

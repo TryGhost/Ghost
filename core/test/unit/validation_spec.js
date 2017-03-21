@@ -1,4 +1,4 @@
-var should  = require('should'),
+var should = require('should'),
 
     validation = require('../../server/data/validation');
 

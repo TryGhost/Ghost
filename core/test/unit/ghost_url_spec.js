@@ -1,9 +1,7 @@
-var should = require('should'),
+var should = require('should'), // jshint ignore:line
     ghostUrl = require('../../shared/ghost-url'),
     configUtils = require('../utils/configUtils'),
     utils = require('../../server/utils');
-
-should.equal(true, true);
 
 // @TODO: ghostUrl.init was obviously written for this test, get rid of it! (write a route test instead)
 describe('Ghost Ajax Helper', function () {

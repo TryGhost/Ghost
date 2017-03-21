@@ -1,8 +1,8 @@
-var should   = require('should'),
-    _        = require('lodash'),
+var should = require('should'),
+    _ = require('lodash'),
 
     // Stuff we are testing
-    channelConfig      = require('../../../../server/controllers/frontend/channel-config'),
+    channelConfig = require('../../../../server/controllers/frontend/channel-config'),
     setResponseContext = require('../../../../server/controllers/frontend/context');
 
 describe('Contexts', function () {

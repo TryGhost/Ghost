@@ -1,4 +1,5 @@
-var getUrl = require('../../../server/data/meta/url');
+var should = require('should'), // jshint ignore:line
+    getUrl = require('../../../server/data/meta/url');
 
 describe('getUrl', function () {
     it('should return url for a post', function () {

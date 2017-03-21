@@ -1,9 +1,9 @@
-var testUtils       = require('../../utils'),
-    should          = require('should'),
+var should = require('should'),
+    testUtils = require('../../utils'),
 
     // Stuff we are testing
-    AppFieldsModel  = require('../../../server/models/app-field').AppField,
-    context         = testUtils.context.admin;
+    AppFieldsModel = require('../../../server/models/app-field').AppField,
+    context = testUtils.context.admin;
 
 describe('App Fields Model', function () {
     // Keep the DB clean

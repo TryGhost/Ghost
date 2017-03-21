@@ -1,13 +1,13 @@
-var testUtils       = require('../../utils'),
-    should          = require('should'),
-    sinon           = require('sinon'),
+var should = require('should'),
+    sinon = require('sinon'),
+    testUtils = require('../../utils'),
 
     // Stuff we are testing
-    SettingsModel   = require('../../../server/models/settings').Settings,
-    db              = require('../../../server/data/db'),
-    events          = require('../../../server/events'),
-    sandbox         = sinon.sandbox.create(),
-    context         = testUtils.context.admin;
+    SettingsModel = require('../../../server/models/settings').Settings,
+    db = require('../../../server/data/db'),
+    events = require('../../../server/events'),
+    context = testUtils.context.admin,
+    sandbox = sinon.sandbox.create();
 
 describe('Settings Model', function () {
     var eventSpy;

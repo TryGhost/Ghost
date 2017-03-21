@@ -1,14 +1,14 @@
-
 // # Channel Route Tests
 // As it stands, these tests depend on the database, and as such are integration tests.
 // These tests are here to cover the headers sent with requests and high-level redirects that can't be
 // tested with the unit tests
-var request    = require('supertest'),
-    should     = require('should'),
-    cheerio    = require('cheerio'),
-    testUtils  = require('../../utils'),
-    config     = require('../../../../core/server/config'),
-    ghost      = testUtils.startGhost;
+var should = require('should'),
+    supertest = require('supertest'),
+    testUtils = require('../../utils'),
+    cheerio = require('cheerio'),
+    config = require('../../../../core/server/config'),
+    ghost = testUtils.startGhost,
+    request;
 
 describe('Channel Routes', function () {
     var ghostServer;
@@ -33,7 +33,7 @@ describe('Channel Routes', function () {
             ghostServer = _ghostServer;
             return ghostServer.start();
         }).then(function () {
-            request = request(config.get('url'));
+            request = supertest.agent(config.get('url'));
             done();
         }).catch(function (e) {
             console.log('Ghost Error: ', e);

@@ -1,14 +1,11 @@
-var should   = require('should'),
-    sinon    = require('sinon'),
-    errors   = require('../../../../server/errors'),
+var should = require('should'), // jshint ignore:line
+    sinon = require('sinon'),
+    errors = require('../../../../server/errors'),
 
     // Stuff we are testing
     handleError = require('../../../../server/controllers/frontend/error'),
 
     sandbox = sinon.sandbox.create();
-
-// To stop jshint complaining
-should.equal(true, true);
 
 describe('handleError', function () {
     var next;
@@ -27,7 +24,6 @@ describe('handleError', function () {
         next.calledOnce.should.be.true();
         next.firstCall.args.should.be.empty();
     });
-
     it('should call next with error for other errors', function () {
         var otherError = new Error();
         otherError.message = 'Something wasn\'t allowed';

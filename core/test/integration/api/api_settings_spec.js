@@ -1,12 +1,12 @@
-var testUtils           = require('../../utils'),
-    should              = require('should'),
-    _                   = require('lodash'),
+var should = require('should'),
+    testUtils = require('../../utils'),
+    _ = require('lodash'),
 
     // Stuff we are testing
-    SettingsAPI         = require('../../../server/api/settings'),
-    settingsCache       = require('../../../server/settings/cache'),
-    defaultContext      = {user: 1},
-    internalContext     = {internal: true},
+    SettingsAPI = require('../../../server/api/settings'),
+    settingsCache = require('../../../server/settings/cache'),
+    defaultContext = {user: 1},
+    internalContext = {internal: true},
     callApiWithContext,
     getErrorDetails;
 
@@ -51,7 +51,9 @@ describe('Settings API', function () {
             testUtils.API.checkResponse(results.settings[0], 'setting');
 
             // Check for a core setting
-            should.not.exist(_.find(results.settings, function (setting) { return setting.type === 'core'; }));
+            should.not.exist(_.find(results.settings, function (setting) {
+                return setting.type === 'core';
+            }));
         }).catch(getErrorDetails);
     });
 
@@ -63,7 +65,9 @@ describe('Settings API', function () {
             testUtils.API.checkResponse(results.settings[0], 'setting');
 
             // Check for a core setting
-            should.not.exist(_.find(results.settings, function (setting) { return setting.type === 'core'; }));
+            should.not.exist(_.find(results.settings, function (setting) {
+                return setting.type === 'core';
+            }));
         }).catch(getErrorDetails);
     });
 
@@ -75,7 +79,9 @@ describe('Settings API', function () {
             testUtils.API.checkResponse(results.settings[0], 'setting');
 
             // Check for a core setting
-            should.exist(_.find(results.settings, function (setting) { return setting.type === 'core'; }));
+            should.exist(_.find(results.settings, function (setting) {
+                return setting.type === 'core';
+            }));
         }).catch(getErrorDetails);
     });
 
@@ -89,7 +95,7 @@ describe('Settings API', function () {
     });
 
     it('cannot read core settings if not an internal request', function () {
-        return callApiWithContext(defaultContext, 'read',  {key: 'dbHash'}).then(function () {
+        return callApiWithContext(defaultContext, 'read', {key: 'dbHash'}).then(function () {
             throw new Error('Allowed to read dbHash with external request');
         }).catch(function (error) {
             should.exist(error);

@@ -5,6 +5,7 @@ var should = require('should'), // jshint ignore:line
     redirectAdminUrls = require('../../server/admin/middleware')[0],
 
     sandbox = sinon.sandbox.create();
+
 describe('Admin App', function () {
     afterEach(function () {
         sandbox.restore();

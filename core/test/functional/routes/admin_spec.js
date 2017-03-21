@@ -3,12 +3,13 @@
 // Mocking out the models to not touch the DB would turn these into unit tests, and should probably be done in future,
 // But then again testing real code, rather than mock code, might be more useful...
 
-var request = require('supertest'),
-    should = require('should'),
+var should = require('should'),
+    supertest = require('supertest'),
     testUtils = require('../../utils'),
     ghost = testUtils.startGhost,
     i18n = require('../../../../core/server/i18n'),
-    config = require('../../../../core/server/config');
+    config = require('../../../../core/server/config'),
+    request;
 
 i18n.init();
 
@@ -49,7 +50,7 @@ describe('Admin Routing', function () {
                 ghostServer = _ghostServer;
                 return ghostServer.start();
             }).then(function () {
-                request = request(config.get('url'));
+                request = supertest.agent(config.get('url'));
                 done();
             }).catch(function (e) {
                 console.log('Ghost Error: ', e);
@@ -135,7 +136,7 @@ describe('Admin Routing', function () {
     describe('FORK', function () {
         // we'll use X-Forwarded-Proto: https to simulate an 'https://' request behind a proxy
         describe('Require HTTPS - redirect', function () {
-            var forkedGhost, request;
+            var forkedGhost;
 
             before(function (done) {
                 testUtils.fork.ghost({
@@ -146,8 +147,7 @@ describe('Admin Routing', function () {
                 }, 'testhttps')
                     .then(function (child) {
                         forkedGhost = child;
-                        request = require('supertest');
-                        request = request('http://localhost:2390');
+                        request = supertest.agent('http://localhost:2390');
                     }).then(done)
                     .catch(done);
             });

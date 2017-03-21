@@ -1,12 +1,13 @@
-var should         = require('should'),
-    hbs            = require('express-hbs'),
-    sinon          = require('sinon'),
-    utils          = require('./utils'),
-    configUtils    = require('../../utils/configUtils'),
-    helpers        = require('../../../server/helpers'),
-    settingsCache  = require('../../../server/settings/cache'),
-    sandbox        = sinon.sandbox.create(),
-    handlebars     = hbs.handlebars;
+var should = require('should'),
+    sinon = require('sinon'),
+    hbs = require('express-hbs'),
+    utils = require('./utils'),
+    configUtils = require('../../utils/configUtils'),
+    helpers = require('../../../server/helpers'),
+    settingsCache = require('../../../server/settings/cache'),
+    handlebars = hbs.handlebars,
+
+    sandbox = sinon.sandbox.create();
 
 describe('{{asset}} helper', function () {
     var rendered, localSettingsCache = {};

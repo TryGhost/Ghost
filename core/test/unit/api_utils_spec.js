@@ -1,11 +1,12 @@
-var should  = require('should'),
-    sinon   = require('sinon'),
-    _       = require('lodash'),
+var should = require('should'),
+    sinon = require('sinon'),
+    _ = require('lodash'),
     Promise = require('bluebird'),
     ObjectId = require('bson-objectid'),
     permissions = require('../../server/permissions'),
     errors = require('../../server/errors'),
     apiUtils = require('../../server/api/utils'),
+
     sandbox = sinon.sandbox.create();
 
 describe('API Utils', function () {
@@ -419,7 +420,10 @@ describe('API Utils', function () {
     describe('checkFileIsValid', function () {
         it('returns true if file has valid extension and type', function () {
             apiUtils.checkFileIsValid({name: 'test.txt', mimetype: 'text'}, ['text'], ['.txt']).should.be.true();
-            apiUtils.checkFileIsValid({name: 'test.jpg', mimetype: 'jpeg'}, ['text', 'jpeg'], ['.txt', '.jpg']).should.be.true();
+            apiUtils.checkFileIsValid({
+                name: 'test.jpg',
+                mimetype: 'jpeg'
+            }, ['text', 'jpeg'], ['.txt', '.jpg']).should.be.true();
         });
 
         it('returns false if file has invalid extension', function () {

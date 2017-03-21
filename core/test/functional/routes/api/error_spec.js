@@ -2,12 +2,11 @@
 // As it stands, these tests depend on the database, and as such are integration tests.
 // Mocking out the models to not touch the DB would turn these into unit tests, and should probably be done in future,
 // But then again testing real code, rather than mock code, might be more useful...
-
-var supertest     = require('supertest'),
-    should        = require('should'),
-    testUtils     = require('../../../utils'),
-    config        = require('../../../../../core/server/config'),
-    ghost         = testUtils.startGhost,
+var should = require('should'),
+    supertest = require('supertest'),
+    testUtils = require('../../../utils'),
+    config = require('../../../../../core/server/config'),
+    ghost = testUtils.startGhost,
     request;
 
 require('should-http');

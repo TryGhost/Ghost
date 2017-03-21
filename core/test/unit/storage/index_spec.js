@@ -1,12 +1,9 @@
-var fs = require('fs-extra'),
-    should = require('should'),
+var should = require('should'), // jshint ignore:line
+    fs = require('fs-extra'),
     configUtils = require('../../utils/configUtils'),
     storage = require('../../../server/storage'),
     errors = require('../../../server/errors'),
     localFileStorage = require('../../../server/storage/local-file-store');
-
-// to stop jshint complaining
-should.equal(true, true);
 
 describe('storage: index_spec', function () {
     var scope = {adapter: null};

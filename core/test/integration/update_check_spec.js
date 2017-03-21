@@ -1,5 +1,5 @@
-var _           = require('lodash'),
-    should      = require('should'),
+var should      = require('should'),
+    _           = require('lodash'),
     rewire      = require('rewire'),
     uuid        = require('uuid'),
     testUtils   = require('../utils'),

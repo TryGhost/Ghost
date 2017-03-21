@@ -1,14 +1,15 @@
 // jshint unused: false
 var should = require('should'),
+    sinon = require('sinon'),
     _ = require('lodash'),
     moment = require('moment'),
-    sinon = require('sinon'),
     utils = require('../../../server/utils'),
     settingsCache = require('../../../server/settings/cache'),
     configUtils = require('../../utils/configUtils'),
     testUtils = require('../../utils'),
-    sandbox = sinon.sandbox.create(),
-    config = configUtils.config;
+    config = configUtils.config,
+
+    sandbox = sinon.sandbox.create();
 
 describe('Url', function () {
     before(function () {

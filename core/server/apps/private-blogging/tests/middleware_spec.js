@@ -1,14 +1,15 @@
 /*globals describe, beforeEach, afterEach, it*/
-var crypto          = require('crypto'),
-    should          = require('should'),
-    sinon           = require('sinon'),
-    Promise         = require('bluebird'),
-    privateBlogging = require('../lib/middleware'),
-    api             = require('../../../api'),
-    errors          = require('../../../errors'),
-    fs              = require('fs');
+var should = require('should'), // jshint ignore:line
+    sinon = require('sinon'),
+    crypto = require('crypto'),
+    Promise = require('bluebird'),
+    api = require('../../../api'),
+    errors = require('../../../errors'),
+    fs = require('fs'),
 
-should.equal(true, true);
+    privateBlogging = require('../lib/middleware'),
+
+    sandbox = sinon.sandbox.create();
 
 function hash(password, salt) {
     var hasher = crypto.createHash('sha256');
@@ -19,12 +20,7 @@ function hash(password, salt) {
 }
 
 describe('Private Blogging', function () {
-    var sandbox,
-        apiSettingsStub;
-
-    beforeEach(function () {
-        sandbox = sinon.sandbox.create();
-    });
+    var apiSettingsStub;
 
     afterEach(function () {
         sandbox.restore();
@@ -98,8 +94,10 @@ describe('Private Blogging', function () {
                     status: function () {
                         return this;
                     },
-                    send: function () {},
-                    set: function () {},
+                    send: function () {
+                    },
+                    set: function () {
+                    },
                     isPrivateBlog: true
                 };
             });

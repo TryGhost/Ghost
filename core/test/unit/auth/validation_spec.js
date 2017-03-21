@@ -3,6 +3,7 @@ var should = require('should'),
     Promise = require('bluebird'),
     auth = require('../../../server/auth'),
     models = require('../../../server/models'),
+
     sandbox = sinon.sandbox.create();
 
 describe('UNIT: auth validation', function () {

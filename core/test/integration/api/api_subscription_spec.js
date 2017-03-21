@@ -1,20 +1,25 @@
-var testUtils   = require('../../utils'),
-    should      = require('should'),
-    sinon       = require('sinon'),
-    Promise     = require('bluebird'),
-    ObjectId    = require('bson-objectid'),
-    fs          = require('fs'),
-    _           = require('lodash'),
-    context     = testUtils.context,
-    errors      = require('../../../server/errors'),
+var should = require('should'),
+    sinon = require('sinon'),
+    testUtils = require('../../utils'),
+    Promise = require('bluebird'),
+    ObjectId = require('bson-objectid'),
+    fs = require('fs'),
+    _ = require('lodash'),
+    context = testUtils.context,
+    errors = require('../../../server/errors'),
     serverUtils = require('../../../server/utils'),
-    apiUtils    = require('../../../server/api/utils'),
-    SubscribersAPI      = require('../../../server/api/subscribers');
+    apiUtils = require('../../../server/api/utils'),
+    SubscribersAPI = require('../../../server/api/subscribers'),
+
+    sandbox = sinon.sandbox.create();
 
 describe('Subscribers API', function () {
     // Keep the DB clean
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
+    afterEach(function () {
+        sandbox.restore();
+    });
     beforeEach(testUtils.setup('users:roles', 'perms:subscriber', 'perms:init', 'posts', 'subscriber'));
 
     should.exist(SubscribersAPI);
@@ -93,7 +98,7 @@ describe('Subscribers API', function () {
 
     describe('Edit', function () {
         var newSubscriberEmail = 'subscriber@updated.com',
-        firstSubscriber = testUtils.DataGenerator.Content.subscribers[0].id;
+            firstSubscriber = testUtils.DataGenerator.Content.subscribers[0].id;
 
         it('can edit a subscriber (admin)', function (done) {
             SubscribersAPI.edit({subscribers: [{email: newSubscriberEmail}]}, _.extend({}, context.admin, {id: firstSubscriber}))
@@ -238,12 +243,12 @@ describe('Subscribers API', function () {
             stub;
 
         beforeEach(function () {
-            sinon.stub(fs, 'unlink', function (path, cb) {
+            sandbox.stub(fs, 'unlink', function (path, cb) {
                 cb();
             });
-            sinon.stub(apiUtils, 'checkFileExists').returns(true);
-            stub = sinon.stub(apiUtils, 'checkFileIsValid').returns(true);
-            sinon.stub(serverUtils, 'readCSV', function () {
+            sandbox.stub(apiUtils, 'checkFileExists').returns(true);
+            stub = sandbox.stub(apiUtils, 'checkFileIsValid').returns(true);
+            sandbox.stub(serverUtils, 'readCSV', function () {
                 if (scope.csvError) {
                     return Promise.reject(new Error('csv'));
                 }
@@ -253,15 +258,11 @@ describe('Subscribers API', function () {
         });
 
         afterEach(function () {
-            fs.unlink.restore();
-            apiUtils.checkFileExists.restore();
-            apiUtils.checkFileIsValid.restore();
-            serverUtils.readCSV.restore();
             scope.csvError = false;
         });
 
         it('check that fn works in general', function (done) {
-            scope.values = [{email: 'lol@hallo.de'}, {email: 'test'}, {email:'lol@hallo.de'}];
+            scope.values = [{email: 'lol@hallo.de'}, {email: 'test'}, {email: 'lol@hallo.de'}];
 
             SubscribersAPI.importCSV(_.merge(testUtils.context.internal, {path: '/somewhere'}))
                 .then(function (result) {

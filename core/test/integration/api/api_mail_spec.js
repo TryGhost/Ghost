@@ -1,6 +1,6 @@
 var should = require('should'),
-    _ = require('lodash'),
     testUtils = require('../../utils'),
+    _ = require('lodash'),
     configUtils = require('../../utils/configUtils'),
     i18n = require('../../../../core/server/i18n'),
     mailData = {

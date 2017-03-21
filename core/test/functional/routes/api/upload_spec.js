@@ -1,11 +1,10 @@
-var testUtils     = require('../../../utils'),
-    /*jshint unused:false*/
-    should        = require('should'),
-    path          = require('path'),
-    fs            = require('fs-extra'),
-    supertest     = require('supertest'),
-    ghost         = testUtils.startGhost,
-    config        = require('../../../../../core/server/config'),
+var should = require('should'), // jshint ignore:line
+    supertest = require('supertest'),
+    testUtils = require('../../../utils'),
+    path = require('path'),
+    fs = require('fs-extra'),
+    ghost = testUtils.startGhost,
+    config = require('../../../../../core/server/config'),
     request;
 
 describe('Upload API', function () {
@@ -45,7 +44,7 @@ describe('Upload API', function () {
             request.post(testUtils.API.getApiQuery('uploads'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .attach('uploadimage',  path.join(__dirname, '/../../../utils/fixtures/images/ghost-logo.png'))
+                .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/ghost-logo.png'))
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -61,7 +60,7 @@ describe('Upload API', function () {
             request.post(testUtils.API.getApiQuery('uploads'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .attach('uploadimage',  path.join(__dirname, '/../../../utils/fixtures/images/ghosticon.jpg'))
+                .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/ghosticon.jpg'))
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -77,7 +76,7 @@ describe('Upload API', function () {
             request.post(testUtils.API.getApiQuery('uploads'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .attach('uploadimage',  path.join(__dirname, '/../../../utils/fixtures/images/loadingcat.gif'))
+                .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/loadingcat.gif'))
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -110,7 +109,7 @@ describe('Upload API', function () {
             request.post(testUtils.API.getApiQuery('uploads'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .attach('uploadimage',  path.join(__dirname, '/../../../utils/fixtures/csv/single-column-with-header.csv'))
+                .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/csv/single-column-with-header.csv'))
                 .expect(415)
                 .end(function (err) {
                     if (err) {
@@ -126,7 +125,7 @@ describe('Upload API', function () {
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .set('content-type', 'image/png')
                 .expect('Content-Type', /json/)
-                .attach('uploadimage',  path.join(__dirname, '/../../../utils/fixtures/images/ghost-logo.pngx'))
+                .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/ghost-logo.pngx'))
                 .expect(415)
                 .end(function (err) {
                     if (err) {

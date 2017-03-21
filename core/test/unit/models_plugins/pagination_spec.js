@@ -1,21 +1,15 @@
-var should = require('should'),
+var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     Promise = require('bluebird'),
     rewire = require('rewire'),
 
 // Thing we're testing
-    pagination = rewire('../../../server/models/plugins/pagination');
+    pagination = rewire('../../../server/models/plugins/pagination'),
 
-// To stop jshint complaining
-should.equal(true, true);
+    sandbox = sinon.sandbox.create();
 
 describe('pagination', function () {
-    var sandbox,
-        paginationUtils;
-
-    beforeEach(function () {
-        sandbox = sinon.sandbox.create();
-    });
+    var paginationUtils;
 
     afterEach(function () {
         sandbox.restore();
@@ -119,9 +113,9 @@ describe('pagination', function () {
                     limit: 10,
                     page: 2
                 }).should.eql({
-                        limit: 10,
-                        page: 2
-                    });
+                    limit: 10,
+                    page: 2
+                });
             });
 
             it('should use defaults if bad options are passed', function () {
@@ -129,18 +123,18 @@ describe('pagination', function () {
                     limit: 'thelma',
                     page: 'louise'
                 }).should.eql({
-                        limit: 15,
-                        page: 1
-                    });
+                    limit: 15,
+                    page: 1
+                });
             });
 
             it('should permit all for limit', function () {
                 parseOptions({
                     limit: 'all'
                 }).should.eql({
-                        limit: 'all',
-                        page: 1
-                    });
+                    limit: 'all',
+                    page: 1
+                });
             });
         });
 
@@ -194,7 +188,8 @@ describe('pagination', function () {
             mockQuery.clone.returns(mockQuery);
             mockQuery.select.returns(Promise.resolve([{aggregate: 1}]));
 
-            model = function () {};
+            model = function () {
+            };
 
             model.prototype.fetchAll = sandbox.stub().returns(Promise.resolve({}));
             model.prototype.query = sandbox.stub();

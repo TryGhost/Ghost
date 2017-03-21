@@ -1,4 +1,4 @@
-var should    = require('should'),
+var should = require('should'),
     hbs = require('express-hbs'),
 
     // Stuff we are testing

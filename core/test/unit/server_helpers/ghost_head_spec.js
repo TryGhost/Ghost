@@ -1,17 +1,18 @@
-var should         = require('should'),
-    sinon          = require('sinon'),
-    _              = require('lodash'),
-    Promise        = require('bluebird'),
-    hbs            = require('express-hbs'),
-    moment         = require('moment'),
-    utils          = require('./utils'),
-    configUtils    = require('../../utils/configUtils'),
-    helpers        = require('../../../server/helpers'),
-    api            = require('../../../server/api'),
-    labs           = require('../../../server/utils/labs'),
-    settingsCache  = require('../../../server/settings/cache'),
-    handlebars     = hbs.handlebars,
-    sandbox        = sinon.sandbox.create();
+var should = require('should'),
+    sinon = require('sinon'),
+    _ = require('lodash'),
+    Promise = require('bluebird'),
+    hbs = require('express-hbs'),
+    moment = require('moment'),
+    utils = require('./utils'),
+    configUtils = require('../../utils/configUtils'),
+    helpers = require('../../../server/helpers'),
+    api = require('../../../server/api'),
+    labs = require('../../../server/utils/labs'),
+    settingsCache = require('../../../server/settings/cache'),
+    handlebars = hbs.handlebars,
+
+    sandbox = sinon.sandbox.create();
 
 describe('{{ghost_head}} helper', function () {
     var settingsReadStub;
@@ -120,7 +121,7 @@ describe('{{ghost_head}} helper', function () {
                 meta_description: 'all about our blog',
                 title: 'About',
                 image: '/content/images/test-image-about.png',
-                published_at:  moment('2008-05-31T19:18:15').toISOString(),
+                published_at: moment('2008-05-31T19:18:15').toISOString(),
                 updated_at: moment('2014-10-06T15:23:54').toISOString(),
                 page: true,
                 author: {
@@ -368,7 +369,12 @@ describe('{{ghost_head}} helper', function () {
             };
 
             helpers.ghost_head.call(
-                {safeVersion: '0.3', relativeUrl: '/author/AuthorName/page/2/', author: author, context: ['paged', 'author']},
+                {
+                    safeVersion: '0.3',
+                    relativeUrl: '/author/AuthorName/page/2/',
+                    author: author,
+                    context: ['paged', 'author']
+                },
                 {data: {root: {context: ['paged', 'author']}}}
             ).then(function (rendered) {
                 should.exist(rendered);
@@ -403,7 +409,7 @@ describe('{{ghost_head}} helper', function () {
                 meta_description: 'blog description',
                 title: 'Welcome to Ghost',
                 image: '/content/images/test-image.png',
-                published_at:  moment('2008-05-31T19:18:15').toISOString(),
+                published_at: moment('2008-05-31T19:18:15').toISOString(),
                 updated_at: moment('2014-10-06T15:23:54').toISOString(),
                 tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
                 author: {
@@ -483,7 +489,7 @@ describe('{{ghost_head}} helper', function () {
                 meta_description: 'blog description',
                 title: 'Welcome to Ghost',
                 image: '/content/images/test-image.png',
-                published_at:  moment('2008-05-31T19:18:15').toISOString(),
+                published_at: moment('2008-05-31T19:18:15').toISOString(),
                 updated_at: moment('2014-10-06T15:23:54').toISOString(),
                 tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
                 author: {
@@ -564,7 +570,7 @@ describe('{{ghost_head}} helper', function () {
                 title: 'title',
                 meta_title: 'Welcome to Ghost "test"',
                 image: '/content/images/test-image.png',
-                published_at:  moment('2008-05-31T19:18:15').toISOString(),
+                published_at: moment('2008-05-31T19:18:15').toISOString(),
                 updated_at: moment('2014-10-06T15:23:54').toISOString(),
                 tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
                 author: {
@@ -643,7 +649,7 @@ describe('{{ghost_head}} helper', function () {
                 meta_description: 'blog description',
                 title: 'Welcome to Ghost',
                 image: '/content/images/test-image.png',
-                published_at:  moment('2008-05-31T19:18:15').toISOString(),
+                published_at: moment('2008-05-31T19:18:15').toISOString(),
                 updated_at: moment('2014-10-06T15:23:54').toISOString(),
                 tags: [],
                 author: {
@@ -718,7 +724,7 @@ describe('{{ghost_head}} helper', function () {
                 meta_description: 'blog description',
                 title: 'Welcome to Ghost',
                 image: null,
-                published_at:  moment('2008-05-31T19:18:15').toISOString(),
+                published_at: moment('2008-05-31T19:18:15').toISOString(),
                 updated_at: moment('2014-10-06T15:23:54').toISOString(),
                 tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
                 author: {
@@ -860,7 +866,12 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns next & prev URL correctly for middle page', function (done) {
             helpers.ghost_head.call(
-                {safeVersion: '0.3', relativeUrl: '/page/3/', context: ['paged', 'index'], pagination: {next: '4', prev: '2'}},
+                {
+                    safeVersion: '0.3',
+                    relativeUrl: '/page/3/',
+                    context: ['paged', 'index'],
+                    pagination: {next: '4', prev: '2'}
+                },
                 {data: {root: {context: ['index', 'paged'], pagination: {total: 4, page: 3, next: 4, prev: 2}}}}
             ).then(function (rendered) {
                 should.exist(rendered);
@@ -879,7 +890,12 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns next & prev URL correctly for second page', function (done) {
             helpers.ghost_head.call(
-                {safeVersion: '0.3', relativeUrl: '/page/2/', context: ['paged', 'index'], pagination: {next: '3', prev: '1'}},
+                {
+                    safeVersion: '0.3',
+                    relativeUrl: '/page/2/',
+                    context: ['paged', 'index'],
+                    pagination: {next: '3', prev: '1'}
+                },
                 {data: {root: {context: ['index', 'paged'], pagination: {total: 3, page: 2, next: 3, prev: 1}}}}
             ).then(function (rendered) {
                 should.exist(rendered);
@@ -986,7 +1002,7 @@ describe('{{ghost_head}} helper', function () {
                 meta_description: 'blog description',
                 title: 'Welcome to Ghost',
                 image: 'content/images/test-image.png',
-                published_at:  moment('2008-05-31T19:18:15').toISOString(),
+                published_at: moment('2008-05-31T19:18:15').toISOString(),
                 updated_at: moment('2014-10-06T15:23:54').toISOString(),
                 tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
                 author: {
@@ -1065,7 +1081,7 @@ describe('{{ghost_head}} helper', function () {
                 meta_description: 'blog description',
                 title: 'Welcome to Ghost',
                 image: 'content/images/test-image.png',
-                published_at:  moment('2008-05-31T19:18:15').toISOString(),
+                published_at: moment('2008-05-31T19:18:15').toISOString(),
                 updated_at: moment('2014-10-06T15:23:54').toISOString(),
                 tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
                 author: {
@@ -1128,7 +1144,7 @@ describe('{{ghost_head}} helper', function () {
                 meta_description: 'blog description',
                 title: 'Welcome to Ghost',
                 image: 'content/images/test-image.png',
-                published_at:  moment('2008-05-31T19:18:15').toISOString(),
+                published_at: moment('2008-05-31T19:18:15').toISOString(),
                 updated_at: moment('2014-10-06T15:23:54').toISOString(),
                 tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
                 author: {
@@ -1178,7 +1194,7 @@ describe('{{ghost_head}} helper', function () {
                 meta_description: 'blog description',
                 title: 'Welcome to Ghost',
                 image: 'content/images/test-image.png',
-                published_at:  moment('2008-05-31T19:18:15').toISOString(),
+                published_at: moment('2008-05-31T19:18:15').toISOString(),
                 updated_at: moment('2014-10-06T15:23:54').toISOString(),
                 tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
                 author: {

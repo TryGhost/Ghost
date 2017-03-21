@@ -1,11 +1,11 @@
 // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
-var should         = require('should'),
-    rewire         = require('rewire'),
-    hbs            = require('express-hbs'),
+var should = require('should'),
+    rewire = require('rewire'),
+    hbs = require('express-hbs'),
 
     // Stuff we are testing
 
-    helpers        = rewire('../../server/helpers');
+    helpers = rewire('../../server/helpers');
 
 describe('Helpers', function () {
     beforeEach(function () {

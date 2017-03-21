@@ -1,9 +1,9 @@
-var supertest     = require('supertest'),
-    should        = require('should'),
-    testUtils     = require('../../../utils'),
-    db            = require('../../../../../core/server/data/db'),
-    config        = require('../../../../../core/server/config'),
-    ghost         = testUtils.startGhost,
+var should = require('should'),
+    supertest = require('supertest'),
+    testUtils = require('../../../utils'),
+    db = require('../../../../../core/server/data/db'),
+    config = require('../../../../../core/server/config'),
+    ghost = testUtils.startGhost,
     failedLoginAttempt,
     count,
     checkBruteTable,
@@ -104,7 +104,7 @@ describe('Spam Prevention API', function () {
                         return done(err);
                     }
 
-                    if (count <  config.get('spam:user_login:freeRetries') + 1) {
+                    if (count < config.get('spam:user_login:freeRetries') + 1) {
                         return failedLoginAttempt(email);
                     }
 
@@ -161,7 +161,7 @@ describe('Spam Prevention API', function () {
                         return done(err);
                     }
 
-                    if (count <  config.get('spam:user_login:freeRetries') + 1) {
+                    if (count < config.get('spam:user_login:freeRetries') + 1) {
                         return failedLoginAttempt(owner.email);
                     }
 

@@ -8,6 +8,7 @@ var should = require('should'),
     schema = require('../../server/data/schema'),
     models = require('../../server/models'),
     schemaTables = Object.keys(schema.tables),
+
     sandbox = sinon.sandbox.create();
 
 describe('Exporter', function () {

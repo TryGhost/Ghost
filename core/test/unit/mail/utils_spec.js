@@ -1,4 +1,5 @@
-var sinon = require('sinon'),
+var should = require('should'), // jshint ignore:line
+    sinon = require('sinon'),
     mail = require('../../../server/mail'),
     sandbox = sinon.sandbox.create();
 

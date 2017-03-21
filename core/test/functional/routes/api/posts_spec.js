@@ -1,10 +1,10 @@
-var testUtils     = require('../../../utils'),
-    should        = require('should'),
-    supertest     = require('supertest'),
-    _             = require('lodash'),
-    ObjectId      = require('bson-objectid'),
-    config        = require('../../../../../core/server/config'),
-    ghost         = testUtils.startGhost,
+var should = require('should'),
+    supertest = require('supertest'),
+    testUtils = require('../../../utils'),
+    _ = require('lodash'),
+    ObjectId = require('bson-objectid'),
+    config = require('../../../../../core/server/config'),
+    ghost = testUtils.startGhost,
     request;
 
 describe('Post API', function () {

@@ -1,12 +1,9 @@
-var should          = require('should'),
-    sinon           = require('sinon'),
-    nock            = require('nock'),
-    configUtils     = require('../utils/configUtils'),
-    gravatar        = require('../../server/utils/gravatar'),
-    utils           = require('../../server/utils');
-
-// To stop jshint complaining
-should.equal(true, true);
+var should = require('should'), // jshint ignore:line
+    sinon = require('sinon'),
+    nock = require('nock'),
+    configUtils = require('../utils/configUtils'),
+    gravatar = require('../../server/utils/gravatar'),
+    utils = require('../../server/utils');
 
 describe('Server Utilities', function () {
     describe('Safe String', function () {

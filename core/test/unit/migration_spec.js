@@ -1,7 +1,7 @@
-var sinon = require('sinon'),
+var should = require('should'), // jshint ignore:line
+    sinon = require('sinon'),
     rewire = require('rewire'),
     _ = require('lodash'),
-    should = require('should'),
     Promise = require('bluebird'),
     crypto = require('crypto'),
     fs = require('fs'),
@@ -10,9 +10,8 @@ var sinon = require('sinon'),
     schema = require('../../server/data/schema'),
     backupDatabase = rewire('../../server/data/db/backup'),
     fixtures = require('../../server/data/schema/fixtures'),
-    sandbox = sinon.sandbox.create();
 
-should.equal(true, true);
+    sandbox = sinon.sandbox.create();
 
 // Check version integrity
 // These tests exist to ensure that developers are not able to modify the database schema, or permissions fixtures

@@ -1,9 +1,9 @@
-var should         = require('should'),
-    rewire         = require('rewire'),
-    configUtils    = require('../../../../test/utils/configUtils'),
+var should = require('should'),
+    rewire = require('rewire'),
+    configUtils = require('../../../../test/utils/configUtils'),
 
 // Stuff we are testing
-    ampContentHelper    = rewire('../lib/helpers/amp_content');
+    ampContentHelper = rewire('../lib/helpers/amp_content');
 
 // TODO: Amperize really needs to get stubbed, so we can test returning errors
 // properly and make this test faster!

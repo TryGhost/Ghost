@@ -1,5 +1,5 @@
-var sinon = require('sinon'),
-    should = require('should'),
+var should = require('should'),
+    sinon = require('sinon'),
     Promise = require('bluebird'),
     passport = require('passport'),
     testUtils = require('../../utils'),
@@ -7,17 +7,18 @@ var sinon = require('sinon'),
     authUtils = require('../../../server/auth/utils'),
     spamPrevention = require('../../../server/middleware/api/spam-prevention'),
     errors = require('../../../server/errors'),
-    models = require('../../../server/models');
+    models = require('../../../server/models'),
+
+    sandbox = sinon.sandbox.create();
 
 describe('OAuth', function () {
-    var next, req, res, sandbox;
+    var next, req, res;
 
     before(function () {
         models.init();
     });
 
     beforeEach(function () {
-        sandbox = sinon.sandbox.create();
         req = {};
         res = {};
         next = sandbox.spy();
@@ -69,7 +70,8 @@ describe('OAuth', function () {
                     expires_in: Date.now() + 1000
                 }));
 
-            sandbox.stub(res, 'setHeader', function () {});
+            sandbox.stub(res, 'setHeader', function () {
+            });
 
             sandbox.stub(res, 'end', function (json) {
                 try {
@@ -185,7 +187,8 @@ describe('OAuth', function () {
                     expires_in: Date.now() + 1000
                 }));
 
-            sandbox.stub(res, 'setHeader', function () {});
+            sandbox.stub(res, 'setHeader', function () {
+            });
 
             sandbox.stub(res, 'end', function (json) {
                 try {

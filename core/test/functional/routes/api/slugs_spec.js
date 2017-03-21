@@ -1,8 +1,8 @@
-var testUtils     = require('../../../utils'),
-    should        = require('should'),
-    supertest     = require('supertest'),
-    config        = require('../../../../../core/server/config'),
-    ghost         = testUtils.startGhost,
+var should = require('should'),
+    supertest = require('supertest'),
+    testUtils = require('../../../utils'),
+    config = require('../../../../../core/server/config'),
+    ghost = testUtils.startGhost,
     request;
 
 describe('Slug API', function () {

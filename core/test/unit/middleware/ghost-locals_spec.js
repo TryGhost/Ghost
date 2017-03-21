@@ -1,14 +1,20 @@
-var sinon        = require('sinon'),
-    should       = require('should'),
-    ghostLocals  = require('../../../server/middleware/ghost-locals');
+var should = require('should'),
+    sinon = require('sinon'),
+    ghostLocals = require('../../../server/middleware/ghost-locals'),
+
+    sandbox = sinon.sandbox.create();
 
 describe('Theme Handler', function () {
     var req, res, next;
 
     beforeEach(function () {
-        req = sinon.spy();
-        res = sinon.spy();
-        next = sinon.spy();
+        req = sandbox.spy();
+        res = sandbox.spy();
+        next = sandbox.spy();
+    });
+
+    afterEach(function () {
+        sandbox.restore();
     });
 
     describe('ghostLocals', function () {

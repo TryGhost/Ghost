@@ -1,15 +1,15 @@
-
-/*jshint unused:false*/
-var should = require('should'),
+var should = require('should'), // jshint ignore:line
+    sinon = require('sinon'),
+    testUtils = require('../../../utils'),
     Promise = require('bluebird'),
     moment = require('moment'),
-    sinon = require('sinon'),
     rewire = require('rewire'),
     _ = require('lodash'),
     config = require('../../../../server/config'),
-    testUtils = require(config.get('paths').corePath + '/test/utils'),
     events = require(config.get('paths').corePath + '/server/events'),
-    models = require(config.get('paths').corePath + '/server/models');
+    models = require(config.get('paths').corePath + '/server/models'),
+
+    sandbox = sinon.sandbox.create();
 
 describe('Models: listeners', function () {
     var eventsToRemember = {},
@@ -28,7 +28,7 @@ describe('Models: listeners', function () {
     beforeEach(testUtils.setup('owner', 'user-token:0'));
 
     beforeEach(function () {
-        sinon.stub(events, 'on', function (eventName, callback) {
+        sandbox.stub(events, 'on', function (eventName, callback) {
             eventsToRemember[eventName] = callback;
         });
 
@@ -36,7 +36,7 @@ describe('Models: listeners', function () {
     });
 
     afterEach(function (done) {
-        events.on.restore();
+        sandbox.restore();
         scope.posts = [];
         testUtils.teardown(done);
     });

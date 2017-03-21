@@ -1,15 +1,15 @@
-var sinon = require('sinon'),
-    should = require('should'),
+var should = require('should'),
+    sinon = require('sinon'),
     rewire = require('rewire'),
-    configUtils  = require('../../../utils/configUtils'),
-    cors = rewire('../../../../server/middleware/api/cors');
+    configUtils = require('../../../utils/configUtils'),
+    cors = rewire('../../../../server/middleware/api/cors'),
+
+    sandbox = sinon.sandbox.create();
 
 describe('cors', function () {
-    var res, req, next, sandbox;
+    var res, req, next;
 
     beforeEach(function () {
-        sandbox = sinon.sandbox.create();
-
         req = {
             headers: {
                 origin: null
@@ -21,7 +21,8 @@ describe('cors', function () {
 
         res = {
             headers: {},
-            getHeader: function () {},
+            getHeader: function () {
+            },
             setHeader: function (h, v) {
                 this.headers[h] = v;
             }

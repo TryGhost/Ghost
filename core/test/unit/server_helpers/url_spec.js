@@ -1,20 +1,21 @@
-var should         = require('should'),
-    sinon          = require('sinon'),
-    Promise        = require('bluebird'),
-    hbs            = require('express-hbs'),
-    utils          = require('./utils'),
-    configUtils    = require('../../utils/configUtils'),
+var should = require('should'),
+    sinon = require('sinon'),
+    Promise = require('bluebird'),
+    hbs = require('express-hbs'),
+    utils = require('./utils'),
+    configUtils = require('../../utils/configUtils'),
 
 // Stuff we are testing
-    handlebars     = hbs.handlebars,
-    helpers        = require('../../../server/helpers'),
-    api            = require('../../../server/api');
+    handlebars = hbs.handlebars,
+    helpers = require('../../../server/helpers'),
+    api = require('../../../server/api'),
+
+    sandbox = sinon.sandbox.create();
 
 describe('{{url}} helper', function () {
-    var sandbox, rendered;
+    var rendered;
 
     before(function () {
-        sandbox = sinon.sandbox.create();
         configUtils.set({url: 'http://testurl.com/'});
         utils.loadHelpers();
     });
@@ -64,8 +65,10 @@ describe('{{url}} helper', function () {
 
     it('should output an absolute URL with https if the option is present and secure', function () {
         rendered = helpers.url.call(
-            {html: 'content', markdown: 'ff', title: 'title', slug: 'slug',
-            url: '/slug/', created_at: new Date(0), secure: true},
+            {
+                html: 'content', markdown: 'ff', title: 'title', slug: 'slug',
+                url: '/slug/', created_at: new Date(0), secure: true
+            },
             {hash: {absolute: 'true'}}
         );
 
@@ -75,8 +78,10 @@ describe('{{url}} helper', function () {
 
     it('should output an absolute URL with https if secure', function () {
         rendered = helpers.url.call(
-            {html: 'content', markdown: 'ff', title: 'title', slug: 'slug',
-            url: '/slug/', created_at: new Date(0), secure: true},
+            {
+                html: 'content', markdown: 'ff', title: 'title', slug: 'slug',
+                url: '/slug/', created_at: new Date(0), secure: true
+            },
             {hash: {absolute: 'true'}}
         );
 
@@ -155,8 +160,10 @@ describe('{{url}} helper', function () {
 
     it('should handle hosted urls in a nav context with secure', function () {
         rendered = helpers.url.call(
-            {url: 'http://testurl.com/qux', label: 'Qux', slug: 'qux', current: true,
-            secure: true},
+            {
+                url: 'http://testurl.com/qux', label: 'Qux', slug: 'qux', current: true,
+                secure: true
+            },
             {hash: {absolute: 'true'}});
         should.exist(rendered);
         rendered.string.should.equal('https://testurl.com/qux');
@@ -164,8 +171,10 @@ describe('{{url}} helper', function () {
 
     it('should handle hosted https urls in a nav context with secure', function () {
         rendered = helpers.url.call(
-            {url: 'https://testurl.com/qux', label: 'Qux', slug: 'qux', current: true,
-            secure: true},
+            {
+                url: 'https://testurl.com/qux', label: 'Qux', slug: 'qux', current: true,
+                secure: true
+            },
             {hash: {absolute: 'true'}});
         should.exist(rendered);
         rendered.string.should.equal('https://testurl.com/qux');

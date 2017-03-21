@@ -1,9 +1,8 @@
-var should  = require('should'),
-    card    = require('../atoms/soft-return'),
-    SimpleDom   = require('simple-dom'),
+var should = require('should'), // jshint ignore:line
+    card = require('../atoms/soft-return'),
+    SimpleDom = require('simple-dom'),
     opts;
 
-should = should;
 describe('Soft return card', function () {
     it('generates a `br` tag', function () {
         opts = {

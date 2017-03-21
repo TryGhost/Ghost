@@ -1,6 +1,6 @@
-var testUtils = require('../../utils'),
-    should = require('should'),
+var should = require('should'),
     sinon = require('sinon'),
+    testUtils = require('../../utils'),
     _ = require('lodash'),
     ObjectId = require('bson-objectid'),
     Promise = require('bluebird'),
@@ -8,6 +8,7 @@ var testUtils = require('../../utils'),
     mail = require('../../../server/api/mail'),
     errors = require('../../../server/errors'),
     context = testUtils.context,
+
     sandbox = sinon.sandbox.create();
 
 describe('Invites API', function () {

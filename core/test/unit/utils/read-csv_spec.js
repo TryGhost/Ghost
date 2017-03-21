@@ -1,7 +1,6 @@
-
-var utils = require('../../../server/utils'),
-    should = require('should'),
-    path = require ('path'),
+var should = require('should'),
+    utils = require('../../../server/utils'),
+    path = require('path'),
     csvPath = path.join(__dirname, '../../utils/fixtures/csv/');
 
 describe('read csv', function () {
