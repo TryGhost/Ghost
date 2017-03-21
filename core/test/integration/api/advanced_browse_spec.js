@@ -1,11 +1,10 @@
-var should = require('should'),
-    testUtils = require('../../utils'),
+var testUtils = require('../../utils'),
     _ = require('lodash'),
 
 // Stuff we are testing
-    PostAPI = require('../../../server/api/posts'),
-    TagAPI = require('../../../server/api/tags'),
-    UserAPI = require('../../../server/api/users');
+    PostAPI = serverRequire('api/posts'),
+    TagAPI = serverRequire('api/tags'),
+    UserAPI = serverRequire('api/users');
 
 describe('Advanced Browse', function () {
     // Initialise the DB just once, the tests are fetch-only
