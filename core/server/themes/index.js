@@ -63,5 +63,6 @@ module.exports = {
 
         // Use the two theme objects to set the current active theme
         active.set(loadedTheme, checkedTheme);
-    }
+    },
+    middleware: require('./middleware')
 };
