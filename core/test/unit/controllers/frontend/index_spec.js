@@ -1,9 +1,9 @@
-var moment   = require('moment'),
-    should   = require('should'),
-    sinon    = require('sinon'),
-    Promise  = require('bluebird'),
-    _        = require('lodash'),
-    api      = require('../../../../server/api'),
+var should = require('should'),
+    sinon = require('sinon'),
+    moment = require('moment'),
+    Promise = require('bluebird'),
+    _ = require('lodash'),
+    api = require('../../../../server/api'),
     frontend = require('../../../../server/controllers/frontend'),
     configUtils = require('../../../utils/configUtils'),
     themes = require('../../../../server/themes'),
@@ -61,56 +61,56 @@ describe('Frontend Controller', function () {
 
     describe('single', function () {
         var req, res, mockPosts = [{
-                posts: [{
-                    status: 'published',
+            posts: [{
+                status: 'published',
+                id: 1,
+                title: 'Test static page',
+                slug: 'test-static-page',
+                markdown: 'Test static page content',
+                page: 1,
+                published_at: new Date('2013/12/30').getTime(),
+                author: {
                     id: 1,
-                    title: 'Test static page',
-                    slug: 'test-static-page',
-                    markdown: 'Test static page content',
-                    page: 1,
-                    published_at: new Date('2013/12/30').getTime(),
-                    author: {
-                        id: 1,
-                        name: 'Test User',
-                        slug: 'test',
-                        email: 'test@ghost.org'
-                    },
-                    url: '/test-static-page/'
-                }]
-            }, {
-                posts: [{
-                    status: 'published',
-                    id: 2,
-                    title: 'Test normal post',
-                    slug: 'test-normal-post',
-                    markdown: 'The test normal post content',
-                    page: 0,
-                    published_at: new Date('2014/1/2').getTime(),
-                    author: {
-                        id: 1,
-                        name: 'Test User',
-                        slug: 'test',
-                        email: 'test@ghost.org'
-                    }
-                }]
-            }, {
-                posts: [{
-                    status: 'published',
-                    id: 3,
-                    title: 'About',
-                    slug: 'about',
-                    markdown: 'This is the about page content',
-                    page: 1,
-                    published_at: new Date('2014/1/30').getTime(),
-                    author: {
-                        id: 1,
-                        name: 'Test User',
-                        slug: 'test',
-                        email: 'test@ghost.org'
-                    },
-                    url: '/about/'
-                }]
-            }];
+                    name: 'Test User',
+                    slug: 'test',
+                    email: 'test@ghost.org'
+                },
+                url: '/test-static-page/'
+            }]
+        }, {
+            posts: [{
+                status: 'published',
+                id: 2,
+                title: 'Test normal post',
+                slug: 'test-normal-post',
+                markdown: 'The test normal post content',
+                page: 0,
+                published_at: new Date('2014/1/2').getTime(),
+                author: {
+                    id: 1,
+                    name: 'Test User',
+                    slug: 'test',
+                    email: 'test@ghost.org'
+                }
+            }]
+        }, {
+            posts: [{
+                status: 'published',
+                id: 3,
+                title: 'About',
+                slug: 'about',
+                markdown: 'This is the about page content',
+                page: 1,
+                published_at: new Date('2014/1/30').getTime(),
+                author: {
+                    id: 1,
+                    name: 'Test User',
+                    slug: 'test',
+                    email: 'test@ghost.org'
+                },
+                url: '/about/'
+            }]
+        }];
 
         beforeEach(function () {
             sandbox.stub(api.posts, 'read', function (args) {

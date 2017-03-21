@@ -1,12 +1,13 @@
-var should  = require('should'),
-    sinon   = require('sinon'),
+var should = require('should'),
+    sinon = require('sinon'),
     Promise = require('bluebird'),
-    rewire  = require('rewire'),
+    rewire = require('rewire'),
 
-    models  = require('../../server/models'),
+    models = require('../../server/models'),
     baseUtils = require('../../server/models/base/utils'),
     fixtureUtils = rewire('../../server/data/schema/fixtures/utils'),
-    fixtures     = require('../../server/data/schema/fixtures/fixtures'),
+    fixtures = require('../../server/data/schema/fixtures/fixtures'),
+
     sandbox = sinon.sandbox.create();
 
 describe('Migration Fixture Utils', function () {
@@ -105,8 +106,8 @@ describe('Migration Fixture Utils', function () {
             fixtureUtils.addFixturesForModel(fixtures.models[0]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
-                result.should.have.property('expected',  1);
-                result.should.have.property('done',  1);
+                result.should.have.property('expected', 1);
+                result.should.have.property('done', 1);
 
                 postOneStub.calledOnce.should.be.true();
                 postAddStub.calledOnce.should.be.true();
@@ -121,8 +122,8 @@ describe('Migration Fixture Utils', function () {
             fixtureUtils.addFixturesForModel(fixtures.models[0]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
-                result.should.have.property('expected',  1);
-                result.should.have.property('done',  0);
+                result.should.have.property('expected', 1);
+                result.should.have.property('done', 0);
 
                 postOneStub.calledOnce.should.be.true();
                 postAddStub.calledOnce.should.be.false();
@@ -150,8 +151,8 @@ describe('Migration Fixture Utils', function () {
             fixtureUtils.addFixturesForRelation(fixtures.relations[0]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
-                result.should.have.property('expected',  30);
-                result.should.have.property('done',  30);
+                result.should.have.property('expected', 30);
+                result.should.have.property('done', 30);
 
                 // Permissions & Roles
                 permsAllStub.calledOnce.should.be.true();
@@ -185,8 +186,8 @@ describe('Migration Fixture Utils', function () {
             fixtureUtils.addFixturesForRelation(fixtures.relations[1]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
-                result.should.have.property('expected',  1);
-                result.should.have.property('done',  1);
+                result.should.have.property('expected', 1);
+                result.should.have.property('done', 1);
 
                 // Posts & Tags
                 postsAllStub.calledOnce.should.be.true();
@@ -221,8 +222,8 @@ describe('Migration Fixture Utils', function () {
             fixtureUtils.addFixturesForRelation(fixtures.relations[1]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
-                result.should.have.property('expected',  1);
-                result.should.have.property('done',  0);
+                result.should.have.property('expected', 1);
+                result.should.have.property('done', 0);
 
                 // Posts & Tags
                 postsAllStub.calledOnce.should.be.true();
@@ -247,9 +248,9 @@ describe('Migration Fixture Utils', function () {
             var foundFixture = fixtureUtils.findModelFixtureEntry('Client', {slug: 'ghost-admin'});
             foundFixture.should.be.an.Object();
             foundFixture.should.eql({
-                name:             'Ghost Admin',
-                slug:             'ghost-admin',
-                status:           'enabled'
+                name: 'Ghost Admin',
+                slug: 'ghost-admin',
+                status: 'enabled'
             });
         });
     });

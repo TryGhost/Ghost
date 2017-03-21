@@ -6,11 +6,11 @@
 // I believe if we refactor the handlebars instances and helpers to be more self-contained and modular
 // We can likely have init functions which replace the need for this file
 
-var hbs     = require('express-hbs'),
+var hbs = require('express-hbs'),
 
 // Stuff we are testing
     helpers = require('../../../server/helpers'),
-    utils   = {};
+    utils = {};
 
 utils.loadHelpers = function () {
     var adminHbs = hbs.create();

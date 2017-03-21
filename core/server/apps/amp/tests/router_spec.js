@@ -1,14 +1,15 @@
-/*globals describe, beforeEach, afterEach, it*/
-var rewire            = require('rewire'),
-    ampController     = rewire('../lib/router'),
-    path              = require('path'),
-    sinon             = require('sinon'),
-    Promise           = require('bluebird'),
-    errors            = require('../../../errors'),
-    should            = require('should'),
-    configUtils       = require('../../../../test/utils/configUtils'),
-    themes            = require('../../../themes'),
-    sandbox           = sinon.sandbox.create();
+var should = require('should'),
+    sinon = require('sinon'),
+    rewire = require('rewire'),
+    path = require('path'),
+    Promise = require('bluebird'),
+
+    ampController = rewire('../lib/router'),
+    errors = require('../../../errors'),
+    configUtils = require('../../../../test/utils/configUtils'),
+    themes = require('../../../themes'),
+
+    sandbox = sinon.sandbox.create();
 
 // Helper function to prevent unit tests
 // from failing via timeout when they

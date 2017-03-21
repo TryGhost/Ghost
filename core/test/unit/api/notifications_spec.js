@@ -1,6 +1,5 @@
-var rewire = require('rewire'),
-    /*jshint unused:false*/
-    should = require('should'),
+var should = require('should'), // jshint ignore:line
+    rewire = require('rewire'),
     NotificationAPI = rewire('../../../server/api/notifications');
 
 describe('UNIT: Notification API', function () {

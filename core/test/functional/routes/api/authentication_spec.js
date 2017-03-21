@@ -1,13 +1,13 @@
-var supertest     = require('supertest'),
-    should        = require('should'),
-    moment        = require('moment'),
-    testUtils     = require('../../../utils'),
-    user          = testUtils.DataGenerator.forModel.users[0],
-    userForKnex   = testUtils.DataGenerator.forKnex.users[0],
-    models        = require('../../../../../core/server/models'),
-    config        = require('../../../../../core/server/config'),
-    utils         = require('../../../../../core/server/utils'),
-    ghost         = testUtils.startGhost,
+var should = require('should'),
+    supertest = require('supertest'),
+    testUtils = require('../../../utils'),
+    moment = require('moment'),
+    user = testUtils.DataGenerator.forModel.users[0],
+    userForKnex = testUtils.DataGenerator.forKnex.users[0],
+    models = require('../../../../../core/server/models'),
+    config = require('../../../../../core/server/config'),
+    utils = require('../../../../../core/server/utils'),
+    ghost = testUtils.startGhost,
     request;
 
 describe('Authentication API', function () {

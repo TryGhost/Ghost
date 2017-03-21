@@ -1,12 +1,12 @@
-var should         = require('should'),
-    hbs            = require('express-hbs'),
-    utils          = require('./utils'),
-    configUtils    = require('../../utils/configUtils'),
-    path           = require('path'),
+var should = require('should'),
+    hbs = require('express-hbs'),
+    utils = require('./utils'),
+    configUtils = require('../../utils/configUtils'),
+    path = require('path'),
 
 // Stuff we are testing
-    handlebars     = hbs.handlebars,
-    helpers        = require('../../../server/helpers');
+    handlebars = hbs.handlebars,
+    helpers = require('../../../server/helpers');
 
 describe('{{navigation}} helper', function () {
     var runHelper = function (data) {
@@ -50,7 +50,8 @@ describe('{{navigation}} helper', function () {
         runHelper(optionsData).should.throwError('navigation data is not an object or is a function');
 
         // Test 2: navigation = function
-        optionsData.data.blog.navigation = function () {};
+        optionsData.data.blog.navigation = function () {
+        };
         runHelper(optionsData).should.throwError('navigation data is not an object or is a function');
 
         // Test 3: invalid label

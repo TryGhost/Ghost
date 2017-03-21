@@ -1,15 +1,15 @@
-var should         = require('should'),
-    sinon          = require('sinon'),
-    hbs            = require('express-hbs'),
-    Promise        = require('bluebird'),
-    utils          = require('./utils'),
+var should = require('should'),
+    sinon = require('sinon'),
+    hbs = require('express-hbs'),
+    Promise = require('bluebird'),
+    utils = require('./utils'),
 
 // Stuff we are testing
-    handlebars     = hbs.handlebars,
-    helpers        = require('../../../server/helpers'),
-    api            = require('../../../server/api'),
+    handlebars = hbs.handlebars,
+    helpers = require('../../../server/helpers'),
+    api = require('../../../server/api'),
 
-    labs           = require('../../../server/utils/labs'),
+    labs = require('../../../server/utils/labs'),
 
     sandbox = sinon.sandbox.create();
 
@@ -36,11 +36,11 @@ describe('{{#get}} helper', function () {
 
     describe('posts', function () {
         var browsePostsStub, readPostsStub, readTagsStub, readUsersStub, testPostsArr = [
-            {id: 1, title: 'Test Post 1', author: {slug: 'cameron'}},
-            {id: 2, title: 'Test Post 2', author: {slug: 'cameron'}, featured: true},
-            {id: 3, title: 'Test Post 3', tags: [{slug: 'test'}]},
-            {id: 4, title: 'Test Post 4'}
-        ],
+                {id: 1, title: 'Test Post 1', author: {slug: 'cameron'}},
+                {id: 2, title: 'Test Post 2', author: {slug: 'cameron'}, featured: true},
+                {id: 3, title: 'Test Post 3', tags: [{slug: 'test'}]},
+                {id: 4, title: 'Test Post 4'}
+            ],
             meta = {pagination: {}};
         beforeEach(function () {
             browsePostsStub = sandbox.stub(api.posts, 'browse');
@@ -49,7 +49,10 @@ describe('{{#get}} helper', function () {
             readUsersStub = sandbox.stub(api.users, 'read').returns(new Promise.resolve({users: []}));
 
             browsePostsStub.returns(new Promise.resolve({posts: testPostsArr, meta: meta}));
-            browsePostsStub.withArgs({limit: '3'}).returns(new Promise.resolve({posts: testPostsArr.slice(0, 3), meta: meta}));
+            browsePostsStub.withArgs({limit: '3'}).returns(new Promise.resolve({
+                posts: testPostsArr.slice(0, 3),
+                meta: meta
+            }));
             browsePostsStub.withArgs({limit: '1'}).returns(new Promise.resolve({posts: testPostsArr.slice(0, 1)}));
             browsePostsStub.withArgs({filter: 'tags:test'}).returns(new Promise.resolve({posts: testPostsArr.slice(2, 3)}));
             browsePostsStub.withArgs({filter: 'tags:none'}).returns(new Promise.resolve({posts: []}));
@@ -109,14 +112,14 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {limit: '3'}, fn: fn, inverse: inverse}
             ).then(function () {
-                    fn.calledOnce.should.be.true();
-                    fn.firstCall.args[0].should.be.an.Object().with.property('posts');
-                    fn.firstCall.args[0].posts.should.have.lengthOf(3);
-                    fn.firstCall.args[0].posts.should.eql(testPostsArr.slice(0, 3));
-                    inverse.called.should.be.false();
+                fn.calledOnce.should.be.true();
+                fn.firstCall.args[0].should.be.an.Object().with.property('posts');
+                fn.firstCall.args[0].posts.should.have.lengthOf(3);
+                fn.firstCall.args[0].posts.should.eql(testPostsArr.slice(0, 3));
+                inverse.called.should.be.false();
 
-                    done();
-                }).catch(done);
+                done();
+            }).catch(done);
         });
 
         it('should handle browse posts call with limit 1', function (done) {
@@ -125,14 +128,14 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {limit: '1'}, fn: fn, inverse: inverse}
             ).then(function () {
-                    fn.calledOnce.should.be.true();
-                    fn.firstCall.args[0].should.be.an.Object().with.property('posts');
-                    fn.firstCall.args[0].posts.should.have.lengthOf(1);
-                    fn.firstCall.args[0].posts.should.eql(testPostsArr.slice(0, 1));
-                    inverse.called.should.be.false();
+                fn.calledOnce.should.be.true();
+                fn.firstCall.args[0].should.be.an.Object().with.property('posts');
+                fn.firstCall.args[0].posts.should.have.lengthOf(1);
+                fn.firstCall.args[0].posts.should.eql(testPostsArr.slice(0, 1));
+                inverse.called.should.be.false();
 
-                    done();
-                }).catch(done);
+                done();
+            }).catch(done);
         });
 
         it('should handle browse posts call with limit 1', function (done) {
@@ -141,14 +144,14 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {limit: '1'}, fn: fn, inverse: inverse}
             ).then(function () {
-                    fn.calledOnce.should.be.true();
-                    fn.firstCall.args[0].should.be.an.Object().with.property('posts');
-                    fn.firstCall.args[0].posts.should.have.lengthOf(1);
-                    fn.firstCall.args[0].posts.should.eql(testPostsArr.slice(0, 1));
-                    inverse.called.should.be.false();
+                fn.calledOnce.should.be.true();
+                fn.firstCall.args[0].should.be.an.Object().with.property('posts');
+                fn.firstCall.args[0].posts.should.have.lengthOf(1);
+                fn.firstCall.args[0].posts.should.eql(testPostsArr.slice(0, 1));
+                inverse.called.should.be.false();
 
-                    done();
-                }).catch(done);
+                done();
+            }).catch(done);
         });
 
         it('should handle browse post call with explicit tag', function (done) {
@@ -318,12 +321,12 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {filter: 'id:-{{post.id}}'}, fn: fn, inverse: inverse}
             ).then(function () {
-                    browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
-                    browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
-                    browseStub.firstCall.args[0].filter.should.eql('id:-3');
+                browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
+                browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
+                browseStub.firstCall.args[0].filter.should.eql('id:-3');
 
-                    done();
-                }).catch(done);
+                done();
+            }).catch(done);
         });
 
         it('should handle arrays the same as handlebars', function (done) {
@@ -349,12 +352,12 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {filter: 'id:{{post.thing}}'}, fn: fn, inverse: inverse}
             ).then(function () {
-                    browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
-                    browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
-                    browseStub.firstCall.args[0].filter.should.eql('id:');
+                browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
+                browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
+                browseStub.firstCall.args[0].filter.should.eql('id:');
 
-                    done();
-                }).catch(done);
+                done();
+            }).catch(done);
         });
     });
 });

@@ -1,20 +1,20 @@
-var testUtils       = require('../../utils'),
-    should          = require('should'),
-    moment          = require('moment'),
-    _               = require('lodash'),
-    Promise         = require('bluebird'),
-    sinon           = require('sinon'),
-    sequence        = require('../../../server/utils/sequence'),
-    settingsCache   = require('../../../server/settings/cache'),
-    ghostBookshelf  = require('../../../server/models/base'),
-    PostModel       = require('../../../server/models/post').Post,
-    TagModel        = require('../../../server/models/tag').Tag,
-    events          = require('../../../server/events'),
-    errors          = require('../../../server/errors'),
-    configUtils     = require('../../utils/configUtils'),
-    DataGenerator   = testUtils.DataGenerator,
-    context         = testUtils.context.owner,
-    sandbox         = sinon.sandbox.create();
+var should = require('should'),
+    sinon = require('sinon'),
+    testUtils = require('../../utils'),
+    moment = require('moment'),
+    _ = require('lodash'),
+    Promise = require('bluebird'),
+    sequence = require('../../../server/utils/sequence'),
+    settingsCache = require('../../../server/settings/cache'),
+    ghostBookshelf = require('../../../server/models/base'),
+    PostModel = require('../../../server/models/post').Post,
+    TagModel = require('../../../server/models/tag').Tag,
+    events = require('../../../server/events'),
+    errors = require('../../../server/errors'),
+    configUtils = require('../../utils/configUtils'),
+    DataGenerator = testUtils.DataGenerator,
+    context = testUtils.context.owner,
+    sandbox = sinon.sandbox.create();
 
 /**
  * IMPORTANT:
@@ -1199,37 +1199,37 @@ describe('Post Model', function () {
                         // Create the second post
                         return PostModel.add(secondPost, context);
                     }).then(function (createdSecondPost) {
-                        // Store the slug for comparison later
-                        secondPost.slug = createdSecondPost.get('slug');
+                    // Store the slug for comparison later
+                    secondPost.slug = createdSecondPost.get('slug');
 
-                        Object.keys(eventsTriggered).length.should.eql(1);
-                        should.exist(eventsTriggered['post.added']);
+                    Object.keys(eventsTriggered).length.should.eql(1);
+                    should.exist(eventsTriggered['post.added']);
 
-                        // Update with a conflicting slug from the first post
-                        return createdSecondPost.save({
-                            slug: firstPost.slug
-                        }, context);
-                    }).then(function (updatedSecondPost) {
-                        // Should have updated from original
-                        updatedSecondPost.get('slug').should.not.equal(secondPost.slug);
-                        // Should not have a conflicted slug from the first
-                        updatedSecondPost.get('slug').should.not.equal(firstPost.slug);
+                    // Update with a conflicting slug from the first post
+                    return createdSecondPost.save({
+                        slug: firstPost.slug
+                    }, context);
+                }).then(function (updatedSecondPost) {
+                    // Should have updated from original
+                    updatedSecondPost.get('slug').should.not.equal(secondPost.slug);
+                    // Should not have a conflicted slug from the first
+                    updatedSecondPost.get('slug').should.not.equal(firstPost.slug);
 
-                        Object.keys(eventsTriggered).length.should.eql(2);
-                        should.exist(eventsTriggered['post.edited']);
+                    Object.keys(eventsTriggered).length.should.eql(2);
+                    should.exist(eventsTriggered['post.edited']);
 
-                        return PostModel.findOne({
-                            id: updatedSecondPost.id,
-                            status: 'all'
-                        });
-                    }).then(function (foundPost) {
-                        // Should have updated from original
-                        foundPost.get('slug').should.not.equal(secondPost.slug);
-                        // Should not have a conflicted slug from the first
-                        foundPost.get('slug').should.not.equal(firstPost.slug);
+                    return PostModel.findOne({
+                        id: updatedSecondPost.id,
+                        status: 'all'
+                    });
+                }).then(function (foundPost) {
+                    // Should have updated from original
+                    foundPost.get('slug').should.not.equal(secondPost.slug);
+                    // Should not have a conflicted slug from the first
+                    foundPost.get('slug').should.not.equal(firstPost.slug);
 
-                        done();
-                    }).catch(done);
+                    done();
+                }).catch(done);
             });
         });
 
@@ -1405,14 +1405,14 @@ describe('Post Model', function () {
             // We're going to delete all posts by user 1
             var authorData = {id: testUtils.DataGenerator.Content.users[0].id};
 
-            PostModel.findAll({context:{internal:true}}).then(function (found) {
+            PostModel.findAll({context: {internal: true}}).then(function (found) {
                 // There are 50 posts to begin with
                 found.length.should.equal(50);
                 return PostModel.destroyByAuthor(authorData);
             }).then(function (results) {
                 // User 1 has 13 posts in the database
                 results.length.should.equal(13);
-                return PostModel.findAll({context:{internal:true}});
+                return PostModel.findAll({context: {internal: true}});
             }).then(function (found) {
                 // Only 37 should remain
                 found.length.should.equal(37);
@@ -1801,7 +1801,10 @@ describe('Post Model', function () {
                         startTags = _.cloneDeep(post.tags);
 
                         // Step 2, edit a single property of the post... we aren't doing anything with tags here...
-                        return PostModel.edit({title: 'new title', tags: undefined}, _.extend({}, context, {id: postId}));
+                        return PostModel.edit({
+                            title: 'new title',
+                            tags: undefined
+                        }, _.extend({}, context, {id: postId}));
                     }).then(function (edited) {
                         should.exist(edited);
                         var post = edited.toJSON(toJSONOpts);

@@ -1,4 +1,4 @@
-var should = require('should'),
+var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     _ = require('lodash'),
     fs = require('fs'),
@@ -9,9 +9,6 @@ var should = require('should'),
     themeList = themes.list,
 
     sandbox = sinon.sandbox.create();
-
-// To stop jshint complaining
-should.equal(true, true);
 
 describe('Themes', function () {
     describe('Loader', function () {

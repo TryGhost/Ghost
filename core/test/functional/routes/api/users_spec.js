@@ -1,9 +1,9 @@
-var testUtils = require('../../../utils'),
-    should = require('should'),
+var should = require('should'),
     supertest = require('supertest'),
+    testUtils = require('../../../utils'),
     ObjectId = require('bson-objectid'),
-    config        = require('../../../../../core/server/config'),
-    ghost         = testUtils.startGhost,
+    config = require('../../../../../core/server/config'),
+    ghost = testUtils.startGhost,
     request;
 
 describe('User API', function () {

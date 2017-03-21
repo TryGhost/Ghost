@@ -1,17 +1,17 @@
-var testUtils   = require('../utils/index'),
-    should      = require('should'),
-    sinon       = require('sinon'),
-    Promise     = require('bluebird'),
-    moment      = require('moment'),
-    assert      = require('assert'),
-    _           = require('lodash'),
-    validator   = require('validator'),
+var should = require('should'),
+    sinon = require('sinon'),
+    testUtils = require('../utils/index'),
+    Promise = require('bluebird'),
+    moment = require('moment'),
+    assert = require('assert'),
+    _ = require('lodash'),
+    validator = require('validator'),
 
     // Stuff we are testing
-    db              = require('../../server/data/db'),
-    exporter        = require('../../server/data/export'),
-    importer        = require('../../server/data/import'),
-    DataImporter    = require('../../server/data/import/data-importer'),
+    db = require('../../server/data/db'),
+    exporter = require('../../server/data/export'),
+    importer = require('../../server/data/import'),
+    DataImporter = require('../../server/data/import/data-importer'),
 
     knex = db.knex,
     sandbox = sinon.sandbox.create();
@@ -732,7 +732,7 @@ describe('Import (new test structure)', function () {
                 // Test the users and roles
                 users = importedData[0];
                 posts = importedData[1];
-                tags  = importedData[2];
+                tags = importedData[2];
 
                 // Grab the users
                 // the owner user is first
@@ -953,7 +953,7 @@ describe('Import (new test structure)', function () {
                 // Test the users and roles
                 users = importedData[0];
                 posts = importedData[1];
-                tags  = importedData[2];
+                tags = importedData[2];
 
                 // Grab the users
                 // the owner user is first
@@ -1181,7 +1181,7 @@ describe('Import (new test structure)', function () {
                 // Test the users and roles
                 users = importedData[0];
                 posts = importedData[1];
-                tags  = importedData[2];
+                tags = importedData[2];
 
                 // Grab the users
                 // the owner user is first

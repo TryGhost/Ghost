@@ -1,5 +1,5 @@
-var should         = require('should'),
-    getAmpUrl      = require('../../../server/data/meta/amp_url');
+var should = require('should'),
+    getAmpUrl = require('../../../server/data/meta/amp_url');
 
 describe('getAmpUrl', function () {
     it('should return amp url for post only', function () {

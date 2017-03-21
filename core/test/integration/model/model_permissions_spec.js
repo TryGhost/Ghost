@@ -1,9 +1,9 @@
-var testUtils       = require('../../utils'),
-    should          = require('should'),
+var should = require('should'),
+    testUtils = require('../../utils'),
 
     // Stuff we are testing
     PermissionModel = require('../../../server/models/permission').Permission,
-    context         = testUtils.context.admin;
+    context = testUtils.context.admin;
 
 describe('Permission Model', function () {
     // Keep the DB clean
