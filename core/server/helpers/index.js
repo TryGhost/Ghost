@@ -1,9 +1,7 @@
 var hbs = require('express-hbs'),
     Promise = require('bluebird'),
     errors = require('../errors'),
-    logging = require('../logging'),
     utils = require('./utils'),
-    i18n = require('../i18n'),
     coreHelpers = {},
     registerHelpers;
 
@@ -39,16 +37,6 @@ coreHelpers.tags = require('./tags');
 coreHelpers.title = require('./title');
 coreHelpers.twitter_url = require('./twitter_url');
 coreHelpers.url = require('./url');
-
-coreHelpers.helperMissing = function (arg) {
-    if (arguments.length === 2) {
-        return undefined;
-    }
-
-    logging.error(new errors.GhostError({
-        message: i18n.t('warnings.helpers.index.missingHelper', {arg: arg})
-    }));
-};
 
 // Register an async handlebars helper for a given handlebars instance
 function registerAsyncHelper(hbs, name, fn) {
