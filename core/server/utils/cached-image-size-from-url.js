@@ -19,7 +19,7 @@ function getCachedImageSizeFromUrl(url) {
 
     // image size is not in cache
     if (!imageSizeCache[url]) {
-        return getImageSizeFromUrl(url, 6000).then(function (res) {
+        return getImageSizeFromUrl(url).then(function (res) {
             imageSizeCache[url] = res;
 
             return Promise.resolve(imageSizeCache[url]);
@@ -27,7 +27,7 @@ function getCachedImageSizeFromUrl(url) {
             errors.logError(err, err.context);
 
             // in case of error we just attach the url
-            return Promise.resolve(imageSizeCache[url] = url);
+            return Promise.resolve();
         });
     }
     // returns image size from cache
