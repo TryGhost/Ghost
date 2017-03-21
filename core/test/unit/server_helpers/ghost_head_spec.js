@@ -1,25 +1,18 @@
-var should = require('should'),
+var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     _ = require('lodash'),
     Promise = require('bluebird'),
-    hbs = require('express-hbs'),
     moment = require('moment'),
-    utils = require('./utils'),
     configUtils = require('../../utils/configUtils'),
     helpers = require('../../../server/helpers'),
     api = require('../../../server/api'),
     labs = require('../../../server/utils/labs'),
     settingsCache = require('../../../server/settings/cache'),
-    handlebars = hbs.handlebars,
 
     sandbox = sinon.sandbox.create();
 
 describe('{{ghost_head}} helper', function () {
     var settingsReadStub;
-
-    before(function () {
-        utils.loadHelpers();
-    });
 
     afterEach(function () {
         sandbox.restore();
@@ -57,10 +50,6 @@ describe('{{ghost_head}} helper', function () {
             });
 
             configUtils.set('url', 'http://testurl.com/');
-        });
-
-        it('has loaded ghost_head helper', function () {
-            should.exist(handlebars.helpers.ghost_head);
         });
 
         it('returns meta tag string on paginated index page without structured data and schema', function (done) {

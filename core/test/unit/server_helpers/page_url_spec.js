@@ -1,24 +1,13 @@
-var should = require('should'),
-    hbs = require('express-hbs'),
-    utils = require('./utils'),
+var should = require('should'), // jshint ignore:line
 
 // Stuff we are testing
-    handlebars = hbs.handlebars,
     helpers = require('../../../server/helpers');
 
 describe('{{page_url}} helper', function () {
     var options = {data: {root: {pagination: {}}}};
 
-    before(function () {
-        utils.loadHelpers();
-    });
-
     beforeEach(function () {
         options.data.root = {pagination: {}};
-    });
-
-    it('has loaded page_url helper', function () {
-        should.exist(handlebars.helpers.page_url);
     });
 
     it('can return a valid url when the relative URL is /', function () {

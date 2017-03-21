@@ -1,11 +1,8 @@
 var should = require('should'),
     sinon = require('sinon'),
-    hbs = require('express-hbs'),
     Promise = require('bluebird'),
-    utils = require('./utils'),
 
 // Stuff we are testing
-    handlebars = hbs.handlebars,
     helpers = require('../../../server/helpers'),
     api = require('../../../server/api'),
 
@@ -16,10 +13,6 @@ var should = require('should'),
 describe('{{#get}} helper', function () {
     var fn, inverse;
 
-    before(function () {
-        utils.loadHelpers();
-    });
-
     beforeEach(function () {
         fn = sandbox.spy();
         inverse = sandbox.spy();
@@ -28,10 +21,6 @@ describe('{{#get}} helper', function () {
 
     afterEach(function () {
         sandbox.restore();
-    });
-
-    it('has loaded get block helper', function () {
-        should.exist(handlebars.helpers.get);
     });
 
     describe('posts', function () {
@@ -330,9 +319,6 @@ describe('{{#get}} helper', function () {
         });
 
         it('should handle arrays the same as handlebars', function (done) {
-            var tpl = handlebars.compile('{{post.tags.[0].slug}}'),
-                output = tpl(data);
-
             helpers.get.call(
                 data,
                 'posts',
@@ -340,7 +326,7 @@ describe('{{#get}} helper', function () {
             ).then(function () {
                 browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
                 browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
-                browseStub.firstCall.args[0].filter.should.eql('tags:' + output);
+                browseStub.firstCall.args[0].filter.should.eql('tags:test');
 
                 done();
             }).catch(done);

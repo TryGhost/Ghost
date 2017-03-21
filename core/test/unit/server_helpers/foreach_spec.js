@@ -1,21 +1,14 @@
-var should = require('should'),
+var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     _ = require('lodash'),
-    hbs = require('express-hbs'),
-    utils = require('./utils'),
 
 // Stuff we are testing
-    handlebars = hbs.handlebars,
     helpers = require('../../../server/helpers'),
 
     sandbox = sinon.sandbox.create();
 
 describe('{{#foreach}} helper', function () {
     var options, context, _this, resultData;
-
-    before(function () {
-        utils.loadHelpers();
-    });
 
     afterEach(function () {
         sandbox.restore();
@@ -41,10 +34,6 @@ describe('{{#foreach}} helper', function () {
         function runTest(self, context, options) {
             helpers.foreach.call(self, context, options);
         }
-
-        it('is loaded', function () {
-            should.exist(handlebars.helpers.foreach);
-        });
 
         it('should not populate data if no private data is supplied (array)', function () {
             delete options.data;
@@ -261,7 +250,8 @@ describe('{{#foreach}} helper', function () {
     });
 
     describe('(compile)', function () {
-        var objectHash = {
+        var handlebars = require('express-hbs').handlebars,
+            objectHash = {
                 posts: {
                     first: {title: 'first'},
                     second: {title: 'second'},
@@ -287,6 +277,10 @@ describe('{{#foreach}} helper', function () {
 
             result.should.eql(expected);
         }
+
+        before(function () {
+            handlebars.registerHelper('foreach', helpers.foreach);
+        });
 
         /** Many of these are copied direct from the handlebars spec */
         it('object and @key', function () {
