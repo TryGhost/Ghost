@@ -34,9 +34,15 @@
     </header>
     <div class="gh-editor-container">
         <div class="gh-editor-inner">
-            {{#gh-view-title classNames="gh-editor-title" openMobileMenu="openMobileMenu"}}
-                {{gh-trim-focus-input model.titleScratch type="text" id="entry-title" placeholder="Your Post Title" tabindex="1" shouldFocus=shouldFocusTitle focus-out="updateTitle" update=(action (perform updateTitle)) keyDown=(action "titleKeyDown")}}
-            {{/gh-view-title}}
+            {{gh-editor-title 
+                val=(readonly model.titleScratch)
+                onChange=(action (mut model.titleScratch)) 
+                tabindex="1" 
+                shouldFocus=shouldFocusTitle 
+                focus-out="updateTitle" 
+                update=(action (perform updateTitle)) 
+                id='gh-editor-title'
+            }}
             {{#if scheduleCountdown}}
                 <time datetime="{{post.publishedAtUTC}}" class="gh-notification gh-notification-schedule">
                     Post will be published {{scheduleCountdown}}.
@@ -51,7 +57,8 @@
                 apiRoot=apiRoot
                 assetPath=assetPath
                 tabindex=2
-                containerSelector='.gh-editor-container'
+		        containerSelector='.gh-editor-container'
+                titleQuery='#gh-editor-title div'
             }}
         </div>
     </div>
