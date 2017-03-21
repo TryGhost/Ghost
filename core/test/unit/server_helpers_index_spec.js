@@ -1,17 +1,14 @@
 // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 var should = require('should'),
     rewire = require('rewire'),
-    hbs = require('express-hbs'),
 
     // Stuff we are testing
-
     helpers = rewire('../../server/helpers');
 
 describe('Helpers', function () {
     beforeEach(function () {
-        var adminHbs = hbs.create();
         helpers = rewire('../../server/helpers');
-        helpers.loadCoreHelpers(adminHbs);
+        helpers.loadCoreHelpers();
     });
 
     describe('helperMissing', function () {
