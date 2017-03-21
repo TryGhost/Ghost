@@ -182,7 +182,7 @@ export default function (editor, toolbar) {
             type: 'markup',
             visibility: 'primary',
             onClick: (editor) => {
-                toolbar.doLink(editor.range);
+                toolbar.send('doLink', editor.range);
             },
             checkElements(elements) {
                 set(this, 'selected', elements.filter((element) => element.tagName === 'a').length > 0);

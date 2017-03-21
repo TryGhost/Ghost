@@ -101,14 +101,18 @@ export default Component.extend({
                 event.stopPropagation();
             }
         },
-
+        doLink(range) {
+            this.set('isLink', true);
+            this.set('linkRange', range);
+            run.schedule('afterRender', this,
+                () => {
+                    this.$('input').focus();
+                }
+            );
+        },
         closeLink() {
             this.set('isLink', false);
         }
-    },
-    doLink(range) {
-        this.set('isLink', true);
-        this.set('linkRange', range);
     }
 });
 
@@ -140,7 +144,7 @@ function updateToolbarToRange(self, $holder, $editor, isMouseDown) {
             }
         );
 
-        self.set('isLink', false);
+        self.send('closeLink');
 
         self.tools.forEach((tool) => {
             if (tool.hasOwnProperty('checkElements')) {
@@ -152,7 +156,7 @@ function updateToolbarToRange(self, $holder, $editor, isMouseDown) {
     } else {
         if (self.isVisible) {
             self.set('isVisible', false);
-            self.set('isLink', false);
+            self.send('closeLink');
         }
     }
 
