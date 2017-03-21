@@ -20,7 +20,7 @@ var _ = require('lodash'),
     join = require('path').join,
     defaultConfig = require('./defaults.json'),
     config = require('../config'),
-    // @TODO: does this need to be it's own util?
+    // @TODO: remove this require
     hbs = require('express-hbs'),
     // Current instance of ActiveTheme
     currentActiveTheme;
