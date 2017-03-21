@@ -1,9 +1,8 @@
-var should  = require('should'),
-    card    = require('../cards/markdown'),
-    SimpleDom   = require('simple-dom'),
+var should = require('should'),  // jshint ignore:line
+    card = require('../cards/markdown'),
+    SimpleDom = require('simple-dom'),
     opts;
 
-should = should;
 describe('Markdown card', function () {
     it('Markdown Card renders', function () {
         opts = {

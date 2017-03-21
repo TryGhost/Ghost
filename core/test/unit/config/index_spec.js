@@ -1,12 +1,10 @@
-// jscs:disable requireDotNotation
-
-var should = require('should'),
+var should = require('should'), // jshint ignore:line
     path = require('path'),
     rewire = require('rewire'),
     _ = require('lodash'),
     configUtils = require('../../utils/configUtils');
 
-should.equal(true, true);
+// jscs:disable requireDotNotation
 
 describe('Config', function () {
     before(function () {

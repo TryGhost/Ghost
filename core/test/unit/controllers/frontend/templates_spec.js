@@ -1,6 +1,6 @@
-var should   = require('should'),
-    sinon    = require('sinon'),
-    rewire   = require('rewire'),
+var should = require('should'),
+    sinon = require('sinon'),
+    rewire = require('rewire'),
 
 // Stuff we are testing
     templates = rewire('../../../../server/controllers/frontend/templates'),
@@ -35,17 +35,29 @@ describe('templates', function () {
         });
 
         it('should return channel-slug, channel, index if channel has name & slug + slugTemplate set', function () {
-            channelTemplateList({name: 'tag', slugTemplate: true, slugParam: 'test'}).should.eql(['tag-test', 'tag', 'index']);
+            channelTemplateList({
+                name: 'tag',
+                slugTemplate: true,
+                slugParam: 'test'
+            }).should.eql(['tag-test', 'tag', 'index']);
         });
 
         it('should return front, channel-slug, channel, index if name, slugParam+slugTemplate & frontPageTemplate+pageParam=1 is set', function () {
             channelTemplateList({
-                name: 'tag', slugTemplate: true, slugParam: 'test', frontPageTemplate: 'front-tag', postOptions: {page: 1}
+                name: 'tag',
+                slugTemplate: true,
+                slugParam: 'test',
+                frontPageTemplate: 'front-tag',
+                postOptions: {page: 1}
             }).should.eql(['front-tag', 'tag-test', 'tag', 'index']);
         });
 
         it('should return home, index for index channel if front is set and pageParam = 1', function () {
-            channelTemplateList({name: 'index', frontPageTemplate: 'home', postOptions: {page: 1}}).should.eql(['home', 'index']);
+            channelTemplateList({
+                name: 'index',
+                frontPageTemplate: 'home',
+                postOptions: {page: 1}
+            }).should.eql(['home', 'index']);
         });
     });
 

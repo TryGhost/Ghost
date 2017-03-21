@@ -1,14 +1,14 @@
-var should      = require('should'),
-    sinon       = require('sinon'),
-    Promise     = require('bluebird'),
+var should = require('should'),
+    sinon = require('sinon'),
+    Promise = require('bluebird'),
 
     // Stuff we are testing
-    events         = require('../../../server/events'),
+    events = require('../../../server/events'),
     SiteMapManager = require('../../../server/data/xml/sitemap/manager'),
-    PostGenerator  = require('../../../server/data/xml/sitemap/post-generator'),
-    PageGenerator  = require('../../../server/data/xml/sitemap/page-generator'),
-    TagGenerator   = require('../../../server/data/xml/sitemap/tag-generator'),
-    UserGenerator  = require('../../../server/data/xml/sitemap/user-generator'),
+    PostGenerator = require('../../../server/data/xml/sitemap/post-generator'),
+    PageGenerator = require('../../../server/data/xml/sitemap/page-generator'),
+    TagGenerator = require('../../../server/data/xml/sitemap/tag-generator'),
+    UserGenerator = require('../../../server/data/xml/sitemap/user-generator'),
 
     sandbox = sinon.sandbox.create();
 

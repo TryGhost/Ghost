@@ -1,25 +1,22 @@
-var _ = require('lodash'),
-    nock = require('nock'),
-    should = require('should'),
+var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
+    _ = require('lodash'),
+    nock = require('nock'),
     http = require('http'),
     rewire = require('rewire'),
     testUtils = require('../utils'),
     configUtils = require('../utils/configUtils'),
     xmlrpc = rewire('../../server/data/xml/xmlrpc'),
     events = require('../../server/events'),
-    logging = require('../../server/logging');
+    logging = require('../../server/logging'),
 
-// To stop jshint complaining
-should.equal(true, true);
+    sandbox = sinon.sandbox.create();
 
 describe('XMLRPC', function () {
-    var sandbox, eventStub;
+    var eventStub;
 
     beforeEach(function () {
-        sandbox = sinon.sandbox.create();
         eventStub = sandbox.stub(events, 'on');
-
         configUtils.set('privacy:useRpcPing', true);
     });
 
@@ -109,8 +106,10 @@ describe('XMLRPC', function () {
         it('captures && logs errors from requests', function () {
             var testPost = _.clone(testUtils.DataGenerator.Content.posts[2]),
                 httpMock = sandbox.stub(http, 'request').returns({
-                    write: function () {},
-                    end: function () {},
+                    write: function () {
+                    },
+                    end: function () {
+                    },
                     on: function (eventName, eventDone) {
                         eventDone(new Error('ping site is down'));
                     }

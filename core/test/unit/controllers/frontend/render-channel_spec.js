@@ -1,7 +1,8 @@
 /*jshint expr:true*/
-var should  = require('should'),
-    rewire  = require('rewire'),
-    sinon   = require('sinon'),
+var should = require('should'), // jshint ignore:line
+    sinon = require('sinon'),
+    rewire = require('rewire'),
+
     channelConfig = require('../../../../server/controllers/frontend/channel-config').get,
 
     // stuff being tested
@@ -9,9 +10,6 @@ var should  = require('should'),
 
     sandbox = sinon.sandbox.create(),
     originalFetchData;
-
-// stop jshint complaining
-should.equal(true, true);
 
 describe('Render Channel', function () {
     beforeEach(function () {
@@ -31,7 +29,10 @@ describe('Render Channel', function () {
             },
             promise = {
                 then: function () {
-                    return {catch: function () {}};
+                    return {
+                        catch: function () {
+                        }
+                    };
                 }
             };
 

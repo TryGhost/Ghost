@@ -1,12 +1,13 @@
-var should         = require('should'),
-    sinon          = require('sinon'),
-    hbs            = require('express-hbs'),
-    utils          = require('./utils'),
-    configUtils    = require('../../utils/configUtils'),
-    handlebars     = hbs.handlebars,
-    sandbox        = sinon.sandbox.create(),
-    helpers        = require('../../../server/helpers'),
-    settingsCache  = require('../../../server/settings/cache');
+var should = require('should'),
+    sinon = require('sinon'),
+    hbs = require('express-hbs'),
+    utils = require('./utils'),
+    configUtils = require('../../utils/configUtils'),
+    handlebars = hbs.handlebars,
+    helpers = require('../../../server/helpers'),
+    settingsCache = require('../../../server/settings/cache'),
+
+    sandbox = sinon.sandbox.create();
 
 describe('{{meta_title}} helper', function () {
     before(function () {

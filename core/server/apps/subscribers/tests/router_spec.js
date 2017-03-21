@@ -1,5 +1,5 @@
 var should = require('should'),
-    router = require('../../../../../server/apps/subscribers/lib/router');
+    router = require('../lib/router');
 
 describe('UNIT: Apps Subscriber Router', function () {
     it('[failure] email is invalid, ensure it`s sanitized', function (done) {

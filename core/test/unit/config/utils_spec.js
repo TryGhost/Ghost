@@ -1,7 +1,5 @@
-var configUtils = require('../../../server/config/utils'),
-    should = require('should');
-
-should.equal(true, true);
+var should = require('should'), // jshint ignore:line
+    configUtils = require('../../../server/config/utils');
 
 describe('UNIT: Config utils', function () {
     describe('makePathsAbsolute', function () {

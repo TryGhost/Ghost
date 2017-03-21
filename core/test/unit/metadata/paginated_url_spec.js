@@ -1,6 +1,6 @@
-var should          = require('should'),
+var should = require('should'),
     getPaginatedUrl = require('../../../server/data/meta/paginated_url'),
-    configUtils     = require('../../utils/configUtils');
+    configUtils = require('../../utils/configUtils');
 
 describe('getPaginatedUrl', function () {
     var data, getTestUrls;

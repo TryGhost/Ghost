@@ -1,11 +1,11 @@
-var should   = require('should'),
-    sinon    = require('sinon'),
-    Promise  = require('bluebird'),
-    _        = require('lodash'),
+var should = require('should'),
+    sinon = require('sinon'),
+    Promise = require('bluebird'),
+    _ = require('lodash'),
 
     // Stuff we are testing
     channels = require('../../../../server/controllers/frontend/channels'),
-    api      = require('../../../../server/api'),
+    api = require('../../../../server/api'),
     themes = require('../../../../server/themes'),
     sandbox = sinon.sandbox.create();
 

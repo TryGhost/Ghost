@@ -1,5 +1,5 @@
-var should          = require('should'),
-    sinon           = require('sinon'),
+var should = require('should'),
+    sinon = require('sinon'),
     getContextObject = require('../../../server/data/meta/context_object.js'),
     settingsCache = require('../../../server/settings/cache'),
     sandbox = sinon.sandbox.create();

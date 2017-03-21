@@ -1,9 +1,9 @@
-var testUtils       = require('../../utils'),
-    should          = require('should'),
+var should = require('should'),
+    testUtils = require('../../utils'),
 
     // Stuff we are testing
     AppSettingModel = require('../../../server/models/app-setting').AppSetting,
-    context         = testUtils.context.admin;
+    context = testUtils.context.admin;
 
 describe('App Setting Model', function () {
     // Keep the DB clean

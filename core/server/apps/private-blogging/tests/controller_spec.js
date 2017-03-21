@@ -1,10 +1,11 @@
 /*globals describe, beforeEach, afterEach, it*/
-var privateController = require('../lib/router').controller,
-    should            = require('should'),
-    path              = require('path'),
-    sinon             = require('sinon'),
-    configUtils       = require('../../../../test/utils/configUtils'),
-    themes            = require('../../../themes'),
+var should = require('should'),
+    sinon = require('sinon'),
+    configUtils = require('../../../../test/utils/configUtils'),
+    path = require('path'),
+    themes = require('../../../themes'),
+    privateController = require('../lib/router').controller,
+
     sandbox = sinon.sandbox.create();
 
 describe('Private Controller', function () {

@@ -1,9 +1,9 @@
-var supertest     = require('supertest'),
-    should        = require('should'),
-    path          = require('path'),
-    testUtils     = require('../../../utils'),
-    config        = require('../../../../../core/server/config'),
-    ghost         = testUtils.startGhost,
+var should = require('should'),
+    supertest = require('supertest'),
+    testUtils = require('../../../utils'),
+    path = require('path'),
+    config = require('../../../../../core/server/config'),
+    ghost = testUtils.startGhost,
     request;
 
 describe('DB API', function () {
