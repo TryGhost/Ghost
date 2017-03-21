@@ -1,9 +1,10 @@
-var fs     = require('fs'),
+var fs = require('fs'),
     path = require('path'),
-    storage = require('../storage'),
-    settingsCache = require('../settings/cache'),
-    utils  = require('../utils'),
     crypto = require('crypto'),
+    config = require('../config'),
+    storage = require('../storage'),
+    utils  = require('../utils'),
+    settingsCache = require('../settings/cache'),
     buildContentResponse,
     content;
 
@@ -59,7 +60,7 @@ function serveFavicon() {
                     res.end(content.body);
                 });
             } else {
-                filePath = 'core/shared/favicon.ico';
+                filePath = path.join(config.get('paths:corePath'), 'shared', 'favicon.ico');
                 originalExtension = path.extname(filePath).toLowerCase();
 
                 // CASE: always redirect to .ico for default icon
