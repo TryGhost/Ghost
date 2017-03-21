@@ -1,10 +1,10 @@
-var should         = require('should'),
-    hbs            = require('express-hbs'),
-    utils          = require('./utils'),
+var should = require('should'),
+    hbs = require('express-hbs'),
+    utils = require('./utils'),
 
 // Stuff we are testing
-    handlebars     = hbs.handlebars,
-    helpers        = require('../../../server/helpers');
+    handlebars = hbs.handlebars,
+    helpers = require('../../../server/helpers');
 
 describe('{{author}} helper', function () {
     before(function () {
@@ -38,8 +38,12 @@ describe('{{author}} helper', function () {
 
     it('Functions as block helper if called with #', function () {
         var data = {author: {name: 'abc 123', slug: 'abc123'}},
-        // including fn emulates the #
-            result = helpers.author.call(data, {hash: {}, fn: function () { return 'FN'; }});
+            // including fn emulates the #
+            result = helpers.author.call(data, {
+                hash: {}, fn: function () {
+                    return 'FN';
+                }
+            });
 
         // It outputs the result of fn
         String(result).should.equal('FN');

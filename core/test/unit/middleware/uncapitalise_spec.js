@@ -1,10 +1,8 @@
-var sinon        = require('sinon'),
-    should       = require('should'),
+var should = require('should'), // jshint ignore:line
+    sinon = require('sinon'),
     uncapitalise = require('../../../server/middleware/uncapitalise'),
 
     sandbox = sinon.sandbox.create();
-
-should.equal(true, true);
 
 // NOTE: all urls will have had trailing slashes added before uncapitalise is called
 

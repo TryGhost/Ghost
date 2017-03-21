@@ -1,18 +1,17 @@
-var should         = require('should'),
-    sinon          = require('sinon'),
-    hbs            = require('express-hbs'),
-    utils          = require('./utils'),
-    configUtils    = require('../../utils/configUtils'),
+var should = require('should'),
+    sinon = require('sinon'),
+    hbs = require('express-hbs'),
+    utils = require('./utils'),
+    configUtils = require('../../utils/configUtils'),
 
 // Stuff we are testing
-    handlebars     = hbs.handlebars,
-    helpers        = require('../../../server/helpers');
+    handlebars = hbs.handlebars,
+    helpers = require('../../../server/helpers'),
+
+    sandbox = sinon.sandbox.create();
 
 describe('{{image}} helper', function () {
-    var sandbox;
-
     before(function () {
-        sandbox = sinon.sandbox.create();
         configUtils.set({url: 'http://testurl.com/'});
         utils.loadHelpers();
     });

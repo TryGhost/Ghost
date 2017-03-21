@@ -1,4 +1,3 @@
-
 var should = require('should'),
     sinon = require('sinon'),
     Promise = require('bluebird'),
@@ -11,7 +10,9 @@ var should = require('should'),
     api = require(config.get('paths').corePath + '/server/api'),
     schedulingUtils = require(config.get('paths').corePath + '/server/scheduling/utils'),
     SchedulingDefault = require(config.get('paths').corePath + '/server/scheduling/SchedulingDefault'),
-    postScheduling = require(config.get('paths').corePath + '/server/scheduling/post-scheduling');
+    postScheduling = require(config.get('paths').corePath + '/server/scheduling/post-scheduling'),
+
+    sandbox = sinon.sandbox.create();
 
 describe('Scheduling: Post Scheduling', function () {
     var scope = {
@@ -32,33 +33,28 @@ describe('Scheduling: Post Scheduling', function () {
 
         scope.adapter = new SchedulingDefault();
 
-        sinon.stub(api.schedules, 'getScheduledPosts', function () {
+        sandbox.stub(api.schedules, 'getScheduledPosts', function () {
             return Promise.resolve({posts: scope.scheduledPosts});
         });
 
-        sinon.stub(events, 'onMany', function (events, stubDone) {
+        sandbox.stub(events, 'onMany', function (events, stubDone) {
             events.forEach(function (event) {
                 scope.events[event] = stubDone;
             });
         });
 
-        sinon.stub(schedulingUtils, 'createAdapter').returns(Promise.resolve(scope.adapter));
+        sandbox.stub(schedulingUtils, 'createAdapter').returns(Promise.resolve(scope.adapter));
 
         models.Client.findOne = function () {
             return Promise.resolve(scope.client);
         };
 
-        sinon.spy(scope.adapter, 'schedule');
-        sinon.spy(scope.adapter, 'reschedule');
+        sandbox.spy(scope.adapter, 'schedule');
+        sandbox.spy(scope.adapter, 'reschedule');
     });
 
     afterEach(function (done) {
-        scope.adapter.schedule.reset();
-        schedulingUtils.createAdapter.restore();
-        scope.adapter.schedule.restore();
-        scope.adapter.reschedule.restore();
-        events.onMany.restore();
-        api.schedules.getScheduledPosts.restore();
+        sandbox.restore();
         testUtils.teardown(done);
     });
 

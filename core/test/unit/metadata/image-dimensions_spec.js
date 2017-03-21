@@ -1,10 +1,10 @@
-var should         = require('should'),
-    sinon          = require('sinon'),
-    rewire         = require('rewire'),
+var should = require('should'),
+    sinon = require('sinon'),
+    rewire = require('rewire'),
 
 // Stuff we are testing
-    getImageDimensions          = rewire('../../../server/data/meta/image-dimensions'),
-    getCachedImageSizeFromUrl   = rewire('../../../server/utils/cached-image-size-from-url'),
+    getImageDimensions = rewire('../../../server/data/meta/image-dimensions'),
+    getCachedImageSizeFromUrl = rewire('../../../server/utils/cached-image-size-from-url'),
 
     sandbox = sinon.sandbox.create();
 

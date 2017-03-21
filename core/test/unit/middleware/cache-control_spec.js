@@ -1,16 +1,15 @@
-var should          = require('should'),
-    sinon           = require('sinon'),
-    cacheControl   = require('../../../server/middleware/cache-control');
+var should = require('should'),
+    sinon = require('sinon'),
+    cacheControl = require('../../../server/middleware/cache-control'),
+
+    sandbox = sinon.sandbox.create();
 
 describe('Middleware: cacheControl', function () {
-    var sandbox,
-        res;
+    var res;
 
     beforeEach(function () {
-        sandbox = sinon.sandbox.create();
-
         res = {
-            set: sinon.spy()
+            set: sandbox.spy()
         };
     });
 
@@ -32,8 +31,7 @@ describe('Middleware: cacheControl', function () {
             should.not.exist(a);
             res.set.calledOnce.should.be.true();
             res.set.calledWith({
-                'Cache-Control':
-                    'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
+                'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
             });
             done();
         });
@@ -58,8 +56,7 @@ describe('Middleware: cacheControl', function () {
             privateCC(null, res, function () {
                 res.set.calledTwice.should.be.true();
                 res.set.calledWith({
-                    'Cache-Control':
-                        'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
+                    'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
                 });
 
                 publicCC(null, res, function () {
@@ -83,8 +80,7 @@ describe('Middleware: cacheControl', function () {
             should.not.exist(a);
             res.set.calledOnce.should.be.true();
             res.set.calledWith({
-                'Cache-Control':
-                    'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
+                'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
             });
             done();
         });

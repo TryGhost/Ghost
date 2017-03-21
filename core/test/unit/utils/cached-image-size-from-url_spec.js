@@ -1,7 +1,7 @@
-var should         = require('should'),
-    sinon          = require('sinon'),
-    Promise        = require('bluebird'),
-    rewire         = require('rewire'),
+var should = require('should'),
+    sinon = require('sinon'),
+    Promise = require('bluebird'),
+    rewire = require('rewire'),
 
 // Stuff we are testing
     getCachedImageSizeFromUrl = rewire('../../../server/utils/cached-image-size-from-url'),
@@ -64,14 +64,14 @@ describe('getCachedImageSizeFromUrl', function () {
         getCachedImageSizeFromUrl.__set__('getImageSizeFromUrl', sizeOfStub);
 
         getCachedImageSizeFromUrl(url)
-        .then(function () {
-            cachedImagedSize = getCachedImageSizeFromUrl.__get__('imageSizeCache');
-            should.exist(cachedImagedSize);
-            cachedImagedSize.should.have.property(url);
-            should.not.exist(cachedImagedSize[url].width);
-            should.not.exist(cachedImagedSize[url].height);
-            done();
-        }).catch(done);
+            .then(function () {
+                cachedImagedSize = getCachedImageSizeFromUrl.__get__('imageSizeCache');
+                should.exist(cachedImagedSize);
+                cachedImagedSize.should.have.property(url);
+                should.not.exist(cachedImagedSize[url].width);
+                should.not.exist(cachedImagedSize[url].height);
+                done();
+            }).catch(done);
     });
 
     it('should return null if url is undefined', function (done) {

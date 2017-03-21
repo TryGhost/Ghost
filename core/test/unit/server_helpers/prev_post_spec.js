@@ -1,13 +1,13 @@
-var should         = require('should'),
-    sinon          = require('sinon'),
-    Promise        = require('bluebird'),
-    hbs            = require('express-hbs'),
-    utils          = require('./utils'),
+var should = require('should'),
+    sinon = require('sinon'),
+    Promise = require('bluebird'),
+    hbs = require('express-hbs'),
+    utils = require('./utils'),
 
 // Stuff we are testing
-    handlebars     = hbs.handlebars,
-    helpers        = require('../../../server/helpers'),
-    api            = require('../../../server/api'),
+    handlebars = hbs.handlebars,
+    helpers = require('../../../server/helpers'),
+    api = require('../../../server/api'),
 
     sandbox = sinon.sandbox.create();
 
@@ -39,13 +39,15 @@ describe('{{prev_post}} helper', function () {
                 inverse = sinon.spy(),
                 optionsData = {name: 'prev_post', fn: fn, inverse: inverse};
 
-            helpers.prev_post.call({html: 'content',
+            helpers.prev_post.call({
+                html: 'content',
                 status: 'published',
                 markdown: 'ff',
                 title: 'post2',
                 slug: 'current',
                 created_at: new Date(0),
-                url: '/current/'}, optionsData).then(function () {
+                url: '/current/'
+            }, optionsData).then(function () {
                 fn.calledOnce.should.be.true();
                 inverse.calledOnce.should.be.false();
 
@@ -75,13 +77,15 @@ describe('{{prev_post}} helper', function () {
                 inverse = sinon.spy(),
                 optionsData = {name: 'prev_post', fn: fn, inverse: inverse};
 
-            helpers.prev_post.call({html: 'content',
+            helpers.prev_post.call({
+                html: 'content',
                 status: 'published',
                 markdown: 'ff',
                 title: 'post2',
                 slug: 'current',
                 created_at: new Date(0),
-                url: '/current/'}, optionsData).then(function () {
+                url: '/current/'
+            }, optionsData).then(function () {
                 fn.called.should.be.false();
                 inverse.called.should.be.true();
                 done();
@@ -122,7 +126,13 @@ describe('{{prev_post}} helper', function () {
             utils.loadHelpers();
             readPostStub = sandbox.stub(api.posts, 'read', function (options) {
                 if (options.include.indexOf('previous') === 0) {
-                    return Promise.resolve({posts: [{slug: '/current/', title: 'post 2',  previous: {slug: '/previous/', title: 'post 1'}}]});
+                    return Promise.resolve({
+                        posts: [{
+                            slug: '/current/',
+                            title: 'post 2',
+                            previous: {slug: '/previous/', title: 'post 1'}
+                        }]
+                    });
                 }
             });
         });
@@ -132,13 +142,15 @@ describe('{{prev_post}} helper', function () {
                 inverse = sinon.spy(),
                 optionsData = {name: 'prev_post', fn: fn, inverse: inverse};
 
-            helpers.prev_post.call({html: 'content',
+            helpers.prev_post.call({
+                html: 'content',
                 status: 'draft',
                 markdown: 'ff',
                 title: 'post2',
                 slug: 'current',
                 created_at: new Date(0),
-                url: '/current/'}, optionsData).then(function () {
+                url: '/current/'
+            }, optionsData).then(function () {
                 fn.called.should.be.false();
                 inverse.called.should.be.true();
                 done();

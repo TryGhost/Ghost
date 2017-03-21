@@ -1,10 +1,10 @@
-var should         = require('should'),
-    hbs            = require('express-hbs'),
-    utils          = require('./utils'),
+var should = require('should'),
+    hbs = require('express-hbs'),
+    utils = require('./utils'),
 
 // Stuff we are testing
-    handlebars     = hbs.handlebars,
-    helpers        = require('../../../server/helpers');
+    handlebars = hbs.handlebars,
+    helpers = require('../../../server/helpers');
 
 describe('{{content}} helper', function () {
     before(function () {
@@ -28,10 +28,10 @@ describe('{{content}} helper', function () {
             rendered = (
                 helpers.content
                     .call(
-                    {html: html},
-                    {hash: {words: 2}}
-                )
-                );
+                        {html: html},
+                        {hash: {words: 2}}
+                    )
+            );
 
         should.exist(rendered);
         rendered.string.should.equal('<p>Hello <strong>World!</strong></p>');
@@ -42,10 +42,10 @@ describe('{{content}} helper', function () {
             rendered = (
                 helpers.content
                     .call(
-                    {html: html},
-                    {hash: {words: '0'}}
-                )
-                );
+                        {html: html},
+                        {hash: {words: '0'}}
+                    )
+            );
 
         should.exist(rendered);
         rendered.string.should.equal('');
@@ -56,10 +56,10 @@ describe('{{content}} helper', function () {
             rendered = (
                 helpers.content
                     .call(
-                    {html: html},
-                    {hash: {characters: 8}}
-                )
-                );
+                        {html: html},
+                        {hash: {characters: 8}}
+                    )
+            );
 
         should.exist(rendered);
         rendered.string.should.equal('<p>Hello <strong>Wo</strong></p>');

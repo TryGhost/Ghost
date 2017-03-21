@@ -1,4 +1,5 @@
-var getMetaDescription = require('../../../server/data/meta/description');
+var should = require('should'), // jshint ignore:line
+    getMetaDescription = require('../../../server/data/meta/description');
 
 describe('getMetaDescription', function () {
     it('should return meta_description if on data root', function () {

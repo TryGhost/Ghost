@@ -1,4 +1,5 @@
-var getExcerpt = require('../../../server/data/meta/excerpt');
+var should = require('should'), // jshint ignore:line
+    getExcerpt = require('../../../server/data/meta/excerpt');
 
 describe('getExcerpt', function () {
     it('should return html excerpt with no html', function () {
@@ -24,35 +25,35 @@ describe('getExcerpt', function () {
 
     it('should return html excerpt striping inline and bottom footnotes', function () {
         var html = '<p>Testing<sup id="fnref:1"><a href="#fn:1" rel="footnote">1</a>' +
-            '</sup> a very short post with a single footnote.</p>\n' +
-            '<div class="footnotes"><ol><li class="footnote" id="fn:1"><p>' +
-            '<a href="https://ghost.org">https://ghost.org</a> <a href="#fnref:1" ' +
-            'title="return to article">↩</a></p></li></ol></div>',
-        expected = 'Testing a very short post with a single footnote.';
+                '</sup> a very short post with a single footnote.</p>\n' +
+                '<div class="footnotes"><ol><li class="footnote" id="fn:1"><p>' +
+                '<a href="https://ghost.org">https://ghost.org</a> <a href="#fnref:1" ' +
+                'title="return to article">↩</a></p></li></ol></div>',
+            expected = 'Testing a very short post with a single footnote.';
 
         getExcerpt(html, {}).should.equal(expected);
     });
 
     it('should return html excerpt truncated by word', function () {
         var html = '<p>Hello <strong>World! It\'s me!</strong></p>',
-        expected = 'Hello World!';
+            expected = 'Hello World!';
 
         getExcerpt(html, {words: '2'}).should.equal(expected);
     });
 
     it('should return html excerpt truncated by words with non-ascii characters',
-    function () {
-        var html = '<p>Едквюэ опортэат <strong>праэчынт ючю но, квуй эю</strong></p>',
-        expected = 'Едквюэ опортэат';
+        function () {
+            var html = '<p>Едквюэ опортэат <strong>праэчынт ючю но, квуй эю</strong></p>',
+                expected = 'Едквюэ опортэат';
 
-        getExcerpt(html, {words: '2'}).should.equal(expected);
-    });
+            getExcerpt(html, {words: '2'}).should.equal(expected);
+        });
 
     it('should return html excerpt truncated by character',
-    function () {
-        var html = '<p>Hello <strong>World! It\'s me!</strong></p>',
-        expected = 'Hello Wo';
+        function () {
+            var html = '<p>Hello <strong>World! It\'s me!</strong></p>',
+                expected = 'Hello Wo';
 
-        getExcerpt(html, {characters: '8'}).should.equal(expected);
-    });
+            getExcerpt(html, {characters: '8'}).should.equal(expected);
+        });
 });

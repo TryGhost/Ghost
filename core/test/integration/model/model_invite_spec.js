@@ -1,5 +1,5 @@
-var testUtils = require('../../utils'),
-    should = require('should'),
+var should = require('should'),
+    testUtils = require('../../utils'),
     models = require('../../../server/models');
 
 describe('Invite Model', function () {

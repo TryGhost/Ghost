@@ -1,24 +1,24 @@
-var should         = require('should'),
-    sinon          = require('sinon'),
-    Promise        = require('bluebird'),
-    rewire         = require('rewire'),
-    hbs            = require('express-hbs'),
-    utils          = require('./utils'),
+var should = require('should'),
+    sinon = require('sinon'),
+    Promise = require('bluebird'),
+    rewire = require('rewire'),
+    hbs = require('express-hbs'),
+    utils = require('./utils'),
 
 // Stuff we are testing
-    handlebars     = hbs.handlebars,
-    helpers        = rewire('../../../server/helpers'),
-    api            = require('../../../server/api');
+    handlebars = hbs.handlebars,
+    helpers = rewire('../../../server/helpers'),
+    api = require('../../../server/api'),
+
+    sandbox = sinon.sandbox.create();
 
 describe('{{ghost_foot}} helper', function () {
-    var sandbox;
-
     before(function () {
         utils.loadHelpers();
     });
 
-    beforeEach(function () {
-        sandbox = sinon.sandbox.create();
+    afterEach(function () {
+        sandbox.restore();
     });
 
     it('has loaded ghost_foot helper', function () {
@@ -38,9 +38,5 @@ describe('{{ghost_foot}} helper', function () {
 
             done();
         }).catch(done);
-    });
-
-    afterEach(function () {
-        sandbox.restore();
     });
 });

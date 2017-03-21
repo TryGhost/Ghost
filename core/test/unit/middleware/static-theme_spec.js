@@ -1,5 +1,5 @@
-var sinon = require('sinon'),
-    should = require('should'),
+var should = require('should'),
+    sinon = require('sinon'),
 
     express = require('express'),
     themeUtils = require('../../../server/themes'),
