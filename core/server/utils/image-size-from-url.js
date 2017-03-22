@@ -80,6 +80,13 @@ module.exports.getImageSizeFromUrl = function getImageSizeFromUrl(imagePath, tim
                     }
                 } else {
                     var err = new Error();
+
+                    if (res.statusCode === 404) {
+                        err.message = 'Image not found.';
+                    } else {
+                        err.message = 'Unknown Request error.'
+                    }
+
                     err.context = imagePath;
                     err.statusCode = res.statusCode;
 
@@ -89,8 +96,16 @@ module.exports.getImageSizeFromUrl = function getImageSizeFromUrl(imagePath, tim
         }).on('socket', function (socket) {
             if (timeout) {
                 socket.setTimeout(timeout);
+
+                /**
+                 * https://nodejs.org/api/http.html
+                 * "...if a callback is assigned to the Server's 'timeout' event, timeouts must be handled explicitly"
+                 *
+                 * socket.destroy will jump to the error listener
+                 */
                 socket.on('timeout', function () {
                     request.abort();
+                    socket.destroy(new Error('Request timed out.'));
                 });
             }
         }).on('error', function (err) {
