@@ -53,6 +53,13 @@ module.exports = function setupBlogApp() {
     // Serve blog images using the storage adapter
     blogApp.use('/' + utils.url.STATIC_IMAGE_URL_PREFIX, storage.getStorage().serve());
 
+    // @TODO find this a better home
+    // We do this here, at the top level, because helpers require so much stuff.
+    // Moving this to being inside themes, where it probably should be requires the proxy to be refactored
+    // Else we end up with circular dependencies
+    require('../helpers').loadCoreHelpers();
+    debug('Helpers done');
+
     // Theme middleware
     // This should happen AFTER any shared assets are served, as it only changes things to do with templates
     // At this point the active theme object is already updated, so we have the right path, so it can probably
