@@ -2,23 +2,22 @@
 // Usage: `{{#foreach data}}{{/foreach}}`
 //
 // Block helper designed for looping through posts
-var hbs             = require('express-hbs'),
-    _               = require('lodash'),
-    logging         = require('../logging'),
-    i18n            = require('../i18n'),
-    visibilityFilter = require('../utils/visibility-filter'),
-    utils           = require('./utils'),
-
-    hbsUtils        = hbs.handlebars.Utils,
-    foreach;
+var proxy = require('./proxy'),
+    _ = require('lodash'),
+    logging = proxy.logging,
+    i18n = proxy.i18n,
+    visibilityFilter = proxy.visibilityFilter,
+    parseVisibility = proxy.utils.parseVisibility,
+    hbsUtils = proxy.hbs.Utils,
+    createFrame = proxy.hbs.handlebars.createFrame;
 
 function filterItemsByVisibility(items, options) {
-    var visibility = utils.parseVisibility(options);
+    var visibility = parseVisibility(options);
 
     return visibilityFilter(items, visibility, !!options.hash.visibility);
 }
 
-foreach = function (items, options) {
+module.exports = function foreach(items, options) {
     if (!options) {
         logging.warn(i18n.t('warnings.helpers.foreach.iteratorNeeded'));
     }
@@ -53,7 +52,7 @@ foreach = function (items, options) {
     }
 
     if (options.data) {
-        data = hbs.handlebars.createFrame(options.data);
+        data = createFrame(options.data);
     }
 
     function execIteration(field, index, last) {
@@ -73,9 +72,9 @@ foreach = function (items, options) {
         }
 
         output = output + fn(items[field], {
-            data: data,
-            blockParams: hbsUtils.blockParams([items[field], field], [contextPath + field, null])
-        });
+                data: data,
+                blockParams: hbsUtils.blockParams([items[field], field], [contextPath + field, null])
+            });
     }
 
     function iterateCollection(context) {
@@ -109,5 +108,3 @@ foreach = function (items, options) {
 
     return output;
 };
-
-module.exports = foreach;

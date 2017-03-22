@@ -6,19 +6,22 @@
 // We use the name ghost_head to match the helper for consistency:
 // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 
-var getMetaData = require('../data/meta'),
-    hbs = require('express-hbs'),
-    escapeExpression = hbs.handlebars.Utils.escapeExpression,
-    SafeString = hbs.handlebars.SafeString,
+var proxy = require('./proxy'),
     _ = require('lodash'),
-    filters = require('../filters'),
-    assetHelper = require('./asset'),
-    config = require('../config'),
     Promise = require('bluebird'),
-    labs = require('../utils/labs'),
-    utils = require('../utils'),
-    api = require('../api'),
-    settingsCache = require('../settings/cache');
+
+    // Aarrgh what to do with this?!
+    assetHelper = require('./asset'),
+
+    getMetaData = proxy.metaData.get,
+    escapeExpression = proxy.hbs.Utils.escapeExpression,
+    SafeString = proxy.SafeString,
+    filters = proxy.filters,
+    labs = proxy.labs,
+    api = proxy.api,
+    settingsCache = proxy.settingsCache,
+    config = proxy.config,
+    url = proxy.url;
 
 function getClient() {
     if (labs.isSet('publicAPI') === true) {
@@ -76,7 +79,7 @@ function getAjaxHelper(clientId, clientSecret) {
         '</script>';
 }
 
-function ghost_head(options) {
+module.exports = function ghost_head(options) {
     // if server error page do nothing
     if (this.statusCode >= 500) {
         return;
@@ -97,7 +100,7 @@ function ghost_head(options) {
         blogIcon = settingsCache.get('icon'),
         // CASE: blog icon is not set in config, we serve the default
         iconType = !blogIcon ? 'x-icon' : blogIcon.match(/\/favicon\.ico$/i) ? 'x-icon' : 'png',
-        favicon = !blogIcon ? '/favicon.ico' : utils.url.urlFor('image', {image: blogIcon});
+        favicon = !blogIcon ? '/favicon.ico' : url.urlFor('image', {image: blogIcon});
 
     return Promise.props(fetch).then(function (response) {
         client = response.client;
@@ -162,6 +165,4 @@ function ghost_head(options) {
     }).then(function (head) {
         return new SafeString(head.join('\n    ').trim());
     });
-}
-
-module.exports = ghost_head;
+};

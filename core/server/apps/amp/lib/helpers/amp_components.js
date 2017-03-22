@@ -7,7 +7,9 @@
 // Here's the list of all supported extended components: https://www.ampproject.org/docs/reference/extended.html
 // By default supported AMP HTML tags (no additional script tag necessary):
 // amp-img, amp-ad, amp-embed, amp-video and amp-pixel.
-var hbs             = require('express-hbs');
+// (less) dirty requires
+var proxy = require('../../../../helpers/proxy'),
+    SafeString = proxy.SafeString;
 
 function ampComponents() {
     var components = [],
@@ -29,7 +31,7 @@ function ampComponents() {
         components.push('<script async custom-element="amp-audio" src="https://cdn.ampproject.org/v0/amp-audio-0.1.js"></script>');
     }
 
-    return new hbs.handlebars.SafeString(components.join('\n'));
+    return new SafeString(components.join('\n'));
 }
 
 module.exports = ampComponents;
