@@ -84,7 +84,7 @@ module.exports.getImageSizeFromUrl = function getImageSizeFromUrl(imagePath, tim
                     if (res.statusCode === 404) {
                         err.message = 'Image not found.';
                     } else {
-                        err.message = 'Unknown Request error.'
+                        err.message = 'Unknown Request error.';
                     }
 
                     err.context = imagePath;
