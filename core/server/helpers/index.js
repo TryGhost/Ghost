@@ -1,11 +1,12 @@
 var hbs = require('express-hbs'),
     Promise = require('bluebird'),
     errors = require('../errors'),
-    utils = require('./utils'),
+    config = require('../config'),
     coreHelpers = {},
     registerHelpers;
 
-if (!utils.isProduction) {
+// @TODO think about a config option for this e.g. theme.devmode?
+if (config.get('env') !== 'production') {
     hbs.handlebars.logger.level = 0;
 }
 
