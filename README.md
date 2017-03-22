@@ -25,11 +25,11 @@ Install and run Ghost.
 <pre>
 <b>git clone git@github.com:TryGhost/Ghost.git</b> [or your Ghost Fork's URL]
 <b>npm run init</b>
-    <span style="color:grey">Short command for: npm install -g knex-migrator ember-cli grunt-cli && npm install && grunt init</span>
+    Short command for: npm install -g knex-migrator ember-cli grunt-cli && npm install && grunt init
 <b>knex-migrator init</b>
-    <span style="color:grey">Creates and initialises your database</span> 
+    Creates and initialises your database 
 <b>grunt dev</b>
-    <span style="color:grey">Starts the express server and ember build</span> 
+    Starts the express server and ember build 
 </pre>
 
 Run server tests
@@ -45,7 +45,7 @@ ember test
 ```
 
 
-Read more about the [development workflows](https://github.com/TryGhost/Ghost/wiki/%5BHOLD%5D-Contributing-Workflow-for-1.0.0).
+Read more about the [development workflows](https://github.com/TryGhost/Ghost/wiki/Working-with-Ghost).
 
 # Deploying Ghost
 
