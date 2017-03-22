@@ -11,16 +11,41 @@ var should = require('should'),
     sandbox = sinon.sandbox.create();
 
 describe('{{#get}} helper', function () {
-    var fn, inverse;
+    var fn, inverse, labsStub;
 
     beforeEach(function () {
         fn = sandbox.spy();
         inverse = sandbox.spy();
-        sandbox.stub(labs, 'isSet').returns(true);
+        labsStub = sandbox.stub(labs, 'isSet').returns(true);
     });
 
     afterEach(function () {
         sandbox.restore();
+    });
+
+    it('errors correctly if labs flag not set', function (done) {
+        labsStub.returns(false);
+
+        helpers.get.call(
+            {},
+            'posts',
+            {hash: {}, fn: fn, inverse: inverse}
+        ).then(function (result) {
+            labsStub.calledOnce.should.be.true();
+            fn.called.should.be.false();
+            inverse.called.should.be.false();
+
+            should.exist(result);
+            result.should.be.a.Function();
+            result().should.be.an.Object().with.property(
+                'string',
+                '<script>console.error("The {{get}} helper is not available. ' +
+                'The Public API labs flag must be enabled if you wish to use the {{get}} helper. ' +
+                'See http://support.ghost.org/public-api-beta/");</script>'
+            );
+
+            done();
+        }).catch(done);
     });
 
     describe('posts', function () {
@@ -31,6 +56,7 @@ describe('{{#get}} helper', function () {
                 {id: 4, title: 'Test Post 4'}
             ],
             meta = {pagination: {}};
+
         beforeEach(function () {
             browsePostsStub = sandbox.stub(api.posts, 'browse');
             readPostsStub = sandbox.stub(api.posts, 'read');
@@ -56,6 +82,8 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {}, fn: fn, inverse: inverse}
             ).then(function () {
+                labsStub.calledOnce.should.be.true();
+
                 fn.called.should.be.true();
                 fn.firstCall.args[0].should.be.an.Object().with.property('posts');
                 fn.firstCall.args[0].posts.should.eql(testPostsArr);
