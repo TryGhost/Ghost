@@ -266,7 +266,8 @@ DataGenerator.forKnex = (function () {
         users,
         roles_users,
         clients,
-        trustedDomains;
+        trustedDomains,
+        subscribers;
 
     function createBasic(overrides) {
         var newObj = _.cloneDeep(overrides);
@@ -467,6 +468,11 @@ DataGenerator.forKnex = (function () {
         createAppField(DataGenerator.Content.app_fields[1])
     ];
 
+    subscribers = [
+        createBasic(DataGenerator.Content.subscribers[0]),
+        createBasic(DataGenerator.Content.subscribers[1])
+    ];
+
     return {
         createPost: createPost,
         createGenericPost: createGenericPost,
@@ -493,7 +499,8 @@ DataGenerator.forKnex = (function () {
         roles: roles,
         users: users,
         roles_users: roles_users,
-        clients: clients
+        clients: clients,
+        subscribers: subscribers
     };
 }());
 

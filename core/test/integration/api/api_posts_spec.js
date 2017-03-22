@@ -1,16 +1,23 @@
 var Promise       = require('bluebird'),
     should        = require('should'),
     _             = require('lodash'),
+    sinon         = require('sinon'),
     testUtils     = require('../../utils'),
     configUtils   = require('../../utils/configUtils'),
     errors        = require('../../../server/errors'),
     db            = require('../../../server/data/db'),
     models        = require('../../../server/models'),
-    PostAPI       = require('../../../server/api/posts');
+    PostAPI       = require('../../../server/api/posts'),
+    sandbox       = sinon.sandbox.create();
 
 describe('Post API', function () {
     before(testUtils.teardown);
-    afterEach(testUtils.teardown);
+
+    afterEach(function () {
+        sandbox.restore();
+        return testUtils.teardown();
+    });
+
     beforeEach(testUtils.setup('users:roles', 'perms:post', 'perms:init'));
 
     // @TODO: remove when https://github.com/TryGhost/Ghost/issues/6930 is fixed
@@ -33,6 +40,14 @@ describe('Post API', function () {
 
     beforeEach(function (done) {
         db.knex('posts_tags').insert(testUtils.DataGenerator.forKnex.posts_tags)
+            .then(function () {
+                done();
+            })
+            .catch(done);
+    });
+
+    beforeEach(function (done) {
+        db.knex('subscribers').insert(testUtils.DataGenerator.forKnex.subscribers)
             .then(function () {
                 done();
             })
@@ -635,8 +650,11 @@ describe('Post API', function () {
     });
 
     describe('Destroy', function () {
-        it('can delete a post', function (done) {
+        it('can delete a post, post has a connected subscriber', function (done) {
             var options = {context: {user: 1}, id: 1};
+
+            sandbox.spy(models.Subscriber.prototype, 'where');
+            sandbox.spy(models.Subscriber.prototype, 'fetchAll');
 
             PostAPI.read(options).then(function (results) {
                 should.exist(results.posts[0]);
@@ -645,11 +663,53 @@ describe('Post API', function () {
             }).then(function (results) {
                 should.not.exist(results);
 
+                models.Subscriber.prototype.fetchAll.calledOnce.should.eql(true);
+                models.Subscriber.prototype.where.calledOnce.should.eql(true);
+
+                models.Subscriber.prototype.where.calledWith({post_id: options.id}).should.eql(true);
+                models.Subscriber.prototype.fetchAll.returnValues[0]._boundTo.models.length.should.eql(1);
+                models.Subscriber.prototype.fetchAll.returnValues[0]._boundTo.models[0].get('email').should.eql(testUtils.DataGenerator.Content.subscribers[0].email);
+
                 return PostAPI.read(options);
             }).then(function () {
                 done(new Error('Post still exists when it should have been deleted'));
-            }).catch(function () {
-                done();
+            }).catch(function (err) {
+                if (err.name === 'NotFoundError') {
+                    return done();
+                }
+
+                done(err);
+            });
+        });
+
+        it('can delete a post, post has no a connected subscriber', function (done) {
+            var options = {context: {user: 1}, id: 2};
+
+            sandbox.spy(models.Subscriber.prototype, 'where');
+            sandbox.spy(models.Subscriber.prototype, 'fetchAll');
+
+            PostAPI.read(options).then(function (results) {
+                should.exist(results.posts[0]);
+
+                return PostAPI.destroy(options);
+            }).then(function (results) {
+                should.not.exist(results);
+
+                models.Subscriber.prototype.fetchAll.calledOnce.should.eql(true);
+                models.Subscriber.prototype.where.calledOnce.should.eql(true);
+
+                models.Subscriber.prototype.where.calledWith({post_id: options.id}).should.eql(true);
+                models.Subscriber.prototype.fetchAll.returnValues[0]._boundTo.models.length.should.eql(0);
+
+                return PostAPI.read(options);
+            }).then(function () {
+                done(new Error('Post still exists when it should have been deleted'));
+            }).catch(function (err) {
+                if (err.name === 'NotFoundError') {
+                    return done();
+                }
+
+                done(err);
             });
         });
 
