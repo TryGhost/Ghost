@@ -14,7 +14,7 @@ var proxy = require('./proxy'),
     assetHelper = require('./asset'),
 
     getMetaData = proxy.metaData.get,
-    escapeExpression = proxy.hbs.Utils.escapeExpression,
+    escapeExpression = proxy.escapeExpression,
     SafeString = proxy.SafeString,
     filters = proxy.filters,
     labs = proxy.labs,

@@ -1,7 +1,7 @@
 // This file defines everything that helpers "require"
 // With the exception of modules like lodash, Bluebird
 // We can later refactor to enforce this something like we do in apps
-var hbs = require('express-hbs'),
+var hbs = require('../themes/engine'),
     _ = require('lodash'),
     config = require('../config');
 
@@ -13,9 +13,9 @@ var hbs = require('express-hbs'),
 // - jsonpath
 
 module.exports = {
-    // @TODO this will eventually be an engine that comes from themes
     hbs: hbs,
     SafeString: hbs.SafeString,
+    escapeExpression: hbs.escapeExpression,
 
     // Expose less of the API?
     api: require('../api'),

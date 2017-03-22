@@ -1,7 +1,7 @@
 var templates = {},
 
     _ = require('lodash'),
-    hbs = require('express-hbs'),
+    hbs = require('../themes/engine'),
     errors = require('../errors'),
     i18n = require('../i18n');
 
@@ -23,7 +23,7 @@ templates.execute = function execute(name, context, options) {
         hbs.registerPartial(partial);
     }
 
-    return new hbs.handlebars.SafeString(partial(context, options));
+    return new hbs.SafeString(partial(context, options));
 };
 
 templates.asset = _.template('<%= source %>?v=<%= version %>');

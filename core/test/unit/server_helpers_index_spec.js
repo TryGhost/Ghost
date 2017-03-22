@@ -1,7 +1,7 @@
 // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 var should = require('should'), // jshint ignore:line
     _ = require('lodash'),
-    hbs = require('express-hbs'),
+    hbs = require.main.require('core/server/themes/engine'),
 
     // Stuff we are testing
     helpers = require.main.require('core/server/helpers');

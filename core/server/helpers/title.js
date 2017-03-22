@@ -5,7 +5,7 @@
 
 var proxy = require('./proxy'),
     SafeString = proxy.SafeString,
-    escapeExpression = proxy.hbs.Utils.escapeExpression;
+    escapeExpression = proxy.escapeExpression;
 
 module.exports = function title() {
     return new SafeString(escapeExpression(this.title || ''));
