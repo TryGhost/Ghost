@@ -6,15 +6,14 @@ var proxy = require('./proxy'),
     _ = require('lodash'),
     logging = proxy.logging,
     i18n = proxy.i18n,
-    visibilityFilter = proxy.visibilityFilter,
-    parseVisibility = proxy.utils.parseVisibility,
+    visibilityUtils = proxy.visibility,
     hbsUtils = proxy.hbs.Utils,
     createFrame = proxy.hbs.handlebars.createFrame;
 
 function filterItemsByVisibility(items, options) {
-    var visibility = parseVisibility(options);
+    var visibility = visibilityUtils.parser(options);
 
-    return visibilityFilter(items, visibility, !!options.hash.visibility);
+    return visibilityUtils.filter(items, visibility, !!options.hash.visibility);
 }
 
 module.exports = function foreach(items, options) {

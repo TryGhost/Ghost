@@ -12,8 +12,7 @@ var proxy = require('./proxy'),
     SafeString = proxy.SafeString,
     templates = proxy.templates,
     url = proxy.url,
-    visibilityFilter = proxy.visibilityFilter,
-    parseVisibility = proxy.utils.parseVisibility;
+    visibilityUtils = proxy.visibility;
 
 module.exports = function tags(options) {
     options = options || {};
@@ -26,7 +25,7 @@ module.exports = function tags(options) {
         limit      = options.hash.limit ? parseInt(options.hash.limit, 10) : undefined,
         from       = options.hash.from ? parseInt(options.hash.from, 10) : 1,
         to         = options.hash.to ? parseInt(options.hash.to, 10) : undefined,
-        visibility = parseVisibility(options),
+        visibility = visibilityUtils.parser(options),
         output     = '';
 
     function createTagList(tags) {
@@ -37,7 +36,7 @@ module.exports = function tags(options) {
             }) : _.escape(tag.name);
         }
 
-        return visibilityFilter(tags, visibility, !!options.hash.visibility, processTag);
+        return visibilityUtils.filter(tags, visibility, !!options.hash.visibility, processTag);
     }
 
     if (this.tags && this.tags.length) {

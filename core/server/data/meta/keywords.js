@@ -1,4 +1,4 @@
-var visibilityFilter = require('../../utils/visibility-filter');
+var visibilityFilter = require('../../utils/visibility').filter;
 
 function getKeywords(data) {
     if (data.post && data.post.tags && data.post.tags.length > 0) {

@@ -72,15 +72,7 @@ module.exports = {
             }
 
             return null;
-        },
-        parseVisibility: function parseVisibility(options) {
-            if (!options.hash.visibility) {
-                return ['public'];
-            }
-
-            return _.map(options.hash.visibility.split(','), _.trim);
         }
     },
-    // @TODO restructure this
-    visibilityFilter: require('../utils/visibility-filter')
+    visibility: require('../utils/visibility')
 };
