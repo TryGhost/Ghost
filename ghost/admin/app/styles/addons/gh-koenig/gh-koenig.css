@@ -163,3 +163,12 @@ textarea.ed_code {
     box-shadow: var(--lightgrey) 0 0 0 1px inset, #fff 0 0 0 15px inset;
     border-radius: 3px;
 }
+
+
+/**
+ * HTML Card
+ */
+
+ .kg-html-card {
+     border: #ddd 1px solid;
+ }
