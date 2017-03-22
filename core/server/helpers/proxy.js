@@ -3,6 +3,7 @@
 // We can later refactor to enforce this something like we do in apps
 var hbs = require('../themes/engine'),
     _ = require('lodash'),
+    settingsCache = require('../settings/cache'),
     config = require('../config');
 
 // Direct requires:
@@ -17,9 +18,10 @@ module.exports = {
     SafeString: hbs.SafeString,
     escapeExpression: hbs.escapeExpression,
 
-    // Expose less of the API?
+    // TODO: Expose less of the API to make this safe
     api: require('../api'),
-    settingsCache: require('../settings/cache'),
+    // TODO: Only expose "get"
+    settingsCache: settingsCache,
 
     // These 3 are kind of core and required all the time
     errors: require('../errors'),
@@ -34,7 +36,10 @@ module.exports = {
     // minifyAssets in asset helper
     // isPrivacyDisabled & referrerPolicy used in ghost_head
     // Subscribe app uses routeKeywords
-    config: config,
+    config: {
+        get: config.get.bind(config),
+        isPrivacyDisabled: config.isPrivacyDisabled.bind(config)
+    },
 
     // Labs utils for enabling/disabling helpers
     labs: require('../utils/labs'),
@@ -43,7 +48,6 @@ module.exports = {
     filters: require('../filters'),
 
     // Things required from data/meta
-    // @TODO: clean this up
     metaData: {
         get: require('../data/meta'), // ghost_head
         getAssetUrl: require('../data/meta/asset_url'), // asset
@@ -61,17 +65,16 @@ module.exports = {
     socialUrls: require('../utils/social-urls'),
     url: require('../utils').url,
     utils: {
-        // @TODO this can probably be made more generic and used in more places
-        findKey: function findKey(key, object, data) {
-            if (object && _.has(object, key) && !_.isEmpty(object[key])) {
-                return object[key];
-            }
+        findKey: function findKey(key /* ...objects... */) {
+            var objects = Array.prototype.slice.call(arguments, 1);
 
-            if (data && _.has(data, key) && !_.isEmpty(data[key])) {
-                return data[key];
-            }
+            return _.reduceRight(objects, function (result, object) {
+                if (object && _.has(object, key) && !_.isEmpty(object[key])) {
+                    result = object[key];
+                }
 
-            return null;
+                return result;
+            }, null);
         }
     },
     visibility: require('../utils/visibility')
