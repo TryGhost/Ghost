@@ -23,8 +23,8 @@ The project is maintained by a non-profit organisation called the **Ghost Founda
 
 Install and run Ghost.
 <pre>
-<b>git clone git@github.com:TryGhost/Ghost.git</b>
-    Alternatively you can use your Ghost Fork URL
+<b>git clone git@github.com:TryGhost/Ghost.git ghost</b>
+    Download the Ghost code base
 <b>npm run init</b>
     Short command for: npm install -g knex-migrator ember-cli grunt-cli && npm install && grunt init
 <b>knex-migrator init</b>
