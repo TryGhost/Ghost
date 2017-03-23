@@ -1,24 +1,24 @@
 // # Get Helper
 // Usage: `{{#get "posts" limit="5"}}`, `{{#get "tags" limit="all"}}`
 // Fetches data from the API
-var _               = require('lodash'),
-    hbs             = require('express-hbs'),
-    Promise         = require('bluebird'),
-    errors          = require('../errors'),
-    logging         = require('../logging'),
-    api             = require('../api'),
-    jsonpath        = require('jsonpath'),
-    labs            = require('../utils/labs'),
-    i18n            = require('../i18n'),
+var _ = require('lodash'),
+    hbs = require('express-hbs'),
+    Promise = require('bluebird'),
+    jsonpath = require('jsonpath'),
+
+    logging = require('../logging'),
+    i18n = require('../i18n'),
+    api = require('../api'),
+    labs = require('../utils/labs'),
     resources,
     pathAliases,
     get;
 
 // Endpoints that the helper is able to access
-resources =  ['posts', 'tags', 'users'];
+resources = ['posts', 'tags', 'users'];
 
 // Short forms of paths which we should understand
-pathAliases     = {
+pathAliases = {
     'post.tags': 'post.tags[*].slug',
     'post.author': 'post.author.slug'
 };
@@ -139,23 +139,17 @@ get = function get(resource, options) {
     });
 };
 
-module.exports = function getWithLabs(resource, options) {
-    var self = this, err;
+module.exports = function getLabsWrapper() {
+    var self = this,
+        args = arguments;
 
-    if (labs.isSet('publicAPI') === true) {
-        // get helper is  active
-        return get.call(self, resource, options);
-    } else {
-        err = new errors.GhostError({
-            message: i18n.t('warnings.helpers.get.helperNotAvailable'),
-            context: i18n.t('warnings.helpers.get.apiMustBeEnabled'),
-            help: i18n.t('warnings.helpers.get.seeLink', {url: 'http://support.ghost.org/public-api-beta'})
-        });
-
-        logging.error(err);
-
-        return Promise.resolve(function noGetHelper() {
-            return '<script>console.error(' + JSON.stringify(err) + ');</script>';
-        });
-    }
+    return labs.enabledHelper({
+        flag: 'publicAPI',
+        flagName: 'Public API',
+        helperName: 'get',
+        helpUrl: 'http://support.ghost.org/public-api-beta/',
+        async: true
+    }, function executeHelper() {
+        return get.apply(self, args);
+    });
 };

@@ -1,20 +1,9 @@
-var should = require('should'),
-    hbs = require('express-hbs'),
-    utils = require('./utils'),
+var should = require('should'), // jshint ignore:line
 
 // Stuff we are testing
-    handlebars = hbs.handlebars,
     helpers = require('../../../server/helpers');
 
 describe('{{plural}} helper', function () {
-    before(function () {
-        utils.loadHelpers();
-    });
-
-    it('has loaded plural helper', function () {
-        should.exist(handlebars.helpers.plural);
-    });
-
     it('will show no-value string', function () {
         var expected = 'No Posts',
             rendered = helpers.plural.call({}, 0, {
