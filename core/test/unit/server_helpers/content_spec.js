@@ -1,20 +1,9 @@
-var should = require('should'),
-    hbs = require('express-hbs'),
-    utils = require('./utils'),
+var should = require('should'), // jshint ignore:line
 
 // Stuff we are testing
-    handlebars = hbs.handlebars,
     helpers = require('../../../server/helpers');
 
 describe('{{content}} helper', function () {
-    before(function () {
-        utils.loadHelpers();
-    });
-
-    it('has loaded content helper', function () {
-        should.exist(handlebars.helpers.content);
-    });
-
     it('can render content', function () {
         var html = 'Hello World',
             rendered = helpers.content.call({html: html});

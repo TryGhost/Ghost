@@ -85,6 +85,7 @@ function ghost_head(options) {
     var metaData,
         client,
         head = [],
+        codeInjection = settingsCache.get('ghost_head'),
         context = this.context ? this.context : null,
         useStructuredData = !config.isPrivacyDisabled('useStructuredData'),
         safeVersion = this.safeVersion,
@@ -153,11 +154,9 @@ function ghost_head(options) {
             escapeExpression(metaData.blog.title)  + '" href="' +
             escapeExpression(metaData.rssUrl) + '" />');
 
-        return api.settings.read({key: 'ghost_head'});
-    }).then(function (response) {
         // no code injection for amp context!!!
-        if (!_.includes(context, 'amp')) {
-            head.push(response.settings[0].value);
+        if (!_.includes(context, 'amp') && !_.isEmpty(codeInjection)) {
+            head.push(codeInjection);
         }
         return filters.doFilter('ghost_head', head);
     }).then(function (head) {

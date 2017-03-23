@@ -1,31 +1,28 @@
-var should = require('should'),
+var should = require('should'), // jshint ignore:line
     hbs = require('express-hbs'),
-    utils = require('./utils'),
     configUtils = require('../../utils/configUtils'),
     path = require('path'),
 
 // Stuff we are testing
-    handlebars = hbs.handlebars,
     helpers = require('../../../server/helpers');
 
 describe('{{pagination}} helper', function () {
     before(function (done) {
-        utils.loadHelpers();
         hbs.express3({partialsDir: [configUtils.config.get('paths').helperTemplates]});
 
         hbs.cachePartials(function () {
             done();
         });
+
+        // The pagination partial expects this helper
+        // @TODO: change to register with Ghost's own registration tools
+        hbs.registerHelper('page_url', helpers.page_url);
     });
 
     var paginationRegex = /class="pagination"/,
         newerRegex = /class="newer-posts"/,
         olderRegex = /class="older-posts"/,
         pageRegex = /class="page-number"/;
-
-    it('has loaded pagination helper', function () {
-        should.exist(handlebars.helpers.pagination);
-    });
 
     it('should throw if pagination data is incorrect', function () {
         var runHelper = function (data) {
@@ -126,7 +123,6 @@ describe('{{pagination}} helper', function () {
 
 describe('{{pagination}} helper with custom template', function () {
     before(function (done) {
-        utils.loadHelpers();
         hbs.express3({partialsDir: [path.resolve(configUtils.config.get('paths').corePath, 'test/unit/server_helpers/test_tpl')]});
 
         hbs.cachePartials(function () {

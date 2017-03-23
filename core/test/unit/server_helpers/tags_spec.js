@@ -1,26 +1,14 @@
-var should = require('should'),
+var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
-    hbs = require('express-hbs'),
-    utils = require('./utils'),
-    rewire = require('rewire'),
 
 // Stuff we are testing
-    handlebars = hbs.handlebars,
-    helpers = rewire('../../../server/helpers'),
+    helpers = require('../../../server/helpers'),
 
     sandbox = sinon.sandbox.create();
 
 describe('{{tags}} helper', function () {
-    before(function () {
-        utils.loadHelpers();
-    });
-
     afterEach(function () {
         sandbox.restore();
-    });
-
-    it('has loaded tags helper', function () {
-        should.exist(handlebars.helpers.tags);
     });
 
     it('can return string with tags', function () {

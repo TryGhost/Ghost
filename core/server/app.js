@@ -52,11 +52,6 @@ module.exports = function setupParentApp() {
     // This sets global res.locals which are needed everywhere
     parentApp.use(ghostLocals);
 
-    // @TODO where should this live?!
-    // Load helpers
-    require('./helpers').loadCoreHelpers();
-    debug('Helpers done');
-
     // Mount the  apps on the parentApp
     // API
     // @TODO: finish refactoring the API app

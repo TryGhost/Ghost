@@ -1,11 +1,10 @@
 var should = require('should'),
     hbs = require('express-hbs'),
-    utils = require('./utils'),
+
     configUtils = require('../../utils/configUtils'),
     path = require('path'),
 
 // Stuff we are testing
-    handlebars = hbs.handlebars,
     helpers = require('../../../server/helpers');
 
 describe('{{navigation}} helper', function () {
@@ -17,7 +16,6 @@ describe('{{navigation}} helper', function () {
         optionsData;
 
     before(function (done) {
-        utils.loadHelpers();
         hbs.express3({
             partialsDir: [configUtils.config.get('paths').helperTemplates]
         });
@@ -25,6 +23,10 @@ describe('{{navigation}} helper', function () {
         hbs.cachePartials(function () {
             done();
         });
+
+        // The navigation partial expects this helper
+        // @TODO: change to register with Ghost's own registration tools
+        hbs.registerHelper('url', helpers.url);
     });
 
     beforeEach(function () {
@@ -38,10 +40,6 @@ describe('{{navigation}} helper', function () {
                 }
             }
         };
-    });
-
-    it('has loaded navigation helper', function () {
-        should.exist(handlebars.helpers.navigation);
     });
 
     it('should throw errors on invalid data', function () {
@@ -187,7 +185,6 @@ describe('{{navigation}} helper with custom template', function () {
     var optionsData;
 
     before(function (done) {
-        utils.loadHelpers();
         hbs.express3({
             partialsDir: [path.resolve(configUtils.config.get('paths').corePath, 'test/unit/server_helpers/test_tpl')]
         });

@@ -1,16 +1,12 @@
-var should = require('should'),
-    hbs = require('express-hbs'),
-    utils = require('./utils'),
+var should = require('should'), // jshint ignore:line
     themeList = require('../../../server/themes').list,
 
 // Stuff we are testing
-    handlebars = hbs.handlebars,
     helpers = require('../../../server/helpers');
 
 describe('{{body_class}} helper', function () {
     var options = {};
     before(function () {
-        utils.loadHelpers();
         themeList.init({
             casper: {
                 assets: null,
@@ -36,10 +32,6 @@ describe('{{body_class}} helper', function () {
 
     after(function () {
         themeList.init();
-    });
-
-    it('has loaded body_class helper', function () {
-        should.exist(handlebars.helpers.body_class);
     });
 
     it('can render class string', function () {

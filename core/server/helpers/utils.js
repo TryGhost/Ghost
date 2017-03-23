@@ -1,5 +1,4 @@
 var _       = require('lodash'),
-    config  = require('../config'),
     utils;
 
 utils = {
@@ -7,7 +6,6 @@ utils = {
     linkTemplate: _.template('<a href="<%= url %>"><%= text %></a>'),
     scriptTemplate: _.template('<script src="<%= source %>?v=<%= version %>"></script>'),
     inputTemplate: _.template('<input class="<%= className %>" type="<%= type %>" name="<%= name %>" <%= extras %> />'),
-    isProduction: config.get('env') === 'production',
     // @TODO this can probably be made more generic and used in more places
     findKey: function findKey(key, object, data) {
         if (object && _.has(object, key) && !_.isEmpty(object[key])) {

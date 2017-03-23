@@ -1,21 +1,10 @@
-var should = require('should'),
-    hbs = require('express-hbs'),
-    utils = require('./utils'),
+var should = require('should'), // jshint ignore:line
 
 // Stuff we are testing
-    handlebars = hbs.handlebars,
     helpers = require('../../../server/helpers'),
     moment = require('moment-timezone');
 
 describe('{{date}} helper', function () {
-    before(function () {
-        utils.loadHelpers();
-    });
-
-    it('is loaded', function () {
-        should.exist(handlebars.helpers.date);
-    });
-
     it('creates properly formatted date strings', function () {
         var testDates = [
                 '2013-12-31T11:28:58.593+02:00',

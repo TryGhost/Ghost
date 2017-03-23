@@ -1,11 +1,8 @@
-var should = require('should'),
+var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
-    hbs = require('express-hbs'),
-    utils = require('./utils'),
     configUtils = require('../../utils/configUtils'),
 
 // Stuff we are testing
-    handlebars = hbs.handlebars,
     helpers = require('../../../server/helpers'),
 
     sandbox = sinon.sandbox.create();
@@ -13,7 +10,6 @@ var should = require('should'),
 describe('{{image}} helper', function () {
     before(function () {
         configUtils.set({url: 'http://testurl.com/'});
-        utils.loadHelpers();
     });
 
     afterEach(function () {
@@ -22,10 +18,6 @@ describe('{{image}} helper', function () {
 
     after(function () {
         configUtils.restore();
-    });
-
-    it('has loaded image helper', function () {
-        should.exist(handlebars.helpers.image);
     });
 
     it('should output relative url of image', function () {

@@ -1,11 +1,8 @@
-var should = require('should'),
+var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
-    hbs = require('express-hbs'),
-    utils = require('./utils'),
     configUtils = require('../../utils/configUtils'),
     helpers = require('../../../server/helpers'),
     settingsCache = require('../../../server/settings/cache'),
-    handlebars = hbs.handlebars,
 
     sandbox = sinon.sandbox.create();
 
@@ -13,7 +10,6 @@ describe('{{asset}} helper', function () {
     var rendered, localSettingsCache = {};
 
     before(function () {
-        utils.loadHelpers();
         configUtils.set({assetHash: 'abc'});
 
         sandbox.stub(settingsCache, 'get', function (key) {
@@ -24,10 +20,6 @@ describe('{{asset}} helper', function () {
     after(function () {
         configUtils.restore();
         sandbox.restore();
-    });
-
-    it('has loaded asset helper', function () {
-        should.exist(handlebars.helpers.asset);
     });
 
     describe('no subdirectory', function () {
