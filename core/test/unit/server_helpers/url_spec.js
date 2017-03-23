@@ -1,12 +1,9 @@
-var should = require('should'),
+var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     Promise = require('bluebird'),
-    hbs = require('express-hbs'),
-    utils = require('./utils'),
     configUtils = require('../../utils/configUtils'),
 
 // Stuff we are testing
-    handlebars = hbs.handlebars,
     helpers = require('../../../server/helpers'),
     api = require('../../../server/api'),
 
@@ -17,7 +14,6 @@ describe('{{url}} helper', function () {
 
     before(function () {
         configUtils.set({url: 'http://testurl.com/'});
-        utils.loadHelpers();
     });
 
     beforeEach(function () {
@@ -33,10 +29,6 @@ describe('{{url}} helper', function () {
 
     after(function () {
         configUtils.restore();
-    });
-
-    it('has loaded url helper', function () {
-        should.exist(handlebars.helpers.url);
     });
 
     it('should return the slug with a prefix slash if the context is a post', function () {

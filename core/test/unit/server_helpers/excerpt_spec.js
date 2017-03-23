@@ -1,20 +1,9 @@
-var should = require('should'),
-    hbs = require('express-hbs'),
-    utils = require('./utils'),
+var should = require('should'), // jshint ignore:line
 
 // Stuff we are testing
-    handlebars = hbs.handlebars,
     helpers = require('../../../server/helpers');
 
 describe('{{excerpt}} Helper', function () {
-    before(function () {
-        utils.loadHelpers();
-    });
-
-    it('has loaded excerpt helper', function () {
-        should.exist(handlebars.helpers.excerpt);
-    });
-
     it('can render excerpt', function () {
         var html = 'Hello World',
             rendered = helpers.excerpt.call({html: html});

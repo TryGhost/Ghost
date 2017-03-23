@@ -1,11 +1,8 @@
-var should = require('should'),
+var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     Promise = require('bluebird'),
-    hbs = require('express-hbs'),
-    utils = require('./utils'),
 
 // Stuff we are testing
-    handlebars = hbs.handlebars,
     helpers = require('../../../server/helpers'),
     api = require('../../../server/api'),
 
@@ -20,7 +17,6 @@ describe('{{prev_post}} helper', function () {
 
     describe('with valid post data - ', function () {
         beforeEach(function () {
-            utils.loadHelpers();
             readPostStub = sandbox.stub(api.posts, 'read', function (options) {
                 if (options.include.indexOf('previous') === 0) {
                     return Promise.resolve({
@@ -28,10 +24,6 @@ describe('{{prev_post}} helper', function () {
                     });
                 }
             });
-        });
-
-        it('has loaded prev_post helper', function () {
-            should.exist(handlebars.helpers.prev_post);
         });
 
         it('shows \'if\' template with previous post data', function (done) {
@@ -64,7 +56,6 @@ describe('{{prev_post}} helper', function () {
 
     describe('for valid post with no previous post', function () {
         beforeEach(function () {
-            utils.loadHelpers();
             readPostStub = sandbox.stub(api.posts, 'read', function (options) {
                 if (options.include.indexOf('previous') === 0) {
                     return Promise.resolve({posts: [{slug: '/current/', title: 'post 2'}]});
@@ -97,7 +88,6 @@ describe('{{prev_post}} helper', function () {
 
     describe('for invalid post data', function () {
         beforeEach(function () {
-            utils.loadHelpers();
             readPostStub = sandbox.stub(api.posts, 'read', function (options) {
                 if (options.include.indexOf('previous') === 0) {
                     return Promise.resolve({});
@@ -123,7 +113,6 @@ describe('{{prev_post}} helper', function () {
 
     describe('for unpublished post', function () {
         beforeEach(function () {
-            utils.loadHelpers();
             readPostStub = sandbox.stub(api.posts, 'read', function (options) {
                 if (options.include.indexOf('previous') === 0) {
                     return Promise.resolve({
