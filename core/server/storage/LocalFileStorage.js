@@ -1,19 +1,19 @@
+// jscs:disable requireMultipleVarDecl
+
 'use strict';
+
 // # Local File System Image Storage module
 // The (default) module for storing images, using the local file system
 
 var serveStatic = require('express').static,
     fs = require('fs-extra'),
-    os = require('os'),
     path = require('path'),
-    util = require('util'),
     Promise = require('bluebird'),
     config = require('../config'),
     errors = require('../errors'),
     i18n = require('../i18n'),
     utils = require('../utils'),
-    StorageBase = require('ghost-storage-base'),
-    remove = Promise.promisify(fs.remove);
+    StorageBase = require('ghost-storage-base');
 
 class LocalFileStore extends StorageBase {
 

@@ -3,13 +3,14 @@ var should = require('should'), // jshint ignore:line
     express = require('express'),
     serveFavicon = require('../../../server/middleware/serve-favicon'),
     settingsCache = require('../../../server/settings/cache'),
+    storage = require('../../../server/storage'),
     configUtils = require('../../utils/configUtils'),
     path = require('path'),
 
     sandbox = sinon.sandbox.create();
 
 describe('Serve Favicon', function () {
-    var req, res, next, blogApp, localSettingsCache = {};
+    var req, res, next, blogApp, localSettingsCache = {}, originalStoragePath;
 
     beforeEach(function () {
         req = sinon.spy();
@@ -21,12 +22,15 @@ describe('Serve Favicon', function () {
         sandbox.stub(settingsCache, 'get', function (key) {
             return localSettingsCache[key];
         });
+
+        originalStoragePath = storage.getStorage().storagePath;
     });
 
     afterEach(function () {
         sandbox.restore();
         configUtils.restore();
         localSettingsCache = {};
+        storage.getStorage().storagePath = originalStoragePath;
     });
 
     describe('serveFavicon', function () {
@@ -48,7 +52,7 @@ describe('Serve Favicon', function () {
                 var middleware = serveFavicon();
                 req.path = '/favicon.png';
 
-                configUtils.set('paths:contentPath', path.join(__dirname, '../../../test/utils/fixtures/'));
+                storage.getStorage().storagePath = path.join(__dirname, '../../../test/utils/fixtures/images/');
                 localSettingsCache.icon = 'favicon.png';
 
                 res = {
@@ -68,7 +72,7 @@ describe('Serve Favicon', function () {
                 var middleware = serveFavicon();
                 req.path = '/favicon.ico';
 
-                configUtils.set('paths:contentPath', path.join(__dirname, '../../../test/utils/fixtures/'));
+                storage.getStorage().storagePath = path.join(__dirname, '../../../test/utils/fixtures/images/');
                 localSettingsCache.icon = 'favicon.ico';
 
                 res = {

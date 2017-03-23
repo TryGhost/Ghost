@@ -150,7 +150,7 @@ describe('Local File System Storage', function () {
     describe('read image', function () {
         beforeEach(function () {
             // we have some example images in our test utils folder
-            configUtils.set('paths:contentPath', path.join(__dirname, '../../utils/fixtures'));
+            localFileStore.storagePath = path.join(__dirname, '../../utils/fixtures/images/');
         });
 
         it('success', function (done) {

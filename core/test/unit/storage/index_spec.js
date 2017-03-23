@@ -80,7 +80,7 @@ describe('storage: index_spec', function () {
             'delete(){}' +
             'read(){}' +
             '}' +
-            'module.exports = AnotherAdapter', chosenStorage;
+            'module.exports = AnotherAdapter';
 
         fs.writeFileSync(scope.adapter, jsFile);
 
