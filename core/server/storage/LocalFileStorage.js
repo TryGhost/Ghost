@@ -16,6 +16,13 @@ var serveStatic = require('express').static,
     remove = Promise.promisify(fs.remove);
 
 class LocalFileStore extends StorageBase {
+
+    constructor() {
+        super();
+
+        this.storagePath = config.getContentPath('images');
+    }
+
     /**
      * Saves the image to storage (the file system)
      *
@@ -25,9 +32,10 @@ class LocalFileStore extends StorageBase {
      * @param targetDir
      * @returns {*}
      */
-    save(image, targetDir) {
-        targetDir = targetDir || this.getTargetDir(config.getContentPath('images'));
-        var targetFilename;
+    save(image) {
+        var targetDir = this.getTargetDir(this.storagePath),
+            targetFilename,
+            self = this;
 
         return this.getUniqueFileName(this, image, targetDir).then(function (filename) {
             targetFilename = filename;
@@ -40,7 +48,7 @@ class LocalFileStore extends StorageBase {
             var fullUrl = (
                 utils.url.urlJoin('/', utils.url.getSubdir(),
                     utils.url.STATIC_IMAGE_URL_PREFIX,
-                    path.relative(config.getContentPath('images'), targetFilename))
+                    path.relative(self.storagePath, targetFilename))
             ).replace(new RegExp('\\' + path.sep, 'g'), '/');
 
             return fullUrl;
@@ -49,9 +57,11 @@ class LocalFileStore extends StorageBase {
         });
     }
 
-    exists(filename) {
+    exists(fileName, targetDir) {
+        var filePath = path.join(targetDir || this.storagePath, fileName);
+
         return new Promise(function (resolve) {
-            fs.stat(filename, function (err) {
+            fs.stat(filePath, function (err) {
                 var exists = !err;
                 resolve(exists);
             });
@@ -69,7 +79,7 @@ class LocalFileStore extends StorageBase {
         var self = this;
 
         return function serveStaticContent(req, res, next) {
-            return serveStatic(config.getContentPath('images'), {maxAge: utils.ONE_YEAR_MS, fallthrough: false})(req, res, function (err) {
+            return serveStatic(self.storagePath, {maxAge: utils.ONE_YEAR_MS, fallthrough: false})(req, res, function (err) {
                 if (err) {
                     if (err.statusCode === 404) {
                         return next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
@@ -103,7 +113,7 @@ class LocalFileStore extends StorageBase {
         // remove trailing slashes
         options.path = (options.path || '').replace(/\/$|\\$/, '');
 
-        var targetPath = path.join(config.getContentPath('images'), options.path);
+        var targetPath = path.join(this.storagePath, options.path);
 
         return new Promise(function (resolve, reject) {
             fs.readFile(targetPath, function (err, bytes) {
