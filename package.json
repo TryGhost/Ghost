@@ -19,7 +19,8 @@
   "main": "./core/index",
   "scripts": {
     "start": "node index",
-    "test": "grunt validate --verbose"
+    "test": "grunt validate --verbose",
+    "init": "npm install -g knex-migrator ember-cli grunt-cli && npm install && grunt init"
   },
   "engines": {
     "node": "^4.2.0 || ^6.5.0"
