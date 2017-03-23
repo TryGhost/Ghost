@@ -27,16 +27,13 @@ var sizeOf       = require('image-size'),
 /**
  * @description read image dimensions from URL
  * @param {String} imagePath
- * @param {Number} timeout (optional)
  * @returns {Promise<Object>} imageObject or error
  */
-module.exports.getImageSizeFromUrl = function getImageSizeFromUrl(imagePath, timeout) {
+module.exports.getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
     return new Promise(function imageSizeRequest(resolve, reject) {
         var imageObject = {},
-            options;
-
-        // set default timeout if called without option. Otherwise node will use default timeout of 120 sec.
-        timeout = timeout ? timeout : 10000;
+            options,
+            timeout = config.times.getImageSizeTimeoutInMS || 10000;
 
         imageObject.url = imagePath;
 

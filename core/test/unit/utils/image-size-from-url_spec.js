@@ -4,6 +4,7 @@ var should = require('should'),
     nock = require('nock'),
     sinon = require('sinon'),
     config = require('../../../server/config'),
+    configUtils = require('../../utils/configUtils'),
 
     // Stuff we are testing
     imageSize = rewire('../../../server/utils/image-size-from-url');
@@ -19,6 +20,7 @@ describe('Image Size', function () {
 
     afterEach(function () {
         sinon.restore();
+        configUtils.restore();
     });
 
     it('should have an image size function', function () {
@@ -171,7 +173,13 @@ describe('Image Size', function () {
             .socketDelay(11)
             .reply(408);
 
-        result = Promise.resolve(imageSize.getImageSizeFromUrl(url, 10))
+        configUtils.set({
+            times: {
+                getImageSizeTimeoutInMS: 10
+            }
+        });
+
+        result = Promise.resolve(imageSize.getImageSizeFromUrl(url))
         .catch(function (err) {
             requestMock.isDone().should.be.true();
             should.exist(err);
