@@ -2,7 +2,7 @@
 var should = require('should'),
     sinon = require('sinon'),
     _ = require('lodash'),
-    moment = require('moment'),
+    moment = require('moment-timezone'),
     utils = require('../../../server/utils'),
     settingsCache = require('../../../server/settings/cache'),
     configUtils = require('../../utils/configUtils'),
@@ -505,10 +505,11 @@ describe('Url', function () {
         });
 
         it('post is not published yet', function () {
+            localSettingsCache.activeTimezone = 'Europe/London';
             localSettingsCache.permalinks = '/:year/:month/:day/:slug/';
 
             var testData = _.merge(testUtils.DataGenerator.Content.posts[2], {id: 3, published_at: null}),
-                nowMoment = moment(),
+                nowMoment = moment().tz('Europe/London'),
                 postLink = '/YYYY/MM/DD/short-and-sweet/';
 
             postLink = postLink.replace('YYYY', nowMoment.format('YYYY'));
