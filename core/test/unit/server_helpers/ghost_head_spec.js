@@ -1,26 +1,17 @@
-var should = require('should'),
+var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     _ = require('lodash'),
     Promise = require('bluebird'),
-    hbs = require('express-hbs'),
     moment = require('moment'),
-    utils = require('./utils'),
     configUtils = require('../../utils/configUtils'),
     helpers = require('../../../server/helpers'),
     api = require('../../../server/api'),
     labs = require('../../../server/utils/labs'),
     settingsCache = require('../../../server/settings/cache'),
-    handlebars = hbs.handlebars,
 
     sandbox = sinon.sandbox.create();
 
 describe('{{ghost_head}} helper', function () {
-    var settingsReadStub;
-
-    before(function () {
-        utils.loadHelpers();
-    });
-
     afterEach(function () {
         sandbox.restore();
         configUtils.restore();
@@ -28,12 +19,6 @@ describe('{{ghost_head}} helper', function () {
 
     // TODO: stub `getImageDimensions` to make things faster
     beforeEach(function () {
-        settingsReadStub = sandbox.stub(api.settings, 'read').returns(new Promise.resolve({
-            settings: [
-                {value: ''}
-            ]
-        }));
-
         sandbox.stub(api.clients, 'read').returns(new Promise.resolve({
             clients: [
                 {slug: 'ghost-frontend', secret: 'a1bcde23cfe5', status: 'enabled'}
@@ -57,10 +42,6 @@ describe('{{ghost_head}} helper', function () {
             });
 
             configUtils.set('url', 'http://testurl.com/');
-        });
-
-        it('has loaded ghost_head helper', function () {
-            should.exist(handlebars.helpers.ghost_head);
         });
 
         it('returns meta tag string on paginated index page without structured data and schema', function (done) {
@@ -1040,14 +1021,11 @@ describe('{{ghost_head}} helper', function () {
             title: 'Ghost',
             description: 'blog description',
             cover: '/content/images/blog-cover.png',
-            icon: '/content/images/favicon.png'
+            icon: '/content/images/favicon.png',
+            ghost_head: '<style>body {background: red;}</style>'
         };
 
         beforeEach(function () {
-            settingsReadStub.returns(new Promise.resolve({
-                settings: [{value: '<style>body {background: red;}</style>'}]
-            }));
-
             sandbox.stub(settingsCache, 'get', function (key) {
                 return localSettingsCache[key];
             });

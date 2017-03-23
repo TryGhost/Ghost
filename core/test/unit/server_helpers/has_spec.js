@@ -1,25 +1,14 @@
-var should = require('should'),
+var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
-    hbs = require('express-hbs'),
-    utils = require('./utils'),
 
 // Stuff we are testing
-    handlebars = hbs.handlebars,
     helpers = require('../../../server/helpers'),
 
     sandbox = sinon.sandbox.create();
 
 describe('{{#has}} helper', function () {
-    before(function () {
-        utils.loadHelpers();
-    });
-
     afterEach(function () {
         sandbox.restore();
-    });
-
-    it('has loaded has block helper', function () {
-        should.exist(handlebars.helpers.has);
     });
 
     it('should handle tag list that validates true', function () {

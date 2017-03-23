@@ -1,9 +1,6 @@
 var should = require('should'),
     sinon = require('sinon'),
-    hbs = require('express-hbs'),
-    utils = require('./utils'),
     configUtils = require('../../utils/configUtils'),
-    handlebars = hbs.handlebars,
     helpers = require('../../../server/helpers'),
     settingsCache = require('../../../server/settings/cache'),
 
@@ -11,18 +8,12 @@ var should = require('should'),
 
 describe('{{meta_description}} helper', function () {
     before(function () {
-        utils.loadHelpers();
-
         sandbox.stub(settingsCache, 'get').returns('Just a blogging platform.');
     });
 
     after(function () {
         configUtils.restore();
         sandbox.restore();
-    });
-
-    it('has loaded meta_description helper', function () {
-        should.exist(handlebars.helpers.meta_description);
     });
 
     it('returns correct blog description', function () {

@@ -1,24 +1,13 @@
-var should = require('should'),
+var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
-    hbs = require('express-hbs'),
-    utils = require('./utils'),
-    handlebars = hbs.handlebars,
     helpers = require('../../../server/helpers'),
     logging = require('../../../server/logging'),
 
     sandbox = sinon.sandbox.create();
 
 describe('{{#is}} helper', function () {
-    before(function () {
-        utils.loadHelpers();
-    });
-
     afterEach(function () {
         sandbox.restore();
-    });
-
-    it('has loaded is block helper', function () {
-        should.exist(handlebars.helpers.is);
     });
 
     // All positive tests

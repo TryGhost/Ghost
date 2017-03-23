@@ -1,20 +1,9 @@
-var should = require('should'),
-    hbs = require('express-hbs'),
-    utils = require('./utils'),
+var should = require('should'), // jshint ignore:line
 
 // Stuff we are testing
-    handlebars = hbs.handlebars,
     helpers = require('../../../server/helpers');
 
 describe('{{author}} helper', function () {
-    before(function () {
-        utils.loadHelpers();
-    });
-
-    it('has loaded author helper', function () {
-        should.exist(handlebars.helpers.author);
-    });
-
     it('Returns the link to the author from the context', function () {
         var data = {author: {name: 'abc 123', slug: 'abc123', bio: '', website: '', status: '', location: ''}},
             result = helpers.author.call(data, {hash: {}});
