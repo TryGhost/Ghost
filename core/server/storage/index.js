@@ -5,26 +5,18 @@ var errors = require('../errors'),
     storage = {};
 
 /**
- * type: images|themes
+ * type: images
  */
-function getStorage(type) {
-    type = type || 'images';
-
-    var storageChoice = config.get('storage').active[type],
+function getStorage() {
+    var storageChoice = config.get('storage:active'),
         storageConfig;
-
-    // CASE: we only allow local-file-storage for themes
-    // @TODO: https://github.com/TryGhost/Ghost/issues/7246
-    if (type === 'themes') {
-        storageChoice = 'local-file-store';
-    }
 
     storageConfig = config.get('storage')[storageChoice];
 
     // CASE: type does not exist
     if (!storageChoice) {
         throw new errors.IncorrectUsageError({
-            message: 'No adapter found for type: ' + type
+            message: 'No adapter found'
         });
     }
 
@@ -70,11 +62,15 @@ function getStorage(type) {
     }
 
     if (!storage[storageChoice].requiredFns) {
-        throw new errors.IncorrectUsageError({message:'Your storage adapter does not provide the minimum required functions.'});
+        throw new errors.IncorrectUsageError({
+            message: 'Your storage adapter does not provide the minimum required functions.'
+        });
     }
 
     if (_.xor(storage[storageChoice].requiredFns, Object.keys(_.pick(Object.getPrototypeOf(storage[storageChoice]), storage[storageChoice].requiredFns))).length) {
-        throw new errors.IncorrectUsageError({message:'Your storage adapter does not provide the minimum required functions.'});
+        throw new errors.IncorrectUsageError({
+            message: 'Your storage adapter does not provide the minimum required functions.'
+        });
     }
 
     return storage[storageChoice];
