@@ -1,6 +1,6 @@
 var errors = require('../errors'),
     config = require('../config'),
-    Base = require('./base'),
+    StorageBase = require('ghost-storage-base'),
     _ = require('lodash'),
     storage = {};
 
@@ -63,8 +63,10 @@ function getStorage(type) {
 
     storage[storageChoice] = new storage[storageChoice](storageConfig);
 
-    if (!(storage[storageChoice] instanceof Base)) {
-        throw new errors.IncorrectUsageError({message: 'Your storage adapter does not inherit from the Storage Base.'});
+    if (!(storage[storageChoice] instanceof StorageBase)) {
+        throw new errors.IncorrectUsageError({
+            message: 'Your storage adapter does not inherit from the Storage Base.'
+        });
     }
 
     if (!storage[storageChoice].requiredFns) {
