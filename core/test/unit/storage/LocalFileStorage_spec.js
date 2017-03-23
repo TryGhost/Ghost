@@ -4,7 +4,7 @@ var should = require('should'), // jshint ignore:line
     moment = require('moment'),
     path = require('path'),
     errors = require('../../../server/errors'),
-    LocalFileStore = require('../../../server/storage/local-file-store'),
+    LocalFileStore = require('../../../server/storage/LocalFileStorage'),
     localFileStore,
 
     configUtils = require('../../utils/configUtils'),
