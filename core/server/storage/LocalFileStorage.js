@@ -37,7 +37,7 @@ class LocalFileStore extends StorageBase {
             targetFilename,
             self = this;
 
-        return this.getUniqueFileName(this, image, targetDir).then(function (filename) {
+        return this.getUniqueFileName(image, targetDir).then(function (filename) {
             targetFilename = filename;
             return Promise.promisify(fs.mkdirs)(targetDir);
         }).then(function () {
