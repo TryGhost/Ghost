@@ -22,7 +22,7 @@ describe('Helpers', function () {
         });
 
         // This will work when we finish refactoring
-        it.skip('should have exactly the right helpers', function () {
+        it('should have exactly the right helpers', function () {
             var foundHelpers, missingHelpers, unexpectedHelpers;
 
             foundHelpers = _.keys(hbs.handlebars.helpers);
