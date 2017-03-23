@@ -221,7 +221,7 @@ function urlPathForPost(post) {
 // @TODO: rewrite, very hard to read, create private functions!
 function urlFor(context, data, absolute) {
     var urlPath = '/',
-        secure, imagePathRe,
+        secure, contentImageRe, assetImageRe,
         knownObjects = ['post', 'tag', 'author', 'image', 'nav'], baseUrl,
         hostname,
 
@@ -257,8 +257,9 @@ function urlFor(context, data, absolute) {
             secure = data.author.secure;
         } else if (context === 'image' && data.image) {
             urlPath = data.image;
-            imagePathRe = new RegExp('^' + getSubdir() + '/' + STATIC_IMAGE_URL_PREFIX);
-            absolute = imagePathRe.test(data.image) ? absolute : false;
+            contentImageRe = new RegExp('^' + getSubdir() + '/' + STATIC_IMAGE_URL_PREFIX);
+            assetImageRe = new RegExp('^/ghost/assets/(img|icons)');
+            absolute = contentImageRe.test(data.image) || assetImageRe.test(data.image) ? absolute : false;
             secure = data.image.secure;
 
             if (absolute) {
