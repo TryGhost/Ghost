@@ -8,8 +8,8 @@ var SimpleDom   = require('simple-dom'),
         dom: new SimpleDom.Document(),
         cards: defaults.cards,
         atoms: defaults.atoms,
-        unknownCardHandler: function(args) {
-            var error = new errors.InternalServerError({message: 'Mobiledoc card \'' + args.env.name + '\' not found.'})
+        unknownCardHandler: function (args) {
+            var error = new errors.InternalServerError({message: 'Mobiledoc card \'' + args.env.name + '\' not found.'});
             logging.error(error);
         }
     };
