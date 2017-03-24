@@ -6,12 +6,12 @@ import hbs from 'htmlbars-inline-precompile';
 import {editorRendered, testInput, waitForRender, inputText} from '../../helpers/editor-helpers';
 import $ from 'jquery';
 
-describe('Integration: Component: gh-cm-editor', function () {
+describe('Integration: Component: gh-koenig-slashmenu', function () {
     setupComponentTest('gh-koenig', {
         integration: true
     });
 
-    it('thge slash menu appears on user input', function (done) {
+    it('the slash menu appears on user input', function (done) {
         this.render(hbs`{{gh-koenig
                             apiRoot='/todo'
                             assetPath='/assets'
