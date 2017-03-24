@@ -73,7 +73,8 @@ function getStorage() {
 
     customStorage = new CustomStorage(storageConfig);
 
-    if (!(storage[storageChoice] instanceof StorageBase)) {
+    // CASE: if multiple StorageBase modules are installed, instanceof could return false
+    if (Object.getPrototypeOf(CustomStorage).name !== StorageBase.name) {
         throw new errors.IncorrectUsageError({
             message: 'Your storage adapter does not inherit from the Storage Base.'
         });
