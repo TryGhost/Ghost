@@ -1,47 +1,114 @@
 import Component from 'ember-component';
-import layout from '../../templates/components/markdown-card';
-import {formatMarkdown} from '../../lib/format-markdown';
-import injectService from 'ember-service/inject';
-import {invokeAction} from 'ember-invoke-action';
-import {isEmberArray} from 'ember-array/utils';
-import {isBlank} from 'ember-utils';
 import computed from 'ember-computed';
-import observer from 'ember-metal/observer';
+import injectService from 'ember-service/inject';
+import {htmlSafe} from 'ember-string';
+import {isBlank} from 'ember-utils';
+import {isEmberArray} from 'ember-array/utils';
 import run from 'ember-runloop';
+import layout from '../../templates/components/card-image';
+
+import {invokeAction} from 'ember-invoke-action';
+
 import {
     isRequestEntityTooLargeError,
     isUnsupportedMediaTypeError,
     isVersionMismatchError,
     UnsupportedMediaTypeError
 } from 'ghost-admin/services/ajax';
-/* legacyConverter.makeHtml(_.toString(this.get('markdown'))) */
 
 export default Component.extend({
     layout,
-    isEditing: true,
+    tagName: 'section',
+    classNames: ['gh-image-uploader'],
+    classNameBindings: ['dragClass'],
+
+    image: null,
+    text: '',
+    altText: '',
+    saveButton: true,
     accept: 'image/gif,image/jpg,image/jpeg,image/png,image/svg+xml',
     extensions: ['gif', 'jpg', 'jpeg', 'png', 'svg'],
+    validate: null,
+
+    dragClass: null,
+    failureMessage: null,
+    file: null,
+    url: null,
+    uploadPercentage: 0,
 
     ajax: injectService(),
+    notifications: injectService(),
 
-    editing: observer('isEditing', function () {
-        if (!this.isEditing) {
-            this.set('preview', formatMarkdown([this.get('payload').markdown]));
-        }
+    // TODO: this wouldn't be necessary if the server could accept direct
+    // file uploads
+    formData: computed('file', function () {
+        let file = this.get('file');
+        let formData = new FormData();
+        formData.append('file', file);
+
+        return formData;
     }),
 
-    value: computed('payload', {
-        get() {
-            return this.get('payload').markdown || '';
-        },
+    description: computed('text', 'altText', function () {
+        let altText = this.get('altText');
 
-        set(_, value) {
-            this.get('payload').markdown = value;
-            this.get('env').save(this.get('payload'), false);
-            return value;
+        return this.get('text') || (altText ? `Upload image of "${altText}"` : 'Upload an image');
+    }),
+
+    progressStyle: computed('uploadPercentage', function () {
+        let percentage = this.get('uploadPercentage');
+        let width = '';
+
+        if (percentage > 0) {
+            width = `${percentage}%`;
+        } else {
+            width = '0';
         }
 
+        return htmlSafe(`width: ${width}`);
     }),
+
+    didReceiveAttrs() {
+        let image = this.get('payload');
+        if (image.img) {
+            this.set('url', image.img);
+        } else if (image.file) {
+            this.send('fileSelected', image.file);
+            delete image.file;
+
+        }
+    },
+
+    dragOver(event) {
+        if (!event.dataTransfer) {
+            return;
+        }
+
+        // this is needed to work around inconsistencies with dropping files
+        // from Chrome's downloads bar
+        let eA = event.dataTransfer.effectAllowed;
+        event.dataTransfer.dropEffect = (eA === 'move' || eA === 'linkMove') ? 'move' : 'copy';
+
+        event.stopPropagation();
+        event.preventDefault();
+
+        this.set('dragClass', '-drag-over');
+    },
+
+    dragLeave(event) {
+        event.preventDefault();
+        this.set('dragClass', null);
+    },
+
+    drop(event) {
+        event.preventDefault();
+
+        this.set('dragClass', null);
+
+        if (event.dataTransfer.files) {
+            this.send('fileSelected', event.dataTransfer.files);
+        }
+    },
 
     _uploadStarted() {
         invokeAction(this, 'uploadStarted');
@@ -61,28 +128,14 @@ export default Component.extend({
     },
 
     _uploadSuccess(response) {
-        this.set('url', response.url);
+        this.set('url', response);
 
-        this.get('payload').img = response.url;
+        this.get('payload').img = response;
         this.get('env').save(this.get('payload'), false);
 
         this.send('saveUrl');
         this.send('reset');
         invokeAction(this, 'uploadSuccess', response);
-        let placeholderText = `![uploading:${response.file.name}]()`;
-        let imageText = `![](${response.url})`;
-        let [el] = this.$('textarea');
-
-        el.value = el.value.replace(placeholderText, imageText);
-        this.sendAction('updateValue');
-    },
-
-    _validate(file) {
-        if (this.get('validate')) {
-            return invokeAction(this, 'validate', file);
-        } else {
-            return this._defaultValidator(file);
-        }
     },
 
     _uploadFailed(error) {
@@ -104,25 +157,6 @@ export default Component.extend({
 
         this.set('failureMessage', message);
         invokeAction(this, 'uploadFailed', error);
-        alert('upload failed');
-        // TODO: remove console.log
-        // eslint-disable-next-line no-console
-        console.log(error);
-    },
-
-    _defaultValidator(file) {
-        let extensions = this.get('extensions');
-        let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
-
-        if (!isEmberArray(extensions)) {
-            extensions = extensions.split(',');
-        }
-
-        if (!extension || extensions.indexOf(extension.toLowerCase()) === -1) {
-            return new UnsupportedMediaTypeError();
-        }
-
-        return true;
     },
 
     generateRequest() {
@@ -158,7 +192,7 @@ export default Component.extend({
             }
         }).then((response) => {
             let url = JSON.parse(response);
-            this._uploadSuccess({file, url});
+            this._uploadSuccess(url);
         }).catch((error) => {
             this._uploadFailed(error);
         }).finally(() => {
@@ -166,41 +200,30 @@ export default Component.extend({
         });
     },
 
-    drop(event) {
-        event.preventDefault();
-        event.stopPropagation();
-        let [el] = this.$('textarea');
-        let start = el.selectionStart;
-        let end = el.selectionEnd;
+    _validate(file) {
+        if (this.get('validate')) {
+            return invokeAction(this, 'validate', file);
+        } else {
+            return this._defaultValidator(file);
+        }
+    },
 
-        let {files} = event.dataTransfer;
-        let combinedLength = 0;
-        // for(let i = 0; i < files.length; i++) {
-        //     let file = files[i];
-        //     let placeholderText = `\r\n![uploading:${file.name}]()\r\n`;
-        //     el.value = el.value.substring(0, start) + placeholderText + el.value.substring(end, el.value.length);
-        //     combinedLength += placeholderText.length;
-        // }
+    _defaultValidator(file) {
+        let extensions = this.get('extensions');
+        let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
 
-        // eslint-disable-next-line ember-suave/prefer-destructuring
-        let file = files[0];
-        let placeholderText = `\r\n![uploading:${file.name}]()\r\n`;
-        el.value = el.value.substring(0, start) + placeholderText + el.value.substring(end, el.value.length);
-        combinedLength += placeholderText.length;
+        if (!isEmberArray(extensions)) {
+            extensions = extensions.split(',');
+        }
 
-        el.selectionStart = start;
-        el.selectionEnd = end + combinedLength;
+        if (!extension || extensions.indexOf(extension.toLowerCase()) === -1) {
+            return new UnsupportedMediaTypeError();
+        }
 
-        this.send('fileSelected', event.dataTransfer.files);
+        return true;
     },
 
     actions: {
-        updateValue() {
-            this.get('payload').markdown = this.$('textarea').val();
-            this.get('env').save(this.get('payload'), false);
-            this.set('preview', formatMarkdown([this.get('payload').markdown]));
-        },
-
         fileSelected(fileList) {
             // can't use array destructuring here as FileList is not a strict
             // array and fails in Safari
@@ -233,5 +256,4 @@ export default Component.extend({
             invokeAction(this, 'update', url);
         }
     }
-
 });

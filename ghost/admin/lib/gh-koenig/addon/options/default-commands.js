@@ -152,7 +152,7 @@ export default function (editor) {
 
             range = range.extend(-(matches[0].length));
             editor.run((postEditor) => {
-                let card = postEditor.builder.createCardSection('image-card', {pos: 'top', img, alt});
+                let card = postEditor.builder.createCardSection('card-image', {pos: 'top', img, alt});
                 postEditor.replaceSection(editor.range.headSection, card);
             });
         }
@@ -179,7 +179,7 @@ export default function (editor) {
             let code = matches[0];
             range = range.extend(-(matches[0].length));
             editor.run((postEditor) => {
-                let card = postEditor.builder.createCardSection('markdown-card', {pos: 'top', markdown: code});
+                let card = postEditor.builder.createCardSection('card-markdown', {pos: 'top', markdown: code});
                 postEditor.replaceSection(editor.range.headSection, card);
             });
         }

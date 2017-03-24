@@ -53,7 +53,10 @@ export default Component.extend({
             }],
             spellcheck: true,
             autofocus: this.get('shouldFocusEditor'),
-            placeholder: 'Click here to start ...'
+            placeholder: 'Click here to start ...',
+            unknownCardHandler: () => {
+                // todo
+            }
         };
 
         this.editor = new Mobiledoc.Editor(options);
@@ -152,7 +155,7 @@ export default Component.extend({
             event.preventDefault();
             for (let i = 0; i < event.dataTransfer.files.length; i++) {
                 let file = [event.dataTransfer.files[i]];
-                this.editor.insertCard('image-card', {pos: 'top', file});
+                this.editor.insertCard('card-image', {pos: 'top', file});
             }
         }
     },
