@@ -5,10 +5,10 @@ var SimpleDom   = require('simple-dom'),
     parser;
 
 module.exports = {
-        name: 'markdown-card',
+        name: 'card-markdown',
         type: 'dom',
         render(opts) {
             parser = new SimpleDom.HTMLParser(tokenizer, opts.env.dom, SimpleDom.voidMap);
-            return parser.parse('<div>' + converter.makeHtml(opts.payload.markdown || '') + '</div>');
+            return parser.parse('<div class="kg-card-markdown">' + converter.makeHtml(opts.payload.markdown || '') + '</div>');
         }
     };

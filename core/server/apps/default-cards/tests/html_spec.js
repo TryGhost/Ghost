@@ -15,7 +15,7 @@ describe('HTML card', function () {
         };
 
         var serializer = new SimpleDom.HTMLSerializer([]);
-        serializer.serialize(card.render(opts)).should.match('<div><h1>HEADING</h1><p>PARAGRAPH</p></div>');
+        serializer.serialize(card.render(opts)).should.match('<div class="kg-card-html"><h1>HEADING</h1><p>PARAGRAPH</p></div>');
     });
     it('Plain content renders', function () {
         opts = {
@@ -28,7 +28,7 @@ describe('HTML card', function () {
         };
 
         var serializer = new SimpleDom.HTMLSerializer([]);
-        serializer.serialize(card.render(opts)).should.match('<div>CONTENT</div>');
+        serializer.serialize(card.render(opts)).should.match('<div class="kg-card-html">CONTENT</div>');
     });
     it.skip('Invalid HTML returns', function () {
         opts = {
@@ -41,6 +41,6 @@ describe('HTML card', function () {
         };
 
         var serializer = new SimpleDom.HTMLSerializer([]);
-        serializer.serialize(card.render(opts)).should.match('<div><h1>HEADING<</div>');
+        serializer.serialize(card.render(opts)).should.match('<div class="kg-card-html"><h1>HEADING<</div>');
     });
 });
