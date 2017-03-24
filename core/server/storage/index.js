@@ -29,13 +29,26 @@ function getStorage() {
     try {
         storage[storageChoice] = require(config.getContentPath('storage') + storageChoice);
     } catch (err) {
-        // CASE: only throw error if module does exist
-        if (err.code !== 'MODULE_NOT_FOUND') {
-            throw new errors.IncorrectUsageError({err: err});
+        if (err.message.match(/strict mode/gi)) {
+            throw new errors.IncorrectUsageError({
+                message: 'Your custom storage adapter must use strict mode.',
+                help: 'Add \'use strict\'; on top of your adapter.',
+                err: err
+            });
         }
         // CASE: if module not found it can be an error within the adapter (cannot find bluebird for example)
         else if (err.code === 'MODULE_NOT_FOUND' && err.message.indexOf(config.getContentPath('storage') + storageChoice) === -1) {
-            throw new errors.IncorrectUsageError({err: err});
+            throw new errors.IncorrectUsageError({
+                message: 'We have detected an error in your custom storage adapter.',
+                err: err
+            });
+        }
+        // CASE: only throw error if module does exist
+        else if (err.code !== 'MODULE_NOT_FOUND') {
+            throw new errors.IncorrectUsageError({
+                message: 'We have detected an unknown error in your custom storage adapter.',
+                err: err
+            });
         }
     }
 
@@ -49,7 +62,10 @@ function getStorage() {
                 context: 'We cannot find your adapter in: ' + config.getContentPath('storage') + ' or: ' + config.get('paths').internalStoragePath
             });
         } else {
-            throw new errors.IncorrectUsageError({err: err});
+            throw new errors.IncorrectUsageError({
+                message: 'We have detected an error in your custom storage adapter.',
+                err: err
+            });
         }
     }
 
