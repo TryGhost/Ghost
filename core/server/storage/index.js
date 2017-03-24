@@ -9,7 +9,9 @@ var errors = require('../errors'),
  */
 function getStorage() {
     var storageChoice = config.get('storage:active'),
-        storageConfig;
+        storageConfig,
+        CustomStorage,
+        customStorage;
 
     storageConfig = config.get('storage')[storageChoice];
 
@@ -20,14 +22,14 @@ function getStorage() {
         });
     }
 
-    // cache?
+    // CASE: cached
     if (storage[storageChoice]) {
         return storage[storageChoice];
     }
 
     // CASE: load adapter from custom path  (.../content/storage)
     try {
-        storage[storageChoice] = require(config.getContentPath('storage') + storageChoice);
+        CustomStorage = require(config.getContentPath('storage') + storageChoice);
     } catch (err) {
         if (err.message.match(/strict mode/gi)) {
             throw new errors.IncorrectUsageError({
@@ -52,9 +54,9 @@ function getStorage() {
         }
     }
 
-    // CASE: either storage[storageChoice] is already set or why check for in the default storage path
+    // CASE: check in the default storage path
     try {
-        storage[storageChoice] = storage[storageChoice] || require(config.get('paths').internalStoragePath + storageChoice);
+        CustomStorage = CustomStorage || require(config.get('paths').internalStoragePath + storageChoice);
     } catch (err) {
         if (err.code === 'MODULE_NOT_FOUND') {
             throw new errors.IncorrectUsageError({
@@ -69,7 +71,7 @@ function getStorage() {
         }
     }
 
-    storage[storageChoice] = new storage[storageChoice](storageConfig);
+    customStorage = new CustomStorage(storageConfig);
 
     if (!(storage[storageChoice] instanceof StorageBase)) {
         throw new errors.IncorrectUsageError({
@@ -77,18 +79,19 @@ function getStorage() {
         });
     }
 
-    if (!storage[storageChoice].requiredFns) {
+    if (!customStorage.requiredFns) {
         throw new errors.IncorrectUsageError({
             message: 'Your storage adapter does not provide the minimum required functions.'
         });
     }
 
-    if (_.xor(storage[storageChoice].requiredFns, Object.keys(_.pick(Object.getPrototypeOf(storage[storageChoice]), storage[storageChoice].requiredFns))).length) {
+    if (_.xor(customStorage.requiredFns, Object.keys(_.pick(Object.getPrototypeOf(customStorage), customStorage.requiredFns))).length) {
         throw new errors.IncorrectUsageError({
             message: 'Your storage adapter does not provide the minimum required functions.'
         });
     }
 
+    storage[storageChoice] = customStorage;
     return storage[storageChoice];
 }
 
