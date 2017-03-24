@@ -1,5 +1,5 @@
 export default {
-    name: 'markdown-card',
+    name: 'card-markdown',
     label: 'Markdown Card',
     icon: '',
     genus: 'ember',

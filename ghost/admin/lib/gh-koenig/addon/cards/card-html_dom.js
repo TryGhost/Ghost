@@ -1,5 +1,5 @@
 export default {
-    name: 'html-card',
+    name: 'card-html',
     label: 'HTML Card',
     icon: '',
     genus: 'ember',

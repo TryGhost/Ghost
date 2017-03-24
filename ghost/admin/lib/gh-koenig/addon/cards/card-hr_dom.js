@@ -1,5 +1,5 @@
 export default {
-    name: 'hr-card',
+    name: 'card-hr',
     label: 'HR Card',
     icon: '',
     genus: 'ember',

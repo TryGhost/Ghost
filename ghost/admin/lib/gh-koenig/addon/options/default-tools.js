@@ -199,7 +199,7 @@ export default function (editor, toolbar) {
             cardMenu: true,
             onClick: (editor) => {
                 editor.run((postEditor) => {
-                    let card = postEditor.builder.createCardSection('image-card', {pos: 'top'});
+                    let card = postEditor.builder.createCardSection('card-image', {pos: 'top'});
                     postEditor.insertSection(card);
 
                 });
@@ -219,13 +219,13 @@ export default function (editor, toolbar) {
             cardMenu: true,
             onClick: (editor, section) => {
                 editor.run((postEditor) => {
-                    let card = postEditor.builder.createCardSection('html-card', {pos: 'top', html: editor.range.headSection.text});
+                    let card = postEditor.builder.createCardSection('card-html', {pos: 'top', html: editor.range.headSection.text});
                     // we can't replace a list item so we insert a card after it and then delete it.
                     if (editor.range.headSection.isListItem) {
                         // postEditor.toggleSection('p');
                         // postEditor.insertSection(card);
                         // postEditor.removeSection(editor.range.head.section);
-                        editor.insertCard('html-card');
+                        editor.insertCard('card-html');
                     } else {
                         postEditor.replaceSection(section || editor.range.headSection, card);
                     }
@@ -246,7 +246,7 @@ export default function (editor, toolbar) {
             cardMenu: true,
             onClick: (editor) => {
                 editor.run((postEditor) => {
-                    let card = postEditor.builder.createCardSection('hr-card', {pos: 'top'});
+                    let card = postEditor.builder.createCardSection('card-hr', {pos: 'top'});
                     postEditor.insertSection(card);
                 });
             },
@@ -264,10 +264,10 @@ export default function (editor, toolbar) {
             cardMenu: true,
             onClick: (editor, section) => {
                 editor.run((postEditor) => {
-                    let card = postEditor.builder.createCardSection('markdown-card', {pos: 'top', markdown: editor.range.headSection.text});
+                    let card = postEditor.builder.createCardSection('card-markdown', {pos: 'top', markdown: editor.range.headSection.text});
                     // we can't replace a list item so we insert a card after it and then delete it.
                     if (editor.range.headSection.isListItem) {
-                        editor.insertCard('markdown-card');
+                        editor.insertCard('card-markdown');
                     } else {
                         postEditor.replaceSection(section || editor.range.headSection, card);
                     }

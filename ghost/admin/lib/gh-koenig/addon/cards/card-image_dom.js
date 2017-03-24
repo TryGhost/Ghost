@@ -1,5 +1,5 @@
 export default {
-    name: 'image-card',
+    name: 'card-image',
     label: 'Image Card',
     icon: '',
     genus: 'ember'

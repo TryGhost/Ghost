@@ -1,5 +1,5 @@
 import Component from 'ember-component';
-import layout from '../../templates/components/html-card';
+import layout from '../../templates/components/card-html';
 import computed from 'ember-computed';
 import observer from 'ember-metal/observer';
 
