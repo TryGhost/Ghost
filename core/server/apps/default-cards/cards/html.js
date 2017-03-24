@@ -3,10 +3,10 @@ var SimpleDom   = require('simple-dom'),
     parser;
 
 module.exports = {
-        name: 'html-card',
+        name: 'card-html',
         type: 'dom',
         render(opts) {
             parser = new SimpleDom.HTMLParser(tokenizer, opts.env.dom, SimpleDom.voidMap);
-            return parser.parse('<div>' + opts.payload.html + '</div>');
+            return parser.parse('<div class="kg-card-html">' + opts.payload.html + '</div>');
         }
     };
