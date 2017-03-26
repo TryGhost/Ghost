@@ -2109,9 +2109,9 @@ i@0.3.x:
   version "0.3.5"
   resolved "https://registry.yarnpkg.com/i/-/i-0.3.5.tgz#1d2b854158ec8169113c6cb7f6b6801e99e211d5"
 
-icojs@0.7.0:
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/icojs/-/icojs-0.7.0.tgz#bc4ce4b12e65bd1e1973bc3734fff3fc1c9dbeba"
+icojs@0.7.1:
+  version "0.7.1"
+  resolved "https://registry.yarnpkg.com/icojs/-/icojs-0.7.1.tgz#0d03fe97adcc0ba509160e887af7e829a4e55378"
   dependencies:
     jimp "^0.2.24"
 
