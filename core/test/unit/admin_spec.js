@@ -1,8 +1,4 @@
-var should = require('should'), // jshint ignore:line
-    sinon = require('sinon'),
-
-    // Thing we are testing
-    redirectAdminUrls = require('../../server/admin/middleware')[0],
+var redirectAdminUrls = serverRequire('admin/middleware')[0],
 
     sandbox = sinon.sandbox.create();
 

@@ -23,5 +23,11 @@
     "predef": [
         "-Promise"
     ],
-    "esversion": "6"
+    "esversion": "6",
+    "globals": {
+        "should": true,
+        "sinon": true,
+        "serverRequire": true
+
+    }
 }

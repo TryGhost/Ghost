@@ -1,9 +1,8 @@
 // # Module tests
 // This tests using Ghost as an npm module
-var should = require('should'),
-    testUtils = require('../../utils'),
+var testUtils = require('../../utils'),
     ghost = testUtils.startGhost,
-    i18n = require('../../../../core/server/i18n');
+    i18n = serverRequire('i18n');
 
 i18n.init();
 
