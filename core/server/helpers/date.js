@@ -27,10 +27,12 @@ date = function (date, options) {
         timeago = options.hash.timeago,
         timeNow = moment().tz(timezone);
 
+    var locale = options.hash.locale || 'en';
+
     if (timeago) {
-        date = timezone ?  moment(date).tz(timezone).from(timeNow) : moment(date).fromNow();
+        date = timezone ?  moment(date).locale(locale).tz(timezone).from(timeNow) : moment(date).fromNow();
     } else {
-        date = timezone ? moment(date).tz(timezone).format(f) : moment(date).format(f);
+        date = timezone ? moment(date).locale(locale).tz(timezone).format(f) : moment(date).format(f);
     }
 
     return date;
