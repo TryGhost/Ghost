@@ -1290,7 +1290,7 @@ broccoli-merge-trees@2.0.0:
     broccoli-plugin "^1.3.0"
     merge-trees "^1.0.1"
 
-broccoli-merge-trees@^1.0.0, broccoli-merge-trees@^1.1.0, broccoli-merge-trees@^1.1.1, broccoli-merge-trees@^1.1.3, broccoli-merge-trees@^1.1.5, broccoli-merge-trees@^1.2.1:
+broccoli-merge-trees@^1.0.0, broccoli-merge-trees@^1.1.0, broccoli-merge-trees@^1.1.1, broccoli-merge-trees@^1.1.3, broccoli-merge-trees@^1.1.4, broccoli-merge-trees@^1.1.5, broccoli-merge-trees@^1.2.1:
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/broccoli-merge-trees/-/broccoli-merge-trees-1.2.4.tgz#a001519bb5067f06589d91afa2942445a2d0fdb5"
   dependencies:
@@ -2936,6 +2936,13 @@ ember-resolver@3.0.0:
     ember-cli-babel "^5.1.6"
     ember-cli-version-checker "^1.1.6"
 
+ember-responsive@2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/ember-responsive/-/ember-responsive-2.0.2.tgz#9d26d5cde87a535d88a7e7bd61caf0b8ff11e025"
+  dependencies:
+    ember-cli-babel "^5.1.6"
+    ember-getowner-polyfill "^1.1.1"
+
 ember-route-action-helper@2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/ember-route-action-helper/-/ember-route-action-helper-2.0.2.tgz#6ca3f6189062f657c0c7a447e0ba12362152790f"
@@ -2996,11 +3003,12 @@ ember-sortable@1.9.1:
     ember-invoke-action "^1.4.0"
     ember-new-computed "^1.0.2"
 
-ember-source@2.11.2:
-  version "2.11.2"
-  resolved "https://registry.yarnpkg.com/ember-source/-/ember-source-2.11.2.tgz#07239925dc8fc2a8377bdf43210c42093e8fc4ae"
+ember-source@2.12.0:
+  version "2.12.0"
+  resolved "https://registry.yarnpkg.com/ember-source/-/ember-source-2.12.0.tgz#5c7d09765a5c2c071382f3c02cf28b34d450e4ef"
   dependencies:
-    broccoli-stew "^1.2.0"
+    broccoli-funnel "^1.0.6"
+    broccoli-merge-trees "^1.1.4"
     ember-cli-get-component-path-option "^1.0.0"
     ember-cli-normalize-entity-name "^1.0.0"
     ember-cli-path-utils "^1.0.0"
@@ -3010,7 +3018,7 @@ ember-source@2.11.2:
     ember-cli-version-checker "^1.1.7"
     jquery "^3.1.1"
     resolve "^1.1.7"
-    rsvp "^3.3.3"
+    rsvp "^3.4.0"
     simple-dom "^0.3.0"
 
 ember-test-helpers@^0.6.0-beta.1:
@@ -6380,7 +6388,7 @@ route-recognizer@^0.2.3:
   version "0.2.10"
   resolved "https://registry.yarnpkg.com/route-recognizer/-/route-recognizer-0.2.10.tgz#024b2283c2e68d13a7c7f5173a5924645e8902df"
 
-rsvp@^3.0.14, rsvp@^3.0.16, rsvp@^3.0.17, rsvp@^3.0.18, rsvp@^3.0.21, rsvp@^3.0.6, rsvp@^3.2.1, rsvp@^3.3.3:
+rsvp@^3.0.14, rsvp@^3.0.16, rsvp@^3.0.17, rsvp@^3.0.18, rsvp@^3.0.21, rsvp@^3.0.6, rsvp@^3.2.1, rsvp@^3.3.3, rsvp@^3.4.0:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/rsvp/-/rsvp-3.4.0.tgz#96f397d9c7e294351b3c1456a74b3d0e7542988d"
 

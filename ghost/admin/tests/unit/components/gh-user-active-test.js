@@ -5,9 +5,9 @@ import {setupComponentTest} from 'ember-mocha';
 
 describe('Unit: Component: gh-user-active', function () {
     setupComponentTest('gh-user-active', {
-        unit: true
+        unit: true,
         // specify the other units that are required for this test
-        // needs: ['component:foo', 'helper:bar']
+        needs: ['service:ghostPaths']
     });
 
     it('renders', function () {

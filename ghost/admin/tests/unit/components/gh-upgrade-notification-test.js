@@ -3,9 +3,10 @@ import {expect} from 'chai';
 import {describe, it} from 'mocha';
 import {setupComponentTest} from 'ember-mocha';
 
-describe('GhUpgradeNotificationComponent', function() {
+describe('Unit: Component: gh-upgrade-notification', function() {
     setupComponentTest('gh-upgrade-notification', {
-        needs: ['helper:gh-format-html']
+        unit: true,
+        needs: ['helper:gh-format-html', 'service:upgrade-notification']
     });
 
     beforeEach(function() {

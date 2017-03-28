@@ -4,7 +4,13 @@ import {describe, it} from 'mocha';
 import {setupTest} from 'ember-mocha';
 
 describe('Unit: Service: config', function () {
-    setupTest('service:config', {});
+    setupTest('service:config', {
+        needs: [
+            'service:ajax',
+            'service:ghostPaths'
+        ]
+    });
+
     // Replace this with your real tests.
     it('exists', function () {
         let service = this.subject();

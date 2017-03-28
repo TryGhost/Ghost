@@ -25,11 +25,12 @@ describe('Unit: Controller: settings/design', function () {
     setupTest('controller:settings/design', {
         // Specify the other units that are required for this test.
         needs: [
-            'service:config',
-            'service:notifications',
             'model:navigation-item',
             'service:ajax',
+            'service:config',
             'service:ghostPaths',
+            'service:notifications',
+            'service:session',
             'service:upgrade-status'
         ]
     });

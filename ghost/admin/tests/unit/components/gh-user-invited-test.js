@@ -5,9 +5,9 @@ import {setupComponentTest} from 'ember-mocha';
 
 describe('Unit: Component: gh-user-invited', function () {
     setupComponentTest('gh-user-invited', {
-        unit: true
+        unit: true,
         // specify the other units that are required for this test
-        // needs: ['component:foo', 'helper:bar']
+        needs: ['service:notifications']
     });
 
     it('renders', function () {

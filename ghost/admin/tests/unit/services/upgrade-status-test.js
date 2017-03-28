@@ -3,11 +3,11 @@ import {expect} from 'chai';
 import {describe, it} from 'mocha';
 import {setupTest} from 'ember-mocha';
 
-describe('UpgradeStatusService', function() {
+describe('Unit: Service: upgrade-status', function() {
     setupTest('service:upgrade-status', {
         // Specify the other units that are required for this test.
         // needs: ['service:foo']
-        needs: []
+        needs: ['service:notifications']
     });
 
     // Replace this with your real tests.

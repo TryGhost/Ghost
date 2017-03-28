@@ -6,6 +6,7 @@ import hbs from 'htmlbars-inline-precompile';
 import $ from 'jquery';
 import run from 'ember-runloop';
 import NavItem from 'ghost-admin/models/navigation-item';
+import wait from 'ember-test-helpers/wait';
 
 describe('Integration: Component: gh-navigation', function () {
     setupComponentTest('gh-navigation', {
@@ -59,13 +60,15 @@ describe('Integration: Component: gh-navigation', function () {
             });
         });
 
-        // move second item down one
-        expectedOldIndex = 1;
-        expectedNewIndex = 2;
-        run(() => {
-            $(this.$('.gh-blognav-item')[1]).simulateDragSortable({
-                move: 1,
-                handle: '.gh-blognav-grab'
+        wait().then(() => {
+            // move second item down one
+            expectedOldIndex = 1;
+            expectedNewIndex = 2;
+            run(() => {
+                $(this.$('.gh-blognav-item')[1]).simulateDragSortable({
+                    move: 1,
+                    handle: '.gh-blognav-grab'
+                });
             });
         });
     });

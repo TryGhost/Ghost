@@ -6,7 +6,7 @@ import {setupModelTest} from 'ember-mocha';
 describe('Unit: Model: subscriber', function() {
     setupModelTest('subscriber', {
         // Specify the other units that are required for this test.
-        needs: ['model:post']
+        needs: ['model:post', 'service:session']
     });
 
     // Replace this with your real tests.
