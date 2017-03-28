@@ -21,9 +21,14 @@ import ghostPaths from 'ghost-admin/utils/ghost-paths';
 
 const {resolve} = RSVP;
 
+// ember-cli-shims doesn't export Ember.testing
+const {testing} = Ember;
+
 // this array will hold properties we need to watch
 // to know if the model has been changed (`controller.hasDirtyAttributes`)
 const watchedProps = ['model.scratch', 'model.titleScratch', 'model.hasDirtyAttributes', 'model.tags.[]'];
+
+const TITLE_DEBOUNCE = testing ? 10 : 700;
 
 PostModel.eachAttribute(function (name) {
     watchedProps.push(`model.${name}`);
@@ -350,7 +355,7 @@ export default Mixin.create({
         }
 
         // debounce for 700 milliseconds
-        yield timeout(700);
+        yield timeout(TITLE_DEBOUNCE);
 
         yield this.get('generateSlug').perform();
     }).restartable(),
