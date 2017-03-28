@@ -1,9 +1,10 @@
 /* eslint-env node */
+'use strict';
 
 module.exports = function (environment) {
-    var ENV = {
+    let ENV = {
         modulePrefix: 'ghost-admin',
-        environment: environment,
+        environment,
         rootURL: '/',
         locationType: 'trailing-hash',
         EmberENV: {
