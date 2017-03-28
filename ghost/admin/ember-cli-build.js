@@ -1,25 +1,24 @@
-/* eslint-disable */
-/* global require, module */
+/* eslint-env node */
+'use strict';
 
-var EmberApp = require('ember-cli/lib/broccoli/ember-app'),
-    concat = require('broccoli-concat'),
-    mergeTrees = require('broccoli-merge-trees'),
-    uglify = require('broccoli-uglify-js'),
-    CleanCSS = require('broccoli-clean-css'),
-    environment = EmberApp.env(),
-    isProduction = environment === 'production',
-    disabled = {enabled: false},
-    assetLocation, codemirrorAssets;
+const EmberApp = require('ember-cli/lib/broccoli/ember-app');
+const concat = require('broccoli-concat');
+const mergeTrees = require('broccoli-merge-trees');
+const uglify = require('broccoli-uglify-js');
+const CleanCSS = require('broccoli-clean-css');
+const environment = EmberApp.env();
+const isProduction = environment === 'production';
+let assetLocation, codemirrorAssets;
 
 assetLocation = function (fileName) {
     if (isProduction) {
         fileName = fileName.replace('.', '.min.');
     }
-    return '/assets/' + fileName;
+    return `/assets/${fileName}`;
 };
 
 codemirrorAssets = function () {
-    var codemirrorFiles = [
+    let codemirrorFiles = [
         'lib/codemirror.css',
         'theme/xq-light.css',
         'lib/codemirror.js',
@@ -37,15 +36,15 @@ codemirrorAssets = function () {
         public: {
             include: codemirrorFiles,
             destDir: '/',
-            processTree: function (tree) {
-                var jsTree = concat(tree, {
+            processTree(tree) {
+                let jsTree = concat(tree, {
                     outputFile: 'assets/codemirror/codemirror.js',
                     headerFiles: ['lib/codemirror.js'],
                     inputFiles: ['mode/**/*'],
                     sourceMapConfig: {enabled: false}
                 });
 
-                var cssTree = concat(tree, {
+                let cssTree = concat(tree, {
                     outputFile: 'assets/codemirror/codemirror.css',
                     inputFiles: ['**/*.css']
                 });
@@ -62,7 +61,7 @@ codemirrorAssets = function () {
 };
 
 function postcssPlugins() {
-    var plugins = [{
+    let plugins = [{
         module: require('postcss-easy-import')
     }, {
         module: require('postcss-custom-properties')
@@ -85,7 +84,7 @@ function postcssPlugins() {
 }
 
 module.exports = function (defaults) {
-    var app = new EmberApp(defaults, {
+    let app = new EmberApp(defaults, {
         'ember-cli-babel': {
             optional: ['es6.spec.symbols'],
             includePolyfill: true
@@ -179,7 +178,7 @@ module.exports = function (defaults) {
     app.import('bower_components/jqueryui-touch-punch/jquery.ui.touch-punch.js');
 
     if (app.env === 'test') {
-        app.import(app.bowerDirectory + '/jquery.simulate.drag-sortable/jquery.simulate.drag-sortable.js', {type: 'test'});
+        app.import(`${app.bowerDirectory}/jquery.simulate.drag-sortable/jquery.simulate.drag-sortable.js`, {type: 'test'});
     }
 
     return app.toTree();
