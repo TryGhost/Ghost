@@ -4,7 +4,15 @@ import {setupModelTest} from 'ember-mocha';
 
 describe('Unit: Model: user', function () {
     setupModelTest('user', {
-        needs: ['model:role', 'serializer:application', 'serializer:user']
+        needs: [
+            'model:role',
+            'serializer:application',
+            'serializer:user',
+            'service:ajax',
+            'service:ghostPaths',
+            'service:notifications',
+            'service:session'
+        ]
     });
 
     it('has a validation type of "user"', function () {

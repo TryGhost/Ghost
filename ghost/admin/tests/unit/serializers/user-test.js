@@ -3,15 +3,19 @@ import {expect} from 'chai';
 import {describe, it} from 'mocha';
 import {setupModelTest} from 'ember-mocha';
 
-describe('Unit:Serializer: user', function() {
+describe('Unit: Serializer: user', function() {
     setupModelTest('user', {
         // Specify the other units that are required for this test.
         needs: [
+            'model:role',
+            'service:ajax',
+            'service:ghostPaths',
+            'service:notifications',
+            'service:session',
+            'transform:facebook-url-user',
             'transform:moment-utc',
             'transform:raw',
-            'transform:facebook-url-user',
-            'transform:twitter-url-user',
-            'model:role'
+            'transform:twitter-url-user'
         ]
     });
 

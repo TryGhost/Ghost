@@ -5,7 +5,11 @@ import {setupTest} from 'ember-mocha';
 
 describe('Unit: Route: subscribers', function() {
     setupTest('route:subscribers', {
-        needs: ['service:notifications']
+        needs: [
+            'service:feature',
+            'service:notifications',
+            'service:session'
+        ]
     });
 
     it('exists', function() {

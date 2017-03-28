@@ -9,7 +9,12 @@ const {
 
 describe('Unit: Controller: settings/general', function () {
     setupTest('controller:settings/general', {
-        needs: ['service:notifications']
+        needs: [
+            'service:config',
+            'service:ghostPaths',
+            'service:notifications',
+            'service:session'
+        ]
     });
 
     it('isDatedPermalinks should be correct', function () {

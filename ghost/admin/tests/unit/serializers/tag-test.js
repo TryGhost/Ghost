@@ -3,10 +3,14 @@ import {expect} from 'chai';
 import {describe, it} from 'mocha';
 import {setupModelTest} from 'ember-mocha';
 
-describe('Unit:Serializer: tag', function() {
+describe('Unit: Serializer: tag', function() {
     setupModelTest('tag', {
         // Specify the other units that are required for this test.
-        needs: ['transform:moment-utc', 'transform:raw']
+        needs: [
+            'service:feature',
+            'transform:moment-utc',
+            'transform:raw'
+        ]
     });
 
     // Replace this with your real tests.

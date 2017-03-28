@@ -6,9 +6,9 @@ import sinon from 'sinon';
 
 describe('Unit: Component: gh-alert', function () {
     setupComponentTest('gh-alert', {
-        unit: true
+        unit: true,
         // specify the other units that are required for this test
-        // needs: ['component:foo', 'helper:bar']
+        needs: ['service:notifications']
     });
 
     it('closes notification through notifications service', function () {

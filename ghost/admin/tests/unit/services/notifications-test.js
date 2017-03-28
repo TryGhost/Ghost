@@ -11,7 +11,10 @@ import {AjaxError, InvalidError} from 'ember-ajax/errors';
 import {ServerUnreachableError} from 'ghost-admin/services/ajax';
 
 describe('Unit: Service: notifications', function () {
-    setupTest('service:notifications', {});
+    setupTest('service:notifications', {
+        needs: ['service:upgradeStatus']
+    });
+
     beforeEach(function () {
         this.subject().set('content', emberA());
         this.subject().set('delayedNotifications', emberA());

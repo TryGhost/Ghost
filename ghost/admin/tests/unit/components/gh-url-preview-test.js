@@ -3,7 +3,8 @@ import {setupComponentTest} from 'ember-mocha';
 
 describe('Unit: Component: gh-url-preview', function () {
     setupComponentTest('gh-url-preview', {
-        unit: true
+        unit: true,
+        needs: ['service:config']
     });
 
     it('generates the correct preview URL with a prefix', function () {

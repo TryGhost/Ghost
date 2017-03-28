@@ -3,7 +3,10 @@ import {describe, it} from 'mocha';
 import {setupModelTest} from 'ember-mocha';
 
 describe('Unit: Model: role', function () {
-    setupModelTest('role');
+    setupModelTest('role', {
+        needs: ['service:ajax']
+    });
+
     it('provides a lowercase version of the name', function () {
         let model = this.subject({
             name: 'Author'

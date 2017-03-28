@@ -5,7 +5,16 @@ import {setupModelTest} from 'ember-mocha';
 
 describe('Unit: Model: post', function () {
     setupModelTest('post', {
-        needs: ['model:user', 'model:tag', 'model:role']
+        needs: [
+            'model:user',
+            'model:tag',
+            'model:role',
+            'service:clock',
+            'service:config',
+            'service:feature',
+            'service:ghostPaths',
+            'service:session'
+        ]
     });
 
     it('has a validation type of "post"', function () {

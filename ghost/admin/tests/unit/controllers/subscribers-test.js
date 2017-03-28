@@ -5,7 +5,7 @@ import {setupTest} from 'ember-mocha';
 
 describe('Unit: Controller: subscribers', function() {
     setupTest('controller:subscribers', {
-        needs: ['service:notifications']
+        needs: ['service:notifications', 'service:session']
     });
 
     // Replace this with your real tests.
