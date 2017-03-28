@@ -27,7 +27,7 @@ Install and run Ghost.
     Download the Ghost code base
 <b>npm run init</b>
     Short command for: npm install -g knex-migrator ember-cli grunt-cli && npm install && grunt init
-<b>knex-migrator init</b>
+<b>./node_modules/.bin/knex-migrator init</b>
     Creates and initialises your database 
 <b>grunt dev</b>
     Starts the express server and ember build 
