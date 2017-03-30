@@ -7,18 +7,27 @@
     assetPath=assetPath
     doSave=doSave
     isEditing=isEditing
+    selectCard=(action "selectCard")
+    selectCardHard=(action "selectCardHard")
+    deselectCard=(action "deselectCard")
 }}
-<div class="card-handle">
-    {{#if card.card.buttons.preview}}
-        <button {{action "toggleState"}}>
-            {{#if isEditing}}
-                Edit
-            {{else}}
-                Preview
+<div class="kg-card-toolbar">
+    <div class="button-group">
+        <label {{action "selectCardHard"}}>{{card.card.label}}:</label>
+        {{#if isEditing}}
+            <button {{action "toggleState"}} class='kg-card-button-text'>
+                        Cancel
+            </button>
+            <button {{action "save"}} class='kg-card-button-save'>
+                        Save
+            </button>
+        {{else}}
+            {{#if card.card.buttons.edit}}
+                <button {{action "toggleState"}} class='kg-card-button-text'>
+                        Edit
+                </button>
             {{/if}}
-        </button>
-    {{/if}}
-    {{#if card.card.buttons.save}}
-        <button {{action "save"}}>Save</button>
-    {{/if}}
+            <button class='kg-card-button kg-card-delete' {{action "delete"}}></button>
+        {{/if}}
+    </div>
 </div>

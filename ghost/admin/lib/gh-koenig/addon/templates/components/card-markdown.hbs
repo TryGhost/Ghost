@@ -1,5 +1,5 @@
 {{#if isEditing}}
-    {{{preview}}}
+    {{textarea value=value key-up="updateValue" focus-in=(action "selectCard")}}
 {{else}}
-    {{textarea value=value key-up="updateValue"}}
+    {{{preview}}}
 {{/if}}

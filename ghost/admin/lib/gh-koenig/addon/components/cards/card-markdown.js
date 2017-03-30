@@ -25,9 +25,15 @@ export default Component.extend({
     ajax: injectService(),
 
     editing: observer('isEditing', function () {
-        if (!this.isEditing) {
-            this.set('preview', formatMarkdown([this.get('payload').markdown]));
-        }
+        // if (!this.isEditing) {
+        //     this.set('preview', formatMarkdown([this.get('payload').markdown]));
+        // }
+    }),
+    preview: computed('value', function() {
+        return formatMarkdown([this.get('payload').markdown]);
+    }),
+    save: observer('doSave', function () {
+        this.get('env').save(this.get('payload'), false);
     }),
 
     value: computed('payload', {
@@ -42,7 +48,6 @@ export default Component.extend({
         }
 
     }),
-
     _uploadStarted() {
         invokeAction(this, 'uploadStarted');
     },
@@ -231,6 +236,9 @@ export default Component.extend({
         saveUrl() {
             let url = this.get('url');
             invokeAction(this, 'update', url);
+        },
+        selectCard() {
+            invokeAction(this, 'selectCard');
         }
     }
 

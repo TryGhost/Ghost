@@ -23,59 +23,131 @@
     letter-spacing: 0.1px;
 }
 
-.dropper-bottom {
-    border-bottom: 66px solid #5ba4e5;
-}
-
-.dropper-top {
-    border-top: 66px solid #5ba4e5;
-}
-
-.dropper-left {
-    border-left: 66px solid #5ba4e5;
-}
-
-.dropper-right {
-    border-right: 66px solid #5ba4e5;
-}
-
-.__mobiledoc-editor div {
-
-}
-
 .kg-card {
     position: relative;
-    display: block; /* required for cursor movement around card */
-    width: 100%;
+    display: block; 
+    padding: 10px;
+    outline:none;
 }
 
-.kg-card:hover {
+.kg-card:hover, .kg-card.selected {
     box-shadow: var(--blue) 0 0 0 1px;
+    border-radius:10px;
 }
-
-.kg-card .card-handle {
+.kg-card.selected-hard {
+    box-shadow: var(--blue) 0 0 0 3px;
+}
+.kg-card .kg-card-toolbar {
     position: absolute;
-    right: 0px;
+    left: 0px;
     top: 0px;
-    margin-top: -25px;
-    height: 20px;
+    margin-top: -56px;
+    height: 46px;
+    width:100%;
     display: none;
 }
+.button-group {
+    color: color(var(--lightgrey) l(-10%));
+    background: linear-gradient(
+        color(var(--darkgrey) l(-3%)),
+        color(var(--darkgrey) l(-8%))
+    );
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-radius:5px;
+    
+    height:46px;
+    display:flex;
+    box-shadow: 0 0 0 1px color(var(--darkgrey) l(-10%)), 0 8px 16px rgba(26,39,49,0.16), rgba(255,255,255,0.09) 0 1px 0 0 inset;
+}
 
-.kg-card:hover .card-handle {
+/* keeps the hover when the cursor is moving from the card to the toolbar */
+.button-group:before {
     display: block;
+    content: "";
+    position: absolute;
+    bottom:-9px;
+    width: 100%;
+    height: 8px;
 }
 
-.kg-card .card-handle label {
-    font-size: 10px;
+.button-group:after {
+    display: block;
+    content: "";
+    position: absolute;
+    bottom:-9px;
+    left: 50%;
+    margin-left: -10px;
+    
+    width: 0;
+    height: 0;
+    border-left: transparent 10px solid;
+    border-right: transparent 10px solid;
+    border-top: color(var(--darkgrey) l(-10%)) 8px solid;
 }
 
 
-.kg-card .card-handle button {
-    background-color: var(--lightgrey);
-    border: 1px solid var(--midgrey);
-    font-size: 10px;
-    min-width: 80px;
+.kg-card:hover .kg-card-toolbar, .kg-card.selected .kg-card-toolbar {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-around;
+    flex-flow: row wrap;
+}
+
+.kg-card .kg-card-toolbar label {
+    flex-grow: 1;
+    font-size: 1.3rem;
+    line-height: 46px;
+    text-align:center;
+    vertical-align: middle;
+    font-weight: bold;
+    padding:0 18px;
+}
+
+
+.kg-card .kg-card-toolbar button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 46px;
+    min-width: 32px;
+    font-size: 1.6rem;
+    line-height: 30px;
+    padding:0 5px 0 5px;
+    transition: text-shadow 0.3s ease;
+}
+.kg-card .kg-card-toolbar button.kg-card-button-text {
+    font-size: 1.3rem;
+    line-height: 46px;
+    width:70px;
+    text-align:center;
+    vertical-align: middle;
+    padding:0;
+}
+.kg-card .kg-card-toolbar button.kg-card-button-save {
+    font-size: 1.3rem;
+    line-height: 30px;
+    height:30px;
+    width:60px;
+    text-align:center;
+    vertical-align: middle;
+    margin:8px;
+
+    color: #fff;
+    text-shadow: 0 -1px 0 rgba(0,0,0,0.1);
+    fill: #fff;
+    background: linear-gradient( rgb(61, 161, 214), rgb(34, 136, 191) );
+    box-shadow: 0 1px 0 rgba(0,0,0,0.12);
+    border-radius:5px;
+}
+.kg-card .kg-card-toolbar button.kg-card-delete {
+    text-transform: none !important;
+    font-family: "ghosticons" !important;
+    font-size: 1rem;
+    line-height: 1;
+    font-weight: normal !important;
+    font-style: normal !important;
+    font-variant: normal !important;
 }
 
 .kg-card textarea {
@@ -86,26 +158,9 @@
     resize: none;
 }
 
-.card-handle button:hover {
+.kg-card-toolbar button:hover {
     background-color: #718087;
     color: #fff;
-}
-
-.card-handle button.confirm {
-    animation-duration: 1s;
-    animation-name: rotate;
-    background-color: red;
-    color: #e9e8dd;
-}
-
-.card-handle button.move {
-    background-image: url('http: //localhost: 4200/assets/move.png');
-    background-color: #9fbb58;
-    margin-left: -10px;
-    margin-right: 20px;
-
-    cursor: -webkit-grab;
-    cursor: -moz-grab;
 }
 
 

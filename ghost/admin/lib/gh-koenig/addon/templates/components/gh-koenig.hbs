@@ -1,6 +1,6 @@
 {{#each emberCards as |card|}}
     {{#ember-wormhole to=card.id}}
-        {{koenig-card card=card apiRoot=apiRoot assetPath=assetPath}}
+        {{koenig-card card=card apiRoot=apiRoot assetPath=assetPath selectCard=(action "selectCard") selectCardHard=(action "selectCardHard") deselectCard=(action "deselectCard")}}
     {{/ember-wormhole}}
 {{/each}}
 <div class='gh-koenig'>

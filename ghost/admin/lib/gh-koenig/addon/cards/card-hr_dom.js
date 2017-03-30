@@ -1,6 +1,6 @@
 export default {
     name: 'card-hr',
-    label: 'HR Card',
+    label: 'Divider',
     icon: '',
     genus: 'ember',
     buttons: {
