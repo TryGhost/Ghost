@@ -61,9 +61,7 @@ var overrides      = require('./core/server/overrides'),
                 livereload: {
                     files: [
                         'content/themes/casper/assets/css/*.css',
-                        'content/themes/casper/assets/js/*.js',
-                        'core/built/assets/*.js',
-                        'core/client/dist/index.html'
+                        'content/themes/casper/assets/js/*.js'
                     ],
                     options: {
                         livereload: true
@@ -219,10 +217,10 @@ var overrides      = require('./core/server/overrides'),
             bgShell: {
                 client: {
                     cmd: 'grunt subgrunt:watch',
-                    bg: true,
+                    bg: grunt.option('client') ? false : true,
                     stdout: function (chunk) {
-                        // hide certain output to prevent confusion
-                        var filter = [
+                        // hide certain output to prevent confusion when running alongside server
+                        var filter = grunt.option('client') ? false : [
                             /> ghost-admin/,
                             /^Livereload/,
                             /^Serving on/
@@ -683,8 +681,15 @@ var overrides      = require('./core/server/overrides'),
         // frontend code changes.
         //
         // Note that the current implementation of watch only works with casper, not other themes.
-        grunt.registerTask('dev', 'Dev Mode; watch files and restart server on changes',
-           ['bgShell:client', 'express:dev', 'watch']);
+        grunt.registerTask('dev', 'Dev Mode; watch files and restart server on changes', function () {
+            if (grunt.option('client')) {
+                grunt.task.run(['bgShell:client']);
+            } else if (grunt.option('server')) {
+                grunt.task.run(['express:dev', 'watch']);
+            } else {
+                grunt.task.run(['bgShell:client', 'express:dev', 'watch']);
+            }
+        });
 
         // ### Release
         // Run `grunt release` to create a Ghost release zip file.
