@@ -9,6 +9,7 @@
 // jshint unused: false
 var overrides      = require('./core/server/overrides'),
     config         = require('./core/server/config'),
+    utils          = require('./core/server/utils'),
     _              = require('lodash'),
     chalk          = require('chalk'),
     fs             = require('fs-extra'),
@@ -219,7 +220,20 @@ var overrides      = require('./core/server/overrides'),
                 client: {
                     cmd: 'grunt subgrunt:watch',
                     bg: true,
-                    stdout: true,
+                    stdout: function (chunk) {
+                        // hide certain output to prevent confusion
+                        var filter = [
+                            /> ghost-admin/,
+                            /^Livereload/,
+                            /^Serving on/
+                        ].some(function (regexp) {
+                            return regexp.test(chunk);
+                        });
+
+                        if (!filter) {
+                            grunt.log.write(chunk);
+                        }
+                    },
                     stderr: true
                 }
             },
@@ -339,7 +353,9 @@ var overrides      = require('./core/server/overrides'),
                 },
 
                 watch: {
-                    'core/client': 'shell:ember:watch'
+                    projects: {
+                        'core/client': ['shell:ember:watch', '--live-reload-base-url="' + utils.url.getSubdir() + '/ghost/"']
+                    }
                 }
             }
         };
