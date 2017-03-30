@@ -32,32 +32,39 @@ codemirrorAssets = function () {
         return {import: codemirrorFiles};
     }
 
-    return {
-        public: {
-            include: codemirrorFiles,
-            destDir: '/',
-            processTree(tree) {
-                let jsTree = concat(tree, {
-                    outputFile: 'assets/codemirror/codemirror.js',
-                    headerFiles: ['lib/codemirror.js'],
-                    inputFiles: ['mode/**/*'],
-                    sourceMapConfig: {enabled: false}
-                });
+    let config = {};
 
-                let cssTree = concat(tree, {
-                    outputFile: 'assets/codemirror/codemirror.css',
-                    inputFiles: ['**/*.css']
-                });
+    config.public = {
+        include: codemirrorFiles,
+        destDir: '/',
+        processTree(tree) {
+            let jsTree = concat(tree, {
+                outputFile: 'assets/codemirror/codemirror.js',
+                headerFiles: ['lib/codemirror.js'],
+                inputFiles: ['mode/**/*'],
+                sourceMapConfig: {enabled: false}
+            });
 
-                if (isProduction) {
-                    jsTree = uglify(jsTree);
-                    cssTree = new CleanCSS(cssTree);
-                }
+            let cssTree = concat(tree, {
+                outputFile: 'assets/codemirror/codemirror.css',
+                inputFiles: ['**/*.css']
+            });
 
-                return mergeTrees([jsTree, cssTree]);
+            if (isProduction) {
+                jsTree = uglify(jsTree);
+                cssTree = new CleanCSS(cssTree);
             }
+
+            return mergeTrees([tree, jsTree, cssTree]);
         }
     };
+
+    // put the files in vendor ready for importing into the test-support file
+    if (environment === 'development') {
+        config.vendor =  codemirrorFiles;
+    }
+
+    return config;
 };
 
 function postcssPlugins() {
@@ -177,8 +184,14 @@ module.exports = function (defaults) {
     app.import('bower_components/google-caja/html-css-sanitizer-bundle.js');
     app.import('bower_components/jqueryui-touch-punch/jquery.ui.touch-punch.js');
 
-    if (app.env === 'test') {
+    if (app.env !== 'production') {
         app.import(`${app.bowerDirectory}/jquery.simulate.drag-sortable/jquery.simulate.drag-sortable.js`, {type: 'test'});
+    }
+
+    // pull things we rely on via lazy-loading into the test-support.js file so
+    // that tests don't break when running via http://localhost:4200/tests
+    if (app.env === 'development') {
+        app.import('vendor/codemirror/lib/codemirror.js', {type: 'test'});
     }
 
     return app.toTree();

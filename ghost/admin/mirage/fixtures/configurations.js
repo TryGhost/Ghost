@@ -1,6 +1,6 @@
 export default [{
     blogTitle: 'Test Blog',
-    blogUrl: 'http://localhost:7357/',
+    blogUrl: `${window.location.origin}/`,
     clientId: 'ghost-admin',
     clientSecret: '1234ClientSecret',
     fileStorage: 'true',
