@@ -1,5 +1,6 @@
 /* eslint-env node */
 /* eslint-disable object-shorthand */
+'use strict';
 
 module.exports = function(grunt) {
 
@@ -42,18 +43,15 @@ module.exports = function(grunt) {
 
             ember: {
                 command: function (mode) {
+                    let liveReloadBaseUrl = grunt.option('live-reload-base-url') || '/ghost/';
+
                     switch (mode) {
                     case 'prod':
                         return 'npm run build -- --environment=production --silent';
                     case 'dev':
                         return 'npm run build';
                     case 'watch':
-                        return 'npm run build -- --watch';
-                    }
-                },
-                options: {
-                    execOptions: {
-                        stdout: false
+                        return `npm run start -- --live-reload-base-url=${liveReloadBaseUrl} --live-reload-port=4201`;
                     }
                 }
             },
