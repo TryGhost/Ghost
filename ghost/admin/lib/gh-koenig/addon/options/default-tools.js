@@ -264,7 +264,7 @@ export default function (editor, toolbar) {
             cardMenu: true,
             onClick: (editor, section) => {
                 editor.run((postEditor) => {
-                    let card = postEditor.builder.createCardSection('card-markdown', {pos: 'top', markdown: editor.range.headSection.text});
+                    let card = postEditor.builder.createCardSection('card-markdown', {pos: 'top', markdown: editor.range.headSection.text, newlyCreated: true});
                     // we can't replace a list item so we insert a card after it and then delete it.
                     if (editor.range.headSection.isListItem) {
                         editor.insertCard('card-markdown');

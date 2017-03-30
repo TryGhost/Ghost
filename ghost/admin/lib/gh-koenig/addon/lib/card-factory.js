@@ -66,12 +66,18 @@ export default function createCardFactory(toolbar) {
 
         function setupEmberCard({env, options, payload}) {
             let id = `GHOST_CARD_${uuid()}`;
+            let newlyCreated;
+            if (payload.newlyCreated) {
+                newlyCreated = true;
+                delete payload.newlyCreated;
+            }
             let card = EmberObject.create({
                 id,
                 env,
                 options,
                 payload,
-                card: cardObject
+                card: cardObject,
+                newlyCreated
             });
 
             self.emberCards.pushObject(card);

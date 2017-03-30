@@ -30,6 +30,37 @@ export default Component.extend({
             }
             if (event.keyCode === 13) {
                 //  enter
+                // on enter we want to split the title, create a new paragraph in the mobile doc and insert it into the content.
+                let {editor} = window;
+                let title = this.$('.gh-editor-title');
+                editor.run((postEditor) => {
+                    let {anchorOffset, focusOffset} = window.getSelection();
+                    let text = title.text();
+                    let startText = ''; // the text before the split
+                    let endText = ''; // the text after the split
+                    // if the selection is not collapsed then we have to delete the text that is selected.
+                    if (anchorOffset !== focusOffset) {
+                        // if the start of the selection is after the end then reverse the selection
+                        if (anchorOffset > focusOffset) {
+                            [anchorOffset, focusOffset] = [focusOffset, anchorOffset];
+                        }
+                        startText = text.substring(0, anchorOffset);
+                        endText = text.substring(focusOffset);
+                    } else {
+                        startText = text.substring(0, anchorOffset);
+                        endText = text.substring(anchorOffset);
+                    }
+
+                    title.html(startText);
+
+                    let marker = editor.builder.createMarker(endText);
+                    let newSection = editor.builder.createMarkupSection('p', [marker]);
+                    postEditor.insertSectionBefore(editor.post.sections, newSection, editor.post.sections.head);
+
+                    let range = newSection.toRange();
+                    range.tail.offset = 0; // colapse range
+                    postEditor.setRange(range);
+                });
                 return false;
             }
 

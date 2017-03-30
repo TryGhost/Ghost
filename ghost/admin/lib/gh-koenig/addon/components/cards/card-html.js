@@ -2,11 +2,12 @@ import Component from 'ember-component';
 import layout from '../../templates/components/card-html';
 import computed from 'ember-computed';
 import observer from 'ember-metal/observer';
+import {invokeAction} from 'ember-invoke-action';
 
 export default Component.extend({
     layout,
     isEditing: true,
-
+    hasRendered: false,
     save: observer('doSave', function () {
         this.get('env').save(this.get('payload'), false);
     }),
@@ -28,8 +29,10 @@ export default Component.extend({
         this.isEditing = !payload.hasOwnProperty('html');
         this.isEditing = true;
     },
-
-    didRender() {
+    actions: {
+        selectCard() {
+            invokeAction(this, 'selectCard');
+        }
     }
 });
 

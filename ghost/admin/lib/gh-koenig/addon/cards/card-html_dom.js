@@ -1,9 +1,9 @@
 export default {
     name: 'card-html',
-    label: 'HTML Card',
+    label: 'Embed',
     icon: '',
     genus: 'ember',
     buttons: {
-        preview: true
+        edit: true
     }
 };

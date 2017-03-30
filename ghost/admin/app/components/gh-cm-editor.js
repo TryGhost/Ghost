@@ -45,7 +45,13 @@ const CmEditorComponent =  Component.extend(InvokeActionMixin, {
         editor.getDoc().setValue(this.get('_value'));
 
         // events
-        editor.on('focus', bind(this, 'set', 'isFocused', true));
+        editor.on('focus', () => {
+
+            run(this, function() {
+                this.set('isFocused', true);
+                this.invokeAction('focus-in', editor.getDoc().getValue());
+            });
+        });
         editor.on('blur', bind(this, 'set', 'isFocused', false));
         editor.on('change', () => {
             run(this, function () {

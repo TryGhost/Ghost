@@ -13,22 +13,50 @@ export default Component.extend({
         // for some reason `this` on did render actually refers to the editor object and not the card object, after render it seems okay.
         run.schedule('afterRender', this,
             () => {
-                let {env: {name}} = this.get('card');
+                let card = this.get('card');
+
+                if (card.newlyCreated) {
+                    this.set('isEditing', true);
+                    this.send('selectCard');
+                }
+                let {env: {name}} = card;
                 let mobiledocCard = this.$().parents('.__mobiledoc-card');
 
                 mobiledocCard.removeClass('__mobiledoc-card');
                 mobiledocCard.addClass('kg-card');
                 mobiledocCard.addClass(name ? `kg-${name}` : '');
+                mobiledocCard.attr('tabindex', 3);
             }
         );
     },
     actions: {
         save() {
             this.set('doSave', Date.now());
+            this.send('stopEdit');
+            this.send('selectCardHard');
+            // this.send('on-save');
         },
 
         toggleState() {
             this.set('isEditing', !this.get('isEditing'));
+        },
+        selectCard() {
+            this.sendAction('selectCard', this.card.id);
+        },
+        deselectCard() {
+            this.sendAction('deselectCard', this.card.id);
+        },
+        selectCardHard() {
+            this.sendAction('selectCardHard', this.card.id);
+        },
+        delete() {
+            this.get('card').env.remove();
+        },
+        startEdit() {
+            this.set('isEditing', true);
+        },
+        stopEdit() {
+            this.set('isEditing', false);
         }
     }
 });

@@ -22,7 +22,8 @@ export default Component.extend({
     layout,
     classNames: ['editor-holder'],
     emberCards: emberA([]),
-
+    selectedCard: null,
+    keyDownHandler: [],
     init() {
         this._super(...arguments);
 
@@ -68,19 +69,9 @@ export default Component.extend({
         }
         let {editor} = this;
 
-        editor.willRender(() => {
-            // console.log(Ember.run.currentRunLoop);
-            // if (!Ember.run.currentRunLoop) {
-            //     this._startedRunLoop = true;
-            //     Ember.run.begin();
-            // }
-        });
-
         editor.didRender(() => {
 
             this.sendAction('loaded', editor);
-                // Ember.run.end();
-
         });
         editor.postDidChange(()=> {
             run.join(() => {
@@ -123,8 +114,12 @@ export default Component.extend({
 
         // hack to track key up to focus back on the title when the up key is pressed
         this.editor.element.addEventListener('keydown', (event) => {
-            if (event.keyCode === 38) {
-                let range = window.getSelection().getRangeAt(0); // get the actual range within the DOM.
+            if (event.keyCode === 38) { // up arrow
+                let selection = window.getSelection();
+                if (!selection.rangeCount) {
+                    return;
+                }
+                let range = selection.getRangeAt(0); // get the actual range within the DOM.
                 let cursorPositionOnScreen = range.getBoundingClientRect();
                 let topOfEditor = this.editor.element.getBoundingClientRect().top;
                 if (cursorPositionOnScreen.top < topOfEditor + 33) {
@@ -147,6 +142,18 @@ export default Component.extend({
             }
         });
 
+        // listen to keydown events outside of the editor, used to handle keydown events in the cards.
+        document.onkeydown = (event) => {
+            // if any of the keydown handlers return false then we return false therefore stopping the event from propogating.
+            return this.get('keyDownHandler').reduce((returnType, handler) => {
+                let result = handler(event);
+                if (returnType !== false) {
+                    return result;
+                }
+                return returnType;
+            }, true);
+        };
+
     },
 
     // drag and drop images onto the editor
@@ -163,9 +170,15 @@ export default Component.extend({
     // makes sure the cursor is on screen except when selection is happening in which case the browser mostly ensures it.
     // there is an issue with keyboard selection on some browsers though so the next step will be to record mouse and touch events.
     cursorMoved() {
-        if (this.get('editor').range.isCollapsed) {
+        let editor = this.get('editor');
+
+        if (editor.range.isCollapsed) {
             let scrollBuffer = 33; // the extra buffer to scroll.
-            let range = window.getSelection().getRangeAt(0); // get the actual range within the DOM.
+            let selection = window.getSelection();
+            if (!selection.rangeCount) {
+                return;
+            }
+            let range = selection.getRangeAt(0); // get the actual range within the DOM.
             let position =  range.getBoundingClientRect();
             let windowHeight = window.innerHeight;
 
@@ -174,11 +187,144 @@ export default Component.extend({
             } else if (position.top < 0) {
                 this.domContainer.scrollTop += position.top - scrollBuffer;
             }
+
+            if (editor.range && editor.range.headSection && editor.range.headSection.isCardSection) {
+                let id = $(editor.range.headSection.renderNode.element).find('.kg-card > div').attr('id');
+                // let id = card.find('div').attr('id');
+                window.getSelection().removeAllRanges();
+                this.send('selectCardHard', id);
+            } else {
+                this.send('deselectCard');
+            }
+        } else {
+            this.send('deselectCard');
         }
     },
 
     willDestroy() {
         this.editor.destroy();
+        this.send('deselectCard');
+        document.onkeydown = null;
+    },
+
+    actions: {
+        // thin border, shows that a card is selected but the user cannot delete the card with
+        // keyboard events.
+        // used when the content of the card is selected and it is editing.
+        selectCard(cardId) {
+            let card = this.get('emberCards').find((card) => card.id === cardId);
+            let cardHolder = $(`#${cardId}`).parent('.kg-card');
+            this.send('deselectCard');
+            cardHolder.addClass('selected');
+            cardHolder.removeClass('selected-hard');
+            this.set('selectedCard', card);
+            this.get('keyDownHandler').length = 0;
+            // cardHolder.focus();
+            document.onclick = (event) => {
+                let target = $(event.target);
+                let parent = target.parents('.kg-card');
+                if (!target.hasClass('kg-card') && (!parent.length || parent[0] !== cardHolder[0])) {
+                    this.send('deselectCard');
+                }
+            };
+        },
+        // thicker border and with keyboard events for moving around the editor
+        // creating blocks under the card and deleting the card.
+        // used when selecting the card with the keyboard or clicking on the toolbar.
+        selectCardHard(cardId) {
+            let card = this.get('emberCards').find((card) => card.id === cardId);
+            let cardHolder = $(`#${cardId}`).parents('.kg-card');
+            this.send('deselectCard');
+            cardHolder.addClass('selected');
+            cardHolder.addClass('selected-hard');
+            this.set('selectedCard', card);
+            // cardHolder.focus();
+            document.onclick = (event) => {
+                let target = $(event.target);
+                let parent = target.parents('.kg-card');
+                if (!target.hasClass('kg-card') && (!parent.length || parent[0] !== cardHolder[0])) {
+                    this.send('deselectCard');
+                }
+            };
+
+            let keyDownHandler = this.get('keyDownHandler');
+            keyDownHandler.push((event) => {
+                let editor = this.get('editor');
+                switch (event.keyCode) {
+                case 37: // arrow left
+                case 38: // arrow up
+                    editor.post.sections.forEach((section) => {
+                        let currentCard = $(section.renderNode.element);
+                        if (currentCard.find(`#${cardId}`).length) {
+                            if (section.prev) {
+                                let range = section.prev.toRange();
+                                range.tail.offset = 0;
+                                editor.selectRange(range);
+                                return;
+                            } else {
+                                $(this.titleQuery).focus();
+                            }
+                        }
+                    });
+                    return false;
+                case 39: // arrow right
+                case 40: // arrow down
+                    editor.post.sections.forEach((section) => {
+                        let currentCard = $(section.renderNode.element);
+                        if (currentCard.find(`#${cardId}`).length) {
+                            if (section.next) {
+                                let range = section.next.toRange();
+                                range.tail.offset = 0;
+                                editor.selectRange(range);
+                                return;
+                            }
+                        }
+                    });
+                    return false;
+                case 13: // enter
+                    editor.post.sections.forEach((section) => {
+                        let currentCard = $(section.renderNode.element);
+                        if (currentCard.find(`#${cardId}`).length) {
+                            if (section.next) {
+                                editor.run((postEditor) => {
+                                    let newSection = editor.builder.createMarkupSection('p');
+                                    postEditor.insertSectionBefore(editor.post.sections, newSection, section.next);
+                                    postEditor.setRange(newSection.toRange()); // new Mobiledoc.Range(newSection.headPosition)
+                                });
+                                return;
+                            } else {
+                                editor.run((postEditor) => {
+                                    let newSection = editor.builder.createMarkupSection('p');
+                                    postEditor.insertSectionAtEnd(newSection);
+                                    postEditor.setRange(newSection.toRange());
+                                });
+
+                            }
+                        }
+                    });
+
+                    return false;
+                case 27: // escape
+                    this.send('selectCard', cardId);
+                    return false;
+                case 8: // backspace
+                case 46: // delete
+                    card.env.remove();
+                    return false;
+                }
+            });
+        },
+        deselectCard() {
+            let selectedCard = this.get('selectedCard');
+            if (selectedCard) {
+                let cardHolder = $(`#${selectedCard.id}`).parent('.kg-card');
+                cardHolder.removeClass('selected');
+                cardHolder.removeClass('selected-hard');
+                this.set('selectedCard', null);
+            }
+            this.get('keyDownHandler').length = 0;
+            document.onclick = null;
+        }
     }
 
 });

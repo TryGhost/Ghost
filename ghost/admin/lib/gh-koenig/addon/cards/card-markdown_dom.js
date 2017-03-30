@@ -1,7 +1,7 @@
 export default {
     name: 'card-markdown',
-    label: 'Markdown Card',
+    label: 'Markdown',
     icon: '',
     genus: 'ember',
-    buttons: {preview: true}
+    buttons: {edit: true}
 };
