@@ -419,7 +419,7 @@ describe('Importer', function () {
         });
 
         it('can load a file (subdirectory)', function (done) {
-            configUtils.set({url: 'http://testurl.com/subdir'});
+            configUtils.set({url: 'http://localhost:82832/subdir'});
 
             var filename = 'test-image.jpeg',
                 file = [{
