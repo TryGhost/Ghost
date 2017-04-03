@@ -242,7 +242,7 @@ var overrides      = require('./core/server/overrides'),
                 master: {
                     command: function () {
                         var upstream = grunt.option('upstream') || 'origin';
-                        return 'git checkout master; git pull ' + upstream +' master; npm install;';
+                        return 'git checkout master; git pull ' + upstream + ' master; npm install;';
                     }
                 },
 
