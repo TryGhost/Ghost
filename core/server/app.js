@@ -36,7 +36,7 @@ module.exports = function setupParentApp() {
     }
 
     // enabled gzip compression by default
-    if (config.get('server').compress !== false) {
+    if (config.get('compress') !== false) {
         parentApp.use(compress());
     }
 
