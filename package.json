@@ -20,7 +20,7 @@
   "scripts": {
     "start": "node index",
     "test": "grunt validate --verbose",
-    "init": "npm install -g knex-migrator ember-cli grunt-cli && npm install && grunt init"
+    "init": "npm install -g knex-migrator ember-cli grunt-cli && npm install && grunt init || true"
   },
   "engines": {
     "node": "^4.2.0 || ^6.5.0"
