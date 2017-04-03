@@ -236,6 +236,21 @@ var overrides      = require('./core/server/overrides'),
                 }
             },
 
+            // ### grunt-shell
+            // Command line tools where it's easier to run a command directly than configure a grunt plugin
+            shell: {
+                master: {
+                    command: function () {
+                        var upstream = grunt.option('upstream') || 'origin';
+                        return 'git checkout master; git pull ' + upstream +' master; npm install;';
+                    }
+                },
+
+                dbhealth: {
+                    command: 'knex-migrator health'
+                }
+            },
+
             // ### grunt-docker
             // Generate documentation from code
             docker: {
@@ -669,6 +684,18 @@ var overrides      = require('./core/server/overrides'),
                 grunt.task.run(['bgShell:client', 'express:dev', 'watch']);
             }
         });
+
+        /**
+         * This command helps you to bring your working directory back to current master.
+         * It will also update your dependencies and shows you if your database is health.
+         * It won't build the client!
+         *
+         * grunt dev-master [origin is the default upstream to pull from]
+         * grunt dev-master --upstream=parent
+         */
+        grunt.registerTask('dev-master', 'Update your current working folder to latest master.',
+            ['shell:master', 'update_submodules', 'subgrunt:init', 'shell:dbhealth']
+        );
 
         // ### Release
         // Run `grunt release` to create a Ghost release zip file.
