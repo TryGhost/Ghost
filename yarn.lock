@@ -3141,13 +3141,13 @@ mocha@^2.4.5:
     supports-color "1.2.0"
     to-iso-string "0.0.2"
 
-moment-timezone@0.5.9:
-  version "0.5.9"
-  resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.9.tgz#e0ea82036d67d21d793544a91b5057f480eda2dd"
+moment-timezone@0.5.12:
+  version "0.5.12"
+  resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.12.tgz#d8d6fa51b365050de1ac7cc5c6e3fa969444edea"
   dependencies:
-    moment ">= 2.6.0"
+    moment ">= 2.9.0"
 
-moment@2.17.1, "moment@>= 2.6.0", moment@^2.10.6, moment@^2.15.2:
+moment@2.17.1, "moment@>= 2.9.0", moment@^2.10.6, moment@^2.15.2:
   version "2.17.1"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.17.1.tgz#fed9506063f36b10f066c8b59a144d7faebe1d82"
 
