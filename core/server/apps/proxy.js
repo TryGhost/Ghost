@@ -1,6 +1,6 @@
 var _           = require('lodash'),
     api         = require('../api'),
-    helpers     = require('../helpers'),
+    helpers     = require('../helpers/register'),
     filters     = require('../filters'),
     i18n        = require('../i18n'),
     generateProxyFunctions;

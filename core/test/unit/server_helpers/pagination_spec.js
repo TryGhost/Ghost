@@ -1,5 +1,5 @@
 var should = require('should'), // jshint ignore:line
-    hbs = require('express-hbs'),
+    hbs = require('../../../server/themes/engine'),
     configUtils = require('../../utils/configUtils'),
     path = require('path'),
 

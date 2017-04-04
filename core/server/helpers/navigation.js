@@ -2,15 +2,14 @@
 // `{{navigation}}`
 // Outputs navigation menu of static urls
 
-var _ = require('lodash'),
-    hbs = require('express-hbs'),
-    i18n = require('../i18n'),
-    errors = require('../errors'),
-    template = require('./template'),
-    navigation;
+var proxy = require('./proxy'),
+    _ = require('lodash'),
+    SafeString = proxy.SafeString,
+    i18n = proxy.i18n,
+    errors = proxy.errors,
+    templates = proxy.templates;
 
-navigation = function (options) {
-    /*jshint unused:false*/
+module.exports = function navigation(options) {
     var navigationData = options.data.blog.navigation,
         currentUrl = options.data.root.relativeUrl,
         self = this,
@@ -58,7 +57,7 @@ navigation = function (options) {
 
     // {{navigation}} should no-op if no data passed in
     if (navigationData.length === 0) {
-        return new hbs.SafeString('');
+        return new SafeString('');
     }
 
     output = navigationData.map(function (e) {
@@ -73,7 +72,6 @@ navigation = function (options) {
 
     data = _.merge({}, {navigation: output});
 
-    return template.execute('navigation', data, options);
+    return templates.execute('navigation', data, options);
 };
 
-module.exports = navigation;
