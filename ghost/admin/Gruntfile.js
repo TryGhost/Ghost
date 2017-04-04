@@ -34,7 +34,7 @@ module.exports = function(grunt) {
 
         shell: {
             'npm-install': {
-                command: 'npm install'
+                command: 'yarn install'
             },
 
             'bower-install': {
