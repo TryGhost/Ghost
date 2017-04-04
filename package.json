@@ -62,7 +62,7 @@
     "knex-migrator": "2.0.16",
     "lodash": "4.17.4",
     "mobiledoc-dom-renderer": "0.6.5",
-    "moment": "2.17.1",
+    "moment": "2.18.0",
     "moment-timezone": "0.5.9",
     "multer": "1.3.0",
     "mysql": "2.13.0",
