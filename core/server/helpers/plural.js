@@ -8,13 +8,13 @@
 // The 3rd argument is the string that will be output if the variable's value is 1
 // The 4th argument is the string that will be output if the variable's value is 2+
 
-var hbs             = require('express-hbs'),
-    errors          = require('../errors'),
-    i18n            = require('../i18n'),
-    _               = require('lodash'),
-    plural;
+var proxy = require('./proxy'),
+    _ = require('lodash'),
+    errors = proxy.errors,
+    i18n = proxy.i18n,
+    SafeString = proxy.SafeString;
 
-plural = function (number, options) {
+module.exports = function plural(number, options) {
     if (_.isUndefined(options.hash) || _.isUndefined(options.hash.empty) ||
         _.isUndefined(options.hash.singular) || _.isUndefined(options.hash.plural)) {
         throw new errors.IncorrectUsageError({
@@ -23,12 +23,11 @@ plural = function (number, options) {
     }
 
     if (number === 0) {
-        return new hbs.handlebars.SafeString(options.hash.empty.replace('%', number));
+        return new SafeString(options.hash.empty.replace('%', number));
     } else if (number === 1) {
-        return new hbs.handlebars.SafeString(options.hash.singular.replace('%', number));
+        return new SafeString(options.hash.singular.replace('%', number));
     } else if (number >= 2) {
-        return new hbs.handlebars.SafeString(options.hash.plural.replace('%', number));
+        return new SafeString(options.hash.plural.replace('%', number));
     }
 };
 
-module.exports = plural;

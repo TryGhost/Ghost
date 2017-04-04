@@ -4,7 +4,7 @@ var should = require('should'),
     EventEmitter = require('events').EventEmitter,
     _ = require('lodash'),
     Promise = require('bluebird'),
-    helpers = require('../../server/helpers'),
+    helpers = require('../../server/helpers/register'),
     filters = require('../../server/filters'),
     i18n = require('../../server/i18n'),
 
@@ -218,7 +218,7 @@ describe('Apps', function () {
         });
 
         it('allows helper registration with permission', function () {
-            var registerSpy = sandbox.spy(helpers, 'registerThemeHelper'),
+            var registerSpy = sandbox.stub(helpers, 'registerThemeHelper'),
                 appProxy = new AppProxy({
                     name: 'TestApp',
                     permissions: {
@@ -234,7 +234,7 @@ describe('Apps', function () {
         });
 
         it('does not allow helper registration without permission', function () {
-            var registerSpy = sandbox.spy(helpers, 'registerThemeHelper'),
+            var registerSpy = sandbox.stub(helpers, 'registerThemeHelper'),
                 appProxy = new AppProxy({
                     name: 'TestApp',
                     permissions: {
@@ -255,7 +255,7 @@ describe('Apps', function () {
         });
 
         it('does allow INTERNAL app to register helper without permission', function () {
-            var registerSpy = sandbox.spy(helpers, 'registerThemeHelper'),
+            var registerSpy = sandbox.stub(helpers, 'registerThemeHelper'),
                 appProxy = new AppProxy({
                     name: 'TestApp',
                     permissions: {},

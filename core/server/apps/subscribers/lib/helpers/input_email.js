@@ -6,12 +6,12 @@
 // We use the name input_email to match the helper for consistency:
 // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 
-// Dirty requires
-var hbs = require('express-hbs'),
-    utils = require('../../../../helpers/utils'),
-    input_email;
+// (less) dirty requires
+var proxy = require('../../../../helpers/proxy'),
+    SafeString = proxy.SafeString,
+    templates = proxy.templates;
 
-input_email = function (options) {
+module.exports = function input_email(options) {
     options = options || {};
     options.hash = options.hash || {};
 
@@ -31,14 +31,13 @@ input_email = function (options) {
         extras += ' value="' + options.hash.value + '"';
     }
 
-    output = utils.inputTemplate({
+    output = templates.input({
         type: 'email',
         name: 'email',
         className: className,
         extras: extras
     });
 
-    return new hbs.handlebars.SafeString(output);
+    return new SafeString(output);
 };
 
-module.exports = input_email;

@@ -6,11 +6,11 @@
 // We use the name body_class to match the helper for consistency:
 // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 
-var hbs             = require('express-hbs'),
-    _               = require('lodash'),
-    body_class;
+var proxy = require('./proxy'),
+    _ = require('lodash'),
+    SafeString = proxy.SafeString;
 
-body_class = function (options) {
+module.exports = function body_class(options) {
     var classes = [],
         context = options.data.root.context,
         post = this.post,
@@ -43,7 +43,6 @@ body_class = function (options) {
     }
 
     classes = _.reduce(classes, function (memo, item) { return memo + ' ' + item; }, '');
-    return new hbs.handlebars.SafeString(classes.trim());
+    return new SafeString(classes.trim());
 };
 
-module.exports = body_class;

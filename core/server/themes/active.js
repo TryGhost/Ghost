@@ -20,8 +20,7 @@ var _ = require('lodash'),
     join = require('path').join,
     themeConfig = require('./config'),
     config = require('../config'),
-    // @TODO: remove this require
-    hbs = require('express-hbs'),
+    engine = require('./engine'),
     // Current instance of ActiveTheme
     currentActiveTheme;
 
@@ -62,15 +61,11 @@ class ActiveTheme {
     }
 
     get partialsPath() {
-        return join(this.path, 'partials');
+        return this._partials.length > 0 ? join(this.path, 'partials') : null;
     }
 
     get mounted() {
         return this._mounted;
-    }
-
-    hasPartials() {
-        return this._partials.length > 0;
     }
 
     hasTemplate(templateName) {
@@ -82,17 +77,6 @@ class ActiveTheme {
     }
 
     mount(blogApp) {
-        let hbsOptions = {
-            partialsDir: [config.get('paths').helperTemplates],
-            onCompile: function onCompile(exhbs, source) {
-                return exhbs.handlebars.compile(source, {preventIndent: true});
-            }
-        };
-
-        if (this.hasPartials()) {
-            hbsOptions.partialsDir.push(this.partialsPath);
-        }
-
         // reset the asset hash
         // @TODO: set this on the theme instead of globally, or use proper file-based hash
         config.set('assetHash', null);
@@ -100,7 +84,7 @@ class ActiveTheme {
         blogApp.cache = {};
         // Set the views and engine
         blogApp.set('views', this.path);
-        blogApp.engine('hbs', hbs.express3(hbsOptions));
+        blogApp.engine('hbs', engine.configure(this.partialsPath));
 
         this._mounted = true;
     }
