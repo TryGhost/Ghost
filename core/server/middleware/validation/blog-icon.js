@@ -61,7 +61,7 @@ module.exports = function blogIcon() {
 
         // CASE: file should not be larger than 100kb
         if (!validIconSize(req.file.size)) {
-            return next(new errors.RequestEntityTooLargeError({message: i18n.t('errors.api.icons.fileSizeTooLarge', {extensions: iconExtensions})}));
+            return next(new errors.ValidationError({message: i18n.t('errors.api.icons.invalidFile', {extensions: iconExtensions})}));
         }
 
         return getIconDimensions(req.file).then(function (dimensions) {
@@ -70,18 +70,18 @@ module.exports = function blogIcon() {
 
             // CASE: file needs to be a square
             if (req.file.dimensions.width !== req.file.dimensions.height) {
-                return next(new errors.ValidationError({message: i18n.t('errors.api.icons.iconNotSquare', {extensions: iconExtensions})}));
+                return next(new errors.ValidationError({message: i18n.t('errors.api.icons.invalidFile', {extensions: iconExtensions})}));
             }
 
             // CASE: icon needs to be bigger than 32px
             // .ico files can contain multiple sizes, we need at least a minimum of 32px (16px is ok, as long as 32px are present as well)
             if (req.file.dimensions.width < 32) {
-                return next(new errors.ValidationError({message: i18n.t('errors.api.icons.fileTooSmall', {extensions: iconExtensions})}));
+                return next(new errors.ValidationError({message: i18n.t('errors.api.icons.invalidFile', {extensions: iconExtensions})}));
             }
 
             // CASE: icon needs to be smaller than 1000px
             if (req.file.dimensions.width > 1000) {
-                return next(new errors.ValidationError({message: i18n.t('errors.api.icons.fileTooLarge', {extensions: iconExtensions})}));
+                return next(new errors.ValidationError({message: i18n.t('errors.api.icons.invalidFile', {extensions: iconExtensions})}));
             }
 
             next();

@@ -151,7 +151,7 @@ describe('Upload Icon API', function () {
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/favicon_size_too_large.png'))
-                .expect(413)
+                .expect(422)
                 .end(function (err) {
                     if (err) {
                         return done(err);
