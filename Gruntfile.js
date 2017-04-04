@@ -690,10 +690,10 @@ var overrides      = require('./core/server/overrides'),
          * It will also update your dependencies and shows you if your database is health.
          * It won't build the client!
          *
-         * grunt dev-master [origin is the default upstream to pull from]
-         * grunt dev-master --upstream=parent
+         * grunt master [origin is the default upstream to pull from]
+         * grunt master --upstream=parent
          */
-        grunt.registerTask('dev-master', 'Update your current working folder to latest master.',
+        grunt.registerTask('master', 'Update your current working folder to latest master.',
             ['shell:master', 'update_submodules', 'subgrunt:init', 'shell:dbhealth']
         );
 
