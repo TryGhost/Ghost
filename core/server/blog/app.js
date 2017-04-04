@@ -50,6 +50,10 @@ module.exports = function setupBlogApp() {
     blogApp.use(serveSharedFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
     // Serve robots.txt if not found in theme
     blogApp.use(serveSharedFile('robots.txt', 'text/plain', utils.ONE_HOUR_S));
+
+    // Serve stylesheets for default templates
+    blogApp.use(serveSharedFile('shared/ghost.css', 'text/css', utils.ONE_HOUR_S));
+
     // Serve blog images using the storage adapter
     blogApp.use('/' + utils.url.STATIC_IMAGE_URL_PREFIX, storage.getStorage().serve());
 

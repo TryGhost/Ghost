@@ -28,6 +28,11 @@ describe('getAssetUrl', function () {
         testUrl.should.equal('/favicon.ico');
     });
 
+    it('should not add ghost or asset to url if ghost.css for default templates', function () {
+        var testUrl = getAssetUrl('shared/ghost.css');
+        testUrl.should.equal('/shared/ghost.css?v=' + config.get('assetHash'));
+    });
+
     it('should not add ghost or asset to url has shared in it', function () {
         var testUrl = getAssetUrl('shared/myfile.js');
         testUrl.should.equal('/shared/myfile.js?v=' + config.get('assetHash'));

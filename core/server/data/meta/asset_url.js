@@ -15,7 +15,7 @@ function getAssetUrl(path, isAdmin, minify) {
         output = utils.url.urlJoin(output, 'assets/');
     }
     // Serve either uploaded favicon or default
-    // for favicon, we don't care anymore about the `/` leading slash, as don't support theme favicons
+    // for favicon, we don't care anymore about the `/` leading slash, as we don't support theme favicons
     if (path.match(/\/?favicon\.(ico|png)$/)) {
         if (isAdmin) {
             output = utils.url.urlJoin(utils.url.getSubdir(), '/favicon.ico');
