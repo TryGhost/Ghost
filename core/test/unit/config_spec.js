@@ -725,28 +725,28 @@ describe('Config', function () {
 
         it('accepts urls with a valid scheme', function (done) {
             // replace the config file with invalid data
-            overrideReadFileConfig({url: 'http://testurl.com'});
+            overrideReadFileConfig({url: 'http://localhost:82832'});
 
             config.load().then(function (localConfig) {
-                localConfig.url.should.equal('http://testurl.com');
+                localConfig.url.should.equal('http://localhost:82832');
 
                 // Next test
-                overrideReadFileConfig({url: 'https://testurl.com'});
+                overrideReadFileConfig({url: 'https://localhost:82832'});
                 return config.load();
             }).then(function (localConfig) {
-                localConfig.url.should.equal('https://testurl.com');
+                localConfig.url.should.equal('https://localhost:82832');
 
                 // Next test
-                overrideReadFileConfig({url: 'http://testurl.com/blog/'});
+                overrideReadFileConfig({url: 'http://localhost:82832/blog/'});
                 return config.load();
             }).then(function (localConfig) {
-                localConfig.url.should.equal('http://testurl.com/blog/');
+                localConfig.url.should.equal('http://localhost:82832/blog/');
 
                 // Next test
-                overrideReadFileConfig({url: 'http://testurl.com/ghostly/'});
+                overrideReadFileConfig({url: 'http://localhost:82832/ghostly/'});
                 return config.load();
             }).then(function (localConfig) {
-                localConfig.url.should.equal('http://testurl.com/ghostly/');
+                localConfig.url.should.equal('http://localhost:82832/ghostly/');
 
                 done();
             }).catch(done);

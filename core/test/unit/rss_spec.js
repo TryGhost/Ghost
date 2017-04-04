@@ -478,7 +478,7 @@ describe('RSS', function () {
         });
 
         it('Should 404 if page number too big', function (done) {
-            configUtils.set({url: 'http://testurl.com/'});
+            configUtils.set({url: 'http://localhost:82832/'});
 
             req = {params: {page: 4}, route: {path: '/rss/:page/'}};
             req.originalUrl = req.route.path.replace(':page', req.params.page);
@@ -495,7 +495,7 @@ describe('RSS', function () {
         });
 
         it('Redirects to last page if page number too big with subdirectory', function (done) {
-            configUtils.set({url: 'http://testurl.com/blog'});
+            configUtils.set({url: 'http://localhost:82832/blog'});
 
             req = {params: {page: 4}, route: {path: '/rss/:page/'}};
             req.originalUrl = req.route.path.replace(':page', req.params.page);
