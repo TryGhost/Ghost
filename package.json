@@ -114,7 +114,7 @@
     "matchdep": "1.0.1",
     "minimist": "1.2.0",
     "mocha": "3.2.0",
-    "nock": "9.0.9",
+    "nock": "9.0.10",
     "rewire": "2.5.2",
     "run-sequence": "1.2.2",
     "should": "11.2.0",
