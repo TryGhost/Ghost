@@ -202,6 +202,12 @@ ConfigManager.prototype.set = function (config) {
         schedulingPath = path.join(contentPath, '/scheduling/');
     }
 
+    this._config.times = _.merge({
+        cannotScheduleAPostBeforeInMinutes: 2,
+        publishAPostBySchedulerToleranceInMinutes: 2,
+        getImageSizeTimeoutInMS: 5000
+    }, this._config.times || {});
+
     _.merge(this._config, {
         ghostVersion: packageInfo.version,
         paths: {
@@ -283,11 +289,7 @@ ConfigManager.prototype.set = function (config) {
         deprecatedItems: ['updateCheck', 'mail.fromaddress'],
         // create a hash for cache busting assets
         assetHash: assetHash,
-        preloadHeaders: this._config.preloadHeaders || false,
-        times: {
-            cannotScheduleAPostBeforeInMinutes: 2,
-            publishAPostBySchedulerToleranceInMinutes: 2
-        }
+        preloadHeaders: this._config.preloadHeaders || false
     });
 
     // Also pass config object to
