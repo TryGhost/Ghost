@@ -53,7 +53,7 @@ function honeyPot(req, res, next) {
 }
 
 function validateUrl(url) {
-    return validator.isEmptyOrURL(url) ? url : '';
+    return validator.isEmptyOrURL(url || '') ? url : '';
 }
 
 function handleSource(req, res, next) {
