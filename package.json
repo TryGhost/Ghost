@@ -103,7 +103,7 @@
     "mocha": "3.1.2",
     "nock": "9.0.13",
     "rewire": "2.5.2",
-    "should": "11.2.0",
+    "should": "11.2.1",
     "should-http": "0.1.0",
     "supertest": "3.0.0",
     "sinon": "1.17.7",
