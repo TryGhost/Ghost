@@ -119,7 +119,7 @@
     "run-sequence": "1.2.2",
     "should": "11.2.1",
     "should-http": "0.1.1",
-    "sinon": "2.1.0",
+    "sinon": "1.17.7",
     "supertest": "3.0.0",
     "tmp": "0.0.31"
   },
@@ -144,7 +144,8 @@
       "grunt-mocha-istanbul",
       "grunt-shell",
       "grunt-subgrunt",
-      "grunt-update-submodules"
+      "grunt-update-submodules",
+      "sinon"
     ]
   }
 }
