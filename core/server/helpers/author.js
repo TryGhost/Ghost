@@ -13,13 +13,13 @@
 var proxy = require('./proxy'),
     _ = require('lodash'),
     SafeString = proxy.SafeString,
-    helpers = proxy.hbs.handlebars.helpers,
+    handlebars = proxy.hbs.handlebars,
     templates = proxy.templates,
     url = proxy.url;
 
 module.exports = function author(options) {
     if (options.fn) {
-        return helpers.with.call(this, this.author, options);
+        return handlebars.helpers.with.call(this, this.author, options);
     }
 
     var autolink = _.isString(options.hash.autolink) && options.hash.autolink === 'false' ? false : true,
