@@ -115,12 +115,11 @@ strategies = {
 
                     return models.User.add({
                         email: profile.email,
-                        name: profile.email,
+                        name: profile.name,
                         password: utils.uid(50),
                         roles: [invite.toJSON().role_id],
                         ghost_auth_id: profile.id,
                         ghost_auth_access_token: ghostAuthAccessToken
-
                     }, options);
                 })
                 .then(function destroyInvite(_user) {
@@ -141,8 +140,11 @@ strategies = {
                         });
                     }
 
+                    // CASE: slug null forces regenerating the slug (ghost-owner is default and needs to be overridden)
                     return models.User.edit({
                         email: profile.email,
+                        name: profile.name,
+                        slug: null,
                         status: 'active',
                         ghost_auth_id: profile.id,
                         ghost_auth_access_token: ghostAuthAccessToken
@@ -169,6 +171,7 @@ strategies = {
 
                     return models.User.edit({
                         email: profile.email,
+                        name: profile.name,
                         ghost_auth_id: profile.id,
                         ghost_auth_access_token: ghostAuthAccessToken
                     }, _.merge({id: user.id}, options));
