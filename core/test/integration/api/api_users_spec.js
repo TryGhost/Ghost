@@ -60,7 +60,7 @@ describe('Users API', function () {
         }).then(function (response) {
             response.users[0].created_at.should.be.an.instanceof(Date);
             response.users[0].updated_at.should.be.an.instanceof(Date);
-            response.users[0].last_login.should.be.an.instanceof(Date);
+            response.users[0].last_seen.should.be.an.instanceof(Date);
 
             done();
         }).catch(done);
