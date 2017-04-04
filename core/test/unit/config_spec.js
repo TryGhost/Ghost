@@ -725,28 +725,28 @@ describe('Config', function () {
 
         it('accepts urls with a valid scheme', function (done) {
             // replace the config file with invalid data
-            overrideReadFileConfig({url: 'http://localhost:82832'});
+            overrideReadFileConfig({url: 'http://localhost'});
 
             config.load().then(function (localConfig) {
-                localConfig.url.should.equal('http://localhost:82832');
+                localConfig.url.should.equal('http://localhost');
 
                 // Next test
-                overrideReadFileConfig({url: 'https://localhost:82832'});
+                overrideReadFileConfig({url: 'https://localhost'});
                 return config.load();
             }).then(function (localConfig) {
-                localConfig.url.should.equal('https://localhost:82832');
+                localConfig.url.should.equal('https://localhost');
 
                 // Next test
-                overrideReadFileConfig({url: 'http://localhost:82832/blog/'});
+                overrideReadFileConfig({url: 'http://localhost/blog/'});
                 return config.load();
             }).then(function (localConfig) {
-                localConfig.url.should.equal('http://localhost:82832/blog/');
+                localConfig.url.should.equal('http://localhost/blog/');
 
                 // Next test
-                overrideReadFileConfig({url: 'http://localhost:82832/ghostly/'});
+                overrideReadFileConfig({url: 'http://localhost/ghostly/'});
                 return config.load();
             }).then(function (localConfig) {
-                localConfig.url.should.equal('http://localhost:82832/ghostly/');
+                localConfig.url.should.equal('http://localhost/ghostly/');
 
                 done();
             }).catch(done);
