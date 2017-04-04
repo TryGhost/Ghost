@@ -4,7 +4,7 @@ import {htmlSafe} from 'ember-string';
 import cajaSanitizers from './caja-sanitizers';
 
 // eslint-disable-next-line new-cap
-let showdown = new Showdown.converter({extensions: ['ghostimagepreview', 'ghostgfm', 'footnotes', 'highlight']});
+let showdown = new Showdown.converter({extensions: ['ghostgfm', 'footnotes', 'highlight']});
 
 export function formatMarkdown(params) {
     if (!params || !params.length) {
