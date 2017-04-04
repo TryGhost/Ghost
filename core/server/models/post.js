@@ -131,6 +131,20 @@ Post = ghostBookshelf.Model.extend({
                     });
                 })
                 .then(function () {
+                    // @TODO: filtering is not possible for subscribers, see https://github.com/TryGhost/GQL/issues/22
+                    return ghostBookshelf.model('Subscriber')
+                        .where({
+                            post_id: model.id
+                        })
+                        .fetchAll(options);
+                })
+                .then(function (response) {
+                    return Promise.each(response.models, function (subscriber) {
+                        subscriber.set('post_id', null);
+                        return subscriber.save(null, options);
+                    });
+                })
+                .then(function () {
                     if (model.previous('status') === 'published') {
                         model.emitChange('unpublished');
                     }
