@@ -43,7 +43,7 @@
     "express": "4.15.0",
     "express-hbs": "1.0.4",
     "extract-zip-fork": "1.5.1",
-    "fs-extra": "2.0.0",
+    "fs-extra": "2.1.2",
     "ghost-gql": "0.0.6",
     "glob": "5.0.15",
     "gscan": "0.2.3",
