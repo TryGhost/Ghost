@@ -25,17 +25,19 @@ class LocalFileStore extends StorageBase {
 
     /**
      * Saves the image to storage (the file system)
-     *
      * - image is the express image object
      * - returns a promise which ultimately returns the full url to the uploaded image
+     *
      * @param image
      * @param targetDir
      * @returns {*}
      */
-    save(image) {
-        var targetDir = this.getTargetDir(this.storagePath),
-            targetFilename,
+    save(image, targetDir) {
+        var targetFilename,
             self = this;
+
+        // NOTE: the base implementation of `getTargetDir` returns the format this.storagePath/YYYY/MM
+        targetDir = targetDir || this.getTargetDir(this.storagePath);
 
         return this.getUniqueFileName(image, targetDir).then(function (filename) {
             targetFilename = filename;
