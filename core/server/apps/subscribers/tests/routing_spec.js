@@ -1,27 +1,31 @@
-var request = require('supertest'),
+var supertest = require('supertest'),
     should = require('should'),
     sinon = require('sinon'),
     testUtils = require('../../../../test/utils'),
-    ghost = require('../../../../../core'),
     labs = require('../../../utils/labs'),
+    config = require('../../../config'),
+    ghost = testUtils.startGhost,
     sandbox = sinon.sandbox.create();
 
 describe('Subscriber: Routing', function () {
-    before(testUtils.teardown);
-    before(testUtils.setup);
-    after(testUtils.teardown);
+    var ghostServer, request;
 
     before(function (done) {
-        ghost().then(function (ghostServer) {
-            // Setup the request object with the ghost express app
-            request = request(ghostServer.rootApp);
-
+        ghost().then(function (_ghostServer) {
+            ghostServer = _ghostServer;
+            return ghostServer.start();
+        }).then(function () {
+            request = supertest.agent(config.get('url'));
             done();
         }).catch(function (e) {
             console.log('Ghost Error: ', e);
             console.log(e.stack);
             done(e);
         });
+    });
+
+    after(function () {
+        return ghostServer.stop();
     });
 
     before(function () {
@@ -50,6 +54,7 @@ describe('Subscriber: Routing', function () {
     describe('POST', function () {
         it('[success]', function (done) {
             request.post('/subscribe/')
+                .set('Content-type', 'application/x-www-form-urlencoded')
                 .send({
                     email: 'test@ghost.org',
                     location: 'http://localhost:2368',
@@ -66,6 +71,7 @@ describe('Subscriber: Routing', function () {
 
         it('[error] email is invalid', function (done) {
             request.post('/subscribe/')
+                .set('Content-type', 'application/x-www-form-urlencoded')
                 .send({
                     email: 'alphabetazeta',
                     location: 'http://localhost:2368',
@@ -74,6 +80,7 @@ describe('Subscriber: Routing', function () {
                 .expect(200)
                 .end(function (err, res) {
                     should.not.exist(err);
+                    res.text.should.containEql('http://localhost:2368');
                     res.text.should.not.containEql('Subscribed!');
                     res.text.should.not.containEql('alphabetazeta');
                     done();
@@ -82,6 +89,7 @@ describe('Subscriber: Routing', function () {
 
         it('[error] location is not defined', function (done) {
             request.post('/subscribe/')
+                .set('Content-type', 'application/x-www-form-urlencoded')
                 .send({
                     email: 'test@ghost.org',
                     confirm: ''
@@ -97,6 +105,7 @@ describe('Subscriber: Routing', function () {
 
         it('[error] confirm is not defined', function (done) {
             request.post('/subscribe/')
+                .set('Content-type', 'application/x-www-form-urlencoded')
                 .send({
                     email: 'test@ghost.org',
                     location: 'http://localhost:2368'
