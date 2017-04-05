@@ -22,6 +22,22 @@ let App = Application.extend({
     }
 });
 
+// TODO: remove once the validations refactor is complete
+// eslint-disable-next-line
+Ember.Debug.registerWarnHandler((message, options, next) => {
+    let skip = [
+        'ds.errors.add',
+        'ds.errors.remove',
+        'ds.errors.clear'
+    ];
+
+    if (skip.includes(options.id)) {
+        return;
+    }
+
+    next(message, options);
+});
+
 loadInitializers(App, config.modulePrefix);
 
 export default App;
