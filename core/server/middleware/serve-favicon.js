@@ -45,7 +45,7 @@ function serveFavicon() {
             if (settingsCache.get('icon')) {
                 // depends on the uploaded icon extension
                 if (originalExtension !== requestedExtension) {
-                    return res.redirect(302, '/favicon' + originalExtension);
+                    return res.redirect(302, utils.url.urlFor({relativeUrl: '/favicon' + originalExtension}));
                 }
 
                 storage.getStorage()
@@ -66,7 +66,7 @@ function serveFavicon() {
 
                 // CASE: always redirect to .ico for default icon
                 if (originalExtension !== requestedExtension) {
-                    return res.redirect(302, '/favicon.ico');
+                    return res.redirect(302, utils.url.urlFor({relativeUrl: '/favicon.ico'}));
                 }
 
                 fs.readFile(filePath, function readFile(err, buf) {
