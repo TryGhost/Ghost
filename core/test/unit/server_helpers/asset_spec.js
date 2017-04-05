@@ -65,7 +65,7 @@ describe('{{asset}} helper', function () {
 
     describe('with /blog subdirectory', function () {
         before(function () {
-            configUtils.set({url: 'http://testurl.com/blog'});
+            configUtils.set({url: 'http://localhost:82832/blog'});
         });
 
         it('handles favicon correctly', function () {

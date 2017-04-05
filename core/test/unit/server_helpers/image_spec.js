@@ -13,7 +13,7 @@ describe('{{image}} helper', function () {
 
     before(function () {
         sandbox = sinon.sandbox.create();
-        configUtils.set({url: 'http://testurl.com/'});
+        configUtils.set({url: 'http://localhost:82832/'});
         utils.loadHelpers();
     });
 
@@ -51,7 +51,7 @@ describe('{{image}} helper', function () {
             });
 
         should.exist(rendered);
-        rendered.should.equal('http://testurl.com/content/images/image-relative-url.png');
+        rendered.should.equal('http://localhost:82832/content/images/image-relative-url.png');
     });
 
     it('should have no output if there is no image ', function () {
@@ -68,7 +68,7 @@ describe('{{image}} helper', function () {
 
     describe('with sub-directory', function () {
         before(function () {
-            configUtils.set({url: 'http://testurl.com/blog'});
+            configUtils.set({url: 'http://localhost:82832/blog'});
         });
         after(function () {
             configUtils.restore();
@@ -96,7 +96,7 @@ describe('{{image}} helper', function () {
                 });
 
             should.exist(rendered);
-            rendered.should.equal('http://testurl.com/blog/content/images/image-relative-url.png');
+            rendered.should.equal('http://localhost:82832/blog/content/images/image-relative-url.png');
         });
 
         it('should not change output for an external url', function () {
