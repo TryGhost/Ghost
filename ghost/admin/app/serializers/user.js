@@ -7,7 +7,7 @@ const {String: {pluralize}} = Ember;
 export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
     attrs: {
         roles: {embedded: 'always'},
-        lastLoginUTC: {key: 'last_login'},
+        lastLoginUTC: {key: 'last_seen'},
         createdAtUTC: {key: 'created_at'},
         updatedAtUTC: {key: 'updated_at'}
     },
