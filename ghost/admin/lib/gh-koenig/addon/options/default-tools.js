@@ -198,9 +198,14 @@ export default function (editor, toolbar) {
             order: 2,
             cardMenu: true,
             onClick: (editor) => {
-                editor.run((postEditor) => {
+                editor.run((postEditor, section) => {
                     let card = postEditor.builder.createCardSection('card-image', {pos: 'top'});
-                    postEditor.insertSection(card);
+                    console.log(editor.range.headSection.text.length);
+                    if (section || editor.range.headSection.text.length) {
+                        postEditor.insertSection(card);
+                    } else {
+                        postEditor.replaceSection(section || editor.range.headSection, card);
+                    }
 
                 });
             },
