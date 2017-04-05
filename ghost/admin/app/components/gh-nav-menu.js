@@ -2,6 +2,7 @@ import Component from 'ember-component';
 import {htmlSafe} from 'ember-string';
 import injectService from 'ember-service/inject';
 import computed from 'ember-computed';
+import calculatePosition from 'ember-basic-dropdown/utils/calculate-position';
 
 export default Component.extend({
     tagName: 'nav',
@@ -24,6 +25,17 @@ export default Component.extend({
 
     mouseEnter() {
         this.sendAction('onMouseEnter');
+    },
+
+    // equivalent to "left: auto; right: -20px"
+    userDropdownPosition(trigger, dropdown) {
+        let {horizontalPosition, verticalPosition, style} = calculatePosition(...arguments);
+        let {width: dropdownWidth} = dropdown.firstElementChild.getBoundingClientRect();
+
+        style.right += (dropdownWidth - 20);
+        style['z-index'] = 1100;
+
+        return {horizontalPosition, verticalPosition, style};
     },
 
     actions: {

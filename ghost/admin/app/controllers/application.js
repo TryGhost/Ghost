@@ -49,6 +49,9 @@ export default Controller.extend({
         },
 
         closeAutoNav() {
+            if (this.get('autoNavOpen')) {
+                this.get('dropdown').closeDropdowns();
+            }
             this.set('autoNavOpen', false);
         },
 

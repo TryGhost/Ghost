@@ -65,6 +65,17 @@ body > .ember-view:not(.default-liquid-destination) {
     align-items: center;
     padding: 25px;
     cursor: pointer;
+    outline: none;
+}
+
+.gh-nav-menu-dropdown.ember-basic-dropdown--transitioning-in {
+    animation: fade-in-scale 0.2s;
+    animation-fill-mode: forwards;
+}
+
+.gh-nav-menu-dropdown.ember-basic-dropdown--transitioning-out {
+    animation: fade-out 0.5s;
+    animation-fill-mode: forwards;
 }
 
 .gh-nav-menu i {
