@@ -3,6 +3,7 @@ var should = require('should'),
     Promise = require('bluebird'),
     rewire = require('rewire'),
     nock = require('nock'),
+    configUtils = require('../../utils/configUtils'),
     utils = require('../../../server/utils'),
 
     // Stuff we are testing
@@ -21,6 +22,7 @@ describe('Image Size', function () {
 
     afterEach(function () {
         sandbox.restore();
+        configUtils.restore();
     });
 
     it('should have an image size function', function () {
@@ -173,7 +175,8 @@ describe('Image Size', function () {
             .socketDelay(11)
             .reply(408);
 
-        result = Promise.resolve(imageSize.getImageSizeFromUrl(url, 10))
+        configUtils.set('times:getImageSizeTimeoutInMS', 10);
+        result = Promise.resolve(imageSize.getImageSizeFromUrl(url))
             .catch(function (err) {
                 requestMock.isDone().should.be.true();
                 should.exist(err);
