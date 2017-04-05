@@ -47,7 +47,7 @@ module.exports = {
         meta_title: {type: 'string', maxlength: 2000, nullable: true},
         meta_description: {type: 'string', maxlength: 2000, nullable: true},
         tour: {type: 'text', maxlength: 65535, nullable: true},
-        last_login: {type: 'dateTime', nullable: true},
+        last_seen: {type: 'dateTime', nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
