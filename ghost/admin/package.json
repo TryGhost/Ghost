@@ -73,6 +73,7 @@
     "ember-light-table": "1.8.4",
     "ember-load": "0.0.11",
     "ember-load-initializers": "1.0.0",
+    "ember-native-dom-helpers": "0.3.5",
     "ember-one-way-controls": "2.0.0",
     "ember-power-select": "1.6.1",
     "ember-resolver": "4.1.0",

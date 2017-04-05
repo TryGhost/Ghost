@@ -1,9 +1,13 @@
 /* Dropdowns
 /* ---------------------------------------------------------- */
 
+.ember-basic-dropdown-content {
+    z-index: 1100;
+}
+
 .dropdown {
     position: relative;
-    z-index: 1000;
+    z-index: 1100;
 }
 
 .dropdown-toggle:focus {

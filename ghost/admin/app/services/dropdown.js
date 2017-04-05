@@ -2,10 +2,15 @@ import Service from 'ember-service';
 import Evented from 'ember-evented';
 // This is used by the dropdown initializer to manage closing & toggling
 import BodyEventListener from 'ghost-admin/mixins/body-event-listener';
+import $ from 'jquery';
 
 export default Service.extend(Evented, BodyEventListener, {
-    bodyClick() {
-        this.closeDropdowns();
+    bodyClick(event) {
+        let dropdownSelector = '.ember-basic-dropdown-trigger, .ember-basic-dropdown-content';
+
+        if ($(event.target).closest(dropdownSelector).length <= 0) {
+            this.closeDropdowns();
+        }
     },
 
     closeDropdowns() {
