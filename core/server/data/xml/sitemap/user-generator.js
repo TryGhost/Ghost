@@ -27,13 +27,16 @@ _.extend(UserMapGenerator.prototype, {
     getData: function () {
         return api.users.browse({
             context: {
-                internal: true
+                public: true
             },
             filter: 'visibility:public',
             status: 'active',
-            limit: 'all'
+            limit: 'all',
+            include: 'count.posts'
         }).then(function (resp) {
-            return resp.users;
+            return _.filter(resp.users, function (user) {
+                return user.count.posts > 0;
+            });
         });
     },
 

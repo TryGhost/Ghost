@@ -24,12 +24,15 @@ _.extend(TagsMapGenerator.prototype, {
     getData: function () {
         return api.tags.browse({
             context: {
-                internal: true
+                public: true
             },
             filter: 'visibility:public',
-            limit: 'all'
+            limit: 'all',
+            include: 'count.posts'
         }).then(function (resp) {
-            return resp.tags;
+            return _.filter(resp.tags, function (tag) {
+                return tag.count.posts > 0;
+            });
         });
     },
 
