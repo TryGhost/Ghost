@@ -306,7 +306,7 @@ utils = {
         }
 
         var ops = [];
-        tableData = stripProperties(['id'], tableData);
+        tableData = stripProperties(['id', 'post_id'], tableData);
 
         _.each(tableData, function (subscriber) {
             ops.push(models.Subscriber.add(subscriber, _.extend({}, internalContext, {transacting: transaction}))
