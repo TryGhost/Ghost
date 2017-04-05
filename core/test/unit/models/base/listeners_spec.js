@@ -34,7 +34,7 @@ describe('Models: listeners', function () {
 
             userModelSpy.calledOnce.should.be.true();
             userModelSpy.calledWith(
-                sinon.match.has('last_login'),
+                sinon.match.has('last_seen'),
                 sinon.match.has('id')
             );
 

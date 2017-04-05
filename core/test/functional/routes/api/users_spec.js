@@ -92,11 +92,11 @@ describe('User API', function () {
                         jsonResponse.users.should.have.length(4);
 
                         testUtils.API.checkResponse(jsonResponse.users[0], 'user');
-                        testUtils.API.isISO8601(jsonResponse.users[0].last_login).should.be.true();
+                        testUtils.API.isISO8601(jsonResponse.users[0].last_seen).should.be.true();
                         testUtils.API.isISO8601(jsonResponse.users[0].created_at).should.be.true();
                         testUtils.API.isISO8601(jsonResponse.users[0].updated_at).should.be.true();
 
-                        testUtils.API.isISO8601(jsonResponse.users[2].last_login).should.be.true();
+                        testUtils.API.isISO8601(jsonResponse.users[2].last_seen).should.be.true();
                         testUtils.API.isISO8601(jsonResponse.users[2].created_at).should.be.true();
                         testUtils.API.isISO8601(jsonResponse.users[2].updated_at).should.be.true();
 

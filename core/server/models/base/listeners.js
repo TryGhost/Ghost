@@ -7,10 +7,10 @@ var config = require('../../config'),
     moment = require('moment-timezone');
 
 /**
- * WHEN access token is created we will update last_login for user.
+ * WHEN access token is created we will update last_seen for user.
  */
 events.on('token.added', function (tokenModel) {
-    models.User.edit({last_login: moment().toDate()}, {id: tokenModel.get('user_id')})
+    models.User.edit({last_seen: moment().toDate()}, {id: tokenModel.get('user_id')})
         .catch(function (err) {
             logging.error(new errors.GhostError({err: err, level: 'critical'}));
         });

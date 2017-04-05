@@ -184,7 +184,7 @@ describe('User Model', function run() {
             var userData = testUtils.DataGenerator.forModel.users[0];
 
             UserModel.check({email: userData.email, password: userData.password}).then(function (activeUser) {
-                should.exist(activeUser.get('last_login'));
+                should.exist(activeUser.get('last_seen'));
                 done();
             }).catch(done);
         });
@@ -201,7 +201,7 @@ describe('User Model', function run() {
 
                 should.exist(user);
 
-                lastLogin = user.get('last_login');
+                lastLogin = user.get('last_seen');
                 createdAt = user.get('created_at');
                 updatedAt = user.get('updated_at');
 
