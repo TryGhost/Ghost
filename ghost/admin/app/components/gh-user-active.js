@@ -3,6 +3,7 @@ import Component from 'ember-component';
 import computed from 'ember-computed';
 import injectService from 'ember-service/inject';
 import {htmlSafe} from 'ember-string';
+import moment from 'moment';
 
 // ember-cli-shims doesn't export these
 const {Handlebars} = Ember;

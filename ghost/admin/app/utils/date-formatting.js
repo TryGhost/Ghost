@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 const parseDateFormats = [
     'DD MMM YY @ HH:mm', 'DD MMM YY HH:mm',
     'D MMM YY @ HH:mm', 'D MMM YY HH:mm',

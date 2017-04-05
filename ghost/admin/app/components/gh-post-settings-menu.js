@@ -4,13 +4,12 @@ import computed, {alias} from 'ember-computed';
 import {guidFor} from 'ember-metal/utils';
 import injectService from 'ember-service/inject';
 import {htmlSafe} from 'ember-string';
-
 import {invokeAction} from 'ember-invoke-action';
-
 import {parseDateString} from 'ghost-admin/utils/date-formatting';
 import SettingsMenuMixin from 'ghost-admin/mixins/settings-menu-component';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import isNumber from 'ghost-admin/utils/isNumber';
+import moment from 'moment';
 
 const {Handlebars} = Ember;
 

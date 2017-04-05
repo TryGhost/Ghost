@@ -135,12 +135,6 @@ module.exports = function (defaults) {
             'mobiledoc-kit': {
                 import: ['dist/amd/mobiledoc-kit.js', 'dist/amd/mobiledoc-kit.map']
             },
-            moment: {
-                import: ['moment.js']
-            },
-            'moment-timezone': {
-                import: ['builds/moment-timezone-with-data.js']
-            },
             'password-generator': {
                 import: ['lib/password-generator.js']
             }

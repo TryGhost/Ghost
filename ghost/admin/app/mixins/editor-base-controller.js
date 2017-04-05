@@ -9,15 +9,14 @@ import observer from 'ember-metal/observer';
 import run from 'ember-runloop';
 import {isEmberArray} from 'ember-array/utils';
 import {isBlank} from 'ember-utils';
-
 import {task, timeout} from 'ember-concurrency';
-
 import PostModel from 'ghost-admin/models/post';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {isInvalidError} from 'ember-ajax/errors';
 
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
+import moment from 'moment';
 
 const {resolve} = RSVP;
 
