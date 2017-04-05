@@ -8,6 +8,7 @@ module.exports = {
         mobiledoc: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         html: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         amp: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
+        plaintext: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         image: {type: 'string', maxlength: 2000, nullable: true},
         featured: {type: 'bool', nullable: false, defaultTo: false},
         page: {type: 'bool', nullable: false, defaultTo: false},
