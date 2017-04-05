@@ -199,14 +199,18 @@ export default function (editor, toolbar) {
             cardMenu: true,
             onClick: (editor) => {
                 editor.run((postEditor, section) => {
+                    let thisSection = section || editor.range.headSection;
                     let card = postEditor.builder.createCardSection('card-image', {pos: 'top'});
-                    console.log(editor.range.headSection.text.length);
-                    if (section || editor.range.headSection.text.length) {
+                    if (thisSection.text.length) {
                         postEditor.insertSection(card);
                     } else {
-                        postEditor.replaceSection(section || editor.range.headSection, card);
+                        postEditor.replaceSection(thisSection, card);
                     }
-
+                    // insert empty paragraph after card if it's the last element.
+                    if(!thisSection.next) {
+                        let newSection = editor.builder.createMarkupSection('p');
+                        postEditor.insertSectionAtEnd(newSection);
+                    }
                 });
             },
             checkElements(elements) {
@@ -224,15 +228,18 @@ export default function (editor, toolbar) {
             cardMenu: true,
             onClick: (editor, section) => {
                 editor.run((postEditor) => {
-                    let card = postEditor.builder.createCardSection('card-html', {pos: 'top', html: editor.range.headSection.text});
+                    let thisSection = section || editor.range.headSection;
+                    let card = postEditor.builder.createCardSection('card-html', {pos: 'top', html: thisSection.text});
                     // we can't replace a list item so we insert a card after it and then delete it.
-                    if (editor.range.headSection.isListItem) {
-                        // postEditor.toggleSection('p');
-                        // postEditor.insertSection(card);
-                        // postEditor.removeSection(editor.range.head.section);
+                    if (thisSection.isListItem) {
                         editor.insertCard('card-html');
                     } else {
-                        postEditor.replaceSection(section || editor.range.headSection, card);
+                        postEditor.replaceSection(thisSection, card);
+                    }
+
+                    if(!thisSection.next) {
+                        let newSection = editor.builder.createMarkupSection('p');
+                        postEditor.insertSectionAtEnd(newSection);
                     }
                 });
             },
@@ -249,10 +256,16 @@ export default function (editor, toolbar) {
             visibility: 'primary',
             order: 4,
             cardMenu: true,
-            onClick: (editor) => {
+            onClick: (editor, section) => {
                 editor.run((postEditor) => {
+                    let thisSection = section || editor.range.headSection;
                     let card = postEditor.builder.createCardSection('card-hr', {pos: 'top'});
                     postEditor.insertSection(card);
+
+                    if(!thisSection.next) {
+                        let newSection = editor.builder.createMarkupSection('p');
+                        postEditor.insertSectionAtEnd(newSection);
+                    }
                 });
             },
             checkElements() {
@@ -269,12 +282,18 @@ export default function (editor, toolbar) {
             cardMenu: true,
             onClick: (editor, section) => {
                 editor.run((postEditor) => {
-                    let card = postEditor.builder.createCardSection('card-markdown', {pos: 'top', markdown: editor.range.headSection.text, newlyCreated: true});
+                    let thisSection = section || editor.range.headSection;
+                    let card = postEditor.builder.createCardSection('card-markdown', {pos: 'top', markdown: thisSection.text, newlyCreated: true});
                     // we can't replace a list item so we insert a card after it and then delete it.
-                    if (editor.range.headSection.isListItem) {
+                    if (thisSection.isListItem) {
                         editor.insertCard('card-markdown');
                     } else {
-                        postEditor.replaceSection(section || editor.range.headSection, card);
+                        postEditor.replaceSection(thisSection, card);
+                    }
+                    // if this is the last element then insert a paragraph after the card
+                    if(!thisSection.next) {
+                        let newSection = editor.builder.createMarkupSection('p');
+                        postEditor.insertSectionAtEnd(newSection);
                     }
                 });
             },
