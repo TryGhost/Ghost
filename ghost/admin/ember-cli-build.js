@@ -105,7 +105,8 @@ module.exports = function (defaults) {
                 js: assetLocation('ghost.js'),
                 css: {
                     app: assetLocation('ghost.css'),
-                    'app-dark': assetLocation('ghost-dark.css')
+                    // TODO: find a way to use the .min file with the lazyLoader
+                    'app-dark': 'assets/ghost-dark.css'
                 }
             },
             vendor: {
