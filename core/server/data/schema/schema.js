@@ -187,6 +187,7 @@ module.exports = {
         token: {type: 'string', maxlength: 191, nullable: false, unique: true},
         user_id: {type: 'string', maxlength: 24, nullable: false, references: 'users.id'},
         client_id: {type: 'string', maxlength: 24, nullable: false, references: 'clients.id'},
+        issued_by: {type: 'string', maxlength: 24, nullable: true},
         expires: {type: 'bigInteger', nullable: false}
     },
     refreshtokens: {
