@@ -110,7 +110,7 @@ var overrides      = require('./core/server/overrides'),
                     'core/server/**/*.js',
                     'core/test/**/*.js',
                     '!core/test/coverage/**',
-                    '!core/shared/vendor/**/*.js'
+                    '!core/server/public/**/*.js'
                 ]
             },
 
@@ -128,7 +128,7 @@ var overrides      = require('./core/server/overrides'),
                             'core/server/**/*.js',
                             'core/test/**/*.js',
                             '!core/test/coverage/**',
-                            '!core/shared/vendor/**/*.js'
+                            '!core/server/public/**/*.js'
                         ]
                     }
                 }
@@ -318,7 +318,7 @@ var overrides      = require('./core/server/overrides'),
                         sourceMap: false
                     },
                     files: {
-                        'core/shared/ghost-url.min.js': 'core/shared/ghost-url.js'
+                        'core/server/public/ghost-url.min.js': 'core/server/public/ghost-url.js'
                     }
                 }
             },

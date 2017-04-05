@@ -61,7 +61,7 @@ function serveFavicon() {
                         next(err);
                     });
             } else {
-                filePath = path.join(config.get('paths:corePath'), 'shared', 'favicon.ico');
+                filePath = path.join(config.get('paths:publicFilePath'), 'favicon.ico');
                 originalExtension = path.extname(filePath).toLowerCase();
 
                 // CASE: always redirect to .ico for default icon
