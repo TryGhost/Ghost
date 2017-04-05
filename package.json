@@ -50,6 +50,7 @@
     "fs-extra": "2.1.2",
     "ghost-gql": "0.0.6",
     "ghost-ignition": "2.8.10",
+    "ghost-storage-base": "0.0.1",
     "glob": "5.0.15",
     "gscan": "0.2.1",
     "html-to-text": "3.2.0",
