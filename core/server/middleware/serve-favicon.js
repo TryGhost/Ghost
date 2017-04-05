@@ -48,17 +48,18 @@ function serveFavicon() {
                     return res.redirect(302, '/favicon' + originalExtension);
                 }
 
-                storage.getStorage().read({path: filePath}).then(function readFile(buf, err) {
-                    if (err) {
-                        return next(err);
-                    }
+                storage.getStorage()
+                    .read({path: filePath})
+                    .then(function readFile(buf) {
+                        iconType = settingsCache.get('icon').match(/\/favicon\.ico$/i) ? 'x-icon' : 'png';
+                        content = buildContentResponse(iconType, buf);
 
-                    iconType = settingsCache.get('icon').match(/\/favicon\.ico$/i) ? 'x-icon' : 'png';
-                    content = buildContentResponse(iconType, buf);
-
-                    res.writeHead(200, content.headers);
-                    res.end(content.body);
-                });
+                        res.writeHead(200, content.headers);
+                        res.end(content.body);
+                    })
+                    .catch(function (err) {
+                        next(err);
+                    });
             } else {
                 filePath = path.join(config.get('paths:corePath'), 'shared', 'favicon.ico');
                 originalExtension = path.extname(filePath).toLowerCase();

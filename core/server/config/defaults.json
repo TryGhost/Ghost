@@ -9,9 +9,7 @@
         "contentPath": "content/"
     },
     "storage": {
-        "active": {
-            "images": "local-file-store"
-        }
+        "active": "LocalFileStorage"
     },
     "scheduling": {
         "active": "SchedulingDefault"

@@ -1578,6 +1578,12 @@ ghost-ignition@2.8.10, ghost-ignition@^2.8.2, ghost-ignition@^2.8.7:
     prettyjson "1.1.3"
     uuid "^3.0.0"
 
+ghost-storage-base@0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/ghost-storage-base/-/ghost-storage-base-0.0.1.tgz#b31b57d2e54574a96153a54bf2e9ea599f12bec8"
+  dependencies:
+    moment "^2.17.1"
+
 glob-base@^0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/glob-base/-/glob-base-0.3.0.tgz#dbb164f6221b1c0b1ccf82aea328b497df0ea3c4"
@@ -3196,7 +3202,7 @@ moment-timezone@0.5.13:
   dependencies:
     moment ">= 2.9.0"
 
-moment@2.18.1, "moment@>= 2.9.0", moment@^2.10.6, moment@^2.15.2:
+moment@2.18.1, "moment@>= 2.9.0", moment@^2.10.6, moment@^2.15.2, moment@^2.17.1:
   version "2.18.1"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.18.1.tgz#c36193dd3ce1c2eed2adb7c802dbbc77a81b1c0f"
 

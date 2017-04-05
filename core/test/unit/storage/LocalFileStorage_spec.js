@@ -4,7 +4,7 @@ var should = require('should'), // jshint ignore:line
     moment = require('moment'),
     path = require('path'),
     errors = require('../../../server/errors'),
-    LocalFileStore = require('../../../server/storage/local-file-store'),
+    LocalFileStore = require('../../../server/storage/LocalFileStorage'),
     localFileStore,
 
     configUtils = require('../../utils/configUtils'),
@@ -150,7 +150,7 @@ describe('Local File System Storage', function () {
     describe('read image', function () {
         beforeEach(function () {
             // we have some example images in our test utils folder
-            configUtils.set('paths:contentPath', path.join(__dirname, '../../utils/fixtures'));
+            localFileStore.storagePath = path.join(__dirname, '../../utils/fixtures/images/');
         });
 
         it('success', function (done) {
