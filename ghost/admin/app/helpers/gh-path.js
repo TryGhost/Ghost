@@ -7,6 +7,9 @@ import ghostPaths from 'ghost-admin/utils/ghost-paths';
 // {{gh-path}} or {{gh-path 'blog'}} for Ghost's root (/myblog/)
 // {{gh-path 'admin'}} for Ghost's admin root (/myblog/ghost/)
 // {{gh-path 'api'}} for Ghost's api root (/myblog/ghost/api/v0.1/)
+//
+// DO NOT USE - admin asset paths are now relative because we are using hash urls
+//              and the gh-path helper can get in the way of asset rewriting
 // {{gh-path 'asset' '/img/hi.png'}} for resolved url (/myblog/ghost/assets/img/hi.png)
 
 export default helper(function (params) {
