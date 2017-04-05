@@ -171,6 +171,10 @@ textarea.ed_code {
     border: none;
 }
 
+.dragOver {
+    background-color: pink;
+    border:100px solid red;
+}
 
 
 /**
