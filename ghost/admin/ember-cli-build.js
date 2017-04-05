@@ -120,7 +120,10 @@ module.exports = function (defaults) {
                 plugins: postcssPlugins()
             }
         },
-        fingerprint: {enabled: true},
+        fingerprint: {
+            enabled: true,
+            extensions: ['js', 'css', 'png', 'jpg', 'jpeg', 'gif', 'map']
+        },
         nodeAssets: {
             'blueimp-md5': {
                 import: ['js/md5.js']
