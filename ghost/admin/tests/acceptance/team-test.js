@@ -13,6 +13,7 @@ import {errorOverride, errorReset} from '../helpers/adapter-error';
 import {enableGhostOAuth} from '../helpers/configuration';
 import {Response} from 'ember-cli-mirage';
 import testSelector from 'ember-test-selectors';
+import moment from 'moment';
 
 describe('Acceptance: Team', function () {
     let application;

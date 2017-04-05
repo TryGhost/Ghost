@@ -1,4 +1,5 @@
 import {helper} from 'ember-helper';
+import moment from 'moment';
 
 // TODO: this isn't used currently - safe to delete?
 

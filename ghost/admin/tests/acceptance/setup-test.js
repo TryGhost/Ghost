@@ -15,6 +15,7 @@ import {
     stubSuccessfulOAuthConnect,
     stubFailedOAuthConnect
 } from '../helpers/oauth';
+import moment from 'moment';
 
 describe('Acceptance: Setup', function () {
     let application;

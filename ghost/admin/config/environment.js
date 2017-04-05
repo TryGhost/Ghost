@@ -31,13 +31,13 @@ module.exports = function (environment) {
             version: require('../package.json').version.match(/^(\d+\.)?(\d+)/)[0]
         },
 
-        'ember-simple-auth': {
+        'ember-simple-auth': { },
 
+        moment: {
+            includeTimezone: 'all'
         },
 
-        torii: {
-
-        }
+        torii: { }
     };
 
     if (environment === 'development') {

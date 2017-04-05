@@ -23,7 +23,6 @@ module.exports = {
         'ember-suave/require-access-in-comments': 'off'
     },
     globals: {
-        moment: false,
         validator: false
     }
 };

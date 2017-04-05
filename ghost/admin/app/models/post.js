@@ -2,6 +2,7 @@
 import Ember from 'ember';
 import computed, {equal, filterBy} from 'ember-computed';
 import injectService from 'ember-service/inject';
+import moment from 'moment';
 
 import Model from 'ember-data/model';
 import attr from 'ember-data/attr';
