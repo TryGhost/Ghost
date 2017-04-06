@@ -1,11 +1,12 @@
 import Component from 'ember-component';
+import Object from 'ember-object';
 import layout from '../../templates/components/card-markdown';
 import {formatMarkdown} from '../../lib/format-markdown';
 import injectService from 'ember-service/inject';
 import {invokeAction} from 'ember-invoke-action';
 import {isEmberArray} from 'ember-array/utils';
 import {isBlank} from 'ember-utils';
-import computed from 'ember-computed';
+import computed, {alias} from 'ember-computed';
 import observer from 'ember-metal/observer';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import run from 'ember-runloop';
@@ -25,17 +26,25 @@ export default Component.extend({
     ajax: injectService(),
 
     editing: observer('isEditing', function () {
-        // if (!this.isEditing) {
-        //     this.set('preview', formatMarkdown([this.get('payload').markdown]));
-        // }
+        if (!this.isEditing) {
+            this.set('preview', formatMarkdown([this.get('payload').markdown]));
+        }
     }),
     preview: computed('value', function() {
         return formatMarkdown([this.get('payload').markdown]);
     }),
     save: observer('doSave', function () {
-        this.get('env').save(this.get('payload'), false);
+        let payload = this.get('payload');
+        payload.markdown = this.$('textarea').val();
+        this.set('value', this.$('textarea').val());
+        this.set('payload', payload);
+        this.get('env').save(payload, false);
+        this.set('isEditing', false);
     }),
-    
+    init() {
+        this._super(...arguments);
+        this.set('value', this.get('payload').markdown);
+    },
     _uploadStarted() {
         invokeAction(this, 'uploadStarted');
     },
@@ -160,12 +169,6 @@ export default Component.extend({
     },
 
     actions: {
-        updateValue() {
-            console.log("update value");
-            this.get('payload').markdown = this.$('textarea').val();
-            this.get('env').save(this.get('payload'), false);
-            this.set('preview', formatMarkdown([this.get('payload').markdown]));
-        },
 
         fileSelected(fileList) {
             // can't use array destructuring here as FileList is not a strict
