@@ -88,7 +88,7 @@
 }
 
 
-.kg-card:hover .kg-card-toolbar, .kg-card.selected .kg-card-toolbar {
+.kg-card.selected .kg-card-toolbar {
     display: flex;
     align-items: stretch;
     justify-content: space-around;
