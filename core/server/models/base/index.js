@@ -249,8 +249,17 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return this.updatedAttributes()[attr];
     },
 
-    hasDateChanged: function (attr) {
-        return moment(this.get(attr)).diff(moment(this.updated(attr))) !== 0;
+    /**
+     * There is difference between `updated` and `previous`:
+     * Depending on the hook (before or after writing into the db), both fields have a different meaning.
+     * e.g. onSaving  -> before db write (has to use previous)
+     *      onUpdated -> after db write  (has to use updated)
+     *
+     * hasDateChanged('attr', {beforeWrite: true})
+     */
+    hasDateChanged: function (attr, options) {
+        options = options || {};
+        return moment(this.get(attr)).diff(moment(options.beforeWrite ? this.previous(attr) : this.updated(attr))) !== 0;
     },
 
     /**

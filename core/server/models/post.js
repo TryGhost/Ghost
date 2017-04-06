@@ -149,7 +149,7 @@ Post = ghostBookshelf.Model.extend({
             prevSlug    = this._previousAttributes.slug,
             tagsToCheck = this.get('tags'),
             publishedAt = this.get('published_at'),
-            publishedAtHasChanged = this.hasDateChanged('published_at'),
+            publishedAtHasChanged = this.hasDateChanged('published_at', {beforeWrite: true}),
             mobiledoc   = this.get('mobiledoc'),
             tags = [];
 
