@@ -6,7 +6,6 @@ import {invokeAction} from 'ember-invoke-action';
 
 export default Component.extend({
     layout,
-    isEditing: true,
     hasRendered: false,
     save: observer('doSave', function () {
         this.get('env').save(this.get('payload'), false);

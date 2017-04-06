@@ -1,14 +1,12 @@
 import Component from 'ember-component';
-import Object from 'ember-object';
 import layout from '../../templates/components/card-markdown';
 import {formatMarkdown} from '../../lib/format-markdown';
 import injectService from 'ember-service/inject';
 import {invokeAction} from 'ember-invoke-action';
 import {isEmberArray} from 'ember-array/utils';
 import {isBlank} from 'ember-utils';
-import computed, {alias} from 'ember-computed';
+import computed from 'ember-computed';
 import observer from 'ember-metal/observer';
-import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import run from 'ember-runloop';
 import {
     isRequestEntityTooLargeError,
@@ -71,6 +69,7 @@ export default Component.extend({
         invokeAction(this, 'uploadSuccess', response);
         let placeholderText = `![uploading:${response.file.name}]()`;
         let imageText = `![](${response.url})`;
+        // eslint-disable-next-line ember-suave/prefer-destructuring
         let el = this.$('textarea')[0]; // array destructuring on jquery causes ember to throw an error about calling an Object as a Function
 
         el.value = el.value.replace(placeholderText, imageText);
@@ -203,19 +202,18 @@ export default Component.extend({
             invokeAction(this, 'selectCard');
         },
         didDrop(event) {
-            
             event.preventDefault();
             event.stopPropagation();
             // eslint-disable-next-line ember-suave/prefer-destructuring
             let el = this.$('textarea')[0]; // array destructuring here causes ember to throw an error about calling an Object as a Function
-            
+
             let start = el.selectionStart;
-            
+
             let end = el.selectionEnd;
 
             let {files} = event.dataTransfer;
             let combinedLength = 0;
-            
+
             // eslint-disable-next-line ember-suave/prefer-destructuring
             let file = files[0]; // array destructuring here causes ember to throw an error about calling an Object as a Function
             let placeholderText = `\r\n![uploading:${file.name}]()\r\n`;
@@ -227,10 +225,10 @@ export default Component.extend({
 
             this.send('fileSelected', event.dataTransfer.files);
         },
-        didDragOver(event) {
+        didDragOver() {
             this.$('textarea').addClass('dragOver');
         },
-        didDragLeave(event) {
+        didDragLeave() {
             this.$('textarea').removeClass('dragOver');
         }
     }

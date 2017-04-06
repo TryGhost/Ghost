@@ -195,10 +195,10 @@ export default Component.extend({
                 window.getSelection().removeAllRanges();
                 this.send('selectCardHard', id);
             } else {
-                 this.send('deselectCard');
+                this.send('deselectCard');
             }
         } else {
-             this.send('deselectCard');
+            this.send('deselectCard');
         }
     },
 
@@ -215,9 +215,9 @@ export default Component.extend({
         selectCard(cardId) {
             let card = this.get('emberCards').find((card) => card.id === cardId);
             let cardHolder = $(`#${cardId}`).parent('.kg-card');
-            if(this.get('selectedCard') !== card) {
+            if (this.get('selectedCard') !== card) {
                 this.send('deselectCard');
-             }
+            }
             cardHolder.addClass('selected');
             cardHolder.removeClass('selected-hard');
             this.set('selectedCard', card);
@@ -235,15 +235,15 @@ export default Component.extend({
         // creating blocks under the card and deleting the card.
         // used when selecting the card with the keyboard or clicking on the toolbar.
         selectCardHard(cardId) {
-             let card = this.get('emberCards').find((card) => card.id === cardId);
-             let cardHolder = $(`#${cardId}`).parents('.kg-card');
-             if(this.get('selectedCard') !== card) {
+            let card = this.get('emberCards').find((card) => card.id === cardId);
+            let cardHolder = $(`#${cardId}`).parents('.kg-card');
+            if (this.get('selectedCard') !== card) {
                 this.send('deselectCard');
-             }
-             cardHolder.addClass('selected');
-             cardHolder.addClass('selected-hard');
-             this.set('selectedCard', card);
-            
+            }
+            cardHolder.addClass('selected');
+            cardHolder.addClass('selected-hard');
+            this.set('selectedCard', card);
+
             document.onclick = (event) => {
                 let target = $(event.target);
                 let parent = target.parents('.kg-card');
@@ -330,7 +330,7 @@ export default Component.extend({
             }
             this.get('keyDownHandler').length = 0;
             document.onclick = null;
-            
+
             this.set('editedCard', null);
         },
         editCard(cardId) {
