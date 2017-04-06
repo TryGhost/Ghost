@@ -11,13 +11,15 @@ export default Component.extend({
 
     open: false,
 
-    navMenuIcon: computed('config.blogUrl', function () {
-        let url = `${this.get('config.blogUrl')}/favicon.png`;
+    navMenuIcon: computed('config.blogUrl', 'settings.icon', function () {
+        let blogIcon = this.get('settings.icon') ? this.get('settings.icon') : 'favicon.ico';
+        let url = `${this.get('config.blogUrl')}/${blogIcon}`;
 
         return htmlSafe(`background-image: url(${url})`);
     }),
 
     config: injectService(),
+    settings: injectService(),
     session: injectService(),
     ghostPaths: injectService(),
     feature: injectService(),
