@@ -73,7 +73,7 @@ function ping(post) {
             slackData = {
                 text: message,
                 unfurl_links: true,
-                icon_url: utils.url.urlJoin(utils.url.urlFor('admin', true), 'img/ghosticon.jpg'),
+                icon_url: utils.url.urlFor({relativeUrl: 'favicon.ico'}, true),
                 username: 'Ghost'
             };
 
