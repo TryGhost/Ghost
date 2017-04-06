@@ -5,11 +5,12 @@
 var should = require('should'),
     sinon = require('sinon'),
     supertest = require('supertest'),
-    testUtils = require('../../utils'),
     moment = require('moment'),
     cheerio = require('cheerio'),
     _ = require('lodash'),
+    testUtils = require('../../utils'),
     config = require('../../../server/config'),
+    events = require('../../../server/events'),
     settingsCache = require('../../../server/settings/cache'),
     origCache = _.cloneDeep(settingsCache),
     ghost = testUtils.startGhost,
@@ -555,6 +556,10 @@ describe('Frontend Routing', function () {
         }
 
         describe('Subdirectory (no slash)', function () {
+            before(function () {
+                events.removeAllListeners();
+            });
+
             before(function (done) {
                 testUtils.fork.ghost({
                     url: 'http://localhost/blog'

@@ -1304,8 +1304,8 @@ describe('Post Model', function () {
                     should.equal(deleted.author, undefined);
 
                     Object.keys(eventsTriggered).length.should.eql(2);
-                    should.exist(eventsTriggered['post.unpublished']);
                     should.exist(eventsTriggered['post.deleted']);
+                    should.exist(eventsTriggered['post.tags-updated']);
 
                     // Double check we can't find the post again
                     return PostModel.findOne(firstItemData);
@@ -1341,8 +1341,9 @@ describe('Post Model', function () {
 
                     should.equal(deleted.author, undefined);
 
-                    Object.keys(eventsTriggered).length.should.eql(1);
+                    Object.keys(eventsTriggered).length.should.eql(2);
                     should.exist(eventsTriggered['post.deleted']);
+                    should.exist(eventsTriggered['post.tags-updated']);
 
                     // Double check we can't find the post again
                     return PostModel.findOne(firstItemData);
@@ -1378,8 +1379,7 @@ describe('Post Model', function () {
 
                     should.equal(deleted.author, undefined);
 
-                    Object.keys(eventsTriggered).length.should.eql(2);
-                    should.exist(eventsTriggered['page.unpublished']);
+                    Object.keys(eventsTriggered).length.should.eql(1);
                     should.exist(eventsTriggered['page.deleted']);
 
                     // Double check we can't find the post again

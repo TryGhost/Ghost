@@ -102,7 +102,7 @@ describe('Schedules API', function () {
                 api.schedules.getScheduledPosts()
                     .then(function (result) {
                         result.posts.length.should.eql(5);
-                        Object.keys(result.posts[0].toJSON()).should.eql(['id', 'published_at', 'created_at', 'author', 'url']);
+                        Object.keys(result.posts[0].toJSON()).should.eql(['id', 'published_at', 'created_at', 'slug', 'author', 'url']);
                         done();
                     })
                     .catch(done);

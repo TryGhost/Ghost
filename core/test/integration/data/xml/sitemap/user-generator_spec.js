@@ -178,6 +178,7 @@ describe('Integration: User Generator', function () {
             })
             .then(function (userModel) {
                 userModel.get('count__posts').should.eql(1);
+                return Promise.delay(200);
             })
             .then(function () {
                 sitemap.authors.addOrUpdateUrl.calledOnce.should.eql(true);

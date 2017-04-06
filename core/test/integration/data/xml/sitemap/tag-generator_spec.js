@@ -269,14 +269,14 @@ describe('Integration: Tag Generator', function () {
                 (function retry() {
                     clearTimeout(timeout);
 
-                    if (sitemap.tags.removeUrl.calledOnce) {
+                    if (sitemap.tags.removeUrl.called) {
                         sitemap.getSiteMapXml('tags').match(/<url>/gi).length.should.eql(Object.keys(publicTagsWithConnectedPosts).length - 1);
                         (sitemap.getSiteMapXml('tags').match(new RegExp(affectedTagSlug)) === null).should.eql(true);
 
                         return done();
                     }
 
-                    timeout = setTimeout(retry, 100);
+                    timeout = setTimeout(retry, 200);
                 }());
             })
             .catch(done);

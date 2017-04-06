@@ -4,6 +4,7 @@ var should = require('should'),
 
     // Stuff we are testing
     events = require('../../../server/events'),
+    models = require('../../../server/models'),
     SiteMapManager = require('../../../server/data/xml/sitemap/manager'),
     PostGenerator = require('../../../server/data/xml/sitemap/post-generator'),
     PageGenerator = require('../../../server/data/xml/sitemap/page-generator'),
@@ -15,6 +16,7 @@ var should = require('should'),
 describe('Sitemap', function () {
     var makeStubManager = function () {
         var posts, pages, tags, authors;
+
         sandbox.stub(PostGenerator.prototype, 'refreshAll').returns(Promise.resolve());
         sandbox.stub(PageGenerator.prototype, 'refreshAll').returns(Promise.resolve());
         sandbox.stub(TagGenerator.prototype, 'refreshAll').returns(Promise.resolve());
@@ -43,6 +45,10 @@ describe('Sitemap', function () {
         return new SiteMapManager({posts: posts, pages: pages, tags: tags, authors: authors});
     };
 
+    before(function () {
+        models.init();
+    });
+
     afterEach(function () {
         sandbox.restore();
         events.removeAllListeners();
@@ -64,6 +70,7 @@ describe('Sitemap', function () {
 
         it('can initialize', function (done) {
             manager.initialized.should.equal(false);
+
             manager.init().then(function () {
                 manager.posts.init.called.should.equal(true);
                 manager.pages.init.called.should.equal(true);
@@ -76,7 +83,15 @@ describe('Sitemap', function () {
             }).catch(done);
         });
 
-        it('updates page site map correctly', function (done) {
+        it('page-generator: updates site map correctly', function (done) {
+            manager.posts.init.restore();
+            manager.authors.init.restore();
+            manager.tags.init.restore();
+
+            sandbox.stub(manager.posts, 'init').returns(Promise.resolve());
+            sandbox.stub(manager.authors, 'init').returns(Promise.resolve());
+            sandbox.stub(manager.tags, 'init').returns(Promise.resolve());
+
             manager.init().then(function () {
                 events.on('page.added', function (fakeModel) {
                     fakeModel.should.eql(fake);
@@ -121,7 +136,15 @@ describe('Sitemap', function () {
             }).catch(done);
         });
 
-        it('updates post site map', function (done) {
+        it('post-generator: updates site map', function (done) {
+            manager.pages.init.restore();
+            manager.authors.init.restore();
+            manager.tags.init.restore();
+
+            sandbox.stub(manager.pages, 'init').returns(Promise.resolve());
+            sandbox.stub(manager.authors, 'init').returns(Promise.resolve());
+            sandbox.stub(manager.tags, 'init').returns(Promise.resolve());
+
             manager.init().then(function () {
                 events.on('post.added', function (fakeModel) {
                     fakeModel.should.eql(fake);
@@ -166,7 +189,15 @@ describe('Sitemap', function () {
             }).catch(done);
         });
 
-        it('doesn\'t add posts until they are published', function (done) {
+        it('post-generator: doesn\'t add posts until they are published', function (done) {
+            manager.pages.init.restore();
+            manager.authors.init.restore();
+            manager.tags.init.restore();
+
+            sandbox.stub(manager.pages, 'init').returns(Promise.resolve());
+            sandbox.stub(manager.authors, 'init').returns(Promise.resolve());
+            sandbox.stub(manager.tags, 'init').returns(Promise.resolve());
+
             manager.init().then(function () {
                 events.on('post.added', function () {
                     manager.posts.addOrUpdateUrl.called.should.equal(false);
@@ -191,7 +222,15 @@ describe('Sitemap', function () {
             }).catch(done);
         });
 
-        it('deletes posts that were unpublished', function (done) {
+        it('post-generator: deletes posts that were unpublished', function (done) {
+            manager.pages.init.restore();
+            manager.authors.init.restore();
+            manager.tags.init.restore();
+
+            sandbox.stub(manager.pages, 'init').returns(Promise.resolve());
+            sandbox.stub(manager.authors, 'init').returns(Promise.resolve());
+            sandbox.stub(manager.tags, 'init').returns(Promise.resolve());
+
             manager.init().then(function () {
                 events.on('post.unpublished', function () {
                     manager.posts.addOrUpdateUrl.called.should.equal(false);
