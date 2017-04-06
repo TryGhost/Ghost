@@ -69,7 +69,6 @@
     bottom:-9px;
     width: 100%;
     height: 8px;
-    background-color:pink;
 }
 
 .button-group:after {
@@ -174,7 +173,6 @@ textarea.ed_code {
 
 .dragOver {
     background-color: var(--lightgrey);
-    position: relative;
 }
 
 

@@ -7,7 +7,7 @@ export default Component.extend({
     layout,
     editing: observer('editedCard', function () {
         let editing = this.get('editedCard') === this.get('card');
-        if(this.get('isEditing') && !editing) {
+        if (this.get('isEditing') && !editing) {
             this.send('stopEdit');
         }
         this.set('isEditing', editing);
@@ -22,7 +22,6 @@ export default Component.extend({
             () => {
                 let card = this.get('card');
 
-                
                 let {env: {name}} = card;
 
                 // the mobiledoc generated container.
@@ -33,7 +32,7 @@ export default Component.extend({
                 mobiledocCard.addClass(name ? `kg-${name}` : '');
                 mobiledocCard.attr('tabindex', 3);
                 mobiledocCard.click(() => {
-                    if(!this.get('isEditing')) {
+                    if (!this.get('isEditing')) {
                         this.send('selectCardHard');
                     }
                 });
@@ -46,7 +45,7 @@ export default Component.extend({
         },
 
         toggleState() {
-            if(this.get('isEditing')) {
+            if (this.get('isEditing')) {
                 this.send('stopEdit');
             } else {
                 this.send('startEdit');
@@ -66,7 +65,7 @@ export default Component.extend({
             this.get('card').env.remove();
         },
         startEdit() {
-            this.sendAction('edit', this.card.id)
+            this.sendAction('edit', this.card.id);
         },
         stopEdit() {
             this.send('save');

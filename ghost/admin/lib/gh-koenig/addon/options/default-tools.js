@@ -207,7 +207,7 @@ export default function (editor, toolbar) {
                         postEditor.replaceSection(thisSection, card);
                     }
                     // insert empty paragraph after card if it's the last element.
-                    if(!thisSection.next) {
+                    if (!thisSection.next) {
                         let newSection = editor.builder.createMarkupSection('p');
                         postEditor.insertSectionAtEnd(newSection);
                     }
@@ -237,7 +237,7 @@ export default function (editor, toolbar) {
                         postEditor.replaceSection(thisSection, card);
                     }
 
-                    if(!thisSection.next) {
+                    if (!thisSection.next) {
                         let newSection = editor.builder.createMarkupSection('p');
                         postEditor.insertSectionAtEnd(newSection);
                     }
@@ -262,7 +262,7 @@ export default function (editor, toolbar) {
                     let card = postEditor.builder.createCardSection('card-hr', {pos: 'top'});
                     postEditor.insertSection(card);
 
-                    if(!thisSection.next) {
+                    if (!thisSection.next) {
                         let newSection = editor.builder.createMarkupSection('p');
                         postEditor.insertSectionAtEnd(newSection);
                     }
@@ -291,7 +291,7 @@ export default function (editor, toolbar) {
                         postEditor.replaceSection(thisSection, card);
                     }
                     // if this is the last element then insert a paragraph after the card
-                    if(!thisSection.next) {
+                    if (!thisSection.next) {
                         let newSection = editor.builder.createMarkupSection('p');
                         postEditor.insertSectionAtEnd(newSection);
                     }

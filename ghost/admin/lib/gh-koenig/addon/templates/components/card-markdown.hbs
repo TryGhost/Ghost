@@ -1,5 +1,4 @@
 {{#if isEditing}}
-    {{!--{{textarea value=value key-up="updateValue" focus-in=(action "selectCard")}}--}}
     <textarea onfocus={{action "selectCard"}} ondrop={{action "didDrop"}} ondragover={{action "didDragOver"}} ondragleave={{action "didDragLeave"}}>{{value}}</textarea>
 {{else}}
     {{{preview}}}
