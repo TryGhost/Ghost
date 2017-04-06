@@ -23,6 +23,7 @@ export default Component.extend({
     classNames: ['editor-holder'],
     emberCards: emberA([]),
     selectedCard: null,
+    editedCard: null,
     keyDownHandler: [],
     init() {
         this._super(...arguments);
@@ -194,10 +195,10 @@ export default Component.extend({
                 window.getSelection().removeAllRanges();
                 this.send('selectCardHard', id);
             } else {
-                this.send('deselectCard');
+                 this.send('deselectCard');
             }
         } else {
-            this.send('deselectCard');
+             this.send('deselectCard');
         }
     },
 
@@ -214,7 +215,9 @@ export default Component.extend({
         selectCard(cardId) {
             let card = this.get('emberCards').find((card) => card.id === cardId);
             let cardHolder = $(`#${cardId}`).parent('.kg-card');
-            this.send('deselectCard');
+            if(this.get('selectedCard') !== card) {
+                this.send('deselectCard');
+             }
             cardHolder.addClass('selected');
             cardHolder.removeClass('selected-hard');
             this.set('selectedCard', card);
@@ -223,7 +226,7 @@ export default Component.extend({
             document.onclick = (event) => {
                 let target = $(event.target);
                 let parent = target.parents('.kg-card');
-                if (!target.hasClass('kg-card') && (!parent.length || parent[0] !== cardHolder[0])) {
+                if (!target.hasClass('kg-card') && !target.hasClass('kg-card-button') && !target.hasClass('kg-card-button-text') && (!parent.length || parent[0] !== cardHolder[0])) {
                     this.send('deselectCard');
                 }
             };
@@ -232,17 +235,20 @@ export default Component.extend({
         // creating blocks under the card and deleting the card.
         // used when selecting the card with the keyboard or clicking on the toolbar.
         selectCardHard(cardId) {
-            let card = this.get('emberCards').find((card) => card.id === cardId);
-            let cardHolder = $(`#${cardId}`).parents('.kg-card');
-            this.send('deselectCard');
-            cardHolder.addClass('selected');
-            cardHolder.addClass('selected-hard');
-            this.set('selectedCard', card);
-            // cardHolder.focus();
+             let card = this.get('emberCards').find((card) => card.id === cardId);
+             let cardHolder = $(`#${cardId}`).parents('.kg-card');
+             if(this.get('selectedCard') !== card) {
+                this.send('deselectCard');
+             }
+             cardHolder.addClass('selected');
+             cardHolder.addClass('selected-hard');
+             this.set('selectedCard', card);
+            
             document.onclick = (event) => {
                 let target = $(event.target);
                 let parent = target.parents('.kg-card');
-                if (!target.hasClass('kg-card') && (!parent.length || parent[0] !== cardHolder[0])) {
+
+                if (!target.hasClass('kg-card') && !target.hasClass('kg-card-button') && !target.hasClass('kg-card-button-text') && (!parent.length || parent[0] !== cardHolder[0])) {
                     this.send('deselectCard');
                 }
             };
@@ -324,6 +330,16 @@ export default Component.extend({
             }
             this.get('keyDownHandler').length = 0;
             document.onclick = null;
+            
+            this.set('editedCard', null);
+        },
+        editCard(cardId) {
+          //  this.send('selectCard', cardId);
+            let card = this.get('emberCards').find((card) => card.id === cardId);
+            this.set('editedCard', card);
+        },
+        stopEditingCard() {
+            this.set('editedCard', null);
         }
     }
 

@@ -10,20 +10,21 @@
     selectCard=(action "selectCard")
     selectCardHard=(action "selectCardHard")
     deselectCard=(action "deselectCard")
+    stopEdit=(action "stopEdit")
 }}
 <div class="kg-card-toolbar">
     <div class="button-group">
         <label {{action "selectCardHard"}}>{{card.card.label}}:</label>
         {{#if isEditing}}
-            <button {{action "toggleState"}} class='kg-card-button-text'>
+            {{!--<button {{action "stopEdit"}} class='kg-card-button-text'>
                         Cancel
-            </button>
-            <button {{action "save"}} class='kg-card-button-save'>
-                        Save
+            </button>--}}
+            <button {{action "stopEdit"}} class='kg-card-button-save'>
+                Done            
             </button>
         {{else}}
             {{#if card.card.buttons.edit}}
-                <button {{action "toggleState"}} class='kg-card-button-text'>
+                <button {{action "startEdit"}} class='kg-card-button-text'>
                         Edit
                 </button>
             {{/if}}
