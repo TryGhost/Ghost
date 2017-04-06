@@ -771,7 +771,8 @@ User = ghostBookshelf.Model.extend({
             }
         });
     },
-    inactiveStates: inactiveStates
+    inactiveStates: inactiveStates,
+    activeStates: activeStates
 });
 
 Users = ghostBookshelf.Collection.extend({

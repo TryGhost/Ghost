@@ -1,10 +1,10 @@
-var _      = require('lodash'),
-    api    = require('../../../api'),
-    utils  = require('../../../utils'),
-    validator        = require('validator'),
-    BaseMapGenerator = require('./base-generator'),
-    // @TODO: figure out a way to get rid of this
-    activeStates   = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'];
+var _ = require('lodash'),
+    validator = require('validator'),
+    api = require('../../../api'),
+    logging = require('../../../logging'),
+    models = require('../../../models'),
+    utils = require('../../../utils'),
+    BaseMapGenerator = require('./base-generator');
 
 // A class responsible for generating a sitemap from posts and keeping it updated
 function UserMapGenerator(opts) {
@@ -41,7 +41,7 @@ _.extend(UserMapGenerator.prototype, {
     },
 
     validateDatum: function (datum) {
-        return datum.visibility === 'public' && _.includes(activeStates, datum.status);
+        return datum.visibility === 'public' && _.includes(models.User.activeStates, datum.status);
     },
 
     getUrlForDatum: function (user) {
