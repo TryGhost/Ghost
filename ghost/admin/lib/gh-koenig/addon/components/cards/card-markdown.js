@@ -20,7 +20,6 @@ import {
 
 export default Component.extend({
     layout,
-    isEditing: true,
     accept: 'image/gif,image/jpg,image/jpeg,image/png,image/svg+xml',
     extensions: ['gif', 'jpg', 'jpeg', 'png', 'svg'],
     ajax: injectService(),
@@ -39,7 +38,6 @@ export default Component.extend({
         this.set('value', this.$('textarea').val());
         this.set('payload', payload);
         this.get('env').save(payload, false);
-        this.set('isEditing', false);
     }),
     init() {
         this._super(...arguments);
@@ -73,7 +71,7 @@ export default Component.extend({
         invokeAction(this, 'uploadSuccess', response);
         let placeholderText = `![uploading:${response.file.name}]()`;
         let imageText = `![](${response.url})`;
-        let [el] = this.$('textarea');
+        let el = this.$('textarea')[0]; // array destructuring on jquery causes ember to throw an error about calling an Object as a Function
 
         el.value = el.value.replace(placeholderText, imageText);
         this.sendAction('updateValue');
@@ -205,23 +203,21 @@ export default Component.extend({
             invokeAction(this, 'selectCard');
         },
         didDrop(event) {
+            
             event.preventDefault();
             event.stopPropagation();
-            let [el] = this.$('textarea');
+            // eslint-disable-next-line ember-suave/prefer-destructuring
+            let el = this.$('textarea')[0]; // array destructuring here causes ember to throw an error about calling an Object as a Function
+            
             let start = el.selectionStart;
+            
             let end = el.selectionEnd;
 
             let {files} = event.dataTransfer;
             let combinedLength = 0;
-            // for(let i = 0; i < files.length; i++) {
-            //     let file = files[i];
-            //     let placeholderText = `\r\n![uploading:${file.name}]()\r\n`;
-            //     el.value = el.value.substring(0, start) + placeholderText + el.value.substring(end, el.value.length);
-            //     combinedLength += placeholderText.length;
-            // }
-
+            
             // eslint-disable-next-line ember-suave/prefer-destructuring
-            let file = files[0];
+            let file = files[0]; // array destructuring here causes ember to throw an error about calling an Object as a Function
             let placeholderText = `\r\n![uploading:${file.name}]()\r\n`;
             el.value = el.value.substring(0, start) + placeholderText + el.value.substring(end, el.value.length);
             combinedLength += placeholderText.length;
@@ -237,8 +233,5 @@ export default Component.extend({
         didDragLeave(event) {
             this.$('textarea').removeClass('dragOver');
         }
-
-
     }
-
 });

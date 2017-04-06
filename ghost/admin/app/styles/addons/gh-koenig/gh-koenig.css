@@ -173,16 +173,15 @@ textarea.ed_code {
 }
 
 .dragOver {
-    background-color: pink;
-    border:100px solid red;
+    background-color: var(--lightgrey);
+    position: relative;
 }
+
 
 
 /**
  * Tooltip
  */
-
-
 @keyframes tooltip-fadein {
     0% { opacity: 0; }
     100% { opacity: 1; }
