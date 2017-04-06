@@ -11,7 +11,7 @@ This default adapter can be found in `core/server/storage/LocalFileStorage.js`.
 
 ### SchedulingDefault
 By default Ghost will schedule your posts using a pure JavaScript solution.
-It doesn't make usage of `cron` or similar.
+It doesn't use of `cron` or similar.
 This default adapter can be found in `core/server/scheduling/SchedulingDefault.js`.
 
 ### Custom Adapter
