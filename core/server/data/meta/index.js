@@ -66,7 +66,7 @@ function getMetaData(data, root) {
     if (settingsCache.get('logo')) {
         metaData.blog.logo.url = utils.url.urlFor('image', {image: settingsCache.get('logo')}, true);
     } else {
-        metaData.blog.logo.url = utils.url.urlJoin(utils.url.urlFor('admin'), 'img/ghosticon.jpg');
+        metaData.blog.logo.url = utils.url.urlJoin(utils.url.urlFor('admin'), 'assets/img/ghosticon.jpg');
     }
 
     // TODO: cleanup these if statements
