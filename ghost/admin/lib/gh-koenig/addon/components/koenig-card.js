@@ -30,7 +30,8 @@ export default Component.extend({
                 mobiledocCard.removeClass('__mobiledoc-card');
                 mobiledocCard.addClass('kg-card');
                 mobiledocCard.addClass(name ? `kg-${name}` : '');
-                mobiledocCard.attr('tabindex', 3);
+
+                mobiledocCard.attr('tabindex', 4);
                 mobiledocCard.click(() => {
                     if (!this.get('isEditing')) {
                         this.send('selectCardHard');

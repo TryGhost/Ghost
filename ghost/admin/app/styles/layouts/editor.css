@@ -17,6 +17,7 @@
     font-weight: bold;
     font-size: 3.2rem;
     line-height: 1.3em;
+    z-index: 1;
 }
 
 /* Place holder content that displays in the title if it is empty */
@@ -30,6 +31,7 @@
     font-weight: bold;
     line-height: 1.3em;
     min-width: 30rem; /* hack it's defaulting just to enough width for the 'Your' in 'Your Post Title' */
+    z-index: -1;
 }
 
 

@@ -61,14 +61,19 @@ export default Component.extend({
             }
         };
 
-        this.editor = new Mobiledoc.Editor(options);
+        this.set('editor', new Mobiledoc.Editor(options));
+        run.next(() => {
+            if (this.get('setEditor')) {
+                this.sendAction('setEditor', this.get('editor'));
+            }
+        });
     },
 
     willRender() {
         if (this._rendered) {
             return;
         }
-        let {editor} = this;
+        let editor = this.get('editor');
 
         editor.didRender(() => {
 
@@ -92,6 +97,8 @@ export default Component.extend({
             return;
         }
         let [editorDom] = this.$('.surface');
+        editorDom.tabindex = this.get('tabindex');
+
         this.domContainer = editorDom.parentNode.parentNode.parentNode.parentNode; // nasty nasty nasty.
         this.editor.render(editorDom);
         this._rendered = true;
@@ -112,36 +119,6 @@ export default Component.extend({
         }
 
         this.editor.cursorDidChange(() => this.cursorMoved());
-
-        // hack to track key up to focus back on the title when the up key is pressed
-        this.editor.element.addEventListener('keydown', (event) => {
-            if (event.keyCode === 38) { // up arrow
-                let selection = window.getSelection();
-                if (!selection.rangeCount) {
-                    return;
-                }
-                let range = selection.getRangeAt(0); // get the actual range within the DOM.
-                let cursorPositionOnScreen = range.getBoundingClientRect();
-                let topOfEditor = this.editor.element.getBoundingClientRect().top;
-                if (cursorPositionOnScreen.top < topOfEditor + 33) {
-                    let $title = $(this.titleQuery);
-
-                    // // the code below will move the cursor to the correct part of the title when pressing the ⬆ arrow.
-                    // // unfortunately it positions correctly in Firefox but you cannot edit, it doesn't position correctly in Chrome but you can.
-                    // let offset = findCursorPositionFromPixel($title[0].firstChild,  cursorPositionOnScreen.left);
-
-                    // let newRange = document.createRange();
-                    // newRange.collapse(true);
-                    // newRange.setStart($title[0].firstChild, offset);
-                    // newRange.setEnd($title[0].firstChild, offset);
-                    // updateCursor(newRange);
-
-                    $title[0].focus();
-
-                    return false;
-                }
-            }
-        });
 
         // listen to keydown events outside of the editor, used to handle keydown events in the cards.
         document.onkeydown = (event) => {
@@ -267,8 +244,6 @@ export default Component.extend({
                                 range.tail.offset = 0;
                                 editor.selectRange(range);
                                 return;
-                            } else {
-                                $(this.titleQuery).focus();
                             }
                         }
                     });
