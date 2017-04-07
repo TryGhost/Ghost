@@ -25,14 +25,13 @@
 
 .kg-card {
     position: relative;
-    display: block; 
-    padding: 10px;
+    display: block;
     outline:none;
 }
 
-.kg-card:hover, .kg-card.selected {
+.kg-card:hover,
+.kg-card.selected {
     box-shadow: var(--blue) 0 0 0 1px;
-    border-radius:10px;
 }
 .kg-card.selected-hard {
     box-shadow: var(--blue) 0 0 0 3px;
@@ -55,7 +54,7 @@
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
     border-radius:5px;
-    
+
     height:46px;
     display:flex;
     box-shadow: 0 0 0 1px color(var(--darkgrey) l(-10%)), 0 8px 16px rgba(26,39,49,0.16), rgba(255,255,255,0.09) 0 1px 0 0 inset;
@@ -78,7 +77,7 @@
     bottom:-9px;
     left: 50%;
     margin-left: -10px;
-    
+
     width: 0;
     height: 0;
     border-left: transparent 10px solid;
