@@ -1,9 +1,9 @@
-{{#link-to "editor.new" classNames="gh-nav-main-editor"}}<i class="icon-pen"></i>New story{{/link-to}}
+{{#link-to "editor.new" classNames="gh-nav-main-editor"}}{{inline-svg "pen"}}New story{{/link-to}}
 {{#if (eq routing.currentRouteName "posts.index")}}
-    {{#link-to "posts" (query-params type=null) classNames="gh-nav-main-content active"}}<i class="icon-content"></i>Stories{{/link-to}}
+    {{#link-to "posts" (query-params type=null) classNames="gh-nav-main-content active"}}{{inline-svg "content"}}Stories{{/link-to}}
 {{else}}
-    {{#link-to "posts" classNames="gh-nav-main-content"}}<i class="icon-content"></i>Content{{/link-to}}
+    {{#link-to "posts" classNames="gh-nav-main-content"}}{{inline-svg "content"}}Content{{/link-to}}
 {{/if}}
-{{#link-to "team" classNames="gh-nav-main-users"}}<i class="icon-team"></i>Team{{/link-to}}
-<div class="gh-mobile-nav-bar-more" {{action "openMobileMenu"}}><i class="icon-gh"></i>More</div>
+{{#link-to "team" classNames="gh-nav-main-users"}}{{inline-svg "account-group"}}Team{{/link-to}}
+<div class="gh-mobile-nav-bar-more" {{action "openMobileMenu"}}>{{inline-svg "icon" class="icon-gh"}}More</div>
 {{yield}}

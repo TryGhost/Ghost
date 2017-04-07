@@ -9,7 +9,7 @@
     <span>
     {{#if isRunning}}<span class="spinner"></span>{{/if}}
     {{if (or isIdle isRunning) buttonText}}
-    {{#if isSuccess}}<i class="icon-check"></i> {{successText}}{{/if}}
-    {{#if isFailure}}<i class="icon-x"></i> {{failureText}}{{/if}}
+    {{#if isSuccess}}{{inline-svg "check-circle"}} {{successText}}{{/if}}
+    {{#if isFailure}}{{inline-svg "close"}} {{failureText}}{{/if}}
     </span>
 {{/if}}

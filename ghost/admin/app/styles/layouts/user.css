@@ -10,6 +10,17 @@
     padding: 9px 11px;
 }
 
+.user-actions-cog svg {
+    height: 13px;
+    width: auto;
+    fill: var(--midgrey);
+    margin-right: 0;
+}
+
+.user-actions-cog svg path {
+    stroke: initial;
+}
+
 .user-actions-menu {
     top: calc(100% + 17px);
     right: 0;

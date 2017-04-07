@@ -2,18 +2,18 @@
     <header class="view-header">
         {{#gh-view-title openMobileMenu="openMobileMenu"}}
             {{link-to "Team" "team" data-test-team-link=true}}
-            <i class="icon-arrow-right"></i> <span>{{user.name}}</span>
+            {{inline-svg "arrow-right"}} <span>{{user.name}}</span>
 
             {{#if user.isSuspended}}
-            <i></i> <span class="gh-badge administrator" data-test-suspended-badge>Suspended</span>
+            <span class="gh-badge administrator" data-test-suspended-badge>Suspended</span>
             {{/if}}
         {{/gh-view-title}}
         <section class="view-actions">
             {{#if userActionsAreVisible}}
                 <span class="dropdown">
-                    {{#gh-dropdown-button dropdownName="user-actions-menu" classNames="gh-btn gh-btn-default only-has-icon user-actions-cog" title="User Actions" data-test-user-actions=true}}
+                    {{#gh-dropdown-button dropdownName="user-actions-menu" classNames="gh-btn gh-btn-default gh-btn-icon only-has-icon user-actions-cog" title="User Actions" data-test-user-actions=true}}
                         <span>
-                            <i class="icon-settings"></i>
+                            {{inline-svg "settings"}}
                             <span class="hidden">User Settings</span>
                         </span>
                     {{/gh-dropdown-button}}
@@ -56,7 +56,7 @@
                 </span>
             {{/if}}
 
-            {{gh-task-button class="gh-btn gh-btn-blue" task=save}}
+            {{gh-task-button class="gh-btn gh-btn-blue gh-btn-icon" task=save}}
 
             {{#if showDeleteUserModal}}
                 {{gh-fullscreen-modal "delete-user"
@@ -234,7 +234,7 @@
                     {{/gh-form-group}}
 
                     <div class="form-group">
-                        {{gh-task-button "Change Password" class="gh-btn gh-btn-red button-change-password" task=user.saveNewPassword}}
+                        {{gh-task-button "Change Password" class="gh-btn gh-btn-red gh-btn-icon button-change-password" task=user.saveNewPassword}}
                     </div>
                 </fieldset>
             </form> {{! change password form }}
@@ -243,7 +243,7 @@
         {{!-- when using Ghost OAuth, users trying to change email/pass need to visit my.ghost.org --}}
         {{#if showMyGhostLink}}
             <div class="user-profile">
-                <p class="gh-box gh-box-info"><i class="icon-lock"></i> To change your login details please visit <a href="https://my.ghost.org/account" target="_blank">https://my.ghost.org/account</a></p>
+                <p class="gh-box gh-box-info">{{inline-svg "lock"}} To change your login details please visit <a href="https://my.ghost.org/account" target="_blank">https://my.ghost.org/account</a></p>
             </div>
         {{/if}}
     </div>

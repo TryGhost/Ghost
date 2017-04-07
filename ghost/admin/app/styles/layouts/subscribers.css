@@ -33,6 +33,11 @@
     visibility: hidden;
 }
 
+.subscribers-table table .gh-btn svg {
+    height: 13px;
+    width: auto;
+}
+
 .subscribers-table table tr:hover .gh-btn {
     visibility: visible;
 }

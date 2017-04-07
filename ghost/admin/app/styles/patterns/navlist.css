@@ -63,11 +63,15 @@
     letter-spacing: 0.2px;
 }
 
-.nav-list-item i {
+.nav-list-item svg {
     position: absolute;
     top: 50%;
     right: 10px;
     margin-top: -0.9rem;
-    color: var(--midgrey);
-    font-size: 1.4rem;
+    height: 1.4rem;
+    width: auto;
+}
+
+.nav-list-item svg path {
+    fill: var(--midgrey);
 }

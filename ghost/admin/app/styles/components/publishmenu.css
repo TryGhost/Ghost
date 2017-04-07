@@ -6,6 +6,16 @@
     border: none;
 }
 
+.gh-publishmenu-trigger svg {
+    height: 8px;
+    width: auto;
+}
+
+.gh-publishmenu-trigger svg path {
+    stroke: var(--blue);
+    stroke-width: 1px;
+}
+
 .gh-publishmenu-trigger:focus {
     outline: 0;
 }

@@ -15,7 +15,7 @@
 {{#unless statusFreeze}}
     {{#gh-dropdown-button dropdownName="post-save-menu" classNameBindings=":gh-btn :gh-btn-sm isDangerous:gh-btn-red:gh-btn-blue gh-btnopen:active :dropdown-toggle :up"}}
         <span>
-            <i class="options icon-arrow2"></i>
+            {{inline-svg "arrow-down-small" class="options"}}
             <span class="sr-only">Toggle Settings Menu</span>
         </span>
     {{/gh-dropdown-button}}

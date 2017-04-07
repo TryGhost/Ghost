@@ -87,6 +87,18 @@ body > .ember-view:not(.default-liquid-destination) {
     transition: margin-top 0.2s ease;
 }
 
+.gh-nav-menu svg {
+    margin-right: 8px;
+    width: 12px;
+    height: 12px;
+    transition: margin-top 0.2s ease;
+    fill: color(var(--darkgrey));
+}
+
+.gh-nav-menu svg path {
+    stroke-width: 1px;
+}
+
 .gh-nav-menu-icon {
     flex-shrink: 0;
     margin-right: 10px;
@@ -158,6 +170,19 @@ body > .ember-view:not(.default-liquid-destination) {
     color: var(--darkgrey);
 }
 
+.gh-nav-search-button svg {
+    width: 16px;
+    height: 16px;
+    fill: var(--midgrey);
+    line-height: 13px;
+    transition: color 0.2s ease;
+    transform: rotate(90deg);
+}
+
+.gh-nav-search-button:hover svg {
+    fill: var(--darkgrey);
+}
+
 .gh-nav-list {
     margin: 0;
     padding: 0 25px 0 0;
@@ -205,24 +230,33 @@ body > .ember-view:not(.default-liquid-destination) {
     opacity: 1;
 }
 
-.gh-nav-list i {
+.gh-nav-list svg {
     margin-right: 8px;
     width: 15px;
     height: 15px;
-    color: rgba(0,0,0,0.6);
-    text-align: center;
-    font-size: 15px;
+    fill: rgba(0,0,0,0.6);
     line-height: 1;
 }
 
-.gh-nav-list .active i {
-    color: #fff;
+.gh-nav-list svg g {
+    stroke: rgba(0,0,0,0.6);
 }
 
-.gh-nav-list a:not(.active):hover i {
-    color: var(--darkgrey);
+.gh-nav-list .active svg {
+    fill: #fff;
 }
 
+.gh-nav-list .active svg g {
+    stroke: #fff;
+}
+
+.gh-nav-list a:not(.active):hover svg {
+    fill: var(--darkgrey);
+}
+
+.gh-nav-list a:not(.active):hover svg g {
+    stroke: var(--darkgrey);
+}
 
 /* Mobile Nav Menu (Slides out)
 /* ---------------------------------------------------------- */
@@ -294,7 +328,7 @@ body > .ember-view:not(.default-liquid-destination) {
         font-size: 1.2rem;
     }
 
-    .gh-nav-list i {
+    .gh-nav-list svg {
         margin-right: 8px;
         width: 17px;
         height: 17px;
@@ -329,6 +363,14 @@ body > .ember-view:not(.default-liquid-destination) {
 
 .gh-menu-toggle:hover i {
     color: var(--blue);
+}
+
+.gh-menu-toggle svg {
+    transition: all 0.2s ease;
+}
+
+.gh-menu-toggle:hover svg {
+    fill: var(--blue);
 }
 
 .gh-menu-toggle-content {
@@ -441,7 +483,16 @@ body > .ember-view:not(.default-liquid-destination) {
         padding: 5px 15px;
         text-align: center;
         cursor: pointer;
-        color: var(--darkgrey)
+        color: var(--darkgrey);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-around;
+    }
+
+    .gh-mobile-nav-bar svg {
+        width: 15px;
+        fill: var(--darkgrey);
     }
 }
 
@@ -514,11 +565,13 @@ body > .ember-view:not(.default-liquid-destination) {
     color: var(--blue);
 }
 
-.view-title i {
+.view-title svg {
     margin: 0 10px;
-    color: #818181;
-    font-size: 14px;
-    line-height: 12px;
+    height: 14px;
+}
+
+.view-title svg path {
+    fill: #818181;
 }
 
 .view-actions {

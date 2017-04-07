@@ -6,21 +6,21 @@
             <div class="gh-nav-menu-details-blog">{{config.blogTitle}}</div>
             <div class="gh-nav-menu-details-user">{{session.user.name}}</div>
         </div>
-        <i class="icon-arrow"></i>
+        {{inline-svg "arrow-down-small"}}
     {{/dropdown.trigger}}
     {{#dropdown.content class="gh-nav-menu-dropdown"}}
         <ul class="dropdown-menu dropdown-triangle-top" role="menu" {{action dropdown.actions.close on="click" preventDefault=false}}>
             <li role="presentation"><a href="{{config.blogUrl}}/" target="_blank">View site</a></li>
-            <li role="presentation">{{#link-to "about" classNames="gh-nav-menu-about dropdown-item js-nav-item" role="menuitem" tabindex="-1"}}<i class="icon-shop"></i> About Ghost{{/link-to}}</li>
+            <li role="presentation">{{#link-to "about" classNames="gh-nav-menu-about dropdown-item js-nav-item" role="menuitem" tabindex="-1"}}{{inline-svg "store"}} About Ghost{{/link-to}}</li>
             <li class="divider"></li>
-            <li role="presentation">{{#link-to "team.user" session.user.slug classNames="dropdown-item user-menu-profile js-nav-item" role="menuitem" tabindex="-1"}}<i class="icon-user"></i> Your Profile{{/link-to}}</li>
-            <li role="presentation"><a class="dropdown-item help-menu-support" role="menuitem" tabindex="-1" href="http://support.ghost.org/" target="_blank"><i class="icon-ambulance"></i> Support Center</a></li>
-            <li role="presentation"><a class="dropdown-item help-menu-tweet" role="menuitem" tabindex="-1" href="https://twitter.com/intent/tweet?text=%40TryGhost+Hi%21+Can+you+help+me+with+&related=TryGhost" target="_blank" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;"><i class="icon-twitter"></i> Tweet @TryGhost!</a></li>
+            <li role="presentation">{{#link-to "team.user" session.user.slug classNames="dropdown-item user-menu-profile js-nav-item" role="menuitem" tabindex="-1"}}{{inline-svg "user-circle"}} Your Profile{{/link-to}}</li>
+            <li role="presentation"><a class="dropdown-item help-menu-support" role="menuitem" tabindex="-1" href="http://support.ghost.org/" target="_blank">{{inline-svg "ambulance"}} Support Center</a></li>
+            <li role="presentation"><a class="dropdown-item help-menu-tweet" role="menuitem" tabindex="-1" href="https://twitter.com/intent/tweet?text=%40TryGhost+Hi%21+Can+you+help+me+with+&related=TryGhost" target="_blank" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">{{inline-svg "twitter"}} Tweet @TryGhost!</a></li>
             <li class="divider"></li>
-            <li role="presentation"><a class="dropdown-item help-menu-how-to" role="menuitem" tabindex="-1" href="http://support.ghost.org/how-to-use-ghost/" target="_blank"><i class="icon-book"></i> How to Use Ghost</a></li>
-            <li role="presentation"><a class="dropdown-item help-menu-wishlist" role="menuitem" tabindex="-1" href="http://ideas.ghost.org/" target="_blank"><i class="icon-idea"></i> Wishlist</a></li>
+            <li role="presentation"><a class="dropdown-item help-menu-how-to" role="menuitem" tabindex="-1" href="http://support.ghost.org/how-to-use-ghost/" target="_blank">{{inline-svg "book-open"}} How to Use Ghost</a></li>
+            <li role="presentation"><a class="dropdown-item help-menu-wishlist" role="menuitem" tabindex="-1" href="http://ideas.ghost.org/" target="_blank">{{inline-svg "idea"}} Wishlist</a></li>
             <li class="divider"></li>
-            <li role="presentation">{{#link-to "signout" classNames="dropdown-item user-menu-signout" role="menuitem" tabindex="-1"}}<i class="icon-signout"></i> Sign Out{{/link-to}}</li>
+            <li role="presentation">{{#link-to "signout" classNames="dropdown-item user-menu-signout" role="menuitem" tabindex="-1"}}{{inline-svg "signout"}} Sign Out{{/link-to}}</li>
         </ul>
     {{/dropdown.content}}
 {{/gh-basic-dropdown}}
@@ -30,33 +30,33 @@
     </section>
     <ul class="gh-nav-list gh-nav-main">
         {{!<li><i class="icon-dash"></i>Dashboard</li>}}
-        <li>{{#link-to "editor.new" classNames="gh-nav-main-editor"}}<i class="icon-pen"></i>New story{{/link-to}}</li>
+        <li>{{#link-to "editor.new" classNames="gh-nav-main-editor"}}{{inline-svg "pen"}}New story{{/link-to}}</li>
         {{!<li><a href="#"><i class="icon-user"></i>My Posts</a></li>}}
         <li>
             {{!-- clicking the Content link whilst on the content screen should reset the filter --}}
             {{#if (eq routing.currentRouteName "posts.index")}}
-                {{#link-to "posts" (query-params type=null author=null tag=null order=null) classNames="gh-nav-main-content active"}}<i class="icon-content"></i>Stories{{/link-to}}
+                {{#link-to "posts" (query-params type=null author=null tag=null order=null) classNames="gh-nav-main-content active"}}{{inline-svg "content"}}Stories{{/link-to}}
             {{else}}
-                {{#link-to "posts" classNames="gh-nav-main-content"}}<i class="icon-content"></i>Stories{{/link-to}}
+                {{#link-to "posts" classNames="gh-nav-main-content"}}{{inline-svg "content"}}Stories{{/link-to}}
             {{/if}}
         </li>
-        <li>{{#link-to "team" classNames="gh-nav-main-users"}}<i class="icon-team"></i>Team{{/link-to}}</li>
+        <li>{{#link-to "team" classNames="gh-nav-main-users"}}{{inline-svg "account-group"}}Team{{/link-to}}</li>
         {{!<li><a href="#"><i class="icon-idea"></i>Ideas</a></li>}}
         {{#if feature.subscribers}}
             {{#if (gh-user-can-admin session.user)}}
-                <li>{{#link-to "subscribers" classNames="gh-nav-main-subscribers"}}<i class="icon-mail"></i>Subscribers{{/link-to}}</li>
+                <li>{{#link-to "subscribers" classNames="gh-nav-main-subscribers"}}{{inline-svg "email"}}Subscribers{{/link-to}}</li>
             {{/if}}
         {{/if}}
     </ul>
     {{#if (gh-user-can-admin session.user)}}
         <ul class="gh-nav-list gh-nav-settings">
             <li class="gh-nav-list-h">Settings</li>
-            <li>{{#link-to "settings.general" classNames="gh-nav-settings-general"}}<i class="icon-settings"></i>General{{/link-to}}</li>
-            <li>{{#link-to "settings.design" classNames="gh-nav-settings-navigation"}}<i class="icon-compass"></i>Design{{/link-to}}</li>
-            <li>{{#link-to "settings.tags" classNames="gh-nav-settings-tags"}}<i class="icon-tag"></i>Tags{{/link-to}}</li>
-            <li>{{#link-to "settings.code-injection" classNames="gh-nav-settings-code-injection"}}<i class="icon-code"></i>Code injection{{/link-to}}</li>
-            <li>{{#link-to "settings.apps" classNames="gh-nav-settings-apps"}}<i class="icon-box"></i>Apps{{/link-to}}</li>
-            <li>{{#link-to "settings.labs" classNames="gh-nav-settings-labs"}}<i class="icon-labs"></i>Labs{{/link-to}}</li>
+            <li>{{#link-to "settings.general" classNames="gh-nav-settings-general"}}{{inline-svg "settings"}}General{{/link-to}}</li>
+            <li>{{#link-to "settings.design" classNames="gh-nav-settings-navigation"}}{{inline-svg "compass"}}Design{{/link-to}}</li>
+            <li>{{#link-to "settings.tags" classNames="gh-nav-settings-tags"}}{{inline-svg "tag"}}Tags{{/link-to}}</li>
+            <li>{{#link-to "settings.code-injection" classNames="gh-nav-settings-code-injection"}}{{inline-svg "brackets"}}Code injection{{/link-to}}</li>
+            <li>{{#link-to "settings.apps" classNames="gh-nav-settings-apps"}}{{inline-svg "box"}}Apps{{/link-to}}</li>
+            <li>{{#link-to "settings.labs" classNames="gh-nav-settings-labs"}}{{inline-svg "wrench-double"}}Labs{{/link-to}}</li>
         </ul>
     {{/if}}
 </section>
