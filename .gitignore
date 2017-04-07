@@ -68,7 +68,7 @@ config.*.json
 # Built asset files
 /core/built
 /core/server/admin/views/*
-/core/shared/ghost-url.min.js
+/core/server/public/ghost-url.min.js
 
 # Coverage reports
 coverage.html

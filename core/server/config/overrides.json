@@ -9,7 +9,8 @@
         "internalAppPath": "core/server/apps/",
         "internalStoragePath": "core/server/storage/",
         "internalSchedulingPath": "core/server/scheduling/",
-        "migrationPath": "core/server/data/migrations"
+        "migrationPath": "core/server/data/migrations",
+        "publicFilePath": "core/server/public"
     },
     "internalApps": [
         "private-blogging",

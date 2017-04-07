@@ -18,7 +18,7 @@ var debug = require('debug')('ghost:blog'),
     errorHandler = require('../middleware/error-handler'),
     maintenance = require('../middleware/maintenance'),
     prettyURLs = require('../middleware/pretty-urls'),
-    serveSharedFile = require('../middleware/serve-shared-file'),
+    servePublicFile = require('../middleware/serve-public-file'),
     staticTheme = require('../middleware/static-theme'),
     customRedirects = require('../middleware/custom-redirects'),
     serveFavicon = require('../middleware/serve-favicon'),
@@ -44,15 +44,19 @@ module.exports = function setupBlogApp() {
     // Favicon
     blogApp.use(serveFavicon());
     // Ghost-Url
-    blogApp.use(serveSharedFile('shared/ghost-url.js', 'application/javascript', utils.ONE_HOUR_S));
-    blogApp.use(serveSharedFile('shared/ghost-url.min.js', 'application/javascript', utils.ONE_HOUR_S));
+    blogApp.use(servePublicFile('public/ghost-url.js', 'application/javascript', utils.ONE_HOUR_S));
+    blogApp.use(servePublicFile('public/ghost-url.min.js', 'application/javascript', utils.ONE_HOUR_S));
     // Serve sitemap.xsl file
-    blogApp.use(serveSharedFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
+    blogApp.use(servePublicFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
     // Serve robots.txt if not found in theme
-    blogApp.use(serveSharedFile('robots.txt', 'text/plain', utils.ONE_HOUR_S));
+    blogApp.use(servePublicFile('robots.txt', 'text/plain', utils.ONE_HOUR_S));
 
     // Serve stylesheets for default templates
-    blogApp.use(serveSharedFile('shared/ghost.css', 'text/css', utils.ONE_HOUR_S));
+    blogApp.use(servePublicFile('public/ghost.css', 'text/css', utils.ONE_HOUR_S));
+
+    // Serve images for default templates
+    blogApp.use(servePublicFile('public/404-ghost@2x.png', 'png', utils.ONE_HOUR_S));
+    blogApp.use(servePublicFile('public/404-ghost.png', 'png', utils.ONE_HOUR_S));
 
     // Serve blog images using the storage adapter
     blogApp.use('/' + utils.url.STATIC_IMAGE_URL_PREFIX, storage.getStorage().serve());

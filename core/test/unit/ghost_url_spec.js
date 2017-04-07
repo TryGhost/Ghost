@@ -1,5 +1,5 @@
 var should = require('should'), // jshint ignore:line
-    ghostUrl = require('../../shared/ghost-url'),
+    ghostUrl = require('../../server/public/ghost-url'),
     configUtils = require('../utils/configUtils'),
     utils = require('../../server/utils');
 
