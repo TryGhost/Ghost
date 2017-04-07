@@ -8,11 +8,9 @@ var proxy = require('./proxy'),
     SafeString = proxy.SafeString;
 
 module.exports = function asset(path, options) {
-    var isAdmin,
-        minify;
+    var minify;
 
     if (options && options.hash) {
-        isAdmin = options.hash.ghost;
         minify = options.hash.minifyInProduction;
     }
 
@@ -21,6 +19,6 @@ module.exports = function asset(path, options) {
     }
 
     return new SafeString(
-        getAssetUrl(path, isAdmin, minify)
+        getAssetUrl(path, minify)
     );
 };

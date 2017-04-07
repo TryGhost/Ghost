@@ -2,29 +2,21 @@ var config = require('../../config'),
     settingsCache = require('../../settings/cache'),
     utils = require('../../utils');
 
-function getAssetUrl(path, isAdmin, minify) {
+function getAssetUrl(path, minify) {
     var output = '';
 
     output += utils.url.urlJoin(utils.url.getSubdir(), '/');
 
     if (!path.match(/^favicon\.(ico|png)$/) && !path.match(/^public/) && !path.match(/^asset/)) {
-        if (isAdmin) {
-            output = utils.url.urlJoin(output, 'ghost/');
-        }
-
         output = utils.url.urlJoin(output, 'assets/');
     }
     // Serve either uploaded favicon or default
     // for favicon, we don't care anymore about the `/` leading slash, as we don't support theme favicons
     if (path.match(/\/?favicon\.(ico|png)$/)) {
-        if (isAdmin) {
-            output = utils.url.urlJoin(utils.url.getSubdir(), '/favicon.ico');
+        if (settingsCache.get('icon')) {
+            output = utils.url.urlJoin(utils.url.getSubdir(), utils.url.urlFor('image', {image: settingsCache.get('icon')}));
         } else {
-            if (settingsCache.get('icon')) {
-                output = utils.url.urlJoin(utils.url.getSubdir(), utils.url.urlFor('image', {image: settingsCache.get('icon')}));
-            } else {
-                output = utils.url.urlJoin(utils.url.getSubdir(), '/favicon.ico');
-            }
+            output = utils.url.urlJoin(utils.url.getSubdir(), '/favicon.ico');
         }
     }
     // Get rid of any leading slash on the path
