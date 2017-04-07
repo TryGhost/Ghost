@@ -7,7 +7,7 @@ function getAssetUrl(path, isAdmin, minify) {
 
     output += utils.url.urlJoin(utils.url.getSubdir(), '/');
 
-    if (!path.match(/^favicon\.(ico|png)$/) && !path.match(/^shared/) && !path.match(/^asset/)) {
+    if (!path.match(/^favicon\.(ico|png)$/) && !path.match(/^public/) && !path.match(/^asset/)) {
         if (isAdmin) {
             output = utils.url.urlJoin(output, 'ghost/');
         }
