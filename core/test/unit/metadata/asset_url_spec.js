@@ -29,13 +29,13 @@ describe('getAssetUrl', function () {
     });
 
     it('should not add ghost or asset to url if ghost.css for default templates', function () {
-        var testUrl = getAssetUrl('shared/ghost.css');
-        testUrl.should.equal('/shared/ghost.css?v=' + config.get('assetHash'));
+        var testUrl = getAssetUrl('public/ghost.css');
+        testUrl.should.equal('/public/ghost.css?v=' + config.get('assetHash'));
     });
 
-    it('should not add ghost or asset to url has shared in it', function () {
-        var testUrl = getAssetUrl('shared/myfile.js');
-        testUrl.should.equal('/shared/myfile.js?v=' + config.get('assetHash'));
+    it('should not add ghost or asset to url has public in it', function () {
+        var testUrl = getAssetUrl('public/myfile.js');
+        testUrl.should.equal('/public/myfile.js?v=' + config.get('assetHash'));
     });
 
     it('should return asset minified url when minify true', function () {
