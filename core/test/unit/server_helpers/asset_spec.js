@@ -37,14 +37,14 @@ describe('{{asset}} helper', function () {
 
         it('handles ghost.css for default templates correctly', function () {
             // with ghost set
-            rendered = helpers.asset('shared/ghost.css', {hash: {ghost: 'true'}});
+            rendered = helpers.asset('public/ghost.css', {hash: {ghost: 'true'}});
             should.exist(rendered);
-            String(rendered).should.equal('/shared/ghost.css?v=abc');
+            String(rendered).should.equal('/public/ghost.css?v=abc');
 
             // without ghost set
-            rendered = helpers.asset('shared/ghost.css');
+            rendered = helpers.asset('public/ghost.css');
             should.exist(rendered);
-            String(rendered).should.equal('/shared/ghost.css?v=abc');
+            String(rendered).should.equal('/public/ghost.css?v=abc');
         });
 
         it('handles custom favicon correctly', function () {
@@ -77,14 +77,14 @@ describe('{{asset}} helper', function () {
             localSettingsCache.icon = '';
 
             // with ghost set
-            rendered = helpers.asset('shared/asset.js', {hash: {ghost: 'true'}});
+            rendered = helpers.asset('public/asset.js', {hash: {ghost: 'true'}});
             should.exist(rendered);
-            String(rendered).should.equal('/shared/asset.js?v=abc');
+            String(rendered).should.equal('/public/asset.js?v=abc');
 
             // without ghost set
-            rendered = helpers.asset('shared/asset.js');
+            rendered = helpers.asset('public/asset.js');
             should.exist(rendered);
-            String(rendered).should.equal('/shared/asset.js?v=abc');
+            String(rendered).should.equal('/public/asset.js?v=abc');
         });
 
         it('handles admin assets correctly', function () {
@@ -121,14 +121,14 @@ describe('{{asset}} helper', function () {
 
         it('handles ghost.css for default templates correctly', function () {
             // with ghost set
-            rendered = helpers.asset('shared/ghost.css', {hash: {ghost: 'true'}});
+            rendered = helpers.asset('public/ghost.css', {hash: {ghost: 'true'}});
             should.exist(rendered);
-            String(rendered).should.equal('/blog/shared/ghost.css?v=abc');
+            String(rendered).should.equal('/blog/public/ghost.css?v=abc');
 
             // without ghost set
-            rendered = helpers.asset('shared/ghost.css');
+            rendered = helpers.asset('public/ghost.css');
             should.exist(rendered);
-            String(rendered).should.equal('/blog/shared/ghost.css?v=abc');
+            String(rendered).should.equal('/blog/public/ghost.css?v=abc');
         });
 
         it('handles custom favicon correctly', function () {
@@ -159,14 +159,14 @@ describe('{{asset}} helper', function () {
 
         it('handles shared assets correctly', function () {
             // with ghost set
-            rendered = helpers.asset('shared/asset.js', {hash: {ghost: 'true'}});
+            rendered = helpers.asset('public/asset.js', {hash: {ghost: 'true'}});
             should.exist(rendered);
-            String(rendered).should.equal('/blog/shared/asset.js?v=abc');
+            String(rendered).should.equal('/blog/public/asset.js?v=abc');
 
             // without ghost set
-            rendered = helpers.asset('shared/asset.js');
+            rendered = helpers.asset('public/asset.js');
             should.exist(rendered);
-            String(rendered).should.equal('/blog/shared/asset.js?v=abc');
+            String(rendered).should.equal('/blog/public/asset.js?v=abc');
         });
 
         it('handles admin assets correctly', function () {
