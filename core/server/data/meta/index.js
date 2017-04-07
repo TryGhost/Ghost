@@ -66,7 +66,13 @@ function getMetaData(data, root) {
     if (settingsCache.get('logo')) {
         metaData.blog.logo.url = utils.url.urlFor('image', {image: settingsCache.get('logo')}, true);
     } else {
-        metaData.blog.logo.url = utils.url.urlJoin(utils.url.urlFor('admin'), 'img/ghosticon.jpg');
+        metaData.blog.logo.url = utils.url.urlFor({relativeUrl: 'favicon.ico'}, true);
+        // Setting image dimensions to force the default logo to be an `ImageObject` and make
+        // Google happy with it. See https://github.com/TryGhost/Ghost/issues/7558
+        metaData.blog.logo.dimensions = {
+            width: 60,
+            height: 60
+        };
     }
 
     // TODO: cleanup these if statements

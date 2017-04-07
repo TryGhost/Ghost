@@ -200,7 +200,7 @@ describe('Slack', function () {
                 settingsAPIStub.calledOnce.should.be.true();
                 requestOptions.should.have.property('href').and.be.equal('https://hooks.slack.com/services/a-b-c-d');
                 requestData.should.have.property('text').and.be.equal('http://myblog.com/');
-                requestData.should.have.property('icon_url').and.be.equal('http://myblog.com/ghost/img/ghosticon.jpg');
+                requestData.should.have.property('icon_url').and.be.equal('http://myblog.com/favicon.ico');
                 requestData.should.have.property('username').and.be.equal('Ghost');
                 done();
             };
@@ -222,7 +222,7 @@ describe('Slack', function () {
                 settingsAPIStub.calledOnce.should.be.true();
                 requestOptions.should.have.property('href').and.be.equal('https://hooks.slack.com/services/a-b-c-d');
                 requestData.should.have.property('text').and.be.equal('Hi!');
-                requestData.should.have.property('icon_url').and.be.equal('https://myblog.com/ghost/img/ghosticon.jpg');
+                requestData.should.have.property('icon_url').and.be.equal('https://myblog.com/favicon.ico');
                 requestData.should.have.property('username').and.be.equal('Ghost');
                 done();
             };
