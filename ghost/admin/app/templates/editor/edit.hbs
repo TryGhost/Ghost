@@ -41,7 +41,8 @@
                 shouldFocus=shouldFocusTitle
                 focus-out="updateTitle"
                 update=(action (perform updateTitle))
-                id='gh-editor-title'
+                id="gh-editor-title"
+                koenigEditor=(readonly editor)
             }}
             {{#if scheduleCountdown}}
                 <time datetime="{{post.publishedAtUTC}}" class="gh-notification gh-notification-schedule">
@@ -56,9 +57,9 @@
                 shouldFocusEditor=shouldFocusEditor
                 apiRoot=apiRoot
                 assetPath=assetPath
-                tabindex=2
-		        containerSelector='.gh-editor-container'
-                titleQuery='#gh-editor-title div'
+                tabindex="2"
+		        containerSelector=".gh-editor-container"
+                setEditor=(action "setEditor")
             }}
         </div>
     </div>

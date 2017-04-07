@@ -1,20 +1,41 @@
 import Component from 'ember-component';
+import computed from 'ember-computed';
 
 export default Component.extend({
     val: '',
+    _cachedVal: '',
     _mutationObserver: null,
     tagName: 'h2',
-    didRender() {
-        if (this._rendered) {
-            return;
+    editor: null,
+
+    koenigEditor: computed('editor', {
+        get() {
+            return this.get('editor');
+        },
+        set(key, value) {
+            this.set('editor', value);
         }
+    }),
+    editorKeyDownListener: null,
+    didRender() {
+        let editor = this.get('editor');
 
         let title = this.$('.gh-editor-title');
         if (!this.get('val')) {
             title.addClass('no-content');
-        } else {
+        } else if (this.get('val') !== this.get('_cachedVal')) {
             title.html(this.get('val'));
         }
+
+        if (!editor) {
+            return;
+        }
+        if (this.get('editorKeyDownListener')) {
+            editor.element.removeEventListener('keydown', this.get('editorKeyDownListener'));
+        }
+        this.set('editorKeyDownListener', this.editorKeyDown.bind(this));
+        editor.element.addEventListener('keydown', this.get('editorKeyDownListener'));
+
         title[0].onkeydown = (event) => {
             // block the browser format keys.
             if (event.ctrlKey || event.metaKey) {
@@ -31,7 +52,6 @@ export default Component.extend({
             if (event.keyCode === 13) {
                 //  enter
                 // on enter we want to split the title, create a new paragraph in the mobile doc and insert it into the content.
-                let {editor} = window;
                 let title = this.$('.gh-editor-title');
                 editor.run((postEditor) => {
                     let {anchorOffset, focusOffset} = window.getSelection();
@@ -73,13 +93,7 @@ export default Component.extend({
                 let offset = title.offset();
                 let bottomOfHeading =  offset.top + title.height();
                 if (cursorPositionOnScreen.bottom > bottomOfHeading - 13) {
-                    let {editor} = window;  // This isn't ideal.
-                                            // We need to pass the editor instance so that we can `this.get('editor');`
-                                            // but the editor instance is within the component and not exposed.
-                                            // there's also a dependency that the editor will have with the title and the title will have with the editor
-                                            // so that the cursor can move both ways (up and down) between them.
-                                            // see `lib/gh-koenig/addon/gh-koenig.js` and the function `findCursorPositionFromPixel` which should actually be
-                                            // encompassed here.
+                    let editor = this.get('editor');
                     let loc = editor.element.getBoundingClientRect();
 
                     let cursorPositionInEditor = editor.positionAtPoint(cursorPositionOnScreen.left, loc.top);
@@ -92,7 +106,7 @@ export default Component.extend({
                     return false;
                 }
             }
-            title.removeClass('no-content');
+            // title.removeClass('no-content');
         };
 
         // setup mutation observer
@@ -112,6 +126,7 @@ export default Component.extend({
             // }
 
             if (this.get('val') !== textContent) {
+                this.set('_cachedVal', textContent);
                 this.set('val', textContent);
                 this.sendAction('onChange', textContent);
                 this.sendAction('update', textContent);
@@ -120,9 +135,76 @@ export default Component.extend({
 
         mutationObserver.observe(title[0], {childList: true, characterData: true, subtree: true});
         this.set('_mutationObserver', mutationObserver);
-        this.set('_rendered', true);
     },
     willDestroyElement() {
         this.get('_mutationObserver').disconnect();
+        this.$('.gh-editor-title')[0].onkeydown = null;
+        let editor = this.get('editor');
+        if (editor) {
+            editor.element.removeEventListener('keydown', this.get('editorKeyDownListener'));
+        }
+    },
+    editorKeyDown(event) {
+        let editor = this.get('editor');
+
+        if (event.keyCode === 38) { // up arrow
+            let selection = window.getSelection();
+            if (!selection.rangeCount) {
+                return;
+            }
+            let range = selection.getRangeAt(0); // get the actual range within the DOM.
+            let cursorPositionOnScreen = range.getBoundingClientRect();
+            let topOfEditor = editor.element.getBoundingClientRect().top;
+
+            // if the current paragraph is empty then the position is 0
+            if (cursorPositionOnScreen.top === 0) {
+                cursorPositionOnScreen = editor.activeSection.renderNode.element.getBoundingClientRect();
+            }
+
+            if (cursorPositionOnScreen.top < topOfEditor + 33) {
+                let offset = this.getOffsetAtPosition(cursorPositionOnScreen.left);
+                this.setCursorAtOffset(offset);
+
+                return false;
+            }
+        }
+    },
+    // gets the character in the last line of the title that best matches the editor
+    getOffsetAtPosition(horizontalOffset) {
+        let [title] = this.$('.gh-editor-title')[0].childNodes;
+        let len = title.textContent.length;
+        let range = document.createRange();
+
+        for (let i = len - 1; i > -1; i--) {
+            // console.log(title);
+            range.setStart(title, i);
+            range.setEnd(title, i + 1);
+            let rect = range.getBoundingClientRect();
+            if (rect.top === rect.bottom) {
+                continue;
+            }
+            if (rect.left <= horizontalOffset && rect.right >= horizontalOffset) {
+                return  i + (horizontalOffset >= (rect.left + rect.right) / 2 ? 1 : 0);     // if the horizontalOffset is on the left hand side of the
+                                                                                            // character then return `i`, if it's on the right return `i + 1`
+            }
+        }
+
+        return len;
+    },
+    setCursorAtOffset() {
+        let [title] = this.$('.gh-editor-title');
+        title.focus();
+        // the following code sets the start point based on the offest provided.
+        // it works in isolation of ghost-admin but in ghost-admin it doesn't work in Chrome
+        // and works in Firefox, but in firefox you can no longer edit the title once this has happened.
+        // It's either an issue with ghost-admin or mobiledoc and more investigation needs to be done.
+        // Probably after the beta release though.
+
+        // let range = document.createRange();
+        // let selection = window.getSelection();
+        // range.setStart(title.childNodes[0], offset);
+        // range.collapse(true);
+        // selection.removeAllRanges();
+        // selection.addRange(range);
     }
 });
