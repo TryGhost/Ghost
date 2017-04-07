@@ -61,3 +61,13 @@
     color: #fff;
     text-align: center;
 }
+
+.splitbtn .dropdown-toggle svg {
+    height: 10px;
+    fill: #fff;
+}
+
+.splitbtn .dropdown-toggle svg path {
+    stroke: #fff;
+    stroke-width: 2px;
+}

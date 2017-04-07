@@ -10,7 +10,8 @@ describe('Unit: Component: gh-editor-save-button', function () {
             'component:gh-dropdown-button',
             'component:gh-dropdown',
             'component:gh-spin-button',
-            'service:dropdown'
+            'service:dropdown',
+            'helper:inline-svg'
         ]
     });
 

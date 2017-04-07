@@ -24,8 +24,8 @@
         {{/gh-form-group}}
     </form>
 
-    {{#gh-spin-button type="submit" tabindex="5" class="gh-btn gh-btn-green gh-btn-lg gh-btn-block" action=(action 'setup') disabled=submitDisabled submitting=submitting autoWidth="false"}}
-        <span>Last step: Invite your team <i class="icon-chevron"></i></span>
+    {{#gh-spin-button type="submit" tabindex="5" class="gh-btn gh-btn-green gh-btn-lg gh-btn-block gh-btn-icon gh-btn-icon-right" action=(action 'setup') disabled=submitDisabled submitting=submitting autoWidth="false"}}
+        <span>Last step: Invite your team {{inline-svg "arrow-right-small"}}</span>
     {{/gh-spin-button}}
 {{else}}
 
@@ -67,8 +67,8 @@
             </span>
             {{gh-error-message errors=errors property="blogTitle"}}
         {{/gh-form-group}}
-        {{#gh-spin-button type="submit" tabindex="5" class="gh-btn gh-btn-green gh-btn-lg gh-btn-block" action="setup" submitting=submitting autoWidth="false"}}
-            <span>Last step: Invite your team <i class="icon-chevron"></i></span>
+        {{#gh-spin-button type="submit" tabindex="5" class="gh-btn gh-btn-green gh-btn-lg gh-btn-block gh-btn-icon gh-btn-icon-right" action="setup" submitting=submitting autoWidth="false"}}
+            <span>Last step: Invite your team {{inline-svg "arrow-right-small"}}</span>
         {{/gh-spin-button}}
     </form>
 {{/if}}

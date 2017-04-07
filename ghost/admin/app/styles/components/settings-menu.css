@@ -129,15 +129,29 @@
     color: var(--red);
 }
 
-.settings-menu-content .tag-delete-button:before {
-    position: relative;
-    top: -1px;
-    margin-right: 4px;
+.settings-menu-content .tag-delete-button span {
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.settings-menu-content .tag-delete-button svg {
+    fill: var(--red);
+    height: 13px;
+    width: auto;
+    margin-bottom: 12px;
+    flex: 1 0 13px;
+}
+
+.settings-menu-content .tag-delete-button svg path {
+    stroke: var(--red);
 }
 
 .settings-menu-content .tag-delete-button:hover,
-.settings-menu-content .tag-delete-button:hover:before {
+.settings-menu-content .tag-delete-button svg:hover,
+.settings-menu-content .tag-delete-button svg path:hover {
     color: color(var(--red) lightness(-10%));
+    fill: color(var(--red) lightness(-10%));
+    stroke: color(var(--red) lightness(-10%));
 }
 
 .settings-menu-content .nav-list {

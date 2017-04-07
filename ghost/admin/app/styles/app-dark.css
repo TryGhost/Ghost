@@ -90,8 +90,12 @@ input,
     background: color(var(--lightgrey));
 }
 
-.gh-nav-list i {
-    color: var(--darkgrey);
+.gh-nav-list svg {
+    fill: var(--darkgrey);
+}
+
+.gh-nav-list svg g {
+    stroke: var(--darkgrey);
 }
 
 .gh-main {

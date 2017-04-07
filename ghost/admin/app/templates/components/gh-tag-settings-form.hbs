@@ -41,12 +41,12 @@
                         <b>Meta Data</b>
                         <span>Extra content for SEO and social media.</span>
                     </button>
-                    <i class="icon-arrow-right"></i>
+                    {{inline-svg "arrow-right"}}
                 </li>
             </ul>
 
             {{#unless tag.isNew}}
-                <button type="button" class="gh-btn gh-btn-link gh-btn-sm tag-delete-button" {{action "deleteTag"}}><span><i class="icon-trash"></i> Delete Tag</span></button>
+                <button type="button" class="gh-btn gh-btn-link gh-btn-sm gh-btn-icon tag-delete-button" {{action "deleteTag"}}><span>{{inline-svg "trash"}} Delete Tag</span></button>
             {{/unless}}
         </form>
     </div>

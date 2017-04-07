@@ -1,7 +1,7 @@
 <header class="view-header">
-    {{#gh-view-title openMobileMenu="openMobileMenu"}}<span style="padding-left:1px">{{#link-to "settings.apps.index"}}Apps{{/link-to}} <i class="icon-arrow-right" style="display:inline"></i> Slack</span>{{/gh-view-title}}
+    {{#gh-view-title openMobileMenu="openMobileMenu"}}<span style="padding-left:1px">{{#link-to "settings.apps.index"}}Apps{{/link-to}} {{inline-svg "arrow-right"}} Slack</span>{{/gh-view-title}}
     <section class="view-actions">
-        {{gh-task-button task=save class="gh-btn gh-btn-blue" data-test-save-button=true}}
+        {{gh-task-button task=save class="gh-btn gh-btn-blue gh-btn-icon" data-test-save-button=true}}
     </section>
 </header>
 <section class="view-container">
@@ -31,7 +31,7 @@
             {{/gh-form-group}}
         </form>
 
-        {{gh-task-button "Send Test Notification" task=sendTestNotification successText="Sent" class="gh-btn gh-btn-grey" disabled=testNotificationDisabled data-test-send-notification-button=true}}
+        {{gh-task-button "Send Test Notification" task=sendTestNotification successText="Sent" class="gh-btn gh-btn-grey gh-btn-icon" disabled=testNotificationDisabled data-test-send-notification-button=true}}
 
     </section>
 </section>

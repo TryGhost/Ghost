@@ -82,9 +82,13 @@
     font-weight: 300;
 }
 
-.apps-configured i {
+.apps-configured svg {
     margin-left: 15px;
-    color: var(--midgrey);
+    height: 14px;
+}
+
+.apps-configured svg path {
+    fill: var(--midgrey);
 }
 
 .apps-configured a {

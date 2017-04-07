@@ -28,19 +28,19 @@
                 submitting=submitting
             }}
             <button type="button" class="post-settings" title="Settings" {{action "openSettingsMenu"}}>
-                <i class="icon-settings"></i>
+                {{inline-svg "settings"}}
             </button>
         </section>
     </header>
     <div class="gh-editor-container">
         <div class="gh-editor-inner">
-            {{gh-editor-title 
+            {{gh-editor-title
                 val=(readonly model.titleScratch)
-                onChange=(action (mut model.titleScratch)) 
-                tabindex="1" 
-                shouldFocus=shouldFocusTitle 
-                focus-out="updateTitle" 
-                update=(action (perform updateTitle)) 
+                onChange=(action (mut model.titleScratch))
+                tabindex="1"
+                shouldFocus=shouldFocusTitle
+                focus-out="updateTitle"
+                update=(action (perform updateTitle))
                 id='gh-editor-title'
             }}
             {{#if scheduleCountdown}}

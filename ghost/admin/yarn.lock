@@ -2437,7 +2437,7 @@ ember-cli-mocha@0.13.2:
     mocha "^2.5.3"
     resolve "^1.1.7"
 
-ember-cli-moment-shim@3.1.0:
+ember-cli-moment-shim@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/ember-cli-moment-shim/-/ember-cli-moment-shim-3.1.0.tgz#ec6a39a0dcb4badeaf6dcb74a6c05b0bc576f721"
   dependencies:

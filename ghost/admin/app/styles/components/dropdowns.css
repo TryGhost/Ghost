@@ -72,6 +72,18 @@
     line-height: 1em;
 }
 
+.dropdown-menu svg {
+    margin-right: 10px;
+    height: 14px;
+    width: 14px;
+    line-height: 1em;
+    fill: color(var(--darkgrey) lightness(+20%));
+}
+
+.dropdown-menu svg path {
+    stroke: color(var(--darkgrey) lightness(+20%));
+}
+
 @media (max-width: 500px) {
     .dropdown-menu > li > a,
     .dropdown-menu > li > button {
@@ -80,6 +92,9 @@
     }
     .dropdown-menu i {
         font-size: 16px;
+    }
+    .dropdown-menu svg {
+        height: 16px;
     }
 }
 
