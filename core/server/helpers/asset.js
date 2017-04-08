@@ -11,10 +11,10 @@ module.exports = function asset(path, options) {
     var minify;
 
     if (options && options.hash) {
-        minify = options.hash.minifyInProduction;
+        minify = options.hash.hasMinFile;
     }
 
-    if (config.get('minifyAssets') === false) {
+    if (config.get('useMinFiles') === false) {
         minify = false;
     }
 

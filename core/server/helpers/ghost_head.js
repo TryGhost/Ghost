@@ -71,7 +71,7 @@ function getAjaxHelper(clientId, clientSecret) {
     var assetHelper = proxy.hbs.handlebars.helpers.asset;
 
     return '<script type="text/javascript" src="' +
-        assetHelper('public/ghost-url.js', {hash: {minifyInProduction: true}}) + '"></script>\n' +
+        assetHelper('public/ghost-url.js', {hash: {hasMinFile: true}}) + '"></script>\n' +
         '<script type="text/javascript">\n' +
         'ghost.init({\n' +
         '\tclientId: "' + clientId + '",\n' +
