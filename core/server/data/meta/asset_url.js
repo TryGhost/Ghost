@@ -2,7 +2,7 @@ var config = require('../../config'),
     settingsCache = require('../../settings/cache'),
     utils = require('../../utils');
 
-function getAssetUrl(path, minify) {
+function getAssetUrl(path, hasMinFile) {
     var output = '';
 
     output += utils.url.urlJoin(utils.url.getSubdir(), '/');
@@ -22,8 +22,8 @@ function getAssetUrl(path, minify) {
     // Get rid of any leading slash on the path
     path = path.replace(/^\//, '');
 
-    // replace ".foo" with ".min.foo" in production
-    if (minify) {
+    // replace ".foo" with ".min.foo" if configured
+    if (hasMinFile && config.get('useMinFiles') !== false) {
         path = path.replace(/\.([^\.]*)$/, '.min.$1');
     }
 

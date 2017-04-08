@@ -11,6 +11,7 @@ describe('{{asset}} helper', function () {
 
     before(function () {
         configUtils.set({assetHash: 'abc'});
+        configUtils.set({useMinFiles: true});
 
         sandbox.stub(settingsCache, 'get', function (key) {
             return localSettingsCache[key];
@@ -51,7 +52,7 @@ describe('{{asset}} helper', function () {
             String(rendered).should.equal('/content/images/favicon.ico');
         });
 
-        it('handles shared assets correctly', function () {
+        it('handles public assets correctly', function () {
             localSettingsCache.icon = '';
 
             rendered = helpers.asset('public/asset.js');
@@ -63,6 +64,12 @@ describe('{{asset}} helper', function () {
             rendered = helpers.asset('js/asset.js');
             should.exist(rendered);
             String(rendered).should.equal('/assets/js/asset.js?v=abc');
+        });
+
+        it('handles hasMinFile assets correctly', function () {
+            rendered = helpers.asset('js/asset.js', {hash: {hasMinFile: true}});
+            should.exist(rendered);
+            String(rendered).should.equal('/assets/js/asset.min.js?v=abc');
         });
     });
 
@@ -99,7 +106,7 @@ describe('{{asset}} helper', function () {
             String(rendered).should.equal('/blog/content/images/favicon.ico');
         });
 
-        it('handles shared assets correctly', function () {
+        it('handles public assets correctly', function () {
             rendered = helpers.asset('public/asset.js');
             should.exist(rendered);
             String(rendered).should.equal('/blog/public/asset.js?v=abc');
@@ -109,6 +116,12 @@ describe('{{asset}} helper', function () {
             rendered = helpers.asset('js/asset.js');
             should.exist(rendered);
             String(rendered).should.equal('/blog/assets/js/asset.js?v=abc');
+        });
+
+        it('handles hasMinFile assets correctly', function () {
+            rendered = helpers.asset('js/asset.js', {hash: {hasMinFile: true}});
+            should.exist(rendered);
+            String(rendered).should.equal('/blog/assets/js/asset.min.js?v=abc');
         });
 
         configUtils.restore();

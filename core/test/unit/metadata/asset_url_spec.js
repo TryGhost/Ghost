@@ -1,6 +1,7 @@
 var should = require('should'), // jshint ignore:line
     getAssetUrl = require('../../../server/data/meta/asset_url'),
-    config = require('../../../server/config');
+    configUtils = require('../../utils/configUtils'),
+    config = configUtils.config;
 
 describe('getAssetUrl', function () {
     it('should return asset url with just context', function () {
@@ -28,13 +29,33 @@ describe('getAssetUrl', function () {
         testUrl.should.equal('/public/myfile.js?v=' + config.get('assetHash'));
     });
 
-    it('should return asset minified url when minify true', function () {
-        var testUrl = getAssetUrl('myfile.js', true);
-        testUrl.should.equal('/assets/myfile.min.js?v=' + config.get('assetHash'));
-    });
+    describe('minify', function () {
+        afterEach(function () {
+            configUtils.restore();
+        });
 
-    it('should not add min to anything besides the last .', function () {
-        var testUrl = getAssetUrl('test.page/myfile.js', true);
-        testUrl.should.equal('/assets/test.page/myfile.min.js?v=' + config.get('assetHash'));
+        it('should return asset minified url when hasMinFile & useMinFiles are both set to true', function () {
+            configUtils.set('useMinFiles', true);
+            var testUrl = getAssetUrl('myfile.js', true);
+            testUrl.should.equal('/assets/myfile.min.js?v=' + config.get('assetHash'));
+        });
+
+        it('should NOT return asset minified url when hasMinFile true but useMinFiles is false', function () {
+            configUtils.set('useMinFiles', false);
+            var testUrl = getAssetUrl('myfile.js', true);
+            testUrl.should.equal('/assets/myfile.js?v=' + config.get('assetHash'));
+        });
+
+        it('should NOT return asset minified url when hasMinFile false but useMinFiles is true', function () {
+            configUtils.set('useMinFiles', true);
+            var testUrl = getAssetUrl('myfile.js', false);
+            testUrl.should.equal('/assets/myfile.js?v=' + config.get('assetHash'));
+        });
+
+        it('should not add min to anything besides the last .', function () {
+            configUtils.set('useMinFiles', true);
+            var testUrl = getAssetUrl('test.page/myfile.js', true);
+            testUrl.should.equal('/assets/test.page/myfile.min.js?v=' + config.get('assetHash'));
+        });
     });
 });
