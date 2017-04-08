@@ -2,41 +2,50 @@ var config = require('../../config'),
     settingsCache = require('../../settings/cache'),
     utils = require('../../utils');
 
+/**
+ * Serve either uploaded favicon or default
+ * @return {string}
+ */
+function getFaviconUrl() {
+    if (settingsCache.get('icon')) {
+        return utils.url.urlJoin(utils.url.getSubdir(), utils.url.urlFor('image', {image: settingsCache.get('icon')}));
+    }
+
+    return utils.url.urlJoin(utils.url.getSubdir(), '/favicon.ico');
+}
+
 function getAssetUrl(path, hasMinFile) {
-    var output = '';
+    // CASE: favicon - this is special path with its own functionality
+    if (path.match(/\/?favicon\.(ico|png)$/)) {
+        // @TODO, resolve this - we should only be resolving subdirectory and extension.
+        return getFaviconUrl();
+    }
 
-    output += utils.url.urlJoin(utils.url.getSubdir(), '/');
+    // CASE: Build the output URL
+    // Add subdirectory...
+    var output = utils.url.urlJoin(utils.url.getSubdir(), '/');
 
-    if (!path.match(/^favicon\.(ico|png)$/) && !path.match(/^public/) && !path.match(/^asset/)) {
+    // Optionally add /assets/
+    if (!path.match(/^public/) && !path.match(/^asset/)) {
         output = utils.url.urlJoin(output, 'assets/');
     }
-    // Serve either uploaded favicon or default
-    // for favicon, we don't care anymore about the `/` leading slash, as we don't support theme favicons
-    if (path.match(/\/?favicon\.(ico|png)$/)) {
-        if (settingsCache.get('icon')) {
-            output = utils.url.urlJoin(utils.url.getSubdir(), utils.url.urlFor('image', {image: settingsCache.get('icon')}));
-        } else {
-            output = utils.url.urlJoin(utils.url.getSubdir(), '/favicon.ico');
-        }
-    }
-    // Get rid of any leading slash on the path
-    path = path.replace(/^\//, '');
 
     // replace ".foo" with ".min.foo" if configured
     if (hasMinFile && config.get('useMinFiles') !== false) {
         path = path.replace(/\.([^\.]*)$/, '.min.$1');
     }
 
-    if (!path.match(/^favicon\.(ico|png)$/)) {
-        // we don't want to concat the path with our favicon url
-        output += path;
+    // Add the path for the requested asset
+    output = utils.url.urlJoin(output, path);
 
-        if (!config.get('assetHash')) {
-            config.set('assetHash', utils.generateAssetHash());
-        }
-
-        output = output + '?v=' + config.get('assetHash');
+    // Ensure we have an assetHash
+    // @TODO rework this!
+    if (!config.get('assetHash')) {
+        config.set('assetHash', utils.generateAssetHash());
     }
+
+    // Finally add the asset hash to the output URL
+    output += '?v=' + config.get('assetHash');
 
     return output;
 }
