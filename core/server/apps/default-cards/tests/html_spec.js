@@ -41,6 +41,6 @@ describe('HTML card', function () {
         };
 
         var serializer = new SimpleDom.HTMLSerializer([]);
-        serializer.serialize(card.render(opts)).should.match('<div><h1>HEADING&lt;</h1></div>');
+        serializer.serialize(card.render(opts)).should.match('<div class="kg-card-html"><h1>HEADING&lt;</h1></div>');
     });
 });
