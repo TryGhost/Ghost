@@ -44,7 +44,7 @@ describe('getAssetUrl', function () {
             testUrl.should.equal('/favicon.ico');
         });
 
-        it.skip('should correct favicon path for custom png', function () {
+        it('should correct favicon path for custom png', function () {
             sandbox.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.png');
             var testUrl = getAssetUrl('favicon.ico');
             testUrl.should.equal('/favicon.png');
@@ -113,7 +113,7 @@ describe('getAssetUrl', function () {
                 testUrl.should.equal('/blog/favicon.ico');
             });
 
-            it.skip('should return correct favicon path for custom png', function () {
+            it('should return correct favicon path for custom png', function () {
                 sandbox.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.png');
                 var testUrl = getAssetUrl('favicon.ico');
                 testUrl.should.equal('/blog/favicon.png');
