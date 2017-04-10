@@ -98,7 +98,7 @@ export default Component.extend({
 
                     let cursorPositionInEditor = editor.positionAtPoint(cursorPositionOnScreen.left, loc.top);
 
-                    if (cursorPositionInEditor.isBlank) {
+                    if (!cursorPositionInEditor || cursorPositionInEditor.isBlank) {
                         editor.element.focus();
                     } else {
                         editor.selectRange(cursorPositionInEditor.toRange());
@@ -176,6 +176,9 @@ export default Component.extend({
     // gets the character in the last line of the title that best matches the editor
     getOffsetAtPosition(horizontalOffset) {
         let [title] = this.$('.gh-editor-title')[0].childNodes;
+        if (!title || !title.textContent) {
+            return 0;
+        }
         let len = title.textContent.length;
         let range = document.createRange();
 
