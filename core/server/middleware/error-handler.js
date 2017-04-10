@@ -8,9 +8,12 @@ var _ = require('lodash'),
     _private = {},
     errorHandler = {};
 
+/**
+ * This is a bare minimum setup, which allows us to render the error page
+ * It uses the {{asset}} helper, and nothing more
+ */
 _private.createHbsEngine = function createHbsEngine() {
     var engine = hbs.create();
-    // @TODO get rid of this after #8126
     engine.registerHelper('asset', require('../helpers/asset'));
 
     return engine.express4();

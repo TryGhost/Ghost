@@ -53,6 +53,7 @@ module.exports = function setupBlogApp() {
 
     // Serve stylesheets for default templates
     blogApp.use(servePublicFile('public/ghost.css', 'text/css', utils.ONE_HOUR_S));
+    blogApp.use(servePublicFile('public/ghost.min.css', 'text/css', utils.ONE_HOUR_S));
 
     // Serve images for default templates
     blogApp.use(servePublicFile('public/404-ghost@2x.png', 'png', utils.ONE_HOUR_S));

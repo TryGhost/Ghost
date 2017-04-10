@@ -33,7 +33,6 @@ module.exports = {
 
     // Config!
     // Keys used:
-    // minifyAssets in asset helper
     // isPrivacyDisabled & referrerPolicy used in ghost_head
     // Subscribe app uses routeKeywords
     config: {

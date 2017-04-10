@@ -17,7 +17,7 @@
         "useRpcPing": false,
         "useUpdateCheck": true
     },
-    "minifyAssets": false,
+    "useMinFiles": false,
     "printErrorStack": true,
     "caching": {
         "theme": {
