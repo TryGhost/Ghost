@@ -290,7 +290,8 @@ Post = ghostBookshelf.Model.extend({
         }
 
         var newTags = this.tagsToSave,
-            TagModel = ghostBookshelf.model('Tag');
+            TagModel = ghostBookshelf.model('Tag'),
+            self = this;
 
         options = options || {};
 
@@ -324,7 +325,7 @@ Post = ghostBookshelf.Model.extend({
                     return _.some(existingTags, function (existingTag) {
                         return baseUtils.tagUpdate.tagsAreEqual(existingTag, newTag);
                     });
-                }), 'name');
+                }));
 
                 // Remove any tags which don't exist anymore
                 _.each(tagsToRemove, function (tag) {
@@ -335,7 +336,7 @@ Post = ghostBookshelf.Model.extend({
                 _.each(newTags, function (newTag, index) {
                     var tag;
 
-                    if (tagsToCreate.indexOf(newTag.name) > -1) {
+                    if (_.find(tagsToCreate, {name: newTag.name})) {
                         tagOps.push(baseUtils.tagUpdate.createTagThenAttachTagToPost(Post, TagModel, savedModel, newTag, index, options));
                     } else {
                         // try to find a tag on the current post which matches
@@ -359,7 +360,26 @@ Post = ghostBookshelf.Model.extend({
                     }
                 });
 
-                return sequence(tagOps);
+                /**
+                 * These are ALL JSON objects.
+                 * e.g. created tags don't have a slug yet, because `tagsToCreate` is just a list of tags to create.
+                 * 
+                 * @TODO:
+                 *   - we could attach these arrays after the query and have tag models available
+                 *   - but right now it's not needed
+                 */
+                self.tagsToRemove = tagsToRemove;
+                self.tagsToCreate = tagsToCreate;
+                self.tagsThatExisted = existingTags;
+
+                return sequence(tagOps)
+                    .then(function () {
+                        /**
+                         * Originally we wanted to trigger events for tag.attached/detached from the model utils,
+                         * but this query runs in a transaction and the event would get triggered to early.
+                         */
+                        savedModel.emitChange('tags-updated');
+                    });
             });
         }
 
