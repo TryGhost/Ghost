@@ -42,14 +42,14 @@ describe('{{asset}} helper', function () {
             // with png
             rendered = helpers.asset('favicon.png');
             should.exist(rendered);
-            String(rendered).should.equal('/content/images/favicon.png');
+            String(rendered).should.equal('/favicon.png');
 
             localSettingsCache.icon = '/content/images/favicon.ico';
 
             // with ico
             rendered = helpers.asset('favicon.ico');
             should.exist(rendered);
-            String(rendered).should.equal('/content/images/favicon.ico');
+            String(rendered).should.equal('/favicon.ico');
         });
 
         it('handles public assets correctly', function () {
@@ -96,14 +96,14 @@ describe('{{asset}} helper', function () {
             // with  png
             rendered = helpers.asset('favicon.png');
             should.exist(rendered);
-            String(rendered).should.equal('/blog/content/images/favicon.png');
+            String(rendered).should.equal('/blog/favicon.png');
 
             localSettingsCache.icon = '/content/images/favicon.ico';
 
             // with ico
             rendered = helpers.asset('favicon.ico');
             should.exist(rendered);
-            String(rendered).should.equal('/blog/content/images/favicon.ico');
+            String(rendered).should.equal('/blog/favicon.ico');
         });
 
         it('handles public assets correctly', function () {

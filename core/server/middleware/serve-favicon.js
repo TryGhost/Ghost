@@ -51,7 +51,7 @@ function serveFavicon() {
                 storage.getStorage()
                     .read({path: filePath})
                     .then(function readFile(buf) {
-                        iconType = settingsCache.get('icon').match(/\/favicon\.ico$/i) ? 'x-icon' : 'png';
+                        iconType = settingsCache.get('icon').match(/\.ico$/i) ? 'x-icon' : 'png';
                         content = buildContentResponse(iconType, buf);
 
                         res.writeHead(200, content.headers);

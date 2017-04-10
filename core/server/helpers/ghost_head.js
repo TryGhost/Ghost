@@ -98,8 +98,9 @@ module.exports = function ghost_head(options) {
         },
         blogIcon = settingsCache.get('icon'),
         // CASE: blog icon is not set in config, we serve the default
-        iconType = !blogIcon ? 'x-icon' : blogIcon.match(/\/favicon\.ico$/i) ? 'x-icon' : 'png',
-        favicon = !blogIcon ? '/favicon.ico' : url.urlFor('image', {image: blogIcon});
+        iconType = !blogIcon ? 'x-icon' : blogIcon.match(/\.ico$/i) ? 'x-icon' : 'png',
+        favicon = !blogIcon ? url.urlFor({relativeUrl: '/favicon.ico'}) :
+                  blogIcon.match(/\.ico$/i) ? url.urlFor({relativeUrl: '/favicon.ico'}) : url.urlFor({relativeUrl: '/favicon.png'});
 
     return Promise.props(fetch).then(function (response) {
         client = response.client;
@@ -111,7 +112,7 @@ module.exports = function ghost_head(options) {
                 head.push('<meta name="description" content="' + escapeExpression(metaData.metaDescription) + '" />');
             }
 
-            head.push('<link rel="shortcut icon" href="' + favicon + '" type="' + iconType + '" />');
+            head.push('<link rel="shortcut icon" href="' + favicon + '" type="image/' + iconType + '" />');
             head.push('<link rel="canonical" href="' +
                 escapeExpression(metaData.canonicalUrl) + '" />');
             head.push('<meta name="referrer" content="' + referrerPolicy + '" />');
