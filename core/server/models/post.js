@@ -122,24 +122,23 @@ Post = ghostBookshelf.Model.extend({
         }
     },
 
+    onDestroyed: function onDestroyed(savedModel) {
+        savedModel.emitChange('deleted', {usePreviousResourceType: true});
+
+        if (savedModel.previous('status') === 'published') {
+            savedModel.emitChange('unpublished', {usePreviousResourceType: true});
+        }
+    },
+
+    /**
+     * Will detach all tags.
+     * @param model
+     * @param options
+     * @returns {*}
+     */
     onDestroying: function onDestroying(model, options) {
-        return model.load('tags', options)
-            .then(function (response) {
-                if (!response.related || !response.related('tags') || !response.related('tags').length) {
-                    return;
-                }
-
-                return Promise.mapSeries(response.related('tags').models, function (tag) {
-                    return baseUtils.tagUpdate.detachTagFromPost(model, tag, options)();
-                });
-            })
-            .then(function () {
-                if (model.previous('status') === 'published') {
-                    model.emitChange('unpublished');
-                }
-
-                model.emitChange('deleted');
-            });
+        this.tagsToSave = [];
+        return this.updateTags(model, null, options);
     },
 
     onSaving: function onSaving(model, attr, options) {
