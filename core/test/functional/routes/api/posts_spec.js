@@ -54,6 +54,138 @@ describe('Post API', function () {
                     testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                     _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                     _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
+
+                    done();
+                });
+        });
+
+        it('can retrieve a single post format', function (done) {
+            request.get(testUtils.API.getApiQuery('posts/?formats=mobiledoc'))
+                .set('Authorization', 'Bearer ' + accesstoken)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    var jsonResponse = res.body;
+                    should.exist(jsonResponse.posts);
+                    testUtils.API.checkResponse(jsonResponse, 'posts');
+                    jsonResponse.posts.should.have.length(5);
+                    testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['mobiledoc'], ['html']);
+                    testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                    _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
+                    _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
+
+                    done();
+                });
+        });
+
+        it('can retrieve multiple post formats', function (done) {
+            request.get(testUtils.API.getApiQuery('posts/?formats=plaintext,mobiledoc,amp'))
+                .set('Authorization', 'Bearer ' + accesstoken)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    var jsonResponse = res.body;
+                    should.exist(jsonResponse.posts);
+                    testUtils.API.checkResponse(jsonResponse, 'posts');
+                    jsonResponse.posts.should.have.length(5);
+                    testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['mobiledoc', 'plaintext', 'amp'], ['html']);
+                    testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                    _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
+                    _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
+
+                    done();
+                });
+        });
+
+        it('can handle unknown post formats', function (done) {
+            request.get(testUtils.API.getApiQuery('posts/?formats=plaintext,mobiledo'))
+                .set('Authorization', 'Bearer ' + accesstoken)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    var jsonResponse = res.body;
+                    should.exist(jsonResponse.posts);
+                    testUtils.API.checkResponse(jsonResponse, 'posts');
+                    jsonResponse.posts.should.have.length(5);
+                    testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['plaintext'], ['html']);
+                    testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                    _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
+                    _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
+
+                    done();
+                });
+        });
+
+        it('can handle empty formats (default html is expected)', function (done) {
+            request.get(testUtils.API.getApiQuery('posts/?formats='))
+                .set('Authorization', 'Bearer ' + accesstoken)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    var jsonResponse = res.body;
+                    should.exist(jsonResponse.posts);
+                    testUtils.API.checkResponse(jsonResponse, 'posts');
+                    jsonResponse.posts.should.have.length(5);
+                    testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                    testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                    _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
+                    _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
+
+                    done();
+                });
+        });
+
+        it('fields and formats', function (done) {
+            request.get(testUtils.API.getApiQuery('posts/?formats=mobiledoc,html&fields=id,title'))
+                .set('Authorization', 'Bearer ' + accesstoken)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    var jsonResponse = res.body;
+                    should.exist(jsonResponse.posts);
+                    testUtils.API.checkResponse(jsonResponse, 'posts');
+                    jsonResponse.posts.should.have.length(5);
+
+                    testUtils.API.checkResponse(
+                        jsonResponse.posts[0],
+                        'post',
+                        null,
+                        null,
+                        ['mobiledoc', 'id', 'title', 'html']
+                    );
+
+                    testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+
                     done();
                 });
         });
