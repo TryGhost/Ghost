@@ -88,6 +88,26 @@ describe('Serve Favicon', function () {
                 middleware(req, res, next);
             });
 
+            it('custom uploaded myicon.ico', function (done) {
+                var middleware = serveFavicon();
+                req.path = '/favicon.ico';
+
+                storage.getStorage().storagePath = path.join(__dirname, '../../../test/utils/fixtures/images/');
+                localSettingsCache.icon = 'myicon.ico';
+
+                res = {
+                    writeHead: function (statusCode) {
+                        statusCode.should.eql(200);
+                    },
+                    end: function (body) {
+                        body.length.should.eql(15086);
+                        done();
+                    }
+                };
+
+                middleware(req, res, next);
+            });
+
             it('default favicon.ico', function (done) {
                 var middleware = serveFavicon();
                 req.path = '/favicon.ico';

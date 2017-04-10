@@ -8,7 +8,7 @@ var config = require('../../config'),
  */
 function getFaviconUrl() {
     if (settingsCache.get('icon')) {
-        return utils.url.urlJoin(utils.url.getSubdir(), utils.url.urlFor('image', {image: settingsCache.get('icon')}));
+        return settingsCache.get('icon').match(/\.ico$/i) ? utils.url.urlJoin(utils.url.getSubdir(), '/favicon.ico') : utils.url.urlJoin(utils.url.getSubdir(), '/favicon.png');
     }
 
     return utils.url.urlJoin(utils.url.getSubdir(), '/favicon.ico');
