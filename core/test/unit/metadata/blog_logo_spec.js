@@ -36,7 +36,7 @@ describe('getBlogLogo', function () {
 
         blogLogo = getBlogLogo();
         should.exist(blogLogo);
-        blogLogo.should.have.property('url', 'http://127.0.0.1:2369/content/images/favicon.png');
+        blogLogo.should.have.property('url', 'http://127.0.0.1:2369/favicon.png');
     });
 
     it('should return custom uploaded ico icon incl. dimensions if no logo given', function () {
@@ -51,7 +51,7 @@ describe('getBlogLogo', function () {
 
         blogLogo = getBlogLogo();
         should.exist(blogLogo);
-        blogLogo.should.have.property('url', 'http://127.0.0.1:2369/content/images/myicon.ico');
+        blogLogo.should.have.property('url', 'http://127.0.0.1:2369/favicon.ico');
         blogLogo.should.have.property('dimensions');
         blogLogo.dimensions.should.have.property('width', 60);
         blogLogo.dimensions.should.have.property('height', 60);

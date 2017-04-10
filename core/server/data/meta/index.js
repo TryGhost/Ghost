@@ -74,6 +74,7 @@ function getMetaData(data, root) {
     }
 
     return Promise.props(getImageDimensions(metaData)).then(function () {
+        metaData.blog.logo = getBlogLogo();
         metaData.structuredData = getStructuredData(metaData);
         metaData.schema = getSchema(metaData, data);
 
