@@ -232,44 +232,8 @@ describe('Sitemap', function () {
                     manager.authors.addOrUpdateUrl.calledTwice.should.equal(true);
                     manager.authors.removeUrl.called.should.equal(false);
                 });
-                events.on('user.deactivated', function () {
-                    // user deleted is ignored as this may be an invited user
-                    manager.authors.addOrUpdateUrl.calledTwice.should.equal(true);
-                    manager.authors.removeUrl.calledOnce.should.equal(true);
-                });
 
-                events.emit('user.added', fake);
-                events.emit('user.edited', fake);
-                events.emit('user.activated', fake);
-                events.emit('user.activated.edited', fake);
-                events.emit('user.deleted', fake);
-                events.emit('user.deactivated', fake);
-
-                done();
-            }).catch(done);
-        });
-
-        it('updates tags site map', function (done) {
-            manager.init().then(function () {
-                events.on('tag.added', function (fakeModel) {
-                    fakeModel.should.eql(fake);
-                    manager.tags.addOrUpdateUrl.calledOnce.should.equal(true);
-                    manager.tags.removeUrl.called.should.equal(false);
-                });
-                events.on('tag.edited', function () {
-                    manager.tags.addOrUpdateUrl.calledTwice.should.equal(true);
-                    manager.tags.removeUrl.called.should.equal(false);
-                });
-                events.on('tag.deleted', function () {
-                    manager.tags.addOrUpdateUrl.calledTwice.should.equal(true);
-                    manager.tags.removeUrl.calledOnce.should.equal(true);
-                });
-
-                events.emit('tag.added', fake);
-                events.emit('tag.edited', fake);
-                events.emit('tag.deleted', fake);
-
-                done();
+                events.emit('post.unpublished', post);
             }).catch(done);
         });
     });
