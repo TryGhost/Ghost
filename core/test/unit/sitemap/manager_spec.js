@@ -203,38 +203,5 @@ describe('Sitemap', function () {
                 done();
             }).catch(done);
         });
-
-        it('updates authors site map', function (done) {
-            manager.init().then(function () {
-                events.on('user.added', function (fakeModel) {
-                    fakeModel.should.eql(fake);
-                    // user added is ignored as this may be an invited user
-                    manager.authors.addOrUpdateUrl.called.should.equal(false);
-                    manager.authors.removeUrl.called.should.equal(false);
-                });
-                events.on('user.edited', function () {
-                    // user edited is ignored as this may be an invited user
-                    manager.authors.addOrUpdateUrl.called.should.equal(false);
-                    manager.authors.removeUrl.called.should.equal(false);
-                });
-                events.on('user.activated', function () {
-                    // user activated is the point we know the user can be added
-                    manager.authors.addOrUpdateUrl.calledOnce.should.equal(true);
-                    manager.authors.removeUrl.called.should.equal(false);
-                });
-                events.on('user.activated.edited', function () {
-                    // user activated.edited means we can be sure the user is active
-                    manager.authors.addOrUpdateUrl.calledTwice.should.equal(true);
-                    manager.authors.removeUrl.called.should.equal(false);
-                });
-                events.on('user.deleted', function () {
-                    // user deleted is ignored as this may be an invited user
-                    manager.authors.addOrUpdateUrl.calledTwice.should.equal(true);
-                    manager.authors.removeUrl.called.should.equal(false);
-                });
-
-                events.emit('post.unpublished', post);
-            }).catch(done);
-        });
     });
 });
