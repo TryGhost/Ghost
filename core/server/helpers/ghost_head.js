@@ -11,6 +11,7 @@ var proxy = require('./proxy'),
     Promise = require('bluebird'),
 
     getMetaData = proxy.metaData.get,
+    getAssetUrl = proxy.metaData.getAssetUrl,
     escapeExpression = proxy.escapeExpression,
     SafeString = proxy.SafeString,
     filters = proxy.filters,
@@ -66,12 +67,9 @@ function finaliseStructuredData(metaData) {
 }
 
 function getAjaxHelper(clientId, clientSecret) {
-    // @TODO: swap this for a direct utility, rather than using the helper? see #8221
-    // Note: this is here because the asset helper isn't registered when this file is first loaded
-    var assetHelper = proxy.hbs.handlebars.helpers.asset;
-
     return '<script type="text/javascript" src="' +
-        assetHelper('public/ghost-url.js', {hash: {minifyInProduction: true}}) + '"></script>\n' +
+        getAssetUrl('public/ghost-url.js', true) +
+        '"></script>\n' +
         '<script type="text/javascript">\n' +
         'ghost.init({\n' +
         '\tclientId: "' + clientId + '",\n' +

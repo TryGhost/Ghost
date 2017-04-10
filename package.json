@@ -101,6 +101,7 @@
     "grunt-contrib-jshint": "1.0.0",
     "grunt-contrib-uglify": "2.0.0",
     "grunt-contrib-watch": "1.0.0",
+    "grunt-cssnano": "2.1.0",
     "grunt-docker": "0.0.11",
     "grunt-express-server": "0.5.3",
     "grunt-jscs": "3.0.1",
