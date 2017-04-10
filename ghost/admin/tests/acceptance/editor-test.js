@@ -425,6 +425,40 @@ describe('Acceptance: Editor', function() {
             });
         });
 
+        it('if title is blank it correctly shows the placeholder', function () {
+            server.createList('post', 1);
+
+            // post id 1 is a draft, checking for draft behaviour now
+            visit('/editor/1');
+
+            andThen(() => {
+                expect(currentURL(), 'currentURL')
+                    .to.equal('/editor/1');
+            });
+
+            andThen(() => {
+                titleRendered();
+            });
+
+            andThen(() => {
+                let title = find('#gh-editor-title div');
+                expect(title.data('placeholder')).to.equal('Your Post Title');
+                expect(title.hasClass('no-content')).to.be.false;
+                title.html('');
+            });
+
+            andThen(() => {
+                let title = find('#gh-editor-title div');
+                expect(title.hasClass('no-content')).to.be.true;
+                title.html('test');
+            });
+
+            andThen(() => {
+                let title = find('#gh-editor-title div');
+                expect(title.hasClass('no-content')).to.be.false;
+            });
+        });
+
         it('renders first countdown notification before scheduled time', function () {
             let clock = sinon.useFakeTimers(moment().valueOf());
             let compareDate = moment().tz('Etc/UTC').add(4, 'minutes').format('DD MMM YY @ HH:mm').toString();
