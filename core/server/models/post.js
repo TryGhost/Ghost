@@ -128,9 +128,6 @@ Post = ghostBookshelf.Model.extend({
 
     /**
      * Will detach all tags.
-     * @param model
-     * @param options
-     * @returns {*}
      */
     onDestroying: function onDestroying(model, options) {
         this.tagsToSave = [];
@@ -358,8 +355,7 @@ Post = ghostBookshelf.Model.extend({
 
                 /**
                  * These are ALL JSON objects.
-                 * e.g. created tags don't have a slug yet, because `tagsToCreate` is just a list of tags to create.
-                 * 
+                 * e.g. created tags don't have a slug yet, because `tagsToCreate` is just a list of tags to create
                  * @TODO:
                  *   - we could attach these arrays after the query and have tag models available
                  *   - but right now it's not needed
