@@ -32,7 +32,7 @@
             </button>
         </section>
     </header>
-    <div class="gh-editor-container">
+    <div class="gh-editor-container needsclick">
         <div class="gh-editor-inner">
             {{gh-editor-title
                 val=(readonly model.titleScratch)
@@ -43,6 +43,7 @@
                 update=(action (perform updateTitle))
                 id="gh-editor-title"
                 koenigEditor=(readonly editor)
+                editorMenuIsOpen=editorMenuIsOpen
             }}
             {{#if scheduleCountdown}}
                 <time datetime="{{post.publishedAtUTC}}" class="gh-notification gh-notification-schedule">
@@ -60,6 +61,8 @@
                 tabindex="2"
 		        containerSelector=".gh-editor-container"
                 setEditor=(action "setEditor")
+                menuIsOpen=(action "editorMenuIsOpen")
+                menuIsClosed=(action "editorMenuIsClosed")
             }}
         </div>
     </div>

@@ -3,11 +3,20 @@ import {expect} from 'chai';
 import {describe, it} from 'mocha';
 import {setupComponentTest} from 'ember-mocha';
 import hbs from 'htmlbars-inline-precompile';
-import {editorRendered, testInput} from '../../helpers/editor-helpers';
+import {editorRendered, testInput, testInputTimeout} from '../../helpers/editor-helpers';
 
 describe('Integration: Component: gh-koenig', function () {
     setupComponentTest('gh-koenig', {
         integration: true
+    });
+
+    beforeEach(function () {
+        this.set('value', {
+            version: '0.3.1',
+            atoms: [],
+            markups: [],
+            cards: [],
+            sections: []});
     });
 
     describe('Makerable markdown support.', function() {
@@ -16,6 +25,7 @@ describe('Integration: Component: gh-koenig', function () {
                                 apiRoot='/todo'
                                 assetPath='/assets'
                                 containerSelector='.editor-holder'
+                                value=value
                             }}`);
 
             editorRendered()
@@ -35,6 +45,7 @@ describe('Integration: Component: gh-koenig', function () {
                                 apiRoot='/todo'
                                 assetPath='/assets'
                                 containerSelector='.editor-holder'
+                                value=value
                             }}`);
 
             editorRendered()
@@ -53,6 +64,7 @@ describe('Integration: Component: gh-koenig', function () {
                                 apiRoot='/todo'
                                 assetPath='/assets'
                                 containerSelector='.editor-holder'
+                                value=value
                             }}`);
 
             editorRendered()
@@ -71,6 +83,7 @@ describe('Integration: Component: gh-koenig', function () {
                                 apiRoot='/todo'
                                 assetPath='/assets'
                                 containerSelector='.editor-holder'
+                                value=value
                             }}`);
 
             editorRendered()
@@ -89,6 +102,7 @@ describe('Integration: Component: gh-koenig', function () {
                                 apiRoot='/todo'
                                 assetPath='/assets'
                                 containerSelector='.editor-holder'
+                                value=value
                             }}`);
 
             editorRendered()
@@ -108,6 +122,7 @@ describe('Integration: Component: gh-koenig', function () {
                                 apiRoot='/todo'
                                 assetPath='/assets'
                                 containerSelector='.editor-holder'
+                                value=value
                             }}`);
 
             editorRendered()
@@ -126,6 +141,7 @@ describe('Integration: Component: gh-koenig', function () {
                                 apiRoot='/todo'
                                 assetPath='/assets'
                                 containerSelector='.editor-holder'
+                                value=value
                             }}`);
 
             editorRendered()
@@ -144,6 +160,7 @@ describe('Integration: Component: gh-koenig', function () {
                                 apiRoot='/todo'
                                 assetPath='/assets'
                                 containerSelector='.editor-holder'
+                                value=value
                             }}`);
 
             editorRendered()
@@ -162,6 +179,7 @@ describe('Integration: Component: gh-koenig', function () {
                                 apiRoot='/todo'
                                 assetPath='/assets'
                                 containerSelector='.editor-holder'
+                                value=value
                             }}`);
 
             editorRendered()
@@ -181,6 +199,7 @@ describe('Integration: Component: gh-koenig', function () {
                                 apiRoot='/todo'
                                 assetPath='/assets'
                                 containerSelector='.editor-holder'
+                                value=value
                             }}`);
 
             editorRendered()
@@ -198,6 +217,7 @@ describe('Integration: Component: gh-koenig', function () {
                                 apiRoot='/todo'
                                 assetPath='/assets'
                                 containerSelector='.editor-holder'
+                                value=value
                             }}`);
 
             editorRendered()
@@ -217,6 +237,7 @@ describe('Integration: Component: gh-koenig', function () {
                                 apiRoot='/todo'
                                 assetPath='/assets'
                                 containerSelector='.editor-holder'
+                                value=value
                             }}`);
 
             editorRendered()
@@ -235,6 +256,7 @@ describe('Integration: Component: gh-koenig', function () {
                                 apiRoot='/todo'
                                 assetPath='/assets'
                                 containerSelector='.editor-holder'
+                                value=value
                             }}`);
 
             editorRendered()
@@ -256,6 +278,7 @@ describe('Integration: Component: gh-koenig', function () {
                                 apiRoot='/todo'
                                 assetPath='/assets'
                                 containerSelector='.editor-holder'
+                                value=value
                             }}`);
 
             editorRendered()
@@ -274,6 +297,7 @@ describe('Integration: Component: gh-koenig', function () {
                                 apiRoot='/todo'
                                 assetPath='/assets'
                                 containerSelector='.editor-holder'
+                                value=value
                             }}`);
 
             editorRendered()
@@ -292,6 +316,7 @@ describe('Integration: Component: gh-koenig', function () {
                                 apiRoot='/todo'
                                 assetPath='/assets'
                                 containerSelector='.editor-holder'
+                                value=value
                             }}`);
 
             editorRendered()
@@ -311,6 +336,7 @@ describe('Integration: Component: gh-koenig', function () {
                                 apiRoot='/todo'
                                 assetPath='/assets'
                                 containerSelector='.editor-holder'
+                                value=value
                             }}`);
 
             editorRendered()
@@ -329,6 +355,7 @@ describe('Integration: Component: gh-koenig', function () {
                                 apiRoot='/todo'
                                 assetPath='/assets'
                                 containerSelector='.editor-holder'
+                                value=value
                             }}`);
 
             editorRendered()
@@ -347,6 +374,7 @@ describe('Integration: Component: gh-koenig', function () {
                                 apiRoot='/todo'
                                 assetPath='/assets'
                                 containerSelector='.editor-holder'
+                                value=value
                             }}`);
 
             editorRendered()
@@ -366,6 +394,7 @@ describe('Integration: Component: gh-koenig', function () {
                                 apiRoot='/todo'
                                 assetPath='/assets'
                                 containerSelector='.editor-holder'
+                                value=value
                             }}`);
 
             editorRendered()
@@ -380,21 +409,23 @@ describe('Integration: Component: gh-koenig', function () {
         });
     });
 
-    describe.skip('Card markdown support.', function () {
+    describe('Card markdown support.', function () {
         it('![]() creates an image card', function (done) {
             this.render(hbs`{{gh-koenig
                                 apiRoot='/todo'
                                 assetPath='/assets'
                                 containerSelector='.editor-holder'
+                                value=value
                             }}`);
 
             editorRendered()
                 .then(() => {
                     let {editor} = window;
                     editor.element.focus();
-                    return testInput('![image of something](https://unsplash.it/200/300/?random) ', '...', expect);
+                    return testInputTimeout('![image of something](https://unsplash.it/200/300/?random)');
                 })
-                .then(() => {
+                .then((value) => {
+                    expect(value).to.have.string('kg-card-image');
                     done();
                 });
         });
@@ -403,15 +434,17 @@ describe('Integration: Component: gh-koenig', function () {
                                 apiRoot='/todo'
                                 assetPath='/assets'
                                 containerSelector='.editor-holder'
+                                value=value
                             }}`);
 
             editorRendered()
                 .then(() => {
                     let {editor} = window;
                     editor.element.focus();
-                    return testInput('```some code``` ', '...', expect);
+                    return testInputTimeout('```some code```');
                 })
-                .then(() => {
+                .then((value) => {
+                    expect(value).to.have.string('kg-card-markdown');
                     done();
                 });
         });

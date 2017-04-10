@@ -24,9 +24,6 @@ export default Component.extend({
 
     init() {
         this._super(...arguments);
-        let payload = this.get('payload');
-        this.isEditing = !payload.hasOwnProperty('html');
-        this.isEditing = true;
     },
     actions: {
         selectCard() {

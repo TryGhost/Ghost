@@ -9,7 +9,7 @@ import Tools from '../options/default-tools';
 export default Component.extend({
     layout,
     classNames: ['gh-toolbar'],
-    classNameBindings: ['isVisible', 'isLink'],
+    classNameBindings: ['isVisible', 'isLink', 'tickFullLeft', 'tickHalfLeft', 'tickFullRight', 'tickHalfRight', 'tickAbove'],
     isVisible: false,
     tools: [],
     hasRendered: false,
@@ -150,8 +150,10 @@ function updateToolbarToRange(self, $holder, $editor, isMouseDown) {
     self.propertyWillChange('toolbar');
     self.propertyWillChange('toolbarBlocks');
 
-    if (!editor.range.isCollapsed) {
-        // if we have a selection, then the toolbar appears just below said selection:
+    // if we have a selection, then the toolbar appears just above said selection:
+    // unless it's a selection around a single card (firefox bug)
+    if (!editor.range.isCollapsed
+        && !(editor.range.head.section.isCardSection && editor.range.head.section === editor.range.tail.section)) {
 
         let range = window.getSelection().getRangeAt(0); // get the actual range within the DOM.
         let position =  range.getBoundingClientRect();
@@ -160,8 +162,53 @@ function updateToolbarToRange(self, $holder, $editor, isMouseDown) {
         self.set('isVisible', true);
         run.schedule('afterRender', this,
             () => {
-                $holder.css('top', position.top + $editor.scrollTop() - $holder.height() - 20); // - edOffset.top+10
-                $holder.css('left', position.left + (position.width / 2) + $editor.scrollLeft() - edOffset.left - ($holder.width() / 2));
+                let width = $holder.width();
+                let height = $holder.height();
+                let top = position.top + $editor.scrollTop() - $holder.height() - 20;
+                let left = position.left + (position.width / 2) + $editor.scrollLeft() - edOffset.left - (width / 2);
+                let right = left + width;
+                let edWidth = $editor[0].scrollWidth;
+                if (left < 0) {
+                    if (Math.round(left / (width / 4)) === -1) {
+                        self.set('tickFullLeft', true);
+                        self.set('tickHalfLeft', false);
+                        self.set('tickFullRight', false);
+                        self.set('tickHalfRight', false);
+                    } else {
+                        self.set('tickFullLeft', false);
+                        self.set('tickHalfLeft', true);
+                        self.set('tickFullRight', false);
+                        self.set('tickHalfRight', false);
+                    }
+                    left = 0;
+                } else if (right > edWidth) {
+                    if (Math.round((edWidth - right) / (width / 4)) === -1) {
+                        self.set('tickFullLeft', false);
+                        self.set('tickHalfLeft', false);
+                        self.set('tickFullRight', true);
+                        self.set('tickHalfRight', false);
+                    } else {
+                        self.set('tickFullLeft', false);
+                        self.set('tickHalfLeft', false);
+                        self.set('tickFullRight', false);
+                        self.set('tickHalfRight', true);
+                    }
+                    left = left + (edWidth - right);
+                } else {
+                    self.set('tickFullLeft', false);
+                    self.set('tickHalfLeft', false);
+                    self.set('tickFullRight', false);
+                    self.set('tickHalfRight', false);
+                }
+
+                if (self.get('isTouch') || top - $editor.scrollTop() < 0) {
+                    top = top + height + 60;
+                    self.set('tickAbove', true);
+                } else {
+                    self.set('tickAbove', false);
+                }
+                $holder.css('top', top);
+                $holder.css('left', left);
             }
         );
 

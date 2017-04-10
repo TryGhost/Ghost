@@ -3,7 +3,6 @@
   "dependencies": {
     "devicejs": "0.2.7",
     "Faker": "3.1.0",
-    "fastclick": "1.0.6",
     "google-caja": "6005.0.0",
     "jquery-file-upload": "9.12.3",
     "jquery-ui": "1.11.4",

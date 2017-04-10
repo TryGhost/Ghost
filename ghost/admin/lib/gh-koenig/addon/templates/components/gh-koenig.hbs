@@ -1,14 +1,43 @@
 {{#each emberCards as |card index|}}
     {{#ember-wormhole to=card.id}}
-        {{koenig-card tabindex=index card=card apiRoot=apiRoot assetPath=assetPath selectCard=(action "selectCard") selectCardHard=(action "selectCardHard") deselectCard=(action "deselectCard") edit=(action "editCard") stopEdit=(action "stopEditingCard") editedCard=editedCard}}
+        {{koenig-card 
+        tabindex=index 
+        card=card 
+        apiRoot=apiRoot 
+        assetPath=assetPath 
+        selectCard=(action "selectCard") 
+        selectCardHard=(action "selectCardHard") 
+        deselectCard=(action "deselectCard") 
+        edit=(action "editCard") 
+        stopEdit=(action "stopEditingCard") 
+        editedCard=editedCard}}
     {{/ember-wormhole}}
 {{/each}}
 <div class='gh-koenig'>
-    <div class='surface' tabindex="{{tabindex}}"/>
+    <div class='surface needsclick' tabindex="{{tabindex}}"/>
 </div>
 
 {{yield}}
 
-{{koenig-toolbar editor=editor assetPath=assetPath containerSelector=containerSelector}}
-{{koenig-slash-menu editor=editor assetPath=assetPath containerSelector=containerSelector}}
-{{koenig-plus-menu editor=editor assetPath=assetPath containerSelector=containerSelector}}
+{{koenig-toolbar 
+    editor=editor 
+    assetPath=assetPath 
+    containerSelector=containerSelector 
+    isTouch=isTouch
+}}
+{{koenig-slash-menu 
+    editor=editor 
+    assetPath=assetPath 
+    containerSelector=containerSelector 
+    isTouch=isTouch
+    menuIsOpen=(action "menuIsOpen")
+    menuIsClosed=(action "menuIsClosed")
+}}
+{{koenig-plus-menu 
+    editor=editor 
+    assetPath=assetPath 
+    containerSelector=containerSelector 
+    isTouch=isTouch
+    menuIsOpen=(action "menuIsOpen")
+    menuIsClosed=(action "menuIsClosed")
+}}

@@ -145,8 +145,12 @@ export default Component.extend({
         }
     },
     editorKeyDown(event) {
-        let editor = this.get('editor');
+        // if the editor has a menu open then we don't want to capture inputs.
+        if (this.get('editorMenuIsOpen')) {
+            return;
+        }
 
+        let editor = this.get('editor');
         if (event.keyCode === 38) { // up arrow
             let selection = window.getSelection();
             if (!selection.rangeCount) {

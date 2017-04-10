@@ -19,12 +19,12 @@
             {{!--<button {{action "stopEdit"}} class='kg-card-button-text'>
                         Cancel
             </button>--}}
-            <button {{action "stopEdit"}} class='kg-card-button-save'>
+            <button {{action "stopEdit"}} class='kg-card-button kg-card-button-save'>
                 Done            
             </button>
         {{else}}
             {{#if card.card.buttons.edit}}
-                <button {{action "startEdit"}} class='kg-card-button-text'>
+                <button {{action "startEdit"}} class='kg-card-button kg-card-button-text'>
                         Edit
                 </button>
             {{/if}}
