@@ -10,10 +10,12 @@
             {{#power-select
                 selected=selectedType
                 options=availableTypes
-                searchField="name"
+                searchEnabled=false
                 onchange=(action "changeType")
                 tagName="div"
                 classNames="gh-contentfilter-menu gh-contentfilter-type"
+                triggerClass="gh-contentfilter-menu-trigger"
+                dropdownClass="gh-contentfilter-menu-dropdown"
                 matchTriggerWidth=false
                 data-test-type-select=true
                 as |type|
@@ -29,6 +31,9 @@
                 onchange=(action "changeAuthor")
                 tagName="div"
                 classNames="gh-contentfilter-menu gh-contentfilter-author"
+                triggerClass="gh-contentfilter-menu-trigger"
+                dropdownClass="gh-contentfilter-menu-dropdown"
+                searchPlaceholder="Search authors"
                 matchTriggerWidth=false
                 data-test-author-select=true
                 as |author|
@@ -44,6 +49,9 @@
                 onchange=(action "changeTag")
                 tagName="div"
                 classNames="gh-contentfilter-menu gh-contentfilter-tag"
+                triggerClass="gh-contentfilter-menu-trigger"
+                dropdownClass="gh-contentfilter-menu-dropdown"
+                searchPlaceholder="Search tags"
                 matchTriggerWidth=false
                 data-test-tag-select=true
                 as |tag|
@@ -61,6 +69,9 @@
                 onchange=(action "changeOrder")
                 tagName="div"
                 classNames="gh-contentfilter-menu gh-contentfilter-sort"
+                triggerClass="gh-contentfilter-menu-trigger"
+                dropdownClass="gh-contentfilter-menu-dropdown"
+                horizontalPosition="right"
                 matchTriggerWidth=false
                 data-test-order-select=true
                 as |order|
@@ -85,7 +96,7 @@
                             <h3>You Haven't Written Any Posts Yet!</h3>
                             {{#link-to "editor.new"}}<button type="button" class="gh-btn gh-btn-green gh-btn-lg"><span>Write a new Post</span></button>{{/link-to}}
                         {{else}}
-                            <h3>No posts that match the current filter</h3>
+                            <h3>No posts match the current filter</h3>
                             {{#link-to "posts.index" (query-params type=null)}}<button type="button" class="gh-btn gh-btn-lg"><span>Show all posts</span></button>{{/link-to}}
                         {{/if}}
                     </div>
