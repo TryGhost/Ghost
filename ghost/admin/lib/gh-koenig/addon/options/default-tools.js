@@ -200,7 +200,7 @@ export default function (editor, toolbar) {
             onClick: (editor) => {
                 editor.run((postEditor, section) => {
                     let thisSection = section || editor.range.headSection;
-                    let card = postEditor.builder.createCardSection('card-image', {pos: 'top'});
+                    let card = postEditor.builder.createCardSection('card-image', {pos: 'top', newlyCreated: true});
                     if (thisSection.text.length) {
                         postEditor.insertSection(card);
                     } else {
@@ -229,7 +229,7 @@ export default function (editor, toolbar) {
             onClick: (editor, section) => {
                 editor.run((postEditor) => {
                     let thisSection = section || editor.range.headSection;
-                    let card = postEditor.builder.createCardSection('card-html', {pos: 'top', html: thisSection.text});
+                    let card = postEditor.builder.createCardSection('card-html', {pos: 'top', html: thisSection.text, newlyCreated: true});
                     // we can't replace a list item so we insert a card after it and then delete it.
                     if (thisSection.isListItem) {
                         editor.insertCard('card-html');
@@ -259,8 +259,12 @@ export default function (editor, toolbar) {
             onClick: (editor, section) => {
                 editor.run((postEditor) => {
                     let thisSection = section || editor.range.headSection;
-                    let card = postEditor.builder.createCardSection('card-hr', {pos: 'top'});
-                    postEditor.insertSection(card);
+                    let card = postEditor.builder.createCardSection('card-hr', {pos: 'top', newlyCreated: true});
+                    if (thisSection.text.length) {
+                        postEditor.insertSection(card);
+                    } else {
+                        postEditor.replaceSection(thisSection, card);
+                    }
 
                     if (!thisSection.next) {
                         let newSection = editor.builder.createMarkupSection('p');

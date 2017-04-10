@@ -3,6 +3,7 @@ export default {
     label: 'Divider',
     icon: '',
     genus: 'ember',
+    launchMode: 'preview',
     buttons: {
     }
 };

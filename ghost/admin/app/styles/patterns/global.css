@@ -88,9 +88,11 @@
 /* Layout
 /* ---------------------------------------------------------- */
 
-*,
-*:before,
-*:after {
+
+/*Exclude the editor*/
+*:not(.__mobiledoc-editor),
+*:not(.__mobiledoc-editor):before,
+*:not(.__mobiledoc-editor):after {
     box-sizing: border-box;
 }
 

@@ -2330,15 +2330,6 @@ ember-cli-eslint@3.0.3:
     rsvp "^3.2.1"
     walk-sync "^0.3.0"
 
-ember-cli-fastclick@1.3.0:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/ember-cli-fastclick/-/ember-cli-fastclick-1.3.0.tgz#1ff21c95ca9faebd5c1c0698ff652e7bdf8f5a83"
-  dependencies:
-    broccoli-funnel "^1.0.1"
-    broccoli-merge-trees "^1.1.1"
-    ember-cli-babel "^5.1.6"
-    fastclick "^1.0.6"
-
 ember-cli-get-component-path-option@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/ember-cli-get-component-path-option/-/ember-cli-get-component-path-option-1.0.0.tgz#0d7b595559e2f9050abed804f1d8eff1b08bc771"
@@ -2437,7 +2428,7 @@ ember-cli-mocha@0.13.2:
     mocha "^2.5.3"
     resolve "^1.1.7"
 
-ember-cli-moment-shim@^3.1.0:
+ember-cli-moment-shim@3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/ember-cli-moment-shim/-/ember-cli-moment-shim-3.1.0.tgz#ec6a39a0dcb4badeaf6dcb74a6c05b0bc576f721"
   dependencies:
@@ -3541,10 +3532,6 @@ fast-sourcemap-concat@^1.0.1:
     rsvp "^3.0.14"
     source-map "^0.4.2"
     source-map-url "^0.3.0"
-
-fastclick@^1.0.6:
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/fastclick/-/fastclick-1.0.6.tgz#161625b27b1a5806405936bda9a2c1926d06be6a"
 
 faye-websocket@~0.10.0:
   version "0.10.0"

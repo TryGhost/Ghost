@@ -15,7 +15,7 @@ export const BLANK_DOC = {
     atoms: [],
     markups: [],
     cards: [],
-    sections: []
+    sections: [[1, 'p', [[0, [], 0, '']]]]
 };
 
 export default Component.extend({
@@ -27,7 +27,6 @@ export default Component.extend({
     keyDownHandler: [],
     init() {
         this._super(...arguments);
-
         let mobiledoc = this.get('value') || BLANK_DOC;
         let userCards = this.get('cards') || [];
 
@@ -62,6 +61,12 @@ export default Component.extend({
         };
 
         this.set('editor', new Mobiledoc.Editor(options));
+
+        // we use css media width for most things but need to know if a device is touch
+        // to place the toolbar. Above the selected content on a mobile browser is the
+        // cut | copy | paste menu so we need to place our toolbar below.
+        this.set('isTouch', 'ontouchstart' in document.documentElement);
+
         run.next(() => {
             if (this.get('setEditor')) {
                 this.sendAction('setEditor', this.get('editor'));
@@ -96,15 +101,18 @@ export default Component.extend({
         if (this._rendered) {
             return;
         }
-        let [editorDom] = this.$('.surface');
+        let editor = this.get('editor');
+        let $editor = this.$('.surface');
+        let [domContainer] = $editor.parents(this.get('containerSelector'));
+        let [editorDom] = $editor;
         editorDom.tabindex = this.get('tabindex');
+        this.set('domContainer', domContainer);
 
-        this.domContainer = editorDom.parentNode.parentNode.parentNode.parentNode; // nasty nasty nasty.
-        this.editor.render(editorDom);
-        this._rendered = true;
+        editor.render(editorDom);
+        this.set('_rendered', true);
 
-        window.editor = this.editor;
-        defaultCommands(this.editor); // initialise the custom text handlers for MD, etc.
+        window.editor = editor;
+        defaultCommands(editor); // initialise the custom text handlers for MD, etc.
         // shouldFocusEditor is only true when transitioning from new to edit, otherwise it's false or undefined.
         // therefore, if it's true it's after the first lot of content is entered and we expect the caret to be at the
         // end of the document.
@@ -115,10 +123,10 @@ export default Component.extend({
             let sel = window.getSelection();
             sel.removeAllRanges();
             sel.addRange(range);
-            this.editor._ensureFocus();
+            editor._ensureFocus();
         }
 
-        this.editor.cursorDidChange(() => this.cursorMoved());
+        editor.cursorDidChange(() => this.cursorMoved());
 
         // listen to keydown events outside of the editor, used to handle keydown events in the cards.
         document.onkeydown = (event) => {
@@ -158,6 +166,15 @@ export default Component.extend({
             }
             let range = selection.getRangeAt(0); // get the actual range within the DOM.
             let position =  range.getBoundingClientRect();
+            if (position.left === 0 && position.top === 0) {
+                // in safari if the range is collapsed you can't get it's location.
+                // this is a bug as it's against the spec.
+                if (editor.range.section) {
+                    position = editor.range.head.section.renderNode.element.getBoundingClientRect();
+                } else {
+                    return;
+                }
+            }
             let windowHeight = window.innerHeight;
 
             if (position.bottom > windowHeight) {
@@ -170,6 +187,12 @@ export default Component.extend({
                 let id = $(editor.range.headSection.renderNode.element).find('.kg-card > div').attr('id');
                 // let id = card.find('div').attr('id');
                 window.getSelection().removeAllRanges();
+                // if the element is first and we create a card with the '/' menu then the cursor moves before
+                // element is placed in the dom properly. So we figure it out another way.
+                if (!id) {
+                    id = editor.range.headSection.renderNode.element.children[0].children[0].id;
+                }
+
                 this.send('selectCardHard', id);
             } else {
                 this.send('deselectCard');
@@ -190,10 +213,20 @@ export default Component.extend({
         // keyboard events.
         // used when the content of the card is selected and it is editing.
         selectCard(cardId) {
+            if (!cardId) {
+                throw new Error('A selection must include a cardId');
+            }
+
             let card = this.get('emberCards').find((card) => card.id === cardId);
             let cardHolder = $(`#${cardId}`).parent('.kg-card');
-            if (this.get('selectedCard') !== card) {
+            let selectedCard = this.get('selectedCard');
+            if (selectedCard && selectedCard !== card) {
                 this.send('deselectCard');
+            }
+            // defer rendering until after the card is placed in the mobiledoc via the wormhole
+            if (!cardHolder[0]) {
+                run.schedule('afterRender', this, () => this.send('selectCard', cardId));
+                return;
             }
             cardHolder.addClass('selected');
             cardHolder.removeClass('selected-hard');
@@ -201,9 +234,7 @@ export default Component.extend({
             this.get('keyDownHandler').length = 0;
             // cardHolder.focus();
             document.onclick = (event) => {
-                let target = $(event.target);
-                let parent = target.parents('.kg-card');
-                if (!target.hasClass('kg-card') && !target.hasClass('kg-card-button') && !target.hasClass('kg-card-button-text') && (!parent.length || parent[0] !== cardHolder[0])) {
+                if (checkIfClickEventShouldCloseCard($(event.target), cardHolder)) {
                     this.send('deselectCard');
                 }
             };
@@ -212,20 +243,27 @@ export default Component.extend({
         // creating blocks under the card and deleting the card.
         // used when selecting the card with the keyboard or clicking on the toolbar.
         selectCardHard(cardId) {
+            if (!cardId) {
+                throw new Error('A selection must include a cardId');
+            }
+
             let card = this.get('emberCards').find((card) => card.id === cardId);
             let cardHolder = $(`#${cardId}`).parents('.kg-card');
-            if (this.get('selectedCard') !== card) {
+            let selectedCard = this.get('selectedCard');
+            if (selectedCard && selectedCard !== card) {
                 this.send('deselectCard');
+            }
+            // defer rendering until after the card is placed in the mobiledoc via the wormhole
+            if (!cardHolder[0]) {
+                run.schedule('afterRender', this, () => this.send('selectCardHard', cardId));
+                return;
             }
             cardHolder.addClass('selected');
             cardHolder.addClass('selected-hard');
             this.set('selectedCard', card);
 
             document.onclick = (event) => {
-                let target = $(event.target);
-                let parent = target.parents('.kg-card');
-
-                if (!target.hasClass('kg-card') && !target.hasClass('kg-card-button') && !target.hasClass('kg-card-button-text') && (!parent.length || parent[0] !== cardHolder[0])) {
+                if (checkIfClickEventShouldCloseCard($(event.target), cardHolder)) {
                     this.send('deselectCard');
                 }
             };
@@ -239,11 +277,18 @@ export default Component.extend({
                     editor.post.sections.forEach((section) => {
                         let currentCard = $(section.renderNode.element);
                         if (currentCard.find(`#${cardId}`).length) {
-                            if (section.prev) {
+                            if (section.prev && section.prev.isCardSection) {
+                                let prevCard = ($(section.prev.renderNode.element).find('.gh-card-holder').attr('id'));
+                                if (prevCard) {
+                                    this.send('selectCardHard', prevCard);
+                                }
+                            } else if (section.prev) {
                                 let range = section.prev.toRange();
                                 range.tail.offset = 0;
                                 editor.selectRange(range);
-                                return;
+                            } else {
+                                $(this.titleQuery).focus();
+                                this.send('deselectCard');
                             }
                         }
                     });
@@ -253,11 +298,18 @@ export default Component.extend({
                     editor.post.sections.forEach((section) => {
                         let currentCard = $(section.renderNode.element);
                         if (currentCard.find(`#${cardId}`).length) {
-                            if (section.next) {
+                            if (section.next && section.next.isCardSection) {
+                                let nextCard = ($(section.next.renderNode.element).find('.gh-card-holder').attr('id'));
+                                if (nextCard) {
+                                    this.send('selectCardHard', nextCard);
+                                }
+                            } else if (section.next) {
                                 let range = section.next.toRange();
                                 range.tail.offset = 0;
                                 editor.selectRange(range);
-                                return;
+                            } else {
+                                $(this.titleQuery).focus();
+                                this.send('deselectCard');
                             }
                         }
                     });
@@ -282,6 +334,7 @@ export default Component.extend({
 
                             }
                         }
+                        this.send('deselectCard');
                     });
 
                     return false;
@@ -315,10 +368,31 @@ export default Component.extend({
         },
         stopEditingCard() {
             this.set('editedCard', null);
+        },
+        menuIsOpen() {
+            this.sendAction('menuIsOpen');
+        },
+        menuIsClosed() {
+            this.sendAction('menuIsClosed');
         }
     }
 
 });
+
+// takes two jquery objects, the target of a click event and a cardholder and sees if the click event should close the card or not
+function checkIfClickEventShouldCloseCard(target, cardHolder) {
+    // see if this element or one of its ancestors is a card.
+    let card = target.hasClass('kg-card') ? target : target.parents('.kg-card');
+
+    let isCardToggle = target.hasClass('kg-card-button') || target.parents('.gh-cardmenu').length || target.parents('.kg-card-toolbar').length;
+
+    // if we're selecting a card toggle (menu item) OR we have clicked on a card and the card is the one we expect//
+    // then we shouldn't close the menu and return false.
+    if (isCardToggle || (card.length && card[0] === cardHolder[0])) {
+        return false;
+    }
+    return true;
+}
 
 // // code for moving the cursor into the correct position of the title: (is buggy)
 
@@ -334,7 +408,7 @@ export default Component.extend({
 //         if (rect.top === rect.bottom) {
 //             continue;
 //         }
-//         if(rect.left <= horizontal_offset && rect.right >= horizontal_offset) {
+//         if (rect.left <= horizontal_offset && rect.right >= horizontal_offset) {
 //             return  i + (horizontal_offset >= (rect.left + rect.right) / 2 ? 1 : 0);    // if the horizontal_offset is on the left hand side of the
 //                                                                                         // character then return `i`, if it's on the right return `i + 1`
 //         }

@@ -34,6 +34,7 @@ export default function createCardFactory(toolbar) {
                 let card = setupEmberCard({env, options, payload}, 'render');
                 let div = document.createElement('div');
                 div.id = card.id;
+                div.className = 'gh-card-holder';
                 return div;
             }
             return cardObject.willRender({env, options, payload});
@@ -70,7 +71,9 @@ export default function createCardFactory(toolbar) {
             if (payload.newlyCreated) {
                 newlyCreated = true;
                 delete payload.newlyCreated;
+                env.save(payload, false);
             }
+
             let card = EmberObject.create({
                 id,
                 env,

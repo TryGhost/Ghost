@@ -202,17 +202,36 @@ export default Component.extend({
 
             let position =  range.getBoundingClientRect();
             let edOffset = $editor.offset();
-
+            if (position.left === 0 && position.top === 0) {
+                // in safari if the range is collapsed you can't get it's location.
+                // this is a bug as it's against the spec.
+                position = editor.range.head.section.renderNode.element.getBoundingClientRect();
+            }
             run.schedule('afterRender', this,
                 () => {
                     let menu = this.$('.gh-cardmenu');
-                    menu.css('top', position.top + $editor.scrollTop() - edOffset.top + 20);
-                    menu.css('left', position.left + (position.width / 2) + $editor.scrollLeft() - edOffset.left);
-                    this.$('.gh-cardmenu-search-input').focus();
+                    let top = position.top + $editor.scrollTop() - edOffset.top + 20;
+                    let left = position.left + (position.width / 2) + $editor.scrollLeft() - edOffset.left;
+                    // calculate if parts of the menu that are hidden by the overflow.
+                    let hiddenByOverflowY = ($editor.innerHeight() + $editor.scrollTop()) - (menu.height() + top);
+                    // if the menu is off the bottom of the screen then place it above the cursor
+                    if (hiddenByOverflowY < 0) {
+                        menu.css('margin-top', -(menu.outerHeight() + 20));
+                    }
+                    let hiddenByOverflowX = ($editor.innerWidth() + $editor.scrollLeft()) - (menu.width() + left);
+                    // if the menu is off the bottom of the screen then place it above the cursor
+                    if (hiddenByOverflowX < 0) {
+                        menu.css('margin-left', -(menu.outerWidth() + 20));
+                    }
+
+                    menu.css('top', top);
+                    menu.css('left', left);
+                    menu.hide().fadeIn('fast');
                 });
+
+            this.sendAction('menuIsOpen');
         },
         closeMenu: function () { // eslint-disable-line
-            this.set('isOpen', false);
             let editor = this.get('editor');
             // this.get('editor').unregisterKeyCommand('slash'); -- waiting for the next release for this
 
@@ -222,6 +241,11 @@ export default Component.extend({
                     editor._keyCommands.splice(i, 1);
                 }
             }
+
+            this.$('.gh-cardmenu').fadeOut('fast', () => {
+                this.set('isOpen', false);
+            });
+            this.sendAction('menuIsClosed');
         },
         clickedMenu: function () { // eslint-disable-line
             // let{section, startOffset, endOffset} = this.get('range');
