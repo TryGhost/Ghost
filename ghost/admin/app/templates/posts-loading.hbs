@@ -7,59 +7,74 @@
     </header>
 
     <div class="gh-contentfilter">
-        {{#power-select
-            placeholder="All posts"
-            selected=selectedType
-            options=availableTypes
-            searchField="name"
-            onchange=(action (mut k))
-            tagName="div"
-            data-test-type-select=true
-            as |type|
-        }}
-            {{type.name}}
-        {{/power-select}}
+        <div class="gh-contentfilter-left">
+            {{#power-select
+                placeholder="All posts"
+                selected=selectedType
+                options=availableTypes
+                searchField="name"
+                onchange=(action (mut k))
+                tagName="div"
+                classNames="gh-contentfilter-menu gh-contentfilter-type"
+                triggerClass="gh-contentfilter-menu-trigger"
+                dropdownClass="gh-contentfilter-menu-dropdown"
+                data-test-type-select=true
+                as |type|
+            }}
+                {{type.name}}
+            {{/power-select}}
 
-        {{#unless session.user.isAuthor}}
-        {{#power-select
-            placeholder="All authors"
-            selected=selectedAuthor
-            options=availableAuthors
-            searchField="name"
-            onchange=(action (mut k))
-            tagName="div"
-            data-test-author-select=true
-            as |author|
-        }}
-            {{author.name}}
-        {{/power-select}}
-        {{/unless}}
+            {{#unless session.user.isAuthor}}
+            {{#power-select
+                placeholder="All authors"
+                selected=selectedAuthor
+                options=availableAuthors
+                searchField="name"
+                onchange=(action (mut k))
+                tagName="div"
+                classNames="gh-contentfilter-menu gh-contentfilter-author"
+                triggerClass="gh-contentfilter-menu-trigger"
+                dropdownClass="gh-contentfilter-menu-dropdown"
+                data-test-author-select=true
+                as |author|
+            }}
+                {{author.name}}
+            {{/power-select}}
+            {{/unless}}
 
-        {{#power-select
-            placeholder="All tags"
-            selected=selectedTag
-            options=availableTags
-            searchField="name"
-            onchange=(action (mut k))
-            tagName="div"
-            data-test-tag-select=true
-            as |tag|
-        }}
-            {{tag.name}}
-        {{/power-select}}
-
-        Sort by:
-        {{#power-select
-            selected=selectedOrder
-            options=availableOrders
-            searchEnabled=false
-            onchange=(action (mut k))
-            tagName="div"
-            data-test-order-select=true
-            as |order|
-        }}
-            {{order.name}}
-        {{/power-select}}
+            {{#power-select
+                placeholder="All tags"
+                selected=selectedTag
+                options=availableTags
+                searchField="name"
+                onchange=(action (mut k))
+                tagName="div"
+                classNames="gh-contentfilter-menu gh-contentfilter-tag"
+                triggerClass="gh-contentfilter-menu-trigger"
+                dropdownClass="gh-contentfilter-menu-dropdown"
+                data-test-tag-select=true
+                as |tag|
+            }}
+                {{tag.name}}
+            {{/power-select}}
+        </div>
+        <div class="gh-contentfilter-right">
+            Sort by:
+            {{#power-select
+                selected=selectedOrder
+                options=availableOrders
+                searchEnabled=false
+                onchange=(action (mut k))
+                tagName="div"
+                classNames="gh-contentfilter-menu gh-contentfilter-sort"
+                triggerClass="gh-contentfilter-menu-trigger"
+                dropdownClass="gh-contentfilter-menu-dropdown"
+                data-test-order-select=true
+                as |order|
+            }}
+                {{order.name}}
+            {{/power-select}}
+        </div>
     </div>
 
     {{gh-loading-spinner}}

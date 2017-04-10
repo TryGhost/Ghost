@@ -37,10 +37,10 @@ export default Controller.extend({
     }],
 
     availableOrders: [{
-        name: 'Latest',
+        name: 'Newest',
         value: null
     }, {
-        name: 'Earliest',
+        name: 'Oldest',
         value: 'published_at asc'
     }],
 
