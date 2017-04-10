@@ -124,10 +124,6 @@ Post = ghostBookshelf.Model.extend({
 
     onDestroyed: function onDestroyed(savedModel) {
         savedModel.emitChange('deleted', {usePreviousResourceType: true});
-
-        if (savedModel.previous('status') === 'published') {
-            savedModel.emitChange('unpublished', {usePreviousResourceType: true});
-        }
     },
 
     /**
