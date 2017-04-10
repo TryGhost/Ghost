@@ -323,6 +323,17 @@ var overrides      = require('./core/server/overrides'),
                 }
             },
 
+            cssnano: {
+                prod: {
+                    options: {
+                        sourcemap: false
+                    },
+                    files: {
+                        'core/server/public/ghost.min.css': 'core/server/public/ghost.css'
+                    }
+                }
+            },
+
             // ### grunt-subgrunt
             // Run grunt tasks in submodule Gruntfiles
             subgrunt: {
@@ -662,7 +673,7 @@ var overrides      = require('./core/server/overrides'),
         //
         // It is otherwise the same as running `grunt`, but is only used when running Ghost in the `production` env.
         grunt.registerTask('prod', 'Build JS & templates for production',
-            ['subgrunt:prod', 'uglify:prod', 'master-warn']);
+            ['subgrunt:prod', 'uglify:prod', 'cssnano:prod', 'master-warn']);
 
         // ### Live reload
         // `grunt dev` - build assets on the fly whilst developing
