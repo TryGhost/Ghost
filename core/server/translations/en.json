@@ -371,7 +371,7 @@
             },
             "icons": {
                 "missingFile": "Please select an icon.",
-                "invalidFile": "Blog icon must be a square .ico or .png file between 32px – 1,000px, under 100kb.",
+                "invalidFile": "Blog icon must be a square .ico or .png file between 60px – 1,000px, under 100kb.",
                 "couldNotGetSize": "Couldn/'t get icon dimensions"
             },
             "users": {

@@ -73,9 +73,9 @@ module.exports = function blogIcon() {
                 return next(new errors.ValidationError({message: i18n.t('errors.api.icons.invalidFile', {extensions: iconExtensions})}));
             }
 
-            // CASE: icon needs to be bigger than 32px
-            // .ico files can contain multiple sizes, we need at least a minimum of 32px (16px is ok, as long as 32px are present as well)
-            if (req.file.dimensions.width < 32) {
+            // CASE: icon needs to be bigger than 60px
+            // .ico files can contain multiple sizes, we need at least a minimum of 60px (16px is ok, as long as 60px are present as well)
+            if (req.file.dimensions.width <= 60) {
                 return next(new errors.ValidationError({message: i18n.t('errors.api.icons.invalidFile', {extensions: iconExtensions})}));
             }
 
