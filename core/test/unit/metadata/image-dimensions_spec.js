@@ -92,6 +92,48 @@ describe('getImageDimensions', function () {
         }).catch(done);
     });
 
+    it('should not try to fetch image dimensions for logo if already set', function (done) {
+        var metaData = {
+            coverImage: {
+                url: 'http://mysite.com/content/image/mypostcoverimage.jpg'
+            },
+            authorImage: {
+                url: 'http://mysite.com/author/image/url/me.jpg'
+            },
+            blog: {
+                logo: {
+                    url: 'http://mysite.com/author/image/url/favicon.ico',
+                    dimensions: {
+                        width: 60,
+                        height: 60
+                    }
+                }
+            }
+        };
+
+        sizeOfStub.returns({
+            width: 480,
+            height: 80,
+            type: 'jpg'
+        });
+
+        getImageDimensions.__set__('getCachedImageSizeFromUrl', sizeOfStub);
+
+        getImageDimensions(metaData).then(function (result) {
+            should.exist(result);
+            sizeOfStub.calledWith(metaData.coverImage.url).should.be.true();
+            sizeOfStub.calledWith(metaData.authorImage.url).should.be.true();
+            sizeOfStub.calledWith(metaData.blog.logo.url).should.be.false();
+            result.coverImage.should.have.property('dimensions');
+            result.blog.logo.should.have.property('dimensions');
+            result.authorImage.should.have.property('dimensions');
+            result.coverImage.should.have.property('url');
+            result.blog.logo.should.have.property('url');
+            result.authorImage.should.have.property('url');
+            done();
+        }).catch(done);
+    });
+
     it('should not return dimension for publisher.logo only if logo is too big', function (done) {
         var metaData = {
             coverImage: {

@@ -13,7 +13,9 @@ function getImageDimensions(metaData) {
     var fetch = {
             coverImage: getCachedImageSizeFromUrl(metaData.coverImage.url),
             authorImage: getCachedImageSizeFromUrl(metaData.authorImage.url),
-            logo: getCachedImageSizeFromUrl(metaData.blog.logo.url)
+            // CASE: check if logo has hard coded image dimension. In that case it's an `ico` file, which
+            // is not supported by `image-size` and would produce an error
+            logo: metaData.blog.logo && metaData.blog.logo.dimensions ? metaData.blog.logo.dimensions : getCachedImageSizeFromUrl(metaData.blog.logo.url)
         };
 
     return Promise.props(fetch).then(function (resolve) {

@@ -7,6 +7,7 @@ var Promise = require('bluebird'),
     getAmpUrl = require('./amp_url'),
     getPaginatedUrl = require('./paginated_url'),
     getAuthorUrl = require('./author_url'),
+    getBlogLogo = require('./blog_logo'),
     getRssUrl = require('./rss_url'),
     getTitle = require('./title'),
     getDescription = require('./description'),
@@ -61,19 +62,7 @@ function getMetaData(data, root) {
         }
     };
 
-    metaData.blog.logo = {};
-
-    if (settingsCache.get('logo')) {
-        metaData.blog.logo.url = utils.url.urlFor('image', {image: settingsCache.get('logo')}, true);
-    } else {
-        metaData.blog.logo.url = utils.url.urlFor({relativeUrl: 'favicon.ico'}, true);
-        // Setting image dimensions to force the default logo to be an `ImageObject` and make
-        // Google happy with it. See https://github.com/TryGhost/Ghost/issues/7558
-        metaData.blog.logo.dimensions = {
-            width: 60,
-            height: 60
-        };
-    }
+    metaData.blog.logo = getBlogLogo();
 
     // TODO: cleanup these if statements
     if (data.post && data.post.html) {
