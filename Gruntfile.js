@@ -241,8 +241,9 @@ var overrides      = require('./core/server/overrides'),
             shell: {
                 master: {
                     command: function () {
-                        var upstream = grunt.option('upstream') || 'origin';
-                        return 'git checkout master; git pull ' + upstream + ' master; npm install;';
+                        var upstream = grunt.option('upstream') || process.env.GHOST_UPSTREAM || 'upstream';
+                        grunt.log.writeln('Pulling down the latest master from ' + upstream);
+                        return 'git checkout master; git pull ' + upstream + ' master; yarn;';
                     }
                 },
 
@@ -305,9 +306,14 @@ var overrides      = require('./core/server/overrides'),
             // ### grunt-update-submodules
             // Grunt task to update git submodules
             update_submodules: {
-                default: {
+                pinned: {
                     options: {
                         params: '--init'
+                    }
+                },
+                master: {
+                    options: {
+                        params: '--remote'
                     }
                 }
             },
@@ -343,9 +349,6 @@ var overrides      = require('./core/server/overrides'),
                 },
 
                 init: {
-                    options: {
-                        npmInstall: true
-                    },
                     projects: {
                         'core/client': 'init'
                     }
@@ -652,7 +655,7 @@ var overrides      = require('./core/server/overrides'),
         // `bower` does have some quirks, such as not running as root. If you have problems please try running
         // `grunt init --verbose` to see if there are any errors.
         grunt.registerTask('init', 'Prepare the project for development',
-            ['update_submodules', 'subgrunt:init', 'clean:tmp', 'default']);
+            ['update_submodules:pinned', 'subgrunt:init', 'clean:tmp', 'default']);
 
         // ### Build assets
         // `grunt build` - will build client assets (without updating the submodule)
@@ -696,16 +699,15 @@ var overrides      = require('./core/server/overrides'),
             }
         });
 
-        /**
-         * This command helps you to bring your working directory back to current master.
-         * It will also update your dependencies and shows you if your database is health.
-         * It won't build the client!
-         *
-         * grunt master [origin is the default upstream to pull from]
-         * grunt master --upstream=parent
-         */
+        // ### grunt master
+        // This command helps you to bring your working directory back to current master.
+        // It will also update your dependencies to master and shows you if your database is healthy.
+        // It won't build the client!
+        //
+        // `grunt master` [`upstream` is the default upstream to pull from]
+        // `grunt master --upstream=parent`
         grunt.registerTask('master', 'Update your current working folder to latest master.',
-            ['shell:master', 'update_submodules', 'subgrunt:init', 'shell:dbhealth']
+            ['shell:master', 'update_submodules:master', 'subgrunt:init', 'shell:dbhealth']
         );
 
         // ### Release
