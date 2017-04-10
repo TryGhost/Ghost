@@ -359,6 +359,7 @@ DataGenerator.forKnex = (function () {
         return _.defaults(newObj, {
             id: ObjectId.generate(),
             uuid: uuid.v4(),
+            slug: 'slug-' + globalUtils.uid(5),
             title: 'title',
             status: 'published',
             html: overrides.markdown,
