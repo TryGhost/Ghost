@@ -1,12 +1,14 @@
 var Promise = require('bluebird'),
     settingsCache = require('../../settings/cache'),
     utils = require('../../utils'),
+    logging = require('../../logging'),
     getUrl = require('./url'),
     getImageDimensions = require('./image-dimensions'),
     getCanonicalUrl = require('./canonical_url'),
     getAmpUrl = require('./amp_url'),
     getPaginatedUrl = require('./paginated_url'),
     getAuthorUrl = require('./author_url'),
+    getBlogLogo = require('./blog_logo'),
     getRssUrl = require('./rss_url'),
     getTitle = require('./title'),
     getDescription = require('./description'),
@@ -61,33 +63,26 @@ function getMetaData(data, root) {
         }
     };
 
-    metaData.blog.logo = {};
+    return Promise.props(getBlogLogo()).then(function (result) {
+        metaData.blog.logo = result;
 
-    if (settingsCache.get('logo')) {
-        metaData.blog.logo.url = utils.url.urlFor('image', {image: settingsCache.get('logo')}, true);
-    } else {
-        metaData.blog.logo.url = utils.url.urlFor({relativeUrl: 'favicon.ico'}, true);
-        // Setting image dimensions to force the default logo to be an `ImageObject` and make
-        // Google happy with it. See https://github.com/TryGhost/Ghost/issues/7558
-        metaData.blog.logo.dimensions = {
-            width: 60,
-            height: 60
-        };
-    }
+        // TODO: cleanup these if statements
+        if (data.post && data.post.html) {
+            metaData.excerpt = getExcerpt(data.post.html, {words: 50});
+        }
 
-    // TODO: cleanup these if statements
-    if (data.post && data.post.html) {
-        metaData.excerpt = getExcerpt(data.post.html, {words: 50});
-    }
+        if (data.post && data.post.author && data.post.author.name) {
+            metaData.authorName = data.post.author.name;
+        }
 
-    if (data.post && data.post.author && data.post.author.name) {
-        metaData.authorName = data.post.author.name;
-    }
+        return Promise.props(getImageDimensions(metaData)).then(function () {
+            metaData.structuredData = getStructuredData(metaData);
+            metaData.schema = getSchema(metaData, data);
 
-    return Promise.props(getImageDimensions(metaData)).then(function () {
-        metaData.structuredData = getStructuredData(metaData);
-        metaData.schema = getSchema(metaData, data);
-
+            return metaData;
+        });
+    }).catch(function (err) {
+        logging.error(err);
         return metaData;
     });
 }

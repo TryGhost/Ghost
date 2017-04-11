@@ -115,6 +115,9 @@
                 "nameOrVersionMissing": "\"name\" or \"version\" is missing from theme package.json file.",
                 "willBeRequired": "This will be required in future. Please see {url}",
                 "themeFileIsMalformed": "Theme package.json file is malformed"
+            },
+            "blogIcon": {
+                "error": "Could not fetch icon dimensions."
             }
         },
         "config": {

@@ -19,7 +19,7 @@ var proxy = require('./proxy'),
     api = proxy.api,
     settingsCache = proxy.settingsCache,
     config = proxy.config,
-    url = proxy.url;
+    blogIconUtils = proxy.blogIcon;
 
 function getClient() {
     if (labs.isSet('publicAPI') === true) {
@@ -96,11 +96,8 @@ module.exports = function ghost_head(options) {
             metaData: getMetaData(this, options.data.root),
             client: getClient()
         },
-        blogIcon = settingsCache.get('icon'),
-        // CASE: blog icon is not set in config, we serve the default
-        iconType = !blogIcon ? 'x-icon' : blogIcon.match(/\.ico$/i) ? 'x-icon' : 'png',
-        favicon = !blogIcon ? url.urlFor({relativeUrl: '/favicon.ico'}) :
-                  blogIcon.match(/\.ico$/i) ? url.urlFor({relativeUrl: '/favicon.ico'}) : url.urlFor({relativeUrl: '/favicon.png'});
+        favicon = blogIconUtils.getIconUrl(),
+        iconType = blogIconUtils.getIconType(favicon);
 
     return Promise.props(fetch).then(function (response) {
         client = response.client;

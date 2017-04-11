@@ -1,5 +1,5 @@
 var config = require('../../config'),
-    settingsCache = require('../../settings/cache'),
+    blogIconUtils = require('../../utils/blog-icon'),
     utils = require('../../utils');
 
 /**
@@ -7,11 +7,7 @@ var config = require('../../config'),
  * @return {string}
  */
 function getFaviconUrl() {
-    if (settingsCache.get('icon')) {
-        return settingsCache.get('icon').match(/\.ico$/i) ? utils.url.urlJoin(utils.url.getSubdir(), '/favicon.ico') : utils.url.urlJoin(utils.url.getSubdir(), '/favicon.png');
-    }
-
-    return utils.url.urlJoin(utils.url.getSubdir(), '/favicon.ico');
+    return blogIconUtils.getIconUrl();
 }
 
 function getAssetUrl(path, hasMinFile) {

@@ -1,10 +1,10 @@
 var fs = require('fs'),
     path = require('path'),
     crypto = require('crypto'),
-    config = require('../config'),
     storage = require('../storage'),
     utils  = require('../utils'),
     settingsCache = require('../settings/cache'),
+    blogIconUtils = require('../utils/blog-icon'),
     buildContentResponse,
     content;
 
@@ -36,7 +36,7 @@ function serveFavicon() {
             // we are using an express route to skip /content/images and the result is a image path
             // based on config.getContentPath('images') + req.path
             // in this case we don't use path rewrite, that's why we have to make it manually
-            filePath = settingsCache.get('icon').replace(new RegExp(utils.url.STATIC_IMAGE_URL_PREFIX), '');
+            filePath = blogIconUtils.getIconPath();
 
             var originalExtension = path.extname(filePath).toLowerCase(),
                 requestedExtension = path.extname(req.path).toLowerCase();
@@ -51,7 +51,7 @@ function serveFavicon() {
                 storage.getStorage()
                     .read({path: filePath})
                     .then(function readFile(buf) {
-                        iconType = settingsCache.get('icon').match(/\.ico$/i) ? 'x-icon' : 'png';
+                        iconType = blogIconUtils.getIconType();
                         content = buildContentResponse(iconType, buf);
 
                         res.writeHead(200, content.headers);
@@ -61,7 +61,6 @@ function serveFavicon() {
                         next(err);
                     });
             } else {
-                filePath = path.join(config.get('paths:publicFilePath'), 'favicon.ico');
                 originalExtension = path.extname(filePath).toLowerCase();
 
                 // CASE: always redirect to .ico for default icon
