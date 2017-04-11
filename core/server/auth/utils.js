@@ -71,19 +71,20 @@ module.exports.createTokens = function createTokens(options) {
                 }, modelOptions));
             })
             .then(function () {
-                return models.Accesstoken.add({
-                    token: newAccessToken,
-                    user_id: userId,
-                    client_id: clientId,
-                    expires: accessExpires
-                }, modelOptions);
-            })
-            .then(function () {
                 return models.Refreshtoken.add({
                     token: newRefreshToken,
                     user_id: userId,
                     client_id: clientId,
                     expires: refreshExpires
+                }, modelOptions);
+            })
+            .then(function (refreshToken) {
+                return models.Accesstoken.add({
+                    token: newAccessToken,
+                    user_id: userId,
+                    client_id: clientId,
+                    issued_by: refreshToken.id,
+                    expires: accessExpires
                 }, modelOptions);
             })
             .then(function () {
