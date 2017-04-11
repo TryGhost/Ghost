@@ -1,15 +1,19 @@
-var ICO = require('icojs'),
-    errors = require('../errors'),
-    url = require('./url'),
-    Promise = require('bluebird'),
-    i18n = require('../i18n'),
-    settingsCache = require('../settings/cache'),
-    fs = require('fs'),
-    _ = require('lodash'),
+var ICO             = require('icojs'),
+    errors          = require('../errors'),
+    url             = require('./url'),
+    Promise         = require('bluebird'),
+    i18n            = require('../i18n'),
+    settingsCache   = require('../settings/cache'),
+    fs              = require('fs'),
+    _               = require('lodash'),
+    path            = require('path'),
+    config          = require('../config'),
+    utils          = require('../utils'),
     getIconDimensions,
     isIcoImageType,
     getIconType,
-    getIconUrl;
+    getIconUrl,
+    getIconPath;
 
 /**
  * Get dimensions for ico file from its real file storage path
@@ -22,25 +26,28 @@ getIconDimensions = function getIconDimensions(path) {
     return new Promise(function getIconSize(resolve, reject) {
         var arrayBuffer;
 
-        arrayBuffer = new Uint8Array(fs.readFileSync(path)).buffer;
-        ICO.parse(arrayBuffer).then(function (result, error) {
-            if (error) {
-                return reject(new errors.ValidationError({message: i18n.t('errors.utils.blogIcon.error', {file: path, error: error.message})}));
-            }
+        try {
+            arrayBuffer = new Uint8Array(fs.readFileSync(path)).buffer;
+        } catch (error) {
+            return reject(error);
+        }
 
+        ICO.parse(arrayBuffer).then(function (response) {
             // CASE: ico file contains only one size
-            if (result.length === 1) {
+            if (response.length === 1) {
                 return resolve({
-                    width: result[0].width,
-                    height: result[0].height
+                    width: response[0].width,
+                    height: response[0].height
                 });
             } else {
                 // CASE: ico file contains multiple sizes, return only the max size
                 return resolve({
-                    width: _.maxBy(result, function (w) {return w.width;}).width,
-                    height: _.maxBy(result, function (h) {return h.height;}).height
+                    width: _.maxBy(response, function (w) {return w.width;}).width,
+                    height: _.maxBy(response, function (h) {return h.height;}).height
                 });
             }
+        }).catch(function (err) {
+            return reject(new errors.ValidationError({message: i18n.t('errors.utils.blogIcon.error', {file: path, error: err.message})}));
         });
     });
 };
@@ -72,7 +79,7 @@ getIconType = function getIconType(icon) {
 };
 
 /**
- * Return URL for Bog icon: [subdirectory or not]favicon.[ico or png]
+ * Return URL for Blog icon: [subdirectory or not]favicon.[ico or png]
  * Always returns {string} getIconUrl
  * @returns {string} [subdirectory or not]favicon.[ico or png]
  * @description Checks if we have a custom uploaded icon and the extension of it. If no custom uploaded icon
@@ -96,7 +103,26 @@ getIconUrl = function getIconUrl(absolut) {
     }
 };
 
+/**
+ * Return path for Blog icon without [subdirectory]/content/image prefix
+ * Always returns {string} getIconPath
+ * @returns {string} physical storage path of icon
+ * @description Checks if we have a custom uploaded icon. If no custom uploaded icon
+ * exists, we're returning the default `favicon.ico`
+ */
+getIconPath = function getIconPath() {
+    var blogIcon = settingsCache.get('icon');
+
+    if (blogIcon) {
+        // The '/' in urlJoin is necessary to add the '/' to `content/images`, if no subdirectory is setup
+        return blogIcon.replace(new RegExp('^' + utils.url.urlJoin(utils.url.getSubdir(), '/', utils.url.STATIC_IMAGE_URL_PREFIX)), '');
+    } else {
+        return path.join(config.get('paths:publicFilePath'), 'favicon.ico');
+    }
+};
+
 module.exports.getIconDimensions = getIconDimensions;
 module.exports.isIcoImageType = isIcoImageType;
 module.exports.getIconUrl = getIconUrl;
+module.exports.getIconPath = getIconPath;
 module.exports.getIconType = getIconType;

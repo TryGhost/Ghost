@@ -19,27 +19,22 @@ function getBlogLogo() {
             logo.url = blogIconUtils.getIconUrl(true);
 
             if (blogIconUtils.isIcoImageType(logo.url)) {
+                filePath = blogIconUtils.getIconPath();
                 // getIconDimensions needs the physical path of the ico file
                 if (settingsCache.get('icon')) {
                     // CASE: custom uploaded icon
-                    filePath = settingsCache.get('icon').replace(new RegExp('^' + utils.url.getSubdir() + '/' + utils.url.STATIC_IMAGE_URL_PREFIX), '');
                     filePath = path.join(config.getContentPath('images'), filePath);
-                } else {
-                    // CASE: default favicon.ico
-                    filePath = path.join(config.get('paths:publicFilePath'), 'favicon.ico');
                 }
 
-                return blogIconUtils.getIconDimensions(filePath).then(function (dimensions, err) {
-                    if (err) {
-                        return reject(err);
-                    }
-
+                return blogIconUtils.getIconDimensions(filePath).then(function (response) {
                     logo.dimensions = {
-                        width: dimensions.width,
-                        height: dimensions.height
+                        width: response.width,
+                        height: response.height
                     };
 
                     return resolve(logo);
+                }).catch(function (err) {
+                    return reject(err);
                 });
             }
         }

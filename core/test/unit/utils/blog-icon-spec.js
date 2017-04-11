@@ -6,6 +6,7 @@ var should = require('should'),
     configUtils = require('../../utils/configUtils'),
     testUtils = require('../../utils'),
     config = configUtils.config,
+    path = require('path'),
 
     // stuff we are testing
     blogIcon = require('../../../server/utils/blog-icon'),
@@ -73,6 +74,43 @@ describe('Blog Icon', function () {
             it('default ico blog icon', function () {
                 configUtils.set({url: 'http://my-ghost-blog.com/blog'});
                 blogIcon.getIconUrl().should.eql('/blog/favicon.ico');
+            });
+        });
+    });
+
+    describe('getIconPath', function () {
+        it('custom uploaded ico blog icon', function () {
+            sandbox.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.ico');
+            blogIcon.getIconPath().should.eql('/2017/04/my-icon.ico');
+        });
+
+        it('custom uploaded png blog icon', function () {
+            sandbox.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.png');
+            blogIcon.getIconPath().should.eql('/2017/04/my-icon.png');
+        });
+
+        it('default ico blog icon', function () {
+            blogIcon.getIconPath().should.eql(path.join(__dirname, '../../../server/public/favicon.ico'));
+        });
+
+        describe('with subdirectory', function () {
+            it('custom uploaded ico blog icon', function () {
+                sandbox.stub(settingsCache, 'get').withArgs('icon').returns('/blog/content/images/2017/04/my-icon.ico');
+                configUtils.set({url: 'http://my-ghost-blog.com/blog'});
+
+                blogIcon.getIconPath().should.eql('/2017/04/my-icon.ico');
+            });
+
+            it('custom uploaded png blog icon', function () {
+                sandbox.stub(settingsCache, 'get').withArgs('icon').returns('/blog/content/images/2017/04/my-icon.png');
+                configUtils.set({url: 'http://my-ghost-blog.com/blog'});
+
+                blogIcon.getIconPath().should.eql('/2017/04/my-icon.png');
+            });
+
+            it('default ico blog icon', function () {
+                configUtils.set({url: 'http://my-ghost-blog.com/blog'});
+                blogIcon.getIconPath().should.eql(path.join(__dirname, '../../../server/public/favicon.ico'));
             });
         });
     });

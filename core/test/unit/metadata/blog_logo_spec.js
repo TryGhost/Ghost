@@ -70,8 +70,8 @@ describe('getBlogLogo', function () {
             should.exist(blogLogo);
             blogLogo.should.have.property('url', 'http://127.0.0.1:2369/favicon.ico');
             blogLogo.should.have.property('dimensions');
-            blogLogo.dimensions.should.have.property('width', 48);
-            blogLogo.dimensions.should.have.property('height', 48);
+            blogLogo.dimensions.should.have.property('width', 64);
+            blogLogo.dimensions.should.have.property('height', 64);
         }).catch(done);
 
         done();

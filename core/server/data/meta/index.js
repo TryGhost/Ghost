@@ -1,6 +1,7 @@
 var Promise = require('bluebird'),
     settingsCache = require('../../settings/cache'),
     utils = require('../../utils'),
+    logging = require('../../logging'),
     getUrl = require('./url'),
     getImageDimensions = require('./image-dimensions'),
     getCanonicalUrl = require('./canonical_url'),
@@ -80,6 +81,9 @@ function getMetaData(data, root) {
 
             return metaData;
         });
+    }).catch(function (err) {
+        logging.error(err);
+        return metaData;
     });
 }
 

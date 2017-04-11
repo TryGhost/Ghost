@@ -14,24 +14,23 @@ validIconSize = function validIconSize(size) {
 getIconDimensions = function getIconDimensions(icon) {
     return new Promise(function getImageSize(resolve, reject) {
         if (blogIconUtils.isIcoImageType(icon.name)) {
-            blogIconUtils.getIconDimensions(icon.path).then(function (dimensions, err) {
-                if (err) {
-                    return reject(err);
-                }
+            blogIconUtils.getIconDimensions(icon.path).then(function (response) {
                 return resolve({
-                    width: dimensions.width,
-                    height: dimensions.height
+                    width: response.width,
+                    height: response.height
                 });
+            }).catch(function (err) {
+                return reject(err);
             });
         } else {
-            sizeOf(icon.path, function (err, dimensions) {
+            sizeOf(icon.path, function (err, response) {
                 if (err) {
                     return reject(new errors.ValidationError({message: i18n.t('errors.api.icons.couldNotGetSize', {file: icon.name, error: err.message})}));
                 }
 
                 return resolve({
-                    width: dimensions.width,
-                    height: dimensions.height
+                    width: response.width,
+                    height: response.height
                 });
             });
         }
@@ -48,9 +47,9 @@ module.exports = function blogIcon() {
             return next(new errors.ValidationError({message: i18n.t('errors.api.icons.invalidFile', {extensions: iconExtensions})}));
         }
 
-        return getIconDimensions(req.file).then(function (dimensions) {
+        return getIconDimensions(req.file).then(function (response) {
             // save the image dimensions in new property for file
-            req.file.dimensions = dimensions;
+            req.file.dimensions = response;
 
             // CASE: file needs to be a square
             if (req.file.dimensions.width !== req.file.dimensions.height) {
@@ -69,6 +68,8 @@ module.exports = function blogIcon() {
             }
 
             next();
+        }).catch(function (err) {
+            next(err);
         });
     };
 };
