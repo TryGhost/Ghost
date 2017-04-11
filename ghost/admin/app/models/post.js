@@ -3,13 +3,13 @@ import Ember from 'ember';
 import computed, {equal, filterBy} from 'ember-computed';
 import injectService from 'ember-service/inject';
 import moment from 'moment';
-
+import observer from 'ember-metal/observer';
 import Model from 'ember-data/model';
 import attr from 'ember-data/attr';
 import {belongsTo, hasMany} from 'ember-data/relationships';
-
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
+import {isBlank} from 'ember-utils';
 
 import {BLANK_DOC} from 'ghost-admin/components/gh-koenig';  // a blank mobile doc
 
@@ -68,6 +68,11 @@ function publishedAtCompare(postA, postB) {
 }
 
 export default Model.extend(Comparable, ValidationEngine, {
+    config: injectService(),
+    ghostPaths: injectService(),
+    clock: injectService(),
+    settings: injectService(),
+
     validationType: 'post',
 
     uuid: attr('string'),
@@ -97,9 +102,27 @@ export default Model.extend(Comparable, ValidationEngine, {
     }),
     url: attr('string'),
 
-    config: injectService(),
-    ghostPaths: injectService(),
-    clock: injectService(),
+    scratch: null,
+    titleScratch: null,
+
+    // HACK: used for validation so that date/time can be validated based on
+    // eventual status rather than current status
+    statusScratch: null,
+
+    // For use by date/time pickers - will be validated then converted to UTC
+    // on save. Updated by an observer whenever publishedAtUTC changes.
+    // Everything that revolves around publishedAtUTC only cares about the saved
+    // value so this should be almost entirely internal
+    publishedAtBlogDate: '',
+    publishedAtBlogTime: '',
+
+    metaTitleScratch: boundOneWay('metaTitle'),
+    metaDescriptionScratch: boundOneWay('metaDescription'),
+
+    isPublished: equal('status', 'published'),
+    isDraft: equal('status', 'draft'),
+    internalTags: filterBy('tags', 'isInternal', true),
+    isScheduled: equal('status', 'scheduled'),
 
     absoluteUrl: computed('url', 'ghostPaths.url', 'config.blogUrl', function () {
         let blogUrl = this.get('config.blogUrl');
@@ -118,26 +141,69 @@ export default Model.extend(Comparable, ValidationEngine, {
         return this.get('ghostPaths.url').join(blogUrl, previewKeyword, uuid);
     }),
 
-    scratch: null,
-    titleScratch: null,
-    metaTitleScratch: boundOneWay('metaTitle'),
-    metaDescriptionScratch: boundOneWay('metaDescription'),
+    // check every second to see if we're past the scheduled time
+    // will only re-compute if this property is being observed elsewhere
+    pastScheduledTime: computed('isScheduled', 'publishedAtUTC', 'clock.second', function () {
+        if (this.get('isScheduled')) {
+            let now = moment.utc();
+            let publishedAtUTC = this.get('publishedAtUTC') || now;
+            let pastScheduledTime = publishedAtUTC.diff(now, 'hours', true) < 0;
 
-    // Computed post properties
+            // force a recompute
+            this.get('clock.second');
 
-    isPublished: equal('status', 'published'),
-    isDraft: equal('status', 'draft'),
-    internalTags: filterBy('tags', 'isInternal', true),
-    isScheduled: equal('status', 'scheduled'),
-
-    // TODO: move this into gh-posts-list-item component
-    // Checks every second, if we reached the scheduled date
-    timeScheduled: computed('publishedAtUTC', 'clock.second', function () {
-        let publishedAtUTC = this.get('publishedAtUTC') || moment.utc(new Date());
-        this.get('clock.second');
-
-        return publishedAtUTC.diff(moment.utc(new Date()), 'hours', true) > 0 ? true : false;
+            return pastScheduledTime;
+        } else {
+            return false;
+        }
     }),
+
+    publishedAtBlogTZ: computed('publishedAtBlogDate', 'publishedAtBlogTime', 'settings.activeTimezone', {
+        get() {
+            return this._getPublishedAtBlogTZ();
+        },
+        set(key, value) {
+            let momentValue = value ? moment(value) : null;
+            this._setPublishedAtBlogStrings(momentValue);
+            return this._getPublishedAtBlogTZ();
+        }
+    }),
+
+    _getPublishedAtBlogTZ() {
+        let publishedAtUTC = this.get('publishedAtUTC');
+        let publishedAtBlogDate = this.get('publishedAtBlogDate');
+        let publishedAtBlogTime = this.get('publishedAtBlogTime');
+        let blogTimezone = this.get('settings.activeTimezone');
+
+        if (!publishedAtUTC && isBlank(publishedAtBlogDate) && isBlank(publishedAtBlogTime)) {
+            return null;
+        }
+
+        if (publishedAtBlogDate && publishedAtBlogTime) {
+            let publishedAtBlog = moment.tz(`${publishedAtBlogDate} ${publishedAtBlogTime}`, blogTimezone);
+            return publishedAtBlog;
+        } else {
+            return moment.tz(this.get('publishedAtUTC'), blogTimezone);
+        }
+    },
+
+    _setPublishedAtBlogTZ: observer('publishedAtUTC', 'settings.activeTimezone', function () {
+        let publishedAtUTC = this.get('publishedAtUTC');
+        this._setPublishedAtBlogStrings(publishedAtUTC);
+    }).on('init'),
+
+    _setPublishedAtBlogStrings(momentDate) {
+        if (momentDate) {
+            let blogTimezone = this.get('settings.activeTimezone');
+            let publishedAtBlog = moment.tz(momentDate, blogTimezone);
+
+            this.set('publishedAtBlogDate', publishedAtBlog.format('YYYY-MM-DD'));
+            this.set('publishedAtBlogTime', publishedAtBlog.format('HH:mm'));
+        } else {
+            this.set('publishedAtBlogDate', '');
+            this.set('publishedAtBlogTime', '');
+        }
+    },
 
     // remove client-generated tags, which have `id: null`.
     // Ember Data won't recognize/update them automatically
@@ -198,5 +264,17 @@ export default Model.extend(Comparable, ValidationEngine, {
         }
 
         return statusResult;
+    },
+
+    // this is a hook added by the ValidationEngine mixin and is called after
+    // successful validation and before this.save()
+    //
+    // the publishedAtBlog{Date/Time} strings are set separately so they can be
+    // validated, grab that time if it exists and set the publishedAtUTC
+    beforeSave() {
+        let publishedAtBlogTZ = this.get('publishedAtBlogTZ');
+        let publishedAtUTC = publishedAtBlogTZ ? publishedAtBlogTZ.utc() : null;
+
+        this.set('publishedAtUTC', publishedAtUTC);
     }
 });

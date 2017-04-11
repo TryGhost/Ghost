@@ -29,10 +29,13 @@ const GhTaskButton = Component.extend({
     failureText: 'Retry',
     failureClass: 'gh-btn-red',
 
+    // hasRun is needed so that a newly rendered button does not show the last
+    // state of the associated task
+    hasRun: false,
     isRunning: reads('task.last.isRunning'),
 
-    isSuccess: computed('isRunning', 'task.last.value', function () {
-        if (this.get('isRunning')) {
+    isSuccess: computed('hasRun', 'isRunning', 'task.last.value', function () {
+        if (!this.get('hasRun') || this.get('isRunning')) {
             return false;
         }
 
@@ -46,8 +49,8 @@ const GhTaskButton = Component.extend({
         }
     }),
 
-    isFailure: computed('isRunning', 'isSuccess', 'task.last.error', function () {
-        if (this.get('isRunning') || this.get('isSuccess')) {
+    isFailure: computed('hasRun', 'isRunning', 'isSuccess', 'task.last.error', function () {
+        if (!this.get('hasRun') || this.get('isRunning') || this.get('isSuccess')) {
             return false;
         }
 
@@ -90,6 +93,7 @@ const GhTaskButton = Component.extend({
 
     setSize: observer('isRunning', function () {
         if (this.get('isRunning')) {
+            this.set('hasRun', true);
             this.$().width(this.$().width());
             this.$().height(this.$().height());
         } else {

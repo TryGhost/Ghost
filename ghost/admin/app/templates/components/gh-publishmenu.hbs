@@ -1,0 +1,39 @@
+{{#basic-dropdown verticalPosition="below" onOpen=(action "open") onClose=(action "close") as |dd|}}
+    {{#dd.trigger class="gh-btn gh-btn-outline gh-publishmenu-trigger"}}
+        <span data-test-publishmenu-trigger>{{triggerText}} {{inline-svg "arrow-down"}}</span>
+    {{/dd.trigger}}
+
+    {{#dd.content class="gh-publishmenu-dropdown"}}
+        {{#if (eq postState "published")}}
+        {{gh-publishmenu-published
+            saveType=saveType
+            setSaveType=(action "setSaveType")}}
+
+        {{else if (eq postState "scheduled")}}
+        {{gh-publishmenu-scheduled
+            post=post
+            saveType=saveType
+            setSaveType=(action "setSaveType")}}
+
+        {{else}}
+        {{gh-publishmenu-draft
+            post=post
+            saveType=saveType
+            setSaveType=(action "setSaveType")}}
+        {{/if}}
+
+        {{!--
+            save button needs to be outside of menu components so it doesn't lose state
+            or cancel the task when the post status updates and switches components
+         --}}
+        <footer class="gh-publishmenu-footer">
+            <button class="gh-btn gh-btn-outline gh-btn-link" {{action dd.actions.close}} data-test-publishmenu-cancel>
+                <span>Cancel</span>
+            </button>
+            {{gh-task-button buttonText
+                task=save
+                class="gh-btn gh-btn-blue gh-publishmenu-button"
+                data-test-publishmenu-save=true}}
+        </footer>
+    {{/dd.content}}
+{{/basic-dropdown}}

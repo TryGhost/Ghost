@@ -14,40 +14,48 @@ import wait from 'ember-test-helpers/wait';
 describe('Unit: Mixin: editor-base-controller', function() {
     describe('generateSlug', function () {
         it('should generate a slug and set it on the model', function (done) {
-            let object = EmberObject.extend(EditorBaseControllerMixin, {
-                slugGenerator: EmberObject.create({
-                    generateSlug(slugType, str) {
-                        return RSVP.resolve(`${str}-slug`);
-                    }
-                }),
-                model: EmberObject.create({slug: ''})
-            }).create();
-
-            object.set('model.titleScratch', 'title');
-
-            expect(object.get('model.slug')).to.equal('');
+            let object;
 
             run(() => {
-                object.get('generateSlug').perform();
-            });
+                object = EmberObject.extend(EditorBaseControllerMixin, {
+                    slugGenerator: EmberObject.create({
+                        generateSlug(slugType, str) {
+                            return RSVP.resolve(`${str}-slug`);
+                        }
+                    }),
+                    model: EmberObject.create({slug: ''})
+                }).create();
 
-            wait().then(() => {
-                expect(object.get('model.slug')).to.equal('title-slug');
-                done();
+                object.set('model.titleScratch', 'title');
+
+                expect(object.get('model.slug')).to.equal('');
+
+                run(() => {
+                    object.get('generateSlug').perform();
+                });
+
+                wait().then(() => {
+                    expect(object.get('model.slug')).to.equal('title-slug');
+                    done();
+                });
             });
         });
 
         it('should not set the destination if the title is "(Untitled)" and the post already has a slug', function (done) {
-            let object = EmberObject.extend(EditorBaseControllerMixin, {
-                slugGenerator: EmberObject.create({
-                    generateSlug(slugType, str) {
-                        return RSVP.resolve(`${str}-slug`);
-                    }
-                }),
-                model: EmberObject.create({
-                    slug: 'whatever'
-                })
-            }).create();
+            let object;
+
+            run(() => {
+                object = EmberObject.extend(EditorBaseControllerMixin, {
+                    slugGenerator: EmberObject.create({
+                        generateSlug(slugType, str) {
+                            return RSVP.resolve(`${str}-slug`);
+                        }
+                    }),
+                    model: EmberObject.create({
+                        slug: 'whatever'
+                    })
+                }).create();
+            });
 
             expect(object.get('model.slug')).to.equal('whatever');
 
@@ -66,13 +74,17 @@ describe('Unit: Mixin: editor-base-controller', function() {
 
     describe('updateTitle', function () {
         it('should invoke generateSlug if the post is new and a title has not been set', function (done) {
-            let object = EmberObject.extend(EditorBaseControllerMixin, {
-                model: EmberObject.create({isNew: true}),
-                generateSlug: task(function* () {
-                    this.set('model.slug', 'test-slug');
-                    yield RSVP.resolve();
-                })
-            }).create();
+            let object;
+
+            run(() => {
+                object = EmberObject.extend(EditorBaseControllerMixin, {
+                    model: EmberObject.create({isNew: true}),
+                    generateSlug: task(function* () {
+                        this.set('model.slug', 'test-slug');
+                        yield RSVP.resolve();
+                    })
+                }).create();
+            });
 
             expect(object.get('model.isNew')).to.be.true;
             expect(object.get('model.titleScratch')).to.not.be.ok;
@@ -89,13 +101,17 @@ describe('Unit: Mixin: editor-base-controller', function() {
         });
 
         it('should invoke generateSlug if the post is not new and a title is "(Untitled)"', function (done) {
-            let object = EmberObject.extend(EditorBaseControllerMixin, {
-                model: EmberObject.create({isNew: false}),
-                generateSlug: task(function* () {
-                    this.set('model.slug', 'test-slug');
-                    yield RSVP.resolve();
-                })
-            }).create();
+            let object;
+
+            run(() => {
+                object = EmberObject.extend(EditorBaseControllerMixin, {
+                    model: EmberObject.create({isNew: false}),
+                    generateSlug: task(function* () {
+                        this.set('model.slug', 'test-slug');
+                        yield RSVP.resolve();
+                    })
+                }).create();
+            });
 
             expect(object.get('model.isNew')).to.be.false;
             expect(object.get('model.titleScratch')).to.not.be.ok;
@@ -112,17 +128,21 @@ describe('Unit: Mixin: editor-base-controller', function() {
         });
 
         it('should not invoke generateSlug if the post is new but has a title', function (done) {
-            let object = EmberObject.extend(EditorBaseControllerMixin, {
-                model: EmberObject.create({
-                    isNew: true,
-                    title: 'a title'
-                }),
-                generateSlug: task(function* () {
-                    expect(false, 'generateSlug should not be called').to.equal(true);
+            let object;
 
-                    yield RSVP.resolve();
-                })
-            }).create();
+            run(() => {
+                object = EmberObject.extend(EditorBaseControllerMixin, {
+                    model: EmberObject.create({
+                        isNew: true,
+                        title: 'a title'
+                    }),
+                    generateSlug: task(function* () {
+                        expect(false, 'generateSlug should not be called').to.equal(true);
+
+                        yield RSVP.resolve();
+                    })
+                }).create();
+            });
 
             expect(object.get('model.isNew')).to.be.true;
             expect(object.get('model.title')).to.equal('a title');
@@ -140,14 +160,18 @@ describe('Unit: Mixin: editor-base-controller', function() {
         });
 
         it('should not invoke generateSlug if the post is not new and the title is not "(Untitled)"', function (done) {
-            let object = EmberObject.extend(EditorBaseControllerMixin, {
-                model: EmberObject.create({isNew: false}),
-                generateSlug: task(function* () {
-                    expect(false, 'generateSlug should not be called').to.equal(true);
+            let object;
 
-                    yield RSVP.resolve();
-                })
-            }).create();
+            run(() => {
+                object = EmberObject.extend(EditorBaseControllerMixin, {
+                    model: EmberObject.create({isNew: false}),
+                    generateSlug: task(function* () {
+                        expect(false, 'generateSlug should not be called').to.equal(true);
+
+                        yield RSVP.resolve();
+                    })
+                }).create();
+            });
 
             expect(object.get('model.isNew')).to.be.false;
             expect(object.get('model.title')).to.not.be.ok;

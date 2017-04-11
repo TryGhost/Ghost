@@ -1,0 +1,27 @@
+<header class="gh-publishmenu-heading">Will be published in {{timeToPublished}}</header>
+<section class="gh-publishmenu-content">
+    <div class="gh-publishmenu-radio {{if (eq saveType "draft") "active"}}" {{action "setSaveType" "draft" on="click"}}>
+        <div class="gh-publishmenu-radio-button" data-test-publishmenu-draft-option></div>
+        <div class="gh-publishmenu-radio-content">
+            <div class="gh-publishmenu-radio-label">Revert to draft</div>
+            <div class="gh-publishmenu-radio-desc">Do not publish</div>
+        </div>
+    </div>
+    <div class="gh-publishmenu-radio {{if (eq saveType "schedule") "active"}}" {{action "setSaveType" "schedule" on="click"}}>
+        <div class="gh-publishmenu-radio-button" data-test-publishmenu-scheduled-option></div>
+        <div class="gh-publishmenu-radio-content">
+            <div class="gh-publishmenu-radio-label">Schedule for later</div>
+            {{gh-date-time-picker
+                date=post.publishedAtBlogDate
+                time=post.publishedAtBlogTime
+                setDate=(action "setDate")
+                setTime=(action "setTime")
+                errors=post.errors
+                dateErrorProperty="publishedAtBlogDate"
+                timeErrorProperty="publishedAtBlogTime"
+                minDate=_minDate
+            }}
+            <div class="gh-publishmenu-radio-desc">Set automatic future publish date</div>
+        </div>
+    </div>
+</section>

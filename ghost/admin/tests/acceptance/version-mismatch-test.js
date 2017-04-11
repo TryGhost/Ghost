@@ -10,6 +10,7 @@ import startApp from '../helpers/start-app';
 import destroyApp from '../helpers/destroy-app';
 import {authenticateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import {versionMismatchResponse} from 'ghost-admin/mirage/utils';
+import testSelector from 'ember-test-selectors';
 
 describe('Acceptance: Version Mismatch', function() {
     let application;
@@ -38,7 +39,8 @@ describe('Acceptance: Version Mismatch', function() {
 
             visit('/');
             click('.posts-list li:nth-of-type(2) a'); // select second post
-            click('.js-publish-button'); // "Save post"
+            click(testSelector('publishmenu-trigger'));
+            click(testSelector('publishmenu-save')); // "Save post"
 
             andThen(() => {
                 // has the refresh to update alert

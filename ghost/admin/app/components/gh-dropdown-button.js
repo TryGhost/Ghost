@@ -4,7 +4,7 @@ import DropdownMixin from 'ghost-admin/mixins/dropdown-mixin';
 
 export default Component.extend(DropdownMixin, {
     tagName: 'button',
-    attributeBindings: 'role',
+    attributeBindings: ['href', 'role'],
     role: 'button',
 
     // matches with the dropdown this button toggles
@@ -16,5 +16,9 @@ export default Component.extend(DropdownMixin, {
     click(event) {
         this._super(event);
         this.get('dropdown').toggleDropdown(this.get('dropdownName'), this);
+
+        if (this.get('tagName') === 'a') {
+            return false;
+        }
     }
 });

@@ -4,6 +4,7 @@
 .gh-publishmenu-trigger {
     color: var(--blue);
     border: none;
+    cursor: pointer;
 }
 
 .gh-publishmenu-trigger svg {
@@ -28,7 +29,7 @@
 .gh-publishmenu-dropdown {
     position: absolute;
     top: 100%;
-    left: 0;
+    right: 0;
     margin: 5px 0 20px 0;
     padding: 20px;
     width: 300px;
@@ -41,6 +42,17 @@
     text-transform: none;
     font-size: 1.4rem;
     font-weight: normal;
+    will-change: transform, opacity;
+}
+
+.gh-publishmenu-dropdown.ember-basic-dropdown--transitioning-in {
+    animation: fade-in-scale 0.2s;
+    animation-fill-mode: forwards;
+}
+
+.gh-publishmenu-dropdown.ember-basic-dropdown--transitioning-out {
+    animation: fade-out 0.5s;
+    animation-fill-mode: forwards;
 }
 
 .gh-publishmenu-heading {
@@ -123,14 +135,14 @@
     box-shadow: rgba(0,0,0,0.25) 0 1px 3px;
 }
 
-.gh-publishmenu-schedule {
+.gh-date-time-picker {
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
-.gh-publishmenu-schedule-date,
-.gh-publishmenu-schedule-time {
+.gh-date-time-picker-date,
+.gh-date-time-picker-time {
     display: flex;
     align-items: center;
     position: relative;
@@ -142,12 +154,17 @@
     background: #fff;
 }
 
-.gh-publishmenu-schedule-time {
+.gh-date-time-picker-time {
     margin-left: 10px;
     width: 170px;
 }
 
-.gh-publishmenu-radio input {
+.gh-date-time-picker-date.error,
+.gh-date-time-picker-time.error {
+    border-color: var(--red);
+}
+
+.gh-date-time-picker input {
     display: block;
     padding: 0;
     width: 100%;
@@ -161,22 +178,30 @@
     -webkit-appearance: none;
 }
 
-.gh-publishmenu-schedule-date:focus,
-.gh-publishmenu-schedule-time:focus {
-    border-color: color(var(--lightgrey) l(-15%) s(-10%));
-}
-
-.gh-publishmenu-radio input:focus {
+.gh-date-time-picker input:focus {
     outline: 0;
 }
 
-.gh-publishmenu-schedule-date svg {
+.gh-date-time-picker-date:focus,
+.gh-date-time-picker-time:focus {
+    border-color: color(var(--lightgrey) l(-15%) s(-10%));
+}
+
+.gh-date-time-picker-date svg {
     height: 14px;
     fill: color(var(--midgrey) l(+15%));
 }
 
-.gh-publishmenu-schedule-timezone {
+.gh-date-time-picker-timezone {
     font-size: 1.1rem;
     font-weight: 200;
     color: color(var(--midgrey) l(+17%));
+}
+
+.gh-date-time-picker-error {
+    display: block;
+    font-size: 1.3rem;
+    line-height: 1.4em;
+    font-weight: 200;
+    color: var(--red);
 }
