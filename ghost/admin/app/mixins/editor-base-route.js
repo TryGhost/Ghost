@@ -71,13 +71,19 @@ export default Mixin.create(styleBody, ShortcutsRoute, {
                 return;
             }
 
-            // The controller may hold model state that will be lost in the transition,
-            // so we need to apply it now.
+            // The controller may hold model state that will be lost in the
+            // new->edit transition, so we need to apply it now.
             if (fromNewToEdit && controllerIsDirty) {
                 if (scratch !== model.get('mobiledoc')) {
                     model.set('mobiledoc', scratch);
                 }
             }
+
+            // make sure the save tasks aren't still running in the background
+            // after leaving the edit route
+            // TODO: the edit screen should really be a component so that we get
+            // automatic state cleanup and task cancellation
+            controller.send('cancelAutosave');
 
             if (state.isNew) {
                 model.deleteRecord();

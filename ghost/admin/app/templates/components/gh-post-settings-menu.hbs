@@ -31,21 +31,26 @@
                 {{gh-url-preview slug=slugValue tagName="p" classNames="description"}}
             </div>
 
-            {{#gh-form-group errors=model.errors property="post-setting-date"}}
-                {{#if model.timeScheduled}}
-                    <label for="post-setting-date">Scheduled Date</label>
+            <div class="form-group">
+                {{#if (or model.isDraft model.isPublished model.pastScheduledTime)}}
+                    <label>Publish Date</label>
                 {{else}}
-                    <label for="post-setting-date">Publish Date</label>
+                    <label>Scheduled Date</label>
+                    <p>Use the publish menu to re-schedule</p>
                 {{/if}}
-                {{gh-datetime-input
-                    value=model.publishedAtUTC
-                    update=(action "setPublishedAtUTC")
-                    inputClass="post-setting-date"
-                    inputId="post-setting-date"
-                    inputName="post-setting-date"
+                {{gh-date-time-picker
+                    date=model.publishedAtBlogDate
+                    time=model.publishedAtBlogTime
+                    setDate=(action "setPublishedAtBlogDate")
+                    setTime=(action "setPublishedAtBlogTime")
+                    errors=model.errors
+                    dateErrorProperty="publishedAtBlogDate"
+                    timeErrorProperty="publishedAtBlogTime"
+                    maxDate='now'
+                    disabled=model.isScheduled
+                    static=true
                 }}
-                {{gh-error-message errors=model.errors property="post-setting-date"}}
-            {{/gh-form-group}}
+            </div>
 
             <div class="form-group">
                 <label for="tag-input">Tags</label>

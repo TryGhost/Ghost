@@ -141,6 +141,9 @@ export default Mixin.create({
         // If validation fails, reject with validation errors.
         // If save to the server fails, reject with server response.
         return this.validate(options).then(() => {
+            if (typeof this.beforeSave === 'function') {
+                this.beforeSave();
+            }
             return _super.call(this, options);
         }).catch((result) => {
             // server save failed or validator type doesn't exist

@@ -2221,6 +2221,12 @@ ember-ajax@2.5.6:
   dependencies:
     ember-cli-babel "^5.1.5"
 
+ember-assign-helper@0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/ember-assign-helper/-/ember-assign-helper-0.1.1.tgz#217f221f37781b64657bd371d9da911768c3fbd1"
+  dependencies:
+    ember-cli-babel "^5.1.7"
+
 ember-basic-dropdown@^0.31.0:
   version "0.31.1"
   resolved "https://registry.yarnpkg.com/ember-basic-dropdown/-/ember-basic-dropdown-0.31.1.tgz#cfc985ac150fa61a9a60b31d7409b616f9b3ff32"
@@ -2428,7 +2434,7 @@ ember-cli-mocha@0.13.2:
     mocha "^2.5.3"
     resolve "^1.1.7"
 
-ember-cli-moment-shim@3.1.0:
+ember-cli-moment-shim@3.1.0, ember-cli-moment-shim@^3.0.1:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/ember-cli-moment-shim/-/ember-cli-moment-shim-3.1.0.tgz#ec6a39a0dcb4badeaf6dcb74a6c05b0bc576f721"
   dependencies:
@@ -2874,6 +2880,12 @@ ember-lodash@^4.0:
     ember-cli-babel "^5.1.7"
     lodash-es "^4.17.4"
 
+ember-macro-helpers@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/ember-macro-helpers/-/ember-macro-helpers-0.4.0.tgz#914670001478fcccccb84819aca7630cc44526c8"
+  dependencies:
+    ember-cli-babel "^5.1.7"
+
 ember-maybe-import-regenerator@^0.1.4, ember-maybe-import-regenerator@^0.1.5:
   version "0.1.6"
   resolved "https://registry.yarnpkg.com/ember-maybe-import-regenerator/-/ember-maybe-import-regenerator-0.1.6.tgz#35d41828afa6d6a59bc0da3ce47f34c573d776ca"
@@ -2888,6 +2900,13 @@ ember-mocha@^0.11.0:
   resolved "https://registry.yarnpkg.com/ember-mocha/-/ember-mocha-0.11.0.tgz#31dd1e267fb73d4cabc6c2dba141596b76f9a3c2"
   dependencies:
     ember-test-helpers "^0.6.0-beta.1"
+
+ember-moment@^7.3.0:
+  version "7.3.0"
+  resolved "https://registry.yarnpkg.com/ember-moment/-/ember-moment-7.3.0.tgz#90ea18d231d85e1b75e45f15b27d33b908aad1fd"
+  dependencies:
+    ember-cli-babel "^5.1.6"
+    ember-macro-helpers "^0.4.0"
 
 ember-native-dom-helpers@0.3.5, ember-native-dom-helpers@^0.3.4:
   version "0.3.5"
@@ -2923,6 +2942,26 @@ ember-one-way-controls@2.0.0:
     ember-get-helper "~1.1.0"
     ember-invoke-action "1.4.0"
     ember-runtime-enumerable-includes-polyfill "^1.0.1"
+
+ember-power-calendar@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/ember-power-calendar/-/ember-power-calendar-0.4.0.tgz#6d9d9f119466b9bba5978e21154507c7d544d682"
+  dependencies:
+    ember-assign-helper "0.1.1"
+    ember-cli-babel "^6.0.0-beta.4"
+    ember-cli-htmlbars "^1.1.1"
+    ember-cli-moment-shim "^3.0.1"
+    ember-concurrency "^0.7.15"
+    ember-moment "^7.3.0"
+
+ember-power-datepicker@0.2.2:
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/ember-power-datepicker/-/ember-power-datepicker-0.2.2.tgz#1926301ad36a3220882dfb2fff95ee203275c8dc"
+  dependencies:
+    ember-basic-dropdown "^0.31.0"
+    ember-cli-babel "^6.0.0-beta.4"
+    ember-cli-htmlbars "^1.1.1"
+    ember-power-calendar "^0.4.0"
 
 ember-power-select@1.6.1:
   version "1.6.1"

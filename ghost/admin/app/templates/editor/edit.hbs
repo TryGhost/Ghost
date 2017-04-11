@@ -2,32 +2,25 @@
 
     <header class="gh-editor-header">
         <div class="gh-editor-status">
-        {{#if model.isPublished}}
-            Published
-        {{else if model.isScheduled}}
-            Scheduled
-        {{else}}
-            Draft
-        {{/if}}
-
-        </div>
-        <section class="view-actions">
-            {{gh-editor-save-button
-                isPublished=model.isPublished
-                isScheduled=model.isScheduled
-                willPublish=willPublish
-                willSchedule=willSchedule
-                statusFreeze=statusFreeze
-                scheduledWillPublish=scheduledWillPublish
-                timeScheduled=model.timeScheduled
-                postOrPage=postOrPage
-                isNew=model.isNew
-                save="save"
-                setSaveType="setSaveType"
-                delete="toggleDeletePostModal"
-                submitting=submitting
+            {{gh-editor-post-status
+                post=model
+                isSaving=autosave.isRunning
             }}
-            <button type="button" class="post-settings" title="Settings" {{action "openSettingsMenu"}}>
+        </div>
+        {{#if scheduleCountdown}}
+            <time datetime="{{post.publishedAtUTC}}" class="gh-notification gh-notification-schedule" data-test-schedule-countdown>
+                Post will be published {{scheduleCountdown}}.
+            </time>
+        {{/if}}
+        <section class="view-actions">
+            {{gh-publishmenu
+                post=model
+                saveTask=save
+                setSaveType=(action "setSaveType")
+                onOpen=(action "cancelAutosave")
+                onClose=(action "restartAutosave")}}
+
+            <button type="button" class="post-settings" title="Settings" {{action "openSettingsMenu"}} data-test-psm-trigger>
                 {{inline-svg "settings"}}
             </button>
         </section>
@@ -45,16 +38,10 @@
                 koenigEditor=(readonly editor)
                 editorMenuIsOpen=editorMenuIsOpen
             }}
-            {{#if scheduleCountdown}}
-                <time datetime="{{post.publishedAtUTC}}" class="gh-notification gh-notification-schedule">
-                    Post will be published {{scheduleCountdown}}.
-                </time>
-            {{/if}}
             {{gh-koenig
                 value=(readonly model.scratch)
-                onChange=(action (mut model.scratch))
+                onChange=(action "updateScratch")
                 onFirstChange=(action "autoSaveNew")
-                onTeardown=(action "cancelTimers")
                 shouldFocusEditor=shouldFocusEditor
                 apiRoot=apiRoot
                 assetPath=assetPath

@@ -1,0 +1,31 @@
+<div class="gh-date-time-picker">
+    {{#power-datepicker
+        selected=_date
+        onSelect=(action "setDate" value="date")
+        renderInPlace=true
+        disabled=disabled as |dp|
+    }}
+        {{#dp.trigger tabindex="-1" data-test-date-time-picker-datepicker=true}}
+            <div class="gh-date-time-picker-date {{if dateError "error"}}">
+                <input type="text" readonly value={{moment-format _date "MM/DD/YYYY"}} disabled={{disabled}} data-test-date-time-picker-date-input>
+                {{inline-svg "calendar"}}
+            </div>
+        {{/dp.trigger}}
+        {{#dp.content class="dropdown-menu"}}
+            {{dp.nav}}
+            {{dp.days minDate=_minDate maxDate=_maxDate weekdayFormat="min"}}
+        {{/dp.content}}
+    {{/power-datepicker}}
+
+    <div class="gh-date-time-picker-time {{if hasError "error"}}">
+        {{one-way-input _time
+            update=(action (mut _time))
+            focusOut=(action "setTime" _time)
+            disabled=disabled
+            data-test-date-time-picker-time-input=true}}
+        <small class="gh-date-time-picker-timezone">({{timezone}})</small>
+    </div>
+</div>
+{{#if hasError}}
+    <div class="gh-date-time-picker-error" data-test-date-time-picker-error>{{dateError}}{{timeError}}</div>
+{{/if}}
