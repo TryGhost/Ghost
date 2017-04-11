@@ -59,6 +59,11 @@ describe('Post Model', function () {
             firstPost.updated_by.name.should.equal(DataGenerator.Content.users[0].name);
             firstPost.published_by.name.should.equal(DataGenerator.Content.users[0].name);
             firstPost.tags[0].name.should.equal(DataGenerator.Content.tags[0].name);
+
+            // Formats
+            // @TODO change / update this for mobiledoc in
+            firstPost.markdown.should.match(/HTML Ipsum Presents/);
+            firstPost.html.should.match(/HTML Ipsum Presents/);
         }
 
         describe('findAll', function () {
@@ -421,6 +426,23 @@ describe('Post Model', function () {
                 }).then(function (edited) {
                     should.exist(edited);
                     edited.attributes.markdown.should.equal('123');
+                    done();
+                }).catch(done);
+            });
+
+            it('converts html to plaintext', function (done) {
+                var postId = testUtils.DataGenerator.Content.posts[0].id;
+
+                PostModel.findOne({id: postId}).then(function (results) {
+                    should.exist(results);
+                    results.attributes.html.should.match(/HTML Ipsum Presents/);
+                    should.not.exist(results.attributes.plaintext);
+                    return PostModel.edit({updated_at: Date.now()}, _.extend({}, context, {id: postId}));
+                }).then(function (edited) {
+                    should.exist(edited);
+
+                    edited.attributes.html.should.match(/HTML Ipsum Presents/);
+                    edited.attributes.plaintext.should.match(/HTML Ipsum Presents/);
                     done();
                 }).catch(done);
             });
@@ -905,6 +927,8 @@ describe('Post Model', function () {
                     createdPost.get('markdown').should.equal(newPost.markdown, 'markdown is correct');
                     createdPost.has('html').should.equal(true);
                     createdPost.get('html').should.equal(newPostDB.html);
+                    createdPost.has('plaintext').should.equal(true);
+                    createdPost.get('plaintext').should.match(/^testing/);
                     createdPost.get('slug').should.equal(newPostDB.slug + '-2');
                     (!!createdPost.get('featured')).should.equal(false);
                     (!!createdPost.get('page')).should.equal(false);
