@@ -145,8 +145,12 @@
                 <div class="gh-setting-desc">Include the date in your post URLs, eg. <strong>blogurl.com/2017/01/post-title/</strong></div>
             </div>
             <div class="gh-setting-action">
-                {{one-way-checkbox isDatedPermalinks type="checkbox" update=(action (mut isDatedPermalinks)) data-test-dated-permalinks-checkbox=true}}
-                <span class="input-toggle-component"></span>
+                <div class="for-checkbox">
+                    <label class="checkbox" for="settings-dated-permalinks">
+                        {{one-way-checkbox isDatedPermalinks id="settings-dated-permalinks" type="checkbox" update=(action (mut isDatedPermalinks)) data-test-dated-permalinks-checkbox=true}}
+                        <span class="input-toggle-component"></span>
+                    </label>
+                </div>
             </div>
         </div>
         <div class="gh-setting">
@@ -164,8 +168,12 @@
                 {{/if}}
             </div>
             <div class="gh-setting-action">
-                {{one-way-checkbox model.isPrivate type="checkbox" update=(action (mut model.isPrivate)) data-test-private-checkbox=true}}
-                <span class="input-toggle-component"></span>
+                <div class="for-checkbox">
+                    <label class="checkbox" for="settings-private">
+                        {{one-way-checkbox model.isPrivate id="settings-private" type="checkbox" update=(action (mut model.isPrivate)) data-test-private-checkbox=true}}
+                        <span class="input-toggle-component"></span>
+                    </label>
+                </div>
             </div>
         </div>
 
