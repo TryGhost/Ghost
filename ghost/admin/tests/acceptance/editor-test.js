@@ -88,7 +88,7 @@ describe('Acceptance: Editor', function() {
 
         it('renders the editor correctly, PSM Publish Date and Save Button', function () {
             server.createList('post', 2);
-            let plusTenMinPacific = moment().tz('Pacific/Kwajalein').add(10, 'minutes');
+            let futureTime = moment().tz('Etc/UTC').add(10, 'minutes');
 
             // post id 1 is a draft, checking for draft behaviour now
             visit('/editor/1');
@@ -111,9 +111,9 @@ describe('Acceptance: Editor', function() {
             });
 
             // should error, if the publish time is in the future
-            fillIn(testSelector('date-time-picker-time-input'), plusTenMinPacific.format('HH:mm'));
+            fillIn(testSelector('date-time-picker-time-input'), futureTime.format('HH:mm'));
             triggerEvent(testSelector('date-time-picker-time-input'), 'blur');
-            datepickerSelect(testSelector('date-time-picker-datepicker'), plusTenMinPacific);
+            datepickerSelect(testSelector('date-time-picker-datepicker'), futureTime);
 
             andThen(() => {
                 expect(find(testSelector('date-time-picker-error')).text().trim(), 'inline error response for future time')
@@ -245,16 +245,9 @@ describe('Acceptance: Editor', function() {
             click(testSelector('publishmenu-cancel'));
             click(testSelector('publishmenu-trigger'));
 
-            // draft menu should show
-            andThen(() => {
-                expect(
-                    find(testSelector('publishmenu-draft')),
-                    'draft menu is shown after unpublished'
-                ).to.exist;
-            });
-
+            let newFutureTime = moment.tz('Pacific/Kwajalein').add(10, 'minutes');
             click(testSelector('publishmenu-scheduled-option'));
-            datepickerSelect(`${testSelector('publishmenu-draft')} ${testSelector('date-time-picker-datepicker')}`, plusTenMinPacific);
+            datepickerSelect(`${testSelector('publishmenu-draft')} ${testSelector('date-time-picker-datepicker')}`, newFutureTime);
             click(testSelector('publishmenu-save'));
             click(testSelector('publishmenu-cancel'));
 
