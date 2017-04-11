@@ -7,6 +7,7 @@ var _               = require('lodash'),
     errors          = require('../errors'),
     Showdown        = require('showdown-ghost'),
     legacyConverter = new Showdown.converter({extensions: ['ghostgfm', 'footnotes', 'highlight']}),
+    htmlToText      = require('html-to-text'),
     ghostBookshelf  = require('./base'),
     events          = require('../events'),
     config          = require('../config'),
@@ -205,6 +206,18 @@ Post = ghostBookshelf.Model.extend({
         } else {
             // legacy showdown mode
             this.set('html', legacyConverter.makeHtml(_.toString(this.get('markdown'))));
+        }
+
+        if (this.hasChanged('html')) {
+            this.set('plaintext', htmlToText.fromString(this.get('html'), {
+                wordwrap: 80,
+                ignoreImage: true,
+                linkHrefBaseUrl: utils.url.urlFor('home').replace(/\/$/, ''),
+                hideLinkHrefIfSameAsText: true,
+                preserveNewlines: true,
+                returnDomByDefault: true,
+                uppercaseHeadings: false
+            }));
         }
 
         // disabling sanitization until we can implement a better version
