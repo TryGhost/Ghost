@@ -73,7 +73,7 @@ describe('Upload Icon API', function () {
             request.post(testUtils.API.getApiQuery('uploads/icon'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/favicon_32x_single.ico'))
+                .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/favicon_64x_single.ico'))
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -151,7 +151,7 @@ describe('Upload Icon API', function () {
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/favicon_size_too_large.png'))
-                .expect(413)
+                .expect(422)
                 .end(function (err) {
                     if (err) {
                         return done(err);
