@@ -21,6 +21,7 @@
 /* ALL buttons must have a span for content */
 .gh-btn span {
     display: block;
+    overflow: hidden;
     padding: 0 12px;
     height: 33px;
     font-size: 1.3rem;
@@ -29,6 +30,8 @@
     text-align: center;
     letter-spacing: 0.2px;
     border-radius: 4px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .gh-btn:hover {
