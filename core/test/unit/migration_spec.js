@@ -19,7 +19,7 @@ var should = require('should'), // jshint ignore:line
 // both of which are required for migrations to work properly.
 describe('DB version integrity', function () {
     // Only these variables should need updating
-    var currentSchemaHash = '461181eefd9a9171099093b67c59b90a',
+    var currentSchemaHash = '961370c4b76ac026104182be9bb75695',
         currentFixturesHash = 'ad12de59b939b13dc198611a6438ab51';
 
     // If this test is failing, then it is likely a change has been made that requires a DB version bump,
