@@ -24,6 +24,7 @@ var overrides      = require('./core/server/overrides'),
     cwd            = process.cwd().replace(/( |\(|\))/g, escapeChar + '$1'),
     buildDirectory = path.resolve(cwd, '.build'),
     distDirectory  = path.resolve(cwd, '.dist'),
+    upstream       = 'upstream',
 
     // ## Grunt configuration
 
@@ -241,7 +242,6 @@ var overrides      = require('./core/server/overrides'),
             shell: {
                 master: {
                     command: function () {
-                        var upstream = grunt.option('upstream') || process.env.GHOST_UPSTREAM || 'upstream';
                         grunt.log.writeln('Pulling down the latest master from ' + upstream);
                         return 'git checkout master; git pull ' + upstream + ' master; yarn;';
                     }
@@ -313,7 +313,7 @@ var overrides      = require('./core/server/overrides'),
                 },
                 master: {
                     options: {
-                        params: '--remote'
+                        params: '--remote --reference=' + upstream
                     }
                 }
             },
@@ -706,9 +706,10 @@ var overrides      = require('./core/server/overrides'),
         //
         // `grunt master` [`upstream` is the default upstream to pull from]
         // `grunt master --upstream=parent`
-        grunt.registerTask('master', 'Update your current working folder to latest master.',
-            ['shell:master', 'update_submodules:master', 'subgrunt:init', 'shell:dbhealth']
-        );
+        grunt.registerTask('master', 'Update your current working folder to latest master.', function () {
+            upstream = grunt.option('upstream') || process.env.GHOST_UPSTREAM || 'upstream';
+            grunt.task.run(['shell:master', 'update_submodules:master', 'subgrunt:init', 'shell:dbhealth']);
+        });
 
         // ### Release
         // Run `grunt release` to create a Ghost release zip file.
