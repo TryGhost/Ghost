@@ -292,21 +292,49 @@ fieldset[disabled] .gh-btn {
     display: flex;
     align-items: center;
     justify-content: center;
+
 }
 
-.gh-btn-icon svg {
-    margin-right: 10px;
-    height: 13px;
+.gh-btn-icon svg,
+.gh-btn-block svg {
+    width: 1em;
+    height: 1em;
+    margin-right: 0.5em;
     fill: #fff;
 }
 
 .gh-btn-icon-right svg {
-    margin-left: 10px;
+    margin-left: 0.5em;
     margin-right: 0;
 }
 
+.gh-btn-block svg {
+    margin-right: 0;
+}
+
+
 .gh-btn-icon svg path {
     stroke: #fff;
+}
+
+/*
+/* Animated button icons
+/* ---------------------------------------------------------- */
+
+path.animated-check-circle {
+    stroke: white;
+    stroke-dashoffset: 300;
+    stroke-dasharray: 300;
+    animation: dash 4s ease-out forwards;
+}
+
+@keyframes dash {
+    0% {
+        stroke-dashoffset: 300;
+    }
+    100% {
+        stroke-dashoffset: 0;
+    }
 }
 
 

@@ -1,3 +1,19 @@
+path.animated-check-circle {
+    stroke: white;
+    stroke-dashoffset: 300;
+    stroke-dasharray: 300;
+    animation: dash 4s ease-out forwards;
+}
+
+@keyframes dash {
+    0% {
+        stroke-dashoffset: 300;
+    }
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+
 /* Icons
 /* ---------------------------------------------------------- */
 /* CUSTOM GENERATED FILE */
