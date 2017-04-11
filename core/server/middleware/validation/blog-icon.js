@@ -1,10 +1,9 @@
 var errors = require('../../errors'),
     config = require('../../config'),
-    fs = require('fs'),
     Promise = require('bluebird'),
     sizeOf = require('image-size'),
     i18n = require('../../i18n'),
-    _ = require('lodash'),
+    blogIconUtils = require('../../utils/blog-icon'),
     validIconSize,
     getIconDimensions;
 
@@ -14,40 +13,24 @@ validIconSize = function validIconSize(size) {
 
 getIconDimensions = function getIconDimensions(icon) {
     return new Promise(function getImageSize(resolve, reject) {
-        var arrayBuffer,
-            ICO = require('icojs');
-
-        // image-size doesn't support .ico files
-        if (icon.name.match(/.ico$/i)) {
-            arrayBuffer = new Uint8Array(fs.readFileSync(icon.path)).buffer;
-            ICO.parse(arrayBuffer).then(function (result, error) {
-                if (error) {
-                    return reject(new errors.ValidationError({message: i18n.t('errors.api.icons.couldNotGetSize', {file: icon.name, error: error.message})}));
-                }
-
-                // CASE: ico file contains only one size
-                if (result.length === 1) {
-                    return resolve({
-                        width: result[0].width,
-                        height: result[0].height
-                    });
-                } else {
-                    // CASE: ico file contains multiple sizes, return only the max size
-                    return resolve({
-                        width: _.maxBy(result, function (w) {return w.width;}).width,
-                        height: _.maxBy(result, function (h) {return h.height;}).height
-                    });
-                }
+        if (blogIconUtils.isIcoImageType(icon.name)) {
+            blogIconUtils.getIconDimensions(icon.path).then(function (response) {
+                return resolve({
+                    width: response.width,
+                    height: response.height
+                });
+            }).catch(function (err) {
+                return reject(err);
             });
         } else {
-            sizeOf(icon.path, function (err, dimensions) {
+            sizeOf(icon.path, function (err, response) {
                 if (err) {
                     return reject(new errors.ValidationError({message: i18n.t('errors.api.icons.couldNotGetSize', {file: icon.name, error: err.message})}));
                 }
 
                 return resolve({
-                    width: dimensions.width,
-                    height: dimensions.height
+                    width: response.width,
+                    height: response.height
                 });
             });
         }
@@ -64,9 +47,9 @@ module.exports = function blogIcon() {
             return next(new errors.ValidationError({message: i18n.t('errors.api.icons.invalidFile', {extensions: iconExtensions})}));
         }
 
-        return getIconDimensions(req.file).then(function (dimensions) {
+        return getIconDimensions(req.file).then(function (response) {
             // save the image dimensions in new property for file
-            req.file.dimensions = dimensions;
+            req.file.dimensions = response;
 
             // CASE: file needs to be a square
             if (req.file.dimensions.width !== req.file.dimensions.height) {
@@ -85,6 +68,8 @@ module.exports = function blogIcon() {
             }
 
             next();
+        }).catch(function (err) {
+            next(err);
         });
     };
 };
