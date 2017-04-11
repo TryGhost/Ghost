@@ -9,7 +9,7 @@ import Tools from '../options/default-tools';
 export default Component.extend({
     layout,
     classNames: ['gh-toolbar'],
-    classNameBindings: ['isVisible', 'isLink', 'tickFullLeft', 'tickHalfLeft', 'tickFullRight', 'tickHalfRight', 'tickAbove'],
+    classNameBindings: ['isVisible', 'isLink', 'tickFullLeft', 'tickHalfLeft', 'tickFullRight', 'tickHalfRight', 'tickAbove', 'isTouch'],
     isVisible: false,
     tools: [],
     hasRendered: false,
@@ -162,6 +162,10 @@ function updateToolbarToRange(self, $holder, $editor, isMouseDown) {
         self.set('isVisible', true);
         run.schedule('afterRender', this,
             () => {
+                // if we're in touch mode we just use CSS to display the toolbar.
+                if (self.get('isTouch')) {
+                    return;
+                }
                 let width = $holder.width();
                 let height = $holder.height();
                 let top = position.top + $editor.scrollTop() - $holder.height() - 20;
@@ -201,7 +205,7 @@ function updateToolbarToRange(self, $holder, $editor, isMouseDown) {
                     self.set('tickHalfRight', false);
                 }
 
-                if (self.get('isTouch') || top - $editor.scrollTop() < 0) {
+                if (!self.get('isTouch') && top - $editor.scrollTop() < 0) {
                     top = top + height + 60;
                     self.set('tickAbove', true);
                 } else {

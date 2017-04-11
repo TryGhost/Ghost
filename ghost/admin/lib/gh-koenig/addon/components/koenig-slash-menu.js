@@ -215,6 +215,7 @@ export default Component.extend({
                     // calculate if parts of the menu that are hidden by the overflow.
                     let hiddenByOverflowY = ($editor.innerHeight() + $editor.scrollTop()) - (menu.height() + top);
                     // if the menu is off the bottom of the screen then place it above the cursor
+
                     if (hiddenByOverflowY < 0) {
                         menu.css('margin-top', -(menu.outerHeight() + 20));
                     }

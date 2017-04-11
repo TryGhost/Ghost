@@ -154,6 +154,10 @@ export default function (editor) {
             editor.run((postEditor) => {
                 let card = postEditor.builder.createCardSection('card-image', {pos: 'top', img, alt});
                 postEditor.replaceSection(editor.range.headSection, card);
+                if (!editor.range.headSection.next) {
+                    let newSection = editor.builder.createMarkupSection('p');
+                    postEditor.insertSectionAtEnd(newSection);
+                }
             });
         }
     }
@@ -181,6 +185,10 @@ export default function (editor) {
             editor.run((postEditor) => {
                 let card = postEditor.builder.createCardSection('card-markdown', {pos: 'top', markdown: code});
                 postEditor.replaceSection(editor.range.headSection, card);
+                if (!editor.range.headSection.next) {
+                    let newSection = editor.builder.createMarkupSection('p');
+                    postEditor.insertSectionAtEnd(newSection);
+                }
             });
         }
     }

@@ -58,6 +58,15 @@
     border: none;
     padding:5px;
 }
+.gh-toolbar.is-touch {
+    position: fixed !important;
+    top: 70px;
+    right: 40px;
+}
+
+.gh-toolbar.is-touch:after {
+    border: none;
+}
 
 .gh-toolbar-btn {
     display: flex;
