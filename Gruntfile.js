@@ -349,6 +349,9 @@ var overrides      = require('./core/server/overrides'),
                 },
 
                 init: {
+                    options: {
+                        npmInstall: true
+                    },
                     projects: {
                         'core/client': 'init'
                     }
