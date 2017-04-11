@@ -100,6 +100,7 @@ generateFeed = function generateFeed(data) {
         generator: 'Ghost ' + data.version,
         feed_url: data.feedUrl,
         site_url: data.siteUrl,
+        image_url: utils.url.urlFor({relativeUrl: 'favicon.png'}, true),
         ttl: '60',
         custom_namespaces: {
             content: 'http://purl.org/rss/1.0/modules/content/',
