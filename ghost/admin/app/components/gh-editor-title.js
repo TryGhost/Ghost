@@ -1,5 +1,7 @@
 import Component from 'ember-component';
 import computed from 'ember-computed';
+import run from 'ember-runloop';
+import $ from 'jquery';
 
 export default Component.extend({
     val: '',
@@ -88,13 +90,26 @@ export default Component.extend({
             // if we're within ten pixels of the bottom of this element then we try and figure out where to position
             // the cursor in the editor.
             if (event.keyCode === 40) {
+                if (!window.getSelection().rangeCount) {
+                    return;
+                }
                 let range = window.getSelection().getRangeAt(0); // get the actual range within the DOM.
-                let cursorPositionOnScreen =  range.getBoundingClientRect();
+                let cursorPositionOnScreen = range.getBoundingClientRect();
                 let offset = title.offset();
                 let bottomOfHeading =  offset.top + title.height();
                 if (cursorPositionOnScreen.bottom > bottomOfHeading - 13) {
                     let editor = this.get('editor');
                     let loc = editor.element.getBoundingClientRect();
+
+                    // if the first element is a card then that is always going to be selected.
+                    if (editor.post.sections.head && editor.post.sections.head.isCardSection) {
+                        run.next(() => {
+                            window.getSelection().removeAllRanges();
+                            $(editor.post.sections.head.renderNode.element).children('div').click();
+                        });
+
+                        return;
+                    }
 
                     let cursorPositionInEditor = editor.positionAtPoint(cursorPositionOnScreen.left, loc.top);
 
@@ -106,7 +121,6 @@ export default Component.extend({
                     return false;
                 }
             }
-            // title.removeClass('no-content');
         };
 
         // setup mutation observer

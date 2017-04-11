@@ -25,6 +25,7 @@ export default Component.extend({
     selectedCard: null,
     editedCard: null,
     keyDownHandler: [],
+    resizeEvent: 0,
     init() {
         this._super(...arguments);
         let mobiledoc = this.get('value') || BLANK_DOC;
@@ -66,6 +67,14 @@ export default Component.extend({
         // to place the toolbar. Above the selected content on a mobile browser is the
         // cut | copy | paste menu so we need to place our toolbar below.
         this.set('isTouch', 'ontouchstart' in document.documentElement);
+
+        // window resize handler - throttled
+        // window.onresize = () => {
+        //     let now = Date.now();
+        //     if (now - 2000 > this.get('resizeEvent')) {
+        //         this.set('resizeEvent', now);
+        //     }
+        // };
 
         run.next(() => {
             if (this.get('setEditor')) {
@@ -111,7 +120,9 @@ export default Component.extend({
         editor.render(editorDom);
         this.set('_rendered', true);
 
+        // set global editor for debugging and testing.
         window.editor = editor;
+
         defaultCommands(editor); // initialise the custom text handlers for MD, etc.
         // shouldFocusEditor is only true when transitioning from new to edit, otherwise it's false or undefined.
         // therefore, if it's true it's after the first lot of content is entered and we expect the caret to be at the
@@ -139,7 +150,6 @@ export default Component.extend({
                 return returnType;
             }, true);
         };
-
     },
 
     // drag and drop images onto the editor
@@ -206,6 +216,7 @@ export default Component.extend({
         this.editor.destroy();
         this.send('deselectCard');
         document.onkeydown = null;
+        // window.oresize = null;
     },
 
     actions: {
@@ -287,7 +298,7 @@ export default Component.extend({
                                 range.tail.offset = 0;
                                 editor.selectRange(range);
                             } else {
-                                $(this.titleQuery).focus();
+                                $(this.get('titleSelector')).focus();
                                 this.send('deselectCard');
                             }
                         }
@@ -308,7 +319,7 @@ export default Component.extend({
                                 range.tail.offset = 0;
                                 editor.selectRange(range);
                             } else {
-                                $(this.titleQuery).focus();
+                                $(this.get('titleSelector')).focus();
                                 this.send('deselectCard');
                             }
                         }

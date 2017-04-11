@@ -107,11 +107,12 @@ export default Component.extend({
             run.schedule('afterRender', this,
                 () => {
                     let button = this.$('.gh-cardmenu-button');
+
                     button.css('top', offset.top + $editor.scrollTop() - editorOffset.top - 2);
                     if (currentNode.tagName.toLowerCase() === 'li') {
-                        button.css('left', this.$(currentNode.parentNode).position().left + $editor.scrollLeft() - 90);
+                     //   button.css('left', this.$(currentNode.parentNode).position().left + $editor.scrollLeft());
                     } else {
-                        button.css('left', offset.left + $editor.scrollLeft() - 50);
+                     //   button.css('left', offset.left + $editor.scrollLeft() - 50);
                     }
                 });
         });

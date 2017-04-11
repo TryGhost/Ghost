@@ -1,16 +1,18 @@
 {{#each emberCards as |card index|}}
     {{#ember-wormhole to=card.id}}
         {{koenig-card 
-        tabindex=index 
-        card=card 
-        apiRoot=apiRoot 
-        assetPath=assetPath 
-        selectCard=(action "selectCard") 
-        selectCardHard=(action "selectCardHard") 
-        deselectCard=(action "deselectCard") 
-        edit=(action "editCard") 
-        stopEdit=(action "stopEditingCard") 
-        editedCard=editedCard}}
+            tabindex=index 
+            card=card 
+            apiRoot=apiRoot 
+            assetPath=assetPath 
+            selectCard=(action "selectCard") 
+            selectCardHard=(action "selectCardHard") 
+            deselectCard=(action "deselectCard") 
+            edit=(action "editCard") 
+            stopEdit=(action "stopEditingCard") 
+            editedCard=editedCard
+            resize=resizeEvent
+        }}
     {{/ember-wormhole}}
 {{/each}}
 <div class='gh-koenig'>
@@ -24,6 +26,7 @@
     assetPath=assetPath 
     containerSelector=containerSelector 
     isTouch=isTouch
+    resize=resizeEvent
 }}
 {{koenig-slash-menu 
     editor=editor 
@@ -32,6 +35,7 @@
     isTouch=isTouch
     menuIsOpen=(action "menuIsOpen")
     menuIsClosed=(action "menuIsClosed")
+    resize=resizeEvent
 }}
 {{koenig-plus-menu 
     editor=editor 
@@ -40,4 +44,6 @@
     isTouch=isTouch
     menuIsOpen=(action "menuIsOpen")
     menuIsClosed=(action "menuIsClosed")
+    isTouch=isTouch
+    resize=resizeEvent
 }}

@@ -28,6 +28,7 @@
     border: var(--midgrey) 1px solid;
     background: #fff;
     border-radius: 100%;
+    margin-left: -40px;
 }
 
 .gh-cardmenu-button svg {
@@ -38,6 +39,12 @@
 .gh-cardmenu-button svg path {
     stroke: var(--midgrey);
     stroke-width: 2px;
+}
+
+@media (max-width: 1024px) {
+  .gh-cardmenu-button {
+        right:10px;
+  }
 }
 
 .gh-cardmenu-search {
