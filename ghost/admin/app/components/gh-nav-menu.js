@@ -11,9 +11,15 @@ export default Component.extend({
 
     open: false,
 
-    navMenuIcon: computed('config.blogUrl', 'settings.icon', function () {
+    navMenuIcon: computed('config.blogUrl', 'settings.icon', 'ghostPaths.subdir', 'ghostPaths.url', function () {
+        let subdirRegExp = new RegExp(`^${this.get('ghostPaths.subdir')}`);
         let blogIcon = this.get('settings.icon') ? this.get('settings.icon') : 'favicon.ico';
-        let url = `${this.get('config.blogUrl')}/${blogIcon}`;
+        let url;
+
+        blogIcon = blogIcon.replace(subdirRegExp, '');
+
+        url = this.get('ghostPaths.url').join(this.get('config.blogUrl'), blogIcon).replace(/\/$/, '');
+        url += `?t=${(new Date()).valueOf()}`;
 
         return htmlSafe(`background-image: url(${url})`);
     }),
