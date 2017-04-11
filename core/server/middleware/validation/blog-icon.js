@@ -16,7 +16,7 @@ getIconDimensions = function getIconDimensions(icon) {
         if (blogIconUtils.isIcoImageType(icon.name)) {
             blogIconUtils.getIconDimensions(icon.path).then(function (dimensions, err) {
                 if (err) {
-                    return reject(new errors.ValidationError({message: i18n.t('errors.api.icons.couldNotGetSize', {file: icon.name, error: err.message})}));
+                    return reject(err);
                 }
                 return resolve({
                     width: dimensions.width,

@@ -62,23 +62,24 @@ function getMetaData(data, root) {
         }
     };
 
-    metaData.blog.logo = getBlogLogo();
+    return Promise.props(getBlogLogo()).then(function (result) {
+        metaData.blog.logo = result;
 
-    // TODO: cleanup these if statements
-    if (data.post && data.post.html) {
-        metaData.excerpt = getExcerpt(data.post.html, {words: 50});
-    }
+        // TODO: cleanup these if statements
+        if (data.post && data.post.html) {
+            metaData.excerpt = getExcerpt(data.post.html, {words: 50});
+        }
 
-    if (data.post && data.post.author && data.post.author.name) {
-        metaData.authorName = data.post.author.name;
-    }
+        if (data.post && data.post.author && data.post.author.name) {
+            metaData.authorName = data.post.author.name;
+        }
 
-    return Promise.props(getImageDimensions(metaData)).then(function () {
-        metaData.blog.logo = getBlogLogo();
-        metaData.structuredData = getStructuredData(metaData);
-        metaData.schema = getSchema(metaData, data);
+        return Promise.props(getImageDimensions(metaData)).then(function () {
+            metaData.structuredData = getStructuredData(metaData);
+            metaData.schema = getSchema(metaData, data);
 
-        return metaData;
+            return metaData;
+        });
     });
 }
 

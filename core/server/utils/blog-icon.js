@@ -25,7 +25,7 @@ getIconDimensions = function getIconDimensions(path) {
         arrayBuffer = new Uint8Array(fs.readFileSync(path)).buffer;
         ICO.parse(arrayBuffer).then(function (result, error) {
             if (error) {
-                return reject(new errors.ValidationError({message: i18n.t('errors.api.icons.couldNotGetSize', {file: path, error: error.message})}));
+                return reject(new errors.ValidationError({message: i18n.t('errors.utils.blogIcon.error', {file: path, error: error.message})}));
             }
 
             // CASE: ico file contains only one size
