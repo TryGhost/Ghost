@@ -166,7 +166,7 @@ describe('Serve Favicon', function () {
                 var middleware = serveFavicon();
                 req.path = '/favicon.png';
 
-                configUtils.set('paths:corePath', path.join(__dirname, '../../../test/utils/fixtures/'));
+                configUtils.set('paths:publicFilePath', path.join(__dirname, '../../../test/utils/fixtures/'));
                 localSettingsCache.icon = '';
 
                 res = {
