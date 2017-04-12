@@ -100,9 +100,8 @@ describe('Acceptance: Setup', function () {
                     .to.be.false;
 
                 // it displays download count (count increments for each ajax call
-                // and polling is disabled in testing so our count should be "2" -
-                // 1 for first load and 1 for first poll)
-                expect(find('.gh-flow-content em').text()).to.equal('2');
+                // and polling is disabled in testing so our count should be "1"
+                expect(find('.gh-flow-content em').text().trim()).to.equal('1');
             });
 
             click('.gh-btn-green');
