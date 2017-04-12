@@ -17,4 +17,18 @@ describe('Markdown card', function () {
         var serializer = new SimpleDom.HTMLSerializer([]);
         serializer.serialize(card.render(opts)).should.match('<div class="kg-card-markdown"><h1 id="heading">HEADING</h1>\n<ul>\n<li>list</li>\n<li>items</li>\n</ul>\n</div>');
     });
+
+    it('Accepts invalid HTML in markdown', function () {
+        opts = {
+            env: {
+                dom: new SimpleDom.Document()
+            },
+            payload: {
+                markdown: '#HEADING\r\n<h2>Heading 2>'
+            }
+        };
+
+        var serializer = new SimpleDom.HTMLSerializer([]);
+        serializer.serialize(card.render(opts)).should.match('<div class="kg-card-markdown"><h1 id="heading">HEADING</h1>\n\n<p></p><h2>Heading 2&gt;<p></p></h2></div>');
+    });
 });
