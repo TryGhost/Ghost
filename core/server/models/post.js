@@ -531,19 +531,16 @@ Post = ghostBookshelf.Model.extend({
     },
 
     /**
-     * Filters potentially unsafe model attributes, so you can pass them to Bookshelf / Knex.
+     * Manually add 'tags' attribute since it's not in the schema and call parent.
+     *
      * @param {Object} data Has keys representing the model's attributes/fields in the database.
      * @return {Object} The filtered results of the passed in data, containing only what's allowed in the schema.
      */
     filterData: function filterData(data) {
-        var permittedAttributes = this.prototype.permittedAttributes(),
-            filteredData;
+        var filteredData = ghostBookshelf.Model.filterData.apply(this, arguments),
+            extraData = _.pick(data, ['tags']);
 
-        // manually add 'tags' attribute since it's not in the schema
-        permittedAttributes.push('tags');
-
-        filteredData = _.pick(data, permittedAttributes);
-
+        _.merge(filteredData, extraData);
         return filteredData;
     },
 
