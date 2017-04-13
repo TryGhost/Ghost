@@ -44,7 +44,7 @@ module.exports = function (Bookshelf) {
              *
              * HTML is always auto generated, ignore.
              */
-            parentSync.update = function update(attrs) {
+            parentSync.update = function update() {
                 var changed = _.omit(self.changed, [
                         'created_at', 'updated_at', 'author_id', 'id',
                         'published_by', 'updated_by', 'html'
@@ -67,13 +67,12 @@ module.exports = function (Bookshelf) {
             return parentSync;
         },
 
-
         /**
          * We have to remember current server data and client data.
          * The `sync` method has no access to it.
          * `updated_at` is already set to "Date.now" when sync.update is called.
          */
-        save: function save(data, options) {
+        save: function save(data) {
             this.clientData = _.cloneDeep(data) || {};
             this.serverData = _.cloneDeep(this.attributes);
 
