@@ -86,7 +86,7 @@ export default Component.extend({
             this.sendAction('selectCardHard', this.card.id);
         },
         delete() {
-            this.get('card').env.remove();
+            this.sendAction('deleteCard', this.card.id);
         },
         startEdit() {
             this.sendAction('edit', this.card.id);
