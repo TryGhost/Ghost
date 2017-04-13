@@ -153,17 +153,6 @@ export default Component.extend({
         editor.cursorDidChange(() => this.cursorMoved());
     },
 
-    // drag and drop images onto the editor
-    drop(event) {
-        if (event.dataTransfer.files.length) {
-            event.preventDefault();
-            for (let i = 0; i < event.dataTransfer.files.length; i++) {
-                let file = [event.dataTransfer.files[i]];
-                this.editor.insertCard('card-image', {pos: 'top', file});
-            }
-        }
-    },
-
     // makes sure the cursor is on screen except when selection is happening in which case the browser mostly ensures it.
     // there is an issue with keyboard selection on some browsers though so the next step will be to record mouse and touch events.
     cursorMoved() {
@@ -411,6 +400,20 @@ export default Component.extend({
         },
         menuIsClosed() {
             this.sendAction('menuIsClosed');
+        },
+        // drag and drop images onto the editor
+        dropImage(event) {
+            if (event.dataTransfer.files.length) {
+                event.preventDefault();
+                for (let i = 0; i < event.dataTransfer.files.length; i++) {
+                    let file = [event.dataTransfer.files[i]];
+                    this.editor.insertCard('card-image', {pos: 'top', file});
+                }
+            }
+        },
+        dragOver(event) {
+            // required for drop events to fire on markdown cards in firefox.
+            event.preventDefault();
         }
     }
 
