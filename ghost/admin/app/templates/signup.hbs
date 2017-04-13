@@ -12,10 +12,13 @@
                 </header>
 
                 <form id="signup" class="gh-signin" method="post" novalidate="novalidate">
-                    {{#gh-spin-button class="login gh-btn gh-btn-blue gh-btn-block" type="submit" action="authenticateWithGhostOrg" tabindex="3" submitting=loggingIn autoWidth="false"}}
-                        <span>Sign in with Ghost to accept</span>
-                    {{/gh-spin-button}}
+                    {{gh-task-button "Sign in with Ghost to accept"
+                        task=authenticateWithGhostOrg
+                        type="submit"
+                        class="login gh-btn gh-btn-blue gh-btn-block gh-btn-icon"
+                        tabindex="3"}}
                 </form>
+
             {{else}}
                 <header>
                     <h1>Create your account</h1>
@@ -26,13 +29,18 @@
                     <input style="display:none;" type="text" name="fakeusernameremembered"/>
                     <input style="display:none;" type="password" name="fakepasswordremembered"/>
 
-                    {{gh-profile-image email=model.email setImage="setImage"}}
+                    {{gh-profile-image email=model.email setImage=(action "setImage")}}
 
                     {{#gh-form-group}}
                         <label for="email-address">Email address</label>
                         <span class="gh-input-icon gh-icon-mail">
                             {{inline-svg "email"}}
-                            {{gh-input model.email type="email" name="email" placeholder="Eg. john@example.com" disabled="disabled" autocorrect="off"}}
+                            {{gh-input model.email
+                                type="email"
+                                name="email"
+                                placeholder="Eg. john@example.com"
+                                disabled="disabled"
+                                autocorrect="off"}}
                         </span>
                     {{/gh-form-group}}
 
@@ -40,7 +48,15 @@
                         <label for="full-name">Full name</label>
                         <span class="gh-input-icon gh-icon-user">
                             {{inline-svg "user-circle"}}
-                            {{gh-trim-focus-input model.name tabindex="1" type="text" name="name" placeholder="Eg. John H. Watson" onenter=(action "signup") autocorrect="off" focusOut=(action "validate" "name") update=(action (mut model.name))}}
+                            {{gh-trim-focus-input model.name
+                                tabindex="1"
+                                type="text"
+                                name="name"
+                                placeholder="Eg. John H. Watson"
+                                autocorrect="off"
+                                onenter=(action "signup")
+                                focusOut=(action "validate" "name")
+                                update=(action (mut model.name))}}
                         </span>
                         {{gh-error-message errors=model.errors property="name"}}
                     {{/gh-form-group}}
@@ -49,13 +65,25 @@
                         <label for="password">Password</label>
                         <span class="gh-input-icon gh-icon-lock">
                             {{inline-svg "lock"}}
-                            {{gh-input model.password tabindex="2" type="password" name="password" placeholder="At least 8 characters" onenter=(action "signup") autocorrect="off" focusOut=(action "validate" "password") update=(action (mut model.password))}}
+                            {{gh-input model.password
+                                tabindex="2"
+                                type="password"
+                                name="password"
+                                placeholder="At least 8 characters"
+                                onenter=(action "signup")
+                                autocorrect="off"
+                                focusOut=(action "validate" "password")
+                                update=(action (mut model.password))}}
                         </span>
                         {{gh-error-message errors=model.errors property="password"}}
                     {{/gh-form-group}}
                 </form>
 
-                {{#gh-spin-button tabindex="3" type="submit" class="gh-btn gh-btn-green gh-btn-lg gh-btn-block" action="signup" submitting=submitting autoWidth="false"}}<span>Create Account</span>{{/gh-spin-button}}
+                {{gh-task-button "Create Account"
+                    runningText="Creating"
+                    task=signup
+                    class="gh-btn gh-btn-green gh-btn-lg gh-btn-block gh-btn-icon"
+                    tabindex="3"}}
             {{/if}}
 
             <p class="main-error">{{{flowErrors}}}</p>
