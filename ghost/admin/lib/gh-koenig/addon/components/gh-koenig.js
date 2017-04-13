@@ -7,6 +7,7 @@ import {MOBILEDOC_VERSION} from 'mobiledoc-kit/renderers/mobiledoc';
 import createCardFactory from '../lib/card-factory';
 import defaultCommands from '../options/default-commands';
 import editorCards  from '../cards/index';
+import RSVP from 'rsvp';
 import $ from 'jquery';
 // import { VALID_MARKUP_SECTION_TAGNAMES } from 'mobiledoc-kit/models/markup-section'; //the block elements supported by mobile-doc
 
@@ -107,6 +108,18 @@ export default Component.extend({
     },
 
     didRender() {
+        // listen to keydown events outside of the editor, used to handle keydown events in the cards.
+        document.onkeydown = (event) => {
+            // if any of the keydown handlers return false then we return false therefore stopping the event from propogating.
+            return this.get('keyDownHandler').reduce((returnType, handler) => {
+                let result = handler(event);
+                if (returnType !== false) {
+                    return result;
+                }
+                return returnType;
+            }, true);
+        };
+
         if (this._rendered) {
             return;
         }
@@ -138,18 +151,6 @@ export default Component.extend({
         }
 
         editor.cursorDidChange(() => this.cursorMoved());
-
-        // listen to keydown events outside of the editor, used to handle keydown events in the cards.
-        document.onkeydown = (event) => {
-            // if any of the keydown handlers return false then we return false therefore stopping the event from propogating.
-            return this.get('keyDownHandler').reduce((returnType, handler) => {
-                let result = handler(event);
-                if (returnType !== false) {
-                    return result;
-                }
-                return returnType;
-            }, true);
-        };
     },
 
     // drag and drop images onto the editor
@@ -295,7 +296,7 @@ export default Component.extend({
                                 }
                             } else if (section.prev) {
                                 let range = section.prev.toRange();
-                                range.tail.offset = 0;
+                                range.head.offset = range.tail.offset;
                                 editor.selectRange(range);
                             } else {
                                 $(this.get('titleSelector')).focus();
@@ -353,8 +354,10 @@ export default Component.extend({
                     this.send('selectCard', cardId);
                     return false;
                 case 8: // backspace
+                    this.send('deleteCard', cardId);
+                    return false;
                 case 46: // delete
-                    card.env.remove();
+                    this.send('deleteCard', cardId, true);
                     return false;
                 }
             });
@@ -376,6 +379,29 @@ export default Component.extend({
           //  this.send('selectCard', cardId);
             let card = this.get('emberCards').find((card) => card.id === cardId);
             this.set('editedCard', card);
+        },
+        deleteCard(cardId, forwards = false) {
+            let editor = this.get('editor');
+            let card = this.get('emberCards').find((card) => card.id === cardId);
+
+            getCardFromDoc(cardId, editor).then(function (section) {
+                let range;
+                if (forwards && section.next) {
+                    range = section.next.toRange();
+                    range.tail.offset = 0;
+                    editor.selectRange(range);
+                } else if (section.prev) {
+                    range = section.prev.toRange();
+                    range.head.offset = range.tail.offset;
+                    editor.selectRange(range);
+                } else if (section.next) {
+                    range = section.next.toRange();
+                    range.tail.offset = 0;
+                    editor.selectRange(range);
+                }
+
+                card.env.remove();
+            });
         },
         stopEditingCard() {
             this.set('editedCard', null);
@@ -403,6 +429,19 @@ function checkIfClickEventShouldCloseCard(target, cardHolder) {
         return false;
     }
     return true;
+}
+
+// searches through the editor to see if it can find the current card
+function getCardFromDoc(cardId, editor) {
+    return new RSVP.Promise((resolve, reject) => {
+        editor.post.sections.forEach((section) => {
+            let sectionDom = $(section.renderNode.element);
+            if (section.isCardSection && sectionDom.find(`#${cardId}`).length) {
+                return resolve(section);
+            }
+        });
+        return reject();
+    });
 }
 
 // // code for moving the cursor into the correct position of the title: (is buggy)
