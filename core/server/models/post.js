@@ -43,6 +43,9 @@ Post = ghostBookshelf.Model.extend({
             return self.updateTags(model, response, options);
         });
 
+        /**
+         * - is called before onSaved
+         */
         this.on('created', function onCreated(model) {
             var status = model.get('status');
 
@@ -250,7 +253,9 @@ Post = ghostBookshelf.Model.extend({
                     {status: 'all', transacting: options.transacting, importing: options.importing})
                 .then(function then(slug) {
                     // After the new slug is found, do another generate for the old title to compare it to the old slug
-                    return ghostBookshelf.Model.generateSlug(Post, prevTitle).then(function then(prevTitleSlug) {
+                    return ghostBookshelf.Model.generateSlug(Post, prevTitle,
+                        {status: 'all', transacting: options.transacting, importing: options.importing}
+                    ).then(function then(prevTitleSlug) {
                         // If the old slug is the same as the slug that was generated from the old title
                         // then set a new slug. If it is not the same, means was set by the user
                         if (prevTitleSlug === prevSlug) {
@@ -636,15 +641,19 @@ Post = ghostBookshelf.Model.extend({
         var self = this;
         options = options || {};
 
-        return ghostBookshelf.Model.edit.call(this, data, options).then(function then(post) {
-            return self.findOne({status: 'all', id: options.id}, options)
-                .then(function then(found) {
-                    if (found) {
-                        // Pass along the updated attributes for checking status changes
-                        found._updatedAttributes = post._updatedAttributes;
-                        return found;
-                    }
-                });
+        return ghostBookshelf.transaction(function (transacting) {
+            options.transacting = transacting;
+
+            return ghostBookshelf.Model.edit.call(self, data, options).then(function then(post) {
+                return self.findOne({status: 'all', id: options.id}, options)
+                    .then(function then(found) {
+                        if (found) {
+                            // Pass along the updated attributes for checking status changes
+                            found._updatedAttributes = post._updatedAttributes;
+                            return found;
+                        }
+                    });
+            });
         });
     },
 
