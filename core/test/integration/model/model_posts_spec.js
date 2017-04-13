@@ -1405,6 +1405,46 @@ describe('Post Model', function () {
                     });
             });
 
+            it('update post tags and updated_at is out of sync', function (done) {
+                var postToUpdate = {id: 2};
+
+                PostModel.findOne({id: postToUpdate.id, status: 'all'})
+                    .then(function () {
+                        return Promise.delay(1000);
+                    })
+                    .then(function () {
+                        return PostModel.edit({
+                            tags: [{name: 'new-tag-1'}],
+                            updated_at: moment().subtract(1, 'day').format()
+                        }, _.extend({}, context, {id: postToUpdate.id}));
+                    })
+                    .then(function () {
+                        done(new Error('expected no success'));
+                    })
+                    .catch(function (err) {
+                        err.code.should.eql('UPDATE_COLLISION');
+                        done();
+                    });
+            });
+
+            it('update post tags and updated_at is not out of sync', function (done) {
+                var postToUpdate = {id: 2};
+
+                PostModel.findOne({id: postToUpdate.id, status: 'all'})
+                    .then(function () {
+                        return Promise.delay(1000);
+                    })
+                    .then(function () {
+                        return PostModel.edit({
+                            tags: [{name: 'new-tag-1'}]
+                        }, _.extend({}, context, {id: postToUpdate.id}));
+                    })
+                    .then(function () {
+                        done();
+                    })
+                    .catch(done);
+            });
+
             it('update post with no changes, but updated_at is out of sync', function (done) {
                 var postToUpdate = {id: 2};
 

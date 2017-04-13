@@ -39,14 +39,10 @@ Post = ghostBookshelf.Model.extend({
 
         ghostBookshelf.Model.prototype.initialize.apply(this, arguments);
 
-        this.on('saved', function onSaved(model, response, options) {
-            return self.updateTags(model, response, options);
-        });
-
         /**
          * - is called before onSaved
          */
-        this.on('created', function onCreated(model) {
+        this.on('created', function onCreated(model, response, options) {
             var status = model.get('status');
 
             model.emitChange('added');
@@ -54,6 +50,8 @@ Post = ghostBookshelf.Model.extend({
             if (['published', 'scheduled'].indexOf(status) !== -1) {
                 model.emitChange(status);
             }
+
+            return this.updateTags(model, response, options);
         });
 
         this.on('updated', function onUpdated(model) {
@@ -216,6 +214,7 @@ Post = ghostBookshelf.Model.extend({
             });
 
             // keep tags for 'saved' event
+            // get('tags') will be removed after saving, because it's not a direct attribute of posts (it's a relation)
             this.tagsToSave = tags;
         }
 
@@ -246,34 +245,57 @@ Post = ghostBookshelf.Model.extend({
             }
         }
 
+        var ops = [];
+
+        /**
+         * - updateTags happens before the post is saved to the database
+         * - when editing a post, it's running in a transaction, see Post.edit
+         * - we are using a update collision detection, we have to know if tags were updated in the client
+         *
+         * NOTE: For adding a post, updateTags happens after the post insert
+         */
+        if (options.method === 'update' || options.method === 'patch') {
+            ops.push(function updateTags() {
+                return self.updateTags(model, attr, options);
+            });
+        }
+
         // If a title is set, not the same as the old title, a draft post, and has never been published
         if (prevTitle !== undefined && newTitle !== prevTitle && newStatus === 'draft' && !publishedAt) {
-            // Pass the new slug through the generator to strip illegal characters, detect duplicates
-            return ghostBookshelf.Model.generateSlug(Post, this.get('title'),
-                    {status: 'all', transacting: options.transacting, importing: options.importing})
-                .then(function then(slug) {
-                    // After the new slug is found, do another generate for the old title to compare it to the old slug
-                    return ghostBookshelf.Model.generateSlug(Post, prevTitle,
-                        {status: 'all', transacting: options.transacting, importing: options.importing}
-                    ).then(function then(prevTitleSlug) {
-                        // If the old slug is the same as the slug that was generated from the old title
-                        // then set a new slug. If it is not the same, means was set by the user
-                        if (prevTitleSlug === prevSlug) {
-                            self.set({slug: slug});
-                        }
-                    });
-                });
-        } else {
-            // If any of the attributes above were false, set initial slug and check to see if slug was changed by the user
-            if (this.hasChanged('slug') || !this.get('slug')) {
+            ops.push(function updateSlug() {
                 // Pass the new slug through the generator to strip illegal characters, detect duplicates
-                return ghostBookshelf.Model.generateSlug(Post, this.get('slug') || this.get('title'),
-                        {status: 'all', transacting: options.transacting, importing: options.importing})
+                return ghostBookshelf.Model.generateSlug(Post, self.get('title'),
+                    {status: 'all', transacting: options.transacting, importing: options.importing})
                     .then(function then(slug) {
-                        self.set({slug: slug});
+                        // After the new slug is found, do another generate for the old title to compare it to the old slug
+                        return ghostBookshelf.Model.generateSlug(Post, prevTitle,
+                            {status: 'all', transacting: options.transacting, importing: options.importing}
+                        ).then(function then(prevTitleSlug) {
+                            // If the old slug is the same as the slug that was generated from the old title
+                            // then set a new slug. If it is not the same, means was set by the user
+                            if (prevTitleSlug === prevSlug) {
+                                self.set({slug: slug});
+                            }
+                        });
                     });
-            }
+            });
+        } else {
+            ops.push(function updateSlug() {
+                // If any of the attributes above were false, set initial slug and check to see if slug was changed by the user
+                if (self.hasChanged('slug') || !self.get('slug')) {
+                    // Pass the new slug through the generator to strip illegal characters, detect duplicates
+                    return ghostBookshelf.Model.generateSlug(Post, self.get('slug') || self.get('title'),
+                        {status: 'all', transacting: options.transacting, importing: options.importing})
+                        .then(function then(slug) {
+                            self.set({slug: slug});
+                        });
+                }
+
+                return Promise.resolve();
+            });
         }
+
+        return sequence(ops);
     },
 
     creating: function creating(model, attr, options) {
@@ -317,7 +339,9 @@ Post = ghostBookshelf.Model.extend({
                     tagsToRemove,
                     tagsToCreate;
 
+                // CASE: if nothing has changed, unset `tags`.
                 if (baseUtils.tagUpdate.tagSetsAreEqual(newTags, currentTags)) {
+                    savedModel.unset('tags');
                     return;
                 }
 
