@@ -20,7 +20,7 @@
   "scripts": {
     "start": "node index",
     "test": "grunt validate --verbose",
-    "init": "yarn global add knex-migrator ember-cli grunt-cli && yarn install && grunt init || true"
+    "init": "yarn global add knex-migrator ember-cli grunt-cli && yarn install && grunt symlink && grunt init || true"
   },
   "engines": {
     "node": "^4.2.0 || ^6.5.0"
@@ -99,6 +99,7 @@
     "grunt-contrib-compress": "1.3.0",
     "grunt-contrib-copy": "1.0.0",
     "grunt-contrib-jshint": "1.0.0",
+    "grunt-contrib-symlink": "^1.0.0",
     "grunt-contrib-uglify": "2.0.0",
     "grunt-contrib-watch": "1.0.0",
     "grunt-cssnano": "2.1.0",

@@ -28,7 +28,7 @@ Install and run Ghost.
 <b>git clone git@github.com:TryGhost/Ghost.git ghost</b>
     Download the Ghost code base
 <b>npm run init</b>
-    Short command for: yarn global add knex-migrator ember-cli grunt-cli && yarn install && grunt init
+    Short command for: yarn global add knex-migrator ember-cli grunt-cli && yarn install && grunt symlink && grunt init
 <b>knex-migrator init</b>
     Creates and initialises your database
 <b>grunt dev</b>

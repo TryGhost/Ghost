@@ -1895,6 +1895,10 @@ grunt-contrib-jshint@1.0.0:
     hooker "^0.2.3"
     jshint "~2.9.1"
 
+grunt-contrib-symlink@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/grunt-contrib-symlink/-/grunt-contrib-symlink-1.0.0.tgz#c83616c035711a6c0062a2810cf1c77ffc6bed2b"
+
 grunt-contrib-uglify@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/grunt-contrib-uglify/-/grunt-contrib-uglify-2.0.0.tgz#8c9970d690936cde6d25aa1193549bd929016930"

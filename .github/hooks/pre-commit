@@ -1,0 +1,40 @@
+#!/bin/bash
+# Modified from https://github.com/chaitanyagupta/gitutils
+
+green='\033[0;32m'
+no_color='\033[0m'
+grey='\033[0;90m'
+
+
+ROOT_DIR=$(git rev-parse --show-cdup)
+SUBMODULES=$(grep path ${ROOT_DIR}.gitmodules | sed 's/^.*path = //')
+MOD_SUBMODULES=$(git diff --cached --name-only | grep -F "$SUBMODULES")
+
+echo -e "Checking submodules ${grey}(pre-commit hook)${no_color} "
+
+# If no modified submodules, exit with status code 0, else prompt the
+# user and exit accordingly
+if [[ -n "$MOD_SUBMODULES" ]]; then
+    echo "Submodules to be committed:"
+    echo "  (use \"git reset HEAD <file>...\" to unstage)"
+    echo
+
+    for SUB in $MOD_SUBMODULES
+    do
+        echo -e "\t${green}modified:\t$SUB${no_color}"
+    done
+    echo
+    echo -n -e "Continue with commit? ${grey}(N|y)${no_color} "
+    read -n 1 reply </dev/tty
+    echo
+    if [[ "$reply" == "y" || "$reply" == "Y" ]]; then
+        echo "Permitting submodules to be committed..."
+        exit 0
+    else
+        echo "Aborting commit due to submodule update."
+        exit 1
+    fi
+else
+    echo "No submodules in commit, continuing..."
+    exit 0
+fi
