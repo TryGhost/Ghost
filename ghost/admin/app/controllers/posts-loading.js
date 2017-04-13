@@ -1,10 +1,12 @@
 import Controller from 'ember-controller';
 import {readOnly} from 'ember-computed';
 import injectController from 'ember-controller/inject';
+import injectService from 'ember-service/inject';
 
 export default Controller.extend({
 
     postsController: injectController('posts'),
+    session: injectService(),
 
     availableTypes: readOnly('postsController.availableTypes'),
     selectedType: readOnly('postsController.selectedType'),
