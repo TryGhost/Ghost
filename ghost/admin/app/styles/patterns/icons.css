@@ -1,3 +1,5 @@
+/* Animated checkmark ------------------------------------------------------- */
+
 path.animated-check-circle {
     stroke: white;
     stroke-dashoffset: 300;
@@ -13,6 +15,18 @@ path.animated-check-circle {
         stroke-dashoffset: 0;
     }
 }
+
+/* Animated retry cross ----------------------------------------------------- */
+
+svg.retry-animated {
+    animation: rotate-360 0.5s ease-in-out forwards;
+}
+
+@keyframes rotate-360 {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 
 /* Icons
 /* ---------------------------------------------------------- */

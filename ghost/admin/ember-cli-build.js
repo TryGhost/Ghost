@@ -150,7 +150,13 @@ module.exports = function (defaults) {
                 plugins: [
                     {removeDimensions: true},
                     {removeTitle: true},
-                    {removeXMLNS: true}
+                    {removeXMLNS: true},
+                    // Transforms on groups are necessary to work around Firefox
+                    // not supporting transform-origin on line/path elements.
+                    {convertPathData: {
+                        applyTransforms: false
+                    }},
+                    {moveGroupAttrsToElems: false}
                 ]
             }
         }

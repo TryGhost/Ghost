@@ -3,6 +3,7 @@ import observer from 'ember-metal/observer';
 import computed, {reads} from 'ember-computed';
 import {isBlank} from 'ember-utils';
 import {invokeAction} from 'ember-invoke-action';
+import {task, timeout} from 'ember-concurrency';
 
 /**
  * Task Button works exactly like Spin button, but with one major difference:
@@ -87,6 +88,8 @@ const GhTaskButton = Component.extend({
         invokeAction(this, 'action');
         task.perform();
 
+        this.get('_restartAnimation').perform();
+
         // prevent the click from bubbling and triggering form actions
         return false;
     },
@@ -99,6 +102,18 @@ const GhTaskButton = Component.extend({
         } else {
             // this.$().width('');
             // this.$().height('');
+        }
+    }),
+
+    // when local validation fails there's no transition from failed->running
+    // so we want to restart the retry spinner animation to show something
+    // has happened when the button is clicked
+    _restartAnimation: task(function* () {
+        if (this.$('.retry-animated').length) {
+            let elem = this.$('.retry-animated')[0];
+            elem.classList.remove('retry-animated');
+            yield timeout(10);
+            elem.classList.add('retry-animated');
         }
     })
 });

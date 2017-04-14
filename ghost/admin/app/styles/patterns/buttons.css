@@ -292,7 +292,6 @@ fieldset[disabled] .gh-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-
 }
 
 .gh-btn-icon svg,
@@ -308,13 +307,12 @@ fieldset[disabled] .gh-btn {
     margin-right: 0;
 }
 
-.gh-btn-block svg {
-    margin-right: 0;
-}
-
-
 .gh-btn-icon svg path {
     stroke: #fff;
+}
+
+.gh-btn svg.no-margin {
+    margin: 0;
 }
 
 /*
