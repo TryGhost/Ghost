@@ -110,6 +110,7 @@ const GhTaskButton = Component.extend({
     // has happened when the button is clicked
     _restartAnimation: task(function* () {
         if (this.$('.retry-animated').length) {
+            // eslint-disable-next-line
             let elem = this.$('.retry-animated')[0];
             elem.classList.remove('retry-animated');
             yield timeout(10);
