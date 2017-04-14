@@ -68,7 +68,7 @@
     "ember-data-filter": "1.13.0",
     "ember-export-application-global": "2.0.0",
     "ember-infinity": "0.2.8",
-    "ember-inline-svg": "0.1.8",
+    "ember-inline-svg": "0.1.11",
     "ember-invoke-action": "1.4.0",
     "ember-light-table": "1.8.4",
     "ember-load": "0.0.11",

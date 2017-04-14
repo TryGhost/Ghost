@@ -2815,9 +2815,9 @@ ember-inflector@^1.9.2, ember-inflector@^1.9.4:
   dependencies:
     ember-cli-babel "^5.1.7"
 
-ember-inline-svg@0.1.8:
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/ember-inline-svg/-/ember-inline-svg-0.1.8.tgz#800a3728587ca172854fbe12d8002e0c1e4d7b21"
+ember-inline-svg@0.1.11:
+  version "0.1.11"
+  resolved "https://registry.yarnpkg.com/ember-inline-svg/-/ember-inline-svg-0.1.11.tgz#bb5af24cef1db3ab2e1a8aec543bee262a368c37"
   dependencies:
     broccoli-caching-writer "^3.0.3"
     broccoli-flatiron "0.0.0"
