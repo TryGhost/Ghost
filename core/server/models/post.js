@@ -38,6 +38,26 @@ Post = ghostBookshelf.Model.extend({
         ghostBookshelf.Model.prototype.initialize.apply(this, arguments);
 
         /**
+         * `forUpdate` is only supported for posts right now
+         */
+        this.on('fetching:collection', function (model, columns, options) {
+            // CASE: fetch and update in two operations (only doable in a transaction)
+            if (options.forUpdate && options.transacting) {
+                options.query.forUpdate();
+            }
+        });
+
+        /**
+         * `forUpdate` is only supported for posts right now
+         */
+        this.on('fetching', function (model, columns, options) {
+            // CASE: fetch and update in two operations (only doable in a transaction)
+            if (options.forUpdate && options.transacting) {
+                options.query.forUpdate();
+            }
+        });
+
+        /**
          * - is called before onSaved
          */
         this.on('created', function onCreated(model, response, options) {
@@ -543,9 +563,10 @@ Post = ghostBookshelf.Model.extend({
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
-                findOne: ['columns', 'importing', 'withRelated', 'require'],
+                findOne: ['columns', 'importing', 'withRelated', 'require', 'forUpdate'],
                 findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status', 'staticPages'],
-                findAll: ['columns', 'filter']
+                findAll: ['columns', 'filter', 'forUpdate'],
+                edit: ['forUpdate']
             };
 
         if (validOptions[methodName]) {
@@ -654,12 +675,16 @@ Post = ghostBookshelf.Model.extend({
 
     /**
      * ### Edit
+     * Fetches and saves to Post. See model.Base.edit
+     *
      * @extends ghostBookshelf.Model.edit to handle returning the full object and manage _updatedAttributes
      * **See:** [ghostBookshelf.Model.edit](base.js.html#edit)
      */
     edit: function edit(data, options) {
         var self = this,
             editPost = function editPost(data, options) {
+                options.forUpdate = true;
+
                 return ghostBookshelf.Model.edit.call(self, data, options).then(function then(post) {
                     return self.findOne({status: 'all', id: options.id}, options)
                         .then(function then(found) {
