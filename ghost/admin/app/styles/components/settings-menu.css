@@ -79,6 +79,12 @@
     line-height: 12px;
 }
 
+.settings-menu-header .close svg {
+    height: 12px;
+    width: 12px;
+    fill: --var(darkgrey);
+}
+
 .settings-menu-header.subview h4 {
     text-align: center;
 }
@@ -86,13 +92,17 @@
 .settings-menu-header.subview .back {
     margin-left: -15px;
     padding: 10px 15px;
-    font-size: 14px;
     line-height: 14px;
 }
 
+.settings-menu-header.subview .back svg {
+    height: 14px;
+    width: auto;
+}
 
-
-
+.settings-menu-header.subview .back svg path {
+    fill: var(--darkgrey);
+}
 
 /* Content
 /* ---------------------------------------------------------- */

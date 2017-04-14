@@ -78,15 +78,6 @@ body > .ember-view:not(.default-liquid-destination) {
     animation-fill-mode: forwards;
 }
 
-.gh-nav-menu i {
-    margin-right: 8px;
-    width: 11px;
-    height: 11px;
-    font-size: 11px;
-    line-height: 11px;
-    transition: margin-top 0.2s ease;
-}
-
 .gh-nav-menu svg {
     margin-right: 8px;
     width: 12px;
@@ -156,27 +147,14 @@ body > .ember-view:not(.default-liquid-destination) {
     padding: 0 8px 0 5px;
 }
 
-.gh-nav-search-button i {
-    width: 16px;
-    height: 16px;
-    color: var(--midgrey);
-    font-size: 13px;
-    line-height: 13px;
-    transition: color 0.2s ease;
-    transform: rotate(90deg);
-}
-
-.gh-nav-search-button:hover i {
-    color: var(--darkgrey);
-}
-
 .gh-nav-search-button svg {
-    width: 16px;
-    height: 16px;
+    width: 13px;
+    height: 13px;
     fill: var(--midgrey);
     line-height: 13px;
     transition: color 0.2s ease;
     transform: rotate(90deg);
+    vertical-align: -1px;
 }
 
 .gh-nav-search-button:hover svg {
@@ -272,7 +250,8 @@ body > .ember-view:not(.default-liquid-destination) {
 
     .gh-mobilemenu-button {
         flex-shrink: 0;
-        display: block;
+        display: flex;
+        align-items: center;
         margin: 0;
         padding: 24px;
         font-size: 18px;
@@ -281,6 +260,8 @@ body > .ember-view:not(.default-liquid-destination) {
 
     .gh-mobilemenu-button .icon-gh {
         margin: 0;
+        width: 20px;
+        height: 18px;
     }
 
     /* Hide the nav */
@@ -355,14 +336,6 @@ body > .ember-view:not(.default-liquid-destination) {
 
 .gh-menu-toggle:hover {
     cursor: pointer;
-}
-
-.gh-menu-toggle i {
-    transition: all 0.2s ease;
-}
-
-.gh-menu-toggle:hover i {
-    color: var(--blue);
 }
 
 .gh-menu-toggle svg {

@@ -47,6 +47,14 @@
     text-decoration: none;
     font-size: 13px;
     line-height: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.gh-image-uploader .image-cancel svg {
+    fill: #fff;
+    height: 13px;
+    width: auto;
 }
 
 .gh-image-uploader .upload-form {

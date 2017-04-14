@@ -58,9 +58,18 @@
     line-height: 5px;
 }
 
+.gh-notification-close svg {
+    height: 7px;
+    width: auto;
+}
+
 .gh-notification-close:hover {
     background: #fff;
     color: var(--red);
+}
+
+.gh-notification-close svg:hover {
+    fill: var(--red);
 }
 
 .gh-notification-passive {
@@ -165,8 +174,17 @@
     line-height: 10px;
 }
 
+.gh-alert-close svg {
+    height: 10px;
+    width: 10px;
+}
+
 .gh-alert-close:hover {
     color: var(--red);
+}
+
+.gh-alert-close svg:hover {
+    fill: var(--red);
 }
 
 
@@ -181,8 +199,11 @@
 .gh-alert-blue a {
     color: #fff;
 }
-.gh-alert-blue .gh-alert-close:hover {
-    color: #fff;
+.gh-alert-blue svg {
+    fill: #fff;
+}
+.gh-alert-blue .gh-alert-close svg:hover {
+    fill: #fff;
 }
 
 /* Red alert
@@ -196,8 +217,14 @@
 .gh-alert-red a {
     color: #fff;
 }
+.gh-alert-red svg {
+    fill: #fff;
+}
 .gh-alert-red .gh-alert-close:hover {
     color: #fff;
+}
+.gh-alert-red .gh-alert-close svg:hover {
+    fill: #fff;
 }
 
 /* Green alert
@@ -211,8 +238,14 @@
 .gh-alert-green a {
     color: #fff;
 }
+.gh-alert-green svg {
+    fill: #fff;
+}
 .gh-alert-green .gh-alert-close:hover {
     color: #fff;
+}
+.gh-alert-green .gh-alert-close svg:hover {
+    fill: #fff;
 }
 
 /* Black alert
@@ -226,8 +259,14 @@
 .gh-alert-black a {
     color: #fff;
 }
+.gh-alert-black svg {
+    fill: #fff;
+}
 .gh-alert-black .gh-alert-close:hover {
     color: #fff;
+}
+.gh-alert-black .gh-alert-close svg:hover {
+    fill: #fff;
 }
 
 /* Yellow alert

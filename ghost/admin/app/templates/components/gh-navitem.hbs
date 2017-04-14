@@ -1,5 +1,6 @@
 {{#unless navItem.isNew}}
-    <span class="gh-blognav-grab icon-grab">
+    <span class="gh-blognav-grab">
+        {{inline-svg "grab"}}
         <span class="sr-only">Reorder</span>
     </span>
 {{/unless}}
@@ -17,10 +18,10 @@
 
 {{#if navItem.isNew}}
     <button type="button" class="gh-blognav-add" {{action "addItem"}}>
-        <i class="icon-add2"><span class="sr-only">Add</span></i>
+        {{inline-svg "add"}}<span class="sr-only">Add</span>
     </button>
 {{else}}
     <button type="button" class="gh-blognav-delete" {{action "deleteItem" navItem}}>
-        <i class="icon-trash"><span class="sr-only">Delete</span></i>
+        {{inline-svg "trash"}}<span class="sr-only">Delete</span>
     </button>
 {{/if}}

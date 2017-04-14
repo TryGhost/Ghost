@@ -8,7 +8,7 @@ describe('Unit: Component: gh-alert', function () {
     setupComponentTest('gh-alert', {
         unit: true,
         // specify the other units that are required for this test
-        needs: ['service:notifications']
+        needs: ['service:notifications', 'helper:inline-svg']
     });
 
     it('closes notification through notifications service', function () {

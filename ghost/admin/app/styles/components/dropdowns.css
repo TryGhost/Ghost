@@ -66,12 +66,6 @@
     transition: none;
 }
 
-.dropdown-menu i {
-    margin-right: 10px;
-    font-size: 14px;
-    line-height: 1em;
-}
-
 .dropdown-menu svg {
     margin-right: 10px;
     height: 14px;
@@ -89,9 +83,6 @@
     .dropdown-menu > li > button {
         padding: 7px 8px;
         font-size: 1.5rem;
-    }
-    .dropdown-menu i {
-        font-size: 16px;
     }
     .dropdown-menu svg {
         height: 16px;

@@ -3,7 +3,7 @@
     <div class="{{if isViewingSubview 'settings-menu-pane-out-left' 'settings-menu-pane-in'}} settings-menu settings-menu-pane">
         <div class="settings-menu-header">
             <h4>Post Settings</h4>
-            <button class="close icon-x settings-menu-header-action" {{action "closeMenus"}}><span class="hidden">Close</span></button>
+            <button class="close settings-menu-header-action" {{action "closeMenus"}}>{{inline-svg "close"}}<span class="hidden">Close</span></button>
         </div>
         <div class="settings-menu-content">
             {{gh-image-uploader-with-preview
@@ -25,9 +25,10 @@
                 </a>
                 {{/if}}
 
-                <span class="input-icon icon-link">
+                <div class="gh-input-icon gh-icon-link">
+                    {{inline-svg "link"}}
                     {{gh-input slugValue class="post-setting-slug" id="url" name="post-setting-slug" focusOut=(action "updateSlug" slugValue) stopEnterKeyDownPropagation="true" update=(action (mut slugValue))}}
-                </span>
+                </div>
                 {{gh-url-preview slug=slugValue tagName="p" classNames="description"}}
             </div>
 
@@ -70,7 +71,8 @@
             {{#unless session.user.isAuthor}}
             <div class="form-group for-select">
                 <label for="author-list">Author</label>
-                <span class="input-icon icon-user">
+                <span class="gh-input-icon gh-icon-user">
+                    {{inline-svg "user-circle"}}
                     <span class="gh-select" tabindex="0">
                     {{one-way-select
                         selectedAuthor
@@ -81,6 +83,7 @@
                         optionLabelPath="name"
                         update=(action "changeAuthor")
                     }}
+                    {{inline-svg "arrow-down-small"}}
                     </span>
                 </span>
             </div>
@@ -118,7 +121,7 @@
     {{#gh-tab-pane}}
         {{#if isViewingSubview}}
         <div class="settings-menu-header subview">
-            <button {{action "closeSubview"}} class="back icon-arrow-left settings-menu-header-action"><span class="hidden">Back</span></button>
+            <button {{action "closeSubview"}} class="back settings-menu-header-action">{{inline-svg "arrow-left"}}<span class="hidden">Back</span></button>
             <h4>Meta Data</h4>
             <div style="width:23px;">{{!flexbox space-between}}</div>
         </div>

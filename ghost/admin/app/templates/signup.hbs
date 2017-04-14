@@ -30,14 +30,16 @@
 
                     {{#gh-form-group}}
                         <label for="email-address">Email address</label>
-                        <span class="input-icon icon-mail">
+                        <span class="gh-input-icon gh-icon-mail">
+                            {{inline-svg "email"}}
                             {{gh-input model.email type="email" name="email" placeholder="Eg. john@example.com" disabled="disabled" autocorrect="off"}}
                         </span>
                     {{/gh-form-group}}
 
                     {{#gh-form-group errors=model.errors hasValidated=hasValidated property="name"}}
                         <label for="full-name">Full name</label>
-                        <span class="input-icon icon-user">
+                        <span class="gh-input-icon gh-icon-user">
+                            {{inline-svg "user-circle"}}
                             {{gh-trim-focus-input model.name tabindex="1" type="text" name="name" placeholder="Eg. John H. Watson" onenter=(action "signup") autocorrect="off" focusOut=(action "validate" "name") update=(action (mut model.name))}}
                         </span>
                         {{gh-error-message errors=model.errors property="name"}}
@@ -45,7 +47,8 @@
 
                     {{#gh-form-group errors=model.errors hasValidated=hasValidated property="password"}}
                         <label for="password">Password</label>
-                        <span class="input-icon icon-lock">
+                        <span class="gh-input-icon gh-icon-lock">
+                            {{inline-svg "lock"}}
                             {{gh-input model.password tabindex="2" type="password" name="password" placeholder="At least 8 characters" onenter=(action "signup") autocorrect="off" focusOut=(action "validate" "password") update=(action (mut model.password))}}
                         </span>
                         {{gh-error-message errors=model.errors property="password"}}

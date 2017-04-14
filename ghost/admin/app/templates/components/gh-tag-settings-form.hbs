@@ -1,7 +1,7 @@
 <div class="{{if isViewingSubview 'settings-menu-pane-out-left' 'settings-menu-pane-in'}} settings-menu settings-menu-pane tag-settings-pane">
     <div class="settings-menu-header {{if isMobile 'subview'}}">
         {{#if isMobile}}
-            {{#link-to 'settings.tags' class="back icon-arrow-left settings-menu-header-action"}}<span class="hidden">Back</span>{{/link-to}}
+            {{#link-to 'settings.tags' class="back settings-menu-header-action"}}{{inline-svg "arrow-left"}}<span class="hidden">Back</span>{{/link-to}}
             <h4>{{title}}</h4>
             <div style="width:23px;">{{!flexbox space-between}}</div>
         {{else}}
@@ -54,7 +54,7 @@
 
 <div class="{{if isViewingSubview 'settings-menu-pane-in' 'settings-menu-pane-out-right'}} settings-menu settings-menu-pane tag-meta-settings-pane">
     <div class="settings-menu-header subview">
-        <button {{action "closeMeta"}} class="back icon-arrow-left settings-menu-header-action"><span class="hidden">Back</span></button>
+        <button {{action "closeMeta"}} class="back settings-menu-header-action">{{inline-svg "arrow-left"}}<span class="hidden">Back</span></button>
         <h4>Meta Data</h4>
         <div style="width:23px;">{{!flexbox space-between}}</div>
     </div>

@@ -29,9 +29,7 @@
         {{gh-search-input class="gh-nav-search-input"}}
     </section>
     <ul class="gh-nav-list gh-nav-main">
-        {{!<li><i class="icon-dash"></i>Dashboard</li>}}
         <li>{{#link-to "editor.new" classNames="gh-nav-main-editor"}}{{inline-svg "pen"}}New story{{/link-to}}</li>
-        {{!<li><a href="#"><i class="icon-user"></i>My Posts</a></li>}}
         <li>
             {{!-- clicking the Content link whilst on the content screen should reset the filter --}}
             {{#if (eq routing.currentRouteName "posts.index")}}
@@ -41,7 +39,6 @@
             {{/if}}
         </li>
         <li>{{#link-to "team" classNames="gh-nav-main-users"}}{{inline-svg "account-group"}}Team{{/link-to}}</li>
-        {{!<li><a href="#"><i class="icon-idea"></i>Ideas</a></li>}}
         {{#if feature.subscribers}}
             {{#if (gh-user-can-admin session.user)}}
                 <li>{{#link-to "subscribers" classNames="gh-nav-main-subscribers"}}{{inline-svg "email"}}Subscribers{{/link-to}}</li>

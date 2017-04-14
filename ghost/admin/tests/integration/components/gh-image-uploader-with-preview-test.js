@@ -33,7 +33,7 @@ describe('Integration: Component: gh-image-uploader-with-preview', function() {
 
         this.render(hbs`{{gh-image-uploader-with-preview image=image remove=(action remove)}}`);
         run(() => {
-            this.$('.icon-trash').click();
+            this.$('.image-cancel').click();
         });
 
         expect(remove.calledOnce).to.be.true;

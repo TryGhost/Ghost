@@ -7,8 +7,9 @@
 
 .user-list-item-icon {
     flex-shrink: 0;
-    position: relative;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
     margin-right: 15px;
     width: 40px;
@@ -19,15 +20,10 @@
     font-size: 0;
 }
 
-.user-list-item-icon:before {
-    position: absolute;
-    top: 50%;
-    right: 0;
-    left: 0;
-    margin-top: -7px;
-    color: var(--midgrey);
-    text-align: center;
-    font-size: 14px;
+.user-list-item-icon svg {
+    fill: var(--midgrey);
+    height: 14px;
+    width: auto;
 }
 
 .user-list-item-figure {

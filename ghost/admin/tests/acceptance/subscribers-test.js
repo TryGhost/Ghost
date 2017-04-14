@@ -97,7 +97,7 @@ describe('Acceptance: Subscribers', function() {
                 let createdAtHeader = find('.subscribers-table th:contains("Subscription Date")');
                 expect(createdAtHeader.hasClass('is-sorted'), 'createdAt column is sorted')
                     .to.be.true;
-                expect(createdAtHeader.find('.icon-descending').length, 'createdAt column has descending icon')
+                expect(createdAtHeader.find('.gh-icon-descending').length, 'createdAt column has descending icon')
                     .to.equal(1);
             });
 
@@ -110,7 +110,7 @@ describe('Acceptance: Subscribers', function() {
                 expect(lastRequest.queryParams.order).to.equal('created_at asc');
 
                 let createdAtHeader = find('.subscribers-table th:contains("Subscription Date")');
-                expect(createdAtHeader.find('.icon-ascending').length, 'createdAt column has ascending icon')
+                expect(createdAtHeader.find('.gh-icon-ascending').length, 'createdAt column has ascending icon')
                     .to.equal(1);
             });
 

@@ -7,7 +7,7 @@ import moment from 'moment';
 
 export default Component.extend(InvokeActionMixin, {
     tagName: 'span',
-    classNames: 'input-icon icon-calendar',
+    classNames: 'gh-input-icon gh-icon-calendar',
 
     datetime: boundOneWay('value'),
     inputClass: null,
