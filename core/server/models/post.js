@@ -658,22 +658,29 @@ Post = ghostBookshelf.Model.extend({
      * **See:** [ghostBookshelf.Model.edit](base.js.html#edit)
      */
     edit: function edit(data, options) {
-        var self = this;
+        var self = this,
+            editPost = function editPost(data, options) {
+                return ghostBookshelf.Model.edit.call(self, data, options).then(function then(post) {
+                    return self.findOne({status: 'all', id: options.id}, options)
+                        .then(function then(found) {
+                            if (found) {
+                                // Pass along the updated attributes for checking status changes
+                                found._updatedAttributes = post._updatedAttributes;
+                                return found;
+                            }
+                        });
+                });
+            };
+
         options = options || {};
+
+        if (options.transacting) {
+            return editPost(data, options);
+        }
 
         return ghostBookshelf.transaction(function (transacting) {
             options.transacting = transacting;
-
-            return ghostBookshelf.Model.edit.call(self, data, options).then(function then(post) {
-                return self.findOne({status: 'all', id: options.id}, options)
-                    .then(function then(found) {
-                        if (found) {
-                            // Pass along the updated attributes for checking status changes
-                            found._updatedAttributes = post._updatedAttributes;
-                            return found;
-                        }
-                    });
-            });
+            return editPost(data, options);
         });
     },
 
