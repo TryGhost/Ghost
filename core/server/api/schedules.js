@@ -35,21 +35,34 @@ exports.publishPost = function publishPost(object, options) {
         function (cleanOptions) {
             cleanOptions.status = 'scheduled';
 
-            return apiPosts.read(cleanOptions)
-                .then(function (result) {
-                    post = result.posts[0];
-                    publishedAtMoment = moment(post.published_at);
+            return dataProvider.Base.transaction(function (transacting) {
+                cleanOptions.transacting = transacting;
 
-                    if (publishedAtMoment.diff(moment(), 'minutes') > publishAPostBySchedulerToleranceInMinutes) {
-                        return Promise.reject(new errors.NotFoundError(i18n.t('errors.api.job.notFound')));
-                    }
+                // CASE: apiPosts.read and apiPosts.edit happen in a transaction, signalise `forUpdate` to knex
+                cleanOptions.forUpdate = true;
 
-                    if (publishedAtMoment.diff(moment(), 'minutes') < publishAPostBySchedulerToleranceInMinutes * -1 && object.force !== true) {
-                        return Promise.reject(new errors.NotFoundError(i18n.t('errors.api.job.publishInThePast')));
-                    }
+                // CASE: extend allowed options, see api/utils.js
+                cleanOptions.opts = ['forUpdate', 'transacting'];
 
-                    return apiPosts.edit({posts: [{status: 'published'}]}, _.pick(cleanOptions, ['context', 'id']));
-                });
+                return apiPosts.read(cleanOptions)
+                    .then(function (result) {
+                        post = result.posts[0];
+                        publishedAtMoment = moment(post.published_at);
+
+                        if (publishedAtMoment.diff(moment(), 'minutes') > publishAPostBySchedulerToleranceInMinutes) {
+                            return Promise.reject(new errors.NotFoundError(i18n.t('errors.api.job.notFound')));
+                        }
+
+                        if (publishedAtMoment.diff(moment(), 'minutes') < publishAPostBySchedulerToleranceInMinutes * -1 && object.force !== true) {
+                            return Promise.reject(new errors.NotFoundError(i18n.t('errors.api.job.publishInThePast')));
+                        }
+
+                        return apiPosts.edit({
+                            posts: [{status: 'published'}]},
+                            _.pick(cleanOptions, ['context', 'id', 'transacting', 'forUpdate', 'opts'])
+                        );
+                    });
+            });
         }
     ], options);
 };
