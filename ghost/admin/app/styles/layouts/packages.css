@@ -202,11 +202,6 @@
     cursor: default;
 }
 
-.package-downloads i {
-    margin-right: 5px;
-    font-size: 15px;
-}
-
 .package-downloads svg {
     margin-right: 5px;
     height: 15px;
@@ -300,13 +295,6 @@
 
 .package-controls-button:hover {
     color: var(--darkgrey);
-}
-
-.package-controls-button i {
-    margin-right: 5px;
-    width: 11px;
-    height: 11px;
-    font-size: 11px;
 }
 
 .package-controls-button svg {

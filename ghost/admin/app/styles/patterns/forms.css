@@ -87,35 +87,33 @@ input {
 /* Input Icons
 /* ---------------------------------------------------------- */
 
-.input-icon[class*="icon-"] {
+.gh-input-icon {
     position: relative;
     display: block;
 }
 
-.input-icon[class*="icon-"] input[type="email"],
-.input-icon[class*="icon-"] input[type="number"],
-.input-icon[class*="icon-"] input[type="password"],
-.input-icon[class*="icon-"] input[type="search"],
-.input-icon[class*="icon-"] input[type="tel"],
-.input-icon[class*="icon-"] input[type="text"],
-.input-icon[class*="icon-"] input[type="url"],
-.input-icon[class*="icon-"] input[type="date"] {
-    padding-left: 3.2rem;
-}
-
-.input-icon[class*="icon-"] .gh-select select {
-    padding-left: 3.2rem;
-}
-
-.input-icon[class*="icon-"]:before {
+.gh-input-icon svg {
     position: absolute;
     top: 50%;
-    left: 1.1rem;
-    z-index: 100;
-    font-size: 1.3rem;
-    transform: translateY(-52%);
+    left: 10px;
+    z-index: 2;
+    height: 14px;
+    width: auto;
+    fill: color(var(--midgrey) l(+15%));
+    transform: translateY(-7px);
 }
 
+.gh-input-icon.gh-icon-link svg path {
+    stroke: color(var(--midgrey) l(+15%));
+}
+
+.gh-input-icon input {
+    padding-left: 35px;
+}
+
+.gh-input-icon .gh-select select {
+    padding-left: 35px;
+}
 
 /* Inputs
 /* ---------------------------------------------------------- */
@@ -290,24 +288,21 @@ textarea {
     border-width: 0;
 }
 
-.gh-select:after {
-    content: "\e00f";
+.gh-select svg {
+    height: 8px;
+    width: auto;
     position: absolute;
     top: 50%;
     right: 1.2rem;
-    margin-top: -0.5em;
-    text-transform: none !important;
-    font-family: "ghosticons" !important;
-    font-size: 1rem;
-    line-height: 1;
-    font-weight: normal !important;
-    font-style: normal !important;
-    font-variant: normal !important;
+    left: inherit;
+    margin-top: -0.2em;
     pointer-events: none;
-
     speak: none;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    transform: inherit;
+}
+
+.gh-select svg path {
+    stroke: color(var(--midgrey) l(+15%));
 }
 
 .gh-select select {

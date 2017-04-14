@@ -34,8 +34,8 @@
 
 .kg-card {
     position: relative;
-    display: inline-block; /* even though we hide the cursors there is still a 
-                            zero width divider character on either side of this card, 
+    display: inline-block; /* even though we hide the cursors there is still a
+                            zero width divider character on either side of this card,
                             we need them to sit inline around this block otherwise we have
                             a line at the top and bottom of the card. */
     width:100%;
@@ -93,7 +93,7 @@
     bottom:11px;
     left: 50%;
     margin-left: -10px;
-    
+
     width: 0;
     height: 0;
     border-left: transparent 10px solid;
@@ -164,7 +164,7 @@
 }
 .kg-card .kg-card-toolbar button.kg-card-delete {
     text-transform: none !important;
-    font-family: "ghosticons" !important;
+    /*font-family: "ghosticons" !important;*/
     font-size: 1rem;
     line-height: 1;
     font-weight: normal !important;
@@ -178,7 +178,7 @@
     outline: none;
     border: none;
     resize: none;
-    
+
 }
 
 .kg-card-toolbar button:hover {

@@ -319,6 +319,8 @@ fieldset[disabled] .gh-btn {
 /* Animated button icons
 /* ---------------------------------------------------------- */
 
+/* Success icon  */
+
 path.animated-check-circle {
     stroke: white;
     stroke-dashoffset: 300;
@@ -333,6 +335,17 @@ path.animated-check-circle {
     100% {
         stroke-dashoffset: 0;
     }
+}
+
+/* Failure icon */
+
+svg.retry-animated {
+    animation: rotate-360 0.5s ease-in-out forwards;
+}
+
+@keyframes rotate-360 {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 

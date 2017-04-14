@@ -73,7 +73,22 @@ table td,
     margin-left: 0.3rem;
 }
 
-.lt-sort-icon.icon-ascending:before,
-.lt-sort-icon.icon-descending:before {
-    font-size: 0.6em;
+.lt-sort-icon.gh-icon-ascending {
+    background: url(icons/arrow-down-small.svg);
+}
+
+.lt-sort-icon.gh-icon-descending {
+    background: url(icons/arrow-up-small.svg);
+}
+
+.lt-sort-icon.gh-icon-ascending,
+.lt-sort-icon.gh-icon-descending {
+    fill: var(--darkgrey);
+    background-size: 10px, auto, contain;
+    background-repeat: no-repeat;
+    height: 9px;
+    position: absolute;
+    left: -3px;
+    bottom: 3px;
+    width: 15px;
 }

@@ -2,7 +2,8 @@
     {{#if url}}
         <div class="gh-image-uploader -with-image">
             <div><img src={{url}}></div>
-            <a class="image-cancel icon-trash" title="Delete" {{action 'removeImage'}}>
+            <a class="image-cancel" title="Delete" {{action 'removeImage'}}>
+                {{inline-svg "trash"}}
                 <span class="hidden">Delete</span>
             </a>
         </div>
@@ -20,5 +21,5 @@
 
 <div class="modal-footer">
     <button {{action "closeModal"}} class="gh-btn"><span>Cancel</span></button>
-    {{gh-task-button task=uploadImage class="gh-btn gh-btn-blue gh-btn-icon right" data-test-modal-accept-button=true}}
+    {{gh-task-button task=uploadImage class="gh-btn gh-btn-blue right gh-btn-icon" data-test-modal-accept-button=true}}
 </div>

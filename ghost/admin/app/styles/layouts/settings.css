@@ -105,10 +105,14 @@
 .gh-blognav-grab {
     padding: 0 16px 0 0;
     width: 16px;
-    color: color(var(--midgrey) l(+15%));
     text-indent: -4px;
-    font-size: 16px;
     cursor: move;
+}
+
+.gh-blognav-grab svg {
+    width: 16px;
+    height: auto;
+    fill: color(var(--midgrey) l(+15%));
 }
 
 .gh-blognav-line {
@@ -127,14 +131,20 @@
 
 .gh-blognav-delete {
     padding: 8px 0 8px 10px;
-    color: color(var(--midgrey) l(+15%));
-    font-size: 14px;
-    transition: color 0.1s linear;
+    display: flex;
+    align-items: center;
 }
 
-.gh-blognav-delete:hover,
-.gh-blognav-delete:focus {
-    color: var(--red);
+.gh-blognav-delete svg {
+    fill: color(var(--midgrey) l(+15%));
+    height: 14px;
+    width: auto;
+    transition: fill 0.1s linear;
+}
+
+.gh-blognav-delete svg:hover,
+.gh-blognav-delete svg:focus {
+    fill: var(--red);
 }
 
 .gh-blognav-add {
@@ -144,11 +154,16 @@
     height: 16px;
     background: var(--green);
     border-radius: 2px;
-    color: #fff;
-    text-align: center;
-    font-size: 10px;
-    line-height: 8px;
     transition: background 0.1s linear;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gh-blognav-add svg {
+    fill: #fff;
+    height: 9px;
+    width: 9px;
 }
 
 .gh-blognav-add:hover,

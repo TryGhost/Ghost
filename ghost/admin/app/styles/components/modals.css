@@ -89,12 +89,18 @@
     margin: 0;
     padding: 0;
     width: 16px;
+    height: auto;
     border: none;
-    color: #808284;
 }
 
-.modal-content .close:hover {
-    color: var(--darkgrey);
+.modal-content .close svg {
+    fill: #808284;
+    width: 16px;
+    height: auto;
+}
+
+.modal-content .close svg:hover {
+    fill: var(--darkgrey);
 }
 
 .modal-header {

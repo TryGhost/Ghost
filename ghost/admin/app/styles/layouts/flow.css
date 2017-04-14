@@ -42,12 +42,6 @@
     transition: all 0.3s ease;
 }
 
-.gh-flow-back i {
-    margin-right: 4px;
-    font-size: 12px;
-    line-height: 8px;
-}
-
 .gh-flow-back svg {
     margin-right: 4px;
     height: 12px;
@@ -283,13 +277,21 @@
     width: calc(100% - 8px);
     background: rgba(87, 163, 232, 0.7);
     border-radius: 100%;
-    color: #fff;
     text-decoration: none;
     text-transform: uppercase;
     font-size: 3rem;
     line-height: 90px;
     opacity: 0;
     transition: opacity 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.gh-flow-content .edit-account-image svg {
+    fill: #fff;
+    height: 3rem;
+    width: auto;
+    flex: 1 1 3rem;
 }
 
 .gh-flow-content .placeholder-img {
@@ -348,7 +350,7 @@
 }
 
 .gh-flow-content input {
-    padding: 10px;
+    padding: 10px 10px 10px 35px;
     border: #dae1e3 1px solid;
     font-size: 1.6rem;
     line-height: 1.4em;
@@ -380,10 +382,6 @@
 
 .gh-flow-content .pw-strength-activedot {
     background-color: var(--red);
-}
-
-.gh-flow-content .input-icon[class*="icon-"]:before {
-    transform: translateY(-49%);
 }
 
 .gh-flow-content .gh-flow-invite {
@@ -444,8 +442,8 @@
     font-size: 1.2rem;
 }
 
-.gh-flow-content .success .input-icon:before {
-    color: var(--green);
+.gh-flow-content .success .gh-input-icon svg {
+    fill: var(--green);
 }
 
 .error,
@@ -458,8 +456,8 @@
     border-color: var(--red);
 }
 
-.gh-flow-content .error .input-icon:before {
-    color: var(--red);
+.gh-flow-content .error .gh-input-icon svg {
+    fill: var(--red);
 }
 
 .gh-flow-content .error .response {
