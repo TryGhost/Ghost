@@ -12,6 +12,7 @@
     text-decoration: none !important;
     user-select: none;
     fill: color(var(--lightgrey) l(-27%) blackness(+15%));
+    stroke: color(var(--lightgrey) l(-27%) blackness(+15%));
     border-radius: 5px;
     transition: all 0.2s ease;
 
@@ -81,6 +82,7 @@ fieldset[disabled] .gh-btn {
     color: color(var(--darkgrey) l(+15%));
     text-shadow: 0 1px 0 #fff;
     fill: var(--darkgrey);
+    stroke: var(--darkgrey);
     background: linear-gradient(
     color(var(--lightgrey) l(-3%)),
     color(var(--lightgrey) l(-8%))
@@ -120,6 +122,7 @@ fieldset[disabled] .gh-btn {
     color: #fff;
     text-shadow: 0 -1px 0 rgba(0,0,0,0.1);
     fill: #fff;
+    stroke: #fff;
     background: linear-gradient(
     color(var(--blue) blackness(+10%)),
     color(var(--blue) l(-15%) saturation(-15%))
@@ -160,6 +163,7 @@ fieldset[disabled] .gh-btn {
     color: #fff;
     text-shadow: 0 -1px 0 rgba(0,0,0,0.1);
     fill: #fff;
+    stroke: #fff;
     background: linear-gradient(
     color(var(--green) blackness(+5%)),
     color(var(--green) l(-9%) saturation(-9%))
@@ -201,6 +205,7 @@ fieldset[disabled] .gh-btn {
     color: #fff;
     text-shadow: 0 -1px 0 rgba(0,0,0,0.1);
     fill: #fff;
+    stroke: #fff;
     background: linear-gradient(
     color(var(--red) blackness(+10%)),
     color(var(--red) l(-15%) saturation(-15%))
@@ -241,6 +246,7 @@ fieldset[disabled] .gh-btn {
     color: #fff;
     text-shadow: 0 -1px 0 rgba(0,0,0,0.1);
     fill: #fff;
+    stroke: #fff;
     background: linear-gradient(
     color(var(--darkgrey) blackness(+10%)),
     color(var(--darkgrey) l(-15%) saturation(-15%))
@@ -299,16 +305,11 @@ fieldset[disabled] .gh-btn {
     width: 1em;
     height: 1em;
     margin-right: 0.5em;
-    fill: #fff;
 }
 
 .gh-btn-icon-right svg {
     margin-left: 0.5em;
     margin-right: 0;
-}
-
-.gh-btn-icon svg path {
-    stroke: #fff;
 }
 
 .gh-btn svg.no-margin {
@@ -322,7 +323,6 @@ fieldset[disabled] .gh-btn {
 /* Success icon  */
 
 path.animated-check-circle {
-    stroke: white;
     stroke-dashoffset: 300;
     stroke-dasharray: 300;
     animation: dash 4s ease-out forwards;
