@@ -82,8 +82,7 @@
 .settings-menu-header .close svg {
     height: 12px;
     width: 12px;
-    fill: var(--darkgrey);
-    stroke: var(--darkgrey);
+    fill: --var(darkgrey);
 }
 
 .settings-menu-header.subview h4 {
@@ -103,7 +102,6 @@
 
 .settings-menu-header.subview .back svg path {
     fill: var(--darkgrey);
-    stroke: var(--darkgrey);
 }
 
 /* Content
