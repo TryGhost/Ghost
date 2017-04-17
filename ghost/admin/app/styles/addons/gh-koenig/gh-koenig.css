@@ -163,13 +163,13 @@
     border-radius:5px;
 }
 .kg-card .kg-card-toolbar button.kg-card-delete {
-    text-transform: none !important;
-    /*font-family: "ghosticons" !important;*/
-    font-size: 1rem;
     line-height: 1;
-    font-weight: normal !important;
-    font-style: normal !important;
-    font-variant: normal !important;
+}
+
+.kg-card .kg-card-toolbar button.kg-card-delete svg {
+    height: 1.4rem;
+    width: auto;
+    fill: color(var(--lightgrey) l(-10%));
 }
 
 .kg-card textarea {
