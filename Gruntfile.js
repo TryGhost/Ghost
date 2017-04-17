@@ -243,7 +243,9 @@ var overrides      = require('./core/server/overrides'),
                     command: function () {
                         var upstream = grunt.option('upstream') || process.env.GHOST_UPSTREAM || 'upstream';
                         grunt.log.writeln('Pulling down the latest master from ' + upstream);
-                        return 'git checkout master; git pull ' + upstream + ' master; yarn;';
+                        return 'git checkout master; git pull ' + upstream + ' master; ' +
+                        'yarn; git submodule foreach "git checkout master && git pull ' +
+                        upstream + ' master"';
                     }
                 },
 
@@ -309,11 +311,6 @@ var overrides      = require('./core/server/overrides'),
                 pinned: {
                     options: {
                         params: '--init'
-                    }
-                },
-                master: {
-                    options: {
-                        params: '--remote'
                     }
                 }
             },
@@ -726,7 +723,7 @@ var overrides      = require('./core/server/overrides'),
         // `grunt master` [`upstream` is the default upstream to pull from]
         // `grunt master --upstream=parent`
         grunt.registerTask('master', 'Update your current working folder to latest master.',
-            ['shell:master', 'update_submodules:master', 'subgrunt:init', 'shell:dbhealth']
+            ['shell:master', 'subgrunt:init', 'shell:dbhealth']
         );
 
         // ### Release
