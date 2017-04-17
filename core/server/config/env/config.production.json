@@ -10,8 +10,7 @@
         }
     },
     "auth": {
-        "type": "ghost",
-        "url": "https://auth.ghost.org"
+        "type": "password"
     },
     "paths": {
         "contentPath": "content/"
