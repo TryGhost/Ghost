@@ -38,27 +38,30 @@ Post = ghostBookshelf.Model.extend({
         ghostBookshelf.Model.prototype.initialize.apply(this, arguments);
 
         /**
+         * http://knexjs.org/#Builder-forUpdate
+         * https://dev.mysql.com/doc/refman/5.7/en/innodb-locking-reads.html
+         *
+         * Lock target collection/model for further update operations.
+         * This avoids collisions and possible content override cases.
+         *
          * `forUpdate` is only supported for posts right now
          */
         this.on('fetching:collection', function (model, columns, options) {
-            // CASE: fetch and update in two operations (only doable in a transaction)
             if (options.forUpdate && options.transacting) {
                 options.query.forUpdate();
             }
         });
 
-        /**
-         * `forUpdate` is only supported for posts right now
-         */
         this.on('fetching', function (model, columns, options) {
-            // CASE: fetch and update in two operations (only doable in a transaction)
             if (options.forUpdate && options.transacting) {
                 options.query.forUpdate();
             }
         });
 
         /**
-         * - is called before onSaved
+         * We update the tags after the Post was inserted.
+         * We update the tags before the Post was updated, see `onSaving` event.
+         * `onCreated` is called before `onSaved`.
          */
         this.on('created', function onCreated(model, response, options) {
             var status = model.get('status');
@@ -264,11 +267,11 @@ Post = ghostBookshelf.Model.extend({
         }
 
         /**
-         * - updateTags happens before the post is saved to the database
-         * - when editing a post, it's running in a transaction, see Post.edit
+         * - `updateTags` happens before the post is saved to the database
+         * - when editing a post, it's running in a transaction, see `Post.edit`
          * - we are using a update collision detection, we have to know if tags were updated in the client
          *
-         * NOTE: For adding a post, updateTags happens after the post insert
+         * NOTE: For adding a post, updateTags happens after the post insert, see `onCreated` event
          */
         if (options.method === 'update' || options.method === 'patch') {
             ops.push(function updateTags() {

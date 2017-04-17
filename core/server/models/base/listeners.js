@@ -32,10 +32,14 @@ events.on('settings.activeTimezone.edited', function (settingModel) {
         return;
     }
 
+    /**
+     * CASE:
+     * `Post.findAll` and the Post.edit` must run in one single transaction.
+     * We lock the target row on fetch by using the `forUpdate` option.
+     * Read more in models/post.js - `onFetching`
+     */
     return models.Base.transaction(function (transacting) {
         options.transacting = transacting;
-
-        // CASE: signalise that two operations will happen (fetch for update)
         options.forUpdate = true;
 
         return models.Post.findAll(_.merge({filter: 'status:scheduled'}, options))

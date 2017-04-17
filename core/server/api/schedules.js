@@ -10,7 +10,11 @@ var _ = require('lodash'),
     utils = require('./utils');
 
 /**
- * publish a scheduled post
+ * Publish a scheduled post
+ *
+ * `apiPosts.read` and `apiPosts.edit` must happen in one transaction.
+ * We lock the target row on fetch by using the `forUpdate` option.
+ * Read more in models/post.js - `onFetching`
  *
  * object.force: you can force publishing a post in the past (for example if your service was down)
  */
@@ -37,8 +41,6 @@ exports.publishPost = function publishPost(object, options) {
 
             return dataProvider.Base.transaction(function (transacting) {
                 cleanOptions.transacting = transacting;
-
-                // CASE: apiPosts.read and apiPosts.edit happen in a transaction, signalise `forUpdate` to knex
                 cleanOptions.forUpdate = true;
 
                 // CASE: extend allowed options, see api/utils.js

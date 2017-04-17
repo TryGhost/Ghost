@@ -28,6 +28,7 @@ module.exports = function (Bookshelf) {
                 originalUpdateSync = parentSync.update,
                 self = this, err;
 
+            // CASE: only enabled for posts table
             if (this.tableName !== 'posts' ||
                 !self.serverData ||
                 ((options.method !== 'update' && options.method !== 'patch') || !options.method)
@@ -69,7 +70,8 @@ module.exports = function (Bookshelf) {
         /**
          * We have to remember current server data and client data.
          * The `sync` method has no access to it.
-         * `updated_at` is already set to "Date.now" when sync.update is called.
+         * `updated_at` is already set to "Date.now" when the overridden `sync.update` is called.
+         * See https://github.com/tgriesser/bookshelf/blob/79c526870e618748caf94e7476a0bc796ee090a6/src/model.js#L955
          */
         save: function save(data) {
             this.clientData = _.cloneDeep(data) || {};

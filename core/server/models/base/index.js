@@ -444,6 +444,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     /**
      * ### Edit
      * Naive edit
+     *
+     * We always forward the `method` option to Bookshelf, see http://bookshelfjs.org/#Model-instance-save.
+     * Based on the `method` option Bookshelf and Ghost can determine if a query is an insert or an update.
+     *
      * @param {Object} data
      * @param {Object} options (optional)
      * @return {Promise(ghostBookshelf.Model)} Edited Model
