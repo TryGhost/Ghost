@@ -1,4 +1,3 @@
-
 /*jshint unused:false*/
 var should = require('should'),
     Promise = require('bluebird'),
@@ -9,11 +8,15 @@ var should = require('should'),
     config = require('../../../../server/config'),
     testUtils = require(config.paths.corePath + '/test/utils'),
     events = require(config.paths.corePath + '/server/events'),
-    models = require(config.paths.corePath + '/server/models');
+    errors = require(config.paths.corePath + '/server/errors'),
+    models = require(config.paths.corePath + '/server/models'),
+    sequence = require(config.paths.corePath + '/server/utils/sequence'),
+    sandbox = sinon.sandbox.create();
 
 describe('Models: listeners', function () {
     var eventsToRemember = {},
         now = moment(),
+        listeners,
         scope = {
             posts: [],
             publishedAtFutureMoment1: moment().add(2, 'days').startOf('hour'),
@@ -28,15 +31,16 @@ describe('Models: listeners', function () {
     beforeEach(testUtils.setup());
 
     beforeEach(function () {
-        sinon.stub(events, 'on', function (eventName, callback) {
+        sandbox.stub(events, 'on', function (eventName, callback) {
             eventsToRemember[eventName] = callback;
         });
 
-        rewire(config.paths.corePath + '/server/models/base/listeners');
+        listeners = rewire(config.paths.corePath + '/server/models/base/listeners');
     });
 
     afterEach(function (done) {
         events.on.restore();
+        sandbox.restore();
         scope.posts = [];
         testUtils.teardown(done);
     });
@@ -157,6 +161,69 @@ describe('Models: listeners', function () {
                         })
                         .catch(done);
                 })();
+            });
+
+            it('collision: ensure the listener always succeeds', function (done) {
+                var timeout,
+                    interval,
+                    post1 = posts[0],
+                    listenerHasFinished = false;
+
+                sandbox.spy(errors, 'logError');
+                sandbox.spy(models.Post, 'findAll');
+
+                // simulate a delay, so that the edit operation from the test here interrupts
+                // the goal here is to force that the listener has old post data, updated_at is then too old
+                // e.g. user edits while listener is active
+                listeners.__set__('sequence', function overrideSequence() {
+                    var self = this,
+                        args = arguments;
+
+                    return Promise.delay(3000)
+                        .then(function () {
+                            return sequence.apply(self, args)
+                                .finally(function () {
+                                    setTimeout(function () {
+                                        listenerHasFinished = true;
+                                    }, 500);
+                                });
+                        });
+                });
+
+                scope.timezoneOffset = -180;
+                scope.oldTimezone = 'Asia/Baghdad';
+                scope.newTimezone = 'Etc/UTC';
+
+                eventsToRemember['settings.activeTimezone.edited']({
+                    attributes: {value: scope.newTimezone},
+                    _updatedAttributes: {value: scope.oldTimezone}
+                });
+
+                models.Post.findAll.calledOnce.should.eql(false);
+
+                // set a little timeout to ensure the listener fetched posts from the database and the updated_at difference
+                // is big enough to simulate the collision scenario
+                // if you remove the transaction from the listener, this test will fail and show a collision error
+                timeout = setTimeout(function () {
+                    clearTimeout(timeout);
+
+                    // ensure findAll was called in the listener
+                    // ensure findAll was called before user's edit operation
+                    models.Post.findAll.calledOnce.should.eql(true);
+
+                    // simulate a client updates the post during the listener activity
+                    models.Post.edit({title: 'a new title, yes!'}, _.merge({id: post1.id}, testUtils.context.internal))
+                        .then(function (x) {
+                            interval = setInterval(function () {
+                                if (listenerHasFinished) {
+                                    clearInterval(interval);
+                                    errors.logError.called.should.eql(false);
+                                    return done();
+                                }
+                            }, 1000);
+                        })
+                        .catch(done);
+                }, 2000);
             });
         });
 

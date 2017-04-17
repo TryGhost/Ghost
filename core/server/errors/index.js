@@ -245,7 +245,12 @@ errors = {
 
             errorContent.message = _.isString(errorItem) ? errorItem :
                 (_.isObject(errorItem) ? errorItem.message : i18n.t('errors.errors.unknownApiError'));
+
             errorContent.errorType = errorItem.errorType || 'InternalServerError';
+
+            if (errorItem.code) {
+                errorContent.code = errorItem.code;
+            }
 
             if (errorItem.errorType === 'ThemeValidationError' && errorItem.errorDetails) {
                 errorContent.errorDetails = errorItem.errorDetails;
