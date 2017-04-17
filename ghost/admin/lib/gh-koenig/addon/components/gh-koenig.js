@@ -7,7 +7,7 @@ import {MOBILEDOC_VERSION} from 'mobiledoc-kit/renderers/mobiledoc';
 import createCardFactory from '../lib/card-factory';
 import defaultCommands from '../options/default-commands';
 import editorCards  from '../cards/index';
-import RSVP from 'rsvp';
+import {getCardFromDoc, checkIfClickEventShouldCloseCard} from '../lib/utils';
 import $ from 'jquery';
 // import { VALID_MARKUP_SECTION_TAGNAMES } from 'mobiledoc-kit/models/markup-section'; //the block elements supported by mobile-doc
 
@@ -147,7 +147,7 @@ export default Component.extend({
             let sel = window.getSelection();
             sel.removeAllRanges();
             sel.addRange(range);
-            editor._ensureFocus();
+            editor._ensureFocus(); // PRIVATE API
         }
 
         editor.cursorDidChange(() => this.cursorMoved());
@@ -275,9 +275,8 @@ export default Component.extend({
                 switch (event.keyCode) {
                 case 37: // arrow left
                 case 38: // arrow up
-                    editor.post.sections.forEach((section) => {
-                        let currentCard = $(section.renderNode.element);
-                        if (currentCard.find(`#${cardId}`).length) {
+                    getCardFromDoc(cardId, editor)
+                        .then((section) => {
                             if (section.prev && section.prev.isCardSection) {
                                 let prevCard = ($(section.prev.renderNode.element).find('.gh-card-holder').attr('id'));
                                 if (prevCard) {
@@ -291,14 +290,12 @@ export default Component.extend({
                                 $(this.get('titleSelector')).focus();
                                 this.send('deselectCard');
                             }
-                        }
-                    });
+                        });
                     return false;
                 case 39: // arrow right
                 case 40: // arrow down
-                    editor.post.sections.forEach((section) => {
-                        let currentCard = $(section.renderNode.element);
-                        if (currentCard.find(`#${cardId}`).length) {
+                    getCardFromDoc(cardId, editor)
+                        .then((section) => {
                             if (section.next && section.next.isCardSection) {
                                 let nextCard = ($(section.next.renderNode.element).find('.gh-card-holder').attr('id'));
                                 if (nextCard) {
@@ -312,13 +309,12 @@ export default Component.extend({
                                 $(this.get('titleSelector')).focus();
                                 this.send('deselectCard');
                             }
-                        }
-                    });
+                        });
+
                     return false;
                 case 13: // enter
-                    editor.post.sections.forEach((section) => {
-                        let currentCard = $(section.renderNode.element);
-                        if (currentCard.find(`#${cardId}`).length) {
+                    getCardFromDoc(cardId, editor)
+                        .then((section) => {
                             if (section.next) {
                                 editor.run((postEditor) => {
                                     let newSection = editor.builder.createMarkupSection('p');
@@ -334,10 +330,8 @@ export default Component.extend({
                                 });
 
                             }
-                        }
-                        this.send('deselectCard');
-                    });
-
+                            this.send('deselectCard');
+                        });
                     return false;
                 case 27: // escape
                     this.send('selectCard', cardId);
@@ -365,7 +359,6 @@ export default Component.extend({
             this.set('editedCard', null);
         },
         editCard(cardId) {
-          //  this.send('selectCard', cardId);
             let card = this.get('emberCards').find((card) => card.id === cardId);
             this.set('editedCard', card);
         },
@@ -418,61 +411,3 @@ export default Component.extend({
     }
 
 });
-
-// takes two jquery objects, the target of a click event and a cardholder and sees if the click event should close the card or not
-function checkIfClickEventShouldCloseCard(target, cardHolder) {
-    // see if this element or one of its ancestors is a card.
-    let card = target.hasClass('kg-card') ? target : target.parents('.kg-card');
-
-    let isCardToggle = target.hasClass('kg-card-button') || target.parents('.gh-cardmenu').length || target.parents('.kg-card-toolbar').length;
-
-    // if we're selecting a card toggle (menu item) OR we have clicked on a card and the card is the one we expect//
-    // then we shouldn't close the menu and return false.
-    if (isCardToggle || (card.length && card[0] === cardHolder[0])) {
-        return false;
-    }
-    return true;
-}
-
-// searches through the editor to see if it can find the current card
-function getCardFromDoc(cardId, editor) {
-    return new RSVP.Promise((resolve, reject) => {
-        editor.post.sections.forEach((section) => {
-            let sectionDom = $(section.renderNode.element);
-            if (section.isCardSection && sectionDom.find(`#${cardId}`).length) {
-                return resolve(section);
-            }
-        });
-        return reject();
-    });
-}
-
-// // code for moving the cursor into the correct position of the title: (is buggy)
-
-// // find the cursor position based on a pixel offset of an element.
-// // used to move the cursor vertically into the title.
-// function findCursorPositionFromPixel(el, horizontal_offset) {
-//     let len = el.textContent.length;
-//     let range = document.createRange();
-//     for(let i = len -1; i > -1; i--) {
-//         range.setStart(el, i);
-//         range.setEnd(el, i + 1);
-//         let rect = range.getBoundingClientRect();
-//         if (rect.top === rect.bottom) {
-//             continue;
-//         }
-//         if (rect.left <= horizontal_offset && rect.right >= horizontal_offset) {
-//             return  i + (horizontal_offset >= (rect.left + rect.right) / 2 ? 1 : 0);    // if the horizontal_offset is on the left hand side of the
-//                                                                                         // character then return `i`, if it's on the right return `i + 1`
-//         }
-//     }
-
-//     return el.length;
-// }
-
-// // update the cursor position.
-// function updateCursor(range) {
-//     let selection = window.getSelection();
-//      selection.removeAllRanges();
-//     selection.addRange(range);
-// }
