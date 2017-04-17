@@ -437,7 +437,7 @@ describe('Post Model', function () {
                     should.exist(results);
                     results.attributes.html.should.match(/HTML Ipsum Presents/);
                     should.not.exist(results.attributes.plaintext);
-                    return PostModel.edit({updated_at: Date.now()}, _.extend({}, context, {id: postId}));
+                    return PostModel.edit({updated_at: results.attributes.updated_at}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
                     should.exist(edited);
 
@@ -1453,6 +1453,110 @@ describe('Post Model', function () {
 
                     done();
                 }).catch(done);
+            });
+        });
+
+        describe('Collision Protection', function () {
+            it('update post title, but updated_at is out of sync', function (done) {
+                var postToUpdate = {id: testUtils.DataGenerator.Content.posts[1].id};
+
+                PostModel.findOne({id: postToUpdate.id, status: 'all'})
+                    .then(function () {
+                        return Promise.delay(1000);
+                    })
+                    .then(function () {
+                        return PostModel.edit({
+                            title: 'New Post Title',
+                            updated_at: moment().subtract(1, 'day').format()
+                        }, _.extend({}, context, {id: postToUpdate.id}));
+                    })
+                    .then(function () {
+                        done(new Error('expected no success'));
+                    })
+                    .catch(function (err) {
+                        err.code.should.eql('UPDATE_COLLISION');
+                        done();
+                    });
+            });
+
+            it('update post tags and updated_at is out of sync', function (done) {
+                var postToUpdate = {id: testUtils.DataGenerator.Content.posts[1].id};
+
+                PostModel.findOne({id: postToUpdate.id, status: 'all'})
+                    .then(function () {
+                        return Promise.delay(1000);
+                    })
+                    .then(function () {
+                        return PostModel.edit({
+                            tags: [{name: 'new-tag-1'}],
+                            updated_at: moment().subtract(1, 'day').format()
+                        }, _.extend({}, context, {id: postToUpdate.id}));
+                    })
+                    .then(function () {
+                        done(new Error('expected no success'));
+                    })
+                    .catch(function (err) {
+                        err.code.should.eql('UPDATE_COLLISION');
+                        done();
+                    });
+            });
+
+            it('update post tags and updated_at is NOT out of sync', function (done) {
+                var postToUpdate = {id: testUtils.DataGenerator.Content.posts[1].id};
+
+                PostModel.findOne({id: postToUpdate.id, status: 'all'})
+                    .then(function () {
+                        return Promise.delay(1000);
+                    })
+                    .then(function () {
+                        return PostModel.edit({
+                            tags: [{name: 'new-tag-1'}]
+                        }, _.extend({}, context, {id: postToUpdate.id}));
+                    })
+                    .then(function () {
+                        done();
+                    })
+                    .catch(done);
+            });
+
+            it('update post with no changes, but updated_at is out of sync', function (done) {
+                var postToUpdate = {id: testUtils.DataGenerator.Content.posts[1].id};
+
+                PostModel.findOne({id: postToUpdate.id, status: 'all'})
+                    .then(function () {
+                        return Promise.delay(1000);
+                    })
+                    .then(function () {
+                        return PostModel.edit({
+                            updated_at: moment().subtract(1, 'day').format()
+                        }, _.extend({}, context, {id: postToUpdate.id}));
+                    })
+                    .then(function () {
+                        done();
+                    })
+                    .catch(done);
+            });
+
+            it('update post with old post title, but updated_at is out of sync', function (done) {
+                var postToUpdate = {
+                    id: testUtils.DataGenerator.Content.posts[1].id,
+                    title: testUtils.DataGenerator.forModel.posts[1].title
+                };
+
+                PostModel.findOne({id: postToUpdate.id, status: 'all'})
+                    .then(function () {
+                        return Promise.delay(1000);
+                    })
+                    .then(function () {
+                        return PostModel.edit({
+                            title: postToUpdate.title,
+                            updated_at: moment().subtract(1, 'day').format()
+                        }, _.extend({}, context, {id: postToUpdate.id}));
+                    })
+                    .then(function () {
+                        done();
+                    })
+                    .catch(done);
             });
         });
     });
