@@ -54,8 +54,7 @@ module.exports = function (Bookshelf) {
 
                 if (Object.keys(changed).length) {
                     if (clientUpdatedAt.diff(serverUpdatedAt) !== 0) {
-                        err = new errors.InternalServerError('Uh-oh. We already have a newer version of this post saved.' +
-                            'To prevent losing your text, please copy your changes somewhere else and then refresh this page.');
+                        err = new errors.InternalServerError('Saving failed! Someone else is editing this post.');
                         err.code = 'UPDATE_COLLISION';
                         return Promise.reject(err);
                     }
