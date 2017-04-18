@@ -43,6 +43,9 @@ ghostBookshelf.plugin(plugins.includeCount);
 // Load the Ghost pagination plugin, which gives us the `fetchPage` method on Models
 ghostBookshelf.plugin(plugins.pagination);
 
+// Update collision plugin
+ghostBookshelf.plugin(plugins.collision);
+
 // Cache an instance of the base model prototype
 proto = ghostBookshelf.Model.prototype;
 
@@ -225,8 +228,17 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return this.updatedAttributes()[attr];
     },
 
-    hasDateChanged: function (attr) {
-        return moment(this.get(attr)).diff(moment(this.updated(attr))) !== 0;
+    /**
+     * There is difference between `updated` and `previous`:
+     * Depending on the hook (before or after writing into the db), both fields have a different meaning.
+     * e.g. onSaving  -> before db write (has to use previous)
+     *      onUpdated -> after db write  (has to use updated)
+     *
+     * hasDateChanged('attr', {beforeWrite: true})
+     */
+    hasDateChanged: function (attr, options) {
+        options = options || {};
+        return moment(this.get(attr)).diff(moment(options.beforeWrite ? this.previous(attr) : this.updated(attr))) !== 0;
     }
 }, {
     // ## Data Utility Functions
@@ -246,14 +258,51 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     /**
      * Filters potentially unsafe model attributes, so you can pass them to Bookshelf / Knex.
+     * This filter should be called before each insert/update operation.
+     *
      * @param {Object} data Has keys representing the model's attributes/fields in the database.
      * @return {Object} The filtered results of the passed in data, containing only what's allowed in the schema.
      */
     filterData: function filterData(data) {
         var permittedAttributes = this.prototype.permittedAttributes(),
-            filteredData = _.pick(data, permittedAttributes);
+            filteredData = _.pick(data, permittedAttributes),
+            sanitizedData = this.sanitizeData(filteredData);
 
-        return filteredData;
+        return sanitizedData;
+    },
+
+    /**
+     * `sanitizeData` ensures that client data is in the correct format for further operations.
+     *
+     * Dates:
+     * - client dates are sent as ISO format (moment(..).format())
+     * - server dates are in JS Date format
+     *   >> when bookshelf fetches data from the database, all dates are in JS Dates
+     *   >> see `parse`
+     * - Bookshelf updates the model with the new client data via the `set` function
+     * - Bookshelf uses a simple `isEqual` function from lodash to detect real changes
+     * - .previous(attr) and .get(attr) returns false obviously
+     * - internally we use our `hasDateChanged` if we have to compare previous/updated dates
+     * - but Bookshelf is not in our control for this case
+     *
+     * @IMPORTANT
+     * Before the new client data get's inserted again, the dates get's retransformed into
+     * proper strings, see `format`.
+     */
+    sanitizeData: function sanitizeData(data) {
+        var tableName = _.result(this.prototype, 'tableName');
+
+        _.each(data, function (value, key) {
+            if (value !== null
+                && schema.tables[tableName].hasOwnProperty(key)
+                && schema.tables[tableName][key].type === 'dateTime'
+                && typeof value === 'string'
+            ) {
+                data[key] = moment(value).toDate();
+            }
+        });
+
+        return data;
     },
 
     /**
@@ -395,6 +444,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     /**
      * ### Edit
      * Naive edit
+     *
+     * We always forward the `method` option to Bookshelf, see http://bookshelfjs.org/#Model-instance-save.
+     * Based on the `method` option Bookshelf and Ghost can determine if a query is an insert or an update.
+     *
      * @param {Object} data
      * @param {Object} options (optional)
      * @return {Promise(ghostBookshelf.Model)} Edited Model
@@ -413,7 +466,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         return model.fetch(options).then(function then(object) {
             if (object) {
-                return object.save(data, options);
+                return object.save(data, _.merge({method: 'update'}, options));
             }
         });
     },

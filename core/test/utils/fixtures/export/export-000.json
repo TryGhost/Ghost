@@ -168,7 +168,8 @@
         "subscribers": [
             {
                 "id": 1,
-                "email": "subscriber1@test.com"
+                "email": "subscriber1@test.com",
+                "post_id": 888
             },
             {
                 "id": 2,

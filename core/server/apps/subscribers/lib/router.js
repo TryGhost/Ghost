@@ -24,8 +24,15 @@ function controller(req, res) {
     }
 }
 
+/**
+ * Takes care of sanitizing the email input.
+ * XSS prevention.
+ * For success cases, we don't have to worry, because then the input contained a valid email address.
+ */
 function errorHandler(error, req, res, next) {
     /*jshint unused:false */
+
+    req.body.email = '';
 
     if (error.statusCode !== 404) {
         res.locals.error = error;
@@ -46,7 +53,7 @@ function honeyPot(req, res, next) {
 }
 
 function validateUrl(url) {
-    return validator.isEmptyOrURL(url) ? url : '';
+    return validator.isEmptyOrURL(url || '') ? url : '';
 }
 
 function handleSource(req, res, next) {
@@ -78,8 +85,6 @@ function storeSubscriber(req, res, next) {
     if (_.isEmpty(req.body.email)) {
         return next(new errors.ValidationError('Email cannot be blank.'));
     } else if (!validator.isEmail(req.body.email)) {
-        // sanitize email
-        req.body.email = '';
         return next(new errors.ValidationError('Invalid email.'));
     }
 

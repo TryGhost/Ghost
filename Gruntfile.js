@@ -457,7 +457,7 @@ var overrides      = require('./core/server/overrides'),
                 grunt.fail.fatal('No test provided. `grunt test` expects a filename. e.g.: `grunt test:unit/apps_spec.js`. Did you mean `npm test` or `grunt validate`?');
             }
 
-            if (!test.match(/core\/test/)) {
+            if (!test.match(/core\/test/) && !test.match(/core\/server/)) {
                 test = 'core/test/' + test;
             }
 
