@@ -3,7 +3,7 @@ export default {
     label: 'Embed',
     icon: '',
     genus: 'ember',
-    launchMode: 'preview',
+    launchMode: 'edit',
     buttons: {
         edit: true
     }
