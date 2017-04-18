@@ -24,7 +24,7 @@ events.on('token.added', function (tokenModel) {
 events.on('settings.activeTimezone.edited', function (settingModel) {
     var newTimezone = settingModel.attributes.value,
         previousTimezone = settingModel._updatedAttributes.value,
-        timezoneOffsetDiff = moment.tz(newTimezone).utcOffset() - moment.tz(previousTimezone).utcOffset(),
+        timezoneOffsetDiff = moment.tz(previousTimezone).utcOffset() - moment.tz(newTimezone).utcOffset(),
         options = {context: {internal: true}};
 
     // CASE: TZ was updated, but did not change
