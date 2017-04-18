@@ -1,5 +1,5 @@
 {{#if isEditing}}
-    {{gh-cm-editor value update=(action (mut value)) focus-in=(action "selectCard")}}
+    {{gh-cm-editor value update=(action (mut value)) focus-in=(action "selectCard") autofocus=true}}
 {{else}}
-    {{{value}}}    
+    {{{value}}}
 {{/if}}

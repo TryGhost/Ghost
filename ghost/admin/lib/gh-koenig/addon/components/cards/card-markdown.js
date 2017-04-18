@@ -22,14 +22,10 @@ export default Component.extend({
     extensions: ['gif', 'jpg', 'jpeg', 'png', 'svg'],
     ajax: injectService(),
 
-    editing: observer('isEditing', function () {
-        if (!this.isEditing) {
-            this.set('preview', formatMarkdown([this.get('payload').markdown]));
-        }
-    }),
     preview: computed('value', function() {
         return formatMarkdown([this.get('payload').markdown]);
     }),
+
     save: observer('doSave', function () {
         let payload = this.get('payload');
         payload.markdown = this.$('textarea').val();
@@ -37,10 +33,18 @@ export default Component.extend({
         this.set('payload', payload);
         this.get('env').save(payload, false);
     }),
+
     init() {
         this._super(...arguments);
         this.set('value', this.get('payload').markdown);
     },
+
+    didReceiveAttrs() {
+        if (!this.get('isEditing')) {
+            this.set('preview', formatMarkdown([this.get('payload').markdown]));
+        }
+    },
+
     _uploadStarted() {
         invokeAction(this, 'uploadStarted');
     },
@@ -198,9 +202,11 @@ export default Component.extend({
             let url = this.get('url');
             invokeAction(this, 'update', url);
         },
+
         selectCard() {
             invokeAction(this, 'selectCard');
         },
+
         didDrop(event) {
             event.preventDefault();
             event.stopPropagation();
@@ -225,9 +231,11 @@ export default Component.extend({
 
             this.send('fileSelected', event.dataTransfer.files);
         },
+
         didDragOver() {
             this.$('textarea').addClass('dragOver');
         },
+
         didDragLeave() {
             this.$('textarea').removeClass('dragOver');
         }

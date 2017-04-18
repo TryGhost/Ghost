@@ -1,9 +1,9 @@
 /* global CodeMirror */
 import Component from 'ember-component';
-import run, {bind, scheduleOnce} from 'ember-runloop';
+import {bind, once, scheduleOnce} from 'ember-runloop';
 import injectService from 'ember-service/inject';
 import RSVP from 'rsvp';
-
+import {assign} from 'ember-platform';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import {InvokeActionMixin} from 'ember-invoke-action';
 
@@ -39,27 +39,52 @@ const CmEditorComponent =  Component.extend(InvokeActionMixin, {
     },
 
     _initCodeMirror() {
-        let options = this.getProperties('lineNumbers', 'indentUnit', 'mode', 'theme');
-        let editor = new CodeMirror(this.element, options);
+        let options = this.getProperties('lineNumbers', 'indentUnit', 'mode', 'theme', 'autofocus');
+        assign(options, {value: this.get('_value')});
 
-        editor.getDoc().setValue(this.get('_value'));
+        this._editor = new CodeMirror(this.element, options);
+
+        // by default CodeMirror will place the cursor at the beginning of the
+        // content, it makes more sense for the cursor to be at the end
+        if (options.autofocus) {
+            this._editor.setCursor(this._editor.lineCount(), 0);
+        }
 
         // events
-        editor.on('focus', () => {
+        this._setupCodeMirrorEventHandler('focus', this, this._focus);
+        this._setupCodeMirrorEventHandler('blur', this, this._blur);
+        this._setupCodeMirrorEventHandler('change', this, this._update);
+    },
 
-            run(this, function() {
-                this.set('isFocused', true);
-                this.invokeAction('focus-in', editor.getDoc().getValue());
-            });
-        });
-        editor.on('blur', bind(this, 'set', 'isFocused', false));
-        editor.on('change', () => {
-            run(this, function () {
-                this.invokeAction('update', editor.getDoc().getValue());
-            });
-        });
+    _setupCodeMirrorEventHandler(event, target, method) {
+        let callback = bind(target, method);
 
-        this._editor = editor;
+        this._editor.on(event, callback);
+
+        this.one('willDestroyElement', this, function () {
+            this._editor.off(event, callback);
+        });
+    },
+
+    _update(codeMirror, changeObj) {
+        once(this, this._invokeUpdateAction, codeMirror.getValue(), codeMirror, changeObj);
+    },
+
+    _invokeUpdateAction(...args) {
+        this.invokeAction('update', ...args);
+    },
+
+    _focus(codeMirror, event) {
+        this.set('isFocused', true);
+        once(this, this._invokeFocusAction, codeMirror.getValue(), codeMirror, event);
+    },
+
+    _invokeFocusAction(...args) {
+        this.invokeAction('focus-in', ...args);
+    },
+
+    _blur(/* codeMirror, event */) {
+        this.set('isFocused', false);
     },
 
     willDestroyElement() {
