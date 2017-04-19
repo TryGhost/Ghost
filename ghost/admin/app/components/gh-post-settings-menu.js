@@ -388,6 +388,12 @@ export default Component.extend(SettingsMenuMixin, {
             if (tag.get('isNew')) {
                 tag.destroyRecord();
             }
+        },
+
+        deletePost() {
+            if (this.get('deletePost')) {
+                this.get('deletePost')();
+            }
         }
     }
 });
