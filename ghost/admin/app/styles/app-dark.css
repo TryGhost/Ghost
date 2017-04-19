@@ -7,6 +7,7 @@
 /* ---------------------------------------------------------- */
 @import "patterns/global.css";
 @import "patterns/_shame.css";
+@import "patterns/icons.css";
 @import "patterns/forms.css";
 @import "patterns/buttons.css";
 @import "patterns/labels.css";

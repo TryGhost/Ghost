@@ -114,6 +114,8 @@
     width: 26px;
     height: 26px;
     fill: #fff;
+    stroke: #fff;
+    stroke-width: 2px;
 }
 
 .gh-flow-nav .active ~ li:not(divider) .step {
@@ -405,7 +407,7 @@
 }
 
 .gh-flow-invite textarea {
-    background: url(img/invite-placeholder.png) 8px 10px no-repeat;
+    background: url(img/invite-placeholder.png) 10px 8px no-repeat;
     background-size: 202px 48px;
     box-shadow: none; /* Remove some default styling for Firefox (required attribute) */
 }

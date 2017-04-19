@@ -16,6 +16,7 @@ import {
     stubFailedOAuthConnect
 } from '../helpers/oauth';
 import moment from 'moment';
+import testSelector from 'ember-test-selectors';
 
 describe('Acceptance: Setup', function () {
     let application;
@@ -497,7 +498,7 @@ describe('Acceptance: Setup', function () {
             });
 
             fillIn('input[name="blog-title"]', 'Ghostbusters');
-            click('.gh-btn-green');
+            click(testSelector('submit-button'));
 
             andThen(() => {
                 expect(

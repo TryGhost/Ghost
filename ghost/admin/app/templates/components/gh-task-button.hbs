@@ -7,7 +7,7 @@
     )}}
 {{else}}
     <span>
-    {{#if isRunning}}{{inline-svg "spinner"}}{{/if}}
+    {{#if isRunning}}{{inline-svg "spinner" class="gh-icon-spinner"}}{{/if}}
     {{if (or isIdle isRunning) buttonText}}
     {{#if isSuccess}}{{inline-svg "check-circle"}} {{successText}}{{/if}}
     {{#if isFailure}}{{inline-svg "retry"}} {{failureText}}{{/if}}

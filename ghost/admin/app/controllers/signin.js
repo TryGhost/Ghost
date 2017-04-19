@@ -1,11 +1,11 @@
 import $ from 'jquery';
 import Controller from 'ember-controller';
-import injectService from 'ember-service/inject';
-import injectController from 'ember-controller/inject';
-import {isEmberArray} from 'ember-array/utils';
-import {task} from 'ember-concurrency';
-import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
+import injectController from 'ember-controller/inject';
+import injectService from 'ember-service/inject';
+import {isEmberArray} from 'ember-array/utils';
+import {isVersionMismatchError} from 'ghost-admin/services/ajax';
+import {task} from 'ember-concurrency';
 
 export default Controller.extend(ValidationEngine, {
     submitting: false,
@@ -87,6 +87,7 @@ export default Controller.extend(ValidationEngine, {
         }
     }).drop(),
 
+    // TODO: remove duplication with controllers/setup/two
     authenticateWithGhostOrg: task(function* () {
         let authStrategy = 'authenticator:oauth2-ghost';
 
@@ -100,6 +101,7 @@ export default Controller.extend(ValidationEngine, {
 
         } catch (error) {
             this.set('flowErrors', 'Authentication with Ghost.org denied or failed');
+            throw error;
         }
     }).drop(),
 

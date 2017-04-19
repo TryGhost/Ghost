@@ -7,6 +7,7 @@ import injectController from 'ember-controller/inject';
 import {htmlSafe} from 'ember-string';
 import run from 'ember-runloop';
 import DS from 'ember-data';
+import {task, timeout} from 'ember-concurrency';
 
 const {Errors} = DS;
 
@@ -18,7 +19,6 @@ export default Controller.extend({
     hasValidated: emberA(),
     users: '',
     ownerEmail: alias('two.email'),
-    submitting: false,
 
     usersArray: computed('users', function () {
         let errors = this.get('errors');
@@ -142,87 +142,99 @@ export default Controller.extend({
         }
     },
 
+    invite: task(function* () {
+        let users = this.get('usersArray');
+
+        if (this.validate() && users.length > 0) {
+            this._hasTransitioned = false;
+
+            this.get('_slowSubmissionTimeout').perform();
+
+            let authorRole = yield this.get('authorRole');
+            let invites = yield this._saveInvites(authorRole);
+
+            this.get('_slowSubmissionTimeout').cancelAll();
+
+            this._showNotifications(invites);
+
+            run.schedule('actions', this, function () {
+                this.send('loadServerNotifications');
+                this._transitionAfterSubmission();
+            });
+
+        } else if (users.length === 0) {
+            this.get('errors').add('users', 'No users to invite');
+        }
+    }).drop(),
+
+    _slowSubmissionTimeout: task(function* () {
+        yield timeout(4000);
+        this._transitionAfterSubmission();
+    }).drop(),
+
+    _saveInvites(authorRole) {
+        let users = this.get('usersArray');
+
+        return RSVP.Promise.all(
+            users.map((user) => {
+                let invite = this.store.createRecord('invite', {
+                    email: user,
+                    role: authorRole
+                });
+
+                return invite.save().then(() => {
+                    return {
+                        email: user,
+                        success: invite.get('status') === 'sent'
+                    };
+                }).catch(() => {
+                    return {
+                        email: user,
+                        success: false
+                    };
+                });
+            })
+        );
+    },
+
+    _showNotifications(invites) {
+        let notifications = this.get('notifications');
+        let erroredEmails = [];
+        let successCount = 0;
+        let invitationsString, message;
+
+        invites.forEach((invite) => {
+            if (invite.success) {
+                successCount++;
+            } else {
+                erroredEmails.push(invite.email);
+            }
+        });
+
+        if (erroredEmails.length > 0) {
+            invitationsString = erroredEmails.length > 1 ? ' invitations: ' : ' invitation: ';
+            message = `Failed to send ${erroredEmails.length} ${invitationsString}`;
+            message += erroredEmails.join(', ');
+            message += ". Please check your email configuration, see <a href=\'http://support.ghost.org/mail\' target=\'_blank\'>http://support.ghost.org/mail</a> for instructions";
+
+            message = htmlSafe(message);
+            notifications.showAlert(message, {type: 'error', delayed: successCount > 0, key: 'signup.send-invitations.failed'});
+        }
+
+        if (successCount > 0) {
+            // pluralize
+            invitationsString = successCount > 1 ? 'invitations' : 'invitation';
+            notifications.showAlert(`${successCount} ${invitationsString} sent!`, {type: 'success', delayed: true, key: 'signup.send-invitations.success'});
+        }
+    },
+
     actions: {
         validate() {
             this.validate();
         },
 
         invite() {
-            let users = this.get('usersArray');
-            let notifications = this.get('notifications');
-            let invitationsString, submissionTimeout;
-
-            if (this.validate() && users.length > 0) {
-                this.set('submitting', true);
-                this._hasTransitioned = false;
-
-                // wait for 4 seconds, otherwise transition anyway
-                submissionTimeout = run.later(this, function () {
-                    this._transitionAfterSubmission();
-                }, 4000);
-
-                this.get('authorRole').then((authorRole) => {
-                    RSVP.Promise.all(
-                        users.map((user) => {
-                            let invite = this.store.createRecord('invite', {
-                                email: user,
-                                role: authorRole
-                            });
-
-                            return invite.save().then(() => {
-                                return {
-                                    email: user,
-                                    success: invite.get('status') === 'sent'
-                                };
-                            }).catch(() => {
-                                return {
-                                    email: user,
-                                    success: false
-                                };
-                            });
-                        })
-                    ).then((invites) => {
-                        let erroredEmails = [];
-                        let successCount = 0;
-                        let message;
-
-                        run.cancel(submissionTimeout);
-
-                        invites.forEach((invite) => {
-                            if (invite.success) {
-                                successCount++;
-                            } else {
-                                erroredEmails.push(invite.email);
-                            }
-                        });
-
-                        if (erroredEmails.length > 0) {
-                            invitationsString = erroredEmails.length > 1 ? ' invitations: ' : ' invitation: ';
-                            message = `Failed to send ${erroredEmails.length} ${invitationsString}`;
-                            message += erroredEmails.join(', ');
-                            message += ". Please check your email configuration, see <a href=\'http://support.ghost.org/mail\' target=\'_blank\'>http://support.ghost.org/mail</a> for instructions";
-
-                            message = htmlSafe(message);
-                            notifications.showAlert(message, {type: 'error', delayed: successCount > 0, key: 'signup.send-invitations.failed'});
-                        }
-
-                        if (successCount > 0) {
-                            // pluralize
-                            invitationsString = successCount > 1 ? 'invitations' : 'invitation';
-                            notifications.showAlert(`${successCount} ${invitationsString} sent!`, {type: 'success', delayed: true, key: 'signup.send-invitations.success'});
-                        }
-
-                        this.set('submitting', false);
-
-                        run.schedule('actions', this, function () {
-                            this.send('loadServerNotifications');
-                            this._transitionAfterSubmission();
-                        });
-                    });
-                });
-            } else if (users.length === 0) {
-                this.get('errors').add('users', 'No users to invite');
-            }
+            this.get('invite').perform();
         },
 
         skipInvite() {
