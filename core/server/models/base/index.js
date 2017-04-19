@@ -5,20 +5,20 @@
 // The models are internal to Ghost, only the API and some internal functions such as migration and import/export
 // accesses the models directly. All other parts of Ghost, including the blog frontend, admin UI, and apps are only
 // allowed to access data via the API.
-var _          = require('lodash'),
-    bookshelf  = require('bookshelf'),
-    moment     = require('moment'),
-    Promise    = require('bluebird'),
-    ObjectId   = require('bson-objectid'),
-    config     = require('../../config'),
-    db         = require('../../data/db'),
-    errors     = require('../../errors'),
-    filters    = require('../../filters'),
-    schema     = require('../../data/schema'),
-    utils      = require('../../utils'),
+var _ = require('lodash'),
+    bookshelf = require('bookshelf'),
+    moment = require('moment'),
+    Promise = require('bluebird'),
+    ObjectId = require('bson-objectid'),
+    config = require('../../config'),
+    db = require('../../data/db'),
+    errors = require('../../errors'),
+    filters = require('../../filters'),
+    schema = require('../../data/schema'),
+    utils = require('../../utils'),
     validation = require('../../data/validation'),
-    plugins    = require('../plugins'),
-    i18n       = require('../../i18n'),
+    plugins = require('../plugins'),
+    i18n = require('../../i18n'),
 
     ghostBookshelf,
     proto;
@@ -41,6 +41,9 @@ ghostBookshelf.plugin(plugins.includeCount);
 
 // Load the Ghost pagination plugin, which gives us the `fetchPage` method on Models
 ghostBookshelf.plugin(plugins.pagination);
+
+// Update collision plugin
+ghostBookshelf.plugin(plugins.collision);
 
 // Cache an instance of the base model prototype
 proto = ghostBookshelf.Model.prototype;
@@ -77,18 +80,35 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             this.include = _.clone(options.include);
         }
 
-        ['fetching', 'fetched', 'creating', 'created', 'updating', 'updated', 'destroying', 'destroyed', 'saved']
-            .forEach(function (eventName) {
-                var functionName = 'on' + eventName[0].toUpperCase() + eventName.slice(1);
+        [
+            'fetching',
+            'fetching:collection',
+            'fetched',
+            'creating',
+            'created',
+            'updating',
+            'updated',
+            'destroying',
+            'destroyed',
+            'saved'
+        ].forEach(function (eventName) {
+            var functionName = 'on' + eventName[0].toUpperCase() + eventName.slice(1);
 
-                if (!self[functionName]) {
-                    return;
-                }
+            if (functionName.indexOf(':') !== -1) {
+                functionName = functionName.slice(0, functionName.indexOf(':'))
+                    + functionName[functionName.indexOf(':') + 1].toUpperCase()
+                    + functionName.slice(functionName.indexOf(':') + 2);
+                functionName = functionName.replace(':', '');
+            }
 
-                self.on(eventName, function eventTriggered() {
-                    return this[functionName].apply(this, arguments);
-                });
+            if (!self[functionName]) {
+                return;
+            }
+
+            self.on(eventName, function eventTriggered() {
+                return this[functionName].apply(this, arguments);
             });
+        });
 
         this.on('saving', function onSaving() {
             var self = this,
@@ -134,8 +154,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         _.each(attrs, function each(value, key) {
             if (value !== null
-                    && schema.tables[self.tableName].hasOwnProperty(key)
-                    && schema.tables[self.tableName][key].type === 'dateTime') {
+                && schema.tables[self.tableName].hasOwnProperty(key)
+                && schema.tables[self.tableName][key].type === 'dateTime') {
                 attrs[key] = moment(value).format('YYYY-MM-DD HH:mm:ss');
             }
         });
@@ -172,7 +192,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         var self = this;
         _.each(attrs, function each(value, key) {
             if (schema.tables[self.tableName].hasOwnProperty(key)
-                    && schema.tables[self.tableName][key].type === 'bool') {
+                && schema.tables[self.tableName][key].type === 'bool') {
                 attrs[key] = value ? true : false;
             }
         });
@@ -360,7 +380,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @param {Object} options Represents options to filter in order to be passed to the Bookshelf query.
      * @param {String} methodName The name of the method to check valid options for.
      * @return {Object} The filtered results of `options`.
-    */
+     */
     filterOptions: function filterOptions(options, methodName) {
         var permittedOptions = this.permittedOptions(methodName),
             filteredOptions = _.pick(options, permittedOptions);
@@ -423,9 +443,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     findPage: function findPage(options) {
         options = options || {};
 
-        var self             = this,
-            itemCollection   = this.forge(null, {context: options.context}),
-            tableName        = _.result(this.prototype, 'tableName'),
+        var self = this,
+            itemCollection = this.forge(null, {context: options.context}),
+            tableName = _.result(this.prototype, 'tableName'),
             requestedColumns = options.columns;
 
         // Set this to true or pass ?debug=true as an API option to get output
@@ -462,7 +482,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
 
         return itemCollection.fetchPage(options).then(function formatResponse(response) {
-            var data   = {},
+            var data = {},
                 models = [];
 
             options.columns = requestedColumns;
@@ -496,6 +516,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     /**
      * ### Edit
      * Naive edit
+     *
+     * We always forward the `method` option to Bookshelf, see http://bookshelfjs.org/#Model-instance-save.
+     * Based on the `method` option Bookshelf and Ghost can determine if a query is an insert or an update.
+     *
      * @param {Object} data
      * @param {Object} options (optional)
      * @return {Promise(ghostBookshelf.Model)} Edited Model
@@ -514,7 +538,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         return model.fetch(options).then(function then(object) {
             if (object) {
-                return object.save(data, options);
+                return object.save(data, _.merge({method: 'update'}, options));
             }
         });
     },
@@ -560,13 +584,13 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     /**
-    * ### Generate Slug
+     * ### Generate Slug
      * Create a string to act as the permalink for an object.
      * @param {ghostBookshelf.Model} Model Model type to generate a slug for
      * @param {String} base The string for which to generate a slug, usually a title or name
      * @param {Object} options Options to pass to findOne
      * @return {Promise(String)} Resolves to a unique slug string
-    */
+     */
     generateSlug: function generateSlug(Model, base, options) {
         var slug,
             slugTryCount = 1,
