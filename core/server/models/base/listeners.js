@@ -43,7 +43,7 @@ events.on('user.deactivated', function (userModel) {
 events.on('settings.activeTimezone.edited', function (settingModel) {
     var newTimezone = settingModel.attributes.value,
         previousTimezone = settingModel._updatedAttributes.value,
-        timezoneOffsetDiff = moment.tz(newTimezone).utcOffset() - moment.tz(previousTimezone).utcOffset();
+        timezoneOffsetDiff = moment.tz(previousTimezone).utcOffset() - moment.tz(newTimezone).utcOffset();
 
     // CASE: TZ was updated, but did not change
     if (previousTimezone === newTimezone) {
