@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import Mixin from 'ember-metal/mixin';
 import RSVP from 'rsvp';
-import computed, {alias, mapBy} from 'ember-computed';
+import computed, {alias, mapBy, reads} from 'ember-computed';
 import injectService from 'ember-service/inject';
 import injectController from 'ember-controller/inject';
 import {htmlSafe} from 'ember-string';
@@ -49,15 +49,18 @@ export default Mixin.create({
     assetPath: ghostPaths().assetRoot,
     editor: null,
     editorMenuIsOpen: false,
+
+    shouldFocusTitle: alias('model.isNew'),
+    shouldFocusEditor: false,
+
+    navIsClosed: reads('application.autoNav'),
+
     init() {
         this._super(...arguments);
         window.onbeforeunload = () => {
             return this.get('hasDirtyAttributes') ? this.unloadDirtyMessage() : null;
         };
     },
-
-    shouldFocusTitle: alias('model.isNew'),
-    shouldFocusEditor: false,
 
     _canAutosave: computed('model.{isDraft,isNew}', function () {
         return !testing && this.get('model.isDraft') && !this.get('model.isNew');
@@ -571,9 +574,11 @@ export default Mixin.create({
         setEditor(editor) {
             this.set('editor', editor);
         },
+
         editorMenuIsOpen() {
             this.set('editorMenuIsOpen', true);
         },
+
         editorMenuIsClosed() {
             this.set('editorMenuIsOpen', false);
         }

@@ -1,6 +1,5 @@
-<section class="gh-view">
-
-    <header class="gh-editor-header">
+{{#gh-editor tagName="section" class="gh-view" navIsClosed=navIsClosed as |headerClass|}}
+    <header class="gh-editor-header {{headerClass}}">
         <div class="gh-editor-status">
             {{gh-editor-post-status
                 post=model
@@ -25,6 +24,7 @@
             </button>
         </section>
     </header>
+
     <div class="gh-editor-container needsclick">
         <div class="gh-editor-inner">
             {{gh-editor-title
@@ -54,7 +54,7 @@
             }}
         </div>
     </div>
-</section>
+{{/gh-editor}}
 
 {{#if showDeletePostModal}}
     {{gh-fullscreen-modal "delete-post"
