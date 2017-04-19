@@ -308,14 +308,51 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     /**
      * Filters potentially unsafe model attributes, so you can pass them to Bookshelf / Knex.
+     * This filter should be called before each insert/update operation.
+     *
      * @param {Object} data Has keys representing the model's attributes/fields in the database.
      * @return {Object} The filtered results of the passed in data, containing only what's allowed in the schema.
      */
     filterData: function filterData(data) {
         var permittedAttributes = this.prototype.permittedAttributes(),
-            filteredData = _.pick(data, permittedAttributes);
+            filteredData = _.pick(data, permittedAttributes),
+            sanitizedData = this.sanitizeData(filteredData);
 
-        return filteredData;
+        return sanitizedData;
+    },
+
+    /**
+     * `sanitizeData` ensures that client data is in the correct format for further operations.
+     *
+     * Dates:
+     * - client dates are sent as ISO format (moment(..).format())
+     * - server dates are in JS Date format
+     *   >> when bookshelf fetches data from the database, all dates are in JS Dates
+     *   >> see `parse`
+     * - Bookshelf updates the model with the new client data via the `set` function
+     * - Bookshelf uses a simple `isEqual` function from lodash to detect real changes
+     * - .previous(attr) and .get(attr) returns false obviously
+     * - internally we use our `hasDateChanged` if we have to compare previous/updated dates
+     * - but Bookshelf is not in our control for this case
+     *
+     * @IMPORTANT
+     * Before the new client data get's inserted again, the dates get's retransformed into
+     * proper strings, see `format`.
+     */
+    sanitizeData: function sanitizeData(data) {
+        var tableName = _.result(this.prototype, 'tableName');
+
+        _.each(data, function (value, key) {
+            if (value !== null
+                && schema.tables[tableName].hasOwnProperty(key)
+                && schema.tables[tableName][key].type === 'dateTime'
+                && typeof value === 'string'
+            ) {
+                data[key] = moment(value).toDate();
+            }
+        });
+
+        return data;
     },
 
     /**
