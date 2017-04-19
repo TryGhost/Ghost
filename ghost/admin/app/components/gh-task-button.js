@@ -18,13 +18,21 @@ import {task, timeout} from 'ember-concurrency';
  */
 const GhTaskButton = Component.extend({
     tagName: 'button',
-    classNameBindings: ['isRunning:appear-disabled', 'isSuccessClass', 'isFailureClass'],
+    classNameBindings: [
+        'isRunning:appear-disabled',
+        'isIdleClass',
+        'isRunningClass',
+        'isSuccessClass',
+        'isFailureClass'
+    ],
     attributeBindings: ['disabled', 'type', 'tabindex'],
 
     task: null,
     disabled: false,
     buttonText: 'Save',
     runningText: reads('buttonText'),
+    idleClass: '',
+    runningClass: '',
     successText: 'Saved',
     successClass: 'gh-btn-green',
     failureText: 'Retry',
@@ -34,6 +42,18 @@ const GhTaskButton = Component.extend({
     // state of the associated task
     hasRun: false,
     isRunning: reads('task.last.isRunning'),
+
+    isIdleClass: computed('isIdle', function () {
+        if (this.get('isIdle')) {
+            return this.get('idleClass');
+        }
+    }),
+
+    isRunningClass: computed('isRunning', function () {
+        if (this.get('isRunning')) {
+            return this.get('runningClass') || this.get('idleClass');
+        }
+    }),
 
     isSuccess: computed('hasRun', 'isRunning', 'task.last.value', function () {
         if (!this.get('hasRun') || this.get('isRunning')) {
