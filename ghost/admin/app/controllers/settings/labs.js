@@ -98,10 +98,12 @@ export default Controller.extend({
                     processData: false
                 });
             }).then(() => {
+                let store = this.get('store');
+
                 // Clear the store, so that all the new data gets fetched correctly.
-                this.store.unloadAll();
+                store.unloadAll();
                 // Reload currentUser and set session
-                this.set('session.user', this.store.findRecord('user', currentUserId));
+                this.set('session.user', store.findRecord('user', currentUserId));
                 // TODO: keep as notification, add link to view content
                 notifications.showNotification('Import successful.', {key: 'import.upload.success'});
             }).catch((response) => {

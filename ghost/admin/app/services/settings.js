@@ -3,6 +3,7 @@ import Service from 'ember-service';
 import injectService from 'ember-service/inject';
 import RSVP from 'rsvp';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
+import get from 'ember-metal/get';
 
 // ember-cli-shims doesn't export _ProxyMixin
 const {_ProxyMixin} = Ember;
@@ -16,6 +17,10 @@ export default Service.extend(_ProxyMixin, ValidationEngine, {
 
     validationType: 'setting',
     _loadingPromise: null,
+
+    // this is an odd case where we only want to react to changes that we get
+    // back from the API rather than local updates
+    settledIcon: '',
 
     // the settings API endpoint is a little weird as it's singular and we have
     // to pass in all types - if we ever fetch settings without all types then
@@ -44,6 +49,7 @@ export default Service.extend(_ProxyMixin, ValidationEngine, {
     reload() {
         return this._loadSettings().then((settings) => {
             this.set('content', settings);
+            this.set('settledIcon', get(settings, 'icon'));
             return this;
         });
     },
@@ -55,7 +61,10 @@ export default Service.extend(_ProxyMixin, ValidationEngine, {
             return false;
         }
 
-        return settings.save();
+        return settings.save().then((settings) => {
+            this.set('settledIcon', get(settings, 'icon'));
+            return settings;
+        });
     },
 
     rollbackAttributes() {
