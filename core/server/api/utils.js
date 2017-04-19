@@ -122,7 +122,7 @@ utils = {
                 name: {}
             },
             // these values are sanitised/validated separately
-            noValidation = ['data', 'context', 'include', 'filter'],
+            noValidation = ['data', 'context', 'include', 'filter', 'forUpdate', 'transacting'],
             errors = [];
 
         _.each(options, function (value, key) {
@@ -262,6 +262,7 @@ utils = {
                 options.columns = utils.prepareFields(options.fields);
                 delete options.fields;
             }
+
             return options;
         };
     },
