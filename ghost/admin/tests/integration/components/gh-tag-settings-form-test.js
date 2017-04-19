@@ -306,7 +306,7 @@ describe('Integration: Component: gh-tag-settings-form', function () {
         `);
 
         run(() => {
-            this.$('.tag-delete-button').click();
+            this.$('.settings-menu-delete-button').click();
         });
     });
 
