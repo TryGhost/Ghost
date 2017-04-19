@@ -1,13 +1,15 @@
 var should = require('should'),
-    testUtils = require('../../utils'),
+    sinon = require('sinon'),
     moment = require('moment'),
     Promise = require('bluebird'),
     ObjectId = require('bson-objectid'),
-    config = require(__dirname + '/../../../server/config'),
+    testUtils = require('../../utils'),
+    config = require('../../../server/config'),
     sequence = require(config.get('paths').corePath + '/server/utils/sequence'),
     errors = require(config.get('paths').corePath + '/server/errors'),
     api = require(config.get('paths').corePath + '/server/api'),
-    models = require(config.get('paths').corePath + '/server/models');
+    models = require(config.get('paths').corePath + '/server/models'),
+    sandbox = sinon.sandbox.create();
 
 describe('Schedules API', function () {
     var scope = {posts: []};
@@ -192,6 +194,10 @@ describe('Schedules API', function () {
             config.set('times:cannotScheduleAPostBeforeInMinutes', originalCannotScheduleAPostBeforeInMinutes);
         });
 
+        afterEach(function () {
+            sandbox.restore();
+        });
+
         describe('success', function () {
             beforeEach(function (done) {
                 scope.posts.push(testUtils.DataGenerator.forKnex.createPost({
@@ -200,6 +206,7 @@ describe('Schedules API', function () {
                     published_by: testUtils.users.ids.author,
                     published_at: moment().toDate(),
                     status: 'scheduled',
+                    title: 'title',
                     slug: 'first'
                 }));
 
@@ -278,6 +285,50 @@ describe('Schedules API', function () {
                         result.posts[0].id.should.eql(scope.posts[3].id);
                         result.posts[0].status.should.eql('published');
                         done();
+                    })
+                    .catch(done);
+            });
+
+            it('collision protection', function (done) {
+                var originalPostApi = api.posts.edit,
+                    postId = scope.posts[0].id, // first post is status=scheduled!
+                    requestCanComeIn = false,
+                    interval;
+
+                // this request get's blocked
+                interval = setInterval(function () {
+                    if (requestCanComeIn) {
+                        clearInterval(interval);
+
+                        // happens in a transaction, request has to wait until the scheduler api finished
+                        return models.Post.edit({title: 'Berlin'}, {id: postId, context: {internal: true}})
+                            .then(function (post) {
+                                post.id.should.eql(postId);
+                                post.get('status').should.eql('published');
+                                post.get('title').should.eql('Berlin');
+                                done();
+                            })
+                            .catch(done);
+                    }
+                }, 500);
+
+                // target post to publish was read already, simulate a client request
+                sandbox.stub(api.posts, 'edit', function () {
+                    var self = this,
+                        args = arguments;
+
+                    requestCanComeIn = true;
+                    return Promise.delay(2000)
+                        .then(function () {
+                            return originalPostApi.apply(self, args);
+                        });
+                });
+
+                api.schedules.publishPost({id: postId, context: {client: 'ghost-scheduler'}})
+                    .then(function (result) {
+                        result.posts[0].id.should.eql(postId);
+                        result.posts[0].status.should.eql('published');
+                        result.posts[0].title.should.eql('title');
                     })
                     .catch(done);
             });
