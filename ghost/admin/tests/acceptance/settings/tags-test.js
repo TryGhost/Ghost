@@ -213,7 +213,7 @@ describe('Acceptance: Settings - Tags', function () {
             });
 
             // delete tag
-            click('.tag-delete-button');
+            click('.settings-menu-delete-button');
             click('.fullscreen-modal .gh-btn-red');
 
             andThen(() => {
