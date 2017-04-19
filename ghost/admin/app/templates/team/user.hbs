@@ -235,7 +235,10 @@
                     {{/gh-form-group}}
 
                     <div class="form-group">
-                        {{gh-task-button "Change Password" class="gh-btn gh-btn-red gh-btn-icon button-change-password" task=user.saveNewPassword}}
+                        {{gh-task-button "Change Password"
+                            class="gh-btn gh-btn-icon button-change-password"
+                            idleClass="gh-btn-red"
+                            task=user.saveNewPassword}}
                     </div>
                 </fieldset>
             </form> {{! change password form }}
