@@ -35,6 +35,7 @@ export default Mixin.create({
 
     showLeaveEditorModal: false,
     showReAuthenticateModal: false,
+    showDeletePostModal: false,
 
     application: injectController(),
     notifications: injectService(),
@@ -539,8 +540,8 @@ export default Mixin.create({
         },
 
         updateTitle() {
-            let currentTitle = this.model.get('title');
-            let newTitle = this.model.get('titleScratch').trim();
+            let currentTitle = this.get('model.title');
+            let newTitle = this.get('model.titleScratch').trim();
 
             if (currentTitle === newTitle) {
                 return;
@@ -554,6 +555,12 @@ export default Mixin.create({
                     silent: true,
                     backgroundSave: true
                 });
+            }
+        },
+
+        toggleDeletePostModal() {
+            if (!this.get('model.isNew')) {
+                this.toggleProperty('showDeletePostModal');
             }
         },
 
