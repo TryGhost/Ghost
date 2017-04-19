@@ -5,13 +5,28 @@
 
 <div><img class="gh-flow-faces" src="assets/img/users.png" alt="" /></div>
 
-<form class="gh-flow-invite">
+<form class="gh-flow-invite" {{action "invite" on="submit"}}>
     {{#gh-form-group errors=errors hasValidated=hasValidated property="users"}}
         <label for="users">Enter one email address per line, we’ll handle the rest! {{inline-svg "email"}}</label>
         {{gh-textarea users name="users" required="required" focusOut=(action "validate") update=(action (mut users))}}
     {{/gh-form-group}}
 
-    {{#gh-spin-button type="submit" action="invite" classNameBindings=":gh-btn :gh-btn-default :gh-btn-lg :gh-btn-block buttonClass" submitting=submitting autoWidth="false"}}<span>{{buttonText}}</span>{{/gh-spin-button}}
+    {{#gh-task-button
+        task=invite
+        type="submit"
+        classNameBindings=":gh-btn :gh-btn-default :gh-btn-lg :gh-btn-block buttonClass"
+        successClass=""
+        failureClass=""
+        as |task|
+    }}
+        <span>
+            {{#if task.isRunning}}
+                {{inline-svg "spinner" class="no-margin"}}
+            {{else}}
+                {{buttonText}}
+            {{/if}}
+        </span>
+    {{/gh-task-button}}
 </form>
 
 <button class="gh-flow-skip" {{action "skipInvite"}}>

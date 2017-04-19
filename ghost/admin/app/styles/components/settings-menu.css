@@ -82,7 +82,7 @@
 .settings-menu-header .close svg {
     height: 12px;
     width: 12px;
-    fill: --var(darkgrey);
+    fill: var(--darkgrey);
 }
 
 .settings-menu-header.subview h4 {
