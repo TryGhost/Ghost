@@ -94,7 +94,7 @@ posts = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName, {attrs: attrs}),
+            utils.validate(docName, {attrs: attrs, opts: options.opts || []}),
             utils.handlePublicPermissions(docName, 'read'),
             utils.convertOptions(allowedIncludes),
             modelQuery
@@ -135,7 +135,7 @@ posts = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName, {opts: utils.idDefaultOptions}),
+            utils.validate(docName, {opts: utils.idDefaultOptions.concat(options.opts || [])}),
             utils.handlePermissions(docName, 'edit'),
             utils.convertOptions(allowedIncludes),
             modelQuery
