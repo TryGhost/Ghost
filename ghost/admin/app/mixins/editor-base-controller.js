@@ -75,7 +75,7 @@ export default Mixin.create({
         }
     }).restartable(),
 
-    // save every 60 seconds so we still save even if the user doesn't stop typing
+    // save at 60 seconds even if the user doesn't stop typing
     _timedSave: task(function* () {
         // eslint-disable-next-line no-constant-condition
         while (!testing && true) {
@@ -85,7 +85,7 @@ export default Mixin.create({
                 yield this.get('autosave').perform();
             }
         }
-    }).drop().on('init'),
+    }).drop(),
 
     // separate task for autosave so that it doesn't override a manual save
     autosave: task(function* () {
@@ -97,15 +97,11 @@ export default Mixin.create({
         }
     }).drop(),
 
-    // save tasks cancels autosave before running, although the _xSave tasks
-    // are the ones being cancelled that will also cancel the autosave task
+    // save tasks cancels autosave before running, although this cancels the
+    // _xSave tasks  that will also cancel the autosave task
     save: task(function* (options) {
-        try {
-            this.send('cancelAutosave');
-            return yield this._savePromise(options);
-        } finally {
-            this.send('restartAutosave');
-        }
+        this.send('cancelAutosave');
+        return yield this._savePromise(options);
     }),
 
     // TODO: convert this into a more ember-concurrency flavour
@@ -115,6 +111,10 @@ export default Mixin.create({
         let promise, status;
 
         options = options || {};
+
+        if (options.backgroundSave && !this.get('hasDirtyAttributes')) {
+            return RSVP.resolve();
+        }
 
         if (options.backgroundSave) {
             // do not allow a post's status to be set to published by a background save
@@ -465,10 +465,9 @@ export default Mixin.create({
     actions: {
         updateScratch(value) {
             this.set('model.scratch', value);
+            // save 3 seconds after last edit
             this.get('_autosave').perform();
-        },
-
-        restartAutosave() {
+            // force save at 60 seconds
             this.get('_timedSave').perform();
         },
 
