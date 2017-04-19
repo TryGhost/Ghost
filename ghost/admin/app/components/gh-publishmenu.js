@@ -92,7 +92,9 @@ export default Component.extend({
         open() {
             this._cachePublishedAtBlogTZ();
             this.get('post.errors').clear();
-            this.get('onOpen')();
+            if (this.get('onOpen')) {
+                this.get('onOpen')();
+            }
         },
 
         close(dropdown, e) {
@@ -108,7 +110,9 @@ export default Component.extend({
             post.set('statusScratch', null);
             post.validate();
 
-            this.get('onClose')();
+            if (this.get('onClose')) {
+                this.get('onClose')();
+            }
             return true;
         }
     }
