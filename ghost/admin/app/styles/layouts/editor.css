@@ -17,6 +17,7 @@
     font-weight: bold;
     font-size: 3.2rem;
     line-height: 1.3em;
+    min-height: 1.3em;
     z-index: 1;
 }
 
@@ -25,7 +26,7 @@
     content: attr(data-placeholder);
     color: color(var(--midgrey) l(+35%));
     cursor: text;
-    position: absolute;
+    position: relative;
     top: 0;
     font-size: 3.2rem;
     font-weight: bold;
