@@ -97,7 +97,7 @@ describe('Themes', function () {
             var updateTemplateData = middleware[1],
                 themeDataExpectedProps = ['posts_per_page'],
                 blogDataExpectedProps = [
-                    'url', 'title', 'description', 'logo', 'cover', 'icon', 'twitter', 'facebook', 'navigation',
+                    'url', 'title', 'description', 'logo', 'cover_image', 'icon', 'twitter', 'facebook', 'navigation',
                     'permalinks', 'timezone', 'amp'
                 ],
                 updateOptionsStub;

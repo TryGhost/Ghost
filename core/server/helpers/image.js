@@ -10,7 +10,13 @@ var proxy = require('./proxy'),
 module.exports = function image(options) {
     var absolute = options && options.hash.absolute;
 
-    if (this.image) {
-        return url.urlFor('image', {image: this.image}, absolute);
+    // tag && post
+    if (this.feature_image) {
+        return url.urlFor('image', {image: this.feature_image}, absolute);
+    }
+
+    // author
+    if (this.profile_image) {
+        return url.urlFor('image', {image: this.profile_image}, absolute);
     }
 };

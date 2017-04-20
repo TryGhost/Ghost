@@ -13,7 +13,7 @@ describe('getAuthorImage', function () {
             context: ['post'],
             post: {
                 author: {
-                    image: '/content/images/2016/01/myimage.jpg'
+                    profile_image: '/content/images/2016/01/myimage.jpg'
                 }
             }
         }, false);
@@ -26,7 +26,7 @@ describe('getAuthorImage', function () {
             context: ['post'],
             post: {
                 author: {
-                    image: '/content/images/2016/01/myimage.jpg'
+                    profile_image: '/content/images/2016/01/myimage.jpg'
                 }
             }
         }, true);
@@ -39,7 +39,7 @@ describe('getAuthorImage', function () {
             context: ['amp', 'post'],
             post: {
                 author: {
-                    image: '/content/images/2016/01/myimage.jpg'
+                    profile_image: '/content/images/2016/01/myimage.jpg'
                 }
             }
         }, false);
@@ -51,7 +51,7 @@ describe('getAuthorImage', function () {
             context: ['amp', 'post'],
             post: {
                 author: {
-                    image: '/content/images/2016/01/myimage.jpg'
+                    profile_image: '/content/images/2016/01/myimage.jpg'
                 }
             }
         }, true);

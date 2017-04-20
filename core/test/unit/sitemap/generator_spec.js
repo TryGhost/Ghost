@@ -164,7 +164,7 @@ describe('Generators', function () {
 
         it('adds an image:image element if post has a cover image', function () {
             var urlNode = generator.createUrlNodeFromDatum(_.extend(makeFakeDatum(100), {
-                image: 'post-100.jpg',
+                feature_image: 'post-100.jpg',
                 page: false
             }));
 
@@ -177,14 +177,14 @@ describe('Generators', function () {
             sandbox.stub(generator, 'getData', function () {
                 return Promise.resolve([
                     _.extend(makeFakeDatum(100), {
-                        image: 'post-100.jpg',
+                        feature_image: 'post-100.jpg',
                         page: false
                     }),
                     _.extend(makeFakeDatum(200), {
                         page: false
                     }),
                     _.extend(makeFakeDatum(300), {
-                        image: 'post-300.jpg',
+                        feature_image: 'post-300.jpg',
                         page: false
                     })
                 ]);
@@ -294,7 +294,7 @@ describe('Generators', function () {
 
         it('adds an image:image element if page has an image', function () {
             var urlNode = generator.createUrlNodeFromDatum(_.extend(makeFakeDatum(100), {
-                image: 'page-100.jpg',
+                feature_image: 'page-100.jpg',
                 page: true
             }));
 
@@ -321,7 +321,7 @@ describe('Generators', function () {
 
         it('adds an image:image element if tag has an image', function () {
             var urlNode = generator.createUrlNodeFromDatum(_.extend(makeFakeDatum(100), {
-                image: 'tag-100.jpg'
+                feature_image: 'tag-100.jpg'
             }));
 
             urlNode.should.be.a.ValidUrlNode({withImage: true});
@@ -348,7 +348,7 @@ describe('Generators', function () {
 
         it('does not create a node for a user with visibility that is not public', function () {
             var urlNode = generator.createUrlNodeFromDatum(_.extend(makeFakeDatum(100), {
-                cover: 'user-100.jpg',
+                cover_image: 'user-100.jpg',
                 status: 'active',
                 visibility: 'notpublic'
             }));
@@ -358,7 +358,7 @@ describe('Generators', function () {
 
         it('adds an image:image element if user has a cover image', function () {
             var urlNode = generator.createUrlNodeFromDatum(_.extend(makeFakeDatum(100), {
-                cover: '/content/images/2016/01/user-100.jpg',
+                cover_image: '/content/images/2016/01/user-100.jpg',
                 status: 'active'
             }));
 
