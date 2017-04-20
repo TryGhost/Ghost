@@ -192,7 +192,7 @@ textarea {
     top: 0;
     right: 0;
     bottom: 0;
-    left: -9999px;
+    display:none;
 }
 
 .for-radio .input-toggle-component,
