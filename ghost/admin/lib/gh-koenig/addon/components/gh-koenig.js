@@ -7,7 +7,7 @@ import {MOBILEDOC_VERSION} from 'mobiledoc-kit/renderers/mobiledoc';
 import createCardFactory from '../lib/card-factory';
 import defaultCommands from '../options/default-commands';
 import editorCards  from '../cards/index';
-import {getCardFromDoc, checkIfClickEventShouldCloseCard} from '../lib/utils';
+import {getCardFromDoc, checkIfClickEventShouldCloseCard, getPositionFromRange} from '../lib/utils';
 import $ from 'jquery';
 // import { VALID_MARKUP_SECTION_TAGNAMES } from 'mobiledoc-kit/models/markup-section'; //the block elements supported by mobile-doc
 
@@ -154,27 +154,19 @@ export default Component.extend({
     },
 
     // makes sure the cursor is on screen except when selection is happening in which case the browser mostly ensures it.
-    // there is an issue with keyboard selection on some browsers though so the next step will be to record mouse and touch events.
+    // there is an issue with keyboard selection on some browsers though so the next step may be to record mouse and touch events.
     cursorMoved() {
         let editor = this.get('editor');
 
         if (editor.range.isCollapsed) {
             let scrollBuffer = 33; // the extra buffer to scroll.
-            let selection = window.getSelection();
-            if (!selection.rangeCount) {
+
+            let position = getPositionFromRange(editor, $(this.get('containerSelector')));
+
+            if (!position) {
                 return;
             }
-            let range = selection.getRangeAt(0); // get the actual range within the DOM.
-            let position =  range.getBoundingClientRect();
-            if (position.left === 0 && position.top === 0) {
-                // in safari if the range is collapsed you can't get it's location.
-                // this is a bug as it's against the spec.
-                if (editor.range.section) {
-                    position = editor.range.head.section.renderNode.element.getBoundingClientRect();
-                } else {
-                    return;
-                }
-            }
+
             let windowHeight = window.innerHeight;
 
             if (position.bottom > windowHeight) {
