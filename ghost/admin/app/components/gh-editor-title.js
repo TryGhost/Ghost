@@ -52,30 +52,10 @@ export default Component.extend({
                 }
             }
             if (event.keyCode === 13) {
-                //  enter
-                // on enter we want to split the title, create a new paragraph in the mobile doc and insert it into the content.
-                let title = this.$('.gh-editor-title');
+                // enter
+                // on enter create a new paragraph at the top of the editor, this is because the first item may be a card.
                 editor.run((postEditor) => {
-                    let {anchorOffset, focusOffset} = window.getSelection();
-                    let text = title.text();
-                    let startText = ''; // the text before the split
-                    let endText = ''; // the text after the split
-                    // if the selection is not collapsed then we have to delete the text that is selected.
-                    if (anchorOffset !== focusOffset) {
-                        // if the start of the selection is after the end then reverse the selection
-                        if (anchorOffset > focusOffset) {
-                            [anchorOffset, focusOffset] = [focusOffset, anchorOffset];
-                        }
-                        startText = text.substring(0, anchorOffset);
-                        endText = text.substring(focusOffset);
-                    } else {
-                        startText = text.substring(0, anchorOffset);
-                        endText = text.substring(anchorOffset);
-                    }
-
-                    title.html(startText);
-
-                    let marker = editor.builder.createMarker(endText);
+                    let marker = editor.builder.createMarker('');
                     let newSection = editor.builder.createMarkupSection('p', [marker]);
                     postEditor.insertSectionBefore(editor.post.sections, newSection, editor.post.sections.head);
 
@@ -95,6 +75,12 @@ export default Component.extend({
                 }
                 let range = window.getSelection().getRangeAt(0); // get the actual range within the DOM.
                 let cursorPositionOnScreen = range.getBoundingClientRect();
+
+                // in safari getBoundingClientRect on a range does not work if the range is collapsed.
+                if (cursorPositionOnScreen.bottom === 0) {
+                    cursorPositionOnScreen = range.getClientRects()[0];
+                }
+
                 let offset = title.offset();
                 let bottomOfHeading =  offset.top + title.height();
                 if (cursorPositionOnScreen.bottom > bottomOfHeading - 13) {
@@ -107,12 +93,9 @@ export default Component.extend({
                             window.getSelection().removeAllRanges();
                             $(editor.post.sections.head.renderNode.element).children('div').click();
                         });
-
                         return;
                     }
-
                     let cursorPositionInEditor = editor.positionAtPoint(cursorPositionOnScreen.left, loc.top);
-
                     if (!cursorPositionInEditor || cursorPositionInEditor.isBlank) {
                         editor.element.focus();
                     } else {
@@ -163,7 +146,6 @@ export default Component.extend({
         if (this.get('editorMenuIsOpen')) {
             return;
         }
-
         let editor = this.get('editor');
         if (event.keyCode === 38) { // up arrow
             let selection = window.getSelection();
@@ -172,11 +154,19 @@ export default Component.extend({
             }
             let range = selection.getRangeAt(0); // get the actual range within the DOM.
             let cursorPositionOnScreen = range.getBoundingClientRect();
+            if (cursorPositionOnScreen.bottom === 0) {
+                cursorPositionOnScreen = range.getClientRects()[0];
+            }
             let topOfEditor = editor.element.getBoundingClientRect().top;
 
             // if the current paragraph is empty then the position is 0
-            if (cursorPositionOnScreen.top === 0) {
-                cursorPositionOnScreen = editor.activeSection.renderNode.element.getBoundingClientRect();
+            if (!cursorPositionOnScreen || cursorPositionOnScreen.top === 0) {
+                if (editor.activeSection.renderNode) {
+                    cursorPositionOnScreen = editor.activeSection.renderNode.element.getBoundingClientRect();
+                } else {
+                    this.setCursorAtOffset(0);
+                    return false;
+                }
             }
 
             if (cursorPositionOnScreen.top < topOfEditor + 33) {
@@ -197,7 +187,6 @@ export default Component.extend({
         let range = document.createRange();
 
         for (let i = len - 1; i > -1; i--) {
-            // console.log(title);
             range.setStart(title, i);
             range.setEnd(title, i + 1);
             let rect = range.getBoundingClientRect();
@@ -212,20 +201,24 @@ export default Component.extend({
 
         return len;
     },
-    setCursorAtOffset() {
+
+    // position the users cursor in the title based on the offset.
+    // unfortunately creating a range and adding it to the selection doesn't work.
+    // In Chrome it ignores the new range and places the cursor at the start of the element.
+    // in Firefox it places the cursor at the correct place but refuses to accept keyboard input.
+    setCursorAtOffset(offset) {
         let [title] = this.$('.gh-editor-title');
         title.focus();
-        // the following code sets the start point based on the offest provided.
-        // it works in isolation of ghost-admin but in ghost-admin it doesn't work in Chrome
-        // and works in Firefox, but in firefox you can no longer edit the title once this has happened.
-        // It's either an issue with ghost-admin or mobiledoc and more investigation needs to be done.
-        // Probably after the beta release though.
+        let selection = window.getSelection();
 
-        // let range = document.createRange();
-        // let selection = window.getSelection();
-        // range.setStart(title.childNodes[0], offset);
-        // range.collapse(true);
-        // selection.removeAllRanges();
-        // selection.addRange(range);
+        window.requestAnimationFrame(() => {
+            run.join(() => {
+                if (selection.modify) {
+                    for (let i = 0; i < offset; i++) {
+                        selection.modify('move', 'forward', 'character');
+                    }
+                }
+            });
+        });
     }
 });

@@ -4,6 +4,7 @@ import run from 'ember-runloop';
 import $ from 'jquery';
 import Tools from '../options/default-tools';
 import layout from '../templates/components/koenig-slash-menu';
+import {getPositionFromRange} from '../lib/utils';
 
 const ROW_LENGTH = 4;
 
@@ -104,7 +105,7 @@ export default Component.extend({
     },
     actions: {
         openMenu: function () { // eslint-disable-line
-            let $editor = $(this.get('containerSelector'));
+            let holder = $(this.get('containerSelector'));
             let editor = this.get('editor');
             let self = this;
 
@@ -198,28 +199,20 @@ export default Component.extend({
                 }
             });
 
-            let range = window.getSelection().getRangeAt(0); // get the actual range within the DOM.
-
-            let position =  range.getBoundingClientRect();
-            let edOffset = $editor.offset();
-            if (position.left === 0 && position.top === 0) {
-                // in safari if the range is collapsed you can't get it's location.
-                // this is a bug as it's against the spec.
-                position = editor.range.head.section.renderNode.element.getBoundingClientRect();
-            }
+            let position = getPositionFromRange(editor, holder);
             run.schedule('afterRender', this,
                 () => {
                     let menu = this.$('.gh-cardmenu');
-                    let top = position.top + $editor.scrollTop() - edOffset.top + 20;
-                    let left = position.left + (position.width / 2) + $editor.scrollLeft() - edOffset.left;
+                    let top = position.top + 20;
+                    let left = position.left + (position.width / 2);
                     // calculate if parts of the menu that are hidden by the overflow.
-                    let hiddenByOverflowY = ($editor.innerHeight() + $editor.scrollTop()) - (menu.height() + top);
+                    let hiddenByOverflowY = (holder.innerHeight() + holder.scrollTop()) - (menu.height() + top);
                     // if the menu is off the bottom of the screen then place it above the cursor
 
                     if (hiddenByOverflowY < 0) {
                         menu.css('margin-top', -(menu.outerHeight() + 20));
                     }
-                    let hiddenByOverflowX = ($editor.innerWidth() + $editor.scrollLeft()) - (menu.width() + left);
+                    let hiddenByOverflowX = (holder.innerWidth() + holder.scrollLeft()) - (menu.width() + left);
                     // if the menu is off the bottom of the screen then place it above the cursor
                     if (hiddenByOverflowX < 0) {
                         menu.css('margin-left', -(menu.outerWidth() + 20));

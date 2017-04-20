@@ -38,22 +38,59 @@ export function checkIfClickEventShouldCloseCard(target, cardHolder) {
 // in Chrome, Firefox, and Edge range.getBoundingClientRect() works
 // in Safari if the range is collapsed you get nothing so we expand the range by 1
 // if that doesn't work then we fallback got the paragraph.
-// export function getPositionFromRange(editor, range = window.getSelection().getRangeAt(0)) {
-//     let {top, left} = editor.element.getBoundingClientRect();
-//     let position = range.getBoundingClientRect();
+export function getPositionFromRange(editor, holder, range) {
+    if (!editor.range || !editor.range.head || !editor.range.head.section) {
+        return;
+    }
+    let position;
+    let offset = holder.offset();
+    let selection = window.getSelection();
 
-//     if (position.left === 0 && position.top === 0) {
-//         // in safari if the range is collapsed you can't get it's location.
-//         // this is a bug as it's against the spec.
-//         position = getCursorPositionSafari(range);
-//         // position = editor.range.head.section.renderNode.element.getBoundingClientRect();
-//     }
-// }
+    if (!range && selection.rangeCount) {
+        range = selection.getRangeAt(0);
+    }
 
-// function getCursorPositionSafari(range) {
-//     if(offset < container.length) {
+    if (range) {
+        if (range.getBoundingClientRect) {
+            let rect = range.getBoundingClientRect();
+            position = {left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom};
+        }
 
-//     } else {
+        // if getBoundingClientRect doesn't work then create it from the client rects
+        if ((!position || (position.left === 0 && position.top === 0)) && range.getClientRects) {
 
-//     }
-// }
+            let rects = range.getClientRects();
+
+            for (let i = 0; i < rects.length; i++) {
+                let rect = rects[i];
+                if (position.left === 0 || position.left > rect.left) {
+                    position.left = rect.left;
+                }
+                if (position.top === 0 || position.top > rect.top) {
+                    position.top = rect.top;
+                }
+                if (position.right < rect.right) {
+                    position.right = rect.right;
+                }
+                if (position.bottom < rect.bottom) {
+                    position.bototm = rect.bottom;
+                }
+            }
+        }
+    }
+
+    // if we can't get the position from either getBoundingClientRect or getClientRects then get it based on the paragraph.
+    if (!position || (position && position.left === 0 && position.top === 0)) {
+        let rect = editor.range.head.section.renderNode.element.getBoundingClientRect();
+        position = {left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom};
+    }
+
+    return {
+        left: position.left + holder.scrollLeft() - offset.left,
+        right: position.right + holder.scrollLeft() - offset.left,
+        top: position.top + holder.scrollTop() - offset.top,
+        bottom: position.bottom + holder.scrollTop() - offset.top,
+        width: position.right - position.left,
+        height: position.bottom - position.top
+    };
+}
