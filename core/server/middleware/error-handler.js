@@ -80,6 +80,7 @@ _private.prepareError = function prepareError(err, req, res, next) {
         } else {
             err = new errors.GhostError({
                 err: err,
+                message: err.message,
                 statusCode: err.statusCode
             });
         }

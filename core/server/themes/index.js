@@ -39,9 +39,12 @@ module.exports = {
                         debug('Activating theme (method A on boot)', activeThemeName);
                         self.activate(theme, checkedTheme);
                     })
-                    .catch(function () {
+                    .catch(function (err) {
                         // Active theme is not valid, we don't want to exit because the admin panel will still work
-                        logging.warn(i18n.t('errors.middleware.themehandler.invalidTheme', {theme: activeThemeName}));
+                        logging.error(new errors.InternalServerError({
+                            message: i18n.t('errors.middleware.themehandler.invalidTheme', {theme: activeThemeName}),
+                            err: err
+                        }));
                     });
             })
             .catch(function () {
