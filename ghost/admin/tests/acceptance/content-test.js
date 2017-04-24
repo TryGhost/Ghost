@@ -19,13 +19,11 @@ describe('Acceptance: Content', function() {
         destroyApp(application);
     });
 
-    it('redirects to signin when not authenticated', function () {
+    it('redirects to signin when not authenticated', async function () {
         invalidateSession(application);
-        visit('/');
+        await visit('/');
 
-        andThen(function () {
-            expect(currentURL()).to.equal('/signin');
-        });
+        expect(currentURL()).to.equal('/signin');
     });
 
     describe('as admin', function () {
@@ -47,87 +45,73 @@ describe('Acceptance: Content', function() {
             return authenticateSession(application);
         });
 
-        it('displays and filters posts', function () {
-            visit('/');
+        it('displays and filters posts', async function () {
+            await visit('/');
 
-            andThen(() => {
-                // Not checking request here as it won't be the last request made
-                // Displays all posts + pages
-                expect(find(testSelector('post-id')).length, 'all posts count').to.equal(5);
-            });
+            // Not checking request here as it won't be the last request made
+            // Displays all posts + pages
+            expect(find(testSelector('post-id')).length, 'all posts count').to.equal(5);
 
-            selectChoose(testSelector('type-select'), 'Draft posts');
+            await selectChoose(testSelector('type-select'), 'Draft posts');
 
-            andThen(() => {
-                // API request is correct
-                let [lastRequest] = server.pretender.handledRequests.slice(-1);
-                expect(lastRequest.queryParams.status, '"drafts" request status param').to.equal('draft');
-                expect(lastRequest.queryParams.staticPages, '"drafts" request staticPages param').to.equal('false');
-                // Displays draft post
-                expect(find(testSelector('post-id')).length, 'drafts count').to.equal(1);
-                expect(find(testSelector('post-id', draftPost.id)), 'draft post').to.exist;
-            });
+            // API request is correct
+            let [lastRequest] = server.pretender.handledRequests.slice(-1);
+            expect(lastRequest.queryParams.status, '"drafts" request status param').to.equal('draft');
+            expect(lastRequest.queryParams.staticPages, '"drafts" request staticPages param').to.equal('false');
+            // Displays draft post
+            expect(find(testSelector('post-id')).length, 'drafts count').to.equal(1);
+            expect(find(testSelector('post-id', draftPost.id)), 'draft post').to.exist;
 
-            selectChoose(testSelector('type-select'), 'Published posts');
+            await selectChoose(testSelector('type-select'), 'Published posts');
 
-            andThen(() => {
-                // API request is correct
-                let [lastRequest] = server.pretender.handledRequests.slice(-1);
-                expect(lastRequest.queryParams.status, '"published" request status param').to.equal('published');
-                expect(lastRequest.queryParams.staticPages, '"published" request staticPages param').to.equal('false');
-                // Displays three published posts + pages
-                expect(find(testSelector('post-id')).length, 'published count').to.equal(2);
-                expect(find(testSelector('post-id', publishedPost.id)), 'admin published post').to.exist;
-                expect(find(testSelector('post-id', authorPost.id)), 'author published post').to.exist;
-            });
+            // API request is correct
+            [lastRequest] = server.pretender.handledRequests.slice(-1);
+            expect(lastRequest.queryParams.status, '"published" request status param').to.equal('published');
+            expect(lastRequest.queryParams.staticPages, '"published" request staticPages param').to.equal('false');
+            // Displays three published posts + pages
+            expect(find(testSelector('post-id')).length, 'published count').to.equal(2);
+            expect(find(testSelector('post-id', publishedPost.id)), 'admin published post').to.exist;
+            expect(find(testSelector('post-id', authorPost.id)), 'author published post').to.exist;
 
-            selectChoose(testSelector('type-select'), 'Scheduled posts');
+            await selectChoose(testSelector('type-select'), 'Scheduled posts');
 
-            andThen(() => {
-                // API request is correct
-                let [lastRequest] = server.pretender.handledRequests.slice(-1);
-                expect(lastRequest.queryParams.status, '"scheduled" request status param').to.equal('scheduled');
-                expect(lastRequest.queryParams.staticPages, '"scheduled" request staticPages param').to.equal('false');
-                // Displays scheduled post
-                expect(find(testSelector('post-id')).length, 'scheduled count').to.equal(1);
-                expect(find(testSelector('post-id', scheduledPost.id)), 'scheduled post').to.exist;
-            });
+            // API request is correct
+            [lastRequest] = server.pretender.handledRequests.slice(-1);
+            expect(lastRequest.queryParams.status, '"scheduled" request status param').to.equal('scheduled');
+            expect(lastRequest.queryParams.staticPages, '"scheduled" request staticPages param').to.equal('false');
+            // Displays scheduled post
+            expect(find(testSelector('post-id')).length, 'scheduled count').to.equal(1);
+            expect(find(testSelector('post-id', scheduledPost.id)), 'scheduled post').to.exist;
 
-            selectChoose(testSelector('type-select'), 'Pages');
+            await selectChoose(testSelector('type-select'), 'Pages');
 
-            andThen(() => {
-                // API request is correct
-                let [lastRequest] = server.pretender.handledRequests.slice(-1);
-                expect(lastRequest.queryParams.status, '"pages" request status param').to.equal('all');
-                expect(lastRequest.queryParams.staticPages, '"pages" request staticPages param').to.equal('true');
-                // Displays page
-                expect(find(testSelector('post-id')).length, 'pages count').to.equal(1);
-                expect(find(testSelector('post-id', publishedPage.id)), 'page post').to.exist;
-            });
+            // API request is correct
+            [lastRequest] = server.pretender.handledRequests.slice(-1);
+            expect(lastRequest.queryParams.status, '"pages" request status param').to.equal('all');
+            expect(lastRequest.queryParams.staticPages, '"pages" request staticPages param').to.equal('true');
+            // Displays page
+            expect(find(testSelector('post-id')).length, 'pages count').to.equal(1);
+            expect(find(testSelector('post-id', publishedPage.id)), 'page post').to.exist;
 
-            selectChoose(testSelector('type-select'), 'All posts');
+            await selectChoose(testSelector('type-select'), 'All posts');
 
-            andThen(() => {
-                // API request is correct
-                let [lastRequest] = server.pretender.handledRequests.slice(-1);
-                expect(lastRequest.queryParams.status, '"all" request status param').to.equal('all');
-                expect(lastRequest.queryParams.staticPages, '"all" request staticPages param').to.equal('all');
-            });
+            // API request is correct
+            [lastRequest] = server.pretender.handledRequests.slice(-1);
+            expect(lastRequest.queryParams.status, '"all" request status param').to.equal('all');
+            expect(lastRequest.queryParams.staticPages, '"all" request staticPages param').to.equal('all');
 
-            selectChoose(testSelector('author-select'), editor.name);
+            await selectChoose(testSelector('author-select'), editor.name);
 
-            andThen(() => {
-                // API request is correct
-                let [lastRequest] = server.pretender.handledRequests.slice(-1);
-                expect(lastRequest.queryParams.status, '"all" request status param').to.equal('all');
-                expect(lastRequest.queryParams.staticPages, '"all" request staticPages param').to.equal('all');
-                expect(lastRequest.queryParams.filter, '"editor" request filter param')
-                    .to.equal(`author:${editor.slug}`);
-                // Displays editor post
-                // TODO: implement "filter" param support and fix mirage post->author association
-                // expect(find(testSelector('post-id')).length, 'editor post count').to.equal(1);
-                // expect(find(testSelector('post-id', authorPost.id)), 'author post').to.exist;
-            });
+            // API request is correct
+            [lastRequest] = server.pretender.handledRequests.slice(-1);
+            expect(lastRequest.queryParams.status, '"all" request status param').to.equal('all');
+            expect(lastRequest.queryParams.staticPages, '"all" request staticPages param').to.equal('all');
+            expect(lastRequest.queryParams.filter, '"editor" request filter param')
+                .to.equal(`author:${editor.slug}`);
+            // Displays editor post
+            // TODO: implement "filter" param support and fix mirage post->author association
+            // expect(find(testSelector('post-id')).length, 'editor post count').to.equal(1);
+            // expect(find(testSelector('post-id', authorPost.id)), 'author post').to.exist;
 
             // TODO: test tags dropdown
         });
@@ -149,20 +133,18 @@ describe('Acceptance: Content', function() {
             return authenticateSession(application);
         });
 
-        it('only fetches the author\'s posts', function () {
-            visit('/');
+        it('only fetches the author\'s posts', async function () {
+            await visit('/');
             // trigger a filter request so we can grab the posts API request easily
-            selectChoose(testSelector('type-select'), 'Published posts');
+            await selectChoose(testSelector('type-select'), 'Published posts');
 
-            andThen(() => {
-                // API request includes author filter
-                let [lastRequest] = server.pretender.handledRequests.slice(-1);
-                expect(lastRequest.queryParams.filter).to.equal(`author:${author.slug}`);
+            // API request includes author filter
+            let [lastRequest] = server.pretender.handledRequests.slice(-1);
+            expect(lastRequest.queryParams.filter).to.equal(`author:${author.slug}`);
 
-                // only author's post is shown
-                expect(find(testSelector('post-id')).length, 'post count').to.equal(1);
-                expect(find(testSelector('post-id', authorPost.id)), 'author post').to.exist;
-            });
+            // only author's post is shown
+            expect(find(testSelector('post-id')).length, 'post count').to.equal(1);
+            expect(find(testSelector('post-id', authorPost.id)), 'author post').to.exist;
         });
     });
 });

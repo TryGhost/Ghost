@@ -31,96 +31,82 @@ describe('Acceptance: Version Mismatch', function() {
             return authenticateSession(application);
         });
 
-        it('displays an alert and disables navigation when saving', function () {
+        it('displays an alert and disables navigation when saving', async function () {
             server.createList('post', 3);
 
             // mock the post save endpoint to return version mismatch
             server.put('/posts/:id', versionMismatchResponse);
 
-            visit('/');
-            click('.posts-list li:nth-of-type(2) a'); // select second post
-            click(testSelector('publishmenu-trigger'));
-            click(testSelector('publishmenu-save')); // "Save post"
+            await visit('/');
+            await click('.posts-list li:nth-of-type(2) a'); // select second post
+            await click(testSelector('publishmenu-trigger'));
+            await click(testSelector('publishmenu-save')); // "Save post"
 
-            andThen(() => {
-                // has the refresh to update alert
-                expect(find('.gh-alert').length).to.equal(1);
-                expect(find('.gh-alert').text()).to.match(/refresh/);
-            });
+            // has the refresh to update alert
+            expect(find('.gh-alert').length).to.equal(1);
+            expect(find('.gh-alert').text()).to.match(/refresh/);
 
             // try navigating back to the content list
-            click('.gh-nav-main-content');
+            await click('.gh-nav-main-content');
 
-            andThen(() => {
-                expect(currentPath()).to.equal('editor.edit');
-            });
+            expect(currentPath()).to.equal('editor.edit');
         });
 
-        it('displays alert and aborts the transition when navigating', function () {
-            visit('/');
+        it('displays alert and aborts the transition when navigating', async function () {
+            await visit('/');
 
-            andThen(() => {
-                // mock the tags endpoint to return version mismatch
-                server.get('/tags/', versionMismatchResponse);
-            });
+            // mock the tags endpoint to return version mismatch
+            server.get('/tags/', versionMismatchResponse);
 
-            click('.gh-nav-settings-tags');
+            await click('.gh-nav-settings-tags');
 
-            andThen(() => {
-                // navigation is blocked on loading screen
-                expect(currentPath()).to.equal('settings.tags_loading');
+            // navigation is blocked on loading screen
+            expect(currentPath()).to.equal('settings.tags_loading');
 
-                // has the refresh to update alert
-                expect(find('.gh-alert').length).to.equal(1);
-                expect(find('.gh-alert').text()).to.match(/refresh/);
-            });
+            // has the refresh to update alert
+            expect(find('.gh-alert').length).to.equal(1);
+            expect(find('.gh-alert').text()).to.match(/refresh/);
         });
 
-        it('displays alert and aborts the transition when an ember-ajax error is thrown whilst navigating', function () {
+        it('displays alert and aborts the transition when an ember-ajax error is thrown whilst navigating', async function () {
             server.get('/configuration/timezones/', versionMismatchResponse);
 
-            visit('/settings/tags');
-            click('.gh-nav-settings-general');
+            await visit('/settings/tags');
+            await click('.gh-nav-settings-general');
 
-            andThen(() => {
-                // navigation is blocked
-                expect(currentPath()).to.equal('settings.general_loading');
+            // navigation is blocked
+            expect(currentPath()).to.equal('settings.general_loading');
 
-                // has the refresh to update alert
-                expect(find('.gh-alert').length).to.equal(1);
-                expect(find('.gh-alert').text()).to.match(/refresh/);
-            });
+            // has the refresh to update alert
+            expect(find('.gh-alert').length).to.equal(1);
+            expect(find('.gh-alert').text()).to.match(/refresh/);
         });
 
-        it('can be triggered when passed in to a component', function () {
+        it('can be triggered when passed in to a component', async function () {
             server.post('/subscribers/csv/', versionMismatchResponse);
 
-            visit('/subscribers');
-            click('.gh-btn:contains("Import CSV")');
-            fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'test.csv'});
+            await visit('/subscribers');
+            await click('.gh-btn:contains("Import CSV")');
+            await fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'test.csv'});
 
-            andThen(() => {
-                // alert is shown
-                expect(find('.gh-alert').length).to.equal(1);
-                expect(find('.gh-alert').text()).to.match(/refresh/);
-            });
+            // alert is shown
+            expect(find('.gh-alert').length).to.equal(1);
+            expect(find('.gh-alert').text()).to.match(/refresh/);
         });
     });
 
     describe('logged out', function () {
-        it('displays alert', function () {
+        it('displays alert', async function () {
             server.post('/authentication/token', versionMismatchResponse);
 
-            visit('/signin');
-            fillIn('[name="identification"]', 'test@example.com');
-            fillIn('[name="password"]', 'password');
-            click('.gh-btn-blue');
+            await visit('/signin');
+            await fillIn('[name="identification"]', 'test@example.com');
+            await fillIn('[name="password"]', 'password');
+            await click('.gh-btn-blue');
 
-            andThen(() => {
-                // has the refresh to update alert
-                expect(find('.gh-alert').length).to.equal(1);
-                expect(find('.gh-alert').text()).to.match(/refresh/);
-            });
+            // has the refresh to update alert
+            expect(find('.gh-alert').length).to.equal(1);
+            expect(find('.gh-alert').text()).to.match(/refresh/);
         });
     });
 });

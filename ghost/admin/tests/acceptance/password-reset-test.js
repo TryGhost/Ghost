@@ -21,85 +21,77 @@ describe('Acceptance: Password Reset', function() {
     });
 
     describe('request reset', function () {
-        it('is successful with valid data', function () {
-            visit('/signin');
-            fillIn('input[name="identification"]', 'test@example.com');
-            click('.forgotten-link');
+        it('is successful with valid data', async function () {
+            await visit('/signin');
+            await fillIn('input[name="identification"]', 'test@example.com');
+            await click('.forgotten-link');
 
-            andThen(function () {
-                // an alert with instructions is displayed
-                expect(find('.gh-alert-blue').length, 'alert count')
-                    .to.equal(1);
-            });
+            // an alert with instructions is displayed
+            expect(find('.gh-alert-blue').length, 'alert count')
+                .to.equal(1);
         });
 
-        it('shows error messages with invalid data', function () {
-            visit('/signin');
+        it('shows error messages with invalid data', async function () {
+            await visit('/signin');
 
             // no email provided
-            click('.forgotten-link');
+            await click('.forgotten-link');
 
-            andThen(function () {
-                // email field is invalid
-                expect(
-                    find('input[name="identification"]').closest('.form-group').hasClass('error'),
-                    'email field has error class (no email)'
-                ).to.be.true;
+            // email field is invalid
+            expect(
+                find('input[name="identification"]').closest('.form-group').hasClass('error'),
+                'email field has error class (no email)'
+            ).to.be.true;
 
-                // password field is valid
-                expect(
-                    find('input[name="password"]').closest('.form-group').hasClass('error'),
-                    'password field has error class (no email)'
-                ).to.be.false;
+            // password field is valid
+            expect(
+                find('input[name="password"]').closest('.form-group').hasClass('error'),
+                'password field has error class (no email)'
+            ).to.be.false;
 
-                // error message shown
-                expect(find('p.main-error').text().trim(), 'error message')
-                    .to.equal('We need your email address to reset your password!');
-            });
+            // error message shown
+            expect(find('p.main-error').text().trim(), 'error message')
+                .to.equal('We need your email address to reset your password!');
 
             // invalid email provided
-            fillIn('input[name="identification"]', 'test');
-            click('.forgotten-link');
+            await fillIn('input[name="identification"]', 'test');
+            await click('.forgotten-link');
 
-            andThen(function () {
-                // email field is invalid
-                expect(
-                    find('input[name="identification"]').closest('.form-group').hasClass('error'),
-                    'email field has error class (invalid email)'
-                ).to.be.true;
+            // email field is invalid
+            expect(
+                find('input[name="identification"]').closest('.form-group').hasClass('error'),
+                'email field has error class (invalid email)'
+            ).to.be.true;
 
-                // password field is valid
-                expect(
-                    find('input[name="password"]').closest('.form-group').hasClass('error'),
-                    'password field has error class (invalid email)'
-                ).to.be.false;
+            // password field is valid
+            expect(
+                find('input[name="password"]').closest('.form-group').hasClass('error'),
+                'password field has error class (invalid email)'
+            ).to.be.false;
 
-                // error message
-                expect(find('p.main-error').text().trim(), 'error message')
-                    .to.equal('We need your email address to reset your password!');
-            });
+            // error message
+            expect(find('p.main-error').text().trim(), 'error message')
+                .to.equal('We need your email address to reset your password!');
 
             // unknown email provided
-            fillIn('input[name="identification"]', 'unknown@example.com');
-            click('.forgotten-link');
+            await fillIn('input[name="identification"]', 'unknown@example.com');
+            await click('.forgotten-link');
 
-            andThen(function () {
-                // email field is invalid
-                expect(
-                    find('input[name="identification"]').closest('.form-group').hasClass('error'),
-                    'email field has error class (unknown email)'
-                ).to.be.true;
+            // email field is invalid
+            expect(
+                find('input[name="identification"]').closest('.form-group').hasClass('error'),
+                'email field has error class (unknown email)'
+            ).to.be.true;
 
-                // password field is valid
-                expect(
-                    find('input[name="password"]').closest('.form-group').hasClass('error'),
-                    'password field has error class (unknown email)'
-                ).to.be.false;
+            // password field is valid
+            expect(
+                find('input[name="password"]').closest('.form-group').hasClass('error'),
+                'password field has error class (unknown email)'
+            ).to.be.false;
 
-                // error message
-                expect(find('p.main-error').text().trim(), 'error message')
-                    .to.equal('There is no user with that email address.');
-            });
+            // error message
+            expect(find('p.main-error').text().trim(), 'error message')
+                .to.equal('There is no user with that email address.');
         });
     });
 

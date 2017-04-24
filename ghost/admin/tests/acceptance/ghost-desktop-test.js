@@ -56,27 +56,23 @@ describe('Acceptance: Ghost Desktop', function() {
             restoreUserAgent();
         });
 
-        it('displays alert for broken version', function() {
+        it('displays alert for broken version', async function() {
             setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) ghost-desktop/0.4.0 Chrome/51.0.2704.84 Electron/1.2.2 Safari/537.36');
 
-            visit('/');
+            await visit('/');
 
-            andThen(function () {
-                // has an alert with matching text
-                expect(find('.gh-alert-yellow').length, 'number of warning alerts').to.equal(1);
-                expect(find('.gh-alert-yellow').text().trim(), 'alert text').to.match(/Your version of Ghost Desktop needs to be manually updated/);
-            });
+            // has an alert with matching text
+            expect(find('.gh-alert-yellow').length, 'number of warning alerts').to.equal(1);
+            expect(find('.gh-alert-yellow').text().trim(), 'alert text').to.match(/Your version of Ghost Desktop needs to be manually updated/);
         });
 
-        it('doesn\'t display alert for working version', function () {
+        it('doesn\'t display alert for working version', async function () {
             setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) ghost-desktop/0.5.1 Chrome/51.0.2704.84 Electron/1.2.2 Safari/537.36');
 
-            visit('/');
+            await visit('/');
 
-            andThen(function () {
-                // no alerts
-                expect(find('.gh-alert').length, 'number of alerts').to.equal(0);
-            });
+            // no alerts
+            expect(find('.gh-alert').length, 'number of alerts').to.equal(0);
         });
     });
 });

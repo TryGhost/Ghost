@@ -29,29 +29,23 @@ describe('Acceptance: Setup', function () {
         destroyApp(application);
     });
 
-    it('redirects if already authenticated', function () {
+    it('redirects if already authenticated', async function () {
         let role = server.create('role', {name: 'Author'});
         server.create('user', {roles: [role], slug: 'test-user'});
 
-        authenticateSession(application);
+        await authenticateSession(application);
 
-        visit('/setup/one');
-        andThen(() => {
-            expect(currentURL()).to.equal('/');
-        });
+        await visit('/setup/one');
+        expect(currentURL()).to.equal('/');
 
-        visit('/setup/two');
-        andThen(() => {
-            expect(currentURL()).to.equal('/');
-        });
+        await visit('/setup/two');
+        expect(currentURL()).to.equal('/');
 
-        visit('/setup/three');
-        andThen(() => {
-            expect(currentURL()).to.equal('/');
-        });
+        await visit('/setup/three');
+        expect(currentURL()).to.equal('/');
     });
 
-    it('redirects to signin if already set up', function () {
+    it('redirects to signin if already set up', async function () {
         // mimick an already setup blog
         server.get('/authentication/setup/', function () {
             return {
@@ -61,12 +55,10 @@ describe('Acceptance: Setup', function () {
             };
         });
 
-        invalidateSession(application);
+        await invalidateSession(application);
 
-        visit('/setup');
-        andThen(() => {
-            expect(currentURL()).to.equal('/signin');
-        });
+        await visit('/setup');
+        expect(currentURL()).to.equal('/signin');
     });
 
     describe('with a new blog', function () {
@@ -81,101 +73,89 @@ describe('Acceptance: Setup', function () {
             });
         });
 
-        it('has a successful happy path', function () {
+        it('has a successful happy path', async function () {
             invalidateSession(application);
             server.loadFixtures('roles');
 
-            visit('/setup');
+            await visit('/setup');
 
-            andThen(() => {
-                // it redirects to step one
-                expect(currentURL(), 'url after accessing /setup')
-                    .to.equal('/setup/one');
+            // it redirects to step one
+            expect(currentURL(), 'url after accessing /setup')
+                .to.equal('/setup/one');
 
-                // it highlights first step
-                expect(find('.gh-flow-nav .step:first-of-type').hasClass('active'))
-                    .to.be.true;
-                expect(find('.gh-flow-nav .step:nth-of-type(2)').hasClass('active'))
-                    .to.be.false;
-                expect(find('.gh-flow-nav .step:nth-of-type(3)').hasClass('active'))
-                    .to.be.false;
+            // it highlights first step
+            expect(find('.gh-flow-nav .step:first-of-type').hasClass('active'))
+                .to.be.true;
+            expect(find('.gh-flow-nav .step:nth-of-type(2)').hasClass('active'))
+                .to.be.false;
+            expect(find('.gh-flow-nav .step:nth-of-type(3)').hasClass('active'))
+                .to.be.false;
 
-                // it displays download count (count increments for each ajax call
-                // and polling is disabled in testing so our count should be "1"
-                expect(find('.gh-flow-content em').text().trim()).to.equal('1');
-            });
+            // it displays download count (count increments for each ajax call
+            // and polling is disabled in testing so our count should be "1"
+            expect(find('.gh-flow-content em').text().trim()).to.equal('1');
 
-            click('.gh-btn-green');
+            await click('.gh-btn-green');
 
-            andThen(() => {
-                // it transitions to step two
-                expect(currentURL(), 'url after clicking "Create your account"')
-                    .to.equal('/setup/two');
+            // it transitions to step two
+            expect(currentURL(), 'url after clicking "Create your account"')
+                .to.equal('/setup/two');
 
-                // email field is focused by default
-                // NOTE: $('x').is(':focus') doesn't work in phantomjs CLI runner
-                // https://github.com/ariya/phantomjs/issues/10427
-                expect(find('[name="email"]').get(0) === document.activeElement, 'email field has focus')
-                    .to.be.true;
-            });
+            // email field is focused by default
+            // NOTE: $('x').is(':focus') doesn't work in phantomjs CLI runner
+            // https://github.com/ariya/phantomjs/issues/10427
+            expect(find('[name="email"]').get(0) === document.activeElement, 'email field has focus')
+                .to.be.true;
 
-            click('.gh-btn-green');
+            await click('.gh-btn-green');
 
-            andThen(() => {
-                // it marks fields as invalid
-                expect(find('.form-group.error').length, 'number of invalid fields')
-                    .to.equal(4);
+            // it marks fields as invalid
+            expect(find('.form-group.error').length, 'number of invalid fields')
+                .to.equal(4);
 
-                // it displays error messages
-                expect(find('.error .response').length, 'number of in-line validation messages')
-                    .to.equal(4);
+            // it displays error messages
+            expect(find('.error .response').length, 'number of in-line validation messages')
+                .to.equal(4);
 
-                // it displays main error
-                expect(find('.main-error').length, 'main error is displayed')
-                    .to.equal(1);
-            });
+            // it displays main error
+            expect(find('.main-error').length, 'main error is displayed')
+                .to.equal(1);
 
             // enter valid details and submit
-            fillIn('[name="email"]', 'test@example.com');
-            fillIn('[name="name"]', 'Test User');
-            fillIn('[name="password"]', 'password');
-            fillIn('[name="blog-title"]', 'Blog Title');
-            click('.gh-btn-green');
+            await fillIn('[name="email"]', 'test@example.com');
+            await fillIn('[name="name"]', 'Test User');
+            await fillIn('[name="password"]', 'password');
+            await fillIn('[name="blog-title"]', 'Blog Title');
+            await click('.gh-btn-green');
 
-            andThen(() => {
-                // it transitions to step 3
-                expect(currentURL(), 'url after submitting step two')
-                    .to.equal('/setup/three');
+            // it transitions to step 3
+            expect(currentURL(), 'url after submitting step two')
+                .to.equal('/setup/three');
 
-                // submit button is "disabled"
-                expect(find('button[type="submit"]').hasClass('gh-btn-green'), 'invite button with no emails is white')
-                    .to.be.false;
-            });
+            // submit button is "disabled"
+            expect(find('button[type="submit"]').hasClass('gh-btn-green'), 'invite button with no emails is white')
+                .to.be.false;
 
             // fill in a valid email
-            fillIn('[name="users"]', 'new-user@example.com');
+            await fillIn('[name="users"]', 'new-user@example.com');
 
-            andThen(() => {
-                // submit button is "enabled"
-                expect(find('button[type="submit"]').hasClass('gh-btn-green'), 'invite button is green with valid email address')
-                    .to.be.true;
-            });
+            // submit button is "enabled"
+            expect(find('button[type="submit"]').hasClass('gh-btn-green'), 'invite button is green with valid email address')
+                .to.be.true;
 
             // submit the invite form
-            click('button[type="submit"]');
+            await click('button[type="submit"]');
 
-            andThen(() => {
-                // it redirects to the home / "content" screen
-                expect(currentURL(), 'url after submitting invites')
-                    .to.equal('/');
+            // it redirects to the home / "content" screen
+            expect(currentURL(), 'url after submitting invites')
+                .to.equal('/');
 
-                // it displays success alert
-                expect(find('.gh-alert-green').length, 'number of success alerts')
-                    .to.equal(1);
-            });
+            // it displays success alert
+            expect(find('.gh-alert-green').length, 'number of success alerts')
+                .to.equal(1);
         });
 
-        it('handles validation errors in step 2', function () {
+        it('handles validation errors in step 2', async function () {
             let postCount = 0;
 
             invalidateSession(application);
@@ -202,41 +182,35 @@ describe('Acceptance: Setup', function () {
                 }
             });
 
-            visit('/setup/two');
-            click('.gh-btn-green');
+            await visit('/setup/two');
+            await click('.gh-btn-green');
 
-            andThen(() => {
-                // non-server validation
-                expect(find('.main-error').text().trim(), 'error text')
-                    .to.not.be.blank;
-            });
+            // non-server validation
+            expect(find('.main-error').text().trim(), 'error text')
+                .to.not.be.blank;
 
-            fillIn('[name="email"]', 'test@example.com');
-            fillIn('[name="name"]', 'Test User');
-            fillIn('[name="password"]', 'password');
-            fillIn('[name="blog-title"]', 'Blog Title');
+            await fillIn('[name="email"]', 'test@example.com');
+            await fillIn('[name="name"]', 'Test User');
+            await fillIn('[name="password"]', 'password');
+            await fillIn('[name="blog-title"]', 'Blog Title');
 
             // first post - simulated validation error
-            click('.gh-btn-green');
+            await click('.gh-btn-green');
 
-            andThen(() => {
-                expect(find('.main-error').text().trim(), 'error text')
-                    .to.equal('Server response message');
-            });
+            expect(find('.main-error').text().trim(), 'error text')
+                .to.equal('Server response message');
 
             // second post - simulated server error
-            click('.gh-btn-green');
+            await click('.gh-btn-green');
 
-            andThen(() => {
-                expect(find('.main-error').text().trim(), 'error text')
-                    .to.be.blank;
+            expect(find('.main-error').text().trim(), 'error text')
+                .to.be.blank;
 
-                expect(find('.gh-alert-red').length, 'number of alerts')
-                    .to.equal(1);
-            });
+            expect(find('.gh-alert-red').length, 'number of alerts')
+                .to.equal(1);
         });
 
-        it('handles invalid origin error on step 2', function () {
+        it('handles invalid origin error on step 2', async function () {
             // mimick the API response for an invalid origin
             server.post('/authentication/token', function () {
                 return new Response(401, {}, {
@@ -252,24 +226,22 @@ describe('Acceptance: Setup', function () {
             invalidateSession(application);
             server.loadFixtures('roles');
 
-            visit('/setup/two');
-            fillIn('[name="email"]', 'test@example.com');
-            fillIn('[name="name"]', 'Test User');
-            fillIn('[name="password"]', 'password');
-            fillIn('[name="blog-title"]', 'Blog Title');
-            click('.gh-btn-green');
+            await visit('/setup/two');
+            await fillIn('[name="email"]', 'test@example.com');
+            await fillIn('[name="name"]', 'Test User');
+            await fillIn('[name="password"]', 'password');
+            await fillIn('[name="blog-title"]', 'Blog Title');
+            await click('.gh-btn-green');
 
-            andThen(() => {
-                // button should not be spinning
-                expect(find('.gh-btn-green .spinner').length, 'button has spinner')
-                    .to.equal(0);
-                // we should show an error message
-                expect(find('.main-error').text(), 'error text')
-                    .to.equal('Access Denied from url: unknown.com. Please use the url configured in config.js.');
-            });
+            // button should not be spinning
+            expect(find('.gh-btn-green .spinner').length, 'button has spinner')
+                .to.equal(0);
+            // we should show an error message
+            expect(find('.main-error').text(), 'error text')
+                .to.equal('Access Denied from url: unknown.com. Please use the url configured in config.js.');
         });
 
-        it('handles validation errors in step 3', function () {
+        it('handles validation errors in step 3', async function () {
             let input = '[name="users"]';
             let postCount = 0;
             let button, formGroup;
@@ -309,106 +281,92 @@ describe('Acceptance: Setup', function () {
             });
 
             // complete step 2 so we can access step 3
-            visit('/setup/two');
-            fillIn('[name="email"]', 'test@example.com');
-            fillIn('[name="name"]', 'Test User');
-            fillIn('[name="password"]', 'password');
-            fillIn('[name="blog-title"]', 'Blog Title');
-            click('.gh-btn-green');
+            await visit('/setup/two');
+            await fillIn('[name="email"]', 'test@example.com');
+            await fillIn('[name="name"]', 'Test User');
+            await fillIn('[name="password"]', 'password');
+            await fillIn('[name="blog-title"]', 'Blog Title');
+            await click('.gh-btn-green');
 
             // default field/button state
-            andThen(() => {
-                formGroup = find('.gh-flow-invite .form-group');
-                button = find('.gh-flow-invite button[type="submit"]');
+            formGroup = find('.gh-flow-invite .form-group');
+            button = find('.gh-flow-invite button[type="submit"]');
 
-                expect(formGroup.hasClass('error'), 'default field has error class')
-                    .to.be.false;
+            expect(formGroup.hasClass('error'), 'default field has error class')
+                .to.be.false;
 
-                expect(button.text().trim(), 'default button text')
-                    .to.equal('Invite some users');
+            expect(button.text().trim(), 'default button text')
+                .to.equal('Invite some users');
 
-                expect(button.hasClass('gh-btn-minor'), 'default button is disabled')
-                    .to.be.true;
-            });
+            expect(button.hasClass('gh-btn-minor'), 'default button is disabled')
+                .to.be.true;
 
             // no users submitted state
-            click('.gh-flow-invite button[type="submit"]');
+            await click('.gh-flow-invite button[type="submit"]');
 
-            andThen(() => {
-                expect(formGroup.hasClass('error'), 'no users submitted field has error class')
-                    .to.be.true;
+            expect(formGroup.hasClass('error'), 'no users submitted field has error class')
+                .to.be.true;
 
-                expect(button.text().trim(), 'no users submitted button text')
-                    .to.equal('No users to invite');
+            expect(button.text().trim(), 'no users submitted button text')
+                .to.equal('No users to invite');
 
-                expect(button.hasClass('gh-btn-minor'), 'no users submitted button is disabled')
-                    .to.be.true;
-            });
+            expect(button.hasClass('gh-btn-minor'), 'no users submitted button is disabled')
+                .to.be.true;
 
             // single invalid email
-            fillIn(input, 'invalid email');
-            triggerEvent(input, 'blur');
+            await fillIn(input, 'invalid email');
+            await triggerEvent(input, 'blur');
 
-            andThen(() => {
-                expect(formGroup.hasClass('error'), 'invalid field has error class')
-                    .to.be.true;
+            expect(formGroup.hasClass('error'), 'invalid field has error class')
+                .to.be.true;
 
-                expect(button.text().trim(), 'single invalid button text')
-                    .to.equal('1 invalid email address');
+            expect(button.text().trim(), 'single invalid button text')
+                .to.equal('1 invalid email address');
 
-                expect(button.hasClass('gh-btn-minor'), 'invalid email button is disabled')
-                    .to.be.true;
-            });
+            expect(button.hasClass('gh-btn-minor'), 'invalid email button is disabled')
+                .to.be.true;
 
             // multiple invalid emails
-            fillIn(input, 'invalid email\nanother invalid address');
-            triggerEvent(input, 'blur');
+            await fillIn(input, 'invalid email\nanother invalid address');
+            await triggerEvent(input, 'blur');
 
-            andThen(() => {
-                expect(button.text().trim(), 'multiple invalid button text')
-                    .to.equal('2 invalid email addresses');
-            });
+            expect(button.text().trim(), 'multiple invalid button text')
+                .to.equal('2 invalid email addresses');
 
             // single valid email
-            fillIn(input, 'invited@example.com');
-            triggerEvent(input, 'blur');
+            await fillIn(input, 'invited@example.com');
+            await triggerEvent(input, 'blur');
 
-            andThen(() => {
-                expect(formGroup.hasClass('error'), 'valid field has error class')
-                    .to.be.false;
+            expect(formGroup.hasClass('error'), 'valid field has error class')
+                .to.be.false;
 
-                expect(button.text().trim(), 'single valid button text')
-                    .to.equal('Invite 1 user');
+            expect(button.text().trim(), 'single valid button text')
+                .to.equal('Invite 1 user');
 
-                expect(button.hasClass('gh-btn-green'), 'valid email button is enabled')
-                    .to.be.true;
-            });
+            expect(button.hasClass('gh-btn-green'), 'valid email button is enabled')
+                .to.be.true;
 
             // multiple valid emails
-            fillIn(input, 'invited1@example.com\ninvited2@example.com');
-            triggerEvent(input, 'blur');
+            await fillIn(input, 'invited1@example.com\ninvited2@example.com');
+            await triggerEvent(input, 'blur');
 
-            andThen(() => {
-                expect(button.text().trim(), 'multiple valid button text')
-                    .to.equal('Invite 2 users');
-            });
+            expect(button.text().trim(), 'multiple valid button text')
+                .to.equal('Invite 2 users');
 
             // submit invitations with simulated failure on 1 invite
-            click('.gh-btn-green');
+            await click('.gh-btn-green');
 
-            andThen(() => {
-                // it redirects to the home / "content" screen
-                expect(currentURL(), 'url after submitting invites')
-                    .to.equal('/');
+            // it redirects to the home / "content" screen
+            expect(currentURL(), 'url after submitting invites')
+                .to.equal('/');
 
-                // it displays success alert
-                expect(find('.gh-alert-green').length, 'number of success alerts')
-                    .to.equal(1);
+            // it displays success alert
+            expect(find('.gh-alert-green').length, 'number of success alerts')
+                .to.equal(1);
 
-                // it displays failure alert
-                expect(find('.gh-alert-red').length, 'number of failure alerts')
-                    .to.equal(1);
-            });
+            // it displays failure alert
+            expect(find('.gh-alert-red').length, 'number of failure alerts')
+                .to.equal(1);
         });
     });
 
@@ -429,97 +387,85 @@ describe('Acceptance: Setup', function () {
             server.loadFixtures('roles');
         });
 
-        it('displays the connect form and validates', function () {
+        it('displays the connect form and validates', async function () {
             invalidateSession(application);
 
-            visit('/setup');
+            await visit('/setup');
 
-            andThen(() => {
-                // it redirects to step one
-                expect(
-                    currentURL(),
-                    'url after accessing /setup'
-                ).to.equal('/setup/one');
-            });
+            // it redirects to step one
+            expect(
+                currentURL(),
+                'url after accessing /setup'
+            ).to.equal('/setup/one');
 
-            click('.gh-btn-green');
+            await click('.gh-btn-green');
 
-            andThen(() => {
-                expect(
-                    find('button.login').text().trim(),
-                    'login button text'
-                ).to.equal('Sign in with Ghost');
-            });
+            expect(
+                find('button.login').text().trim(),
+                'login button text'
+            ).to.equal('Sign in with Ghost');
 
-            click('.gh-btn-green');
+            await click('.gh-btn-green');
 
-            andThen(() => {
-                let sessionFG = find('button.login').closest('.form-group');
-                let titleFG = find('input[name="blog-title"]').closest('.form-group');
+            let sessionFG = find('button.login').closest('.form-group');
+            let titleFG = find('input[name="blog-title"]').closest('.form-group');
 
-                // session is validated
-                expect(
-                    sessionFG.hasClass('error'),
-                    'session form group has error class'
-                ).to.be.true;
+            // session is validated
+            expect(
+                sessionFG.hasClass('error'),
+                'session form group has error class'
+            ).to.be.true;
 
-                expect(
-                    sessionFG.find('.response').text().trim(),
-                    'session validation text'
-                ).to.match(/Please connect a Ghost\.org account/i);
+            expect(
+                sessionFG.find('.response').text().trim(),
+                'session validation text'
+            ).to.match(/Please connect a Ghost\.org account/i);
 
-                // blog title is validated
-                expect(
-                    titleFG.hasClass('error'),
-                    'title form group has error class'
-                ).to.be.true;
+            // blog title is validated
+            expect(
+                titleFG.hasClass('error'),
+                'title form group has error class'
+            ).to.be.true;
 
-                expect(
-                    titleFG.find('.response').text().trim(),
-                    'title validation text'
-                ).to.match(/please enter a blog title/i);
-            });
+            expect(
+                titleFG.find('.response').text().trim(),
+                'title validation text'
+            ).to.match(/please enter a blog title/i);
 
             // TODO: test that connecting clears session validation error
             // TODO: test that typing in blog title clears validation error
         });
 
-        it('can connect and setup successfully', function () {
+        it('can connect and setup successfully', async function () {
             stubSuccessfulOAuthConnect(application);
 
-            visit('/setup/two');
-            click('button.login');
+            await visit('/setup/two');
+            await click('button.login');
 
-            andThen(() => {
-                expect(
-                    find('button.login').text().trim(),
-                    'login button text when connected'
-                ).to.equal('Connected: oauthtest@example.com');
-            });
+            expect(
+                find('button.login').text().trim(),
+                'login button text when connected'
+            ).to.equal('Connected: oauthtest@example.com');
 
-            fillIn('input[name="blog-title"]', 'Ghostbusters');
-            click(testSelector('submit-button'));
+            await fillIn('input[name="blog-title"]', 'Ghostbusters');
+            await click(testSelector('submit-button'));
 
-            andThen(() => {
-                expect(
-                    currentURL(),
-                    'url after submitting'
-                ).to.equal('/setup/three');
-            });
+            expect(
+                currentURL(),
+                'url after submitting'
+            ).to.equal('/setup/three');
         });
 
-        it('handles failed connect', function () {
+        it('handles failed connect', async function () {
             stubFailedOAuthConnect(application);
 
-            visit('/setup/two');
-            click('button.login');
+            await visit('/setup/two');
+            await click('button.login');
 
-            andThen(() => {
-                expect(
-                    find('.main-error').text().trim(),
-                    'error text after failed oauth connect'
-                ).to.match(/authentication with ghost\.org denied or failed/i);
-            });
+            expect(
+                find('.main-error').text().trim(),
+                'error text after failed oauth connect'
+            ).to.match(/authentication with ghost\.org denied or failed/i);
         });
     });
 });

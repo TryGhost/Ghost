@@ -25,7 +25,7 @@ describe('Acceptance: Signup', function() {
         destroyApp(application);
     });
 
-    it('can signup successfully', function() {
+    it('can signup successfully', async function() {
         server.get('/authentication/invitation', function () {
             return {
                 invitation: [{valid: true}]
@@ -52,91 +52,79 @@ describe('Acceptance: Signup', function() {
 
         // token details:
         // "1470346017929|kevin+test2@ghost.org|2cDnQc3g7fQTj9nNK4iGPSGfvomkLdXf68FuWgS66Ug="
-        visit('/signup/MTQ3MDM0NjAxNzkyOXxrZXZpbit0ZXN0MkBnaG9zdC5vcmd8MmNEblFjM2c3ZlFUajluTks0aUdQU0dmdm9ta0xkWGY2OEZ1V2dTNjZVZz0');
+        await visit('/signup/MTQ3MDM0NjAxNzkyOXxrZXZpbit0ZXN0MkBnaG9zdC5vcmd8MmNEblFjM2c3ZlFUajluTks0aUdQU0dmdm9ta0xkWGY2OEZ1V2dTNjZVZz0');
 
-        andThen(function () {
-            expect(currentPath()).to.equal('signup');
+        expect(currentPath()).to.equal('signup');
 
-            // email address should be pre-filled and disabled
-            expect(
-                find('input[name="email"]').val(),
-                'email field value'
-            ).to.equal('kevin+test2@ghost.org');
+        // email address should be pre-filled and disabled
+        expect(
+            find('input[name="email"]').val(),
+            'email field value'
+        ).to.equal('kevin+test2@ghost.org');
 
-            expect(
-                find('input[name="email"]').is(':disabled'),
-                'email field is disabled'
-            ).to.be.true;
-        });
+        expect(
+            find('input[name="email"]').is(':disabled'),
+            'email field is disabled'
+        ).to.be.true;
 
         // focus out in Name field triggers inline error
-        triggerEvent('input[name="name"]', 'blur');
+        await triggerEvent('input[name="name"]', 'blur');
 
-        andThen(function () {
-            expect(
-                find('input[name="name"]').closest('.form-group').hasClass('error'),
-                'name field group has error class when empty'
-            ).to.be.true;
+        expect(
+            find('input[name="name"]').closest('.form-group').hasClass('error'),
+            'name field group has error class when empty'
+        ).to.be.true;
 
-            expect(
-                find('input[name="name"]').closest('.form-group').find('.response').text().trim(),
-                'name inline-error text'
-            ).to.match(/Please enter a name/);
-        });
+        expect(
+            find('input[name="name"]').closest('.form-group').find('.response').text().trim(),
+            'name inline-error text'
+        ).to.match(/Please enter a name/);
 
         // entering text in Name field clears error
-        fillIn('input[name="name"]', 'Test User');
-        triggerEvent('input[name="name"]', 'blur');
+        await fillIn('input[name="name"]', 'Test User');
+        await triggerEvent('input[name="name"]', 'blur');
 
-        andThen(function () {
-            expect(
-                find('input[name="name"]').closest('.form-group').hasClass('error'),
-                'name field loses error class after text input'
-            ).to.be.false;
+        expect(
+            find('input[name="name"]').closest('.form-group').hasClass('error'),
+            'name field loses error class after text input'
+        ).to.be.false;
 
-            expect(
-                find('input[name="name"]').closest('.form-group').find('.response').text().trim(),
-                'name field error is removed after text input'
-            ).to.equal('');
-        });
+        expect(
+            find('input[name="name"]').closest('.form-group').find('.response').text().trim(),
+            'name field error is removed after text input'
+        ).to.equal('');
 
         // focus out in Name field triggers inline error
-        triggerEvent('input[name="password"]', 'blur');
+        await triggerEvent('input[name="password"]', 'blur');
 
-        andThen(function () {
-            expect(
-                find('input[name="password"]').closest('.form-group').hasClass('error'),
-                'password field group has error class when empty'
-            ).to.be.true;
+        expect(
+            find('input[name="password"]').closest('.form-group').hasClass('error'),
+            'password field group has error class when empty'
+        ).to.be.true;
 
-            expect(
-                find('input[name="password"]').closest('.form-group').find('.response').text().trim(),
-                'password field error text'
-            ).to.match(/must be at least 8 characters/);
-        });
+        expect(
+            find('input[name="password"]').closest('.form-group').find('.response').text().trim(),
+            'password field error text'
+        ).to.match(/must be at least 8 characters/);
 
         // entering valid text in Password field clears error
-        fillIn('input[name="password"]', 'ValidPassword');
-        triggerEvent('input[name="password"]', 'blur');
+        await fillIn('input[name="password"]', 'ValidPassword');
+        await triggerEvent('input[name="password"]', 'blur');
 
-        andThen(function () {
-            expect(
-                find('input[name="password"]').closest('.form-group').hasClass('error'),
-                'password field loses error class after text input'
-            ).to.be.false;
+        expect(
+            find('input[name="password"]').closest('.form-group').hasClass('error'),
+            'password field loses error class after text input'
+        ).to.be.false;
 
-            expect(
-                find('input[name="password"]').closest('.form-group').find('.response').text().trim(),
-                'password field error is removed after text input'
-            ).to.equal('');
-        });
+        expect(
+            find('input[name="password"]').closest('.form-group').find('.response').text().trim(),
+            'password field error is removed after text input'
+        ).to.equal('');
 
         // submitting sends correct details and redirects to content screen
-        click('.gh-btn-green');
+        await click('.gh-btn-green');
 
-        andThen(function () {
-            expect(currentPath()).to.equal('posts.index');
-        });
+        expect(currentPath()).to.equal('posts.index');
     });
 
     it('redirects if already logged in');
@@ -157,46 +145,40 @@ describe('Acceptance: Signup', function() {
             });
         });
 
-        it('can sign up sucessfully', function () {
+        it('can sign up sucessfully', async function () {
             stubSuccessfulOAuthConnect(application);
 
             // token details:
             // "1470346017929|kevin+test2@ghost.org|2cDnQc3g7fQTj9nNK4iGPSGfvomkLdXf68FuWgS66Ug="
-            visit('/signup/MTQ3MDM0NjAxNzkyOXxrZXZpbit0ZXN0MkBnaG9zdC5vcmd8MmNEblFjM2c3ZlFUajluTks0aUdQU0dmdm9ta0xkWGY2OEZ1V2dTNjZVZz0');
+            await visit('/signup/MTQ3MDM0NjAxNzkyOXxrZXZpbit0ZXN0MkBnaG9zdC5vcmd8MmNEblFjM2c3ZlFUajluTks0aUdQU0dmdm9ta0xkWGY2OEZ1V2dTNjZVZz0');
 
-            andThen(() => {
-                expect(currentPath()).to.equal('signup');
+            expect(currentPath()).to.equal('signup');
 
-                expect(
-                    find('.gh-flow-content header p').text().trim(),
-                    'form header text'
-                ).to.equal('Accept your invite from Test Invite Creator');
-            });
+            expect(
+                find('.gh-flow-content header p').text().trim(),
+                'form header text'
+            ).to.equal('Accept your invite from Test Invite Creator');
 
-            click('button.login');
+            await click('button.login');
 
-            andThen(() => {
-                expect(currentPath()).to.equal('posts.index');
-            });
+            expect(currentPath()).to.equal('posts.index');
         });
 
-        it('handles failed connect', function () {
+        it('handles failed connect', async function () {
             stubFailedOAuthConnect(application);
 
             // token details:
             // "1470346017929|kevin+test2@ghost.org|2cDnQc3g7fQTj9nNK4iGPSGfvomkLdXf68FuWgS66Ug="
-            visit('/signup/MTQ3MDM0NjAxNzkyOXxrZXZpbit0ZXN0MkBnaG9zdC5vcmd8MmNEblFjM2c3ZlFUajluTks0aUdQU0dmdm9ta0xkWGY2OEZ1V2dTNjZVZz0');
+            await visit('/signup/MTQ3MDM0NjAxNzkyOXxrZXZpbit0ZXN0MkBnaG9zdC5vcmd8MmNEblFjM2c3ZlFUajluTks0aUdQU0dmdm9ta0xkWGY2OEZ1V2dTNjZVZz0');
 
-            click('button.login');
+            await click('button.login');
 
-            andThen(() => {
-                expect(currentPath()).to.equal('signup');
+            expect(currentPath()).to.equal('signup');
 
-                expect(
-                    find('.main-error').text().trim(),
-                    'flow error text'
-                ).to.match(/authentication with ghost\.org denied or failed/i);
-            });
+            expect(
+                find('.main-error').text().trim(),
+                'flow error text'
+            ).to.match(/authentication with ghost\.org denied or failed/i);
         });
     });
 });
