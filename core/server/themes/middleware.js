@@ -18,7 +18,7 @@ themeMiddleware.ensureActiveTheme = function ensureActiveTheme(req, res, next) {
         return next(new errors.InternalServerError({
             // We use the settingsCache here, because the setting will be set,
             // even if the theme itself is not usable because it is invalid or missing.
-            message: i18n.t('errors.middleware.themehandler.missingTheme', {theme: settingsCache.get('activeTheme')})
+            message: i18n.t('errors.middleware.themehandler.missingTheme', {theme: settingsCache.get('active_theme')})
         }));
     }
 
@@ -40,7 +40,7 @@ themeMiddleware.updateTemplateData = function updateTemplateData(req, res, next)
             description: settingsCache.get('description'),
             facebook: settingsCache.get('facebook'),
             twitter: settingsCache.get('twitter'),
-            timezone: settingsCache.get('activeTimezone'),
+            timezone: settingsCache.get('active_timezone'),
             navigation: settingsCache.get('navigation'),
             permalinks: settingsCache.get('permalinks'),
             icon: settingsCache.get('icon'),

@@ -163,14 +163,14 @@ describe('Middleware: uncapitalise', function () {
 
         it('does not convert any capitals after the endpoint', function (done) {
             var query = '?filter=mAgic';
-            req.path = '/Ghost/API/v0.1/settings/isPrivate/';
+            req.path = '/Ghost/API/v0.1/settings/is_private/';
             req.url = req.path + query;
 
             uncapitalise(req, res, next);
 
             next.called.should.be.false();
             res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/ghost/api/v0.1/settings/isPrivate/?filter=mAgic').should.be.true();
+            res.redirect.calledWith(301, '/ghost/api/v0.1/settings/is_private/?filter=mAgic').should.be.true();
             done();
         });
 

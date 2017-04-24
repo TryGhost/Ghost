@@ -7,7 +7,7 @@
 //
 // The data collected is as follows:
 //
-// - blog id - a hash of the blog hostname, pathname and dbHash. No identifiable info is stored.
+// - blog id - a hash of the blog hostname, pathname and db_hash. No identifiable info is stored.
 // - ghost version
 // - node version
 // - npm version
@@ -42,7 +42,7 @@ function updateCheckError(err) {
     err = errors.utils.deserialize(err);
 
     api.settings.edit(
-        {settings: [{key: 'nextUpdateCheck', value: Math.round(Date.now() / 1000 + 24 * 3600)}]},
+        {settings: [{key: 'next_update_check', value: Math.round(Date.now() / 1000 + 24 * 3600)}]},
         internal
     );
 
@@ -70,7 +70,7 @@ function createCustomNotification(message) {
         message: message.content
     },
     getAllNotifications = api.notifications.browse({context: {internal: true}}),
-    getSeenNotifications = api.settings.read(_.extend({key: 'seenNotifications'}, internal));
+    getSeenNotifications = api.settings.read(_.extend({key: 'seen_notifications'}, internal));
 
     return Promise.join(getAllNotifications, getSeenNotifications, function joined(all, seen) {
         var isSeen      = _.includes(JSON.parse(seen.settings[0].value || []), notification.id),
@@ -96,9 +96,9 @@ function updateCheckData() {
         mailConfig.transport);
 
     return Promise.props({
-        hash: api.settings.read(_.extend({key: 'dbHash'}, internal)).reflect(),
-        theme: api.settings.read(_.extend({key: 'activeTheme'}, internal)).reflect(),
-        apps: api.settings.read(_.extend({key: 'activeApps'}, internal))
+        hash: api.settings.read(_.extend({key: 'db_hash'}, internal)).reflect(),
+        theme: api.settings.read(_.extend({key: 'active_theme'}, internal)).reflect(),
+        apps: api.settings.read(_.extend({key: 'active_apps'}, internal))
             .then(function (response) {
                 var apps = response.settings[0];
 
@@ -204,14 +204,14 @@ function updateCheckRequest() {
  */
 function updateCheckResponse(response) {
     return Promise.all([
-        api.settings.edit({settings: [{key: 'nextUpdateCheck', value: response.next_check}]}, internal),
-        api.settings.edit({settings: [{key: 'displayUpdateNotification', value: response.version}]}, internal)
+        api.settings.edit({settings: [{key: 'next_update_check', value: response.next_check}]}, internal),
+        api.settings.edit({settings: [{key: 'display_update_notification', value: response.version}]}, internal)
     ]).then(function () {
         var messages = response.messages || [];
 
         /**
          * by default the update check service returns messages: []
-         * but the latest release version get's stored anyway, because we adding the `displayUpdateNotification` ^
+         * but the latest release version get's stored anyway, because we adding the `display_update_notification` ^
          */
         return Promise.map(messages, createCustomNotification);
     });
@@ -221,7 +221,7 @@ function updateCheck() {
     if (config.isPrivacyDisabled('useUpdateCheck')) {
         return Promise.resolve();
     } else {
-        return api.settings.read(_.extend({key: 'nextUpdateCheck'}, internal)).then(function then(result) {
+        return api.settings.read(_.extend({key: 'next_update_check'}, internal)).then(function then(result) {
             var nextUpdateCheck = result.settings[0];
 
             if (nextUpdateCheck && nextUpdateCheck.value && nextUpdateCheck.value > moment().unix()) {
@@ -238,7 +238,7 @@ function updateCheck() {
 }
 
 function showUpdateNotification() {
-    return api.settings.read(_.extend({key: 'displayUpdateNotification'}, internal)).then(function then(response) {
+    return api.settings.read(_.extend({key: 'display_update_notification'}, internal)).then(function then(response) {
         var display = response.settings[0];
 
         if (display && display.value && currentVersion && semver.gt(display.value, currentVersion)) {

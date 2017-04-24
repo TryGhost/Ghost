@@ -19,7 +19,7 @@ function parseDefaultSettings() {
     var defaultSettingsInCategories = require('../data/schema/').defaultSettings,
         defaultSettingsFlattened = {},
         dynamicDefault = {
-            dbHash: uuid.v4()
+            db_hash: uuid.v4()
         };
 
     _.each(defaultSettingsInCategories, function each(settings, categoryName) {

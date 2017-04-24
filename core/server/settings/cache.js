@@ -20,12 +20,12 @@ var debug = require('debug')('ghost:settings:cache'),
  *
  * {
  *   type: core
- *   key: dbHash
+ *   key: db_hash
  *   value: ...
  * }
  *
  * But the settings cache does not allow requesting a value by type, only by key.
- * e.g. settingsCache.get('dbHash')
+ * e.g. settingsCache.get('db_hash')
  */
 module.exports = {
     /**

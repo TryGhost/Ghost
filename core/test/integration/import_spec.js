@@ -201,8 +201,8 @@ describe('Import', function () {
                 // import no longer requires all data to be dropped, and adds posts
                 posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
 
-                // activeTheme should NOT have been overridden
-                _.find(settings, {key: 'activeTheme'}).value.should.equal('casper', 'Wrong theme');
+                // active_theme should NOT have been overridden
+                _.find(settings, {key: 'active_theme'}).value.should.equal('casper', 'Wrong theme');
 
                 // test tags
                 tags.length.should.equal(exportData.data.tags.length, 'no new tags');
@@ -308,8 +308,8 @@ describe('Import', function () {
                 // import no longer requires all data to be dropped, and adds posts
                 posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
 
-                // activeTheme should NOT have been overridden
-                _.find(settings, {key: 'activeTheme'}).value.should.equal('casper', 'Wrong theme');
+                // active_theme should NOT have been overridden
+                _.find(settings, {key: 'active_theme'}).value.should.equal('casper', 'Wrong theme');
 
                 // test tags
                 tags.length.should.equal(exportData.data.tags.length, 'no new tags');

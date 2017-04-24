@@ -43,7 +43,7 @@ settingsFilter = function (settings, filter) {
  *
  * Takes a keyed JSON object
  * E.g.
- * dbHash: {
+ * db_hash: {
  *   id: '123abc',
  *   key: 'dbash',
  *   value: 'xxxx',
@@ -103,7 +103,7 @@ canEditAllSettings = function (settingsInfo, options) {
                 ));
             }
 
-            if (setting.key === 'activeTheme') {
+            if (setting.key === 'active_theme') {
                 return Promise.reject(
                     new errors.BadRequestError({
                         message: i18n.t('errors.api.settings.activeThemeSetViaAPI.error'),

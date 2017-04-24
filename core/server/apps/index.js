@@ -11,7 +11,7 @@ var _           = require('lodash'),
     availableApps = {};
 
 function getInstalledApps() {
-    return api.settings.read({context: {internal: true}, key: 'installedApps'}).then(function (response) {
+    return api.settings.read({context: {internal: true}, key: 'installed_apps'}).then(function (response) {
         var installed = response.settings[0];
 
         installed.value = installed.value || '[]';
@@ -30,7 +30,7 @@ function saveInstalledApps(installedApps) {
     return getInstalledApps().then(function (currentInstalledApps) {
         var updatedAppsInstalled = _.difference(_.uniq(installedApps.concat(currentInstalledApps)), config.get('internalApps'));
 
-        return api.settings.edit({settings: [{key: 'installedApps', value: updatedAppsInstalled}]}, {context: {internal: true}});
+        return api.settings.edit({settings: [{key: 'installed_apps', value: updatedAppsInstalled}]}, {context: {internal: true}});
     });
 }
 
@@ -40,7 +40,7 @@ module.exports = {
 
         try {
             // We have to parse the value because it's a string
-            api.settings.read({context: {internal: true}, key: 'activeApps'}).then(function (response) {
+            api.settings.read({context: {internal: true}, key: 'active_apps'}).then(function (response) {
                 var aApps = response.settings[0];
 
                 appsToLoad = JSON.parse(aApps.value) || [];

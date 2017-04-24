@@ -36,7 +36,7 @@ describe('Themes', function () {
 
             beforeEach(function () {
                 mountThemeSpy = sandbox.spy();
-                settingsCacheStub.withArgs('activeTheme').returns('casper');
+                settingsCacheStub.withArgs('active_theme').returns('casper');
             });
 
             it('mounts active theme if not yet mounted', function (done) {
@@ -84,7 +84,7 @@ describe('Themes', function () {
                     should.exist(err);
                     err.message.should.eql('The currently active theme "casper" is missing.');
 
-                    settingsCacheStub.calledWith('activeTheme').should.be.true();
+                    settingsCacheStub.calledWith('active_theme').should.be.true();
                     getActiveThemeStub.called.should.be.true();
                     mountThemeSpy.called.should.be.false();
 

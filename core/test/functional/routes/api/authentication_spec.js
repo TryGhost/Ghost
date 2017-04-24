@@ -216,7 +216,7 @@ describe('Authentication API', function () {
 
     it('reset password', function (done) {
         models.Settings
-            .findOne({key: 'dbHash'})
+            .findOne({key: 'db_hash'})
             .then(function (response) {
                 var token = utils.tokens.resetToken.generateHash({
                     expires: Date.now() + (1000 * 60),

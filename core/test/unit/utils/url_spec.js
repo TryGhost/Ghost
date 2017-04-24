@@ -451,7 +451,7 @@ describe('Url', function () {
         });
 
         it('permalink is /:year/:month/:day/:slug, blog timezone is Los Angeles', function () {
-            localSettingsCache.activeTimezone = 'America/Los_Angeles';
+            localSettingsCache.active_timezone = 'America/Los_Angeles';
             localSettingsCache.permalinks = '/:year/:month/:day/:slug/';
 
             var testData = testUtils.DataGenerator.Content.posts[2],
@@ -462,7 +462,7 @@ describe('Url', function () {
         });
 
         it('permalink is /:year/:month/:day/:slug, blog timezone is Asia Tokyo', function () {
-            localSettingsCache.activeTimezone = 'Asia/Tokyo';
+            localSettingsCache.active_timezone = 'Asia/Tokyo';
             localSettingsCache.permalinks = '/:year/:month/:day/:slug/';
 
             var testData = testUtils.DataGenerator.Content.posts[2],
@@ -473,7 +473,7 @@ describe('Url', function () {
         });
 
         it('post is page, no permalink usage allowed at all', function () {
-            localSettingsCache.activeTimezone = 'America/Los_Angeles';
+            localSettingsCache.active_timezone = 'America/Los_Angeles';
             localSettingsCache.permalinks = '/:year/:month/:day/:slug/';
 
             var testData = testUtils.DataGenerator.Content.posts[5],
@@ -483,7 +483,7 @@ describe('Url', function () {
         });
 
         it('permalink is /:year/:id:/:author', function () {
-            localSettingsCache.activeTimezone = 'America/Los_Angeles';
+            localSettingsCache.active_timezone = 'America/Los_Angeles';
             localSettingsCache.permalinks = '/:year/:id/:author/';
 
             var testData = _.merge(testUtils.DataGenerator.Content.posts[2], {id: 3}, {author: {slug: 'joe-blog'}}),
@@ -494,7 +494,7 @@ describe('Url', function () {
         });
 
         it('permalink is /:year/:id:/:author', function () {
-            localSettingsCache.activeTimezone = 'Europe/Berlin';
+            localSettingsCache.active_timezone = 'Europe/Berlin';
             localSettingsCache.permalinks = '/:year/:id/:author/';
 
             var testData = _.merge(testUtils.DataGenerator.Content.posts[2], {id: 3}, {author: {slug: 'joe-blog'}}),
@@ -505,7 +505,7 @@ describe('Url', function () {
         });
 
         it('post is not published yet', function () {
-            localSettingsCache.activeTimezone = 'Europe/London';
+            localSettingsCache.active_timezone = 'Europe/London';
             localSettingsCache.permalinks = '/:year/:month/:day/:slug/';
 
             var testData = _.merge(testUtils.DataGenerator.Content.posts[2], {id: 3, published_at: null}),

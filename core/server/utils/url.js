@@ -174,7 +174,7 @@ function createUrl(urlPath, absolute, secure) {
 function urlPathForPost(post) {
     var output = '',
         permalinks = settingsCache.get('permalinks'),
-        publishedAtMoment = moment.tz(post.published_at || Date.now(), settingsCache.get('activeTimezone')),
+        publishedAtMoment = moment.tz(post.published_at || Date.now(), settingsCache.get('active_timezone')),
         tags = {
             year:   function () { return publishedAtMoment.format('YYYY'); },
             month:  function () { return publishedAtMoment.format('MM'); },

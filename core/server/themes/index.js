@@ -17,7 +17,7 @@ module.exports = {
     // Init themes module
     // TODO: move this once we're clear what needs to happen here
     init: function initThemes() {
-        var activeThemeName = settingsCache.get('activeTheme'),
+        var activeThemeName = settingsCache.get('active_theme'),
             self = this;
 
         debug('init themes', activeThemeName);
