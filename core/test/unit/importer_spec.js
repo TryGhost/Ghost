@@ -681,16 +681,16 @@ describe('Importer', function () {
             outputData.posts[0].markdown.should.containEql('/content/images/photos/cat.jpg');
             outputData.posts[0].html.should.containEql('/content/images/photos/cat.jpg');
 
-            inputData.posts[0].image.should.eql('/images/my-image.png');
-            outputData.posts[0].image.should.eql('/content/images/my-image.png');
+            inputData.posts[0].feature_image.should.eql('/images/my-image.png');
+            outputData.posts[0].feature_image.should.eql('/content/images/my-image.png');
 
-            inputData.tags[0].image.should.eql('/images/my-image.png');
-            outputData.tags[0].image.should.eql('/content/images/my-image.png');
+            inputData.tags[0].feature_image.should.eql('/images/my-image.png');
+            outputData.tags[0].feature_image.should.eql('/content/images/my-image.png');
 
-            inputData.users[0].image.should.eql('/images/my-image.png');
-            inputData.users[0].cover.should.eql('/images/photos/cat.jpg');
-            outputData.users[0].image.should.eql('/content/images/my-image.png');
-            outputData.users[0].cover.should.eql('/content/images/photos/cat.jpg');
+            inputData.users[0].profile_image.should.eql('/images/my-image.png');
+            inputData.users[0].cover_image.should.eql('/images/photos/cat.jpg');
+            outputData.users[0].profile_image.should.eql('/content/images/my-image.png');
+            outputData.users[0].cover_image.should.eql('/content/images/photos/cat.jpg');
         });
 
         it('does import the images correctly', function () {

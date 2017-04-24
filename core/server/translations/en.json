@@ -517,6 +517,9 @@
             "plural": {
                 "valuesMustBeDefined": "All values must be defined for empty, singular and plural"
             },
+            "img_url": {
+                "attrIsRequired": "Attribute is required e.g. \\{\\{img_url feature_image\\}\\}"
+            },
             "template": {
                 "templateNotFound": "Template {name} not found."
             }

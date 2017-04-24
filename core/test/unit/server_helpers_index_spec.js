@@ -10,7 +10,7 @@ describe('Helpers', function () {
     var hbsHelpers = ['each', 'if', 'unless', 'with', 'helperMissing', 'blockHelperMissing', 'log', 'lookup'],
         ghostHelpers = [
             'asset', 'author', 'body_class', 'content', 'date', 'encode', 'excerpt', 'facebook_url', 'foreach', 'get',
-            'ghost_foot', 'ghost_head', 'has', 'image', 'is', 'meta_description', 'meta_title', 'navigation',
+            'ghost_foot', 'ghost_head', 'has', 'img_url', 'is', 'meta_description', 'meta_title', 'navigation',
             'next_post', 'page_url', 'pagination', 'plural', 'post_class', 'prev_post', 'tags', 'title', 'twitter_url',
             'url'
         ],

@@ -934,7 +934,7 @@ describe('Post Model', function () {
                     (!!createdPost.get('page')).should.equal(false);
                     createdPost.get('language').should.equal('en_US');
                     // testing for nulls
-                    (createdPost.get('image') === null).should.equal(true);
+                    (createdPost.get('feature_image') === null).should.equal(true);
                     (createdPost.get('meta_title') === null).should.equal(true);
                     (createdPost.get('meta_description') === null).should.equal(true);
 
