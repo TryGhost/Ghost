@@ -3,11 +3,11 @@ import {Factory} from 'ember-cli-mirage';
 export default Factory.extend({
     accessibility: null,
     bio: null,
-    cover: null,
+    coverImage: null,
     createdAt: '2015-09-02T13:41:50.000Z',
     createdBy: null,
     email(i) { return `user-${i}@example.com`; },
-    image: '//www.gravatar.com/avatar/3ae045bc198a157401827c8455cd7c99?s=250&d=mm&r=x',
+    profileImage: '//www.gravatar.com/avatar/3ae045bc198a157401827c8455cd7c99?s=250&d=mm&r=x',
     language: 'en_US',
     lastLogin: '2015-11-02T16:12:05.000Z',
     location: null,

@@ -17,7 +17,7 @@ export default Model.extend(ValidationEngine, {
     parent: attr(),
     metaTitle: attr('string'),
     metaDescription: attr('string'),
-    image: attr('string'),
+    featureImage: attr('string'),
     visibility: attr('string', {defaultValue: 'public'}),
     createdAtUTC: attr('moment-utc'),
     updatedAtUTC: attr('moment-utc'),

@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import Controller from 'ember-controller';
 import RSVP from 'rsvp';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
@@ -26,7 +27,7 @@ export default Controller.extend(ValidationEngine, {
     blogTitle: null,
     email: '',
     flowErrors: '',
-    image: null,
+    profileImage: null,
     name: null,
     password: null,
 
@@ -94,14 +95,14 @@ export default Controller.extend(ValidationEngine, {
      * @return {Ember.RSVP.Promise} A promise that takes care of both calls
      */
     _sendImage(user) {
-        let image = this.get('image');
+        let image = this.get('profileImage');
 
         return new Promise((resolve, reject) => {
             image.formData = {};
             return image.submit()
                 .done((response) => {
                     let usersUrl = this.get('ghostPaths.url').api('users', user.id.toString());
-                    user.image = response;
+                    user.profile_image = response;
 
                     return this.get('ajax').put(usersUrl, {
                         data: {
@@ -215,7 +216,7 @@ export default Controller.extend(ValidationEngine, {
     },
 
     _afterAuthentication(result) {
-        if (this.get('image')) {
+        if (this.get('profileImage')) {
             return this._sendImage(result.users[0])
             .then(() => {
 
@@ -248,7 +249,7 @@ export default Controller.extend(ValidationEngine, {
         },
 
         setImage(image) {
-            this.set('image', image);
+            this.set('profileImage', image);
         }
     }
 });

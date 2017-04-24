@@ -178,7 +178,7 @@ export default Controller.extend(ValidationEngine, {
         },
 
         setImage(image) {
-            this.set('image', image);
+            this.set('profileImage', image);
         }
     }
 });

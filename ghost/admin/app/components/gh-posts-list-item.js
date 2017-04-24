@@ -28,8 +28,8 @@ export default Component.extend({
         return this.get('post.author.name') || this.get('post.author.email');
     }),
 
-    authorAvatar: computed('post.author.image', function () {
-        return this.get('post.author.image') || `${this.get('ghostPaths.assetRoot')}/img/user-image.png`;
+    authorAvatar: computed('post.author.profileImage', function () {
+        return this.get('post.author.profileImage') || `${this.get('ghostPaths.assetRoot')}/img/user-image.png`;
     }),
 
     authorAvatarBackground: computed('authorAvatar', function () {

@@ -32,7 +32,7 @@ export default [
     },
     {
         id: 4,
-        key: 'cover',
+        key: 'cover_image',
         value: '/content/images/2014/Feb/cover.jpg',
         type: 'blog',
         created_at: '2013-11-25T14:48:11.000Z',

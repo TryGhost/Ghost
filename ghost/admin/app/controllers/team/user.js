@@ -74,8 +74,8 @@ export default Controller.extend({
         return `${this.get('ghostPaths.assetRoot')}/img/user-image.png`;
     }),
 
-    userImageBackground: computed('user.image', 'userDefault', function () {
-        let url = this.get('user.image') || this.get('userDefault');
+    userImageBackground: computed('user.profileImage', 'userDefault', function () {
+        let url = this.get('user.profileImage') || this.get('userDefault');
         let safeUrl = Handlebars.Utils.escapeExpression(url);
 
         return htmlSafe(`background-image: url(${safeUrl})`);
@@ -86,8 +86,8 @@ export default Controller.extend({
         return `${this.get('ghostPaths.assetRoot')}/img/user-cover.png`;
     }),
 
-    coverImageBackground: computed('user.cover', 'coverDefault', function () {
-        let url = this.get('user.cover') || this.get('coverDefault');
+    coverImageBackground: computed('user.coverImage', 'coverDefault', function () {
+        let url = this.get('user.coverImage') || this.get('coverDefault');
         let safeUrl = Handlebars.Utils.escapeExpression(url);
 
         return htmlSafe(`background-image: url(${safeUrl})`);
