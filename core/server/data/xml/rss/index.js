@@ -123,8 +123,8 @@ generateFeed = function generateFeed(data) {
             },
             imageUrl;
 
-        if (post.image) {
-            imageUrl = utils.url.urlFor('image', {image: post.image, secure: data.secure}, true);
+        if (post.feature_image) {
+            imageUrl = utils.url.urlFor('image', {image: post.feature_image, secure: data.secure}, true);
 
             // Add a media content tag
             item.custom_elements.push({

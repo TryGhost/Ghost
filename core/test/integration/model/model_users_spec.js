@@ -97,7 +97,7 @@ describe('User Model', function run() {
 
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
-                createdUser.attributes.image.should.eql(
+                createdUser.attributes.profile_image.should.eql(
                     'http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404', 'Gravatar found'
                 );
                 done();
