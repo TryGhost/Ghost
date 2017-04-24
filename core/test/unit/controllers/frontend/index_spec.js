@@ -18,7 +18,7 @@ describe('Frontend Controller', function () {
     function resetLocalSettingsCache() {
         localSettingsCache = {
             permalinks: '/:slug/',
-            activeTheme: 'casper'
+            active_theme: 'casper'
         };
     }
 

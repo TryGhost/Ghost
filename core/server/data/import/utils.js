@@ -12,8 +12,8 @@ var Promise     = require('bluebird'),
     stripProperties;
 
 updatedSettingKeys = {
-    activePlugins: 'activeApps',
-    installedPlugins: 'installedApps'
+    activePlugins: 'active_apps',
+    installedPlugins: 'installed_apps'
 };
 
 areEmpty = function (object) {
