@@ -119,11 +119,11 @@ export default Component.extend({
         },
 
         setCoverImage(image) {
-            this.send('setProperty', 'image', image);
+            this.send('setProperty', 'featureImage', image);
         },
 
         clearCoverImage() {
-            this.send('setProperty', 'image', '');
+            this.send('setProperty', 'featureImage', '');
         },
 
         openMeta() {

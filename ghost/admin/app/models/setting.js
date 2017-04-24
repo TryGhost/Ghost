@@ -9,7 +9,7 @@ export default Model.extend(ValidationEngine, {
     title: attr('string'),
     description: attr('string'),
     logo: attr('string'),
-    cover: attr('string'),
+    cover_image: attr('string'),
     icon: attr('string'),
     defaultLang: attr('string'),
     forceI18n: attr('boolean'),

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import Ember from 'ember';
 import computed, {equal, filterBy} from 'ember-computed';
 import injectService from 'ember-service/inject';
@@ -81,7 +80,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     markdown: attr('string', {defaultValue: ''}),
     mobiledoc: attr('json-string', {defaultValue: () => BLANK_DOC}),
     html: attr('string'),
-    image: attr('string'),
+    featureImage: attr('string'),
     featured: attr('boolean', {defaultValue: false}),
     page: attr('boolean', {defaultValue: false}),
     status: attr('string', {defaultValue: 'draft'}),

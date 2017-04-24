@@ -300,7 +300,7 @@ export default Component.extend(SettingsMenuMixin, {
         },
 
         setCoverImage(image) {
-            this.set('model.image', image);
+            this.set('model.featureImage', image);
 
             if (this.get('model.isNew')) {
                 return;
@@ -313,7 +313,7 @@ export default Component.extend(SettingsMenuMixin, {
         },
 
         clearCoverImage() {
-            this.set('model.image', '');
+            this.set('model.featureImage', '');
 
             if (this.get('model.isNew')) {
                 return;

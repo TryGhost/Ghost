@@ -90,7 +90,7 @@
             <button class="gh-btn gh-btn-default user-cover-edit" {{action "toggleUploadCoverModal"}}><span>Change Cover</span></button>
             {{#if showUploadCoverModal}}
                 {{gh-fullscreen-modal "upload-image"
-                                      model=(hash model=user imageProperty="cover")
+                                      model=(hash model=user imageProperty="coverImage")
                                       close=(action "toggleUploadCoverModal")
                                       modifier="action wide"}}
             {{/if}}
@@ -109,7 +109,7 @@
                     <button type="button" {{action "toggleUploadImageModal"}} class="edit-user-image">Edit Picture</button>
                     {{#if showUploadImageModal}}
                         {{gh-fullscreen-modal "upload-image"
-                                              model=(hash model=user imageProperty="image")
+                                              model=(hash model=user imageProperty="profileImage")
                                               close=(action "toggleUploadImageModal")
                                               modifier="action wide"}}
                     {{/if}}

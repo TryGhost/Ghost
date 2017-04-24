@@ -7,7 +7,7 @@ export default Factory.extend({
     slug(i) { return  `post-${i}`; },
     markdown(i) { return  `Markdown for post ${i}.`; },
     html(i) { return  `<p>HTML for post ${i}.</p>`; },
-    image(i) { return  `/content/images/2015/10/post-${i}.jpg`; },
+    featureImage(i) { return  `/content/images/2015/10/post-${i}.jpg`; },
     featured: false,
     page: false,
     status(i) { return faker.list.cycle('draft', 'published', 'scheduled')(i); },
