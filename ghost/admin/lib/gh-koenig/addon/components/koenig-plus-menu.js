@@ -73,10 +73,9 @@ export default Component.extend({
         let $editor = $(this.get('containerSelector'));
 
         input.blur(() => {
-            // nasty hack - give the tool time to execute before removing this from the dom.
-            window.setTimeout(() => {
+            run.later(() => {
                 this.send('closeMenuKeepButton');
-            }, 200);
+            }, 100);
         });
 
         editor.cursorDidChange(() => {
@@ -107,13 +106,7 @@ export default Component.extend({
             run.schedule('afterRender', this,
                 () => {
                     let button = this.$('.gh-cardmenu-button');
-
                     button.css('top', offset.top + $editor.scrollTop() - editorOffset.top - 2);
-                    if (currentNode.tagName.toLowerCase() === 'li') {
-                     //   button.css('left', this.$(currentNode.parentNode).position().left + $editor.scrollLeft());
-                    } else {
-                     //   button.css('left', offset.left + $editor.scrollLeft() - 50);
-                    }
                 });
         });
     },

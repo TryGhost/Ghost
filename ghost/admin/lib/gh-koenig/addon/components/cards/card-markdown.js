@@ -42,6 +42,10 @@ export default Component.extend({
     didReceiveAttrs() {
         if (!this.get('isEditing')) {
             this.set('preview', formatMarkdown([this.get('payload').markdown]));
+        } else {
+            run.next(() => {
+                this.$('textarea').focus();
+            });
         }
     },
 
