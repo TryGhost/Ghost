@@ -98,8 +98,8 @@ export default Controller.extend(ValidationEngine, {
 
         return new Promise((resolve, reject) => {
             image.formData = {};
-            image.submit()
-                .success((response) => {
+            return image.submit()
+                .done((response) => {
                     let usersUrl = this.get('ghostPaths.url').api('users', user.id.toString());
                     user.image = response;
 
@@ -109,7 +109,7 @@ export default Controller.extend(ValidationEngine, {
                         }
                     }).then(resolve).catch(reject);
                 })
-                .error(reject);
+                .fail(reject);
         });
     },
 
