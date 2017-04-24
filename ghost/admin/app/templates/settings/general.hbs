@@ -98,15 +98,15 @@
                 <div class="gh-setting-desc">An optional large background image for your site</div>
             </div>
             <div class="gh-setting-action gh-setting-action-largeimg">
-                {{#if model.cover_image}}
-                    <img class="blog-cover" src="{{model.cover_image}}" alt="cover photo" role="button" {{action "toggleUploadCoverModal"}}>
+                {{#if model.coverImage}}
+                    <img class="blog-cover" src="{{model.coverImage}}" alt="cover photo" role="button" {{action "toggleUploadCoverModal"}}>
                 {{else}}
                     <button type="button" class="gh-btn" {{action "toggleUploadCoverModal"}}><span>Upload Image</span></button>
                 {{/if}}
 
                 {{#if showUploadCoverModal}}
                     {{gh-fullscreen-modal "upload-image"
-                            model=(hash model=model imageProperty="cover_image")
+                            model=(hash model=model imageProperty="coverImage")
                             close=(action "toggleUploadCoverModal")
                             modifier="action wide"}}
                 {{/if}}
