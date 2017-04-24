@@ -152,7 +152,7 @@ describe('Notifications API', function () {
         });
     });
 
-    it('can destroy a custom notification and add its uuid to seenNotifications (owner)', function (done) {
+    it('can destroy a custom notification and add its uuid to seen_notifications (owner)', function (done) {
         var customNotification = {
             status: 'alert',
             type: 'info',
@@ -168,7 +168,7 @@ describe('Notifications API', function () {
             NotificationsAPI.destroy(
                 _.extend({}, testUtils.context.internal, {id: notification.id})
             ).then(function () {
-                return SettingsAPI.read(_.extend({key: 'seenNotifications'}, testUtils.context.internal));
+                return SettingsAPI.read(_.extend({key: 'seen_notifications'}, testUtils.context.internal));
             }).then(function (response) {
                 should.exist(response);
                 response.settings[0].value.should.containEql(notification.id);

@@ -34,7 +34,7 @@ themes = {
     activate: function activate(options) {
         var themeName = options.name,
             newSettings = [{
-                key: 'activeTheme',
+                key: 'active_theme',
                 value: themeName
             }],
             loadedTheme,
@@ -50,7 +50,7 @@ themes = {
                 if (!loadedTheme) {
                     return Promise.reject(new errors.ValidationError({
                         message: i18n.t('notices.data.validation.index.themeCannotBeActivated', {themeName: themeName}),
-                        context: 'activeTheme'
+                        context: 'active_theme'
                     }));
                 }
 
@@ -127,7 +127,7 @@ themes = {
             .then(function activateAndReturn(loadedTheme) {
                 // If this is the active theme, we are overriding
                 // This is a special case of activation
-                if (zip.shortName === settingsCache.get('activeTheme')) {
+                if (zip.shortName === settingsCache.get('active_theme')) {
                     // Activate! (sort of)
                     debug('Activating theme (method C, on API "override")', zip.shortName);
                     themeUtils.activate(loadedTheme, checkedTheme);
@@ -193,7 +193,7 @@ themes = {
                     throw new errors.ValidationError({message: i18n.t('errors.api.themes.destroyCasper')});
                 }
 
-                if (themeName === settingsCache.get('activeTheme')) {
+                if (themeName === settingsCache.get('active_theme')) {
                     throw new errors.ValidationError({message: i18n.t('errors.api.themes.destroyActive')});
                 }
 

@@ -158,7 +158,7 @@ authentication = {
             var options = {context: {internal: true}},
                 dbHash, token;
 
-            return settings.read(_.merge({key: 'dbHash'}, options))
+            return settings.read(_.merge({key: 'db_hash'}, options))
                 .then(function fetchedSettings(response) {
                     dbHash = response.settings[0].value;
 
@@ -286,7 +286,7 @@ authentication = {
                 oldPassword = data.oldPassword,
                 newPassword = data.newPassword;
 
-            return settings.read(_.merge({key: 'dbHash'}, options))
+            return settings.read(_.merge({key: 'db_hash'}, options))
                 .then(function fetchedSettings(response) {
                     dbHash = response.settings[0].value;
 
