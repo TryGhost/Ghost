@@ -240,7 +240,7 @@ describe('Url', function () {
             testData = {image: '/blog/content/images/my-image4.jpg'};
             utils.url.urlFor(testContext, testData).should.equal('/blog/content/images/my-image4.jpg');
             utils.url.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog/content/images/my-image4.jpg');
-            
+
             // Test case for blogs with optional https -
             // they may be configured with http url but the actual connection may be over https (#8373)
             configUtils.set({url: 'http://my-ghost-blog.com'});
