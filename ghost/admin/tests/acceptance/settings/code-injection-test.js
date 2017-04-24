@@ -23,37 +23,31 @@ describe('Acceptance: Settings - Code-Injection', function() {
         destroyApp(application);
     });
 
-    it('redirects to signin when not authenticated', function () {
+    it('redirects to signin when not authenticated', async function () {
         invalidateSession(application);
-        visit('/settings/code-injection');
+        await visit('/settings/code-injection');
 
-        andThen(function() {
-            expect(currentURL(), 'currentURL').to.equal('/signin');
-        });
+        expect(currentURL(), 'currentURL').to.equal('/signin');
     });
 
-    it('redirects to team page when authenticated as author', function () {
+    it('redirects to team page when authenticated as author', async function () {
         let role = server.create('role', {name: 'Author'});
         server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
-        visit('/settings/code-injection');
+        await visit('/settings/code-injection');
 
-        andThen(() => {
-            expect(currentURL(), 'currentURL').to.equal('/team/test-user');
-        });
+        expect(currentURL(), 'currentURL').to.equal('/team/test-user');
     });
 
-    it('redirects to team page when authenticated as editor', function () {
+    it('redirects to team page when authenticated as editor', async function () {
         let role = server.create('role', {name: 'Editor'});
         server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
-        visit('/settings/code-injection');
+        await visit('/settings/code-injection');
 
-        andThen(() => {
-            expect(currentURL(), 'currentURL').to.equal('/team');
-        });
+        expect(currentURL(), 'currentURL').to.equal('/team');
     });
 
     describe('when logged in', function () {
@@ -64,28 +58,26 @@ describe('Acceptance: Settings - Code-Injection', function() {
             return authenticateSession(application);
         });
 
-        it('it renders, loads editors correctly', function () {
-            visit('/settings/code-injection');
+        it('it renders, loads editors correctly', async function () {
+            await visit('/settings/code-injection');
 
-            andThen(() => {
-                // has correct url
-                expect(currentURL(), 'currentURL').to.equal('/settings/code-injection');
+            // has correct url
+            expect(currentURL(), 'currentURL').to.equal('/settings/code-injection');
 
-                // has correct page title
-                expect(document.title, 'page title').to.equal('Settings - Code injection - Test Blog');
+            // has correct page title
+            expect(document.title, 'page title').to.equal('Settings - Code injection - Test Blog');
 
-                // highlights nav menu
-                expect($('.gh-nav-settings-code-injection').hasClass('active'), 'highlights nav menu item')
-                    .to.be.true;
+            // highlights nav menu
+            expect($('.gh-nav-settings-code-injection').hasClass('active'), 'highlights nav menu item')
+                .to.be.true;
 
-                expect(find(testSelector('save-button')).text().trim(), 'save button text').to.equal('Save');
+            expect(find(testSelector('save-button')).text().trim(), 'save button text').to.equal('Save');
 
-                expect(find('#ghost-head .CodeMirror').length, 'ghost head codemirror element').to.equal(1);
-                expect($('#ghost-head .CodeMirror').hasClass('cm-s-xq-light'), 'ghost head editor theme').to.be.true;
+            expect(find('#ghost-head .CodeMirror').length, 'ghost head codemirror element').to.equal(1);
+            expect($('#ghost-head .CodeMirror').hasClass('cm-s-xq-light'), 'ghost head editor theme').to.be.true;
 
-                expect(find('#ghost-foot .CodeMirror').length, 'ghost head codemirror element').to.equal(1);
-                expect($('#ghost-foot .CodeMirror').hasClass('cm-s-xq-light'), 'ghost head editor theme').to.be.true;
-            });
+            expect(find('#ghost-foot .CodeMirror').length, 'ghost head codemirror element').to.equal(1);
+            expect($('#ghost-foot .CodeMirror').hasClass('cm-s-xq-light'), 'ghost head editor theme').to.be.true;
         });
     });
 });

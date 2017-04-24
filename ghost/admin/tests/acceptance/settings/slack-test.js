@@ -23,37 +23,31 @@ describe('Acceptance: Settings - Apps - Slack', function () {
         destroyApp(application);
     });
 
-    it('redirects to signin when not authenticated', function () {
+    it('redirects to signin when not authenticated', async function () {
         invalidateSession(application);
-        visit('/settings/apps/slack');
+        await visit('/settings/apps/slack');
 
-        andThen(function() {
-            expect(currentURL(), 'currentURL').to.equal('/signin');
-        });
+        expect(currentURL(), 'currentURL').to.equal('/signin');
     });
 
-    it('redirects to team page when authenticated as author', function () {
+    it('redirects to team page when authenticated as author', async function () {
         let role = server.create('role', {name: 'Author'});
         server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
-        visit('/settings/apps/slack');
+        await visit('/settings/apps/slack');
 
-        andThen(() => {
-            expect(currentURL(), 'currentURL').to.equal('/team/test-user');
-        });
+        expect(currentURL(), 'currentURL').to.equal('/team/test-user');
     });
 
-    it('redirects to team page when authenticated as editor', function () {
+    it('redirects to team page when authenticated as editor', async function () {
         let role = server.create('role', {name: 'Editor'});
         server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
-        visit('/settings/apps/slack');
+        await visit('/settings/apps/slack');
 
-        andThen(() => {
-            expect(currentURL(), 'currentURL').to.equal('/team');
-        });
+        expect(currentURL(), 'currentURL').to.equal('/team');
     });
 
     describe('when logged in', function () {
@@ -64,54 +58,43 @@ describe('Acceptance: Settings - Apps - Slack', function () {
             return authenticateSession(application);
         });
 
-        it('it validates and saves a slack url properly', function () {
-            visit('/settings/apps/slack');
+        it('it validates and saves a slack url properly', async function () {
+            await visit('/settings/apps/slack');
 
-            andThen(() => {
-                // has correct url
-                expect(currentURL(), 'currentURL').to.equal('/settings/apps/slack');
+            // has correct url
+            expect(currentURL(), 'currentURL').to.equal('/settings/apps/slack');
 
-            });
+            await fillIn('#slack-settings input[name="slack[url]"]', 'notacorrecturl');
+            await click(testSelector('save-button'));
 
-            fillIn('#slack-settings input[name="slack[url]"]', 'notacorrecturl');
-            click(testSelector('save-button'));
+            expect(find('#slack-settings .error .response').text().trim(), 'inline validation response')
+                .to.equal('The URL must be in a format like https://hooks.slack.com/services/<your personal key>');
 
-            andThen(() => {
-                expect(find('#slack-settings .error .response').text().trim(), 'inline validation response')
-                    .to.equal('The URL must be in a format like https://hooks.slack.com/services/<your personal key>');
-            });
+            await fillIn('#slack-settings input[name="slack[url]"]', 'https://hooks.slack.com/services/1275958430');
+            await click(testSelector('send-notification-button'));
 
-            fillIn('#slack-settings input[name="slack[url]"]', 'https://hooks.slack.com/services/1275958430');
-            click(testSelector('send-notification-button'));
+            expect(find('.gh-alert-blue').length, 'modal element').to.equal(1);
+            expect(find('#slack-settings .error .response').text().trim(), 'inline validation response')
+                .to.equal('');
 
-            andThen(() => {
-                expect(find('.gh-alert-blue').length, 'modal element').to.equal(1);
-                expect(find('#slack-settings .error .response').text().trim(), 'inline validation response')
-                    .to.equal('');
-            });
-
-            andThen(() => {
-                server.put('/settings/', function () {
-                    return new Mirage.Response(422, {}, {
-                        errors: [
-                            {
-                                errorType: 'ValidationError',
-                                message: 'Test error'
-                            }
-                        ]
-                    });
+            server.put('/settings/', function () {
+                return new Mirage.Response(422, {}, {
+                    errors: [
+                        {
+                            errorType: 'ValidationError',
+                            message: 'Test error'
+                        }
+                    ]
                 });
             });
 
-            click('.gh-alert-blue .gh-alert-close');
-            click(testSelector('send-notification-button'));
+            await click('.gh-alert-blue .gh-alert-close');
+            await click(testSelector('send-notification-button'));
 
             // we shouldn't try to send the test request if the save fails
-            andThen(() => {
-                let [lastRequest] = server.pretender.handledRequests.slice(-1);
-                expect(lastRequest.url).to.not.match(/\/slack\/test/);
-                expect(find('.gh-alert-blue').length, 'check slack alert after api validation error').to.equal(0);
-            });
+            let [lastRequest] = server.pretender.handledRequests.slice(-1);
+            expect(lastRequest.url).to.not.match(/\/slack\/test/);
+            expect(find('.gh-alert-blue').length, 'check slack alert after api validation error').to.equal(0);
         });
 
     });

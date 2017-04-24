@@ -22,37 +22,31 @@ describe('Acceptance: Settings - Labs', function() {
         destroyApp(application);
     });
 
-    it('redirects to signin when not authenticated', function () {
+    it('redirects to signin when not authenticated', async function () {
         invalidateSession(application);
-        visit('/settings/labs');
+        await visit('/settings/labs');
 
-        andThen(function() {
-            expect(currentURL(), 'currentURL').to.equal('/signin');
-        });
+        expect(currentURL(), 'currentURL').to.equal('/signin');
     });
 
-    it('redirects to team page when authenticated as author', function () {
+    it('redirects to team page when authenticated as author', async function () {
         let role = server.create('role', {name: 'Author'});
         server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
-        visit('/settings/labs');
+        await visit('/settings/labs');
 
-        andThen(() => {
-            expect(currentURL(), 'currentURL').to.equal('/team/test-user');
-        });
+        expect(currentURL(), 'currentURL').to.equal('/team/test-user');
     });
 
-    it('redirects to team page when authenticated as editor', function () {
+    it('redirects to team page when authenticated as editor', async function () {
         let role = server.create('role', {name: 'Editor'});
         server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
-        visit('/settings/labs');
+        await visit('/settings/labs');
 
-        andThen(() => {
-            expect(currentURL(), 'currentURL').to.equal('/team');
-        });
+        expect(currentURL(), 'currentURL').to.equal('/team');
     });
 
     describe('when logged in', function () {
@@ -63,32 +57,24 @@ describe('Acceptance: Settings - Labs', function() {
             return authenticateSession(application);
         });
 
-        it.skip('it renders, loads modals correctly', function () {
-            visit('/settings/labs');
+        it.skip('it renders, loads modals correctly', async function () {
+            await visit('/settings/labs');
 
-            andThen(() => {
-                // has correct url
-                expect(currentURL(), 'currentURL').to.equal('/settings/labs');
+            // has correct url
+            expect(currentURL(), 'currentURL').to.equal('/settings/labs');
 
-                // has correct page title
-                expect(document.title, 'page title').to.equal('Settings - Labs - Test Blog');
+            // has correct page title
+            expect(document.title, 'page title').to.equal('Settings - Labs - Test Blog');
 
-                // highlights nav menu
-                expect($('.gh-nav-settings-labs').hasClass('active'), 'highlights nav menu item')
-                    .to.be.true;
-            });
+            // highlights nav menu
+            expect($('.gh-nav-settings-labs').hasClass('active'), 'highlights nav menu item')
+                .to.be.true;
 
-            click('#settings-resetdb .js-delete');
+            await click('#settings-resetdb .js-delete');
+            expect(find('.fullscreen-modal .modal-content').length, 'modal element').to.equal(1);
 
-            andThen(() => {
-                expect(find('.fullscreen-modal .modal-content').length, 'modal element').to.equal(1);
-            });
-
-            click('.fullscreen-modal .modal-footer .gh-btn');
-
-            andThen(() => {
-                expect(find('.fullscreen-modal').length, 'modal element').to.equal(0);
-            });
+            await click('.fullscreen-modal .modal-footer .gh-btn');
+            expect(find('.fullscreen-modal').length, 'modal element').to.equal(0);
         });
     });
 });

@@ -258,11 +258,9 @@ describe('Acceptance: Editor', function() {
                 'scheduled status text'
             ).to.equal('Scheduled');
 
-            andThen(() => {
-                // expect countdown to show warning, that post will be published in x minutes
-                expect(find(testSelector('schedule-countdown')).text().trim(), 'notification countdown')
-                    .to.contain('Post will be published in');
-            });
+            // expect countdown to show warning, that post will be published in x minutes
+            expect(find(testSelector('schedule-countdown')).text().trim(), 'notification countdown')
+                .to.contain('Post will be published in');
 
             // unschedule
             await click(testSelector('publishmenu-trigger'));

@@ -53,25 +53,21 @@ describe('Acceptance: Settings - Tags', function () {
         destroyApp(application);
     });
 
-    it('redirects to signin when not authenticated', function () {
+    it('redirects to signin when not authenticated', async function () {
         invalidateSession(application);
-        visit('/settings/tags');
+        await visit('/settings/tags');
 
-        andThen(() => {
-            expect(currentURL()).to.equal('/signin');
-        });
+        expect(currentURL()).to.equal('/signin');
     });
 
-    it('redirects to team page when authenticated as author', function () {
+    it('redirects to team page when authenticated as author', async function () {
         let role = server.create('role', {name: 'Author'});
         server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
-        visit('/settings/design');
+        await visit('/settings/design');
 
-        andThen(() => {
-            expect(currentURL(), 'currentURL').to.equal('/team/test-user');
-        });
+        expect(currentURL(), 'currentURL').to.equal('/team/test-user');
     });
 
     describe('when logged in', function () {
@@ -82,240 +78,208 @@ describe('Acceptance: Settings - Tags', function () {
             return authenticateSession(application);
         });
 
-        it('it renders, can be navigated, can edit, create & delete tags', function () {
+        it('it renders, can be navigated, can edit, create & delete tags', async function () {
             let tag1 = server.create('tag');
             let tag2 = server.create('tag');
 
-            visit('/settings/tags');
+            await visit('/settings/tags');
 
-            andThen(() => {
-                // it redirects to first tag
-                expect(currentURL(), 'currentURL').to.equal(`/settings/tags/${tag1.slug}`);
+            // it redirects to first tag
+            expect(currentURL(), 'currentURL').to.equal(`/settings/tags/${tag1.slug}`);
 
-                // it has correct page title
-                expect(document.title, 'page title').to.equal('Settings - Tags - Test Blog');
+            // it has correct page title
+            expect(document.title, 'page title').to.equal('Settings - Tags - Test Blog');
 
-                // it highlights nav menu
-                expect($('.gh-nav-settings-tags').hasClass('active'), 'highlights nav menu item')
-                    .to.be.true;
+            // it highlights nav menu
+            expect($('.gh-nav-settings-tags').hasClass('active'), 'highlights nav menu item')
+                .to.be.true;
 
-                // it lists all tags
-                expect(find('.settings-tags .settings-tag').length, 'tag list count')
-                    .to.equal(2);
-                expect(find('.settings-tags .settings-tag:first .tag-title').text(), 'tag list item title')
-                    .to.equal(tag1.name);
+            // it lists all tags
+            expect(find('.settings-tags .settings-tag').length, 'tag list count')
+                .to.equal(2);
+            expect(find('.settings-tags .settings-tag:first .tag-title').text(), 'tag list item title')
+                .to.equal(tag1.name);
 
-                // it highlights selected tag
-                expect(find(`a[href="/ghost/settings/tags/${tag1.slug}"]`).hasClass('active'), 'highlights selected tag')
-                    .to.be.true;
+            // it highlights selected tag
+            expect(find(`a[href="/ghost/settings/tags/${tag1.slug}"]`).hasClass('active'), 'highlights selected tag')
+                .to.be.true;
 
-                // it shows selected tag form
-                expect(find('.tag-settings-pane h4').text(), 'settings pane title')
-                    .to.equal('Tag Settings');
-                expect(find('.tag-settings-pane input[name="name"]').val(), 'loads correct tag into form')
-                    .to.equal(tag1.name);
-            });
+            // it shows selected tag form
+            expect(find('.tag-settings-pane h4').text(), 'settings pane title')
+                .to.equal('Tag Settings');
+            expect(find('.tag-settings-pane input[name="name"]').val(), 'loads correct tag into form')
+                .to.equal(tag1.name);
 
             // click the second tag in the list
-            click('.tag-edit-button:last');
+            await click('.tag-edit-button:last');
 
-            andThen(() => {
-                // it navigates to selected tag
-                expect(currentURL(), 'url after clicking tag').to.equal(`/settings/tags/${tag2.slug}`);
+            // it navigates to selected tag
+            expect(currentURL(), 'url after clicking tag').to.equal(`/settings/tags/${tag2.slug}`);
 
-                // it highlights selected tag
-                expect(find(`a[href="/ghost/settings/tags/${tag2.slug}"]`).hasClass('active'), 'highlights selected tag')
-                    .to.be.true;
+            // it highlights selected tag
+            expect(find(`a[href="/ghost/settings/tags/${tag2.slug}"]`).hasClass('active'), 'highlights selected tag')
+                .to.be.true;
 
-                // it shows selected tag form
-                expect(find('.tag-settings-pane input[name="name"]').val(), 'loads correct tag into form')
-                    .to.equal(tag2.name);
+            // it shows selected tag form
+            expect(find('.tag-settings-pane input[name="name"]').val(), 'loads correct tag into form')
+                .to.equal(tag2.name);
+
+            // simulate up arrow press
+            run(() => {
+                keydown(38);
+                keyup(38);
             });
 
-            andThen(() => {
-                // simulate up arrow press
-                run(() => {
-                    keydown(38);
-                    keyup(38);
-                });
+            // it navigates to previous tag
+            expect(currentURL(), 'url after keyboard up arrow').to.equal(`/settings/tags/${tag1.slug}`);
+
+            // it highlights selected tag
+            expect(find(`a[href="/ghost/settings/tags/${tag1.slug}"]`).hasClass('active'), 'selects previous tag')
+                .to.be.true;
+
+            // simulate down arrow press
+            run(() => {
+                keydown(40);
+                keyup(40);
             });
 
-            andThen(() => {
-                // it navigates to previous tag
-                expect(currentURL(), 'url after keyboard up arrow').to.equal(`/settings/tags/${tag1.slug}`);
+            // it navigates to previous tag
+            expect(currentURL(), 'url after keyboard down arrow').to.equal(`/settings/tags/${tag2.slug}`);
 
-                // it highlights selected tag
-                expect(find(`a[href="/ghost/settings/tags/${tag1.slug}"]`).hasClass('active'), 'selects previous tag')
-                    .to.be.true;
-            });
-
-            andThen(() => {
-                // simulate down arrow press
-                run(() => {
-                    keydown(40);
-                    keyup(40);
-                });
-            });
-
-            andThen(() => {
-                // it navigates to previous tag
-                expect(currentURL(), 'url after keyboard down arrow').to.equal(`/settings/tags/${tag2.slug}`);
-
-                // it highlights selected tag
-                expect(find(`a[href="/ghost/settings/tags/${tag2.slug}"]`).hasClass('active'), 'selects next tag')
-                    .to.be.true;
-            });
+            // it highlights selected tag
+            expect(find(`a[href="/ghost/settings/tags/${tag2.slug}"]`).hasClass('active'), 'selects next tag')
+                .to.be.true;
 
             // trigger save
-            fillIn('.tag-settings-pane input[name="name"]', 'New Name');
-            triggerEvent('.tag-settings-pane input[name="name"]', 'blur');
-            andThen(() => {
-                // check we update with the data returned from the server
-                expect(find('.settings-tags .settings-tag:last .tag-title').text(), 'tag list updates on save')
-                    .to.equal('New Name');
-                expect(find('.tag-settings-pane input[name="name"]').val(), 'settings form updates on save')
-                    .to.equal('New Name');
-            });
+            await fillIn('.tag-settings-pane input[name="name"]', 'New Name');
+            await triggerEvent('.tag-settings-pane input[name="name"]', 'blur');
+
+            // check we update with the data returned from the server
+            expect(find('.settings-tags .settings-tag:last .tag-title').text(), 'tag list updates on save')
+                .to.equal('New Name');
+            expect(find('.tag-settings-pane input[name="name"]').val(), 'settings form updates on save')
+                .to.equal('New Name');
 
             // start new tag
-            click('.view-actions .gh-btn-green');
+            await click('.view-actions .gh-btn-green');
 
-            andThen(() => {
-                // it navigates to the new tag route
-                expect(currentURL(), 'new tag URL').to.equal('/settings/tags/new');
+            // it navigates to the new tag route
+            expect(currentURL(), 'new tag URL').to.equal('/settings/tags/new');
 
-                // it displays the new tag form
-                expect(find('.tag-settings-pane h4').text(), 'settings pane title')
-                    .to.equal('New Tag');
+            // it displays the new tag form
+            expect(find('.tag-settings-pane h4').text(), 'settings pane title')
+                .to.equal('New Tag');
 
-                // all fields start blank
-                find('.tag-settings-pane input, .tag-settings-pane textarea').each(function () {
-                    expect($(this).val(), `input field for ${$(this).attr('name')}`)
-                        .to.be.blank;
-                });
+            // all fields start blank
+            find('.tag-settings-pane input, .tag-settings-pane textarea').each(function () {
+                expect($(this).val(), `input field for ${$(this).attr('name')}`)
+                    .to.be.blank;
             });
 
             // save new tag
-            fillIn('.tag-settings-pane input[name="name"]', 'New Tag');
-            triggerEvent('.tag-settings-pane input[name="name"]', 'blur');
+            await fillIn('.tag-settings-pane input[name="name"]', 'New Tag');
+            await triggerEvent('.tag-settings-pane input[name="name"]', 'blur');
 
-            andThen(() => {
-                // it redirects to the new tag's URL
-                expect(currentURL(), 'URL after tag creation').to.equal('/settings/tags/new-tag');
+            // it redirects to the new tag's URL
+            expect(currentURL(), 'URL after tag creation').to.equal('/settings/tags/new-tag');
 
-                // it adds the tag to the list and selects
-                expect(find('.settings-tags .settings-tag').length, 'tag list count after creation')
-                    .to.equal(3);
-                expect(find('.settings-tags .settings-tag:last .tag-title').text(), 'new tag list item title')
-                    .to.equal('New Tag');
-                expect(find('a[href="/ghost/settings/tags/new-tag"]').hasClass('active'), 'highlights new tag')
-                    .to.be.true;
-            });
+            // it adds the tag to the list and selects
+            expect(find('.settings-tags .settings-tag').length, 'tag list count after creation')
+                .to.equal(3);
+            expect(find('.settings-tags .settings-tag:last .tag-title').text(), 'new tag list item title')
+                .to.equal('New Tag');
+            expect(find('a[href="/ghost/settings/tags/new-tag"]').hasClass('active'), 'highlights new tag')
+                .to.be.true;
 
             // delete tag
-            click('.settings-menu-delete-button');
-            click('.fullscreen-modal .gh-btn-red');
+            await click('.settings-menu-delete-button');
+            await click('.fullscreen-modal .gh-btn-red');
 
-            andThen(() => {
-                // it redirects to the first tag
-                expect(currentURL(), 'URL after tag deletion').to.equal(`/settings/tags/${tag1.slug}`);
+            // it redirects to the first tag
+            expect(currentURL(), 'URL after tag deletion').to.equal(`/settings/tags/${tag1.slug}`);
 
-                // it removes the tag from the list
-                expect(find('.settings-tags .settings-tag').length, 'tag list count after deletion')
-                    .to.equal(2);
-            });
+            // it removes the tag from the list
+            expect(find('.settings-tags .settings-tag').length, 'tag list count after deletion')
+                .to.equal(2);
         });
 
-        it('loads tag via slug when accessed directly', function () {
+        it('loads tag via slug when accessed directly', async function () {
             server.createList('tag', 2);
 
-            visit('/settings/tags/tag-1');
+            await visit('/settings/tags/tag-1');
 
-            andThen(() => {
-                expect(currentURL(), 'URL after direct load').to.equal('/settings/tags/tag-1');
+            expect(currentURL(), 'URL after direct load').to.equal('/settings/tags/tag-1');
 
-                // it loads all other tags
-                expect(find('.settings-tags .settings-tag').length, 'tag list count after direct load')
-                    .to.equal(2);
+            // it loads all other tags
+            expect(find('.settings-tags .settings-tag').length, 'tag list count after direct load')
+                .to.equal(2);
 
-                // selects tag in list
-                expect(find('a[href="/ghost/settings/tags/tag-1"]').hasClass('active'), 'highlights requested tag')
-                    .to.be.true;
+            // selects tag in list
+            expect(find('a[href="/ghost/settings/tags/tag-1"]').hasClass('active'), 'highlights requested tag')
+                .to.be.true;
 
-                // shows requested tag in settings pane
-                expect(find('.tag-settings-pane input[name="name"]').val(), 'loads correct tag into form')
-                    .to.equal('Tag 1');
-            });
+            // shows requested tag in settings pane
+            expect(find('.tag-settings-pane input[name="name"]').val(), 'loads correct tag into form')
+                .to.equal('Tag 1');
         });
 
-        it('has infinite scroll pagination of tags list', function () {
+        it('has infinite scroll pagination of tags list', async function () {
             server.createList('tag', 32);
 
-            visit('settings/tags/tag-0');
+            await visit('settings/tags/tag-0');
 
-            andThen(() => {
-                // it loads first page
-                expect(find('.settings-tags .settings-tag').length, 'tag list count on first load')
-                    .to.equal(15);
+            // it loads first page
+            expect(find('.settings-tags .settings-tag').length, 'tag list count on first load')
+                .to.equal(15);
 
-                find('.tag-list').scrollTop(find('.tag-list-content').height());
-            });
+            await find('.tag-list').scrollTop(find('.tag-list-content').height());
+            await triggerEvent('.tag-list', 'scroll');
 
-            triggerEvent('.tag-list', 'scroll');
+            // it loads the second page
+            expect(find('.settings-tags .settings-tag').length, 'tag list count on second load')
+                .to.equal(30);
 
-            andThen(() => {
-                // it loads the second page
-                expect(find('.settings-tags .settings-tag').length, 'tag list count on second load')
-                    .to.equal(30);
-
-                find('.tag-list').scrollTop(find('.tag-list-content').height());
-            });
+            await find('.tag-list').scrollTop(find('.tag-list-content').height());
 
             // NOTE: FF has issues with scrolling further in acceptance tests
             // but works fine outside of tests
             //
-            // triggerEvent('.tag-list', 'scroll');
+            // await triggerEvent('.tag-list', 'scroll');
             //
-            // andThen(() => {
-            //     // it loads the final page
-            //     expect(find('.settings-tags .settings-tag').length, 'tag list count on third load')
-            //         .to.equal(32);
-            // });
+            // // it loads the final page
+            // expect(find('.settings-tags .settings-tag').length, 'tag list count on third load')
+            //     .to.equal(32);
         });
 
-        it('shows the internal tag label', function () {
+        it('shows the internal tag label', async function () {
             server.create('tag', {name: '#internal-tag', slug: 'hash-internal-tag', visibility: 'internal'});
 
-            visit('settings/tags/');
+            await visit('settings/tags/');
 
-            andThen(() => {
-                expect(currentURL()).to.equal('/settings/tags/hash-internal-tag');
+            expect(currentURL()).to.equal('/settings/tags/hash-internal-tag');
 
-                expect(find('.settings-tags .settings-tag').length, 'tag list count')
-                    .to.equal(1);
+            expect(find('.settings-tags .settings-tag').length, 'tag list count')
+                .to.equal(1);
 
-                expect(find('.settings-tags .settings-tag:first .label.label-blue').length, 'internal tag label')
-                    .to.equal(1);
+            expect(find('.settings-tags .settings-tag:first .label.label-blue').length, 'internal tag label')
+                .to.equal(1);
 
-                expect(find('.settings-tags .settings-tag:first .label.label-blue').text().trim(), 'internal tag label text')
-                    .to.equal('internal');
-            });
+            expect(find('.settings-tags .settings-tag:first .label.label-blue').text().trim(), 'internal tag label text')
+                .to.equal('internal');
         });
 
-        it('redirects to 404 when tag does not exist', function () {
+        it('redirects to 404 when tag does not exist', async function () {
             server.get('/tags/slug/unknown/', function () {
                 return new Response(404, {'Content-Type': 'application/json'}, {errors: [{message: 'Tag not found.', errorType: 'NotFoundError'}]});
             });
 
             errorOverride();
 
-            visit('settings/tags/unknown');
+            await visit('settings/tags/unknown');
 
-            andThen(() => {
-                errorReset();
-                expect(currentPath()).to.equal('error404');
-                expect(currentURL()).to.equal('/settings/tags/unknown');
-            });
+            errorReset();
+            expect(currentPath()).to.equal('error404');
+            expect(currentURL()).to.equal('/settings/tags/unknown');
         });
     });
 });

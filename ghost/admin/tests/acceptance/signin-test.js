@@ -28,16 +28,14 @@ describe('Acceptance: Signin', function() {
         destroyApp(application);
     });
 
-    it('redirects if already authenticated', function () {
+    it('redirects if already authenticated', async function () {
         let role = server.create('role', {name: 'Author'});
         server.create('user', {roles: [role], slug: 'test-user'});
 
-        authenticateSession(application);
+        await authenticateSession(application);
+        await visit('/signin');
 
-        visit('/signin');
-        andThen(() => {
-            expect(currentURL(), 'current url').to.equal('/');
-        });
+        expect(currentURL(), 'current url').to.equal('/');
     });
 
     describe('when attempting to signin', function () {
@@ -77,61 +75,48 @@ describe('Acceptance: Signin', function() {
             });
         });
 
-        it('errors correctly', function () {
-            invalidateSession(application);
+        it('errors correctly', async function () {
+            await invalidateSession(application);
+            await visit('/signin');
 
-            visit('/signin');
+            expect(currentURL(), 'signin url').to.equal('/signin');
 
-            andThen(() => {
-                expect(currentURL(), 'signin url').to.equal('/signin');
+            expect(find('input[name="identification"]').length, 'email input field')
+                .to.equal(1);
+            expect(find('input[name="password"]').length, 'password input field')
+                .to.equal(1);
 
-                expect(find('input[name="identification"]').length, 'email input field')
-                    .to.equal(1);
-                expect(find('input[name="password"]').length, 'password input field')
-                    .to.equal(1);
-            });
+            await click('.gh-btn-blue');
 
-            click('.gh-btn-blue');
+            expect(find('.form-group.error').length, 'number of invalid fields')
+                .to.equal(2);
 
-            andThen(() => {
-                expect(find('.form-group.error').length, 'number of invalid fields')
-                    .to.equal(2);
+            expect(find('.main-error').length, 'main error is displayed')
+                .to.equal(1);
 
-                expect(find('.main-error').length, 'main error is displayed')
-                    .to.equal(1);
-            });
+            await fillIn('[name="identification"]', 'test@example.com');
+            await fillIn('[name="password"]', 'invalid');
+            await click('.gh-btn-blue');
 
-            fillIn('[name="identification"]', 'test@example.com');
-            fillIn('[name="password"]', 'invalid');
-            click('.gh-btn-blue');
+            expect(currentURL(), 'current url').to.equal('/signin');
 
-            andThen(() => {
-                expect(currentURL(), 'current url').to.equal('/signin');
+            expect(find('.main-error').length, 'main error is displayed')
+                .to.equal(1);
 
-                expect(find('.main-error').length, 'main error is displayed')
-                    .to.equal(1);
-
-                expect(find('.main-error').text().trim(), 'main error text')
-                    .to.equal('Invalid Password');
-            });
+            expect(find('.main-error').text().trim(), 'main error text')
+                .to.equal('Invalid Password');
         });
 
-        it('submits successfully', function () {
+        it('submits successfully', async function () {
             invalidateSession(application);
 
-            visit('/signin');
+            await visit('/signin');
+            expect(currentURL(), 'current url').to.equal('/signin');
 
-            andThen(() => {
-                expect(currentURL(), 'current url').to.equal('/signin');
-            });
-
-            fillIn('[name="identification"]', 'test@example.com');
-            fillIn('[name="password"]', 'testpass');
-            click('.gh-btn-blue');
-
-            andThen(() => {
-                expect(currentURL(), 'currentURL').to.equal('/');
-            });
+            await fillIn('[name="identification"]', 'test@example.com');
+            await fillIn('[name="password"]', 'testpass');
+            await click('.gh-btn-blue');
+            expect(currentURL(), 'currentURL').to.equal('/');
         });
     });
 
@@ -140,42 +125,36 @@ describe('Acceptance: Signin', function() {
             enableGhostOAuth(server);
         });
 
-        it('can sign in successfully', function () {
+        it('can sign in successfully', async function () {
             server.loadFixtures('roles');
             stubSuccessfulOAuthConnect(application);
 
-            visit('/signin');
+            await visit('/signin');
 
-            andThen(() => {
-                expect(currentURL(), 'current url').to.equal('/signin');
+            expect(currentURL(), 'current url').to.equal('/signin');
 
-                expect(
-                    find('button.login').text().trim(),
-                    'login button text'
-                ).to.equal('Sign in with Ghost');
-            });
+            expect(
+                find('button.login').text().trim(),
+                'login button text'
+            ).to.equal('Sign in with Ghost');
 
-            click('button.login');
+            await click('button.login');
 
-            andThen(() => {
-                expect(currentURL(), 'url after connect').to.equal('/');
-            });
+            expect(currentURL(), 'url after connect').to.equal('/');
         });
 
-        it('handles a failed connect', function () {
+        it('handles a failed connect', async function () {
             stubFailedOAuthConnect(application);
 
-            visit('/signin');
-            click('button.login');
+            await visit('/signin');
+            await click('button.login');
 
-            andThen(() => {
-                expect(currentURL(), 'current url').to.equal('/signin');
+            expect(currentURL(), 'current url').to.equal('/signin');
 
-                expect(
-                    find('.main-error').text().trim(),
-                    'sign-in error'
-                ).to.match(/Authentication with Ghost\.org denied or failed/i);
-            });
+            expect(
+                find('.main-error').text().trim(),
+                'sign-in error'
+            ).to.match(/Authentication with Ghost\.org denied or failed/i);
         });
     });
 });

@@ -37,12 +37,10 @@ describe('Acceptance: Authentication', function () {
             });
         });
 
-        it('redirects to setup when setup isn\'t complete', function () {
-            visit('settings/labs');
+        it('redirects to setup when setup isn\'t complete', async function () {
+            await visit('settings/labs');
 
-            andThen(() => {
-                expect(currentURL()).to.equal('/setup/one');
-            });
+            expect(currentURL()).to.equal('/setup/one');
         });
     });
 
@@ -55,7 +53,7 @@ describe('Acceptance: Authentication', function () {
             server.create('user', {roles: [role], slug: 'test-user'});
         });
 
-        it('refreshes app tokens on boot', function () {
+        it('refreshes app tokens on boot', async function () {
             /* eslint-disable camelcase */
             authenticateSession(application, {
                 access_token: 'testAccessToken',
@@ -63,31 +61,31 @@ describe('Acceptance: Authentication', function () {
             });
             /* eslint-enable camelcase */
 
-            visit('/');
+            await visit('/');
 
-            andThen(() => {
-                let requests = server.pretender.handledRequests;
-                let refreshRequest = requests.findBy('url', '/ghost/api/v0.1/authentication/token');
+            let requests = server.pretender.handledRequests;
+            let refreshRequest = requests.findBy('url', '/ghost/api/v0.1/authentication/token');
 
-                expect(refreshRequest).to.exist;
-                expect(refreshRequest.method, 'method').to.equal('POST');
+            expect(refreshRequest).to.exist;
+            expect(refreshRequest.method, 'method').to.equal('POST');
 
-                let requestBody = $.deparam(refreshRequest.requestBody);
-                expect(requestBody.grant_type, 'grant_type').to.equal('password');
-                expect(requestBody.username.access_token, 'access_token').to.equal('testAccessToken');
-                expect(requestBody.username.refresh_token, 'refresh_token').to.equal('refreshAccessToken');
-
-            });
+            let requestBody = $.deparam(refreshRequest.requestBody);
+            expect(requestBody.grant_type, 'grant_type').to.equal('password');
+            expect(requestBody.username.access_token, 'access_token').to.equal('testAccessToken');
+            expect(requestBody.username.refresh_token, 'refresh_token').to.equal('refreshAccessToken');
         });
     });
 
     describe('general page', function () {
+        let newLocation;
+
         beforeEach(function () {
             originalReplaceLocation = windowProxy.replaceLocation;
             windowProxy.replaceLocation = function (url) {
                 url = url.replace(/^\/ghost\//, '/');
-                visit(url);
+                newLocation = url;
             };
+            newLocation = undefined;
 
             let role = server.create('role', {name: 'Administrator'});
             server.create('user', {roles: [role], slug: 'test-user'});
@@ -97,7 +95,7 @@ describe('Acceptance: Authentication', function () {
             windowProxy.replaceLocation = originalReplaceLocation;
         });
 
-        it('invalidates session on 401 API response', function () {
+        it('invalidates session on 401 API response', async function () {
             // return a 401 when attempting to retrieve users
             server.get('/users/', () => {
                 return new Response(401, {}, {
@@ -107,47 +105,41 @@ describe('Acceptance: Authentication', function () {
                 });
             });
 
-            authenticateSession(application);
-            visit('/team');
+            await authenticateSession(application);
+            await visit('/team');
 
-            andThen(() => {
-                // NOTE: seems to be a test issue where this is running
-                // mid transition
-            });
+            // running `visit(url)` inside windowProxy.replaceLocation breaks
+            // the async behaviour so we need to run `visit` here to simulate
+            // the browser visiting the new page
+            if (newLocation) {
+                await visit(newLocation);
+            }
 
-            andThen(() => {
-                expect(currentURL(), 'url after 401').to.equal('/signin');
-            });
+            expect(currentURL(), 'url after 401').to.equal('/signin');
         });
 
-        it('doesn\'t show navigation menu on invalid url when not authenticated', function () {
+        it('doesn\'t show navigation menu on invalid url when not authenticated', async function () {
             invalidateSession(application);
 
-            visit('/');
+            await visit('/');
 
-            andThen(() => {
-                expect(currentURL(), 'current url').to.equal('/signin');
-                expect(find('nav.gh-nav').length, 'nav menu presence').to.equal(0);
-            });
+            expect(currentURL(), 'current url').to.equal('/signin');
+            expect(find('nav.gh-nav').length, 'nav menu presence').to.equal(0);
 
-            visit('/signin/invalidurl/');
+            await visit('/signin/invalidurl/');
 
-            andThen(() => {
-                expect(currentURL(), 'url after invalid url').to.equal('/signin/invalidurl/');
-                expect(currentPath(), 'path after invalid url').to.equal('error404');
-                expect(find('nav.gh-nav').length, 'nav menu presence').to.equal(0);
-            });
+            expect(currentURL(), 'url after invalid url').to.equal('/signin/invalidurl/');
+            expect(currentPath(), 'path after invalid url').to.equal('error404');
+            expect(find('nav.gh-nav').length, 'nav menu presence').to.equal(0);
         });
 
-        it('shows nav menu on invalid url when authenticated', function () {
-            authenticateSession(application);
-            visit('/signin/invalidurl/');
+        it('shows nav menu on invalid url when authenticated', async function () {
+            await authenticateSession(application);
+            await visit('/signin/invalidurl/');
 
-            andThen(() => {
-                expect(currentURL(), 'url after invalid url').to.equal('/signin/invalidurl/');
-                expect(currentPath(), 'path after invalid url').to.equal('error404');
-                expect(find('nav.gh-nav').length, 'nav menu presence').to.equal(1);
-            });
+            expect(currentURL(), 'url after invalid url').to.equal('/signin/invalidurl/');
+            expect(currentPath(), 'path after invalid url').to.equal('error404');
+            expect(find('nav.gh-nav').length, 'nav menu presence').to.equal(1);
         });
     });
 
@@ -162,7 +154,7 @@ describe('Acceptance: Authentication', function () {
             run.throttle = function () { };
         });
 
-        it('displays re-auth modal attempting to save with invalid session', function () {
+        it('displays re-auth modal attempting to save with invalid session', async function () {
             let role = server.create('role', {name: 'Administrator'});
             server.create('user', {roles: [role]});
 
@@ -182,30 +174,26 @@ describe('Acceptance: Authentication', function () {
                 }
             });
 
-            authenticateSession(application);
+            await authenticateSession(application);
 
-            visit('/editor');
+            await visit('/editor');
 
             // create the post
-            fillIn('#entry-title', 'Test Post');
-            fillIn('.__mobiledoc-editor', 'Test post body');
-            click('.js-publish-button');
+            await fillIn('#entry-title', 'Test Post');
+            await fillIn('.__mobiledoc-editor', 'Test post body');
+            await click('.js-publish-button');
 
-            andThen(() => {
-                // we shouldn't have a modal at this point
-                expect(find('.modal-container #login').length, 'modal exists').to.equal(0);
-                // we also shouldn't have any alerts
-                expect(find('.gh-alert').length, 'no of alerts').to.equal(0);
-            });
+            // we shouldn't have a modal at this point
+            expect(find('.modal-container #login').length, 'modal exists').to.equal(0);
+            // we also shouldn't have any alerts
+            expect(find('.gh-alert').length, 'no of alerts').to.equal(0);
 
             // update the post
-            fillIn('.__mobiledoc-editor', 'Edited post body');
-            click('.js-publish-button');
+            await fillIn('.__mobiledoc-editor', 'Edited post body');
+            await click('.js-publish-button');
 
-            andThen(() => {
-                // we should see a re-auth modal
-                expect(find('.fullscreen-modal #login').length, 'modal exists').to.equal(1);
-            });
+            // we should see a re-auth modal
+            expect(find('.fullscreen-modal #login').length, 'modal exists').to.equal(1);
         });
 
         // don't clobber debounce/throttle for future tests
@@ -215,7 +203,7 @@ describe('Acceptance: Authentication', function () {
         });
     });
 
-    it('adds auth headers to jquery ajax', function (done) {
+    it('adds auth headers to jquery ajax', async function (done) {
         let role = server.create('role', {name: 'Administrator'});
         server.create('user', {roles: [role]});
 
@@ -232,19 +220,19 @@ describe('Acceptance: Authentication', function () {
         /* eslint-enable camelcase */
 
         // necessary to visit a page to fully boot the app in testing
-        visit('/').andThen(() => {
-            $.ajax({
-                type: 'POST',
-                url: `${Ghost.apiRoot}/uploads/`,
-                data: {test: 'Test'}
-            }).then((request) => {
-                expect(request.requestHeaders.Authorization, 'Authorization header')
-                    .to.exist;
-                expect(request.requestHeaders.Authorization, 'Authotization header content')
-                    .to.equal('Bearer test_token');
-            }).always(() => {
-                done();
-            });
+        await visit('/');
+
+        await $.ajax({
+            type: 'POST',
+            url: `${Ghost.apiRoot}/uploads/`,
+            data: {test: 'Test'}
+        }).then((request) => {
+            expect(request.requestHeaders.Authorization, 'Authorization header')
+                .to.exist;
+            expect(request.requestHeaders.Authorization, 'Authotization header content')
+                .to.equal('Bearer test_token');
+        }).always(() => {
+            done();
         });
     });
 });

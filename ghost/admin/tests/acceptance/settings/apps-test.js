@@ -21,37 +21,31 @@ describe('Acceptance: Settings - Apps', function () {
         destroyApp(application);
     });
 
-    it('redirects to signin when not authenticated', function () {
+    it('redirects to signin when not authenticated', async function () {
         invalidateSession(application);
-        visit('/settings/apps');
+        await visit('/settings/apps');
 
-        andThen(function () {
-            expect(currentURL(), 'currentURL').to.equal('/signin');
-        });
+        expect(currentURL(), 'currentURL').to.equal('/signin');
     });
 
-    it('redirects to team page when authenticated as author', function () {
+    it('redirects to team page when authenticated as author', async function () {
         let role = server.create('role', {name: 'Author'});
         server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
-        visit('/settings/apps');
+        await visit('/settings/apps');
 
-        andThen(() => {
-            expect(currentURL(), 'currentURL').to.equal('/team/test-user');
-        });
+        expect(currentURL(), 'currentURL').to.equal('/team/test-user');
     });
 
-    it('redirects to team page when authenticated as editor', function () {
+    it('redirects to team page when authenticated as editor', async function () {
         let role = server.create('role', {name: 'Editor'});
         server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
-        visit('/settings/apps');
+        await visit('/settings/apps');
 
-        andThen(() => {
-            expect(currentURL(), 'currentURL').to.equal('/team');
-        });
+        expect(currentURL(), 'currentURL').to.equal('/team');
     });
 
     describe('when logged in', function () {
@@ -62,35 +56,27 @@ describe('Acceptance: Settings - Apps', function () {
             return authenticateSession(application);
         });
 
-        it('it redirects to Slack when clicking on the grid', function () {
-            visit('/settings/apps');
+        it('it redirects to Slack when clicking on the grid', async function () {
+            await visit('/settings/apps');
 
-            andThen(() => {
-                // has correct url
-                expect(currentURL(), 'currentURL').to.equal('/settings/apps');
-            });
+            // has correct url
+            expect(currentURL(), 'currentURL').to.equal('/settings/apps');
 
-            click('#slack-link');
+            await click('#slack-link');
 
-            andThen(() => {
-                // has correct url
-                expect(currentURL(), 'currentURL').to.equal('/settings/apps/slack');
-            });
+            // has correct url
+            expect(currentURL(), 'currentURL').to.equal('/settings/apps/slack');
         });
-        it('it redirects to AMP when clicking on the grid', function () {
-            visit('/settings/apps');
+        it('it redirects to AMP when clicking on the grid', async function () {
+            await visit('/settings/apps');
 
-            andThen(() => {
-                // has correct url
-                expect(currentURL(), 'currentURL').to.equal('/settings/apps');
-            });
+            // has correct url
+            expect(currentURL(), 'currentURL').to.equal('/settings/apps');
 
-            click('#amp-link');
+            await click('#amp-link');
 
-            andThen(() => {
-                // has correct url
-                expect(currentURL(), 'currentURL').to.equal('/settings/apps/amp');
-            });
+            // has correct url
+            expect(currentURL(), 'currentURL').to.equal('/settings/apps/amp');
         });
     });
 });
