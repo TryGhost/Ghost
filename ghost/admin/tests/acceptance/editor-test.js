@@ -79,7 +79,7 @@ describe('Acceptance: Editor', function() {
         });
 
         it('renders the editor correctly, PSM Publish Date and Save Button', async function () {
-            server.createList('post', 2);
+            let [post1] = server.createList('post', 2);
             let futureTime = moment().tz('Etc/UTC').add(10, 'minutes');
 
             // post id 1 is a draft, checking for draft behaviour now
@@ -99,12 +99,33 @@ describe('Acceptance: Editor', function() {
                 .to.equal('Must be in format: "15:00"');
 
             // should error, if the publish time is in the future
+            // NOTE: date must be selected first, changing the time first will save
+            // with the new time
+            await datepickerSelect(testSelector('date-time-picker-datepicker'), moment.tz('Etc/UTC'));
             await fillIn(testSelector('date-time-picker-time-input'), futureTime.format('HH:mm'));
             await triggerEvent(testSelector('date-time-picker-time-input'), 'blur');
-            await datepickerSelect(testSelector('date-time-picker-datepicker'), futureTime);
 
             expect(find(testSelector('date-time-picker-error')).text().trim(), 'inline error response for future time')
                 .to.equal('Must be in the past');
+
+            // closing the PSM will reset the invalid date/time
+            await click(testSelector('close-settings-menu'));
+            await click(testSelector('psm-trigger'));
+
+            expect(
+                find(testSelector('date-time-picker-error')).text().trim(),
+                'date picker error after closing PSM'
+            ).to.equal('');
+
+            expect(
+                find(testSelector('date-time-picker-date-input')).val(),
+                'PSM date value after closing with invalid date'
+            ).to.equal(moment(post1.publishedAt).format('MM/DD/YYYY'));
+
+            expect(
+                find(testSelector('date-time-picker-time-input')).val(),
+                'PSM time value after closing with invalid date'
+            ).to.equal(moment(post1.publishedAt).format('HH:mm'));
 
             // saves the post with the new date
             let validTime = moment('2017-04-09 12:00');
