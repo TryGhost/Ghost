@@ -37,9 +37,9 @@ describe('Private Blogging', function () {
         });
 
         it('checkIsPrivate should call next if not private', function (done) {
-            apiSettingsStub.withArgs(sinon.match.has('key', 'isPrivate')).returns(Promise.resolve({
+            apiSettingsStub.withArgs(sinon.match.has('key', 'is_private')).returns(Promise.resolve({
                 settings: [{
-                    key: 'isPrivate',
+                    key: 'is_private',
                     value: 'false'
                 }]
             }));
@@ -53,9 +53,9 @@ describe('Private Blogging', function () {
         });
 
         it('checkIsPrivate should load session if private', function (done) {
-            apiSettingsStub.withArgs(sinon.match.has('key', 'isPrivate')).returns(Promise.resolve({
+            apiSettingsStub.withArgs(sinon.match.has('key', 'is_private')).returns(Promise.resolve({
                 settings: [{
-                    key: 'isPrivate',
+                    key: 'is_private',
                     value: 'true'
                 }]
             }));

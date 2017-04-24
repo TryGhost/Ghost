@@ -24,7 +24,7 @@ describe('{{body_class}} helper', function () {
             data: {
                 root: {
                     context: [],
-                    settings: {activeTheme: 'casper'}
+                    settings: {active_theme: 'casper'}
                 }
             }
         };

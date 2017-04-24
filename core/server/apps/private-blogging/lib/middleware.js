@@ -28,7 +28,7 @@ function verifySessionHash(salt, hash) {
 
 privateBlogging = {
     checkIsPrivate: function checkIsPrivate(req, res, next) {
-        return api.settings.read({context: {internal: true}, key: 'isPrivate'}).then(function then(response) {
+        return api.settings.read({context: {internal: true}, key: 'is_private'}).then(function then(response) {
             var pass = response.settings[0];
 
             if (_.isEmpty(pass.value) || pass.value === 'false') {

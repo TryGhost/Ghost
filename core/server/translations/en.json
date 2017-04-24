@@ -34,9 +34,9 @@
     "errors": {
         "apps": {
             "failedToParseActiveAppsSettings": {
-                "error": "Failed to parse activeApps setting value: {message}",
+                "error": "Failed to parse active_apps setting value: {message}",
                 "context": "Your apps will not be loaded.",
-                "help": "Check your settings table for typos in the activeApps value. It should look like: [\"app-1\", \"app2\"] (double quotes required)."
+                "help": "Check your settings table for typos in the active_apps value. It should look like: [\"app-1\", \"app2\"] (double quotes required)."
             },
             "appWillNotBeLoaded": {
                 "error": "The app will not be loaded",
@@ -335,7 +335,7 @@
                 "problemFindingSetting": "Problem finding setting: {key}",
                 "accessCoreSettingFromExtReq": "Attempted to access core setting from external request",
                 "activeThemeSetViaAPI": {
-                    "error": "Attempted to change activeTheme via settings API",
+                    "error": "Attempted to change active_theme via settings API",
                     "help": "Please activate theme via the themes API endpoints instead"
                 },
                 "invalidJsonInLabs": "Error: Invalid JSON in settings.labs",

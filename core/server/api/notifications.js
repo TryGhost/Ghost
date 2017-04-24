@@ -129,16 +129,16 @@ notifications = {
         var tasks;
 
         /**
-         * Adds the id of notification to "seenNotifications" array.
+         * Adds the id of notification to "seen_notifications" array.
          * @param {Object} notification
          * @return {*|Promise}
          */
         function markAsSeen(notification) {
             var context = {internal: true};
-            return settings.read({key: 'seenNotifications', context: context}).then(function then(response) {
+            return settings.read({key: 'seen_notifications', context: context}).then(function then(response) {
                 var seenNotifications = JSON.parse(response.settings[0].value);
                 seenNotifications = _.uniqBy(seenNotifications.concat([notification.id]));
-                return settings.edit({settings: [{key: 'seenNotifications', value: seenNotifications}]}, {context: context});
+                return settings.edit({settings: [{key: 'seen_notifications', value: seenNotifications}]}, {context: context});
             });
         }
 
