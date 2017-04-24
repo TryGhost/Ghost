@@ -24,9 +24,12 @@ export default Component.extend(SettingsMenuMixin, {
     session: injectService(),
     settings: injectService(),
 
+    model: null,
     slugValue: boundOneWay('model.slug'),
     metaTitleScratch: alias('model.metaTitleScratch'),
     metaDescriptionScratch: alias('model.metaDescriptionScratch'),
+
+    _showSettingsMenu: false,
 
     didReceiveAttrs() {
         this._super(...arguments);
@@ -38,6 +41,19 @@ export default Component.extend(SettingsMenuMixin, {
         this.get('model.author').then((author) => {
             this.set('selectedAuthor', author);
         });
+
+        // reset the publish date on close if it has an error
+        if (!this.get('showSettingsMenu') && this._showSettingsMenu) {
+            let post = this.get('model');
+            let errors = post.get('errors');
+
+            if (errors.has('publishedAtBlogDate') || errors.has('publishedAtBlogTime')) {
+                post.set('publishedAtBlogTZ', post.get('publishedAtUTC'));
+                post.validate({attribute: 'publishedAtBlog'});
+            }
+        }
+
+        this._showSettingsMenu = this.get('showSettingsMenu');
     },
 
     seoTitle: computed('model.titleScratch', 'metaTitleScratch', function () {
