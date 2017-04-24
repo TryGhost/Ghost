@@ -44,7 +44,7 @@ themeMiddleware.updateTemplateData = function updateTemplateData(req, res, next)
             navigation: settingsCache.get('navigation'),
             permalinks: settingsCache.get('permalinks'),
             icon: settingsCache.get('icon'),
-            cover: settingsCache.get('cover'),
+            cover_image: settingsCache.get('cover_image'),
             logo: settingsCache.get('logo'),
             amp: settingsCache.get('amp')
         },

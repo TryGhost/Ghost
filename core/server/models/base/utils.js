@@ -91,7 +91,7 @@ tagUpdate = {
     },
 
     createTagThenAttachTagToPost: function createTagThenAttachTagToPost(PostModel, TagModel, post, tag, index, options) {
-        var fields = ['name', 'slug', 'description', 'image', 'visibility', 'parent_id', 'meta_title', 'meta_description'];
+        var fields = ['name', 'slug', 'description', 'feature_image', 'visibility', 'parent_id', 'meta_title', 'meta_description'];
         return function () {
             return TagModel.add(_.pick(tag, fields), options).then(function then(createdTag) {
                 return tagUpdate.attachTagToPost(PostModel, post.id, createdTag, index, options)();

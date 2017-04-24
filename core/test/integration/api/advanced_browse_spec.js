@@ -74,7 +74,7 @@ describe('Advanced Browse', function () {
         describe('2. Posts - filter: "tag:photo,featured:true,image:-null", include: "tags"', function () {
             it('Will fetch posts which have either a tag of `photo`, are marked `featured` or have an image.', function (done) {
                 PostAPI.browse({
-                    filter: 'tag:photo,featured:true,image:-null',
+                    filter: 'tag:photo,featured:true,feature_image:-null',
                     include: 'tags'
                 }).then(function (result) {
                     var ids;
@@ -158,7 +158,7 @@ describe('Advanced Browse', function () {
             // Note that `pat` doesn't exist (it's `pat-smith`)
             it('Will fetch posts by the author `leslie` or `pat` which are either have tag `audio` or an image.', function (done) {
                 PostAPI.browse({
-                    filter: 'author:[leslie,pat]+(tag:audio,image:-null)',
+                    filter: 'author:[leslie,pat]+(tag:audio,feature_image:-null)',
                     include: 'author,tags'
                 }).then(function (result) {
                     var ids, authors;
@@ -181,8 +181,8 @@ describe('Advanced Browse', function () {
                     _.each(result.posts, function (post) {
                         var tags = _.map(post.tags, 'slug');
                         // This construct ensures we get an assertion or a failure
-                        if (!_.isEmpty(post.image)) {
-                            post.image.should.not.be.empty();
+                        if (!_.isEmpty(post.feature_image)) {
+                            post.feature_image.should.not.be.empty();
                         } else {
                             tags = _.map(post.tags, 'slug');
                             tags.should.containEql('audio');
@@ -322,7 +322,7 @@ describe('Advanced Browse', function () {
 
         describe('8. Tags filter: "image:-null+description:-null"', function () {
             it('Will fetch tags which have an image and a description', function (done) {
-                TagAPI.browse({filter: 'image:-null+description:-null', order: 'name ASC'}).then(function (result) {
+                TagAPI.browse({filter: 'feature_image:-null+description:-null', order: 'name ASC'}).then(function (result) {
                     var ids;
                     // 1. Result should have the correct base structure
                     should.exist(result);
@@ -341,9 +341,9 @@ describe('Advanced Browse', function () {
                     // @TODO standardise how alphabetical ordering is done across DBs (see #6104)
                     // ids.should.eql([4, 2, 3]);
 
-                    should.exist(result.tags[0].image);
-                    should.exist(result.tags[1].image);
-                    should.exist(result.tags[2].image);
+                    should.exist(result.tags[0].feature_image);
+                    should.exist(result.tags[1].feature_image);
+                    should.exist(result.tags[2].feature_image);
 
                     should.exist(result.tags[0].description);
                     should.exist(result.tags[1].description);
