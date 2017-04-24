@@ -57,7 +57,7 @@ function getMetaData(data, root) {
             timezone: settingsCache.get('activeTimezone'),
             navigation: settingsCache.get('navigation'),
             icon: settingsCache.get('icon'),
-            cover: settingsCache.get('cover'),
+            cover_image: settingsCache.get('cover_image'),
             logo: settingsCache.get('logo'),
             amp: settingsCache.get('amp')
         }

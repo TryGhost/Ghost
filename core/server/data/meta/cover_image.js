@@ -7,12 +7,12 @@ function getCoverImage(data) {
         contextObject = getContextObject(data, context);
 
     if (_.includes(context, 'home') || _.includes(context, 'author')) {
-        if (contextObject.cover) {
-            return utils.url.urlFor('image', {image: contextObject.cover}, true);
+        if (contextObject.cover_image) {
+            return utils.url.urlFor('image', {image: contextObject.cover_image}, true);
         }
     } else {
-        if (contextObject.image) {
-            return utils.url.urlFor('image', {image: contextObject.image}, true);
+        if (contextObject.feature_image) {
+            return utils.url.urlFor('image', {image: contextObject.feature_image}, true);
         }
     }
     return null;

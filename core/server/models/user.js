@@ -112,7 +112,7 @@ User = ghostBookshelf.Model.extend({
                     email: self.get('email')
                 }).then(function (response) {
                     if (response && response.image) {
-                        self.set('image', response.image);
+                        self.set('profile_image', response.image);
                     }
                 });
             })();

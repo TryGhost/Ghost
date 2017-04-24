@@ -44,7 +44,7 @@ data.tags = [
         id: ObjectId.generate(),
         name: 'photo',
         slug: 'photo',
-        image: 'some/image/path.jpg',
+        feature_image: 'some/image/path.jpg',
         description: 'Photo posts',
         created_by: data.users[1].id
     },
@@ -52,7 +52,7 @@ data.tags = [
         id: ObjectId.generate(),
         name: 'Video',
         slug: 'video',
-        image: 'some/image/path.jpg',
+        feature_image: 'some/image/path.jpg',
         description: 'Video posts',
         created_by: data.users[0].id
     },
@@ -60,7 +60,7 @@ data.tags = [
         id: ObjectId.generate(),
         name: 'Audio',
         slug: 'audio',
-        image: 'some/image/path.jpg',
+        feature_image: 'some/image/path.jpg',
         description: 'Audio posts',
         created_by: data.users[0].id
     },
@@ -131,7 +131,7 @@ data.posts = [
         markdown: 'Hello World!',
         featured: false,
         author_id: data.users[1].id,
-        image: 'some/image/path.jpg',
+        feature_image: 'some/image/path.jpg',
         tags: [data.tags[0].id, data.tags[3].id, data.tags[5].id]
     },
     {
@@ -141,7 +141,7 @@ data.posts = [
         markdown: 'Hello World!',
         featured: false,
         author_id: data.users[0].id,
-        image: 'some/image/path.jpg',
+        feature_image: 'some/image/path.jpg',
         tags: [data.tags[0].id, data.tags[2].id]
     },
     {
@@ -178,7 +178,7 @@ data.posts = [
         markdown: 'Hello World!',
         featured: false,
         author_id: data.users[0].id,
-        image: 'some/image/path.jpg',
+        feature_image: 'some/image/path.jpg',
         tags: [data.tags[1].id]
     },
     {

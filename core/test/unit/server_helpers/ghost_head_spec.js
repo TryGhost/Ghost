@@ -33,7 +33,7 @@ describe('{{ghost_head}} helper', function () {
         var localSettingsCache = {
             title: 'Ghost',
             description: 'blog description',
-            cover: '/content/images/blog-cover.png',
+            cover_image: '/content/images/blog-cover.png',
             amp: true
         };
 
@@ -102,7 +102,7 @@ describe('{{ghost_head}} helper', function () {
             var post = {
                 meta_description: 'all about our blog',
                 title: 'About',
-                image: '/content/images/test-image-about.png',
+                feature_image: '/content/images/test-image-about.png',
                 published_at: moment('2008-05-31T19:18:15').toISOString(),
                 updated_at: moment('2014-10-06T15:23:54').toISOString(),
                 page: true,
@@ -110,7 +110,7 @@ describe('{{ghost_head}} helper', function () {
                     name: 'Author name',
                     url: 'http://testauthorurl.com',
                     slug: 'Author',
-                    image: '/content/images/test-author-image.png',
+                    profile_image: '/content/images/test-author-image.png',
                     website: 'http://authorwebsite.com',
                     facebook: 'testuser',
                     twitter: '@testuser',
@@ -163,7 +163,7 @@ describe('{{ghost_head}} helper', function () {
                 meta_description: 'tag meta description',
                 name: 'tagtitle',
                 meta_title: 'tag meta title',
-                image: '/content/images/tag-image.png'
+                feature_image: '/content/images/tag-image.png'
             };
 
             helpers.ghost_head.call(
@@ -206,7 +206,7 @@ describe('{{ghost_head}} helper', function () {
                 description: 'tag description',
                 name: 'tagtitle',
                 meta_title: '',
-                image: '/content/images/tag-image.png'
+                feature_image: '/content/images/tag-image.png'
             };
 
             helpers.ghost_head.call(
@@ -248,7 +248,7 @@ describe('{{ghost_head}} helper', function () {
                 meta_description: '',
                 name: 'tagtitle',
                 meta_title: '',
-                image: '/content/images/tag-image.png'
+                feature_image: '/content/images/tag-image.png'
             };
 
             helpers.ghost_head.call(
@@ -271,7 +271,7 @@ describe('{{ghost_head}} helper', function () {
                 meta_description: 'tag meta description',
                 title: 'tagtitle',
                 meta_title: 'tag meta title',
-                image: '/content/images/tag-image.png'
+                feature_image: '/content/images/tag-image.png'
             };
 
             helpers.ghost_head.call(
@@ -296,8 +296,8 @@ describe('{{ghost_head}} helper', function () {
                 name: 'Author name',
                 slug: 'AuthorName',
                 bio: 'Author bio',
-                image: '/content/images/test-author-image.png',
-                cover: '/content/images/author-cover-image.png',
+                profile_image: '/content/images/test-author-image.png',
+                cover_image: '/content/images/author-cover-image.png',
                 website: 'http://authorwebsite.com',
                 facebook: 'testuser',
                 twitter: '@testuser'
@@ -345,8 +345,8 @@ describe('{{ghost_head}} helper', function () {
                 name: 'Author name',
                 slug: 'AuthorName',
                 bio: 'Author bio',
-                image: '/content/images/test-author-image.png',
-                cover: '/content/images/author-cover-image.png',
+                profile_image: '/content/images/test-author-image.png',
+                cover_image: '/content/images/author-cover-image.png',
                 website: 'http://authorwebsite.com'
             };
 
@@ -390,7 +390,7 @@ describe('{{ghost_head}} helper', function () {
             var post = {
                 meta_description: 'blog description',
                 title: 'Welcome to Ghost',
-                image: '/content/images/test-image.png',
+                feature_image: '/content/images/test-image.png',
                 published_at: moment('2008-05-31T19:18:15').toISOString(),
                 updated_at: moment('2014-10-06T15:23:54').toISOString(),
                 tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
@@ -398,7 +398,7 @@ describe('{{ghost_head}} helper', function () {
                     name: 'Author name',
                     url: 'http://testauthorurl.com',
                     slug: 'Author',
-                    image: '/content/images/test-author-image.png',
+                    profile_image: '/content/images/test-author-image.png',
                     website: 'http://authorwebsite.com',
                     bio: 'Author bio',
                     facebook: 'testuser',
@@ -470,7 +470,7 @@ describe('{{ghost_head}} helper', function () {
             var post = {
                 meta_description: 'blog description',
                 title: 'Welcome to Ghost',
-                image: '/content/images/test-image.png',
+                feature_image: '/content/images/test-image.png',
                 published_at: moment('2008-05-31T19:18:15').toISOString(),
                 updated_at: moment('2014-10-06T15:23:54').toISOString(),
                 tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
@@ -478,7 +478,7 @@ describe('{{ghost_head}} helper', function () {
                     name: 'Author name',
                     url: 'http://testauthorurl.com',
                     slug: 'Author',
-                    image: '/content/images/test-author-image.png',
+                    profile_image: '/content/images/test-author-image.png',
                     website: 'http://authorwebsite.com',
                     bio: 'Author bio',
                     facebook: 'testuser',
@@ -551,7 +551,7 @@ describe('{{ghost_head}} helper', function () {
                 meta_description: 'blog "test" description',
                 title: 'title',
                 meta_title: 'Welcome to Ghost "test"',
-                image: '/content/images/test-image.png',
+                feature_image: '/content/images/test-image.png',
                 published_at: moment('2008-05-31T19:18:15').toISOString(),
                 updated_at: moment('2014-10-06T15:23:54').toISOString(),
                 tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
@@ -559,7 +559,7 @@ describe('{{ghost_head}} helper', function () {
                     name: 'Author name',
                     url: 'http//:testauthorurl.com',
                     slug: 'Author',
-                    image: '/content/images/test-author-image.png',
+                    profile_image: '/content/images/test-author-image.png',
                     website: 'http://authorwebsite.com',
                     facebook: 'testuser',
                     twitter: '@testuser'
@@ -630,7 +630,7 @@ describe('{{ghost_head}} helper', function () {
             var post = {
                 meta_description: 'blog description',
                 title: 'Welcome to Ghost',
-                image: '/content/images/test-image.png',
+                feature_image: '/content/images/test-image.png',
                 published_at: moment('2008-05-31T19:18:15').toISOString(),
                 updated_at: moment('2014-10-06T15:23:54').toISOString(),
                 tags: [],
@@ -638,7 +638,7 @@ describe('{{ghost_head}} helper', function () {
                     name: 'Author name',
                     url: 'http//:testauthorurl.com',
                     slug: 'Author',
-                    image: '/content/images/test-author-image.png',
+                    profile_image: '/content/images/test-author-image.png',
                     website: 'http://authorwebsite.com',
                     facebook: 'testuser',
                     twitter: '@testuser'
@@ -705,7 +705,7 @@ describe('{{ghost_head}} helper', function () {
             var post = {
                 meta_description: 'blog description',
                 title: 'Welcome to Ghost',
-                image: null,
+                feature_image: null,
                 published_at: moment('2008-05-31T19:18:15').toISOString(),
                 updated_at: moment('2014-10-06T15:23:54').toISOString(),
                 tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
@@ -713,7 +713,7 @@ describe('{{ghost_head}} helper', function () {
                     name: 'Author name',
                     url: 'http//:testauthorurl.com',
                     slug: 'Author',
-                    image: null,
+                    profile_image: null,
                     website: 'http://authorwebsite.com',
                     facebook: 'testuser',
                     twitter: '@testuser'
@@ -926,7 +926,7 @@ describe('{{ghost_head}} helper', function () {
         var localSettingsCache = {
             title: 'Ghost',
             description: 'blog description',
-            cover: '/content/images/blog-cover.png',
+            cover_image: '/content/images/blog-cover.png',
             amp: true,
             icon: '/content/images/favicon.png'
         };
@@ -961,7 +961,7 @@ describe('{{ghost_head}} helper', function () {
         var localSettingsCache = {
             title: 'Ghost',
             description: 'blog description',
-            cover: '/content/images/blog-cover.png',
+            cover_image: '/content/images/blog-cover.png',
             amp: true,
             icon: '/content/images/favicon.png'
         };
@@ -1021,7 +1021,7 @@ describe('{{ghost_head}} helper', function () {
         var localSettingsCache = {
             title: 'Ghost',
             description: 'blog description',
-            cover: '/content/images/blog-cover.png',
+            cover_image: '/content/images/blog-cover.png',
             icon: '/content/images/favicon.png',
             ghost_head: '<style>body {background: red;}</style>'
         };

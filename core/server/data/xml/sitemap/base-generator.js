@@ -178,7 +178,7 @@ _.extend(BaseSiteMapGenerator.prototype, {
 
     createImageNodeFromDatum: function (datum) {
         // Check for cover first because user has cover but the rest only have image
-        var image = datum.cover || datum.image,
+        var image = datum.cover_image || datum.profile_image || datum.feature_image,
             imageUrl,
             imageEl;
 

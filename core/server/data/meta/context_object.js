@@ -6,7 +6,7 @@ function getContextObject(data, context) {
      * If the data object does not contain the requested context, we return the fallback object.
      */
     var blog = {
-            cover: settingsCache.get('cover'),
+            cover_image: settingsCache.get('cover_image'),
             twitter: settingsCache.get('twitter'),
             facebook: settingsCache.get('facebook')
         },

@@ -51,7 +51,7 @@ describe('getContextObject', function () {
         before(function () {
             sandbox.stub(settingsCache, 'get', function (key) {
                 return {
-                    cover: 'test.png'
+                    cover_image: 'test.png'
                 }[key];
             });
         });
@@ -66,7 +66,7 @@ describe('getContextObject', function () {
             contextObject = getContextObject(data, context);
 
             should.exist(contextObject);
-            contextObject.should.have.property('cover', 'test.png');
+            contextObject.should.have.property('cover_image', 'test.png');
         });
     });
 });
