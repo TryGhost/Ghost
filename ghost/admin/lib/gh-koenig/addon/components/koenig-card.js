@@ -12,7 +12,7 @@ export default Component.extend({
         this._super(...arguments);
         let card = this.get('card');
         if (card.newlyCreated) {
-            run.schedule('afterRender', this, () => {
+            run.next(() => {
                 if (card.card.launchMode === 'edit') {
                     this.send('startEdit');
                     this.send('selectCard');

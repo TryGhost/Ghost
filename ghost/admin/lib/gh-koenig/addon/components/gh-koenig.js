@@ -363,18 +363,19 @@ export default Component.extend({
                 if (forwards && section.next) {
                     range = section.next.toRange();
                     range.tail.offset = 0;
-                    editor.selectRange(range);
                 } else if (section.prev) {
                     range = section.prev.toRange();
                     range.head.offset = range.tail.offset;
-                    editor.selectRange(range);
                 } else if (section.next) {
                     range = section.next.toRange();
                     range.tail.offset = 0;
-                    editor.selectRange(range);
+                } else {
+                    card.env.remove();
+                    return;
                 }
 
                 card.env.remove();
+                editor.selectRange(range);
             });
         },
         stopEditingCard() {
