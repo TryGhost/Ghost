@@ -70,14 +70,14 @@ describe('templates', function () {
             });
         });
 
-        it('returns fallback if there is no activeTheme', function () {
+        it('returns fallback if there is no active_theme', function () {
             getActiveThemeStub.returns(undefined);
 
             templates.pickTemplate(['tag-test', 'tag', 'index'], 'fallback').should.eql('fallback');
             templates.pickTemplate(['page-my-post', 'page', 'post'], 'fallback').should.eql('fallback');
         });
 
-        it('returns fallback if activeTheme has no templates', function () {
+        it('returns fallback if active_theme has no templates', function () {
             templates.pickTemplate(['tag-test', 'tag', 'index'], 'fallback').should.eql('fallback');
             templates.pickTemplate(['page-about', 'page', 'post'], 'fallback').should.eql('fallback');
         });
@@ -232,7 +232,7 @@ describe('templates', function () {
             });
         });
 
-        it('will fall back to default if there is no activeTheme', function () {
+        it('will fall back to default if there is no active_theme', function () {
             getActiveThemeStub.returns(undefined);
 
             templates.error(500).should.match(/core\/server\/views\/error.hbs$/);
