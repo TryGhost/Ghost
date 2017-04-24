@@ -115,12 +115,19 @@ export default Component.extend({
                 title.addClass('no-content');
             }
 
-            let {textContent} = title[0]; // eslint-disable-line
-            // // sanity check if there is formatting reset it.
-            // if (title[0].innerHTML !== textContent && title[0].innerHTML) {
-            //     title[0].innerHTML = textContent;
-            //     // todo: retain the range position.
-            // }
+            // there is no consistency in how characters like nbsp and zwd are handled across browsers
+            // so we replace every whitespace character with a ' '
+            // note: this means that we can't have tabs in the title.
+            let textContent = title[0].textContent.replace(/\s/g, ' ');
+            let innerHTML = title[0].innerHTML.replace(/(&nbsp;|\s)/g, ' ');
+
+            // sanity check if there is formatting reset it.
+            if (innerHTML && innerHTML !== textContent) {
+                // run in next runloop so that we don't get stuck in infinite loops.
+                run.next(() => {
+                    title[0].innerHTML = textContent;
+                });
+            }
 
             if (this.get('val') !== textContent) {
                 this.set('_cachedVal', textContent);
@@ -211,14 +218,12 @@ export default Component.extend({
         title.focus();
         let selection = window.getSelection();
 
-        window.requestAnimationFrame(() => {
-            run.join(() => {
-                if (selection.modify) {
-                    for (let i = 0; i < offset; i++) {
-                        selection.modify('move', 'forward', 'character');
-                    }
+        run.next(() => {
+            if (selection.modify) {
+                for (let i = 0; i < offset; i++) {
+                    selection.modify('move', 'forward', 'character');
                 }
-            });
+            }
         });
     }
 });
