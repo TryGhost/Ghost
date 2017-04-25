@@ -318,54 +318,6 @@ svg.gh-btn-icon-right {
 
 
 /*
-/* Loading Button Spinner
-/* ---------------------------------------------------------- */
-/*
-
-Usage: Swap out button>span text with HTML
-
-<a class="gh-btn gh-btn-blue">
-    <span>
-        <div class="gh-spinner"></div>
-    </span>
-</div>
-
-*/
-
-.gh-spinner {
-    position: relative;
-    display: inline-block;
-    width: 18px;
-    height: 18px;
-    border: rgba(0,0,0,0.2) solid 4px;
-    border-radius: 100%;
-    animation: spin 1s linear infinite;
-}
-
-.gh-spinner:before {
-    content: "";
-    display: block;
-    margin-top: 9px;
-    width: 4px;
-    height: 4px;
-    background: rgba(0,0,0,0.6);
-    border-radius: 100%;
-}
-
-@keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-    50% {
-        transform: rotate(180deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
-}
-
-
-/*
 /* Button Variations
 /* ---------------------------------------------------------- */
 
