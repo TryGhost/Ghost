@@ -8,6 +8,7 @@ import {isBlank} from 'ember-utils';
 import computed from 'ember-computed';
 import observer from 'ember-metal/observer';
 import run from 'ember-runloop';
+import counter from 'ghost-admin/utils/word-count';
 import {
     isRequestEntityTooLargeError,
     isUnsupportedMediaTypeError,
@@ -29,6 +30,7 @@ export default Component.extend({
     save: observer('doSave', function () {
         let payload = this.get('payload');
         payload.markdown = this.$('textarea').val();
+        payload.wordcount = counter(payload.markdown);
         this.set('value', this.$('textarea').val());
         this.set('payload', payload);
         this.get('env').save(payload, false);

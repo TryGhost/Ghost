@@ -3,13 +3,16 @@ import layout from '../../templates/components/card-html';
 import computed from 'ember-computed';
 import observer from 'ember-metal/observer';
 import {invokeAction} from 'ember-invoke-action';
+import counter from 'ghost-admin/utils/word-count';
 
 export default Component.extend({
     layout,
     hasRendered: false,
 
     save: observer('doSave', function () {
-        this.get('env').save(this.get('payload'), false);
+        let payload = this.get('payload');
+        payload.wordcount = counter(payload.html);
+        this.get('env').save(payload, false);
     }),
 
     value: computed('payload', {
