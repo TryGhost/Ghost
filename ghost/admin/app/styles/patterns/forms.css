@@ -334,6 +334,7 @@ textarea {
 .gh-input-file {
     font-size: 1.2rem;
     width: auto;
+    height: auto;
 }
 
 .gh-input-file + .gh-btn {

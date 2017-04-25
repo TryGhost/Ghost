@@ -196,6 +196,7 @@
     font-size: 1.1rem;
     font-weight: 200;
     color: color(var(--midgrey) l(+17%));
+    margin-left: -30px;
 }
 
 .gh-date-time-picker-error {
