@@ -50,9 +50,11 @@
                 setEditor=(action "setEditor")
                 menuIsOpen=(action "editorMenuIsOpen")
                 menuIsClosed=(action "editorMenuIsClosed")
+                wordcountDidChange=(action "wordcountDidChange")
             }}
         </div>
     </div>
+    <div class="gh-editor-wordcount">{{pluralize wordcount 'word'}}.</div>
 {{/gh-editor}}
 
 {{#if showDeletePostModal}}

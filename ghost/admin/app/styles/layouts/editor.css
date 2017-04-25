@@ -251,7 +251,18 @@
     line-height: 0;
 }
 
-
 .gh-editor-header-small .post-settings {
     padding: 13px 15px;
+}
+
+.gh-editor-wordcount {
+     position: fixed;
+     bottom: 0px;
+     padding:10px;
+ }
+
+@media (max-width: 1200px) {
+    .gh-editor-wordcount {
+        display: none;
+    }
 }

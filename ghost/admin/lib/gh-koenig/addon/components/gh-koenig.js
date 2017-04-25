@@ -8,8 +8,8 @@ import createCardFactory from '../lib/card-factory';
 import defaultCommands from '../options/default-commands';
 import editorCards  from '../cards/index';
 import {getCardFromDoc, checkIfClickEventShouldCloseCard, getPositionOnScreenFromRange} from '../lib/utils';
+import counter from 'ghost-admin/utils/word-count';
 import $ from 'jquery';
-// import { VALID_MARKUP_SECTION_TAGNAMES } from 'mobiledoc-kit/models/markup-section'; //the block elements supported by mobile-doc
 
 export const BLANK_DOC = {
     version: MOBILEDOC_VERSION,
@@ -103,6 +103,7 @@ export default Component.extend({
                     this._firstChange = true;
                     this.sendAction('onFirstChange', this._cachedDoc);
                 }
+                this.processWordcount();
             });
         });
     },
@@ -151,6 +152,7 @@ export default Component.extend({
         }
 
         editor.cursorDidChange(() => this.cursorMoved());
+        this.processWordcount();
     },
 
     // makes sure the cursor is on screen except when selection is happening in which case the browser mostly ensures it.
@@ -193,7 +195,21 @@ export default Component.extend({
             this.send('deselectCard');
         }
     },
-
+    // Note: This wordcount function doesn't count words that have been entered in cards.
+    // We should either allow cards to report their own wordcount or use the DOM (innerText) to calculate the wordcount.
+    processWordcount() {
+        let wordcount = 0;
+        if (this.editor.post.sections.length) {
+            this.editor.post.sections.forEach((section) => {
+                if (section.isMarkerable && section.text.length) {
+                    wordcount += counter(section.text);
+                } else if (section.isCardSection && section.payload.wordcount) {
+                    wordcount += Number(section.payload.wordcount);
+                }
+            });
+        }
+        this.sendAction('wordcountDidChange', wordcount);
+    },
     willDestroy() {
         this.editor.destroy();
         this.send('deselectCard');

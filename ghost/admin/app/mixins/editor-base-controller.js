@@ -42,6 +42,7 @@ export default Mixin.create({
     clock: injectService(),
     slugGenerator: injectService(),
 
+    wordcount: 0,
     cards: [], // for apps
     atoms: [], // for apps
     toolbar: [], // for apps
@@ -580,6 +581,10 @@ export default Mixin.create({
 
         editorMenuIsClosed() {
             this.set('editorMenuIsOpen', false);
+        },
+
+        wordcountDidChange(wordcount) {
+            this.set('wordcount', wordcount);
         }
     }
 });
