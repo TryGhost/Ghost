@@ -256,6 +256,12 @@ export default Component.extend({
                 throw new Error('A selection must include a cardId');
             }
 
+            // don't hard select an editing card.
+            if (this.editedCard && this.editedCard.id === cardId) {
+                this.send('editCard', cardId);
+                return;
+            }
+
             let card = this.get('emberCards').find((card) => card.id === cardId);
             let cardHolder = $(`#${cardId}`).parents('.kg-card');
             let selectedCard = this.get('selectedCard');
@@ -369,6 +375,7 @@ export default Component.extend({
         editCard(cardId) {
             let card = this.get('emberCards').find((card) => card.id === cardId);
             this.set('editedCard', card);
+            this.send('selectCard', cardId);
         },
         deleteCard(cardId, forwards = false) {
             let editor = this.get('editor');
