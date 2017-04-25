@@ -104,7 +104,7 @@ describe('Acceptance: Setup', function () {
             // email field is focused by default
             // NOTE: $('x').is(':focus') doesn't work in phantomjs CLI runner
             // https://github.com/ariya/phantomjs/issues/10427
-            expect(find('[name="email"]').get(0) === document.activeElement, 'email field has focus')
+            expect(find(testSelector('email-input')).get(0) === document.activeElement, 'email field has focus')
                 .to.be.true;
 
             await click('.gh-btn-green');
@@ -122,10 +122,10 @@ describe('Acceptance: Setup', function () {
                 .to.equal(1);
 
             // enter valid details and submit
-            await fillIn('[name="email"]', 'test@example.com');
-            await fillIn('[name="name"]', 'Test User');
-            await fillIn('[name="password"]', 'password');
-            await fillIn('[name="blog-title"]', 'Blog Title');
+            await fillIn(testSelector('email-input'), 'test@example.com');
+            await fillIn(testSelector('name-input'), 'Test User');
+            await fillIn(testSelector('password-input'), 'password');
+            await fillIn(testSelector('blog-title-input'), 'Blog Title');
             await click('.gh-btn-green');
 
             // it transitions to step 3
@@ -189,10 +189,10 @@ describe('Acceptance: Setup', function () {
             expect(find('.main-error').text().trim(), 'error text')
                 .to.not.be.blank;
 
-            await fillIn('[name="email"]', 'test@example.com');
-            await fillIn('[name="name"]', 'Test User');
-            await fillIn('[name="password"]', 'password');
-            await fillIn('[name="blog-title"]', 'Blog Title');
+            await fillIn(testSelector('email-input'), 'test@example.com');
+            await fillIn(testSelector('name-input'), 'Test User');
+            await fillIn(testSelector('password-input'), 'password');
+            await fillIn(testSelector('blog-title-input'), 'Blog Title');
 
             // first post - simulated validation error
             await click('.gh-btn-green');
@@ -227,10 +227,10 @@ describe('Acceptance: Setup', function () {
             server.loadFixtures('roles');
 
             await visit('/setup/two');
-            await fillIn('[name="email"]', 'test@example.com');
-            await fillIn('[name="name"]', 'Test User');
-            await fillIn('[name="password"]', 'password');
-            await fillIn('[name="blog-title"]', 'Blog Title');
+            await fillIn(testSelector('email-input'), 'test@example.com');
+            await fillIn(testSelector('name-input'), 'Test User');
+            await fillIn(testSelector('password-input'), 'password');
+            await fillIn(testSelector('blog-title-input'), 'Blog Title');
             await click('.gh-btn-green');
 
             // button should not be spinning
@@ -282,10 +282,10 @@ describe('Acceptance: Setup', function () {
 
             // complete step 2 so we can access step 3
             await visit('/setup/two');
-            await fillIn('[name="email"]', 'test@example.com');
-            await fillIn('[name="name"]', 'Test User');
-            await fillIn('[name="password"]', 'password');
-            await fillIn('[name="blog-title"]', 'Blog Title');
+            await fillIn(testSelector('email-input'), 'test@example.com');
+            await fillIn(testSelector('name-input'), 'Test User');
+            await fillIn(testSelector('password-input'), 'password');
+            await fillIn(testSelector('blog-title-input'), 'Blog Title');
             await click('.gh-btn-green');
 
             // default field/button state
