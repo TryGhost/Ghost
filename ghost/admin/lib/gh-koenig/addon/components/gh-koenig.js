@@ -7,7 +7,7 @@ import {MOBILEDOC_VERSION} from 'mobiledoc-kit/renderers/mobiledoc';
 import createCardFactory from '../lib/card-factory';
 import defaultCommands from '../options/default-commands';
 import editorCards  from '../cards/index';
-import {getCardFromDoc, checkIfClickEventShouldCloseCard, getPositionFromRange} from '../lib/utils';
+import {getCardFromDoc, checkIfClickEventShouldCloseCard, getPositionOnScreenFromRange} from '../lib/utils';
 import $ from 'jquery';
 // import { VALID_MARKUP_SECTION_TAGNAMES } from 'mobiledoc-kit/models/markup-section'; //the block elements supported by mobile-doc
 
@@ -161,7 +161,7 @@ export default Component.extend({
         if (editor.range.isCollapsed) {
             let scrollBuffer = 33; // the extra buffer to scroll.
 
-            let position = getPositionFromRange(editor, $(this.get('containerSelector')));
+            let position = getPositionOnScreenFromRange(editor, $(this.get('containerSelector')));
 
             if (!position) {
                 return;

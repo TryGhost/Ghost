@@ -34,11 +34,26 @@ export function checkIfClickEventShouldCloseCard(target, cardHolder) {
     return true;
 }
 
-// get a position based on the range.
+// get a position in the editor based on the range.
 // in Chrome, Firefox, and Edge range.getBoundingClientRect() works
 // in Safari if the range is collapsed you get nothing so we expand the range by 1
 // if that doesn't work then we fallback got the paragraph.
 export function getPositionFromRange(editor, holder, range) {
+    let position = getPositionOnScreenFromRange(editor, holder, range);
+    let scrollLeft = holder.scrollLeft();
+    let scrollTop = holder.scrollTop();
+    return {
+        left: position.left + scrollLeft,
+        right: position.right + scrollLeft,
+        top: position.top + scrollTop,
+        bottom: position.bottom + scrollTop,
+        width: position.width,
+        height: position.height
+    };
+}
+
+// get a position on the screen based on the range.
+export function getPositionOnScreenFromRange(editor, holder, range) {
     if (!editor.range || !editor.range.head || !editor.range.head.section) {
         return;
     }
@@ -86,10 +101,10 @@ export function getPositionFromRange(editor, holder, range) {
     }
 
     return {
-        left: position.left + holder.scrollLeft() - offset.left,
-        right: position.right + holder.scrollLeft() - offset.left,
-        top: position.top + holder.scrollTop() - offset.top,
-        bottom: position.bottom + holder.scrollTop() - offset.top,
+        left: position.left - offset.left,
+        right: position.right - offset.left,
+        top: position.top - offset.top,
+        bottom: position.bottom  - offset.top,
         width: position.right - position.left,
         height: position.bottom - position.top
     };
