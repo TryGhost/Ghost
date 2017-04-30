@@ -9,7 +9,8 @@
 // (less) dirty requires
 var proxy = require('../../../../helpers/proxy'),
     SafeString = proxy.SafeString,
-    templates = proxy.templates;
+    templates = proxy.templates,
+    i18n = proxy.i18n;
 
 module.exports = function input_email(options) {
     options = options || {};
@@ -23,8 +24,8 @@ module.exports = function input_email(options) {
         extras += 'autofocus="autofocus"';
     }
 
-    if (options.hash.placeholder) {
-        extras += ' placeholder="' + options.hash.placeholder + '"';
+    if (i18n.t(options.hash.placeholder)) {
+        extras += ' placeholder="' + i18n.t(options.hash.placeholder) + '"';
     }
 
     if (options.hash.value) {

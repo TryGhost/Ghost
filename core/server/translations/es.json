@@ -578,34 +578,34 @@
             }
         }
     },
-    "pagination": {
-        "newerPosts": "Newer Posts",
-        "page": "Page",
-        "of": "of",
-        "olderPosts": "Older Posts"
+   "pagination": {
+        "newerPosts": "Artículos Siguientes",
+        "page": "Página",
+        "of": "de",
+        "olderPosts": "Artículos Anteriores"
     },
     "theme": {
-        "back": "Back",
-        "close": "Close",
-        "menu": "Menu",
-        "on": "on",
-        "noPosts": "No posts",
-        "1Post": "1 post",
-        "xPosts": "% posts",
-        "1PostCollection": "A 1-post collection",
-        "xPostCollection": "A %-post collection",
-        "proudlyPublishedWith": "Proudly published with",
-        "read": "Read",
-        "morePosts": "more posts",
-        "byThisAuthor": "by this author",
-        "scrollDown": "Scroll Down",
-        "shareThisPost": "Share this post",
-        "subscribe": "Subscribe",
-        "subscribeTo": "Subscribe to",
-        "getLatestPosts": "Get the latest posts delivered right to your inbox",
-        "orSubscribe": "or subscribe",
-        "viaRss": "via RSS",
-        "withFeedly": "with Feedly!",
-        "yourEmailAddress": "Your email address"
+        "back": "Volver",
+        "close": "Cerrar",
+        "menu": "Menú",
+        "on": "en",
+        "noPosts": "No hay artículos",
+        "1Post": "1 artículo",
+        "xPosts": "% artículos",
+        "1PostCollection": "Una colección de 1 artículo",
+        "xPostCollection": "Una colección de % artículos",
+        "proudlyPublishedWith": "Publicado con",
+        "read": "Lee",
+        "morePosts": "más artículos",
+        "byThisAuthor": "de este autor",
+        "scrollDown": "Bajar",
+        "shareThisPost": "Comparte este artículo",
+        "subscribe": "Suscríbete",
+        "subscribeTo": "Suscríbete a",
+        "getLatestPosts": "Recibe los últimos artículos directamente en tu buzón",
+        "orSubscribe": "¡O suscríbete",
+        "viaRss": "por RSS",
+        "withFeedly": "con Feedly!",
+        "yourEmailAddress": "Tu correo electrónico"
     }
 }

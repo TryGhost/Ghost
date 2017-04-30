@@ -114,6 +114,13 @@ I18n = {
             // No `Intl`, so use and load the polyfill.
             global.Intl = require('intl');
         }
+    },
+    /**
+     * Exporting the current locale (e.g. "en") to make it available for other files,
+     * such as core/server/helpers/index.js and core/server/helpers/date.js
+     */
+    locale: function locale() {
+        return currentLocale;
     }
 };
 

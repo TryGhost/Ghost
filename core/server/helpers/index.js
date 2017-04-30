@@ -2,7 +2,13 @@ var coreHelpers = {},
     register = require('./register'),
     registerThemeHelper = register.registerThemeHelper,
     registerAsyncThemeHelper = register.registerAsyncThemeHelper,
-    registerAllCoreHelpers;
+    registerAllCoreHelpers,
+    proxy = require('./proxy'),
+    getAssetUrl = proxy.metaData.getAssetUrl,
+    SafeString = proxy.SafeString,
+    i18n = proxy.i18n,
+    locale = i18n.locale();
+    i18nCss = new SafeString(getAssetUrl("css/" + locale + ".css"));
 
 coreHelpers.asset = require('./asset');
 coreHelpers.author = require('./author');
@@ -58,6 +64,40 @@ registerAllCoreHelpers = function registerAllCoreHelpers() {
     registerThemeHelper('twitter_url', coreHelpers.twitter_url);
     registerThemeHelper('facebook_url', coreHelpers.facebook_url);
     registerThemeHelper('url', coreHelpers.url);
+
+    // i18n: Stylesheet file such as /assets/css/es.css to translate content
+    // by overriding. This is used in the default.hbs theme template file:
+    //<link rel="stylesheet" type="text/css" href="{{theme_i18nCss}}" />
+    registerThemeHelper('theme_i18nCss', i18nCss);
+    
+    // i18n: Translatable handlebars expressions for themes and pagination.
+    // Translations are defined in files: core/server/translations/en.json, etc.
+    registerThemeHelper('pagination_newerPosts', i18n.t('pagination.newerPosts'));
+    registerThemeHelper('pagination_page', i18n.t('pagination.page'));
+    registerThemeHelper('pagination_of', i18n.t('pagination.of'));
+    registerThemeHelper('pagination_olderPosts', i18n.t('pagination.olderPosts'));
+    registerThemeHelper('theme_back', i18n.t('theme.back'));
+    registerThemeHelper('theme_close', i18n.t('theme.close'));
+    registerThemeHelper('theme_menu', i18n.t('theme.menu'));
+    registerThemeHelper('theme_on', i18n.t('theme.on'));
+    registerThemeHelper('theme_noPosts', i18n.t('theme.noPosts'));
+    registerThemeHelper('theme_1Post', i18n.t('theme.1Post'));
+    registerThemeHelper('theme_xPosts', i18n.t('theme.xPosts'));
+    registerThemeHelper('theme_1PostCollection', i18n.t('theme.1PostCollection'));
+    registerThemeHelper('theme_xPostCollection', i18n.t('theme.xPostCollection'));
+    registerThemeHelper('theme_proudlyPublishedWith', i18n.t('theme.proudlyPublishedWith'));
+    registerThemeHelper('theme_read', i18n.t('theme.read'));
+    registerThemeHelper('theme_morePosts', i18n.t('theme.morePosts'));
+    registerThemeHelper('theme_byThisAuthor', i18n.t('theme.byThisAuthor'));
+    registerThemeHelper('theme_scrollDown', i18n.t('theme.scrollDown'));
+    registerThemeHelper('theme_shareThisPost', i18n.t('theme.shareThisPost'));
+    registerThemeHelper('theme_subscribe', i18n.t('theme.subscribe'));
+    registerThemeHelper('theme_subscribeTo', i18n.t('theme.subscribeTo'));
+    registerThemeHelper('theme_getLatestPosts', i18n.t('theme.getLatestPosts'));
+    registerThemeHelper('theme_orSubscribe', i18n.t('theme.orSubscribe'));
+    registerThemeHelper('theme_viaRss', i18n.t('theme.viaRss'));
+    registerThemeHelper('theme_withFeedly', i18n.t('theme.withFeedly'));
+    registerThemeHelper('theme_yourEmailAddress', i18n.t('theme.yourEmailAddress'));
 
     // Async theme helpers
     registerAsyncThemeHelper('ghost_foot', coreHelpers.ghost_foot);

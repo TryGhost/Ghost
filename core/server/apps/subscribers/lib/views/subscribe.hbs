@@ -24,7 +24,7 @@
             <div class="gh-flow">
                 <header class="gh-flow-head">
                     <nav class="gh-flow-nav">
-                        <a href="{{#if subscribed_url}}{{subscribed_url}}{{else}}{{@blog.url}}{{/if}}" class="gh-flow-back"><i class="icon-arrow-left"></i> Back</a>
+                        <a href="{{#if subscribed_url}}{{subscribed_url}}{{else}}{{@blog.url}}{{/if}}" class="gh-flow-back"><i class="icon-arrow-left"></i> {{{theme_back}}}</a>
                     </nav>
                 </header>
 
@@ -32,14 +32,14 @@
                     <section class="gh-flow-content">
                         {{^if success}}
                             <header>
-                                <h1>Subscribe to {{@blog.title}}</h1>
+                                <h1>{{{theme_subscribeTo}}} {{@blog.title}}</h1>
                             </header>
 
                             {{subscribe_form
                                 form_class="gh-signin"
                                 input_class="gh-input"
                                 button_class="gh-btn gh-btn-blue gh-btn-block"
-                                placeholder="Your email address"
+                                placeholder="theme.yourEmailAddress"
                                 autofocus="true"
                             }}
                         {{else}}

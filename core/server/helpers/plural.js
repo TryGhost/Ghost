@@ -1,12 +1,14 @@
 // # Plural Helper
-// Usage: `{{plural 0 empty='No posts' singular='% post' plural='% posts'}}`
+// Usage: `{{plural 0 empty='theme.noPosts' singular='theme.1Post' plural='theme.xPosts'}}`
 //
 // pluralises strings depending on item count
 //
 // The 1st argument is the numeric variable which the helper operates on
-// The 2nd argument is the string that will be output if the variable's value is 0
-// The 3rd argument is the string that will be output if the variable's value is 1
-// The 4th argument is the string that will be output if the variable's value is 2+
+// The 2nd argument is the i18n string that will be output if the variable's value is 0
+// The 3rd argument is the i18n string that will be output if the variable's value is 1
+// The 4th argument is the i18n string that will be output if the variable's value is 2+
+//
+// Translations are defined in files: core/server/translations/en.json, etc.
 
 var proxy = require('./proxy'),
     _ = require('lodash'),
@@ -23,11 +25,11 @@ module.exports = function plural(number, options) {
     }
 
     if (number === 0) {
-        return new SafeString(options.hash.empty.replace('%', number));
+        return new SafeString(i18n.t(options.hash.empty).replace('%', number));
     } else if (number === 1) {
-        return new SafeString(options.hash.singular.replace('%', number));
+        return new SafeString(i18n.t(options.hash.singular).replace('%', number));
     } else if (number >= 2) {
-        return new SafeString(options.hash.plural.replace('%', number));
+        return new SafeString(i18n.t(options.hash.plural).replace('%', number));
     }
 };
 
