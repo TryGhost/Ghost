@@ -5,8 +5,10 @@
 
 // (less) dirty requires
 var proxy = require('../../../../helpers/proxy'),
+    jp = require('jsonpath'),
     SafeString = proxy.SafeString,
-    templates = proxy.templates;
+    templates = proxy.templates,
+    i18n = proxy.i18n;
 
 // We use the name input_email to match the helper for consistency:
 module.exports = function input_email(options) { // eslint-disable-line camelcase
@@ -21,8 +23,13 @@ module.exports = function input_email(options) { // eslint-disable-line camelcas
         extras += 'autofocus="autofocus"';
     }
 
+    // Compatibility with both old themes and i18n-capable themes.
     if (options.hash.placeholder) {
-        extras += ' placeholder="' + options.hash.placeholder + '"';
+        if (options.hash.where) {
+            extras += ' placeholder="' + i18n.t(jp.stringify([options.hash.where, options.hash.placeholder])) + '"';
+        } else {
+            extras += ' placeholder="' + options.hash.placeholder + '"';
+        }
     }
 
     if (options.hash.value) {

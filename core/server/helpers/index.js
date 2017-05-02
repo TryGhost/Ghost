@@ -2,7 +2,13 @@ var coreHelpers = {},
     register = require('./register'),
     registerThemeHelper = register.registerThemeHelper,
     registerAsyncThemeHelper = register.registerAsyncThemeHelper,
-    registerAllCoreHelpers;
+    registerAllCoreHelpers,
+    proxy = require('./proxy'),
+    getAssetUrl = proxy.metaData.getAssetUrl,
+    SafeString = proxy.SafeString,
+    i18n = proxy.i18n,
+    locale = i18n.locale(),
+    i18nCss = new SafeString(getAssetUrl('css/' + locale + '.css'));
 
 coreHelpers.asset = require('./asset');
 coreHelpers.author = require('./author');
@@ -29,6 +35,7 @@ coreHelpers.post_class = require('./post_class');
 coreHelpers.prev_post = require('./prev_next');
 coreHelpers.next_post = require('./prev_next');
 coreHelpers.reading_time = require('./reading_time');
+coreHelpers.t = require('./t');
 coreHelpers.tags = require('./tags');
 coreHelpers.title = require('./title');
 coreHelpers.twitter_url = require('./twitter_url');
@@ -55,11 +62,17 @@ registerAllCoreHelpers = function registerAllCoreHelpers() {
     registerThemeHelper('plural', coreHelpers.plural);
     registerThemeHelper('post_class', coreHelpers.post_class);
     registerThemeHelper('reading_time', coreHelpers.reading_time);
+    registerThemeHelper('t', coreHelpers.t);
     registerThemeHelper('tags', coreHelpers.tags);
     registerThemeHelper('title', coreHelpers.title);
     registerThemeHelper('twitter_url', coreHelpers.twitter_url);
     registerThemeHelper('facebook_url', coreHelpers.facebook_url);
     registerThemeHelper('url', coreHelpers.url);
+
+    // i18n: Stylesheet file such as /assets/css/es.css to translate content
+    // by overriding. This is used in the default.hbs theme template file:
+    // <link rel="stylesheet" type="text/css" href="{{i18nCss}}" />
+    registerThemeHelper('i18nCss', i18nCss);
 
     // Async theme helpers
     registerAsyncThemeHelper('ghost_foot', coreHelpers.ghost_foot);

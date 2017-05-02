@@ -66,7 +66,7 @@
         },
         "middleware": {
             "api": {
-                "versionMismatch": "Client request for {clientVersion} does not match server version {serverVersion}."
+                "versionMismatch": "Request for version {requestVersion} does not match current version {currentVersion}."
             },
             "auth": {
                 "clientAuthenticationFailed": "Client Authentication Failed",
@@ -106,12 +106,7 @@
             },
             "themehandler": {
                 "missingTheme": "The currently active theme \"{theme}\" is missing.",
-                "invalidTheme": "The currently active theme \"{theme}\" is invalid.",
-                "themeHasErrors": "The currently active theme \"{theme}\" has errors, but will still work.",
-                "activateFailed": "Unable to activate the theme \"{theme}\"."
-            },
-            "redirects": {
-                "register": "Could not register custom redirects."
+                "invalidTheme": "The currently active theme \"{theme}\" is invalid."
             }
         },
         "utils": {
@@ -123,8 +118,7 @@
             },
             "blogIcon": {
                 "error": "Could not fetch icon dimensions."
-            },
-            "redirectsWrongFormat": "Incorrect redirects file format."
+            }
         },
         "config": {
             "couldNotLocateConfigFile": {
@@ -172,9 +166,9 @@
         },
         "general": {
             "maintenance": "Ghost is currently undergoing maintenance, please wait a moment then retry.",
+            "moreInfo": "\nMore info: {info}",
             "requiredOnFuture": "This will be required in future. Please see {link}",
-            "internalError": "Something went wrong.",
-            "jsonParse": "Could not parse JSON: {context}."
+            "internalError": "Something went wrong."
         },
         "httpServer": {
             "addressInUse": {
@@ -190,15 +184,17 @@
         },
         "mail": {
             "incompleteMessageData": {
-                "error": "Incomplete message data."
+                "error": "Error: Incomplete message data."
             },
             "failedSendingEmail": {
-                "error": "Failed to send email."
+                "error": "Error: Failed to send email"
             },
             "noMailServerAtAddress": {
-                "error": " No mail server found at {domain}."
+                "error": " - no mail server found at {domain}"
             },
-            "reason": " Reason: {reason}."
+            "messageNotSent": {
+                "error": "Error: Message could not be sent"
+            }
         },
         "models": {
             "subscriber": {
@@ -228,8 +224,7 @@
                 "missingContext": "missing context",
                 "onlyOneRolePerUserSupported": "Only one role per user is supported at the moment.",
                 "methodDoesNotSupportOwnerRole": "This method does not support assigning the owner role",
-                "passwordDoesNotComplyLength": "Your password must be at least {minLength} characters long.",
-                "passwordDoesNotComplySecurity": "Sorry, you cannot use an insecure password.",
+                "passwordDoesNotComplyLength": "Your password must be at least 8 characters long.",
                 "notEnoughPermission": "You do not have permission to perform this action",
                 "noUserWithEnteredEmailAddr": "There is no user with that email address.",
                 "userIsInactive": "The user with that email address is inactive.",
@@ -248,7 +243,6 @@
                 "tokenLocked": "Token locked",
                 "invalidToken": "Invalid token",
                 "userNotFound": "User not found",
-                "ownerNotFound": "Owner not found",
                 "onlyOwnerCanTransferOwnerRole": "Only owners are able to transfer the owner role.",
                 "onlyAdmCanBeAssignedOwnerRole": "Only administrators can be assigned the owner role."
             },
@@ -259,8 +253,7 @@
                 "token": {
                     "noUserFound": "No user found",
                     "tokenNotFound": "Token not found"
-                },
-                "invalidDate": "Date format for `{key}` is invalid."
+                }
             },
             "plugins": {
                 "filter": {
@@ -278,7 +271,7 @@
             },
             "noPermissionToAction": "You do not have permission to perform this action"
         },
-        "updateCheck": {
+        "update-check": {
             "checkingForUpdatesFailed": {
                 "error": "Checking for updates failed, your blog will continue to function.",
                 "help": "If you get this error repeatedly, please seek help from {url}."
@@ -337,10 +330,6 @@
             "job": {
                 "notFound": "Job not found.",
                 "publishInThePast": "Use the force flag to publish a post in the past."
-            },
-            "redirects": {
-                "missingFile": "Please select a JSON file.",
-                "invalidFile": "Please select a valid JSON file to import."
             },
             "settings": {
                 "problemFindingSetting": "Problem finding setting: {key}",
@@ -417,9 +406,6 @@
                 },
                 "notAllowedToInviteOwner": "Not allowed to invite an owner user.",
                 "notAllowedToInvite": "Not allowed to invite this role."
-            },
-            "webhooks": {
-                "webhookAlreadyExists": "A webhook for requested event with supplied target_url already exists."
             }
         },
         "data": {
@@ -457,13 +443,13 @@
                         "failedToParseImportJson": "Failed to parse the import JSON file."
                     }
                 }
-            }
-        },
-        "services": {
-            "ping": {
-                "requestFailed": {
-                    "error": "The {service} service was unable to send a ping request, your blog will continue to function.",
-                    "help": "If you get this error repeatedly, please seek help on {url}."
+            },
+            "xml": {
+                "xmlrpc": {
+                    "pingUpdateFailed": {
+                        "error": "Pinging services for updates on your blog failed, your blog will continue to function.",
+                        "help": "If you get this error repeatedly, please seek help on {url}."
+                    }
                 }
             }
         },
@@ -485,9 +471,6 @@
             "whilstTryingToRender": "whilst trying to render an error page for the error: ",
             "renderingErrorPage": "Rendering Error Page",
             "caughtProcessingError": "Ghost caught a processing error in the middleware layer.",
-            "imageNotFound": "Image not found",
-            "imageNotFoundWithRef": "Image not found: {img}",
-            "cannotReadImage": "Could not read image: {img}",
             "pageNotFound": "Page not found",
             "resourceNotFound": "Resource not found"
         }
@@ -499,13 +482,13 @@
         },
         "helpers": {
             "helperNotAvailable": "The \\{\\{{helperName}\\}\\} helper is not available.",
-            "flagMustBeEnabled": "The {flagName} flag must be enabled in labs if you wish to use the \\{\\{{helperName}\\}\\} helper.",
+            "flagMustBeEnabled": "The {flagName} labs flag must be enabled if you wish to use the \\{\\{{helperName}\\}\\} helper.",
             "seeLink": "See {url}",
-            "mustBeCalledAsBlock": "The \\{\\{{helperName}\\}\\} helper must be called as a block. E.g.  \\{\\{#{helperName}\\}\\} \\{\\{/{helperName}\\}\\}",
             "foreach": {
                 "iteratorNeeded": "Need to pass an iterator to #foreach"
             },
             "get": {
+                "mustBeCalledAsBlock": "Get helper must be called as a block",
                 "invalidResource": "Invalid resource given to get helper"
             },
             "has": {
@@ -526,7 +509,7 @@
                 "isDeprecated": "Warning: pageUrl is deprecated, please use page_url instead\nThe helper pageUrl has been replaced with page_url in Ghost 0.4.2, and will be removed entirely in Ghost 0.6\nIn your theme's pagination.hbs file, pageUrl should be renamed to page_url"
             },
             "pagination": {
-                "invalidData": "The \\{\\{pagination\\}\\} helper was used outside of a paginated context. See https://themes.ghost.org/docs/pagination.",
+                "invalidData": "pagination data is not an object or is a function",
                 "valuesMustBeDefined": "All values must be defined for page, pages, limit and total",
                 "nextPrevValuesMustBeNumeric": "Invalid value, Next/Prev must be a number",
                 "valuesMustBeNumeric": "Invalid value, check page, pages, limit and total are numbers"
@@ -535,8 +518,7 @@
                 "valuesMustBeDefined": "All values must be defined for empty, singular and plural"
             },
             "img_url": {
-                "attrIsRequired": "Attribute is required e.g. \\{\\{img_url feature_image\\}\\}",
-                "attrIsUnknown": "Attribute passed to \\{\\{img_url\\}\\} is unknown"
+                "attrIsRequired": "Attribute is required e.g. \\{\\{img_url feature_image\\}\\}"
             },
             "template": {
                 "templateNotFound": "Template {name} not found."
@@ -555,14 +537,14 @@
         "httpServer": {
             "cantTouchThis": "Can't touch this",
             "ghostIsRunning": "Ghost is running...",
-            "yourBlogIsAvailableOn": "Your blog is now available on {url}",
-            "ctrlCToShutDown": "Ctrl+C to shut down",
+            "yourBlogIsAvailableOn": "\nYour blog is now available on {url}",
+            "ctrlCToShutDown": "\nCtrl+C to shut down",
             "ghostIsRunningIn": "Ghost is running in {env}...",
-            "listeningOn": "Listening on: {host}:{port}",
-            "urlConfiguredAs": "Url configured as: {url}",
-            "ghostHasShutdown": "Ghost has shut down",
-            "yourBlogIsNowOffline": "Your blog is now offline",
-            "ghostWasRunningFor": "Ghost was running for",
+            "listeningOn": "\nListening on",
+            "urlConfiguredAs": "\nUrl configured as: {url}",
+            "ghostHasShutdown": "\nGhost has shut down",
+            "yourBlogIsNowOffline": "\nYour blog is now offline",
+            "ghostWasRunningFor": "\nGhost was running for",
             "ghostIsClosingConnections": "Ghost is closing connections"
         },
         "mail": {
@@ -587,52 +569,49 @@
             "validation": {
                 "index": {
                     "valueCannotBeBlank": "Value in [{tableName}.{columnKey}] cannot be blank.",
-                    "valueMustBeBoolean": "Value in [{tableName}.{columnKey}] must be one of true, false, 0 or 1.",
+                    "valueMustBeBoolean": "Value in [settings.key] must be one of true, false, 0 or 1.",
                     "valueExceedsMaxLength": "Value in [{tableName}.{columnKey}] exceeds maximum length of {maxlength} characters.",
                     "valueIsNotInteger": "Value in [{tableName}.{columnKey}] is not an integer.",
                     "themeCannotBeActivated": "{themeName} cannot be activated because it is not currently installed.",
-                    "validationFailed": "Validation ({validationName}) failed for {key}",
-                    "validationFailedTypes": {
-                        "isLength": "Value in [{tableName}.{key}] exceeds maximum length of {max} characters."
-                    }
+                    "validationFailed": "Validation ({validationName}) failed for {key}"
                 }
             }
         }
     },
     "frontend": {
-        "Back": "Back",
-        "Newer Posts": "Newer Posts",
-        "of": "of",
-        "Older Posts": "Older Posts",
-        "Page": "Page",
-        "Subscribe": "Subscribe",
-        "Subscribe to": "Subscribe to",
-        "Subscribed!": "Subscribed!",
-        "with the email address": "with the email address",
-        "Your email address": "Your email address",
-        "You've successfully subscribed to": "You've successfully subscribed to"
+        "Back": "Volver",
+        "Newer Posts": "Artículos Siguientes",
+        "of": "de",
+        "Older Posts": "Artículos Anteriores",
+        "Page": "Página",
+        "Subscribe": "Suscríbete",
+        "Subscribe to": "Suscríbete a",
+        "Subscribed!": "¡Suscrito!",
+        "with the email address": "con el correo electrónico",
+        "Your email address": "Tu correo electrónico",
+        "You've successfully subscribed to": "Te has suscrito con éxito a"
     },
     "casper": {
-        "A 1-post collection": "A 1-post collection",
-        "A %-post collection": "A %-post collection",
-        "by this author": "by this author",
-        "Close": "Close",
-        "Get the latest posts delivered right to your inbox": "Get the latest posts delivered right to your inbox",
-        "Menu": "Menu",
-        "more posts": "more posts",
-        "No posts": "No posts",
-        "on": "on",
-        "or subscribe": "or subscribe",
-        "Proudly published with {ghostLink}": "Proudly published with {ghostLink}",
-        "Read": "Read",
-        "Scroll Down": "Scroll Down",
-        "Share this post": "Share this post",
-        "Subscribe": "Subscribe",
-        "Subscribe to": "Subscribe to",
-        "via RSS": "via RSS",
-        "with Feedly!": "with Feedly!",
-        "Your email address": "Your email address",
-        "1 post": "1 post",
-        "% posts": "% posts"
+        "A 1-post collection": "Una colección de 1 artículo",
+        "A %-post collection": "Una colección de % artículos",
+        "by this author": "de este autor",
+        "Close": "Cerrar",
+        "Get the latest posts delivered right to your inbox": "Recibe los últimos artículos directamente en tu buzón",
+        "Menu": "Menú",
+        "more posts": "más artículos",
+        "No posts": "No hay artículos",
+        "on": "en",
+        "or subscribe": "¡O suscríbete",
+        "Proudly published with {ghostLink}": "Publicado con {ghostLink}",
+        "Read": "Lee",
+        "Scroll Down": "Bajar",
+        "Share this post": "Comparte",
+        "Subscribe": "Suscríbete",
+        "Subscribe to": "Suscríbete a",
+        "via RSS": "por RSS",
+        "with Feedly!": "con Feedly!",
+        "Your email address": "Tu correo electrónico",
+        "1 post": "1 artículo",
+        "% posts": "% artículos"
     }
 }

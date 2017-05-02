@@ -8,7 +8,10 @@ var supportedLocales = ['en'],
     MessageFormat = require('intl-messageformat'),
     logging = require('./logging'),
     errors = require('./errors'),
+    jp = require('jsonpath'),
 
+    // You can choose the current locale here. E.g.: en = English (default), es = Spanish, etc.
+    // The corresponding translation file (en.json, es.json...) should be at core/server/translations/
     // TODO: fetch this dynamically based on overall blog settings (`key = "default_locale"`) in the `settings` table
     currentLocale = 'en',
     blos,
@@ -72,7 +75,7 @@ I18n = {
      */
     findString: function findString(msgPath, opts) {
         var options = _.merge({log: true}, opts || {}),
-            matchingString, path;
+            candidateString, matchingString, path;
 
         // no path? no string
         if (_.isEmpty(msgPath) || !_.isString(msgPath)) {
@@ -84,13 +87,21 @@ I18n = {
             I18n.init();
         }
 
-        matchingString = blos;
+        // Both jsonpath's dot-notation and bracket-notation start with '$'
+        // E.g.: $.store.book.title or $['store']['book']['title']
+        // The {{t}} translation helper passes here the full jsonpath with $
+        // Backend messages use dot-notation, and the $. is added here
+        if (msgPath.substring(0, 1) !== '$') {
+            path = '$.' + msgPath;
+        } else {
+            path = msgPath;
+        }
 
-        path = msgPath.split('.');
-        path.forEach(function (key) {
-            // reassign matching object, or set to an empty string if there is no match
-            matchingString = matchingString[key] || {};
-        });
+        // jp.value is a jsonpath method. Info:
+        // https://www.npmjs.com/package/jsonpath
+        candidateString = jp.value(blos, path) || defaultString;
+        matchingString = candidateString || {};
+
         if (_.isObject(matchingString) || _.isEqual(matchingString, {})) {
             if (options.log) {
                 logging.error(new errors.IncorrectUsageError({
@@ -147,6 +158,13 @@ I18n = {
             // No `Intl`, so use and load the polyfill.
             global.Intl = require('intl');
         }
+    },
+    /**
+     * Exporting the current locale (e.g. "en") to make it available for other files,
+     * such as core/server/helpers/index.js and core/server/helpers/date.js
+     */
+    locale: function locale() {
+        return currentLocale;
     }
 };
 
