@@ -1,10 +1,10 @@
 var should = require('should'), // jshint ignore:line
     fs = require('fs-extra'),
     StorageBase = require('ghost-storage-base'),
-    configUtils = require('../../utils/configUtils'),
-    storage = require('../../../server/storage'),
-    errors = require('../../../server/errors'),
-    LocalFileStorage = require('../../../server/storage/LocalFileStorage');
+    configUtils = require('../../../utils/configUtils'),
+    storage = require('../../../../server/adapters/storage'),
+    errors = require('../../../../server/errors'),
+    LocalFileStorage = require('../../../../server/adapters/storage/LocalFileStorage');
 
 describe('storage: index_spec', function () {
     var scope = {adapter: null};

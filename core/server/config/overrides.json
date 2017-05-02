@@ -7,8 +7,8 @@
         "adminViews": "core/server/admin/views/",
         "defaultViews": "core/server/views/",
         "internalAppPath": "core/server/apps/",
-        "internalStoragePath": "core/server/storage/",
-        "internalSchedulingPath": "core/server/scheduling/",
+        "internalStoragePath": "core/server/adapters/storage/",
+        "internalSchedulingPath": "core/server/adapters/scheduling/",
         "migrationPath": "core/server/data/migrations",
         "publicFilePath": "core/server/public"
     },

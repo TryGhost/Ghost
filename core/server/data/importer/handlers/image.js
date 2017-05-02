@@ -3,7 +3,7 @@ var _       = require('lodash'),
     path    = require('path'),
     config  = require('../../../config'),
     utils   = require('../../../utils'),
-    storage = require('../../../storage'),
+    storage = require('../../../adapters/storage'),
 
     ImageHandler;
 
