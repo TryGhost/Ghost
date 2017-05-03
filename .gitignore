@@ -73,3 +73,6 @@ config.*.json
 
 # Coverage reports
 coverage.html
+
+# Nodeclipse project file
+.project
