@@ -1,0 +1,25 @@
+{
+    "__SECTION__": "admin core",
+    "admin.navbar.blog": "Blog",
+    "admin.navbar.settings": "Beállítások",
+
+    "__SECTION__": "icons",
+    "icon.tag.label": "Címke",
+    "icon.faq.label": "?",
+    "icon.faq.markdown.title": "Mi az a Markdown?",
+    "icon.full_screen.label": "Teljes képernyő",
+    "icon.full_screen.title": "Teljes képernyő mód",
+    "icon.settings.label": "Beállítások",
+
+    "__SECTION__": "editor",
+    "editor.entry_title.placeholder": "Bejegyzés cím",
+    "editor.entry_permalink.label": "Közvetlen hivatkozás:",
+    "editor.entry_permalink.example_url": "http://weboldal.hu/",
+    "editor.entry_permalink.example_slug": "bejegyzes-cim",
+    "editor.headers.markdown.label": "Markdown",
+    "editor.headers.preview.label": "Előnézet",
+    "editor.word_count": "%{count} szó",
+    "editor.actions.save_draft": "Mentés vázlatként",
+    "editor.actions.publish": "Közzététel"
+
+}
