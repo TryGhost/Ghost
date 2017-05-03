@@ -1,0 +1,90 @@
+platform: 'nodejs-0.10'
+
+processes:
+  -
+    name: 'web'
+    memory: 'standard'
+    command: 'NODE_ENV=production node index.js'
+    quantity: 1
+    public: true
+    kill_after: 3600
+    start_monitor:
+      module: 'httpcheck'
+      timer: 30
+
+shared_databases:
+  -
+    type: 'mysql'
+    label: 'Primary DB'
+
+environment_variables:
+  -
+    key: 'NODE_PATH'
+    value: '/app/node_modules'
+
+persistent_directories:
+  - 
+    path: 'content/images'
+
+config_files:
+  -
+    path: 'config.js'
+    content: |
+      var path = require('path'),
+          config;
+
+      config = {
+
+          production: {
+              url: 'http://' + process.env.VDT_APP + '.vdtapp.com',
+             mail: {
+                 transport: 'SMTP',
+                 options: {
+                   host: process.env.VDT_SMTP_HOST,
+                   auth: {
+                     user: process.env.VDT_SMTP_USERNAME, // Super secret username
+                     pass: process.env.VDT_SMTP_PASSWORD  // Super secret password
+                    }
+                 }
+              },
+              database: {
+                  client: 'mysql',
+                  connection: {
+                  host: process.env.VDT_SDB1_HOST,
+                  user: process.env.VDT_SDB1_USER,
+                  password: process.env.VDT_SDB1_PASS,
+                  database: process.env.VDT_SDB1_NAME,
+                  charset: 'utf8'
+                  },
+                  debug: false
+              },
+              server: {
+                  // Host to be passed to node's `net.Server#listen()`
+                  host: process.env.VDT_IP || '127.0.0.1',
+                  // Port to be passed to node's `net.Server#listen()`, for iisnode set this to `process.env.PORT`
+                  port: process.env.PORT || '5000'
+              }
+          }
+          
+      };
+
+      // Export config
+      module.exports = config;
+
+commands:
+  -
+    event: 'build'
+    command: 'npm install -g grunt-cli'
+    success_exit_code: 0
+  -
+    event: 'build'
+    command: 'npm install'
+    success_exit_code: 0
+  -
+    event: 'build'
+    command: 'grunt init --force'
+    success_exit_code: 0
+  -
+    event: 'build'
+    command: 'grunt prod'
+    success_exit_code: 0
