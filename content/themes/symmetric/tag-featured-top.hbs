@@ -1,0 +1,6 @@
+{{#foreach posts}}
+	<article class="{{post_class}}">
+		<time class="uppercase" datetime="{{date format='YYYY-MM-DD'}}"><i class="fa fa-clock-o"></i> {{date}}</time>
+		<h4 class="title"><a href="{{url}}">{{title}}</a></h4>
+	</article>	
+{{/foreach}}

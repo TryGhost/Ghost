@@ -1,0 +1,92 @@
+/* Pretty printing styles. Used with prettify.js.
+ *
+ * This version is slight modified based on the original version.
+ *
+ * Name:	Stanley Ng
+ * Email: 	stanleyhlng@googlegroups.com
+ * 
+ * Reference:
+ * http://code.google.com/p/google-code-prettify/source/browse/trunk/src/prettify.css
+ */
+.pln {
+  color: #48484C; }
+
+.str {
+  color: #DD1144; }
+
+.kwd {
+  color: #1E347B; }
+
+.com {
+  color: #93A1A1; }
+
+.typ {
+  color: teal; }
+
+.lit {
+  color: #195F91; }
+
+.pun {
+  color: #93A1A1; }
+
+.opn {
+  color: #93A1A1; }
+
+.clo {
+  color: #93A1A1; }
+
+.tag {
+  color: #008; }
+
+.atn {
+  color: teal; }
+
+.atv {
+  color: #DD1144; }
+
+.dec {
+  color: teal; }
+
+.var {
+  color: teal; }
+
+.fun {
+  color: #DC322F; }
+
+/* Put a border around prettyprinted code snippets. */
+pre.prettyprint {
+  background-color: #F7F7F9;
+  padding: 10px;
+  border: 1px solid #E1E1E8; }
+
+pre.prettyprint.linenums {
+  box-shadow: 40px 0 0 #FBFBFC inset, 41px 0 0 #ECECF0 inset; }
+
+/* Specify class=linenums on a pre to get line numbering */
+ol.linenums {
+  color: #1E347B;
+  margin: 0 0 0 40px; }
+
+ol.linenums li {
+  color: #BEBEC5;
+  line-height: 18px;
+  padding-left: 12px;
+  text-shadow: 0 1px 0 #FFFFFF; }
+
+li.L0,
+li.L1,
+li.L2,
+li.L3,
+li.L5,
+li.L6,
+li.L7,
+li.L8 {
+  list-style-type: normal; }
+
+/* Alternate shading for lines */
+li.L1,
+li.L3,
+li.L5,
+li.L7,
+li.L9 {
+  background: #eee; }

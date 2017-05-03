@@ -1,0 +1,30 @@
+<aside id="featured" class="featured hide-on-mobile grid-25 tablet-grid-50">
+
+	{{#is "author"}}
+		{{#author}}
+			<div class="author-info hide-on-tablet hide-on-mobile item">
+				<h2 class="title">{{name}}</h2>
+				<p>{{bio}}</p>
+				<div class="social">
+							
+					{{#if location}}
+						<a href="javascript:void(0)" class="button location tooltip" title="Location: {{location}}"><i class="fa fa-map-marker"></i> Location</a>
+					{{/if}}
+					
+					{{#if website}}
+						<a href="{{website}}" class="button website tooltip" target="_blank" title="Website: {{website}}"><i class="fa fa-external-link"></i> Website</a>
+					{{/if}}
+					
+				</div>
+			</div>
+		{{/author}}
+	{{/is}}	
+	
+	<!-- start: .item -->
+	<div class="item">
+		<h3 class="title bordered">ADVERTISING</h3>
+		<a href="http://themeforest.net/user/estudiopatagon/portfolio?ref=EstudioPatagon" class="ads" target="_blank"><img src="{{asset "images/ad-160x600.jpg"}}" class="img-ad"></a>
+	</div>
+	<!-- end: .item -->
+	
+</aside>

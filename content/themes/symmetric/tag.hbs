@@ -1,0 +1,51 @@
+{{!< default}}
+
+{{! The comment above "< default" means - insert everything in this file into
+    the {body} of the default.hbs template, which contains our header/footer. }}
+
+<!-- start: #archives-->
+<main id="archives" class="main" role="main">
+
+	<!-- start: .center -->
+	<div class="center grid-container">
+	
+		{{> tweets}}
+		
+		<div class="left-content section articles grid-parent grid-50">
+				{{#if tag.image}}
+					<h3 class="title bordered uppercase">TAG ARCHIVE</h3>
+					<div class="wow fadeIn">
+						
+						<div class="cover-image">
+							<img src="{{tag.image}}" class="fullwidth">
+							<div class="description">
+								<h2 class="title uppercase">{{tag.name}}</h2>
+								{{#if tag.description}}
+									<p>{{tag.description}}</p>
+								{{/if}}
+							</div>
+						</div>
+					</div>
+				{{/if}}
+				<div class="{{#if tag.image}}section{{/if}}">
+					<h3 class="title bordered uppercase">{{pagination.total}} RESULTS IN TAG "{{tag.name}}":</h3>
+				</div>
+			{{#foreach posts}}
+				{{> default-article}}
+			{{/foreach}}
+			{{pagination}}
+		</div>
+		
+		<div class="section">
+		
+			{{> sidebar-featured}}
+			
+			{{> sidebar-default}}
+		
+		</div>
+	
+	</div>
+	<!-- end: .center -->
+
+</main>
+<!-- end: #archives -->

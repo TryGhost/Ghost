@@ -1,0 +1,11 @@
+.tooltipster-small {
+	background: #1f1f1f;
+	border-radius: 3px;
+	box-shadow: 2px 2px 15px 0px rgba(0,0,0,.25);
+}
+.tooltipster-small .tooltipster-content {
+	font: 11px 'Roboto';
+	color: #fff;
+	padding: 10px;
+	text-align: center;
+}

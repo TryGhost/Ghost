@@ -1,0 +1,102 @@
+/* CSS Document */
+
+/*
+Notes: it is highly recommendable to use lighter color than dark ones, if your main color is not good enough go to the contrast helper in this same file and uncomment it.
+*/
+
+/* @group Main Color default: #FCD665 */
+
+#header div.menu-wrapper,
+div.tags a, div.tags span,
+section.tweets div.slick,
+.pagination a, .pagination span,
+.button,
+.pace .pace-progress{
+	background: #FCD665;
+}
+
+.title.bordered,
+div.text blockquote,
+#footer{
+	border-color: #FCD665;	
+}
+
+/* @end */
+
+/* @group Secondary Color default: #000 (links, titles, etc): Important to use some dark color to generate contrast */
+
+a,
+.button,
+h1, h2, h3, h4, h5, h6,
+#header nav div.social,
+#header nav div.social ul li a,
+#header nav form button,
+.slick-prev:before, .slick-next:before,
+div.tags a, div.tags span,
+div.meta a.comments:hover,
+.pagination a, .pagination span, .pagination a:hover, .pagination .current{ color: #000; }
+
+#header,
+#header nav ul.menu > li > a:hover:before, #header nav ul.menu > li.current-menu-item > a:before,
+#footer,
+section.tweets h3,
+.button.dark,
+#single section.related a.thumb span,
+section.widget_tag_cloud a,
+.spinner > div{ background: #000; }
+
+/* @end */
+
+/* @group Third Color default: #666 (links rollover, tags rollover, titles, etc)*/
+
+a:hover{ color: #666; }
+
+/* @end */
+
+/* @group Fourth Color default: #888 (dates and comments)*/
+
+article time, div.meta time,
+div.meta a.comments{ color: #888; }
+
+/* @end */
+
+/* @group Sixth Color default: #ccc (border color for sections)*/
+
+hr,
+div.articles article.first,
+div.articles article.default,
+#single .left-content article.post,
+#single #comments,
+section.author,
+aside#featured div.box article,
+div.text pre{ border-color: #ccc; }
+
+/* @end */
+
+
+/* @group Secondary Color default: #535353 (paragraphs)*/
+
+body{ color: #535353; }
+
+/* @end */
+
+
+/* 
+	Contrast helper 
+	Note: sometimes if you pick a dark color the text, buttons and links will not look good enough. In these cases, uncomment all lines below:
+*/
+
+/*.button, .button:hover,
+#header nav ul.menu > li > a,
+#header nav div.social,
+#header nav div.social ul li a,
+#header nav form button,
+section.tweets div.slick,
+div.tags a, div.tags span,
+.pagination a, .pagination span, .pagination a:hover, .pagination .current,
+section.tweets div.slick a{ color: #fff; }
+
+#header nav ul.menu > li > a:hover:before, #header nav ul.menu > li.current-menu-item > a:before,
+.spinner > div{
+	background: #fff;	
+}*/
