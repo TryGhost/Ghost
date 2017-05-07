@@ -93,10 +93,10 @@ body > .ember-view:not(.default-liquid-destination) {
 .gh-nav-menu-icon {
     flex-shrink: 0;
     margin-right: 10px;
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
     background-color: transparent;
-    background-size: 34px;
+    background-size: 32px;
     border-radius: 4px;
 }
 
