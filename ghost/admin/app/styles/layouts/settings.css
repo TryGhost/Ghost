@@ -52,6 +52,12 @@
     max-width: 250px;
 }
 
+.gh-setting-action-smallimg img:hover,
+.gh-setting-action-largeimg img:hover {
+    cursor: pointer;
+}
+
+
 /* Checkboxes */
 
 .gh-setting-action .input-toggle-component {
