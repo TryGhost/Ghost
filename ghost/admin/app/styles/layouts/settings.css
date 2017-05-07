@@ -41,12 +41,14 @@
 /* Images */
 
 .gh-setting-action-smallimg img {
-    max-height: 50px;
+    height: 50px;
+    width: auto;
     max-width: 250px;
 }
 
 .gh-setting-action-largeimg img {
-    max-height: 130px;
+    height: 130px;
+    width: auto;
     max-width: 250px;
 }
 
