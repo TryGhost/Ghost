@@ -1,6 +1,6 @@
 var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
-    hbs = require('express-hbs'),
+    hbs = require('../../../server/themes/engine'),
 
     themes = require('../../../server/themes'),
     // is only exposed via themes.getActive()
@@ -36,7 +36,7 @@ describe('Themes', function () {
 
             beforeEach(function () {
                 mountThemeSpy = sandbox.spy();
-                settingsCacheStub.withArgs('activeTheme').returns('casper');
+                settingsCacheStub.withArgs('active_theme').returns('casper');
             });
 
             it('mounts active theme if not yet mounted', function (done) {
@@ -84,7 +84,7 @@ describe('Themes', function () {
                     should.exist(err);
                     err.message.should.eql('The currently active theme "casper" is missing.');
 
-                    settingsCacheStub.calledWith('activeTheme').should.be.true();
+                    settingsCacheStub.calledWith('active_theme').should.be.true();
                     getActiveThemeStub.called.should.be.true();
                     mountThemeSpy.called.should.be.false();
 
@@ -97,7 +97,7 @@ describe('Themes', function () {
             var updateTemplateData = middleware[1],
                 themeDataExpectedProps = ['posts_per_page'],
                 blogDataExpectedProps = [
-                    'url', 'title', 'description', 'logo', 'cover', 'icon', 'twitter', 'facebook', 'navigation',
+                    'url', 'title', 'description', 'logo', 'cover_image', 'icon', 'twitter', 'facebook', 'navigation',
                     'permalinks', 'timezone', 'amp'
                 ],
                 updateOptionsStub;

@@ -4,8 +4,20 @@ var _ = require('lodash'),
     errors = require('../errors'),
     i18n = require('../i18n'),
     templates = require('../controllers/frontend/templates'),
+    escapeExpression = hbs.Utils.escapeExpression,
     _private = {},
     errorHandler = {};
+
+/**
+ * This is a bare minimum setup, which allows us to render the error page
+ * It uses the {{asset}} helper, and nothing more
+ */
+_private.createHbsEngine = function createHbsEngine() {
+    var engine = hbs.create();
+    engine.registerHelper('asset', require('../helpers/asset'));
+
+    return engine.express4();
+};
 
 /**
  * This function splits the stack into pieces, that are then rendered using the following handlebars code:
@@ -68,6 +80,7 @@ _private.prepareError = function prepareError(err, req, res, next) {
         } else {
             err = new errors.GhostError({
                 err: err,
+                message: err.message,
                 statusCode: err.statusCode
             });
         }
@@ -111,7 +124,7 @@ _private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, /*jshint un
     // It can be that something went wrong with the theme or otherwise loading handlebars
     // This ensures that no matter what res.render will work here
     if (_.isEmpty(req.app.engines)) {
-        req.app.engine('hbs', hbs.express3());
+        req.app.engine('hbs', _private.createHbsEngine());
     }
 
     res.render(templates.error(err.statusCode), templateData, function renderResponse(err, html) {
@@ -124,9 +137,9 @@ _private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, /*jshint un
         return res.status(500).send(
             '<h1>' + i18n.t('errors.errors.oopsErrorTemplateHasError') + '</h1>' +
             '<p>' + i18n.t('errors.errors.encounteredError') + '</p>' +
-            '<pre>' + hbs.handlebars.Utils.escapeExpression(err.message || err) + '</pre>' +
+            '<pre>' + escapeExpression(err.message || err) + '</pre>' +
             '<br ><p>' + i18n.t('errors.errors.whilstTryingToRender') + '</p>' +
-            err.statusCode + ' ' + '<pre>' + hbs.handlebars.Utils.escapeExpression(err.message || err) + '</pre>'
+            err.statusCode + ' ' + '<pre>' + escapeExpression(err.message || err) + '</pre>'
         );
     });
 };

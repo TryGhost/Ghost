@@ -8,8 +8,7 @@
         "debug": false
     },
     "auth": {
-        "type": "ghost",
-        "url": "http://devauth.ghost.org:8080"
+        "type": "password"
     },
     "paths": {
         "contentPath": "content/"
@@ -18,7 +17,7 @@
         "useRpcPing": false,
         "useUpdateCheck": true
     },
-    "minifyAssets": false,
+    "useMinFiles": false,
     "printErrorStack": true,
     "caching": {
         "theme": {

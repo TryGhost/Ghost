@@ -73,7 +73,7 @@ function init() {
 
         debug('Express Apps done');
     }).then(function () {
-        return auth.validation.switch({
+        return auth.validation.validate({
             authType: config.get('auth:type')
         });
     }).then(function () {

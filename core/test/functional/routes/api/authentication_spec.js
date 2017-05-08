@@ -61,12 +61,26 @@ describe('Authentication API', function () {
                     return done(err);
                 }
                 should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
+                var jsonResponse = res.body,
+                    newAccessToken;
+
                 should.exist(jsonResponse.access_token);
                 should.exist(jsonResponse.refresh_token);
                 should.exist(jsonResponse.expires_in);
                 should.exist(jsonResponse.token_type);
-                done();
+
+                models.Accesstoken.findOne({
+                    token: jsonResponse.access_token
+                }).then(function (_newAccessToken) {
+                    newAccessToken = _newAccessToken;
+
+                    return models.Refreshtoken.findOne({
+                        token: jsonResponse.refresh_token
+                    });
+                }).then(function (newRefreshToken) {
+                    newAccessToken.get('issued_by').should.eql(newRefreshToken.id);
+                    done();
+                }).catch(done);
             });
     });
 
@@ -202,7 +216,7 @@ describe('Authentication API', function () {
 
     it('reset password', function (done) {
         models.Settings
-            .findOne({key: 'dbHash'})
+            .findOne({key: 'db_hash'})
             .then(function (response) {
                 var token = utils.tokens.resetToken.generateHash({
                     expires: Date.now() + (1000 * 60),

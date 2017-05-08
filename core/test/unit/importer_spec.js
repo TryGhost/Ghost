@@ -370,9 +370,9 @@ describe('Importer', function () {
             ImageHandler.loadFile(_.clone(file)).then(function () {
                 storageSpy.calledOnce.should.be.true();
                 storeSpy.calledOnce.should.be.true();
-                storeSpy.firstCall.args[1].originalPath.should.equal('test-image.jpeg');
-                storeSpy.firstCall.args[1].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
-                storeSpy.firstCall.args[1].newPath.should.eql('/content/images/test-image.jpeg');
+                storeSpy.firstCall.args[0].originalPath.should.equal('test-image.jpeg');
+                storeSpy.firstCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
+                storeSpy.firstCall.args[0].newPath.should.eql('/content/images/test-image.jpeg');
 
                 done();
             }).catch(done);
@@ -390,9 +390,9 @@ describe('Importer', function () {
             ImageHandler.loadFile(_.clone(file)).then(function () {
                 storageSpy.calledOnce.should.be.true();
                 storeSpy.calledOnce.should.be.true();
-                storeSpy.firstCall.args[1].originalPath.should.equal('photos/my-cat.jpeg');
-                storeSpy.firstCall.args[1].targetDir.should.match(/(\/|\\)content(\/|\\)images(\/|\\)photos$/);
-                storeSpy.firstCall.args[1].newPath.should.eql('/content/images/photos/my-cat.jpeg');
+                storeSpy.firstCall.args[0].originalPath.should.equal('photos/my-cat.jpeg');
+                storeSpy.firstCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images(\/|\\)photos$/);
+                storeSpy.firstCall.args[0].newPath.should.eql('/content/images/photos/my-cat.jpeg');
 
                 done();
             }).catch(done);
@@ -410,16 +410,16 @@ describe('Importer', function () {
             ImageHandler.loadFile(_.clone(file)).then(function () {
                 storageSpy.calledOnce.should.be.true();
                 storeSpy.calledOnce.should.be.true();
-                storeSpy.firstCall.args[1].originalPath.should.equal('content/images/my-cat.jpeg');
-                storeSpy.firstCall.args[1].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
-                storeSpy.firstCall.args[1].newPath.should.eql('/content/images/my-cat.jpeg');
+                storeSpy.firstCall.args[0].originalPath.should.equal('content/images/my-cat.jpeg');
+                storeSpy.firstCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
+                storeSpy.firstCall.args[0].newPath.should.eql('/content/images/my-cat.jpeg');
 
                 done();
             }).catch(done);
         });
 
         it('can load a file (subdirectory)', function (done) {
-            configUtils.set({url: 'http://testurl.com/subdir'});
+            configUtils.set({url: 'http://localhost:82832/subdir'});
 
             var filename = 'test-image.jpeg',
                 file = [{
@@ -432,9 +432,9 @@ describe('Importer', function () {
             ImageHandler.loadFile(_.clone(file)).then(function () {
                 storageSpy.calledOnce.should.be.true();
                 storeSpy.calledOnce.should.be.true();
-                storeSpy.firstCall.args[1].originalPath.should.equal('test-image.jpeg');
-                storeSpy.firstCall.args[1].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
-                storeSpy.firstCall.args[1].newPath.should.eql('/subdir/content/images/test-image.jpeg');
+                storeSpy.firstCall.args[0].originalPath.should.equal('test-image.jpeg');
+                storeSpy.firstCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
+                storeSpy.firstCall.args[0].newPath.should.eql('/subdir/content/images/test-image.jpeg');
 
                 done();
             }).catch(done);
@@ -463,18 +463,18 @@ describe('Importer', function () {
             ImageHandler.loadFile(_.clone(files)).then(function () {
                 storageSpy.calledOnce.should.be.true();
                 storeSpy.callCount.should.eql(4);
-                storeSpy.firstCall.args[1].originalPath.should.equal('testing.png');
-                storeSpy.firstCall.args[1].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
-                storeSpy.firstCall.args[1].newPath.should.eql('/content/images/testing.png');
-                storeSpy.secondCall.args[1].originalPath.should.equal('photo/kitten.jpg');
-                storeSpy.secondCall.args[1].targetDir.should.match(/(\/|\\)content(\/|\\)images(\/|\\)photo$/);
-                storeSpy.secondCall.args[1].newPath.should.eql('/content/images/photo/kitten.jpg');
-                storeSpy.thirdCall.args[1].originalPath.should.equal('content/images/animated/bunny.gif');
-                storeSpy.thirdCall.args[1].targetDir.should.match(/(\/|\\)content(\/|\\)images(\/|\\)animated$/);
-                storeSpy.thirdCall.args[1].newPath.should.eql('/content/images/animated/bunny.gif');
-                storeSpy.lastCall.args[1].originalPath.should.equal('images/puppy.jpg');
-                storeSpy.lastCall.args[1].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
-                storeSpy.lastCall.args[1].newPath.should.eql('/content/images/puppy.jpg');
+                storeSpy.firstCall.args[0].originalPath.should.equal('testing.png');
+                storeSpy.firstCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
+                storeSpy.firstCall.args[0].newPath.should.eql('/content/images/testing.png');
+                storeSpy.secondCall.args[0].originalPath.should.equal('photo/kitten.jpg');
+                storeSpy.secondCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images(\/|\\)photo$/);
+                storeSpy.secondCall.args[0].newPath.should.eql('/content/images/photo/kitten.jpg');
+                storeSpy.thirdCall.args[0].originalPath.should.equal('content/images/animated/bunny.gif');
+                storeSpy.thirdCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images(\/|\\)animated$/);
+                storeSpy.thirdCall.args[0].newPath.should.eql('/content/images/animated/bunny.gif');
+                storeSpy.lastCall.args[0].originalPath.should.equal('images/puppy.jpg');
+                storeSpy.lastCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
+                storeSpy.lastCall.args[0].newPath.should.eql('/content/images/puppy.jpg');
 
                 done();
             }).catch(done);
@@ -681,16 +681,16 @@ describe('Importer', function () {
             outputData.posts[0].markdown.should.containEql('/content/images/photos/cat.jpg');
             outputData.posts[0].html.should.containEql('/content/images/photos/cat.jpg');
 
-            inputData.posts[0].image.should.eql('/images/my-image.png');
-            outputData.posts[0].image.should.eql('/content/images/my-image.png');
+            inputData.posts[0].feature_image.should.eql('/images/my-image.png');
+            outputData.posts[0].feature_image.should.eql('/content/images/my-image.png');
 
-            inputData.tags[0].image.should.eql('/images/my-image.png');
-            outputData.tags[0].image.should.eql('/content/images/my-image.png');
+            inputData.tags[0].feature_image.should.eql('/images/my-image.png');
+            outputData.tags[0].feature_image.should.eql('/content/images/my-image.png');
 
-            inputData.users[0].image.should.eql('/images/my-image.png');
-            inputData.users[0].cover.should.eql('/images/photos/cat.jpg');
-            outputData.users[0].image.should.eql('/content/images/my-image.png');
-            outputData.users[0].cover.should.eql('/content/images/photos/cat.jpg');
+            inputData.users[0].profile_image.should.eql('/images/my-image.png');
+            inputData.users[0].cover_image.should.eql('/images/photos/cat.jpg');
+            outputData.users[0].profile_image.should.eql('/content/images/my-image.png');
+            outputData.users[0].cover_image.should.eql('/content/images/photos/cat.jpg');
         });
 
         it('does import the images correctly', function () {

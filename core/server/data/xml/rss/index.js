@@ -100,6 +100,7 @@ generateFeed = function generateFeed(data) {
         generator: 'Ghost ' + data.version,
         feed_url: data.feedUrl,
         site_url: data.siteUrl,
+        image_url: utils.url.urlFor({relativeUrl: 'favicon.png'}, true),
         ttl: '60',
         custom_namespaces: {
             content: 'http://purl.org/rss/1.0/modules/content/',
@@ -122,8 +123,8 @@ generateFeed = function generateFeed(data) {
             },
             imageUrl;
 
-        if (post.image) {
-            imageUrl = utils.url.urlFor('image', {image: post.image, secure: data.secure}, true);
+        if (post.feature_image) {
+            imageUrl = utils.url.urlFor('image', {image: post.feature_image, secure: data.secure}, true);
 
             // Add a media content tag
             item.custom_elements.push({

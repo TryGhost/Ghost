@@ -112,7 +112,7 @@ User = ghostBookshelf.Model.extend({
                     email: self.get('email')
                 }).then(function (response) {
                     if (response && response.image) {
-                        self.set('image', response.image);
+                        self.set('profile_image', response.image);
                     }
                 });
             })();
@@ -241,7 +241,7 @@ User = ghostBookshelf.Model.extend({
 }, {
     orderDefaultOptions: function orderDefaultOptions() {
         return {
-            last_login: 'DESC',
+            last_seen: 'DESC',
             name: 'ASC',
             created_at: 'DESC'
         };
@@ -364,7 +364,7 @@ User = ghostBookshelf.Model.extend({
     /**
      * ### Edit
      *
-     * Note: In case of login the last_login attribute gets updated.
+     * Note: In case of login the last_seen attribute gets updated.
      *
      * @extends ghostBookshelf.Model.edit to handle returning the full object
      * **See:** [ghostBookshelf.Model.edit](base.js.html#edit)
@@ -628,7 +628,7 @@ User = ghostBookshelf.Model.extend({
 
             return self.isPasswordCorrect({plainPassword: object.password, hashedPassword: user.get('password')})
                 .then(function then() {
-                    return Promise.resolve(user.set({status: 'active', last_login: new Date()}).save({validate: false}))
+                    return Promise.resolve(user.set({status: 'active', last_seen: new Date()}).save({validate: false}))
                         .catch(function handleError(err) {
                             // If we get a validation or other error during this save, catch it and log it, but don't
                             // cause a login error because of it. The user validation is not important here.

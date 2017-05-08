@@ -3,13 +3,10 @@
 var debug = require('debug')('ghost:api:themes'),
     Promise = require('bluebird'),
     fs = require('fs-extra'),
-    config = require('../config'),
     errors = require('../errors'),
     events = require('../events'),
     logging = require('../logging'),
-    storage = require('../storage'),
     apiUtils = require('./utils'),
-    utils = require('./../utils'),
     i18n = require('../i18n'),
     settingsModel = require('../models/settings').Settings,
     settingsCache = require('../settings/cache'),
@@ -37,7 +34,7 @@ themes = {
     activate: function activate(options) {
         var themeName = options.name,
             newSettings = [{
-                key: 'activeTheme',
+                key: 'active_theme',
                 value: themeName
             }],
             loadedTheme,
@@ -53,7 +50,7 @@ themes = {
                 if (!loadedTheme) {
                     return Promise.reject(new errors.ValidationError({
                         message: i18n.t('notices.data.validation.index.themeCannotBeActivated', {themeName: themeName}),
-                        context: 'activeTheme'
+                        context: 'active_theme'
                     }));
                 }
 
@@ -82,11 +79,10 @@ themes = {
         // consistent filename uploads
         options.originalname = options.originalname.toLowerCase();
 
-        var storageAdapter = storage.getStorage('themes'),
-            zip = {
+        var zip = {
                 path: options.path,
                 name: options.originalname,
-                shortName: storageAdapter.getSanitizedFileName(options.originalname.split('.zip')[0])
+                shortName: themeUtils.storage.getSanitizedFileName(options.originalname.split('.zip')[0])
             },
             checkedTheme;
 
@@ -106,22 +102,22 @@ themes = {
             .then(function checkExists(_checkedTheme) {
                 checkedTheme = _checkedTheme;
 
-                return storageAdapter.exists(utils.url.urlJoin(config.getContentPath('themes'), zip.shortName));
+                return themeUtils.storage.exists(zip.shortName);
             })
             // If the theme existed we need to delete it
             .then(function removeOldTheme(themeExists) {
                 // delete existing theme
                 if (themeExists) {
-                    return storageAdapter.delete(zip.shortName, config.getContentPath('themes'));
+                    return themeUtils.storage.delete(zip.shortName);
                 }
             })
             .then(function storeNewTheme() {
                 events.emit('theme.uploaded', zip.shortName);
                 // store extracted theme
-                return storageAdapter.save({
+                return themeUtils.storage.save({
                     name: zip.shortName,
                     path: checkedTheme.path
-                }, config.getContentPath('themes'));
+                });
             })
             .then(function loadNewTheme() {
                 // Loads the theme from the filesystem
@@ -131,7 +127,7 @@ themes = {
             .then(function activateAndReturn(loadedTheme) {
                 // If this is the active theme, we are overriding
                 // This is a special case of activation
-                if (zip.shortName === settingsCache.get('activeTheme')) {
+                if (zip.shortName === settingsCache.get('active_theme')) {
                     // Activate! (sort of)
                     debug('Activating theme (method C, on API "override")', zip.shortName);
                     themeUtils.activate(loadedTheme, checkedTheme);
@@ -163,8 +159,7 @@ themes = {
 
     download: function download(options) {
         var themeName = options.name,
-            theme = themeList.get(themeName),
-            storageAdapter = storage.getStorage('themes');
+            theme = themeList.get(themeName);
 
         if (!theme) {
             return Promise.reject(new errors.BadRequestError({message: i18n.t('errors.api.themes.invalidRequest')}));
@@ -175,7 +170,9 @@ themes = {
             .handlePermissions('themes', 'read')(options)
             .then(function sendTheme() {
                 events.emit('theme.downloaded', themeName);
-                return storageAdapter.serve({isTheme: true, name: themeName});
+                return themeUtils.storage.serve({
+                    name: themeName
+                });
             });
     },
 
@@ -185,8 +182,7 @@ themes = {
      */
     destroy: function destroy(options) {
         var themeName = options.name,
-            theme,
-            storageAdapter = storage.getStorage('themes');
+            theme;
 
         return apiUtils
             // Permissions
@@ -197,7 +193,7 @@ themes = {
                     throw new errors.ValidationError({message: i18n.t('errors.api.themes.destroyCasper')});
                 }
 
-                if (themeName === settingsCache.get('activeTheme')) {
+                if (themeName === settingsCache.get('active_theme')) {
                     throw new errors.ValidationError({message: i18n.t('errors.api.themes.destroyActive')});
                 }
 
@@ -208,7 +204,7 @@ themes = {
                 }
 
                 // Actually do the deletion here
-                return storageAdapter.delete(themeName, config.getContentPath('themes'));
+                return themeUtils.storage.delete(themeName);
             })
             // And some extra stuff to maintain state here
             .then(function deleteTheme() {

@@ -50,6 +50,8 @@ Session.vim
 /content/apps/**/*
 /content/themes/**/*
 /content/images/**/*
+/content/adapters/storage/**/*
+/content/adapters/scheduling/**/*
 !/content/themes/casper/**
 !/README.md
 
@@ -66,7 +68,8 @@ config.*.json
 # Built asset files
 /core/built
 /core/server/admin/views/*
-/core/shared/ghost-url.min.js
+/core/server/public/ghost-url.min.js
+/core/server/public/ghost.min.css
 
 # Coverage reports
 coverage.html

@@ -4,6 +4,7 @@ var https           = require('https'),
     errors          = require('../../errors'),
     logging         = require('../../logging'),
     utils           = require('../../utils'),
+    blogIconUtils   = require('../../utils/blog-icon'),
     events          = require('../../events'),
     api             = require('../../api/settings'),
     i18n            = require('../../i18n'),
@@ -73,7 +74,7 @@ function ping(post) {
             slackData = {
                 text: message,
                 unfurl_links: true,
-                icon_url: utils.url.urlJoin(utils.url.urlFor('admin', true), 'img/ghosticon.jpg'),
+                icon_url: blogIconUtils.getIconUrl(true),
                 username: 'Ghost'
             };
 

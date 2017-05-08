@@ -87,6 +87,7 @@ describe('RSS', function () {
                 xmlData.should.match(/<channel><title><!\[CDATA\[Test Title\]\]><\/title>/);
                 xmlData.should.match(/<description><!\[CDATA\[Testing Desc\]\]><\/description>/);
                 xmlData.should.match(/<link>http:\/\/my-ghost-blog.com\/<\/link>/);
+                xmlData.should.match(/<image><url>http:\/\/my-ghost-blog.com\/favicon.png<\/url><title>Test Title<\/title><link>http:\/\/my-ghost-blog.com\/<\/link><\/image>/);
                 xmlData.should.match(/<generator>Ghost 0.6<\/generator>/);
                 xmlData.should.match(/<lastBuildDate>.*?<\/lastBuildDate>/);
                 xmlData.should.match(/<atom:link href="http:\/\/my-ghost-blog.com\/rss\/" rel="self"/);
@@ -118,6 +119,7 @@ describe('RSS', function () {
                 xmlData.should.match(/<item><title><!\[CDATA\[HTML Ipsum\]\]><\/title>/);
                 xmlData.should.match(/<description><!\[CDATA\[<h1>HTML Ipsum Presents<\/h1>/);
                 xmlData.should.match(/<link>http:\/\/my-ghost-blog.com\/html-ipsum\/<\/link>/);
+                xmlData.should.match(/<image><url>http:\/\/my-ghost-blog.com\/favicon.png<\/url><title>Test Title<\/title><link>http:\/\/my-ghost-blog.com\/<\/link><\/image>/);
                 xmlData.should.match(/<guid isPermaLink="false">/);
                 xmlData.should.match(/<\/guid><dc:creator><!\[CDATA\[Joe Bloggs\]\]><\/dc:creator>/);
                 xmlData.should.match(/<pubDate>Thu, 01 Jan 2015/);
@@ -448,7 +450,7 @@ describe('RSS', function () {
         });
 
         it('Should 404 if page number too big', function (done) {
-            configUtils.set({url: 'http://testurl.com/'});
+            configUtils.set({url: 'http://localhost:82832/'});
 
             req = {params: {page: 4}, route: {path: '/rss/:page/'}};
             req.originalUrl = req.route.path.replace(':page', req.params.page);
@@ -465,7 +467,7 @@ describe('RSS', function () {
         });
 
         it('Redirects to last page if page number too big with subdirectory', function (done) {
-            configUtils.set({url: 'http://testurl.com/blog'});
+            configUtils.set({url: 'http://localhost:82832/blog'});
 
             req = {params: {page: 4}, route: {path: '/rss/:page/'}};
             req.originalUrl = req.route.path.replace(':page', req.params.page);

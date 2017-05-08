@@ -9,6 +9,7 @@
 // jshint unused: false
 var overrides      = require('./core/server/overrides'),
     config         = require('./core/server/config'),
+    utils          = require('./core/server/utils'),
     _              = require('lodash'),
     chalk          = require('chalk'),
     fs             = require('fs-extra'),
@@ -60,9 +61,7 @@ var overrides      = require('./core/server/overrides'),
                 livereload: {
                     files: [
                         'content/themes/casper/assets/css/*.css',
-                        'content/themes/casper/assets/js/*.js',
-                        'core/built/assets/*.js',
-                        'core/client/dist/index.html'
+                        'content/themes/casper/assets/js/*.js'
                     ],
                     options: {
                         livereload: true
@@ -111,7 +110,7 @@ var overrides      = require('./core/server/overrides'),
                     'core/server/**/*.js',
                     'core/test/**/*.js',
                     '!core/test/coverage/**',
-                    '!core/shared/vendor/**/*.js'
+                    '!core/server/public/**/*.js'
                 ]
             },
 
@@ -129,7 +128,7 @@ var overrides      = require('./core/server/overrides'),
                             'core/server/**/*.js',
                             'core/test/**/*.js',
                             '!core/test/coverage/**',
-                            '!core/shared/vendor/**/*.js'
+                            '!core/server/public/**/*.js'
                         ]
                     }
                 }
@@ -218,8 +217,21 @@ var overrides      = require('./core/server/overrides'),
             bgShell: {
                 client: {
                     cmd: 'grunt subgrunt:watch',
-                    bg: true,
-                    stdout: true,
+                    bg: grunt.option('client') ? false : true,
+                    stdout: function (chunk) {
+                        // hide certain output to prevent confusion when running alongside server
+                        var filter = grunt.option('client') ? false : [
+                            /> ghost-admin/,
+                            /^Livereload/,
+                            /^Serving on/
+                        ].some(function (regexp) {
+                            return regexp.test(chunk);
+                        });
+
+                        if (!filter) {
+                            grunt.log.write(chunk);
+                        }
+                    },
                     stderr: true
                 }
             },
@@ -227,16 +239,18 @@ var overrides      = require('./core/server/overrides'),
             // ### grunt-shell
             // Command line tools where it's easier to run a command directly than configure a grunt plugin
             shell: {
-                shrinkwrap: {
-                    command: 'npm shrinkwrap'
+                master: {
+                    command: function () {
+                        var upstream = grunt.option('upstream') || process.env.GHOST_UPSTREAM || 'upstream';
+                        grunt.log.writeln('Pulling down the latest master from ' + upstream);
+                        return 'git checkout master; git pull ' + upstream + ' master; ' +
+                        'yarn; git submodule foreach "git checkout master && git pull ' +
+                        upstream + ' master"';
+                    }
                 },
 
-                prune: {
-                    command: 'npm prune'
-                },
-
-                dedupe: {
-                    command: 'npm dedupe'
+                dbhealth: {
+                    command: 'knex-migrator health'
                 }
             },
 
@@ -261,9 +275,7 @@ var overrides      = require('./core/server/overrides'),
                 built: {
                     src: [
                         'core/built/**',
-                        'core/client/dist/**',
-                        'core/client/public/assets/img/contributors/**',
-                        'core/client/app/templates/-contributors.hbs'
+                        'core/client/dist/**'
                     ]
                 },
                 release: {
@@ -296,7 +308,7 @@ var overrides      = require('./core/server/overrides'),
             // ### grunt-update-submodules
             // Grunt task to update git submodules
             update_submodules: {
-                default: {
+                pinned: {
                     options: {
                         params: '--init'
                     }
@@ -309,7 +321,18 @@ var overrides      = require('./core/server/overrides'),
                         sourceMap: false
                     },
                     files: {
-                        'core/shared/ghost-url.min.js': 'core/shared/ghost-url.js'
+                        'core/server/public/ghost-url.min.js': 'core/server/public/ghost-url.js'
+                    }
+                }
+            },
+
+            cssnano: {
+                prod: {
+                    options: {
+                        sourcemap: false
+                    },
+                    files: {
+                        'core/server/public/ghost.min.css': 'core/server/public/ghost.css'
                     }
                 }
             },
@@ -318,7 +341,8 @@ var overrides      = require('./core/server/overrides'),
             // Run grunt tasks in submodule Gruntfiles
             subgrunt: {
                 options: {
-                    npmInstall: false
+                    npmInstall: false,
+                    npmPath: 'yarn'
                 },
 
                 init: {
@@ -339,7 +363,25 @@ var overrides      = require('./core/server/overrides'),
                 },
 
                 watch: {
-                    'core/client': 'shell:ember:watch'
+                    projects: {
+                        'core/client': ['shell:ember:watch', '--live-reload-base-url="' + utils.url.getSubdir() + '/ghost/"']
+                    }
+                }
+            },
+
+            // ### grunt-contrib-symlink
+            // Create symlink for git hooks
+            symlink: {
+                githooks: {
+                    // Enable overwrite to delete symlinks before recreating them
+                    overwrite: false,
+                    // Enable force to overwrite symlinks outside the current working directory
+                    force: false,
+                    // Expand to all files in /hooks
+                    expand: true,
+                    cwd: '.github/hooks',
+                    src: ['*'],
+                    dest: '.git/hooks'
                 }
             }
         };
@@ -422,7 +464,7 @@ var overrides      = require('./core/server/overrides'),
                 grunt.fail.fatal('No test provided. `grunt test` expects a filename. e.g.: `grunt test:unit/apps_spec.js`. Did you mean `npm test` or `grunt validate`?');
             }
 
-            if (!test.match(/core\/test/)) {
+            if (!test.match(/core\/test/) && !test.match(/core\/server/)) {
                 test = 'core/test/' + test;
             }
 
@@ -610,7 +652,7 @@ var overrides      = require('./core/server/overrides'),
         // the Ghost assets in order to make them work.
         //
         // There are a number of grunt tasks available to help with this. Firstly after fetching an updated version of
-        // the Ghost codebase, after running `npm install`, you will need to run [grunt init](#init%20assets).
+        // the Ghost codebase, after running `yarn install`, you will need to run [grunt init](#init%20assets).
         //
         // For production blogs you will need to run [grunt prod](#production%20assets).
         //
@@ -620,16 +662,16 @@ var overrides      = require('./core/server/overrides'),
         // ### Init assets
         // `grunt init` - will run an initial asset build for you
         //
-        // Grunt init runs `npm install && bower install` inside `core/client` as well as the standard asset build
+        // Grunt init runs `yarn install && bower install` inside `core/client` as well as the standard asset build
         // tasks which occur when you run just `grunt`. This fetches the latest client-side dependencies.
         //
         // This task is very important, and should always be run when fetching down an updated code base just after
-        // running `npm install`.
+        // running `yarn install`.
         //
         // `bower` does have some quirks, such as not running as root. If you have problems please try running
         // `grunt init --verbose` to see if there are any errors.
         grunt.registerTask('init', 'Prepare the project for development',
-            ['update_submodules', 'subgrunt:init', 'clean:tmp', 'default']);
+            ['update_submodules:pinned', 'subgrunt:init', 'clean:tmp', 'default']);
 
         // ### Build assets
         // `grunt build` - will build client assets (without updating the submodule)
@@ -650,11 +692,7 @@ var overrides      = require('./core/server/overrides'),
         //
         // It is otherwise the same as running `grunt`, but is only used when running Ghost in the `production` env.
         grunt.registerTask('prod', 'Build JS & templates for production',
-            ['subgrunt:prod', 'uglify:prod', 'master-warn']);
-
-        grunt.registerTask('deps', 'Prepare dependencies',
-            ['shell:dedupe', 'shell:prune', 'shell:shrinkwrap']
-        );
+            ['subgrunt:prod', 'uglify:prod', 'cssnano:prod', 'master-warn']);
 
         // ### Live reload
         // `grunt dev` - build assets on the fly whilst developing
@@ -667,8 +705,26 @@ var overrides      = require('./core/server/overrides'),
         // frontend code changes.
         //
         // Note that the current implementation of watch only works with casper, not other themes.
-        grunt.registerTask('dev', 'Dev Mode; watch files and restart server on changes',
-           ['bgShell:client', 'express:dev', 'watch']);
+        grunt.registerTask('dev', 'Dev Mode; watch files and restart server on changes', function () {
+            if (grunt.option('client')) {
+                grunt.task.run(['bgShell:client']);
+            } else if (grunt.option('server')) {
+                grunt.task.run(['express:dev', 'watch']);
+            } else {
+                grunt.task.run(['bgShell:client', 'express:dev', 'watch']);
+            }
+        });
+
+        // ### grunt master
+        // This command helps you to bring your working directory back to current master.
+        // It will also update your dependencies to master and shows you if your database is healthy.
+        // It won't build the client!
+        //
+        // `grunt master` [`upstream` is the default upstream to pull from]
+        // `grunt master --upstream=parent`
+        grunt.registerTask('master', 'Update your current working folder to latest master.',
+            ['shell:master', 'subgrunt:init', 'shell:dbhealth']
+        );
 
         // ### Release
         // Run `grunt release` to create a Ghost release zip file.
@@ -694,7 +750,7 @@ var overrides      = require('./core/server/overrides'),
                     dest: '<%= paths.releaseBuild %>/'
                 });
 
-                grunt.task.run(['init', 'prod', 'clean:release', 'deps', 'copy:release', 'compress:release']);
+                grunt.task.run(['init', 'prod', 'clean:release', 'copy:release', 'compress:release']);
             }
         );
     };

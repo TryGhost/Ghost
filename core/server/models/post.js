@@ -7,6 +7,7 @@ var _               = require('lodash'),
     errors          = require('../errors'),
     Showdown        = require('showdown-ghost'),
     legacyConverter = new Showdown.converter({extensions: ['ghostgfm', 'footnotes', 'highlight']}),
+    htmlToText      = require('html-to-text'),
     ghostBookshelf  = require('./base'),
     events          = require('../events'),
     config          = require('../config'),
@@ -36,16 +37,41 @@ Post = ghostBookshelf.Model.extend({
         };
     },
 
-    onSaved: function onSaved(model, response, options) {
-        return this.updateTags(model, response, options);
-    },
-
-    onCreated: function onCreated(model) {
+    /**
+     * We update the tags after the Post was inserted.
+     * We update the tags before the Post was updated, see `onSaving` event.
+     * `onCreated` is called before `onSaved`.
+     */
+    onCreated: function onCreated(model, response, options) {
         var status = model.get('status');
+
         model.emitChange('added');
 
         if (['published', 'scheduled'].indexOf(status) !== -1) {
             model.emitChange(status);
+        }
+
+        return this.updateTags(model, response, options);
+    },
+
+    /**
+     * http://knexjs.org/#Builder-forUpdate
+     * https://dev.mysql.com/doc/refman/5.7/en/innodb-locking-reads.html
+     *
+     * Lock target collection/model for further update operations.
+     * This avoids collisions and possible content override cases.
+     *
+     * `forUpdate` is only supported for posts right now
+     */
+    onFetching: function onFetching(model, columns, options) {
+        if (options.forUpdate && options.transacting) {
+            options.query.forUpdate();
+        }
+    },
+
+    onFetchingCollection: function onFetchingCollection(model, columns, options) {
+        if (options.forUpdate && options.transacting) {
+            options.query.forUpdate();
         }
     },
 
@@ -149,9 +175,9 @@ Post = ghostBookshelf.Model.extend({
             prevSlug    = this._previousAttributes.slug,
             tagsToCheck = this.get('tags'),
             publishedAt = this.get('published_at'),
-            publishedAtHasChanged = this.hasDateChanged('published_at'),
+            publishedAtHasChanged = this.hasDateChanged('published_at', {beforeWrite: true}),
             mobiledoc   = this.get('mobiledoc'),
-            tags = [];
+            tags = [], ops = [];
 
         // CASE: disallow published -> scheduled
         // @TODO: remove when we have versioning based on updated_at
@@ -195,6 +221,7 @@ Post = ghostBookshelf.Model.extend({
             });
 
             // keep tags for 'saved' event
+            // get('tags') will be removed after saving, because it's not a direct attribute of posts (it's a relation)
             this.tagsToSave = tags;
         }
 
@@ -205,6 +232,18 @@ Post = ghostBookshelf.Model.extend({
         } else {
             // legacy showdown mode
             this.set('html', legacyConverter.makeHtml(_.toString(this.get('markdown'))));
+        }
+
+        if (this.hasChanged('html')) {
+            this.set('plaintext', htmlToText.fromString(this.get('html'), {
+                wordwrap: 80,
+                ignoreImage: true,
+                linkHrefBaseUrl: utils.url.urlFor('home').replace(/\/$/, ''),
+                hideLinkHrefIfSameAsText: true,
+                preserveNewlines: true,
+                returnDomByDefault: true,
+                uppercaseHeadings: false
+            }));
         }
 
         // disabling sanitization until we can implement a better version
@@ -230,32 +269,55 @@ Post = ghostBookshelf.Model.extend({
             }
         }
 
+        /**
+         * - `updateTags` happens before the post is saved to the database
+         * - when editing a post, it's running in a transaction, see `Post.edit`
+         * - we are using a update collision detection, we have to know if tags were updated in the client
+         *
+         * NOTE: For adding a post, updateTags happens after the post insert, see `onCreated` event
+         */
+        if (options.method === 'update' || options.method === 'patch') {
+            ops.push(function updateTags() {
+                return self.updateTags(model, attr, options);
+            });
+        }
+
         // If a title is set, not the same as the old title, a draft post, and has never been published
         if (prevTitle !== undefined && newTitle !== prevTitle && newStatus === 'draft' && !publishedAt) {
-            // Pass the new slug through the generator to strip illegal characters, detect duplicates
-            return ghostBookshelf.Model.generateSlug(Post, this.get('title'),
-                    {status: 'all', transacting: options.transacting, importing: options.importing})
-                .then(function then(slug) {
-                    // After the new slug is found, do another generate for the old title to compare it to the old slug
-                    return ghostBookshelf.Model.generateSlug(Post, prevTitle).then(function then(prevTitleSlug) {
-                        // If the old slug is the same as the slug that was generated from the old title
-                        // then set a new slug. If it is not the same, means was set by the user
-                        if (prevTitleSlug === prevSlug) {
-                            self.set({slug: slug});
-                        }
-                    });
-                });
-        } else {
-            // If any of the attributes above were false, set initial slug and check to see if slug was changed by the user
-            if (this.hasChanged('slug') || !this.get('slug')) {
+            ops.push(function updateSlug() {
                 // Pass the new slug through the generator to strip illegal characters, detect duplicates
-                return ghostBookshelf.Model.generateSlug(Post, this.get('slug') || this.get('title'),
-                        {status: 'all', transacting: options.transacting, importing: options.importing})
+                return ghostBookshelf.Model.generateSlug(Post, self.get('title'),
+                    {status: 'all', transacting: options.transacting, importing: options.importing})
                     .then(function then(slug) {
-                        self.set({slug: slug});
+                        // After the new slug is found, do another generate for the old title to compare it to the old slug
+                        return ghostBookshelf.Model.generateSlug(Post, prevTitle,
+                            {status: 'all', transacting: options.transacting, importing: options.importing}
+                        ).then(function then(prevTitleSlug) {
+                            // If the old slug is the same as the slug that was generated from the old title
+                            // then set a new slug. If it is not the same, means was set by the user
+                            if (prevTitleSlug === prevSlug) {
+                                self.set({slug: slug});
+                            }
+                        });
                     });
-            }
+            });
+        } else {
+            ops.push(function updateSlug() {
+                // If any of the attributes above were false, set initial slug and check to see if slug was changed by the user
+                if (self.hasChanged('slug') || !self.get('slug')) {
+                    // Pass the new slug through the generator to strip illegal characters, detect duplicates
+                    return ghostBookshelf.Model.generateSlug(Post, self.get('slug') || self.get('title'),
+                        {status: 'all', transacting: options.transacting, importing: options.importing})
+                        .then(function then(slug) {
+                            self.set({slug: slug});
+                        });
+                }
+
+                return Promise.resolve();
+            });
         }
+
+        return sequence(ops);
     },
 
     onCreating: function onCreating(model, attr, options) {
@@ -299,7 +361,9 @@ Post = ghostBookshelf.Model.extend({
                     tagsToRemove,
                     tagsToCreate;
 
+                // CASE: if nothing has changed, unset `tags`.
                 if (baseUtils.tagUpdate.tagSetsAreEqual(newTags, currentTags)) {
+                    savedModel.unset('tags');
                     return;
                 }
 
@@ -502,9 +566,10 @@ Post = ghostBookshelf.Model.extend({
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
-                findOne: ['columns', 'importing', 'withRelated', 'require'],
+                findOne: ['columns', 'importing', 'withRelated', 'require', 'forUpdate'],
                 findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status', 'staticPages'],
-                findAll: ['columns', 'filter']
+                findAll: ['columns', 'filter', 'forUpdate'],
+                edit: ['forUpdate']
             };
 
         if (validOptions[methodName]) {
@@ -515,19 +580,16 @@ Post = ghostBookshelf.Model.extend({
     },
 
     /**
-     * Filters potentially unsafe model attributes, so you can pass them to Bookshelf / Knex.
+     * Manually add 'tags' attribute since it's not in the schema and call parent.
+     *
      * @param {Object} data Has keys representing the model's attributes/fields in the database.
      * @return {Object} The filtered results of the passed in data, containing only what's allowed in the schema.
      */
     filterData: function filterData(data) {
-        var permittedAttributes = this.prototype.permittedAttributes(),
-            filteredData;
+        var filteredData = ghostBookshelf.Model.filterData.apply(this, arguments),
+            extraData = _.pick(data, ['tags']);
 
-        // manually add 'tags' attribute since it's not in the schema
-        permittedAttributes.push('tags');
-
-        filteredData = _.pick(data, permittedAttributes);
-
+        _.merge(filteredData, extraData);
         return filteredData;
     },
 
@@ -616,22 +678,37 @@ Post = ghostBookshelf.Model.extend({
 
     /**
      * ### Edit
+     * Fetches and saves to Post. See model.Base.edit
+     *
      * @extends ghostBookshelf.Model.edit to handle returning the full object and manage _updatedAttributes
      * **See:** [ghostBookshelf.Model.edit](base.js.html#edit)
      */
     edit: function edit(data, options) {
-        var self = this;
+        var self = this,
+            editPost = function editPost(data, options) {
+                options.forUpdate = true;
+
+                return ghostBookshelf.Model.edit.call(self, data, options).then(function then(post) {
+                    return self.findOne({status: 'all', id: options.id}, options)
+                        .then(function then(found) {
+                            if (found) {
+                                // Pass along the updated attributes for checking status changes
+                                found._updatedAttributes = post._updatedAttributes;
+                                return found;
+                            }
+                        });
+                });
+            };
+
         options = options || {};
 
-        return ghostBookshelf.Model.edit.call(this, data, options).then(function then(post) {
-            return self.findOne({status: 'all', id: options.id}, options)
-                .then(function then(found) {
-                    if (found) {
-                        // Pass along the updated attributes for checking status changes
-                        found._updatedAttributes = post._updatedAttributes;
-                        return found;
-                    }
-                });
+        if (options.transacting) {
+            return editPost(data, options);
+        }
+
+        return ghostBookshelf.transaction(function (transacting) {
+            options.transacting = transacting;
+            return editPost(data, options);
         });
     },
 

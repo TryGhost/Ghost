@@ -59,6 +59,11 @@ describe('Post Model', function () {
             firstPost.updated_by.name.should.equal(DataGenerator.Content.users[0].name);
             firstPost.published_by.name.should.equal(DataGenerator.Content.users[0].name);
             firstPost.tags[0].name.should.equal(DataGenerator.Content.tags[0].name);
+
+            // Formats
+            // @TODO change / update this for mobiledoc in
+            firstPost.markdown.should.match(/HTML Ipsum Presents/);
+            firstPost.html.should.match(/HTML Ipsum Presents/);
         }
 
         describe('findAll', function () {
@@ -425,6 +430,23 @@ describe('Post Model', function () {
                 }).catch(done);
             });
 
+            it('converts html to plaintext', function (done) {
+                var postId = testUtils.DataGenerator.Content.posts[0].id;
+
+                PostModel.findOne({id: postId}).then(function (results) {
+                    should.exist(results);
+                    results.attributes.html.should.match(/HTML Ipsum Presents/);
+                    should.not.exist(results.attributes.plaintext);
+                    return PostModel.edit({updated_at: results.attributes.updated_at}, _.extend({}, context, {id: postId}));
+                }).then(function (edited) {
+                    should.exist(edited);
+
+                    edited.attributes.html.should.match(/HTML Ipsum Presents/);
+                    edited.attributes.plaintext.should.match(/HTML Ipsum Presents/);
+                    done();
+                }).catch(done);
+            });
+
             it('can publish draft post', function (done) {
                 var postId = testUtils.DataGenerator.Content.posts[3].id;
 
@@ -472,16 +494,21 @@ describe('Post Model', function () {
             });
 
             it('draft -> scheduled without published_at update', function (done) {
-                PostModel.findOne({status: 'draft'}).then(function (results) {
-                    var post;
+                var post;
 
+                PostModel.findOne({status: 'draft'}).then(function (results) {
                     should.exist(results);
                     post = results.toJSON();
                     post.status.should.equal('draft');
 
+                    results.set('published_at', null);
+                    return results.save();
+                }).then(function () {
                     return PostModel.edit({
                         status: 'scheduled'
                     }, _.extend({}, context, {id: post.id}));
+                }).then(function () {
+                    done(new Error('expected error'));
                 }).catch(function (err) {
                     should.exist(err);
                     (err instanceof errors.ValidationError).should.eql(true);
@@ -570,7 +597,7 @@ describe('Post Model', function () {
 
                     return PostModel.edit({
                         status: 'scheduled',
-                        published_at: moment().add(20, 'days')
+                        published_at: moment().add(20, 'days').toDate()
                     }, _.extend({}, context, {id: post.id}));
                 }).then(function (edited) {
                     should.exist(edited);
@@ -592,6 +619,38 @@ describe('Post Model', function () {
                     post = results.toJSON();
                     post.status.should.equal('scheduled');
 
+                    return PostModel.edit({
+                        status: 'scheduled'
+                    }, _.extend({}, context, {id: post.id}));
+                }).then(function (edited) {
+                    should.exist(edited);
+                    edited.attributes.status.should.equal('scheduled');
+
+                    Object.keys(eventsTriggered).length.should.eql(1);
+                    should.exist(eventsTriggered['post.edited']);
+
+                    done();
+                }).catch(done);
+            });
+
+            it('scheduled -> scheduled with unchanged published_at (within the 2 minutes window)', function (done) {
+                var post;
+
+                PostModel.findOne({status: 'scheduled'}).then(function (results) {
+                    should.exist(results);
+                    post = results.toJSON();
+                    post.status.should.equal('scheduled');
+
+                    results.set('published_at', moment().add(2, 'minutes').add(2, 'seconds').toDate());
+                    return results.save();
+                }).then(function () {
+                    Object.keys(eventsTriggered).length.should.eql(2);
+                    should.exist(eventsTriggered['post.edited']);
+                    should.exist(eventsTriggered['post.rescheduled']);
+                    eventsTriggered = {};
+
+                    return Promise.delay(1000 * 3);
+                }).then(function () {
                     return PostModel.edit({
                         status: 'scheduled'
                     }, _.extend({}, context, {id: post.id}));
@@ -868,12 +927,14 @@ describe('Post Model', function () {
                     createdPost.get('markdown').should.equal(newPost.markdown, 'markdown is correct');
                     createdPost.has('html').should.equal(true);
                     createdPost.get('html').should.equal(newPostDB.html);
+                    createdPost.has('plaintext').should.equal(true);
+                    createdPost.get('plaintext').should.match(/^testing/);
                     createdPost.get('slug').should.equal(newPostDB.slug + '-2');
                     (!!createdPost.get('featured')).should.equal(false);
                     (!!createdPost.get('page')).should.equal(false);
                     createdPost.get('language').should.equal('en_US');
                     // testing for nulls
-                    (createdPost.get('image') === null).should.equal(true);
+                    (createdPost.get('feature_image') === null).should.equal(true);
                     (createdPost.get('meta_title') === null).should.equal(true);
                     (createdPost.get('meta_description') === null).should.equal(true);
 
@@ -1392,6 +1453,110 @@ describe('Post Model', function () {
 
                     done();
                 }).catch(done);
+            });
+        });
+
+        describe('Collision Protection', function () {
+            it('update post title, but updated_at is out of sync', function (done) {
+                var postToUpdate = {id: testUtils.DataGenerator.Content.posts[1].id};
+
+                PostModel.findOne({id: postToUpdate.id, status: 'all'})
+                    .then(function () {
+                        return Promise.delay(1000);
+                    })
+                    .then(function () {
+                        return PostModel.edit({
+                            title: 'New Post Title',
+                            updated_at: moment().subtract(1, 'day').format()
+                        }, _.extend({}, context, {id: postToUpdate.id}));
+                    })
+                    .then(function () {
+                        done(new Error('expected no success'));
+                    })
+                    .catch(function (err) {
+                        err.code.should.eql('UPDATE_COLLISION');
+                        done();
+                    });
+            });
+
+            it('update post tags and updated_at is out of sync', function (done) {
+                var postToUpdate = {id: testUtils.DataGenerator.Content.posts[1].id};
+
+                PostModel.findOne({id: postToUpdate.id, status: 'all'})
+                    .then(function () {
+                        return Promise.delay(1000);
+                    })
+                    .then(function () {
+                        return PostModel.edit({
+                            tags: [{name: 'new-tag-1'}],
+                            updated_at: moment().subtract(1, 'day').format()
+                        }, _.extend({}, context, {id: postToUpdate.id}));
+                    })
+                    .then(function () {
+                        done(new Error('expected no success'));
+                    })
+                    .catch(function (err) {
+                        err.code.should.eql('UPDATE_COLLISION');
+                        done();
+                    });
+            });
+
+            it('update post tags and updated_at is NOT out of sync', function (done) {
+                var postToUpdate = {id: testUtils.DataGenerator.Content.posts[1].id};
+
+                PostModel.findOne({id: postToUpdate.id, status: 'all'})
+                    .then(function () {
+                        return Promise.delay(1000);
+                    })
+                    .then(function () {
+                        return PostModel.edit({
+                            tags: [{name: 'new-tag-1'}]
+                        }, _.extend({}, context, {id: postToUpdate.id}));
+                    })
+                    .then(function () {
+                        done();
+                    })
+                    .catch(done);
+            });
+
+            it('update post with no changes, but updated_at is out of sync', function (done) {
+                var postToUpdate = {id: testUtils.DataGenerator.Content.posts[1].id};
+
+                PostModel.findOne({id: postToUpdate.id, status: 'all'})
+                    .then(function () {
+                        return Promise.delay(1000);
+                    })
+                    .then(function () {
+                        return PostModel.edit({
+                            updated_at: moment().subtract(1, 'day').format()
+                        }, _.extend({}, context, {id: postToUpdate.id}));
+                    })
+                    .then(function () {
+                        done();
+                    })
+                    .catch(done);
+            });
+
+            it('update post with old post title, but updated_at is out of sync', function (done) {
+                var postToUpdate = {
+                    id: testUtils.DataGenerator.Content.posts[1].id,
+                    title: testUtils.DataGenerator.forModel.posts[1].title
+                };
+
+                PostModel.findOne({id: postToUpdate.id, status: 'all'})
+                    .then(function () {
+                        return Promise.delay(1000);
+                    })
+                    .then(function () {
+                        return PostModel.edit({
+                            title: postToUpdate.title,
+                            updated_at: moment().subtract(1, 'day').format()
+                        }, _.extend({}, context, {id: postToUpdate.id}));
+                    })
+                    .then(function () {
+                        done();
+                    })
+                    .catch(done);
             });
         });
     });

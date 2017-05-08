@@ -6,38 +6,52 @@ var should = require('should'),
 
     sandbox = sinon.sandbox.create();
 
+/**
+ * See https://github.com/TryGhost/Ghost/issues/8342
+ * We have disabled Ghost authentication temporary.
+ * That's why some tests are skipped for now.
+ */
 describe('UNIT: auth validation', function () {
     before(function () {
         models.init();
     });
 
-    beforeEach(function () {
+    afterEach(function () {
         sandbox.restore();
     });
 
     describe('ghost is enabled', function () {
-        it('[success]', function () {
+        it('[failure]', function () {
+            return auth.validation.validate({
+                authType: 'ghost'
+            }).catch(function (err) {
+                should.exist(err);
+                err.code.should.eql('AUTH_TYPE');
+            });
+        });
+
+        it.skip('[success]', function () {
             sandbox.stub(models.User, 'isSetup').returns(Promise.resolve(false));
 
-            return auth.validation.switch({
+            return auth.validation.validate({
                 authType: 'ghost'
             });
         });
 
-        it('[success]', function () {
+        it.skip('[success]', function () {
             sandbox.stub(models.User, 'isSetup').returns(Promise.resolve(true));
             sandbox.stub(models.Client, 'findOne').returns(Promise.resolve(true));
 
-            return auth.validation.switch({
+            return auth.validation.validate({
                 authType: 'ghost'
             });
         });
 
-        it('[failure]', function () {
+        it.skip('[failure]', function () {
             sandbox.stub(models.User, 'isSetup').returns(Promise.resolve(true));
             sandbox.stub(models.Client, 'findOne').returns(Promise.resolve(true));
 
-            return auth.validation.switch({
+            return auth.validation.validate({
                 authType: 'password'
             }).catch(function (err) {
                 should.exist(err);
@@ -50,7 +64,7 @@ describe('UNIT: auth validation', function () {
         it('[success]', function () {
             sandbox.stub(models.User, 'isSetup').returns(Promise.resolve(false));
 
-            return auth.validation.switch({
+            return auth.validation.validate({
                 authType: 'password'
             });
         });
@@ -59,16 +73,16 @@ describe('UNIT: auth validation', function () {
             sandbox.stub(models.User, 'isSetup').returns(Promise.resolve(true));
             sandbox.stub(models.Client, 'findOne').returns(Promise.resolve(false));
 
-            return auth.validation.switch({
+            return auth.validation.validate({
                 authType: 'password'
             });
         });
 
-        it('[failure]', function () {
+        it.skip('[failure]', function () {
             sandbox.stub(models.User, 'isSetup').returns(Promise.resolve(true));
             sandbox.stub(models.Client, 'findOne').returns(Promise.resolve(true));
 
-            return auth.validation.switch({
+            return auth.validation.validate({
                 authType: 'ghost'
             }).catch(function (err) {
                 should.exist(err);

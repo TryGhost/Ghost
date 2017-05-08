@@ -29,7 +29,7 @@
                     "slug": "welcome-to-ghost",
                     "markdown": "You're live! Nice. \n![Cat Photo](/images/photos/cat.jpg)\n\n![Cat Photo](/images/photos/cat.jpg)\n![My pic](/images/my-image.png)",
                     "html": "<p>You're live! Nice. <br>\n<img src=\"/images/photos/cat.jpg\" alt=\"Cat Photo\"></p>\n\n<p><img src=\"/images/photos/cat.jpg\" alt=\"Cat Photo\">\n<img src=\"/images/my-image.png\" alt=\"My pic\"></p>",
-                    "image": "/images/my-image.png",
+                    "feature_image": "/images/my-image.png",
                     "featured": 0,
                     "page": 0,
                     "status": "published",
@@ -52,7 +52,7 @@
                     "name": "Getting Started",
                     "slug": "getting-started",
                     "description": null,
-                    "image": "/images/my-image.png",
+                    "feature_image": "/images/my-image.png",
                     "parent_id": null,
                     "meta_title": null,
                     "meta_description": null,
@@ -66,8 +66,8 @@
                 {
                     "name": "test user",
                     "email": "test@ghost.org",
-                    "image": "/images/my-image.png",
-                    "cover": "/images/photos/cat.jpg"
+                    "profile_image": "/images/my-image.png",
+                    "cover_image": "/images/photos/cat.jpg"
                 }
             ],
             "posts_tags": [

@@ -36,6 +36,13 @@ module.exports = function setupAdminApp() {
     // Service Worker for offline support
     adminApp.get(/^\/(sw.js|sw-registration.js)$/, require('./serviceworker'));
 
+    // Ember CLI's live-reload script
+    if (config.get('env') === 'development') {
+        adminApp.get('/ember-cli-live-reload.js', function (req, res) {
+            res.redirect('http://localhost:4200' + utils.url.getSubdir() + '/ghost/ember-cli-live-reload.js');
+        });
+    }
+
     // Render error page in case of maintenance
     adminApp.use(maintenance);
 

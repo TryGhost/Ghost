@@ -19,8 +19,8 @@ var should = require('should'), // jshint ignore:line
 // both of which are required for migrations to work properly.
 describe('DB version integrity', function () {
     // Only these variables should need updating
-    var currentSchemaHash = 'ae4ada98be2691b4d6e323eebcdb875f',
-        currentFixturesHash = '46abf9fd0d67fc89fa7845bef7fc7ffd';
+    var currentSchemaHash = '0d3a45d3db7f7ae6effb654621ca8ab5',
+        currentFixturesHash = 'ad12de59b939b13dc198611a6438ab51';
 
     // If this test is failing, then it is likely a change has been made that requires a DB version bump,
     // and the values above will need updating as confirmation
@@ -35,8 +35,8 @@ describe('DB version integrity', function () {
             });
         });
 
-        schemaHash = crypto.createHash('md5').update(JSON.stringify(tablesNoValidation)).digest('hex');
-        fixturesHash = crypto.createHash('md5').update(JSON.stringify(fixtures)).digest('hex');
+        schemaHash = crypto.createHash('md5').update(JSON.stringify(tablesNoValidation), 'binary').digest('hex');
+        fixturesHash = crypto.createHash('md5').update(JSON.stringify(fixtures), 'binary').digest('hex');
 
         schemaHash.should.eql(currentSchemaHash);
         fixturesHash.should.eql(currentFixturesHash);

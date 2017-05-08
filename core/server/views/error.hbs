@@ -15,7 +15,8 @@
     <link rel="shortcut icon" href="{{asset "favicon.ico"}}">
     <meta http-equiv="cleartype" content="on">
 
-    <link rel="stylesheet" href="{{asset "ghost.css" ghost="true" minifyInProduction="true"}}" />
+    <link rel="stylesheet" href="{{asset "public/ghost.css" hasMinFile="true"}}"/>
+
   </head>
   <body>
     <main role="main" id="main">
@@ -26,8 +27,8 @@
                   <section class="error-details">
                     <img
                     class="error-ghost"
-                    src="{{asset "img/404-ghost@2x.png" ghost="true"}}"
-                    srcset="{{asset "img/404-ghost.png" ghost="true"}} 1x, {{asset "img/404-ghost@2x.png" ghost="true"}} 2x"/>
+                    src="{{asset "public/404-ghost@2x.png"}}"
+                    srcset="{{asset "public/404-ghost.png"}} 1x, {{asset "public/404-ghost@2x.png"}} 2x"/>
                     <section class="error-message">
                       <h1 class="error-code">{{code}}</h1>
                       <h2 class="error-description">{{message}}</h2>

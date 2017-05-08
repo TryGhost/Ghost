@@ -1,15 +1,15 @@
 {
     "core": {
-        "dbHash": {
+        "db_hash": {
             "defaultValue": null
         },
-        "nextUpdateCheck": {
+        "next_update_check": {
             "defaultValue": null
         },
-        "displayUpdateNotification": {
+        "display_update_notification": {
             "defaultValue": null
         },
-        "seenNotifications": {
+        "seen_notifications": {
             "defaultValue": "[]"
         }
     },
@@ -23,26 +23,26 @@
         "logo": {
             "defaultValue": ""
         },
-        "cover": {
+        "cover_image": {
             "defaultValue": ""
         },
         "icon": {
             "defaultValue": ""
         },
-        "defaultLang": {
+        "default_lang": {
             "defaultValue": "en_US",
             "validations": {
                 "isEmpty": false
             }
         },
-        "activeTimezone": {
+        "active_timezone": {
             "defaultValue": "Etc/UTC",
             "validations": {
                 "isTimezone": true,
                 "isEmpty": false
             }
         },
-        "forceI18n": {
+        "force_i18n": {
             "defaultValue": "true",
             "validations": {
                 "isEmpty": false,
@@ -83,20 +83,20 @@
         }
     },
     "theme": {
-        "activeTheme": {
+        "active_theme": {
             "defaultValue": "casper"
         }
     },
     "app": {
-        "activeApps": {
+        "active_apps": {
             "defaultValue": "[]"
         },
-        "installedApps": {
+        "installed_apps": {
             "defaultValue": "[]"
         }
     },
     "private": {
-        "isPrivate": {
+        "is_private": {
             "defaultValue": "false"
         },
         "password": {

@@ -6,19 +6,20 @@
 // We use the name ghost_head to match the helper for consistency:
 // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 
-var getMetaData = require('../data/meta'),
-    hbs = require('express-hbs'),
-    escapeExpression = hbs.handlebars.Utils.escapeExpression,
-    SafeString = hbs.handlebars.SafeString,
+var proxy = require('./proxy'),
     _ = require('lodash'),
-    filters = require('../filters'),
-    assetHelper = require('./asset'),
-    config = require('../config'),
     Promise = require('bluebird'),
-    labs = require('../utils/labs'),
-    utils = require('../utils'),
-    api = require('../api'),
-    settingsCache = require('../settings/cache');
+
+    getMetaData = proxy.metaData.get,
+    getAssetUrl = proxy.metaData.getAssetUrl,
+    escapeExpression = proxy.escapeExpression,
+    SafeString = proxy.SafeString,
+    filters = proxy.filters,
+    labs = proxy.labs,
+    api = proxy.api,
+    settingsCache = proxy.settingsCache,
+    config = proxy.config,
+    blogIconUtils = proxy.blogIcon;
 
 function getClient() {
     if (labs.isSet('publicAPI') === true) {
@@ -67,7 +68,8 @@ function finaliseStructuredData(metaData) {
 
 function getAjaxHelper(clientId, clientSecret) {
     return '<script type="text/javascript" src="' +
-        assetHelper('shared/ghost-url.js', {hash: {minifyInProduction: true}}) + '"></script>\n' +
+        getAssetUrl('public/ghost-url.js', true) +
+        '"></script>\n' +
         '<script type="text/javascript">\n' +
         'ghost.init({\n' +
         '\tclientId: "' + clientId + '",\n' +
@@ -76,7 +78,7 @@ function getAjaxHelper(clientId, clientSecret) {
         '</script>';
 }
 
-function ghost_head(options) {
+module.exports = function ghost_head(options) {
     // if server error page do nothing
     if (this.statusCode >= 500) {
         return;
@@ -94,10 +96,8 @@ function ghost_head(options) {
             metaData: getMetaData(this, options.data.root),
             client: getClient()
         },
-        blogIcon = settingsCache.get('icon'),
-        // CASE: blog icon is not set in config, we serve the default
-        iconType = !blogIcon ? 'x-icon' : blogIcon.match(/\/favicon\.ico$/i) ? 'x-icon' : 'png',
-        favicon = !blogIcon ? '/favicon.ico' : utils.url.urlFor('image', {image: blogIcon});
+        favicon = blogIconUtils.getIconUrl(),
+        iconType = blogIconUtils.getIconType(favicon);
 
     return Promise.props(fetch).then(function (response) {
         client = response.client;
@@ -109,7 +109,7 @@ function ghost_head(options) {
                 head.push('<meta name="description" content="' + escapeExpression(metaData.metaDescription) + '" />');
             }
 
-            head.push('<link rel="shortcut icon" href="' + favicon + '" type="' + iconType + '" />');
+            head.push('<link rel="shortcut icon" href="' + favicon + '" type="image/' + iconType + '" />');
             head.push('<link rel="canonical" href="' +
                 escapeExpression(metaData.canonicalUrl) + '" />');
             head.push('<meta name="referrer" content="' + referrerPolicy + '" />');
@@ -162,6 +162,4 @@ function ghost_head(options) {
     }).then(function (head) {
         return new SafeString(head.join('\n    ').trim());
     });
-}
-
-module.exports = ghost_head;
+};

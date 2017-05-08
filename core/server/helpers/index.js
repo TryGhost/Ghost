@@ -1,14 +1,8 @@
-var hbs = require('express-hbs'),
-    Promise = require('bluebird'),
-    errors = require('../errors'),
-    config = require('../config'),
-    coreHelpers = {},
-    registerHelpers;
-
-// @TODO think about a config option for this e.g. theme.devmode?
-if (config.get('env') !== 'production') {
-    hbs.handlebars.logger.level = 0;
-}
+var coreHelpers = {},
+    register = require('./register'),
+    registerThemeHelper = register.registerThemeHelper,
+    registerAsyncThemeHelper = register.registerAsyncThemeHelper,
+    registerAllCoreHelpers;
 
 coreHelpers.asset = require('./asset');
 coreHelpers.author = require('./author');
@@ -22,7 +16,7 @@ coreHelpers.foreach = require('./foreach');
 coreHelpers.get = require('./get');
 coreHelpers.ghost_foot = require('./ghost_foot');
 coreHelpers.ghost_head = require('./ghost_head');
-coreHelpers.image = require('./image');
+coreHelpers.img_url = require('./img_url');
 coreHelpers.is = require('./is');
 coreHelpers.has = require('./has');
 coreHelpers.meta_description = require('./meta_description');
@@ -39,38 +33,7 @@ coreHelpers.title = require('./title');
 coreHelpers.twitter_url = require('./twitter_url');
 coreHelpers.url = require('./url');
 
-// Register an async handlebars helper for a given handlebars instance
-function registerAsyncHelper(hbs, name, fn) {
-    hbs.registerAsyncHelper(name, function (context, options, cb) {
-        // Handle the case where we only get context and cb
-        if (!cb) {
-            cb = options;
-            options = undefined;
-        }
-
-        // Wrap the function passed in with a when.resolve so it can return either a promise or a value
-        Promise.resolve(fn.call(this, context, options)).then(function (result) {
-            cb(result);
-        }).catch(function (err) {
-            throw new errors.IncorrectUsageError({
-                err: err,
-                context: 'registerAsyncThemeHelper: ' + name
-            });
-        });
-    });
-}
-
-// Register a handlebars helper for themes
-function registerThemeHelper(name, fn) {
-    hbs.registerHelper(name, fn);
-}
-
-// Register an async handlebars helper for themes
-function registerAsyncThemeHelper(name, fn) {
-    registerAsyncHelper(hbs, name, fn);
-}
-
-registerHelpers = function () {
+registerAllCoreHelpers = function registerAllCoreHelpers() {
     // Register theme helpers
     registerThemeHelper('asset', coreHelpers.asset);
     registerThemeHelper('author', coreHelpers.author);
@@ -82,7 +45,7 @@ registerHelpers = function () {
     registerThemeHelper('foreach', coreHelpers.foreach);
     registerThemeHelper('has', coreHelpers.has);
     registerThemeHelper('is', coreHelpers.is);
-    registerThemeHelper('image', coreHelpers.image);
+    registerThemeHelper('img_url', coreHelpers.img_url);
     registerThemeHelper('meta_description', coreHelpers.meta_description);
     registerThemeHelper('meta_title', coreHelpers.meta_title);
     registerThemeHelper('navigation', coreHelpers.navigation);
@@ -105,6 +68,4 @@ registerHelpers = function () {
 };
 
 module.exports = coreHelpers;
-module.exports.loadCoreHelpers = registerHelpers;
-module.exports.registerThemeHelper = registerThemeHelper;
-module.exports.registerAsyncThemeHelper = registerAsyncThemeHelper;
+module.exports.loadCoreHelpers = registerAllCoreHelpers;

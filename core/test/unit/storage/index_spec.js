@@ -1,9 +1,10 @@
 var should = require('should'), // jshint ignore:line
     fs = require('fs-extra'),
+    StorageBase = require('ghost-storage-base'),
     configUtils = require('../../utils/configUtils'),
     storage = require('../../../server/storage'),
     errors = require('../../../server/errors'),
-    localFileStorage = require('../../../server/storage/local-file-store');
+    LocalFileStorage = require('../../../server/storage/LocalFileStorage');
 
 describe('storage: index_spec', function () {
     var scope = {adapter: null};
@@ -23,124 +24,71 @@ describe('storage: index_spec', function () {
         configUtils.restore();
     });
 
-    describe('default ghost storage config', function () {
-        it('load without a type', function () {
-            var chosenStorage = storage.getStorage();
-            (chosenStorage instanceof localFileStorage).should.eql(true);
-        });
-
-        it('load with themes type', function () {
-            var chosenStorage = storage.getStorage('themes');
-            (chosenStorage instanceof localFileStorage).should.eql(true);
-        });
-
-        it('load with unknown type', function () {
-            try {
-                storage.getStorage('theme');
-            } catch (err) {
-                (err instanceof errors.IncorrectUsageError).should.eql(true);
-            }
-        });
+    it('default image storage is local file storage', function () {
+        var chosenStorage = storage.getStorage();
+        (chosenStorage instanceof StorageBase).should.eql(true);
+        (chosenStorage instanceof LocalFileStorage).should.eql(true);
     });
 
-    describe('custom ghost storage config', function () {
-        it('images storage adapter is custom, themes is default', function () {
-            scope.adapter = configUtils.config.getContentPath('storage') + 'custom-adapter.js';
+    it('custom adapter', function () {
+        scope.adapter = configUtils.config.getContentPath('storage') + 'custom-adapter.js';
 
-            configUtils.set({
-                storage: {
-                    active: {
-                        images: 'custom-adapter'
-                    }
-                }
-            });
-
-            var jsFile = '' +
-                'var util = require(\'util\');' +
-                'var StorageBase = require(__dirname + \'/../../core/server/storage/base\');' +
-                'var AnotherAdapter = function (){ StorageBase.call(this); };' +
-                'util.inherits(AnotherAdapter, StorageBase);' +
-                'AnotherAdapter.prototype.exists = function (){};' +
-                'AnotherAdapter.prototype.save = function (){};' +
-                'AnotherAdapter.prototype.serve = function (){};' +
-                'AnotherAdapter.prototype.delete = function (){};' +
-                'AnotherAdapter.prototype.read = function (){};' +
-                'module.exports = AnotherAdapter', chosenStorage;
-
-            fs.writeFileSync(scope.adapter, jsFile);
-
-            chosenStorage = storage.getStorage('themes');
-            (chosenStorage instanceof localFileStorage).should.eql(true);
-
-            chosenStorage = storage.getStorage('images');
-            (chosenStorage instanceof localFileStorage).should.eql(false);
-        });
-    });
-
-    describe('adapter validation', function () {
-        it('create good adapter', function () {
-            scope.adapter = configUtils.config.getContentPath('storage') + 'another-storage.js';
-
-            configUtils.set({
-                storage: {
-                    active: {
-                        images: 'another-storage'
-                    }
-                },
-                paths: {
-                    storage: __dirname + '/another-storage.js'
-                }
-            });
-
-            var jsFile = '' +
-                'var util = require(\'util\');' +
-                'var StorageBase = require(__dirname + \'/../../core/server/storage/base\');' +
-                'var AnotherAdapter = function (){ StorageBase.call(this); };' +
-                'util.inherits(AnotherAdapter, StorageBase);' +
-                'AnotherAdapter.prototype.exists = function (){};' +
-                'AnotherAdapter.prototype.save = function (){};' +
-                'AnotherAdapter.prototype.serve = function (){};' +
-                'AnotherAdapter.prototype.delete = function (){};' +
-                'AnotherAdapter.prototype.read = function (){};' +
-                'module.exports = AnotherAdapter', adapter;
-
-            fs.writeFileSync(scope.adapter, jsFile);
-
-            adapter = storage.getStorage();
-            should.exist(adapter);
-            (adapter instanceof localFileStorage).should.eql(false);
-        });
-
-        it('create bad adapter: exists fn is missing', function () {
-            scope.adapter = configUtils.config.getContentPath('storage') + 'broken-storage.js';
-
-            configUtils.set({
-                storage: {
-                    active: 'broken-storage'
-                },
-                paths: {
-                    storage: __dirname + '/broken-storage.js'
-                }
-            });
-
-            var jsFile = '' +
-                'var util = require(\'util\');' +
-                'var StorageBase = require(__dirname + \'/../../core/server/storage/base\');' +
-                'var AnotherAdapter = function (){ StorageBase.call(this); };' +
-                'util.inherits(AnotherAdapter, StorageBase);' +
-                'AnotherAdapter.prototype.save = function (){};' +
-                'AnotherAdapter.prototype.serve = function (){};' +
-                'AnotherAdapter.prototype.delete = function (){};' +
-                'module.exports = AnotherAdapter';
-
-            fs.writeFileSync(scope.adapter, jsFile);
-
-            try {
-                storage.getStorage();
-            } catch (err) {
-                should.exist(err);
-                (err instanceof errors.IncorrectUsageError).should.eql(true);
+        configUtils.set({
+            storage: {
+                active: 'custom-adapter'
             }
         });
+
+        var jsFile = '' +
+            '\'use strict\';' +
+            'var StorageBase = require(\'ghost-storage-base\');' +
+            'class AnotherAdapter extends StorageBase {' +
+            'exists(){}' +
+            'save(){}' +
+            'serve(){}' +
+            'delete(){}' +
+            'read(){}' +
+            '}' +
+            'module.exports = AnotherAdapter', chosenStorage;
+
+        fs.writeFileSync(scope.adapter, jsFile);
+
+        configUtils.config.get('storage:active').should.eql('custom-adapter');
+        chosenStorage = storage.getStorage();
+        (chosenStorage instanceof LocalFileStorage).should.eql(false);
+        (chosenStorage instanceof StorageBase).should.eql(true);
+    });
+
+    it('create bad adapter: exists fn is missing', function () {
+        scope.adapter = configUtils.config.getContentPath('storage') + 'broken-storage.js';
+
+        configUtils.set({
+            storage: {
+                active: 'broken-storage'
+            },
+            paths: {
+                storage: __dirname + '/broken-storage.js'
+            }
+        });
+
+        var jsFile = '' +
+            '\'use strict\';' +
+            'var StorageBase = require(\'ghost-storage-base\');' +
+            'class AnotherAdapter extends StorageBase {' +
+            'save(){}' +
+            'serve(){}' +
+            'delete(){}' +
+            'read(){}' +
+            '}' +
+            'module.exports = AnotherAdapter';
+
+        fs.writeFileSync(scope.adapter, jsFile);
+
+        try {
+            storage.getStorage();
+        } catch (err) {
+            should.exist(err);
+            (err instanceof errors.IncorrectUsageError).should.eql(true);
+        }
     });
 });

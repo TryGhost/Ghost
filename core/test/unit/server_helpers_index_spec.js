@@ -1,7 +1,7 @@
 // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 var should = require('should'), // jshint ignore:line
     _ = require('lodash'),
-    hbs = require('express-hbs'),
+    hbs = require.main.require('core/server/themes/engine'),
 
     // Stuff we are testing
     helpers = require.main.require('core/server/helpers');
@@ -10,7 +10,7 @@ describe('Helpers', function () {
     var hbsHelpers = ['each', 'if', 'unless', 'with', 'helperMissing', 'blockHelperMissing', 'log', 'lookup'],
         ghostHelpers = [
             'asset', 'author', 'body_class', 'content', 'date', 'encode', 'excerpt', 'facebook_url', 'foreach', 'get',
-            'ghost_foot', 'ghost_head', 'has', 'image', 'is', 'meta_description', 'meta_title', 'navigation',
+            'ghost_foot', 'ghost_head', 'has', 'img_url', 'is', 'meta_description', 'meta_title', 'navigation',
             'next_post', 'page_url', 'pagination', 'plural', 'post_class', 'prev_post', 'tags', 'title', 'twitter_url',
             'url'
         ],
@@ -22,7 +22,7 @@ describe('Helpers', function () {
         });
 
         // This will work when we finish refactoring
-        it.skip('should have exactly the right helpers', function () {
+        it('should have exactly the right helpers', function () {
             var foundHelpers, missingHelpers, unexpectedHelpers;
 
             foundHelpers = _.keys(hbs.handlebars.helpers);

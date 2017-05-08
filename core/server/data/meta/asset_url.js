@@ -1,50 +1,47 @@
 var config = require('../../config'),
-    settingsCache = require('../../settings/cache'),
+    blogIconUtils = require('../../utils/blog-icon'),
     utils = require('../../utils');
 
-function getAssetUrl(path, isAdmin, minify) {
-    var output = '';
+/**
+ * Serve either uploaded favicon or default
+ * @return {string}
+ */
+function getFaviconUrl() {
+    return blogIconUtils.getIconUrl();
+}
 
-    output += utils.url.urlJoin(utils.url.getSubdir(), '/');
+function getAssetUrl(path, hasMinFile) {
+    // CASE: favicon - this is special path with its own functionality
+    if (path.match(/\/?favicon\.(ico|png)$/)) {
+        // @TODO, resolve this - we should only be resolving subdirectory and extension.
+        return getFaviconUrl();
+    }
 
-    if (!path.match(/^favicon\.(ico|png)$/) && !path.match(/^shared/) && !path.match(/^asset/)) {
-        if (isAdmin) {
-            output = utils.url.urlJoin(output, 'ghost/');
-        }
+    // CASE: Build the output URL
+    // Add subdirectory...
+    var output = utils.url.urlJoin(utils.url.getSubdir(), '/');
 
+    // Optionally add /assets/
+    if (!path.match(/^public/) && !path.match(/^asset/)) {
         output = utils.url.urlJoin(output, 'assets/');
     }
-    // Serve either uploaded favicon or default
-    // for favicon, we don't care anymore about the `/` leading slash, as don't support theme favicons
-    if (path.match(/\/?favicon\.(ico|png)$/)) {
-        if (isAdmin) {
-            output = utils.url.urlJoin(utils.url.getSubdir(), '/favicon.ico');
-        } else {
-            if (settingsCache.get('icon')) {
-                output = utils.url.urlJoin(utils.url.getSubdir(), utils.url.urlFor('image', {image: settingsCache.get('icon')}));
-            } else {
-                output = utils.url.urlJoin(utils.url.getSubdir(), '/favicon.ico');
-            }
-        }
-    }
-    // Get rid of any leading slash on the path
-    path = path.replace(/^\//, '');
 
-    // replace ".foo" with ".min.foo" in production
-    if (minify) {
+    // replace ".foo" with ".min.foo" if configured
+    if (hasMinFile && config.get('useMinFiles') !== false) {
         path = path.replace(/\.([^\.]*)$/, '.min.$1');
     }
 
-    if (!path.match(/^favicon\.(ico|png)$/)) {
-        // we don't want to concat the path with our favicon url
-        output += path;
+    // Add the path for the requested asset
+    output = utils.url.urlJoin(output, path);
 
-        if (!config.get('assetHash')) {
-            config.set('assetHash', utils.generateAssetHash());
-        }
-
-        output = output + '?v=' + config.get('assetHash');
+    // Ensure we have an assetHash
+    // @TODO rework this!
+    if (!config.get('assetHash')) {
+        config.set('assetHash', utils.generateAssetHash());
     }
+
+    // Finally add the asset hash to the output URL
+    output += '?v=' + config.get('assetHash');
 
     return output;
 }

@@ -6,9 +6,20 @@ var Promise = require('bluebird'),
  * If the setup is completed and...
  * 1. the public client does exist, deny to switch to local
  * 2. the public client does not exist, deny to switch to remote
+ *
+ * See https://github.com/TryGhost/Ghost/issues/8342
+ * Remote authentication is disabled right now.
  */
-exports.switch = function validate(options) {
+exports.validate = function validate(options) {
     var authType = options.authType;
+
+    if (authType === 'ghost') {
+        return Promise.reject(new errors.InternalServerError({
+            code: 'AUTH_TYPE',
+            message: 'Ghost doesn\'t support remote authentication at the moment.',
+            help: 'Set `auth.type` to "password".'
+        }));
+    }
 
     return models.User.isSetup()
         .then(function (isSetup) {
