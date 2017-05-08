@@ -89,7 +89,14 @@
     cursor: pointer;
 }
 
-.gh-image-uploader .progress-container {
+.gh-image-uploader .failed {
+    margin: 1em 2em;
+    font-size: 16px;
+}
+
+/* TODO: remove the gh-image-uploader classes once it's using gh-progrss-bar */
+.gh-image-uploader .progress-container,
+.gh-progress-container {
     flex-grow: 1;
     display: flex;
     flex-direction: row;
@@ -97,7 +104,8 @@
     width: 100%;
 }
 
-.gh-image-uploader .progress {
+.gh-image-uploader .progress,
+.gh-progress-container-progress {
     overflow: hidden;
     margin: 0 auto;
     width: 60%;
@@ -106,17 +114,14 @@
     box-shadow: rgba(0, 0, 0, 0.1) 0 1px 2px inset;
 }
 
-.gh-image-uploader .failed {
-    margin: 1em 2em;
-    font-size: 16px;
-}
-
-.gh-image-uploader .bar {
+.gh-image-uploader .bar,
+.gh-progress-bar {
     height: 12px;
     background: var(--blue);
 }
 
-.gh-image-uploader .bar.fail {
+.gh-image-uploader .bar.fail,
+.gh-progress-bar.-error {
     width: 100% !important;
     background: var(--red);
 }

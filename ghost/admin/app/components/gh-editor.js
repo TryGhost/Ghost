@@ -1,13 +1,35 @@
 import Component from 'ember-component';
 import run from 'ember-runloop';
+import {
+    IMAGE_MIME_TYPES,
+    IMAGE_EXTENSIONS
+} from 'ghost-admin/components/gh-image-uploader';
 
 const {debounce} = run;
 
 export default Component.extend({
 
-    headerClass: '',
+    classNameBindings: ['isDraggedOver:-drag-over'],
 
+    // Public attributes
+    navIsClosed: false,
+
+    // Internal attributes
+    droppedFiles: null,
+    headerClass: '',
+    imageExtensions: IMAGE_EXTENSIONS,
+    imageMimeTypes: IMAGE_MIME_TYPES,
+    isDraggedOver: false,
+    uploadedImageUrls: null,
+
+    // Closure actions
+    toggleAutoNav() {},
+
+    // Private
+    _dragCounter: 0,
+    _fullScreenEnabled: false,
     _navIsClosed: false,
+    _onResizeHandler: null,
     _viewActionsWidth: 190,
 
     init() {
@@ -27,22 +49,18 @@ export default Component.extend({
         let navIsClosed = this.get('navIsClosed');
 
         if (navIsClosed !== this._navIsClosed) {
+            this._fullScreenEnabled = navIsClosed;
             run.scheduleOnce('afterRender', this, this._setHeaderClass);
         }
 
         this._navIsClosed = navIsClosed;
     },
 
-    willDestroyElement() {
-        this._super(...arguments);
-        window.removeEventListener('resize', this._onResizeHandler);
-    },
-
     _setHeaderClass() {
-        let $editorInner = this.$('.gh-editor-inner');
+        let $editorTitle = this.$('.gh-editor-title');
 
-        if ($editorInner.length > 0) {
-            let boundingRect = $editorInner[0].getBoundingClientRect();
+        if ($editorTitle.length > 0) {
+            let boundingRect = $editorTitle[0].getBoundingClientRect();
             let maxRight = window.innerWidth - this._viewActionsWidth;
 
             if (boundingRect.right >= maxRight) {
@@ -52,5 +70,89 @@ export default Component.extend({
         }
 
         this.set('headerClass', '');
+    },
+
+    // dragOver is needed so that drop works
+    dragOver(event) {
+        if (!event.dataTransfer) {
+            return;
+        }
+
+        // this is needed to work around inconsistencies with dropping files
+        // from Chrome's downloads bar
+        let eA = event.dataTransfer.effectAllowed;
+        event.dataTransfer.dropEffect = (eA === 'move' || eA === 'linkMove') ? 'move' : 'copy';
+
+        event.preventDefault();
+        event.stopPropagation();
+    },
+
+    // dragEnter is needed so that the drag class is correctly removed
+    dragEnter(event) {
+        if (!event.dataTransfer) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        // the counter technique prevents flickering of the drag class when
+        // dragging across child elements
+        this._dragCounter++;
+
+        this.set('isDraggedOver', true);
+    },
+
+    dragLeave(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        this._dragCounter--;
+        if (this._dragCounter === 0) {
+            this.set('isDraggedOver', false);
+        }
+    },
+
+    drop(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        this._dragCounter = 0;
+        this.set('isDraggedOver', false);
+
+        if (event.dataTransfer.files) {
+            this.set('droppedFiles', event.dataTransfer.files);
+        }
+    },
+
+    willDestroyElement() {
+        this._super(...arguments);
+        window.removeEventListener('resize', this._onResizeHandler);
+
+        // reset fullscreen mode if it was turned on
+        if (this._fullScreenEnabled) {
+            this.toggleAutoNav();
+        }
+    },
+
+    actions: {
+        toggleFullScreen() {
+            if (!this._fullScreenWasToggled) {
+                this._fullScreenEnabled = !this.get('isNavOpen');
+                this._fullScreenWasToggled = true;
+            } else {
+                this._fullScreenEnabled = !this._fullScreenEnabled;
+            }
+            this.toggleAutoNav();
+        },
+
+        uploadComplete(uploads) {
+            this.set('uploadedImageUrls', uploads.mapBy('url'));
+            this.set('droppedFiles', null);
+        },
+
+        uploadCancelled() {
+            this.set('droppedFiles', null);
+        }
     }
 });

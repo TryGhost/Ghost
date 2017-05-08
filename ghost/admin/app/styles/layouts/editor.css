@@ -156,25 +156,6 @@
     .gh-editor-header { padding: 0 4vw; }
 }
 
-.gh-editor-status {
-    color: var(--midgrey);
-    font-weight: 300;
-}
-
-.gh-editor-container {
-    position: absolute;
-    overflow-y: auto;
-    padding: 10vw 4vw;
-    width: 100%;
-    height: 100%;
-}
-
-.gh-editor-inner {
-    margin: 0 auto;
-    max-width: 740px;
-    height: 100%;
-}
-
 .gh-editor-header-small {
     height: 43px;
     padding: 0;
@@ -192,14 +173,147 @@
     padding: 13px 15px;
 }
 
+.gh-editor-status {
+    color: var(--midgrey);
+    font-weight: 300;
+}
+
+.gh-editor-container {
+    position: absolute;
+    overflow-y: auto;
+    padding: 10vw 4vw;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.gh-editor-inner {
+    margin: 0 auto;
+    max-width: 760px;
+    height: 100%;
+}
+
+.gh-editor-title {
+    width: 100%;
+    min-height: 1.3em;
+    margin-bottom: 2vw;
+    border: none;
+    letter-spacing: 0.8px;
+    font-weight: bold;
+    font-size: 3.2rem;
+    line-height: 1.3em;
+
+}
+
 .gh-editor-wordcount {
-     position: fixed;
-     bottom: 0px;
-     padding:10px;
+    position: fixed;
+    bottom: 0px;
+    padding:10px;
  }
 
 @media (max-width: 1200px) {
     .gh-editor-wordcount {
         display: none;
     }
+}
+
+/* SimpleMDE editor
+/* ---------------------------------------------------------- */
+
+.gh-editor-container {
+    position: relative;
+}
+
+.gh-editor-footer {
+    height: 48px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--lightgrey);
+}
+
+.gh-editor-footer .editor-toolbar {
+    border: none;
+    border-radius: 0;
+    background-color: #fff;
+    opacity: 1;
+}
+
+.gh-editor-footer .editor-toolbar:before,
+.gh-editor-footer .editor-toolbar:after {
+    content: none;
+}
+
+.gh-editor-footer .editor-toolbar a:focus {
+    outline: none;
+}
+
+.gh-editor .CodeMirror {
+    padding: 0;
+    overflow: visible;
+}
+
+.gh-editor .gh-editor-title,
+.gh-editor .CodeMirror-wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    border: none;
+}
+
+.gh-editor .CodeMirror pre {
+    padding: 0;
+}
+
+.gh-editor .editor-preview {
+    height: auto;
+    margin-top: 4px;
+    padding: 0;
+    background-color: #fff;
+}
+
+.gh-editor-drop-target,
+.gh-editor-image-upload {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid blue;
+    content: '';
+    z-index: 9999;
+    background-color: rgba(255,255,255,0.6);
+}
+
+.gh-editor-drop-target .drop-target-message {
+    padding: 1em;
+    background-color: #fff;
+    border-radius: 1em;
+}
+
+.gh-editor-image-upload.-error {
+    border: 2px solid red;
+}
+
+.gh-editor-image-upload-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 1em;
+    background-color: #fff;
+    border-radius: 1em;
+    max-width: 80%;
+}
+
+.gh-editor-image-upload .gh-progress-container-progress {
+    width: 100%;
+}
+
+/* TODO: need a way to make stroke + fill global without causing issues with certain icons */
+.gh-editor-image-upload .gh-btn-grey svg path {
+    stroke: color(var(--darkgrey) l(+15%));
 }

@@ -10,7 +10,8 @@ import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import {isBlank} from 'ember-utils';
 
-import {BLANK_DOC} from 'ghost-admin/components/gh-koenig';  // a blank mobile doc
+// a blank mobile doc containing a single markdown card
+import {BLANK_DOC} from 'ghost-admin/components/gh-markdown-editor';
 
 // ember-cli-shims doesn't export these so we must get them manually
 const {Comparable, compare} = Ember;

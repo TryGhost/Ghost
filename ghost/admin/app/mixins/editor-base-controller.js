@@ -56,6 +56,8 @@ export default Mixin.create({
 
     navIsClosed: reads('application.autoNav'),
 
+    _hasChanged: false,
+
     init() {
         this._super(...arguments);
         window.onbeforeunload = () => {
@@ -466,6 +468,16 @@ export default Mixin.create({
     actions: {
         updateScratch(value) {
             this.set('model.scratch', value);
+
+            // save on first change to trigger the new->edit transition
+            if (!this._hasChanged && this.get('model.isNew')) {
+                this._hasChanged = true;
+                this.send('save', {silent: true, backgroundSave: true});
+                return;
+            }
+
+            this._hasChanged = true;
+
             // save 3 seconds after last edit
             this.get('_autosave').perform();
             // force save at 60 seconds
@@ -491,12 +503,6 @@ export default Mixin.create({
             } else if (newType === 'schedule') {
                 this.set('willSchedule', true);
                 this.set('willPublish', false);
-            }
-        },
-
-        autoSaveNew() {
-            if (this.get('model.isNew')) {
-                this.send('save', {silent: true, backgroundSave: true});
             }
         },
 
@@ -573,6 +579,10 @@ export default Mixin.create({
 
         setWordcount(wordcount) {
             this.set('wordcount', wordcount);
+        },
+
+        toggleAutoNav() {
+            this.get('application').send('toggleAutoNav');
         }
     }
 });

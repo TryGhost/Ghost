@@ -14,6 +14,9 @@ import {
     UnsupportedMediaTypeError
 } from 'ghost-admin/services/ajax';
 
+export const IMAGE_MIME_TYPES = 'image/gif,image/jpg,image/jpeg,image/png,image/svg+xml';
+export const IMAGE_EXTENSIONS = ['gif', 'jpg', 'jpeg', 'png', 'svg'];
+
 export default Component.extend({
     tagName: 'section',
     classNames: ['gh-image-uploader'],
@@ -37,8 +40,8 @@ export default Component.extend({
     ajax: injectService(),
     notifications: injectService(),
 
-    _defaultAccept: 'image/gif,image/jpg,image/jpeg,image/png,image/svg+xml',
-    _defaultExtensions: ['gif', 'jpg', 'jpeg', 'png', 'svg'],
+    _defaultAccept: IMAGE_MIME_TYPES,
+    _defaultExtensions: IMAGE_EXTENSIONS,
     _defaultUploadUrl: '/uploads/',
 
     // TODO: this wouldn't be necessary if the server could accept direct

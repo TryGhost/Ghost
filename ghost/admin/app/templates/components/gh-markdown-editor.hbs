@@ -1,0 +1,11 @@
+{{yield (hash
+    pane=(component "gh-simplemde"
+        value=markdown
+        placeholder=placeholder
+        autofocus=autofocus
+        onChange=(action "updateMarkdown")
+        onEditorInit=(action "setEditor")
+        onEditorDestroy=(action "destroyEditor")
+        options=simpleMDEOptions)
+    focus=(action "focusEditor")
+)}}

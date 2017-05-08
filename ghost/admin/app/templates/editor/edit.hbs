@@ -1,5 +1,11 @@
-{{#gh-editor tagName="section" class="gh-view" navIsClosed=navIsClosed as |headerClass|}}
-    <header class="gh-editor-header {{headerClass}}">
+{{#gh-editor
+    tagName="section"
+    class="gh-editor gh-view"
+    navIsClosed=navIsClosed
+    toggleAutoNav=(action "toggleAutoNav")
+    as |editor|
+}}
+    <header class="gh-editor-header {{editor.headerClass}}">
         <div class="gh-editor-status">
             {{gh-editor-post-status
                 post=model
@@ -24,40 +30,83 @@
         </section>
     </header>
 
-    <div class="gh-editor-container needsclick">
-        <div class="gh-editor-inner">
-            {{!--
-                NOTE: the mobiledoc property is unbound so that the setting the
-                serialized version onChange doesn't cause a deserialization and
-                re-render of the editor on every key press / editor change
-            --}}
-            {{#gh-koenig
-                mobiledoc=(unbound model.scratch)
-                onChange=(action "updateScratch")
-                onFirstChange=(action "autoSaveNew")
-                autofocus=shouldFocusEditor
-                tabindex="2"
-                titleSelector="#kg-title-input"
-		        containerSelector=".gh-editor-container"
-                wordcountDidChange=(action "setWordcount")
-                as |koenig|
-            }}
-                {{koenig-title-input
-                    id="koenig-title-input"
-                    val=(readonly model.titleScratch)
-                    onChange=(action (mut model.titleScratch))
-                    tabindex="1"
-                    autofocus=shouldFocusTitle
-                    focus-out="updateTitle"
-                    update=(action (perform updateTitle))
-                    editor=(readonly koenig.editor)
-                    editorHasRendered=koenig.hasRendered
-                    editorMenuIsOpen=koenig.isMenuOpen
-                }}
-            {{/gh-koenig}}
+    {{!--
+        NOTE: title is part of the markdown editor container so that it has
+        access to the markdown editor's "focus" action
+    --}}
+    {{#gh-markdown-editor
+        class="gh-editor-container"
+        tabindex="2"
+        placeholder="Click here to start..."
+        autofocus=shouldFocusEditor
+        uploadedImageUrls=editor.uploadedImageUrls
+        mobiledoc=(readonly model.scratch)
+        onChange=(action "updateScratch")
+        onFullScreen=(action editor.toggleFullScreen)
+        showMarkdownHelp=(route-action "toggleMarkdownHelpModal")
+        as |markdown|
+    }}
+        {{gh-trim-focus-input model.titleScratch
+            type="text"
+            class="gh-editor-title"
+            placeholder="Your Post Title"
+            tabindex="1"
+            shouldFocus=shouldFocusTitle
+            focus-out="updateTitle"
+            update=(action (perform updateTitle))
+            keyEvents=(hash
+                9=(action markdown.focus 'bottom')
+                13=(action markdown.focus 'top')
+            )
+            data-test-editor-title-input=true
+        }}
+
+        {{markdown.pane}}
+    {{/gh-markdown-editor}}
+
+    {{!-- TODO: put tool/status bar in here so that scroll area can be fixed --}}
+    <footer class="gh-editor-footer"></footer>
+
+    {{!-- files are dragged over editor pane --}}
+    {{#if editor.isDraggedOver}}
+        <div class="drop-target gh-editor-drop-target">
+            <div class="drop-target-message">
+                <h3>Drop image(s) here to upload</h3>
+            </div>
         </div>
-    </div>
-    <div class="gh-editor-wordcount">{{pluralize wordcount 'word'}}.</div>
+    {{/if}}
+
+    {{!-- files have been dropped ready to be uploaded --}}
+    {{#if editor.droppedFiles}}
+        {{#gh-uploader
+            files=editor.droppedFiles
+            accept=editor.imageMimeTypes
+            extensions=editor.imageExtensions
+            onComplete=(action editor.uploadComplete)
+            onCancel=(action editor.uploadCancelled)
+            as |upload|
+        }}
+            <div class="gh-editor-image-upload {{if upload.errors "-error"}}">
+                <div class="gh-editor-image-upload-content">
+                    {{#if upload.errors}}
+                        <h3>Upload failed</h3>
+
+                        {{#each upload.errors as |error|}}
+                            <div class="failed">{{error.fileName}} - {{error.message}}</div>
+                        {{/each}}
+
+                        <button class="gh-btn gh-btn-grey gh-btn-icon" {{action upload.cancel}}>
+                            <span>{{inline-svg "close"}} Close</span>
+                        </button>
+                    {{else}}
+
+                        <h3>Uploading {{pluralize upload.files.length "image"}}...</h3>
+                        {{upload.progressBar}}
+                    {{/if}}
+                </div>
+            </div>
+        {{/gh-uploader}}
+    {{/if}}
 {{/gh-editor}}
 
 {{#if showDeletePostModal}}
