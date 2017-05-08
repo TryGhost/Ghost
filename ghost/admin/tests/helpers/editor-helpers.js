@@ -2,27 +2,50 @@ import Ember from 'ember';
 import $ from 'jquery';
 import run from 'ember-runloop';
 import wait from 'ember-test-helpers/wait';
-import {findWithAssert} from 'ember-native-dom-helpers';
+import {find, findWithAssert, waitUntil} from 'ember-native-dom-helpers';
+import {MOBILEDOC_VERSION} from 'mobiledoc-kit/renderers/mobiledoc';
+import {TESTING_EXPANDO_PROPERTY} from 'gh-koenig/components/gh-koenig';
 
-// polls the editor until it's started.
-export function editorRendered() {
-    return Ember.Test.promise(function (resolve) { // eslint-disable-line
-        function checkEditor() {
-            if (window.editor) {
-                return resolve();
-            } else {
-                window.requestAnimationFrame(checkEditor);
-            }
+export const EMPTY_DOC = {
+    version: MOBILEDOC_VERSION,
+    markups: [],
+    atoms: [],
+    cards: [],
+    sections: []
+};
+
+// traverse up the node tree looking for an editor instance
+export function findEditor(element) {
+    if (!element) {
+        // TODO: get the selector from the editor component
+        element = findWithAssert('.gh-koenig-container');
+    }
+
+    if (typeof element === 'string') {
+        element = findWithAssert(element);
+    }
+
+    do {
+        if (element[TESTING_EXPANDO_PROPERTY]) {
+            return element[TESTING_EXPANDO_PROPERTY];
         }
-        checkEditor();
-    });
+        element = element.parentNode;
+    } while (!!element); // eslint-disable-line
+
+    throw new Error('Unable to find gh-koenig editor from element');
+}
+
+export function focusEditor(element) {
+    let editor = findEditor(element);
+    run(() => editor.element.focus());
+    return (window.wait || wait);
 }
 
 // polls the title until it's started.
 export function titleRendered() {
     return Ember.Test.promise(function (resolve) { // eslint-disable-line
         function checkTitle() {
-            let title = $('#gh-editor-title div');
+            let title = $('#koenig-title-input div');
             if (title[0]) {
                 return resolve();
             } else {
@@ -36,21 +59,24 @@ export function titleRendered() {
 // replaces the title text content with HTML and returns once the HTML has been placed.
 // takes into account converting to plaintext.
 export function replaceTitleHTML(HTML) {
-    let el = findWithAssert('#gh-editor-title div');
+    let el = findWithAssert('#koenig-title-input div');
     run(() => el.innerHTML = HTML);
     return (window.wait || wait)();
 }
 
-// simulates text inputs into the editor, unfortunately the helper Ember helper functions
+// simulates text inputs into the editor, unfortunately the Ember helper functions
 // don't work on content editable so we have to manipuate the text input event manager
 // in mobiledoc-kit directly. This is a private API.
 export function inputText(editor, text) {
-    editor._eventManager._textInputHandler.handle(text);
+    run(() => {
+        editor._eventManager._textInputHandler.handle(text);
+    });
 }
 
 // inputs text and waits for the editor to modify the dom with the desired result or timesout.
-export function testInput(input, output, expect) {
-    window.editor.element.focus(); // for some reason the editor doesn't work until it's focused when run in ghost-admin.
+export function testEditorInput(input, output, expect) {
+    let editor = findEditor();
+    editor.element.focus(); // for some reason the editor doesn't work until it's focused when run in ghost-admin.
     return Ember.Test.promise(function (resolve, reject) { // eslint-disable-line
         let lastRender = '';
         let isRejected = false;
@@ -59,53 +85,32 @@ export function testInput(input, output, expect) {
             reject(lastRender);
             isRejected = true;
         }, 500);
-        window.editor.didRender(() => {
-            lastRender = window.editor.element.innerHTML;
-            if (window.editor.element.innerHTML === output && !isRejected) {
+        editor.didRender(() => {
+            lastRender = editor.element.innerHTML;
+            if (editor.element.innerHTML === output && !isRejected) {
                 window.clearTimeout(rejectTimeout);
                 expect(lastRender).to.equal(output); // we know this is true but include it for the output.
                 return resolve(lastRender);
             }
         });
-        inputText(window.editor, input);
+        inputText(editor, input);
     });
 }
 
-export function testInputTimeout(input) {
-    window.editor.element.focus();
+export function testEditorInputTimeout(input) {
+    let editor = findEditor();
+    editor.element.focus();
     return Ember.Test.promise(function (resolve, reject) { // eslint-disable-line
         window.setTimeout(() => {
-            resolve(window.editor.element.innerHTML);
+            resolve(editor.element.innerHTML);
         }, 300);
 
-        inputText(window.editor, input);
+        inputText(editor, input);
     });
 }
 
 export function waitForRender(selector) {
-    let isRejected = false;
-    return Ember.Test.promise(function (resolve, reject) { // eslint-disable-line
-        let rejectTimeout = window.setTimeout(() => {
-            reject('element didn\'t render');
-            isRejected = true;
-        }, 1500);
-
-        function checkIsRendered() {
-            if ($(selector)[0] && !isRejected) {
-                window.clearTimeout(rejectTimeout);
-                return resolve();
-            } else {
-                window.requestAnimationFrame(checkIsRendered);
-            }
-        }
-        checkIsRendered();
-    });
-}
-
-export function timeoutPromise(timeout) {
-    return Ember.Test.promise(function (resolve) { // eslint-disable-line
-        window.setTimeout(() => {
-            resolve();
-        }, timeout);
+    return waitUntil(() => {
+        return find(selector);
     });
 }

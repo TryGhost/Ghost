@@ -21,6 +21,7 @@ export default Component.extend({
 
         this.iconURL = `${this.get('assetPath')}/tools/`;
     },
+
     didRender() {
         let $this = this.$();
         let editor = this.get('editor');
@@ -32,7 +33,6 @@ export default Component.extend({
         }
 
         editor.cursorDidChange(() => {
-
             // if there is no cursor:
             if (!editor.range || !editor.range.head.section || !editor.range.head.section.isBlank
                 || editor.range.head.section.renderNode._element.tagName.toLowerCase() !== 'p') {
@@ -69,7 +69,6 @@ export default Component.extend({
             });
 
             this.propertyDidChange('toolbar');
-
         });
     }
 });

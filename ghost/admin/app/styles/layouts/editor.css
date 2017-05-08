@@ -1,69 +1,6 @@
 /* Editor /ghost/editor/
 /* ---------------------------------------------------------- */
 
-
-/* Title
-/* ---------------------------------------------------------- */
-
-.gh-editor-title {
-    flex-grow: 1;
-    margin-bottom: 2vw;
-    padding: 0;
-    margin: 0;
-    outline: none;
-    position: relative;
-    width: 100%;
-    letter-spacing: 0.8px;
-    font-weight: bold;
-    font-size: 3.2rem;
-    line-height: 1.3em;
-    min-height: 1.3em;
-    z-index: 1;
-}
-
-/* Place holder content that displays in the title if it is empty */
-.gh-editor-title.no-content:before {
-    content: attr(data-placeholder);
-    color: color(var(--midgrey) l(+35%));
-    cursor: text;
-    position: relative;
-    top: 0;
-    font-size: 3.2rem;
-    font-weight: bold;
-    line-height: 1.3em;
-    min-width: 30rem; /* hack it's defaulting just to enough width for the 'Your' in 'Your Post Title' */
-    z-index: -1;
-}
-
-
-.gh-editor-title input {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    border: 0;
-    background: transparent;
-    color: var(--darkgrey);
-    font-size: 3.2rem;
-    font-weight: bold;
-    letter-spacing: 0.8px;
-}
-
-.gh-editor-title input::-webkit-input-placeholder {
-    color: color(var(--midgrey) l(+25%));
-    font-weight: 400;
-    letter-spacing: 1.2px;
-}
-
-.gh-editor-title input:-ms-input-placeholder {
-    color: color(var(--midgrey) l(+25%));
-    font-weight: 400;
-    letter-spacing: 1.2px;
-}
-
-.gh-editor-title input:focus {
-    outline: 0;
-}
-
 .editor-options .dropdown-menu {
     top: 35px;
     right: 0;

@@ -3,8 +3,7 @@ import {expect} from 'chai';
 import {describe, it} from 'mocha';
 import {setupComponentTest} from 'ember-mocha';
 
-
-describe.skip('Unit: Component: koenig-toolbar-button', function () {
+describe('gh-koenig: Unit: Component: koenig-toolbar-button', function () {
     setupComponentTest('koenig-toolbar-button', {
         unit: true
     });

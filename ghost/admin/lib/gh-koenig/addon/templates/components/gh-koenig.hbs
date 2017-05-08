@@ -1,50 +1,57 @@
+{{yield (hash
+    editor=editor
+    isMenuOpen=isMenuOpen
+    hasRendered=editorHasRendered
+)}}
+
+<div class='gh-koenig'>
+    <div class='gh-koenig-surface'
+        tabindex="{{tabindex}}"
+        ondrop={{action "dropImage"}}
+        ondragover={{action "dragOver"}} />
+</div>
+
 {{#each emberCards as |card index|}}
     {{#ember-wormhole to=card.id}}
-        {{koenig-card 
-            tabindex=index 
-            card=card 
-            apiRoot=apiRoot 
-            assetPath=assetPath 
-            selectCard=(action "selectCard") 
-            selectCardHard=(action "selectCardHard") 
-            deselectCard=(action "deselectCard") 
-            edit=(action "editCard") 
-            stopEdit=(action "stopEditingCard") 
+        {{koenig-card
+            tabindex=index
+            card=card
+            apiRoot=apiRoot
+            assetPath=assetPath
+            selectCard=(action "selectCard")
+            selectCardHard=(action "selectCardHard")
+            deselectCard=(action "deselectCard")
+            edit=(action "editCard")
+            stopEdit=(action "stopEditingCard")
             editedCard=editedCard
-            resize=resizeEvent
             deleteCard=(action "deleteCard")
         }}
     {{/ember-wormhole}}
 {{/each}}
-<div class='gh-koenig'>
-    <div class='surface' tabindex="{{tabindex}}" ondrop={{action "dropImage"}} ondragover={{action "dragOver"}} />
-</div>
 
-{{yield}}
+{{!-- Popup formatting toolbar when text is selected --}}
+{{koenig-toolbar
+    editor=editor
+    assetPath=assetPath
+    containerSelector=containerSelector
+    isTouch=isTouch
+}}
 
-{{koenig-toolbar 
-    editor=editor 
-    assetPath=assetPath 
-    containerSelector=containerSelector 
+{{koenig-slash-menu
+    editor=editor
+    assetPath=assetPath
+    containerSelector=containerSelector
+    menuIsOpen=(action "menuOpened")
+    menuIsClosed=(action "menuClosed")
     isTouch=isTouch
-    resize=resizeEvent
 }}
-{{koenig-slash-menu 
-    editor=editor 
-    assetPath=assetPath 
-    containerSelector=containerSelector 
+
+{{koenig-plus-menu
+    editor=editor
+    assetPath=assetPath
+    containerSelector=containerSelector
     isTouch=isTouch
-    menuIsOpen=(action "menuIsOpen")
-    menuIsClosed=(action "menuIsClosed")
-    resize=resizeEvent
-}}
-{{koenig-plus-menu 
-    editor=editor 
-    assetPath=assetPath 
-    containerSelector=containerSelector 
+    menuIsOpen=(action "menuOpened")
+    menuIsClosed=(action "menuClosed")
     isTouch=isTouch
-    menuIsOpen=(action "menuIsOpen")
-    menuIsClosed=(action "menuIsClosed")
-    isTouch=isTouch
-    resize=resizeEvent
 }}

@@ -26,32 +26,35 @@
 
     <div class="gh-editor-container needsclick">
         <div class="gh-editor-inner">
-            {{gh-editor-title
-                val=(readonly model.titleScratch)
-                onChange=(action (mut model.titleScratch))
-                tabindex="1"
-                shouldFocus=shouldFocusTitle
-                focus-out="updateTitle"
-                update=(action (perform updateTitle))
-                id="gh-editor-title"
-                koenigEditor=(readonly editor)
-                editorMenuIsOpen=editorMenuIsOpen
-            }}
-            {{gh-koenig
-                value=(readonly model.scratch)
+            {{!--
+                NOTE: the mobiledoc property is unbound so that the setting the
+                serialized version onChange doesn't cause a deserialization and
+                re-render of the editor on every key press / editor change
+            --}}
+            {{#gh-koenig
+                mobiledoc=(unbound model.scratch)
                 onChange=(action "updateScratch")
                 onFirstChange=(action "autoSaveNew")
-                shouldFocusEditor=shouldFocusEditor
-                apiRoot=apiRoot
-                assetPath=assetPath
+                autofocus=shouldFocusEditor
                 tabindex="2"
-                titleSelector=".gh-editor-title"
+                titleSelector="#kg-title-input"
 		        containerSelector=".gh-editor-container"
-                setEditor=(action "setEditor")
-                menuIsOpen=(action "editorMenuIsOpen")
-                menuIsClosed=(action "editorMenuIsClosed")
-                wordcountDidChange=(action "wordcountDidChange")
+                wordcountDidChange=(action "setWordcount")
+                as |koenig|
             }}
+                {{koenig-title-input
+                    id="koenig-title-input"
+                    val=(readonly model.titleScratch)
+                    onChange=(action (mut model.titleScratch))
+                    tabindex="1"
+                    autofocus=shouldFocusTitle
+                    focus-out="updateTitle"
+                    update=(action (perform updateTitle))
+                    editor=(readonly koenig.editor)
+                    editorHasRendered=koenig.hasRendered
+                    editorMenuIsOpen=koenig.isMenuOpen
+                }}
+            {{/gh-koenig}}
         </div>
     </div>
     <div class="gh-editor-wordcount">{{pluralize wordcount 'word'}}.</div>

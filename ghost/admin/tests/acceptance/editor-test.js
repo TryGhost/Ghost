@@ -328,7 +328,7 @@ describe('Acceptance: Editor', function() {
 
             titleRendered();
 
-            let title = find('#gh-editor-title div');
+            let title = find('#koenig-title-input div');
             title.html(Array(160).join('a'));
 
             await click(testSelector('publishmenu-trigger'));
@@ -356,7 +356,7 @@ describe('Acceptance: Editor', function() {
 
             titleRendered();
 
-            let title = find('#gh-editor-title div');
+            let title = find('#koenig-title-input div');
             expect(title.data('placeholder')).to.equal('Your Post Title');
             expect(title.hasClass('no-content')).to.be.false;
             await title.html('');
@@ -378,7 +378,7 @@ describe('Acceptance: Editor', function() {
 
             titleRendered();
 
-            let title = find('#gh-editor-title div');
+            let title = find('#koenig-title-input div');
             await replaceTitleHTML('<div>TITLE&nbsp;&#09;&nbsp;&thinsp;&ensp;&emsp;TEST</div>&nbsp;');
             expect(title.html()).to.equal('TITLE      TEST ');
         });

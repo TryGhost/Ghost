@@ -571,19 +571,7 @@ export default Mixin.create({
             this.toggleProperty('showReAuthenticateModal');
         },
 
-        setEditor(editor) {
-            this.set('editor', editor);
-        },
-
-        editorMenuIsOpen() {
-            this.set('editorMenuIsOpen', true);
-        },
-
-        editorMenuIsClosed() {
-            this.set('editorMenuIsOpen', false);
-        },
-
-        wordcountDidChange(wordcount) {
+        setWordcount(wordcount) {
             this.set('wordcount', wordcount);
         }
     }

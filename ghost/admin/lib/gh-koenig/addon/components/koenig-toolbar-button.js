@@ -1,30 +1,48 @@
 import Component from 'ember-component';
+import computed from 'ember-computed';
 import layout from '../templates/components/koenig-toolbar-button';
 
 export default Component.extend({
     layout,
     tagName: 'button',
-    classNameBindings: ['selected', 'primary', 'secondary',
-        'gh-toolbar-btn-bold', 'gh-toolbar-btn-italic', 'gh-toolbar-btn-strike', 'gh-toolbar-btn-link', 'gh-toolbar-btn-h1', 'gh-toolbar-btn-h2', 'gh-toolbar-btn-quote'],
+
+    attributeBindings: ['title'],
     classNames: ['gh-toolbar-btn'],
-    attributesBindings: ['title'],
-    title: 'bold',
+    // TODO: what do selected/primary/secondary classes relate to? Some tools
+    // have 'primary' added but none of them appear do anything/be used elsewhere
+    classNameBindings: [
+        'selected',
+        'buttonClass',
+        'visibilityClass'
+    ],
 
-    // todo title="Bold", https://github.com/TryGhost/Ghost-Editor/commit/1133a9a7506f409b1b4fae6639c84c94c74dcebf
-    // actions: {
+    // exernally set properties
+    tool: null,
+    editor: null,
+
+    buttonClass: computed('tool.class', function () {
+        return `gh-toolbar-btn-${this.get('tool.class')}`;
+    }),
+
+    // returns "primary" or null
+    visibilityClass: computed('tool.visibility', function() {
+        return this.get('tool.visibility');
+    }),
+
+    title: computed('tool.label', function () {
+        return this.get('tool.label');
+    }),
+
     click() {
-        this.tool.onClick(this.editor);
+        this.tool.onClick(this.get('editor'));
     },
-    // },
-    //
-    willRender() {
-        this.set(`gh-toolbar-btn-${this.tool.class}`, true);
-        if (this.tool.selected) {
-            this.set('selected', true);
-        } else {
-            this.set('selected', false);
-        }
 
+    willRender() {
+        // TODO: "selected" doesn't appear to do anything for toolbar items -
+        // it's only used within card menus
+        this.set('selected', !!this.tool.selected);
+
+        // sets the primary/secondary/
         if (this.tool.visibility) {
             this.set(this.tool.visibility, true);
         }

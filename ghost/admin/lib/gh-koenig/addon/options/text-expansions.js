@@ -1,12 +1,20 @@
 /* eslint-disable ember-suave/prefer-destructuring, no-unused-vars */
-import {replaceWithListSection, replaceWithHeaderSection} from 'mobiledoc-kit/editor/text-input-handlers';
+import {
+    replaceWithHeaderSection,
+    replaceWithListSection
+} from 'mobiledoc-kit/editor/text-input-handlers';
+
+// Text expansions watch text entry events and will look for matches, replacing
+// the matches with additional markup, atoms, or cards
+// https://github.com/bustlelabs/mobiledoc-kit#responding-to-text-input
 
 export default function (editor) {
 
-    // We don't want to run all our content rules on every text entry event, instead we check to see if this text entry
-    // event could match a content rule, and only then run the rules.
-    // Right now we only want to match content ending with *, _, ), ~, and `. This could increase as we support more
-    // markdown.
+    // We don't want to run all our content rules on every text entry event,
+    // instead we check to see if this text entry event could match a content
+    // rule, and only then run the rules. Right now we only want to match
+    // content ending with *, _, ), ~, and `. This could increase as we support
+    // more markdown.
 
     editor.onTextInput({
         name: 'inline_markdown',
@@ -53,19 +61,6 @@ export default function (editor) {
             replaceWithHeaderSection(editor, 'blockquote');
         }
     });
-
-    // soft return
-    let softReturnKeyCommand = {
-        str: 'SHIFT+ENTER',
-
-        run(editor) {
-            editor.run((postEditor) => {
-                let mention = postEditor.builder.createAtom('soft-return');
-                postEditor.insertMarkers(editor.range.head, [mention]);
-            });
-        }
-    };
-    editor.registerKeyCommand(softReturnKeyCommand);
 
     // inline matches
     function matchStrongStar(editor, text) {

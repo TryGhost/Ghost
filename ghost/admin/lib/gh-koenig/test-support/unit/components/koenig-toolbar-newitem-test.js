@@ -4,8 +4,7 @@ import {describe, it} from 'mocha';
 import {setupComponentTest} from 'ember-mocha';
 import {editorShim} from '../../utils';
 
-
-describe.skip('Unit: Component: koenig-toolbar-newitem', function () {
+describe('gh-koenig: Unit: Component: koenig-toolbar-newitem', function () {
     setupComponentTest('koenig-toolbar-newitem', {
         unit: true,
         needs: [
@@ -14,7 +13,6 @@ describe.skip('Unit: Component: koenig-toolbar-newitem', function () {
     });
 
     it('renders', function () {
-
         let component = this.subject();
         component.editor = editorShim;
         expect(component._state).to.equal('preRender');

@@ -1,147 +1,245 @@
+import Ember from 'ember';
 import Component from 'ember-component';
-import {A as emberA} from 'ember-array/utils';
 import run from 'ember-runloop';
 import layout from '../templates/components/gh-koenig';
-import Mobiledoc from 'mobiledoc-kit';
+import Editor from 'mobiledoc-kit/editor/editor';
 import {MOBILEDOC_VERSION} from 'mobiledoc-kit/renderers/mobiledoc';
 import createCardFactory from '../lib/card-factory';
-import defaultCommands from '../options/default-commands';
-import editorCards  from '../cards/index';
-import {getCardFromDoc, checkIfClickEventShouldCloseCard, getPositionOnScreenFromRange} from '../lib/utils';
+import registerKeyCommands from '../options/key-commands';
+import registerTextExpansions from '../options/text-expansions';
+import defaultCards from '../cards/index';
+import {
+    getCardFromDoc,
+    checkIfClickEventShouldCloseCard,
+    getPositionOnScreenFromRange
+} from '../lib/utils';
 import counter from 'ghost-admin/utils/word-count';
 import $ from 'jquery';
+import computed from 'ember-computed';
+import {assign} from 'ember-platform';
+
+// ember-cli-shims doesn't export Ember.testing
+const {testing} = Ember;
+
+export const TESTING_EXPANDO_PROPERTY = '__koenig_editor';
 
 export const BLANK_DOC = {
     version: MOBILEDOC_VERSION,
-    atoms: [],
     markups: [],
+    atoms: [],
     cards: [],
     sections: [[1, 'p', [[0, [], 0, '']]]]
 };
 
 export default Component.extend({
     layout,
-    classNames: ['editor-holder'],
-    emberCards: emberA([]),
-    selectedCard: null,
+    classNames: ['gh-koenig-container'],
+
+    // exterally set properties
+    mobiledoc: null,
+    placeholder: 'Click here to start ...',
+    spellcheck: true,
+    autofocus: false,
+    cards: null,
+    atoms: null,
+    serializeVersion: MOBILEDOC_VERSION,
+    options: {},
+
+    // exposed properties
+    editor: null,
     editedCard: null,
-    keyDownHandler: [],
-    resizeEvent: 0,
+    selectedCard: null,
+    emberCards: null,
+    isMenuOpen: false,
+    editorHasRendered: false,
+
+    // internal properties
+    _domContainer: null,
+    // TODO: keyDownHandler is assigned event handlers when a card is
+    // hard-selected, is there a better way of handling this?
+    _keyDownHandler: null,
+
+    // merge in named options with the `options` property data-bag
+    editorOptions: computed(function () {
+        let options = this.get('options');
+        let cards = this.get('cards') || [];
+        let atoms = this.get('atoms') || [];
+
+        // use our CardFactory to wrap our default and any user-supplied cards
+        // with Ghost specific functionality
+        // TODO: this also sets the emberCards property - do we need that indirection?
+        let createCard = createCardFactory.apply(this, {}); // need to pass the toolbar
+        cards = defaultCards.concat(cards).map((card) => createCard(card));
+
+        // add our default atoms
+        atoms.concat([{
+            name: 'soft-return',
+            type: 'dom',
+            render() {
+                return document.createElement('br');
+            }
+        }]);
+
+        return assign({
+            placeholder: this.get('placeholder'),
+            spellchack: this.get('spellcheck'),
+            autofocus: this.get('autofocus'),
+            // cardOptions: this.get('cardOptions'),
+            cards,
+            atoms
+        }, options);
+    }),
+
     init() {
         this._super(...arguments);
-        let mobiledoc = this.get('value') || BLANK_DOC;
-        let userCards = this.get('cards') || [];
 
+        // grab the supplied mobiledoc value - if it's empty set our default
+        // blank document, if it's a JSON string then deserialize it
+        let mobiledoc = this.get('mobiledoc');
+        if (!mobiledoc) {
+            mobiledoc = BLANK_DOC;
+            this.set('mobiledoc', mobiledoc);
+        }
         if (typeof mobiledoc === 'string') {
             mobiledoc = JSON.parse(mobiledoc);
+            this.set('mobiledoc', mobiledoc);
         }
 
-        // if the doc is cached then the editor is loaded and we don't need to continue.
-        if (this._cachedDoc && this._cachedDoc === mobiledoc) {
-            return;
-        }
-
-        let createCard = createCardFactory.apply(this, {}); // need to pass the toolbar
-
-        let options = {
-            mobiledoc,
-            // temp
-            cards: createCard(editorCards.concat(userCards)),
-            atoms: [{
-                name: 'soft-return',
-                type: 'dom',
-                render() {
-                    return document.createElement('br');
-                }
-            }],
-            spellcheck: true,
-            autofocus: this.get('shouldFocusEditor'),
-            placeholder: 'Click here to start ...',
-            unknownCardHandler: () => {
-                // todo
-            }
-        };
-
-        this.set('editor', new Mobiledoc.Editor(options));
+        this.set('emberCards', []);
+        this._keyDownHandler = [];
 
         // we use css media width for most things but need to know if a device is touch
         // to place the toolbar. Above the selected content on a mobile browser is the
         // cut | copy | paste menu so we need to place our toolbar below.
+        // TODO: is this reliable enough? What about most Windows laptops now being touch enabled?
         this.set('isTouch', 'ontouchstart' in document.documentElement);
 
-        // window resize handler - throttled
-        // window.onresize = () => {
-        //     let now = Date.now();
-        //     if (now - 2000 > this.get('resizeEvent')) {
-        //         this.set('resizeEvent', now);
-        //     }
-        // };
-
-        run.next(() => {
-            if (this.get('setEditor')) {
-                this.sendAction('setEditor', this.get('editor'));
-            }
-        });
+        this._startedRunLoop = false;
     },
 
     willRender() {
-        if (this._rendered) {
+        // Use a default mobiledoc. If there are no changes, then return early.
+        let mobiledoc = this.get('mobiledoc') || BLANK_DOC;
+
+        let noMobiledocChanges
+            = (this._localMobiledoc && this._localMobiledoc === mobiledoc)
+            || (this._upstreamMobiledoc && this._upstreamMobiledoc === mobiledoc);
+
+        if (noMobiledocChanges) {
             return;
         }
+
+        // reset everything ready for an editor re-render
+        this._upstreamMobiledoc = mobiledoc;
+        this._localMobiledoc = null;
+
+        // trigger hook action
+        this._willCreateEditor();
+
+        // teardown any old editor that might be around
         let editor = this.get('editor');
+        if (editor) {
+            editor.destroy();
+        }
+
+        // create a new editor
+        let editorOptions = this.get('editorOptions');
+        editorOptions.mobiledoc = mobiledoc;
+
+        // TODO: instantiate component hooks?
+        // https://github.com/bustlelabs/ember-mobiledoc-editor/blob/master/addon/components/mobiledoc-editor/component.js#L163-L227
+
+        editor = new Editor(editorOptions);
+
+        // set up our default key handling and text expansions to emulate MD behaviour
+        // TODO: better place to do this?
+        registerKeyCommands(editor);
+        registerTextExpansions(editor);
+
+        editor.willRender(() => {
+            // The editor's render/rerender will happen after this `editor.willRender`,
+            // so we explicitly start a runloop here if there is none, so that the
+            // add/remove card hooks happen inside a runloop.
+            // When pasting text that gets turned into a card, for example,
+            // the add card hook would run outside the runloop if we didn't begin a new
+            // one now.
+            if (!run.currentRunLoop) {
+                this._startedRunLoop = true;
+                run.begin();
+            }
+        });
 
         editor.didRender(() => {
+            // If we had explicitly started a run loop in `editor.willRender`,
+            // we must explicitly end it here.
+            if (this._startedRunLoop) {
+                this._startedRunLoop = false;
+                run.end();
+            }
 
-            this.sendAction('loaded', editor);
+            this.set('editorHasRendered', true);
         });
-        editor.postDidChange(()=> {
+
+        editor.postDidChange(() => {
             run.join(() => {
-                // store a cache of the local doc so that we don't need to reinitialise it.
-                this._cachedDoc = editor.serialize(MOBILEDOC_VERSION);
-                this.sendAction('onChange', this._cachedDoc);
-                if (this._cachedDoc !== BLANK_DOC && !this._firstChange) {
-                    this._firstChange = true;
-                    this.sendAction('onFirstChange', this._cachedDoc);
-                }
-                this.processWordcount();
+                this.postDidChange(editor);
             });
         });
+
+        editor.cursorDidChange(() => {
+            if (this.isDestroyed) {
+                return;
+            }
+            run.join(() => {
+                this.cursorMoved();
+            });
+        });
+
+        this.set('editor', editor);
+
+        // trigger hook action
+        this._didCreateEditor(editor);
     },
 
     didRender() {
-        // listen to keydown events outside of the editor, used to handle keydown events in the cards.
-        document.onkeydown = (event) => {
-            // if any of the keydown handlers return false then we return false therefore stopping the event from propogating.
-            return this.get('keyDownHandler').reduce((returnType, handler) => {
-                let result = handler(event);
-                if (returnType !== false) {
-                    return result;
-                }
-                return returnType;
-            }, true);
-        };
-
-        if (this._rendered) {
-            return;
+        // listen to keydown events outside of the editor, used to handle keydown
+        // events in the cards.
+        // TODO: is there a better way to handle this?
+        if (!document.onkeydown) {
+            document.onkeydown = (event) => {
+                // if any of the keydown handlers return false then we return false
+                // therefore stopping the event from propogating.
+                return this._keyDownHandler.reduce((returnType, handler) => {
+                    let result = handler(event);
+                    if (returnType !== false) {
+                        return result;
+                    }
+                    return returnType;
+                }, true);
+            };
         }
+
         let editor = this.get('editor');
-        let $editor = this.$('.surface');
-        let [domContainer] = $editor.parents(this.get('containerSelector'));
-        let [editorDom] = $editor;
-        editorDom.tabindex = this.get('tabindex');
-        this.set('domContainer', domContainer);
+        if (!editor.hasRendered) {
+            let $editor = this.$('.gh-koenig-surface');
+            let [domContainer] = $editor.parents(this.get('containerSelector'));
+            let [editorDom] = $editor;
 
-        editor.render(editorDom);
-        this.set('_rendered', true);
+            editorDom.tabindex = this.get('tabindex');
+            this._domContainer = domContainer;
 
-        // set global editor for debugging and testing.
-        window.editor = editor;
+            this._isRenderingEditor = true;
+            editor.render(editorDom);
+            this._isRenderingEditor = false;
+        }
+        this._setExpandoProperty(editor);
 
-        defaultCommands(editor); // initialise the custom text handlers for MD, etc.
-        // shouldFocusEditor is only true when transitioning from new to edit, otherwise it's false or undefined.
-        // therefore, if it's true it's after the first lot of content is entered and we expect the caret to be at the
-        // end of the document.
-        if (this.get('shouldFocusEditor')) {
+        // autofocus is only true when transitioning from new to edit,
+        // otherwise it's false or undefined. therefore, if it's true it's after
+        // the first lot of content is entered and we expect the caret to be at
+        // the end of the document.
+        // TODO: can this be removed if we refactor the new/edit screens to not re-render?
+        if (this.get('autofocus')) {
             let range = document.createRange();
             range.selectNodeContents(this.editor.element);
             range.collapse(false);
@@ -151,12 +249,13 @@ export default Component.extend({
             editor._ensureFocus(); // PRIVATE API
         }
 
-        editor.cursorDidChange(() => this.cursorMoved());
         this.processWordcount();
     },
 
-    // makes sure the cursor is on screen except when selection is happening in which case the browser mostly ensures it.
-    // there is an issue with keyboard selection on some browsers though so the next step may be to record mouse and touch events.
+    // makes sure the cursor is on screen except when selection is happening in
+    // which case the browser mostly ensures it. there is an issue with keyboard
+    // selection on some browsers though so the next step may be to record mouse
+    // and touch events.
     cursorMoved() {
         let editor = this.get('editor');
 
@@ -172,9 +271,9 @@ export default Component.extend({
             let windowHeight = window.innerHeight;
 
             if (position.bottom > windowHeight) {
-                this.domContainer.scrollTop += position.bottom - windowHeight + scrollBuffer;
+                this._domContainer.scrollTop += position.bottom - windowHeight + scrollBuffer;
             } else if (position.top < 0) {
-                this.domContainer.scrollTop += position.top - scrollBuffer;
+                this._domContainer.scrollTop += position.top - scrollBuffer;
             }
 
             if (editor.range && editor.range.headSection && editor.range.headSection.isCardSection) {
@@ -195,8 +294,10 @@ export default Component.extend({
             this.send('deselectCard');
         }
     },
-    // Note: This wordcount function doesn't count words that have been entered in cards.
-    // We should either allow cards to report their own wordcount or use the DOM (innerText) to calculate the wordcount.
+
+    // NOTE: This wordcount function doesn't count words that have been entered in cards.
+    // We should either allow cards to report their own wordcount or use the DOM
+    // (innerText) to calculate the wordcount.
     processWordcount() {
         let wordcount = 0;
         if (this.editor.post.sections.length) {
@@ -210,16 +311,49 @@ export default Component.extend({
         }
         this.sendAction('wordcountDidChange', wordcount);
     },
-    willDestroy() {
+
+    _willCreateEditor() {
+        this.sendAction('willCreateEditor');
+    },
+
+    _didCreateEditor(editor) {
+        this.sendAction('didCreateEditor', editor);
+    },
+
+    willDestroyElement() {
         this.editor.destroy();
         this.send('deselectCard');
+        // TODO: should we be killing all global onkeydown event handlers?
         document.onkeydown = null;
-        // window.oresize = null;
+    },
+
+    postDidChange(editor) {
+        // store a cache of the local doc so that we don't need to reinitialise it.
+        let serializeVersion = this.get('serializeVersion');
+        let updatedMobiledoc = editor.serialize(serializeVersion);
+        this._localMobiledoc = updatedMobiledoc;
+        this.sendAction('onChange', updatedMobiledoc);
+
+        // we need to trigger a first-change action so that we can trigger a
+        // save and transition from new-> edit
+        if (this._localMobiledoc !== BLANK_DOC && !this._hasChanged) {
+            this._hasChanged = true;
+            this.sendAction('onFirstChange', this._localMobiledoc);
+        }
+
+        this.processWordcount();
+    },
+
+    _setExpandoProperty(editor) {
+        // Store a reference to the editor for the acceptance test helpers
+        if (this.element && testing) {
+            this.element[TESTING_EXPANDO_PROPERTY] = editor;
+        }
     },
 
     actions: {
-        // thin border, shows that a card is selected but the user cannot delete the card with
-        // keyboard events.
+        // thin border, shows that a card is selected but the user cannot delete
+        // the card with keyboard events.
         // used when the content of the card is selected and it is editing.
         selectCard(cardId) {
             if (!cardId) {
@@ -240,7 +374,7 @@ export default Component.extend({
             cardHolder.addClass('selected');
             cardHolder.removeClass('selected-hard');
             this.set('selectedCard', card);
-            this.get('keyDownHandler').length = 0;
+            this._keyDownHandler.length = 0;
             // cardHolder.focus();
             document.onclick = (event) => {
                 if (checkIfClickEventShouldCloseCard($(event.target), cardHolder)) {
@@ -248,6 +382,7 @@ export default Component.extend({
                 }
             };
         },
+
         // thicker border and with keyboard events for moving around the editor
         // creating blocks under the card and deleting the card.
         // used when selecting the card with the keyboard or clicking on the toolbar.
@@ -283,8 +418,7 @@ export default Component.extend({
                 }
             };
 
-            let keyDownHandler = this.get('keyDownHandler');
-            keyDownHandler.push((event) => {
+            this._keyDownHandler.push((event) => {
                 let editor = this.get('editor');
                 switch (event.keyCode) {
                 case 37: // arrow left
@@ -359,6 +493,7 @@ export default Component.extend({
                 }
             });
         },
+
         deselectCard() {
             let selectedCard = this.get('selectedCard');
             if (selectedCard) {
@@ -367,16 +502,19 @@ export default Component.extend({
                 cardHolder.removeClass('selected-hard');
                 this.set('selectedCard', null);
             }
-            this.get('keyDownHandler').length = 0;
+            this._keyDownHandler.length = 0;
+            // TODO: do we want to kill all document onclick handlers?
             document.onclick = null;
 
             this.set('editedCard', null);
         },
+
         editCard(cardId) {
             let card = this.get('emberCards').find((card) => card.id === cardId);
             this.set('editedCard', card);
             this.send('selectCard', cardId);
         },
+
         deleteCard(cardId, forwards = false) {
             let editor = this.get('editor');
             let card = this.get('emberCards').find((card) => card.id === cardId);
@@ -401,15 +539,19 @@ export default Component.extend({
                 editor.selectRange(range);
             });
         },
+
         stopEditingCard() {
             this.set('editedCard', null);
         },
-        menuIsOpen() {
-            this.sendAction('menuIsOpen');
+
+        menuOpened() {
+            this.set('isMenuOpen', true);
         },
-        menuIsClosed() {
-            this.sendAction('menuIsClosed');
+
+        menuClosed() {
+            this.set('isMenuOpen', false);
         },
+
         // drag and drop images onto the editor
         dropImage(event) {
             if (event.dataTransfer.files.length) {
@@ -420,6 +562,7 @@ export default Component.extend({
                 }
             }
         },
+
         dragOver(event) {
             // required for drop events to fire on markdown cards in firefox.
             event.preventDefault();
