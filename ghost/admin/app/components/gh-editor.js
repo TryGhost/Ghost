@@ -9,7 +9,10 @@ const {debounce} = run;
 
 export default Component.extend({
 
-    classNameBindings: ['isDraggedOver:-drag-over'],
+    classNameBindings: [
+        'isDraggedOver:-drag-over',
+        'isFullScreen:gh-editor-fullscreen'
+    ],
 
     // Public attributes
     navIsClosed: false,
@@ -20,14 +23,12 @@ export default Component.extend({
     imageExtensions: IMAGE_EXTENSIONS,
     imageMimeTypes: IMAGE_MIME_TYPES,
     isDraggedOver: false,
+    isFullScreen: false,
+    isSplitScreen: false,
     uploadedImageUrls: null,
-
-    // Closure actions
-    toggleAutoNav() {},
 
     // Private
     _dragCounter: 0,
-    _fullScreenEnabled: false,
     _navIsClosed: false,
     _onResizeHandler: null,
     _viewActionsWidth: 190,
@@ -49,7 +50,6 @@ export default Component.extend({
         let navIsClosed = this.get('navIsClosed');
 
         if (navIsClosed !== this._navIsClosed) {
-            this._fullScreenEnabled = navIsClosed;
             run.scheduleOnce('afterRender', this, this._setHeaderClass);
         }
 
@@ -58,13 +58,19 @@ export default Component.extend({
 
     _setHeaderClass() {
         let $editorTitle = this.$('.gh-editor-title');
+        let smallHeaderClass = 'gh-editor-header-small';
+
+        if (this.get('isSplitScreen')) {
+            this.set('headerClass', smallHeaderClass);
+            return;
+        }
 
         if ($editorTitle.length > 0) {
             let boundingRect = $editorTitle[0].getBoundingClientRect();
             let maxRight = window.innerWidth - this._viewActionsWidth;
 
             if (boundingRect.right >= maxRight) {
-                this.set('headerClass', 'gh-editor-header-small');
+                this.set('headerClass', smallHeaderClass);
                 return;
             }
         }
@@ -128,22 +134,17 @@ export default Component.extend({
     willDestroyElement() {
         this._super(...arguments);
         window.removeEventListener('resize', this._onResizeHandler);
-
-        // reset fullscreen mode if it was turned on
-        if (this._fullScreenEnabled) {
-            this.toggleAutoNav();
-        }
     },
 
     actions: {
         toggleFullScreen() {
-            if (!this._fullScreenWasToggled) {
-                this._fullScreenEnabled = !this.get('isNavOpen');
-                this._fullScreenWasToggled = true;
-            } else {
-                this._fullScreenEnabled = !this._fullScreenEnabled;
-            }
-            this.toggleAutoNav();
+            this.toggleProperty('isFullScreen');
+            run.scheduleOnce('afterRender', this, this._setHeaderClass);
+        },
+
+        toggleSplitScreen() {
+            this.toggleProperty('isSplitScreen');
+            run.scheduleOnce('afterRender', this, this._setHeaderClass);
         },
 
         uploadComplete(uploads) {

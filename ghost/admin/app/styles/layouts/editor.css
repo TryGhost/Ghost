@@ -141,6 +141,16 @@
 /* NEW editor
 /* ---------------------------------------------------------- */
 
+.gh-main > section.gh-editor-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    background-color: white;
+}
+
 .gh-editor-header {
     position: absolute;
     top: 0;
@@ -220,8 +230,42 @@
 /* SimpleMDE editor
 /* ---------------------------------------------------------- */
 
-.gh-editor-container {
+.gh-editor-title {
+    padding: 0;
+}
+
+.gh-editor-title:placeholder {
+    font-weight: bold;
+}
+
+.gh-markdown-editor {
     position: relative;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    z-index: 0;
+}
+
+.gh-markdown-editor-pane,
+.gh-markdown-editor-preview {
+    padding: 10vw 4vw;
+}
+
+.gh-markdown-editor-side-by-side {
+    display: flex;
+    flex-direction: row;
+    overflow-y: hidden;
+}
+
+.gh-markdown-editor-side-by-side .gh-markdown-editor-pane,
+.gh-markdown-editor-side-by-side .gh-markdown-editor-preview {
+    width: 50%;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.gh-markdown-editor-preview {
+    border-left: 1px solid color(var(--lightgrey) l(+4%));
 }
 
 .gh-editor-footer {
@@ -230,7 +274,7 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    border-top: 1px solid var(--lightgrey);
+    border-top: 1px solid color(var(--lightgrey) l(+4%));
 }
 
 .gh-editor-footer .editor-toolbar {

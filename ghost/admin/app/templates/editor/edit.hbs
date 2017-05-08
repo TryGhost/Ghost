@@ -2,7 +2,6 @@
     tagName="section"
     class="gh-editor gh-view"
     navIsClosed=navIsClosed
-    toggleAutoNav=(action "toggleAutoNav")
     as |editor|
 }}
     <header class="gh-editor-header {{editor.headerClass}}">
@@ -35,33 +34,42 @@
         access to the markdown editor's "focus" action
     --}}
     {{#gh-markdown-editor
-        class="gh-editor-container"
         tabindex="2"
         placeholder="Click here to start..."
         autofocus=shouldFocusEditor
         uploadedImageUrls=editor.uploadedImageUrls
         mobiledoc=(readonly model.scratch)
+        isFullScreen=editor.isFullScreen
         onChange=(action "updateScratch")
         onFullScreen=(action editor.toggleFullScreen)
+        onSplitScreen=(action editor.toggleSplitScreen)
         showMarkdownHelp=(route-action "toggleMarkdownHelpModal")
         as |markdown|
     }}
-        {{gh-trim-focus-input model.titleScratch
-            type="text"
-            class="gh-editor-title"
-            placeholder="Your Post Title"
-            tabindex="1"
-            shouldFocus=shouldFocusTitle
-            focus-out="updateTitle"
-            update=(action (perform updateTitle))
-            keyEvents=(hash
-                9=(action markdown.focus 'bottom')
-                13=(action markdown.focus 'top')
-            )
-            data-test-editor-title-input=true
-        }}
+        <div class="gh-markdown-editor-pane">
+            {{gh-trim-focus-input model.titleScratch
+                type="text"
+                class="gh-editor-title"
+                placeholder="Your Post Title"
+                tabindex="1"
+                shouldFocus=shouldFocusTitle
+                focus-out="updateTitle"
+                update=(action (perform updateTitle))
+                keyEvents=(hash
+                    9=(action markdown.focus 'bottom')
+                    13=(action markdown.focus 'top')
+                )
+                data-test-editor-title-input=true
+            }}
+            {{markdown.editor}}
+        </div>
 
-        {{markdown.pane}}
+        {{#if markdown.isSplitScreen}}
+            <div class="gh-markdown-editor-preview">
+                <h1>{{model.titleScratch}}</h1>
+                <div class="gh-markdown-editor-preview-content"></div>
+            </div>
+        {{/if}}
     {{/gh-markdown-editor}}
 
     {{!-- TODO: put tool/status bar in here so that scroll area can be fixed --}}
