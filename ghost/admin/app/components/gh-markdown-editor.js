@@ -22,8 +22,15 @@ export const BLANK_DOC = {
 
 export default Component.extend({
 
+    classNames: ['gh-markdown-editor'],
+    classNameBindings: [
+        '_isFullScreen:gh-markdown-editor-full-screen',
+        '_isSplitScreen:gh-markdown-editor-side-by-side'
+    ],
+
     // Public attributes
     autofocus: false,
+    isFullScreen: false,
     mobiledoc: null,
     options: null,
     placeholder: '',
@@ -32,6 +39,7 @@ export default Component.extend({
     // Closure actions
     onChange() {},
     onFullScreen() {},
+    onSplitScreen() {},
     showMarkdownHelp() {},
 
     // Internal attributes
@@ -39,10 +47,12 @@ export default Component.extend({
 
     // Private
     _editor: null,
+    _isFullScreen: false,
+    _isSplitScreen: false,
     _isUploading: false,
-    _uploadedImageUrls: null,
     _statusbar: null,
     _toolbar: null,
+    _uploadedImageUrls: null,
 
     // Ghost-Specific SimpleMDE toolbar config - allows us to create a bridge
     // between SimpleMDE buttons and Ember actions
@@ -53,14 +63,22 @@ export default Component.extend({
                 'bold', 'italic', 'heading', '|',
                 'quote', 'unordered-list', 'ordered-list', '|',
                 'link', 'image', '|',
-                'preview', 'side-by-side',
+                'preview',
+                {
+                    name: 'side-by-side',
+                    action: () => {
+                        this.send('toggleSplitScreen');
+                    },
+                    className: 'fa fa-columns no-disable no-mobile',
+                    title: 'Toggle Side by Side'
+                },
                 {
                     name: 'fullscreen',
                     action: () => {
-                        this.onFullScreen();
+                        this.send('toggleFullScreen');
                     },
                     className: 'fa fa-arrows-alt no-disable no-mobile',
-                    title: 'Toggle Fullscreen (F11)'
+                    title: 'Toggle Fullscreen'
                 },
                 '|',
                 {
@@ -97,6 +115,16 @@ export default Component.extend({
         // eslint-disable-next-line ember-suave/prefer-destructuring
         let markdown = mobiledoc.cards[0][1].markdown;
         this.set('markdown', markdown);
+
+        // use internal values to avoid updating bound values
+        if (!isEmpty(this.get('isFullScreen'))) {
+            this.set('_isFullScreen', this.get('isFullScreen'));
+        }
+        if (!isEmpty(this.get('isSplitScreen'))) {
+            this.set('_isSplitScreen', this.get('isSplitScreen'));
+        }
+
+        this._updateButtonState();
     },
 
     _insertImages(urls) {
@@ -116,6 +144,100 @@ export default Component.extend({
         // insert at cursor or replace selection then position cursor at end
         // of inserted text
         cm.replaceSelection(text, 'end');
+    },
+
+    // mark the split-pane/full-screen buttons active when they're active
+    _updateButtonState() {
+        if (this._editor) {
+            let fullScreenButton = this._editor.toolbarElements.fullscreen;
+            let sideBySideButton = this._editor.toolbarElements['side-by-side'];
+
+            if (this.get('_isFullScreen')) {
+                fullScreenButton.classList.add('active');
+            } else {
+                fullScreenButton.classList.remove('active');
+            }
+
+            if (this.get('_isSplitScreen')) {
+                sideBySideButton.classList.add('active');
+            } else {
+                sideBySideButton.classList.remove('active');
+            }
+        }
+    },
+
+    // set up the preview auto-update and scroll sync
+    _connectSplitPreview() {
+        let cm = this._editor.codemirror;
+        let editor = this._editor;
+        /* eslint-disable ember-suave/prefer-destructuring */
+        let editorPane = this.$('.gh-markdown-editor-pane')[0];
+        let previewPane = this.$('.gh-markdown-editor-preview')[0];
+        let previewContent = this.$('.gh-markdown-editor-preview-content')[0];
+        /* eslint-enable ember-suave/prefer-destructuring */
+
+        this._editorPane = editorPane;
+        this._previewPane = previewPane;
+        this._previewContent = previewContent;
+
+        // from SimpleMDE -------
+        let sideBySideRenderingFunction = function() {
+            previewContent.innerHTML = editor.options.previewRender(
+                editor.value(),
+                previewContent
+            );
+        };
+
+        cm.sideBySideRenderingFunction = sideBySideRenderingFunction;
+
+        sideBySideRenderingFunction();
+        cm.on('update', cm.sideBySideRenderingFunction);
+
+        // Refresh to fix selection being off (#309)
+        cm.refresh();
+        // ----------------------
+
+        this._onEditorPaneScroll = this._scrollHandler.bind(this);
+        editorPane.addEventListener('scroll', this._onEditorPaneScroll, false);
+        this._scrollSync();
+    },
+
+    _scrollHandler() {
+        if (!this._scrollSyncTicking) {
+            requestAnimationFrame(this._scrollSync.bind(this));
+        }
+        this._scrollSyncTicking = true;
+    },
+
+    _scrollSync() {
+        let editorPane = this._editorPane;
+        let previewPane = this._previewPane;
+        let height = editorPane.scrollHeight - editorPane.clientHeight;
+        let ratio = parseFloat(editorPane.scrollTop) / height;
+        let move = (previewPane.scrollHeight - previewPane.clientHeight) * ratio;
+
+        previewPane.scrollTop = move;
+        this._scrollSyncTicking = false;
+    },
+
+    _disconnectSplitPreview() {
+        let cm = this._editor.codemirror;
+
+        cm.off('update', cm.sideBySideRenderingFunction);
+        cm.refresh();
+
+        this._editorPane.removeEventListener('scroll', this._onEditorPaneScroll, false);
+        delete this._previewPane;
+        delete this._previewPaneContent;
+        delete this._onEditorPaneScroll;
+    },
+
+    willDestroyElement() {
+        if (this.get('_isSplitScreen')) {
+            this._disconnectSplitPreview();
+        }
+
+        this._super(...arguments);
     },
 
     actions: {
@@ -142,15 +264,8 @@ export default Component.extend({
             this._statusbar = this.$('.editor-statusbar');
             this._toolbar.appendTo(container);
             this._statusbar.appendTo(container);
-        },
 
-        // put the toolbar/statusbar elements back so that SimpleMDE doesn't throw
-        // errors when it tries to remove them
-        destroyEditor() {
-            let container = this.$();
-            this._toolbar.appendTo(container);
-            this._statusbar.appendTo(container);
-            this._editor = null;
+            this._updateButtonState();
         },
 
         // used by the title input when the TAB or ENTER keys are pressed
@@ -164,6 +279,51 @@ export default Component.extend({
             }
 
             return false;
+        },
+
+        toggleFullScreen() {
+            let isFullScreen = !this.get('_isFullScreen');
+
+            this.set('_isFullScreen', isFullScreen);
+            this._updateButtonState();
+            this.onFullScreen(isFullScreen);
+
+            // leave split screen when exiting full screen mode
+            if (!isFullScreen && this.get('_isSplitScreen')) {
+                this.send('toggleSplitScreen');
+            }
+        },
+
+        toggleSplitScreen() {
+            let isSplitScreen = !this.get('_isSplitScreen');
+
+            this.set('_isSplitScreen', isSplitScreen);
+            this._updateButtonState();
+
+            // set up the preview rendering and scroll sync
+            // afterRender is needed so that necessary components have been
+            // added/removed and editor pane length has settled
+            if (isSplitScreen) {
+                run.scheduleOnce('afterRender', this, this._connectSplitPreview);
+            } else {
+                run.scheduleOnce('afterRender', this, this._disconnectSplitPreview);
+            }
+
+            this.onSplitScreen(isSplitScreen);
+
+            // go fullscreen when entering split screen mode
+            if (isSplitScreen && !this.get('_isFullScreen')) {
+                this.send('toggleFullScreen');
+            }
+        },
+
+        // put the toolbar/statusbar elements back so that SimpleMDE doesn't throw
+        // errors when it tries to remove them
+        destroyEditor() {
+            let container = this.$('.gh-markdown-editor-pane');
+            this._toolbar.appendTo(container);
+            this._statusbar.appendTo(container);
+            this._editor = null;
         }
     }
 });

@@ -6592,6 +6592,14 @@ simplemde@1.11.2:
     codemirror-spell-checker "*"
     marked "*"
 
+"simplemde@https://github.com/kevinansfield/simplemde-markdown-editor.git":
+  version "1.11.2"
+  resolved "https://github.com/kevinansfield/simplemde-markdown-editor.git#6abda7ab68cc20f4aca870eb243747951b90ab04"
+  dependencies:
+    codemirror "*"
+    codemirror-spell-checker "*"
+    marked "*"
+
 sinon@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/sinon/-/sinon-2.1.0.tgz#e057a9d2bf1b32f5d6dd62628ca9ee3961b0cafb"
