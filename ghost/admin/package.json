@@ -98,19 +98,18 @@
     "liquid-wormhole": "2.0.4",
     "loader.js": "4.2.3",
     "matchdep": "1.0.1",
-    "mobiledoc-kit": "0.10.15",
     "password-generator": "2.1.0",
     "postcss-color-function": "3.0.0",
     "postcss-custom-properties": "5.0.2",
     "postcss-easy-import": "2.0.0",
+    "simplemde": "1.11.2",
     "top-gh-contribs": "2.0.4",
     "torii": "0.8.2",
     "walk-sync": "0.3.1"
   },
   "ember-addon": {
     "paths": [
-      "lib/asset-delivery",
-      "lib/gh-koenig"
+      "lib/asset-delivery"
     ]
   },
   "greenkeeper": {

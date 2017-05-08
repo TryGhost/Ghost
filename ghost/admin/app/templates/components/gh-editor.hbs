@@ -1,1 +1,11 @@
-{{yield headerClass}}
+{{yield (hash
+    headerClass=headerClass
+    isDraggedOver=isDraggedOver
+    droppedFiles=droppedFiles
+    uploadedImageUrls=uploadedImageUrls
+    imageMimeTypes=imageMimeTypes
+    imageExtensions=imageExtensions
+    toggleFullScreen=(action "toggleFullScreen")
+    uploadComplete=(action "uploadComplete")
+    uploadCancelled=(action "uploadCancelled")
+)}}

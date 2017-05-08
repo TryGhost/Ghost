@@ -132,11 +132,12 @@ module.exports = function (defaults) {
             'jquery-deparam': {
                 import: ['jquery-deparam.js']
             },
-            'mobiledoc-kit': {
-                import: ['dist/amd/mobiledoc-kit.js', 'dist/amd/mobiledoc-kit.map']
-            },
             'password-generator': {
                 import: ['lib/password-generator.js']
+            },
+            'simplemde': {
+                srcDir: 'dist',
+                import: ['simplemde.min.js', 'simplemde.min.css']
             }
         },
         'ember-cli-selectize': {

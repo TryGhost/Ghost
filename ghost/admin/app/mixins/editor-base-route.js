@@ -132,6 +132,9 @@ export default Mixin.create(styleBody, ShortcutsRoute, {
             controller.set('previousTagNames', []);
         }
 
+        // reset save-on-first-change
+        controller._hasChanged = false;
+
         // attach model-related listeners created in editor-base-route
         this.attachModelHooks(controller, model);
     }
