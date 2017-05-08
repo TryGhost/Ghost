@@ -17,6 +17,7 @@ export default Component.extend({
     query: '',
     range: null,
     editor: null,
+
     toolbar: computed('query', 'range', 'selected', function () {
         let tools = [];
         let match = (this.query || '').trim().toLowerCase();
@@ -56,14 +57,11 @@ export default Component.extend({
 
         return tools;
     }),
+
     init() {
         this._super(...arguments);
         let editor = this.get('editor');
         this.set('tools', new Tools(editor, this));
-    },
-
-    willDestroy() {
-
     },
 
     didRender() {
@@ -80,6 +78,7 @@ export default Component.extend({
             }
         });
     },
+
     cursorChange() {
         let editor = this.get('editor');
         let range = this.get('range');
@@ -103,8 +102,9 @@ export default Component.extend({
             }
         }
     },
+
     actions: {
-        openMenu: function () { // eslint-disable-line
+        openMenu() {
             let holder = $(this.get('containerSelector'));
             let editor = this.get('editor');
             let self = this;
@@ -225,7 +225,8 @@ export default Component.extend({
 
             this.sendAction('menuIsOpen');
         },
-        closeMenu: function () { // eslint-disable-line
+
+        closeMenu() {
             let editor = this.get('editor');
             // this.get('editor').unregisterKeyCommand('slash'); -- waiting for the next release for this
 
@@ -241,11 +242,12 @@ export default Component.extend({
             });
             this.sendAction('menuIsClosed');
         },
-        clickedMenu: function () { // eslint-disable-line
-            // let{section, startOffset, endOffset} = this.get('range');
 
-            window.editor.range.head.offset = this.get('range').startOffset - 1;
-            window.editor.deleteRange(window.editor.range);
+        clickedMenu() {
+            let editor = this.get('editor');
+            // let{section, startOffset, endOffset} = this.get('range');
+            editor.range.head.offset = this.get('range').startOffset - 1;
+            editor.deleteRange(editor.range);
             this.send('closeMenu');
         }
     }

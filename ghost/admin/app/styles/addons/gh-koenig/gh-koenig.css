@@ -2,13 +2,78 @@
 @import "koenig-menu.css";
 @import "../ghost-editor/cardmenu.css";
 
-.editor-holder {
+.gh-koenig-container {
     height: 100%;
 }
 .gh-koenig {
     height: 100%;
     -webkit-overflow-scrolling: touch;
 }
+
+/* Title
+/* ---------------------------------------------------------- */
+
+.kg-title-input {
+    flex-grow: 1;
+    margin-bottom: 2vw;
+    padding: 0;
+    margin: 0;
+    outline: none;
+    position: relative;
+    width: 100%;
+    letter-spacing: 0.8px;
+    font-weight: bold;
+    font-size: 3.2rem;
+    line-height: 1.3em;
+    min-height: 1.3em;
+    z-index: 1;
+}
+
+/* Place holder content that displays in the title if it is empty */
+.kg-title-input.no-content:before {
+    content: attr(data-placeholder);
+    color: color(var(--midgrey) l(+35%));
+    cursor: text;
+    position: relative;
+    top: 0;
+    font-size: 3.2rem;
+    font-weight: bold;
+    line-height: 1.3em;
+    min-width: 30rem; /* hack it's defaulting just to enough width for the 'Your' in 'Your Post Title' */
+    z-index: -1;
+}
+
+
+.kg-title-input input {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: var(--darkgrey);
+    font-size: 3.2rem;
+    font-weight: bold;
+    letter-spacing: 0.8px;
+}
+
+.kg-title-input input::-webkit-input-placeholder {
+    color: color(var(--midgrey) l(+25%));
+    font-weight: 400;
+    letter-spacing: 1.2px;
+}
+
+.kg-title-input input:-ms-input-placeholder {
+    color: color(var(--midgrey) l(+25%));
+    font-weight: 400;
+    letter-spacing: 1.2px;
+}
+
+.kg-title-input input:focus {
+    outline: 0;
+}
+
+/* Editor
+/* ---------------------------------------------------------- */
 
 .__mobiledoc-editor {
     width: 100%;

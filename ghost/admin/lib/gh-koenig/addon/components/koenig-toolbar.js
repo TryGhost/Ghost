@@ -10,11 +10,40 @@ import {getPositionFromRange} from '../lib/utils';
 export default Component.extend({
     layout,
     classNames: ['gh-toolbar'],
-    classNameBindings: ['isVisible', 'isLink', 'tickFullLeft', 'tickHalfLeft', 'tickFullRight', 'tickHalfRight', 'tickAbove', 'isTouch'],
-    isVisible: false,
-    tools: [],
+
+    // if any of the associated properties are true these class names will
+    // be dasherized and added to the element
+    classNameBindings: [
+        'isVisible',
+        'isLink',
+        'tickFullLeft',
+        'tickHalfLeft',
+        'tickFullRight',
+        'tickHalfRight',
+        'tickAbove',
+        'isTouch'
+    ],
+
+    // externally set properties
+    editor: null,
+    assetPath: null,
+    containerSelector: null,
+    isTouch: null,
+
+    // internal properties
     hasRendered: false,
     activeTags: null,
+    tools: [],
+    isVisible: false,
+    tickFullLeft: false,
+    tickFullRight: false,
+    tickHalfLeft: false,
+    tickHalfRight: false,
+    tickAbove: false,
+
+    _isLink: false,
+
+    // TODO: why is this not just a property?
     isLink: computed({
         get() {
             return this._isLink;
@@ -190,6 +219,7 @@ export default Component.extend({
                 event.stopPropagation();
             }
         },
+
         doLink(range) {
             // if a link is already selected then we remove the links from within the range.
             let currentLinks = this.get('activeTags').filter((element) => element.tagName === 'a');
@@ -210,9 +240,9 @@ export default Component.extend({
                 }
             );
         },
+
         closeLink() {
             this.set('isLink', false);
         }
     }
 });
-

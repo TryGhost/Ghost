@@ -7,10 +7,12 @@ export default Component.extend({
     tagName: 'div',
     classNames: ['gh-cardmenu-card'],
     classNameBindings: ['selected'],
+
     init() {
         this._super(...arguments);
         this.set('selected', this.get('tool').selected);
     },
+
     click: function () { // eslint-disable-line
         let {section, startOffset, endOffset} = this.get('range');
         let editor = this.get('editor');

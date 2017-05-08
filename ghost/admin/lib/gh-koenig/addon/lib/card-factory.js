@@ -26,7 +26,7 @@ export default function createCardFactory(toolbar) {
 
             // setupUI({env, options, payload});
 
-            // todo setup non ember UI
+            // TODO: setup non ember UI
 
             let payload = copy(_payload);
             payload.card_name = env.name;

@@ -12,15 +12,17 @@ export default Component.extend({
     layout,
     isOpen: false,
     isButton: false,
-    showButton: computed('isOpen', 'isButton', function () {
-        return this.get('isOpen') || this.get('isButton');
-    }),
     toolsLength: 0,
     selected: -1,
     selectedTool: null,
     query: '',
     range: null,
     editor: null,
+
+    showButton: computed('isOpen', 'isButton', function () {
+        return this.get('isOpen') || this.get('isButton');
+    }),
+
     toolbar: computed('query', 'range', 'selected', function () {
         let tools = [];
         let match = (this.query || '').trim().toLowerCase();
@@ -58,13 +60,10 @@ export default Component.extend({
         }
         return tools;
     }),
+
     init() {
         this._super(...arguments);
         this.tools = new Tools(this.get('editor'), this);
-    },
-
-    willDestroy() {
-
     },
 
     didRender() {
@@ -110,8 +109,9 @@ export default Component.extend({
                 });
         });
     },
+
     actions: {
-        openMenu: function () { // eslint-disable-line
+        openMenu() {
             let button = this.$('.gh-cardmenu-button'); // the ⊕ button.
             let $editor = $(this.get('containerSelector'));
             this.set('isOpen', true);
@@ -140,24 +140,28 @@ export default Component.extend({
                 });
             this.sendAction('menuIsOpen');
         },
-        closeMenu: function () { // eslint-disable-line
+
+        closeMenu() {
             this.set('isButton', false);
             this.$('.gh-cardmenu').fadeOut('fast', () => {
                 this.set('isOpen', false);
             });
             this.sendAction('menuIsClosed');
         },
-        closeMenuKeepButton: function () { // eslint-disable-line
+
+        closeMenuKeepButton() {
             this.set('isOpen', false);
         },
-        selectTool: function () { // eslint-disable-line
+
+        selectTool() {
             let {section} = this.get('range');
             let editor = this.get('editor');
             editor.range = Range.create(section, 0, section, 0);
             this.get('selectedTool').onClick(editor);
             this.send('closeMenuKeepButton');
         },
-        moveSelectionLeft: function () { // eslint-disable-line
+
+        moveSelectionLeft() {
             let item = this.get('selected');
             let length = this.get('toolsLength');
             if (item > 0) {
@@ -166,7 +170,8 @@ export default Component.extend({
                 this.set('selected', length - 1);
             }
         },
-        moveSelectionUp: function () { // eslint-disable-line
+
+        moveSelectionUp() {
             let item = this.get('selected');
             if (item > ROW_LENGTH) {
                 this.set('selected', item - ROW_LENGTH);
@@ -174,7 +179,8 @@ export default Component.extend({
                 this.set('selected', 0);
             }
         },
-        moveSelectionRight: function () { // eslint-disable-line
+
+        moveSelectionRight() {
             let item = this.get('selected');
             let length = this.get('toolsLength');
             if (item < length) {
@@ -183,7 +189,8 @@ export default Component.extend({
                 this.set('selected', 0);
             }
         },
-        moveSelectionDown: function () { // eslint-disable-line
+
+        moveSelectionDown() {
             let item = this.get('selected');
             if (item < 0) {
                 item = 0;
