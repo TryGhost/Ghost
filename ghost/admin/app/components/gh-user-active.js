@@ -19,8 +19,8 @@ export default Component.extend({
         return `${this.get('ghostPaths.assetRoot')}/img/user-image.png`;
     }),
 
-    userImageBackground: computed('user.image', 'userDefault', function () {
-        let url = this.get('user.image') || this.get('userDefault');
+    userImageBackground: computed('user.profileImage', 'userDefault', function () {
+        let url = this.get('user.profileImage') || this.get('userDefault');
         let safeUrl = Handlebars.Utils.escapeExpression(url);
 
         return htmlSafe(`background-image: url(${safeUrl})`);
