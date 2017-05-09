@@ -2342,6 +2342,10 @@ image-size@0.5.1:
   version "0.5.1"
   resolved "https://registry.yarnpkg.com/image-size/-/image-size-0.5.1.tgz#28eea8548a4b1443480ddddc1e083ae54652439f"
 
+image-size@0.5.2:
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/image-size/-/image-size-0.5.2.tgz#8e97cd0eb69ce04a2831a11a6095983100f8bda4"
+
 indent-string@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/indent-string/-/indent-string-2.1.0.tgz#8e2d48348742121b4a8218b7a137e9a52049dc80"
@@ -3386,13 +3390,13 @@ mkdirp@0.3.2:
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.3.2.tgz#4bfb891e9c48b93d6b567f2c3cf2dd3f56bcdef8"
 
-mkdirp@0.5.0:
+mkdirp@0.5.0, mkdirp@^0.5.0:
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.0.tgz#1d73076a6df986cd9344e15e71fcc05a4c9abf12"
   dependencies:
     minimist "0.0.8"
 
-mkdirp@0.5.1, mkdirp@0.5.x, mkdirp@0.x.x, "mkdirp@>=0.5 0", mkdirp@^0.5.0, mkdirp@^0.5.1, mkdirp@~0.5.0, mkdirp@~0.5.1:
+mkdirp@0.5.1, mkdirp@0.5.x, mkdirp@0.x.x, "mkdirp@>=0.5 0", mkdirp@^0.5.1, mkdirp@~0.5.0, mkdirp@~0.5.1:
   version "0.5.1"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.1.tgz#30057438eac6cf7f8c4767f38648d6697d75c903"
   dependencies:
