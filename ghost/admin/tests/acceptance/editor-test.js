@@ -350,16 +350,16 @@ describe('Acceptance: Editor', function() {
         //     expect(currentURL(), 'currentURL')
         //         .to.equal('/editor/1');
         //
-        //     titleRendered();
+        //     await titleRendered();
         //
         //     let title = find('#koenig-title-input div');
         //     expect(title.data('placeholder')).to.equal('Your Post Title');
         //     expect(title.hasClass('no-content')).to.be.false;
-        //     await title.html('');
         //
+        //     await replaceTitleHTML('');
         //     expect(title.hasClass('no-content')).to.be.true;
-        //     await title.html('test');
         //
+        //     await replaceTitleHTML('test');
         //     expect(title.hasClass('no-content')).to.be.false;
         // });
         //
@@ -372,7 +372,7 @@ describe('Acceptance: Editor', function() {
         //     expect(currentURL(), 'currentURL')
         //         .to.equal('/editor/1');
         //
-        //     titleRendered();
+        //     await titleRendered();
         //
         //     let title = find('#koenig-title-input div');
         //     await replaceTitleHTML('<div>TITLE&nbsp;&#09;&nbsp;&thinsp;&ensp;&emsp;TEST</div>&nbsp;');
