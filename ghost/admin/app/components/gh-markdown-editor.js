@@ -30,6 +30,7 @@ export default Component.extend({
 
     // Public attributes
     autofocus: false,
+    imageMimeTypes: null,
     isFullScreen: false,
     mobiledoc: null,
     options: null,
@@ -39,6 +40,7 @@ export default Component.extend({
     // Closure actions
     onChange() {},
     onFullScreen() {},
+    onImageFilesSelected() {},
     onSplitScreen() {},
     showMarkdownHelp() {},
 
@@ -62,7 +64,16 @@ export default Component.extend({
             toolbar: [
                 'bold', 'italic', 'heading', '|',
                 'quote', 'unordered-list', 'ordered-list', '|',
-                'link', 'image', '|',
+                'link',
+                {
+                    name: 'image',
+                    action: () => {
+                        this._openImageFileDialog();
+                    },
+                    className: 'fa fa-picture-o',
+                    title: 'Upload Image(s)'
+                },
+                '|',
                 'preview',
                 {
                     name: 'side-by-side',
@@ -90,6 +101,10 @@ export default Component.extend({
                     title: 'Markdown Guide'
                 }
             ],
+            shortcuts: {
+                toggleSideBySide: null,
+                toggleFullScreen: null
+            },
             status: ['words']
         };
 
@@ -109,6 +124,8 @@ export default Component.extend({
             // a single render
             run.scheduleOnce('afterRender', this, () => {
                 this._insertImages(uploadedImageUrls);
+                // reset the file input so the same file can be selected again
+                this.$('input[type=file]').val('');
             });
         }
 
@@ -135,6 +152,21 @@ export default Component.extend({
             return `![](${url})`;
         });
         let text = images.join(' ');
+
+        // clicking the image toolbar button will lose the selection so we use
+        // the captured selection to re-select here
+        if (this._imageInsertSelection) {
+            // we want to focus but not re-position
+            this.send('focusEditor', null);
+
+            // re-select and clear the captured selection so drag/drop still
+            // inserts at the correct place
+            cm.setSelection(
+                this._imageInsertSelection.anchor,
+                this._imageInsertSelection.head
+            );
+            this._imageInsertSelection = null;
+        }
 
         // focus editor and place cursor at end if not already focused
         if (!cm.hasFocus()) {
@@ -230,6 +262,19 @@ export default Component.extend({
         delete this._previewPane;
         delete this._previewPaneContent;
         delete this._onEditorPaneScroll;
+    },
+
+    _openImageFileDialog() {
+        // capture the current selection before it's lost by clicking the
+        // file input button
+        this._imageInsertSelection = {
+            anchor: this._editor.codemirror.getCursor('anchor'),
+            head: this._editor.codemirror.getCursor('head')
+        };
+
+        // trigger the dialog via gh-file-input, when a file is selected it will
+        // trigger the onImageFilesSelected closure action
+        this.$('input[type="file"]').click();
     },
 
     willDestroyElement() {

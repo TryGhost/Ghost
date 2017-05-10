@@ -147,6 +147,10 @@ export default Component.extend({
             run.scheduleOnce('afterRender', this, this._setHeaderClass);
         },
 
+        uploadImages(fileList) {
+            this.set('droppedFiles', fileList);
+        },
+
         uploadComplete(uploads) {
             this.set('uploadedImageUrls', uploads.mapBy('url'));
             this.set('droppedFiles', null);

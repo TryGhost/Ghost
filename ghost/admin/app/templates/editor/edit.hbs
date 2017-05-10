@@ -43,7 +43,9 @@
         onChange=(action "updateScratch")
         onFullScreen=(action editor.toggleFullScreen)
         onSplitScreen=(action editor.toggleSplitScreen)
+        onImageFilesSelected=(action editor.uploadImages)
         showMarkdownHelp=(route-action "toggleMarkdownHelpModal")
+        imageMimeTypes=editor.imageMimeTypes
         as |markdown|
     }}
         <div class="gh-markdown-editor-pane">
