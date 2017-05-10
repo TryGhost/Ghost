@@ -31,10 +31,6 @@ export default TextArea.extend({
             autofocus: this.get('autofocus'),
             indentWithTabs: false,
             placeholder: this.get('placeholder'),
-            shortcuts: {
-                toggleSideBySide: null,
-                toggleFullScreen: null
-            },
             tabSize: 4
         };
     }),
