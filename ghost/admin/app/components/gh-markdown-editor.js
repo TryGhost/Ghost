@@ -296,6 +296,7 @@ export default Component.extend({
 
         toggleSplitScreen() {
             let isSplitScreen = !this.get('_isSplitScreen');
+            let previewButton = this._editor.toolbarElements.preview;
 
             this.set('_isSplitScreen', isSplitScreen);
             this._updateButtonState();
@@ -304,8 +305,19 @@ export default Component.extend({
             // afterRender is needed so that necessary components have been
             // added/removed and editor pane length has settled
             if (isSplitScreen) {
+                // disable the normal SimpleMDE preview if it's active
+                if (this._editor.isPreviewActive()) {
+                    let preview = this._editor.toolbar.find((button) => {
+                        return button.name === 'preview';
+                    });
+
+                    preview.action(this._editor);
+                }
+
+                previewButton.classList.add('disabled');
                 run.scheduleOnce('afterRender', this, this._connectSplitPreview);
             } else {
+                previewButton.classList.remove('disabled');
                 run.scheduleOnce('afterRender', this, this._disconnectSplitPreview);
             }
 

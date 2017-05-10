@@ -298,6 +298,11 @@
     overflow: visible;
 }
 
+/* fix visible scrollbars when OSX is set to show them */
+.gh-editor .CodeMirror-scroll {
+    overflow: visible !important;
+}
+
 .gh-editor .gh-editor-title,
 .gh-editor .CodeMirror-wrap {
     max-width: 760px;
@@ -360,4 +365,13 @@
 /* TODO: need a way to make stroke + fill global without causing issues with certain icons */
 .gh-editor-image-upload .gh-btn-grey svg path {
     stroke: color(var(--darkgrey) l(+15%));
+}
+
+.editor-toolbar a.disabled {
+    pointer-events: none;
+    color: lightgray !important;
+}
+
+.editor-toolbar a.disabled:hover {
+    border: none;
 }
