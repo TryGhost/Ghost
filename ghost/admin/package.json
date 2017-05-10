@@ -111,12 +111,5 @@
     "paths": [
       "lib/asset-delivery"
     ]
-  },
-  "greenkeeper": {
-    "ignore": [
-      "grunt",
-      "grunt-bg-shell",
-      "grunt-shell"
-    ]
   }
 }
