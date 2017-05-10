@@ -31,9 +31,9 @@ module.exports = function plural(number, options) {
 
     // Compatibility with both old themes and i18n-capable themes.
     if (options.hash.where) {
-        optionsEmpty = i18n.t(jp.stringify([options.hash.where, options.hash.empty]));
-        optionsSingular = i18n.t(jp.stringify([options.hash.where, options.hash.singular]));
-        optionsPlural = i18n.t(jp.stringify([options.hash.where, options.hash.plural]));
+        optionsEmpty = i18n.t(jp.stringify(['$', options.hash.where, options.hash.empty]));
+        optionsSingular = i18n.t(jp.stringify(['$', options.hash.where, options.hash.singular]));
+        optionsPlural = i18n.t(jp.stringify(['$', options.hash.where, options.hash.plural]));
     } else {
         optionsEmpty = options.hash.empty;
         optionsSingular = options.hash.singular;
