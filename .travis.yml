@@ -45,19 +45,6 @@ install:
 
 after_success:
   - |
-      if [ "$DB" != "sqlite3" ] || [ "$TRAVIS_NODE_VERSION" != "4" ] || [[ "$TRAVIS_PULL_REQUEST_BRANCH" != *"greenkeeper"* ]]; then
-        exit 0
-      fi
-      git clone -b "$TRAVIS_PULL_REQUEST_BRANCH" "https://"$PUSH_TOKEN"@github.com/"$TRAVIS_REPO_SLUG".git" repo && cd repo
-      git log --name-status HEAD^..HEAD | grep "update" || exit 0
-      yarn
-      git config --global user.email "github@ghost.org"
-      git config --global user.name "TryGhost-Travis"
-      git config --global push.default simple
-      git add yarn.lock
-      git commit -m "chore: yarn.lock"
-      git push
-  - |
       if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
         if [[ "$DB" = "sqlite3" && "$TRAVIS_NODE_VERSION" = "4" ]]; then
           echo "Generate coverage..."
