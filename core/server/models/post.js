@@ -5,8 +5,7 @@ var _               = require('lodash'),
     Promise         = require('bluebird'),
     sequence        = require('../utils/sequence'),
     errors          = require('../errors'),
-    Showdown        = require('showdown-ghost'),
-    legacyConverter = new Showdown.converter({extensions: ['ghostgfm', 'footnotes', 'highlight']}),
+    MarkdownIt      = require('markdown-it'),
     htmlToText      = require('html-to-text'),
     ghostBookshelf  = require('./base'),
     events          = require('../events'),
@@ -14,8 +13,17 @@ var _               = require('lodash'),
     utils           = require('../utils'),
     baseUtils       = require('./base/utils'),
     i18n            = require('../i18n'),
+    legacyConverter,
     Post,
     Posts;
+
+legacyConverter = new MarkdownIt({
+    html: true,
+    breaks: true,
+    linkify: true
+})
+.use(require('markdown-it-footnote'))
+.use(require('markdown-it-mark'));
 
 Post = ghostBookshelf.Model.extend({
 
@@ -234,8 +242,8 @@ Post = ghostBookshelf.Model.extend({
         if (mobiledoc) {
             this.set('html', utils.mobiledocConverter.render(JSON.parse(mobiledoc)));
         } else {
-            // legacy showdown mode
-            this.set('html', legacyConverter.makeHtml(_.toString(this.get('markdown'))));
+            // legacy markdown mode
+            this.set('html', legacyConverter.render(_.toString(this.get('markdown'))));
         }
 
         if (this.hasChanged('html')) {

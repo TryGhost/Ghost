@@ -1,77 +1,83 @@
 /**
- * Client showdown integration tests
+ * Client markdown-it integration tests
  *
- * Ensures that the final output from showdown + client extensions is as expected
+ * Ensures that the final output from markdown renderer is as expected
  */
 
 var should = require('should'), // jshint ignore:line
 
     // Stuff we are testing
-    Showdown = require('showdown-ghost'),
-    converter = new Showdown.converter({extensions: ['ghostimagepreview', 'ghostgfm', 'footnotes', 'highlight']});
+    MarkdownIt = require('markdown-it'),
+    converter = new MarkdownIt({
+        html: true,
+        breaks: true,
+        linkify: true
+    })
+    .use(require('markdown-it-footnote'))
+    .use(require('markdown-it-mark'));
 
-describe('Showdown client side converter', function () {
+describe('Markdown-it client side converter', function () {
     /*jslint regexp: true */
 
     it('should replace showdown strike through with html', function () {
-        var testPhrase = {input: '~~foo_bar~~', output: /^<p><del>foo_bar<\/del><\/p>$/},
-            processedMarkup = converter.makeHtml(testPhrase.input);
+        var testPhrase = {input: '~~foo_bar~~', output: /^<p><del>foo_bar<\/del><\/p>\n?$/},
+            processedMarkup = converter.render(testPhrase.input);
 
         // The image is the entire markup, so the image box should be too
         processedMarkup.should.match(testPhrase.output);
     });
 
     it('should honour escaped tildes', function () {
-        var testPhrase = {input: '\\~\\~foo_bar\\~\\~', output: /^<p>~~foo_bar~~<\/p>$/},
-            processedMarkup = converter.makeHtml(testPhrase.input);
+        var testPhrase = {input: '\\~\\~foo_bar\\~\\~', output: /^<p>~~foo_bar~~<\/p>\n?$/},
+            processedMarkup = converter.render(testPhrase.input);
 
         // The image is the entire markup, so the image box should be too
         processedMarkup.should.match(testPhrase.output);
     });
 
     it('should not touch single underscores inside words', function () {
-        var testPhrase = {input: 'foo_bar', output: /^<p>foo_bar<\/p>$/},
-            processedMarkup = converter.makeHtml(testPhrase.input);
+        var testPhrase = {input: 'foo_bar', output: /^<p>foo_bar<\/p>\n?$/},
+            processedMarkup = converter.render(testPhrase.input);
 
         processedMarkup.should.match(testPhrase.output);
     });
 
     // Currently failing - fixing this causes other issues
     // it('should not create italic words between lines', function () {
-    //     var testPhrase = {input: 'foo_bar\nbar_foo', output: /^<p>foo_bar <br \/>\nbar_foo<\/p>$/},
-    //         processedMarkup = converter.makeHtml(testPhrase.input);
+    //     var testPhrase = {input: 'foo_bar\nbar_foo', output: /^<p>foo_bar <br>\nbar_foo<\/p>$/},
+    //         processedMarkup = converter.render(testPhrase.input);
 
     //     processedMarkup.should.match(testPhrase.output);
     // });
 
     it('should not touch underscores in code blocks', function () {
-        var testPhrase = {input: '    foo_bar_baz', output: /^<pre><code>foo_bar_baz\n<\/code><\/pre>$/},
-            processedMarkup = converter.makeHtml(testPhrase.input);
+        var testPhrase = {input: '    foo_bar_baz', output: /^<pre><code>foo_bar_baz<\/code><\/pre>\n?$/},
+            processedMarkup = converter.render(testPhrase.input);
 
         processedMarkup.should.match(testPhrase.output);
     });
 
     it('should not touch underscores in pre blocks', function () {
         var testPhrases = [
-                {input: '<pre>\nfoo_bar_baz\n</pre>', output: /^<pre>\nfoo_bar_baz\n<\/pre>$/},
+                {input: '<pre>\nfoo_bar_baz\n</pre>', output: /^<pre>\nfoo_bar_baz\n<\/pre>\n?$/},
                 {input: '<pre>foo_bar_baz</pre>', output: /^<pre>foo_bar_baz<\/pre>$/}
             ],
             processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = converter.render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
 
     it('should not escape double underscores at the beginning of a line', function () {
         var testPhrases = [
-                {input: '\n__test__\n', output: /^<p><strong>test<\/strong><\/p>$/}
+                {input: '\n__test__\n', output: /^<p><strong>test<\/strong><\/p>\n?$/}
             ],
             processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = converter.render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -80,51 +86,51 @@ describe('Showdown client side converter', function () {
         var testPhrases = [
                 {
                     input: '<pre>\nthis is `a\\_test` and this\\_too and finally_this_is\n</pre>',
-                    output: /^<pre>\nthis is `a\\_test` and this\\_too and finally_this_is\n<\/pre>$/
+                    output: /^<pre>\nthis is `a\\_test` and this\\_too and finally_this_is\n<\/pre>\n?$/
                 },
                 {
                     input: 'hmm<pre>\nthis is `a\\_test` and this\\_too and finally_this_is\n</pre>',
-                    output: /^<p>hmm<\/p>\n\n<pre>\nthis is `a\\_test` and this\\_too and finally_this_is\n<\/pre>$/
+                    output: /^<p>hmm<\/p>\n<pre>\nthis is `a\\_test` and this\\_too and finally_this_is\n<\/pre>\n?$/
                 }
             ],
             processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = converter.render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
 
     it('should escape two or more underscores inside words', function () {
         var testPhrases = [
-                {input: 'foo_bar_baz', output: /^<p>foo_bar_baz<\/p>$/},
-                {input: 'foo_bar_baz_bat', output: /^<p>foo_bar_baz_bat<\/p>$/},
-                {input: 'foo_bar_baz_bat_boo', output: /^<p>foo_bar_baz_bat_boo<\/p>$/},
-                {input: 'FOO_BAR', output: /^<p>FOO_BAR<\/p>$/},
-                {input: 'FOO_BAR_BAZ', output: /^<p>FOO_BAR_BAZ<\/p>$/},
-                {input: 'FOO_bar_BAZ_bat', output: /^<p>FOO_bar_BAZ_bat<\/p>$/},
-                {input: 'FOO_bar_BAZ_bat_BOO', output: /^<p>FOO_bar_BAZ_bat_BOO<\/p>$/},
-                {input: 'foo_BAR_baz_BAT_boo', output: /^<p>foo_BAR_baz_BAT_boo<\/p>$/}
+                {input: 'foo_bar_baz', output: /^<p>foo_bar_baz<\/p>\n?$/},
+                {input: 'foo_bar_baz_bat', output: /^<p>foo_bar_baz_bat<\/p>\n?$/},
+                {input: 'foo_bar_baz_bat_boo', output: /^<p>foo_bar_baz_bat_boo<\/p>\n?$/},
+                {input: 'FOO_BAR', output: /^<p>FOO_BAR<\/p>\n?$/},
+                {input: 'FOO_BAR_BAZ', output: /^<p>FOO_BAR_BAZ<\/p>\n?$/},
+                {input: 'FOO_bar_BAZ_bat', output: /^<p>FOO_bar_BAZ_bat<\/p>\n?$/},
+                {input: 'FOO_bar_BAZ_bat_BOO', output: /^<p>FOO_bar_BAZ_bat_BOO<\/p>\n?$/},
+                {input: 'foo_BAR_baz_BAT_boo', output: /^<p>foo_BAR_baz_BAT_boo<\/p>\n?$/}
             ],
             processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = converter.render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
 
     it('should turn newlines into br tags in simple cases', function () {
         var testPhrases = [
-                {input: 'fizz\nbuzz', output: /^<p>fizz <br \/>\nbuzz<\/p>$/},
-                {input: 'Hello world\nIt is a fine day', output: /^<p>Hello world <br \/>\nIt is a fine day<\/p>$/},
-                {input: '\'first\nsecond', output: /^<p>\'first <br \/>\nsecond<\/p>$/},
-                {input: '\'first\nsecond', output: /^<p>\'first <br \/>\nsecond<\/p>$/}
+                {input: 'fizz\nbuzz', output: /^<p>fizz<br>\nbuzz<\/p>\n?$/},
+                {input: 'Hello world\nIt is a fine day', output: /^<p>Hello world<br>\nIt is a fine day<\/p>\n?$/},
+                {input: '\'first\nsecond', output: /^<p>\'first<br>\nsecond<\/p>\n?$/},
+                {input: '\'first\nsecond', output: /^<p>\'first<br>\nsecond<\/p>\n?$/}
             ],
             processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = converter.render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -133,17 +139,17 @@ describe('Showdown client side converter', function () {
         var testPhrases = [
                 {
                     input: 'ruby\npython\nerlang',
-                    output: /^<p>ruby <br \/>\npython <br \/>\nerlang<\/p>$/
+                    output: /^<p>ruby<br>\npython<br>\nerlang<\/p>\n?$/
                 },
                 {
                     input: 'Hello world\nIt is a fine day\nout',
-                    output: /^<p>Hello world <br \/>\nIt is a fine day <br \/>\nout<\/p>$/
+                    output: /^<p>Hello world<br>\nIt is a fine day<br>\nout<\/p>\n?$/
                 }
             ],
             processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = converter.render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -152,17 +158,17 @@ describe('Showdown client side converter', function () {
         var testPhrases = [
                 {
                     input: 'ruby\npython\nerlang\ngo',
-                    output: /^<p>ruby <br \/>\npython <br \/>\nerlang <br \/>\ngo<\/p>$/
+                    output: /^<p>ruby<br>\npython<br>\nerlang<br>\ngo<\/p>\n?$/
                 },
                 {
                     input: 'Hello world\nIt is a fine day\noutside\nthe window',
-                    output: /^<p>Hello world <br \/>\nIt is a fine day <br \/>\noutside <br \/>\nthe window<\/p>$/
+                    output: /^<p>Hello world<br>\nIt is a fine day<br>\noutside<br>\nthe window<\/p>\n?$/
                 }
             ],
             processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = converter.render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -171,17 +177,17 @@ describe('Showdown client side converter', function () {
         var testPhrases = [
                 {
                     input: '#fizz\n# buzz\n### baz',
-                    output: /^<h1 id="fizz">fizz<\/h1>\n\n<h1 id="buzz">buzz<\/h1>\n\n<h3 id="baz">baz<\/h3>$/
+                    output: /^<h1 id="fizz">fizz<\/h1>\n<h1 id="buzz">buzz<\/h1>\n<h3 id="baz">baz<\/h3>\n?$/
                 },
                 {
                     input: '* foo\n* bar',
-                    output: /^<ul>\n<li>foo<\/li>\n<li>bar<\/li>\n<\/ul>$/
+                    output: /^<ul>\n<li>foo<\/li>\n<li>bar<\/li>\n<\/ul>\n?$/
                 }
             ],
             processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = converter.render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -190,45 +196,45 @@ describe('Showdown client side converter', function () {
         var testPhrases = [
                 {
                     input: 'http://google.co.uk',
-                    output: /^<p><a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/p>$/
+                    output: /^<p><a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/p>\n?$/
                 },
                 {
                     input: 'https://atest.com/fizz/buzz?baz=fizzbuzz',
-                    output: /^<p><a href="https:\/\/atest.com\/fizz\/buzz\?baz=fizzbuzz">https:\/\/atest.com\/fizz\/buzz\?baz=fizzbuzz<\/a><\/p>$/
+                    output: /^<p><a href="https:\/\/atest.com\/fizz\/buzz\?baz=fizzbuzz">https:\/\/atest.com\/fizz\/buzz\?baz=fizzbuzz<\/a><\/p>\n?$/
                 },
                 {
                     input: 'Some [ text (http://www.google.co.uk) some other text',
-                    output: /^<p>Some \[ text \(<a href="http:\/\/www.google.co.uk">http:\/\/www.google.co.uk<\/a>\) some other text<\/p>$/
+                    output: /^<p>Some \[ text \(<a href="http:\/\/www.google.co.uk">http:\/\/www.google.co.uk<\/a>\) some other text<\/p>\n?$/
                 },
                 {
                     input: '>http://google.co.uk',
-                    output: /^<blockquote>\n  <p><a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/p>\n<\/blockquote>$/
+                    output: /^<blockquote>\n<p><a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/p>\n<\/blockquote>\n?$/
                 },
                 {
                     input: '> http://google.co.uk',
-                    output: /^<blockquote>\n  <p><a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/p>\n<\/blockquote>$/
+                    output: /^<blockquote>\n<p><a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/p>\n<\/blockquote>\n?$/
                 },
                 {
                     input: '<>>> http://google.co.uk',
-                    output: /^<p>&lt;>>> <a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/p>$/
+                    output: /^<p>&lt;&gt;&gt;&gt; <a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/p>\n?$/
                 },
                 {
                     input: '<strong>http://google.co.uk',
-                    output: /^<p><strong><a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/p>$/
+                    output: /^<p><strong><a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/p>\n?$/
                 },
                 {
                     input: '# http://google.co.uk',
-                    output: /^<h1 id="httpgooglecouk"><a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/h1>$/
+                    output: /^<h1 id="httpgooglecouk"><a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/h1>\n?$/
                 },
                 {
                     input: '* http://google.co.uk',
-                    output: /^<ul>\n<li><a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/li>\n<\/ul>$/
+                    output: /^<ul>\n<li><a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/li>\n<\/ul>\n?$/
                 }
             ],
             processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = converter.render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -237,21 +243,21 @@ describe('Showdown client side converter', function () {
         var testPhrases = [
                 {
                     input: '[Google][1]\n\n[1]: http://google.co.uk',
-                    output: /^<p><a href="http:\/\/google.co.uk">Google<\/a><\/p>$/
+                    output: /^<p><a href="http:\/\/google.co.uk">Google<\/a><\/p>\n?$/
                 },
                 {
                     input: '[Google][1]\n\n[1]: http://google.co.uk \"some text\"',
-                    output: /^<p><a href="http:\/\/google.co.uk" title="some text">Google<\/a><\/p>$/
+                    output: /^<p><a href="http:\/\/google.co.uk" title="some text">Google<\/a><\/p>\n?$/
                 },
                 {
                     input: '[http://google.co.uk]: http://google.co.uk\n\n[Hello][http://google.co.uk]',
-                    output: /^<p><a href="http:\/\/google.co.uk">Hello<\/a><\/p>$/
+                    output: /^<p><a href="http:\/\/google.co.uk">Hello<\/a><\/p>\n?$/
                 }
             ],
             processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = converter.render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -275,7 +281,7 @@ describe('Showdown client side converter', function () {
      processedMarkup;
 
      testPhrases.forEach(function (testPhrase) {
-     processedMarkup = converter.makeHtml(testPhrase.input);
+     processedMarkup = converter.render(testPhrase.input);
      processedMarkup.should.match(testPhrase.output);
      });
      });
@@ -285,29 +291,29 @@ describe('Showdown client side converter', function () {
         var testPhrases = [
                 {
                     input: '<img src="http://placekitten.com/50">',
-                    output: /^<p><img src=\"http:\/\/placekitten.com\/50\"><\/p>$/
+                    output: /^<p><img src=\"http:\/\/placekitten.com\/50\"><\/p>\n?$/
                 },
                 {
                     input: '<img src="http://placekitten.com/50" />',
-                    output: /^<p><img src=\"http:\/\/placekitten.com\/50\" \/><\/p>$/
+                    output: /^<p><img src=\"http:\/\/placekitten.com\/50\" \/><\/p>\n?$/
                 },
                 {
                     input: '<script type="text/javascript" src="http://google.co.uk"></script>',
-                    output: /^<script type=\"text\/javascript\" src=\"http:\/\/google.co.uk\"><\/script>$/
+                    output: /^<script type=\"text\/javascript\" src=\"http:\/\/google.co.uk\"><\/script>\n?$/
                 },
                 {
                     input: '<a href="http://facebook.com">http://google.co.uk</a>',
-                    output: /^<p><a href=\"http:\/\/facebook.com\">http:\/\/google.co.uk<\/a><\/p>$/
+                    output: /^<p><a href=\"http:\/\/facebook.com\">http:\/\/google.co.uk<\/a><\/p>\n?$/
                 },
                 {
                     input: '<a href="http://facebook.com">test</a> http://google.co.uk',
-                    output: /^<p><a href=\"http:\/\/facebook.com\">test<\/a> <a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/p>$/
+                    output: /^<p><a href=\"http:\/\/facebook.com\">test<\/a> <a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/p>\n?$/
                 }
             ],
             processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = converter.render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -315,11 +321,11 @@ describe('Showdown client side converter', function () {
     it('should NOT escape underscore inside of code/pre blocks', function () {
         var testPhrase = {
                 input: '```\n_____\n```',
-                output: /^<pre><code>_____  \n<\/code><\/pre>$/
+                output: /^<pre><code>_____ \n<\/code><\/pre>\n?$/
             },
             processedMarkup;
 
-        processedMarkup = converter.makeHtml(testPhrase.input);
+        processedMarkup = converter.render(testPhrase.input);
         processedMarkup.should.match(testPhrase.output);
     });
 
@@ -327,22 +333,22 @@ describe('Showdown client side converter', function () {
         var testPhrases = [
                 {
                     input: '```\nurl: http://google.co.uk\n```',
-                    output: /^<pre><code>url: http:\/\/google.co.uk  \n<\/code><\/pre>$/
+                    output: /^<pre><code>url: http:\/\/google.co.uk\n<\/code><\/pre>\n?$/
                 },
                 {
                     input: '`url: http://google.co.uk`',
-                    output: /^<p><code>url: http:\/\/google.co.uk<\/code><\/p>$/
+                    output: /^<p><code>url: http:\/\/google.co.uk<\/code><\/p>\n?$/
                 },
                 {
                     input: 'Hello type some `url: http://google.co.uk` stuff',
-                    output: /^<p>Hello type some <code>url: http:\/\/google.co.uk<\/code> stuff<\/p>$/
+                    output: /^<p>Hello type some <code>url: http:\/\/google.co.uk<\/code> stuff<\/p>\n?$/
                 }
 
             ],
             processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = converter.render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -377,7 +383,7 @@ describe('Showdown client side converter', function () {
             processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = converter.render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -392,7 +398,7 @@ describe('Showdown client side converter', function () {
             processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = converter.render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -413,7 +419,7 @@ describe('Showdown client side converter', function () {
             processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = converter.render(testPhrase.input);
             if (testPhrase.not) {
                 processedMarkup.should.not.match(testPhrase.output);
             } else {
@@ -437,7 +443,7 @@ describe('Showdown client side converter', function () {
      processedMarkup;
 
      testPhrases.forEach(function (testPhrase) {
-     processedMarkup = converter.makeHtml(testPhrase.input);
+     processedMarkup = converter.render(testPhrase.input);
      if (testPhrase.not) {
      processedMarkup.should.not.match(testPhrase.output);
      } else {
@@ -451,33 +457,33 @@ describe('Showdown client side converter', function () {
         var testPhrases = [
                 {
                     input: '[1](http://google.co.uk)',
-                    output: /^<p><a href="http:\/\/google.co.uk">1<\/a><\/p>$/
+                    output: /^<p><a href="http:\/\/google.co.uk">1<\/a><\/p>\n?$/
                 },
                 {
                     input: '  [1](http://google.co.uk)',
-                    output: /^<p><a href="http:\/\/google.co.uk">1<\/a><\/p>$/
+                    output: /^<p><a href="http:\/\/google.co.uk">1<\/a><\/p>\n?$/
                 },
                 {
                     input: '[http://google.co.uk](http://google.co.uk)',
-                    output: /^<p><a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/p>$/
+                    output: /^<p><a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/p>\n?$/
                 },
                 {
                     input: '[http://google.co.uk][id]\n\n[id]: http://google.co.uk',
-                    output: /^<p><a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/p>$/
+                    output: /^<p><a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/p>\n?$/
                 },
                 {
                     input: '![http://google.co.uk/kitten.jpg](http://google.co.uk/kitten.jpg)',
-                    output: /^<section.*?((?!<a href="http:\/\/google.co.uk\/kitten.jpg").)*<\/section>$/
+                    output: /^<section.*?((?!<a href="http:\/\/google.co.uk\/kitten.jpg").)*<\/section>\n?$/
                 },
                 {
                     input: '![image stuff](http://dsurl.stuff/something)',
-                    output: /^<section.*?((?!<a href="http:\/\/dsurl.stuff\/something").)*<\/section>$/
+                    output: /^<section.*?((?!<a href="http:\/\/dsurl.stuff\/something").)*<\/section>\n?$/
                 }
             ],
             processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = converter.render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -486,7 +492,7 @@ describe('Showdown client side converter', function () {
         var testPhrases = [
             {
                 input: '<table class=\"test\">\n    <tr>\n        <td>Foo</td>\n    </tr>\n    <tr>\n        <td>Bar</td>\n    </tr>\n</table>',
-                output: /^<table class=\"test\">  \n    <tr>\n        <td>Foo<\/td>\n    <\/tr>\n    <tr>\n        <td>Bar<\/td>\n    <\/tr>\n<\/table>$/
+                output: /^<table class=\"test\">\n    <tr>\n        <td>Foo<\/td>\n    <\/tr>\n    <tr>\n        <td>Bar<\/td>\n    <\/tr>\n<\/table>$/
             },
             {
                 input: '<hr />',
@@ -494,12 +500,12 @@ describe('Showdown client side converter', function () {
             },
             {   // audio isn't counted as a block tag by showdown so gets wrapped in <p></p>
                 input: '<audio class=\"podcastplayer\" controls>\n    <source src=\"foobar.mp3\" type=\"audio/mp3\" preload=\"none\"></source>\n    <source src=\"foobar.off\" type=\"audio/ogg\" preload=\"none\"></source>\n</audio>',
-                output: /^<audio class=\"podcastplayer\" controls>  \n    <source src=\"foobar.mp3\" type=\"audio\/mp3\" preload=\"none\"><\/source>\n    <source src=\"foobar.off\" type=\"audio\/ogg\" preload=\"none\"><\/source>\n<\/audio>$/
+                output: /^<audio class=\"podcastplayer\" controls>\n    <source src=\"foobar.mp3\" type=\"audio\/mp3\" preload=\"none\"><\/source>\n    <source src=\"foobar.off\" type=\"audio\/ogg\" preload=\"none\"><\/source>\n<\/audio>$/
             }
         ];
 
         testPhrases.forEach(function (testPhrase) {
-            var processedMarkup = converter.makeHtml(testPhrase.input);
+            var processedMarkup = converter.render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -518,7 +524,7 @@ describe('Showdown client side converter', function () {
         ];
 
         testPhrases.forEach(function (testPhrase) {
-            var processedMarkup = converter.makeHtml(testPhrase.input);
+            var processedMarkup = converter.render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -527,44 +533,44 @@ describe('Showdown client side converter', function () {
         var testPhrases = [
             {
                 input: '==foo_bar==',
-                output: /^<p><mark>foo_bar<\/mark><\/p>$/
+                output: /^<p><mark>foo_bar<\/mark><\/p>\n?$/
             },
             {
                 input: 'My stuff that has a ==highlight== in the middle.',
-                output: /^<p>My stuff that has a <mark>highlight<\/mark> in the middle.<\/p>$/
+                output: /^<p>My stuff that has a <mark>highlight<\/mark> in the middle.<\/p>\n?$/
             },
             {
                 input: 'My stuff that has a ==multiple word highlight== in the middle.',
-                output: /^<p>My stuff that has a <mark>multiple word highlight<\/mark> in the middle.<\/p>$/
+                output: /^<p>My stuff that has a <mark>multiple word highlight<\/mark> in the middle.<\/p>\n?$/
             },
             {
                 input: 'My stuff that has a ==multiple word **bold** highlight== in the middle.',
-                output: /^<p>My stuff that has a <mark>multiple word <strong>bold<\/strong> highlight<\/mark> in the middle.<\/p>$/
+                output: /^<p>My stuff that has a <mark>multiple word <strong>bold<\/strong> highlight<\/mark> in the middle.<\/p>\n?$/
             },
             {
                 input: 'My stuff that has a ==multiple word and\n line broken highlight== in the middle.',
-                output: /^<p>My stuff that has a <mark>multiple word and <br \/>\n line broken highlight<\/mark> in the middle.<\/p>$/
+                output: /^<p>My stuff that has a <mark>multiple word and<br>\nline broken highlight<\/mark> in the middle.<\/p>\n?$/
             },
             {
                 input: 'Test ==Highlighting with a [link](https://ghost.org) in the middle== of it.',
-                output: /^<p>Test <mark>Highlighting with a <a href="https:\/\/ghost.org">link<\/a> in the middle<\/mark> of it.<\/p>$/
+                output: /^<p>Test <mark>Highlighting with a <a href="https:\/\/ghost.org">link<\/a> in the middle<\/mark> of it.<\/p>\n?$/
             },
             {
                 input: '==[link](http://ghost.org)==',
-                output: /^<p><mark><a href="http:\/\/ghost.org">link<\/a><\/mark><\/p>$/
+                output: /^<p><mark><a href="http:\/\/ghost.org">link<\/a><\/mark><\/p>\n?$/
             },
             {
                 input: '[==link==](http://ghost.org)',
-                output: /^<p><a href="http:\/\/ghost.org"><mark>link<\/mark><\/a><\/p>$/
+                output: /^<p><a href="http:\/\/ghost.org"><mark>link<\/mark><\/a><\/p>\n?$/
             },
             {
                 input: '====test==test==test====test',
-                output: /^<p><mark>==test<\/mark>test<mark>test<\/mark>==test<\/p>$/
+                output: /^<p><mark>==test<\/mark>test<mark>test<\/mark>==test<\/p>\n?$/
             }
         ];
 
         testPhrases.forEach(function (testPhrase) {
-            var processedMarkup = converter.makeHtml(testPhrase.input);
+            var processedMarkup = converter.render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -581,15 +587,15 @@ describe('Showdown client side converter', function () {
                 '```',
                 output: /^<mark><\/mark>$/
             },
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = converter.render(testPhrase.input);
 
         // this does not get mark tags
         processedMarkup.should.not.match(testPhrase.output);
     });
 
     it('should ignore multiple equals', function () {
-        var testPhrase = {input: '=====', output: /^<p>=====<\/p>$/},
-            processedMarkup = converter.makeHtml(testPhrase.input);
+        var testPhrase = {input: '=====', output: /^<p>=====<\/p>\n?$/},
+            processedMarkup = converter.render(testPhrase.input);
 
         processedMarkup.should.match(testPhrase.output);
     });
@@ -598,16 +604,16 @@ describe('Showdown client side converter', function () {
         var testPhrases = [
             {
                 input: 'Header\n==',
-                output: /^<h1 id="header">Header  <\/h1>$/
+                output: /^<h1 id="header">Header<\/h1>\n?$/
             },
             {
                 input: 'First Header\n==\nSecond Header\n==',
-                output: /^<h1 id="firstheader">First Header  <\/h1>\n\n<h1 id="secondheader">Second Header  <\/h1>$/
+                output: /^<h1 id="firstheader">First Header<\/h1>\n\n<h1 id="secondheader">Second Header  <\/h1>\n?$/
             }
         ];
 
         testPhrases.forEach(function (testPhrase) {
-            var processedMarkup = converter.makeHtml(testPhrase.input);
+            var processedMarkup = converter.render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -617,11 +623,11 @@ describe('Showdown client side converter', function () {
     //    var testPhrases = [
     //        {
     //            input: 'Hello world\nIt's a fine day\nout',
-    //            output: /^<p>Hello world <br \/>\nIt’s a fine day <br \/>\nout<\/p>$/}
+    //            output: /^<p>Hello world <br>\nIt’s a fine day <br>\nout<\/p>$/}
     //    ];
 
     //    testPhrases.forEach(function (testPhrase) {
-    //        processedMarkup = converter.makeHtml(testPhrase.input);
+    //        processedMarkup = converter.render(testPhrase.input);
     //        processedMarkup.should.match(testPhrase.output);
     //    });
     // });
