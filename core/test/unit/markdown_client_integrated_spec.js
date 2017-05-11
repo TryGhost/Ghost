@@ -14,6 +14,7 @@ var should = require('should'), // jshint ignore:line
         linkify: true
     })
     .use(require('markdown-it-footnote'))
+    .use(require('markdown-it-lazy-headers'))
     .use(require('markdown-it-mark'))
     .use(require('markdown-it-named-headers'), {
         // match legacy Showdown IDs otherwise default is github style dasherized
