@@ -102,7 +102,7 @@
     "postcss-color-function": "3.0.0",
     "postcss-custom-properties": "5.0.2",
     "postcss-easy-import": "2.0.0",
-    "simplemde": "https://github.com/kevinansfield/simplemde-markdown-editor.git",
+    "simplemde": "https://github.com/kevinansfield/simplemde-markdown-editor.git#ghost",
     "top-gh-contribs": "2.0.4",
     "torii": "0.8.2",
     "walk-sync": "0.3.1"
