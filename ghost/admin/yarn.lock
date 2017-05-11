@@ -6815,9 +6815,9 @@ simple-is@~0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/simple-is/-/simple-is-0.2.0.tgz#2abb75aade39deb5cc815ce10e6191164850baf0"
 
-"simplemde@https://github.com/kevinansfield/simplemde-markdown-editor.git":
+"simplemde@https://github.com/kevinansfield/simplemde-markdown-editor.git#ghost":
   version "1.11.2"
-  resolved "https://github.com/kevinansfield/simplemde-markdown-editor.git#6abda7ab68cc20f4aca870eb243747951b90ab04"
+  resolved "https://github.com/kevinansfield/simplemde-markdown-editor.git#29f69b859b19f6ecbc678780290e388298b308c4"
   dependencies:
     codemirror "*"
     codemirror-spell-checker "*"
