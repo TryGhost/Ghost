@@ -14,7 +14,14 @@ var should = require('should'), // jshint ignore:line
         linkify: true
     })
     .use(require('markdown-it-footnote'))
-    .use(require('markdown-it-mark'));
+    .use(require('markdown-it-mark'))
+    .use(require('markdown-it-named-headers'), {
+        // match legacy Showdown IDs otherwise default is github style dasherized
+        // NOTE: this doesn't add a count suffix to duplicate titles
+        slugify: function (input_string) {
+            return input_string.replace(/[^\w]/g, '').toLowerCase();
+        }
+    });
 
 describe('Markdown-it client side converter', function () {
     /*jslint regexp: true */
@@ -321,7 +328,7 @@ describe('Markdown-it client side converter', function () {
     it('should NOT escape underscore inside of code/pre blocks', function () {
         var testPhrase = {
                 input: '```\n_____\n```',
-                output: /^<pre><code>_____ \n<\/code><\/pre>\n?$/
+                output: /^<pre><code>_____\n<\/code><\/pre>\n?$/
             },
             processedMarkup;
 
@@ -608,7 +615,7 @@ describe('Markdown-it client side converter', function () {
             },
             {
                 input: 'First Header\n==\nSecond Header\n==',
-                output: /^<h1 id="firstheader">First Header<\/h1>\n\n<h1 id="secondheader">Second Header  <\/h1>\n?$/
+                output: /^<h1 id="firstheader">First Header<\/h1>\n<h1 id="secondheader">Second Header<\/h1>\n?$/
             }
         ];
 

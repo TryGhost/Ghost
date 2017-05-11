@@ -10,7 +10,14 @@ converter = new MarkdownIt({
     linkify: true
 })
 .use(require('markdown-it-footnote'))
-.use(require('markdown-it-mark'));
+.use(require('markdown-it-mark'))
+.use(require('markdown-it-named-headers'), {
+    // match legacy Showdown IDs otherwise default is github style dasherized
+    // NOTE: this doesn't add a count suffix to duplicate titles
+    slugify: function (input_string) {
+        return input_string.replace(/[^\w]/g, '').toLowerCase();
+    }
+});
 
 module.exports = {
         name: 'card-markdown',
