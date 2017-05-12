@@ -6,7 +6,7 @@
                 {
                     "title": "Welcome to Ghost",
                     "slug": "welcome-to-ghost",
-                    "mobiledoc": "{\"version\":\"0.3.1\",\"atoms\":[],\"cards\":[],\"markups\":[],\"sections\":[[1,\"p\",[[0,[],0,\"Click here to learn more about our all-new editor and improved admin panel 📖 ➡️\"]]],[1,\"p\",[[0,[],0,\"This post is a placeholder for brand new content that is coming soon...\"]]]]}",
+                    "mobiledoc": "{\"version\":\"0.3.1\",\"markups\":[],\"atoms\":[],\"cards\":[[\"card-markdown\",{\"cardName\":\"card-markdown\",\"markdown\":\"Click here to learn more about our all-new editor and improved admin panel 📖 ➡️\\n\\nThis post is a placeholder for brand new content that is coming soon...\"}]],\"sections\":[[10,0]]}",
                     "image": null,
                     "featured": false,
                     "page": false,
