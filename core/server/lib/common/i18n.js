@@ -161,7 +161,7 @@ I18n = {
     },
     /**
      * Exporting the current locale (e.g. "en") to make it available for other files,
-     * such as core/server/helpers/index.js and core/server/helpers/date.js
+     * such as core/server/helpers/date.js and core/server/helpers/t_css.js
      */
     locale: function locale() {
         return currentLocale;
