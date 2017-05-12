@@ -41,8 +41,9 @@
         mobiledoc=(readonly model.scratch)
         isFullScreen=editor.isFullScreen
         onChange=(action "updateScratch")
-        onFullScreen=(action editor.toggleFullScreen)
-        onSplitScreen=(action editor.toggleSplitScreen)
+        onFullScreenToggle=(action editor.toggleFullScreen)
+        onPreviewToggle=(action editor.togglePreview)
+        onSplitScreenToggle=(action editor.toggleSplitScreen)
         onImageFilesSelected=(action editor.uploadImages)
         showMarkdownHelp=(route-action "toggleMarkdownHelpModal")
         imageMimeTypes=editor.imageMimeTypes
