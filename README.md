@@ -21,7 +21,7 @@ The project is maintained by a non-profit organisation called the **Ghost Founda
 
 **Please note:** These are the install instructions for Ghost 1.0-alpha, which is **not** stable. If you're looking for the latest release of Ghost, check out the [stable branch](https://github.com/TryGhost/Ghost/tree/stable) or the [latest release](https://github.com/TryGhost/Ghost/releases). If you get stuck, come say hi over [on slack](https://slack.ghost.org)!
 
-**Important**: Ghost uses [`yarn`](https://yarnpkg.com) rather than `npm` to manage it's dependencies. Ensure that you have it installed and you have configured your `PATH` environment variable for it to work correctly. We recommend the ["Installation Script" instructions](https://yarnpkg.com/en/docs/install#alternatives-tab) because it works better with `nvm` but choose the best option for your development setup.
+**Important**: Ghost uses [`yarn`](https://yarnpkg.com) (**>= 0.23.x**) rather than `npm` to manage it's dependencies. Ensure that you have it installed and you have configured your `PATH` environment variable for it to work correctly. We recommend the ["Installation Script" instructions](https://yarnpkg.com/en/docs/install#alternatives-tab) because it works better with `nvm` but choose the best option for your development setup.
 
 Install and run Ghost.
 <pre>
