@@ -26,6 +26,28 @@
                 "updated_by": 1,
                 "published_at": 1388318310783,
                 "published_by": 1
+            },
+            {
+                "id": 2,
+                "uuid": "8492fbba-1102-4b53-8e3e-abe207952f0c",
+                "title": "schedule-me",
+                "slug": "schedule-me",
+                "markdown": "You're live! Nice.",
+                "html": "<p>You're live! Nice.</p>",
+                "image": null,
+                "featured": 0,
+                "page": 0,
+                "status": "scheduled",
+                "language": "en_US",
+                "meta_title": null,
+                "meta_description": null,
+                "author_id": 1,
+                "created_at": 1388318310782,
+                "created_by": 1,
+                "updated_at": 1388318310782,
+                "updated_by": 1,
+                "published_at": 1388318310783,
+                "published_by": 1
             }
         ],
         "users": [],
