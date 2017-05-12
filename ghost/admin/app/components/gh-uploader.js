@@ -106,7 +106,10 @@ export default Component.extend({
         let ok = [];
         let errors = [];
 
-        for (let file of files) {
+        // NOTE: for...of loop results in a transpilation that errors in Edge,
+        // once we drop IE11 support we should be able to use native for...of
+        for (let i = 0; i < files.length; i++) {
+            let file = files[i];
             let result = validate(file);
             if (result === true) {
                 ok.push(file);
@@ -147,8 +150,10 @@ export default Component.extend({
 
         this.onStart();
 
-        for (let file of files) {
-            uploads.push(this.get('_uploadFile').perform(file));
+        // NOTE: for...of loop results in a transpilation that errors in Edge,
+        // once we drop IE11 support we should be able to use native for...of
+        for (let i = 0; i < files.length; i++) {
+            uploads.push(this.get('_uploadFile').perform(files[i]));
         }
 
         // populates this.errors and this.uploadUrls
