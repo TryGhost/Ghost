@@ -191,6 +191,10 @@ describe('Mail: Ghostmailer', function () {
             // Strip Port
             configUtils.set({url: 'http://default.com:2368/', mail: {from: null}, theme: {title: 'Test'}});
             mailer.from().should.equal('"Test" <ghost@default.com>');
+
+            // Escape title
+            configUtils.set({url: 'http://default.com:2368/', mail: {from: null}, theme: {title: 'Test"'}});
+            mailer.from().should.equal('"Test\\"" <ghost@default.com>');
         });
 
         it('should use mail.from if both from and fromaddress are present', function () {
