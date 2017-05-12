@@ -1,9 +1,17 @@
-var should  = require('should'),
+var should     = require('should'),
+    sinon      = require('sinon'),
 
-    validation = require('../../server/data/validation');
+    errors     = require('../../server/errors'),
+    validation = require('../../server/data/validation'),
+
+    sandbox    = sinon.sandbox.create();
 
 // Validate our customisations
 describe('Validation', function () {
+    afterEach(function () {
+        sandbox.restore();
+    });
+
     it('should export our required functions', function () {
         should.exist(validation);
 
@@ -17,6 +25,29 @@ describe('Validation', function () {
         validation.validateActiveTheme.should.be.a.Function();
 
         validation.validator.should.have.properties(['empty', 'notContains', 'isTimezone', 'isEmptyOrURL', 'isSlug']);
+    });
+
+    describe('validateActiveTheme', function () {
+        it('should reject theme that is not installed', function (done) {
+            validation.validateActiveTheme('theme-that-does-not-exist')
+                .then(function () {
+                    done(new Error('Activating missing theme is not rejected.'));
+                }).catch(function (error) {
+                    error.should.have.property('errorType', 'ValidationError');
+                    done();
+                }).catch(done);
+        });
+
+        it('should show warning instead of the rejection when showWarning option is used', function (done) {
+            var warnSpy = sinon.stub(errors, 'logWarn');
+
+            validation.validateActiveTheme('theme-that-does-not-exist', {showWarning: true})
+                .then(function () {
+                    warnSpy.called.should.be.true();
+                    warnSpy.calledWith('The currently active theme "theme-that-does-not-exist" is missing.').should.be.true();
+                    done();
+                }).catch(done);
+        });
     });
 
     describe('Validator customisations', function () {
