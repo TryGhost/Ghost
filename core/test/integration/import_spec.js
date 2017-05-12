@@ -145,8 +145,11 @@ describe('Import', function () {
 
                 // we always have 1 user, the owner user we added
                 users.length.should.equal(1, 'There should only be one user');
+
                 // import no longer requires all data to be dropped, and adds posts
                 posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
+                posts[0].status.should.eql('published');
+                posts[1].status.should.eql('scheduled');
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
