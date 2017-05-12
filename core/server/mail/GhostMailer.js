@@ -30,7 +30,7 @@ GhostMailer.prototype.from = function () {
 
     // If we do have a from address, and it's just an email
     if (validator.isEmail(from)) {
-        defaultBlogTitle = settingsCache.get('title') || i18n.t('common.mail.title', {domain: this.getDomain()});
+        defaultBlogTitle = settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : i18n.t('common.mail.title', {domain: this.getDomain()});
         from = '"' + defaultBlogTitle + '" <' + from + '>';
     }
 
