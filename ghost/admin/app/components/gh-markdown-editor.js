@@ -39,9 +39,10 @@ export default Component.extend({
 
     // Closure actions
     onChange() {},
-    onFullScreen() {},
+    onFullScreenToggle() {},
     onImageFilesSelected() {},
-    onSplitScreen() {},
+    onPreviewToggle() {},
+    onSplitScreenToggle() {},
     showMarkdownHelp() {},
 
     // Internal attributes
@@ -74,7 +75,14 @@ export default Component.extend({
                     title: 'Upload Image(s)'
                 },
                 '|',
-                'preview',
+                {
+                    name: 'preview',
+                    action: () => {
+                        this._togglePreview();
+                    },
+                    className: 'fa fa-eye no-disable',
+                    title: 'Toggle Preview (Cmd-P)'
+                },
                 {
                     name: 'side-by-side',
                     action: () => {
@@ -102,8 +110,9 @@ export default Component.extend({
                 }
             ],
             shortcuts: {
-                toggleSideBySide: null,
-                toggleFullScreen: null
+                toggleFullScreen: null,
+                togglePreview: null,
+                toggleSideBySide: null
             },
             status: ['words']
         };
@@ -277,6 +286,13 @@ export default Component.extend({
         this.$('input[type="file"]').click();
     },
 
+    // wrap SimpleMDE's built-in preview toggle so that we can trigger a closure
+    // action that can apply our own classes higher up in the DOM
+    _togglePreview() {
+        this.onPreviewToggle(!this._editor.isPreviewActive());
+        this._editor.togglePreview();
+    },
+
     willDestroyElement() {
         if (this.get('_isSplitScreen')) {
             this._disconnectSplitPreview();
@@ -331,7 +347,7 @@ export default Component.extend({
 
             this.set('_isFullScreen', isFullScreen);
             this._updateButtonState();
-            this.onFullScreen(isFullScreen);
+            this.onFullScreenToggle(isFullScreen);
 
             // leave split screen when exiting full screen mode
             if (!isFullScreen && this.get('_isSplitScreen')) {
@@ -366,7 +382,7 @@ export default Component.extend({
                 run.scheduleOnce('afterRender', this, this._disconnectSplitPreview);
             }
 
-            this.onSplitScreen(isSplitScreen);
+            this.onSplitScreenToggle(isSplitScreen);
 
             // go fullscreen when entering split screen mode
             if (isSplitScreen && !this.get('_isFullScreen')) {

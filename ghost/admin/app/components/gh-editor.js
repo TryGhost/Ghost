@@ -11,7 +11,8 @@ export default Component.extend({
 
     classNameBindings: [
         'isDraggedOver:-drag-over',
-        'isFullScreen:gh-editor-fullscreen'
+        'isFullScreen:gh-editor-fullscreen',
+        'isPreview:gh-editor-preview'
     ],
 
     // Public attributes
@@ -137,13 +138,17 @@ export default Component.extend({
     },
 
     actions: {
-        toggleFullScreen() {
-            this.toggleProperty('isFullScreen');
+        toggleFullScreen(isFullScreen) {
+            this.set('isFullScreen', isFullScreen);
             run.scheduleOnce('afterRender', this, this._setHeaderClass);
         },
 
-        toggleSplitScreen() {
-            this.toggleProperty('isSplitScreen');
+        togglePreview(isPreview) {
+            this.set('isPreview', isPreview);
+        },
+
+        toggleSplitScreen(isSplitScreen) {
+            this.set('isSplitScreen', isSplitScreen);
             run.scheduleOnce('afterRender', this, this._setHeaderClass);
         },
 
