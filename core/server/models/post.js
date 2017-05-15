@@ -5,7 +5,7 @@ var _               = require('lodash'),
     Promise         = require('bluebird'),
     sequence        = require('../utils/sequence'),
     errors          = require('../errors'),
-    MarkdownIt      = require('markdown-it'),
+    legacyConverter = require('../utils/markdown-converter'),
     htmlToText      = require('html-to-text'),
     ghostBookshelf  = require('./base'),
     events          = require('../events'),
@@ -13,17 +13,8 @@ var _               = require('lodash'),
     utils           = require('../utils'),
     baseUtils       = require('./base/utils'),
     i18n            = require('../i18n'),
-    legacyConverter,
     Post,
     Posts;
-
-legacyConverter = new MarkdownIt({
-    html: true,
-    breaks: true,
-    linkify: true
-})
-.use(require('markdown-it-footnote'))
-.use(require('markdown-it-mark'));
 
 Post = ghostBookshelf.Model.extend({
 
