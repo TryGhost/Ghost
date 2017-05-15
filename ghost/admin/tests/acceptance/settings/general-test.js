@@ -208,8 +208,9 @@ describe('Acceptance: Settings - General', function () {
             await fillIn(testSelector('facebook-input'), 'ab99');
             await triggerEvent(testSelector('facebook-input'), 'blur');
 
+            expect(find(testSelector('facebook-input')).val()).to.be.equal('https://www.facebook.com/ab99');
             expect(find(testSelector('facebook-error')).text().trim(), 'inline validation response')
-                .to.equal('Your Page name is not a valid Facebook Page name');
+                .to.equal('');
 
             await fillIn(testSelector('facebook-input'), 'page/ab99');
             await triggerEvent(testSelector('facebook-input'), 'blur');
