@@ -13,8 +13,8 @@ export default BaseValidator.create({
             this.invalidate();
         }
 
-        if (!validator.isLength(title, 0, 150)) {
-            model.get('errors').add('title', 'Title cannot be longer than 150 characters.');
+        if (!validator.isLength(title, 0, 255)) {
+            model.get('errors').add('title', 'Title cannot be longer than 255 characters.');
             this.invalidate();
         }
     },
@@ -22,8 +22,8 @@ export default BaseValidator.create({
     metaTitle(model) {
         let metaTitle = model.get('metaTitle');
 
-        if (!validator.isLength(metaTitle, 0, 150)) {
-            model.get('errors').add('metaTitle', 'Meta Title cannot be longer than 150 characters.');
+        if (!validator.isLength(metaTitle, 0, 300)) {
+            model.get('errors').add('metaTitle', 'Meta Title cannot be longer than 300 characters.');
             this.invalidate();
         }
     },
@@ -31,8 +31,8 @@ export default BaseValidator.create({
     metaDescription(model) {
         let metaDescription = model.get('metaDescription');
 
-        if (!validator.isLength(metaDescription, 0, 200)) {
-            model.get('errors').add('metaDescription', 'Meta Description cannot be longer than 200 characters.');
+        if (!validator.isLength(metaDescription, 0, 500)) {
+            model.get('errors').add('metaDescription', 'Meta Description cannot be longer than 500 characters.');
             this.invalidate();
         }
     },
