@@ -416,6 +416,10 @@ describe('Config', function () {
                 testData = {image: '/blog/content/images/my-image4.jpg'};
                 config.urlFor(testContext, testData).should.equal('/blog/content/images/my-image4.jpg');
                 config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog/content/images/my-image4.jpg');
+
+                testData = {image: '/blog/content/images/my-image4.jpg', secure: true};
+                config.urlFor(testContext, testData).should.equal('/blog/content/images/my-image4.jpg');
+                config.urlFor(testContext, testData, true).should.equal('https://my-ghost-blog.com/blog/content/images/my-image4.jpg');
             });
 
             it('should return a url for a nav item when asked for it', function () {
