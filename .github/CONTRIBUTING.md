@@ -199,6 +199,7 @@ Looking to get setup to work on Ghost? AWESOME! The [Ghost-Vagrant](https://gith
 1. `git clone https://github.com/TryGhost/Ghost.git`- clone the git repo
 1. `cd Ghost` - change into the project folder
 1. `npm install -g grunt-cli` - to make it possible to run grunt commands (see [developer tips](#developer-tips) for more info on Grunt)
+1. `npm install -g bower` - to allow installation of client-side dependencies from [Bower](https://bower.io/)
 1. `npm install` - you need all the dependencies, so do not use the `--production` flag mentioned in user install guides
 	* If the install fails with errors to do with "node-gyp rebuild" or "SQLite3", follow the SQLite3 install
 instructions below this list
