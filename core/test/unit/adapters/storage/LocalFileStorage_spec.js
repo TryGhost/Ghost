@@ -3,11 +3,11 @@ var should = require('should'), // jshint ignore:line
     fs = require('fs-extra'),
     moment = require('moment'),
     path = require('path'),
-    errors = require('../../../server/errors'),
-    LocalFileStore = require('../../../server/storage/LocalFileStorage'),
+    errors = require('../../../../server/errors'),
+    LocalFileStore = require('../../../../server/adapters/storage/LocalFileStorage'),
     localFileStore,
 
-    configUtils = require('../../utils/configUtils'),
+    configUtils = require('../../../utils/configUtils'),
 
     sandbox = sinon.sandbox.create();
 
@@ -150,7 +150,7 @@ describe('Local File System Storage', function () {
     describe('read image', function () {
         beforeEach(function () {
             // we have some example images in our test utils folder
-            localFileStore.storagePath = path.join(__dirname, '../../utils/fixtures/images/');
+            localFileStore.storagePath = path.join(__dirname, '../../../utils/fixtures/images/');
         });
 
         it('success', function (done) {

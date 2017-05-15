@@ -1,7 +1,7 @@
 var fs = require('fs'),
     path = require('path'),
     crypto = require('crypto'),
-    storage = require('../storage'),
+    storage = require('../adapters/storage'),
     utils  = require('../utils'),
     settingsCache = require('../settings/cache'),
     blogIconUtils = require('../utils/blog-icon'),

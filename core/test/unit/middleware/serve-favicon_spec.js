@@ -3,7 +3,7 @@ var should = require('should'), // jshint ignore:line
     express = require('express'),
     serveFavicon = require('../../../server/middleware/serve-favicon'),
     settingsCache = require('../../../server/settings/cache'),
-    storage = require('../../../server/storage'),
+    storage = require('../../../server/adapters/storage'),
     configUtils = require('../../utils/configUtils'),
     path = require('path'),
 
