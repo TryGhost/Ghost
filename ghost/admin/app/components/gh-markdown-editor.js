@@ -4,6 +4,7 @@ import {assign} from 'ember-platform';
 import {copy} from 'ember-metal/utils';
 import {isEmpty} from 'ember-utils';
 import run from 'ember-runloop';
+import formatMarkdown from 'ghost-admin/utils/format-markdown';
 
 const MOBILEDOC_VERSION = '0.3.1';
 
@@ -57,11 +58,16 @@ export default Component.extend({
     _toolbar: null,
     _uploadedImageUrls: null,
 
-    // Ghost-Specific SimpleMDE toolbar config - allows us to create a bridge
-    // between SimpleMDE buttons and Ember actions
     simpleMDEOptions: computed('options', function () {
         let options = this.get('options') || {};
         let defaultOptions = {
+            // use our Showdown config with sanitization for previews
+            previewRender(markdown) {
+                return formatMarkdown(markdown);
+            },
+
+            // Ghost-specific SimpleMDE toolbar config - allows us to create a
+            // bridge between SimpleMDE buttons and Ember actions
             toolbar: [
                 'bold', 'italic', 'heading', '|',
                 'quote', 'unordered-list', 'ordered-list', '|',
@@ -109,11 +115,17 @@ export default Component.extend({
                     title: 'Markdown Guide'
                 }
             ],
+
+            // disable shortcuts for side-by-side and fullscreen because they
+            // trigger interal SimpleMDE methods that will result in broken
+            // layouts
             shortcuts: {
                 toggleFullScreen: null,
                 togglePreview: null,
                 toggleSideBySide: null
             },
+
+            // only include the number of words in the status bar
             status: ['words']
         };
 
