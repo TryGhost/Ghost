@@ -1,7 +1,6 @@
 var SimpleDom   = require('simple-dom'),
     tokenizer   = require('simple-html-tokenizer').tokenize,
-    Showdown    = require('showdown-ghost'),
-    converter   = new Showdown.converter({extensions: ['ghostgfm', 'footnotes', 'highlight']}),
+    markdownConverter  = require('../../../utils/markdown-converter'),
     parser;
 
 module.exports = {
@@ -9,6 +8,10 @@ module.exports = {
         type: 'dom',
         render(opts) {
             parser = new SimpleDom.HTMLParser(tokenizer, opts.env.dom, SimpleDom.voidMap);
-            return parser.parse('<div class="kg-card-markdown">' + converter.makeHtml(opts.payload.markdown || '') + '</div>');
+            return parser.parse(''
+                + '<div class="kg-card-markdown">'
+                + markdownConverter.render(opts.payload.markdown || '')
+                + '</div>'
+            );
         }
     };
