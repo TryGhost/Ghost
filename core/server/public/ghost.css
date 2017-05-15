@@ -571,6 +571,29 @@ h2 {
     width: 100%;
 }
 
+/* Input Icons
+/* ---------------------------------------------------------- */
+
+.gh-input-icon {
+    position: relative;
+    display: block;
+}
+
+.gh-input-icon svg {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    z-index: 2;
+    height: 14px;
+    width: auto;
+    fill: color(var(--midgrey) l(+15%));
+    transform: translateY(-7px);
+}
+
+.gh-input-icon input {
+    padding-left: 35px;
+}
+
 /* Layouts: Groups of Components
 /* ---------------------------------------------------------- */
 /* Global Layout
@@ -656,10 +679,14 @@ h2 {
     font-weight: 100;
     transition: all 0.3s ease;
 }
-.gh-flow-back i {
+.gh-flow-back svg {
     margin-right: 4px;
-    font-size: 12px;
-    line-height: 8px;
+    height: 12px;
+    line-height: 14px;
+}
+.gh-flow-back svg path {
+    stroke: #7d878a;
+    stroke-width: 1.2px;
 }
 .gh-flow-back:hover {
     border: #dae1e3 1px solid;
@@ -682,6 +709,11 @@ h2 {
     line-height: 1.5em;
     font-weight: 100;
 }
+
+.gh-flow-content .gh-input-icon input {
+    padding-left: 35px;
+}
+
 @media (max-width: 500px) {
     .gh-flow-content {
         font-size: 4vw;
