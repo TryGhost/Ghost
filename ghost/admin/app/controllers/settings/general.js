@@ -134,8 +134,8 @@ export default Controller.extend({
                     // we got a page url, now save the username without the / in the beginning
 
                     [, username] = username.match(/^(?:\/)?(pages?\/\S+)/mi);
-                } else if (username.match(/^(http|www)|(\/)/) || !username.match(/^([a-z\d\.]{5,50})$/mi)) {
-                    errMessage = !username.match(/^([a-z\d\.]{5,50})$/mi) ? 'Your Page name is not a valid Facebook Page name' : 'The URL must be in a format like https://www.facebook.com/yourPage';
+                } else if (username.match(/^(http|www)|(\/)/) || !username.match(/^([a-z\d\.]{1,50})$/mi)) {
+                    errMessage = !username.match(/^([a-z\d\.]{1,50})$/mi) ? 'Your Page name is not a valid Facebook Page name' : 'The URL must be in a format like https://www.facebook.com/yourPage';
 
                     this.get('model.errors').add('facebook', errMessage);
                     this.get('model.hasValidated').pushObject('facebook');

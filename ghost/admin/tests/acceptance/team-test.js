@@ -560,7 +560,8 @@ describe('Acceptance: Team', function () {
                 await fillIn('#user-facebook', 'test');
                 await triggerEvent('#user-facebook', 'blur');
 
-                expect(find('#user-facebook').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.true;
+                expect(find('#user-facebook').val()).to.be.equal('https://www.facebook.com/test');
+                expect(find('#user-facebook').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.false;
 
                 await fillIn('#user-facebook', '');
                 await fillIn('#user-facebook', 'http://twitter.com/testuser');
