@@ -58,7 +58,7 @@
     "image-size": "0.5.2",
     "intl": "1.2.5",
     "intl-messageformat": "1.3.0",
-    "jsdom": "^9.12.0",
+    "jsdom": "10.1.0",
     "jsonpath": "0.2.11",
     "knex": "0.12.9",
     "knex-migrator": "2.0.16",
