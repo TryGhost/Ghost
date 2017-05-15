@@ -15,7 +15,7 @@ var should = require('should'),
     DataImporter = require('../../server/data/importer/importers/data'),
     ImageImporter = require('../../server/data/importer/importers/image'),
 
-    storage = require('../../server/storage'),
+    storage = require('../../server/adapters/storage'),
 
     configUtils = require('../utils/configUtils'),
     sandbox = sinon.sandbox.create();

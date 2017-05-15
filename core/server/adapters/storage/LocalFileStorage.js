@@ -9,10 +9,10 @@ var serveStatic = require('express').static,
     fs = require('fs-extra'),
     path = require('path'),
     Promise = require('bluebird'),
-    config = require('../config'),
-    errors = require('../errors'),
-    i18n = require('../i18n'),
-    utils = require('../utils'),
+    config = require('../../config'),
+    errors = require('../../errors'),
+    i18n = require('../../i18n'),
+    utils = require('../../utils'),
     StorageBase = require('ghost-storage-base');
 
 class LocalFileStore extends StorageBase {

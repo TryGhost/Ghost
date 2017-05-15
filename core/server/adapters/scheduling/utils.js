@@ -1,7 +1,7 @@
 var _ = require('lodash'),
     Promise = require('bluebird'),
     SchedulingBase = require(__dirname + '/SchedulingBase'),
-    errors = require(__dirname + '/../errors');
+    errors = require(__dirname + '/../../errors');
 
 exports.createAdapter = function (options) {
     options = options || {};

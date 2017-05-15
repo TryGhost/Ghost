@@ -116,7 +116,7 @@ describe('Config', function () {
 
     describe('Storage', function () {
         it('should default to local-file-store', function () {
-            configUtils.config.get('paths').should.have.property('internalStoragePath', path.join(configUtils.config.get('paths').corePath, '/server/storage/'));
+            configUtils.config.get('paths').should.have.property('internalStoragePath', path.join(configUtils.config.get('paths').corePath, '/server/adapters/storage/'));
 
             configUtils.config.get('storage').should.have.property('active', 'LocalFileStorage');
         });

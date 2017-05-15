@@ -8,7 +8,7 @@ var fs = require('fs-extra'),
     Promise = require('bluebird'),
     config = require('../config'),
     utils = require('../utils'),
-    LocalFileStorage = require('../storage/LocalFileStorage'),
+    LocalFileStorage = require('../adapters/storage/LocalFileStorage'),
     remove = Promise.promisify(fs.remove);
 
 /**
