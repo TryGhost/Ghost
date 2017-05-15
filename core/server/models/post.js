@@ -237,7 +237,7 @@ Post = ghostBookshelf.Model.extend({
             this.set('html', legacyConverter.render(_.toString(this.get('markdown'))));
         }
 
-        if (this.hasChanged('html')) {
+        if (this.hasChanged('html') || !this.get('plaintext')) {
             this.set('plaintext', htmlToText.fromString(this.get('html'), {
                 wordwrap: 80,
                 ignoreImage: true,
