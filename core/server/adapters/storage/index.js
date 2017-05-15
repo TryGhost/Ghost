@@ -1,5 +1,5 @@
-var errors = require('../errors'),
-    config = require('../config'),
+var errors = require('../../errors'),
+    config = require('../../config'),
     StorageBase = require('ghost-storage-base'),
     _ = require('lodash'),
     storage = {};

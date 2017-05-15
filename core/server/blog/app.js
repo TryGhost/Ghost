@@ -3,7 +3,7 @@ var debug = require('debug')('ghost:blog'),
 
     // App requires
     config = require('../config'),
-    storage = require('../storage'),
+    storage = require('../adapters/storage'),
     utils = require('../utils'),
 
     // This should probably be an internal app
