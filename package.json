@@ -87,6 +87,7 @@
     "semver": "5.3.0",
     "simple-dom": "0.3.2",
     "simple-html-tokenizer": "0.4.1",
+    "spec-xunit-file": "0.0.1-3",
     "superagent": "3.5.2",
     "unidecode": "0.1.8",
     "uuid": "3.0.1",

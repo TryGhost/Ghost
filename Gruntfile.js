@@ -140,7 +140,7 @@ var overrides      = require('./core/server/overrides'),
             mochacli: {
                 options: {
                     ui: 'bdd',
-                    reporter: grunt.option('reporter') || 'spec',
+                    reporter: grunt.option('reporter') || 'spec-xunit-file',
                     timeout: '30000',
                     save: grunt.option('reporter-output'),
                     require: ['core/server/overrides']
@@ -151,7 +151,10 @@ var overrides      = require('./core/server/overrides'),
                     src: [
                         'core/test/unit/**/*_spec.js',
                         'core/server/apps/**/tests/*_spec.js'
-                    ]
+                    ],
+                    options: {
+                        env: {XUNIT_FILE: 'unit-xunit.xml'}
+                    }
                 },
 
                 // #### All Integration tests
@@ -159,21 +162,30 @@ var overrides      = require('./core/server/overrides'),
                     src: [
                         'core/test/integration/**/*_spec.js',
                         'core/test/integration/*_spec.js'
-                    ]
+                    ],
+                    options: {
+                        env: {XUNIT_FILE: 'integration-xunit.xml'}
+                    }
                 },
 
                 // #### All Route tests
                 routes: {
                     src: [
                         'core/test/functional/routes/**/*_spec.js'
-                    ]
+                    ],
+                    options: {
+                        env: {XUNIT_FILE: 'route-xunit.xml'}
+                    }
                 },
 
                 // #### All Module tests
                 module: {
                     src: [
                         'core/test/functional/module/**/*_spec.js'
-                    ]
+                    ],
+                    options: {
+                        env: {XUNIT_FILE: 'module-xunit.xml'}
+                    }
                 },
 
                 // #### Run single test (src is set dynamically, see grunt task 'test')
