@@ -29,6 +29,6 @@ describe('Convert mobiledoc to HTML ', function () {
         ]
     };
     it('Converts a mobiledoc to HTML', function () {
-        converter.render(mobiledoc).should.match('<p>test</p><div class="kg-card-markdown"><h1 id="heading">heading</h1>\n\n<ul>\n<li>list one</li>\n<li>list two</li>\n<li>list three</li>\n</ul></div><div class="kg-card-html"><p>HTML CARD</p></div>');
+        converter.render(mobiledoc).should.match('<p>test</p><div class="kg-card-markdown"><h1 id="heading">heading</h1>\n<ul>\n<li>list one</li>\n<li>list two</li>\n<li>list three</li>\n</ul>\n</div><div class="kg-card-html"><p>HTML CARD</p></div>');
     });
 });

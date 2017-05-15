@@ -15,6 +15,6 @@ describe('Markdown card', function () {
         };
 
         var serializer = new SimpleDom.HTMLSerializer([]);
-        serializer.serialize(card.render(opts)).should.match('<div class="kg-card-markdown"><h1 id="heading">HEADING</h1>\n\n<ul>\n<li>list</li>\n<li>items</li>\n</ul></div>');
+        serializer.serialize(card.render(opts)).should.match('<div class="kg-card-markdown"><h1 id="heading">HEADING</h1>\n<ul>\n<li>list</li>\n<li>items</li>\n</ul>\n</div>');
     });
 });
