@@ -1,7 +1,8 @@
 var SimpleDom   = require('simple-dom'),
     tokenizer   = require('simple-html-tokenizer').tokenize,
     JSDOM       = require('jsdom').JSDOM,
-    markdownConverter  = require('../../../utils/markdown-converter');
+    markdownConverter  = require('../../../utils/markdown-converter'),
+    html, dom, parser, sanitizedHTML;
 
 module.exports = {
         name: 'card-markdown',
@@ -18,20 +19,19 @@ module.exports = {
             // pass the HTML through jsdom which seeks to fully emulate the
             // WHATWG DOM/HTML standards including the ability to handle
             // unbalanced HTML in the same way a browser does
-
-            var html = markdownConverter.render(opts.payload.markdown || ''),
-                dom = new JSDOM(html),
-                parser = new SimpleDom.HTMLParser(tokenizer, opts.env.dom, SimpleDom.voidMap),
-                sanitisedHTML;
+            html = markdownConverter.render(opts.payload.markdown || '');
+            dom = new JSDOM(html);
 
             // dom.serialize() will return an entire HTML doc including doctype
             // etc but we only want the rendered + sanitized HTML
-            sanitisedHTML = dom.window.document.documentElement.innerHTML;
+            sanitizedHTML = dom.window.document.documentElement.innerHTML;
+
+            parser = new SimpleDom.HTMLParser(tokenizer, opts.env.dom, SimpleDom.voidMap);
 
             // generate a new SimpleDom object from the sanitzed HTML
             return parser.parse(''
                 + '<div class="kg-card-markdown">'
-                + sanitisedHTML
+                + sanitizedHTML
                 + '</div>'
             );
         }
