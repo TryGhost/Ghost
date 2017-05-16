@@ -23,8 +23,8 @@ module.exports = {
             dom = new JSDOM(html);
 
             // dom.serialize() will return an entire HTML doc including doctype
-            // etc but we only want the rendered + sanitized HTML
-            sanitizedHTML = dom.window.document.documentElement.innerHTML;
+            // etc but we only want the rendered + sanitized body HTML
+            sanitizedHTML = dom.window.document.body.innerHTML;
 
             parser = new SimpleDom.HTMLParser(tokenizer, opts.env.dom, SimpleDom.voidMap);
 
