@@ -50,8 +50,8 @@ module.exports = function (Bookshelf) {
                         'created_at', 'updated_at', 'author_id', 'id',
                         'published_by', 'updated_by', 'html'
                     ]),
-                    clientUpdatedAt = moment(self.clientData.updated_at || self.serverData.updated_at),
-                    serverUpdatedAt = moment(self.serverData.updated_at);
+                    clientUpdatedAt = moment(self.clientData.updated_at || self.serverData.updated_at || new Date()),
+                    serverUpdatedAt = moment(self.serverData.updated_at || clientUpdatedAt);
 
                 if (Object.keys(changed).length) {
                     if (clientUpdatedAt.diff(serverUpdatedAt) !== 0) {
