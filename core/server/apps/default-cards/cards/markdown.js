@@ -7,7 +7,7 @@ var SimpleDom   = require('simple-dom'),
 module.exports = {
         name: 'card-markdown',
         type: 'dom',
-        render(opts) {
+        render: function (opts) {
             // markdown can be autosaved at any point by the client, even when
             // writing HTML so you can end up with unbalanced HTML elements
             //
