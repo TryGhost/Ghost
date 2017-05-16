@@ -1,8 +1,8 @@
 var SimpleDom   = require('simple-dom'),
     tokenizer   = require('simple-html-tokenizer').tokenize,
-    JSDOM       = require('jsdom').JSDOM,
+    jsdom       = require('jsdom').jsdom,
     markdownConverter  = require('../../../utils/markdown-converter'),
-    html, dom, parser, sanitizedHTML;
+    html, doc, parser, sanitizedHTML;
 
 module.exports = {
         name: 'card-markdown',
@@ -20,11 +20,18 @@ module.exports = {
             // WHATWG DOM/HTML standards including the ability to handle
             // unbalanced HTML in the same way a browser does
             html = markdownConverter.render(opts.payload.markdown || '');
-            dom = new JSDOM(html);
+            doc = jsdom(html, {
+                features: {
+                    FetchExternalResources: false,
+                    ProcessExternalResources: false
+                }
+            });
 
-            // dom.serialize() will return an entire HTML doc including doctype
-            // etc but we only want the rendered + sanitized body HTML
-            sanitizedHTML = dom.window.document.body.innerHTML;
+            // grab the rendered + sanitized body HTML
+            sanitizedHTML = doc.body.innerHTML;
+
+            // free up memory by closing the jsdom "window"
+            doc.defaultView.close();
 
             parser = new SimpleDom.HTMLParser(tokenizer, opts.env.dom, SimpleDom.voidMap);
 
