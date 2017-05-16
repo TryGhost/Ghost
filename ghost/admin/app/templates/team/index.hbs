@@ -80,38 +80,34 @@
     <section class="apps-grid-container gh-active-users" data-test-active-users>
         <span class="apps-grid-title">Active users</span>
         <div class="apps-grid">
-            {{#each sortedActiveUsers key="id" as |user|}}
-                {{!-- For authors only shows users as a list, otherwise show users with links to user page --}}
-                {{#unless session.user.isAuthor}}
+            {{!-- For authors only show their own user --}}
+            {{#if session.user.isAuthor}}
+                {{#with session.user as |user|}}
                     {{#gh-user-active user=user as |component|}}
                         {{partial 'user-list-item'}}
                     {{/gh-user-active}}
-                {{else}}
+                {{/with}}
+            {{else}}
+                {{#each sortedActiveUsers key="id" as |user|}}
                     {{#gh-user-active user=user as |component|}}
-                        <li class="ember-view active user-list-item">{{partial 'user-list-item'}}</li>
+                        {{partial 'user-list-item'}}
                     {{/gh-user-active}}
-                {{/unless}}
-            {{/each}}
+                {{/each}}
+            {{/if}}
         </div>
     </section>
 
     {{/gh-infinite-scroll}}
 
-    {{#if suspendedUsers}}
+    {{!-- Don't show if we have no suspended users or logged in as an author --}}
+    {{#if (and suspendedUsers (not session.user.isAuthor))}}
     <section class="apps-grid-container gh-active-users" data-test-suspended-users>
         <span class="apps-grid-title">Suspended users</span>
         <div class="apps-grid">
             {{#each sortedSuspendedUsers key="id" as |user|}}
-                {{!-- For authors only shows users as a list, otherwise show users with links to user page --}}
-                {{#unless session.user.isAuthor}}
-                    {{#gh-user-active user=user as |component|}}
-                        {{partial 'user-list-item'}}
-                    {{/gh-user-active}}
-                {{else}}
-                    {{#gh-user-active user=user as |component|}}
-                        <li class="ember-view active user-list-item">{{partial 'user-list-item'}}</li>
-                    {{/gh-user-active}}
-                {{/unless}}
+                {{#gh-user-active user=user as |component|}}
+                    {{partial 'user-list-item'}}
+                {{/gh-user-active}}
             {{/each}}
         </div>
     </section>
