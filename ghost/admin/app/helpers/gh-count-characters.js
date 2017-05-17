@@ -16,9 +16,9 @@ export function countCharacters(params) {
     el.className = 'word-count';
 
     if (length > 180) {
-        el.style.color = '#E25440';
+        el.style.color = '#f05230';
     } else {
-        el.style.color = '#9E9D95';
+        el.style.color = '#738a94';
     }
 
     el.innerHTML = 200 - length;
