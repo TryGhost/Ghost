@@ -170,7 +170,15 @@ export default Component.extend({
 
         // loop through urls and generate image markdown
         let images = urls.map((url) => {
-            return `![](${url})`;
+            let filename = url.split('/').pop();
+            let alt = filename;
+
+            // if we have a normal filename.ext, set alt to filename -ext
+            if (filename.lastIndexOf('.') > 0) {
+                alt = filename.slice(0, filename.lastIndexOf('.'));
+            }
+
+            return `![${alt}](${url})`;
         });
         let text = images.join(' ');
 
