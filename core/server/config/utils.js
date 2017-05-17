@@ -1,5 +1,6 @@
 var path = require('path'),
-    _ = require('lodash');
+    _ = require('lodash'),
+    chalk = require('chalk');
 
 exports.isPrivacyDisabled = function isPrivacyDisabled(privacyFlag) {
     if (!this.get('privacy')) {
@@ -65,6 +66,21 @@ exports.getContentPath = function getContentPath(type) {
             return path.join(this.get('paths:contentPath'), 'data/');
         default:
             throw new Error('getContentPath was called with: ' + type);
+    }
+};
+
+/**
+* Check if the URL in config has a protocol and sanitise it if not including a warning that it should be changed
+*/
+exports.sanitiseUrlProtocol = function sanitiseUrlProtocol() {
+    var url = this.get('url');
+
+    if (url.match(/^https?:\/\//i)) {
+        return;
+    } else {
+        this.set('url', 'http://' + url);
+        console.log(chalk.red('Watch out! Your URL in the config should have a protocol! E.g. "http://my-ghost-blog.com"'));
+        console.log(chalk.white('Current URL: ') + chalk.cyan(url));
     }
 };
 
