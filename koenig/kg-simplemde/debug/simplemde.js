@@ -4969,17 +4969,8 @@ function clearCaches(cm) {
   cm.display.lineNumChars = null;
 }
 
-function pageScrollX() {
-  // Work around https://bugs.chromium.org/p/chromium/issues/detail?id=489206
-  // which causes page_Offset and bounding client rects to use
-  // different reference viewports and invalidate our calculations.
-  if (chrome && android) { return -(document.body.getBoundingClientRect().left - parseInt(getComputedStyle(document.body).marginLeft)) }
-  return window.pageXOffset || (document.documentElement || document.body).scrollLeft
-}
-function pageScrollY() {
-  if (chrome && android) { return -(document.body.getBoundingClientRect().top - parseInt(getComputedStyle(document.body).marginTop)) }
-  return window.pageYOffset || (document.documentElement || document.body).scrollTop
-}
+function pageScrollX() { return window.pageXOffset || (document.documentElement || document.body).scrollLeft }
+function pageScrollY() { return window.pageYOffset || (document.documentElement || document.body).scrollTop }
 
 // Converts a {top, bottom, left, right} box from line-local
 // coordinates into another coordinate system. Context may be one of
@@ -5785,12 +5776,12 @@ NativeScrollbars.prototype.update = function (measure) {
 
 NativeScrollbars.prototype.setScrollLeft = function (pos) {
   if (this.horiz.scrollLeft != pos) { this.horiz.scrollLeft = pos; }
-  if (this.disableHoriz) { this.enableZeroWidthBar(this.horiz, this.disableHoriz, "horiz"); }
+  if (this.disableHoriz) { this.enableZeroWidthBar(this.horiz, this.disableHoriz); }
 };
 
 NativeScrollbars.prototype.setScrollTop = function (pos) {
   if (this.vert.scrollTop != pos) { this.vert.scrollTop = pos; }
-  if (this.disableVert) { this.enableZeroWidthBar(this.vert, this.disableVert, "vert"); }
+  if (this.disableVert) { this.enableZeroWidthBar(this.vert, this.disableVert); }
 };
 
 NativeScrollbars.prototype.zeroWidthHack = function () {
@@ -5801,18 +5792,17 @@ NativeScrollbars.prototype.zeroWidthHack = function () {
   this.disableVert = new Delayed;
 };
 
-NativeScrollbars.prototype.enableZeroWidthBar = function (bar, delay, type) {
+NativeScrollbars.prototype.enableZeroWidthBar = function (bar, delay) {
   bar.style.pointerEvents = "auto";
   function maybeDisable() {
     // To find out whether the scrollbar is still visible, we
     // check whether the element under the pixel in the bottom
-    // right corner of the scrollbar box is the scrollbar box
+    // left corner of the scrollbar box is the scrollbar box
     // itself (when the bar is still visible) or its filler child
     // (when the bar is hidden). If it is still visible, we keep
     // it enabled, if it's hidden, we disable pointer events.
     var box = bar.getBoundingClientRect();
-    var elt$$1 = type == "vert" ? document.elementFromPoint(box.right - 1, (box.top + box.bottom) / 2)
-        : document.elementFromPoint((box.right + box.left) / 2, box.bottom - 1);
+    var elt$$1 = document.elementFromPoint(box.left + 1, box.bottom - 1);
     if (elt$$1 != bar) { bar.style.pointerEvents = "none"; }
     else { delay.set(1000, maybeDisable); }
   }
@@ -8240,8 +8230,7 @@ Doc.prototype = createObj(BranchChunk.prototype, {
     var top = Pos(this.first, 0), last = this.first + this.size - 1;
     makeChange(this, {from: top, to: Pos(last, getLine(this, last).text.length),
                       text: this.splitLines(code), origin: "setValue", full: true}, true);
-    if (this.cm) { this.cm.scrollTo(0, 0); }
-    setSelection(this, simpleSelection(top), sel_dontScroll);
+    setSelection(this, simpleSelection(top));
   }),
   replaceRange: function(code, from, to, origin) {
     from = clipPos(this, from);
@@ -9318,17 +9307,15 @@ function leftButtonDown(cm, e, start) {
 // Start a text drag. When it ends, see if any dragging actually
 // happen, and treat as a click if it didn't.
 function leftButtonStartDrag(cm, e, start, modifier) {
-  var display = cm.display, moved = false;
-  var dragEnd = operation(cm, function (e) {
+  var display = cm.display, startTime = +new Date;
+  var dragEnd = operation(cm, function (e2) {
     if (webkit) { display.scroller.draggable = false; }
     cm.state.draggingText = false;
     off(document, "mouseup", dragEnd);
-    off(document, "mousemove", mouseMove);
-    off(display.scroller, "dragstart", dragStart);
     off(display.scroller, "drop", dragEnd);
-    if (!moved) {
-      e_preventDefault(e);
-      if (!modifier)
+    if (Math.abs(e.clientX - e2.clientX) + Math.abs(e.clientY - e2.clientY) < 10) {
+      e_preventDefault(e2);
+      if (!modifier && +new Date - 200 < startTime)
         { extendSelection(cm.doc, start); }
       // Work around unexplainable focus problem in IE9 (#2127) and Chrome (#3081)
       if (webkit || ie && ie_version == 9)
@@ -9337,10 +9324,6 @@ function leftButtonStartDrag(cm, e, start, modifier) {
         { display.input.focus(); }
     }
   });
-  var mouseMove = function(e2) {
-    moved = moved || Math.abs(e.clientX - e2.clientX) + Math.abs(e.clientY - e2.clientY) >= 10;
-  };
-  var dragStart = function () { return moved = true; };
   // Let the drag handler handle this.
   if (webkit) { display.scroller.draggable = true; }
   cm.state.draggingText = dragEnd;
@@ -9348,12 +9331,7 @@ function leftButtonStartDrag(cm, e, start, modifier) {
   // IE's approach to draggable
   if (display.scroller.dragDrop) { display.scroller.dragDrop(); }
   on(document, "mouseup", dragEnd);
-  on(document, "mousemove", mouseMove);
-  on(display.scroller, "dragstart", dragStart);
   on(display.scroller, "drop", dragEnd);
-
-  delayBlurEvent(cm);
-  setTimeout(function () { return display.input.focus(); }, 20);
 }
 
 // Normal selection, as opposed to text dragging.
@@ -10742,41 +10720,36 @@ ContentEditableInput.prototype.showSelection = function (info, takeFocus) {
 };
 
 ContentEditableInput.prototype.showPrimarySelection = function () {
-  var sel = window.getSelection(), cm = this.cm, prim = cm.doc.sel.primary();
-  var from = prim.from(), to = prim.to();
+  var sel = window.getSelection(), prim = this.cm.doc.sel.primary();
+  var curAnchor = domToPos(this.cm, sel.anchorNode, sel.anchorOffset);
+  var curFocus = domToPos(this.cm, sel.focusNode, sel.focusOffset);
+  if (curAnchor && !curAnchor.bad && curFocus && !curFocus.bad &&
+      cmp(minPos(curAnchor, curFocus), prim.from()) == 0 &&
+      cmp(maxPos(curAnchor, curFocus), prim.to()) == 0)
+    { return }
 
-  if (cm.display.viewTo == cm.display.viewFrom || from.line >= cm.display.viewTo || to.line < cm.display.viewFrom) {
+  var start = posToDOM(this.cm, prim.from());
+  var end = posToDOM(this.cm, prim.to());
+  if (!start && !end) {
     sel.removeAllRanges();
     return
   }
 
-  var curAnchor = domToPos(cm, sel.anchorNode, sel.anchorOffset);
-  var curFocus = domToPos(cm, sel.focusNode, sel.focusOffset);
-  if (curAnchor && !curAnchor.bad && curFocus && !curFocus.bad &&
-      cmp(minPos(curAnchor, curFocus), from) == 0 &&
-      cmp(maxPos(curAnchor, curFocus), to) == 0)
-    { return }
-
-  var view = cm.display.view;
-  var start = (from.line >= cm.display.viewFrom && posToDOM(cm, from)) ||
-      {node: view[0].measure.map[2], offset: 0};
-  var end = to.line < cm.display.viewTo && posToDOM(cm, to);
-  if (!end) {
+  var view = this.cm.display.view;
+  var old = sel.rangeCount && sel.getRangeAt(0);
+  if (!start) {
+    start = {node: view[0].measure.map[2], offset: 0};
+  } else if (!end) { // FIXME dangerously hacky
     var measure = view[view.length - 1].measure;
     var map$$1 = measure.maps ? measure.maps[measure.maps.length - 1] : measure.map;
     end = {node: map$$1[map$$1.length - 1], offset: map$$1[map$$1.length - 2] - map$$1[map$$1.length - 3]};
   }
 
-  if (!start || !end) {
-    sel.removeAllRanges();
-    return
-  }
-
-  var old = sel.rangeCount && sel.getRangeAt(0), rng;
+  var rng;
   try { rng = range(start.node, start.offset, end.offset, end.node); }
   catch(e) {} // Our model of the DOM might be outdated, in which case the range we try to set can be impossible
   if (rng) {
-    if (!gecko && cm.state.focused) {
+    if (!gecko && this.cm.state.focused) {
       sel.collapse(start.node, start.offset);
       if (!rng.collapsed) {
         sel.removeAllRanges();
@@ -11651,7 +11624,7 @@ CodeMirror$1.fromTextArea = fromTextArea;
 
 addLegacyProps(CodeMirror$1);
 
-CodeMirror$1.version = "5.25.2";
+CodeMirror$1.version = "5.25.0";
 
 return CodeMirror$1;
 
@@ -11773,6 +11746,7 @@ CodeMirror.defineMode("gfm", function(config, modeConfig) {
   };
 
   var markdownConfig = {
+    underscoresBreakWords: false,
     taskLists: true,
     fencedCodeBlocks: '```',
     strikethrough: true
@@ -11826,6 +11800,10 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
   if (modeCfg.maxBlockquoteDepth === undefined)
     modeCfg.maxBlockquoteDepth = 0;
 
+  // Should underscores in words open/close em/strong?
+  if (modeCfg.underscoresBreakWords === undefined)
+    modeCfg.underscoresBreakWords = true;
+
   // Use `fencedCodeBlocks` to configure fenced code blocks. false to
   // disable, string to specify a precise regexp that the fence should
   // match, and true to allow three or more backticks or tildes (as
@@ -11876,8 +11854,7 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
   ,   setextHeaderRE = /^ *(?:\={1,}|-{1,})\s*$/
   ,   textRE = /^[^#!\[\]*_\\<>` "'(~]+/
   ,   fencedCodeRE = new RegExp("^(" + (modeCfg.fencedCodeBlocks === true ? "~~~+|```+" : modeCfg.fencedCodeBlocks) +
-                                ")[ \\t]*([\\w+#\-]*)")
-  ,   punctuation = /[!\"#$%&\'()*+,\-\.\/:;<=>?@\[\\\]^_`{|}~—]/
+                                ")[ \\t]*([\\w+#\-]*)");
 
   function switchInline(stream, state, f) {
     state.f = state.inline = f;
@@ -12163,6 +12140,9 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
       return getType(state);
     }
 
+    // Get sol() value now, before character is consumed
+    var sol = stream.sol();
+
     var ch = stream.next();
 
     // Matches link titles present on next line
@@ -12172,7 +12152,7 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
       if (ch === '(') {
         matchCh = ')';
       }
-      matchCh = (matchCh+'').replace(/([.?*+^\[\]\\(){}|-])/g, "\\$1");
+      matchCh = (matchCh+'').replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1");
       var regex = '^\\s*(?:[^' + matchCh + '\\\\]+|\\\\\\\\|\\\\.)' + matchCh;
       if (stream.match(new RegExp(regex), true)) {
         return tokenTypes.linkHref;
@@ -12284,34 +12264,41 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
     if (ch === '<' && stream.match(/^\/\w*?>/)) {
       state.md_inside = false;
       return "tag";
-    } else if (ch === "*" || ch === "_") {
-      var len = 1, before = stream.pos == 1 ? " " : stream.string.charAt(stream.pos - 2)
-      while (len < 3 && stream.eat(ch)) len++
-      var after = stream.peek() || " "
-      // See http://spec.commonmark.org/0.27/#emphasis-and-strong-emphasis
-      var leftFlanking = !/\s/.test(after) && (!punctuation.test(after) || /\s/.test(before) || punctuation.test(before))
-      var rightFlanking = !/\s/.test(before) && (!punctuation.test(before) || /\s/.test(after) || punctuation.test(after))
-      var setEm = null, setStrong = null
-      if (len % 2) { // Em
-        if (!state.em && leftFlanking && (ch === "*" || !rightFlanking || punctuation.test(before)))
-          setEm = true
-        else if (state.em == ch && rightFlanking && (ch === "*" || !leftFlanking || punctuation.test(after)))
-          setEm = false
+    }
+
+    var ignoreUnderscore = false;
+    if (!modeCfg.underscoresBreakWords) {
+      if (ch === '_' && stream.peek() !== '_' && stream.match(/(\w)/, false)) {
+        var prevPos = stream.pos - 2;
+        if (prevPos >= 0) {
+          var prevCh = stream.string.charAt(prevPos);
+          if (prevCh !== '_' && prevCh.match(/(\w)/, false)) {
+            ignoreUnderscore = true;
+          }
+        }
       }
-      if (len > 1) { // Strong
-        if (!state.strong && leftFlanking && (ch === "*" || !rightFlanking || punctuation.test(before)))
-          setStrong = true
-        else if (state.strong == ch && rightFlanking && (ch === "*" || !leftFlanking || punctuation.test(after)))
-          setStrong = false
-      }
-      if (setStrong != null || setEm != null) {
-        if (modeCfg.highlightFormatting) state.formatting = setEm == null ? "strong" : setStrong == null ? "em" : "strong em"
-        if (setEm === true) state.em = ch
-        if (setStrong === true) state.strong = ch
-        var t = getType(state)
-        if (setEm === false) state.em = false
-        if (setStrong === false) state.strong = false
-        return t
+    }
+    if (ch === '*' || (ch === '_' && !ignoreUnderscore)) {
+      if (sol && stream.peek() === ' ') {
+        // Do nothing, surrounded by newline and space
+      } else if (state.strong === ch && stream.eat(ch)) { // Remove STRONG
+        if (modeCfg.highlightFormatting) state.formatting = "strong";
+        var t = getType(state);
+        state.strong = false;
+        return t;
+      } else if (!state.strong && stream.eat(ch)) { // Add STRONG
+        state.strong = ch;
+        if (modeCfg.highlightFormatting) state.formatting = "strong";
+        return getType(state);
+      } else if (state.em === ch) { // Remove EM
+        if (modeCfg.highlightFormatting) state.formatting = "em";
+        var t = getType(state);
+        state.em = false;
+        return t;
+      } else if (!state.em) { // Add EM
+        state.em = ch;
+        if (modeCfg.highlightFormatting) state.formatting = "em";
+        return getType(state);
       }
     } else if (ch === ' ') {
       if (stream.eat('*') || stream.eat('_')) { // Probably surrounded by spaces
@@ -17292,7 +17279,7 @@ SimpleMDE.prototype.createToolbar = function(items) {
 				var el = toolbarData[key];
 				if(stat[key]) {
 					el.className += " active";
-				} else if(key != "fullscreen" && key != "side-by-side") {
+				} else if(key != "fullscreen" && key != "side-by-side" && key != "spellcheck") {
 					el.className = el.className.replace(/\s*active\s*/g, "");
 				}
 			})(key);
