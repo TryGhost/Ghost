@@ -3,8 +3,8 @@ import {describe, it} from 'mocha';
 import {countCharacters} from 'ghost-admin/helpers/gh-count-characters';
 
 describe('Unit: Helper: gh-count-characters', function() {
-    let defaultStyle = 'color: rgb(158, 157, 149);';
-    let errorStyle = 'color: rgb(226, 84, 64);';
+    let defaultStyle = 'color: rgb(115, 138, 148);';
+    let errorStyle = 'color: rgb(240, 82, 48);';
 
     it('counts remaining chars', function() {
         let result = countCharacters(['test']);

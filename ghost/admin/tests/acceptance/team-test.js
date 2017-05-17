@@ -469,22 +469,22 @@ describe('Acceptance: Team', function () {
                 await visit('/team/test-1');
 
                 expect(currentURL(), 'currentURL').to.equal('/team/test-1');
-                expect(find('.user-details-top .first-form-group input.user-name').val(), 'current user name').to.equal('Test User');
+                expect(find('.user-details-bottom .first-form-group input.user-name').val(), 'current user name').to.equal('Test User');
 
                 // test empty user name
-                await fillIn('.user-details-top .first-form-group input.user-name', '');
-                await triggerEvent('.user-details-top .first-form-group input.user-name', 'blur');
+                await fillIn('.user-details-bottom .first-form-group input.user-name', '');
+                await triggerEvent('.user-details-bottom .first-form-group input.user-name', 'blur');
 
-                expect(find('.user-details-top .first-form-group').hasClass('error'), 'username input is in error state with blank input').to.be.true;
+                expect(find('.user-details-bottom .first-form-group').hasClass('error'), 'username input is in error state with blank input').to.be.true;
 
                 // test too long user name
-                await fillIn('.user-details-top .first-form-group input.user-name', new Array(160).join('a'));
-                await triggerEvent('.user-details-top .first-form-group input.user-name', 'blur');
+                await fillIn('.user-details-bottom .first-form-group input.user-name', new Array(160).join('a'));
+                await triggerEvent('.user-details-bottom .first-form-group input.user-name', 'blur');
 
-                expect(find('.user-details-top .first-form-group').hasClass('error'), 'username input is in error state with too long input').to.be.true;
+                expect(find('.user-details-bottom .first-form-group').hasClass('error'), 'username input is in error state with too long input').to.be.true;
 
                 // reset name field
-                await fillIn('.user-details-top .first-form-group input.user-name', 'Test User');
+                await fillIn('.user-details-bottom .first-form-group input.user-name', 'Test User');
 
                 expect(find('.user-details-bottom input[name="user"]').val(), 'slug value is default').to.equal('test-1');
 
@@ -501,7 +501,7 @@ describe('Acceptance: Team', function () {
                 await fillIn('.user-details-bottom input[name="email"]', 'thisisnotanemail');
                 await triggerEvent('.user-details-bottom input[name="email"]', 'blur');
 
-                expect(find('.user-details-bottom .form-group:nth-of-type(2)').hasClass('error'), 'email input should be in error state with invalid email').to.be.true;
+                expect(find('.user-details-bottom .form-group:nth-of-type(3)').hasClass('error'), 'email input should be in error state with invalid email').to.be.true;
 
                 await fillIn('.user-details-bottom input[name="email"]', 'test@example.com');
                 await fillIn('#user-location', new Array(160).join('a'));
