@@ -11,6 +11,7 @@ import destroyApp from '../../helpers/destroy-app';
 import Mirage from 'ember-cli-mirage';
 import {invalidateSession, authenticateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import testSelector from 'ember-test-selectors';
+import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 
 describe('Acceptance: Settings - Apps - Slack', function () {
     let application;
@@ -70,6 +71,22 @@ describe('Acceptance: Settings - Apps - Slack', function () {
             expect(find('#slack-settings .error .response').text().trim(), 'inline validation response')
                 .to.equal('The URL must be in a format like https://hooks.slack.com/services/<your personal key>');
 
+            // CMD-S shortcut works
+            await fillIn(testSelector('slack-url-input'), 'https://hooks.slack.com/services/1275958430');
+            await triggerEvent('.gh-app', 'keydown', {
+                keyCode: 83, // s
+                metaKey: ctrlOrCmd === 'command',
+                ctrlKey: ctrlOrCmd === 'ctrl'
+            });
+
+            let [newRequest] = server.pretender.handledRequests.slice(-1);
+            let params = JSON.parse(newRequest.requestBody);
+            let [result] = JSON.parse(params.settings.findBy('key', 'slack').value);
+
+            expect(result.url).to.equal('https://hooks.slack.com/services/1275958430');
+            expect(find('#slack-settings .error .response').text().trim(), 'inline validation response')
+                .to.equal('');
+
             await fillIn('#slack-settings input[name="slack[url]"]', 'https://hooks.slack.com/services/1275958430');
             await click(testSelector('send-notification-button'));
 
@@ -96,6 +113,5 @@ describe('Acceptance: Settings - Apps - Slack', function () {
             expect(lastRequest.url).to.not.match(/\/slack\/test/);
             expect(find('.gh-alert-blue').length, 'check slack alert after api validation error').to.equal(0);
         });
-
     });
 });

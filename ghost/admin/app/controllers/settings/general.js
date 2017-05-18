@@ -81,6 +81,10 @@ export default Controller.extend({
     }),
 
     actions: {
+        save() {
+            this.get('save').perform();
+        },
+
         setTimezone(timezone) {
             this.set('model.activeTimezone', timezone.name);
         },

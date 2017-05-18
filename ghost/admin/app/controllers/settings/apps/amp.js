@@ -27,6 +27,10 @@ export default Controller.extend({
     actions: {
         update(value) {
             this.set('model', value);
+        },
+
+        save() {
+            this.get('save').perform();
         }
     }
 });
