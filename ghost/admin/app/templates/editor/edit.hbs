@@ -50,12 +50,12 @@
         as |markdown|
     }}
         <div class="gh-markdown-editor-pane">
-            {{gh-trim-focus-input model.titleScratch
-                type="text"
+            {{gh-textarea model.titleScratch
                 class="gh-editor-title"
                 placeholder="Your Post Title"
                 tabindex="1"
                 shouldFocus=shouldFocusTitle
+                autoExpand=".gh-markdown-editor-pane"
                 focus-out="updateTitle"
                 update=(action (perform updateTitle))
                 keyEvents=(hash

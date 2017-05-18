@@ -67,6 +67,7 @@
     "ember-concurrency": "0.8.3",
     "ember-data": "2.13.1",
     "ember-data-filter": "1.13.0",
+    "ember-element-resize-detector": "0.1.5",
     "ember-export-application-global": "2.0.0",
     "ember-infinity": "0.2.8",
     "ember-inline-svg": "0.1.11",

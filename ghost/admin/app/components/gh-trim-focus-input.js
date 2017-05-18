@@ -1,5 +1,3 @@
-/* global device */
-import computed from 'ember-computed';
 import GhostInput from 'ghost-admin/components/gh-input';
 
 /**
@@ -12,25 +10,6 @@ const TrimFocusInputComponent = GhostInput.extend({
 
     shouldFocus: true,
 
-    attributeBindings: ['autofocus'],
-
-    autofocus: computed(function () {
-        if (this.get('shouldFocus')) {
-            return (device.ios()) ? false : 'autofocus';
-        }
-
-        return false;
-    }),
-
-    init() {
-        this._super(...arguments);
-    },
-
-    didInsertElement() {
-        this._super(...arguments);
-        this._focus();
-    },
-
     focusOut(event) {
         this._trimInput(event.target.value);
     },
@@ -41,14 +20,6 @@ const TrimFocusInputComponent = GhostInput.extend({
         }
 
         this._processNewValue(value);
-    },
-
-    _focus() {
-        // Until mobile safari has better support
-        // for focusing, we just ignore it
-        if (this.get('shouldFocus') && !device.ios()) {
-            this.element.focus();
-        }
     }
 });
 
