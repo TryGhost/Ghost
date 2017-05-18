@@ -1,6 +1,5 @@
 var path = require('path'),
-    _ = require('lodash'),
-    chalk = require('chalk');
+    _ = require('lodash');
 
 exports.isPrivacyDisabled = function isPrivacyDisabled(privacyFlag) {
     if (!this.get('privacy')) {
@@ -72,15 +71,11 @@ exports.getContentPath = function getContentPath(type) {
 /**
 * Check if the URL in config has a protocol and sanitise it if not including a warning that it should be changed
 */
-exports.sanitiseUrlProtocol = function sanitiseUrlProtocol() {
+exports.checkUrlProtocol = function checkUrlProtocol() {
     var url = this.get('url');
 
-    if (url.match(/^https?:\/\//i)) {
-        return;
-    } else {
-        this.set('url', 'http://' + url);
-        console.log(chalk.red('Watch out! Your URL in the config should have a protocol! E.g. "http://my-ghost-blog.com"'));
-        console.log(chalk.white('Current URL: ') + chalk.cyan(url));
+    if (!url.match(/^https?:\/\//i)) {
+        throw new Error('URL in config must be provided with protocol, eg. "http://my-ghost-blog.com"');
     }
 };
 

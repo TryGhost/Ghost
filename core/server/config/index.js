@@ -51,8 +51,8 @@ _private.loadNconf = function loadNconf(options) {
     /**
      * Check if the URL in config has a protocol
      */
-    nconf.sanitiseUrlProtocol = localUtils.sanitiseUrlProtocol.bind(nconf);
-    nconf.sanitiseUrlProtocol();
+    nconf.checkUrlProtocol = localUtils.checkUrlProtocol.bind(nconf);
+    nconf.checkUrlProtocol();
 
     /**
      * values we have to set manual
