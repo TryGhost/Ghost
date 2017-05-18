@@ -590,28 +590,5 @@
         "with the email address": "con el correo electrónico",
         "Your email address": "Tu correo electrónico",
         "You've successfully subscribed to": "Te has suscrito con éxito a"
-    },
-    "casper": {
-        "A 1-post collection": "Una colección de 1 artículo",
-        "A %-post collection": "Una colección de % artículos",
-        "by this author": "de este autor",
-        "Close": "Cerrar",
-        "Get the latest posts delivered right to your inbox": "Recibe los últimos artículos directamente en tu buzón",
-        "Menu": "Menú",
-        "more posts": "más artículos",
-        "No posts": "No hay artículos",
-        "on": "en",
-        "or subscribe": "¡O suscríbete",
-        "Proudly published with {ghostLink}": "Publicado con {ghostLink}",
-        "Read": "Lee",
-        "Scroll Down": "Bajar",
-        "Share this post": "Comparte",
-        "Subscribe": "Suscríbete",
-        "Subscribe to": "Suscríbete a",
-        "via RSS": "por RSS",
-        "with Feedly!": "con Feedly!",
-        "Your email address": "Tu correo electrónico",
-        "1 post": "1 artículo",
-        "% posts": "% artículos"
     }
 }

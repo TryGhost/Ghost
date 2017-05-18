@@ -9,11 +9,20 @@ var supportedLocales = ['en'],
     logging = require('./logging'),
     errors = require('./errors'),
     jp = require('jsonpath'),
+    path = require('path'),
+    settingsCache = require('./settings/cache'),
 
-    // You can choose the current locale here. E.g.: en = English (default), es = Spanish, etc.
-    // The corresponding translation file (en.json, es.json...) should be at core/server/translations/
+    // For now, you can choose the current locale here. E.g.: en = English (default), es = Spanish, en-US = American English, etc.
+    // The corresponding translation files should be at core/server/translations/en.json, es.json, en-US.json... and
+    // content/themes/mytheme/assets/translations/mytheme_en.json, mytheme_es.json, mytheme_en-US.json...
     // TODO: fetch this dynamically based on overall blog settings (`key = "default_locale"`) in the `settings` table
+    // (settings not available here during Ghost's initialization but inside i18n functions, see TODO comments below
+    // and file core/server/index.js)
     currentLocale = 'en',
+    activeTheme,
+    blosCoreDefault,
+    blosCore,
+    blosTheme,
     blos,
     I18n;
 
@@ -29,6 +38,9 @@ I18n = {
     t: function t(path, bindings) {
         var string = I18n.findString(path),
             msg;
+
+        // TODO: When language will be in settings:
+        // currentLocale = settingsCache.get('default_lang') || 'en';
 
         // If the path returns an array (as in the case with anything that has multiple paragraphs such as emails), then
         // loop through them and return an array of translated/formatted strings. Otherwise, just return the normal
@@ -126,15 +138,56 @@ I18n = {
      *  - Polyfill node.js if it does not have Intl support or support for a particular locale
      */
     init: function init() {
-        // read file for current locale and keep its content in memory
-        blos = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', currentLocale + '.json'));
+        // TODO: When language will be in settings:
+        // currentLocale = settingsCache.get('default_lang') || 'en';
 
-        // if translation file is not valid, you will see an error
-        try {
-            blos = JSON.parse(blos);
-        } catch (err) {
-            blos = undefined;
-            throw err;
+        activeTheme = settingsCache.get('active_theme') || '';
+
+        // read files for current locale and active theme and keep their content in memory
+        if (activeTheme) {
+            // Initialize full internationalization for core and theme
+            // (settings for language and theme available here)
+            if (blosCore === undefined) {
+                blosCoreDefault = {};
+                blosCore = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', currentLocale + '.json'));
+            }
+            if (blosTheme === undefined) {
+                // Compatibility with both old themes and i18n-capable themes.
+                try {
+                    blosTheme = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'content', 'themes', activeTheme, 'assets', 'translations', activeTheme + '_' + currentLocale + '.json'));
+                } catch (err) {
+                    blosTheme = undefined;
+                    if (err.code === 'ENOENT') {
+                        console.log('File ' + activeTheme + '_' + currentLocale + '.json not found!');
+                    } else {
+                        throw err;
+                    }
+                }
+            }
+            // if translation files are not valid, you will see an error
+            try {
+                if (blosTheme === undefined) {
+                    blos = JSON.parse(blosCore);
+                } else {
+                    blos = _.merge(JSON.parse(blosCore), JSON.parse(blosTheme));
+                }
+            } catch (err) {
+                blos = undefined;
+                throw err;
+            }
+        } else {
+            // Initialize default internationalization, just for core now
+            // (settings for language and theme not yet available here)
+            if (blosCoreDefault === undefined) {
+                blosCoreDefault = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', currentLocale + '.json'));
+            }
+            // if translation file is not valid, you will see an error
+            try {
+                blos = JSON.parse(blosCoreDefault);
+            } catch (err) {
+                blos = undefined;
+                throw err;
+            }
         }
 
         if (global.Intl) {
@@ -164,6 +217,8 @@ I18n = {
      * such as core/server/helpers/date.js and core/server/helpers/t_css.js
      */
     locale: function locale() {
+        // TODO: When language will be in settings:
+        // currentLocale = settingsCache.get('default_lang') || 'en';
         return currentLocale;
     }
 };

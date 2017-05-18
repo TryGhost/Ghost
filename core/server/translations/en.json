@@ -611,28 +611,5 @@
         "with the email address": "with the email address",
         "Your email address": "Your email address",
         "You've successfully subscribed to": "You've successfully subscribed to"
-    },
-    "casper": {
-        "A 1-post collection": "A 1-post collection",
-        "A %-post collection": "A %-post collection",
-        "by this author": "by this author",
-        "Close": "Close",
-        "Get the latest posts delivered right to your inbox": "Get the latest posts delivered right to your inbox",
-        "Menu": "Menu",
-        "more posts": "more posts",
-        "No posts": "No posts",
-        "on": "on",
-        "or subscribe": "or subscribe",
-        "Proudly published with {ghostLink}": "Proudly published with {ghostLink}",
-        "Read": "Read",
-        "Scroll Down": "Scroll Down",
-        "Share this post": "Share this post",
-        "Subscribe": "Subscribe",
-        "Subscribe to": "Subscribe to",
-        "via RSS": "via RSS",
-        "with Feedly!": "with Feedly!",
-        "Your email address": "Your email address",
-        "1 post": "1 post",
-        "% posts": "% posts"
     }
 }
