@@ -13,6 +13,7 @@ import {invalidateSession, authenticateSession} from 'ghost-admin/tests/helpers/
 import Mirage from 'ember-cli-mirage';
 import mockThemes from 'ghost-admin/mirage/config/themes';
 import testSelector from 'ember-test-selectors';
+import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 
 describe('Acceptance: Settings - Design', function () {
     let application;
@@ -54,6 +55,7 @@ describe('Acceptance: Settings - Design', function () {
             await visit('/settings/design');
 
             expect(currentPath()).to.equal('settings.design.index');
+            expect(find(testSelector('save-button')).text().trim(), 'save button text').to.equal('Save');
 
             // fixtures contain two nav items, check for three rows as we
             // should have one extra that's blank
@@ -69,7 +71,7 @@ describe('Acceptance: Settings - Design', function () {
             await fillIn('.gh-blognav-url:first input', '/test');
             await triggerEvent('.gh-blognav-url:first input', 'blur');
 
-            await click('.gh-btn-blue');
+            await click(testSelector('save-button'));
 
             let [navSetting] = server.db.settings.where({key: 'navigation'});
 
@@ -86,7 +88,7 @@ describe('Acceptance: Settings - Design', function () {
         it('validates new item correctly on save', async function () {
             await visit('/settings/design');
 
-            await click('.gh-btn-blue');
+            await click(testSelector('save-button'));
 
             expect(
                 find('.gh-blognav-item').length,
@@ -97,7 +99,7 @@ describe('Acceptance: Settings - Design', function () {
             await fillIn('.gh-blognav-url:last input', 'http://invalid domain/');
             await triggerEvent('.gh-blognav-url:last input', 'blur');
 
-            await click('.gh-btn-blue');
+            await click(testSelector('save-button'));
 
             expect(
                 find('.gh-blognav-item').length,
@@ -182,7 +184,12 @@ describe('Acceptance: Settings - Design', function () {
                 'number of nav items after successful remove'
             ).to.equal(3);
 
-            await click('.gh-btn-blue');
+            // CMD-S shortcut works
+            await triggerEvent('.gh-app', 'keydown', {
+                keyCode: 83, // s
+                metaKey: ctrlOrCmd === 'command',
+                ctrlKey: ctrlOrCmd === 'ctrl'
+            });
 
             let [navSetting] = server.db.settings.where({key: 'navigation'});
 
@@ -649,6 +656,5 @@ describe('Acceptance: Settings - Design', function () {
             // restore default mirage handlers
             mockThemes(server);
         });
-
     });
 });

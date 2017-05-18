@@ -52,7 +52,7 @@ export default Controller.extend({
 
     actions: {
         save() {
-            return this.get('save').perform();
+            this.get('save').perform();
         },
 
         updateURL(value) {

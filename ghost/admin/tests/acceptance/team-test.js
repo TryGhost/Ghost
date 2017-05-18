@@ -14,6 +14,7 @@ import {enableGhostOAuth} from '../helpers/configuration';
 import {Response} from 'ember-cli-mirage';
 import testSelector from 'ember-test-selectors';
 import moment from 'moment';
+import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 
 describe('Acceptance: Team', function () {
     let application;
@@ -471,6 +472,8 @@ describe('Acceptance: Team', function () {
                 expect(currentURL(), 'currentURL').to.equal('/team/test-1');
                 expect(find('.user-details-bottom .first-form-group input.user-name').val(), 'current user name').to.equal('Test User');
 
+                expect(find(testSelector('save-button')).text().trim(), 'save button text').to.equal('Save');
+
                 // test empty user name
                 await fillIn('.user-details-bottom .first-form-group input.user-name', '');
                 await triggerEvent('.user-details-bottom .first-form-group input.user-name', 'blur');
@@ -492,6 +495,26 @@ describe('Acceptance: Team', function () {
                 await triggerEvent('.user-details-bottom input[name="user"]', 'blur');
 
                 expect(find('.user-details-bottom input[name="user"]').val(), 'slug value is reset to original upon empty string').to.equal('test-1');
+
+                // Save changes
+                await click(testSelector('save-button'));
+
+                expect(find(testSelector('save-button')).text().trim(), 'save button text').to.equal('Saved');
+
+                // CMD-S shortcut works
+                await fillIn('.user-details-bottom input[name="user"]', 'Test User');
+                await triggerEvent('.gh-app', 'keydown', {
+                    keyCode: 83, // s
+                    metaKey: ctrlOrCmd === 'command',
+                    ctrlKey: ctrlOrCmd === 'ctrl'
+                });
+
+                // we've already saved in this test so there's no on-screen indication
+                // that we've had another save, check the request was fired instead
+                let [lastRequest] = server.pretender.handledRequests.slice(-1);
+                let params = JSON.parse(lastRequest.requestBody);
+
+                expect(params.users[0].name).to.equal('Test User');
 
                 await fillIn('.user-details-bottom input[name="user"]', 'white space');
                 await triggerEvent('.user-details-bottom input[name="user"]', 'blur');
@@ -666,10 +689,10 @@ describe('Acceptance: Team', function () {
                 await click('.button-change-password');
 
                 // hits the endpoint
-                let [lastRequest] = server.pretender.handledRequests.slice(-1);
-                let params = JSON.parse(lastRequest.requestBody);
+                let [newRequest] = server.pretender.handledRequests.slice(-1);
+                params = JSON.parse(newRequest.requestBody);
 
-                expect(lastRequest.url, 'password request URL')
+                expect(newRequest.url, 'password request URL')
                     .to.match(/\/users\/password/);
 
                 // eslint-disable-next-line camelcase

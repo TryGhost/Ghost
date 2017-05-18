@@ -22,7 +22,7 @@
             <div class="form-group for-checkbox">
                 <label for="amp">AMP support for your publications</label>
                 <label class="checkbox" for="amp">
-                    {{one-way-checkbox model id="amp" name="amp" type="checkbox" update=(action "update")}}
+                    {{one-way-checkbox model id="amp" name="amp" type="checkbox" update=(action "update") data-test-amp-checkbox=true}}
                     <span class="input-toggle-component"></span>
                     <p>Enable AMP support</p>
                 </label>

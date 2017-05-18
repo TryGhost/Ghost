@@ -22,7 +22,7 @@
         <form class="app-config-form" id="slack-settings" novalidate="novalidate" {{action "save" on="submit"}}>
             {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="url"}}
                 <label for="url">Webhook URL</label>
-                {{gh-input model.url name="slack[url]" update=(action "updateURL") onenter=(action "save") placeholder="https://hooks.slack.com/services/..."}}
+                {{gh-input model.url name="slack[url]" update=(action "updateURL") onenter=(action "save") placeholder="https://hooks.slack.com/services/..." data-test-slack-url-input=true}}
                 {{#unless model.errors.url}}
                     <p>Set up a new incoming webhook <a href="https://my.slack.com/apps/new/A0F7XDUAZ-incoming-webhooks" target="_blank">here</a>, and grab the URL.</p>
                 {{else}}

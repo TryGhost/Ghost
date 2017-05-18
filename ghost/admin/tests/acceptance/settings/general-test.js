@@ -11,6 +11,7 @@ import $ from 'jquery';
 import startApp from '../../helpers/start-app';
 import destroyApp from '../../helpers/destroy-app';
 import {invalidateSession, authenticateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
+import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 
 describe('Acceptance: Settings - General', function () {
     let application;
@@ -105,6 +106,19 @@ describe('Acceptance: Settings - General', function () {
 
             await click(testSelector('modal-accept-button'));
             expect(find('.fullscreen-modal').length).to.equal(0);
+
+            // CMD-S shortcut works
+            await fillIn(testSelector('title-input'), 'CMD-S Test');
+            await triggerEvent('.gh-app', 'keydown', {
+                keyCode: 83, // s
+                metaKey: ctrlOrCmd === 'command',
+                ctrlKey: ctrlOrCmd === 'ctrl'
+            });
+            // we've already saved in this test so there's no on-screen indication
+            // that we've had another save, check the request was fired instead
+            let [lastRequest] = server.pretender.handledRequests.slice(-1);
+            let params = JSON.parse(lastRequest.requestBody);
+            expect(params.settings.findBy('key', 'title').value).to.equal('CMD-S Test');
         });
 
         it('renders timezone selector correctly', async function () {

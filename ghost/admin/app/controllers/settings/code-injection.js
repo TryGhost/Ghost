@@ -14,5 +14,11 @@ export default Controller.extend({
             notifications.showAPIError(error, {key: 'code-injection.save'});
             throw error;
         }
-    })
+    }),
+
+    actions: {
+        save() {
+            this.get('save').perform();
+        }
+    }
 });

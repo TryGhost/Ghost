@@ -1,19 +1,18 @@
 /* jshint expr:true */
 import {
-  describe,
-  it,
-  beforeEach,
-  afterEach
+    describe,
+    it,
+    beforeEach,
+    afterEach
 } from 'mocha';
 import {expect} from 'chai';
-import $ from 'jquery';
 import startApp from '../../helpers/start-app';
 import destroyApp from '../../helpers/destroy-app';
 import {invalidateSession, authenticateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import testSelector from 'ember-test-selectors';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 
-describe('Acceptance: Settings - Code-Injection', function() {
+describe('Acceptance: Settings - Apps - AMP', function () {
     let application;
 
     beforeEach(function() {
@@ -26,7 +25,7 @@ describe('Acceptance: Settings - Code-Injection', function() {
 
     it('redirects to signin when not authenticated', async function () {
         invalidateSession(application);
-        await visit('/settings/code-injection');
+        await visit('/settings/apps/amp');
 
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
@@ -36,7 +35,7 @@ describe('Acceptance: Settings - Code-Injection', function() {
         server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
-        await visit('/settings/code-injection');
+        await visit('/settings/apps/amp');
 
         expect(currentURL(), 'currentURL').to.equal('/team/test-user');
     });
@@ -46,7 +45,7 @@ describe('Acceptance: Settings - Code-Injection', function() {
         server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
-        await visit('/settings/code-injection');
+        await visit('/settings/apps/amp');
 
         expect(currentURL(), 'currentURL').to.equal('/team');
     });
@@ -59,48 +58,41 @@ describe('Acceptance: Settings - Code-Injection', function() {
             return authenticateSession(application);
         });
 
-        it('it renders, loads and saves editors correctly', async function () {
-            await visit('/settings/code-injection');
+        it('it enables or disables AMP properly and saves it', async function () {
+            await visit('/settings/apps/amp');
 
             // has correct url
-            expect(currentURL(), 'currentURL').to.equal('/settings/code-injection');
+            expect(currentURL(), 'currentURL').to.equal('/settings/apps/amp');
 
-            // has correct page title
-            expect(document.title, 'page title').to.equal('Settings - Code injection - Test Blog');
+            // AMP is enabled by default
+            expect(find(testSelector('amp-checkbox')).prop('checked'), 'AMP checkbox').to.be.true;
 
-            // highlights nav menu
-            expect($('.gh-nav-settings-code-injection').hasClass('active'), 'highlights nav menu item')
-                .to.be.true;
+            await click(testSelector('amp-checkbox'));
 
-            expect(find(testSelector('save-button')).text().trim(), 'save button text').to.equal('Save');
-
-            expect(find('#ghost-head .CodeMirror').length, 'ghost head codemirror element').to.equal(1);
-            expect($('#ghost-head .CodeMirror').hasClass('cm-s-xq-light'), 'ghost head editor theme').to.be.true;
-
-            expect(find('#ghost-foot .CodeMirror').length, 'ghost head codemirror element').to.equal(1);
-            expect($('#ghost-foot .CodeMirror').hasClass('cm-s-xq-light'), 'ghost head editor theme').to.be.true;
+            expect(find(testSelector('amp-checkbox')).prop('checked'), 'AMP checkbox').to.be.false;
 
             await click(testSelector('save-button'));
 
             let [lastRequest] = server.pretender.handledRequests.slice(-1);
             let params = JSON.parse(lastRequest.requestBody);
 
-            expect(params.settings.findBy('key', 'ghost_head').value).to.equal('');
-            expect(find(testSelector('save-button')).text().trim(), 'save button text').to.equal('Saved');
+            expect(params.settings.findBy('key', 'amp').value).to.equal(false);
 
             // CMD-S shortcut works
+            await click(testSelector('amp-checkbox'));
             await triggerEvent('.gh-app', 'keydown', {
                 keyCode: 83, // s
                 metaKey: ctrlOrCmd === 'command',
                 ctrlKey: ctrlOrCmd === 'ctrl'
             });
+
             // we've already saved in this test so there's no on-screen indication
             // that we've had another save, check the request was fired instead
             let [newRequest] = server.pretender.handledRequests.slice(-1);
             params = JSON.parse(newRequest.requestBody);
 
-            expect(params.settings.findBy('key', 'ghost_head').value).to.equal('');
-            expect(find(testSelector('save-button')).text().trim(), 'save button text').to.equal('Saved');
+            expect(find(testSelector('amp-checkbox')).prop('checked'), 'AMP checkbox').to.be.true;
+            expect(params.settings.findBy('key', 'amp').value).to.equal(true);
         });
     });
 });

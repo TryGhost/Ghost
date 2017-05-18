@@ -79,6 +79,10 @@ export default Controller.extend({
     },
 
     actions: {
+        save() {
+            this.get('save').perform();
+        },
+
         addNavItem() {
             let newNavItem = this.get('newNavItem');
 
