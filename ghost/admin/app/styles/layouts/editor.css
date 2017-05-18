@@ -381,3 +381,25 @@
 .editor-toolbar a.disabled:hover {
     border: none;
 }
+
+.editor-toolbar .fa-check {
+    position: relative;
+    vertical-align: bottom;
+}
+.editor-toolbar .fa-check:before {
+    font-size: 14px;
+    position: absolute;
+    line-height: 14px;
+    right: 3px;
+    bottom: 4px;
+}
+
+.editor-toolbar .fa-check:after {
+    content: 'abc';
+    font-family: var(--font-family);
+    position: absolute;
+    left: 4px;
+    font-size: 9px;
+    top: 6px;
+    line-height: 9px;
+}

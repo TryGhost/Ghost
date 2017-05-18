@@ -107,6 +107,14 @@ export default Component.extend({
                 },
                 '|',
                 {
+                    name: 'spellcheck',
+                    action: () => {
+                        this._toggleSpellcheck();
+                    },
+                    className: 'fa fa-check',
+                    title: 'Toggle Spellcheck'
+                },
+                {
                     name: 'guide',
                     action: () => {
                         this.showMarkdownHelp();
@@ -207,11 +215,12 @@ export default Component.extend({
         cm.replaceSelection(text, 'end');
     },
 
-    // mark the split-pane/full-screen buttons active when they're active
+    // mark the split-pane/full-screen/spellcheck buttons active when they're active
     _updateButtonState() {
         if (this._editor) {
             let fullScreenButton = this._editor.toolbarElements.fullscreen;
             let sideBySideButton = this._editor.toolbarElements['side-by-side'];
+            let spellcheckButton = this._editor.toolbarElements.spellcheck;
 
             if (this.get('_isFullScreen')) {
                 fullScreenButton.classList.add('active');
@@ -223,6 +232,12 @@ export default Component.extend({
                 sideBySideButton.classList.add('active');
             } else {
                 sideBySideButton.classList.remove('active');
+            }
+
+            if (this._editor.codemirror.getOption('mode') === 'spell-checker') {
+                spellcheckButton.classList.add('active');
+            } else {
+                spellcheckButton.classList.remove('active');
             }
         }
     },
@@ -311,6 +326,18 @@ export default Component.extend({
     _togglePreview() {
         this.onPreviewToggle(!this._editor.isPreviewActive());
         this._editor.togglePreview();
+    },
+
+    _toggleSpellcheck() {
+        let cm = this._editor.codemirror;
+
+        if (cm.getOption('mode') === 'spell-checker') {
+            cm.setOption('mode', 'markdown');
+        } else {
+            cm.setOption('mode', 'spell-checker');
+        }
+
+        this._updateButtonState();
     },
 
     willDestroyElement() {
