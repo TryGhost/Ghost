@@ -69,6 +69,17 @@ exports.getContentPath = function getContentPath(type) {
 };
 
 /**
+* Check if the URL in config has a protocol and sanitise it if not including a warning that it should be changed
+*/
+exports.checkUrlProtocol = function checkUrlProtocol() {
+    var url = this.get('url');
+
+    if (!url.match(/^https?:\/\//i)) {
+        throw new Error('URL in config must be provided with protocol, eg. "http://my-ghost-blog.com"');
+    }
+};
+
+/**
  * nconf merges all database keys together and this can be confusing
  * e.g. production default database is sqlite, but you override the configuration with mysql
  *
