@@ -285,6 +285,15 @@ fixtures = {
         });
     },
 
+    // Creates posts for extra users
+    createExtraUsersPosts: function (index) {
+        var user = DataGenerator.Content.extraUsers[index || 0];
+        return fixtures.insertPosts([
+            DataGenerator.forKnex.createPost({author_id: user.id}),
+            DataGenerator.forKnex.createPost({author_id: user.id})
+        ]);
+    },
+
     // Creates a client, and access and refresh tokens for user with index or 2 by default
     createTokensForUser: function createTokensForUser(index) {
         return db.knex('clients').insert(DataGenerator.forKnex.clients).then(function () {
@@ -484,6 +493,9 @@ toDoList = {
     users: function createExtraUsers() {
         return fixtures.createExtraUsers();
     },
+    'users-posts': function (index) {
+        return fixtures.createExtraUsersPosts(index);
+    },
     'user-token': function createTokensForUser(index) {
         return fixtures.createTokensForUser(index);
     },
@@ -555,7 +567,9 @@ getFixtureOps = function getFixtureOps(toDos) {
     _.each(toDos, function (value, toDo) {
         var tmp;
 
-        if ((toDo !== 'perms:init' && toDo.indexOf('perms:') !== -1) || toDo.indexOf('user-token:') !== -1) {
+        if ((toDo !== 'perms:init' && toDo.indexOf('perms:') !== -1) ||
+            toDo.indexOf('users-posts:') !== -1 ||
+            toDo.indexOf('user-token:') !== -1) {
             tmp = toDo.split(':');
 
             fixtureOps.push(function addCustomFixture() {
@@ -834,6 +848,7 @@ module.exports = {
     context: {
         internal: {context: {internal: true}},
         external: {context: {external: true}},
+        public: {context: {public: true}},
         owner: {context: {user: DataGenerator.Content.users[0].id}},
         admin: {context: {user: DataGenerator.Content.users[1].id}},
         editor: {context: {user: DataGenerator.Content.users[2].id}},

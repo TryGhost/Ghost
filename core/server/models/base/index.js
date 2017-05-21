@@ -409,6 +409,12 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         itemCollection.applyDefaultAndCustomFilters(options);
 
+        // we always have to fetch a minimum set of attributes, otherwise connected logic won't work e.g. events
+        if (options.columns) {
+            options.columns = _.intersection(options.columns, this.prototype.permittedAttributes());
+            options.columns = _.union(options.columns, this.prototype.defaultColumnsToFetch());
+        }
+
         return itemCollection.fetchAll(options).then(function then(result) {
             if (options.include) {
                 _.each(result.models, function each(item) {

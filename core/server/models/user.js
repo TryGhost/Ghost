@@ -339,14 +339,14 @@ User = ghostBookshelf.Model.extend({
             options.withRelated = _.union(options.withRelated, ['roles']);
             options.include = _.union(options.include, ['roles']);
 
-            query = this.forge(data, {include: options.include});
+            query = this.forge(data, {include: options.include, context: options.context});
 
             query.query('join', 'roles_users', 'users.id', '=', 'roles_users.user_id');
             query.query('join', 'roles', 'roles_users.role_id', '=', 'roles.id');
             query.query('where', 'roles.name', '=', lookupRole);
         } else {
             // We pass include to forge so that toJSON has access
-            query = this.forge(data, {include: options.include});
+            query = this.forge(data, {include: options.include, context: options.context});
         }
 
         if (status === 'active') {
@@ -771,7 +771,8 @@ User = ghostBookshelf.Model.extend({
             }
         });
     },
-    inactiveStates: inactiveStates
+    inactiveStates: inactiveStates,
+    activeStates: activeStates
 });
 
 Users = ghostBookshelf.Collection.extend({

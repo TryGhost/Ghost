@@ -20,10 +20,17 @@ Post = ghostBookshelf.Model.extend({
 
     tableName: 'posts',
 
-    emitChange: function emitChange(event, usePreviousResourceType) {
+    emitChange: function emitChange(event, options) {
+        options = options || {};
+
         var resourceType = this.get('page') ? 'page' : 'post';
-        if (usePreviousResourceType) {
+
+        if (options.useUpdatedResourceType) {
             resourceType = this.updated('page') ? 'page' : 'post';
+        }
+
+        if (options.usePreviousResourceType) {
+            resourceType = this.previous('page') ? 'page' : 'post';
         }
 
         events.emit(resourceType + '.' + event, this);
@@ -87,14 +94,14 @@ Post = ghostBookshelf.Model.extend({
         // Handle added and deleted for post -> page or page -> post
         if (model.resourceTypeChanging) {
             if (model.wasPublished) {
-                model.emitChange('unpublished', true);
+                model.emitChange('unpublished', {useUpdatedResourceType: true});
             }
 
             if (model.wasScheduled) {
-                model.emitChange('unscheduled', true);
+                model.emitChange('unscheduled', {useUpdatedResourceType: true});
             }
 
-            model.emitChange('deleted', true);
+            model.emitChange('deleted', {useUpdatedResourceType: true});
             model.emitChange('added');
 
             if (model.isPublished) {
@@ -140,24 +147,16 @@ Post = ghostBookshelf.Model.extend({
         }
     },
 
+    onDestroyed: function onDestroyed(savedModel) {
+        savedModel.emitChange('deleted', {usePreviousResourceType: true});
+    },
+
+    /**
+     * Will detach all tags.
+     */
     onDestroying: function onDestroying(model, options) {
-        return model.load('tags', options)
-            .then(function (response) {
-                if (!response.related || !response.related('tags') || !response.related('tags').length) {
-                    return;
-                }
-
-                return Promise.mapSeries(response.related('tags').models, function (tag) {
-                    return baseUtils.tagUpdate.detachTagFromPost(model, tag, options)();
-                });
-            })
-            .then(function () {
-                if (model.previous('status') === 'published') {
-                    model.emitChange('unpublished');
-                }
-
-                model.emitChange('deleted');
-            });
+        this.tagsToSave = [];
+        return this.updateTags(model, null, options);
     },
 
     onSaving: function onSaving(model, attr, options) {
@@ -349,7 +348,8 @@ Post = ghostBookshelf.Model.extend({
         }
 
         var newTags = this.tagsToSave,
-            TagModel = ghostBookshelf.model('Tag');
+            TagModel = ghostBookshelf.model('Tag'),
+            self = this;
 
         options = options || {};
 
@@ -385,7 +385,7 @@ Post = ghostBookshelf.Model.extend({
                     return _.some(existingTags, function (existingTag) {
                         return baseUtils.tagUpdate.tagsAreEqual(existingTag, newTag);
                     });
-                }), 'name');
+                }));
 
                 // Remove any tags which don't exist anymore
                 _.each(tagsToRemove, function (tag) {
@@ -396,7 +396,7 @@ Post = ghostBookshelf.Model.extend({
                 _.each(newTags, function (newTag, index) {
                     var tag;
 
-                    if (tagsToCreate.indexOf(newTag.name) > -1) {
+                    if (_.find(tagsToCreate, {name: newTag.name})) {
                         tagOps.push(baseUtils.tagUpdate.createTagThenAttachTagToPost(Post, TagModel, savedModel, newTag, index, options));
                     } else {
                         // try to find a tag on the current post which matches
@@ -420,7 +420,25 @@ Post = ghostBookshelf.Model.extend({
                     }
                 });
 
-                return sequence(tagOps);
+                /**
+                 * These are ALL JSON objects.
+                 * e.g. created tags don't have a slug yet, because `tagsToCreate` is just a list of tags to create
+                 * @TODO:
+                 *   - we could attach these arrays after the query and have tag models available
+                 *   - but right now it's not needed
+                 */
+                self.tagsToRemove = tagsToRemove;
+                self.tagsToCreate = tagsToCreate;
+                self.tagsThatExisted = existingTags;
+
+                return sequence(tagOps)
+                    .then(function () {
+                        /**
+                         * Originally we wanted to trigger events for tag.attached/detached from the model utils,
+                         * but this query runs in a transaction and the event would get triggered to early.
+                         */
+                        savedModel.emitChange('tags-updated');
+                    });
             });
         }
 

@@ -94,7 +94,7 @@ Tag = ghostBookshelf.Model.extend({
         options = this.filterOptions(options, 'findOne');
         data = this.filterData(data, 'findOne');
 
-        var tag = this.forge(data);
+        var tag = this.forge(data, options);
 
         // Add related objects
         options.withRelated = _.union(options.withRelated, options.include);

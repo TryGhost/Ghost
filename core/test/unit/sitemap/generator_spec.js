@@ -6,6 +6,7 @@ var should = require('should'),
 
     // Stuff we are testing
     api = require('../../../server/api'),
+    models = require('../../../server/models'),
     utils = require('../../../server/utils'),
     BaseGenerator = require('../../../server/data/xml/sitemap/base-generator'),
     PostGenerator = require('../../../server/data/xml/sitemap/post-generator'),
@@ -69,6 +70,10 @@ describe('Generators', function () {
             };
         },
         generator;
+
+    before(function () {
+        models.init();
+    });
 
     afterEach(function () {
         sandbox.restore();
@@ -340,7 +345,7 @@ describe('Generators', function () {
         it('does not create a node for invited users', function () {
             var urlNode = generator.createUrlNodeFromDatum(_.extend(makeFakeDatum(100), {
                 cover: 'user-100.jpg',
-                status: 'invited'
+                status: 'inactive'
             }));
 
             urlNode.should.be.false();
