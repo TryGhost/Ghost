@@ -86,7 +86,7 @@
             },
             "spamprevention": {
                 "tooManyAttempts": "Too many attempts.",
-                "noUsername": "No username.",
+                "noUsername": "No username entered.",
                 "noPassword": "No password entered",
                 "tooManySigninAttempts": {
                     "error": "Only {rateSigninAttempts} tries per IP address every {rateSigninPeriod} seconds.",
@@ -349,7 +349,7 @@
                 "unknownSlugType": "Unknown slug type '{type}'."
             },
             "subscribers": {
-                "missingFile": "Please select a csv.",
+                "missingFile": "Please select a CSV.",
                 "invalidFile": "Please select a valid CSV file to import.",
                 "subscriberNotFound": "Subscriber not found.",
                 "subscriberAlreadyExists": "Email address is already subscribed."
