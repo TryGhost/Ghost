@@ -455,9 +455,10 @@ User = ghostBookshelf.Model.extend({
         }
 
         function getAuthorRole() {
-            return ghostBookshelf.model('Role').findOne({name: 'Author'}, _.pick(options, 'transacting')).then(function then(authorRole) {
-                return [authorRole.get('id')];
-            });
+            return ghostBookshelf.model('Role').findOne({name: 'Author'}, _.pick(options, 'transacting'))
+                .then(function then(authorRole) {
+                    return [authorRole.get('id')];
+                });
         }
 
         /**
@@ -466,16 +467,27 @@ User = ghostBookshelf.Model.extend({
          * roles: [] -> no default role (used for owner creation, see fixtures.json)
          * roles: undefined -> default role
          */
-        roles = data.roles || getAuthorRole();
+        roles = data.roles;
         delete data.roles;
 
         return ghostBookshelf.Model.add.call(self, userData, options)
             .then(function then(addedUser) {
                 // Assign the userData to our created user so we can pass it back
                 userData = addedUser;
+            })
+            .then(function () {
+                if (!roles) {
+                    return getAuthorRole();
+                }
+
+                return Promise.resolve(roles);
+            })
+            .then(function (_roles) {
+                roles = _roles;
 
                 return baseUtils.attach(User, userData.id, 'roles', roles, options);
-            }).then(function then() {
+            })
+            .then(function then() {
                 // find and return the added user
                 return self.findOne({id: userData.id, status: 'all'}, options);
             });
