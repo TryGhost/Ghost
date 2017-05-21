@@ -1,6 +1,6 @@
 var should = require('should'),
     sinon = require('sinon'),
-    testUtils = require('../utils/index'),
+    testUtils = require('../../../../utils/index'),
     Promise = require('bluebird'),
     moment = require('moment'),
     assert = require('assert'),
@@ -8,9 +8,9 @@ var should = require('should'),
     validator = require('validator'),
 
     // Stuff we are testing
-    db = require('../../server/data/db'),
-    exporter = require('../../server/data/export'),
-    importer = require('../../server/data/importer'),
+    db = require('../../../../../server/data/db'),
+    exporter = require('../../../../../server/data/export'),
+    importer = require('../../../../../server/data/importer'),
     dataImporter = importer.importers[1],
 
     knex = db.knex,
