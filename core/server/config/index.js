@@ -49,6 +49,12 @@ _private.loadNconf = function loadNconf(options) {
     nconf.makePathsAbsolute(nconf.get('database:connection'), 'database:connection');
 
     /**
+     * Check if the URL in config has a protocol
+     */
+    nconf.checkUrlProtocol = localUtils.checkUrlProtocol.bind(nconf);
+    nconf.checkUrlProtocol();
+
+    /**
      * values we have to set manual
      */
     nconf.set('env', env);
