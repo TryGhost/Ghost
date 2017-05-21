@@ -12,13 +12,12 @@ var supportedLocales = ['en'],
     path = require('path'),
     settingsCache = require('./settings/cache'),
 
-    // For now, you can choose the current locale here. E.g.: en = English (default), es = Spanish, en-US = American English, etc.
-    // The corresponding translation files should be at core/server/translations/en.json, es.json, en-US.json... and
-    // content/themes/mytheme/assets/translations/mytheme_en.json, mytheme_es.json, mytheme_en-US.json...
-    // TODO: fetch this dynamically based on overall blog settings (`key = "default_locale"`) in the `settings` table
-    // (settings not available here during Ghost's initialization but inside i18n functions, see TODO comments below
-    // and file core/server/index.js)
-    currentLocale = 'en',
+    // currentLocale, dynamically based on overall settings (key = "default_locale") in the settings db table
+    // (during Ghost's initialization, settings available inside i18n functions below; see core/server/index.js)
+    // E.g.: en = English (default), es = Spanish, en-US = American English, etc.
+    // The corresponding translation files should be at core/server/translations/en.json, es.json...
+    // and content/themes/mytheme/assets/translations/mytheme_en.json, mytheme_en.css...
+    currentLocale,
     activeTheme,
     blosCoreDefault,
     blosCore,
@@ -39,8 +38,7 @@ I18n = {
         var string = I18n.findString(path),
             msg;
 
-        // TODO: When language will be in settings:
-        // currentLocale = settingsCache.get('default_lang') || 'en';
+        currentLocale = settingsCache.get('default_lang') || 'en';
 
         // If the path returns an array (as in the case with anything that has multiple paragraphs such as emails), then
         // loop through them and return an array of translated/formatted strings. Otherwise, just return the normal
@@ -138,9 +136,7 @@ I18n = {
      *  - Polyfill node.js if it does not have Intl support or support for a particular locale
      */
     init: function init() {
-        // TODO: When language will be in settings:
-        // currentLocale = settingsCache.get('default_lang') || 'en';
-
+        currentLocale = settingsCache.get('default_lang') || 'en';
         activeTheme = settingsCache.get('active_theme') || '';
 
         // read files for current locale and active theme and keep their content in memory
@@ -217,8 +213,7 @@ I18n = {
      * such as core/server/helpers/date.js and core/server/helpers/t_css.js
      */
     locale: function locale() {
-        // TODO: When language will be in settings:
-        // currentLocale = settingsCache.get('default_lang') || 'en';
+        currentLocale = settingsCache.get('default_lang') || 'en';
         return currentLocale;
     }
 };
