@@ -294,5 +294,15 @@ describe('Slack', function () {
                 done();
             });
         });
+
+        it('do not ping if content is imported', function (done) {
+            ping({}, {importing: true}).then(function () {
+                isPostStub.called.should.be.false();
+                urlForSpy.called.should.be.false();
+                settingsAPIStub.called.should.be.false();
+                makeRequestSpy.called.should.be.false();
+                done();
+            }).catch(done);
+        });
     });
 });
