@@ -1,0 +1,581 @@
+{
+    "common": {
+        "mail": {
+            "title": "Ghost a {domain}"
+        },
+        "seeLinkForInstructions": "Regardez ici {link} pour plus d'instructions.",
+        "time": {
+            "seconds": "secondes"
+        },
+        "api": {
+            "authentication": {
+                "sampleBlogDescription": "Des pensées, des histoires et des idées.",
+                "mail": {
+                    "resetPassword": "Mot de passe oublié",
+                    "checkEmailForInstructions": "Consultez votre boîte mail pour obtenir d'autres instructions.",
+                    "passwordChanged": "Mot de passe modifié avec succès.",
+                    "invitationAccepted": "Invitation acceptée.",
+                    "yourNewGhostBlog": "Votre nouveau blog Ghost"
+                }
+            },
+            "mail": {
+                "testGhostEmail": "Test Ghost Email"
+            },
+            "users": {
+                "mail": {
+                    "invitedByName": "{invitedByName} vous à invité à rejoindre {blogName}"
+                }
+            },
+            "clients": {
+                "clientNotFound": "Client non trouvé"
+            }
+        }
+    },
+    "errors": {
+        "apps": {
+            "failedToParseActiveAppsSettings": {
+                "error": "Impossible d'analyser active_apps valeur de réglage: {message}",
+                "context": "Vos applications ne seront pas chargées.",
+                "help": "Veuillez vérifier la table paramètres dans le champ active_apps. Cela devrait ressembler à ceci : [\"app-1\", \"app2\"] (guillements requis)."
+            },
+            "appWillNotBeLoaded": {
+                "error": "L'application ne seront pas chargée.",
+                "help": "Veuillez vérifier le fonctionnement avec le créateur de l'application, ou lisez la documentation de l'application pour plus de détails sur les dépendances de l'application"
+            },
+            "permissionsErrorLoadingApp": {
+                "error": "Erreur lors du chargement de l'application {name}; problème lors de la lecture des permissions : {message}"
+            },
+            "noInstallMethodLoadingApp": {
+                "error": "Erreur lors du chargement de l'application {name}; la méthode install() n'est pas définie."
+            },
+            "noActivateMethodLoadingApp": {
+                "error": "Erreur lors du chargement de l'application {name}; la méthode activate() n'est pas définie."
+            },
+            "accessResourceWithoutPermission": {
+                "error": "L'application \"{name}\" a tenté d'effectuer une action ou accéder à une ressource ({perm}.{method}) sans permissions."
+            },
+            "mustProvideAppName": {
+                "error": "Il faut un nom d'application pour le contexte d'API"
+            },
+            "mustProvideAppPermissions": {
+                "error": "Il faut fournir les permissions de l'application"
+            },
+            "unsafeAppRequire": {
+                "error": "Une application dangereuse requiert : {msg}"
+            }
+        },
+        "middleware": {
+            "api": {
+                "versionMismatch": "La version demandée {requestVersion} ne correspond pas à la version actuelle {currentVersion}."
+            },
+            "auth": {
+                "clientAuthenticationFailed": "L'authentification du client a échouée",
+                "clientCredentialsNotProvided": "Les informations d'identification du client ne sont pas fournies",
+                "clientCredentialsNotValid": "Les informations d'identification du client ne sont pas valides",
+                "forInformationRead": "Pour plus d'information, veuillez consulter ce lien : {url}.",
+                "accessDenied": "Accès refusé.",
+                "pleaseSignIn": "Veuillez vous connecter."
+            },
+            "oauth": {
+                "invalidClient": "Client invalide.",
+                "invalidRefreshToken": "Token invalide.",
+                "refreshTokenExpired": "Token expiré."
+            },
+            "privateblogging": {
+                "wrongPassword": "Mot de passe incorrect"
+            },
+            "spamprevention": {
+                "tooManyAttempts": "Trop de tentatives.",
+                "noUsername": "Aucun nom d'utilisateur entré.",
+                "noPassword": "Aucun mot de passe entré",
+                "tooManySigninAttempts": {
+                    "error": "Uniquement {rateSigninAttempts} essais par adresse IP chaque {rateSigninPeriod} seconds.",
+                    "context": "Trop de tentatives de connexion."
+                },
+                "tryAgainLater": " Veuillez réessayer plus tard.",
+                "waitOneHour": " Veuillez réessayer dans 1 heure.",
+                "noEmail": "Aucun email.",
+                "forgottenPasswordEmail": {
+                    "error": "Uniquement {rfa} mots de passe oubliés par email chaque {rfp} secondes.",
+                    "context": "Forgotten password reset attempt failed"
+                },
+                "forgottenPasswordIp": {
+                    "error": "Uniquement {rfa} essais par adresse IP chaque {rfp} secondes.",
+                    "context": "Tentative de réinitialisation de mot de passe a échoué"
+                }
+            },
+            "themehandler": {
+                "missingTheme": "Le thème actuellement actif \"{theme}\" est manquant.",
+                "invalidTheme": "Le thème actuellement actif \"{theme}\" est invalide."
+            }
+        },
+        "utils": {
+            "parsepackagejson": {
+                "couldNotReadPackage": "Impossible de lire le fichier package.json",
+                "nameOrVersionMissing": "\"name\" ou \"version\" est manquant dans le fichier package.json",
+                "willBeRequired": "Cela sera requis dans le futur. Plus d'information : {url}",
+                "themeFileIsMalformed": "Le fichier package.json est invalide"
+            },
+            "blogIcon": {
+                "error": "Impossible de récupérer les dimensions du fichier icon."
+            }
+        },
+        "config": {
+            "couldNotLocateConfigFile": {
+                "error": "Aucun fichier de configuration trouvé.",
+                "help": "Veuillez vérifier le fichier de déployement config.js ou config.example.js."
+            },
+            "couldNotOpenForReading": {
+                "error": "Impossible d'ouvrir le fichier {file} pour la lecture.",
+                "help": "Veuillez vérifier le fichier de déployement config.js ou config.example.js."
+            },
+            "couldNotOpenForWriting": {
+                "error": "Impossible d'ouvrir le fichier {file} pour l'écriture.",
+                "help": "Veuillez vérifier le fichier de déployement config.js ou config.example.js."
+            },
+            "invalidUrlInConfig": {
+                "error": "URL du site invalide",
+                "description": "L'URL du site dans config.js est invalide.",
+                "help": "Veuillez vérifier la validité de l'URL avant de redémarrer"
+            },
+            "urlCannotContainGhostSubdir": {
+                "error": "Le répertoire ghost n'est pas autorisé",
+                "description": "L'URL de votre site dans config.js ne peut pas contenir un répertoire s'intitulant ghost.",
+                "help": "Veuillez renommer le répertoire avant de redémarrer"
+            },
+            "urlCannotContainPrivateSubdir": {
+                "error": "Répertoire intitulé private n'est pas autorisé",
+                "description": "L'URL de votre site dans config.js ne peut pas contenir un répertoire s'intitulant private.",
+                "help": "Veuillez renommer le répertoire avant de redémarrer"
+            },
+            "dbConfigInvalid": {
+                "error": "Configuration de la base de donnée invalide",
+                "description": "La configuration de votre base de donnée dans config.js est invalide.",
+                "help": "Assurez-vous que la configuration est correcte"
+            },
+            "deprecatedProperty": {
+                "error": "La propriété [{property}] a été dépréciée.",
+                "explanation": "Cette propriété sera supprimée dans une versin future, veuillez modifier votre fichier config.js.",
+                "help": "Veuillez vérifier ici {url} la configuration la plus actuelle."
+            },
+            "invalidServerValues": {
+                "error": "Configuration du serveur invaldie",
+                "description": "Votre configuration (socket, ou host et port) dans le fichier config.js sont invalides.",
+                "help": "Veuillez les fournir avant de redémarrer."
+            }
+        },
+        "general": {
+            "maintenance": "Ghost est actuellement en maintenance, veuillez vérifier dans un moment.",
+            "moreInfo": "\nPlus d'information : {info}",
+            "requiredOnFuture": "Cela sera requis dans une version future. Plus d'information ici : {link}",
+            "internalError": "Quelque chose s'est mal passé."
+        },
+        "httpServer": {
+            "addressInUse": {
+                "error": "(EADDRINUSE) Impossible de démarrer Ghost.",
+                "context": "Le port {port} est déjà utilisé par un autre programme.",
+                "help": "Est-ce que une autre instance de Ghost est déjà active ?"
+            },
+            "otherError": {
+                "error": "(Code: {errorNumber})",
+                "context": "Il y a eu une erreur lors du démarrage du serveur.",
+                "help": "Veuillez utiliser le code d'erreur ci-dessus pour trouver une solution."
+            }
+        },
+        "mail": {
+            "incompleteMessageData": {
+                "error": "Erreur: la donnée du message n'est pas complète."
+            },
+            "failedSendingEmail": {
+                "error": "Erreur: Erreur lors de l'envois de l'email"
+            },
+            "noMailServerAtAddress": {
+                "error": " - aucun serveur de mail trouvé pour {domain}"
+            },
+            "messageNotSent": {
+                "error": "Erreur: Le message n'a pas pu être envoyé"
+            }
+        },
+        "models": {
+            "subscriber": {
+                "notEnoughPermission": "Vous n'avez pas la permission d'effectuer cette action"
+            },
+            "post": {
+                "untitled": "(Untitled)",
+                "valueCannotBeBlank": "La valeur pour {key} ne peut être vide.",
+                "isAlreadyPublished": "Votre publication est déjà publiée, veuillez recharger la page.",
+                "expectedPublishedAtInFuture": "La date doit être au moins {cannotScheduleAPostBeforeInMinutes} minutes dans le futur.",
+                "noUserFound": "Aucun utilisateur n'a été trouvé",
+                "notEnoughPermission": "Vous n'avez pas la permission d'effectuer cette action.",
+                "tagUpdates": {
+                    "error": "Impossible de sauvegarder le tag.",
+                    "help": "Votre publication a été sauvée, mais les tags n'ont pas été mis à jour."
+                }
+            },
+            "role": {
+                "notEnoughPermission": "Vous n'avez pas la permission d'effectuer cette action."
+            },
+            "settings": {
+                "valueCannotBeBlank": "La valeur [settings.key] ne peut pas être vide.",
+                "unableToFindSetting": "Impossible de trouver la valeur à mettre à jour : {key}",
+                "unableToFindDefaultSetting": "Impossible de trouver la valeur pas défaut : {key}"
+            },
+            "user": {
+                "missingContext": "contexte manquant",
+                "onlyOneRolePerUserSupported": "Uniquement un role par utilisateur est supporté actuellement.",
+                "methodDoesNotSupportOwnerRole": "Cette méthode ne supporte pas d'assigner le role propriétaire",
+                "passwordDoesNotComplyLength": "Votre mot de passe doit contenir au moins 8 caractères.",
+                "notEnoughPermission": "You do not have permission to perform this action",
+                "noUserWithEnteredEmailAddr": "There is no user with that email address.",
+                "userIsInactive": "L'utilisateur avec cet email est inactif.",
+                "incorrectPasswordAttempts": "Votre mot de passe est incorrect. <br /> {remaining} essai{s} restant !",
+                "userUpdateError": {
+                    "emailIsAlreadyInUse": "Email déjà utilisé",
+                    "context": "Erreur venant de la modification de l'utilisateur durant l'authentification",
+                    "help": "Vititez et sauvegardez votre profile après l'authentification pour vérifier les problèmes."
+                },
+                "incorrectPassword": "Votre mot de passe est incorrect.",
+                "accountLocked": "Votre compte est bloqué. Veuillez réinitialiser votre mot de passe en cliquant le lien \"Mot de passe oublié ?\" !",
+                "accountSuspended": "Votre compte à été suspendu.",
+                "newPasswordsDoNotMatch": "Vos nouveau mots de passe ne correspondent pas.",
+                "passwordRequiredForOperation": "Mot de passe requis pour cette operation",
+                "expiredToken": "Token expiré",
+                "tokenLocked": "Token bloqué",
+                "invalidToken": "Token invalide",
+                "userNotFound": "Utilisateur non trouvé",
+                "onlyOwnerCanTransferOwnerRole": "Uniquement les propriétaires peuvent transférer le rôle propriétaire",
+                "onlyAdmCanBeAssignedOwnerRole": "Uniquement les administrateurs peuvent ête propriétaires"
+            },
+            "base": {
+                "index": {
+                    "missingContext": "contexte manquant"
+                },
+                "token": {
+                    "noUserFound": "Aucun utilisateur n'a été trouvé",
+                    "tokenNotFound": "Token non trouvé"
+                }
+            },
+            "plugins": {
+                "filter": {
+                    "errorParsing": "Erreur lors de l'analyse du filtre",
+                    "forInformationRead": "Pour plus d'information sur le filtre : {url}"
+                }
+            }
+        },
+        "permissions": {
+            "noActionsMapFound": {
+                "error": "Aucune action map n'a été trouvée, veuillez vérifier que vous avez chargé les permissions chargées dans la base de donnée et executé la méthode permissions.init() avant de pouvoir les utiliser."
+            },
+            "applyStatusRules": {
+                "error": "Vous n'avez pas la permission de récupérer {docName} avec ce statut"
+            },
+            "noPermissionToAction": "Vous n'avez pas la permission d'effectuer cette action"
+        },
+        "update-check": {
+            "checkingForUpdatesFailed": {
+                "error": "La vérification des mises à jour a échoué, votre blog continuera à fonctionner.",
+                "help": "Si vous recevez cette erreur à plusieurs reprises, veuillez demander de l'aide à partir de {url}."
+            },
+            "unableToDecodeUpdateResponse": {
+                "error": "Impossible de décoder la réponse à la mise à jour"
+            }
+        },
+        "api": {
+            "common": {
+                "invalidTokenStructure": "Structure du token invalide"
+            },
+            "authentication": {
+                "setupUnableToRun": "Base de données manquante. Réinitialisez la base de données et réessayez.",
+                "setupMustBeCompleted": "Le programme d'installation doit être complété avant de faire cette demande.",
+                "noEmailProvided": "Aucun email fourni.",
+                "noTokenProvided": "Aucun token fourni.",
+                "noPasswordProvided": "Aucun mot de passe fourni.",
+                "noNameProvided": "Aucun nom fourni.",
+                "invalidEmailReceived": "Le serveur n'a reçu aucun email valide.",
+                "setupAlreadyCompleted": "L'installation à déjà été effectuée.",
+                "unableToSendWelcomeEmail": "Impossible d'envoyer l'email de bienvenue, votre blog continuera à fonctionner.",
+                "checkEmailConfigInstructions": "Veuillez consulter {url} pour obtenir des instructions sur la configuration du mail.",
+                "notLoggedIn": "Vous n'êtes pas connecté.",
+                "notTheBlogOwner": "Vous n'êtes pas le propriétaire du blog.",
+                "invalidTokenTypeHint": "token_type_hint est invalide.",
+                "invalidTokenProvided": "Token invalide",
+                "tokenRevocationFailed": "Révocation du token a échoué"
+            },
+            "clients": {
+                "clientNotFound": "Client non trouvé."
+            },
+            "configuration": {
+                "invalidKey": "Clé invalide"
+            },
+            "db": {
+                "missingFile": "Veuillez sélectionner un fichier de base de donnée à importer.",
+                "invalidFile": "Format non supporté. Veuillez utiliser un des formats suivants : {extensions}",
+                "noPermissionToExportData": "Vous n'avez pas la permission d'exporter les données (no rights).",
+                "noPermissionToImportData": "Vous n'avez pas la permission d'importer les données (no rights)."
+            },
+            "mail": {
+                "noPermissionToSendEmail": "Vous n'avez pas la permission d'envoyer des emails.",
+                "cannotFindCurrentUser": "Impossible de trouver l'utilisateur courant"
+            },
+            "notifications": {
+                "noPermissionToBrowseNotif": "Vous n'avez pas la permission de naviguer dans les notifications.",
+                "noPermissionToAddNotif": "Vous n'avez pas la permission d'ajouter une notification.",
+                "noPermissionToDestroyNotif": "Vous n'avez pas la permission de détruire une notification.",
+                "noPermissionToDismissNotif": "Vous n'avez pas la permission de rejeter une notification.",
+                "notificationDoesNotExist": "Notification n'existe pas."
+            },
+            "posts": {
+                "postNotFound": "Publication non trouvée."
+            },
+            "job": {
+                "notFound": "Job non trouvé.",
+                "publishInThePast": "Veuillez utiliser la publication forcée pour publier une publication dans le passé."
+            },
+            "settings": {
+                "problemFindingSetting": "Problème pour trouver le paramètre : {key}",
+                "accessCoreSettingFromExtReq": "Tentative d'accès au paramètre de base à partir d'une requête externe",
+                "activeThemeSetViaAPI": {
+                    "error": "Tentative de changer active_theme via l'API des settings",
+                    "help": "Veuillez plutôt activer le thème via l'API."
+                },
+                "invalidJsonInLabs": "Erreur: JSON invalide dans les paramètres.labs",
+                "labsColumnCouldNotBeParsed": "La colone avec la clé \"labs\" n'a pas pu ête analysée comme JSON",
+                "tryUpdatingLabs": "Veuillez essayer de modifier les paramètes sur la page labs ou veuillez modifier les valeurs dans la BDD.",
+                "noPermissionToEditSettings": "Vous n'avez pas la permission de modifier ce paramètre.",
+                "noPermissionToReadSettings": "Vous n'avez pas la permission de lire ce paramètre."
+            },
+            "slugs": {
+                "couldNotGenerateSlug": "Impossible de générer le slug.",
+                "unknownSlugType": "Type de slug inconnu : '{type}'."
+            },
+            "subscribers": {
+                "missingFile": "Veuillez sélectionner un CSV.",
+                "invalidFile": "Veuillez sélectionner un fichier CSV pour l'importer.",
+                "subscriberNotFound": "Abonné non trouvé.",
+                "subscriberAlreadyExists": "Cette email est déjà abboné."
+            },
+            "tags": {
+                "tagNotFound": "Tag non trouvé."
+            },
+            "themes": {
+                "noPermissionToBrowseThemes": "Vous n'avez pas la permission de parcourir les thèmes.",
+                "noPermissionToEditThemes": "Vous n'avez pas la permission de modifier les thèmes.",
+                "themeDoesNotExist": "Theme n'existe pas.",
+                "invalidTheme": "Theme n'est pas compatible ou il contient des erreurs.",
+                "missingFile": "Veuillez sélectionner un theme.",
+                "invalidFile": "Veuillez sélectionner un fichier zip valide.",
+                "overrideCasper": "Veuillez renomer votre fichier zip, il ne peut pas s'appeler ainsi et renommer le theme par défaut.",
+                "destroyCasper": "Supprimer le theme pas défaut n'est pas autorisé.",
+                "destroyActive": "Supprimer le theme actif n'est pas autorisé."
+            },
+            "images": {
+                "missingFile": "Veuillez sélectionner une image.",
+                "invalidFile": "Veuillez sélectionner une image valide."
+            },
+            "icons": {
+                "missingFile": "Veuillez sélectionner une icône.",
+                "invalidFile": "Le favicon doit être un fichier .ico or .png entre 60px – 1,000px, sous 100kb.",
+                "couldNotGetSize": "Impossible de récupérer les dimensions de l'icône."
+            },
+            "users": {
+                "userNotFound": "Utilisateur non trouvé.",
+                "cannotChangeOwnRole": "Impossible de modifier votre propre rôle.",
+                "cannotChangeStatus": "Impossible de modifier votre propre statut.",
+                "cannotChangeOwnersRole": "Impossible de modifier le role propriétaire.",
+                "noPermissionToEditUser": "Vous n'avez pas la permission de modifier cet utilisateur.",
+                "noPermissionToAddUser": "Vous n'avez pas la permission d'ajouter cet utilisateur.",
+                "noEmailProvided": "Aucun email fourni.",
+                "userAlreadyRegistered": "Utilisateur est déjà enregistré.",
+                "noPermissionToDestroyUser": "Vous n'avez pas la permission de supprimer cet utilisateur",
+                "noPermissionToChangeUsersPwd": "Vous n'avez pas la permission de modifier le mot de passe de cet utilisateur"
+            },
+            "utils": {
+                "noPermissionToCall": "Vous n'avez pas la permission de {method} {docName}",
+                "noRootKeyProvided": "Aucune clé root ('{docName}') fournie.",
+                "invalidIdProvided": "id invalide fourni."
+            },
+            "invites": {
+                "inviteNotFound": "Invitation non trouvée.",
+                "inviteExpired": "Invite a expirée.",
+                "emailIsRequired": "E-Mail est requise.",
+                "roleIsRequired": "Role est requis",
+                "roleNotFound": "Role non trouvé",
+                "errorSendingEmail": {
+                    "error": "Erreur lors de l'envois de l'email : {message}",
+                    "help": "Veuillez vérifier vos email et réenvoyer l'invitation."
+                },
+                "notAllowedToInviteOwner": "Impossible d'inviter un utilisateur propriétaire",
+                "notAllowedToInvite": "Impossible d'inviter ce rôle."
+            }
+        },
+        "data": {
+            "export": {
+                "errorExportingData": "Erreur lors de l'export des données."
+            },
+            "import": {
+                "dataImporter": {
+                    "unableToFindOwner": "Impossible de trouver le propriétaire"
+                },
+                "index": {
+                    "duplicateEntryFound": "Entrée dupliquée trouvée. Plusieurs valeurs '{value}' trouvées pour {offendingProperty}."
+                },
+                "utils": {
+                    "dataLinkedToUnknownUser": "Essai d'importer des données liées à aucun utilisateur {userToMap}"
+                }
+            },
+            "importer": {
+                "index": {
+                    "couldNotCleanUpFile": {
+                        "error": "L'import n'a pas pu nettoyer le fichier ",
+                        "context": "Votre blog va continuer à fonctionne comme souhaité"
+                    },
+                    "unsupportedRoonExport": "Votre fichier zip ressemble à un ancien Roon export, veuillez exporter à nouveau votre Roon blog et réessayer.",
+                    "noContentToImport": "Le zip ne contient aucune donnée à importer",
+                    "invalidZipStructure": "Structure de fichier zip invalide",
+                    "invalidZipFileBaseDirectory": "Fichier zip invalide: la lecture du répertoire parent a échoué",
+                    "zipContainsMultipleDataFormats": "Fichier zip contient plusieurs types de données. Veuillez les séparer et les importer de manière séparée"
+                },
+                "handlers": {
+                    "json": {
+                        "invalidJsonFormat": "Format JSON invalide, cela était attendu `{ db: [exportedData] }`",
+                        "apiDbImportContent": "API BDD contenu importé",
+                        "checkImportJsonIsValid": "Veuillez vérifier que le fichier est un JSON.",
+                        "failedToParseImportJson": "Impossible d'analyser le fichier JSON."
+                    }
+                }
+            },
+            "xml": {
+                "xmlrpc": {
+                    "pingUpdateFailed": {
+                        "error": "Les services pour les mises à jour sur votre blog ont échoué, votre blog continuera à fonctionner.",
+                        "help": "Si vous recevez cette erreur à plusieurs reprises, veuillez demander de l'aide sur {url}."
+                    }
+                }
+            }
+        },
+        "errors": {
+            "noMessageSupplied": "Aucun message fourni",
+            "error": "\nERREUR:",
+            "warning": "\nAttention:",
+            "anErrorOccurred": "Une erreur s'est produite",
+            "unknownErrorOccurred": "Une erreur inconnue s'est produite",
+            "unknownError": "Erreur inconnue",
+            "unknownApiError": "Erreur API inconnue",
+            "databaseIsReadOnly": "Votre base de donnée est en mode lecture. Des visiteurs peuvent lire votre blog, mais vous ne pouvez pas vous authentifier et ajouter des publications.",
+            "checkDatabase": "Vérifiez votre fichier de base de donnée. Controllez les permissions et le propriétaire du fichier.",
+            "notEnoughPermission": "Vous n'avez pas la permission d'effectuer cette action",
+            "errorWhilstRenderingError": "Erreur lors du rendu de la page d'erreur",
+            "errorTemplateHasError": "Erreur le template a une erreur",
+            "oopsErrorTemplateHasError": "Oops, il semblerait qu'il y a une erreur dans le template d'erreur.",
+            "encounteredError": "Erreur trouvée : ",
+            "whilstTryingToRender": "whilst essaye de rendre une erreur pour la page : ",
+            "renderingErrorPage": "En train de rendre une page d'erreur",
+            "caughtProcessingError": "Ghost a attrapé une erreur de traitement dans le middleware.",
+            "pageNotFound": "Page non trouvée",
+            "resourceNotFound": "Resource non trouvée"
+        }
+    },
+    "warnings": {
+        "index": {
+            "usingDirectMethodToSendEmail": "Ghost essaye d'utiliser la méthode directe pour envoyer des emails. \nC'est recommandé de configurer un service de mail externe.",
+            "unableToSendEmail": "Ghost n'arrive pas à envoyer des emails actuellement."
+        },
+        "helpers": {
+            "helperNotAvailable": "Le helper \\{\\{{helperName}\\}\\} n'est pas disponible.",
+            "flagMustBeEnabled": "Le flag {flagName} labs flag doit être activé pour utiliser le helper \\{\\{{helperName}\\}\\}.",
+            "seeLink": "Regardez ici : {url}",
+            "foreach": {
+                "iteratorNeeded": "Doit passer un itérateur au #foreach"
+            },
+            "get": {
+                "mustBeCalledAsBlock": "Le get helper doit être appelé en block",
+                "invalidResource": "Resource invalide donnée au get helper"
+            },
+            "has": {
+                "invalidAttribute": "Aucun ou un attribut invalide donnée au has helper"
+            },
+            "index": {
+                "missingHelper": "Helper manquant : '{arg}'"
+            },
+            "is": {
+                "invalidAttribute": "Aucun ou un attribut invalide donnée au is helper"
+            },
+            "navigation": {
+                "invalidData": "les données de navigation en sont pas valides",
+                "valuesMustBeDefined": "Toutes les valeurs doivent être définies pour un label, url et courant",
+                "valuesMustBeString": "Valeur invalides, elles doivent être des changes de caractères"
+            },
+            "page_url": {
+                "isDeprecated": "Warning: pageUrl is deprecated, please use page_url instead\nThe helper pageUrl has been replaced with page_url in Ghost 0.4.2, and will be removed entirely in Ghost 0.6\nIn your theme's pagination.hbs file, pageUrl should be renamed to page_url"
+            },
+            "pagination": {
+                "invalidData": "pagination data is not an object or is a function",
+                "valuesMustBeDefined": "All values must be defined for page, pages, limit and total",
+                "nextPrevValuesMustBeNumeric": "Invalid value, Next/Prev must be a number",
+                "valuesMustBeNumeric": "Invalid value, check page, pages, limit and total are numbers"
+            },
+            "plural": {
+                "valuesMustBeDefined": "Toutes les valeurs doivent être définies pour une valeur nule, singulier et pluriel"
+            },
+            "img_url": {
+                "attrIsRequired": "Attribut requis ex: \\{\\{img_url feature_image\\}\\}"
+            },
+            "template": {
+                "templateNotFound": "Template {name} non trouvé."
+            }
+        }
+    },
+    "notices": {
+        "controllers": {
+            "newVersionAvailable": "Ghost {version} est disponible ! Damn. {link} pour faire la mise à jour."
+        },
+        "index": {
+            "welcomeToGhost": "Ghost vous souhaite la bienvenue.",
+            "youAreRunningUnderEnvironment": "L'environement est le suivant : <strong> {environment} </strong>.",
+            "yourURLisSetTo": "Votre URL est définie comme suit <strong> {url} </strong>."
+        },
+        "httpServer": {
+            "cantTouchThis": "Impossible de toucher cela",
+            "ghostIsRunning": "Ghost est entrain de fonctionner...",
+            "yourBlogIsAvailableOn": "\nVotre blog est disponible ici {url}",
+            "ctrlCToShutDown": "\nCtrl+C pour éteindre",
+            "ghostIsRunningIn": "Ghost fonctionne en {env}...",
+            "listeningOn": "\nEcoute sur",
+            "urlConfiguredAs": "\nURL est configurée comme suit : {url}",
+            "ghostHasShutdown": "\nGhost s'est éteind",
+            "yourBlogIsNowOffline": "\nVotre blog est hors-ligne.",
+            "ghostWasRunningFor": "\nGhost a fonctionné durant",
+            "ghostIsClosingConnections": "Ghost est entrain de fermer les connexions"
+        },
+        "mail": {
+            "messageSent": "Message envoyé. Veuillez vérifier votre boîte mail et les spams!"
+        },
+        "api": {
+            "users": {
+                "pwdChangedSuccessfully": "Mot de passe modifié avec succès."
+            }
+        },
+        "data": {
+            "fixtures": {
+                "canSafelyDelete": "<!-- Vous pouvez supprimer cette ligne, si votre theme n'utilise pas jQuery. -->\n",
+                "jQueryRemoved": "jQuery a été supprimé du Ghost core et est maintenant chargé par le CDN de la fondation jQuery.",
+                "canBeChanged": "Cela peut ête modifié dans la section <strong>Code Injection</strong> dans les paramètres."
+            },
+            "utils": {
+                "index": {
+                    "noSupportForDatabase": "Aucun support pour le client de base de donnée suivant {client}"
+                }
+            },
+            "validation": {
+                "index": {
+                    "valueCannotBeBlank": "La valeur dans le champ [{tableName}.{columnKey}] ne peut ête vide.",
+                    "valueMustBeBoolean": "La valeur dans le champ [settings.key] doit être true, false, 0 ou 1",
+                    "valueExceedsMaxLength": "La valeur dans le champ [{tableName}.{columnKey}] excède la longeur maximale de {maxlength} caractères.",
+                    "valueIsNotInteger": "La valeur dans le champ [{tableName}.{columnKey}] n'est pas un entier.",
+                    "themeCannotBeActivated": "{themeName} ne peut pas être activé car il n'est pas installé.",
+                    "validationFailed": "La validation ({validationName}) a échouée à cause de {key}"
+                }
+            }
+        }
+    }
+}
