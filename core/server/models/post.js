@@ -250,8 +250,10 @@ Post = ghostBookshelf.Model.extend({
         }
 
         // disabling sanitization until we can implement a better version
-        title = this.get('title') || i18n.t('errors.models.post.untitled');
-        this.set('title', _.toString(title).trim());
+        if (!options.importing) {
+            title = this.get('title') || i18n.t('errors.models.post.untitled');
+            this.set('title', _.toString(title).trim());
+        }
 
         // ### Business logic for published_at and published_by
         // If the current status is 'published' and published_at is not set, set it to now
