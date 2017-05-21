@@ -2,6 +2,7 @@ var _              = require('lodash'),
     Promise        = require('bluebird'),
     bcrypt         = require('bcryptjs'),
     validator      = require('validator'),
+    ObjectId      = require('bson-objectid'),
     ghostBookshelf = require('./base'),
     baseUtils      = require('./base/utils'),
     errors         = require('../errors'),
@@ -485,6 +486,24 @@ User = ghostBookshelf.Model.extend({
             .then(function (_roles) {
                 roles = _roles;
 
+                // CASE: it is possible to add roles by name, by id or by object
+                if (_.isString(roles[0]) && !ObjectId.isValid(roles[0])) {
+                    return Promise.map(roles, function (roleName) {
+                        return ghostBookshelf.model('Role').findOne({
+                            name: roleName
+                        }, options);
+                    }).then(function (roleModels) {
+                        roles = [];
+
+                        _.each(roleModels, function (roleModel) {
+                            roles.push(roleModel.id);
+                        });
+                    });
+                }
+
+                return Promise.resolve();
+            })
+            .then(function () {
                 return baseUtils.attach(User, userData.id, 'roles', roles, options);
             })
             .then(function then() {
