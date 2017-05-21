@@ -628,8 +628,6 @@ describe('Importer', function () {
     });
 
     describe('DataImporter', function () {
-        var importer = require('../../server/data/import');
-
         it('has the correct interface', function () {
             DataImporter.type.should.eql('data');
             DataImporter.preProcess.should.be.instanceof(Function);
@@ -644,16 +642,6 @@ describe('Importer', function () {
             inputData.data.data.posts[0].should.eql(outputData.data.data.posts[0]);
             inputData.data.data.tags[0].should.eql(outputData.data.data.tags[0]);
             inputData.data.data.users[0].should.eql(outputData.data.data.users[0]);
-        });
-
-        it('does import the data correctly', function () {
-            var inputData = require('../utils/fixtures/import/import-data-1.json'),
-                importerSpy = sandbox.stub(importer, 'doImport').returns(Promise.resolve());
-
-            DataImporter.doImport(inputData.data).then(function () {
-                importerSpy.calledOnce.should.be.true();
-                importerSpy.calledWith(inputData.data).should.be.true();
-            });
         });
     });
 
