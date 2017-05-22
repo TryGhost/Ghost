@@ -9,7 +9,6 @@ var https           = require('https'),
     api             = require('../../api/settings'),
     i18n            = require('../../i18n'),
     schema          = require('../schema').checks,
-    options,
     req,
     slackData = {};
 
@@ -44,8 +43,15 @@ function makeRequest(reqOptions, reqPayload) {
     req.end();
 }
 
-function ping(post) {
-    var message;
+function ping(post, options) {
+    options = options || {};
+
+    var message, reqOptions;
+
+    // CASE: do not ping slack if we import a database
+    if (options.importing) {
+        return Promise.resolve();
+    }
 
     // If this is a post, we want to send the link of the post
     if (schema.isPost(post)) {
@@ -79,20 +85,20 @@ function ping(post) {
             };
 
             // fill the options for https request
-            options = url.parse(slackSettings.url);
-            options.method = 'POST';
-            options.headers = {'Content-type': 'application/json'};
+            reqOptions = url.parse(slackSettings.url);
+            reqOptions.method = 'POST';
+            reqOptions.headers = {'Content-type': 'application/json'};
 
             // with all the data we have, we're doing the request now
-            makeRequest(options, slackData);
+            makeRequest(reqOptions, slackData);
         } else {
             return;
         }
     });
 }
 
-function listener(model) {
-    ping(model.toJSON());
+function listener(model, options) {
+    ping(model.toJSON(), options);
 }
 
 function testPing() {
