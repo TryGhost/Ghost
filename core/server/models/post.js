@@ -20,13 +20,16 @@ Post = ghostBookshelf.Model.extend({
 
     tableName: 'posts',
 
-    emitChange: function emitChange(event, usePreviousResourceType) {
+    emitChange: function emitChange(event, options) {
+        options = options || {};
+
         var resourceType = this.get('page') ? 'page' : 'post';
-        if (usePreviousResourceType) {
+
+        if (options.usePreviousResourceType) {
             resourceType = this.updated('page') ? 'page' : 'post';
         }
 
-        events.emit(resourceType + '.' + event, this);
+        events.emit(resourceType + '.' + event, this, options);
     },
 
     defaults: function defaults() {
@@ -47,7 +50,7 @@ Post = ghostBookshelf.Model.extend({
         model.emitChange('added');
 
         if (['published', 'scheduled'].indexOf(status) !== -1) {
-            model.emitChange(status);
+            model.emitChange(status, {importing: options.importing});
         }
 
         return this.updateTags(model, response, options);
@@ -87,14 +90,14 @@ Post = ghostBookshelf.Model.extend({
         // Handle added and deleted for post -> page or page -> post
         if (model.resourceTypeChanging) {
             if (model.wasPublished) {
-                model.emitChange('unpublished', true);
+                model.emitChange('unpublished', {usePreviousResourceType: true});
             }
 
             if (model.wasScheduled) {
-                model.emitChange('unscheduled', true);
+                model.emitChange('unscheduled', {usePreviousResourceType: true});
             }
 
-            model.emitChange('deleted', true);
+            model.emitChange('deleted', {usePreviousResourceType: true});
             model.emitChange('added');
 
             if (model.isPublished) {
