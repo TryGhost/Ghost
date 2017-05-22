@@ -9,6 +9,7 @@ var should = require('should'),
 
     // Stuff we are testing
     db = require('../../../../../server/data/db'),
+    models = require('../../../../../server/models'),
     exporter = require('../../../../../server/data/export'),
     importer = require('../../../../../server/data/importer'),
     dataImporter = importer.importers[1],
@@ -489,6 +490,53 @@ describe('Import', function () {
                 assert.equal(validator.isUUID(importedData[1].uuid), true, 'Empty UUID NOT fixed');
                 assert.equal(validator.isUUID(importedData[2].uuid), true, 'Missing UUID NOT fixed');
                 assert.equal(validator.isUUID(importedData[3].uuid), true, 'Malformed UUID NOT fixed');
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe('004: order', function () {
+        beforeEach(testUtils.setup('roles', 'owner', 'settings'));
+
+        it('ensure post tag order is correct', function (done) {
+            var exportData;
+
+            testUtils.fixtures.loadExportFixture('export-004').then(function (exported) {
+                exportData = exported;
+                return dataImporter.doImport(exportData);
+            }).then(function () {
+                // Grab the data from tables
+                return Promise.all([
+                    models.Post.findAll({include: ['tags']}),
+                    models.Tag.findAll()
+                ]);
+            }).then(function (importedData) {
+                should.exist(importedData);
+
+                importedData.length.should.equal(2, 'Did not get data successfully');
+
+                var posts = importedData[0],
+                    tags = importedData[1];
+
+                // test posts
+                posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
+                posts.models[0].toJSON().tags.length.should.eql(1);
+                posts.models[0].toJSON().tags[0].slug.should.eql(exportData.data.tags[0].slug);
+
+                // has a specific sort_order
+                posts.models[1].toJSON().tags.length.should.eql(2);
+                posts.models[1].toJSON().tags[0].slug.should.eql(exportData.data.tags[1].slug);
+                posts.models[1].toJSON().tags[1].slug.should.eql(exportData.data.tags[0].slug);
+
+                // sort_order property is missing (order depends on the posts_tags entries)
+                posts.models[2].toJSON().tags.length.should.eql(3);
+                posts.models[2].toJSON().tags[0].slug.should.eql(exportData.data.tags[2].slug);
+                posts.models[2].toJSON().tags[1].slug.should.eql(exportData.data.tags[0].slug);
+                posts.models[2].toJSON().tags[2].slug.should.eql(exportData.data.tags[1].slug);
+
+                // test tags
+                tags.length.should.equal(exportData.data.tags.length, 'no new tags');
+
                 done();
             }).catch(done);
         });
