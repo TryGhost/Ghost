@@ -671,14 +671,14 @@ var overrides      = require('./core/server/overrides'),
         // `bower` does have some quirks, such as not running as root. If you have problems please try running
         // `grunt init --verbose` to see if there are any errors.
         grunt.registerTask('init', 'Prepare the project for development',
-            ['update_submodules:pinned', 'subgrunt:init', 'clean:tmp', 'default']);
+            ['update_submodules:pinned', 'subgrunt:init', 'clean:built', 'clean:tmp', 'default']);
 
         // ### Build assets
         // `grunt build` - will build client assets (without updating the submodule)
         //
         // This task is identical to `grunt init`, except it does not build client dependencies
         grunt.registerTask('build', 'Build client app',
-            ['subgrunt:init', 'clean:tmp', 'default']);
+            ['subgrunt:init', 'clean:built', 'clean:tmp', 'default']);
 
         // ### Default asset build
         // `grunt` - default grunt task
