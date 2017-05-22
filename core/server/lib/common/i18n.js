@@ -19,9 +19,6 @@ var supportedLocales = ['en'],
     // and content/themes/mytheme/assets/translations/mytheme_en.json, mytheme_en.css...
     currentLocale,
     activeTheme,
-    blosCoreDefault,
-    blosCore,
-    blosTheme,
     blos,
     I18n;
 
@@ -136,50 +133,54 @@ I18n = {
      *  - Polyfill node.js if it does not have Intl support or support for a particular locale
      */
     init: function init() {
+        var blosCore, blosTheme, hasBuiltInLocaleData, IntlPolyfill;
+
         currentLocale = settingsCache.get('default_lang') || 'en';
         activeTheme = settingsCache.get('active_theme') || '';
 
         // read files for current locale and active theme and keep their content in memory
         if (activeTheme) {
             // Initialize full internationalization for core and theme
-            // (settings for language and theme available here)
-            if (blosCore === undefined) {
-                blosCoreDefault = {};
+            // (settings for language and theme available here;
+            // default English file read before, it could be used)
+            if (blos === undefined || currentLocale !== 'en') {
                 blosCore = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', currentLocale + '.json'));
-            }
-            if (blosTheme === undefined) {
-                // Compatibility with both old themes and i18n-capable themes.
+                // if translation file is not valid, you will see an error
                 try {
-                    blosTheme = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'content', 'themes', activeTheme, 'assets', 'translations', activeTheme + '_' + currentLocale + '.json'));
+                    blos = JSON.parse(blosCore);
+                } catch (err) {
+                    blos = undefined;
+                    throw err;
+                }
+            }
+            // Compatibility with both old themes and i18n-capable themes.
+            try {
+                blosTheme = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'content', 'themes', activeTheme, 'assets', 'translations', activeTheme + '_' + currentLocale + '.json'));
+            } catch (err) {
+                blosTheme = undefined;
+                if (err.code === 'ENOENT') {
+                    console.log('File ' + activeTheme + '_' + currentLocale + '.json not found!');
+                } else {
+                    throw err;
+                }
+            }
+            if (blosTheme !== undefined) {
+                // if translation file is not valid, you will see an error
+                try {
+                    blosTheme = JSON.parse(blosTheme);
                 } catch (err) {
                     blosTheme = undefined;
-                    if (err.code === 'ENOENT') {
-                        console.log('File ' + activeTheme + '_' + currentLocale + '.json not found!');
-                    } else {
-                        throw err;
-                    }
+                    throw err;
                 }
-            }
-            // if translation files are not valid, you will see an error
-            try {
-                if (blosTheme === undefined) {
-                    blos = JSON.parse(blosCore);
-                } else {
-                    blos = _.merge(JSON.parse(blosCore), JSON.parse(blosTheme));
-                }
-            } catch (err) {
-                blos = undefined;
-                throw err;
+                blos = _.merge(blos, blosTheme);
             }
         } else {
             // Initialize default internationalization, just for core now
             // (settings for language and theme not yet available here)
-            if (blosCoreDefault === undefined) {
-                blosCoreDefault = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', currentLocale + '.json'));
-            }
+            blosCore = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', currentLocale + '.json'));
             // if translation file is not valid, you will see an error
             try {
-                blos = JSON.parse(blosCoreDefault);
+                blos = JSON.parse(blosCore);
             } catch (err) {
                 blos = undefined;
                 throw err;
@@ -188,9 +189,6 @@ I18n = {
 
         if (global.Intl) {
             // Determine if the built-in `Intl` has the locale data we need.
-            var hasBuiltInLocaleData,
-                IntlPolyfill;
-
             hasBuiltInLocaleData = supportedLocales.every(function (locale) {
                 return Intl.NumberFormat.supportedLocalesOf(locale)[0] === locale &&
                     Intl.DateTimeFormat.supportedLocalesOf(locale)[0] === locale;
