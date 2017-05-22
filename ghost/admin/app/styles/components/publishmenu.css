@@ -24,6 +24,8 @@
 .gh-publishmenu {
     position: relative;
     z-index: 1000;
+    display: flex;
+    align-items: center;
 }
 
 .gh-publishmenu-dropdown {
@@ -62,7 +64,7 @@
 }
 
 .gh-publishmenu-content {
-    margin: 20px 0;
+    margin: 17px 0;
     border-top: var(--lightgrey) 1px solid;
     border-bottom: var(--lightgrey) 1px solid;
 }

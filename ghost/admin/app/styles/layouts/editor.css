@@ -58,7 +58,7 @@
 .post-settings {
     position: relative;
     display: inline-block;
-    padding: 15px;
+    padding: 15px 0 15px 15px;
     color: var(--midgrey);
     transition: all 0.15s ease-out 0s;
     line-height: 0;
@@ -76,7 +76,7 @@
     fill: var(--midgrey);
 }
 
-.post-settings svg:hover,
+.post-settings:hover svg,
 .post-settings.active svg {
     fill: var(--darkgrey);
 }
@@ -171,7 +171,7 @@
     padding: 0;
     padding-left: 15px;
     background: #fff;
-    border-bottom: 1px solid color(var(--lightgrey) l(+4%));
+    border-bottom: var(--lightgrey) 1px solid;
     z-index: 100;
 }
 
@@ -186,6 +186,7 @@
 .gh-editor-status {
     color: var(--midgrey);
     font-weight: 300;
+    font-size: 1.3rem;
 }
 
 .gh-editor-container {
@@ -204,14 +205,16 @@
 }
 
 .gh-editor-title {
+    display: block;
     width: 100%;
-    min-height: 1.3em;
+    min-height: auto;
     margin-bottom: 2vw;
     border: none;
     letter-spacing: 0.8px;
     font-weight: bold;
     font-size: 3.2rem;
-    line-height: 1.3em;
+    line-height: 1.15em;
+    color: var(--darkgrey);
 
 }
 
@@ -251,10 +254,16 @@
     padding: 10vw 4vw;
 }
 
+.gh-markdown-editor-side-by-side .gh-markdown-editor-pane,
+.gh-markdown-editor-side-by-side .gh-markdown-editor-preview {
+    padding: 4vw;
+}
+
 .gh-markdown-editor-side-by-side {
     display: flex;
     flex-direction: row;
     overflow-y: hidden;
+    margin-top: 43px;
 }
 
 .gh-markdown-editor-side-by-side .gh-markdown-editor-pane,
@@ -265,7 +274,11 @@
 }
 
 .gh-markdown-editor-preview {
-    border-left: 1px solid color(var(--lightgrey) l(+4%));
+    border-left: var(--lightgrey) 1px solid;
+}
+
+.gh-markdown-editor-preview a {
+    text-decoration: underline;
 }
 
 .gh-editor-footer {
@@ -274,7 +287,11 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    border-top: 1px solid color(var(--lightgrey) l(+4%));
+    border-top: var(--lightgrey) 1px solid;
+}
+
+@media (max-width: 800px) {
+    .gh-editor-footer { display: none; }
 }
 
 .gh-editor-footer .editor-toolbar {
@@ -311,12 +328,30 @@
 .gh-editor .gh-editor-title,
 .gh-editor .CodeMirror-wrap {
     max-width: 760px;
-    margin: 0 auto;
+    margin-left: auto;
+    margin-right: auto;
     border: none;
 }
 
 .gh-editor .CodeMirror pre {
     padding: 0;
+    font-family: “Consolas”, monaco, monospace;
+    font-size: 1.6rem;
+    color: color(var(--darkgrey) l(+5%));
+}
+
+@media (max-width: 960px) {
+    .gh-editor .CodeMirror pre {
+        font-size: 1.4rem;
+    }
+}
+
+.gh-editor .CodeMirror .cm-strong {
+    color: var(--darkgrey);
+}
+
+.gh-editor .CodeMirror .cm-url {
+    text-decoration: underline;
 }
 
 .gh-editor .editor-preview {
@@ -324,6 +359,17 @@
     margin-top: 4px;
     padding: 0;
     background-color: #fff;
+}
+
+.gh-editor .editor-preview,
+.gh-markdown-editor-preview {
+    font-family: Georgia, Times, Serif;
+    font-size: 1.9rem;
+    color: color(var(--darkgrey) l(+5%));
+}
+
+.gh-markdown-editor-preview-title {
+    margin-bottom: 2vw;
 }
 
 .gh-editor-drop-target,
@@ -402,4 +448,32 @@
     font-size: 9px;
     top: 6px;
     line-height: 9px;
+}
+
+.editor-statusbar .words:before {
+    content: "Words: ";
+}
+
+.CodeMirror .CodeMirror-code .cm-link {
+    color: var(--blue);
+    text-decoration: none;
+}
+
+.editor-statusbar {
+    padding: 8px 15px;
+    color: var(--midgrey);
+}
+
+.editor-toolbar i.separator {
+    border-left: color(var(--lightgrey) l(-3%)) 1px solid;
+    border-right: none;
+}
+
+.editor-toolbar a.active,
+.editor-toolbar a:hover {
+    border-color: color(var(--lightgrey) l(-5%));
+}
+
+.CodeMirror .CodeMirror-selected {
+    background: color(var(--blue) lightness(+30%));
 }
