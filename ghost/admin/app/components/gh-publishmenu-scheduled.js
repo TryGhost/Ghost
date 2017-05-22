@@ -17,6 +17,10 @@ export default Component.extend({
     timeToPublished: computed('post.publishedAtUTC', 'clock.second', function () {
         let publishedAtUTC = this.get('post.publishedAtUTC');
 
+        if (!publishedAtUTC) {
+            return null;
+        }
+
         this.get('clock.second');
 
         return publishedAtUTC.toNow(true);
