@@ -107,7 +107,7 @@ User = ghostBookshelf.Model.extend({
 
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 
-        if (self.hasChanged('email')) {
+        if (self.hasChanged('email') && self.get('email')) {
             tasks.gravatar = (function lookUpGravatar() {
                 return gravatar.lookup({
                     email: self.get('email')
