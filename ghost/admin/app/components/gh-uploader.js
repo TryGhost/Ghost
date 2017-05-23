@@ -5,6 +5,7 @@ import {isEmpty} from 'ember-utils';
 import {task, all} from 'ember-concurrency';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import EmberObject from 'ember-object';
+import run from 'ember-runloop';
 
 // TODO: this is designed to be a more re-usable/composable upload component, it
 // should be able to replace the duplicated upload logic in:
@@ -36,11 +37,10 @@ export default Component.extend({
     tagName: '',
 
     ajax: injectService(),
-    notifications: injectService(),
 
     // Public attributes
     accept: '',
-    extensions: null,
+    extensions: '',
     files: null,
     paramName: 'uploadimage', // TODO: is this the best default?
     uploadUrl: null,
@@ -55,7 +55,6 @@ export default Component.extend({
     // Private
     _defaultUploadUrl: '/uploads/',
     _files: null,
-    _isUploading: false,
     _uploadTrackers: null,
 
     // Closure actions
@@ -87,8 +86,9 @@ export default Component.extend({
         // if we have new files, validate and start an upload
         let files = this.get('files');
         if (files && files !== this._files) {
-            if (this._isUploading) {
-                throw new Error('Adding new files whilst an upload is in progress is not supported.');
+            if (this.get('_uploadFiles.isRunning')) {
+                // eslint-disable-next-line
+                console.error('Adding new files whilst an upload is in progress is not supported.');
             }
 
             this._files = files;
@@ -133,6 +133,11 @@ export default Component.extend({
         let extensions = this.get('extensions');
         let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
 
+        // if extensions is falsy exit early and accept all files
+        if (!extensions) {
+            return true;
+        }
+
         if (!isEmberArray(extensions)) {
             extensions = extensions.split(',');
         }
@@ -159,6 +164,10 @@ export default Component.extend({
         // populates this.errors and this.uploadUrls
         yield all(uploads);
 
+        if (!isEmpty(this.get('errors'))) {
+            this.onFailed(this.get('errors'));
+        }
+
         this.onComplete(this.get('uploadUrls'));
     }).drop(),
 
@@ -180,32 +189,50 @@ export default Component.extend({
                     let xhr = new window.XMLHttpRequest();
 
                     xhr.upload.addEventListener('progress', (event) => {
-                        tracker.update(event);
-                        this._updateProgress();
+                        run(() => {
+                            tracker.update(event);
+                            this._updateProgress();
+                        });
                     }, false);
 
                     return xhr;
                 }
             });
 
+            // force tracker progress to 100% in case we didn't get a final event,
+            // eg. when using mirage
+            tracker.update({loaded: file.size, total: file.size});
+            this._updateProgress();
+
             // TODO: is it safe to assume we'll only get a url back?
             let uploadUrl = JSON.parse(response);
-
-            this.get('uploadUrls').push({
+            let result = {
                 fileName: file.name,
                 url: uploadUrl
-            });
+            };
+
+            this.get('uploadUrls').pushObject(result);
+            this.onUploadSuccess(result);
 
             return true;
 
         } catch (error) {
-            console.log('error', error); // eslint-disable-line
+            // grab custom error message if present
+            let message = error.errors && error.errors[0].message;
 
-            // TODO: check for or expose known error types?
-            this.get('errors').push({
+            // fall back to EmberData/ember-ajax default message for error type
+            if (!message) {
+                message = error.message;
+            }
+
+            let result = {
                 fileName: file.name,
                 message: error.errors[0].message
-            });
+            };
+
+            // TODO: check for or expose known error types?
+            this.get('errors').pushObject(result);
+            this.onUploadFail(result);
         }
     }),
 
@@ -247,7 +274,6 @@ export default Component.extend({
         this.set('uploadedSize', 0);
         this.set('uploadPercentage', 0);
         this._uploadTrackers = [];
-        this._isUploading = false;
     },
 
     actions: {
