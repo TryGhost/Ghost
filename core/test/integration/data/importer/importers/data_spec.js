@@ -506,8 +506,9 @@ describe('Import', function () {
                 return dataImporter.doImport(exportData);
             }).then(function () {
                 // Grab the data from tables
+                // NOTE: we have to return sorted data, sqlite can insert the posts in a different order
                 return Promise.all([
-                    models.Post.findAll({include: ['tags']}),
+                    models.Post.findPage({include: ['tags']}),
                     models.Tag.findAll()
                 ]);
             }).then(function (importedData) {
@@ -515,24 +516,24 @@ describe('Import', function () {
 
                 importedData.length.should.equal(2, 'Did not get data successfully');
 
-                var posts = importedData[0],
+                var posts = importedData[0].posts,
                     tags = importedData[1];
 
                 // test posts
                 posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
-                posts.models[0].toJSON().tags.length.should.eql(1);
-                posts.models[0].toJSON().tags[0].slug.should.eql(exportData.data.tags[0].slug);
+                posts[0].tags.length.should.eql(1);
+                posts[0].tags[0].slug.should.eql(exportData.data.tags[0].slug);
 
                 // has a specific sort_order
-                posts.models[1].toJSON().tags.length.should.eql(2);
-                posts.models[1].toJSON().tags[0].slug.should.eql(exportData.data.tags[1].slug);
-                posts.models[1].toJSON().tags[1].slug.should.eql(exportData.data.tags[0].slug);
+                posts[1].tags.length.should.eql(3);
+                posts[1].tags[0].slug.should.eql(exportData.data.tags[2].slug);
+                posts[1].tags[1].slug.should.eql(exportData.data.tags[0].slug);
+                posts[1].tags[2].slug.should.eql(exportData.data.tags[1].slug);
 
                 // sort_order property is missing (order depends on the posts_tags entries)
-                posts.models[2].toJSON().tags.length.should.eql(3);
-                posts.models[2].toJSON().tags[0].slug.should.eql(exportData.data.tags[2].slug);
-                posts.models[2].toJSON().tags[1].slug.should.eql(exportData.data.tags[0].slug);
-                posts.models[2].toJSON().tags[2].slug.should.eql(exportData.data.tags[1].slug);
+                posts[2].tags.length.should.eql(2);
+                posts[2].tags[0].slug.should.eql(exportData.data.tags[1].slug);
+                posts[2].tags[1].slug.should.eql(exportData.data.tags[0].slug);
 
                 // test tags
                 tags.length.should.equal(exportData.data.tags.length, 'no new tags');
