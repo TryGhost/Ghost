@@ -32,11 +32,20 @@ class PostsImporter extends BaseImporter {
         let postTags = this.posts_tags,
             postsWithTags = new Map(),
             self = this,
-            tags;
+            tags,
+            duplicatedTagsPerPost = {};
 
         _.each(postTags, function (postTag) {
             if (!postsWithTags.get(postTag.post_id)) {
                 postsWithTags.set(postTag.post_id, []);
+            }
+
+            if (postsWithTags.get(postTag.post_id).indexOf(postTag.tag_id) !== -1) {
+                if (!duplicatedTagsPerPost.hasOwnProperty(postTag.post_id)) {
+                    duplicatedTagsPerPost[postTag.post_id] = [];
+                }
+
+                duplicatedTagsPerPost[postTag.post_id].push(postTag.tag_id);
             }
 
             postsWithTags.get(postTag.post_id).push(postTag.tag_id);
@@ -52,6 +61,20 @@ class PostsImporter extends BaseImporter {
                     if (obj.id === postId) {
                         if (!_.isArray(obj.tags)) {
                             obj.tags = [];
+                        }
+
+                        if (duplicatedTagsPerPost.hasOwnProperty(postId) && duplicatedTagsPerPost[postId].length) {
+                            self.problems.push({
+                                message: 'Detected duplicated tags for: ' + obj.title || obj.slug,
+                                help: self.modelName,
+                                context: JSON.stringify({
+                                    tags: _.map(_.filter(self.tags, function (tag) {
+                                        return _.indexOf(duplicatedTagsPerPost[postId], tag.id) !== -1;
+                                    }), function (value) {
+                                        return value.slug || value.name;
+                                    })
+                                })
+                            });
                         }
 
                         obj.tags.push({
