@@ -32,8 +32,11 @@ class PostsImporter extends BaseImporter {
         let postTags = this.posts_tags,
             postsWithTags = new Map(),
             self = this,
-            tags,
-            duplicatedTagsPerPost = {};
+            duplicatedTagsPerPost = {},
+            tagsToAttach = [],
+            foundOriginalTag;
+
+        postTags = _.orderBy(postTags, ['post_id', 'sort_order'], ['asc', 'asc']);
 
         _.each(postTags, function (postTag) {
             if (!postsWithTags.get(postTag.post_id)) {
@@ -52,11 +55,19 @@ class PostsImporter extends BaseImporter {
         });
 
         postsWithTags.forEach(function (tagIds, postId) {
-            tags = _.filter(self.tags, function (tag) {
-                return _.indexOf(tagIds, tag.id) !== -1;
+            tagsToAttach = [];
+
+            _.each(tagIds, function (tagId) {
+                foundOriginalTag = _.find(self.tags, {id: tagId});
+
+                if (!foundOriginalTag) {
+                    return;
+                }
+
+                tagsToAttach.push(foundOriginalTag);
             });
 
-            _.each(tags, function (tag) {
+            _.each(tagsToAttach, function (tag) {
                 _.each(self.dataToImport, function (obj) {
                     if (obj.id === postId) {
                         if (!_.isArray(obj.tags)) {
