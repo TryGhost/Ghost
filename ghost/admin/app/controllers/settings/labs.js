@@ -6,6 +6,7 @@ import {isBlank} from 'ember-utils';
 import {isEmberArray} from 'ember-array/utils';
 import {task} from 'ember-concurrency';
 import {UnsupportedMediaTypeError, isUnsupportedMediaTypeError} from 'ghost-admin/services/ajax';
+import run from 'ember-runloop';
 
 const {Promise} = RSVP;
 
@@ -102,10 +103,17 @@ export default Controller.extend({
 
                 // Clear the store, so that all the new data gets fetched correctly.
                 store.unloadAll();
-                // Reload currentUser and set session
-                this.set('session.user', store.findRecord('user', currentUserId));
-                // TODO: keep as notification, add link to view content
-                notifications.showNotification('Import successful.', {key: 'import.upload.success'});
+
+                // NOTE: workaround for behaviour change in Ember 2.13
+                // store.unloadAll has some async tendencies so we need to schedule
+                // the reload of the current user once the unload has finished
+                // https://github.com/emberjs/data/issues/4963
+                run.schedule('destroy', this, () => {
+                    // Reload currentUser and set session
+                    this.set('session.user', store.findRecord('user', currentUserId));
+                    // TODO: keep as notification, add link to view content
+                    notifications.showNotification('Import successful.', {key: 'import.upload.success'});
+                });
             }).catch((response) => {
                 if (isUnsupportedMediaTypeError(response)) {
                     this.set('importErrors', [response]);
