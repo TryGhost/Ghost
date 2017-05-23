@@ -60,7 +60,7 @@ describe('Import', function () {
                 should.exist(importResult.data.posts);
 
                 importResult.data.posts.length.should.equal(1);
-                importResult.problems.length.should.eql(11);
+                importResult.problems.length.should.eql(8);
 
                 done();
             }).catch(done);
@@ -86,7 +86,7 @@ describe('Import', function () {
                     return postTag.tag_id !== 2;
                 });
 
-                importResult.problems.length.should.equal(12);
+                importResult.problems.length.should.equal(9);
 
                 done();
             }).catch(done);
@@ -372,11 +372,11 @@ describe('Import', function () {
                 return dataImporter.doImport(exportData);
             }).then(function (importedData) {
                 importedData.problems.length.should.eql(3);
-                importedData.problems[0].message.should.eql('Detected duplicated entry.');
+                importedData.problems[0].message.should.eql('Entry was not imported and ignored. Detected duplicated entry.');
                 importedData.problems[0].help.should.eql('Tag');
-                importedData.problems[1].message.should.eql('Detected duplicated entry.');
+                importedData.problems[1].message.should.eql('Entry was not imported and ignored. Detected duplicated entry.');
                 importedData.problems[1].help.should.eql('Tag');
-                importedData.problems[2].message.should.eql('Detected duplicated entry.');
+                importedData.problems[2].message.should.eql('Entry was not imported and ignored. Detected duplicated entry.');
                 importedData.problems[2].help.should.eql('Post');
                 done();
             }).catch(done);
@@ -391,9 +391,9 @@ describe('Import', function () {
             }).then(function (importedData) {
                 // NOTE: we detect invalid author references as warnings, because ember can handle this
                 // The owner can simply update the author reference in the UI
-                importedData.problems.length.should.eql(6);
-                importedData.problems[4].message.should.eql('Not able to update user reference');
-                importedData.problems[4].help.should.eql('Post');
+                importedData.problems.length.should.eql(3);
+                importedData.problems[2].message.should.eql('Entry was imported, but we were not able to update user reference field: published_by');
+                importedData.problems[2].help.should.eql('Post');
 
                 // Grab the data from tables
                 return Promise.all([
