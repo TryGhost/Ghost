@@ -133,26 +133,30 @@ I18n = {
      *  - Polyfill node.js if it does not have Intl support or support for a particular locale
      */
     init: function init() {
+        // i18n.init() is only called: during Ghost's initialization twice, and when the translation files are not in memory;
+        // for the first call, settings for language and theme are not yet available, and English default is used for core;
+        // settings are available for the second initialization call, allowing full internationalization of core and theme
+        // (see file core/server/index.js for Ghost's initialization, and function i18n.findString above)
+
         var blosCore, blosTheme, hasBuiltInLocaleData, IntlPolyfill;
 
         currentLocale = settingsCache.get('default_lang') || 'en';
         activeTheme = settingsCache.get('active_theme') || '';
 
-        // read files for current locale and active theme and keep their content in memory
-        if (activeTheme) {
-            // Initialize full internationalization for core and theme
-            // (settings for language and theme available here;
-            // default English file read before, it could be used)
-            if (blos === undefined || currentLocale !== 'en') {
-                blosCore = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', currentLocale + '.json'));
-                // if translation file is not valid, you will see an error
-                try {
-                    blos = JSON.parse(blosCore);
-                } catch (err) {
-                    blos = undefined;
-                    throw err;
-                }
+        // Reading files for current locale and active theme and keeping their content in memory
+        // (during Ghost's initialization, when English is the language in settings, the second call
+        // to i18n.init() doesn't read again the default English file for core if already in memory).
+        if (blos === undefined || currentLocale !== 'en') {
+            blosCore = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', currentLocale + '.json'));
+            // if translation file is not valid, you will see an error
+            try {
+                blos = JSON.parse(blosCore);
+            } catch (err) {
+                blos = undefined;
+                throw err;
             }
+        }
+        if (activeTheme) {
             // Compatibility with both old themes and i18n-capable themes.
             try {
                 blosTheme = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'content', 'themes', activeTheme, 'assets', 'translations', activeTheme + '_' + currentLocale + '.json'));
@@ -173,17 +177,6 @@ I18n = {
                     throw err;
                 }
                 blos = _.merge(blos, blosTheme);
-            }
-        } else {
-            // Initialize default internationalization, just for core now
-            // (settings for language and theme not yet available here)
-            blosCore = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', currentLocale + '.json'));
-            // if translation file is not valid, you will see an error
-            try {
-                blos = JSON.parse(blosCore);
-            } catch (err) {
-                blos = undefined;
-                throw err;
             }
         }
 
