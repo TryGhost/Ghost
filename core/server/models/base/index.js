@@ -134,6 +134,14 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         if (schema.tables[this.tableName].hasOwnProperty('created_by') && !this.get('created_by')) {
             this.set('created_by', this.contextUser(options));
         }
+
+        if (!newObj.get('created_at')) {
+            newObj.set('created_at', new Date());
+        }
+
+        if (!newObj.get('updated_at')) {
+            newObj.set('updated_at', new Date());
+        }
     },
 
     onSaving: function onSaving(newObj, attr, options) {

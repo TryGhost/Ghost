@@ -1,6 +1,6 @@
 var should = require('should'),
     sinon = require('sinon'),
-    testUtils = require('../utils/index'),
+    testUtils = require('../../../../utils/index'),
     Promise = require('bluebird'),
     moment = require('moment'),
     assert = require('assert'),
@@ -8,10 +8,10 @@ var should = require('should'),
     validator = require('validator'),
 
     // Stuff we are testing
-    db = require('../../server/data/db'),
-    exporter = require('../../server/data/export'),
-    importer = require('../../server/data/import'),
-    DataImporter = require('../../server/data/import/data-importer'),
+    db = require('../../../../../server/data/db'),
+    exporter = require('../../../../../server/data/export'),
+    importer = require('../../../../../server/data/importer'),
+    dataImporter = importer.importers[1],
 
     knex = db.knex,
     sandbox = sinon.sandbox.create();
@@ -19,6 +19,11 @@ var should = require('should'),
 // Tests in here do an import for each test
 describe('Import', function () {
     before(testUtils.teardown);
+
+    beforeEach(function () {
+        sandbox.stub(importer, 'cleanUp');
+    });
+
     afterEach(testUtils.teardown);
     afterEach(function () {
         sandbox.restore();
@@ -26,25 +31,6 @@ describe('Import', function () {
 
     should.exist(exporter);
     should.exist(importer);
-
-    describe('Resolves', function () {
-        beforeEach(testUtils.setup());
-
-        it('resolves DataImporter', function (done) {
-            var importStub = sandbox.stub(DataImporter, 'importData', function () {
-                    return Promise.resolve();
-                }),
-                fakeData = {test: true};
-
-            importer.doImport(fakeData).then(function () {
-                importStub.calledWith(fakeData).should.equal(true);
-
-                importStub.restore();
-
-                done();
-            }).catch(done);
-        });
-    });
 
     describe('Sanitizes', function () {
         beforeEach(testUtils.setup('roles', 'owner', 'settings'));
@@ -54,7 +40,7 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-003').then(function (exported) {
                 exportData = exported;
-                return importer.doImport(exportData);
+                return dataImporter.doImport(exportData);
             }).then(function (importResult) {
                 should.exist(importResult);
                 should.exist(importResult.data);
@@ -67,15 +53,14 @@ describe('Import', function () {
         it('removes duplicate posts', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003-duplicate-posts').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003').then(function (exported) {
                 exportData = exported;
-                return importer.doImport(exportData);
+                return dataImporter.doImport(exportData);
             }).then(function (importResult) {
-                should.exist(importResult.data.data.posts);
+                should.exist(importResult.data.posts);
 
-                importResult.data.data.posts.length.should.equal(1);
-
-                importResult.problems.posts.length.should.equal(1);
+                importResult.data.posts.length.should.equal(1);
+                importResult.problems.length.should.eql(8);
 
                 done();
             }).catch(done);
@@ -86,21 +71,22 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-003-duplicate-tags').then(function (exported) {
                 exportData = exported;
-                return importer.doImport(exportData);
+                return dataImporter.doImport(exportData);
             }).then(function (importResult) {
-                should.exist(importResult.data.data.tags);
-                should.exist(importResult.data.data.posts_tags);
+                should.exist(importResult.data.tags);
+                should.exist(importResult.originalData.posts_tags);
 
-                importResult.data.data.tags.length.should.equal(1);
+                importResult.data.tags.length.should.equal(1);
 
                 // Check we imported all posts_tags associations
-                importResult.data.data.posts_tags.length.should.equal(2);
+                importResult.originalData.posts_tags.length.should.equal(2);
+
                 // Check the post_tag.tag_id was updated when we removed duplicate tag
-                _.every(importResult.data.data.posts_tags, function (postTag) {
+                _.every(importResult.originalData.posts_tags, function (postTag) {
                     return postTag.tag_id !== 2;
                 });
 
-                importResult.problems.tags.length.should.equal(1);
+                importResult.problems.length.should.equal(9);
 
                 done();
             }).catch(done);
@@ -110,15 +96,12 @@ describe('Import', function () {
     describe('DataImporter', function () {
         beforeEach(testUtils.setup('roles', 'owner', 'settings'));
 
-        should.exist(DataImporter);
-
         it('imports data from 000', function (done) {
             var exportData;
 
             testUtils.fixtures.loadExportFixture('export-000').then(function (exported) {
                 exportData = exported;
-
-                return importer.doImport(exportData);
+                return dataImporter.doImport(exportData);
             }).then(function () {
                 // Grab the data from tables
                 return Promise.all([
@@ -160,18 +143,11 @@ describe('Import', function () {
         });
 
         it('safely imports data, from 001', function (done) {
-            var exportData,
-                timestamp = moment().startOf('day').valueOf(); // no ms
+            var exportData;
 
             testUtils.fixtures.loadExportFixture('export-001').then(function (exported) {
                 exportData = exported;
-
-                // Modify timestamp data for testing
-                exportData.data.posts[0].created_at = timestamp;
-                exportData.data.posts[0].updated_at = timestamp;
-                exportData.data.posts[0].published_at = timestamp;
-
-                return importer.doImport(exportData);
+                return dataImporter.doImport(exportData);
             }).then(function () {
                 // Grab the data from tables
                 return Promise.all([
@@ -215,9 +191,9 @@ describe('Import', function () {
                 // in MySQL we're returned a date object.
                 // We pass the returned post always through the date object
                 // to ensure the return is consistent for all DBs.
-                assert.equal(moment(posts[0].created_at).valueOf(), timestamp);
-                assert.equal(moment(posts[0].updated_at).valueOf(), timestamp);
-                assert.equal(moment(posts[0].published_at).valueOf(), timestamp);
+                assert.equal(moment(posts[0].created_at).valueOf(), 1388318310000);
+                assert.equal(moment(posts[0].updated_at).valueOf(), 1388318310000);
+                assert.equal(moment(posts[0].published_at).valueOf(), 1388404710000);
 
                 done();
             }).catch(done);
@@ -226,14 +202,12 @@ describe('Import', function () {
         it('doesn\'t import invalid settings data from 001', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-001').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-001-invalid-setting').then(function (exported) {
                 exportData = exported;
-                // change to blank settings key
-                exportData.data.settings[3].key = null;
-                return importer.doImport(exportData);
+                return dataImporter.doImport(exportData);
             }).then(function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
-            }, function (error) {
+            }).catch(function (error) {
                 error[0].message.should.eql('Value in [settings.key] cannot be blank.');
                 error[0].errorType.should.eql('ValidationError');
 
@@ -259,7 +233,7 @@ describe('Import', function () {
 
                     done();
                 });
-            }).catch(done);
+            });
         });
     });
 
@@ -267,18 +241,11 @@ describe('Import', function () {
         beforeEach(testUtils.setup('roles', 'owner', 'settings'));
 
         it('safely imports data from 002', function (done) {
-            var exportData,
-                timestamp = moment().startOf('day').valueOf(); // no ms
+            var exportData;
 
             testUtils.fixtures.loadExportFixture('export-002').then(function (exported) {
                 exportData = exported;
-
-                // Modify timestamp data for testing
-                exportData.data.posts[0].created_at = timestamp;
-                exportData.data.posts[0].updated_at = timestamp;
-                exportData.data.posts[0].published_at = timestamp;
-
-                return importer.doImport(exportData);
+                return dataImporter.doImport(exportData);
             }).then(function () {
                 // Grab the data from tables
                 return Promise.all([
@@ -322,49 +289,11 @@ describe('Import', function () {
                 // in MySQL we're returned a date object.
                 // We pass the returned post always through the date object
                 // to ensure the return is consistant for all DBs.
-                assert.equal(moment(posts[0].created_at).valueOf(), timestamp);
-                assert.equal(moment(posts[0].updated_at).valueOf(), timestamp);
-                assert.equal(moment(posts[0].published_at).valueOf(), timestamp);
+                assert.equal(moment(posts[0].created_at).valueOf(), 1419940710000);
+                assert.equal(moment(posts[0].updated_at).valueOf(), 1420027110000);
+                assert.equal(moment(posts[0].published_at).valueOf(), 1420027110000);
 
                 done();
-            }).catch(done);
-        });
-
-        it('doesn\'t import invalid settings data from 002', function (done) {
-            var exportData;
-
-            testUtils.fixtures.loadExportFixture('export-002').then(function (exported) {
-                exportData = exported;
-                // change to blank settings key
-                exportData.data.settings[3].key = null;
-                return importer.doImport(exportData);
-            }).then(function () {
-                (1).should.eql(0, 'Data import should not resolve promise.');
-            }, function (error) {
-                error[0].message.should.eql('Value in [settings.key] cannot be blank.');
-                error[0].errorType.should.eql('ValidationError');
-
-                Promise.all([
-                    knex('users').select(),
-                    knex('posts').select(),
-                    knex('tags').select()
-                ]).then(function (importedData) {
-                    should.exist(importedData);
-
-                    importedData.length.should.equal(3, 'Did not get data successfully');
-
-                    var users = importedData[0],
-                        posts = importedData[1],
-                        tags = importedData[2];
-
-                    // we always have 1 user, the owner user we added
-                    users.length.should.equal(1, 'There should only be one user');
-                    // Nothing should have been imported
-                    posts.length.should.equal(0, 'Wrong number of posts');
-                    tags.length.should.equal(0, 'no new tags');
-
-                    done();
-                });
             }).catch(done);
         });
     });
@@ -377,7 +306,7 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-003').then(function (exported) {
                 exportData = exported;
-                return importer.doImport(exportData);
+                return dataImporter.doImport(exportData);
             }).then(function () {
                 // Grab the data from tables
                 return Promise.all([
@@ -416,52 +345,88 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-003-badValidation').then(function (exported) {
                 exportData = exported;
-                return importer.doImport(exportData);
+                return dataImporter.doImport(exportData);
             }).then(function () {
                 done(new Error('Allowed import of duplicate data'));
             }).catch(function (response) {
-                response.length.should.equal(5);
+                response.length.should.equal(4);
+
+                // NOTE: a duplicated tag.slug is a warning
                 response[0].errorType.should.equal('ValidationError');
-                response[0].message.should.eql('Value in [posts.title] cannot be blank.');
+                response[0].message.should.eql('Value in [tags.name] cannot be blank.');
                 response[1].errorType.should.equal('ValidationError');
-                response[1].message.should.eql('Value in [posts.slug] cannot be blank.');
+                response[1].message.should.eql('Value in [posts.title] cannot be blank.');
                 response[2].errorType.should.equal('ValidationError');
-                response[2].message.should.eql('Value in [settings.key] cannot be blank.');
+                response[2].message.should.eql('Value in [tags.name] cannot be blank.');
                 response[3].errorType.should.equal('ValidationError');
-                response[3].message.should.eql('Value in [tags.slug] cannot be blank.');
-                response[4].errorType.should.equal('ValidationError');
-                response[4].message.should.eql('Value in [tags.name] cannot be blank.');
+                response[3].message.should.eql('Value in [settings.key] cannot be blank.');
                 done();
             }).catch(done);
         });
 
-        it('handles database errors nicely', function (done) {
+        it('handles database errors nicely: duplicated tag slugs', function (done) {
             var exportData;
+
             testUtils.fixtures.loadExportFixture('export-003-dbErrors').then(function (exported) {
                 exportData = exported;
-                return importer.doImport(exportData);
-            }).then(function () {
-                done(new Error('Allowed import of duplicate data'));
-            }).catch(function (response) {
-                response.length.should.be.above(0);
-                response[0].errorType.should.equal('DataImportError');
+                return dataImporter.doImport(exportData);
+            }).then(function (importedData) {
+                importedData.problems.length.should.eql(3);
+                importedData.problems[0].message.should.eql('Entry was not imported and ignored. Detected duplicated entry.');
+                importedData.problems[0].help.should.eql('Tag');
+                importedData.problems[1].message.should.eql('Entry was not imported and ignored. Detected duplicated entry.');
+                importedData.problems[1].help.should.eql('Tag');
+                importedData.problems[2].message.should.eql('Entry was not imported and ignored. Detected duplicated entry.');
+                importedData.problems[2].help.should.eql('Post');
                 done();
             }).catch(done);
         });
 
-        it('doesn\'t import posts with an invalid author', function (done) {
+        it('does import posts with an invalid author', function (done) {
             var exportData;
 
             testUtils.fixtures.loadExportFixture('export-003-mu-unknownAuthor').then(function (exported) {
                 exportData = exported;
+                return dataImporter.doImport(exportData);
+            }).then(function (importedData) {
+                // NOTE: we detect invalid author references as warnings, because ember can handle this
+                // The owner can simply update the author reference in the UI
+                importedData.problems.length.should.eql(3);
+                importedData.problems[2].message.should.eql('Entry was imported, but we were not able to update user reference field: published_by');
+                importedData.problems[2].help.should.eql('Post');
 
-                return importer.doImport(exportData);
-            }).then(function () {
-                done(new Error('Allowed import of unknown author'));
-            }).catch(function (response) {
-                response.length.should.equal(1);
-                response[0].message.should.eql('Attempting to import data linked to unknown user id 2');
-                response[0].errorType.should.equal('DataImportError');
+                // Grab the data from tables
+                return Promise.all([
+                    knex('users').select(),
+                    knex('posts').select(),
+                    knex('tags').select()
+                ]);
+            }).then(function (importedData) {
+                should.exist(importedData);
+
+                importedData.length.should.equal(3, 'Did not get data successfully');
+
+                var users = importedData[0],
+                    posts = importedData[1],
+                    tags = importedData[2];
+
+                // user should still have the credentials from the original insert, not the import
+                users[0].email.should.equal(testUtils.DataGenerator.Content.users[0].email);
+                users[0].password.should.equal(testUtils.DataGenerator.Content.users[0].password);
+                // but the name, slug, and bio should have been overridden
+                users[0].name.should.equal('Joe Bloggs');
+                users[0].slug.should.equal('joe-bloggs');
+                should.not.exist(users[0].bio, 'bio is not imported');
+
+                // test posts
+                posts.length.should.equal(1, 'Wrong number of posts');
+
+                // this is just a string and ember can handle unknown authors
+                // the blog owner is able to simply set a new author
+                posts[0].author_id.should.eql('2');
+
+                // test tags
+                tags.length.should.equal(0, 'no tags');
 
                 done();
             }).catch(done);
@@ -472,11 +437,7 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-003-nullTags').then(function (exported) {
                 exportData = exported;
-
-                exportData.data.tags.length.should.be.above(1);
-                exportData.data.posts_tags.length.should.be.above(1);
-
-                return importer.doImport(exportData);
+                return dataImporter.doImport(exportData);
             }).then(function () {
                 done(new Error('Allowed import of invalid tags data'));
             }).catch(function (response) {
@@ -484,7 +445,7 @@ describe('Import', function () {
                 response[0].errorType.should.equal('ValidationError');
                 response[0].message.should.eql('Value in [tags.name] cannot be blank.');
                 response[1].errorType.should.equal('ValidationError');
-                response[1].message.should.eql('Value in [tags.slug] cannot be blank.');
+                response[1].message.should.eql('Value in [tags.name] cannot be blank.');
                 done();
             }).catch(done);
         });
@@ -494,14 +455,20 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-003-nullPosts').then(function (exported) {
                 exportData = exported;
-
-                exportData.data.posts.length.should.be.above(1);
-
-                return importer.doImport(exportData);
+                return dataImporter.doImport(exportData);
             }).then(function () {
                 done(new Error('Allowed import of invalid post data'));
             }).catch(function (response) {
-                response.length.should.equal(5, response);
+                response.length.should.equal(3, response);
+
+                response[0].errorType.should.equal('ValidationError');
+                response[0].message.should.eql('Value in [posts.title] cannot be blank.');
+
+                response[1].errorType.should.equal('ValidationError');
+                response[1].message.should.eql('Value in [posts.status] cannot be blank.');
+
+                response[2].errorType.should.equal('ValidationError');
+                response[2].message.should.eql('Value in [posts.language] cannot be blank.');
                 done();
             }).catch(done);
         });
@@ -511,10 +478,7 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-003-wrongUUID').then(function (exported) {
                 exportData = exported;
-
-                exportData.data.posts.length.should.be.above(0);
-
-                return importer.doImport(exportData);
+                return dataImporter.doImport(exportData);
             }).then(function () {
                 // Grab the data from tables
                 return knex('posts').select();
@@ -542,10 +506,10 @@ describe('Import', function () {
                 // change title to 1001 characters
                 exportData.data.posts[0].title = new Array(2002).join('a');
                 exportData.data.posts[0].tags = 'Tag';
-                return importer.doImport(exportData);
+                return dataImporter.doImport(exportData);
             }).then(function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
-            }, function (error) {
+            }).catch(function (error) {
                 error[0].message.should.eql('Value in [posts.title] exceeds maximum length of 2000 characters.');
                 error[0].errorType.should.eql('ValidationError');
 
@@ -588,11 +552,12 @@ describe('Import (new test structure)', function () {
                 return testUtils.fixtures.loadExportFixture('export-003-mu');
             }).then(function (exported) {
                 exportData = exported;
-                return importer.doImport(exportData);
+                return dataImporter.doImport(exportData);
             }).then(function () {
                 done();
             }).catch(done);
         });
+
         after(testUtils.teardown);
 
         it('gets the right data', function (done) {
@@ -809,11 +774,12 @@ describe('Import (new test structure)', function () {
                 return testUtils.fixtures.loadExportFixture('export-003-mu-noOwner');
             }).then(function (exported) {
                 exportData = exported;
-                return importer.doImport(exportData);
+                return dataImporter.doImport(exportData);
             }).then(function () {
                 done();
             }).catch(done);
         });
+
         after(testUtils.teardown);
 
         it('gets the right data', function (done) {
@@ -1031,11 +997,12 @@ describe('Import (new test structure)', function () {
                 return testUtils.fixtures.loadExportFixture('export-003-mu');
             }).then(function (exported) {
                 exportData = exported;
-                return importer.doImport(exportData);
+                return dataImporter.doImport(exportData);
             }).then(function () {
                 done();
             }).catch(done);
         });
+
         after(testUtils.teardown);
 
         it('gets the right data', function (done) {
@@ -1259,11 +1226,12 @@ describe('Import (new test structure)', function () {
                 return testUtils.fixtures.loadExportFixture('export-003-mu-multipleOwner');
             }).then(function (exported) {
                 exportData = exported;
-                return importer.doImport(exportData);
+                return dataImporter.doImport(exportData);
             }).then(function () {
                 done();
             }).catch(done);
         });
+
         after(testUtils.teardown);
 
         it('imports users with correct roles and status', function (done) {

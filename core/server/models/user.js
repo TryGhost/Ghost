@@ -2,6 +2,7 @@ var _              = require('lodash'),
     Promise        = require('bluebird'),
     bcrypt         = require('bcryptjs'),
     validator      = require('validator'),
+    ObjectId      = require('bson-objectid'),
     ghostBookshelf = require('./base'),
     baseUtils      = require('./base/utils'),
     errors         = require('../errors'),
@@ -106,7 +107,7 @@ User = ghostBookshelf.Model.extend({
 
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 
-        if (self.hasChanged('email')) {
+        if (self.hasChanged('email') && self.get('email')) {
             tasks.gravatar = (function lookUpGravatar() {
                 return gravatar.lookup({
                     email: self.get('email')
@@ -455,9 +456,10 @@ User = ghostBookshelf.Model.extend({
         }
 
         function getAuthorRole() {
-            return ghostBookshelf.model('Role').findOne({name: 'Author'}, _.pick(options, 'transacting')).then(function then(authorRole) {
-                return [authorRole.get('id')];
-            });
+            return ghostBookshelf.model('Role').findOne({name: 'Author'}, _.pick(options, 'transacting'))
+                .then(function then(authorRole) {
+                    return [authorRole.get('id')];
+                });
         }
 
         /**
@@ -466,16 +468,45 @@ User = ghostBookshelf.Model.extend({
          * roles: [] -> no default role (used for owner creation, see fixtures.json)
          * roles: undefined -> default role
          */
-        roles = data.roles || getAuthorRole();
+        roles = data.roles;
         delete data.roles;
 
         return ghostBookshelf.Model.add.call(self, userData, options)
             .then(function then(addedUser) {
                 // Assign the userData to our created user so we can pass it back
                 userData = addedUser;
+            })
+            .then(function () {
+                if (!roles) {
+                    return getAuthorRole();
+                }
 
+                return Promise.resolve(roles);
+            })
+            .then(function (_roles) {
+                roles = _roles;
+
+                // CASE: it is possible to add roles by name, by id or by object
+                if (_.isString(roles[0]) && !ObjectId.isValid(roles[0])) {
+                    return Promise.map(roles, function (roleName) {
+                        return ghostBookshelf.model('Role').findOne({
+                            name: roleName
+                        }, options);
+                    }).then(function (roleModels) {
+                        roles = [];
+
+                        _.each(roleModels, function (roleModel) {
+                            roles.push(roleModel.id);
+                        });
+                    });
+                }
+
+                return Promise.resolve();
+            })
+            .then(function () {
                 return baseUtils.attach(User, userData.id, 'roles', roles, options);
-            }).then(function then() {
+            })
+            .then(function then() {
                 // find and return the added user
                 return self.findOne({id: userData.id, status: 'all'}, options);
             });
