@@ -105,6 +105,7 @@ _private.JSONErrorRenderer = function JSONErrorRenderer(err, req, res, /*jshint 
     res.json({
         errors: [{
             message: err.message,
+            context: err.context,
             errorType: err.errorType,
             errorDetails: err.errorDetails
         }]

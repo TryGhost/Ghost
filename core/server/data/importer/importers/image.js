@@ -8,6 +8,10 @@ var _       = require('lodash'),
     preProcessUsers;
 
 replaceImage = function (markdown, image) {
+    if (!markdown) {
+        return;
+    }
+
     // Normalizes to include a trailing slash if there was one
     var regex = new RegExp('(/)?' + image.originalPath, 'gm');
 

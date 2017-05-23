@@ -771,7 +771,7 @@ describe('Post API', function () {
                             should.not.exist(res.headers['x-cache-invalidate']);
                             jsonResponse = res.body;
                             should.exist(jsonResponse.errors);
-                            testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
+                            testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType', 'context']);
                             done();
                         });
                 });

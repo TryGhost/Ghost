@@ -2,22 +2,22 @@ var should = require('should'),
     sinon = require('sinon'),
     Promise = require('bluebird'),
     _ = require('lodash'),
-    testUtils = require('../utils'),
+    testUtils = require('../../../utils'),
     moment = require('moment'),
     path = require('path'),
-    errors = require('../../server/errors'),
+    errors = require('../../../../server/errors'),
 
     // Stuff we are testing
-    ImportManager = require('../../server/data/importer'),
-    JSONHandler = require('../../server/data/importer/handlers/json'),
-    ImageHandler = require('../../server/data/importer/handlers/image'),
-    MarkdownHandler = require('../../server/data/importer/handlers/markdown'),
-    DataImporter = require('../../server/data/importer/importers/data'),
-    ImageImporter = require('../../server/data/importer/importers/image'),
+    ImportManager = require('../../../../server/data/importer'),
+    JSONHandler = require('../../../../server/data/importer/handlers/json'),
+    ImageHandler = require('../../../../server/data/importer/handlers/image'),
+    MarkdownHandler = require('../../../../server/data/importer/handlers/markdown'),
+    DataImporter = require('../../../../server/data/importer/importers/data'),
+    ImageImporter = require('../../../../server/data/importer/importers/image'),
 
-    storage = require('../../server/adapters/storage'),
+    storage = require('../../../../server/adapters/storage'),
 
-    configUtils = require('../utils/configUtils'),
+    configUtils = require('../../../utils/configUtils'),
     sandbox = sinon.sandbox.create();
 
 describe('Importer', function () {
@@ -628,8 +628,6 @@ describe('Importer', function () {
     });
 
     describe('DataImporter', function () {
-        var importer = require('../../server/data/import');
-
         it('has the correct interface', function () {
             DataImporter.type.should.eql('data');
             DataImporter.preProcess.should.be.instanceof(Function);
@@ -637,23 +635,13 @@ describe('Importer', function () {
         });
 
         it('does preprocess posts, users and tags correctly', function () {
-            var inputData = require('../utils/fixtures/import/import-data-1.json'),
+            var inputData = require('../../../utils/fixtures/import/import-data-1.json'),
                 outputData = DataImporter.preProcess(_.cloneDeep(inputData));
 
             // Data preprocess is a noop
             inputData.data.data.posts[0].should.eql(outputData.data.data.posts[0]);
             inputData.data.data.tags[0].should.eql(outputData.data.data.tags[0]);
             inputData.data.data.users[0].should.eql(outputData.data.data.users[0]);
-        });
-
-        it('does import the data correctly', function () {
-            var inputData = require('../utils/fixtures/import/import-data-1.json'),
-                importerSpy = sandbox.stub(importer, 'doImport').returns(Promise.resolve());
-
-            DataImporter.doImport(inputData.data).then(function () {
-                importerSpy.calledOnce.should.be.true();
-                importerSpy.calledWith(inputData.data).should.be.true();
-            });
         });
     });
 
@@ -665,7 +653,7 @@ describe('Importer', function () {
         });
 
         it('does preprocess posts, users and tags correctly', function () {
-            var inputData = require('../utils/fixtures/import/import-data-1.json'),
+            var inputData = require('../../../utils/fixtures/import/import-data-1.json'),
                 outputData = ImageImporter.preProcess(_.cloneDeep(inputData));
 
             inputData = inputData.data.data;
@@ -694,7 +682,7 @@ describe('Importer', function () {
         });
 
         it('does import the images correctly', function () {
-            var inputData = require('../utils/fixtures/import/import-data-1.json'),
+            var inputData = require('../../../utils/fixtures/import/import-data-1.json'),
                 storageApi = {
                     save: sandbox.stub().returns(Promise.resolve())
                 },

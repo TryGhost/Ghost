@@ -60,7 +60,10 @@ db = {
 
         function importContent(options) {
             return importer.importFromFile(options)
-                .return({db: []});
+                .then(function (response) {
+                    // NOTE: response can contain 2 objects if images are imported
+                    return {db: [], problems: response.length === 2 ? response[1].problems : response[0].problems};
+                });
         }
 
         tasks = [
