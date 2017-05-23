@@ -37,7 +37,6 @@ JSONHandler = {
                 return Promise.reject(new errors.BadRequestError({
                     err: err,
                     message: err.message,
-                    context: i18n.t('errors.data.importer.handlers.json.apiDbImportContent'),
                     help: i18n.t('errors.data.importer.handlers.json.checkImportJsonIsValid')
                 }));
             }
