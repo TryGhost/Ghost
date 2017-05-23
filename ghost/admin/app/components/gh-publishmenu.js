@@ -13,6 +13,8 @@ export default Component.extend({
 
     _publishedAtBlogTZ: null,
 
+    isClosing: null,
+
     forcePublishedMenu: reads('post.pastScheduledTime'),
 
     postState: computed('post.{isPublished,isScheduled}', 'forcePublishedMenu', function () {
@@ -91,6 +93,7 @@ export default Component.extend({
 
         open() {
             this._cachePublishedAtBlogTZ();
+            this.set('isClosing', false);
             this.get('post.errors').clear();
             if (this.get('onOpen')) {
                 this.get('onOpen')();
@@ -113,6 +116,9 @@ export default Component.extend({
             if (this.get('onClose')) {
                 this.get('onClose')();
             }
+
+            this.set('isClosing', true);
+
             return true;
         }
     }

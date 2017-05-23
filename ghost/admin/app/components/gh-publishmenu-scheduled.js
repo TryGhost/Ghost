@@ -8,6 +8,7 @@ export default Component.extend({
 
     post: null,
     saveType: null,
+    isClosing: null,
 
     // used to set minDate in datepicker
     _minDate: null,
@@ -60,8 +61,10 @@ export default Component.extend({
         setTime(time) {
             let post = this.get('post');
 
-            post.set('publishedAtBlogTime', time);
-            return post.validate();
+            if (!this.get('isClosing')) {
+                post.set('publishedAtBlogTime', time);
+                return post.validate();
+            }
         }
     }
 });
