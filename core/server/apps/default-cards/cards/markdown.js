@@ -1,13 +1,14 @@
-var SimpleDom   = require('simple-dom'),
-    tokenizer   = require('simple-html-tokenizer').tokenize,
-    jsdom       = require('jsdom').jsdom,
-    markdownConverter  = require('../../../utils/markdown-converter'),
-    html, doc, parser, sanitizedHTML;
+var markdownConverter  = require('../../../utils/markdown-converter');
 
 module.exports = {
         name: 'card-markdown',
         type: 'dom',
         render: function (opts) {
+            var SimpleDom   = require('simple-dom'),
+                tokenizer   = require('simple-html-tokenizer').tokenize,
+                jsdom       = require('jsdom').jsdom,
+                html, doc, parser, sanitizedHTML;
+
             // markdown can be autosaved at any point by the client, even when
             // writing HTML so you can end up with unbalanced HTML elements
             //
