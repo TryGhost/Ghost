@@ -30,6 +30,6 @@ export default Test.registerAsyncHelper('fileUpload', function(app, selector, co
     return triggerEvent(
         selector,
         'change',
-        {foor: 'bar', testingFiles: [file]}
+        {testingFiles: [file]}
     );
 });

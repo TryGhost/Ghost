@@ -5,24 +5,25 @@ import observer from 'ember-metal/observer';
 import run from 'ember-runloop';
 import randomPassword from 'ghost-admin/utils/random-password';
 import {task} from 'ember-concurrency';
+import {
+    IMAGE_MIME_TYPES,
+    IMAGE_EXTENSIONS
+} from 'ghost-admin/components/gh-image-uploader';
 
 export default Controller.extend({
-
-    availableTimezones: null,
-
-    showUploadLogoModal: false,
-    showUploadCoverModal: false,
-    showUploadIconModal: false,
-
     config: injectService(),
     ghostPaths: injectService(),
     notifications: injectService(),
     session: injectService(),
+
+    availableTimezones: null,
+    iconExtensions: ['ico', 'png'],
+    iconMimeTypes: 'image/png,image/x-icon',
+    imageExtensions: IMAGE_EXTENSIONS,
+    imageMimeTypes: IMAGE_MIME_TYPES,
+
     _scratchFacebook: null,
     _scratchTwitter: null,
-
-    iconMimeTypes: 'image/png,image/x-icon',
-    iconExtensions: ['ico', 'png'],
 
     isDatedPermalinks: computed('model.permalinks', {
         set(key, value) {
@@ -89,16 +90,48 @@ export default Controller.extend({
             this.set('model.activeTimezone', timezone.name);
         },
 
-        toggleUploadCoverModal() {
-            this.toggleProperty('showUploadCoverModal');
+        removeImage(image) {
+            // setting `null` here will error as the server treats it as "null"
+            this.get('model').set(image, '');
         },
 
-        toggleUploadLogoModal() {
-            this.toggleProperty('showUploadLogoModal');
+        /**
+         * Opens a file selection dialog - Triggered by "Upload Image" buttons,
+         * searches for the hidden file input within the .gh-setting element
+         * containing the clicked button then simulates a click
+         * @param  {MouseEvent} event - MouseEvent fired by the button click
+         */
+        triggerFileDialog(event) {
+            let fileInput = event.target
+                .closest('.gh-setting')
+                .querySelector('input[type="file"]');
+
+            if (fileInput) {
+                let click = new MouseEvent('click', {
+                    view: window,
+                    bubbles: true,
+                    cancelable: true
+                });
+
+                // reset file input value before clicking so that the same image
+                // can be selected again
+                fileInput.value = '';
+
+                // simulate click to open file dialog
+                fileInput.dispatchEvent(click);
+            }
         },
 
-        toggleUploadIconModal() {
-            this.toggleProperty('showUploadIconModal');
+        /**
+         * Fired after an image upload completes
+         * @param  {string} property - Property name to be set on `this.model`
+         * @param  {UploadResult[]} results - Array of UploadResult objects
+         * @return {string} The URL that was set on `this.model.property`
+         */
+        imageUploaded(property, results) {
+            if (results[0]) {
+                return this.get('model').set(property, results[0].url);
+            }
         },
 
         validateFacebookUrl() {

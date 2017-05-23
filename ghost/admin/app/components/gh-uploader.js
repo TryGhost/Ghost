@@ -18,6 +18,13 @@ import run from 'ember-runloop';
 // "allowMultiple" attribute so that single-image uploads don't allow multiple
 // simultaneous uploads
 
+/**
+ * Result from a file upload
+ * @typedef {Object} UploadResult
+ * @property {string} fileName - file name, eg "my-image.png"
+ * @property {string} url - url relative to Ghost root,eg "/content/images/2017/05/my-image.png"
+ */
+
 const UploadTracker = EmberObject.extend({
     file: null,
     total: 0,
@@ -153,6 +160,7 @@ export default Component.extend({
     _uploadFiles: task(function* (files) {
         let uploads = [];
 
+        this._reset();
         this.onStart();
 
         // NOTE: for...of loop results in a transpilation that errors in Edge,
@@ -239,7 +247,7 @@ export default Component.extend({
     // NOTE: this is necessary because the API doesn't accept direct file uploads
     _getFormData(file) {
         let formData = new FormData();
-        formData.append(this.get('paramName'), file);
+        formData.append(this.get('paramName'), file, file.name);
         return formData;
     },
 
@@ -269,10 +277,11 @@ export default Component.extend({
     },
 
     _reset() {
-        this.set('errors', null);
+        this.set('errors', []);
         this.set('totalSize', 0);
         this.set('uploadedSize', 0);
         this.set('uploadPercentage', 0);
+        this.set('uploadUrls', []);
         this._uploadTrackers = [];
     },
 
