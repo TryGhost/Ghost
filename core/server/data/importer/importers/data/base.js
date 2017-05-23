@@ -15,7 +15,8 @@ class Base {
         this.problems = [];
 
         this.errorConfig = {
-            allowDuplicates: true
+            allowDuplicates: true,
+            returnDuplicates: true
         };
 
         this.dataKeyToImport = options.dataKeyToImport;
@@ -61,38 +62,40 @@ class Base {
         _.each(errs, function (err) {
             if (err.code && err.message.toLowerCase().indexOf('unique') !== -1) {
                 if (self.errorConfig.allowDuplicates) {
-                    problems.push({
-                        message: 'Detected duplicated entry.',
-                        help: self.modelName,
-                        context: JSON.stringify(obj),
-                        err: err
-                    });
+                    if (self.errorConfig.returnDuplicates) {
+                        problems.push({
+                            message: 'Entry was not imported and ignored. Detected duplicated entry.',
+                            help: self.modelName,
+                            context: JSON.stringify(obj, null, '\t'),
+                            err: err
+                        });
+                    }
                 } else {
                     errorsToReject.push(new errors.DataImportError({
                         message: 'Detected duplicated entry.',
                         help: self.modelName,
-                        context: JSON.stringify(obj),
+                        context: JSON.stringify(obj, null, '\t'),
                         err: err
                     }));
                 }
             } else if (err instanceof errors.NotFoundError) {
                 problems.push({
-                    message: 'Could not find entry.',
+                    message: 'Entry was not imported and ignored. Could not find entry.',
                     help: self.modelName,
-                    context: JSON.stringify(obj),
+                    context: JSON.stringify(obj, null, '\t'),
                     err: err
                 });
             } else {
                 if (!errors.utils.isIgnitionError(err)) {
                     err = new errors.DataImportError({
                         message: err.message,
-                        context: JSON.stringify(obj),
+                        context: JSON.stringify(obj, null, '\t'),
                         help: self.modelName,
                         errorType: err.errorType,
                         err: err
                     });
                 } else {
-                    err.context = JSON.stringify(obj);
+                    err.context = JSON.stringify(obj, null, '\t');
                 }
 
                 errorsToReject.push(err);

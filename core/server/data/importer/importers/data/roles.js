@@ -11,6 +11,8 @@ class RolesImporter extends BaseImporter {
             dataKeyToImport: 'roles',
             requiredData: []
         }));
+
+        this.errorConfig.returnDuplicates = false;
     }
 
     beforeImport() {
