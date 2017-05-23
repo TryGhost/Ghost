@@ -57,6 +57,10 @@ utils = {
     safeString: function (string, options) {
         options = options || {};
 
+        if (string === null) {
+            string = '';
+        }
+
         // Handle the £ symbol separately, since it needs to be removed before the unicode conversion.
         string = string.replace(/£/g, '-');
 

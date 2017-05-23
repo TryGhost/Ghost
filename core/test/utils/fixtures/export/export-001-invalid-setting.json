@@ -291,6 +291,17 @@
                 "created_by": 1,
                 "updated_at": 1388318310831,
                 "updated_by": 1
+            },
+            {
+                "id": 15,
+                "uuid": "2ea560a3-2304-449d-a62b-f7b622987510",
+                "key": null,
+                "value": "[]",
+                "type": "app",
+                "created_at": 1388318310831,
+                "created_by": 1,
+                "updated_at": 1388318310831,
+                "updated_by": 1
             }
         ],
         "tags": [

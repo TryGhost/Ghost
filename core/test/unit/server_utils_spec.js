@@ -15,6 +15,11 @@ describe('Server Utilities', function () {
             result.should.equal('stringwithspace');
         });
 
+        it('can handle null strings', function () {
+            var result = safeString(null);
+            result.should.equal('');
+        });
+
         it('should remove non ascii characters', function () {
             var result = safeString('howtowin✓', options);
             result.should.equal('howtowin');
