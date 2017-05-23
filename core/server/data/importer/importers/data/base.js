@@ -166,7 +166,7 @@ class Base {
 
                 if (!oldUser) {
                     self.problems.push({
-                        message: 'Not able to update user reference',
+                        message: 'Entry was imported, but we were not able to update user reference field: ' + key,
                         help: self.modelName,
                         context: JSON.stringify(obj)
                     });
