@@ -66,7 +66,7 @@ class Base {
                         problems.push({
                             message: 'Entry was not imported and ignored. Detected duplicated entry.',
                             help: self.modelName,
-                            context: JSON.stringify(obj, null, '\t'),
+                            context: JSON.stringify(obj),
                             err: err
                         });
                     }
@@ -74,7 +74,7 @@ class Base {
                     errorsToReject.push(new errors.DataImportError({
                         message: 'Detected duplicated entry.',
                         help: self.modelName,
-                        context: JSON.stringify(obj, null, '\t'),
+                        context: JSON.stringify(obj),
                         err: err
                     }));
                 }
@@ -82,20 +82,20 @@ class Base {
                 problems.push({
                     message: 'Entry was not imported and ignored. Could not find entry.',
                     help: self.modelName,
-                    context: JSON.stringify(obj, null, '\t'),
+                    context: JSON.stringify(obj),
                     err: err
                 });
             } else {
                 if (!errors.utils.isIgnitionError(err)) {
                     err = new errors.DataImportError({
                         message: err.message,
-                        context: JSON.stringify(obj, null, '\t'),
+                        context: JSON.stringify(obj),
                         help: self.modelName,
                         errorType: err.errorType,
                         err: err
                     });
                 } else {
-                    err.context = JSON.stringify(obj, null, '\t');
+                    err.context = JSON.stringify(obj);
                 }
 
                 errorsToReject.push(err);
