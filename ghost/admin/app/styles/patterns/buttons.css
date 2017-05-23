@@ -14,6 +14,7 @@
     fill: color(var(--lightgrey) l(-27%) blackness(+15%));
     border-radius: 5px;
     transition: all 0.2s ease;
+    transition-property: color, border-color, background, width, height;
 
     -webkit-font-smoothing: subpixel-antialiased;
 }
