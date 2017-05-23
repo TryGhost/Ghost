@@ -118,6 +118,26 @@ describe('Integration: Component: gh-uploader', function() {
             expect(result[1].url).to.equal('/content/images/test.png');
         });
 
+        it('onComplete only passes results for last upload', async function () {
+            this.set('uploadsFinished', sinon.spy());
+
+            this.render(hbs`{{#gh-uploader files=files onComplete=(action uploadsFinished)}}{{/gh-uploader}}`);
+            this.set('files', [
+                createFile(['test'], {name: 'file1.png'})
+            ]);
+            await wait();
+
+            this.set('files', [
+                createFile(['test'], {name: 'file2.png'})
+            ]);
+
+            await wait();
+
+            let [results] = this.get('uploadsFinished').getCall(1).args;
+            expect(results.length).to.equal(1);
+            expect(results[0].fileName).to.equal('file2.png');
+        });
+
         it('doesn\'t allow new files to be set whilst uploading', async function () {
             let errorSpy = sinon.spy(console, 'error');
             stubSuccessfulUpload(server, 100);
@@ -140,6 +160,27 @@ describe('Integration: Component: gh-uploader', function() {
             expect(server.handledRequests.length).to.equal(2);
             expect(errorSpy.calledOnce).to.be.true;
             errorSpy.restore();
+        });
+
+        it('yields isUploading whilst upload is in progress', async function () {
+            stubSuccessfulUpload(server, 200);
+
+            this.render(hbs`
+            {{#gh-uploader files=files as |uploader|}}
+                {{#if uploader.isUploading}}
+                    <div class="is-uploading-test"></div>
+                {{/if}}
+            {{/gh-uploader}}`);
+
+            this.set('files', [createFile(), createFile()]);
+
+            run.later(() => {
+                expect(find('.is-uploading-test')).to.exist;
+            }, 100);
+
+            await wait();
+
+            expect(find('.is-uploading-test')).to.not.exist;
         });
 
         it('yields progressBar component with total upload progress', async function () {

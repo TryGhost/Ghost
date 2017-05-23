@@ -12,6 +12,9 @@ import startApp from '../../helpers/start-app';
 import destroyApp from '../../helpers/destroy-app';
 import {invalidateSession, authenticateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
+import wait from 'ember-test-helpers/wait';
+import run from 'ember-runloop';
+import mockUploads from '../../../mirage/config/uploads';
 
 describe('Acceptance: Settings - General', function () {
     let application;
@@ -59,7 +62,7 @@ describe('Acceptance: Settings - General', function () {
             return authenticateSession(application);
         });
 
-        it('it renders, shows image uploader modals', async function () {
+        it('it renders, handles image uploads', async function () {
             await visit('/settings/general');
 
             // has correct url
@@ -72,42 +75,230 @@ describe('Acceptance: Settings - General', function () {
             expect($('.gh-nav-settings-general').hasClass('active'), 'highlights nav menu item')
                 .to.be.true;
 
-            expect(find(testSelector('save-button')).text().trim(), 'save button text').to.equal('Save settings');
+            expect(
+                find(testSelector('save-button')).text().trim(),
+                'save button text'
+            ).to.equal('Save settings');
 
-            expect(find(testSelector('dated-permalinks-checkbox')).prop('checked'), 'date permalinks checkbox').to.be.false;
+            expect(
+                find(testSelector('dated-permalinks-checkbox')).prop('checked'),
+                'date permalinks checkbox'
+            ).to.be.false;
 
             await click(testSelector('toggle-pub-info'));
             await fillIn(testSelector('title-input'), 'New Blog Title');
             await click(testSelector('save-button'));
             expect(document.title, 'page title').to.equal('Settings - General - New Blog Title');
 
-            await click('.blog-logo');
-            expect(find('.fullscreen-modal .modal-content .gh-image-uploader').length, 'modal selector').to.equal(1);
+            // blog icon upload
+            // -------------------------------------------------------------- //
 
-            await click('.fullscreen-modal .modal-content .gh-image-uploader .image-cancel');
-            expect(find(testSelector('file-input-description')).text()).to.equal('Upload an image');
+            // has fixture icon
+            expect(
+                find(testSelector('icon-img')).attr('src'),
+                'initial icon src'
+            ).to.equal('/content/images/2014/Feb/favicon.ico');
 
-            // click cancel button
-            await click('.fullscreen-modal .modal-footer .gh-btn');
-            expect(find('.fullscreen-modal').length).to.equal(0);
+            // delete removes icon + shows button
+            await click(testSelector('delete-image', 'icon'));
+            expect(
+                find(testSelector('icon-img')),
+                'icon img after removal'
+            ).to.not.exist;
+            expect(
+                find(testSelector('image-upload-btn', 'icon')),
+                'icon upload button after removal'
+            ).to.exist;
 
-            await click('.blog-icon');
-            expect(find('.fullscreen-modal .modal-content .gh-image-uploader').length, 'modal selector').to.equal(1);
+            // select file
+            fileUpload(
+                testSelector('file-input', 'icon'),
+                ['test'],
+                {name: 'pub-icon.ico', type: 'image/x-icon'}
+            );
 
-            await click('.fullscreen-modal .modal-content .gh-image-uploader .image-cancel');
-            expect(find(testSelector('file-input-description')).text()).to.equal('Upload an image');
+            // check progress bar exists during upload
+            run.later(() => {
+                expect(
+                    find(`${testSelector('setting', 'icon')} ${testSelector('progress-bar')}`),
+                    'icon upload progress bar'
+                ).to.exist;
+            }, 50);
 
-            // click cancel button
-            await click('.fullscreen-modal .modal-footer .gh-btn');
-            expect(find('.fullscreen-modal').length).to.equal(0);
+            // wait for upload to finish and check image is shown
+            await wait();
+            expect(
+                find(testSelector('icon-img')).attr('src'),
+                'icon img after upload'
+            ).to.match(/pub-icon\.ico$/);
+            expect(
+                find(testSelector('image-upload-btn', 'icon')),
+                'icon upload button after upload'
+            ).to.not.exist;
 
-            await click('.blog-cover');
-            expect(find('.fullscreen-modal .modal-content .gh-image-uploader').length, 'modal selector').to.equal(1);
+            // failed upload shows error
+            server.post('/uploads/icon/', function () {
+                return {
+                    errors: [{
+                        errorType: 'ValidationError',
+                        message: 'Wrong icon size'
+                    }]
+                };
+            }, 422);
+            await click(testSelector('delete-image', 'icon'));
+            await fileUpload(
+                testSelector('file-input', 'icon'),
+                ['test'],
+                {name: 'pub-icon.ico', type: 'image/x-icon'}
+            );
+            expect(
+                find(testSelector('error', 'icon')).text().trim(),
+                'failed icon upload message'
+            ).to.equal('Wrong icon size');
 
-            await click(testSelector('modal-accept-button'));
-            expect(find('.fullscreen-modal').length).to.equal(0);
+            // reset upload endpoints
+            mockUploads(server);
+
+            // blog logo upload
+            // -------------------------------------------------------------- //
+
+            // has fixture icon
+            expect(
+                find(testSelector('logo-img')).attr('src'),
+                'initial logo src'
+            ).to.equal('/content/images/2013/Nov/logo.png');
+
+            // delete removes logo + shows button
+            await click(testSelector('delete-image', 'logo'));
+            expect(
+                find(testSelector('logo-img')),
+                'logo img after removal'
+            ).to.not.exist;
+            expect(
+                find(testSelector('image-upload-btn', 'logo')),
+                'logo upload button after removal'
+            ).to.exist;
+
+            // select file
+            fileUpload(
+                testSelector('file-input', 'logo'),
+                ['test'],
+                {name: 'pub-logo.png', type: 'image/png'}
+            );
+
+            // check progress bar exists during upload
+            run.later(() => {
+                expect(
+                    find(`${testSelector('setting', 'logo')} ${testSelector('progress-bar')}`),
+                    'logo upload progress bar'
+                ).to.exist;
+            }, 50);
+
+            // wait for upload to finish and check image is shown
+            await wait();
+            expect(
+                find(testSelector('logo-img')).attr('src'),
+                'logo img after upload'
+            ).to.match(/pub-logo\.png$/);
+            expect(
+                find(testSelector('image-upload-btn', 'logo')),
+                'logo upload button after upload'
+            ).to.not.exist;
+
+            // failed upload shows error
+            server.post('/uploads/', function () {
+                return {
+                    errors: [{
+                        errorType: 'ValidationError',
+                        message: 'Wrong logo size'
+                    }]
+                };
+            }, 422);
+            await click(testSelector('delete-image', 'logo'));
+            await fileUpload(
+                testSelector('file-input', 'logo'),
+                ['test'],
+                {name: 'pub-logo.png', type: 'image/png'}
+            );
+            expect(
+                find(testSelector('error', 'logo')).text().trim(),
+                'failed logo upload message'
+            ).to.equal('Wrong logo size');
+
+            // reset upload endpoints
+            mockUploads(server);
+
+            // blog cover upload
+            // -------------------------------------------------------------- //
+
+            // has fixture icon
+            expect(
+                find(testSelector('cover-img')).attr('src'),
+                'initial coverImage src'
+            ).to.equal('/content/images/2014/Feb/cover.jpg');
+
+            // delete removes coverImage + shows button
+            await click(testSelector('delete-image', 'coverImage'));
+            expect(
+                find(testSelector('coverImage-img')),
+                'coverImage img after removal'
+            ).to.not.exist;
+            expect(
+                find(testSelector('image-upload-btn', 'coverImage')),
+                'coverImage upload button after removal'
+            ).to.exist;
+
+            // select file
+            fileUpload(
+                testSelector('file-input', 'coverImage'),
+                ['test'],
+                {name: 'pub-coverImage.png', type: 'image/png'}
+            );
+
+            // check progress bar exists during upload
+            run.later(() => {
+                expect(
+                    find(`${testSelector('setting', 'coverImage')} ${testSelector('progress-bar')}`),
+                    'coverImage upload progress bar'
+                ).to.exist;
+            }, 50);
+
+            // wait for upload to finish and check image is shown
+            await wait();
+            expect(
+                find(testSelector('cover-img')).attr('src'),
+                'coverImage img after upload'
+            ).to.match(/pub-coverImage\.png$/);
+            expect(
+                find(testSelector('image-upload-btn', 'coverImage')),
+                'coverImage upload button after upload'
+            ).to.not.exist;
+
+            // failed upload shows error
+            server.post('/uploads/', function () {
+                return {
+                    errors: [{
+                        errorType: 'ValidationError',
+                        message: 'Wrong coverImage size'
+                    }]
+                };
+            }, 422);
+            await click(testSelector('delete-image', 'coverImage'));
+            await fileUpload(
+                testSelector('file-input', 'coverImage'),
+                ['test'],
+                {name: 'pub-coverImage.png', type: 'image/png'}
+            );
+            expect(
+                find(testSelector('error', 'coverImage')).text().trim(),
+                'failed coverImage upload message'
+            ).to.equal('Wrong coverImage size');
+
+            // reset upload endpoints
+            mockUploads(server);
 
             // CMD-S shortcut works
+            // -------------------------------------------------------------- //
             await fillIn(testSelector('title-input'), 'CMD-S Test');
             await triggerEvent('.gh-app', 'keydown', {
                 keyCode: 83, // s

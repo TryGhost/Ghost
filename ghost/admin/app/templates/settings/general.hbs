@@ -52,65 +52,111 @@
         </div>
 
         <div class="gh-setting-header">Publication identity</div>
-        <div class="gh-setting">
+        <div class="gh-setting" data-test-setting="icon">
+            {{#gh-uploader
+                files=iconUpload
+                extensions=iconExtensions
+                uploadUrl="/uploads/icon/"
+                onComplete=(action "imageUploaded" "icon")
+                as |uploader|
+            }}
             <div class="gh-setting-content">
                 <div class="gh-setting-title">Publication icon</div>
                 <div class="gh-setting-desc">A square, social icon used in the UI of your publication, at least 60x60px</div>
+                {{#if uploader.errors}}
+                    {{#each uploader.errors as |error|}}
+                        <div class="gh-setting-error" data-test-error="icon">{{error.message}}</div>
+                    {{/each}}
+                {{/if}}
             </div>
             <div class="gh-setting-action gh-setting-action-smallimg">
                 {{#if model.icon}}
-                    <img class="blog-icon" src="{{model.icon}}" alt="icon" role="button" {{action "toggleUploadIconModal"}}>
+                    <img class="blog-icon" src="{{model.icon}}" alt="icon" data-test-icon-img>
+                    <button type="button" class="gh-setting-action-smallimg-delete" {{action "removeImage" "icon"}} data-test-delete-image="icon">
+                        <span>delete</span>
+                    </button>
+                {{else if uploader.isUploading}}
+                    {{uploader.progressBar}}
                 {{else}}
-                    <button type="button" class="gh-btn" {{action "toggleUploadIconModal"}}><span>Upload Image</span></button>
+                    <button type="button" class="gh-btn" onClick={{action "triggerFileDialog"}} data-test-image-upload-btn="icon">
+                        <span>Upload Image</span>
+                    </button>
                 {{/if}}
-
-                {{#if showUploadIconModal}}
-                    {{gh-fullscreen-modal "upload-image"
-                            model=(hash model=model imageProperty="icon" accept=iconMimeTypes extensions=iconExtensions uploadUrl="/uploads/icon/")
-                            close=(action "toggleUploadIconModal")
-                            modifier="action wide"}}
-                {{/if}}
+                <div style="display:none">
+                    {{gh-file-input multiple=false action=(action (mut iconUpload)) accept=iconMimeTypes data-test-file-input="icon"}}
+                </div>
             </div>
+            {{/gh-uploader}}
         </div>
-        <div class="gh-setting">
+        <div class="gh-setting" data-test-setting="logo">
+            {{#gh-uploader
+                files=logoUpload
+                extensions=imageExtensions
+                onComplete=(action "imageUploaded" "logo")
+                as |uploader|
+            }}
             <div class="gh-setting-content">
                 <div class="gh-setting-title">Publication logo</div>
                 <div class="gh-setting-desc">The primary logo for your brand displayed across your theme, should be transparent and at least 600px x 72px</div>
+                {{#if uploader.errors}}
+                    {{#each uploader.errors as |error|}}
+                        <div class="gh-setting-error" data-test-error="logo">{{error.message}}</div>
+                    {{/each}}
+                {{/if}}
             </div>
             <div class="gh-setting-action gh-setting-action-smallimg">
                 {{#if model.logo}}
-                    <img class="blog-logo" src="{{model.logo}}" alt="logo" role="button" {{action "toggleUploadLogoModal"}}>
+                    <img class="blog-logo" src="{{model.logo}}" alt="logo" data-test-logo-img>
+                    <button type="button" class="gh-setting-action-smallimg-delete" {{action "removeImage" "logo"}} data-test-delete-image="logo">
+                        <span>delete</span>
+                    </button>
+                {{else if uploader.isUploading}}
+                    {{uploader.progressBar}}
                 {{else}}
-                    <button type="button" class="gh-btn" {{action "toggleUploadLogoModal"}}><span>Upload Image</span></button>
+                    <button type="button" class="gh-btn" onClick={{action "triggerFileDialog"}} data-test-image-upload-btn="logo">
+                        <span>Upload Image</span>
+                    </button>
                 {{/if}}
-
-                {{#if showUploadLogoModal}}
-                    {{gh-fullscreen-modal "upload-image"
-                            model=(hash model=model imageProperty="logo")
-                            close=(action "toggleUploadLogoModal")
-                            modifier="action wide"}}
-                {{/if}}
+                <div style="display:none">
+                    {{gh-file-input multiple=false action=(action (mut logoUpload)) accept=imageMimeTypes data-test-file-input="logo"}}
+                </div>
             </div>
+            {{/gh-uploader}}
         </div>
-        <div class="gh-setting">
+        <div class="gh-setting" data-test-setting="coverImage">
+            {{#gh-uploader
+                files=coverImageUpload
+                extensions=imageExtensions
+                onComplete=(action "imageUploaded" "coverImage")
+                as |uploader|
+            }}
             <div class="gh-setting-content">
                 <div class="gh-setting-title">Publication cover</div>
                 <div class="gh-setting-desc">An optional large background image for your site</div>
+                {{#if uploader.errors}}
+                    {{#each uploader.errors as |error|}}
+                        <div class="gh-setting-error" data-test-error="coverImage">{{error.message}}</div>
+                    {{/each}}
+                {{/if}}
             </div>
             <div class="gh-setting-action gh-setting-action-largeimg">
                 {{#if model.coverImage}}
-                    <img class="blog-cover" src="{{model.coverImage}}" alt="cover photo" role="button" {{action "toggleUploadCoverModal"}}>
+                    <img class="blog-cover" src="{{model.coverImage}}" alt="cover photo" data-test-cover-img>
+                    <button type="button" class="gh-setting-action-largeimg-delete" {{action "removeImage" "coverImage"}} data-test-delete-image="coverImage">
+                        <span>delete</span>
+                    </button>
+                {{else if uploader.isUploading}}
+                    {{uploader.progressBar}}
                 {{else}}
-                    <button type="button" class="gh-btn" {{action "toggleUploadCoverModal"}}><span>Upload Image</span></button>
+                    <button type="button" class="gh-btn" onClick={{action "triggerFileDialog"}} data-test-image-upload-btn="coverImage">
+                        <span>Upload Image</span>
+                    </button>
                 {{/if}}
-
-                {{#if showUploadCoverModal}}
-                    {{gh-fullscreen-modal "upload-image"
-                            model=(hash model=model imageProperty="coverImage")
-                            close=(action "toggleUploadCoverModal")
-                            modifier="action wide"}}
-                {{/if}}
+                <div style="display:none">
+                    {{gh-file-input multiple=false action=(action (mut coverImageUpload)) accept=imageMimeTypes data-test-file-input="coverImage"}}
+                </div>
             </div>
+            {{/gh-uploader}}
         </div>
 
         <div class="gh-setting-header">Social accounts</div>

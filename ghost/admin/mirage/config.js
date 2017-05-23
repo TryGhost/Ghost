@@ -8,6 +8,7 @@ import mockSlugs from './config/slugs';
 import mockSubscribers from './config/subscribers';
 import mockTags from './config/tags';
 import mockThemes from './config/themes';
+import mockUploads from './config/uploads';
 import mockUsers from './config/users';
 
 // import {versionMismatchResponse} from 'utils';
@@ -48,13 +49,14 @@ export function testConfig() {
     mockSubscribers(this);
     mockTags(this);
     mockThemes(this);
+    mockUploads(this);
     mockUsers(this);
 
     /* Notifications -------------------------------------------------------- */
 
     this.get('/notifications/');
 
-    /* Apps - Slack Test Notification --------------------------------------------------------- */
+    /* Apps - Slack Test Notification --------------------------------------- */
 
     this.post('/slack/test', function () {
         return {};

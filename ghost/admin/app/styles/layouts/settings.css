@@ -33,12 +33,24 @@
     letter-spacing: 0.3px;
 }
 
+.gh-setting-error {
+    margin-top: 1em;
+    line-height: 1.3em;
+    color: var(--red);
+    font-weight: 200;
+    letter-spacing: 0.3px;
+}
+
 .gh-setting-action {
     flex-shrink: 0;
     margin: 1px 0 0 0;
 }
 
 /* Images */
+
+.gh-setting-action-smallimg {
+    position: relative;
+}
 
 .gh-setting-action-smallimg img {
     height: 50px;
@@ -57,6 +69,36 @@
     cursor: pointer;
 }
 
+.gh-setting-action-smallimg-delete,
+.gh-setting-action-largeimg-delete {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    color: var(--midgrey);
+    text-decoration: none;
+    font-size: 13px;
+    line-height: 10px;
+}
+
+.gh-setting-action-smallimg-delete:hover,
+.gh-setting-action-largeimg-delete:hover {
+    color: var(--red);
+    text-decoration: underline;
+}
+
+.gh-setting-action .gh-progress-container {
+    width: 113px;
+    height: 100%;
+}
+
+.gh-setting-action .gh-progress-container-progress {
+    width: 100%;
+}
+
+.gh-setting-action .gh-progress-bar {
+    height: 9px;
+}
 
 /* Checkboxes */
 
