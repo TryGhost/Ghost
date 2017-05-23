@@ -1,10 +1,6 @@
-{{#if hasBlock}}
-    {{yield (hash
-        progressBar=(component "gh-progress-bar" percentage=uploadPercentage)
-        files=files
-        errors=errors
-        cancel=(action "cancel")
-    )}}
-{{else}}
-    {{!-- TODO: default uploader interface --}}
-{{/if}}
+{{yield (hash
+    progressBar=(component "gh-progress-bar" percentage=uploadPercentage)
+    files=files
+    errors=errors
+    cancel=(action "cancel")
+)}}
