@@ -81,6 +81,9 @@ generateProxyFunctions = function (name, permissions, isInternal) {
             ),
             settings: passThruAppContextToApi('settings',
                 _.pick(api.settings, 'browse', 'read', 'edit')
+            ),
+            configuration: passThruAppContextToApi('configuration',
+                _.pick(api.configuration, 'browse', 'read')
             )
         }
     };
