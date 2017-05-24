@@ -11,10 +11,11 @@ import run from 'ember-runloop';
 const {Promise} = RSVP;
 
 export default Controller.extend({
-    uploadButtonText: 'Import',
-    importErrors: '',
-    submitting: false,
+    importErrors: null,
+    importSuccessful: false,
     showDeleteAllModal: false,
+    submitting: false,
+    uploadButtonText: 'Import',
 
     importMimeType: ['application/json', 'application/zip', 'application/x-zip-compressed'],
 
@@ -79,6 +80,11 @@ export default Controller.extend({
         }
     }).drop(),
 
+    reset() {
+        this.set('importErrors', null);
+        this.set('importSuccessful', false);
+    },
+
     actions: {
         onUpload(file) {
             let formData = new FormData();
@@ -87,7 +93,8 @@ export default Controller.extend({
             let dbUrl = this.get('ghostPaths.url').api('db');
 
             this.set('uploadButtonText', 'Importing');
-            this.set('importErrors', '');
+            this.set('importErrors', null);
+            this.set('importSuccessful', false);
 
             return this._validate(file).then(() => {
                 formData.append('importfile', file);
@@ -99,8 +106,14 @@ export default Controller.extend({
                     contentType: false,
                     processData: false
                 });
-            }).then(() => {
+            }).then((response) => {
                 let store = this.get('store');
+
+                this.set('importSuccessful', true);
+
+                if (response.problems) {
+                    this.set('importErrors', response.problems);
+                }
 
                 // Clear the store, so that all the new data gets fetched correctly.
                 store.unloadAll();
@@ -128,8 +141,6 @@ export default Controller.extend({
                 if (response && response.errors && isEmberArray(response.errors)) {
                     this.set('importErrors', response.errors);
                 }
-
-                notifications.showAlert('Import Failed', {type: 'error', key: 'import.upload.failed'});
             }).finally(() => {
                 this.set('uploadButtonText', 'Import');
             });

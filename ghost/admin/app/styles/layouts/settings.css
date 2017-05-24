@@ -303,6 +303,53 @@
     }
 }
 
+.gh-import-errors {
+    position: relative;
+    padding: 12px 10px 14px 10px;
+    border: 1px solid var(--lightgrey);
+    border-left-width: 5px;
+    border-left-color: var(--red);
+    color: var(--midgrey);
+    line-height: 1.4em;
+    letter-spacing: 0.2px;
+    background: #fff;
+    border-radius: 5px;
+    margin-bottom: 25px;
+}
+
+.gh-import-errors-warning {
+    border-left-color: var(--orange);
+}
+
+.gh-import-errors-title {
+    margin-bottom: 1em;
+    font-size: 1.8rem;
+    line-height: 1.15em;
+    font-weight: 600;
+    color: var(--red);
+}
+
+.gh-import-errors-warning .gh-import-errors-title {
+    color: var(--orange);
+}
+
+.gh-import-error {
+    margin-bottom: 1.75em;
+}
+
+.gh-import-error:last-of-type {
+    margin-bottom: 0;
+}
+
+.gh-import-error-message {
+    margin-bottom: 0.5em;
+    font-weight: 200;
+}
+
+.gh-import-error-entry pre {
+    margin: 0;
+    font-size: 10px;
+}
 
 /* Themes
 /* ---------------------------------------------------------- */

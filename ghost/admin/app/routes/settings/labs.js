@@ -18,5 +18,11 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
 
     model() {
         return this.get('settings').reload();
+    },
+
+    resetController(controller, isExiting) {
+        if (isExiting) {
+            controller.reset();
+        }
     }
 });
