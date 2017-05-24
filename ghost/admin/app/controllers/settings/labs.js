@@ -21,6 +21,7 @@ export default Controller.extend({
     ghostPaths: injectService(),
     notifications: injectService(),
     session: injectService(),
+    settings: injectService(),
     ajax: injectService(),
 
     // TODO: convert to ember-concurrency task
@@ -111,8 +112,12 @@ export default Controller.extend({
                 run.schedule('destroy', this, () => {
                     // Reload currentUser and set session
                     this.set('session.user', store.findRecord('user', currentUserId));
+
                     // TODO: keep as notification, add link to view content
                     notifications.showNotification('Import successful.', {key: 'import.upload.success'});
+
+                    // reload settings
+                    return this.get('settings').reload();
                 });
             }).catch((response) => {
                 if (isUnsupportedMediaTypeError(response)) {
