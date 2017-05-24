@@ -11,7 +11,6 @@
             <div class="gh-setting-content">
                 <div class="gh-setting-title">Import content</div>
                 <div class="gh-setting-desc">Import posts from another Ghost installation</div>
-                {{partial "import-errors"}}
             </div>
             <div class="gh-setting-action">
                 <form id="settings-import" enctype="multipart/form-data">
@@ -19,6 +18,33 @@
                 </form>
             </div>
         </div>
+
+        {{#if importErrors}}
+            <div class="gh-import-errors {{if importSuccessful "gh-import-errors-warning"}}">
+                <div class="gh-import-errors-title">
+                    {{#if importSuccessful}}
+                        Import successful with warnings
+                    {{else}}
+                        Import failed
+                    {{/if}}
+                </div>
+
+                {{#each importErrors as |error|}}
+                    <div class="gh-import-error">
+                        <p class="gh-import-error-message">
+                            {{#if error.help}}{{error.help}}: {{/if}}{{error.message}}
+                        </p>
+
+                        {{#if error.context}}
+                            <div class="gh-import-error-entry">
+                                <pre>{{error.context}}</pre>
+                            </div>
+                        {{/if}}
+                    </div>
+                {{/each}}
+            </div>
+        {{/if}}
+
         <div class="gh-setting">
             <div class="gh-setting-content">
                 <div class="gh-setting-title">Export your content</div>
