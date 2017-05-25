@@ -14,11 +14,13 @@ var proxy = require('./proxy'),
     SafeString = proxy.SafeString,
     getAssetUrl = proxy.metaData.getAssetUrl,
     settingsCache = proxy.settingsCache,
-    theme = settingsCache.get('active_theme'),
-    locale = i18n.locale(),
+    theme,
+    locale,
     tCss;
 
 module.exports = function t_css() {
+    theme = settingsCache.get('active_theme');
+    locale = i18n.locale();
     tCss = new SafeString(getAssetUrl('translations/' + theme + '_' + locale + '.css'));
     return tCss;
 };
