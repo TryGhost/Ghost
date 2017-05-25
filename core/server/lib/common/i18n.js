@@ -147,7 +147,18 @@ I18n = {
         // (during Ghost's initialization, when English is the language in settings, the second call
         // to i18n.init() doesn't read again the default English file for core if already in memory).
         if (blos === undefined || currentLocale !== 'en') {
-            blosCore = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', currentLocale + '.json'));
+            // Preventing wrong locale.
+            try {
+                blosCore = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', currentLocale + '.json'));
+            } catch (err) {
+                if (err.code === 'ENOENT') {
+                    logging.warn('File ' + currentLocale + '.json not found!');
+                    currentLocale = 'en';
+                    blosCore = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', currentLocale + '.json'));
+                } else {
+                    throw err;
+                }
+            }
             // if translation file is not valid, you will see an error
             try {
                 blos = JSON.parse(blosCore);
