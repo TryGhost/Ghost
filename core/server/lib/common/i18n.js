@@ -91,7 +91,7 @@ I18n = {
         }
 
         if (blos === undefined) {
-            I18n.init();
+            I18n.init(true, true);
         }
 
         // Both jsonpath's dot-notation and bracket-notation start with '$'
@@ -132,13 +132,19 @@ I18n = {
      *  - Load proper language file in to memory
      *  - Polyfill node.js if it does not have Intl support or support for a particular locale
      */
-    init: function init() {
-        // i18n.init() is only called: during Ghost's initialization twice, and when the translation files are not in memory;
-        // for the first call, settings for language and theme are not yet available, and English default is used for core;
-        // settings are available for the second initialization call, allowing full internationalization of core and theme
-        // (see file core/server/index.js for Ghost's initialization, and function i18n.findString above)
+    init: function init(i18nCore, i18nTheme) {
+        // This function is called during Ghost's initialization, when switching language or theme...
+        // For the first initialization call, settings for language and theme are not yet available,
+        // and English default is used for core; settings are available shortly after, allowing
+        // full internationalization of core and theme.
 
         var blosCore, blosTheme, hasBuiltInLocaleData, IntlPolyfill;
+
+        if (blos === undefined) {
+            // If not in memory, load translations for core and theme.
+            i18nCore = true;
+            i18nTheme = true;
+        }
 
         currentLocale = settingsCache.get('default_lang') || 'en';
         activeTheme = settingsCache.get('active_theme') || '';
@@ -146,7 +152,7 @@ I18n = {
         // Reading files for current locale and active theme and keeping their content in memory
         // (during Ghost's initialization, when English is the language in settings, the second call
         // to i18n.init() doesn't read again the default English file for core if already in memory).
-        if (blos === undefined || currentLocale !== 'en') {
+        if (i18nCore) {
             if (currentLocale !== 'en') {
                 // Preventing wrong locale.
                 try {
@@ -172,7 +178,7 @@ I18n = {
                 throw err;
             }
         }
-        if (activeTheme) {
+        if (i18nTheme && activeTheme) {
             // Compatibility with both old themes and i18n-capable themes.
             try {
                 blosTheme = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'content', 'themes', activeTheme, 'assets', 'translations', activeTheme + '_' + currentLocale + '.json'));

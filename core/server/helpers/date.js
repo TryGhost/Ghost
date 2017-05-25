@@ -7,7 +7,7 @@ var proxy = require('./proxy'),
     moment = require('moment-timezone'),
     SafeString = proxy.SafeString,
     i18n = proxy.i18n,
-    locale = i18n.locale();
+    locale;
 
 module.exports = function (date, options) {
     var timezone, format, timeago, timeNow;
@@ -32,6 +32,7 @@ module.exports = function (date, options) {
     // i18n: Making dates, including month names, translatable to any language.
     // Documentation: http://momentjs.com/docs/#/i18n/
     // Locales: https://github.com/moment/moment/tree/develop/locale
+    locale = i18n.locale();
     moment.locale(locale);
 
     timeago = options.hash.timeago;

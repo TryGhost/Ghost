@@ -233,6 +233,8 @@ settings = {
                 // We convert this to JSON, by calling toJSON on each Model (using invokeMap for ease)
                 // We use keyBy to create an object that uses the 'key' as a key for each setting.
                 var settingsKeyedJSON = _.keyBy(_.invokeMap(settingsModelsArray, 'toJSON'), 'key');
+                // Reload translations for core and theme when saving group of settings that includes language.
+                i18n.init(true, true);
                 return settingsResult(settingsKeyedJSON, type);
             });
         });
