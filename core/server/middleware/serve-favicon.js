@@ -14,7 +14,7 @@ buildContentResponse = function buildContentResponse(ext, buf) {
             'Content-Type': 'image/' + ext,
             'Content-Length': buf.length,
             ETag: '"' + crypto.createHash('md5').update(buf, 'utf8').digest('hex') + '"',
-            'Cache-Control': 'public, max-age=' + utils.ONE_DAY_S
+            'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
         },
         body: buf
     };
