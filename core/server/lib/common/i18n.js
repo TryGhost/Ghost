@@ -15,8 +15,8 @@ var supportedLocales = ['en'],
     // currentLocale, dynamically based on overall settings (key = "default_locale") in the settings db table
     // (during Ghost's initialization, settings available inside i18n functions below; see core/server/index.js)
     // E.g.: en = English (default), es = Spanish, en-US = American English, etc.
-    // The corresponding translation files should be at core/server/translations/en.json, es.json...
-    // and content/themes/mytheme/assets/translations/mytheme_en.json, mytheme_en.css...
+    // The corresponding translation files should be at e.g. content/translations/es.json, frontend_es.json,
+    // and content/themes/mytheme/assets/translations/mytheme_es.json, mytheme_es.css.
     currentLocale,
     activeTheme,
     blos,
@@ -138,7 +138,7 @@ I18n = {
         // and English default is used for core; settings are available shortly after, allowing
         // full internationalization of core and theme.
 
-        var blosCore, blosTheme, hasBuiltInLocaleData, IntlPolyfill;
+        var blosFrontend, blosTheme, hasBuiltInLocaleData, IntlPolyfill;
 
         if (blos === undefined) {
             // If not in memory, load translations for core and theme.
@@ -151,15 +151,16 @@ I18n = {
 
         // Reading files for current locale and active theme and keeping their content in memory
         // (during Ghost's initialization, when English is the language in settings, the second call
-        // to i18n.init() doesn't read again the default English file for core if already in memory).
+        // to i18n.init() doesn't read again the default English files for core if already in memory).
         if (i18nCore) {
+            // Reading translation file for core .js files.
             if (currentLocale !== 'en') {
                 // Preventing wrong locale.
                 try {
-                    blosCore = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'content', 'translations', currentLocale + '.json'));
+                    blos = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'content', 'translations', currentLocale + '.json'));
                 } catch (err) {
                     if (err.code === 'ENOENT') {
-                        logging.warn('File ' + currentLocale + '.json not found! Falling back to default en.json.');
+                        logging.warn('File ' + currentLocale + '.json not found! Falling back to default English.');
                         currentLocale = 'en';
                         settingsCache.set('default_lang', 'en');
                     } else {
@@ -168,17 +169,43 @@ I18n = {
                 }
             }
             if (currentLocale === 'en') {
-                blosCore = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', 'en.json'));
+                blos = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', 'en.json'));
             }
             // if translation file is not valid, you will see an error
             try {
-                blos = JSON.parse(blosCore);
+                blos = JSON.parse(blos);
             } catch (err) {
                 blos = undefined;
                 throw err;
             }
+            // Reading translation file for core frontend .hbs templates.
+            if (currentLocale !== 'en') {
+                // Any wrong locale has been already corrected for this session,
+                // but maybe there is a missing file.
+                try {
+                    blosFrontend = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'content', 'translations', 'frontend_' + currentLocale + '.json'));
+                } catch (err) {
+                    if (err.code === 'ENOENT') {
+                        logging.warn('File frontend_' + currentLocale + '.json not found! Falling back to default frontend_en.json.');
+                        blosFrontend = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', 'frontend_en.json'));
+                    } else {
+                        throw err;
+                    }
+                }
+            } else {
+                blosFrontend = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', 'frontend_en.json'));
+            }
+            // if translation file is not valid, you will see an error
+            try {
+                blosFrontend = JSON.parse(blosFrontend);
+            } catch (err) {
+                blosFrontend = undefined;
+                throw err;
+            }
+            blos = _.merge(blos, blosFrontend);
         }
         if (i18nTheme && activeTheme) {
+            // Reading translation file for theme .hbs templates.
             // Compatibility with both old themes and i18n-capable themes.
             try {
                 blosTheme = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'content', 'themes', activeTheme, 'assets', 'translations', activeTheme + '_' + currentLocale + '.json'));
