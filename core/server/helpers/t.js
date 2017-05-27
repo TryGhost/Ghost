@@ -7,7 +7,7 @@
 //
 // {{t "frontend" "Older Posts"}}
 // {{t "mytheme" "Get the latest posts delivered right to your inbox"}}
-// {{{t "mytheme" "Proudly published with {ghostLink}" ghostLink="<a href=\"https://ghost.org\">Ghost</a>"}}}
+// {{t "mytheme" "Proudly published with {ghostLink}" ghostLink="<a href=\"https://ghost.org\">Ghost</a>"}}
 //
 // And in .json translation files, for example for Spanish:
 //
