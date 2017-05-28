@@ -25,11 +25,10 @@ module.exports = function plural(number, options) {
     }
 
     if (number === 0) {
-        return new SafeString(String(options.hash.empty).replace('%', number));
+        return new SafeString(options.hash.empty.replace('%', number));
     } else if (number === 1) {
-        return new SafeString(String(options.hash.singular).replace('%', number));
+        return new SafeString(options.hash.singular.replace('%', number));
     } else if (number >= 2) {
-        return new SafeString(String(options.hash.plural).replace('%', number));
+        return new SafeString(options.hash.plural.replace('%', number));
     }
 };
-

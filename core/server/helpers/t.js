@@ -7,7 +7,7 @@
 //
 // {{t "frontend" "Older Posts"}}
 // {{t "mytheme" "Get the latest posts delivered right to your inbox"}}
-// {{t "mytheme" "Proudly published with {ghostLink}" ghostLink="<a href=\"https://ghost.org\">Ghost</a>"}}
+// {{{t "mytheme" "Proudly published with {ghostLink}" ghostLink="<a href=\"https://ghost.org\">Ghost</a>"}}}
 //
 // And in .json translation files, for example for Spanish:
 //
@@ -19,12 +19,15 @@
 //     "Get the latest posts delivered right to your inbox": "Recibe los últimos artículos directamente en tu buzón",
 //     "Proudly published with {ghostLink}": "Publicado con {ghostLink}"
 // }
+//
+// To preserve HTML, use {{{t}}}. This helper doesn't use a SafeString object which would prevent escaping,
+// because often other helpers need that (t) returns a string to be able to work as subexpression; e.g.:
+// {{tags prefix=(t "casper" " on ")}}
 
 var proxy = require('./proxy'),
     jp = require('jsonpath'),
     i18n = proxy.i18n,
     bindings = {},
-    SafeString = proxy.SafeString,
     path;
 
 module.exports = function t(where, what, options) {
@@ -34,5 +37,5 @@ module.exports = function t(where, what, options) {
             bindings[prop] = options.hash[prop];
         }
     }
-    return new SafeString(i18n.t(path, bindings));
+    return i18n.t(path, bindings);
 };

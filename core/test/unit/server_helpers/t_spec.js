@@ -12,7 +12,7 @@ describe('{{t}} helper', function () {
             var expected = 'Page',
                 rendered = helpers.t.call({}, 'frontend', 'Page', {});
             should.exist(rendered);
-            rendered.string.should.equal(expected);
+            rendered.should.equal(expected);
         });
         // Removed for compatibility with both old themes and i18n-capable themes:
         //
