@@ -14,7 +14,12 @@ var supportedLocales = ['en'],
 
     // currentLocale, dynamically based on overall settings (key = "default_locale") in the settings db table
     // (during Ghost's initialization, settings available inside i18n functions below; see core/server/index.js)
+    //
     // E.g.: en = English (default), es = Spanish, en-US = American English, etc.
+    // Standard:
+    // Language tags in HTML and XML
+    // https://www.w3.org/International/articles/language-tags/
+    //
     // The corresponding translation files should be at e.g. content/translations/es.json, frontend_es.json,
     // and content/themes/mytheme/assets/translations/mytheme_es.json, mytheme_es.css.
     currentLocale,
@@ -250,7 +255,7 @@ I18n = {
     },
     /**
      * Exporting the current locale (e.g. "en") to make it available for other files,
-     * such as core/server/helpers/date.js and core/server/helpers/t_css.js
+     * such as core/server/helpers/date.js and core/server/helpers/lang.js
      */
     locale: function locale() {
         currentLocale = settingsCache.get('default_lang') || 'en';
