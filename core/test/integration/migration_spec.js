@@ -203,7 +203,7 @@ describe('Database Migration (special functions)', function () {
                     // User (Owner)
                     should.exist(result.users);
                     result.users.length.should.eql(1);
-                    result.users.at(0).get('name').should.eql('Ghost Owner');
+                    result.users.at(0).get('name').should.eql('Ghost');
                     result.users.at(0).get('status').should.eql('inactive');
                     result.users.at(0).related('roles').length.should.eql(1);
                     result.users.at(0).related('roles').at(0).get('name').should.eql('Owner');
