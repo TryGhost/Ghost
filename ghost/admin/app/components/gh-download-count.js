@@ -1,5 +1,5 @@
-import Ember from 'ember';
 import Component from 'ember-component';
+import Ember from 'ember';
 import injectService from 'ember-service/inject';
 import {task, timeout} from 'ember-concurrency';
 

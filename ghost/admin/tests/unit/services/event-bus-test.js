@@ -1,8 +1,8 @@
 /* jshint expr:true */
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupTest} from 'ember-mocha';
 import sinon from 'sinon';
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
+import {setupTest} from 'ember-mocha';
 
 describe('Unit: Service: event-bus', function() {
     setupTest('service:event-bus', {});

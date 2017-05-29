@@ -1,6 +1,6 @@
 import Component from 'ember-component';
-import computed from 'ember-computed';
 import ValidationStateMixin from 'ghost-admin/mixins/validation-state';
+import computed from 'ember-computed';
 
 /**
  * Handles the CSS necessary to show a specific property state. When passed a

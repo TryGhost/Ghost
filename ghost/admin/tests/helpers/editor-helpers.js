@@ -1,10 +1,10 @@
-import Ember from 'ember';
 import $ from 'jquery';
+import Ember from 'ember';
 import run from 'ember-runloop';
 import wait from 'ember-test-helpers/wait';
-import {find, findWithAssert, waitUntil} from 'ember-native-dom-helpers';
 import {MOBILEDOC_VERSION} from 'mobiledoc-kit/renderers/mobiledoc';
 import {TESTING_EXPANDO_PROPERTY} from 'gh-koenig/components/gh-koenig';
+import {find, findWithAssert, waitUntil} from 'ember-native-dom-helpers';
 
 export const EMPTY_DOC = {
     version: MOBILEDOC_VERSION,

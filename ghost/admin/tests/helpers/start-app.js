@@ -1,11 +1,10 @@
-import {assign} from 'ember-platform';
-import run from 'ember-runloop';
 import Application from '../../app';
 import config from '../../config/environment';
-import registerPowerSelectHelpers from '../../tests/helpers/ember-power-select';
+import fileUpload from './file-upload'; // eslint-disable-line
 import registerPowerDatepickerHelpers from '../../tests/helpers/ember-power-datepicker';
-// eslint-disable-next-line no-unused-vars
-import fileUpload from './file-upload';
+import registerPowerSelectHelpers from '../../tests/helpers/ember-power-select';
+import run from 'ember-runloop';
+import {assign} from 'ember-platform';
 
 registerPowerSelectHelpers();
 registerPowerDatepickerHelpers();

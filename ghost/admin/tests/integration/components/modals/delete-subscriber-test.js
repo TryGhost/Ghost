@@ -1,8 +1,8 @@
 /* jshint expr:true */
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupComponentTest} from 'ember-mocha';
 import hbs from 'htmlbars-inline-precompile';
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
+import {setupComponentTest} from 'ember-mocha';
 
 describe('Integration: Component: modals/delete-subscriber', function() {
     setupComponentTest('modals/delete-subscriber', {

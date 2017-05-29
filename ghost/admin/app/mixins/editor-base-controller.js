@@ -1,20 +1,19 @@
 import Ember from 'ember';
 import Mixin from 'ember-metal/mixin';
-import RSVP from 'rsvp';
-import computed, {alias, mapBy, reads} from 'ember-computed';
-import injectService from 'ember-service/inject';
-import injectController from 'ember-controller/inject';
-import {htmlSafe} from 'ember-string';
-import {isEmberArray} from 'ember-array/utils';
-import {isBlank} from 'ember-utils';
-import {task, timeout} from 'ember-concurrency';
 import PostModel from 'ghost-admin/models/post';
+import RSVP from 'rsvp';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
-import {isVersionMismatchError} from 'ghost-admin/services/ajax';
-import {isInvalidError} from 'ember-ajax/errors';
-
+import computed, {alias, mapBy, reads} from 'ember-computed';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
+import injectController from 'ember-controller/inject';
+import injectService from 'ember-service/inject';
 import moment from 'moment';
+import {htmlSafe} from 'ember-string';
+import {isBlank} from 'ember-utils';
+import {isEmberArray} from 'ember-array/utils';
+import {isInvalidError} from 'ember-ajax/errors';
+import {isVersionMismatchError} from 'ghost-admin/services/ajax';
+import {task, timeout} from 'ember-concurrency';
 
 const {resolve} = RSVP;
 

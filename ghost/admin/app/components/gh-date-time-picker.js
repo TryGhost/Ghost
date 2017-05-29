@@ -1,5 +1,5 @@
 import Component from 'ember-component';
-import computed, {reads, or} from 'ember-computed';
+import computed, {or, reads} from 'ember-computed';
 import injectService from 'ember-service/inject';
 import moment from 'moment';
 import {isBlank, isEmpty} from 'ember-utils';

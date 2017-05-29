@@ -1,5 +1,5 @@
-import Mixin from 'ember-metal/mixin';
 import Evented from 'ember-evented';
+import Mixin from 'ember-metal/mixin';
 
 /*
   Dropdowns and their buttons are evented and do not propagate clicks.

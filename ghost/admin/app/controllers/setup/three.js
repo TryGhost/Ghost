@@ -1,12 +1,12 @@
 import Controller from 'ember-controller';
+import DS from 'ember-data';
 import RSVP from 'rsvp';
 import computed, {alias} from 'ember-computed';
-import {A as emberA} from 'ember-array/utils';
-import injectService from 'ember-service/inject';
 import injectController from 'ember-controller/inject';
-import {htmlSafe} from 'ember-string';
+import injectService from 'ember-service/inject';
 import run from 'ember-runloop';
-import DS from 'ember-data';
+import {A as emberA} from 'ember-array/utils';
+import {htmlSafe} from 'ember-string';
 import {task, timeout} from 'ember-concurrency';
 
 const {Errors} = DS;

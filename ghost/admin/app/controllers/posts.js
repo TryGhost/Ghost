@@ -1,7 +1,7 @@
 import Controller from 'ember-controller';
 import computed from 'ember-computed';
-import injectService from 'ember-service/inject';
 import get from 'ember-metal/get';
+import injectService from 'ember-service/inject';
 
 export default Controller.extend({
 

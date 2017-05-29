@@ -1,18 +1,13 @@
 /* jshint expr:true */
-import {
-    describe,
-    it,
-    beforeEach,
-    afterEach
-} from 'mocha';
-import {expect} from 'chai';
-import startApp from '../helpers/start-app';
-import destroyApp from '../helpers/destroy-app';
-import {invalidateSession, authenticateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import Mirage from 'ember-cli-mirage';
-import sinon from 'sinon';
-import testSelector from 'ember-test-selectors';
+import destroyApp from '../helpers/destroy-app';
 import moment from 'moment';
+import sinon from 'sinon';
+import startApp from '../helpers/start-app';
+import testSelector from 'ember-test-selectors';
+import {afterEach, beforeEach, describe, it} from 'mocha';
+import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
+import {expect} from 'chai';
 
 describe('Acceptance: Editor', function() {
     let application;

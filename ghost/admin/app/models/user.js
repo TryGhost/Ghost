@@ -1,12 +1,11 @@
 /* eslint-disable camelcase */
 import Model from 'ember-data/model';
+import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import attr from 'ember-data/attr';
-import {hasMany} from 'ember-data/relationships';
 import computed, {equal} from 'ember-computed';
 import injectService from 'ember-service/inject';
-
+import {hasMany} from 'ember-data/relationships';
 import {task} from 'ember-concurrency';
-import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 
 export default Model.extend(ValidationEngine, {
     validationType: 'user',

@@ -1,11 +1,11 @@
 /* eslint-disable camelcase */
-import run from 'ember-runloop';
-import RSVP from 'rsvp';
 import EmberObject from 'ember-object';
-import {describe, it} from 'mocha';
-import {setupComponentTest} from 'ember-mocha';
-
+import RSVP from 'rsvp';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
+import run from 'ember-runloop';
+import {describe, it} from 'mocha';
+
+import {setupComponentTest} from 'ember-mocha';
 
 function K() {
     return this;

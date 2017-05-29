@@ -1,5 +1,5 @@
-import {Factory} from 'ember-cli-mirage';
 import moment from 'moment';
+import {Factory} from 'ember-cli-mirage';
 
 export default Factory.extend({
     token(i) { return `${i}-token`; },

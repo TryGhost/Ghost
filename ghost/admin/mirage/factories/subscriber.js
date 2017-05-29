@@ -1,5 +1,5 @@
-import {Factory, faker} from 'ember-cli-mirage';
 import moment from 'moment';
+import {Factory, faker} from 'ember-cli-mirage';
 
 let randomDate = function randomDate(start = moment().subtract(30, 'days').toDate(), end = new Date()) {
     return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));

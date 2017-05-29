@@ -1,8 +1,8 @@
 import Mixin from 'ember-metal/mixin';
-import {isEmpty} from 'ember-utils';
-import {A as emberA} from 'ember-array/utils';
 import observer from 'ember-metal/observer';
 import run from 'ember-runloop';
+import {A as emberA} from 'ember-array/utils';
+import {isEmpty} from 'ember-utils';
 
 export default Mixin.create({
 

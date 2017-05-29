@@ -1,9 +1,9 @@
 /* jshint scripturl:true */
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupComponentTest} from 'ember-mocha';
-import hbs from 'htmlbars-inline-precompile';
 import Ember from 'ember';
+import hbs from 'htmlbars-inline-precompile';
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
+import {setupComponentTest} from 'ember-mocha';
 
 const {$, run} = Ember;
 

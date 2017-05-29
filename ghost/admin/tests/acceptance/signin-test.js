@@ -1,20 +1,20 @@
 /* jshint expr:true */
-import {
-    describe,
-    it,
-    beforeEach,
-    afterEach
-} from 'mocha';
 import $ from 'jquery';
-import {expect} from 'chai';
-import startApp from '../helpers/start-app';
 import destroyApp from '../helpers/destroy-app';
-import {invalidateSession, authenticateSession} from '../helpers/ember-simple-auth';
-import {enableGhostOAuth} from '../helpers/configuration';
+import startApp from '../helpers/start-app';
 import {Response} from 'ember-cli-mirage';
 import {
-    stubSuccessfulOAuthConnect,
-    stubFailedOAuthConnect
+    afterEach,
+    beforeEach,
+    describe,
+    it
+} from 'mocha';
+import {authenticateSession, invalidateSession} from '../helpers/ember-simple-auth';
+import {enableGhostOAuth} from '../helpers/configuration';
+import {expect} from 'chai';
+import {
+    stubFailedOAuthConnect,
+    stubSuccessfulOAuthConnect
 } from '../helpers/oauth';
 
 describe('Acceptance: Signin', function() {

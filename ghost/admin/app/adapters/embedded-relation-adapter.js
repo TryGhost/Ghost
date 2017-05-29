@@ -1,6 +1,6 @@
+import BaseAdapter from 'ghost-admin/adapters/base';
 import get from 'ember-metal/get';
 import {isNone} from 'ember-utils';
-import BaseAdapter from 'ghost-admin/adapters/base';
 
 // EmbeddedRelationAdapter will augment the query object in calls made to
 // DS.Store#findRecord, findAll, query, and queryRecord with the correct "includes"

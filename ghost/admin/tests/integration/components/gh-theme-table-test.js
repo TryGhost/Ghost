@@ -1,12 +1,12 @@
 /* jshint expr:true */
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupComponentTest} from 'ember-mocha';
-import hbs from 'htmlbars-inline-precompile';
 import $ from 'jquery';
-import sinon from 'sinon';
+import hbs from 'htmlbars-inline-precompile';
 import run from 'ember-runloop';
+import sinon from 'sinon';
 import testSelector from 'ember-test-selectors';
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
+import {setupComponentTest} from 'ember-mocha';
 
 describe('Integration: Component: gh-theme-table', function() {
     setupComponentTest('gh-theme-table', {

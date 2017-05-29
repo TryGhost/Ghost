@@ -1,9 +1,9 @@
 import Controller from 'ember-controller';
-import {empty} from 'ember-computed';
 import injectService from 'ember-service/inject';
-import {task} from 'ember-concurrency';
-import {isInvalidError} from 'ember-ajax/errors';
 import {alias} from 'ember-computed';
+import {empty} from 'ember-computed';
+import {isInvalidError} from 'ember-ajax/errors';
+import {task} from 'ember-concurrency';
 
 export default Controller.extend({
     ghostPaths: injectService(),

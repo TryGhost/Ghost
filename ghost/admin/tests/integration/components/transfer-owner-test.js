@@ -1,11 +1,11 @@
 /* jshint expr:true */
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupComponentTest} from 'ember-mocha';
+import RSVP from 'rsvp';
 import hbs from 'htmlbars-inline-precompile';
 import run from 'ember-runloop';
-import RSVP from 'rsvp';
 import sinon from 'sinon';
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
+import {setupComponentTest} from 'ember-mocha';
 
 describe('Integration: Component: modals/transfer-owner', function() {
     setupComponentTest('transfer-owner', {

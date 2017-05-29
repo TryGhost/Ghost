@@ -1,11 +1,11 @@
-import RSVP from 'rsvp';
-import injectService from 'ember-service/inject';
-import {A as emberA} from 'ember-array/utils';
-import {isBlank} from 'ember-utils';
-import run from 'ember-runloop';
-import {invokeAction} from 'ember-invoke-action';
-import computed from 'ember-computed';
 import Component from 'ember-component';
+import RSVP from 'rsvp';
+import computed from 'ember-computed';
+import injectService from 'ember-service/inject';
+import run from 'ember-runloop';
+import {A as emberA} from 'ember-array/utils';
+import {invokeAction} from 'ember-invoke-action';
+import {isBlank} from 'ember-utils';
 
 const FullScreenModalComponent = Component.extend({
 

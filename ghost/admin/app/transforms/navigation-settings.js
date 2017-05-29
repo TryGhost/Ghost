@@ -1,6 +1,6 @@
-import {A as emberA, isEmberArray} from 'ember-array/utils';
-import Transform from 'ember-data/transform';
 import NavigationItem from 'ghost-admin/models/navigation-item';
+import Transform from 'ember-data/transform';
+import {A as emberA, isEmberArray} from 'ember-array/utils';
 
 export default Transform.extend({
     deserialize(serialized) {

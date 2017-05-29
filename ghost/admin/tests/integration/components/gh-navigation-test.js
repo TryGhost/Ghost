@@ -1,12 +1,12 @@
 /* jshint expr:true */
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupComponentTest} from 'ember-mocha';
-import hbs from 'htmlbars-inline-precompile';
 import $ from 'jquery';
-import run from 'ember-runloop';
 import NavItem from 'ghost-admin/models/navigation-item';
+import hbs from 'htmlbars-inline-precompile';
+import run from 'ember-runloop';
 import wait from 'ember-test-helpers/wait';
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
+import {setupComponentTest} from 'ember-mocha';
 
 describe('Integration: Component: gh-navigation', function () {
     setupComponentTest('gh-navigation', {

@@ -1,17 +1,15 @@
 import Ember from 'ember';
+import Model from 'ember-data/model';
+import ValidationEngine from 'ghost-admin/mixins/validation-engine';
+import attr from 'ember-data/attr';
+import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import computed, {equal, filterBy} from 'ember-computed';
 import injectService from 'ember-service/inject';
 import moment from 'moment';
 import observer from 'ember-metal/observer';
-import Model from 'ember-data/model';
-import attr from 'ember-data/attr';
-import {belongsTo, hasMany} from 'ember-data/relationships';
-import ValidationEngine from 'ghost-admin/mixins/validation-engine';
-import boundOneWay from 'ghost-admin/utils/bound-one-way';
-import {isBlank} from 'ember-utils';
-
-// a blank mobile doc containing a single markdown card
 import {BLANK_DOC} from 'ghost-admin/components/gh-markdown-editor';
+import {belongsTo, hasMany} from 'ember-data/relationships';
+import {isBlank} from 'ember-utils';
 
 // ember-cli-shims doesn't export these so we must get them manually
 const {Comparable, compare} = Ember;

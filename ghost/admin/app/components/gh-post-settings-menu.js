@@ -1,14 +1,14 @@
-import Ember from 'ember';
 import Component from 'ember-component';
-import computed, {alias} from 'ember-computed';
-import {guidFor} from 'ember-metal/utils';
-import injectService from 'ember-service/inject';
-import {htmlSafe} from 'ember-string';
-import {invokeAction} from 'ember-invoke-action';
+import Ember from 'ember';
 import SettingsMenuMixin from 'ghost-admin/mixins/settings-menu-component';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
+import computed, {alias} from 'ember-computed';
+import injectService from 'ember-service/inject';
 import isNumber from 'ghost-admin/utils/isNumber';
 import moment from 'moment';
+import {guidFor} from 'ember-metal/utils';
+import {htmlSafe} from 'ember-string';
+import {invokeAction} from 'ember-invoke-action';
 
 const {Handlebars} = Ember;
 

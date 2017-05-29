@@ -2,13 +2,13 @@ import Controller from 'ember-controller';
 import computed from 'ember-computed';
 import injectService from 'ember-service/inject';
 import observer from 'ember-metal/observer';
-import run from 'ember-runloop';
 import randomPassword from 'ghost-admin/utils/random-password';
-import {task} from 'ember-concurrency';
+import run from 'ember-runloop';
 import {
-    IMAGE_MIME_TYPES,
-    IMAGE_EXTENSIONS
+    IMAGE_EXTENSIONS,
+    IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
+import {task} from 'ember-concurrency';
 
 export default Controller.extend({
     config: injectService(),

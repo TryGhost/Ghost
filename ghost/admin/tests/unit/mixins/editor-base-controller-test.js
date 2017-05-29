@@ -1,15 +1,15 @@
 /* jshint expr:true */
-import {expect} from 'chai';
+import EditorBaseControllerMixin from 'ghost-admin/mixins/editor-base-controller';
+import EmberObject from 'ember-object';
+import RSVP from 'rsvp';
+import run from 'ember-runloop';
+import wait from 'ember-test-helpers/wait';
 import {
     describe,
     it
 } from 'mocha';
-import EmberObject from 'ember-object';
-import RSVP from 'rsvp';
-import run from 'ember-runloop';
+import {expect} from 'chai';
 import {task} from 'ember-concurrency';
-import EditorBaseControllerMixin from 'ghost-admin/mixins/editor-base-controller';
-import wait from 'ember-test-helpers/wait';
 
 describe('Unit: Mixin: editor-base-controller', function() {
     describe('generateSlug', function () {

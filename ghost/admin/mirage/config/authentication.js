@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
+import $ from 'jquery';
 import {Response} from 'ember-cli-mirage';
 import {isBlank} from 'ember-utils';
-import $ from 'jquery';
 
 export default function mockAuthentication(server) {
     server.post('/authentication/token', function ({roles, users}, {requestBody}) {

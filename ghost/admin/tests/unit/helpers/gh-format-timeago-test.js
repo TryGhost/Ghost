@@ -1,14 +1,14 @@
 /* jshint expr:true */
-import {expect} from 'chai';
+import moment from 'moment';
+import sinon from 'sinon';
 import {
     describe,
     it
 } from 'mocha';
+import {expect} from 'chai';
 import {
     timeAgo
 } from 'ghost-admin/helpers/gh-format-timeago';
-import sinon from 'sinon';
-import moment from 'moment';
 
 describe('Unit: Helper: gh-format-timeago', function () {
     // eslint-disable-next-line no-unused-vars

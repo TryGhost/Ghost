@@ -1,19 +1,14 @@
 /* jshint expr:true */
 /* eslint-disable camelcase */
-import {
-    describe,
-    it,
-    beforeEach,
-    afterEach
-} from 'mocha';
-import {expect} from 'chai';
 import $ from 'jquery';
+import destroyApp from '../../helpers/destroy-app';
 import run from 'ember-runloop';
 import startApp from '../../helpers/start-app';
-import destroyApp from '../../helpers/destroy-app';
-import {invalidateSession, authenticateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
-import {errorOverride, errorReset} from 'ghost-admin/tests/helpers/adapter-error';
 import {Response} from 'ember-cli-mirage';
+import {afterEach, beforeEach, describe, it} from 'mocha';
+import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
+import {errorOverride, errorReset} from 'ghost-admin/tests/helpers/adapter-error';
+import {expect} from 'chai';
 
 // Grabbed from keymaster's testing code because Ember's `keyEvent` helper
 // is for some reason not triggering the events in a way that keymaster detects:

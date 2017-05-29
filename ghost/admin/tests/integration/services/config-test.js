@@ -1,8 +1,8 @@
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupTest} from 'ember-mocha';
 import Pretender from 'pretender';
 import wait from 'ember-test-helpers/wait';
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
+import {setupTest} from 'ember-mocha';
 
 function stubAvailableTimezonesEndpoint(server) {
     server.get('/ghost/api/v0.1/configuration/timezones', function () {

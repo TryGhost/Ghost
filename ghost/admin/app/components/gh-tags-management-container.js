@@ -1,9 +1,9 @@
 import Component from 'ember-component';
 import computed, {equal, reads} from 'ember-computed';
 import injectService from 'ember-service/inject';
-import {isBlank} from 'ember-utils';
 import observer from 'ember-metal/observer';
 import run from 'ember-runloop';
+import {isBlank} from 'ember-utils';
 
 export default Component.extend({
     classNames: ['view-container'],

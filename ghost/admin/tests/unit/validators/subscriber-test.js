@@ -1,11 +1,11 @@
 /* jshint expr:true */
-import {expect} from 'chai';
+import Ember from 'ember';
+import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {
     describe,
     it
 } from 'mocha';
-import Ember from 'ember';
-import ValidationEngine from 'ghost-admin/mixins/validation-engine';
+import {expect} from 'chai';
 
 const {
     run,

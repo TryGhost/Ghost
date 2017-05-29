@@ -1,14 +1,9 @@
 /* jshint expr:true */
-import {
-    describe,
-    it,
-    beforeEach,
-    afterEach
-} from 'mocha';
-import {expect} from 'chai';
-import startApp from '../helpers/start-app';
 import destroyApp from '../helpers/destroy-app';
+import startApp from '../helpers/start-app';
+import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
+import {expect} from 'chai';
 
 const originalAgent = window.navigator.userAgent;
 

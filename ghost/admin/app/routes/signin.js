@@ -1,8 +1,8 @@
-import Route from 'ember-route';
-import EmberObject from 'ember-object';
-import styleBody from 'ghost-admin/mixins/style-body';
 import DS from 'ember-data';
+import EmberObject from 'ember-object';
+import Route from 'ember-route';
 import UnauthenticatedRouteMixin from 'ghost-admin/mixins/unauthenticated-route-mixin';
+import styleBody from 'ghost-admin/mixins/style-body';
 
 const {Errors} = DS;
 

@@ -1,12 +1,10 @@
-import Mixin from 'ember-metal/mixin';
-import RSVP from 'rsvp';
-import {A as emberA, isEmberArray} from 'ember-array/utils';
 import DS from 'ember-data';
-import Model from 'ember-data/model';
-
 import InviteUserValidator from 'ghost-admin/validators/invite-user';
+import Mixin from 'ember-metal/mixin';
+import Model from 'ember-data/model';
 import NavItemValidator from 'ghost-admin/validators/nav-item';
 import PostValidator from 'ghost-admin/validators/post';
+import RSVP from 'rsvp';
 import ResetValidator from 'ghost-admin/validators/reset';
 import SettingValidator from 'ghost-admin/validators/setting';
 import SetupValidator from 'ghost-admin/validators/setup';
@@ -16,8 +14,8 @@ import SlackIntegrationValidator from 'ghost-admin/validators/slack-integration'
 import SubscriberValidator from 'ghost-admin/validators/subscriber';
 import TagSettingsValidator from 'ghost-admin/validators/tag-settings';
 import UserValidator from 'ghost-admin/validators/user';
-
 import ValidatorExtensions from 'ghost-admin/utils/validator-extensions';
+import {A as emberA, isEmberArray} from 'ember-array/utils';
 
 const {Errors} = DS;
 

@@ -1,7 +1,7 @@
 import Controller from 'ember-controller';
-import {alias} from 'ember-computed';
-import injectService from 'ember-service/inject';
 import injectController from 'ember-controller/inject';
+import injectService from 'ember-service/inject';
+import {alias} from 'ember-computed';
 
 export default Controller.extend({
 

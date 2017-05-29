@@ -1,11 +1,11 @@
 /* jshint expr:true */
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupComponentTest} from 'ember-mocha';
+import $ from 'jquery';
 import hbs from 'htmlbars-inline-precompile';
 import wait from 'ember-test-helpers/wait';
 import {click, find, triggerEvent} from 'ember-native-dom-helpers';
-import $ from 'jquery';
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
+import {setupComponentTest} from 'ember-mocha';
 
 // NOTE: If the browser window is not focused/visible CodeMirror (or Chrome?) will
 // take longer to respond to/fire events so it's possible that some of these tests

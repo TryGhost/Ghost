@@ -1,11 +1,11 @@
 /* jshint expr:true */
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupComponentTest} from 'ember-mocha';
 import hbs from 'htmlbars-inline-precompile';
-import {task, timeout} from 'ember-concurrency';
 import run from 'ember-runloop';
 import wait from 'ember-test-helpers/wait';
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
+import {setupComponentTest} from 'ember-mocha';
+import {task, timeout} from 'ember-concurrency';
 
 describe('Integration: Component: gh-task-button', function() {
     setupComponentTest('gh-task-button', {

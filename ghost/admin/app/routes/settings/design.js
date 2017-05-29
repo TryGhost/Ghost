@@ -1,9 +1,9 @@
 import $ from 'jquery';
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
-import styleBody from 'ghost-admin/mixins/style-body';
 import RSVP from 'rsvp';
 import injectService from 'ember-service/inject';
+import styleBody from 'ghost-admin/mixins/style-body';
 
 export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     settings: injectService(),

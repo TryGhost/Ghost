@@ -1,6 +1,6 @@
 /* jshint expr:true */
-import {expect} from 'chai';
 import {describe, it} from 'mocha';
+import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';
 
 describe('Unit: Transform: twitter-url-user', function() {

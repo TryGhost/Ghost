@@ -1,9 +1,9 @@
 import Router from 'ember-router';
+import config from './config/environment';
+import documentTitle from 'ghost-admin/utils/document-title';
+import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import injectService from 'ember-service/inject';
 import on from 'ember-evented/on';
-import ghostPaths from 'ghost-admin/utils/ghost-paths';
-import documentTitle from 'ghost-admin/utils/document-title';
-import config from './config/environment';
 
 const GhostRouter = Router.extend({
     location: config.locationType, // use HTML5 History API instead of hash-tag based URLs

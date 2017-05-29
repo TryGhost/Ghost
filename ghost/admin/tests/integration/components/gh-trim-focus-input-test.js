@@ -1,8 +1,8 @@
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupComponentTest} from 'ember-mocha';
-import run from 'ember-runloop';
 import hbs from 'htmlbars-inline-precompile';
+import run from 'ember-runloop';
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
+import {setupComponentTest} from 'ember-mocha';
 
 describe('Integration: Component: gh-trim-focus-input', function () {
     setupComponentTest('gh-trim-focus-input', {

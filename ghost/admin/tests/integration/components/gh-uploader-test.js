@@ -1,14 +1,14 @@
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupComponentTest} from 'ember-mocha';
-import hbs from 'htmlbars-inline-precompile';
-import {createFile} from '../../helpers/file-upload';
 import Pretender from 'pretender';
-import sinon from 'sinon';
-import wait from 'ember-test-helpers/wait';
+import hbs from 'htmlbars-inline-precompile';
 import run from 'ember-runloop';
-import {click, find, findAll} from 'ember-native-dom-helpers';
+import sinon from 'sinon';
 import testSelector from 'ember-test-selectors';
+import wait from 'ember-test-helpers/wait';
+import {click, find, findAll} from 'ember-native-dom-helpers';
+import {createFile} from '../../helpers/file-upload';
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
+import {setupComponentTest} from 'ember-mocha';
 
 const stubSuccessfulUpload = function (server, delay = 0) {
     server.post('/ghost/api/v0.1/uploads/', function () {

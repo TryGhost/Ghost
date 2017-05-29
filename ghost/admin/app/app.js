@@ -1,11 +1,11 @@
-import Ember from 'ember';
-import Application from 'ember-application';
-import Resolver from './resolver';
-import loadInitializers from 'ember-load-initializers';
-import 'ghost-admin/utils/route';
 import 'ghost-admin/utils/link-component';
+import 'ghost-admin/utils/route';
 import 'ghost-admin/utils/text-field';
+import Application from 'ember-application';
+import Ember from 'ember';
+import Resolver from './resolver';
 import config from './config/environment';
+import loadInitializers from 'ember-load-initializers';
 
 Ember.MODEL_FACTORY_INJECTIONS = true;
 

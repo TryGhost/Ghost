@@ -1,10 +1,10 @@
+import Ember from 'ember';
+import FeatureService, {feature} from 'ghost-admin/services/feature';
+import Pretender from 'pretender';
+import run from 'ember-runloop';
+import wait from 'ember-test-helpers/wait';
 import {describe, it} from 'mocha';
 import {setupTest} from 'ember-mocha';
-import Pretender from 'pretender';
-import wait from 'ember-test-helpers/wait';
-import FeatureService, {feature} from 'ghost-admin/services/feature';
-import Ember from 'ember';
-import run from 'ember-runloop';
 
 const {Error: EmberError} = Ember;
 

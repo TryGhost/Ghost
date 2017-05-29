@@ -1,10 +1,10 @@
 /* jshint expr:true */
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupComponentTest} from 'ember-mocha';
-import hbs from 'htmlbars-inline-precompile';
 import Service from 'ember-service';
+import hbs from 'htmlbars-inline-precompile';
+import {describe, it} from 'mocha';
 import {A as emberA} from 'ember-array/utils';
+import {expect} from 'chai';
+import {setupComponentTest} from 'ember-mocha';
 
 let notificationsStub = Service.extend({
     notifications: emberA()

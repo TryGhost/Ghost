@@ -1,10 +1,9 @@
 import $ from 'jquery';
 import Mixin from 'ember-metal/mixin';
-import run from 'ember-runloop';
-
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
-import styleBody from 'ghost-admin/mixins/style-body';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
+import run from 'ember-runloop';
+import styleBody from 'ghost-admin/mixins/style-body';
 
 let generalShortcuts = {};
 generalShortcuts[`${ctrlOrCmd}+alt+p`] = 'publish';

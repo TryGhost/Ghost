@@ -1,9 +1,9 @@
-import RSVP from 'rsvp';
-import injectService from 'ember-service/inject';
-import {A as emberA} from 'ember-array/utils';
-import run from 'ember-runloop';
 import ModalComponent from 'ghost-admin/components/modals/base';
+import RSVP from 'rsvp';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
+import injectService from 'ember-service/inject';
+import run from 'ember-runloop';
+import {A as emberA} from 'ember-array/utils';
 import {task} from 'ember-concurrency';
 
 const {Promise} = RSVP;
