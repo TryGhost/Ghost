@@ -277,10 +277,12 @@
 
 .settings-code-editor.focused {
     outline: 0;
-    border-color: var(--midgrey);
+    border-color: color(var(--lightgrey) l(-15%) s(-10%));
 }
 
 .settings-code-editor .CodeMirror {
+    padding: 0;
+    border: none;
     border-radius: inherit;
 }
 
