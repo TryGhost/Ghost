@@ -1,10 +1,10 @@
 import Component from 'ember-component';
 import computed from 'ember-computed';
+import formatMarkdown from 'ghost-admin/utils/format-markdown';
+import run from 'ember-runloop';
 import {assign} from 'ember-platform';
 import {copy} from 'ember-metal/utils';
 import {isEmpty} from 'ember-utils';
-import run from 'ember-runloop';
-import formatMarkdown from 'ghost-admin/utils/format-markdown';
 
 const MOBILEDOC_VERSION = '0.3.1';
 

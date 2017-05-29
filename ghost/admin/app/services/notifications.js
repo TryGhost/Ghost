@@ -1,11 +1,11 @@
 import Service from 'ember-service';
-import {filter} from 'ember-computed';
-import {A as emberA, isEmberArray} from 'ember-array/utils';
 import get from 'ember-metal/get';
-import set from 'ember-metal/set';
 import injectService from 'ember-service/inject';
-import {isBlank} from 'ember-utils';
+import set from 'ember-metal/set';
 import {dasherize} from 'ember-string';
+import {A as emberA, isEmberArray} from 'ember-array/utils';
+import {filter} from 'ember-computed';
+import {isBlank} from 'ember-utils';
 import {
     isMaintenanceError,
     isVersionMismatchError

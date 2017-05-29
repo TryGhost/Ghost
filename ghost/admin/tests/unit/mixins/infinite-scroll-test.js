@@ -1,11 +1,11 @@
 /* jshint expr:true */
-import {expect} from 'chai';
+import EmberObject from 'ember-object';
+import InfiniteScrollMixin from 'ghost-admin/mixins/infinite-scroll';
 import {
     describe,
     it
 } from 'mocha';
-import EmberObject from 'ember-object';
-import InfiniteScrollMixin from 'ghost-admin/mixins/infinite-scroll';
+import {expect} from 'chai';
 
 describe('Unit: Mixin: infinite-scroll', function () {
     // Replace this with your real tests.

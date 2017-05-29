@@ -1,7 +1,7 @@
-import RSVP from 'rsvp';
-import injectService from 'ember-service/inject';
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
+import RSVP from 'rsvp';
+import injectService from 'ember-service/inject';
 import styleBody from 'ghost-admin/mixins/style-body';
 
 export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {

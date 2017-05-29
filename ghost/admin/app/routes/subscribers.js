@@ -1,6 +1,6 @@
+import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import RSVP from 'rsvp';
 import injectService from 'ember-service/inject';
-import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 
 export default AuthenticatedRoute.extend({
     titleToken: 'Subscribers',

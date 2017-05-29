@@ -1,11 +1,10 @@
+import AjaxService from 'ember-ajax/services/ajax';
 import Component from 'ember-component';
 import computed, {notEmpty} from 'ember-computed';
-import {htmlSafe} from 'ember-string';
 import injectService from 'ember-service/inject';
-import {isBlank} from 'ember-utils';
 import run from 'ember-runloop';
-
-import AjaxService from 'ember-ajax/services/ajax';
+import {htmlSafe} from 'ember-string';
+import {isBlank} from 'ember-utils';
 import {isNotFoundError} from 'ember-ajax/errors';
 
 /**

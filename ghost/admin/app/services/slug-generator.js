@@ -1,5 +1,5 @@
-import Service from 'ember-service';
 import RSVP from 'rsvp';
+import Service from 'ember-service';
 import injectService from 'ember-service/inject';
 
 const {resolve} = RSVP;

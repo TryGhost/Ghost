@@ -1,9 +1,9 @@
 /* jshint expr:true */
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupTest} from 'ember-mocha';
-import {A as emberA} from 'ember-array/utils';
 import SlackIntegration from 'ghost-admin/models/slack-integration';
+import {describe, it} from 'mocha';
+import {A as emberA} from 'ember-array/utils';
+import {expect} from 'chai';
+import {setupTest} from 'ember-mocha';
 
 describe('Unit: Transform: slack-settings', function() {
     setupTest('transform:slack-settings', {});

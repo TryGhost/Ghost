@@ -1,11 +1,11 @@
 /* jshint expr:true */
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupComponentTest} from 'ember-mocha';
-import hbs from 'htmlbars-inline-precompile';
-import EmberObject from 'ember-object';
 import DS from 'ember-data';
+import EmberObject from 'ember-object';
+import hbs from 'htmlbars-inline-precompile';
 import wait from 'ember-test-helpers/wait';
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
+import {setupComponentTest} from 'ember-mocha';
 
 const {Errors} = DS;
 

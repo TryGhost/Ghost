@@ -1,9 +1,9 @@
 import $ from 'jquery';
+import ModalComponent from 'ghost-admin/components/modals/base';
+import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import computed from 'ember-computed';
 import injectService from 'ember-service/inject';
 import {htmlSafe} from 'ember-string';
-import ModalComponent from 'ghost-admin/components/modals/base';
-import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {task} from 'ember-concurrency';
 

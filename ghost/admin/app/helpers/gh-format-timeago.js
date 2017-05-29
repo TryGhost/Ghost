@@ -1,5 +1,5 @@
-import {helper} from 'ember-helper';
 import moment from 'moment';
+import {helper} from 'ember-helper';
 
 export function timeAgo(params) {
     if (!params || !params.length) {

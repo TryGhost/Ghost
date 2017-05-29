@@ -1,8 +1,8 @@
 /* jshint expr:true */
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupTest} from 'ember-mocha';
 import Pretender from 'pretender';
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
+import {setupTest} from 'ember-mocha';
 
 describe('Integration: Adapter: user', function () {
     setupTest('adapter:user', {

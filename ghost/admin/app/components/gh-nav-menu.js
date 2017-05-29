@@ -1,7 +1,7 @@
 import Component from 'ember-component';
+import calculatePosition from 'ember-basic-dropdown/utils/calculate-position';
 import injectService from 'ember-service/inject';
 import {htmlSafe} from 'ember-string';
-import calculatePosition from 'ember-basic-dropdown/utils/calculate-position';
 
 export default Component.extend({
     config: injectService(),

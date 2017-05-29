@@ -1,17 +1,17 @@
 /* jshint expr:true */
-import {
-    describe,
-    it,
-    beforeEach,
-    afterEach
-} from 'mocha';
-import {expect} from 'chai';
-import startApp from '../helpers/start-app';
 import destroyApp from '../helpers/destroy-app';
-import {enableGhostOAuth} from '../helpers/configuration';
+import startApp from '../helpers/start-app';
 import {
-    stubSuccessfulOAuthConnect,
-    stubFailedOAuthConnect
+    afterEach,
+    beforeEach,
+    describe,
+    it
+} from 'mocha';
+import {enableGhostOAuth} from '../helpers/configuration';
+import {expect} from 'chai';
+import {
+    stubFailedOAuthConnect,
+    stubSuccessfulOAuthConnect
 } from '../helpers/oauth';
 
 describe('Acceptance: Signup', function() {

@@ -1,8 +1,8 @@
 import Component from 'ember-component';
 import run from 'ember-runloop';
 import {
-    IMAGE_MIME_TYPES,
-    IMAGE_EXTENSIONS
+    IMAGE_EXTENSIONS,
+    IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
 
 const {debounce} = run;

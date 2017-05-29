@@ -1,11 +1,11 @@
 /* jshint expr:true */
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupComponentTest} from 'ember-mocha';
+import Pretender from 'pretender';
 import hbs from 'htmlbars-inline-precompile';
 import run from 'ember-runloop';
-import Pretender from 'pretender';
 import wait from 'ember-test-helpers/wait';
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
+import {setupComponentTest} from 'ember-mocha';
 
 describe('Integration: Component: gh-search-input', function () {
     setupComponentTest('gh-search-input', {

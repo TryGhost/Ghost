@@ -1,7 +1,7 @@
 import Controller from 'ember-controller';
 import injectService from 'ember-service/inject';
-import {task} from 'ember-concurrency';
 import {alias} from 'ember-computed';
+import {task} from 'ember-concurrency';
 
 export default Controller.extend({
     notifications: injectService(),

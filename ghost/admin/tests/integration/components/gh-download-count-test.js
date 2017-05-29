@@ -1,9 +1,9 @@
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupComponentTest} from 'ember-mocha';
-import hbs from 'htmlbars-inline-precompile';
 import Pretender from 'pretender';
+import hbs from 'htmlbars-inline-precompile';
 import wait from 'ember-test-helpers/wait';
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
+import {setupComponentTest} from 'ember-mocha';
 
 describe('Integration: Component: gh-download-count', function() {
     setupComponentTest('gh-download-count', {

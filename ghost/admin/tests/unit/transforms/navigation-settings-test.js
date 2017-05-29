@@ -1,9 +1,9 @@
 /* jshint expr:true */
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupTest} from 'ember-mocha';
-import {A as emberA} from 'ember-array/utils';
 import NavigationItem from 'ghost-admin/models/navigation-item';
+import {describe, it} from 'mocha';
+import {A as emberA} from 'ember-array/utils';
+import {expect} from 'chai';
+import {setupTest} from 'ember-mocha';
 
 describe('Unit: Transform: navigation-settings', function() {
     setupTest('transform:navigation-settings', {});

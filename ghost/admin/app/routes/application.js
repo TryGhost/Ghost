@@ -1,17 +1,17 @@
-import Route from 'ember-route';
-import {htmlSafe} from 'ember-string';
-import injectService from 'ember-service/inject';
-import run from 'ember-runloop';
-import {isEmberArray} from 'ember-array/utils';
-import observer from 'ember-metal/observer';
 import $ from 'jquery';
-import {isUnauthorizedError} from 'ember-ajax/errors';
-import AuthConfiguration from 'ember-simple-auth/configuration';
 import ApplicationRouteMixin from 'ember-simple-auth/mixins/application-route-mixin';
+import AuthConfiguration from 'ember-simple-auth/configuration';
+import RSVP from 'rsvp';
+import Route from 'ember-route';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
+import injectService from 'ember-service/inject';
+import observer from 'ember-metal/observer';
+import run from 'ember-runloop';
 import windowProxy from 'ghost-admin/utils/window-proxy';
-import RSVP from 'rsvp';
+import {htmlSafe} from 'ember-string';
+import {isEmberArray} from 'ember-array/utils';
+import {isUnauthorizedError} from 'ember-ajax/errors';
 
 function K() {
     return this;

@@ -1,8 +1,8 @@
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupComponentTest} from 'ember-mocha';
-import hbs from 'htmlbars-inline-precompile';
 import Service from 'ember-service';
+import hbs from 'htmlbars-inline-precompile';
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
+import {setupComponentTest} from 'ember-mocha';
 
 const featureStub = Service.extend({
     testFlag: true

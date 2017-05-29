@@ -1,6 +1,6 @@
 import $ from 'jquery';
-import run from 'ember-runloop';
 import Mixin from 'ember-metal/mixin';
+import run from 'ember-runloop';
 
 function K() {
     return this;

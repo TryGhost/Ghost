@@ -91,6 +91,7 @@
     "ember-wormhole": "0.5.1",
     "emberx-file-input": "1.1.2",
     "eslint-plugin-ember-suave": "1.0.0",
+    "eslint-plugin-sort-imports-es6-autofix": "https://github.com/kevinansfield/eslint-plugin-sort-imports-es6-autofix.git#node-4-compat",
     "fs-extra": "3.0.1",
     "glob": "7.1.1",
     "grunt": "1.0.1",

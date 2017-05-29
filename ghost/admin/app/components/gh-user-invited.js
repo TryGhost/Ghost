@@ -1,8 +1,8 @@
 import Component from 'ember-component';
 import computed from 'ember-computed';
+import moment from 'moment';
 import service from 'ember-service/inject';
 import {isNotFoundError} from 'ember-ajax/errors';
-import moment from 'moment';
 
 export default Component.extend({
     tagName: '',

@@ -1,7 +1,7 @@
 import Component from 'ember-component';
-import moment from 'moment';
 import computed from 'ember-computed';
 import injectService from 'ember-service/inject';
+import moment from 'moment';
 
 export default Component.extend({
     clock: injectService(),

@@ -1,11 +1,10 @@
 /* eslint-disable camelcase */
-import {A as emberA, isEmberArray} from 'ember-array/utils';
+import EmberSelectizeComponent from 'ember-cli-selectize/components/ember-selectize';
 import computed from 'ember-computed';
-import {isBlank} from 'ember-utils';
 import get from 'ember-metal/get';
 import run from 'ember-runloop';
-
-import EmberSelectizeComponent from 'ember-cli-selectize/components/ember-selectize';
+import {A as emberA, isEmberArray} from 'ember-array/utils';
+import {isBlank} from 'ember-utils';
 
 export default EmberSelectizeComponent.extend({
 

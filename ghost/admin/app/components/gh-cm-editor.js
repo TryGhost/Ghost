@@ -1,11 +1,11 @@
 /* global CodeMirror */
 import Component from 'ember-component';
-import {bind, once, scheduleOnce} from 'ember-runloop';
-import injectService from 'ember-service/inject';
 import RSVP from 'rsvp';
-import {assign} from 'ember-platform';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
+import injectService from 'ember-service/inject';
 import {InvokeActionMixin} from 'ember-invoke-action';
+import {assign} from 'ember-platform';
+import {bind, once, scheduleOnce} from 'ember-runloop';
 
 const CmEditorComponent =  Component.extend(InvokeActionMixin, {
     classNameBindings: ['isFocused:focused'],

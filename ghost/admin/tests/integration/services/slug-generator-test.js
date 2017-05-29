@@ -1,8 +1,8 @@
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupTest} from 'ember-mocha';
 import Pretender from 'pretender';
 import {dasherize} from 'ember-string';
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
+import {setupTest} from 'ember-mocha';
 
 function stubSlugEndpoint(server, type, slug) {
     server.get('/ghost/api/v0.1/slugs/:type/:slug/', function (request) {

@@ -1,4 +1,4 @@
-import {RestSerializer, Collection} from 'ember-cli-mirage';
+import {Collection, RestSerializer} from 'ember-cli-mirage';
 import {pluralize} from 'ember-cli-mirage/utils/inflector';
 import {underscore} from 'ember-string';
 

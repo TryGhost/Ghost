@@ -1,8 +1,8 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
 import PaginationMixin from 'ghost-admin/mixins/pagination';
-import styleBody from 'ghost-admin/mixins/style-body';
 import RSVP from 'rsvp';
+import styleBody from 'ghost-admin/mixins/style-body';
 
 export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, PaginationMixin, {
     titleToken: 'Team',

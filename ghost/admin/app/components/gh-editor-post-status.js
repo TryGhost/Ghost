@@ -1,6 +1,6 @@
 import Component from 'ember-component';
-import {task, timeout} from 'ember-concurrency';
 import computed, {reads} from 'ember-computed';
+import {task, timeout} from 'ember-concurrency';
 
 // TODO: reduce when in testing mode
 const SAVE_TIMEOUT_MS = 3000;

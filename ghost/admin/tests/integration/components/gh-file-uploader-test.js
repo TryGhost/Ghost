@@ -1,16 +1,16 @@
 /* jshint expr:true */
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupComponentTest} from 'ember-mocha';
-import hbs from 'htmlbars-inline-precompile';
 import $ from 'jquery';
-import run from 'ember-runloop';
 import Pretender from 'pretender';
-import wait from 'ember-test-helpers/wait';
-import sinon from 'sinon';
-import {createFile, fileUpload} from '../../helpers/file-upload';
 import Service from 'ember-service';
+import hbs from 'htmlbars-inline-precompile';
+import run from 'ember-runloop';
+import sinon from 'sinon';
+import wait from 'ember-test-helpers/wait';
 import {UnsupportedMediaTypeError} from 'ghost-admin/services/ajax';
+import {createFile, fileUpload} from '../../helpers/file-upload';
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
+import {setupComponentTest} from 'ember-mocha';
 
 const notificationsStub = Service.extend({
     showAPIError() {

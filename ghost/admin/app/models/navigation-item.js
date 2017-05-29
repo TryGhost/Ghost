@@ -1,8 +1,7 @@
+import EmberObject from 'ember-object';
+import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import computed from 'ember-computed';
 import {isBlank} from 'ember-utils';
-import EmberObject from 'ember-object';
-
-import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 
 export default EmberObject.extend(ValidationEngine, {
     label: '',

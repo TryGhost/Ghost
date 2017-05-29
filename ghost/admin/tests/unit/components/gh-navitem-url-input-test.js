@@ -1,7 +1,7 @@
 /* jshint expr:true */
 import run from 'ember-runloop';
-import {expect} from 'chai';
 import {describe, it} from 'mocha';
+import {expect} from 'chai';
 import {setupComponentTest} from 'ember-mocha';
 
 describe('Unit: Component: gh-navitem-url-input', function () {

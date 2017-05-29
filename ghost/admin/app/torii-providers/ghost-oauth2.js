@@ -1,7 +1,7 @@
 import Oauth2 from 'torii/providers/oauth2-code';
-import injectService from 'ember-service/inject';
 import computed from 'ember-computed';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
+import injectService from 'ember-service/inject';
 
 let GhostOauth2 = Oauth2.extend({
 

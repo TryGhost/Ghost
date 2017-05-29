@@ -1,5 +1,5 @@
-import injectService from 'ember-service/inject';
 import ModalComponent from 'ghost-admin/components/modals/base';
+import injectService from 'ember-service/inject';
 import {task} from 'ember-concurrency';
 
 export default ModalComponent.extend({

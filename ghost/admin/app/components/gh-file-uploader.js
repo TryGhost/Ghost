@@ -1,18 +1,17 @@
 import Component from 'ember-component';
-import {htmlSafe} from 'ember-string';
-import injectService from 'ember-service/inject';
 import computed from 'ember-computed';
-import {isBlank} from 'ember-utils';
+import injectService from 'ember-service/inject';
 import run from 'ember-runloop';
-import {isEmberArray} from 'ember-array/utils';
-
-import {invokeAction} from 'ember-invoke-action';
 import {
-    isVersionMismatchError,
+    UnsupportedMediaTypeError,
     isRequestEntityTooLargeError,
     isUnsupportedMediaTypeError,
-    UnsupportedMediaTypeError
+    isVersionMismatchError
 } from 'ghost-admin/services/ajax';
+import {htmlSafe} from 'ember-string';
+import {invokeAction} from 'ember-invoke-action';
+import {isBlank} from 'ember-utils';
+import {isEmberArray} from 'ember-array/utils';
 
 export default Component.extend({
     tagName: 'section',

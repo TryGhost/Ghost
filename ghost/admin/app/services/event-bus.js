@@ -1,5 +1,5 @@
-import Service from 'ember-service';
 import Evented from 'ember-evented';
+import Service from 'ember-service';
 
 export default Service.extend(Evented, {
     publish() {

@@ -1,8 +1,8 @@
 /* jshint expr:true */
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupComponentTest} from 'ember-mocha';
 import sinon from 'sinon';
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
+import {setupComponentTest} from 'ember-mocha';
 
 describe('Unit: Component: gh-alert', function () {
     setupComponentTest('gh-alert', {

@@ -1,15 +1,13 @@
-import Ember from 'ember';
 import Controller from 'ember-controller';
+import Ember from 'ember';
+import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import computed, {alias, and, not, or, readOnly} from 'ember-computed';
 import injectService from 'ember-service/inject';
-import {htmlSafe} from 'ember-string';
-import run from 'ember-runloop';
-import {isEmberArray} from 'ember-array/utils';
-
-import {task, taskGroup} from 'ember-concurrency';
-
 import isNumber from 'ghost-admin/utils/isNumber';
-import boundOneWay from 'ghost-admin/utils/bound-one-way';
+import run from 'ember-runloop';
+import {htmlSafe} from 'ember-string';
+import {isEmberArray} from 'ember-array/utils';
+import {task, taskGroup} from 'ember-concurrency';
 
 // ember-cli-shims doesn't export this
 const {Handlebars} = Ember;

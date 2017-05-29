@@ -1,11 +1,11 @@
 /* jshint expr:true */
-import {expect} from 'chai';
+import NavItem from 'ghost-admin/models/navigation-item';
+import validator from 'ghost-admin/validators/nav-item';
 import {
     describe,
     it
 } from 'mocha';
-import validator from 'ghost-admin/validators/nav-item';
-import NavItem from 'ghost-admin/models/navigation-item';
+import {expect} from 'chai';
 
 const testInvalidUrl = function (url) {
     let navItem = NavItem.create({url});

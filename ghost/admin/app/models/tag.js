@@ -1,12 +1,11 @@
 /* eslint-disable camelcase */
-import computed, {equal} from 'ember-computed';
-import observer from 'ember-metal/observer';
-import injectService from 'ember-service/inject';
-import {guidFor} from 'ember-metal/utils';
-
 import Model from 'ember-data/model';
-import attr from 'ember-data/attr';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
+import attr from 'ember-data/attr';
+import computed, {equal} from 'ember-computed';
+import injectService from 'ember-service/inject';
+import observer from 'ember-metal/observer';
+import {guidFor} from 'ember-metal/utils';
 
 export default Model.extend(ValidationEngine, {
     validationType: 'tag',

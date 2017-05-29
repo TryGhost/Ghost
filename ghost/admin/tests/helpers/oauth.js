@@ -1,5 +1,5 @@
-import {faker} from 'ember-cli-mirage';
 import RSVP from 'rsvp';
+import {faker} from 'ember-cli-mirage';
 
 let generateCode = function generateCode() {
     return faker.internet.password(32, false, /[a-zA-Z0-9]/);

@@ -1,7 +1,7 @@
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupModelTest} from 'ember-mocha';
 import Pretender from 'pretender';
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
+import {setupModelTest} from 'ember-mocha';
 
 describe('Unit: Serializer: notification', function () {
     setupModelTest('notification', {

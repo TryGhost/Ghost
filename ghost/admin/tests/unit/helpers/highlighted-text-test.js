@@ -1,9 +1,9 @@
 /* jshint expr:true */
-import {expect} from 'chai';
 import {
   describe,
   it
 } from 'mocha';
+import {expect} from 'chai';
 import {
   highlightedText
 } from 'ghost-admin/helpers/highlighted-text';

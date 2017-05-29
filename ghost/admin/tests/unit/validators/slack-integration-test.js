@@ -1,11 +1,11 @@
 /* jshint expr:true */
-import {expect} from 'chai';
+import SlackObject from 'ghost-admin/models/slack-integration';
+import validator from 'ghost-admin/validators/slack-integration';
 import {
     describe,
     it
 } from 'mocha';
-import validator from 'ghost-admin/validators/slack-integration';
-import SlackObject from 'ghost-admin/models/slack-integration';
+import {expect} from 'chai';
 
 const testInvalidUrl = function (url) {
     let slackObject = SlackObject.create({url});

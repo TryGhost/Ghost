@@ -1,6 +1,6 @@
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
 import {countCharacters} from 'ghost-admin/helpers/gh-count-characters';
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
 
 describe('Unit: Helper: gh-count-characters', function() {
     let defaultStyle = 'color: rgb(115, 138, 148);';

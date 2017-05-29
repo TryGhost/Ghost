@@ -3,8 +3,8 @@
 import Component from 'ember-component';
 import RSVP from 'rsvp';
 import computed from 'ember-computed';
-import run from 'ember-runloop';
 import injectService from 'ember-service/inject';
+import run from 'ember-runloop';
 import {isBlank, isEmpty} from 'ember-utils';
 
 export function computedGroup(category) {

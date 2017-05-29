@@ -1,11 +1,11 @@
+import Authenticator from 'ember-simple-auth/authenticators/oauth2-password-grant';
+import RSVP from 'rsvp';
 import computed from 'ember-computed';
 import injectService from 'ember-service/inject';
-import Authenticator from 'ember-simple-auth/authenticators/oauth2-password-grant';
 import run from 'ember-runloop';
-import RSVP from 'rsvp';
-import {wrap} from 'ember-array/utils';
-import {isEmpty} from 'ember-utils';
 import {assign} from 'ember-platform';
+import {isEmpty} from 'ember-utils';
+import {wrap} from 'ember-array/utils';
 
 export default Authenticator.extend({
     ajax: injectService(),

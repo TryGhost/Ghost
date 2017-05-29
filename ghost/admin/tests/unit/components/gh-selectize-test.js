@@ -1,9 +1,9 @@
 /* jshint expr:true */
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupComponentTest} from 'ember-mocha';
-import {A as emberA} from 'ember-array/utils';
 import run from 'ember-runloop';
+import {describe, it} from 'mocha';
+import {A as emberA} from 'ember-array/utils';
+import {expect} from 'chai';
+import {setupComponentTest} from 'ember-mocha';
 
 describe('Unit: Component: gh-selectize', function () {
     setupComponentTest('gh-selectize', {

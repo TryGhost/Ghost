@@ -1,19 +1,19 @@
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupTest} from 'ember-mocha';
 import Pretender from 'pretender';
+import RSVP from 'rsvp';
+import Service from 'ember-service';
+import config from 'ghost-admin/config/environment';
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
 import {
     isAjaxError,
     isUnauthorizedError
 } from 'ember-ajax/errors';
 import {
-    isVersionMismatchError,
     isRequestEntityTooLargeError,
-    isUnsupportedMediaTypeError
+    isUnsupportedMediaTypeError,
+    isVersionMismatchError
 } from 'ghost-admin/services/ajax';
-import config from 'ghost-admin/config/environment';
-import Service from 'ember-service';
-import RSVP from 'rsvp';
+import {setupTest} from 'ember-mocha';
 
 function stubAjaxEndpoint(server, response = {}, code = 200) {
     server.get('/test/', function () {

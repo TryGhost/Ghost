@@ -1,8 +1,8 @@
+import $ from 'jquery';
 import Component from 'ember-component';
 import computed, {reads} from 'ember-computed';
 import injectService from 'ember-service/inject';
 import {task} from 'ember-concurrency';
-import $ from 'jquery';
 
 export default Component.extend({
     clock: injectService(),

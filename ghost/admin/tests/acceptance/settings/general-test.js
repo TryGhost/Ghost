@@ -1,20 +1,15 @@
 /* jshint expr:true */
-import {
-    describe,
-    it,
-    beforeEach,
-    afterEach
-} from 'mocha';
-import {expect} from 'chai';
-import testSelector from 'ember-test-selectors';
 import $ from 'jquery';
-import startApp from '../../helpers/start-app';
-import destroyApp from '../../helpers/destroy-app';
-import {invalidateSession, authenticateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
-import wait from 'ember-test-helpers/wait';
-import run from 'ember-runloop';
+import destroyApp from '../../helpers/destroy-app';
 import mockUploads from '../../../mirage/config/uploads';
+import run from 'ember-runloop';
+import startApp from '../../helpers/start-app';
+import testSelector from 'ember-test-selectors';
+import wait from 'ember-test-helpers/wait';
+import {afterEach, beforeEach, describe, it} from 'mocha';
+import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
+import {expect} from 'chai';
 
 describe('Acceptance: Settings - General', function () {
     let application;

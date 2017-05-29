@@ -1,9 +1,9 @@
 /* jshint expr:true */
-import {expect, assert} from 'chai';
-import {describe, it} from 'mocha';
-import {setupTest} from 'ember-mocha';
 import Ember from 'ember';
 import NavItem from 'ghost-admin/models/navigation-item';
+import {assert, expect} from 'chai';
+import {describe, it} from 'mocha';
+import {setupTest} from 'ember-mocha';
 
 const {
     run,

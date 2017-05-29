@@ -1,14 +1,14 @@
 import Controller from 'ember-controller';
 import RSVP from 'rsvp';
-import injectService from 'ember-service/inject';
-import {isEmberArray} from 'ember-array/utils';
-import {task} from 'ember-concurrency';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
+import injectService from 'ember-service/inject';
 import {
     VersionMismatchError,
     isVersionMismatchError
 } from 'ghost-admin/services/ajax';
 import {assign} from 'ember-platform';
+import {isEmberArray} from 'ember-array/utils';
+import {task} from 'ember-concurrency';
 
 const {Promise} = RSVP;
 

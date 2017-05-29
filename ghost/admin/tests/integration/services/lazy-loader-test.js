@@ -1,9 +1,9 @@
 /* jshint expr:true */
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupTest} from 'ember-mocha';
-import Pretender from 'pretender';
 import $ from 'jquery';
+import Pretender from 'pretender';
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
+import {setupTest} from 'ember-mocha';
 
 describe('Integration: Service: lazy-loader', function() {
     setupTest('service:lazy-loader', {integration: true});

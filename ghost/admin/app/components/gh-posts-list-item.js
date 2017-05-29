@@ -1,9 +1,9 @@
-import Ember from 'ember';
+import $ from 'jquery';
 import Component from 'ember-component';
-import {htmlSafe} from 'ember-string';
+import Ember from 'ember';
 import computed, {alias, equal} from 'ember-computed';
 import injectService from 'ember-service/inject';
-import $ from 'jquery';
+import {htmlSafe} from 'ember-string';
 import {isBlank} from 'ember-utils';
 
 // ember-cli-shims doesn't export these

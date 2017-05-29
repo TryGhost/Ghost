@@ -1,9 +1,9 @@
-import Route from 'ember-route';
-import RSVP from 'rsvp';
-import injectService from 'ember-service/inject';
-import EmberObject from 'ember-object';
 import DS from 'ember-data';
+import EmberObject from 'ember-object';
+import RSVP from 'rsvp';
+import Route from 'ember-route';
 import UnauthenticatedRouteMixin from 'ghost-admin/mixins/unauthenticated-route-mixin';
+import injectService from 'ember-service/inject';
 import styleBody from 'ghost-admin/mixins/style-body';
 
 const {Promise} = RSVP;

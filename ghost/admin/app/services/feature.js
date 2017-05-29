@@ -1,9 +1,9 @@
 import Ember from 'ember';
+import RSVP from 'rsvp';
 import Service from 'ember-service';
 import computed from 'ember-computed';
 import injectService from 'ember-service/inject';
 import set from 'ember-metal/set';
-import RSVP from 'rsvp';
 
 // ember-cli-shims doesn't export Error
 const {Error: EmberError} = Ember;
