@@ -1,5 +1,5 @@
 var _       = require('lodash'),
-    utils   = require('../../../utils'),
+    config  = require('../../../config'),
     sitemap = require('./index');
 
 // Responsible for handling requests for sitemap files
@@ -20,7 +20,7 @@ module.exports = function handler(blogApp) {
         var siteMapXml = sitemap.getIndexXml();
 
         res.set({
-            'Cache-Control': 'public, max-age=' + utils.ONE_HOUR_S,
+            'Cache-Control': 'public, max-age=' + config.get('caching:sitemap:maxAge'),
             'Content-Type': 'text/xml'
         });
 
@@ -45,7 +45,7 @@ module.exports = function handler(blogApp) {
             siteMapXml = getResourceSiteMapXml(type, page);
 
         res.set({
-            'Cache-Control': 'public, max-age=' + utils.ONE_HOUR_S,
+            'Cache-Control': 'public, max-age=' + config.get('caching:sitemap:maxAge'),
             'Content-Type': 'text/xml'
         });
 
