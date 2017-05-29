@@ -11,7 +11,7 @@ var path = require('path'),
     loader;
 
 function isInternalApp(name) {
-    return _.includes(config.get('internalApps'), name);
+    return _.includes(config.get('apps:internal'), name);
 }
 
 // Get the full path to an app by name

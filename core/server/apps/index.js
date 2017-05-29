@@ -22,13 +22,13 @@ function getInstalledApps() {
             return Promise.reject(e);
         }
 
-        return installed.concat(config.get('internalApps'));
+        return installed.concat(config.get('apps:internal'));
     });
 }
 
 function saveInstalledApps(installedApps) {
     return getInstalledApps().then(function (currentInstalledApps) {
-        var updatedAppsInstalled = _.difference(_.uniq(installedApps.concat(currentInstalledApps)), config.get('internalApps'));
+        var updatedAppsInstalled = _.difference(_.uniq(installedApps.concat(currentInstalledApps)), config.get('apps:internal'));
 
         return api.settings.edit({settings: [{key: 'installed_apps', value: updatedAppsInstalled}]}, {context: {internal: true}});
     });
@@ -45,7 +45,7 @@ module.exports = {
 
                 appsToLoad = JSON.parse(aApps.value) || [];
 
-                appsToLoad = appsToLoad.concat(config.get('internalApps'));
+                appsToLoad = appsToLoad.concat(config.get('apps:internal'));
             });
         } catch (err) {
             logging.error(new errors.GhostError({

@@ -12,12 +12,14 @@
         "migrationPath": "core/server/data/migrations",
         "publicFilePath": "core/server/public"
     },
-    "internalApps": [
-        "private-blogging",
-        "subscribers",
-        "amp",
-        "default-cards"
-    ],
+    "apps": {
+        "internal": [
+            "private-blogging",
+            "subscribers",
+            "amp",
+            "default-cards"
+        ]
+    },
     "routeKeywords": {
         "tag": "tag",
         "author": "author",
