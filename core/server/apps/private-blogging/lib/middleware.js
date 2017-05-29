@@ -60,11 +60,13 @@ privateBlogging = {
                 if (err) {
                     return next(err);
                 }
+
                 res.writeHead(200, {
                     'Content-Type': 'text/plain',
                     'Content-Length': buf.length,
-                    'Cache-Control': 'public, max-age=' + utils.ONE_HOUR_MS
+                    'Cache-Control': 'public, max-age=' + config.get('caching:robotstxt:maxAge')
                 });
+
                 res.end(buf);
             });
         } else {

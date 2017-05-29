@@ -2,8 +2,7 @@ var fs = require('fs-extra'),
     _ = require('lodash'),
     config = require('../config'),
     errors = require('../errors'),
-    logging = require('../logging'),
-    utils = require('../utils');
+    logging = require('../logging');
 
 /**
  * you can extend Ghost with a custom redirects file
@@ -42,7 +41,7 @@ module.exports = function redirects(blogApp) {
             }
 
             blogApp.get(new RegExp(redirect.from), function (req, res) {
-                var maxAge = redirect.permanent ? utils.ONE_YEAR_S : 0;
+                var maxAge = redirect.permanent ? config.get('caching:customRedirects:maxAge') : 0;
 
                 res.set({
                     'Cache-Control': 'public, max-age=' + maxAge

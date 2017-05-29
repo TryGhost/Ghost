@@ -53,5 +53,25 @@
             "lifetime": 3600,
             "freeRetries":99
         }
+    },
+    "caching": {
+        "frontend": {
+            "maxAge": 0
+        },
+        "301": {
+            "maxAge": 31536000
+        },
+        "customRedirects": {
+            "maxAge": 31536000
+        },
+        "favicon": {
+            "maxAge": 86400
+        },
+        "sitemap": {
+            "maxAge": 3600
+        },
+        "robotstxt": {
+            "maxAge": 3600000
+        }
     }
 }
