@@ -32,7 +32,7 @@ frontendRoutes = function frontendRoutes() {
 
     // setup routes for internal apps
     // @TODO: refactor this to be a proper app route hook for internal & external apps
-    config.get('internalApps').forEach(function (appName) {
+    config.get('apps:internal').forEach(function (appName) {
         var app = require(path.join(config.get('paths').internalAppPath, appName));
         if (app.hasOwnProperty('setupRoutes')) {
             app.setupRoutes(router);
