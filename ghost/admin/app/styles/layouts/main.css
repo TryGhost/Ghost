@@ -481,7 +481,7 @@ body > .ember-view:not(.default-liquid-destination) {
 
 .gh-canvas {
     flex-grow: 1;
-    padding: 2.9vw 4vw 3vw 4vw;
+    padding: 24px 4vw 3vw 4vw;
     margin: 0 auto;
     max-width: 1200px;
 }
@@ -502,10 +502,27 @@ body > .ember-view:not(.default-liquid-destination) {
     padding: 0;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 3.4rem;
+    font-size: 2.9rem;
     line-height: 1.2em;
     font-weight: 700;
     letter-spacing: 0.4px;
+    /* match button height to avoid jump on navigation between screens*/
+    min-height: 35px;
+}
+
+.gh-canvas-title a {
+    color: var(--darkgrey);
+}
+
+.gh-canvas-title span {
+    display: inline-block;
+    height: 100%;
+    vertical-align: baseline;
+}
+
+.gh-canvas-title svg {
+    height: 0.6em;
+    margin: 0 10px;
 }
 
 .view-header {

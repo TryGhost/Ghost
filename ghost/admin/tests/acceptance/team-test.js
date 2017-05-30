@@ -116,10 +116,12 @@ describe('Acceptance: Team', function () {
             expect(document.title, 'title after clicking user').to.equal('Team - User - Test Blog');
 
             // view title should exist and be linkable and active
-            expect(find('.view-title a[href="/ghost/team"]').hasClass('active'), 'has linkable url back to team main page')
-                .to.be.true;
+            expect(
+                find(`${testSelector('screen-title')} a[href="/ghost/team"]`).hasClass('active'),
+                'has linkable url back to team main page'
+            ).to.be.true;
 
-            await click('.view-title a');
+            await click(`${testSelector('screen-title')} a`);
 
             // url should be /team again
             expect(currentURL(), 'url after clicking back').to.equal('/team');

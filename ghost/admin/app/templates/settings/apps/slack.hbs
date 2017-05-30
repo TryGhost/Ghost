@@ -1,11 +1,17 @@
-<header class="view-header">
-    {{#gh-view-title openMobileMenu="openMobileMenu"}}<span style="padding-left:1px">{{#link-to "settings.apps.index"}}Apps{{/link-to}} {{inline-svg "arrow-right"}} Slack</span>{{/gh-view-title}}
-    <section class="view-actions">
-        {{gh-task-button task=save class="gh-btn gh-btn-blue gh-btn-icon" data-test-save-button=true}}
-    </section>
-</header>
-<section class="view-container">
-    <section class="view-content">
+<section class="gh-canvas">
+    <header class="gh-canvas-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>
+            {{#link-to "settings.apps.index"}}Apps{{/link-to}}
+            <span>{{inline-svg "arrow-right"}}</span>
+            Slack
+        </h2>
+        <section class="view-actions">
+            {{gh-task-button task=save class="gh-btn gh-btn-blue gh-btn-icon" data-test-save-button=true}}
+        </section>
+    </header>
+
+    <section class="view-container">
+        <br>
         <section class="app-grid">
             <div class="app-cell">
                 <img class="app-icon" src="assets/img/slackicon.png" />
@@ -15,23 +21,27 @@
                 <p>A messaging app for teams</p>
             </div>
         </section>
-        <section class="app-subtitle">
-            <p>Automatically send newly published posts to a channel in Slack.</p>
-        </section>
 
         <form class="app-config-form" id="slack-settings" novalidate="novalidate" {{action "save" on="submit"}}>
-            {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="url"}}
-                <label for="url">Webhook URL</label>
-                {{gh-input model.url name="slack[url]" update=(action "updateURL") onenter=(action "save") placeholder="https://hooks.slack.com/services/..." data-test-slack-url-input=true}}
-                {{#unless model.errors.url}}
-                    <p>Set up a new incoming webhook <a href="https://my.slack.com/apps/new/A0F7XDUAZ-incoming-webhooks" target="_blank">here</a>, and grab the URL.</p>
-                {{else}}
-                    {{gh-error-message errors=model.errors property="url"}}
-                {{/unless}}
-            {{/gh-form-group}}
+            <div class="gh-setting-header">Slack configuration</div>
+            <div class="gh-setting">
+                <div class="gh-setting-content">
+                    <div class="gh-setting-title">Webhook URL</div>
+                    <div class="gh-setting-desc">Automatically send newly published posts to a channel in Slack</div>
+                    <div class="gh-setting-content-extended">
+                        {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="url"}}
+                            {{gh-input model.url name="slack[url]" update=(action "updateURL") onenter=(action "save") placeholder="https://hooks.slack.com/services/..." data-test-slack-url-input=true}}
+                            {{#unless model.errors.url}}
+                                <p>Set up a new incoming webhook <a href="https://my.slack.com/apps/new/A0F7XDUAZ-incoming-webhooks" target="_blank">here</a>, and grab the URL.</p>
+                            {{else}}
+                                {{gh-error-message errors=model.errors property="url"}}
+                            {{/unless}}
+                        {{/gh-form-group}}
+                    </div>
+                </div>
+            </div>
         </form>
 
         {{gh-task-button "Send Test Notification" task=sendTestNotification successText="Sent" class="gh-btn gh-btn-grey gh-btn-icon" disabled=testNotificationDisabled data-test-send-notification-button=true}}
-
     </section>
 </section>
