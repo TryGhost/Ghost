@@ -19,6 +19,12 @@ class Base {
             returnDuplicates: true
         };
 
+        this.legacyKeys = {};
+        this.legacyMapper = item => _(item)
+            .mapKeys((val, key) => this.legacyKeys[key] || key)
+            .mapValues((val, key) => (key === 'language' && val === 'en_US') ? 'en' : val)
+            .value();
+
         this.dataKeyToImport = options.dataKeyToImport;
         this.dataToImport = _.cloneDeep(options[this.dataKeyToImport] || []);
         this.importedData = [];

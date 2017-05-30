@@ -51,7 +51,7 @@ describe('Import', function () {
             }).catch(done);
         });
 
-        it('removes duplicate posts', function (done) {
+        it.only('removes duplicate posts', function (done) {
             var exportData;
 
             testUtils.fixtures.loadExportFixture('export-003').then(function (exported) {
@@ -59,7 +59,7 @@ describe('Import', function () {
                 return dataImporter.doImport(exportData);
             }).then(function (importResult) {
                 should.exist(importResult.data.posts);
-
+console.log(importResult)
                 importResult.data.posts.length.should.equal(1);
                 importResult.problems.length.should.eql(8);
 

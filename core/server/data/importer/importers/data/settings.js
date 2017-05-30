@@ -14,9 +14,16 @@ class SettingsImporter extends BaseImporter {
             requiredData: []
         }));
 
-        this.legacyKeys = {
-            activePlugins: 'active_apps',
-            installedPlugins: 'installed_apps'
+        // Map legacy keys
+        this.legacySettingsKeys = {
+            activeApps: 'active_apps',
+            installedApps: 'installed_apps',
+            defaultLang: 'default_lang',
+            isPrivate: 'is_private',
+            activeTheme: 'active_theme', // TODO check we want tthis as we are not installing it?
+            forceI18n: 'force_i18n',
+            activeTimezone: 'active_timezone',
+            cover: 'cover_image'
         };
     }
 
@@ -29,12 +36,21 @@ class SettingsImporter extends BaseImporter {
 
         let self = this;
 
+        // Remove core and theme data types
         this.dataToImport = _.filter(this.dataToImport, function (data) {
             return ['core', 'theme'].indexOf(data.type) === -1;
         });
 
+        // Remove deprecated postsPerPage setting
+        this.dataToImport = _.filter(this.dataToImport, function (data) {
+            return data.key !== "postsPerPage";
+        });
+
         _.each(this.dataToImport, function (obj) {
-            obj.key = self.legacyKeys[obj.key] || obj.key;
+            obj.key = self.legacySettingsKeys[obj.key] || obj.key;
+
+            // Set legacy default lang to current format
+            obj.value = (obj.key === 'default_lang' && obj.value === 'en_US') ? 'en' : obj.value;
         });
 
         return super.beforeImport();

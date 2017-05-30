@@ -12,6 +12,12 @@ class UsersImporter extends BaseImporter {
             dataKeyToImport: 'users',
             requiredData: ['roles', 'roles_users']
         }));
+
+        // Map legacy keys
+        this.legacyKeys = {
+            image: 'profile_image',
+            cover: 'cover_image'
+        };
     }
 
     /**
@@ -25,7 +31,9 @@ class UsersImporter extends BaseImporter {
 
         let self = this, role;
 
-        _.each(this.dataToImport, function (model) {
+        self.dataToImport = this.dataToImport.map(self.legacyMapper);
+
+        _.each(self.dataToImport, function (model) {
             model.password = globalUtils.uid(50);
             model.status = 'locked';
         });
