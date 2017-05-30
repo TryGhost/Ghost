@@ -1,13 +1,15 @@
-<section class="gh-view">
-    <header class="view-header">
-        {{#gh-view-title openMobileMenu="openMobileMenu"}}
+<section class="gh-canvas">
+    <header class="gh-canvas-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>
             {{link-to "Team" "team" data-test-team-link=true}}
-            {{inline-svg "arrow-right"}} <span>{{user.name}}</span>
+            <span>{{inline-svg "arrow-right"}}</span>
+            {{user.name}}
 
             {{#if user.isSuspended}}
             <span class="gh-badge administrator" data-test-suspended-badge>Suspended</span>
             {{/if}}
-        {{/gh-view-title}}
+        </h2>
+
         <section class="view-actions">
             {{#if userActionsAreVisible}}
                 <span class="dropdown">
@@ -85,164 +87,161 @@
     </header>
 
     <div class="gm-main view-container settings-user">
-        <div class="gh-canvas">
-            <form class="user-profile" novalidate="novalidate" autocomplete="off" {{action (perform save) on="submit"}}>
+        <form class="user-profile" novalidate="novalidate" autocomplete="off" {{action (perform save) on="submit"}}>
 
-              <figure class="user-cover" style={{coverImageBackground}}>
-                  <button class="gh-btn gh-btn-default user-cover-edit" {{action "toggleUploadCoverModal"}}><span>Change Cover</span></button>
-                  {{#if showUploadCoverModal}}
-                      {{gh-fullscreen-modal "upload-image"
-                                            model=(hash model=user imageProperty="cover")
-                                            close=(action "toggleUploadCoverModal")
-                                            modifier="action wide"}}
-                  {{/if}}
-              </figure>
+          <figure class="user-cover" style={{coverImageBackground}}>
+              <button class="gh-btn gh-btn-default user-cover-edit" {{action "toggleUploadCoverModal"}}><span>Change Cover</span></button>
+              {{#if showUploadCoverModal}}
+                  {{gh-fullscreen-modal "upload-image"
+                                        model=(hash model=user imageProperty="cover")
+                                        close=(action "toggleUploadCoverModal")
+                                        modifier="action wide"}}
+              {{/if}}
+          </figure>
 
-              <figure class="user-image">
-                  <div id="user-image" class="img" style={{userImageBackground}}><span class="hidden">{{user.name}}"s Picture</span></div>
-                  <button type="button" {{action "toggleUploadImageModal"}} class="edit-user-image">Edit Picture</button>
-                  {{#if showUploadImageModal}}
-                      {{gh-fullscreen-modal "upload-image"
-                                            model=(hash model=user imageProperty="image")
-                                            close=(action "toggleUploadImageModal")
-                                            modifier="action wide"}}
-                  {{/if}}
-              </figure>
+          <figure class="user-image">
+              <div id="user-image" class="img" style={{userImageBackground}}><span class="hidden">{{user.name}}"s Picture</span></div>
+              <button type="button" {{action "toggleUploadImageModal"}} class="edit-user-image">Edit Picture</button>
+              {{#if showUploadImageModal}}
+                  {{gh-fullscreen-modal "upload-image"
+                                        model=(hash model=user imageProperty="image")
+                                        close=(action "toggleUploadImageModal")
+                                        modifier="action wide"}}
+              {{/if}}
+          </figure>
 
-                {{!-- Horrible hack to prevent Chrome from incorrectly auto-filling inputs --}}
-                <input style="display:none;" type="text" name="fakeusernameremembered"/>
-                <input style="display:none;" type="password" name="fakepasswordremembered"/>
+            {{!-- Horrible hack to prevent Chrome from incorrectly auto-filling inputs --}}
+            <input style="display:none;" type="text" name="fakeusernameremembered"/>
+            <input style="display:none;" type="password" name="fakepasswordremembered"/>
 
-                <fieldset class="user-details-bottom">
+            <fieldset class="user-details-bottom">
 
-                    {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="name" class="first-form-group"}}
-                        <label for="user-name">Full Name</label>
-                        {{gh-input user.name id="user-name" class="user-name" placeholder="Full Name" autocorrect="off" focusOut=(action "validate" "name" target=user) update=(action (mut user.name))}}
-                        {{#if user.errors.name}}
-                            {{gh-error-message errors=user.errors property="name"}}
-                        {{else}}
-                            <p>Use your real name so people can recognise you</p>
-                        {{/if}}
-                    {{/gh-form-group}}
-
-                    {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="slug"}}
-                        <label for="user-slug">Slug</label>
-                        {{gh-input slugValue class="user-name" id="user-slug" name="user" focusOut=(action (perform updateSlug slugValue)) placeholder="Slug" selectOnClick="true" autocorrect="off" update=(action (mut slugValue))}}
-                        <p>{{gh-blog-url}}/author/{{slugValue}}</p>
-                        {{gh-error-message errors=user.errors property="slug"}}
-                    {{/gh-form-group}}
-
-                    {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="email"}}
-                        <label for="user-email">Email</label>
-                        {{!-- Administrators only see text of Owner's email address but not input --}}
-                        {{#if canChangeEmail}}
-                            {{gh-input user.email type="email" id="user-email" name="email" placeholder="Email Address" autocapitalize="off" autocorrect="off" autocomplete="off" focusOut=(action "validate" "email" target=user) update=(action (mut user.email))}}
-                            {{gh-error-message errors=user.errors property="email"}}
-                        {{else}}
-                            <span>{{user.email}}</span>
-                        {{/if}}
-                        <p>Used for notifications</p>
-                    {{/gh-form-group}}
-
-                    {{#if rolesDropdownIsVisible}}
-                        <div class="form-group">
-                            <label for="user-role">Role</label>
-                            <span class="gh-select" tabindex="0">
-                                {{one-way-select
-                                    id="new-user-role"
-                                    options=roles
-                                    optionValuePath="id"
-                                    optionLabelPath="name"
-                                    value=model.role
-                                    update=(action "changeRole")
-                                }}
-                            </span>
-                            <p>What permissions should this user have?</p>
-                        </div>
+                {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="name" class="first-form-group"}}
+                    <label for="user-name">Full Name</label>
+                    {{gh-input user.name id="user-name" class="user-name" placeholder="Full Name" autocorrect="off" focusOut=(action "validate" "name" target=user) update=(action (mut user.name))}}
+                    {{#if user.errors.name}}
+                        {{gh-error-message errors=user.errors property="name"}}
+                    {{else}}
+                        <p>Use your real name so people can recognise you</p>
                     {{/if}}
+                {{/gh-form-group}}
 
-                    {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="location"}}
-                        <label for="user-location">Location</label>
-                        {{gh-input user.location type="text" id="user-location" focusOut=(action "validate" "location" target=user) update=(action (mut user.location))}}
-                        {{gh-error-message errors=user.errors property="location"}}
-                        <p>Where in the world do you live?</p>
+                {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="slug"}}
+                    <label for="user-slug">Slug</label>
+                    {{gh-input slugValue class="user-name" id="user-slug" name="user" focusOut=(action (perform updateSlug slugValue)) placeholder="Slug" selectOnClick="true" autocorrect="off" update=(action (mut slugValue))}}
+                    <p>{{gh-blog-url}}/author/{{slugValue}}</p>
+                    {{gh-error-message errors=user.errors property="slug"}}
+                {{/gh-form-group}}
+
+                {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="email"}}
+                    <label for="user-email">Email</label>
+                    {{!-- Administrators only see text of Owner's email address but not input --}}
+                    {{#if canChangeEmail}}
+                        {{gh-input user.email type="email" id="user-email" name="email" placeholder="Email Address" autocapitalize="off" autocorrect="off" autocomplete="off" focusOut=(action "validate" "email" target=user) update=(action (mut user.email))}}
+                        {{gh-error-message errors=user.errors property="email"}}
+                    {{else}}
+                        <span>{{user.email}}</span>
+                    {{/if}}
+                    <p>Used for notifications</p>
+                {{/gh-form-group}}
+
+                {{#if rolesDropdownIsVisible}}
+                    <div class="form-group">
+                        <label for="user-role">Role</label>
+                        <span class="gh-select" tabindex="0">
+                            {{one-way-select
+                                id="new-user-role"
+                                options=roles
+                                optionValuePath="id"
+                                optionLabelPath="name"
+                                value=model.role
+                                update=(action "changeRole")
+                            }}
+                        </span>
+                        <p>What permissions should this user have?</p>
+                    </div>
+                {{/if}}
+
+                {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="location"}}
+                    <label for="user-location">Location</label>
+                    {{gh-input user.location type="text" id="user-location" focusOut=(action "validate" "location" target=user) update=(action (mut user.location))}}
+                    {{gh-error-message errors=user.errors property="location"}}
+                    <p>Where in the world do you live?</p>
+                {{/gh-form-group}}
+
+                {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="website"}}
+                    <label for="user-website">Website</label>
+                    {{gh-input user.website type="url" id="user-website" autocapitalize="off" autocorrect="off" autocomplete="off" focusOut=(action "validate" "website" target=user) update=(action (mut user.website))}}
+                    {{gh-error-message errors=user.errors property="website"}}
+                    <p>Have a website or blog other than this one? Link it!</p>
+                {{/gh-form-group}}
+
+                {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="facebook"}}
+                    <label for="user-facebook">Facebook Profile</label>
+                    <input value={{user.facebook}} oninput={{action (mut _scratchFacebook) value="target.value"}} {{action "validateFacebookUrl" on="focusOut"}} type="url" class="gh-input" id="user-facebook" name="user[facebook]"  placeholder="https://www.facebook.com/username" autocorrect="off" />
+                    {{gh-error-message errors=user.errors property="facebook"}}
+                    <p>URL of your personal Facebook Profile</p>
+                {{/gh-form-group}}
+
+                {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="twitter"}}
+                    <label for="user-twitter">Twitter Profile</label>
+                    <input value={{user.twitter}} oninput={{action (mut _scratchTwitter) value="target.value"}} {{action "validateTwitterUrl" on="focusOut"}} type="url" class="gh-input" id="user-twitter" name="user[twitter]"  placeholder="https://twitter.com/username" autocorrect="off" />
+                    {{gh-error-message errors=user.errors property="twitter"}}
+                    <p>URL of your personal Twitter profile</p>
+                {{/gh-form-group}}
+
+                {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="bio" class="bio-container"}}
+                    <label for="user-bio">Bio</label>
+                    {{gh-textarea user.bio id="user-bio" focusOut=(action "validate" "bio" target=user) update=(action (mut user.bio))}}
+                    {{gh-error-message errors=user.errors property="bio"}}
+                    <p>
+                        Write about you, in 200 characters or less.
+                        {{gh-count-characters user.bio}}
+                    </p>
+                {{/gh-form-group}}
+
+                <hr />
+
+            </fieldset>
+
+        </form> {{! user details form }}
+
+        {{!-- If an administrator is viewing Owner's profile or we're using Ghost.org OAuth then hide inputs for change password --}}
+        {{#if canChangePassword}}
+            <form id="password-reset" class="user-profile" novalidate="novalidate" autocomplete="off" {{action (perform user.saveNewPassword) on="submit"}}>
+                <fieldset>
+                    {{#unless isNotOwnProfile}}
+                        {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="password"}}
+                            <label for="user-password-old">Old Password</label>
+                            {{gh-input value=user.password type="password" id="user-password-old" update=(action 'updatePassword') onenter=(action (perform user.saveNewPassword))}}
+                            {{gh-error-message errors=user.errors property="password"}}
+                        {{/gh-form-group}}
+                    {{/unless}}
+
+                    {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="newPassword"}}
+                        <label for="user-password-new">New Password</label>
+                        {{gh-input user.newPassword type="password" id="user-password-new" update=(action 'updateNewPassword') onenter=(action (perform user.saveNewPassword))}}
+                        {{gh-error-message errors=user.errors property="newPassword"}}
                     {{/gh-form-group}}
 
-                    {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="website"}}
-                        <label for="user-website">Website</label>
-                        {{gh-input user.website type="url" id="user-website" autocapitalize="off" autocorrect="off" autocomplete="off" focusOut=(action "validate" "website" target=user) update=(action (mut user.website))}}
-                        {{gh-error-message errors=user.errors property="website"}}
-                        <p>Have a website or blog other than this one? Link it!</p>
+                    {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="ne2Password"}}
+                        <label for="user-new-password-verification">Verify Password</label>
+                        {{gh-input user.ne2Password type="password" id="user-new-password-verification" update=(action 'updateNe2Password') onenter=(action (perform user.saveNewPassword))}}
+                        {{gh-error-message errors=user.errors property="ne2Password"}}
                     {{/gh-form-group}}
 
-                    {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="facebook"}}
-                        <label for="user-facebook">Facebook Profile</label>
-                        <input value={{user.facebook}} oninput={{action (mut _scratchFacebook) value="target.value"}} {{action "validateFacebookUrl" on="focusOut"}} type="url" class="gh-input" id="user-facebook" name="user[facebook]"  placeholder="https://www.facebook.com/username" autocorrect="off" />
-                        {{gh-error-message errors=user.errors property="facebook"}}
-                        <p>URL of your personal Facebook Profile</p>
-                    {{/gh-form-group}}
-
-                    {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="twitter"}}
-                        <label for="user-twitter">Twitter Profile</label>
-                        <input value={{user.twitter}} oninput={{action (mut _scratchTwitter) value="target.value"}} {{action "validateTwitterUrl" on="focusOut"}} type="url" class="gh-input" id="user-twitter" name="user[twitter]"  placeholder="https://twitter.com/username" autocorrect="off" />
-                        {{gh-error-message errors=user.errors property="twitter"}}
-                        <p>URL of your personal Twitter profile</p>
-                    {{/gh-form-group}}
-
-                    {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="bio" class="bio-container"}}
-                        <label for="user-bio">Bio</label>
-                        {{gh-textarea user.bio id="user-bio" focusOut=(action "validate" "bio" target=user) update=(action (mut user.bio))}}
-                        {{gh-error-message errors=user.errors property="bio"}}
-                        <p>
-                            Write about you, in 200 characters or less.
-                            {{gh-count-characters user.bio}}
-                        </p>
-                    {{/gh-form-group}}
-
-                    <hr />
-
+                    <div class="form-group">
+                        {{gh-task-button "Change Password" class="gh-btn gh-btn-red gh-btn-icon button-change-password" task=user.saveNewPassword}}
+                    </div>
                 </fieldset>
+            </form> {{! change password form }}
+        {{/if}}
 
-            </form> {{! user details form }}
-
-            {{!-- If an administrator is viewing Owner's profile or we're using Ghost.org OAuth then hide inputs for change password --}}
-            {{#if canChangePassword}}
-                <form id="password-reset" class="user-profile" novalidate="novalidate" autocomplete="off" {{action (perform user.saveNewPassword) on="submit"}}>
-                    <fieldset>
-                        {{#unless isNotOwnProfile}}
-                            {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="password"}}
-                                <label for="user-password-old">Old Password</label>
-                                {{gh-input value=user.password type="password" id="user-password-old" update=(action 'updatePassword') onenter=(action (perform user.saveNewPassword))}}
-                                {{gh-error-message errors=user.errors property="password"}}
-                            {{/gh-form-group}}
-                        {{/unless}}
-
-                        {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="newPassword"}}
-                            <label for="user-password-new">New Password</label>
-                            {{gh-input user.newPassword type="password" id="user-password-new" update=(action 'updateNewPassword') onenter=(action (perform user.saveNewPassword))}}
-                            {{gh-error-message errors=user.errors property="newPassword"}}
-                        {{/gh-form-group}}
-
-                        {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="ne2Password"}}
-                            <label for="user-new-password-verification">Verify Password</label>
-                            {{gh-input user.ne2Password type="password" id="user-new-password-verification" update=(action 'updateNe2Password') onenter=(action (perform user.saveNewPassword))}}
-                            {{gh-error-message errors=user.errors property="ne2Password"}}
-                        {{/gh-form-group}}
-
-                        <div class="form-group">
-                            {{gh-task-button "Change Password" class="gh-btn gh-btn-red gh-btn-icon button-change-password" task=user.saveNewPassword}}
-                        </div>
-                    </fieldset>
-                </form> {{! change password form }}
-            {{/if}}
-
-            {{!-- when using Ghost OAuth, users trying to change email/pass need to visit my.ghost.org --}}
-            {{#if showMyGhostLink}}
-                <div class="user-profile">
-                    <p class="gh-box gh-box-info">{{inline-svg "lock"}} To change your login details please visit <a href="https://my.ghost.org/account" target="_blank">https://my.ghost.org/account</a></p>
-                </div>
-            {{/if}}
-
-        </div>
+        {{!-- when using Ghost OAuth, users trying to change email/pass need to visit my.ghost.org --}}
+        {{#if showMyGhostLink}}
+            <div class="user-profile">
+                <p class="gh-box gh-box-info">{{inline-svg "lock"}} To change your login details please visit <a href="https://my.ghost.org/account" target="_blank">https://my.ghost.org/account</a></p>
+            </div>
+        {{/if}}
     </div>
 </section>
