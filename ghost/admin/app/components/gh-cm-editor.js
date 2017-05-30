@@ -29,7 +29,9 @@ const CmEditorComponent =  Component.extend(InvokeActionMixin, {
         let loader = this.get('lazyLoader');
 
         RSVP.all([
-            loader.loadStyle('codemirror', 'assets/codemirror/codemirror.css'),
+            // NOTE: no need to load the styles because we're already pulling
+            // them in via SimpleMDE and it causes conflicts with the editor
+            // loader.loadStyle('codemirror', 'assets/codemirror/codemirror.css'),
             loader.loadScript('codemirror', 'assets/codemirror/codemirror.js')
         ]).then(() => {
             scheduleOnce('afterRender', this, function () {
