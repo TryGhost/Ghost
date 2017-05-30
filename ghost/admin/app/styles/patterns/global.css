@@ -329,6 +329,11 @@ pre tt {
     font-size: inherit;
 }
 
+.CodeMirror pre {
+    font-family: var(--font-family-mono);
+    font-size: 0.9em;
+}
+
 kbd {
     display: inline-block;
     margin-bottom: 0.4em;
