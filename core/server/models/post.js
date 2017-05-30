@@ -477,11 +477,30 @@ Post = ghostBookshelf.Model.extend({
     defaultColumnsToFetch: function defaultColumnsToFetch() {
         return ['id', 'published_at', 'slug', 'author_id'];
     },
+    /**
+     * If the `formats` option is not used, we return `html` be default.
+     * Otherwise we return what is requested e.g. `?formats=mobiledoc,plaintext`
+     */
+    formatsToJSON: function formatsToJSON(attrs, options) {
+        var defaultFormats = ['html'],
+            formatsToKeep = options.formats || defaultFormats;
+
+        // Iterate over all known formats, and if they are not in the keep list, remove them
+        _.each(Post.allowedFormats, function (format) {
+            if (formatsToKeep.indexOf(format) === -1) {
+                delete attrs[format];
+            }
+        });
+
+        return attrs;
+    },
 
     toJSON: function toJSON(options) {
         options = options || {};
 
         var attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
+
+        attrs = this.formatsToJSON(attrs, options);
 
         if (!options.columns || (options.columns && options.columns.indexOf('author') > -1)) {
             attrs.author = attrs.author || attrs.author_id;
@@ -505,6 +524,8 @@ Post = ghostBookshelf.Model.extend({
         return this.isPublicContext() ? 'page:false' : 'page:false+status:published';
     }
 }, {
+    allowedFormats: ['markdown', 'mobiledoc', 'html', 'plaintext', 'amp'],
+
     orderDefaultOptions: function orderDefaultOptions() {
         return {
             status: 'ASC',
@@ -579,6 +600,9 @@ Post = ghostBookshelf.Model.extend({
                 findAll: ['columns', 'filter', 'forUpdate'],
                 edit: ['forUpdate']
             };
+
+        // The post model additionally supports having a formats option
+        options.push('formats');
 
         if (validOptions[methodName]) {
             options = options.concat(validOptions[methodName]);
