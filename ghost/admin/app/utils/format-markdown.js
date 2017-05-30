@@ -27,7 +27,7 @@ let md = markdownit({
     }
 });
 
-export default function formatMarkdown(_markdown) {
+export default function formatMarkdown(_markdown, replaceJS = true) {
     let markdown = _markdown || '';
     let escapedhtml = '';
 
@@ -35,10 +35,12 @@ export default function formatMarkdown(_markdown) {
     escapedhtml = md.render(markdown);
 
     // replace script and iFrame
-    escapedhtml = escapedhtml.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
-        '<pre class="js-embed-placeholder">Embedded JavaScript</pre>');
-    escapedhtml = escapedhtml.replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi,
-        '<pre class="iframe-embed-placeholder">Embedded iFrame</pre>');
+    if (replaceJS) {
+        escapedhtml = escapedhtml.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+            '<pre class="js-embed-placeholder">Embedded JavaScript</pre>');
+        escapedhtml = escapedhtml.replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi,
+            '<pre class="iframe-embed-placeholder">Embedded iFrame</pre>');
+    }
 
     // sanitize html
     escapedhtml = html_sanitize(escapedhtml, cajaSanitizers.url, cajaSanitizers.id);
