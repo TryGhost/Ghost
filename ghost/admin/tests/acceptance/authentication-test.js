@@ -158,7 +158,7 @@ describe('Acceptance: Authentication', function () {
                 let post = posts.find(params.id);
                 let attrs = this.normalizedRequestAttrs();
 
-                if (attrs.markdown === 'Edited post body') {
+                if (attrs.mobiledoc.cards[0][1].markdown === 'Edited post body') {
                     return new Response(401, {}, {
                         errors: [
                             {message: 'Access denied.', errorType: 'UnauthorizedError'}
