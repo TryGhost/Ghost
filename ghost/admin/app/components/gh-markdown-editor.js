@@ -87,7 +87,7 @@ export default Component.extend({
                         this._togglePreview();
                     },
                     className: 'fa fa-eye no-disable',
-                    title: 'Toggle Preview (Cmd-P)'
+                    title: 'Toggle Preview'
                 },
                 {
                     name: 'side-by-side',
@@ -95,15 +95,7 @@ export default Component.extend({
                         this.send('toggleSplitScreen');
                     },
                     className: 'fa fa-columns no-disable no-mobile',
-                    title: 'Toggle Side by Side'
-                },
-                {
-                    name: 'fullscreen',
-                    action: () => {
-                        this.send('toggleFullScreen');
-                    },
-                    className: 'fa fa-arrows-alt no-disable no-mobile',
-                    title: 'Toggle Fullscreen'
+                    title: 'Toggle Side-by-side Preview'
                 },
                 '|',
                 {
@@ -218,15 +210,8 @@ export default Component.extend({
     // mark the split-pane/full-screen/spellcheck buttons active when they're active
     _updateButtonState() {
         if (this._editor) {
-            let fullScreenButton = this._editor.toolbarElements.fullscreen;
             let sideBySideButton = this._editor.toolbarElements['side-by-side'];
             let spellcheckButton = this._editor.toolbarElements.spellcheck;
-
-            if (this.get('_isFullScreen')) {
-                fullScreenButton.classList.add('active');
-            } else {
-                fullScreenButton.classList.remove('active');
-            }
 
             if (this.get('_isSplitScreen')) {
                 sideBySideButton.classList.add('active');
@@ -432,9 +417,7 @@ export default Component.extend({
             this.onSplitScreenToggle(isSplitScreen);
 
             // go fullscreen when entering split screen mode
-            if (isSplitScreen && !this.get('_isFullScreen')) {
-                this.send('toggleFullScreen');
-            }
+            this.send('toggleFullScreen');
         },
 
         // put the toolbar/statusbar elements back so that SimpleMDE doesn't throw
