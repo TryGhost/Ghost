@@ -196,9 +196,23 @@ describe.skip('Unit: Component: post-settings-menu', function () {
             expect(component.get('seoDescription')).to.equal('a description');
         });
 
-        it.skip('should be generated from the rendered markdown if not explicitly set', function () {
-            // can't test right now because the rendered markdown is being pulled
-            // from the DOM via jquery
+        it('should be generated from the rendered mobiledoc if not explicitly set', function () {
+            let component = this.subject({
+                model: EmberObject.extend({
+                    author: RSVP.resolve(),
+                    metaDescription: null,
+                    metaDescriptionScratch: boundOneWay('metaDescription'),
+                    scratch: {
+                        cards: [
+                            ['markdown-card', {
+                                markdown: '# This is a <strong>test</strong> <script>foo</script>'
+                            }]
+                        ]
+                    }
+                }).create()
+            });
+
+            expect(component.get('seoDescription')).to.equal('This is a test');
         });
 
         it('should truncate to 156 characters with an appended ellipsis', function () {

@@ -3,6 +3,7 @@ import Ember from 'ember';
 import SettingsMenuMixin from 'ghost-admin/mixins/settings-menu-component';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import computed, {alias} from 'ember-computed';
+import formatMarkdown from 'ghost-admin/utils/format-markdown';
 import injectService from 'ember-service/inject';
 import isNumber from 'ghost-admin/utils/isNumber';
 import moment from 'moment';
@@ -70,17 +71,20 @@ export default Component.extend(SettingsMenuMixin, {
         return metaTitle;
     }),
 
-    seoDescription: computed('model.html', 'metaDescriptionScratch', function () {
+    seoDescription: computed('model.scratch', 'metaDescriptionScratch', function () {
         let metaDescription = this.get('metaDescriptionScratch') || '';
+        let mobiledoc = this.get('model.scratch');
+        let markdown = mobiledoc.cards && mobiledoc.cards[0][1].markdown;
         let placeholder;
 
         if (metaDescription.length > 0) {
             placeholder = metaDescription;
         } else {
-            let html = this.get('model.html');
+            let div = document.createElement('div');
+            div.innerHTML = formatMarkdown(markdown, false);
 
             // Strip HTML
-            placeholder = this.$('<div />', {html}).text();
+            placeholder = div.textContent;
             // Replace new lines and trim
             placeholder = placeholder.replace(/\n+/g, ' ').trim();
         }
