@@ -19,8 +19,13 @@ var _               = require('lodash'),
         slugs:         ['slugs'],
         slug:          ['slug'],
         // object / model level
-        // Post API swaps author_id to author, and always returns a computed 'url' property
-        post:        _(schema.posts).keys().without('author_id').concat('author', 'url').value(),
+        // Post API
+        post:        _(schema.posts).keys()
+            // does not return all formats by default
+            .without('markdown', 'mobiledoc', 'amp', 'plaintext')
+            // swaps author_id to author, and always returns a computed 'url' property
+            .without('author_id').concat('author', 'url')
+            .value(),
         // User API always removes the password field
         user:        _(schema.users).keys().without('password').without('ghost_auth_access_token').value(),
         // Tag API swaps parent_id to parent
@@ -78,8 +83,10 @@ function checkResponseValue(jsonResponse, expectedProperties) {
     providedProperties.length.should.eql(expectedProperties.length);
 }
 
-function checkResponse(jsonResponse, objectType, additionalProperties, missingProperties) {
+function checkResponse(jsonResponse, objectType, additionalProperties, missingProperties, onlyProperties) {
     var checkProperties = expectedProperties[objectType];
+
+    checkProperties = onlyProperties ? onlyProperties : checkProperties;
     checkProperties = additionalProperties ? checkProperties.concat(additionalProperties) : checkProperties;
     checkProperties = missingProperties ? _.xor(checkProperties, missingProperties) : checkProperties;
 

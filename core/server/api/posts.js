@@ -37,7 +37,7 @@ posts = {
      * @returns {Promise<Posts>} Posts Collection with Meta
      */
     browse: function browse(options) {
-        var extraOptions = ['status'],
+        var extraOptions = ['status', 'formats'],
             permittedOptions,
             tasks;
 
@@ -62,7 +62,7 @@ posts = {
         tasks = [
             utils.validate(docName, {opts: permittedOptions}),
             utils.handlePublicPermissions(docName, 'browse'),
-            utils.convertOptions(allowedIncludes),
+            utils.convertOptions(allowedIncludes, dataProvider.Post.allowedFormats),
             modelQuery
         ];
 
@@ -79,7 +79,7 @@ posts = {
      * @return {Promise<Post>} Post
      */
     read: function read(options) {
-        var attrs = ['id', 'slug', 'status', 'uuid'],
+        var attrs = ['id', 'slug', 'status', 'uuid', 'formats'],
             tasks;
 
         /**
@@ -96,7 +96,7 @@ posts = {
         tasks = [
             utils.validate(docName, {attrs: attrs, opts: options.opts || []}),
             utils.handlePublicPermissions(docName, 'read'),
-            utils.convertOptions(allowedIncludes),
+            utils.convertOptions(allowedIncludes, dataProvider.Post.allowedFormats),
             modelQuery
         ];
 

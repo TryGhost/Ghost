@@ -122,7 +122,7 @@ utils = {
                 name: {}
             },
             // these values are sanitised/validated separately
-            noValidation = ['data', 'context', 'include', 'filter', 'forUpdate', 'transacting'],
+            noValidation = ['data', 'context', 'include', 'filter', 'forUpdate', 'transacting', 'formats'],
             errors = [];
 
         _.each(options, function (value, key) {
@@ -243,12 +243,16 @@ utils = {
         return this.trimAndLowerCase(fields);
     },
 
+    prepareFormats: function prepareFormats(formats, allowedFormats) {
+        return _.intersection(this.trimAndLowerCase(formats), allowedFormats);
+    },
+
     /**
      * ## Convert Options
      * @param {Array} allowedIncludes
      * @returns {Function} doConversion
      */
-    convertOptions: function convertOptions(allowedIncludes) {
+    convertOptions: function convertOptions(allowedIncludes, allowedFormats) {
         /**
          * Convert our options from API-style to Model-style
          * @param {Object} options
@@ -258,9 +262,18 @@ utils = {
             if (options.include) {
                 options.include = utils.prepareInclude(options.include, allowedIncludes);
             }
+
             if (options.fields) {
                 options.columns = utils.prepareFields(options.fields);
                 delete options.fields;
+            }
+
+            if (options.formats) {
+                options.formats = utils.prepareFormats(options.formats, allowedFormats);
+            }
+
+            if (options.formats && options.columns) {
+                options.columns = options.columns.concat(options.formats);
             }
 
             return options;
@@ -274,7 +287,7 @@ utils = {
      * @param {String} docName
      * @returns {Promise(Object)} resolves to the original object if it checks out
      */
-    checkObject: function (object, docName, editId) {
+    checkObject: function checkObject(object, docName, editId) {
         if (_.isEmpty(object) || _.isEmpty(object[docName]) || _.isEmpty(object[docName][0])) {
             return Promise.reject(new errors.BadRequestError({
                 message: i18n.t('errors.api.utils.noRootKeyProvided', {docName: docName})
@@ -306,10 +319,10 @@ utils = {
 
         return Promise.resolve(object);
     },
-    checkFileExists: function (fileData) {
+    checkFileExists: function checkFileExists(fileData) {
         return !!(fileData.mimetype && fileData.path);
     },
-    checkFileIsValid: function (fileData, types, extensions) {
+    checkFileIsValid: function checkFileIsValid(fileData, types, extensions) {
         var type = fileData.mimetype,
             ext = path.extname(fileData.name).toLowerCase();
 

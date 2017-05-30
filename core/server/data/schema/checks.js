@@ -1,5 +1,5 @@
 function isPost(jsonData) {
-    return jsonData.hasOwnProperty('html') && jsonData.hasOwnProperty('markdown') &&
+    return jsonData.hasOwnProperty('html') &&
         jsonData.hasOwnProperty('title') && jsonData.hasOwnProperty('slug');
 }
 
