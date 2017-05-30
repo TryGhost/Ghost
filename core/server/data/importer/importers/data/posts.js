@@ -13,6 +13,10 @@ class PostsImporter extends BaseImporter {
             dataKeyToImport: 'posts',
             requiredData: ['tags', 'posts_tags']
         }));
+
+        this.legacyKeys = {
+            image: 'feature_image'
+        };
     }
 
     sanitizeAttributes() {
@@ -99,9 +103,12 @@ class PostsImporter extends BaseImporter {
 
     beforeImport() {
         debug('beforeImport');
+        var self = this;
 
         this.sanitizeAttributes();
         this.addTagsToPosts();
+
+        self.dataToImport = this.dataToImport.map(self.legacyMapper);
 
         // NOTE: do after, because model properties are deleted e.g. post.id
         return super.beforeImport();

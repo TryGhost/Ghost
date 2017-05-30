@@ -1269,7 +1269,7 @@ describe('Import (new test structure)', function () {
         before(function doImport(done) {
             // initialise the blog with some data
             testUtils.initFixtures('users:roles', 'posts', 'settings').then(function () {
-                return testUtils.fixtures.loadExportFixture('export-003-mu-multipleOwner', {lts:true});
+                return testUtils.fixtures.loadExportFixture('export-003-mu-multipleOwner', {lts: true});
             }).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
@@ -1328,6 +1328,73 @@ describe('Import (new test structure)', function () {
                         roleUser.role_id.should.equal(testUtils.DataGenerator.Content.roles[0].id, 'Existing user was an admin');
                     }
                 });
+
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe('lts: legacy fields', function () {
+        var exportData;
+
+        before(function doImport(done) {
+            // initialise the blog with some data
+            testUtils.initFixtures('roles', 'owner', 'settings').then(function () {
+                return testUtils.fixtures.loadExportFixture('export-lts-legacy-fields', {lts: true});
+            }).then(function (exported) {
+                exportData = exported;
+                return dataImporter.doImport(exportData);
+            }).then(function () {
+                done();
+            }).catch(done);
+        });
+
+        it('ensure images and language are mapped correctly', function (done) {
+            var fetchImported = Promise.join(
+                knex('users').select(),
+                knex('posts').select(),
+                knex('tags').select(),
+                knex('settings').select()
+            );
+
+            fetchImported.then(function (importedData) {
+                should.exist(importedData);
+                importedData.length.should.equal(4);
+
+                var users = importedData[0],
+                    posts = importedData[1],
+                    tags = importedData[2],
+                    settings = importedData[3];
+
+                // Check length of of posts, tags and users
+                posts.length.should.equal(exportData.data.posts.length);
+                tags.length.should.equal(exportData.data.tags.length);
+                // Users include original user + joe bloggs' brother
+                users.length.should.equal(exportData.data.users.length + 1);
+
+                // Check feature image is correctly mapped for a post
+                posts[0].feature_image.should.eql('/content/images/2017/05/post-image.jpg');
+                // Check logo and cover images are correctly mapped for a user
+                users[1].cover_image.should.eql(exportData.data.users[0].cover);
+                users[1].profile_image.should.eql(exportData.data.users[0].image);
+                // Check feature image is correctly mapped for a tag
+                tags[0].feature_image.should.eql(exportData.data.tags[0].image);
+                // Check logo image is correctly mapped for a blog
+                settings[6].key.should.eql('logo');
+                settings[6].value.should.eql('/content/images/2017/05/bloglogo.jpeg');
+                // Check cover image is correctly mapped for a blog
+                settings[7].key.should.eql('cover_image');
+                settings[7].value.should.eql('/content/images/2017/05/blogcover.jpeg');
+
+
+                // Check default settings language is correctly mapped and changed to 'en'
+                settings[9].key.should.eql('default_lang');
+                settings[9].value.should.eql('en');
+
+                // Check post language is set to 'en' if en_US
+                posts[0].language.should.eql('en');
+                // Check user language is set to 'en' if en_US
+                users[1].language.should.eql('en');
 
                 done();
             }).catch(done);
