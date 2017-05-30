@@ -10,7 +10,11 @@ describe('{{t}} helper', function () {
     if (locale.substring(0, 2) === 'en') {
         it('returns correct frontend text string', function () {
             var expected = 'Page',
-                rendered = helpers.t.call({}, 'frontend', 'Page', {});
+                rendered = helpers.t.call({}, 'Page', {
+                    hash: {
+                        where: 'frontend'
+                    }
+                });
             should.exist(rendered);
             rendered.should.equal(expected);
         });
@@ -18,29 +22,33 @@ describe('{{t}} helper', function () {
         //
         // it('returns correct default theme text string', function () {
         //     var expected = 'Proudly published with <a href="https://ghost.org">Ghost</a>',
-        //         rendered = helpers.t.call({}, 'casper', 'Proudly published with \{ghostLink\}', {
+        //         rendered = helpers.t.call({}, 'Proudly published with \{ghostlink\}', {
         //             hash: {
-        //                 ghostLink: '<a href="https://ghost.org">Ghost</a>'
+        //                 ghostlink: '<a href="https://ghost.org">Ghost</a>'
         //             }
         //         });
         //     should.exist(rendered);
-        //     rendered.string.should.equal(expected);
+        //     rendered.should.equal(expected);
         // });
     } else {
         it('returns frontend text string translation', function () {
-            var rendered = helpers.t.call({}, 'frontend', 'Page', {});
+            var rendered = helpers.t.call({}, 'Page', {
+                    hash: {
+                        where: 'frontend'
+                    }
+                });
             should.exist(rendered);
         });
         // Removed for compatibility with both old themes and i18n-capable themes:
         //
         // it('returns default theme text string translation', function () {
-        //     var rendered = helpers.t.call({}, 'casper', 'Proudly published with \{ghostLink\}', {
+        //     var rendered = helpers.t.call({}, 'Proudly published with \{ghostlink\}', {
         //             hash: {
-        //                 ghostLink: '<a href="https://ghost.org">Ghost</a>'
+        //                 ghostlink: '<a href="https://ghost.org">Ghost</a>'
         //             }
         //         });
         //     should.exist(rendered);
-        //     rendered.string.should.match(/<a href\=\"https\:\/\/ghost\.org\">Ghost<\/a>/);
+        //     rendered.should.match(/<a href\=\"https\:\/\/ghost\.org\">Ghost<\/a>/);
         // });
     }
 });

@@ -1,41 +1,40 @@
 // # t helper
 // i18n: Translatable handlebars expressions for templates of the frontend, themes, and apps.
 // Frontend: .hbs templates in core/server. Themes: in content/themes. Apps: in content/apps.
-// Translations are defined in files such as core/server/translations/en.json, etc.
 //
-// Usage examples, in .hbs templates:
+// Usage examples, for example in .hbs theme templates:
+// {{t "Get the latest posts delivered right to your inbox"}}
+// {{{t "Proudly published with {ghostlink}" ghostlink="<a href=\"https://ghost.org\">Ghost</a>"}}}
 //
-// {{t "frontend" "Older Posts"}}
-// {{t "mytheme" "Get the latest posts delivered right to your inbox"}}
-// {{{t "mytheme" "Proudly published with {ghostLink}" ghostLink="<a href=\"https://ghost.org\">Ghost</a>"}}}
+// The few sentences in *.hbs* core frontend templates need a `where` parameter, not needed for themes:
+// {{t "You've successfully subscribed to" where="frontend"}}
 //
-// And in .json translation files, for example for Spanish:
-//
-// "frontend": {
-//     "Older Posts": "Artículos Anteriores"
-// }
-//
-// "mytheme": {
-//     "Get the latest posts delivered right to your inbox": "Recibe los últimos artículos directamente en tu buzón",
-//     "Proudly published with {ghostLink}": "Publicado con {ghostLink}"
-// }
+// Probably, developers of future apps with templates will also use this parameter, e.g. `where="myapp"`
+// (there will likely be one theme and several apps enabled at the same time).
 //
 // To preserve HTML, use {{{t}}}. This helper doesn't use a SafeString object which would prevent escaping,
 // because often other helpers need that (t) returns a string to be able to work as subexpression; e.g.:
-// {{tags prefix=(t "casper" " on ")}}
+// {{tags prefix=(t " on ")}}
 
 var proxy = require('./proxy'),
     jp = require('jsonpath'),
     i18n = proxy.i18n,
+    settingsCache = proxy.settingsCache,
     bindings = {},
     path;
 
-module.exports = function t(where, what, options) {
-    path = jp.stringify(['$', where, what]);
-    for (var prop in options.hash) {
+module.exports = function t(text, options) {
+    var prop, where;
+    for (prop in options.hash) {
         if (options.hash.hasOwnProperty(prop)) {
-            bindings[prop] = options.hash[prop];
+            if (prop === 'where') {
+                where = options.hash[prop];
+            } else {
+                bindings[prop] = options.hash[prop];
+            }
         }
     }
+    where = where || settingsCache.get('active_theme');
+    path = jp.stringify(['$', where, text]);
     return i18n.t(path, bindings);
 };

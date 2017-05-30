@@ -156,8 +156,16 @@ Ghost's themes use a very simple translation system, just for themes. On the oth
 For example, in *.hbs* theme templates:
 
 ```
-{{t "mytheme" "Directly the nice plain English text that users love"}}
+{{t "Get the latest posts delivered right to your inbox"}}
 ```
+
+The few sentences in *.hbs* core frontend templates need a `where` parameter, not needed for themes:
+
+```
+{{t "You've successfully subscribed to" where="frontend"}}
+```
+
+Probably, developers of future apps with templates will also use this parameter, e.g. `where="myapp"` (there will likely be one theme and several apps enabled at the same time).
 
 ### 1. Look for text on the theme's .hbs templates
 
@@ -165,15 +173,15 @@ They contain the text to translate, that is the text visible lo site visitors.
 
 ### 2. Wrap it in {{t}} translation helpers
 
-Just copy and paste `{{t "mytheme" "` to the left, and `"}}` to the rigth.
-
-Naturally, having replaced `mytheme` with the simplified name of your theme (for file names, etc.). In the future, it can be as well the name of a Ghost app with templates to translate.
+Just copy and paste `{{t "` to the left, and `"}}` to the rigth.
 
 ### 3. Copy and paste each text into the translation file
 
 Do all these three steps for each text, before going to the next, to remember to add all of them to the translation file.
 
 For now, just quickly write the English default file *mytheme_en.json*. Later you can translate it as explained before.
+
+Naturally, replace `mytheme` with the simplified name of your theme (like the theme folder). In the future, it can be as well the name of a Ghost app with templates to translate.
 
 If you have the translation files of another Ghost theme, surely part of the texts will be common, and you can copy them and their translations.
 
@@ -255,7 +263,7 @@ In file *mytheme_es.json*
 And, in theme template *default.hbs*
 
 ```
-{{{t "mytheme" "Proudly published with {ghostlink}" ghostlink="<a href=\"https://ghost.org\">Ghost</a>"}}}
+{{{t "Proudly published with {ghostlink}" ghostlink="<a href=\"https://ghost.org\">Ghost</a>"}}}
 ```
 
 Which gives, after translating the text and replacing the `{ghostlink}` placeholder with its parameter:
@@ -287,7 +295,7 @@ To translate a helper's parameter, e.g. `" on "` in theme template *loop.hbs*
 a `(t)` nested translation helper (instead of normal `{{t}}` helper) can be used as a parameter inside another helper such as `{{tags}}`
 
 ```
-{{tags prefix=(t "mytheme" " on ")}}
+{{tags prefix=(t " on ")}}
 ```
 
 which, when translated, is equivalent to
@@ -309,7 +317,7 @@ In file *mytheme_es.json*
 And, in theme template *post.hbs*
 
 ```
-{{{t "mytheme" "Read <a href='{url}'>more posts</a> by this author" url=(url)}}}.
+{{{t "Read <a href='{url}'>more posts</a> by this author" url=(url)}}}.
 ```
 
 Here, the `{url}` placeholder is replaced by the value of the `(url)` nested helper in the parameter, which is equivalent to the `{{url}}` helper.
@@ -335,7 +343,7 @@ To translate several helper's parameters, e.g. in theme template *author.hbs*
 several `(t)` nested translation helpers (instead of normal `{{t}}` helpers) can be used as parameters inside `{{plural}}` helper
 
 ```
-{{plural ../pagination.total empty=(t "mytheme" "No posts") singular=(t "mytheme" "1 post") plural=(t "mytheme" "% posts")}}
+{{plural ../pagination.total empty=(t "No posts") singular=(t "1 post") plural=(t "% posts")}}
 ```
 
 `%` is replaced by the value of `../pagination.total`, e.g. `6`, giving after translation
