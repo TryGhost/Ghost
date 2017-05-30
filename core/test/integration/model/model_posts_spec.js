@@ -43,7 +43,9 @@ describe('Post Model', function () {
 
         beforeEach(testUtils.setup('owner', 'posts', 'apps'));
 
-        function checkFirstPostData(firstPost) {
+        function checkFirstPostData(firstPost, options) {
+            options = options || {};
+
             should.not.exist(firstPost.author_id);
             firstPost.author.should.be.an.Object();
             firstPost.url.should.equal('/html-ipsum/');
@@ -60,10 +62,29 @@ describe('Post Model', function () {
             firstPost.published_by.name.should.equal(DataGenerator.Content.users[0].name);
             firstPost.tags[0].name.should.equal(DataGenerator.Content.tags[0].name);
 
-            // Formats
             // @TODO change / update this for mobiledoc in
-            firstPost.markdown.should.match(/HTML Ipsum Presents/);
-            firstPost.html.should.match(/HTML Ipsum Presents/);
+            if (options.formats) {
+                if (options.formats.indexOf('markdown') !== -1) {
+                    firstPost.markdown.should.match(/HTML Ipsum Presents/);
+                }
+
+                if (options.formats.indexOf('html') !== -1) {
+                    firstPost.html.should.match(/HTML Ipsum Presents/);
+                }
+
+                if (options.formats.indexOf('plaintext') !== -1) {
+                    /**
+                     * NOTE: this is null, not undefined, so it was returned
+                     * The plaintext value is generated.
+                     */
+                    should.equal(firstPost.plaintext, null);
+                }
+            } else {
+                firstPost.html.should.match(/HTML Ipsum Presents/);
+                should.equal(firstPost.plaintext, undefined);
+                should.equal(firstPost.markdown, undefined);
+                should.equal(firstPost.amp, undefined);
+            }
         }
 
         describe('findAll', function () {
@@ -94,6 +115,27 @@ describe('Post Model', function () {
                         }), firstPost = _.find(posts, {title: testUtils.DataGenerator.Content.posts[0].title});
 
                         checkFirstPostData(firstPost);
+
+                        done();
+                    }).catch(done);
+            });
+
+            it('can findAll, use formats option', function (done) {
+                var options = {
+                    formats: ['markdown', 'plaintext'],
+                    include: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']
+                };
+
+                PostModel.findAll(options)
+                    .then(function (results) {
+                        should.exist(results);
+                        results.length.should.be.above(0);
+
+                        var posts = results.models.map(function (model) {
+                            return model.toJSON(options);
+                        }), firstPost = _.find(posts, {title: testUtils.DataGenerator.Content.posts[0].title});
+
+                        checkFirstPostData(firstPost, options);
 
                         done();
                     }).catch(done);
