@@ -20,20 +20,41 @@ _private.redirectUrl = function redirectUrl(options) {
 };
 
 _private.getAdminRedirectUrl = function getAdminRedirectUrl(options) {
-    var admimHostWithoutProtocol = utils.url.urlFor('admin', {cors: true}, true),
+    var blogHostWithProtocol = utils.url.urlFor('home', true),
         adminHostWithProtocol = utils.url.urlFor('admin', true),
         requestedHost = options.requestedHost,
         requestedUrl = options.requestedUrl,
         queryParameters = options.queryParameters,
         secure = options.secure;
 
+    debug('getAdminRedirectUrl');
     debug('requestedUrl', requestedUrl);
     debug('requestedHost', requestedHost);
     debug('adminHost', adminHostWithProtocol);
 
-    // CASE: we always redirect to the correct admin url, if configured
-    if (!admimHostWithoutProtocol.match(new RegExp(requestedHost))) {
-        debug('redirect because host does not match');
+    /**
+     * @TODO: add back if we enable OAuth again or find an alternative solution
+     * See https://github.com/TryGhost/Ghost/issues/8152
+     *
+     * Background:
+     * For oauth we ensure that the served admin url matches the registered oauth redirect uri.
+     * If OAuth is enabled again, Ghost registeres a public client with the admin redirect uri.
+     * So this url has to be clearly, you can only serve the admin with one single url.
+     * And this must be the configured blog url (or admin url if specified)
+        if (!admimHostWithoutProtocol.match(new RegExp(requestedHost))) {
+            debug('redirect because host does not match');
+
+            return _private.redirectUrl({
+                redirectTo: adminHostWithProtocol,
+                path: requestedUrl,
+                query: queryParameters
+            });
+        }
+     */
+
+    // CASE: we only redirect the admin access if `admin.url` is configured
+    if (adminHostWithProtocol !== utils.url.urlJoin(blogHostWithProtocol, 'ghost/')) {
+        debug('redirect because admin host does not match');
 
         return _private.redirectUrl({
             redirectTo: adminHostWithProtocol,
@@ -61,6 +82,7 @@ _private.getBlogRedirectUrl = function getBlogRedirectUrl(options) {
         queryParameters = options.queryParameters,
         secure = options.secure;
 
+    debug('getBlogRedirectUrl');
     debug('requestedUrl', requestedUrl);
     debug('requestedHost', requestedHost);
     debug('blogHost', blogHostWithProtocol);
