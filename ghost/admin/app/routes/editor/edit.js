@@ -16,7 +16,8 @@ export default AuthenticatedRoute.extend(base, {
         let query = {
             id: params.post_id,
             status: 'all',
-            staticPages: 'all'
+            staticPages: 'all',
+            formats: 'mobiledoc,plaintext'
         };
         /* eslint-enable camelcase */
 

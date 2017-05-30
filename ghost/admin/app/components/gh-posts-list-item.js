@@ -40,19 +40,14 @@ export default Component.extend({
 
     // HACK: this is intentionally awful due to time constraints
     // TODO: find a better way to get an excerpt! :)
-    subText: computed('post.{html,metaDescription}', function () {
-        let html = this.get('post.html');
+    subText: computed('post.{plaintext,metaDescription}', function () {
+        let text = this.get('post.plaintext');
         let metaDescription = this.get('post.metaDescription');
-        let text;
 
         if (!isBlank(metaDescription)) {
             text = metaDescription;
-        } else {
-            let $html = $(`<div>${html}</div>`);
-            text = $html.text();
         }
-
-        return htmlSafe(`${text.slice(0, 80)}&hellip;`);
+        return `${text.slice(0, 80)}...`;
     }),
 
     didReceiveAttrs() {

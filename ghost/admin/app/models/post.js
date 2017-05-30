@@ -82,6 +82,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     featureImage: attr('string'),
     featured: attr('boolean', {defaultValue: false}),
     page: attr('boolean', {defaultValue: false}),
+    plaintext: attr('string'),
     status: attr('string', {defaultValue: 'draft'}),
     language: attr('string', {defaultValue: 'en_US'}),
     metaTitle: attr('string'),

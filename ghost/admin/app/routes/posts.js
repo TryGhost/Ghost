@@ -55,6 +55,8 @@ export default AuthenticatedRoute.extend(InfinityRoute, ShortcutsRoute, {
                 queryParams.order = params.order;
             }
 
+            queryParams.formats = 'mobiledoc,plaintext';
+
             let perPage = this.get('perPage');
             let paginationSettings = assign({perPage, startingPage: 1}, queryParams);
 
