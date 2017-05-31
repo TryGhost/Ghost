@@ -46,7 +46,7 @@ describe('Themes API (Forked)', function () {
         fs.mkdirSync(join(tmpContentPath.name, 'themes', 'test-theme'));
         fs.writeFileSync(
             join(tmpContentPath.name, 'themes', 'test-theme', 'package.json'),
-            JSON.stringify({name: 'test-theme', version: '0.5'})
+            JSON.stringify({name: 'test-theme', version: '0.5.9', author: {email: 'test@example.org'}})
         );
         fs.writeFileSync(join(tmpContentPath.name, 'themes', 'test-theme', 'index.hbs'));
         fs.writeFileSync(join(tmpContentPath.name, 'themes', 'test-theme', 'post.hbs'));

@@ -27,6 +27,10 @@ module.exports = function toJSON(name, checkedTheme) {
         if (checkedTheme && checkedTheme.results.warning.length > 0) {
             themeResult[0].warnings = _.cloneDeep(checkedTheme.results.warning);
         }
+
+        if (checkedTheme && checkedTheme.results.error.length > 0) {
+            themeResult[0].errors = _.cloneDeep(checkedTheme.results.error);
+        }
     }
 
     return {themes: themeResult};

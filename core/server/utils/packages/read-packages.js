@@ -3,6 +3,7 @@
  */
 
 var parsePackageJson = require('./parse-package-json'),
+    errors = require('../../errors'),
     Promise = require('bluebird'),
     _ = require('lodash'),
     join = require('path').join,
@@ -56,8 +57,13 @@ readPackage = function readPackage(packagePath, packageName) {
                     return res;
                 });
         })
-        .catch(function () {
-            return Promise.reject(new Error('Package not found'));
+        .catch(function (err) {
+            return Promise.reject(new errors.NotFoundError({
+                message: 'Package not found',
+                err: err,
+                help: 'path: ' + packagePath,
+                context: 'name: ' + packageName
+            }));
         });
 };
 
