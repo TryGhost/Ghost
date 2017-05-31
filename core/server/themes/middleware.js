@@ -2,6 +2,7 @@ var _  = require('lodash'),
     hbs = require('./engine'),
     utils = require('../utils'),
     errors = require('../errors'),
+    config = require('../config'),
     i18n = require('../i18n'),
     settingsCache = require('../settings/cache'),
     activeTheme = require('./active'),
@@ -12,13 +13,23 @@ var _  = require('lodash'),
 // If there is no active theme, throw an error
 // Else, ensure the active theme is mounted
 themeMiddleware.ensureActiveTheme = function ensureActiveTheme(req, res, next) {
-    // This means that the theme hasn't been loaded yet i.e. there is no active theme
+    // CASE: this means that the theme hasn't been loaded yet i.e. there is no active theme
     if (!activeTheme.get()) {
         // This is the one place we ACTUALLY throw an error for a missing theme as it's a request we cannot serve
         return next(new errors.InternalServerError({
             // We use the settingsCache here, because the setting will be set,
             // even if the theme itself is not usable because it is invalid or missing.
             message: i18n.t('errors.middleware.themehandler.missingTheme', {theme: settingsCache.get('active_theme')})
+        }));
+    }
+
+    // CASE: bootstrap theme validation failed, we would like to show the errors on the blog [only production]
+    if (activeTheme.get().error && config.get('env') === 'production') {
+        return next(new errors.InternalServerError({
+            // We use the settingsCache here, because the setting will be set,
+            // even if the theme itself is not usable because it is invalid or missing.
+            message: i18n.t('errors.middleware.themehandler.invalidTheme', {theme: settingsCache.get('active_theme')}),
+            errorDetails: activeTheme.get().error.errorDetails
         }));
     }
 

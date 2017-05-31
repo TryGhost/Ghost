@@ -2131,9 +2131,9 @@ grunt@~0.4.0:
     underscore.string "~2.2.1"
     which "~1.0.5"
 
-gscan@1.0.0:
+"gscan@https://github.com/TryGhost/gscan/tarball/b45192207cb11c43998f489b72ec6d3ee03cc6b0":
   version "1.0.0"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-1.0.0.tgz#7b4e9856e8d987c4d0d9bd39f6aa6e7a2d29c415"
+  resolved "https://github.com/TryGhost/gscan/tarball/b45192207cb11c43998f489b72ec6d3ee03cc6b0#4ebf8ab83fbeb619cfb8fa76e2f5fafaeade3ba5"
   dependencies:
     bluebird "3.4.6"
     chalk "1.1.1"
@@ -2146,9 +2146,10 @@ gscan@1.0.0:
     glob "7.0.5"
     lodash "3.10.1"
     multer "1.1.0"
-    package-json-validator "0.6.0"
     require-dir "0.1.0"
+    semver "^5.3.0"
     uuid "^3.0.0"
+    validator "^6.3.0"
 
 gulp-util@*:
   version "3.0.8"
@@ -3480,13 +3481,13 @@ mkdirp@0.3.2:
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.3.2.tgz#4bfb891e9c48b93d6b567f2c3cf2dd3f56bcdef8"
 
-mkdirp@0.5.0:
+mkdirp@0.5.0, mkdirp@^0.5.0:
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.0.tgz#1d73076a6df986cd9344e15e71fcc05a4c9abf12"
   dependencies:
     minimist "0.0.8"
 
-mkdirp@0.5.1, mkdirp@0.5.x, mkdirp@0.x.x, "mkdirp@>=0.5 0", mkdirp@^0.5.0, mkdirp@^0.5.1, mkdirp@~0.5.0, mkdirp@~0.5.1:
+mkdirp@0.5.1, mkdirp@0.5.x, mkdirp@0.x.x, "mkdirp@>=0.5 0", mkdirp@^0.5.1, mkdirp@~0.5.0, mkdirp@~0.5.1:
   version "0.5.1"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.1.tgz#30057438eac6cf7f8c4767f38648d6697d75c903"
   dependencies:
@@ -3836,7 +3837,7 @@ once@1.x, once@^1.3.0, once@^1.3.3, once@^1.4.0:
   dependencies:
     wrappy "1"
 
-optimist@^0.6.1, optimist@~0.6.0:
+optimist@^0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/optimist/-/optimist-0.6.1.tgz#da3ea74686fa21a19a111c326e90eb15a0196686"
   dependencies:
@@ -3874,12 +3875,6 @@ osenv@^0.1.4:
   dependencies:
     os-homedir "^1.0.0"
     os-tmpdir "^1.0.0"
-
-package-json-validator@0.6.0:
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/package-json-validator/-/package-json-validator-0.6.0.tgz#5629c7328b1307d09e7f291027bd15952bbe80c2"
-  dependencies:
-    optimist "~0.6.0"
 
 pako@~0.2.0:
   version "0.2.9"
@@ -5473,7 +5468,7 @@ validate-npm-package-license@^3.0.1:
     spdx-correct "~1.0.0"
     spdx-expression-parse "~1.0.0"
 
-validator@6.3.0:
+validator@6.3.0, validator@^6.3.0:
   version "6.3.0"
   resolved "https://registry.yarnpkg.com/validator/-/validator-6.3.0.tgz#47ce23ed8d4eaddfa9d4b8ef0071b6cf1078d7c8"
 
