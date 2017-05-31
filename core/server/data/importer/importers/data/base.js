@@ -22,7 +22,7 @@ class Base {
         this.legacyKeys = {};
         this.legacyMapper = item => _(item)
             .mapKeys((val, key) => this.legacyKeys[key] || key)
-            .mapValues((val, key) => (key === 'language' && val === 'en_US') ? 'en' : val)
+            .mapValues((val, key) => (key === 'locale' && val === 'en_US') ? 'en' : val)
             .value();
 
         this.dataKeyToImport = options.dataKeyToImport;

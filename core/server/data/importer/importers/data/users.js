@@ -16,7 +16,8 @@ class UsersImporter extends BaseImporter {
         // Map legacy keys
         this.legacyKeys = {
             image: 'profile_image',
-            cover: 'cover_image'
+            cover: 'cover_image',
+            language: 'locale'
         };
     }
 

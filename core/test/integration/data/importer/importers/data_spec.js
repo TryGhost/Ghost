@@ -1390,13 +1390,13 @@ describe('Import (new test structure)', function () {
 
 
                 // Check default settings language is correctly mapped and changed to 'en'
-                settings[9].key.should.eql('default_lang');
+                settings[9].key.should.eql('default_locale');
                 settings[9].value.should.eql('en');
 
                 // Check post language is set to 'en' if en_US
-                posts[0].language.should.eql('en');
+                posts[0].locale.should.eql('en');
                 // Check user language is set to 'en' if en_US
-                users[1].language.should.eql('en');
+                users[1].locale.should.eql('en');
 
                 // Check mobiledoc is populated from markdown
                 JSON.parse(posts[0].mobiledoc).cards[0][1].markdown.should.eql(exportData.data.posts[0].markdown);
@@ -1464,13 +1464,13 @@ describe('Import (new test structure)', function () {
 
 
                 // Check default settings language is correctly mapped and changed to 'en'
-                settings[9].key.should.eql('default_lang');
+                settings[9].key.should.eql('default_locale');
                 settings[9].value.should.eql('en');
 
                 // Check post language is set to 'en' if en_US
-                posts[0].language.should.eql('en');
+                posts[0].locale.should.eql('en');
                 // Check user language is set to 'en' if en_US
-                users[1].language.should.eql('en');
+                users[1].locale.should.eql('en');
 
                 // Check mobiledoc is populated from from html when mobiledoc is null & markdown is empty string
                 JSON.parse(posts[0].mobiledoc).cards[0][1].markdown.should.eql(exportData.data.posts[0].html);

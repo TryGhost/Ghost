@@ -18,7 +18,7 @@ class SettingsImporter extends BaseImporter {
         this.legacySettingsKeys = {
             activeApps: 'active_apps',
             installedApps: 'installed_apps',
-            defaultLang: 'default_lang',
+            defaultLang: 'default_locale',
             isPrivate: 'is_private',
             activeTheme: 'active_theme', // TODO check we want tthis as we are not installing it?
             forceI18n: 'force_i18n',
@@ -50,7 +50,7 @@ class SettingsImporter extends BaseImporter {
             obj.key = self.legacySettingsKeys[obj.key] || obj.key;
 
             // Set legacy default lang to current format
-            obj.value = (obj.key === 'default_lang' && obj.value === 'en_US') ? 'en' : obj.value;
+            obj.value = (obj.key === 'default_locale' && obj.value === 'en_US') ? 'en' : obj.value;
         });
 
         return super.beforeImport();

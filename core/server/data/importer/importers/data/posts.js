@@ -15,7 +15,8 @@ class PostsImporter extends BaseImporter {
         }));
 
         this.legacyKeys = {
-            image: 'feature_image'
+            image: 'feature_image',
+            language: 'locale'
         };
     }
 
