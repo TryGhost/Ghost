@@ -29,7 +29,7 @@ describe('Scheduling: Post Scheduling', function () {
 
     beforeEach(function () {
         scope.client = models.Client.forge(testUtils.DataGenerator.forKnex.createClient({slug: 'ghost-scheduler'}));
-        scope.post = models.Post.forge(testUtils.DataGenerator.forKnex.createPost({id: 1337, markdown: 'something'}));
+        scope.post = models.Post.forge(testUtils.DataGenerator.forKnex.createPost({id: 1337, mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('something')}));
 
         scope.adapter = new SchedulingDefault();
 

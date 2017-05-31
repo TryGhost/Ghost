@@ -14,7 +14,8 @@ var should = require('should'),
     configUtils = require('../../utils/configUtils'),
     DataGenerator = testUtils.DataGenerator,
     context = testUtils.context.owner,
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.sandbox.create(),
+    markdownToMobiledoc = testUtils.DataGenerator.markdownToMobiledoc;
 
 /**
  * IMPORTANT:
@@ -62,10 +63,9 @@ describe('Post Model', function () {
             firstPost.published_by.name.should.equal(DataGenerator.Content.users[0].name);
             firstPost.tags[0].name.should.equal(DataGenerator.Content.tags[0].name);
 
-            // @TODO change / update this for mobiledoc in
             if (options.formats) {
-                if (options.formats.indexOf('markdown') !== -1) {
-                    firstPost.markdown.should.match(/HTML Ipsum Presents/);
+                if (options.formats.indexOf('mobiledoc') !== -1) {
+                    firstPost.mobiledoc.should.match(/HTML Ipsum Presents/);
                 }
 
                 if (options.formats.indexOf('html') !== -1) {
@@ -82,7 +82,7 @@ describe('Post Model', function () {
             } else {
                 firstPost.html.should.match(/HTML Ipsum Presents/);
                 should.equal(firstPost.plaintext, undefined);
-                should.equal(firstPost.markdown, undefined);
+                should.equal(firstPost.mobiledoc, undefined);
                 should.equal(firstPost.amp, undefined);
             }
         }
@@ -122,7 +122,7 @@ describe('Post Model', function () {
 
             it('can findAll, use formats option', function (done) {
                 var options = {
-                    formats: ['markdown', 'plaintext'],
+                    formats: ['mobiledoc', 'plaintext'],
                     include: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']
                 };
 
@@ -182,7 +182,7 @@ describe('Post Model', function () {
             });
 
             it('returns computed fields when columns are asked for explicitly', function (done) {
-                PostModel.findPage({columns: ['id', 'slug', 'url', 'markdown']}).then(function (results) {
+                PostModel.findPage({columns: ['id', 'slug', 'url', 'mobiledoc']}).then(function (results) {
                     should.exist(results);
 
                     var post = _.find(results.posts, {slug: testUtils.DataGenerator.Content.posts[0].slug});
@@ -453,21 +453,6 @@ describe('Post Model', function () {
                 }).then(function (edited) {
                     should.exist(edited);
                     edited.attributes.title.should.equal('123');
-                    done();
-                }).catch(done);
-            });
-
-            it('can change markdown to number', function (done) {
-                var postId = testUtils.DataGenerator.Content.posts[0].id;
-
-                PostModel.findOne({id: postId}).then(function (results) {
-                    should.exist(results);
-                    var post = results.toJSON();
-                    post.title.should.not.equal('123');
-                    return PostModel.edit({markdown: 123}, _.extend({}, context, {id: postId}));
-                }).then(function (edited) {
-                    should.exist(edited);
-                    edited.attributes.markdown.should.equal('123');
                     done();
                 }).catch(done);
             });
@@ -966,7 +951,7 @@ describe('Post Model', function () {
                     createdPost.has('uuid').should.equal(true);
                     createdPost.get('status').should.equal('draft');
                     createdPost.get('title').should.equal(newPost.title, 'title is correct');
-                    createdPost.get('markdown').should.equal(newPost.markdown, 'markdown is correct');
+                    createdPost.get('mobiledoc').should.equal(newPost.mobiledoc, 'mobiledoc is correct');
                     createdPost.has('html').should.equal(true);
                     createdPost.get('html').should.equal(newPostDB.html);
                     createdPost.has('plaintext').should.equal(true);
@@ -1023,17 +1008,6 @@ describe('Post Model', function () {
                 }).catch(done);
             });
 
-            it('can add, with markdown being a number', function (done) {
-                var newPost = testUtils.DataGenerator.forModel.posts[2];
-
-                newPost.markdown = 123;
-
-                PostModel.add(newPost, context).then(function (createdPost) {
-                    should.exist(createdPost);
-                    done();
-                }).catch(done);
-            });
-
             it('can add, with previous published_at date', function (done) {
                 var previousPublishedAtDate = new Date(2013, 8, 21, 12);
 
@@ -1041,7 +1015,7 @@ describe('Post Model', function () {
                     status: 'published',
                     published_at: previousPublishedAtDate,
                     title: 'published_at test',
-                    markdown: 'This is some content'
+                    mobiledoc: markdownToMobiledoc('This is some content')
                 }, context).then(function (newPost) {
                     should.exist(newPost);
                     new Date(newPost.get('published_at')).getTime().should.equal(previousPublishedAtDate.getTime());
@@ -1058,7 +1032,7 @@ describe('Post Model', function () {
                 PostModel.add({
                     status: 'draft',
                     title: 'draft 1',
-                    markdown: 'This is some content'
+                    mobiledoc: markdownToMobiledoc('This is some content')
                 }, context).then(function (newPost) {
                     should.exist(newPost);
                     should.not.exist(newPost.get('published_at'));
@@ -1075,7 +1049,7 @@ describe('Post Model', function () {
                     status: 'draft',
                     published_at: moment().toDate(),
                     title: 'draft 1',
-                    markdown: 'This is some content'
+                    mobiledoc: markdownToMobiledoc('This is some content')
                 }, context).then(function (newPost) {
                     should.exist(newPost);
                     should.exist(newPost.get('published_at'));
@@ -1091,7 +1065,7 @@ describe('Post Model', function () {
                 PostModel.add({
                     status: 'scheduled',
                     title: 'scheduled 1',
-                    markdown: 'This is some content'
+                    mobiledoc: markdownToMobiledoc('This is some content')
                 }, context).catch(function (err) {
                     should.exist(err);
                     (err instanceof errors.ValidationError).should.eql(true);
@@ -1105,7 +1079,7 @@ describe('Post Model', function () {
                     status: 'scheduled',
                     published_at: moment().subtract(1, 'minute'),
                     title: 'scheduled 1',
-                    markdown: 'This is some content'
+                    mobiledoc: markdownToMobiledoc('This is some content')
                 }, context).catch(function (err) {
                     should.exist(err);
                     (err instanceof errors.ValidationError).should.eql(true);
@@ -1119,7 +1093,7 @@ describe('Post Model', function () {
                     status: 'scheduled',
                     published_at: moment().add(1, 'minute'),
                     title: 'scheduled 1',
-                    markdown: 'This is some content'
+                    mobiledoc: markdownToMobiledoc('This is some content')
                 }, context).catch(function (err) {
                     (err instanceof errors.ValidationError).should.eql(true);
                     Object.keys(eventsTriggered).length.should.eql(0);
@@ -1132,7 +1106,7 @@ describe('Post Model', function () {
                     status: 'scheduled',
                     published_at: moment().add(10, 'minute'),
                     title: 'scheduled 1',
-                    markdown: 'This is some content'
+                    mobiledoc: markdownToMobiledoc('This is some content')
                 }, context).then(function (post) {
                     should.exist(post);
 
@@ -1150,7 +1124,7 @@ describe('Post Model', function () {
                     page: 1,
                     published_at: moment().add(10, 'minute'),
                     title: 'scheduled 1',
-                    markdown: 'This is some content'
+                    mobiledoc: markdownToMobiledoc('This is some content')
                 }, context).then(function (post) {
                     should.exist(post);
 
@@ -1164,7 +1138,7 @@ describe('Post Model', function () {
 
             it('can add default title, if it\'s missing', function (done) {
                 PostModel.add({
-                    markdown: 'Content'
+                    mobiledoc: markdownToMobiledoc('Content')
                 }, context).then(function (newPost) {
                     should.exist(newPost);
                     newPost.get('title').should.equal('(Untitled)');
@@ -1178,7 +1152,7 @@ describe('Post Model', function () {
                     untrimmedUpdateTitle = '  test trimmed update title  ',
                     newPost = {
                         title: untrimmedCreateTitle,
-                        markdown: 'Test Content'
+                        mobiledoc: markdownToMobiledoc('Test content')
                     };
 
                 PostModel.add(newPost, context).then(function (createdPost) {
@@ -1207,7 +1181,7 @@ describe('Post Model', function () {
                     return function () {
                         return PostModel.add({
                             title: 'Test Title',
-                            markdown: 'Test Content ' + (i + 1)
+                            mobiledoc: markdownToMobiledoc('Test Content ' + (i + 1))
                         }, context);
                     };
                 })).then(function (createdPosts) {
@@ -1225,7 +1199,7 @@ describe('Post Model', function () {
                         }
 
                         post.get('slug').should.equal('test-title-' + num);
-                        post.get('markdown').should.equal('Test Content ' + num);
+                        JSON.parse(post.get('mobiledoc')).cards[0][1].markdown.should.equal('Test Content ' + num);
 
                         Object.keys(eventsTriggered).length.should.eql(1);
                         should.exist(eventsTriggered['post.added']);
@@ -1239,7 +1213,7 @@ describe('Post Model', function () {
             it('can generate slugs without duplicate hyphens', function (done) {
                 var newPost = {
                     title: 'apprehensive  titles  have  too  many  spaces—and m-dashes  —  –  and also n-dashes  ',
-                    markdown: 'Test Content 1'
+                    mobiledoc: markdownToMobiledoc('Test Content 1')
                 };
 
                 PostModel.add(newPost, context).then(function (createdPost) {
@@ -1255,7 +1229,7 @@ describe('Post Model', function () {
             it('can generate a safe slug when a reserved keyword is used', function (done) {
                 var newPost = {
                     title: 'rss',
-                    markdown: 'Test Content 1'
+                    mobiledoc: markdownToMobiledoc('Test Content 1')
                 };
 
                 PostModel.add(newPost, context).then(function (createdPost) {
@@ -1271,7 +1245,7 @@ describe('Post Model', function () {
             it('can generate slugs without non-ascii characters', function (done) {
                 var newPost = {
                     title: 'भुते धडकी भरवणारा आहेत',
-                    markdown: 'Test Content 1'
+                    mobiledoc: markdownToMobiledoc('Test Content 1')
                 };
 
                 PostModel.add(newPost, context).then(function (createdPost) {
@@ -1283,11 +1257,11 @@ describe('Post Model', function () {
             it('detects duplicate slugs before saving', function (done) {
                 var firstPost = {
                         title: 'First post',
-                        markdown: 'First content 1'
+                        mobiledoc: markdownToMobiledoc('First content 1')
                     },
                     secondPost = {
                         title: 'Second post',
-                        markdown: 'Second content 1'
+                        mobiledoc: markdownToMobiledoc('Second content 1')
                     };
 
                 // Create the first post

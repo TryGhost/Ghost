@@ -5,6 +5,7 @@ var should = require('should'),
     ObjectId = require('bson-objectid'),
     config = require('../../../../../core/server/config'),
     ghost = testUtils.startGhost,
+    markdownToMobiledoc = testUtils.DataGenerator.markdownToMobiledoc,
     request;
 
 describe('Post API', function () {
@@ -525,7 +526,7 @@ describe('Post API', function () {
     // ## Add
     describe('Add', function () {
         it('create and ensure dates are correct', function (done) {
-            var newPost = {posts: [{status: 'published', published_at: '2016-05-30T07:00:00.000Z'}]};
+            var newPost = {posts: [{status: 'published', published_at: '2016-05-30T07:00:00.000Z', mobiledoc: markdownToMobiledoc()}]};
 
             request.post(testUtils.API.getApiQuery('posts'))
                 .set('Authorization', 'Bearer ' + accesstoken)
@@ -576,7 +577,7 @@ describe('Post API', function () {
                 newTagName = 'My Tag',
                 publishedState = 'published',
                 newTag = {id: null, name: newTagName},
-                newPost = {posts: [{status: 'draft', title: newTitle, markdown: 'my post', tags: [newTag]}]};
+                newPost = {posts: [{status: 'draft', title: newTitle, mobiledoc: markdownToMobiledoc('my post'), tags: [newTag]}]};
 
             request.post(testUtils.API.getApiQuery('posts/?include=tags'))
                 .set('Authorization', 'Bearer ' + accesstoken)
@@ -711,7 +712,7 @@ describe('Post API', function () {
             var newTitle = 'My Post',
                 newTagName = 'My Tag',
                 newTag = {id: null, name: newTagName},
-                newPost = {posts: [{status: 'draft', title: newTitle, markdown: 'my post', tags: [newTag]}]};
+                newPost = {posts: [{status: 'draft', title: newTitle, mobiledoc: markdownToMobiledoc('my post'), tags: [newTag]}]};
 
             request.post(testUtils.API.getApiQuery('posts/?include=tags'))
                 .set('Authorization', 'Bearer ' + accesstoken)
@@ -756,7 +757,7 @@ describe('Post API', function () {
                 newTagName = 'My Tag',
                 draftState = 'draft',
                 newTag = {id: null, name: newTagName},
-                newPost = {posts: [{status: 'published', title: newTitle, markdown: 'my post', tags: [newTag]}]};
+                newPost = {posts: [{status: 'published', title: newTitle, mobiledoc: markdownToMobiledoc('my post'), tags: [newTag]}]};
 
             request.post(testUtils.API.getApiQuery('posts/?include=tags'))
                 .set('Authorization', 'Bearer ' + accesstoken)
@@ -1092,7 +1093,7 @@ describe('Post API', function () {
         it('can delete a new draft', function (done) {
             var newTitle = 'My Post',
                 publishedState = 'draft',
-                newPost = {posts: [{status: publishedState, title: newTitle, markdown: 'my post'}]};
+                newPost = {posts: [{status: publishedState, title: newTitle, mobiledoc: markdownToMobiledoc('my post')}]};
 
             request.post(testUtils.API.getApiQuery('posts/'))
                 .set('Authorization', 'Bearer ' + accesstoken)

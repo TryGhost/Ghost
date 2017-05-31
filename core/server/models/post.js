@@ -5,7 +5,6 @@ var _               = require('lodash'),
     Promise         = require('bluebird'),
     sequence        = require('../utils/sequence'),
     errors          = require('../errors'),
-    legacyConverter = require('../utils/markdown-converter'),
     htmlToText      = require('html-to-text'),
     ghostBookshelf  = require('./base'),
     events          = require('../events'),
@@ -235,9 +234,6 @@ Post = ghostBookshelf.Model.extend({
 
         if (mobiledoc) {
             this.set('html', utils.mobiledocConverter.render(JSON.parse(mobiledoc)));
-        } else {
-            // legacy markdown mode
-            this.set('html', legacyConverter.render(_.toString(this.get('markdown'))));
         }
 
         if (this.hasChanged('html') || !this.get('plaintext')) {
@@ -524,7 +520,7 @@ Post = ghostBookshelf.Model.extend({
         return this.isPublicContext() ? 'page:false' : 'page:false+status:published';
     }
 }, {
-    allowedFormats: ['markdown', 'mobiledoc', 'html', 'plaintext', 'amp'],
+    allowedFormats: ['mobiledoc', 'html', 'plaintext', 'amp'],
 
     orderDefaultOptions: function orderDefaultOptions() {
         return {
