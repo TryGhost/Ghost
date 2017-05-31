@@ -22,7 +22,7 @@ var _               = require('lodash'),
         // Post API
         post:        _(schema.posts).keys()
             // does not return all formats by default
-            .without('markdown', 'mobiledoc', 'amp', 'plaintext')
+            .without('mobiledoc', 'amp', 'plaintext')
             // swaps author_id to author, and always returns a computed 'url' property
             .without('author_id').concat('author', 'url')
             .value(),

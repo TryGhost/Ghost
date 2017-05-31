@@ -8,6 +8,7 @@ var should = require('should'),
     configUtils = require('../../../utils/configUtils'),
     themes = require('../../../../server/themes'),
     settingsCache = require('../../../../server/settings/cache'),
+    markdownToMobiledoc = require('../../../utils/fixtures/data-generator').markdownToMobiledoc,
     sandbox = sinon.sandbox.create();
 
 describe('Frontend Controller', function () {
@@ -66,7 +67,7 @@ describe('Frontend Controller', function () {
                 id: 1,
                 title: 'Test static page',
                 slug: 'test-static-page',
-                markdown: 'Test static page content',
+                mobiledoc: markdownToMobiledoc('Test static page content'),
                 page: 1,
                 published_at: new Date('2013/12/30').getTime(),
                 author: {
@@ -83,7 +84,7 @@ describe('Frontend Controller', function () {
                 id: 2,
                 title: 'Test normal post',
                 slug: 'test-normal-post',
-                markdown: 'The test normal post content',
+                mobiledoc: markdownToMobiledoc('The test normal post content'),
                 page: 0,
                 published_at: new Date('2014/1/2').getTime(),
                 author: {
@@ -99,7 +100,7 @@ describe('Frontend Controller', function () {
                 id: 3,
                 title: 'About',
                 slug: 'about',
-                markdown: 'This is the about page content',
+                mobiledoc: markdownToMobiledoc('This is the about page content'),
                 page: 1,
                 published_at: new Date('2014/1/30').getTime(),
                 author: {
@@ -689,7 +690,7 @@ describe('Frontend Controller', function () {
                 id: 1,
                 title: 'Test static page',
                 slug: 'test-static-page',
-                markdown: 'Test static page content',
+                mobiledoc: markdownToMobiledoc('Test static page content'),
                 page: 1,
                 author: {
                     id: 1,
@@ -706,7 +707,7 @@ describe('Frontend Controller', function () {
                 id: 2,
                 title: 'Test normal post',
                 slug: 'test-normal-post',
-                markdown: 'The test normal post content',
+                mobiledoc: markdownToMobiledoc('The test normal post content'),
                 page: 0,
                 author: {
                     id: 1,
@@ -722,7 +723,7 @@ describe('Frontend Controller', function () {
                 id: 3,
                 title: 'Getting started',
                 slug: 'about',
-                markdown: 'This is a blog post',
+                mobiledoc: markdownToMobiledoc('This is a blog post'),
                 page: 0,
                 published_at: new Date('2014/1/30').getTime(),
                 author: {
