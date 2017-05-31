@@ -1,5 +1,6 @@
 var should = require('should'),
-    getSchema = require('../../../server/data/meta/schema');
+    getSchema = require('../../../server/data/meta/schema'),
+    markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc;
 
 describe('getSchema', function () {
     it('should return post schema if context starts with post', function (done) {
@@ -142,7 +143,7 @@ describe('getSchema', function () {
             post: {
                 title: 'Post Title',
                 slug: 'my-amp-post-slug',
-                markdown: 'some markdown',
+                mobiledoc: markdownToMobiledoc('some markdown'),
                 html: 'some html',
                 author: {
                     name: 'Post Author',

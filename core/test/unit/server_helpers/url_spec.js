@@ -2,6 +2,7 @@ var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     Promise = require('bluebird'),
     configUtils = require('../../utils/configUtils'),
+    markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc,
 
 // Stuff we are testing
     helpers = require('../../../server/helpers'),
@@ -34,7 +35,7 @@ describe('{{url}} helper', function () {
     it('should return the slug with a prefix slash if the context is a post', function () {
         rendered = helpers.url.call({
             html: 'content',
-            markdown: 'ff',
+            mobiledoc: markdownToMobiledoc('ff'),
             title: 'title',
             slug: 'slug',
             created_at: new Date(0),
@@ -47,7 +48,7 @@ describe('{{url}} helper', function () {
 
     it('should output an absolute URL if the option is present', function () {
         rendered = helpers.url.call(
-            {html: 'content', markdown: 'ff', title: 'title', slug: 'slug', url: '/slug/', created_at: new Date(0)},
+            {html: 'content', mobiledoc: markdownToMobiledoc('ff'), title: 'title', slug: 'slug', url: '/slug/', created_at: new Date(0)},
             {hash: {absolute: 'true'}}
         );
 
@@ -58,7 +59,7 @@ describe('{{url}} helper', function () {
     it('should output an absolute URL with https if the option is present and secure', function () {
         rendered = helpers.url.call(
             {
-                html: 'content', markdown: 'ff', title: 'title', slug: 'slug',
+                html: 'content', mobiledoc: markdownToMobiledoc('ff'), title: 'title', slug: 'slug',
                 url: '/slug/', created_at: new Date(0), secure: true
             },
             {hash: {absolute: 'true'}}
@@ -71,7 +72,7 @@ describe('{{url}} helper', function () {
     it('should output an absolute URL with https if secure', function () {
         rendered = helpers.url.call(
             {
-                html: 'content', markdown: 'ff', title: 'title', slug: 'slug',
+                html: 'content', mobiledoc: markdownToMobiledoc('ff'), title: 'title', slug: 'slug',
                 url: '/slug/', created_at: new Date(0), secure: true
             },
             {hash: {absolute: 'true'}}
@@ -94,7 +95,7 @@ describe('{{url}} helper', function () {
     });
 
     it('should return / if not a post or tag', function () {
-        rendered = helpers.url.call({markdown: 'ff', title: 'title', slug: 'slug'});
+        rendered = helpers.url.call({mobiledoc: markdownToMobiledoc('ff'), title: 'title', slug: 'slug'});
         should.exist(rendered);
         rendered.string.should.equal('/');
 
@@ -102,11 +103,11 @@ describe('{{url}} helper', function () {
         should.exist(rendered);
         rendered.string.should.equal('/');
 
-        rendered = helpers.url.call({html: 'content', markdown: 'ff', slug: 'slug'});
+        rendered = helpers.url.call({html: 'content', mobiledoc: markdownToMobiledoc('ff'), slug: 'slug'});
         should.exist(rendered);
         rendered.string.should.equal('/');
 
-        rendered = helpers.url.call({html: 'content', markdown: 'ff', title: 'title'});
+        rendered = helpers.url.call({html: 'content', mobiledoc: markdownToMobiledoc('ff'), title: 'title'});
         should.exist(rendered);
         rendered.string.should.equal('/');
     });
