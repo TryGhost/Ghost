@@ -183,6 +183,11 @@ For now, just quickly write the English default file *mytheme_en.json*. Later yo
 
 Naturally, replace `mytheme` with the simplified name of your theme (like the theme folder). In the future, it can be as well the name of a Ghost app with templates to translate.
 
+Although the English version will work for themes even without default English file (because of fallback to the text inside the `{{t}}` translation helper when no translation is available), it's advisable to include the default *mytheme_en.json* anyway, because:
+
+- It will be much easier for users to add and contribute languages by copying and editing the default file, as explained in the previous section.
+- Even for sites in English, Ghost users will be able to customize any theme texts by simply editing the default English file, without modifying the theme templates.
+
 If you have the translation files of another Ghost theme, surely part of the texts will be common, and you can copy them and their translations.
 
 To easily start a new translation file, copy the following into it:
@@ -209,6 +214,8 @@ For most texts, that's all and your theme is translatable now, although you can 
 ### 4. Share it with the theme maintainers
 
 If you send the adapted theme and language files to the maintainers, there is a good chance that they will keep the translatability for the next versions.
+
+And more translations mean more users, therefore more improvements and maintenance for the theme.
 
 ## Optional Advanced Features
 

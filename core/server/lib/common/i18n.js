@@ -37,10 +37,14 @@ I18n = {
      * @returns {string}
      */
     t: function t(path, bindings) {
-        var string = I18n.findString(path),
-            msg;
+        var string, defaultString, msg;
 
         currentLocale = settingsCache.get('default_lang') || 'en';
+        if (bindings !== undefined) {
+            defaultString = bindings.defaultString;
+            delete bindings.defaultString;
+        }
+        string = I18n.findString(path, defaultString);
 
         // If the path returns an array (as in the case with anything that has multiple paragraphs such as emails), then
         // loop through them and return an array of translated/formatted strings. Otherwise, just return the normal
@@ -85,7 +89,7 @@ I18n = {
      * @param {string} msgPath Path with in the JSON language file to desired string (ie: "errors.init.jsNotBuilt")
      * @returns {string}
      */
-    findString: function findString(msgPath, opts) {
+    findString: function findString(msgPath, defaultString, opts) {
         var options = _.merge({log: true}, opts || {}),
             candidateString, matchingString, path;
 

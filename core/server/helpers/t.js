@@ -34,6 +34,7 @@ module.exports = function t(text, options) {
             }
         }
     }
+    bindings.defaultString = text;
     where = where || settingsCache.get('active_theme');
     path = jp.stringify(['$', where, text]);
     return i18n.t(path, bindings);
