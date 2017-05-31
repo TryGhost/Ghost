@@ -21,6 +21,7 @@ var _ = require('lodash'),
     themeConfig = require('./config'),
     config = require('../config'),
     engine = require('./engine'),
+    _ = require('lodash'),
     // Current instance of ActiveTheme
     currentActiveTheme;
 
@@ -29,16 +30,19 @@ class ActiveTheme {
      * @TODO this API needs to be simpler, but for now should work!
      * @param {object} loadedTheme - the loaded theme object from the theme list
      * @param {object} checkedTheme - the result of gscan.format for the theme we're activating
+     * @param {object} error - bootstrap validates the active theme, we would like to remember this error
      */
-    constructor(loadedTheme, checkedTheme) {
+    constructor(loadedTheme, checkedTheme, error) {
         // Assign some data, mark it all as pseudo-private
         this._name = loadedTheme.name;
         this._path = loadedTheme.path;
         this._mounted = false;
+        this._error = error;
 
         // @TODO: get gscan to return validated, useful package.json fields for us!
         this._packageInfo = loadedTheme['package.json'];
-        this._partials = checkedTheme.partials;
+        this._partials =  checkedTheme.partials;
+
         // @TODO: get gscan to return a template collection for us
         this._templates = _.reduce(checkedTheme.files, function (templates, entry) {
             var tplMatch = entry.file.match(/(^[^\/]+).hbs$/);
@@ -66,6 +70,10 @@ class ActiveTheme {
 
     get mounted() {
         return this._mounted;
+    }
+
+    get error() {
+        return this._error;
     }
 
     hasTemplate(templateName) {
@@ -105,8 +113,8 @@ module.exports = {
      * @param {object} checkedTheme - the result of gscan.format for the theme we're activating
      * @return {ActiveTheme}
      */
-    set(loadedTheme, checkedTheme) {
-        currentActiveTheme = new ActiveTheme(loadedTheme, checkedTheme);
+    set(loadedTheme, checkedTheme, error) {
+        currentActiveTheme = new ActiveTheme(loadedTheme, checkedTheme, error);
         return currentActiveTheme;
     }
 };

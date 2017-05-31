@@ -52,7 +52,7 @@
     "ghost-ignition": "2.8.11",
     "ghost-storage-base": "0.0.1",
     "glob": "5.0.15",
-    "gscan": "1.0.0",
+    "gscan": "https://github.com/TryGhost/gscan/tarball/b45192207cb11c43998f489b72ec6d3ee03cc6b0",
     "html-to-text": "3.2.0",
     "icojs": "0.7.2",
     "image-size": "0.5.2",
