@@ -6,7 +6,7 @@ var supportedLocales    = ['en'],
     chalk               = require('chalk'),
     MessageFormat       = require('intl-messageformat'),
 
-    // TODO: fetch this dynamically based on overall blog settings (`key = "default_lang"`) in the `settings` table
+    // TODO: fetch this dynamically based on overall blog settings (`key = "default_locale"`) in the `settings` table
     currentLocale       = 'en',
     blos,
     I18n;
