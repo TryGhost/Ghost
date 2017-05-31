@@ -29,8 +29,8 @@
         "icon": {
             "defaultValue": ""
         },
-        "default_lang": {
-            "defaultValue": "en_US",
+        "default_locale": {
+            "defaultValue": "en",
             "validations": {
                 "isEmpty": false
             }

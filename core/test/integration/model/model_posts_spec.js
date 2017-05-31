@@ -959,7 +959,9 @@ describe('Post Model', function () {
                     createdPost.get('slug').should.equal(newPostDB.slug + '-2');
                     (!!createdPost.get('featured')).should.equal(false);
                     (!!createdPost.get('page')).should.equal(false);
-                    createdPost.get('language').should.equal('en_US');
+
+                    should.equal(createdPost.get('locale'), null);
+
                     // testing for nulls
                     (createdPost.get('feature_image') === null).should.equal(true);
                     (createdPost.get('meta_title') === null).should.equal(true);
