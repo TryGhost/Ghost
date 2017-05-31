@@ -8,7 +8,6 @@ export default Factory.extend({
     createdBy: null,
     email(i) { return `user-${i}@example.com`; },
     profileImage: '//www.gravatar.com/avatar/3ae045bc198a157401827c8455cd7c99?s=250&d=mm&r=x',
-    language: 'en_US',
     lastLogin: '2015-11-02T16:12:05.000Z',
     location: null,
     metaDescription: null,

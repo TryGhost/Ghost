@@ -20,7 +20,7 @@ export default Model.extend(ValidationEngine, {
     location: attr('string'),
     accessibility: attr('string'),
     status: attr('string'),
-    language: attr('string', {defaultValue: 'en_US'}),
+    locale: attr('string'),
     metaTitle: attr('string'),
     metaDescription: attr('string'),
     lastLoginUTC: attr('moment-utc'),
