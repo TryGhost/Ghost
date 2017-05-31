@@ -125,11 +125,11 @@ class PostsImporter extends BaseImporter {
                 }
                 if (mobileDocContent) {
                     model.mobiledoc = JSON.stringify({
-                        "version":"0.3.1",
-                        "markups":[],
-                        "atoms":[],
-                        "cards":[["card-markdown",{"cardName":"card-markdown","markdown": mobileDocContent}]],
-                        "sections":[[10,0]]
+                        version: '0.3.1',
+                        markups: [],
+                        atoms: [],
+                        cards: [['card-markdown',{cardName: 'card-markdown',markdown: mobileDocContent}]],
+                        sections:[[10,0]]
                     });
                 }
             }

@@ -1351,7 +1351,7 @@ describe('Import (new test structure)', function () {
 
         after(testUtils.teardown);
 
-        it('ensure data is still imported anmd converted ', function (done) {
+        it('ensure data is still imported and mapped correctly', function (done) {
             var fetchImported = Promise.join(
                 knex('users').select(),
                 knex('posts').select(),
@@ -1359,50 +1359,51 @@ describe('Import (new test structure)', function () {
                 knex('settings').select()
             );
 
-            fetchImported.then(function (importedData) {
-                should.exist(importedData);
-                importedData.length.should.equal(4);
+            fetchImported
+                .then(function (importedData) {
+                    should.exist(importedData);
+                    importedData.length.should.equal(4);
 
-                var users = importedData[0],
-                    posts = importedData[1],
-                    tags = importedData[2],
-                    settings = importedData[3];
+                    var users = importedData[0],
+                        posts = importedData[1],
+                        tags = importedData[2],
+                        settings = importedData[3],
+                        firstPost = _.find(posts, {slug: exportData.data.posts[0].slug});
 
-                // Check length of of posts, tags and users
-                posts.length.should.equal(exportData.data.posts.length);
-                tags.length.should.equal(exportData.data.tags.length);
-                // Users include original user + joe bloggs' brother
-                users.length.should.equal(exportData.data.users.length + 1);
+                    // Check length of of posts, tags and users
+                    posts.length.should.equal(exportData.data.posts.length);
+                    tags.length.should.equal(exportData.data.tags.length);
+                    // Users include original user + joe bloggs' brother
+                    users.length.should.equal(exportData.data.users.length + 1);
 
-                // Check feature image is correctly mapped for a post
-                posts[0].feature_image.should.eql('/content/images/2017/05/post-image.jpg');
-                // Check logo and cover images are correctly mapped for a user
-                users[1].cover_image.should.eql(exportData.data.users[0].cover);
-                users[1].profile_image.should.eql(exportData.data.users[0].image);
-                // Check feature image is correctly mapped for a tag
-                tags[0].feature_image.should.eql(exportData.data.tags[0].image);
-                // Check logo image is correctly mapped for a blog
-                settings[6].key.should.eql('logo');
-                settings[6].value.should.eql('/content/images/2017/05/bloglogo.jpeg');
-                // Check cover image is correctly mapped for a blog
-                settings[7].key.should.eql('cover_image');
-                settings[7].value.should.eql('/content/images/2017/05/blogcover.jpeg');
+                    // Check feature image is correctly mapped for a post
+                    firstPost.feature_image.should.eql('/content/images/2017/05/post-image.jpg');
+                    // Check logo and cover images are correctly mapped for a user
+                    users[1].cover_image.should.eql(exportData.data.users[0].cover);
+                    users[1].profile_image.should.eql(exportData.data.users[0].image);
+                    // Check feature image is correctly mapped for a tag
+                    tags[0].feature_image.should.eql(exportData.data.tags[0].image);
+                    // Check logo image is correctly mapped for a blog
+                    settings[6].key.should.eql('logo');
+                    settings[6].value.should.eql('/content/images/2017/05/bloglogo.jpeg');
+                    // Check cover image is correctly mapped for a blog
+                    settings[7].key.should.eql('cover_image');
+                    settings[7].value.should.eql('/content/images/2017/05/blogcover.jpeg');
 
+                    // Check default settings language is correctly mapped and changed to 'en'
+                    settings[9].key.should.eql('default_locale');
+                    settings[9].value.should.eql('en');
 
-                // Check default settings language is correctly mapped and changed to 'en'
-                settings[9].key.should.eql('default_locale');
-                settings[9].value.should.eql('en');
+                    // Check post language is set to 'en' if en_US
+                    firstPost.locale.should.eql('en');
+                    // Check user language is set to 'en' if en_US
+                    users[1].locale.should.eql('en');
 
-                // Check post language is set to 'en' if en_US
-                posts[0].locale.should.eql('en');
-                // Check user language is set to 'en' if en_US
-                users[1].locale.should.eql('en');
+                    // Check mobiledoc is populated from markdown
+                    JSON.parse(firstPost.mobiledoc).cards[0][1].markdown.should.eql(exportData.data.posts[0].markdown);
 
-                // Check mobiledoc is populated from markdown
-                JSON.parse(posts[0].mobiledoc).cards[0][1].markdown.should.eql(exportData.data.posts[0].markdown);
-
-                done();
-            }).catch(done);
+                    done();
+                }).catch(done);
         });
     });
 
@@ -1440,7 +1441,11 @@ describe('Import (new test structure)', function () {
                 var users = importedData[0],
                     posts = importedData[1],
                     tags = importedData[2],
-                    settings = importedData[3];
+                    settings = importedData[3],
+                    firstPost = _.find(posts, {slug: exportData.data.posts[0].slug}),
+                    secondPost = _.find(posts, {slug: exportData.data.posts[1].slug}),
+                    thirdPost = _.find(posts, {slug: exportData.data.posts[2].slug}),
+                    fourthPost = _.find(posts, {slug: exportData.data.posts[3].slug});
 
                 // Check length of of posts, tags and users
                 posts.length.should.equal(exportData.data.posts.length);
@@ -1449,7 +1454,7 @@ describe('Import (new test structure)', function () {
                 users.length.should.equal(exportData.data.users.length + 1);
 
                 // Check feature image is correctly mapped for a post
-                should(posts[0].feature_image).equal(null);
+                should(firstPost.feature_image).equal(null);
                 // Check logo and cover images are correctly mapped for a user
                 users[1].cover_image.should.eql(exportData.data.users[0].cover);
                 users[1].profile_image.should.eql(exportData.data.users[0].image);
@@ -1462,24 +1467,23 @@ describe('Import (new test structure)', function () {
                 settings[7].key.should.eql('cover_image');
                 settings[7].value.should.eql('/content/images/2017/05/blogcover.jpeg');
 
-
                 // Check default settings language is correctly mapped and changed to 'en'
                 settings[9].key.should.eql('default_locale');
                 settings[9].value.should.eql('en');
 
                 // Check post language is set to 'en' if en_US
-                posts[0].locale.should.eql('en');
+                firstPost.locale.should.eql('en');
                 // Check user language is set to 'en' if en_US
                 users[1].locale.should.eql('en');
 
                 // Check mobiledoc is populated from from html when mobiledoc is null & markdown is empty string
-                JSON.parse(posts[0].mobiledoc).cards[0][1].markdown.should.eql(exportData.data.posts[0].html);
+                JSON.parse(firstPost.mobiledoc).cards[0][1].markdown.should.eql(exportData.data.posts[0].html);
                 // Check mobiledoc is populated from from html when mobiledoc is null & markdown is null
-                JSON.parse(posts[1].mobiledoc).cards[0][1].markdown.should.eql(exportData.data.posts[1].html);
+                JSON.parse(secondPost.mobiledoc).cards[0][1].markdown.should.eql(exportData.data.posts[1].html);
                 // Check mobiledoc is null when markdown and mobiledoc are null and html is empty string
-                should(posts[2].mobiledoc).equal(null);
+                should(thirdPost.mobiledoc).equal(null);
                 // Check mobiledoc is null when markdown, mobiledoc are html are null
-                should(posts[3].mobiledoc).equal(null);
+                should(fourthPost.mobiledoc).equal(null);
 
                 done();
             }).catch(done);

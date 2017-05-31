@@ -983,11 +983,11 @@
                 "meta_title": null,
                 "meta_description": null,
                 "author_id": 1,
-                "created_at": "2017-05-30T10:41:19.000Z",
+                "created_at": "2017-05-26T10:41:19.000Z",
                 "created_by": 1,
-                "updated_at": "2017-05-30T10:42:15.000Z",
+                "updated_at": "2017-05-26T10:42:15.000Z",
                 "updated_by": 1,
-                "published_at": "2017-08-15T10:41:00.000Z",
+                "published_at": "2017-08-26T10:41:00.000Z",
                 "published_by": null
             },
             {
@@ -1008,11 +1008,11 @@
                 "meta_title": null,
                 "meta_description": null,
                 "author_id": 1,
-                "created_at": "2017-05-30T10:41:19.000Z",
+                "created_at": "2017-05-27T10:41:19.000Z",
                 "created_by": 1,
-                "updated_at": "2017-05-30T10:42:15.000Z",
+                "updated_at": "2017-05-27T10:42:15.000Z",
                 "updated_by": 1,
-                "published_at": "2017-08-15T10:41:00.000Z",
+                "published_at": "2017-08-27T10:41:00.000Z",
                 "published_by": null
             },
             {
@@ -1033,11 +1033,11 @@
                 "meta_title": null,
                 "meta_description": null,
                 "author_id": 1,
-                "created_at": "2017-05-30T10:41:19.000Z",
+                "created_at": "2017-05-28T10:41:19.000Z",
                 "created_by": 1,
-                "updated_at": "2017-05-30T10:42:15.000Z",
+                "updated_at": "2017-05-28T10:42:15.000Z",
                 "updated_by": 1,
-                "published_at": "2017-08-15T10:41:00.000Z",
+                "published_at": "2017-08-28T10:41:00.000Z",
                 "published_by": null
             },
             {
@@ -1058,11 +1058,11 @@
                 "meta_title": null,
                 "meta_description": null,
                 "author_id": 1,
-                "created_at": "2017-05-30T10:41:19.000Z",
+                "created_at": "2017-05-29T10:41:19.000Z",
                 "created_by": 1,
-                "updated_at": "2017-05-30T10:42:15.000Z",
+                "updated_at": "2017-05-29T10:42:15.000Z",
                 "updated_by": 1,
-                "published_at": "2017-08-15T10:41:00.000Z",
+                "published_at": "2017-08-29T10:41:00.000Z",
                 "published_by": null
             }
         ],

@@ -43,7 +43,7 @@ class SettingsImporter extends BaseImporter {
 
         // Remove deprecated postsPerPage setting
         this.dataToImport = _.filter(this.dataToImport, function (data) {
-            return data.key !== "postsPerPage";
+            return data.key !== 'postsPerPage';
         });
 
         _.each(this.dataToImport, function (obj) {
