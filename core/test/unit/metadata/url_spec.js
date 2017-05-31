@@ -1,11 +1,12 @@
 var should = require('should'), // jshint ignore:line
-    getUrl = require('../../../server/data/meta/url');
+    getUrl = require('../../../server/data/meta/url'),
+    markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc;
 
 describe('getUrl', function () {
     it('should return url for a post', function () {
         var url = getUrl({
             html: '<p>Welcome to my post.</p>',
-            markdown: 'Welcome to my post.',
+            mobiledoc: markdownToMobiledoc('Welcome to my post.'),
             title: 'Welcome Post',
             slug: 'welcome-post',
             url: '/post/welcome-post/'
@@ -16,7 +17,7 @@ describe('getUrl', function () {
     it('should return absolute url for a post', function () {
         var url = getUrl({
             html: '<p>Welcome to my post.</p>',
-            markdown: 'Welcome to my post.',
+            mobiledoc: markdownToMobiledoc('Welcome to my post.'),
             title: 'Welcome Post',
             slug: 'welcome-post',
             url: '/post/welcome-post/'

@@ -1,6 +1,7 @@
 var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     Promise = require('bluebird'),
+    markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc,
 // Stuff we are testing
     helpers = require('../../../server/helpers'),
     api = require('../../../server/api'),
@@ -33,7 +34,7 @@ describe('{{next_post}} helper', function () {
             helpers.prev_post.call({
                 html: 'content',
                 status: 'published',
-                markdown: 'ff',
+                mobiledoc: markdownToMobiledoc('ff'),
                 title: 'post2',
                 slug: 'current',
                 created_at: new Date(0),
@@ -68,7 +69,7 @@ describe('{{next_post}} helper', function () {
 
             helpers.prev_post.call({
                 html: 'content',
-                markdown: 'ff',
+                mobiledoc: markdownToMobiledoc('ff'),
                 title: 'post2',
                 slug: 'current',
                 created_at: new Date(0),
@@ -127,7 +128,7 @@ describe('{{next_post}} helper', function () {
             helpers.prev_post.call({
                 html: 'content',
                 status: 'published',
-                markdown: 'ff',
+                mobiledoc: markdownToMobiledoc('ff'),
                 title: 'post2',
                 slug: 'current',
                 created_at: new Date(0),

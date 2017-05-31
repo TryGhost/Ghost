@@ -4,7 +4,6 @@ module.exports = {
         uuid: {type: 'string', maxlength: 36, nullable: false, validations: {isUUID: true}},
         title: {type: 'string', maxlength: 2000, nullable: false},
         slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
-        markdown: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         mobiledoc: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         html: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         amp: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
