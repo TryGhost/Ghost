@@ -106,7 +106,8 @@
             },
             "themehandler": {
                 "missingTheme": "The currently active theme \"{theme}\" is missing.",
-                "invalidTheme": "The currently active theme \"{theme}\" is invalid."
+                "invalidTheme": "The currently active theme \"{theme}\" is invalid.",
+                "themeHasErrors": "The currently active theme has errors, but theme still works."
             }
         },
         "utils": {

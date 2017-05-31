@@ -36,20 +36,24 @@
                     </section>
                   </section>
                 </section>
-                {{#if stack}}
-                  <section class="error-stack">
-                    <h3>Stack Trace</h3>
-                    <p><strong>{{message}}</strong></p>
-                    <ul class="error-stack-list">
-                      {{#each stack}}
-                        <li>
-                          at
-                          {{#if function}}<em class="error-stack-function">{{function}}</em>{{/if}}
-                          <span class="error-stack-file">({{at}})</span>
-                        </li>
-                      {{/each}}
-                    </ul>
-                  </section>
+
+                {{#if errorDetails}}
+                    <section class="error-stack">
+                        <h3>Theme errors</h3>
+
+                        <ul class="error-stack-list">
+                            {{#each errorDetails}}
+                                <li>
+                                    <em class="error-stack-function">{{{rule}}}</em>
+
+                                    {{#each failures}}
+                                        <p><span class="error-stack-file">Ref: {{ref}}</span></p>
+                                        <p><span class="error-stack-file">Message: {{message}}</span></p>
+                                    {{/each}}
+                                </li>
+                            {{/each}}
+                        </ul>
+                    </section>
                 {{/if}}
               </div>
           </div>

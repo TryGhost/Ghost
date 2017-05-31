@@ -1,5 +1,4 @@
 var debug = require('debug')('ghost:themes'),
-    _ = require('lodash'),
     events = require('../events'),
     errors = require('../errors'),
     logging = require('../logging'),
@@ -35,21 +34,35 @@ module.exports = {
                 return validate
                     .check(theme)
                     .then(function resultHandler(checkedTheme) {
-                        // Activate! (sort of)
+                        // CASE: inform that the theme has errors, but not fatal (theme still works)
+                        if (checkedTheme.results.error.length) {
+                            logging.warn(new errors.ThemeValidationError({
+                                errorType: 'ThemeWorksButHasErrors',
+                                message: i18n.t('errors.middleware.themehandler.themeHasErrors', {theme: activeThemeName}),
+                                errorDetails: JSON.stringify(checkedTheme.results.error, null, '\t')
+                            }));
+                        }
+
                         debug('Activating theme (method A on boot)', activeThemeName);
                         self.activate(theme, checkedTheme);
                     })
                     .catch(function (err) {
-                        // Active theme is not valid, we don't want to exit because the admin panel will still work
-                        logging.error(new errors.InternalServerError({
-                            message: i18n.t('errors.middleware.themehandler.invalidTheme', {theme: activeThemeName}),
-                            err: err
-                        }));
+                        if (err.errorDetails) {
+                            logging.error(new errors.ThemeValidationError({
+                                message: i18n.t('errors.middleware.themehandler.invalidTheme', {theme: activeThemeName}),
+                                errorDetails: JSON.stringify(err.errorDetails, null, '\t')
+                            }));
+                        }
+
+                        // CASE: we have to remember to show errors on blog
+                        // `err.context` remembers the theme inside this property
+                        active.set(theme, err.context, err);
                     });
             })
-            .catch(function () {
-                // Active theme is missing, we don't want to exit because the admin panel will still work
-                logging.warn(i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeThemeName}));
+            .catch(function (err) {
+                // CASE: active theme is missing, we don't want to exit because the admin panel will still work
+                err.message = i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeThemeName});
+                logging.error(err);
             });
     },
     // Load themes, soon to be removed and exposed via specific function.
@@ -65,12 +78,7 @@ module.exports = {
     toJSON: require('./to-json'),
     getActive: active.get,
     activate: function activate(loadedTheme, checkedTheme) {
-        if (!_.has(checkedTheme, 'results.score.level') || checkedTheme.results.score.level !== 'passing') {
-            throw new errors.InternalServerError({
-                message: i18n.t('errors.middleware.themehandler.invalidTheme', {theme: loadedTheme.name})
-            });
-        }
-
+        // no need to check the score, activation should be used in combination with validate.check
         // Use the two theme objects to set the current active theme
         active.set(loadedTheme, checkedTheme);
     },
