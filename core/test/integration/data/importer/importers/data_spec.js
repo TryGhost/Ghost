@@ -87,7 +87,7 @@ describe('Import', function () {
                 });
 
                 importResult.problems.length.should.equal(4);
-                importResult.problems[2].message.should.equal('Theme not imported, please upload in Settings - Design')
+                importResult.problems[2].message.should.equal('Theme not imported, please upload in Settings - Design');
 
                 done();
             }).catch(done);
@@ -1508,6 +1508,45 @@ describe('Import (new test structure)', function () {
 
                 done();
             }).catch(done);
+        });
+    });
+
+    describe('lts: style import for user with a very long email address', function () {
+        var exportData;
+
+        before(function doImport(done) {
+            // initialise the blog with some data
+            testUtils.initFixtures('roles', 'owner', 'settings').then(function () {
+                return testUtils.fixtures.loadExportFixture('export-lts-style-user-long-email',
+                    {lts: true}
+                );
+            }).then(function (exported) {
+                exportData = exported;
+                done();
+            }).catch(done);
+        });
+
+        after(testUtils.teardown);
+
+        it('provides error message and does not import where lts email address is longer that 1.0.0 constraint', function (done) {
+            testUtils.fixtures.loadExportFixture('export-lts-style-user-long-email', {lts:true}).then(function (exported) {
+                exportData = exported;
+                return dataImporter.doImport(exportData);
+            }).then(function () {
+                (1).should.eql(0, 'Data import should not resolve promise.');
+            }).catch(function (error) {
+                error[0].message.should.eql('Value in [users.email] exceeds maximum length of 191 characters.');
+                error[0].errorType.should.eql('ValidationError');
+
+                Promise.resolve(knex('users').select()).then(function (users) {
+                    should.exist(users);
+
+                    users.length.should.equal(1, 'Did not get data successfully');
+                    users[0].email.should.not.equal(exportData.data.users[0].email);
+
+                    done();
+                });
+            });
         });
     });
 });
