@@ -37,7 +37,7 @@ class TagsImporter extends BaseImporter {
 
         let self = this, ops = [];
 
-        self.dataToImport = this.dataToImport.map(self.legacyMapper);
+        this.dataToImport = this.dataToImport.map(self.legacyMapper);
 
         _.each(this.dataToImport, function (obj) {
             ops.push(models[self.modelName].findOne({name: obj.name}, options).then(function (tag) {

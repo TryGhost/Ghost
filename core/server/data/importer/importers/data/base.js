@@ -21,15 +21,9 @@ class Base {
 
         this.legacyKeys = {};
         this.legacyMapper = function legacyMapper(item) {
-            item = _.mapKeys(item, function matchLegacyKey(value, key) {
+            return _.mapKeys(item, function matchLegacyKey(value, key) {
                 return self.legacyKeys[key] || key;
             });
-
-            item = _.mapValues(item, function alterDefaultLanguage(value, key) {
-                return (key === 'locale' && value === 'en_US') ? 'en' : value;
-            });
-
-            return item;
         };
 
         this.dataKeyToImport = options.dataKeyToImport;

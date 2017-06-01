@@ -15,8 +15,7 @@ class PostsImporter extends BaseImporter {
         }));
 
         this.legacyKeys = {
-            image: 'feature_image',
-            language: 'locale'
+            image: 'feature_image'
         };
     }
 
@@ -109,15 +108,20 @@ class PostsImporter extends BaseImporter {
         this.sanitizeAttributes();
         this.addTagsToPosts();
 
-        self.dataToImport = this.dataToImport.map(self.legacyMapper);
+        // Remove legacy field language
+        this.dataToImport = _.filter(this.dataToImport, function (data) {
+            return _.omit(data, 'language');
+        });
+
+        this.dataToImport = this.dataToImport.map(self.legacyMapper);
 
         // For legacy imports/custom imports with only html we can parse the markdown or html into a mobile doc card
         // For now we can hardcode the version
-        _.each(self.dataToImport, function (model) {
-            if (_.isNull(model.mobiledoc)) {
-                if (!_.isNull(model.markdown) && model.markdown.length > 0) {
+        _.each(this.dataToImport, function (model) {
+            if (!model.mobiledoc) {
+                if (model.markdown && model.markdown.length > 0) {
                     mobileDocContent = model.markdown;
-                } else if (!_.isNull(model.html) && model.html.length > 0) {
+                } else if (model.html && model.html.length > 0) {
                     mobileDocContent = model.html;
                 } else {
                     // Set mobileDocContent to null else it will affect empty posts

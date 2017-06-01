@@ -15,10 +15,9 @@ class SettingsImporter extends BaseImporter {
         }));
 
         // Map legacy keys
-        this.legacySettingsKeys = {
+        this.legacySettingsKeyValues = {
             activeApps: 'active_apps',
             installedApps: 'installed_apps',
-            defaultLang: 'default_locale',
             isPrivate: 'is_private',
             activeTheme: 'active_theme', // TODO check we want tthis as we are not installing it?
             forceI18n: 'force_i18n',
@@ -41,16 +40,13 @@ class SettingsImporter extends BaseImporter {
             return ['core', 'theme'].indexOf(data.type) === -1;
         });
 
-        // Remove deprecated postsPerPage setting
+        // Remove deprecated postsPerPage setting and defaultLang
         this.dataToImport = _.filter(this.dataToImport, function (data) {
-            return data.key !== 'postsPerPage';
+            return data.key !== 'postsPerPage' && data.key !== 'defaultLang';
         });
 
         _.each(this.dataToImport, function (obj) {
-            obj.key = self.legacySettingsKeys[obj.key] || obj.key;
-
-            // Set legacy default lang to current format
-            obj.value = (obj.key === 'default_locale' && obj.value === 'en_US') ? 'en' : obj.value;
+            obj.key = self.legacySettingsKeyValues[obj.key] || obj.key;
         });
 
         return super.beforeImport();

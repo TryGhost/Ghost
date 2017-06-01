@@ -1390,14 +1390,14 @@ describe('Import (new test structure)', function () {
                     settings[7].key.should.eql('cover_image');
                     settings[7].value.should.eql('/content/images/2017/05/blogcover.jpeg');
 
-                    // Check default settings language is correctly mapped and changed to 'en'
+                    // Check default settings locale is not overwritten by defaultLang
                     settings[9].key.should.eql('default_locale');
                     settings[9].value.should.eql('en');
 
-                    // Check post language is set to 'en' if en_US
-                    firstPost.locale.should.eql('en');
-                    // Check user language is set to 'en' if en_US
-                    users[1].locale.should.eql('en');
+                    // Check post language is null
+                    should(firstPost.locale).equal(null);
+                    // Check user language is null
+                    should(users[1].locale).equal(null);
 
                     // Check mobiledoc is populated from markdown
                     JSON.parse(firstPost.mobiledoc).cards[0][1].markdown.should.eql(exportData.data.posts[0].markdown);
@@ -1426,7 +1426,7 @@ describe('Import (new test structure)', function () {
 
         after(testUtils.teardown);
 
-        it('ensure images and language are mapped correctly', function (done) {
+        it('ensure images are mapped correctly and language is null', function (done) {
             var fetchImported = Promise.join(
                 knex('users').select(),
                 knex('posts').select(),
@@ -1467,14 +1467,14 @@ describe('Import (new test structure)', function () {
                 settings[7].key.should.eql('cover_image');
                 settings[7].value.should.eql('/content/images/2017/05/blogcover.jpeg');
 
-                // Check default settings language is correctly mapped and changed to 'en'
+                // Check default settings locale is not overwritten by defaultLang
                 settings[9].key.should.eql('default_locale');
                 settings[9].value.should.eql('en');
 
-                // Check post language is set to 'en' if en_US
-                firstPost.locale.should.eql('en');
-                // Check user language is set to 'en' if en_US
-                users[1].locale.should.eql('en');
+                // Check post language is set to null
+                should(firstPost.locale).equal(null);
+                // Check user language is set to null
+                should(users[1].locale).equal(null);
 
                 // Check mobiledoc is populated from from html when mobiledoc is null & markdown is empty string
                 JSON.parse(firstPost.mobiledoc).cards[0][1].markdown.should.eql(exportData.data.posts[0].html);
@@ -1484,6 +1484,24 @@ describe('Import (new test structure)', function () {
                 should(thirdPost.mobiledoc).equal(null);
                 // Check mobiledoc is null when markdown, mobiledoc are html are null
                 should(fourthPost.mobiledoc).equal(null);
+
+                done();
+            }).catch(done);
+        });
+
+        it('ensure post without mobiledoc key uses markdown', function (done) {
+            var fetchImported = Promise.resolve( knex('posts').select());
+
+            fetchImported.then(function (importedData) {
+                should.exist(importedData);
+                importedData.length.should.equal(5);
+
+                var posts = importedData,
+                    fifthPost = _.find(posts, {slug: exportData.data.posts[4].slug});
+
+                // Check mobiledoc is populated from from html when mobiledoc is null & markdown is empty string
+                JSON.parse(fifthPost.mobiledoc).cards[0][1].markdown.should.eql(exportData.data.posts[4].markdown);
+
 
                 done();
             }).catch(done);
