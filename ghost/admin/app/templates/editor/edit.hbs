@@ -56,7 +56,7 @@
                 tabindex="1"
                 shouldFocus=shouldFocusTitle
                 autoExpand=".gh-markdown-editor-pane"
-                focus-out="updateTitle"
+                focusOut=(action "saveTitle")
                 update=(action (perform updateTitle))
                 keyEvents=(hash
                     9=(action markdown.focus 'bottom')
