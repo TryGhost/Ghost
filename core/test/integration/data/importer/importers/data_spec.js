@@ -1478,8 +1478,10 @@ describe('Import (new test structure)', function () {
                 should(users[1].locale).equal(null);
 
                 // Check last_seen is mapped from last_login for user
-                users[1].last_seen.should.eql(moment(exportData.data.users[0].last_login).format('YYYY-MM-DD HH:mm:ss'));
-
+                assert.equal(
+                    moment(users[1].last_seen).valueOf(),
+                    moment(exportData.data.users[0].last_login).valueOf()
+                );
                 // Check mobiledoc is populated from from html when mobiledoc is null & markdown is empty string
                 JSON.parse(firstPost.mobiledoc).cards[0][1].markdown.should.eql(exportData.data.posts[0].html);
                 // Check mobiledoc is populated from from html when mobiledoc is null & markdown is null
