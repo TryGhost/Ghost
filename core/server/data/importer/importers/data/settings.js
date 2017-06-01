@@ -14,6 +14,8 @@ class SettingsImporter extends BaseImporter {
             requiredData: []
         }));
 
+        this.problems = [];
+
         // Map legacy keys
         this.legacySettingsKeyValues = {
             activeApps: 'active_apps',
@@ -33,7 +35,16 @@ class SettingsImporter extends BaseImporter {
     beforeImport() {
         debug('beforeImport');
 
-        let self = this;
+        let self = this,
+            legacyActiveTheme = _.find(this.dataToImport, {key: 'activeTheme'});
+
+        if (legacyActiveTheme) {
+            self.problems.push({
+                message: 'Theme not imported, please upload in Settings - Design',
+                help: self.modelName,
+                context: JSON.stringify(legacyActiveTheme)
+            });
+        }
 
         // Remove core and theme data types
         this.dataToImport = _.filter(this.dataToImport, function (data) {

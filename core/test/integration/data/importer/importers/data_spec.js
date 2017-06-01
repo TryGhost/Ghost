@@ -60,7 +60,7 @@ describe('Import', function () {
             }).then(function (importResult) {
                 should.exist(importResult.data.posts);
                 importResult.data.posts.length.should.equal(1);
-                importResult.problems.length.should.eql(2);
+                importResult.problems.length.should.eql(3);
 
                 done();
             }).catch(done);
@@ -86,7 +86,8 @@ describe('Import', function () {
                     return postTag.tag_id !== 2;
                 });
 
-                importResult.problems.length.should.equal(3);
+                importResult.problems.length.should.equal(4);
+                importResult.problems[2].message.should.equal('Theme not imported, please upload in Settings - Design')
 
                 done();
             }).catch(done);
