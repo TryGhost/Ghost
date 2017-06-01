@@ -10,7 +10,6 @@
     {{/dropdown.trigger}}
     {{#dropdown.content class="gh-nav-menu-dropdown"}}
         <ul class="dropdown-menu dropdown-triangle-top" role="menu" {{action dropdown.actions.close on="click" preventDefault=false}}>
-            <li role="presentation"><a href="{{config.blogUrl}}/" target="_blank">View site</a></li>
             <li role="presentation">{{#link-to "about" classNames="gh-nav-menu-about dropdown-item js-nav-item" role="menuitem" tabindex="-1"}}{{inline-svg "store"}} About Ghost{{/link-to}}</li>
             <li class="divider"></li>
             <li role="presentation">{{#link-to "team.user" session.user.slug classNames="dropdown-item user-menu-profile js-nav-item" role="menuitem" tabindex="-1"}}{{inline-svg "user-circle"}} Your Profile{{/link-to}}</li>
@@ -57,4 +56,7 @@
         </ul>
     {{/if}}
 </section>
+<footer class="gh-nav-foot">
+    <a class="gh-nav-foot-sitelink" href="{{config.blogUrl}}/" target="_blank">View site {{inline-svg "external"}}</a>
+</footer>
 <div class="gh-autonav-toggle" {{action "openAutoNav" on="mouseEnter"}}></div>

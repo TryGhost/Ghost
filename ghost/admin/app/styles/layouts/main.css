@@ -236,6 +236,25 @@ body > .ember-view:not(.default-liquid-destination) {
     stroke: var(--darkgrey);
 }
 
+.gh-nav-foot-sitelink {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 46px;
+    border-top: color(var(--lightgrey) l(-1%)) 1px solid;
+    text-align: center;
+    font-size: 1.2rem;
+    line-height: 1em;
+    font-weight: 300;
+    color:  color(var(--midgrey) l(+5%));
+}
+
+.gh-nav-foot-sitelink svg {
+    width: 13px;
+    margin-left: 5px;
+    fill: color(var(--midgrey) l(+5%));
+}
+
 /* Mobile Nav Menu (Slides out)
 /* ---------------------------------------------------------- */
 
