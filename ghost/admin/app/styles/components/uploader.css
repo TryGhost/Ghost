@@ -55,7 +55,7 @@
 .gh-image-uploader .image-cancel svg {
     fill: #fff;
     height: 13px;
-    width: auto;
+    width: 13px;
 }
 
 .gh-image-uploader .upload-form {

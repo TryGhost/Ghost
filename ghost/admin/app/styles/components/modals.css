@@ -89,14 +89,14 @@
     margin: 0;
     padding: 0;
     width: 16px;
-    height: auto;
+    height: 16px;
     border: none;
 }
 
 .modal-content .close svg {
     fill: #808284;
     width: 16px;
-    height: auto;
+    height: 16px;
 }
 
 .modal-content .close svg:hover {

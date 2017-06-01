@@ -9,7 +9,7 @@
 
 .gh-publishmenu-trigger svg {
     height: 8px;
-    width: auto;
+    width: 8px;
 }
 
 .gh-publishmenu-trigger svg path {
@@ -190,6 +190,7 @@
 }
 
 .gh-date-time-picker-date svg {
+    width: 14px;
     height: 14px;
     fill: color(var(--midgrey) l(+15%));
 }

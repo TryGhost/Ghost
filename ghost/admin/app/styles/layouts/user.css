@@ -11,7 +11,7 @@
 
 .user-actions-cog svg {
     height: 13px;
-    width: auto;
+    width: 13px;
     fill: var(--midgrey);
     margin-right: 0;
 }

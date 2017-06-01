@@ -35,7 +35,7 @@
 
 .subscribers-table table .gh-btn svg {
     height: 13px;
-    width: auto;
+    width: 13px;
 }
 
 .subscribers-table table tr:hover .gh-btn {

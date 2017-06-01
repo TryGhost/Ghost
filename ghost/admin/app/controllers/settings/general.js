@@ -1,3 +1,4 @@
+import $ from 'jquery';
 import Controller from 'ember-controller';
 import computed from 'ember-computed';
 import injectService from 'ember-service/inject';
@@ -102,23 +103,18 @@ export default Controller.extend({
          * @param  {MouseEvent} event - MouseEvent fired by the button click
          */
         triggerFileDialog(event) {
-            let fileInput = event.target
+            let fileInput = $(event.target)
                 .closest('.gh-setting')
-                .querySelector('input[type="file"]');
+                .find('input[type="file"]');
 
-            if (fileInput) {
-                let click = new MouseEvent('click', {
-                    view: window,
-                    bubbles: true,
-                    cancelable: true
-                });
-
+            if (fileInput.length > 0) {
                 // reset file input value before clicking so that the same image
                 // can be selected again
                 fileInput.value = '';
 
                 // simulate click to open file dialog
-                fileInput.dispatchEvent(click);
+                // using jQuery because IE11 doesn't support MouseEvent
+                $(fileInput).click();
             }
         },
 
