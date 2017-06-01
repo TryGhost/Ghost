@@ -237,7 +237,7 @@
     padding: 0;
 }
 
-.gh-editor-title:placeholder {
+.gh-editor-title::placeholder {
     font-weight: bold;
 }
 
