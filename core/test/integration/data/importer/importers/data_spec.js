@@ -1476,6 +1476,9 @@ describe('Import (new test structure)', function () {
                 // Check user language is set to null
                 should(users[1].locale).equal(null);
 
+                // Check last_seen is mapped from last_login for user
+                users[1].last_seen.should.eql(moment(exportData.data.users[0].last_login).format('YYYY-MM-DD HH:mm:ss'));
+
                 // Check mobiledoc is populated from from html when mobiledoc is null & markdown is empty string
                 JSON.parse(firstPost.mobiledoc).cards[0][1].markdown.should.eql(exportData.data.posts[0].html);
                 // Check mobiledoc is populated from from html when mobiledoc is null & markdown is null
@@ -1490,7 +1493,7 @@ describe('Import (new test structure)', function () {
         });
 
         it('ensure post without mobiledoc key uses markdown', function (done) {
-            var fetchImported = Promise.resolve( knex('posts').select());
+            var fetchImported = Promise.resolve(knex('posts').select());
 
             fetchImported.then(function (importedData) {
                 should.exist(importedData);
@@ -1501,7 +1504,6 @@ describe('Import (new test structure)', function () {
 
                 // Check mobiledoc is populated from from html when mobiledoc is null & markdown is empty string
                 JSON.parse(fifthPost.mobiledoc).cards[0][1].markdown.should.eql(exportData.data.posts[4].markdown);
-
 
                 done();
             }).catch(done);
