@@ -19,7 +19,7 @@ assetLocation = function (fileName) {
 
 codemirrorAssets = function () {
     let codemirrorFiles = [
-        'lib/codemirror.css',
+        // 'lib/codemirror.css',
         'theme/xq-light.css',
         'lib/codemirror.js',
         'mode/htmlmixed/htmlmixed.js',

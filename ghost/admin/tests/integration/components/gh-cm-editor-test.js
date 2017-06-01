@@ -37,7 +37,7 @@ describe('Integration: Component: gh-cm-editor', function () {
         let onFocus = () => {
             // wait for runloop to finish so that the new class has been rendered
             wait().then(() => {
-                expect($(find('.gh-input')).hasClass('focused'), 'has focused class on first render with autofocus')
+                expect($(find('.gh-input')).hasClass('focus'), 'has focused class on first render with autofocus')
                     .to.be.true;
 
                 done();
@@ -58,16 +58,16 @@ describe('Integration: Component: gh-cm-editor', function () {
         this.set('text', '');
         this.render(hbs`{{gh-cm-editor text class="gh-input" update=(action (mut text))}}`);
 
-        expect($(find('.gh-input')).hasClass('focused')).to.be.false;
+        expect($(find('.gh-input')).hasClass('focus')).to.be.false;
 
         await click('textarea');
         await triggerEvent('textarea', 'focus');
 
-        expect($(find('.gh-input')).hasClass('focused')).to.be.true;
+        expect($(find('.gh-input')).hasClass('focus')).to.be.true;
 
         await triggerEvent('textarea', 'blur');
 
-        expect($(find('.gh-input')).hasClass('focused')).to.be.false;
+        expect($(find('.gh-input')).hasClass('focus')).to.be.false;
     });
 
     it('can autofocus', function (done) {
@@ -77,7 +77,7 @@ describe('Integration: Component: gh-cm-editor', function () {
         let onFocus = () => {
             // wait for runloop to finish so that the new class has been rendered
             wait().then(() => {
-                expect(this.$('.gh-input').hasClass('focused'), 'has focused class on first render with autofocus')
+                expect(this.$('.gh-input').hasClass('focus'), 'has focused class on first render with autofocus')
                     .to.be.true;
 
                 done();
