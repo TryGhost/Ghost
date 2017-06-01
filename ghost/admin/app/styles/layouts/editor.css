@@ -282,7 +282,8 @@
 }
 
 .gh-editor-footer {
-    height: 48px;
+    height: 46px;
+    min-height: 46px;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
