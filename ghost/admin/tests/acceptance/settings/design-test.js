@@ -651,5 +651,31 @@ describe('Acceptance: Settings - Design', function () {
             // restore default mirage handlers
             mockThemes(server);
         });
+
+        it('can delete then re-upload the same theme', async function () {
+            server.loadFixtures('themes');
+
+            // mock theme upload to emulate uploading theme with same id
+            server.post('/themes/upload/', function ({themes}) {
+                let theme = themes.create({
+                    name: 'foo',
+                    package: {
+                        name: 'Foo',
+                        version: '0.1'
+                    }
+                });
+
+                return {themes: [theme]};
+            });
+
+            await visit('/settings/design');
+            await click(`${testSelector('theme-id', 'foo')} ${testSelector('theme-delete-button')}`);
+            await click(`.fullscreen-modal ${testSelector('delete-button')}`);
+
+            await click(testSelector('upload-theme-button'));
+            await fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'foo.zip', type: 'application/zip'});
+            // this will fail if upload failed because there won't be an activate now button
+            await click(`.fullscreen-modal ${testSelector('activate-now-button')}`);
+        });
     });
 });
