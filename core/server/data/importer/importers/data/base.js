@@ -16,7 +16,8 @@ class Base {
 
         this.errorConfig = {
             allowDuplicates: true,
-            returnDuplicates: true
+            returnDuplicates: true,
+            showNotFoundWarning: true
         };
 
         this.legacyKeys = {};
@@ -86,12 +87,14 @@ class Base {
                     }));
                 }
             } else if (err instanceof errors.NotFoundError) {
-                problems.push({
-                    message: 'Entry was not imported and ignored. Could not find entry.',
-                    help: self.modelName,
-                    context: JSON.stringify(obj),
-                    err: err
-                });
+                if (self.showNotFoundWarning) {
+                    problems.push({
+                        message: 'Entry was not imported and ignored. Could not find entry.',
+                        help: self.modelName,
+                        context: JSON.stringify(obj),
+                        err: err
+                    });
+                }
             } else {
                 if (!errors.utils.isIgnitionError(err)) {
                     err = new errors.DataImportError({

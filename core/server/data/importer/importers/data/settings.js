@@ -14,15 +14,15 @@ class SettingsImporter extends BaseImporter {
             requiredData: []
         }));
 
-        this.problems = [];
+        this.errorConfig = {
+            allowDuplicates: true,
+            returnDuplicates: true,
+            showNotFoundWarning: false
+        };
 
         // Map legacy keys
         this.legacySettingsKeyValues = {
-            activeApps: 'active_apps',
-            installedApps: 'installed_apps',
             isPrivate: 'is_private',
-            activeTheme: 'active_theme', // TODO check we want tthis as we are not installing it?
-            forceI18n: 'force_i18n',
             activeTimezone: 'active_timezone',
             cover: 'cover_image'
         };
@@ -36,24 +36,20 @@ class SettingsImporter extends BaseImporter {
         debug('beforeImport');
 
         let self = this,
-            legacyActiveTheme = _.find(this.dataToImport, {key: 'activeTheme'});
+            ltsActiveTheme = _.find(this.dataToImport, {key: 'activeTheme'});
 
-        if (legacyActiveTheme) {
+        // If there is an lts we want to warn user that theme is not imported
+        if (ltsActiveTheme) {
             self.problems.push({
                 message: 'Theme not imported, please upload in Settings - Design',
                 help: self.modelName,
-                context: JSON.stringify(legacyActiveTheme)
+                context: JSON.stringify(ltsActiveTheme)
             });
         }
 
         // Remove core and theme data types
         this.dataToImport = _.filter(this.dataToImport, function (data) {
             return ['core', 'theme'].indexOf(data.type) === -1;
-        });
-
-        // Remove deprecated postsPerPage setting and defaultLang
-        this.dataToImport = _.filter(this.dataToImport, function (data) {
-            return data.key !== 'postsPerPage' && data.key !== 'defaultLang';
         });
 
         _.each(this.dataToImport, function (obj) {
