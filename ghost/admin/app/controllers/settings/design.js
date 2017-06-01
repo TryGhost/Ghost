@@ -73,7 +73,12 @@ export default Controller.extend({
             return;
         }
 
-        return theme.destroyRecord().catch((error) => {
+        return theme.destroyRecord().then(() => {
+            // HACK: this is a private method, we need to unload from the store
+            // here so that uploading another theme with the same "id" doesn't
+            // attempt to update the deleted record
+            theme.unloadRecord();
+        }).catch((error) => {
             this.get('notifications').showAPIError(error);
         });
     },
