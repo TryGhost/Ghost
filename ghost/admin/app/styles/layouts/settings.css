@@ -267,17 +267,7 @@
     max-width: 680px;
     width: 100%;
     height: auto;
-    border: 1px solid #e0dfd7;
-    border-radius: var(--border-radius);
     line-height: 22px;
-    transition: border-color 0.15s linear;
-
-    -webkit-appearance: none;
-}
-
-.settings-code-editor.focused {
-    outline: 0;
-    border-color: color(var(--lightgrey) l(-15%) s(-10%));
 }
 
 .settings-code-editor .CodeMirror {

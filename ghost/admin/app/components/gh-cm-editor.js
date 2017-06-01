@@ -8,7 +8,7 @@ import {assign} from 'ember-platform';
 import {bind, once, scheduleOnce} from 'ember-runloop';
 
 const CmEditorComponent =  Component.extend(InvokeActionMixin, {
-    classNameBindings: ['isFocused:focused'],
+    classNameBindings: ['isFocused:focus'],
 
     _value: boundOneWay('value'), // make sure a value exists
     isFocused: false,
@@ -29,9 +29,7 @@ const CmEditorComponent =  Component.extend(InvokeActionMixin, {
         let loader = this.get('lazyLoader');
 
         RSVP.all([
-            // NOTE: no need to load the styles because we're already pulling
-            // them in via SimpleMDE and it causes conflicts with the editor
-            // loader.loadStyle('codemirror', 'assets/codemirror/codemirror.css'),
+            loader.loadStyle('codemirror', 'assets/codemirror/codemirror.css'),
             loader.loadScript('codemirror', 'assets/codemirror/codemirror.js')
         ]).then(() => {
             scheduleOnce('afterRender', this, function () {
