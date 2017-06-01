@@ -98,7 +98,7 @@
 .post-view-link svg {
     display: inline;
     height: 10px;
-    width: auto;
+    width: 10px;
     fill: var(--blue);
 }
 

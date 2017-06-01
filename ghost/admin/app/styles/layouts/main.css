@@ -36,6 +36,8 @@ body > .ember-view:not(.default-liquid-destination) {
     display: flex;
     background: #fff;
     overflow-y: auto;
+    /* prevent horizontal scroll in IE11 */
+    overflow-x: hidden;
 }
 
 /*  Flexbox fix. https://github.com/TryGhost/Ghost/issues/5804#issuecomment-141416812 */
@@ -540,6 +542,7 @@ body > .ember-view:not(.default-liquid-destination) {
 }
 
 .gh-canvas-title svg {
+    width: 0.6em;
     height: 0.6em;
     margin: 0 10px;
 }

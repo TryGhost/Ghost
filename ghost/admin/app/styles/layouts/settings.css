@@ -161,7 +161,7 @@
 
 .gh-blognav-grab svg {
     width: 16px;
-    height: auto;
+    height: 16px;
     fill: color(var(--midgrey) l(+15%));
 }
 
@@ -188,7 +188,7 @@
 .gh-blognav-delete svg {
     fill: color(var(--midgrey) l(+15%));
     height: 14px;
-    width: auto;
+    width: 14px;
     transition: fill 0.1s linear;
 }
 

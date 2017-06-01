@@ -98,7 +98,7 @@ input {
     left: 10px;
     z-index: 2;
     height: 14px;
-    width: auto;
+    width: 14px;
     fill: color(var(--midgrey) l(+15%));
     transform: translateY(-7px);
 }
@@ -290,7 +290,7 @@ textarea {
 
 .gh-select svg {
     height: 8px;
-    width: auto;
+    width: 8px;
     position: absolute;
     top: 50%;
     right: 1.2rem;
