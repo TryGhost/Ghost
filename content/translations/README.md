@@ -121,11 +121,11 @@ As you can see, it's just plain English on the left, and the language you choose
 
 Dates, with month names, are automatically translated. You don't need to include them in the translation files. 
 
-Another example with optional features (see the related section below) such as placeholders for flexibility, is the complete Spanish file for the default Casper theme, *casper_es.json*:
+Another example with optional features (see the related section below) such as placeholders for flexibility, is *worldcasper_es.json*, the complete Spanish file for [WorldCasper](https://github.com/juan-g/WorldCasper/tree/i18n-translatable-frontend), translatable clone of the default Casper theme:
 
 ```
 {
-    "casper": {
+    "worldcasper": {
         "A 1-post collection": "Una colección de 1 artículo",
         "A %-post collection": "Una colección de % artículos",
         "Close": "Cerrar",
@@ -223,7 +223,7 @@ And more translations mean more users, therefore more improvements and maintenan
 
 If the theme to translate includes, in style sheets, content text visible to site visitors, you can translate it by override. For example:
 
-File *casper_en.css*
+File *worldcasper_en.css*
 ```
 .read-next-story .post:before {
     content: "Read This Next";
@@ -233,7 +233,7 @@ File *casper_en.css*
 }
 ```
 
-File *casper_es.css*
+File *worldcasper_es.css*
 ```
 .read-next-story .post:before {
     content: "Sigue leyendo";
@@ -252,7 +252,7 @@ And, in theme template *default.hbs*, after the rest of style sheets to override
 In this line, the {{asset}} helper can be equivalent in this example to
 
 ```
-{{asset "translations/casper_es.css"}}
+{{asset "translations/worldcasper_es.css"}}
 ```
 
 That stylesheet line uses replacement placeholders `{theme}` and `{lang}`, and nested helpers `(theme)` and `(lang)`.
