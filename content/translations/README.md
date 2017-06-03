@@ -43,15 +43,15 @@ Simply verify that the translation files are in place, and then activate the new
 
 **Ghost's Settings > General > Language**
 
-Just enter the [language tag](https://www.w3schools.com/tags/ref_language_codes.asp) of the files to use (e.g.: `es` for Spanish, `fr` for French, `zh` for Chinese, `ja` for Japanese, `en-US` for American English, etc.) and click on the *Save settings* button. That's all folks!
+Just enter the [language tag &#x27B6;](https://www.w3schools.com/tags/ref_language_codes.asp) of the files to use (e.g.: `es` for Spanish, `fr` for French, `zh` for Chinese, `ja` for Japanese, `en-US` for American English, etc.) and click on the *Save settings* button. That's all folks!
 
 ### If the theme is already translatable, but does not include the language
 
-Follow the easy steps of the section below: *How to Add Any Language*.
+Follow the easy steps of the section below: [*How to Add Any Language*](#how-to-add-any-language).
 
 ### If the theme is not yet translatable
 
-See the section below: *How to Make Any Theme Translatable*.
+See the section below: [*How to Make Any Theme Translatable*](#how-to-make-any-theme-translatable).
 
 ## How to Add Any Language
 
@@ -121,7 +121,7 @@ As you can see, it's just plain English on the left, and the language you choose
 
 Dates, with month names, are automatically translated. You don't need to include them in the translation files. 
 
-Another example with optional features (see the related section below) such as placeholders for flexibility, is *worldcasper_es.json*, the complete Spanish file for [WorldCasper](https://github.com/juan-g/WorldCasper/tree/i18n-translatable-frontend), translatable clone of the default Casper theme:
+Another example with [optional features](#optional-advanced-features) (see the related section below) such as placeholders for flexibility, is *worldcasper_es.json*, the complete Spanish file for [WorldCasper &#x27B6;](https://github.com/juan-g/WorldCasper/tree/i18n-translatable-frontend), translatable clone of the default Casper theme:
 
 ```
 {
@@ -185,7 +185,7 @@ Naturally, replace `mytheme` with the simplified name of your theme (like the th
 
 Although the English version will work for themes even without default English file (because of fallback to the text inside the `{{t}}` translation helper when no translation is available), it's advisable to include the default *mytheme_en.json* anyway, because:
 
-- It will be much easier for users to add and contribute languages by copying and editing the default file, as explained in the previous section.
+- It will be much easier for users to [add and contribute languages](#how-to-add-any-language) by copying and editing the default file, as explained in the previous section.
 - Even for sites in English, Ghost users will be able to customize any theme texts by simply editing the default English file, without modifying the theme templates.
 
 If you have the translation files of another Ghost theme, surely part of the texts will be common, and you can copy them and their translations.
@@ -209,7 +209,7 @@ To easily start a new translation file, copy the following into it:
 }
 ```
 
-For most texts, that's all and your theme is translatable now, although you can also use optional features (see related section below).
+For most texts, that's all and your theme is translatable now, although you can also use [optional features](#optional-advanced-features) (see related section below).
 
 ### 4. Share it with the theme maintainers
 
@@ -283,7 +283,7 @@ Using `{{{t}}}` translation helper instead of `{{t}}` preserves working HTML wit
 
 ### Nested helpers
 
-See [Handlebars subexpressions](http://handlebarsjs.com/expressions.html#subexpressions).
+See [Handlebars subexpressions &#x27B6;](http://handlebarsjs.com/expressions.html#subexpressions).
 
 For example:
 
@@ -361,9 +361,8 @@ several `(t)` nested translation helpers (instead of normal `{{t}}` helpers) can
 
 ## What's Coming Next
 
-A new Ghost wiki to share translation files through public [gist](https://help.github.com/articles/about-gists/) links, lists of translatable Ghost themes, and any useful internationalization/i18n resources.
+A new Ghost wiki to share translation files through public [gist &#x27B6;](https://help.github.com/articles/about-gists/) links, lists of translatable Ghost themes, and any useful internationalization/i18n resources.
 
 ## Copyright & License
 
-Copyright (c) 2013-2017 Ghost Foundation - Released under the [MIT license](https://github.com/TryGhost/Ghost/blob/master/LICENSE)
-
+Copyright (c) 2013-2017 Ghost Foundation - Released under the [MIT license &#x27B6;](https://github.com/TryGhost/Ghost/blob/master/LICENSE)
