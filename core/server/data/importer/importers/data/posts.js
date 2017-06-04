@@ -13,6 +13,10 @@ class PostsImporter extends BaseImporter {
             dataKeyToImport: 'posts',
             requiredData: ['tags', 'posts_tags']
         }));
+
+        this.legacyKeys = {
+            image: 'feature_image'
+        };
     }
 
     sanitizeAttributes() {
@@ -99,9 +103,41 @@ class PostsImporter extends BaseImporter {
 
     beforeImport() {
         debug('beforeImport');
+        let mobileDocContent, self = this;
 
         this.sanitizeAttributes();
         this.addTagsToPosts();
+
+        // Remove legacy field language
+        this.dataToImport = _.filter(this.dataToImport, function (data) {
+            return _.omit(data, 'language');
+        });
+
+        this.dataToImport = this.dataToImport.map(self.legacyMapper);
+
+        // For legacy imports/custom imports with only html we can parse the markdown or html into a mobile doc card
+        // For now we can hardcode the version
+        _.each(this.dataToImport, function (model) {
+            if (!model.mobiledoc) {
+                if (model.markdown && model.markdown.length > 0) {
+                    mobileDocContent = model.markdown;
+                } else if (model.html && model.html.length > 0) {
+                    mobileDocContent = model.html;
+                } else {
+                    // Set mobileDocContent to null else it will affect empty posts
+                    mobileDocContent = null;
+                }
+                if (mobileDocContent) {
+                    model.mobiledoc = JSON.stringify({
+                        version: '0.3.1',
+                        markups: [],
+                        atoms: [],
+                        cards: [['card-markdown',{cardName: 'card-markdown',markdown: mobileDocContent}]],
+                        sections:[[10,0]]
+                    });
+                }
+            }
+        });
 
         // NOTE: do after, because model properties are deleted e.g. post.id
         return super.beforeImport();

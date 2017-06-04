@@ -14,9 +14,17 @@ class SettingsImporter extends BaseImporter {
             requiredData: []
         }));
 
-        this.legacyKeys = {
-            activePlugins: 'active_apps',
-            installedPlugins: 'installed_apps'
+        this.errorConfig = {
+            allowDuplicates: true,
+            returnDuplicates: true,
+            showNotFoundWarning: false
+        };
+
+        // Map legacy keys
+        this.legacySettingsKeyValues = {
+            isPrivate: 'is_private',
+            activeTimezone: 'active_timezone',
+            cover: 'cover_image'
         };
     }
 
@@ -27,14 +35,25 @@ class SettingsImporter extends BaseImporter {
     beforeImport() {
         debug('beforeImport');
 
-        let self = this;
+        let self = this,
+            ltsActiveTheme = _.find(this.dataToImport, {key: 'activeTheme'});
 
+        // If there is an lts we want to warn user that theme is not imported
+        if (ltsActiveTheme) {
+            self.problems.push({
+                message: 'Theme not imported, please upload in Settings - Design',
+                help: self.modelName,
+                context: JSON.stringify(ltsActiveTheme)
+            });
+        }
+
+        // Remove core and theme data types
         this.dataToImport = _.filter(this.dataToImport, function (data) {
             return ['core', 'theme'].indexOf(data.type) === -1;
         });
 
         _.each(this.dataToImport, function (obj) {
-            obj.key = self.legacyKeys[obj.key] || obj.key;
+            obj.key = self.legacySettingsKeyValues[obj.key] || obj.key;
         });
 
         return super.beforeImport();
