@@ -313,12 +313,15 @@ fixtures = {
         return path.resolve(__dirname + '/fixtures/import/' + filename);
     },
 
-    getExportFixturePath: function (filename) {
-        return path.resolve(__dirname + '/fixtures/export/' + filename + '.json');
+    getExportFixturePath: function (filename, options) {
+        options = options || {lts: false};
+        var relativePath = options.lts ? '/fixtures/export/lts/' : '/fixtures/export/';
+        return path.resolve(__dirname + relativePath + filename + '.json');
     },
 
-    loadExportFixture: function loadExportFixture(filename) {
-        var filePath = this.getExportFixturePath(filename),
+    loadExportFixture: function loadExportFixture(filename, options) {
+        options = options || {lts: false};
+        var filePath = this.getExportFixturePath(filename, options),
             readFile = Promise.promisify(fs.readFile);
 
         return readFile(filePath).then(function (fileContents) {

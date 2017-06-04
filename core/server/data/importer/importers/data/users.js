@@ -12,6 +12,13 @@ class UsersImporter extends BaseImporter {
             dataKeyToImport: 'users',
             requiredData: ['roles', 'roles_users']
         }));
+
+        // Map legacy keys
+        this.legacyKeys = {
+            image: 'profile_image',
+            cover: 'cover_image',
+            last_login: 'last_seen'
+        };
     }
 
     /**
@@ -24,6 +31,13 @@ class UsersImporter extends BaseImporter {
         debug('beforeImport');
 
         let self = this, role;
+
+        // Remove legacy field language
+        this.dataToImport = _.filter(this.dataToImport, function (data) {
+            return _.omit(data, 'language');
+        });
+
+        this.dataToImport = this.dataToImport.map(self.legacyMapper);
 
         _.each(this.dataToImport, function (model) {
             model.password = globalUtils.uid(50);
