@@ -49,6 +49,11 @@ module.exports = {
 
         // Default behaviour is to try to resolve the value and return that
         try {
+            // CASE: if a string contains a number e.g. "1", JSON.parse will auto convert into integer
+            if (settingsCache[key].value.match(/^\d+$/)) {
+                return settingsCache[key].value;
+            }
+
             return JSON.parse(settingsCache[key].value);
         } catch (err) {
             return settingsCache[key].value;
