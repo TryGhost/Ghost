@@ -39,7 +39,7 @@ describe('Import', function () {
         it('import results have data and problems', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003', {lts:true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function (importResult) {
@@ -54,14 +54,13 @@ describe('Import', function () {
         it('removes duplicate posts', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003',{lts:true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function (importResult) {
                 should.exist(importResult.data.posts);
-
                 importResult.data.posts.length.should.equal(1);
-                importResult.problems.length.should.eql(8);
+                importResult.problems.length.should.eql(2);
 
                 done();
             }).catch(done);
@@ -70,7 +69,7 @@ describe('Import', function () {
         it('removes duplicate tags and updates associations', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003-duplicate-tags').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003-duplicate-tags', {lts:true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function (importResult) {
@@ -87,7 +86,9 @@ describe('Import', function () {
                     return postTag.tag_id !== 2;
                 });
 
-                importResult.problems.length.should.equal(9);
+                importResult.problems.length.should.equal(3);
+
+                importResult.problems[2].message.should.equal('Theme not imported, please upload in Settings - Design');
 
                 done();
             }).catch(done);
@@ -100,7 +101,7 @@ describe('Import', function () {
         it('imports data from 000', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-000').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-000', {lts:true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function () {
@@ -146,7 +147,7 @@ describe('Import', function () {
         it('safely imports data, from 001', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-001').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-001', {lts:true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function () {
@@ -203,7 +204,7 @@ describe('Import', function () {
         it('doesn\'t import invalid settings data from 001', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-001-invalid-setting').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-001-invalid-setting', {lts:true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function () {
@@ -244,7 +245,7 @@ describe('Import', function () {
         it('safely imports data from 002', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-002').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-002', {lts:true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function () {
@@ -305,7 +306,7 @@ describe('Import', function () {
         it('safely imports data from 003 (single user)', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003', {lts:true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function () {
@@ -344,7 +345,7 @@ describe('Import', function () {
         it('handles validation errors nicely', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003-badValidation').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003-badValidation', {lts:true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function () {
@@ -368,7 +369,7 @@ describe('Import', function () {
         it('handles database errors nicely: duplicated tag slugs', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003-dbErrors').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003-dbErrors', {lts:true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function (importedData) {
@@ -386,7 +387,7 @@ describe('Import', function () {
         it('does import posts with an invalid author', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003-mu-unknownAuthor').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003-mu-unknownAuthor', {lts:true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function (importedData) {
@@ -436,7 +437,7 @@ describe('Import', function () {
         it('doesn\'t import invalid tags data from 003', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003-nullTags').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003-nullTags', {lts:true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function () {
@@ -454,7 +455,7 @@ describe('Import', function () {
         it('doesn\'t import invalid posts data from 003', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003-nullPosts').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003-nullPosts', {lts:true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function () {
@@ -475,7 +476,7 @@ describe('Import', function () {
         it('correctly sanitizes incorrect UUIDs', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003-wrongUUID').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003-wrongUUID', {lts:true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function () {
@@ -499,7 +500,7 @@ describe('Import', function () {
         it('ensure post tag order is correct', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-004').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-004', {lts:true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function () {
@@ -547,7 +548,7 @@ describe('Import', function () {
         it('doesn\'t import a title which is too long', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-001').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-001', {lts:true}).then(function (exported) {
                 exportData = exported;
 
                 // change title to 1001 characters
@@ -596,7 +597,7 @@ describe('Import (new test structure)', function () {
 
         before(function doImport(done) {
             testUtils.initFixtures('roles', 'owner', 'settings').then(function () {
-                return testUtils.fixtures.loadExportFixture('export-003-mu');
+                return testUtils.fixtures.loadExportFixture('export-003-mu', {lts:true});
             }).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
@@ -818,7 +819,7 @@ describe('Import (new test structure)', function () {
 
         before(function doImport(done) {
             testUtils.initFixtures('roles', 'owner', 'settings').then(function () {
-                return testUtils.fixtures.loadExportFixture('export-003-mu-noOwner');
+                return testUtils.fixtures.loadExportFixture('export-003-mu-noOwner', {lts:true});
             }).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
@@ -1041,7 +1042,7 @@ describe('Import (new test structure)', function () {
         before(function doImport(done) {
             // initialise the blog with some data
             testUtils.initFixtures('users:roles', 'posts', 'settings').then(function () {
-                return testUtils.fixtures.loadExportFixture('export-003-mu');
+                return testUtils.fixtures.loadExportFixture('export-003-mu', {lts:true});
             }).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
@@ -1270,7 +1271,7 @@ describe('Import (new test structure)', function () {
         before(function doImport(done) {
             // initialise the blog with some data
             testUtils.initFixtures('users:roles', 'posts', 'settings').then(function () {
-                return testUtils.fixtures.loadExportFixture('export-003-mu-multipleOwner');
+                return testUtils.fixtures.loadExportFixture('export-003-mu-multipleOwner', {lts: true});
             }).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
@@ -1332,6 +1333,223 @@ describe('Import (new test structure)', function () {
 
                 done();
             }).catch(done);
+        });
+    });
+
+    describe('lts: legacy fields', function () {
+        var exportData;
+
+        before(function doImport(done) {
+            // initialise the blog with some data
+            testUtils.initFixtures('roles', 'owner', 'settings').then(function () {
+                return testUtils.fixtures.loadExportFixture('export-lts-legacy-fields', {lts: true});
+            }).then(function (exported) {
+                exportData = exported;
+                return dataImporter.doImport(exportData);
+            }).then(function () {
+                done();
+            }).catch(done);
+        });
+
+        after(testUtils.teardown);
+
+        it('ensure data is still imported and mapped correctly', function (done) {
+            var fetchImported = Promise.join(
+                knex('users').select(),
+                knex('posts').select(),
+                knex('tags').select(),
+                knex('settings').select()
+            );
+
+            fetchImported
+                .then(function (importedData) {
+                    should.exist(importedData);
+                    importedData.length.should.equal(4);
+
+                    var users = importedData[0],
+                        posts = importedData[1],
+                        tags = importedData[2],
+                        settings = importedData[3],
+                        firstPost = _.find(posts, {slug: exportData.data.posts[0].slug});
+
+                    // Check length of of posts, tags and users
+                    posts.length.should.equal(exportData.data.posts.length);
+                    tags.length.should.equal(exportData.data.tags.length);
+                    // Users include original user + joe bloggs' brother
+                    users.length.should.equal(exportData.data.users.length + 1);
+
+                    // Check feature image is correctly mapped for a post
+                    firstPost.feature_image.should.eql('/content/images/2017/05/post-image.jpg');
+                    // Check logo and cover images are correctly mapped for a user
+                    users[1].cover_image.should.eql(exportData.data.users[0].cover);
+                    users[1].profile_image.should.eql(exportData.data.users[0].image);
+                    // Check feature image is correctly mapped for a tag
+                    tags[0].feature_image.should.eql(exportData.data.tags[0].image);
+                    // Check logo image is correctly mapped for a blog
+                    settings[6].key.should.eql('logo');
+                    settings[6].value.should.eql('/content/images/2017/05/bloglogo.jpeg');
+                    // Check cover image is correctly mapped for a blog
+                    settings[7].key.should.eql('cover_image');
+                    settings[7].value.should.eql('/content/images/2017/05/blogcover.jpeg');
+
+                    // Check default settings locale is not overwritten by defaultLang
+                    settings[9].key.should.eql('default_locale');
+                    settings[9].value.should.eql('en');
+
+                    // Check post language is null
+                    should(firstPost.locale).equal(null);
+                    // Check user language is null
+                    should(users[1].locale).equal(null);
+
+                    // Check mobiledoc is populated from markdown
+                    JSON.parse(firstPost.mobiledoc).cards[0][1].markdown.should.eql(exportData.data.posts[0].markdown);
+
+                    done();
+                }).catch(done);
+        });
+    });
+
+    describe('lts: style import with missing markdown or html values', function () {
+        var exportData;
+
+        before(function doImport(done) {
+            // initialise the blog with some data
+            testUtils.initFixtures('roles', 'owner', 'settings').then(function () {
+                return testUtils.fixtures.loadExportFixture('export-lts-style-bad-markdown-html',
+                    {lts: true}
+                );
+            }).then(function (exported) {
+                exportData = exported;
+                return dataImporter.doImport(exportData);
+            }).then(function () {
+                done();
+            }).catch(done);
+        });
+
+        after(testUtils.teardown);
+
+        it('ensure images are mapped correctly and language is null', function (done) {
+            var fetchImported = Promise.join(
+                knex('users').select(),
+                knex('posts').select(),
+                knex('tags').select(),
+                knex('settings').select()
+            );
+
+            fetchImported.then(function (importedData) {
+                should.exist(importedData);
+                importedData.length.should.equal(4);
+
+                var users = importedData[0],
+                    posts = importedData[1],
+                    tags = importedData[2],
+                    settings = importedData[3],
+                    firstPost = _.find(posts, {slug: exportData.data.posts[0].slug}),
+                    secondPost = _.find(posts, {slug: exportData.data.posts[1].slug}),
+                    thirdPost = _.find(posts, {slug: exportData.data.posts[2].slug}),
+                    fourthPost = _.find(posts, {slug: exportData.data.posts[3].slug});
+
+                // Check length of of posts, tags and users
+                posts.length.should.equal(exportData.data.posts.length);
+                tags.length.should.equal(exportData.data.tags.length);
+                // Users include original user + joe bloggs' brother
+                users.length.should.equal(exportData.data.users.length + 1);
+
+                // Check feature image is correctly mapped for a post
+                should(firstPost.feature_image).equal(null);
+                // Check logo and cover images are correctly mapped for a user
+                users[1].cover_image.should.eql(exportData.data.users[0].cover);
+                users[1].profile_image.should.eql(exportData.data.users[0].image);
+                // Check feature image is correctly mapped for a tag
+                tags[0].feature_image.should.eql(exportData.data.tags[0].image);
+                // Check logo image is correctly mapped for a blog
+                settings[6].key.should.eql('logo');
+                settings[6].value.should.eql('/content/images/2017/05/bloglogo.jpeg');
+                // Check cover image is correctly mapped for a blog
+                settings[7].key.should.eql('cover_image');
+                settings[7].value.should.eql('/content/images/2017/05/blogcover.jpeg');
+
+                // Check default settings locale is not overwritten by defaultLang
+                settings[9].key.should.eql('default_locale');
+                settings[9].value.should.eql('en');
+
+                // Check post language is set to null
+                should(firstPost.locale).equal(null);
+                // Check user language is set to null
+                should(users[1].locale).equal(null);
+
+                // Check last_seen is mapped from last_login for user
+                assert.equal(
+                    moment(users[1].last_seen).valueOf(),
+                    moment(exportData.data.users[0].last_login).valueOf()
+                );
+                // Check mobiledoc is populated from from html when mobiledoc is null & markdown is empty string
+                JSON.parse(firstPost.mobiledoc).cards[0][1].markdown.should.eql(exportData.data.posts[0].html);
+                // Check mobiledoc is populated from from html when mobiledoc is null & markdown is null
+                JSON.parse(secondPost.mobiledoc).cards[0][1].markdown.should.eql(exportData.data.posts[1].html);
+                // Check mobiledoc is null when markdown and mobiledoc are null and html is empty string
+                should(thirdPost.mobiledoc).equal(null);
+                // Check mobiledoc is null when markdown, mobiledoc are html are null
+                should(fourthPost.mobiledoc).equal(null);
+
+                done();
+            }).catch(done);
+        });
+
+        it('ensure post without mobiledoc key uses markdown', function (done) {
+            var fetchImported = Promise.resolve(knex('posts').select());
+
+            fetchImported.then(function (importedData) {
+                should.exist(importedData);
+                importedData.length.should.equal(5);
+
+                var posts = importedData,
+                    fifthPost = _.find(posts, {slug: exportData.data.posts[4].slug});
+
+                // Check mobiledoc is populated from from html when mobiledoc is null & markdown is empty string
+                JSON.parse(fifthPost.mobiledoc).cards[0][1].markdown.should.eql(exportData.data.posts[4].markdown);
+
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe('lts: style import for user with a very long email address', function () {
+        var exportData;
+
+        before(function doImport(done) {
+            // initialise the blog with some data
+            testUtils.initFixtures('roles', 'owner', 'settings').then(function () {
+                return testUtils.fixtures.loadExportFixture('export-lts-style-user-long-email',
+                    {lts: true}
+                );
+            }).then(function (exported) {
+                exportData = exported;
+                done();
+            }).catch(done);
+        });
+
+        after(testUtils.teardown);
+
+        it('provides error message and does not import where lts email address is longer that 1.0.0 constraint', function (done) {
+            testUtils.fixtures.loadExportFixture('export-lts-style-user-long-email', {lts:true}).then(function (exported) {
+                exportData = exported;
+                return dataImporter.doImport(exportData);
+            }).then(function () {
+                (1).should.eql(0, 'Data import should not resolve promise.');
+            }).catch(function (error) {
+                error[0].message.should.eql('Value in [users.email] exceeds maximum length of 191 characters.');
+                error[0].errorType.should.eql('ValidationError');
+
+                Promise.resolve(knex('users').select()).then(function (users) {
+                    should.exist(users);
+
+                    users.length.should.equal(1, 'Did not get data successfully');
+                    users[0].email.should.not.equal(exportData.data.users[0].email);
+
+                    done();
+                });
+            });
         });
     });
 });

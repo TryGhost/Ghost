@@ -13,6 +13,11 @@ class TagsImporter extends BaseImporter {
             dataKeyToImport: 'tags',
             requiredData: []
         }));
+
+        // Map legacy keys
+        this.legacyKeys = {
+            image: 'feature_image'
+        };
     }
 
     beforeImport() {
@@ -31,6 +36,8 @@ class TagsImporter extends BaseImporter {
         debug('doImport', this.modelName, this.dataToImport.length);
 
         let self = this, ops = [];
+
+        this.dataToImport = this.dataToImport.map(self.legacyMapper);
 
         _.each(this.dataToImport, function (obj) {
             ops.push(models[self.modelName].findOne({name: obj.name}, options).then(function (tag) {
