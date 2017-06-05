@@ -9,100 +9,43 @@ The project is maintained by a non-profit organisation called the **Ghost Founda
 
 - [Ghost.org](https://ghost.org)
 - [Latest Release](https://ghost.org/developers/)
-- [Support](http://support.ghost.org/)
-- [Theme Docs](http://themes.ghost.org)
-- [Contributing Guide](https://github.com/TryGhost/Ghost/blob/master/.github/CONTRIBUTING.md)
+- [Documentation](http://docs.ghost.org/)
+- [Theme Documentation](http://themes.ghost.org)
+- [Contributing Guide](https://github.com/TryGhost/Ghost/blob/lts/.github/CONTRIBUTING.md)
 - [Feature Requests](http://ideas.ghost.org/)
 - [Dev Blog](http://dev.ghost.org)
 
 **NOTE: If you’re stuck, can’t get something working or need some help, please head on over and join our [Slack community](https://ghost.org/slack/) rather than opening an issue.**
 
+# Install Node.js
 
-# Quick Start Install
-
-Make sure you've installed Node.js - We recommend the latest **Node v4 LTS** release. For other versions [click here](http://support.ghost.org/supported-node-versions/). May contain nuts.
-
-1. Download the [latest release](https://ghost.org/developers/) of Ghost
-1. Unzip in the location you want to install
-1. Fire up a terminal
-1. `npm install --production`
-1. Start Ghost!
-    - Local environment: `npm start`
-    - On a server: `npm start --production`
-1. `http://localhost:2368/ghost` :tada:
-
-More [install docs](http://support.ghost.org/installation/) here in case you got stuck.
-
-<a name="getting-started"></a>
-# Developer Install (from git)
-
-Install Node.js. (See [Supported Node.js versions](http://support.ghost.org/supported-node-versions/))
-
-```bash
-# Node v4.2+ LTS - recommended
-# Node v0.10.x and v0.12.x - supported
-#
-# Choose wisely
-```
-
-Clone :ghost:
-
-```bash
-git clone git://github.com/tryghost/ghost.git
-cd ghost
-```
-
-Install grunt. No prizes here.
-
-```bash
-npm install -g grunt-cli
-```
-
-Install Ghost. If you're running locally, use [master](https://github.com/TryGhost/Ghost/tree/master). For production, use [stable](https://github.com/TryGhost/Ghost/tree/stable). :no_entry_sign::rocket::microscope:
-
-```bash
-npm install
-```
-
-Build the things!
-
-```bash
-grunt init
-```
-
-Minify that shit for production?
-
-```bash
-grunt prod
-```
-
-Start your engines.
-
-```bash
-npm start
-
-## running production? Add --production
-```
-
-Congrats! You made it. BTW you can also just `npm install ghost` if you're into that sort of thing. NPM aficionados can also read up on using [Ghost as an NPM module](https://github.com/TryGhost/Ghost/wiki/Using-Ghost-as-an-npm-module).
-
-More general [install docs](http://support.ghost.org/installation/) here in case you got stuck.
+See [Supported Node.js versions](https://docs.ghost.org/v0.11.9/docs/supported-node-versions)
 
 
-# Deploying Ghost
-
-![Ghost(Pro) + DigitalOcean](https://cloud.githubusercontent.com/assets/120485/8180331/d6674e32-1414-11e5-8ce4-2250e9994906.png)
+# Hosting Ghost
 
 Save yourself time and headaches with our fully managed **[Ghost(Pro)](https://ghost.org/pricing/)** service. Deploy a new instance of Ghost in a couple of clicks running on [DigitalOcean](https://digitalocean.com)’s rock solid infrastructure, with a worldwide CDN thrown in at no extra charge.
 
 All revenue from **Ghost(Pro)** goes to the Ghost Foundation, the non-profit org which funds the maintenance and further development of Ghost.
 
-[Other options](http://support.ghost.org/deploying-ghost/) are also available if you prefer playing around with servers by yourself.
+
+# Install Ghost for Production
+
+Please follow our [installation](https://docs.ghost.org/v0.11.9/docs/getting-started-guide) and
+[1-Click Installer & Hosting](https://docs.ghost.org/v0.11.9/docs/install-with-3rd-party-tools) guides.
+
+# Ghost for Contributors and Theme Developers
+
+Please follow our guides [here](https://docs.ghost.org/v0.11.9/docs/introduction-1)
+
+# Installing Ghost as NPM Module
+
+Please follow our guide [here](https://docs.ghost.org/v0.11.9/docs/using-ghost-as-an-npm-module)
 
 
 # Staying Up to Date
 
-When a new version of Ghost comes out, you'll want to look over these [upgrade instructions](http://support.ghost.org/how-to-upgrade/) for what to do next.
+When a new version of Ghost comes out, you'll want to look over these [upgrade instructions](https://docs.ghost.org/v0.11.9/docs/how-to-upgrade-ghost) for what to do next.
 
 You can talk to other Ghost users and developers in our [public Slack team](https://ghost.org/slack/) (it's pretty awesome). We have a public meeting every Tuesday at 5:30pm UK time.
 
