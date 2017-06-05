@@ -321,6 +321,10 @@
     overflow: visible !important;
 }
 
+.gh-editor .CodeMirror-scroll:hover {
+    cursor: text;
+}
+
 /* prevent markdown content showing after the preview if the preview is shorter */
 .gh-editor-preview .CodeMirror-scroll {
     display: none;
