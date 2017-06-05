@@ -1,21 +1,25 @@
-# Welcome to the contributing guide for Ghost!
+# Welcome to the LTS contributing guide for Ghost!
 
 So you're interested in giving us a hand? That's awesome! We've put together some guidelines that should help
 you get started quickly and easily. If you need help with anything, please come visit our [slack community](https://ghost.org/slack). Thank you for stopping by!
 
+**Note:**
+The [LTS branch](https://github.com/TryGhost/Ghost/tree/lts) keeps track of our long term support for Ghost 0.X.
+We have released `1.0` beta and this lives now in the [master branch](https://github.com/TryGhost/Ghost/tree/master). 
+
 **Quick Links:**
+- [documentation](http://docs.ghost.org)
+- [themes documentation](http://themes.ghost.org)
 - [feature roadmap](https://trello.com/b/EceUgtCL/ghost-roadmap)
 - [feature wishlist](http://ideas.ghost.org)
 - [slack community](https://ghost.org/slack)
-- [documentation](http://support.ghost.org)
-- [developer wiki](https://github.com/TryGhost/Ghost/wiki)
-- [community guidelines](https://ghost.org/about/guidelines/)
+- [community guidelines](https://ghost.org/conduct/)
 - [dev blog](http://dev.ghost.org)
 
 
 ### TL;DR
 
-If you need help with Ghost or have questions, please use [slack](https://ghost.org/slack) (documentation is [here](http://support.ghost.org)). If you're [raising a bug](#bugs) please be sure to [include as much info as possible](#bug-template) so that we can fix it! If you've got some code you want to [pull request](#pull-requests) please [squash commits](https://github.com/TryGhost/Ghost/wiki/Git-workflow#wiki-clean-up-history), use this [commit message format](https://github.com/TryGhost/Ghost/wiki/Git-workflow#commit-messages) and check it passes the tests by running `grunt validate`. Thanks for helping us make Ghost better.
+If you need help with Ghost or have questions, please use [slack](https://ghost.org/slack) (documentation is [here](http://docs.ghost.org)). If you're [raising a bug](#bugs) please be sure to [include as much info as possible](#bug-template) so that we can fix it! If you've got some code you want to [pull request](#pull-requests) please [squash commits](https://docs.ghost.org/v0.11.9/docs/git-workflow#section-clean-up-history), use this [commit message format](https://docs.ghost.org/v0.11.9/docs/git-workflow#section-commit-messages) and check it passes the tests by running `grunt validate`. Thanks for helping us make Ghost better.
 
 
 ### Guideline Contents
@@ -62,7 +66,7 @@ Guidelines for bug reports:
    reported.
 
 2. **Check if the issue has been fixed** &mdash; try to reproduce it using the
-   latest `master` or look for [closed issues in the current milestone](https://github.com/TryGhost/Ghost/issues?labels=&milestone=3&page=1&state=closed).
+   latest `lts` or look for [closed issues in the current milestone](https://github.com/TryGhost/Ghost/issues?labels=&milestone=3&page=1&state=closed).
 
 3. **Isolate the problem** &mdash; ideally create a [reduced test
    case](https://css-tricks.com/reduced-test-cases/) and a live example.
@@ -71,7 +75,7 @@ Guidelines for bug reports:
 helpful thing in the world is if we can *see* what you're talking about.
 Use [LICEcap](http://www.cockos.com/licecap/) to quickly and easily record a short screencast (24fps) and save it as an animated gif! Embed it directly into your GitHub issue. Kapow.
 
-5. **Include as much info as possible!** Use the **Bug Report template** below or [click this link](https://github.com/TryGhost/Ghost/issues/new?title=Bug%3A&body=%23%23%23%20Issue%20Summary%0A%0A%23%23%23%20Steps%20to%20Reproduce%0A%0A1.%20This%20is%20the%20first%20step%0A%0AThis%20is%20a%20bug%20because...%0A%0A%23%23%23%20Technical%20details%0A%0A*%20Ghost%20Version%3A%20master%20-%20latest%20commit%3A%20%20INSERT%20COMMIT%20REF%0A*%20Client%20OS%3A%20%0A*%20Server%20OS%3A%20%0A*%20Node%20Version%3A%20%0A*%20Browser%3A%20%0A*%20Database%3A) to start creating a bug report with the template automatically.
+5. **Include as much info as possible!** Use the **Bug Report template** below or [click this link](https://github.com/TryGhost/Ghost/issues/new?title=Bug%3A&body=%23%23%23%20Issue%20Summary%0A%0A%23%23%23%20Steps%20to%20Reproduce%0A%0A1.%20This%20is%20the%20first%20step%0A%0AThis%20is%20a%20bug%20because...%0A%0A%23%23%23%20Technical%20details%0A%0A*%20Ghost%20Version%3A%20lts%20-%20latest%20commit%3A%20%20INSERT%20COMMIT%20REF%0A*%20Client%20OS%3A%20%0A*%20Server%20OS%3A%20%0A*%20Node%20Version%3A%20%0A*%20Browser%3A%20%0A*%20Database%3A) to start creating a bug report with the template automatically.
 
 A good bug report shouldn't leave others needing to chase you up for more information. Be sure to include the
 details of your environment.
@@ -80,7 +84,7 @@ Here is a [real example](https://github.com/TryGhost/Ghost/issues/413) of a grea
 
 <a name="bug-template"></a>
 
-Template Example ([click to use](https://github.com/TryGhost/Ghost/issues/new?title=Bug%3A&body=%23%23%23%20Issue%20Summary%0A%0A%23%23%23%20Steps%20to%20Reproduce%0A%0A1.%20This%20is%20the%20first%20step%0A%0AThis%20is%20a%20bug%20because...%0A%0A%23%23%23%20Technical%20details%0A%0A*%20Ghost%20Version%3A%20master%20-%20latest%20commit%3A%20%20INSERT%20COMMIT%20REF%0A*%20Client%20OS%3A%20%0A*%20Server%20OS%3A%20%0A*%20Node%20Version%3A%20%0A*%20Browser%3A%20%0A*%20Database%3A)):
+Template Example ([click to use](https://github.com/TryGhost/Ghost/issues/new?title=Bug%3A&body=%23%23%23%20Issue%20Summary%0A%0A%23%23%23%20Steps%20to%20Reproduce%0A%0A1.%20This%20is%20the%20first%20step%0A%0AThis%20is%20a%20bug%20because...%0A%0A%23%23%23%20Technical%20details%0A%0A*%20Ghost%20Version%3A%20lts%20-%20latest%20commit%3A%20%20INSERT%20COMMIT%20REF%0A*%20Client%20OS%3A%20%0A*%20Server%20OS%3A%20%0A*%20Node%20Version%3A%20%0A*%20Browser%3A%20%0A*%20Database%3A)):
 ```
 Short and descriptive example bug report title
 
@@ -97,10 +101,10 @@ Any other info e.g. Why do you consider this to be a bug? What did you expect to
 
 ### Technical details:
 
-* Ghost Version: master (latest commit: a761de2079dca4df49567b1bddac492f25033985)
+* Ghost Version: lts (latest commit: a761de2079dca4df49567b1bddac492f25033985)
 * Node Version: 4.4.7
 * Browser: Chrome 48.0.2564.109 on Mac OS X 10.10.4
-* Database: SQLite / MySQL / postgres
+* Database: SQLite / MySQL
 ```
 
 <a name="features"></a>
@@ -112,13 +116,11 @@ Please use your discretion to decide whether a feature request belongs on the [w
 
 Before making a suggestion, here are a few handy tips on what to consider:
 
-1. Visit the [Roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap), [wishlist](http://ideas.ghost.org) & search to see if the feature has already been requested
+1. Visit the [Roadmap](https://trello.com/b/EceUgtCL/ghost-roadmap), [wishlist](http://ideas.ghost.org) & search to see if the feature has already been requested
 
-2. Check out [What makes it into Ghost core?](https://github.com/TryGhost/Ghost/wiki/What-makes-it-into-Ghost-core%3F) - this explains the guidelines for what fits into the scope and aims of the project
+2. Have a quick think about whether your feature is for the admin UI, the blog output, themes or apps - or does it affect multiple areas? This can help when describing your idea.
 
-3. Have a quick think about whether your feature is for the admin UI, the blog output, themes or apps - or does it affect multiple areas? This can help when describing your idea.
-
-4. Remember, it's up to *you* to make a strong case to convince the project's leaders of the merits of a new
+3. Remember, it's up to *you* to make a strong case to convince the project's leaders of the merits of a new
 feature. Please provide as much detail and context as possible, this means explaining the use case and why it is
 likely to be common. The strongest vote in favour of any feature request is hands-down, un-debatable traction on our user [wishlist](http://ideas.ghost.org).
 
@@ -141,15 +143,15 @@ new or different dependency, a refactor, or an improvement to a feature, etc - p
 
 Pull requests are **awesome**. If you're looking to raise a PR for something which doesn't have an open issue, please think carefully about [raising an issue](#raising-issues) which your PR can close, especially if you're fixing a bug. This makes it more likely that there will be enough information available for your PR to be properly tested and merged. To make sure your PR is accepted as quickly as possible, please take a minute to check the guidelines on:
 
-* [commit messages](https://github.com/TryGhost/Ghost/wiki/Git-workflow#commit-messages)
-* [cleaning-up history](https://github.com/TryGhost/Ghost/wiki/Git-workflow#wiki-clean-up-history)
-* [not breaking the build](https://github.com/TryGhost/Ghost/wiki/Git-workflow#check-it-passes-the-tests)
+* [commit messages](https://docs.ghost.org/v0.11.9/docs/git-workflow#section-commit-messages)
+* [cleaning-up history](https://docs.ghost.org/v0.11.9/docs/git-workflow#section-clean-up-history)
+* [not breaking the build](https://docs.ghost.org/v0.11.9/docs/git-workflow#section-check-it-passes-the-tests)
 
 
 ##### Need Help?
 
 If you're not completely clear on how to submit / update / *do* Pull Requests, please check out our in depth
-[Git Workflow guide](https://github.com/TryGhost/Ghost/wiki/Git-Workflow) for Ghost, or visit [slack](http://ghost.org/slack) and we'll help you out.
+[Git Workflow guide](https://docs.ghost.org/v0.11.9/docs/git-workflow) for Ghost, or visit [slack](http://ghost.org/slack) and we'll help you out.
 
 
 <a name="testing"></a>
@@ -158,10 +160,8 @@ If you're not completely clear on how to submit / update / *do* Pull Requests, p
 Never underestimate just how useful quality assurance is. If you're looking to get involved with the code base and
 don't know where to start, checking out and testing a pull request is one of the most useful things you could do.
 
-If you want to get involved with testing Ghost, there is a set of
-[QA Documentation](https://github.com/TryGhost/Ghost/wiki/QA-Documentation) on the wiki.
 
-Essentially though, [check out the latest master](#core), take it for a spin, and if you find anything odd, please
+Essentially though, [check out the latest lts](#core), take it for a spin, and if you find anything odd, please
 follow the [bug report guidelines](#bug-reports) and let us know!
 
 #### Checking out a Pull Request
@@ -171,8 +171,6 @@ The dev blog has [detailed instructions](http://dev.ghost.org/easy-git-pr-test/)
 
 <a name="documentation"></a>
 ### Documentation
-
-Ghost's user documentation can be found at [support.ghost.org](http://support.ghost.org), if you have feedback or would like to write some user documentation, please let us know by [emailing support](mailto:support@ghost.org).
 
 Ghost's developer documentation can be found at [docs.ghost.org](http://docs.ghost.org). These docs are written and hosted on [readme.io](https://readme.io/) which has a suggested edits feature through which you can submit updates. If you'd like to get more involved than just making amendments, [email support](mailto:support@ghost.org) and let us know :)
 
@@ -184,78 +182,30 @@ Full documentation on contributing translations can be found at <http://docs.gho
 <a name="core"></a>
 ## Working on Ghost Core
 
-Looking to get setup to work on Ghost? AWESOME! The [Ghost-Vagrant](https://github.com/TryGhost/Ghost-Vagrant) image is a super-easy way to get a ready-made environment for contributing, but if you'd rather install Ghost natively, here's how...
-
-**What you'll need:**
-
-- A supported Node.js version & npm  (see [Supported Node Versions](http://support.ghost.org/supported-node-versions/))
-- phantomjs 2.1.x
-([instructions](https://github.com/TryGhost/Ghost/wiki/Functional-testing-with-PhantomJS-and-CasperJS)) for running tests
-
-
-### Installation / Setup Instructions
-
-1. Check you have the pre-requisites listed above!
-1. `git clone https://github.com/TryGhost/Ghost.git`- clone the git repo
-1. `cd Ghost` - change into the project folder
-1. `npm install -g grunt-cli` - to make it possible to run grunt commands (see [developer tips](#developer-tips) for more info on Grunt)
-1. `npm install` - you need all the dependencies, so do not use the `--production` flag mentioned in user install guides
-	* If the install fails with errors to do with "node-gyp rebuild" or "SQLite3", follow the SQLite3 install
-instructions below this list
-    * Usually if you're within vagrant, and have installed the guest plugins and updated that, this will not happen
-1. `grunt init` - updates bower dependencies, copies assets and compiles Handlebars templates
-1. If you're going to run in production mode, you also need to run `grunt prod`
-1. `npm start` - starts Ghost or `grunt dev` will start it in watch mode
+Please follow our guide here [Working with Ghost](https://docs.ghost.org/v0.11.9/docs/working-with-ghost).
 
 If something goes wrong, please see the
-[troubleshooting tips](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md#troubleshooting--faq) below.
+[troubleshooting tips](https://github.com/TryGhost/Ghost/blob/lts/.github/CONTRIBUTING.md#troubleshooting--faq) below.
 
 ### Looking for something to work on?
 
 If you're interested in contributing to Ghost and don't know where to start, here's a few tips:
 
 - The [beginner label](https://github.com/TryGhost/Ghost/labels/beginner) indicates issues which should be suitable for someone new to the Ghost codebase
+- The [fix wanted label](https://github.com/TryGhost/Ghost/labels/fix%20wanted) indicates issues which should be suitable for someone new to the Ghost codebase
 - The [help wanted label](https://github.com/TryGhost/Ghost/labels/help%20wanted) highlights issues that need a champion
-- The [roadmap wiki page](https://github.com/TryGhost/Ghost/wiki/Roadmap#github-backlogs) has details of how we use milestones to prioritise issues
 
 If you're still stuck, please come join us in [slack](https://ghost.org/slack) and let us know what you're interested in!
 
-
-### Developer Tips
-Whilst developing, you can take advantage of the [Grunt toolkit](https://github.com/TryGhost/Ghost/wiki/Grunt-Toolkit) to automatically compile assets, such as handlebars templates, styles and ember scripts. Some useful commands include:
-
-- `grunt dev` => Watch for changes and automatically rebuild assets
-- `grunt prod` => Build assets for the production environment
-- `grunt validate` => Run the linting and test suite
-
-Addresses for development:
-
-- Front-end => <http://localhost:2368>
-- Admin => <http://localhost:2368/ghost/>
-
-### Updating with the latest changes
-
-Pulling down the latest changes from master will often require more than just a pull, you may also need to do one
-or more of the following:
-
-- `npm install` - fetch any new dependencies
-- `grunt init` - will fetch bower dependencies and recompile handlebars templates for the admin
-- delete content/data/*.db - delete the database and allow Ghost to recreate the fixtures
 
 ### Key Branches & Tags
 
 - **[master](https://github.com/TryGhost/Ghost)** is the bleeding edge development branch. All work on the next
 release is here. Do **NOT** use this branch for a production site.
+- **[lts](https://github.com/TryGhost/Ghost)** is the long term support development branch. Do **NOT** use this branch for a production site.
 - **[stable](https://github.com/TryGhost/Ghost/tree/stable)** contains the latest release of Ghost. This branch may be used in production.
 - **[gh-pages](http://github.com/TryGhost/Ghost/tree/gh-pages)** contains [The Ghost Guide](http://docs.ghost.org) our developer documentation.
 
-
-## Grunt Toolkit
-
-Ghost uses Grunt heavily to automate useful tasks such as building assets, testing, live reloading/watching etc etc
-
-[Grunt Toolkit docs](https://github.com/TryGhost/Ghost/wiki/Grunt-Toolkit) are a worthwhile read for any would-be
-contributor.
 
 ## Troubleshooting / FAQ
 
