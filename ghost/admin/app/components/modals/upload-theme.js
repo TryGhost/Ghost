@@ -105,13 +105,38 @@ export default ModalComponent.extend({
                 this.set('validationWarnings', get(theme, 'warnings'));
             }
 
+            // Ghost differentiates between errors and fatal errors
+            // You can't activate a theme with fatal errors, but with errors.
+            if (get(theme, 'errors.length') > 0) {
+                this.set('validationErrors', get(theme, 'errors'));
+            }
+
+            this.set('hasWarningsOrErrors', this.get('validationErrors').length || this.get('validationWarnings').length);
+
             // invoke the passed in confirm action
             invokeAction(this, 'model.uploadSuccess', theme);
         },
 
         uploadFailed(error) {
             if (isThemeValidationError(error)) {
-                this.set('validationErrors', error.errors[0].errorDetails);
+                let errors = error.errors[0].errorDetails;
+                let fatalErrors = [];
+                let normalErrors = [];
+
+                // to have a proper grouping of fatal errors and none fatal, we need to check
+                // our errors for the fatal property
+                if (errors.length > 0) {
+                    for (let i = 0; i < errors.length; i++) {
+                        if (errors[i].fatal) {
+                            fatalErrors.push(errors[i]);
+                        } else {
+                            normalErrors.push(errors[i]);
+                        }
+                    }
+                }
+
+                this.set('fatalValidationErrors', fatalErrors);
+                this.set('validationErrors', normalErrors);
             }
         },
 
@@ -131,7 +156,10 @@ export default ModalComponent.extend({
         },
 
         reset() {
-            this.set('validationErrors', null);
+            this.set('validationWarnings', []);
+            this.set('validationErrors', []);
+            this.set('fatalValidationErrors', []);
+            this.set('hasWarningsOrErrors', false);
         }
     }
 });

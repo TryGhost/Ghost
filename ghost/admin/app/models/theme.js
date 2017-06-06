@@ -6,6 +6,7 @@ export default Model.extend({
     package: attr('raw'),
     active: attr('boolean'),
     warnings: attr('raw'),
+    errors: attr('raw'),
 
     activate() {
         let adapter = this.store.adapterFor(this.constructor.modelName);

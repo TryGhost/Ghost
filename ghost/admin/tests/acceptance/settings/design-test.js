@@ -395,7 +395,7 @@ describe('Acceptance: Settings - Design', function () {
             expect(
                 find('.fullscreen-modal h1').text().trim(),
                 'modal title after uploading theme with warnings'
-            ).to.equal('Uploaded with warnings');
+            ).to.equal('Upload successful with warnings/errors!');
 
             expect(
                 find('.theme-validation-errors').text(),
