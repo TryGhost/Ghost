@@ -19,8 +19,9 @@ module.exports = function toJSON(name, checkedTheme) {
         themeResult = packages.filterPackages(toFilter, settingsCache.get('active_theme'));
     } else {
         // If we pass in a gscan result, convert this instead
-        toFilter = {};
-        toFilter[name] = themeList.get(name);
+        toFilter = {
+            [name]: themeList.get(name)
+        };
 
         themeResult = packages.filterPackages(toFilter, settingsCache.get('active_theme'));
 
