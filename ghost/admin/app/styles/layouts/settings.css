@@ -374,3 +374,20 @@
     margin-top: 0.2em;
     font-size: 13px;
 }
+
+.theme-validation-errordescription {
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+}
+
+.theme-validation-errordescription span {
+    font-weight: 600;
+}
+
+.theme-validation-errortype {
+    font-size: 18px;
+}
+
+.theme-validation-errortype.fatal {
+    color: var(--red);
+}

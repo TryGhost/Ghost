@@ -2,7 +2,7 @@
     <h1>
         {{#if theme}}
             {{#if validationWarnings}}
-                Uploaded with warnings
+                Upload successful with warnings/errors!
             {{else}}
                 Upload successful!
             {{/if}}
@@ -17,13 +17,30 @@
 
 <div class="modal-body">
     {{#if theme}}
-        {{#if validationWarnings}}
-            <ul class="theme-validation-errors">
+        {{#if hasWarningsOrErrors}}
+             <ul class="theme-validation-errors">
                 <li>
                     <p>
-                        "{{themeName}}" uploaded successfully but some warnings were generated...
+                        "{{themeName}}" uploaded successfully but some warnings/errors were detected.
+                        You are still able to use and activate the theme. Here is your report...
                     </p>
                 </li>
+
+                {{#if validationErrors}}
+                    <div class="theme-validation-errordescription">
+                        <h2 class="theme-validation-errortype">Errors</h2>
+                        <p><em>(Very recommended to fix, functionality <span>could</span> be restricted)</em></p>
+                    </div>
+                {{/if}}
+                {{#each validationErrors as |error|}}
+                    {{gh-theme-error-li error=error}}
+                {{/each}}
+
+                {{#if validationWarnings}}
+                    <div class="theme-validation-errordescription">
+                        <h2 class="theme-validation-errortype">Warnings</h2>
+                    </div>
+                {{/if}}
                 {{#each validationWarnings as |error|}}
                     {{gh-theme-error-li error=error}}
                 {{/each}}
@@ -38,8 +55,24 @@
         <p>
             "{{fileThemeName}}" will overwrite an existing theme of the same name. Are you sure?
         </p>
-    {{else if validationErrors}}
+    {{else if (or validationErrors fatalValidationErrors)}}
         <ul class="theme-validation-errors">
+            {{#if fatalValidationErrors}}
+                <div class="theme-validation-errordescription">
+                    <h2 class="theme-validation-errortype fatal">Fatal Errors</h2>
+                    <p><em>(Must-fix to activate theme)</em></p>
+                </div>
+            {{/if}}
+            {{#each fatalValidationErrors as |error|}}
+                {{gh-theme-error-li error=error}}
+            {{/each}}
+
+            {{#if validationErrors}}
+                <div class="theme-validation-errordescription">
+                    <h2 class="theme-validation-errortype">Errors</h2>
+                    <p><em>(Very recommended to fix, functionality <span>could</span> be restricted)</em></p>
+                </div>
+            {{/if}}
             {{#each validationErrors as |error|}}
                 {{gh-theme-error-li error=error}}
             {{/each}}
