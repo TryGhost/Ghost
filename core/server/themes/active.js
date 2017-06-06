@@ -21,7 +21,6 @@ var _ = require('lodash'),
     themeConfig = require('./config'),
     config = require('../config'),
     engine = require('./engine'),
-    _ = require('lodash'),
     // Current instance of ActiveTheme
     currentActiveTheme;
 
