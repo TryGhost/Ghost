@@ -1,4 +1,5 @@
 var path = require('path'),
+    fs = require('fs-extra'),
     _ = require('lodash');
 
 exports.isPrivacyDisabled = function isPrivacyDisabled(privacyFlag) {
@@ -65,6 +66,16 @@ exports.getContentPath = function getContentPath(type) {
             return path.join(this.get('paths:contentPath'), 'data/');
         default:
             throw new Error('getContentPath was called with: ' + type);
+    }
+};
+
+/**
+ * @TODO:
+ *   - content/logs folder is required right now, otherwise Ghost want start
+ */
+exports.doesContentPathExist = function doesContentPathExist() {
+    if (!fs.pathExistsSync(this.get('paths:contentPath'))) {
+        throw new Error('Your content path does not exist! Please double check `paths.contentPath` in your custom config file e.g. config.production.json.');
     }
 };
 

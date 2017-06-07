@@ -22,6 +22,10 @@ describe('Config', function () {
             originalEnv = _.clone(process.env);
             originalArgv = _.clone(process.argv);
             config = rewire('../../../server/config');
+
+            // we manually call `loadConf` in the tests and we need to ensure that the minimum
+            // required config properties are available
+            process.env['paths__contentPath'] = 'content/';
         });
 
         afterEach(function () {

@@ -43,6 +43,7 @@ _private.loadNconf = function loadNconf(options) {
     nconf.isPrivacyDisabled = localUtils.isPrivacyDisabled.bind(nconf);
     nconf.getContentPath = localUtils.getContentPath.bind(nconf);
     nconf.sanitizeDatabaseProperties = localUtils.sanitizeDatabaseProperties.bind(nconf);
+    nconf.doesContentPathExist = localUtils.doesContentPathExist.bind(nconf);
 
     nconf.sanitizeDatabaseProperties();
     nconf.makePathsAbsolute(nconf.get('paths'), 'paths');
@@ -53,6 +54,11 @@ _private.loadNconf = function loadNconf(options) {
      */
     nconf.checkUrlProtocol = localUtils.checkUrlProtocol.bind(nconf);
     nconf.checkUrlProtocol();
+
+    /**
+     * Ensure that the content path exists
+     */
+    nconf.doesContentPathExist();
 
     /**
      * values we have to set manual
