@@ -33,6 +33,12 @@ Not only will it save you [many hours per month](https://ghost.org/ghost-pro-vs-
 
 [Other options](https://docs.ghost.org/v0.11.9/docs/getting-started-guide) are also available if you prefer playing around with servers by yourself, of course. The freedom of choice is in your hands.
 
+# Self-Hosters
+
+Other options are also available if you prefer playing around with servers by yourself, of course. The freedom of choice is in your hands.
+
+- [Self-hosting Guide](https://docs.ghost.org/v0.11.9/getting-started-guide)
+
 
 # Theme Developers
 
