@@ -9,7 +9,8 @@ We are working on `1.0` and this lives now in the [master branch](https://github
 
 **Quick Links:**
 - [documentation](http://docs.ghost.org/v0.11.9)
-- [themes documentation](http://themes.ghost.org)
+- [themes documentation](http://themes.ghost.org/v0.11.9)
+- [api documentation](http://api.ghost.org/v0.11.9)
 - [feature roadmap](https://trello.com/b/EceUgtCL/ghost-roadmap)
 - [feature wishlist](http://ideas.ghost.org)
 - [slack community](https://ghost.org/slack)
