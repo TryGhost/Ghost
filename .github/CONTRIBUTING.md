@@ -173,15 +173,10 @@ The dev blog has [detailed instructions](http://dev.ghost.org/easy-git-pr-test/)
 <a name="documentation"></a>
 ### Documentation
 
-Ghost's developer documentation can be found at [docs.ghost.org](http://docs.ghost.org). These docs are written and hosted on [readme.io](https://readme.io/) which has a suggested edits feature through which you can submit updates. If you'd like to get more involved than just making amendments, [email support](mailto:support@ghost.org) and let us know :)
-
-<a name="translation"></a>
-### Translation
-
-Full documentation on contributing translations can be found at <http://docs.ghost.org/translations>
+Ghost's developer documentation can be found at [docs.ghost.org](http://docs.ghost.org/v0.11.9). These docs are written and hosted on [readme.io](https://readme.io/) which has a suggested edits feature through which you can submit updates. If you'd like to get more involved than just making amendments, [email support](mailto:support@ghost.org) and let us know :)
 
 <a name="core"></a>
-## Working on Ghost Core
+## Working on Ghost Core LTS
 
 Please follow our guide here [Working with Ghost](https://docs.ghost.org/v0.11.9/docs/working-with-ghost).
 
@@ -205,7 +200,7 @@ If you're still stuck, please come join us in [slack](https://ghost.org/slack) a
 release is here. Do **NOT** use this branch for a production site.
 - **[lts](https://github.com/TryGhost/Ghost)** is the long term support development branch. Do **NOT** use this branch for a production site.
 - **[stable](https://github.com/TryGhost/Ghost/tree/stable)** contains the latest release of Ghost. This branch may be used in production.
-- **[gh-pages](http://github.com/TryGhost/Ghost/tree/gh-pages)** contains [The Ghost Guide](http://docs.ghost.org) our developer documentation.
+- **[gh-pages](http://github.com/TryGhost/Ghost/tree/gh-pages)** contains [The Ghost Guide](http://docs.ghost.org/v0.11.9) our developer documentation.
 
 
 ## Troubleshooting / FAQ
