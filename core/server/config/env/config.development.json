@@ -18,7 +18,6 @@
         "useUpdateCheck": true
     },
     "useMinFiles": false,
-    "printErrorStack": true,
     "caching": {
         "theme": {
             "maxAge": 0
