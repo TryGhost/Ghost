@@ -18,17 +18,20 @@
     margin-top: 5px;
     padding: 4px;
     width: 220px;
-    border: #dfe1e3 1px solid;
-    background: rgba(255,255,255,0.9);
+    border: color(var(--blue) l(-10%)) 1px solid;
+    background: var(--blue);
     border-radius: 4px;
     box-shadow: rgba(0,0,0,0.06) 0 1px 7px;
-    color: #808284;
+    color: #fff;
     font-size: 1.2rem;
     line-height: 1.4em;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
 }
 
 .gh-notification:hover {
     cursor: pointer;
+    opacity: 0.95;
 }
 
 .gh-notification-content {
@@ -38,22 +41,23 @@
     transition: background 0.2s ease;
 }
 
-.gh-notification em {
-    color: var(--blue);
-    font-style: normal;
+.gh-notification a {
+    color: #fff;
+    text-decoration: underline;
 }
 
-.gh-notification:hover .gh-notification-content {
-    background: color(var(--blue) lightness(+34%));
+.gh-notification em {
+    font-weight: bold;
+    font-style: normal;
 }
 
 .gh-notification-close {
     position: absolute;
-    top: 0;
-    right: 0;
+    top: 1px;
+    right: 1px;
     padding: 6px 6px 5px 5px;
-    background: #fff;
-    border-radius: 0 4px 0 4px;
+    background: var(--blue);
+    border-radius: 2px;
     font-size: 7px;
     line-height: 5px;
 }
@@ -61,15 +65,15 @@
 .gh-notification-close svg {
     height: 7px;
     width: 7px;
+    fill: #fff;
 }
 
 .gh-notification-close:hover {
     background: #fff;
-    color: var(--red);
 }
 
-.gh-notification-close svg:hover {
-    fill: var(--red);
+.gh-notification-close:hover svg {
+    fill: var(--red)
 }
 
 .gh-notification-passive {
