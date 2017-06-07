@@ -71,5 +71,8 @@ config.*.json
 /core/server/public/ghost-url.min.js
 /core/server/public/ghost.min.css
 
+# Temp files
+/core/client/tmp
+
 # Coverage reports
 coverage.html
