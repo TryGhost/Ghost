@@ -7,7 +7,7 @@ you get started quickly and easily. If you need help with anything, please come 
 The [LTS branch](https://github.com/TryGhost/Ghost/tree/lts) keeps track of our long term support for Ghost 0.11.X.
 We are working on `1.0` and this lives now in the [master branch](https://github.com/TryGhost/Ghost/tree/master). 
 
-**Quick Links:**
+## Quick Links
 - [documentation](http://docs.ghost.org/v0.11.9)
 - [themes documentation](http://themes.ghost.org/v0.11.9)
 - [api documentation](http://api.ghost.org/v0.11.9)
@@ -18,12 +18,12 @@ We are working on `1.0` and this lives now in the [master branch](https://github
 - [dev blog](http://dev.ghost.org)
 
 
-### TL;DR
+## TL;DR
 
 If you need help with Ghost or have questions, please use [slack](https://ghost.org/slack) (documentation is [here](http://docs.ghost.orgv0.11.9)). If you're [raising a bug](#bugs) please be sure to [include as much info as possible](#bug-template) so that we can fix it! If you've got some code you want to [pull request](#pull-requests) please [squash commits](https://docs.ghost.org/v0.11.9/docs/git-workflow#section-clean-up-history), use this [commit message format](https://docs.ghost.org/v0.11.9/docs/git-workflow#section-commit-messages) and check it passes the tests by running `grunt validate`. Thanks for helping us make Ghost better.
 
 
-### Guideline Contents
+## Guideline Contents
 
 There are lots and lots of ways to get involved, this document covers:
 
