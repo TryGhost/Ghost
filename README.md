@@ -31,8 +31,6 @@ The easiest way to deploy Ghost is with our official **[Ghost(Pro)](https://ghos
 
 Not only will it save you [many hours per month](https://ghost.org/ghost-pro-vs-self-hosting/), but all revenue goes to the Ghost Foundation, which funds the maintenance and further development of Ghost itself. So you’ll be supporting open source software *and* getting a great service **at the same time**! Talk about win/win. :trophy:
 
-[Other options](https://docs.ghost.org/v0.11.9/docs/getting-started-guide) are also available if you prefer playing around with servers by yourself, of course. The freedom of choice is in your hands.
-
 # Self-Hosters
 
 Other options are also available if you prefer playing around with servers by yourself, of course. The freedom of choice is in your hands.
