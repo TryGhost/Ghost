@@ -4,8 +4,8 @@ So you're interested in giving us a hand? That's awesome! We've put together som
 you get started quickly and easily. If you need help with anything, please come visit our [slack community](https://ghost.org/slack). Thank you for stopping by!
 
 **Note:**
-The [LTS branch](https://github.com/TryGhost/Ghost/tree/lts) keeps track of our long term support for Ghost 0.X.
-We have released `1.0` beta and this lives now in the [master branch](https://github.com/TryGhost/Ghost/tree/master). 
+The [LTS branch](https://github.com/TryGhost/Ghost/tree/lts) keeps track of our long term support for Ghost 0.11.X.
+We are working on `1.0` and this lives now in the [master branch](https://github.com/TryGhost/Ghost/tree/master). 
 
 **Quick Links:**
 - [documentation](http://docs.ghost.org)
