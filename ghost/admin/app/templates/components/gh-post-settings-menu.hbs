@@ -163,3 +163,24 @@
     </div>
 </div>
 {{/gh-tabs-manager}}
+
+{{!--
+    _showThrobbers is on a timer so that throbbers don't get positioned until
+    the slide-in animation has finished and it gets toggled when the meta
+    pane is shown
+--}}
+{{#if _showThrobbers}}
+    {{gh-tour-item "static-post"
+        target="label[for='static-page'] p"
+        throbberAttachment="middle middle"
+        throbberOffset="0px 75px"
+        popoverTriangleClass="bottom-right"
+    }}
+
+    {{gh-tour-item "featured-post"
+        target="label[for='featured'] p"
+        throbberAttachment="middle middle"
+        throbberOffset="0px -20px"
+        popoverTriangleClass="bottom-right"
+    }}
+{{/if}}

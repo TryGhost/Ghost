@@ -14,7 +14,8 @@ describe('Unit: Model: invite', function() {
             'service:ghost-paths',
             'service:ajax',
             'service:session',
-            'service:feature'
+            'service:feature',
+            'service:tour'
         ]
     });
 

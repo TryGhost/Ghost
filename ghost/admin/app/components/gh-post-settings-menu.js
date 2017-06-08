@@ -10,8 +10,11 @@ import moment from 'moment';
 import {guidFor} from 'ember-metal/utils';
 import {htmlSafe} from 'ember-string';
 import {invokeAction} from 'ember-invoke-action';
+import {task, timeout} from 'ember-concurrency';
 
 const {Handlebars} = Ember;
+
+const PSM_ANIMATION_LENGTH = 400;
 
 export default Component.extend(SettingsMenuMixin, {
     selectedAuthor: null,
@@ -31,6 +34,7 @@ export default Component.extend(SettingsMenuMixin, {
     metaDescriptionScratch: alias('model.metaDescriptionScratch'),
 
     _showSettingsMenu: false,
+    _showThrobbers: false,
 
     didReceiveAttrs() {
         this._super(...arguments);
@@ -43,19 +47,36 @@ export default Component.extend(SettingsMenuMixin, {
             this.set('selectedAuthor', author);
         });
 
-        // reset the publish date on close if it has an error
+        // HACK: ugly method of working around the CSS animations so that we
+        // can add throbbers only when the animation has finished
+        // TODO: use liquid-fire to handle PSM slide-in and replace tabs manager
+        // with something more ember-like
+        if (this.get('showSettingsMenu') && !this._showSettingsMenu) {
+            this.get('showThrobbers').perform();
+        }
+
+        // fired when menu is closed
         if (!this.get('showSettingsMenu') && this._showSettingsMenu) {
             let post = this.get('model');
             let errors = post.get('errors');
 
+            // reset the publish date if it has an error
             if (errors.has('publishedAtBlogDate') || errors.has('publishedAtBlogTime')) {
                 post.set('publishedAtBlogTZ', post.get('publishedAtUTC'));
                 post.validate({attribute: 'publishedAtBlog'});
             }
+
+            // remove throbbers
+            this.set('_showThrobbers', false);
         }
 
         this._showSettingsMenu = this.get('showSettingsMenu');
     },
+
+    showThrobbers: task(function* () {
+        yield timeout(PSM_ANIMATION_LENGTH);
+        this.set('_showThrobbers', true);
+    }).restartable(),
 
     seoTitle: computed('model.titleScratch', 'metaTitleScratch', function () {
         let metaTitle = this.get('metaTitleScratch') || '';
@@ -133,6 +154,16 @@ export default Component.extend(SettingsMenuMixin, {
     },
 
     actions: {
+        showSubview() {
+            this._super(...arguments);
+            this.set('_showThrobbers', false);
+        },
+
+        closeSubview() {
+            this._super(...arguments);
+            this.get('showThrobbers').perform();
+        },
+
         discardEnter() {
             return false;
         },
