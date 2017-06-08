@@ -66,10 +66,16 @@ function dropUnique(table, column, transaction) {
 }
 
 function createTable(table, transaction) {
-    return (transaction || db.knex).schema.createTableIfNotExists(table, function (t) {
-        var columnKeys = _.keys(schema[table]);
-        _.each(columnKeys, function (column) {
-            return addTableColumn(table, t, column);
+    return (transaction || db.knex).schema.hasTable(table).then(function (exists) {
+        if (exists) {
+            return;
+        }
+
+        return (transaction || db.knex).schema.createTable(table, function (t) {
+            var columnKeys = _.keys(schema[table]);
+            _.each(columnKeys, function (column) {
+                return addTableColumn(table, t, column);
+            });
         });
     });
 }

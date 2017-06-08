@@ -94,6 +94,7 @@ function init(options) {
             })
             .catch(function (err) {
                 if (err instanceof errors.DatabaseNotPopulated) {
+                    // populated means: either has not all tables or missing default/fixture values!
                     return migrations.populate();
                 }
 

@@ -61,7 +61,14 @@ createOwner = function createOwner(logger, modelOptions) {
             user.roles = [ownerRole.id];
 
             logger.info('Creating owner');
-            return models.User.add(user, modelOptions);
+            return models.User.findOne({name: 'Ghost Owner', status: 'all'}, modelOptions)
+                .then(function (exists) {
+                   if (exists) {
+                       return;
+                   }
+
+                    return models.User.add(user, modelOptions);
+                });
         }
     });
 };
