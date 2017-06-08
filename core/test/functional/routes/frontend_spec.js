@@ -90,7 +90,7 @@ describe('Frontend Routing', function () {
             it('should load a post with date permalink', function (done) {
                 var date = moment().format('YYYY/MM/DD');
 
-                request.get('/' + date + '/welcome-to-ghost/')
+                request.get('/' + date + '/welcome/')
                     .expect(200)
                     .expect('Content-Type', /html/)
                     .end(doEnd(done));
@@ -99,11 +99,11 @@ describe('Frontend Routing', function () {
             it('expect redirect because of wrong/old permalink prefix', function (done) {
                 var date = moment().format('YYYY/MM/DD');
 
-                request.get('/2016/04/01/welcome-to-ghost/')
+                request.get('/2016/04/01/welcome/')
                     .expect('Content-Type', /html/)
                     .end(function (err, res) {
                         res.status.should.eql(301);
-                        request.get('/' + date + '/welcome-to-ghost/')
+                        request.get('/' + date + '/welcome/')
                             .expect(200)
                             .expect('Content-Type', /html/)
                             .end(doEnd(done));
@@ -130,7 +130,7 @@ describe('Frontend Routing', function () {
                             dd = todayMoment.format('DD'),
                             mm = todayMoment.format('MM'),
                             yyyy = todayMoment.format('YYYY'),
-                            postLink = '/' + yyyy + '/' + mm + '/' + dd + '/welcome-to-ghost/';
+                            postLink = '/' + yyyy + '/' + mm + '/' + dd + '/welcome/';
 
                         content.indexOf(postLink).should.be.above(0);
                         done();
@@ -186,16 +186,16 @@ describe('Frontend Routing', function () {
 
             describe('Single post', function () {
                 it('should redirect without slash', function (done) {
-                    request.get('/welcome-to-ghost')
-                        .expect('Location', '/welcome-to-ghost/')
+                    request.get('/welcome')
+                        .expect('Location', '/welcome/')
                         .expect('Cache-Control', testUtils.cacheRules.year)
                         .expect(301)
                         .end(doEnd(done));
                 });
 
                 it('should redirect uppercase', function (done) {
-                    request.get('/Welcome-To-Ghost/')
-                        .expect('Location', '/welcome-to-ghost/')
+                    request.get('/Welcome/')
+                        .expect('Location', '/welcome/')
                         .expect('Cache-Control', testUtils.cacheRules.year)
                         .expect(301)
                         .end(doEnd(done));
@@ -210,7 +210,7 @@ describe('Frontend Routing', function () {
                 });
 
                 it('should respond with html for valid url', function (done) {
-                    request.get('/welcome-to-ghost/')
+                    request.get('/welcome/')
                         .expect('Content-Type', /html/)
                         .expect('Cache-Control', testUtils.cacheRules.public)
                         .expect(200)
@@ -242,7 +242,7 @@ describe('Frontend Routing', function () {
                     // get today's date
                     var date = moment().format('YYYY/MM/DD');
 
-                    request.get('/' + date + '/welcome-to-ghost/')
+                    request.get('/' + date + '/welcome/')
                         .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(404)
                         .expect(/Page not found/)
@@ -252,15 +252,15 @@ describe('Frontend Routing', function () {
 
             describe('Post edit', function () {
                 it('should redirect without slash', function (done) {
-                    request.get('/welcome-to-ghost/edit')
-                        .expect('Location', '/welcome-to-ghost/edit/')
+                    request.get('/welcome/edit')
+                        .expect('Location', '/welcome/edit/')
                         .expect('Cache-Control', testUtils.cacheRules.year)
                         .expect(301)
                         .end(doEnd(done));
                 });
 
                 it('should redirect to editor', function (done) {
-                    request.get('/welcome-to-ghost/edit/')
+                    request.get('/welcome/edit/')
                         .expect('Location', /ghost\/editor\/\w+/)
                         .expect('Cache-Control', testUtils.cacheRules.public)
                         .expect(302)
@@ -268,7 +268,7 @@ describe('Frontend Routing', function () {
                 });
 
                 it('should 404 for non-edit parameter', function (done) {
-                    request.get('/welcome-to-ghost/notedit/')
+                    request.get('/welcome/notedit/')
                         .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(404)
                         .expect(/Page not found/)
@@ -278,23 +278,23 @@ describe('Frontend Routing', function () {
 
             describe('AMP post', function () {
                 it('should redirect without slash', function (done) {
-                    request.get('/welcome-to-ghost/amp')
-                        .expect('Location', '/welcome-to-ghost/amp/')
+                    request.get('/welcome/amp')
+                        .expect('Location', '/welcome/amp/')
                         .expect('Cache-Control', testUtils.cacheRules.year)
                         .expect(301)
                         .end(doEnd(done));
                 });
 
                 it('should redirect uppercase', function (done) {
-                    request.get('/Welcome-To-Ghost/AMP/')
-                        .expect('Location', '/welcome-to-ghost/amp/')
+                    request.get('/Welcome/AMP/')
+                        .expect('Location', '/welcome/amp/')
                         .expect('Cache-Control', testUtils.cacheRules.year)
                         .expect(301)
                         .end(doEnd(done));
                 });
 
                 it('should respond with html for valid url', function (done) {
-                    request.get('/welcome-to-ghost/amp/')
+                    request.get('/welcome/amp/')
                         .expect('Content-Type', /html/)
                         .expect('Cache-Control', testUtils.cacheRules.public)
                         .expect(200)
@@ -324,7 +324,7 @@ describe('Frontend Routing', function () {
                     // get today's date
                     var date = moment().format('YYYY/MM/DD');
 
-                    request.get('/' + date + '/welcome-to-ghost/amp/')
+                    request.get('/' + date + '/welcome/amp/')
                         .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(404)
                         .expect(/Page not found/)
@@ -339,7 +339,7 @@ describe('Frontend Routing', function () {
                         return origCache.get(key, options);
                     });
 
-                    request.get('/welcome-to-ghost/amp/')
+                    request.get('/welcome/amp/')
                         .expect(404)
                         .expect(/Page not found/)
                         .end(doEnd(done));
@@ -592,16 +592,16 @@ describe('Frontend Routing', function () {
                     .end(doEnd(done));
             });
 
-            it('http://localhost/blog/welcome-to-ghost should 301 to http://localhost/blog/welcome-to-ghost/', function (done) {
-                request.get('/blog/welcome-to-ghost')
+            it('http://localhost/blog/welcome should 301 to http://localhost/blog/welcome/', function (done) {
+                request.get('/blog/welcome')
                     .expect(301)
-                    .expect('Location', '/blog/welcome-to-ghost/')
+                    .expect('Location', '/blog/welcome/')
                     .expect('Cache-Control', testUtils.cacheRules.year)
                     .end(doEnd(done));
             });
 
-            it('http://localhost/blog/welcome-to-ghost/ should 200', function (done) {
-                request.get('/blog/welcome-to-ghost/')
+            it('http://localhost/blog/welcome/ should 200', function (done) {
+                request.get('/blog/welcome/')
                     .expect(200)
                     .end(doEnd(done));
             });
@@ -620,8 +620,8 @@ describe('Frontend Routing', function () {
                     .end(doEnd(done));
             });
 
-            it('/blog/welcome-to-ghost/amp/ should 200', function (done) {
-                request.get('/blog/welcome-to-ghost/amp/')
+            it('/blog/welcome/amp/ should 200', function (done) {
+                request.get('/blog/welcome/amp/')
                     .expect(200)
                     .end(doEnd(done));
             });
@@ -665,16 +665,16 @@ describe('Frontend Routing', function () {
                     .end(doEnd(done));
             });
 
-            it('/blog/welcome-to-ghost should 301 to /blog/welcome-to-ghost/', function (done) {
-                request.get('/blog/welcome-to-ghost')
+            it('/blog/welcome should 301 to /blog/welcome/', function (done) {
+                request.get('/blog/welcome')
                     .expect(301)
-                    .expect('Location', '/blog/welcome-to-ghost/')
+                    .expect('Location', '/blog/welcome/')
                     .expect('Cache-Control', testUtils.cacheRules.year)
                     .end(doEnd(done));
             });
 
-            it('/blog/welcome-to-ghost/ should 200', function (done) {
-                request.get('/blog/welcome-to-ghost/')
+            it('/blog/welcome/ should 200', function (done) {
+                request.get('/blog/welcome/')
                     .expect(200)
                     .end(doEnd(done));
             });
@@ -693,8 +693,8 @@ describe('Frontend Routing', function () {
                     .end(doEnd(done));
             });
 
-            it('/blog/welcome-to-ghost/amp/ should 200', function (done) {
-                request.get('/blog/welcome-to-ghost/amp/')
+            it('/blog/welcome/amp/ should 200', function (done) {
+                request.get('/blog/welcome/amp/')
                     .expect(200)
                     .end(doEnd(done));
             });

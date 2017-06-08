@@ -106,11 +106,11 @@ describe('Migration Fixture Utils', function () {
             fixtureUtils.addFixturesForModel(fixtures.models[0]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
-                result.should.have.property('expected', 1);
-                result.should.have.property('done', 1);
+                result.should.have.property('expected', 7);
+                result.should.have.property('done', 7);
 
-                postOneStub.calledOnce.should.be.true();
-                postAddStub.calledOnce.should.be.true();
+                postOneStub.callCount.should.eql(7);
+                postAddStub.callCount.should.eql(7);
 
                 done();
             }).catch(done);
@@ -122,11 +122,11 @@ describe('Migration Fixture Utils', function () {
             fixtureUtils.addFixturesForModel(fixtures.models[0]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
-                result.should.have.property('expected', 1);
+                result.should.have.property('expected', 7);
                 result.should.have.property('done', 0);
 
-                postOneStub.calledOnce.should.be.true();
-                postAddStub.calledOnce.should.be.false();
+                postOneStub.callCount.should.eql(7);
+                postAddStub.callCount.should.eql(0);
 
                 done();
             }).catch(done);
@@ -186,18 +186,18 @@ describe('Migration Fixture Utils', function () {
             fixtureUtils.addFixturesForRelation(fixtures.relations[1]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
-                result.should.have.property('expected', 1);
-                result.should.have.property('done', 1);
+                result.should.have.property('expected', 7);
+                result.should.have.property('done', 7);
 
                 // Posts & Tags
                 postsAllStub.calledOnce.should.be.true();
                 tagsAllStub.calledOnce.should.be.true();
-                dataMethodStub.filter.calledOnce.should.be.true();
-                dataMethodStub.find.calledOnce.should.be.true();
-                fromItem.related.calledOnce.should.be.true();
-                fromItem.findWhere.calledOnce.should.be.true();
-                toItem[0].get.calledOnce.should.be.true();
-                baseUtilAttachStub.callCount.should.eql(1);
+                dataMethodStub.filter.callCount.should.eql(7);
+                dataMethodStub.find.callCount.should.eql(7);
+                fromItem.related.callCount.should.eql(7);
+                fromItem.findWhere.callCount.should.eql(7);
+                toItem[0].get.callCount.should.eql(7);
+                baseUtilAttachStub.callCount.should.eql(7);
 
                 done();
             }).catch(done);
@@ -222,18 +222,18 @@ describe('Migration Fixture Utils', function () {
             fixtureUtils.addFixturesForRelation(fixtures.relations[1]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
-                result.should.have.property('expected', 1);
+                result.should.have.property('expected', 7);
                 result.should.have.property('done', 0);
 
                 // Posts & Tags
                 postsAllStub.calledOnce.should.be.true();
                 tagsAllStub.calledOnce.should.be.true();
-                dataMethodStub.filter.calledOnce.should.be.true();
-                dataMethodStub.find.calledOnce.should.be.true();
+                dataMethodStub.filter.callCount.should.eql(7);
+                dataMethodStub.find.callCount.should.eql(7);
 
-                fromItem.related.calledOnce.should.be.true();
-                fromItem.findWhere.calledOnce.should.be.true();
-                toItem[0].get.calledOnce.should.be.true();
+                fromItem.related.callCount.should.eql(7);
+                fromItem.findWhere.callCount.should.eql(7);
+                toItem[0].get.callCount.should.eql(7);
 
                 fromItem.tags.called.should.be.false();
                 fromItem.attach.called.should.be.false();

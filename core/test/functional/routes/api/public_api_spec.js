@@ -65,7 +65,7 @@ describe('Public API', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.posts);
                 testUtils.API.checkResponse(jsonResponse, 'posts');
-                jsonResponse.posts.should.have.length(5);
+                jsonResponse.posts.should.have.length(11);
                 testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                 testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
@@ -92,7 +92,7 @@ describe('Public API', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.posts);
                 testUtils.API.checkResponse(jsonResponse, 'posts');
-                jsonResponse.posts.should.have.length(5);
+                jsonResponse.posts.should.have.length(11);
                 testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                 testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
@@ -116,7 +116,7 @@ describe('Public API', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.posts);
                 testUtils.API.checkResponse(jsonResponse, 'posts');
-                jsonResponse.posts.should.have.length(5);
+                jsonResponse.posts.should.have.length(11);
                 testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                 testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);

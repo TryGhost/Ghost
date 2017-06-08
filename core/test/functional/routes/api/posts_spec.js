@@ -50,7 +50,7 @@ describe('Post API', function () {
                     var jsonResponse = res.body;
                     should.exist(jsonResponse.posts);
                     testUtils.API.checkResponse(jsonResponse, 'posts');
-                    jsonResponse.posts.should.have.length(5);
+                    jsonResponse.posts.should.have.length(11);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                     testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                     _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
@@ -75,7 +75,7 @@ describe('Post API', function () {
                     var jsonResponse = res.body;
                     should.exist(jsonResponse.posts);
                     testUtils.API.checkResponse(jsonResponse, 'posts');
-                    jsonResponse.posts.should.have.length(5);
+                    jsonResponse.posts.should.have.length(11);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['mobiledoc'], ['html']);
                     testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                     _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
@@ -100,7 +100,7 @@ describe('Post API', function () {
                     var jsonResponse = res.body;
                     should.exist(jsonResponse.posts);
                     testUtils.API.checkResponse(jsonResponse, 'posts');
-                    jsonResponse.posts.should.have.length(5);
+                    jsonResponse.posts.should.have.length(11);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['mobiledoc', 'plaintext', 'amp'], ['html']);
                     testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                     _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
@@ -125,7 +125,7 @@ describe('Post API', function () {
                     var jsonResponse = res.body;
                     should.exist(jsonResponse.posts);
                     testUtils.API.checkResponse(jsonResponse, 'posts');
-                    jsonResponse.posts.should.have.length(5);
+                    jsonResponse.posts.should.have.length(11);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['plaintext'], ['html']);
                     testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                     _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
@@ -150,7 +150,7 @@ describe('Post API', function () {
                     var jsonResponse = res.body;
                     should.exist(jsonResponse.posts);
                     testUtils.API.checkResponse(jsonResponse, 'posts');
-                    jsonResponse.posts.should.have.length(5);
+                    jsonResponse.posts.should.have.length(11);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                     testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                     _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
@@ -175,7 +175,7 @@ describe('Post API', function () {
                     var jsonResponse = res.body;
                     should.exist(jsonResponse.posts);
                     testUtils.API.checkResponse(jsonResponse, 'posts');
-                    jsonResponse.posts.should.have.length(5);
+                    jsonResponse.posts.should.have.length(11);
 
                     testUtils.API.checkResponse(
                         jsonResponse.posts[0],
@@ -206,7 +206,7 @@ describe('Post API', function () {
                     var jsonResponse = res.body;
                     should.exist(jsonResponse.posts);
                     testUtils.API.checkResponse(jsonResponse, 'posts');
-                    jsonResponse.posts.should.have.length(6);
+                    jsonResponse.posts.should.have.length(12);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                     testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                     done();
@@ -230,7 +230,7 @@ describe('Post API', function () {
                     var jsonResponse = res.body;
                     should.exist(jsonResponse.posts);
                     testUtils.API.checkResponse(jsonResponse, 'posts');
-                    jsonResponse.posts.should.have.length(9);
+                    jsonResponse.posts.should.have.length(15);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                     testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                     done();
@@ -358,7 +358,7 @@ describe('Post API', function () {
         });
 
         it('can retrieve a post by slug', function (done) {
-            request.get(testUtils.API.getApiQuery('posts/slug/welcome-to-ghost/'))
+            request.get(testUtils.API.getApiQuery('posts/slug/welcome/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
@@ -373,7 +373,7 @@ describe('Post API', function () {
                     should.exist(jsonResponse);
                     should.exist(jsonResponse.posts);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                    jsonResponse.posts[0].slug.should.equal('welcome-to-ghost');
+                    jsonResponse.posts[0].slug.should.equal('welcome');
                     jsonResponse.posts[0].page.should.not.be.ok();
                     _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                     _.isBoolean(jsonResponse.posts[0].page).should.eql(true);

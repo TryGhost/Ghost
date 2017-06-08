@@ -67,18 +67,26 @@ describe('Channel Routes', function () {
                     should.exist(res.headers.date);
 
                     $('title').text().should.equal('Ghost');
-                    $('.content .post').length.should.equal(1);
+                    $('.content .post').length.should.equal(5);
                     $('.poweredby').text().should.equal('Proudly published with Ghost');
                     $('body.home-template').length.should.equal(1);
-                    $('article.post').length.should.equal(1);
-                    $('article.tag-getting-started').length.should.equal(1);
+                    $('article.post').length.should.equal(5);
+                    $('article.tag-getting-started').length.should.equal(5);
 
                     done();
                 });
         });
 
-        it('should not have as second page', function (done) {
+        it('should have a second page', function (done) {
             request.get('/page/2/')
+                .expect('Content-Type', /html/)
+                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect(200)
+                .end(doEnd(done));
+        });
+
+        it('should not have a third page', function (done) {
+            request.get('/page/3/')
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(404)
                 .expect(/Page not found/)
@@ -138,13 +146,13 @@ describe('Channel Routes', function () {
 
         describe('Paged', function () {
             // Add enough posts to trigger pages for both the index (5 pp) and rss (15 pp)
-            // insertPosts adds 5 published posts, 1 draft post, 1 published static page and one draft page
-            // we then insert with max 11 which ensures we have 16 published posts
+            // insertPosts adds 11 published posts, 1 draft post, 1 published static page and one draft page
+            // we then insert with max 5 which ensures we have 16 published posts
             before(function (done) {
                 testUtils.initData().then(function () {
                     return testUtils.fixtures.insertPostsAndTags();
                 }).then(function () {
-                    return testUtils.fixtures.insertMorePosts(11);
+                    return testUtils.fixtures.insertMorePosts(5);
                 }).then(function () {
                     done();
                 }).catch(done);
@@ -496,7 +504,7 @@ describe('Channel Routes', function () {
             });
 
             it('should 404 if page too high', function (done) {
-                request.get('/author/ghost-owner/page/4/')
+                request.get('/author/ghost-owner/page/6/')
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(404)
                     .expect(/Page not found/)
@@ -521,7 +529,7 @@ describe('Channel Routes', function () {
                 });
 
                 it('should 404 if page too high', function (done) {
-                    request.get('/author/ghost-owner/rss/2/')
+                    request.get('/author/ghost-owner/rss/3/')
                         .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(404)
                         .expect(/Page not found/)
