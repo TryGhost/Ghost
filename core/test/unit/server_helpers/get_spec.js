@@ -2,8 +2,9 @@ var should = require('should'),
     sinon = require('sinon'),
     Promise = require('bluebird'),
 
-// Stuff we are testing
+    // Stuff we are testing
     helpers = require('../../../server/helpers'),
+    models = require('../../../server/models'),
     api = require('../../../server/api'),
 
     labs = require('../../../server/utils/labs'),
@@ -12,6 +13,10 @@ var should = require('should'),
 
 describe('{{#get}} helper', function () {
     var fn, inverse, labsStub;
+
+    before(function () {
+        models.init();
+    });
 
     beforeEach(function () {
         fn = sandbox.spy();
@@ -41,7 +46,7 @@ describe('{{#get}} helper', function () {
                 'string',
                 '<script>console.error("The {{get}} helper is not available. ' +
                 'The Public API labs flag must be enabled if you wish to use the {{get}} helper. ' +
-                'See http://support.ghost.org/public-api-beta/");</script>'
+                'See https://help.ghost.org/hc/en-us/articles/115000301672-Public-API-Beta");</script>'
             );
 
             done();

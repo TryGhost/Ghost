@@ -149,7 +149,7 @@ module.exports = function getLabsWrapper() {
         flagKey: 'publicAPI',
         flagName: 'Public API',
         helperName: 'get',
-        helpUrl: 'http://support.ghost.org/public-api-beta/',
+        helpUrl: 'https://help.ghost.org/hc/en-us/articles/115000301672-Public-API-Beta',
         async: true
     }, function executeHelper() {
         return get.apply(self, args);
