@@ -13,6 +13,7 @@ describe('Unit: Serializer: user', function() {
             'service:notifications',
             'service:session',
             'transform:facebook-url-user',
+            'transform:json-string',
             'transform:moment-utc',
             'transform:raw',
             'transform:twitter-url-user'

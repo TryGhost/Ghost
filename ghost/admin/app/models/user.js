@@ -35,6 +35,7 @@ export default Model.extend(ValidationEngine, {
     count: attr('raw'),
     facebook: attr('facebook-url-user'),
     twitter: attr('twitter-url-user'),
+    tour: attr('json-string'),
 
     ghostPaths: injectService(),
     ajax: injectService(),

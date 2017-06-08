@@ -98,6 +98,7 @@
     "grunt-shell": "2.1.0",
     "jquery-deparam": "0.5.3",
     "liquid-fire": "0.27.3",
+    "liquid-tether": "2.0.4",
     "liquid-wormhole": "2.0.5",
     "loader.js": "4.4.0",
     "markdown-it": "8.3.1",

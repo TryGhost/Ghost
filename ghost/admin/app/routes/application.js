@@ -34,6 +34,7 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
     notifications: injectService(),
     settings: injectService(),
     upgradeNotification: injectService(),
+    tour: injectService(),
 
     beforeModel() {
         return this.get('config').fetch();
@@ -64,12 +65,14 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
             });
 
             let settingsPromise = this.get('settings').fetch();
+            let tourPromise = this.get('tour').fetchViewed();
 
             // return the feature/settings load promises so that we block until
             // they are loaded to enable synchronous access everywhere
             return RSVP.all([
                 featurePromise,
-                settingsPromise
+                settingsPromise,
+                tourPromise
             ]);
         }
     },
