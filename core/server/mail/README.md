@@ -1,6 +1,6 @@
 # Modifying Email Templates
 
-## Thinks to keep in mind
+## Things to keep in mind
 
 Before you start, here are some limitations you should be aware of:
 
@@ -28,8 +28,8 @@ When editing the "raw" email templates, you will notice there are things wrapped
 
 Once you are done making the changes you want, here is how to generate the in-lined CSS version of your newly updated file:
 - Install [juice2](https://www.npmjs.org/package/juice2) - ```npm install -g juice2 ```
-  - There are a few other alternatives, but this is the recommended tool (or [http://inlinestyler.torchboxapps.com/](http://inlinestyler.torchboxapps.com/) if you're more of the copy/paste type)
-  - If you are a Windows user and want to use juice, you will want to take a look at this: https://github.com/tmpvar/jsdom#contextify
+  - There are a few other alternatives, but this is the recommended tool (or [Inline Styler](http://inlinestyler.torchboxapps.com/) if you're more of the copy/paste type)
+  - If you are a Windows user and want to use juice, you will want to take a look at this: https://github.com/tmpvar/jsdom
 - In your terminal, change directories to ```/path/to/Ghost/core/server/email-templates```
 - To generate in in-lined CSS version, run ```juice2 raw/input.html output.html```
   - where ```raw/input.html``` is the file you originally edited and ```out.html``` is the file you want to generate
