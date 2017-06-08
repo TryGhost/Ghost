@@ -180,10 +180,10 @@ export default Controller.extend({
             // If the user's slug has changed, change the URL and replace
             // the history so refresh and back button still work
             if (slugChanged) {
-                currentPath = window.history.state.path;
+                currentPath = window.location.hash;
 
                 newPath = currentPath.split('/');
-                newPath[newPath.length - 2] = model.get('slug');
+                newPath[newPath.length - 1] = model.get('slug');
                 newPath = newPath.join('/');
 
                 window.history.replaceState({path: newPath}, '', newPath);
