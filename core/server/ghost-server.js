@@ -195,7 +195,7 @@ GhostServer.prototype.logStartMessages = function () {
         console.log(
             chalk.red('Currently running Ghost 1.0.0 Beta, this is NOT suitable for production! \n'),
             chalk.white('Please switch to the stable branch. \n'),
-            chalk.white('More information on the Ghost 1.0.0 Beta at: ') + chalk.cyan('https://dev.ghost.org/beta-release') + '\n',
+            chalk.white('More information on the Ghost 1.0.0 Beta at: ') + chalk.cyan('https://dev.ghost.org/1-0-0-beta') + '\n',
             chalk.gray(i18n.t('notices.httpServer.ctrlCToShutDown'))
         );
     } else {
