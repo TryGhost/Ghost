@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "1.0.0-alpha.21",
+  "version": "1.0.0-beta.1",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
