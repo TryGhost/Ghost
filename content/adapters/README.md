@@ -15,9 +15,8 @@ It doesn't use `cron` or similar.
 This default adapter can be found in `core/server/adapters/scheduling/SchedulingDefault.js`.
 
 ### Custom Adapter
-To override any of the default adapters, you have to add a folder (`content/adapters/storage` or `content/adapters/scheduling`) and copy your adapter to it. 
+To override any of the default adapters, you have to add a folder (`content/adapters/storage` or `content/adapters/scheduling`) and copy your adapter to it.
 
 Please follow our detailed guides:
-https://github.com/TryGhost/Ghost/wiki/Using-a-custom-storage-module
-https://github.com/TryGhost/Ghost/wiki/Using-a-custom-scheduling-module
-
+https://docs.ghost.org/v1.0.0/docs/using-a-custom-storage-module
+https://docs.ghost.org/v1.0.0/docs/using-a-custom-scheduling-module
