@@ -12,7 +12,7 @@ module.exports = function registerHelpers(ghost) {
             flagKey: 'subscribers',
             flagName: 'Subscribers',
             helperName: 'subscribe_form',
-            helpUrl: 'http://support.ghost.org/subscribers-beta/'
+            helpUrl: 'https://help.ghost.org/hc/en-us/articles/224089787-Subscribers-Beta'
         }, function executeHelper() {
             return require('./subscribe_form').apply(self, args);
         });
