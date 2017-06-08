@@ -21,17 +21,26 @@ pingList = [{
 function ping(post) {
     var pingXML,
         title = post.title,
-        url = utils.url.urlFor('post', {post: post}, true);
+        url = utils.url.urlFor('post', {post: post}, true),
+        defaultPostSlugs = [
+            'welcome',
+            'the-editor',
+            'using-tags',
+            'managing-users',
+            'private-sites',
+            'advanced-markdown',
+            'themes'
+        ];
 
     if (post.page || config.isPrivacyDisabled('useRpcPing')) {
         return;
     }
 
-    // Don't ping for the welcome to ghost post.
+    // Don't ping for the default posts.
     // This also handles the case where during ghost's first run
     // models.init() inserts this post but permissions.init() hasn't
     // (can't) run yet.
-    if (post.slug === 'welcome-to-ghost') {
+    if (defaultPostSlugs.indexOf(post.slug) > -1) {
         return;
     }
 
