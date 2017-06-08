@@ -59,7 +59,7 @@
 }
 
 .gh-setting-action-largeimg img {
-    height: 130px;
+    min-height: 80px;
     width: auto;
     max-width: 250px;
 }
