@@ -146,7 +146,7 @@ describe('AMP getPostData', function () {
     beforeEach(function () {
         res = {
             locals: {
-                relativeUrl: '/welcome-to-ghost/amp/'
+                relativeUrl: '/welcome/amp/'
             }
         };
 
@@ -168,7 +168,7 @@ describe('AMP getPostData', function () {
         postLookupStub.returns(new Promise.resolve({
             post: {
                 id: '1',
-                slug: 'welcome-to-ghost'
+                slug: 'welcome'
             }
         }));
 
@@ -177,7 +177,7 @@ describe('AMP getPostData', function () {
         ampController.getPostData(req, res, function () {
             req.body.post.should.be.eql({
                     id: '1',
-                    slug: 'welcome-to-ghost'
+                    slug: 'welcome'
                 }
             );
             done();
