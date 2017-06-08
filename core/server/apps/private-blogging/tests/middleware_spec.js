@@ -218,7 +218,7 @@ describe('Private Blogging', function () {
                 });
 
                 it('authenticatePrivateSession should redirect if hash is not verified', function (done) {
-                    req.url = '/welcome-to-ghost';
+                    req.url = '/welcome';
                     req.session = {
                         token: 'wrongpassword',
                         salt: Date.now().toString()

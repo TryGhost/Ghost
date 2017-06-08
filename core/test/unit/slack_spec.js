@@ -264,13 +264,13 @@ describe('Slack', function () {
             }).catch(done);
         });
 
-        it('does not send webhook for \'welcome-to-ghost\' post', function (done) {
+        it('does not send webhook for \'welcome\' post', function (done) {
             // set up
             isPostStub.returns(true);
             settingsObj.settings[0] = slackObjWithUrl;
 
             // execute code
-            ping({slug: 'welcome-to-ghost'}).then(function (result) {
+            ping({slug: 'welcome'}).then(function (result) {
                 // assertions
                 isPostStub.calledOnce.should.be.true();
                 urlForSpy.calledOnce.should.be.true();

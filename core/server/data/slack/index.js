@@ -62,6 +62,15 @@ function ping(post, options) {
 
     return getSlackSettings().then(function (slackSettings) {
         // Quit here if slack integration is not activated
+        var defaultPostSlugs = [
+            'welcome',
+            'the-editor',
+            'using-tags',
+            'managing-users',
+            'private-sites',
+            'advanced-markdown',
+            'themes'
+        ];
 
         if (slackSettings.url && slackSettings.url !== '') {
             // Only ping when not a page
@@ -69,11 +78,11 @@ function ping(post, options) {
                 return;
             }
 
-            // Don't ping for the welcome to ghost post.
+            // Don't ping for the default posts.
             // This also handles the case where during ghost's first run
             // models.init() inserts this post but permissions.init() hasn't
             // (can't) run yet.
-            if (post.slug === 'welcome-to-ghost') {
+            if (defaultPostSlugs.indexOf(post.slug) > -1) {
                 return;
             }
 

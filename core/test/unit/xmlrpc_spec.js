@@ -71,7 +71,7 @@ describe('XMLRPC', function () {
                 ping2 = nock('http://rpc.pingomatic.com').post('/').reply(200),
                 testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
 
-            testPost.slug = 'welcome-to-ghost';
+            testPost.slug = 'welcome';
 
             ping(testPost);
 
