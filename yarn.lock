@@ -2131,9 +2131,9 @@ grunt@~0.4.0:
     underscore.string "~2.2.1"
     which "~1.0.5"
 
-gscan@1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-1.1.0.tgz#16894249ec291021b2ad5f11087184013ee65ceb"
+gscan@1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-1.1.1.tgz#430c60ef24ed81f22ba82ed488df91a2c6ca368d"
   dependencies:
     bluebird "3.4.6"
     chalk "1.1.1"
