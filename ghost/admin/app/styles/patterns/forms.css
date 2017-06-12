@@ -182,7 +182,7 @@ textarea {
 .for-radio label p,
 .for-checkbox label p {
     overflow: auto;
-    color: #000;
+    color: var(--darkgrey);
     font-weight: normal;
 }
 

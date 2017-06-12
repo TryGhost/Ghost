@@ -367,7 +367,7 @@ Usage: CTA buttons grouped together horizontally.
 }
 
 .gh-btn-link {
-    border: 0;
+    border: none;
 }
 
 
