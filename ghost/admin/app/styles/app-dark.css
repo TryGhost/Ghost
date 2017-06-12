@@ -69,6 +69,11 @@ body {
     color: #e5eff5;
 }
 
+pre {
+    border: color(var(--lightgrey) l(+5%));
+    background: var(--lightgrey);
+}
+
 input,
 .gh-input,
 .gh-select {
@@ -89,6 +94,12 @@ input,
     border-color: color(var(--lightgrey));
     background: color(var(--lightgrey));
 }
+
+.ember-power-select-dropdown {
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.ember-power-select-dropdown,
 .ember-power-select-options:not([role="group"]),
 .ember-power-select-dropdown.ember-basic-dropdown-content--in-place {
     border-color: color(var(--lightgrey));
@@ -119,6 +130,23 @@ input,
     border: 0;
 }
 
+.gh-btn-link {
+    border: none;
+}
+
+.settings-menu-delete-button {
+    color: var(--red);
+}
+
+.gh-publishmenu-trigger {
+    color: var(--blue);
+    border: none;
+}
+
+.gh-publishmenu-trigger svg path {
+    stroke-width: 2px;
+}
+
 .dropdown-menu > li > a,
 .dropdown-menu > li > button {
     color: color(var(--lightgrey) lightness(+20%));
@@ -130,4 +158,94 @@ input,
 
 .gh-cardmenu {
     background: var(--lightgrey);
+}
+
+.editor-toolbar a.active, .editor-toolbar a:hover {
+    background-color: rgba(0,0,0,0.3);
+}
+
+.gh-badge-black,
+.gh-badge.owner {
+    color: var(--lightgrey);
+}
+
+.nav-list {
+    border-color: var(--lightgrey);
+    background: var(--lightgrey);
+}
+
+.selectize-input,
+.selectize-control.single .selectize-input.input-active {
+    background: var(--lightgrey);
+}
+
+.gh-select select {
+    color: var(--darkgrey);
+    background: var(--lightgrey);
+}
+
+.gh-date-time-picker-date,
+.gh-date-time-picker-time {
+    background: var(--lightgrey);
+}
+
+.gh-date-time-picker input {
+    color: var(--darkgrey);
+}
+
+.gh-publishmenu-dropdown {
+    background: #212A2E;
+}
+
+.gh-image-uploader {
+    background: var(--lightgrey);
+}
+
+.gh-main > section.gh-editor-fullscreen {
+    background: color(#212A2E l(+2%));
+}
+
+.dropdown-menu {
+    background: var(--lightgrey);
+}
+
+.dropdown-menu > li > a, .dropdown-menu > li > button {
+    color: var(--darkgrey);
+}
+
+.dropdown-menu > li > a:hover, .dropdown-menu > li > a:focus, .dropdown-menu > li > button:hover, .dropdown-menu > li > button:focus {
+    color: #fff;
+}
+
+.dropdown-menu .divider {
+    opacity: 0.1;
+}
+
+.ember-power-select-group .ember-power-select-option .highlight {
+    background: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background: #212A2E;
+}
+
+.seo-preview-title {
+    color: color(#1e0fbe l(+25%));
+}
+
+.seo-preview-description {
+    color: var(--midgrey);
+}
+
+.tour-dismiss {
+    border: none;
+    background: linear-gradient( rgb(50, 50, 50), rgb(23, 23, 23) );
+}
+
+.tour-dismiss span {
+    background: linear-gradient( rgb(69, 69, 69), rgb(42, 44, 45) 60%, rgb(42, 44, 45) 90%, rgb(49, 52, 53) );
+}
+
+.throbber:before {
+    background: rgba(0,0,0,0.2);
 }

@@ -170,7 +170,6 @@
     height: 43px;
     padding: 0;
     padding-left: 15px;
-    background: #fff;
     border-bottom: var(--lightgrey) 1px solid;
     z-index: 100;
 }
@@ -298,7 +297,7 @@
 .gh-editor-footer .editor-toolbar {
     border: none;
     border-radius: 0;
-    background-color: #fff;
+    background: transparent;
     opacity: 1;
 }
 
@@ -314,6 +313,7 @@
 .gh-editor .CodeMirror {
     padding: 0;
     overflow: visible;
+    background: transparent;
 }
 
 /* fix visible scrollbars when OSX is set to show them */
@@ -336,6 +336,7 @@
     margin-left: auto;
     margin-right: auto;
     border: none;
+    background: transparent;
 }
 
 .gh-editor .CodeMirror pre {
@@ -423,10 +424,14 @@
     stroke: color(var(--darkgrey) l(+15%));
 }
 
+.editor-toolbar a {
+    color: var(--darkgrey) !important;
+}
+
 .editor-toolbar a.disabled,
 .gh-editor-preview .editor-toolbar a:not(.no-disable) {
     pointer-events: none;
-    color: lightgray !important;
+    color: var(--lightgrey) !important;
 }
 
 .editor-toolbar a.disabled:hover {

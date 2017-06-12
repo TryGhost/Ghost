@@ -85,11 +85,11 @@ body > .ember-view:not(.default-liquid-destination) {
     width: 12px;
     height: 12px;
     transition: margin-top 0.2s ease;
-    fill: color(var(--darkgrey));
 }
 
 .gh-nav-menu svg path {
     stroke-width: 1px;
+    stroke: color(var(--darkgrey));
 }
 
 .gh-nav-menu-icon {
@@ -138,6 +138,7 @@ body > .ember-view:not(.default-liquid-destination) {
 
 .gh-nav-search .ember-power-select-trigger {
     outline: 0;
+    background: #fff;
 }
 
 .gh-nav-search-button {
@@ -554,7 +555,7 @@ body > .ember-view:not(.default-liquid-destination) {
     align-items: center;
     padding: 0 20px;
     height: 65px;
-    border-bottom: #dfe1e3 1px solid;
+    border-bottom: var(--lightgrey) 1px solid;
 }
 
 .view-title {

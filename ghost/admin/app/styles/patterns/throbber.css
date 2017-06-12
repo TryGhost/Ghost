@@ -19,8 +19,7 @@
     display: block;
     width: 14px;
     height: 14px;
-    border: rgba(255,255,255,0.1) 2px solid;
-    background: rgba(255,255,255,0.6);
+    background: color(var(--blue) alpha(0.9));
     border-radius: 100%;
     box-shadow: color(var(--blue) alpha(0.9)) 0 0 0 2px;
 }

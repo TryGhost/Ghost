@@ -2,6 +2,7 @@
     padding: 0 16px 0 8px;
     border: 1px solid #dfe1e3;
     border-radius: var(--border-radius);
+    background: transparent;
 }
 
 .ember-power-select-trigger svg {
@@ -9,6 +10,10 @@
     width: 4px;
     margin-left: 2px;
     vertical-align: middle;
+}
+
+.ember-power-select-trigger svg path {
+    stroke: var(--darkgrey);
 }
 
 .ember-power-select-search {
