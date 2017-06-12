@@ -9,16 +9,17 @@ The project is maintained by a non-profit organisation called the **Ghost Founda
 
 - [Ghost.org](https://ghost.org)
 - [Latest Release](https://ghost.org/developers/)
-- [Documentation](http://docs.ghost.org/v0.11.9)
-- [Theme Documentation](http://themes.ghost.org/v0.11.9)
-- [API Documentation](http://api.ghost.org/v0.11.9)
-- [Contributing Guide](https://github.com/TryGhost/Ghost/blob/lts/.github/CONTRIBUTING.md)
+- [Help & Support](http://help.ghost.org/)
+- [Theme Docs](http://themes.ghost.org/v0.11.9/)
+- [API Docs](https://api.ghost.org/)
+- [Contributing Guide](https://docs.ghost.org/v0.11.9/docs/contributing)
 - [Feature Requests](http://ideas.ghost.org/)
-- [Dev Blog](http://dev.ghost.org)
+- [Developer Blog](http://dev.ghost.org)
+- [Self-hoster Docs](http://docs.ghost.org/v0.11.9/)
 
 **NOTE: If you’re stuck, can’t get something working or need some help, please head on over and join our [Slack community](https://ghost.org/slack/) rather than opening an issue.**
 
-# Install Node.js
+# Important: Node.js version support
 
 See [Supported Node.js versions](https://docs.ghost.org/v0.11.9/docs/supported-node-versions)
 
@@ -29,7 +30,7 @@ See [Supported Node.js versions](https://docs.ghost.org/v0.11.9/docs/supported-n
 
 The easiest way to deploy Ghost is with our official **[Ghost(Pro)](https://ghost.org/pricing/)** managed service. You can have a fresh instance up and running in a couple of clicks with a worldwide CDN, backups, security and maintenance all done for you.
 
-Not only will it save you [many hours per month](https://ghost.org/ghost-pro-vs-self-hosting/), but all revenue goes to the Ghost Foundation, which funds the maintenance and further development of Ghost itself. So you’ll be supporting open source software *and* getting a great service **at the same time**! Talk about win/win. :trophy:
+Not only will it save you [many hours per month](https://ghost.org/pricing/#why-ghost-pro), but all revenue goes to the Ghost Foundation, which funds the maintenance and further development of Ghost itself. So you’ll be supporting open source software *and* getting a great service **at the same time**! Talk about win/win. :trophy:
 
 # Self-Hosters
 
