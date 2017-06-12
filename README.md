@@ -41,9 +41,15 @@ Other options are also available if you prefer playing around with servers by yo
 
 # Theme Developers
 
-If you are developing a Ghost theme for your own site or creating themes for others to use we recommend installing Ghost on your own local machine. Luckily we have a brand new Ghost CLI to make this really easy 😄
+If you are developing a Ghost theme for your own site or creating themes for others to use we recommend installing Ghost on your own local machine.
 
-- [Installing Ghost via the CLI](https://docs.ghost.org/v0.11.9/docs/installing-ghost-via-the-cli)
+1. Install ghost locally...
+    - [Mac](https://docs.ghost.org/v0.11.9/docs/installing-ghost-on-mac)
+    - [Linux](https://docs.ghost.org/v0.11.9/docs/installing-ghost-on-linux)
+    - [Windows](https://docs.ghost.org/v0.11.9/docs/installing-ghost-on-windows)
+2. Start ghost in the `development` environment so it doesn't require a restart after each change to a theme file:
+    - `npm start`
+    
 - [Theme Developer Docs](http://themes.ghost.org/v0.11.9)
 
 
