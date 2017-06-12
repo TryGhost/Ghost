@@ -11,7 +11,7 @@ The project is maintained by a non-profit organisation called the **Ghost Founda
 - [Latest Release](https://ghost.org/developers/)
 - [Help & Support](http://help.ghost.org/)
 - [Theme Docs](http://themes.ghost.org/v0.11.9/)
-- [API Docs](https://api.ghost.org/)
+- [API Docs](https://api.ghost.org/v0.11.9/)
 - [Contributing Guide](https://docs.ghost.org/v0.11.9/docs/contributing)
 - [Feature Requests](http://ideas.ghost.org/)
 - [Developer Blog](http://dev.ghost.org)
