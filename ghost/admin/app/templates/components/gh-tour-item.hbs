@@ -32,10 +32,8 @@
                     {{{_throbber.message}}}
                 </div>
                 <footer class="popover-foot">
-                    <small class="tour-optout">
-                        Not your first time? <a href="#" {{action 'optOut'}}>Skip these tips</a>
-                    </small>
-                    <a class="tour-dismiss btn btn-blue" href="#" {{action 'markAsViewed'}}>Ok, got it</a>
+                    <a class="tour-optout" href="#" {{action 'optOut'}}>Not your first time? <em>Skip these tips</em></a>
+                    <a class="tour-dismiss gh-btn gh-btn-black" href="#" {{action 'markAsViewed'}}><span>Ok, got it</span></a>
                 </footer>
             </div>
         {{/liquid-tether}}
