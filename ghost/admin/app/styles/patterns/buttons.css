@@ -303,6 +303,14 @@ fieldset[disabled] .gh-btn {
     fill: #fff;
 }
 
+.gh-btn-icon svg.gh-spinner {
+    left: 5px;
+}
+
+.gh-btn-icon svg.gh-spinner rect {
+    fill: color(var(--midgrey) l(+15%));
+}
+
 .gh-btn-icon-right svg,
 svg.gh-btn-icon-right {
     margin-left: 0.5em;

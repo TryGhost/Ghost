@@ -46,9 +46,11 @@
                                 class="forgotten-link gh-btn gh-btn-link gh-btn-icon"
                                 tabindex="4"
                                 type="button"
+                                successClass=""
+                                failureClass=""
                                 as |task|
                             }}
-                                <span>{{#if task.isRunning}}{{inline-svg "spinner"}}{{else}}Forgot?{{/if}}</span>
+                                <span>{{#if task.isRunning}}{{inline-svg "spinner" class="gh-spinner"}}{{else}}Forgot?{{/if}}</span>
                             {{/gh-task-button}}
                         </span>
                     {{/gh-form-group}}
