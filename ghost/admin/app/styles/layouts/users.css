@@ -81,6 +81,15 @@
     background: #fff;
 }
 
+.gh-badge.suspended {
+    margin-left: 15px;
+    border: color(var(--red) blackness(+8%)) 1px solid;
+    background: linear-gradient(
+    color(var(--red) whiteness(+10%)),
+    color(var(--red) blackness(+4%))
+    );
+}
+
 
 /* User invitation modal
 /* ---------------------------------------------------------- */
