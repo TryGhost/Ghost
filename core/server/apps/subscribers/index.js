@@ -55,7 +55,7 @@ module.exports = {
         var errorMessages = [
             i18n.t('warnings.helpers.helperNotAvailable', {helperName: 'subscribe_form'}),
             i18n.t('warnings.helpers.apiMustBeEnabled', {helperName: 'subscribe_form', flagName: 'subscribers'}),
-            i18n.t('warnings.helpers.seeLink', {url: 'http://support.ghost.org/subscribers-beta/'})
+            i18n.t('warnings.helpers.seeLink', {url: 'https://help.ghost.org/hc/en-us/articles/224089787-Subscribers-Beta'})
         ];
 
         // Correct way to register a helper from an app
