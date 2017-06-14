@@ -58,7 +58,7 @@ describe('Package Utils', function () {
                 .catch(function (err) {
                     err.message.should.equal('"name" or "version" is missing from theme package.json file.');
                     err.context.should.equal(tmpFile.name);
-                    err.help.should.equal('This will be required in future. Please see http://docs.ghost.org/themes/');
+                    err.help.should.equal('This will be required in future. Please see http://themes.ghost.org/docs/packagejson');
 
                     done();
                 })
@@ -83,7 +83,7 @@ describe('Package Utils', function () {
                 .catch(function (err) {
                     err.message.should.equal('"name" or "version" is missing from theme package.json file.');
                     err.context.should.equal(tmpFile.name);
-                    err.help.should.equal('This will be required in future. Please see http://docs.ghost.org/themes/');
+                    err.help.should.equal('This will be required in future. Please see http://themes.ghost.org/docs/packagejson');
 
                     done();
                 })
@@ -106,7 +106,7 @@ describe('Package Utils', function () {
                 .catch(function (err) {
                     err.message.should.equal('Theme package.json file is malformed');
                     err.context.should.equal(tmpFile.name);
-                    err.help.should.equal('This will be required in future. Please see http://docs.ghost.org/themes/');
+                    err.help.should.equal('This will be required in future. Please see http://themes.ghost.org/docs/packagejson');
 
                     done();
                 })

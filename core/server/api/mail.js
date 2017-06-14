@@ -31,7 +31,7 @@ function sendMail(object) {
                     message: [
                         i18n.t('warnings.index.unableToSendEmail'),
                         i18n.t('common.seeLinkForInstructions',
-                            {link: '<a href=\'http://support.ghost.org/mail\' target=\'_blank\'>http://support.ghost.org/mail</a>'})
+                            {link: '<a href=\'https://docs.ghost.org/v0.11.9/docs/mail-configuration-on-self-hosted-version-of-ghost\' target=\'_blank\'>https://docs.ghost.org/v0.11.9/docs/mail-configuration-on-self-hosted-version-of-ghost</a>'})
                     ].join(' ')
                 }]},
                 {context: {internal: true}}

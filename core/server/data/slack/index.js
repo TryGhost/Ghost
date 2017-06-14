@@ -35,7 +35,7 @@ function makeRequest(reqOptions, reqPayload) {
         errors.logError(
             error,
             i18n.t('errors.data.xml.xmlrpc.pingUpdateFailed.error'),
-            i18n.t('errors.data.xml.xmlrpc.pingUpdateFailed.help', {url: 'http://support.ghost.org'})
+            i18n.t('errors.data.xml.xmlrpc.pingUpdateFailed.help', {url: 'http://docs.ghost.org/v0.11.9'})
         );
     });
 

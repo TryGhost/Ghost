@@ -128,7 +128,7 @@ isDatabaseOutOfDate = function isDatabaseOutOfDate(options) {
         return {error: new errors.DatabaseVersion(
             i18n.t('errors.data.versioning.index.cannotMigrate.error'),
             i18n.t('errors.data.versioning.index.cannotMigrate.context'),
-            i18n.t('common.seeLinkForInstructions', {link: 'http://support.ghost.org/how-to-upgrade/'})
+            i18n.t('common.seeLinkForInstructions', {link: 'https://docs.ghost.org/v0.11.9/docs/how-to-upgrade-ghost'})
         )};
     }
     // CASE: the database exists but is out of date

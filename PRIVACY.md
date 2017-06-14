@@ -2,7 +2,7 @@
 
 This is a plain English summary of all of the components within Ghost which may affect your privacy in some way. Please keep in mind that if you use third party Themes or Apps with Ghost, there may be additional things not listed here.
 
-Each of the items listed in this document can be disabled via Ghost's `config.js` file. Check out the [configuration guide](http://support.ghost.org/config/) for details.
+Each of the items listed in this document can be disabled via Ghost's `config.js` file. Check out the [configuration guide](https://docs.ghost.org/v0.11.9/docs/configuring-ghost) for details.
 
 ## Official Services
 

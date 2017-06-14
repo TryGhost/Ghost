@@ -503,7 +503,7 @@ ConfigManager.prototype.displayDeprecated = function (item, properties, address)
         }
         errorText = i18n.t('errors.config.deprecatedProperty.error', {property: chalk.bold(address.join('.'))});
         explanationText =  i18n.t('errors.config.deprecatedProperty.explanation');
-        helpText = i18n.t('errors.config.deprecatedProperty.help', {url: 'http://support.ghost.org/config'});
+        helpText = i18n.t('errors.config.deprecatedProperty.help', {url: 'https://docs.ghost.org/v0.11.9/docs/configuring-ghost'});
         errors.logWarn(errorText, explanationText, helpText);
     }
 };

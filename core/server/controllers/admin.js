@@ -45,7 +45,7 @@ adminControllers = {
                 location: 'upgrade.new-version-available',
                 dismissible: false,
                 message: i18n.t('notices.controllers.newVersionAvailable',
-                                {version: updateVersion, link: '<a href="http://support.ghost.org/how-to-upgrade/" target="_blank">Click here</a>'})};
+                                {version: updateVersion, link: '<a href="https://docs.ghost.org/v0.11.9/docs/how-to-upgrade-ghost" target="_blank">Click here</a>'})};
 
             return api.notifications.browse({context: {internal: true}}).then(function then(results) {
                 if (!_.some(results.notifications, {message: notification.message})) {
