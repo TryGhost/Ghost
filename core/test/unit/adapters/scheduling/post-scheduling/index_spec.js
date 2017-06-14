@@ -11,6 +11,7 @@ var should = require('should'),
     schedulingUtils = require(config.get('paths').corePath + '/server/adapters/scheduling/utils'),
     SchedulingDefault = require(config.get('paths').corePath + '/server/adapters/scheduling/SchedulingDefault'),
     postScheduling = require(config.get('paths').corePath + '/server/adapters/scheduling/post-scheduling'),
+    generalUtils = require(__dirname + '/../../../../../server/utils'),
 
     sandbox = sinon.sandbox.create();
 
@@ -69,7 +70,7 @@ describe('Scheduling: Post Scheduling', function () {
 
                     scope.adapter.schedule.calledWith({
                         time: moment(scope.post.get('published_at')).valueOf(),
-                        url: scope.apiUrl + '/schedules/posts/' + scope.post.get('id') + '?client_id=' + scope.client.get('slug') + '&client_secret=' + scope.client.get('secret'),
+                        url: generalUtils.url.urlJoin(scope.apiUrl, 'schedules', 'posts', scope.post.get('id')) + '?client_id=' + scope.client.get('slug') + '&client_secret=' + scope.client.get('secret'),
                         extra: {
                             httpMethod: 'PUT',
                             oldTime: null
