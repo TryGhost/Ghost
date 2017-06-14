@@ -145,14 +145,15 @@ readSettingsResult = function (settingsModels) {
         themes = config.paths.availableThemes,
         res;
 
+    settings.availableThemes = {
+        key: 'availableThemes',
+        value: [],
+        type: 'theme'
+    };
+
     if (settings.activeTheme && !_.isEmpty(themes)) {
         res = filterPackages(themes, settings.activeTheme.value);
-
-        settings.availableThemes = {
-            key: 'availableThemes',
-            value: res,
-            type: 'theme'
-        };
+        settings.availableThemes.value = res;
     }
 
     return settings;
