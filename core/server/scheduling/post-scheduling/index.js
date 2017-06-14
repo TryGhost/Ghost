@@ -4,6 +4,7 @@ var Promise = require('bluebird'),
     events = require(__dirname + '/../../events'),
     errors = require(__dirname + '/../../errors'),
     models = require(__dirname + '/../../models'),
+    config = require(__dirname + '/../../config'),
     schedules = require(__dirname + '/../../api/schedules'),
     _private = {};
 
@@ -14,7 +15,7 @@ _private.normalize = function normalize(options) {
 
     return {
         time: moment(object.get('published_at')).valueOf(),
-        url: apiUrl + '/schedules/posts/' + object.get('id') + '?client_id=' + client.get('slug') + '&client_secret=' + client.get('secret'),
+        url: config.urlJoin(apiUrl, '/schedules/posts/', object.get('id')) + '?client_id=' + client.get('slug') + '&client_secret=' + client.get('secret'),
         extra: {
             httpMethod: 'PUT',
             oldTime: object.updated('published_at') ? moment(object.updated('published_at')).valueOf() : null
