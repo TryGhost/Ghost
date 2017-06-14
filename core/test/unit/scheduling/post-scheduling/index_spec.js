@@ -73,7 +73,7 @@ describe('Scheduling: Post Scheduling', function () {
 
                     scope.adapter.schedule.calledWith({
                         time: moment(scope.post.get('published_at')).valueOf(),
-                        url: config.urlJoin(scope.apiUrl, '/schedules/posts/', scope.post.get('id')) + '?client_id=' + scope.client.get('slug') + '&client_secret=' + scope.client.get('secret'),
+                        url: config.urlJoin(scope.apiUrl, 'schedules', 'posts', scope.post.get('id')) + '?client_id=' + scope.client.get('slug') + '&client_secret=' + scope.client.get('secret'),
                         extra: {
                             httpMethod: 'PUT',
                             oldTime: null
