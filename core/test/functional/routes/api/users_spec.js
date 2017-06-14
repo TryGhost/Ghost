@@ -136,6 +136,28 @@ describe('User API', function () {
                     });
             });
 
+            it('use invalid status option', function (done) {
+                request.get(testUtils.API.getApiQuery('users/me/?status=al'))
+                    .set('Authorization', 'Bearer ' + ownerAccessToken)
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        should.not.exist(res.headers['x-cache-invalidate']);
+                        var jsonResponse = res.body;
+                        should.exist(jsonResponse.users);
+                        should.not.exist(jsonResponse.meta);
+
+                        jsonResponse.users.should.have.length(1);
+                        testUtils.API.checkResponse(jsonResponse.users[0], 'user');
+                        done();
+                    });
+            });
+
             it('can retrieve a user by id', function (done) {
                 request.get(testUtils.API.getApiQuery('users/2/'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)

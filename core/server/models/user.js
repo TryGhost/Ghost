@@ -19,6 +19,7 @@ var _              = require('lodash'),
     tokenSecurity  = {},
     activeStates   = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'],
     invitedStates  = ['invited', 'invited-pending'],
+    allStates      = activeStates.concat(invitedStates),
     User,
     Users;
 
@@ -202,8 +203,7 @@ User = ghostBookshelf.Model.extend({
         // This is the only place that 'options.where' is set now
         options.where = {statements: []};
 
-        var allStates = activeStates.concat(invitedStates),
-            value;
+        var value;
 
         // Filter on the status.  A status of 'all' translates to no filter since we want all statuses
         if (options.status !== 'all') {
@@ -297,7 +297,8 @@ User = ghostBookshelf.Model.extend({
         } else if (status === 'invited') {
             query.query('whereIn', 'status', invitedStates);
         } else if (status !== 'all') {
-            query.query('where', {status: options.status});
+            status = allStates.indexOf(status) !== -1 ? status : 'active';
+            query.query('where', {status: status});
         }
 
         options = this.filterOptions(options, 'findOne');
