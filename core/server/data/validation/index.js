@@ -130,7 +130,7 @@ validateSettings = function validateSettings(defaultSettings, model) {
     return Promise.resolve();
 };
 
-validateActiveTheme = function validateActiveTheme(themeName) {
+validateActiveTheme = function validateActiveTheme(themeName, options) {
     // If Ghost is running and its availableThemes collection exists
     // give it priority.
     if (config.paths.availableThemes && Object.keys(config.paths.availableThemes).length > 0) {
@@ -145,9 +145,15 @@ validateActiveTheme = function validateActiveTheme(themeName) {
     }
 
     return availableThemes.then(function then(themes) {
-        if (!themes.hasOwnProperty(themeName)) {
-            return Promise.reject(new errors.ValidationError(i18n.t('notices.data.validation.index.themeCannotBeActivated', {themeName: themeName}), 'activeTheme'));
+        if (themes.hasOwnProperty(themeName)) {
+            return;
         }
+
+        if (options && options.showWarning) {
+            errors.logWarn(i18n.t('errors.middleware.themehandler.missingTheme', {theme: themeName}));
+            return;
+        }
+        return Promise.reject(new errors.ValidationError(i18n.t('notices.data.validation.index.themeCannotBeActivated', {themeName: themeName}), 'activeTheme'));
     });
 };
 
