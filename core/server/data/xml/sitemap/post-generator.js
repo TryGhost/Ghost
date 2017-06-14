@@ -30,7 +30,8 @@ _.extend(PostMapGenerator.prototype, {
             filter: 'visibility:public',
             status: 'published',
             staticPages: false,
-            limit: 'all'
+            limit: 'all',
+            include: 'author'
         }).then(function (resp) {
             return resp.posts;
         });
