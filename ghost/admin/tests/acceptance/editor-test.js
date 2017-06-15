@@ -149,8 +149,27 @@ describe('Acceptance: Editor', function() {
                 'draft publish menu is shown'
             ).to.exist;
 
+            await click(testSelector('publishmenu-scheduled-option'));
+
+            expect(
+                find(testSelector('publishmenu-save')).text().trim(),
+                'draft post schedule button text'
+            ).to.equal('Schedule');
+
+            await click(testSelector('publishmenu-published-option'));
+
+            expect(
+                find(testSelector('publishmenu-save')).text().trim(),
+                'draft post publish button text'
+            ).to.equal('Publish');
+
             // Publish the post
             await click(testSelector('publishmenu-save'));
+
+            expect(
+                find(testSelector('publishmenu-save')).text().trim(),
+                'publish menu save button updated after draft is published'
+            ).to.equal('Published');
 
             expect(
                 find(testSelector('publishmenu-published')),
@@ -161,6 +180,15 @@ describe('Acceptance: Editor', function() {
                 find(testSelector('editor-post-status')).text().trim(),
                 'post status updated after draft published'
             ).to.equal('Published');
+
+            await click(testSelector('publishmenu-cancel'));
+            await click(testSelector('publishmenu-trigger'));
+            await click(testSelector('publishmenu-unpublished-option'));
+
+            expect(
+                find(testSelector('publishmenu-save')).text().trim(),
+                'published post unpublish button text'
+            ).to.equal('Un-publish');
 
             // post id 2 is a published post, checking for published post behaviour now
             await visit('/editor/2');
@@ -175,7 +203,18 @@ describe('Acceptance: Editor', function() {
             await triggerEvent(testSelector('date-time-picker-time-input'), 'blur');
             // saving
             await click(testSelector('publishmenu-trigger'));
+
+            expect(
+                find(testSelector('publishmenu-save')).text().trim(),
+                'published button text'
+            ).to.equal('Update');
+
             await click(testSelector('publishmenu-save'));
+
+            expect(
+                find(testSelector('publishmenu-save')).text().trim(),
+                'publish menu save button updated after published post is updated'
+            ).to.equal('Updated');
 
             // go to settings to change the timezone
             await visit('/settings/general');
@@ -215,7 +254,18 @@ describe('Acceptance: Editor', function() {
             // unpublish
             await click(testSelector('publishmenu-trigger'));
             await click(testSelector('publishmenu-unpublished-option'));
+
+            expect(
+                find(testSelector('publishmenu-save')).text().trim(),
+                'published post unpublish button text'
+            ).to.equal('Un-publish');
+
             await click(testSelector('publishmenu-save'));
+
+            expect(
+                find(testSelector('publishmenu-save')).text().trim(),
+                'publish menu save button updated after published post is unpublished'
+            ).to.equal('Un-published');
 
             expect(
                 find(testSelector('publishmenu-draft')),
@@ -233,14 +283,30 @@ describe('Acceptance: Editor', function() {
 
             let newFutureTime = moment.tz('Pacific/Kwajalein').add(10, 'minutes');
             await click(testSelector('publishmenu-scheduled-option'));
+
+            expect(
+                find(testSelector('publishmenu-save')).text().trim(),
+                'draft post, schedule button text'
+            ).to.equal('Schedule');
+
             await datepickerSelect(`${testSelector('publishmenu-draft')} ${testSelector('date-time-picker-datepicker')}`, newFutureTime);
             await click(testSelector('publishmenu-save'));
+
+            expect(
+                find(testSelector('publishmenu-save')).text().trim(),
+                'publish menu save button updated after draft is scheduled'
+            ).to.equal('Scheduled');
+
             await click(testSelector('publishmenu-cancel'));
 
             expect(
                 find(testSelector('publishmenu-scheduled')),
                 'publish menu is not shown after closed'
             ).to.not.exist;
+
+            // expect countdown to show warning, that post will be published in x minutes
+            expect(find(testSelector('schedule-countdown')).text().trim(), 'notification countdown')
+                .to.contain('Post will be published in');
 
             expect(
                 find(testSelector('publishmenu-trigger')).text().trim(),
@@ -249,17 +315,52 @@ describe('Acceptance: Editor', function() {
 
             expect(
                 find(testSelector('editor-post-status')).text().trim(),
-                'scheduled status text'
+                'scheduled post status'
             ).to.equal('Scheduled');
 
-            // expect countdown to show warning, that post will be published in x minutes
-            expect(find(testSelector('schedule-countdown')).text().trim(), 'notification countdown')
-                .to.contain('Post will be published in');
+            // Re-schedule
+            await click(testSelector('publishmenu-trigger'));
+            await click(testSelector('publishmenu-scheduled-option'));
+            expect(
+                find(testSelector('publishmenu-save')).text().trim(),
+                'scheduled post button reschedule text'
+            ).to.equal('Re-schedule');
+
+            await click(testSelector('publishmenu-save'));
+
+            expect(
+                find(testSelector('publishmenu-save')).text().trim(),
+                'publish menu save button text for a rescheduled post'
+            ).to.equal('Re-scheduled');
+
+            await click(testSelector('publishmenu-cancel'));
+
+            expect(
+                find(testSelector('publishmenu-scheduled')),
+                'publish menu is not shown after closed'
+            ).to.not.exist;
+
+            expect(
+                find(testSelector('editor-post-status')).text().trim(),
+                'scheduled status text'
+            ).to.equal('Scheduled');
 
             // unschedule
             await click(testSelector('publishmenu-trigger'));
             await click(testSelector('publishmenu-draft-option'));
+
+            expect(
+                find(testSelector('publishmenu-save')).text().trim(),
+                'publish menu save button updated after scheduled post is unscheduled'
+            ).to.equal('Un-schedule');
+
             await click(testSelector('publishmenu-save'));
+
+            expect(
+                find(testSelector('publishmenu-save')).text().trim(),
+                'publish menu save button updated after scheduled post is unscheduled'
+            ).to.equal('Un-scheduled');
+
             await click(testSelector('publishmenu-cancel'));
 
             expect(
