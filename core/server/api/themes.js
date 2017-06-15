@@ -93,7 +93,7 @@ themes = {
             .finally(function () {
                 // remove zip upload from multer
                 // happens in background
-                Promise.promisify(fs.removeSync)(zip.path)
+                Promise.promisify(fs.remove)(zip.path)
                     .catch(function (err) {
                         errors.logError(err);
                     });
@@ -101,7 +101,7 @@ themes = {
                 // remove extracted dir from gscan
                 // happens in background
                 if (theme) {
-                    Promise.promisify(fs.removeSync)(theme.path)
+                    Promise.promisify(fs.remove)(theme.path)
                         .catch(function (err) {
                             errors.logError(err);
                         });
