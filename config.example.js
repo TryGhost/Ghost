@@ -40,7 +40,7 @@ config = {
         // referrerPolicy: 'origin-when-cross-origin',
 
         // Example mail config
-        // Visit https://docs.ghost.org/v0.11.9/docs/mail-configuration-on-self-hosted-version-of-ghost for instructions
+        // Visit https://docs.ghost.org/v0.11.9/docs/mail-config for instructions
         // ```
         //  mail: {
         //      transport: 'SMTP',
