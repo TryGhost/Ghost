@@ -39,13 +39,48 @@ export default Component.extend({
         }
     }),
 
-    buttonText: computed('postState', function () {
-        let state = this.get('postState');
+    buttonText:  computed('postState', 'saveType', function() {
+        let postState = this.get('postState');
+        let saveType = this.get('saveType');
+        let buttonText;
 
-        return state === 'draft' ? 'Publish' : 'Update';
+        if (postState === 'draft') {
+            buttonText = saveType === 'publish' ? 'Publish' : 'Schedule';
+        }
+
+        if (postState === 'published') {
+            buttonText = saveType === 'publish' ? 'Update' : 'Un-publish';
+        }
+
+        if (postState === 'scheduled') {
+            buttonText = saveType === 'schedule' ? 'Re-schedule' : 'Un-schedule';
+        }
+
+        return buttonText || 'Publish';
+    }),
+
+    successText: computed('_previousStatus', 'postState', function() {
+        let postState = this.get('postState');
+        let previousStatus = this.get('_previousStatus');
+        let buttonText;
+
+        if (previousStatus === 'draft') {
+            buttonText = postState === 'published' ? 'Published' : 'Scheduled';
+        }
+
+        if (previousStatus === 'published') {
+            buttonText = postState === 'draft' ? 'Un-published' : 'Updated';
+        }
+
+        if (previousStatus === 'scheduled') {
+            buttonText = postState === 'draft' ? 'Un-scheduled' : 'Re-scheduled';
+        }
+
+        return buttonText;
     }),
 
     save: task(function* () {
+        this.set('_previousStatus', this.get('post.status'));
         this.get('setSaveType')(this.get('saveType'));
 
         try {
@@ -65,6 +100,8 @@ export default Component.extend({
             }
         }
     }),
+
+    _previousStatus: null,
 
     _cachePublishedAtBlogTZ() {
         this._publishedAtBlogTZ = this.get('post.publishedAtBlogTZ');
