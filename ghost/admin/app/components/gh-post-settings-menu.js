@@ -5,7 +5,6 @@ import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import computed, {alias} from 'ember-computed';
 import formatMarkdown from 'ghost-admin/utils/format-markdown';
 import injectService from 'ember-service/inject';
-import isNumber from 'ghost-admin/utils/isNumber';
 import moment from 'moment';
 import {guidFor} from 'ember-metal/utils';
 import {htmlSafe} from 'ember-string';
@@ -202,63 +201,12 @@ export default Component.extend(SettingsMenuMixin, {
          * triggered by user manually changing slug
          */
         updateSlug(newSlug) {
-            let slug = this.get('model.slug');
-
-            newSlug = newSlug || slug;
-            newSlug = newSlug && newSlug.trim();
-
-            // Ignore unchanged slugs or candidate slugs that are empty
-            if (!newSlug || slug === newSlug) {
-                // reset the input to its previous state
-                this.set('slugValue', slug);
-
-                return;
-            }
-
-            this.get('slugGenerator').generateSlug('post', newSlug).then((serverSlug) => {
-                // If after getting the sanitized and unique slug back from the API
-                // we end up with a slug that matches the existing slug, abort the change
-                if (serverSlug === slug) {
-                    return;
-                }
-
-                // Because the server transforms the candidate slug by stripping
-                // certain characters and appending a number onto the end of slugs
-                // to enforce uniqueness, there are cases where we can get back a
-                // candidate slug that is a duplicate of the original except for
-                // the trailing incrementor (e.g., this-is-a-slug and this-is-a-slug-2)
-
-                // get the last token out of the slug candidate and see if it's a number
-                let slugTokens = serverSlug.split('-');
-                let check = Number(slugTokens.pop());
-
-                // if the candidate slug is the same as the existing slug except
-                // for the incrementor then the existing slug should be used
-                if (isNumber(check) && check > 0) {
-                    if (slug === slugTokens.join('-') && serverSlug !== newSlug) {
-                        this.set('slugValue', slug);
-
-                        return;
-                    }
-                }
-
-                this.set('model.slug', serverSlug);
-
-                if (this.hasObserverFor('model.titleScratch')) {
-                    this.removeObserver('model.titleScratch', this, 'titleObserver');
-                }
-
-                // If this is a new post.  Don't save the model.  Defer the save
-                // to the user pressing the save button
-                if (this.get('model.isNew')) {
-                    return;
-                }
-
-                return this.get('model').save();
-            }).catch((error) => {
-                this.showError(error);
-                this.get('model').rollbackAttributes();
-            });
+            return this.get('updateSlug')
+                .perform(newSlug)
+                .catch((error) => {
+                    this.showError(error);
+                    this.get('model').rollbackAttributes();
+                });
         },
 
         setPublishedAtBlogDate(date) {
