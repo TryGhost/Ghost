@@ -226,7 +226,7 @@ checks = {
 
         if (!config.mail || !config.mail.transport) {
             console.error('\x1B[31mWARNING: Ghost is attempting to use a direct method to send email. \nIt is recommended that you explicitly configure an email service.\033[0m');
-            console.error('\x1B[32mHelp and documentation can be found at https://docs.ghost.org/v0.11.9/docs/mail-configuration-on-self-hosted-version-of-ghost.\033[0m\n');
+            console.error('\x1B[32mHelp and documentation can be found at https://docs.ghost.org/v0.11.9/docs/mail-config.\033[0m\n');
         }
     },
 
