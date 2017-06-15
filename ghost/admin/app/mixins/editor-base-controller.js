@@ -7,13 +7,14 @@ import computed, {alias, mapBy, reads} from 'ember-computed';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import injectController from 'ember-controller/inject';
 import injectService from 'ember-service/inject';
+import isNumber from 'ghost-admin/utils/isNumber';
 import moment from 'moment';
 import {htmlSafe} from 'ember-string';
 import {isBlank} from 'ember-utils';
 import {isEmberArray} from 'ember-array/utils';
 import {isInvalidError} from 'ember-ajax/errors';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
-import {task, timeout} from 'ember-concurrency';
+import {task, taskGroup, timeout} from 'ember-concurrency';
 
 const {resolve} = RSVP;
 
@@ -97,12 +98,19 @@ export default Mixin.create({
         }
     }).drop(),
 
+    // updateSlug and save should always be enqueued so that we don't run into
+    // problems with concurrency, for example when Cmd-S is pressed whilst the
+    // cursor is in the slug field - that would previously trigger a simultaneous
+    // slug update and save resulting in ember data errors and inconsistent save
+    // results
+    saveTasks: taskGroup().enqueue(),
+
     // save tasks cancels autosave before running, although this cancels the
     // _xSave tasks  that will also cancel the autosave task
     save: task(function* (options) {
         this.send('cancelAutosave');
         return yield this._savePromise(options);
-    }),
+    }).group('saveTasks'),
 
     // TODO: convert this into a more ember-concurrency flavour
     _savePromise(options) {
@@ -183,6 +191,62 @@ export default Mixin.create({
             return this.get('model');
         });
     },
+
+    /*
+     * triggered by a user manually changing slug
+     */
+    updateSlug: task(function* (_newSlug) {
+        let slug = this.get('model.slug');
+        let newSlug, serverSlug;
+
+        newSlug = _newSlug || slug;
+        newSlug = newSlug && newSlug.trim();
+
+        // Ignore unchanged slugs or candidate slugs that are empty
+        if (!newSlug || slug === newSlug) {
+            // reset the input to its previous state
+            this.set('slugValue', slug);
+            return;
+        }
+
+        serverSlug = yield this.get('slugGenerator').generateSlug('post', newSlug);
+
+        // If after getting the sanitized and unique slug back from the API
+        // we end up with a slug that matches the existing slug, abort the change
+        if (serverSlug === slug) {
+            return;
+        }
+
+        // Because the server transforms the candidate slug by stripping
+        // certain characters and appending a number onto the end of slugs
+        // to enforce uniqueness, there are cases where we can get back a
+        // candidate slug that is a duplicate of the original except for
+        // the trailing incrementor (e.g., this-is-a-slug and this-is-a-slug-2)
+
+        // get the last token out of the slug candidate and see if it's a number
+        let slugTokens = serverSlug.split('-');
+        let check = Number(slugTokens.pop());
+
+        // if the candidate slug is the same as the existing slug except
+        // for the incrementor then the existing slug should be used
+        if (isNumber(check) && check > 0) {
+            if (slug === slugTokens.join('-') && serverSlug !== newSlug) {
+                this.set('slugValue', slug);
+
+                return;
+            }
+        }
+
+        this.set('model.slug', serverSlug);
+
+        // If this is a new post.  Don't save the model.  Defer the save
+        // to the user pressing the save button
+        if (this.get('model.isNew')) {
+            return;
+        }
+
+        return yield this.get('model').save();
+    }).group('saveTasks'),
 
     /**
      * By default, a post will not change its publish state.
