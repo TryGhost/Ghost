@@ -98,7 +98,7 @@ describe('Spam Prevention API', function () {
                     client_secret: 'not_available'
                 })
                 .expect('Content-Type', /json/)
-                .expect(401)
+                .expect(422)
                 .end(function (err) {
                     if (err) {
                         return done(err);
@@ -155,7 +155,7 @@ describe('Spam Prevention API', function () {
                     client_id: 'ghost-admin',
                     client_secret: 'not_available'
                 }).expect('Content-Type', /json/)
-                .expect(401)
+                .expect(422)
                 .end(function (err) {
                     if (err) {
                         return done(err);
@@ -220,7 +220,7 @@ describe('Spam Prevention API', function () {
                     client_id: 'ghost-admin',
                     client_secret: 'not_available'
                 }).expect('Content-Type', /json/)
-                .expect(401)
+                .expect(422)
                 .end(function (err) {
                     if (err) {
                         return done(err);
