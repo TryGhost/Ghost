@@ -350,6 +350,9 @@ export default Component.extend({
             // in the parent gh-editor component
             this._editor.codemirror.setOption('dragDrop', false);
 
+            // default to spellchecker being off
+            this._editor.codemirror.setOption('mode', 'markdown');
+
             // HACK: move the toolbar & status bar elements outside of the
             // editor container so that they can be aligned in fixed positions
             let container = this.$().closest('.gh-editor').find('.gh-editor-footer');
