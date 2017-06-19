@@ -68,7 +68,8 @@ themeMiddleware.updateTemplateData = function updateTemplateData(req, res, next)
 
     // Request-specific information
     // These things are super dependent on the request, so they need to be in middleware
-    blogData.url = utils.url.urlFor('home', {secure: req.secure}, true);
+    // Serve the blog url without trailing slash
+    blogData.url = utils.url.urlFor('home', {secure: req.secure, trailingSlash: false}, true);
 
     // Pass 'secure' flag to the view engine
     // so that templates can choose to render https or http 'url', see url utility
