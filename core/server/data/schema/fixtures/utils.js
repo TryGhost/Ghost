@@ -1,12 +1,13 @@
 // # Fixture Utils
 // Standalone file which can be required to help with advanced operations on the fixtures.json file
-var _            = require('lodash'),
-    Promise      = require('bluebird'),
-    models       = require('../../../models'),
-    baseUtils    = require('../../../models/base/utils'),
-    sequence     = require('../../../utils/sequence'),
+var _ = require('lodash'),
+    Promise = require('bluebird'),
+    models = require('../../../models'),
+    baseUtils = require('../../../models/base/utils'),
+    sequence = require('../../../utils/sequence'),
+    moment = require('moment'),
 
-    fixtures     = require('./fixtures'),
+    fixtures = require('./fixtures'),
 
     // Private
     matchFunc,
@@ -95,6 +96,21 @@ fetchRelationData = function fetchRelationData(relation, options) {
  * @returns {Promise.<*>}
  */
 addFixturesForModel = function addFixturesForModel(modelFixture, options) {
+    // Clone the fixtures as they get changed in this function.
+    // The initial blog posts will be added a `published_at` property, which
+    // would change the fixturesHash.
+    modelFixture = _.cloneDeep(modelFixture);
+    // The Post model fixtures need a `published_at` date, where at least the seconds
+    // are different, otherwise `prev_post` and `next_post` helpers won't workd with
+    // them.
+    if (modelFixture.name === 'Post') {
+        _.forEach(modelFixture.entries, function (post, index) {
+            if (!post.published_at) {
+                post.published_at = moment().add(index, 'seconds');
+            }
+        });
+    }
+
     return Promise.mapSeries(modelFixture.entries, function (entry) {
         // CASE: if id is specified, only query by id
         return models[modelFixture.name].findOne(entry.id ? {id: entry.id} : entry, options).then(function (found) {
