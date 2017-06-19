@@ -297,6 +297,12 @@ function urlFor(context, data, absolute) {
         if (data && data.cors) {
             urlPath = urlPath.replace(/^.*?:\/\//g, '//');
         }
+
+        // CASE: there are cases where urlFor('home') needs to be returned without trailing
+        // slash e. g. the `{{@blog.url}}` helper. See https://github.com/TryGhost/Ghost/issues/8569
+        if (data && data.trailingSlash === false) {
+            urlPath = urlPath.replace(/\/$/, '');
+        }
     } else if (context === 'admin') {
         urlPath = getAdminUrl() || getBlogUrl();
 

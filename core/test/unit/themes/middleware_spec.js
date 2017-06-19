@@ -136,7 +136,7 @@ describe('Themes', function () {
                         .with.properties(blogDataExpectedProps)
                         .and.size(blogDataExpectedProps.length);
                     // url should be correct
-                    templateOptions.data.blog.url.should.eql('http://127.0.0.1:2369/');
+                    templateOptions.data.blog.url.should.eql('http://127.0.0.1:2369');
                     // should get the title
                     templateOptions.data.blog.title.should.eql('Bloggy McBlogface');
 
@@ -173,7 +173,7 @@ describe('Themes', function () {
                         .with.properties(blogDataExpectedProps)
                         .and.size(blogDataExpectedProps.length);
                     // url should be correct
-                    templateOptions.data.blog.url.should.eql('http://127.0.0.1:2369/');
+                    templateOptions.data.blog.url.should.eql('http://127.0.0.1:2369');
                     // should get the title
                     templateOptions.data.blog.title.should.eql('Bloggy McBlogface');
 
@@ -209,7 +209,7 @@ describe('Themes', function () {
                         .with.properties(blogDataExpectedProps)
                         .and.size(blogDataExpectedProps.length);
                     // url should be correct HTTPS!
-                    templateOptions.data.blog.url.should.eql('https://127.0.0.1:2369/');
+                    templateOptions.data.blog.url.should.eql('https://127.0.0.1:2369');
                     // should get the title
                     templateOptions.data.blog.title.should.eql('Bloggy McBlogface');
 
