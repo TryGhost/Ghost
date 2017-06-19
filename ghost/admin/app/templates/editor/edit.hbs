@@ -35,8 +35,8 @@
     --}}
     {{#gh-markdown-editor
         tabindex="2"
-        placeholder="Click here to start..."
-        autofocus=shouldFocusEditor
+        placeholder="Now begin writing your story..."
+        autofocus=true
         uploadedImageUrls=editor.uploadedImageUrls
         mobiledoc=(readonly model.scratch)
         isFullScreen=editor.isFullScreen
@@ -54,7 +54,6 @@
                 class="gh-editor-title"
                 placeholder="Your Post Title"
                 tabindex="1"
-                shouldFocus=shouldFocusTitle
                 autoExpand=".gh-markdown-editor-pane"
                 focusOut=(action "saveTitle")
                 update=(action (perform updateTitle))

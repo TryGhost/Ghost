@@ -3,7 +3,7 @@ import Mixin from 'ember-metal/mixin';
 import PostModel from 'ghost-admin/models/post';
 import RSVP from 'rsvp';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
-import computed, {alias, mapBy, reads} from 'ember-computed';
+import computed, {mapBy, reads} from 'ember-computed';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import injectController from 'ember-controller/inject';
 import injectService from 'ember-service/inject';
@@ -50,9 +50,6 @@ export default Mixin.create({
     assetPath: ghostPaths().assetRoot,
     editor: null,
     editorMenuIsOpen: false,
-
-    shouldFocusTitle: alias('model.isNew'),
-    shouldFocusEditor: false,
 
     navIsClosed: reads('application.autoNav'),
 
