@@ -43,4 +43,6 @@ Ghost outputs basic meta tags to allow rich snippets of your content to be recog
 
 ### Default Theme
 
+aaaLaoer !!!
+
 The default theme which comes with Ghost loads a copy of jQuery from the jQuery Foundation's [public CDN](https://code.jquery.com/jquery-1.11.3.min.js), and makes use of the Open Sans [Google Font](https://www.google.com/fonts). The theme also contains three sharing buttons to [Twitter](http://twitter.com), [Facebook](http://facebook.com), and [Google Plus](http://plus.google.com). No resources are loaded from any services, however the buttons do allow visitors to your blog to share your content publicly on these respective networks.
