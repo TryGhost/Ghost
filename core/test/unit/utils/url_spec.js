@@ -124,6 +124,27 @@ describe('Url', function () {
             utils.url.urlFor(testContext).should.equal('/blog/');
             utils.url.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/');
             utils.url.urlFor(testContext, {secure: true}, true).should.equal('https://my-ghost-blog.com/blog/');
+
+            // Output blog url without trailing slash
+            configUtils.set({url: 'http://my-ghost-blog.com'});
+            utils.url.urlFor(testContext).should.equal('/');
+            utils.url.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/');
+            utils.url.urlFor(testContext, {secure: true, trailingSlash: false}, true).should.equal('https://my-ghost-blog.com');
+
+            configUtils.set({url: 'http://my-ghost-blog.com/'});
+            utils.url.urlFor(testContext).should.equal('/');
+            utils.url.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/');
+            utils.url.urlFor(testContext, {secure: true, trailingSlash: false}, true).should.equal('https://my-ghost-blog.com');
+
+            configUtils.set({url: 'http://my-ghost-blog.com/blog'});
+            utils.url.urlFor(testContext).should.equal('/blog/');
+            utils.url.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/');
+            utils.url.urlFor(testContext, {secure: true, trailingSlash: false}, true).should.equal('https://my-ghost-blog.com/blog');
+
+            configUtils.set({url: 'http://my-ghost-blog.com/blog/'});
+            utils.url.urlFor(testContext).should.equal('/blog/');
+            utils.url.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/');
+            utils.url.urlFor(testContext, {secure: true, trailingSlash: false}, true).should.equal('https://my-ghost-blog.com/blog');
         });
 
         it('should return rss url when asked for', function () {
