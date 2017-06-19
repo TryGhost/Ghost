@@ -628,7 +628,7 @@ describe('User Model', function run() {
             return UserModel.check(object).then(userWasLoggedIn)
                 .catch(function checkError(error) {
                     should.exist(error);
-                    error.errorType.should.equal('UnauthorizedError');
+                    error.errorType.should.equal('ValidationError');
                 });
         });
     });
