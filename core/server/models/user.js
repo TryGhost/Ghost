@@ -673,11 +673,7 @@ User = ghostBookshelf.Model.extend({
                         });
                 })
                 .catch(function onError(err) {
-                    return Promise.reject(new errors.UnauthorizedError({
-                        err: err,
-                        context: i18n.t('errors.models.user.incorrectPassword'),
-                        help: i18n.t('errors.models.user.userUpdateError.help')
-                    }));
+                    return Promise.reject(err);
                 });
         }, function handleError(error) {
             if (error.message === 'NotFound' || error.message === 'EmptyResponse') {
@@ -705,6 +701,7 @@ User = ghostBookshelf.Model.extend({
                 }
 
                 return Promise.reject(new errors.ValidationError({
+                    context: i18n.t('errors.models.user.incorrectPassword'),
                     message: i18n.t('errors.models.user.incorrectPassword'),
                     help: i18n.t('errors.models.user.userUpdateError.help'),
                     code: 'PASSWORD_INCORRECT'

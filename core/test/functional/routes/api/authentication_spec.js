@@ -120,14 +120,14 @@ describe('Authentication API', function () {
                 client_secret: 'not_available'
             }).expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(401)
+            .expect(422)
             .end(function (err, res) {
                 if (err) {
                     return done(err);
                 }
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.errors[0].errorType);
-                jsonResponse.errors[0].errorType.should.eql('UnauthorizedError');
+                jsonResponse.errors[0].errorType.should.eql('ValidationError');
                 done();
             });
     });
