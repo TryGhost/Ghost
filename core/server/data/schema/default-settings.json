@@ -73,7 +73,7 @@
             "defaultValue" : ""
         },
         "labs": {
-            "defaultValue": "{}"
+            "defaultValue": "{\"publicAPI\": true}"
         },
         "navigation": {
             "defaultValue": "[{\"label\":\"Home\", \"url\":\"/\"}]"
