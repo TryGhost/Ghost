@@ -7,37 +7,19 @@ var should = require('should'),
     request;
 
 describe('Public API', function () {
-    var publicAPIaccessSetting = {
-        settings: [
-            {key: 'labs', value: {publicAPI: true}}
-        ]
-    }, ghostServer;
+    var ghostServer;
 
-    before(function (done) {
+    before(function () {
         // starting ghost automatically populates the db
         // TODO: prevent db init, and manage bringing up the DB with fixtures ourselves
-        ghost().then(function (_ghostServer) {
+        return ghost().then(function (_ghostServer) {
             ghostServer = _ghostServer;
             return ghostServer.start();
         }).then(function () {
             request = supertest.agent(config.get('url'));
         }).then(function () {
             return testUtils.doAuth(request, 'posts', 'tags', 'client:trusted-domain');
-        }).then(function (token) {
-            // enable public API
-            request.put(testUtils.API.getApiQuery('settings/'))
-                .set('Authorization', 'Bearer ' + token)
-                .send(publicAPIaccessSetting)
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
-                    done();
-                });
-        }).catch(done);
+        });
     });
 
     after(function () {
