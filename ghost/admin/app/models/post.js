@@ -179,6 +179,24 @@ export default Model.extend(Comparable, ValidationEngine, {
 
         if (publishedAtBlogDate && publishedAtBlogTime) {
             let publishedAtBlog = moment.tz(`${publishedAtBlogDate} ${publishedAtBlogTime}`, blogTimezone);
+
+            /**
+             * Note:
+             * If you create a post and publish it, we send seconds to the database.
+             * If you edit the post afterwards, ember would send the date without seconds, because
+             * the `publishedAtUTC` is based on `publishedAtBlogTime`, which is only in seconds.
+             * The date time picker doesn't use seconds.
+             *
+             * This condition prevents the case:
+             *   - you edit a post, but you don't change the published_at time
+             *   - we keep the original date with seconds
+             *
+             * See https://github.com/TryGhost/Ghost/issues/8603#issuecomment-309538395.
+             */
+            if (publishedAtBlog.diff(publishedAtUTC.clone().startOf('minutes')) === 0) {
+                return publishedAtUTC;
+            }
+
             return publishedAtBlog;
         } else {
             return moment.tz(this.get('publishedAtUTC'), blogTimezone);
@@ -272,7 +290,6 @@ export default Model.extend(Comparable, ValidationEngine, {
     beforeSave() {
         let publishedAtBlogTZ = this.get('publishedAtBlogTZ');
         let publishedAtUTC = publishedAtBlogTZ ? publishedAtBlogTZ.utc() : null;
-
         this.set('publishedAtUTC', publishedAtUTC);
     }
 });
