@@ -126,6 +126,10 @@ export default Controller.extend({
          */
         imageUploaded(property, results) {
             if (results[0]) {
+                // Note: We have to reset the file input after upload, otherwise you can't upload the same image again
+                // See https://github.com/thefrontside/emberx-file-input/blob/master/addon/components/x-file-input.js#L37
+                // See https://github.com/TryGhost/Ghost/issues/8545
+                $('.x-file--input').val('');
                 return this.get('model').set(property, results[0].url);
             }
         },
