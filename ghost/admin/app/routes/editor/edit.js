@@ -5,6 +5,12 @@ import base from 'ghost-admin/mixins/editor-base-route';
 export default AuthenticatedRoute.extend(base, {
     titleToken: 'Editor',
 
+    beforeModel(transition) {
+        this.set('_transitionedFromNew', transition.data.fromNew);
+
+        this._super(...arguments);
+    },
+
     model(params) {
         /* eslint-disable camelcase */
         let query = {
@@ -34,6 +40,11 @@ export default AuthenticatedRoute.extend(base, {
                 return this.replaceWith('posts.index');
             }
         });
+    },
+
+    setupController(controller) {
+        this._super(...arguments);
+        controller.set('shouldFocusEditor', this.get('_transitionedFromNew'));
     },
 
     actions: {
