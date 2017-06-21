@@ -29,7 +29,7 @@ matrix:
   include:
     - node_js: "4"
       env: TEST_SUITE=lint
-  fast_finish: true
+  fast_finish: false
 
 branches:
   except:
@@ -37,10 +37,18 @@ branches:
 
 before_install:
   - if [ $DB == "mysql" ]; then mysql -e 'create database ghost_testing'; fi
+  - mkdir -p $HOME/bin
+  - curl -s https://testspace-client.s3.amazonaws.com/testspace-linux.tgz | tar -zxvf- -C $HOME/bin
+  - testspace config url open.testspace.com
 
 install:
   - yarn
   - if [ "$DB" == "sqlite3" ]; then yarn add --force sqlite3; fi # fix sqlite caching issues
+
+after_script:
+   - if [ "${TEST_SUITE}" != "lint" ]; then
+       testspace [Node-$TRAVIS_NODE_VERSION-$DB/]*-xunit.xml{core};
+     fi 
 
 after_success:
   - |
