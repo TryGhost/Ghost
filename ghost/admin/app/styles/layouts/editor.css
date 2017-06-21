@@ -489,8 +489,8 @@
     border-color: color(var(--lightgrey) l(-5%));
 }
 
-.CodeMirror .CodeMirror-selectedtext {
-    color: #000;
+.gh-editor .CodeMirror .CodeMirror-selectedtext {
+    color: #000 !important;
 }
 
 .CodeMirror .CodeMirror-selected {
