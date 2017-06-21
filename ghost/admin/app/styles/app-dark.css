@@ -249,3 +249,7 @@ input,
 .throbber:before {
     background: rgba(0,0,0,0.2);
 }
+
+.gh-editor .CodeMirror-cursor {
+    border-color: #fff;
+}
