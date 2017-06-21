@@ -489,6 +489,10 @@
     border-color: color(var(--lightgrey) l(-5%));
 }
 
+.CodeMirror .CodeMirror-selectedtext {
+    color: #000;
+}
+
 .CodeMirror .CodeMirror-selected {
     background: color(var(--blue) lightness(+30%));
 }
