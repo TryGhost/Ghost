@@ -316,6 +316,11 @@
     background: transparent;
 }
 
+.gh-editor .CodeMirror-cursor {
+    border-color: var(--blue);
+    border-width: 3px;
+}
+
 /* fix visible scrollbars when OSX is set to show them */
 .gh-editor .CodeMirror-scroll {
     overflow: visible !important;
