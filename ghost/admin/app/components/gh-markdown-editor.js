@@ -124,7 +124,8 @@ export default Component.extend(ShortcutsMixin, {
             shortcuts: {
                 toggleFullScreen: null,
                 togglePreview: null,
-                toggleSideBySide: null
+                toggleSideBySide: null,
+                drawImage: null
             },
 
             // only include the number of words in the status bar
