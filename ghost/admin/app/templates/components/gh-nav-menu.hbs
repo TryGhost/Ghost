@@ -19,6 +19,21 @@
             <li role="presentation"><a class="dropdown-item help-menu-how-to" role="menuitem" tabindex="-1" href="https://ghosthelp.zendesk.com/hc/en-us/categories/203268947-Ghost-Pro-" target="_blank">{{inline-svg "book-open"}} How to Use Ghost</a></li>
             <li role="presentation"><a class="dropdown-item help-menu-wishlist" role="menuitem" tabindex="-1" href="http://ideas.ghost.org/" target="_blank">{{inline-svg "idea"}} Wishlist</a></li>
             <li class="divider"></li>
+
+            {{#if showDropdownExtension}}
+                {{#each config.clientExtensions.dropdown.items as |menuItem| }}
+                    {{#if menuItem.divider}}
+                        <li class="divider"></li>
+                    {{else}}
+                        <li role="presentation">
+                          <a href="{{menuItem.href}}" target="_blank"
+                             class="dropdown-item js-nav-item {{menuItem.classes}}"
+                             role="menuitem" tabindex="-1">{{inline-svg menuItem.icon}}{{menuItem.text}}</a>
+                        </li>
+                    {{/if}}
+                {{/each}}
+
+            {{/if}}
             <li role="presentation">{{#link-to "signout" classNames="dropdown-item user-menu-signout" role="menuitem" tabindex="-1"}}{{inline-svg "signout"}} Sign Out{{/link-to}}</li>
         </ul>
     {{/dropdown.content}}
@@ -55,6 +70,23 @@
             <li>{{#link-to "settings.labs" classNames="gh-nav-settings-labs"}}{{inline-svg "wrench-double"}}Labs{{/link-to}}</li>
         </ul>
     {{/if}}
+
+    {{#if showMenuExtension}}
+        <ul class="gh-nav-list gh-nav-settings">
+            {{#if config.clientExtensions.menu.title}}<li class="gh-nav-list-h">{{config.clientExtensions.menu.title}}</li>{{/if}}
+            {{#each config.clientExtensions.menu.items as |menuItem| }}
+                <li>
+                    <a href="{{menuItem.href}}" target="_blank">{{inline-svg menuItem.icon}}{{menuItem.text}}</a>
+                </li>
+            {{/each}}
+        </ul>
+    {{/if}}
+
+    {{#if showScriptExtension}}
+        {{{config.clientExtensions.script.container}}}
+        <script src="{{config.clientExtensions.script.src}}"></script>
+    {{/if}}
+
 </section>
 <footer class="gh-nav-foot">
     <a class="gh-nav-foot-sitelink" href="{{config.blogUrl}}/" target="_blank">View site {{inline-svg "external"}}</a>
