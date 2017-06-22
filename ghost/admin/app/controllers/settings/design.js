@@ -48,7 +48,6 @@ export default Controller.extend({
         try {
             yield RSVP.all(validationPromises);
             return yield this.get('model').save();
-
         } catch (error) {
             if (error) {
                 notifications.showAPIError(error);
@@ -125,13 +124,43 @@ export default Controller.extend({
 
         activateTheme(theme) {
             return theme.activate().then((theme) => {
+                let themeName = theme.get('name');
+
                 if (!isEmpty(theme.get('warnings'))) {
                     this.set('themeWarnings', theme.get('warnings'));
                     this.set('showThemeWarningsModal', true);
                 }
+
+                if (!isEmpty(theme.get('errors'))) {
+                    this.set('themeErrors', theme.get('errors'));
+                    this.set('showThemeWarningsModal', true);
+                }
+
+                if (this.get('themeErrors') || this.get('themeWarnings')) {
+                    let message = `${themeName} activated successfully but some warnings/errors were detected.
+                                   You are still able to use and activate the theme. Here is your report...`;
+                    this.set('message', message);
+                }
             }).catch((error) => {
                 if (isThemeValidationError(error)) {
-                    this.set('themeWarnings', error.errors[0].errorDetails);
+                    let errors = error.errors[0].errorDetails;
+                    let fatalErrors = [];
+                    let normalErrors = [];
+
+                    // to have a proper grouping of fatal errors and none fatal, we need to check
+                    // our errors for the fatal property
+                    if (errors.length > 0) {
+                        for (let i = 0; i < errors.length; i++) {
+                            if (errors[i].fatal) {
+                                fatalErrors.push(errors[i]);
+                            } else {
+                                normalErrors.push(errors[i]);
+                            }
+                        }
+                    }
+
+                    this.set('themeErrors', normalErrors);
+                    this.set('themeFatalErrors', fatalErrors);
                     this.set('showThemeErrorsModal', true);
                     return;
                 }
@@ -167,6 +196,8 @@ export default Controller.extend({
 
         hideThemeWarningsModal() {
             this.set('themeWarnings', null);
+            this.set('themeErrors', null);
+            this.set('themeFatalErrors', null);
             this.set('showThemeWarningsModal', false);
             this.set('showThemeErrorsModal', false);
         },
