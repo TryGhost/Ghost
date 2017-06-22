@@ -1,5 +1,6 @@
 import Component from 'ember-component';
 import calculatePosition from 'ember-basic-dropdown/utils/calculate-position';
+import computed from 'ember-computed';
 import injectService from 'ember-service/inject';
 import {htmlSafe} from 'ember-string';
 
@@ -28,6 +29,18 @@ export default Component.extend({
     mouseEnter() {
         this.sendAction('onMouseEnter');
     },
+
+    showMenuExtension: computed('config.clientExtensions.menu', 'session.user.isOwner', function() {
+        return this.get('config.clientExtensions.menu') && this.get('session.user.isOwner');
+    }),
+
+    showDropdownExtension: computed('config.clientExtensions.dropdown', 'session.user.isOwner', function() {
+        return this.get('config.clientExtensions.dropdown') && this.get('session.user.isOwner');
+    }),
+
+    showScriptExtension: computed('config.clientExtensions.script', 'session.user.isOwner', function() {
+        return this.get('config.clientExtensions.script') && this.get('session.user.isOwner');
+    }),
 
     // equivalent to "left: auto; right: -20px"
     userDropdownPosition(trigger, dropdown) {
