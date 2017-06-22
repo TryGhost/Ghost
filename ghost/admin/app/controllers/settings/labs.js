@@ -22,11 +22,12 @@ export default Controller.extend({
 
     importMimeType: ['application/json', 'application/zip', 'application/x-zip-compressed'],
 
+    ajax: injectService(),
+    config: injectService(),
     ghostPaths: injectService(),
     notifications: injectService(),
     session: injectService(),
     settings: injectService(),
-    ajax: injectService(),
 
     // TODO: convert to ember-concurrency task
     _validate(file) {
@@ -133,7 +134,9 @@ export default Controller.extend({
                     notifications.showNotification('Import successful.', {key: 'import.upload.success'});
 
                     // reload settings
-                    return this.get('settings').reload();
+                    return this.get('settings').reload().then((settings) => {
+                        this.get('config').set('blogTitle', settings.get('title'));
+                    });
                 });
             }).catch((response) => {
                 if (isUnsupportedMediaTypeError(response)) {
