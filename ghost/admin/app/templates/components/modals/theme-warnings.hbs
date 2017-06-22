@@ -10,9 +10,35 @@
                 <p data-test-theme-warnings-message>{{message}}</p>
             </li>
         {{/if}}
+        {{#if fatalErrors}}
+            <div class="theme-validation-errordescription">
+                <h2 class="theme-validation-errortype fatal">Fatal Errors</h2>
+                <p><em>(Must-fix to activate theme)</em></p>
+            </div>
+        {{/if}}
+        {{#each fatalErrors as |error|}}
+            {{gh-theme-error-li error=error}}
+        {{/each}}
+
+        {{#if errors}}
+            <div class="theme-validation-errordescription">
+                <h2 class="theme-validation-errortype">Errors</h2>
+                <p><em>(Very recommended to fix, functionality <span>could</span> be restricted)</em></p>
+            </div>
+        {{/if}}
+        {{#each errors as |error|}}
+            {{gh-theme-error-li error=error}}
+        {{/each}}
+
+        {{#if warnings}}
+            <div class="theme-validation-errordescription">
+                <h2 class="theme-validation-errortype">Warnings</h2>
+            </div>
+        {{/if}}
         {{#each warnings as |error|}}
             {{gh-theme-error-li error=error}}
         {{/each}}
+
     </ul>
 </div>
 

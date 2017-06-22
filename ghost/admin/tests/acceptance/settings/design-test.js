@@ -511,7 +511,7 @@ describe('Acceptance: Settings - Design', function () {
             expect(
                 find(testSelector('theme-warnings-title')).text().trim(),
                 'modal title after activating invalid theme'
-            ).to.equal('Theme activation failed');
+            ).to.equal('Activation failed');
 
             expect(
                 find(testSelector('theme-warnings')).text(),
@@ -570,7 +570,7 @@ describe('Acceptance: Settings - Design', function () {
             expect(
                 find(testSelector('theme-warnings-title')).text().trim(),
                 'modal title after activating theme with warnings'
-            ).to.equal('Theme activated with warnings');
+            ).to.equal('Activated successful with warnings/errors!');
 
             expect(
                 find(testSelector('theme-warnings')).text(),
