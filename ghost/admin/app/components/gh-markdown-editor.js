@@ -1,5 +1,7 @@
 import Component from 'ember-component';
+import ShortcutsMixin from 'ghost-admin/mixins/shortcuts';
 import computed from 'ember-computed';
+import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import formatMarkdown from 'ghost-admin/utils/format-markdown';
 import run from 'ember-runloop';
 import {assign} from 'ember-platform';
@@ -21,7 +23,7 @@ export const BLANK_DOC = {
     sections: [[10, 0]]
 };
 
-export default Component.extend({
+export default Component.extend(ShortcutsMixin, {
 
     classNames: ['gh-markdown-editor'],
     classNameBindings: [
@@ -132,6 +134,15 @@ export default Component.extend({
         return assign(defaultOptions, options);
     }),
 
+    shortcuts: {},
+
+    init() {
+        this._super(...arguments);
+        let shortcuts = this.get('shortcuts');
+
+        shortcuts[`${ctrlOrCmd}+shift+i`] = {action: 'insertImage'};
+    },
+
     // extract markdown content from single markdown card
     didReceiveAttrs() {
         this._super(...arguments);
@@ -165,6 +176,11 @@ export default Component.extend({
         this._updateButtonState();
     },
 
+    didInsertElement() {
+        this._super(...arguments);
+        this.registerShortcuts();
+    },
+
     _insertImages(urls) {
         let cm = this._editor.codemirror;
 
@@ -180,7 +196,7 @@ export default Component.extend({
 
             return `![${alt}](${url})`;
         });
-        let text = images.join(' ');
+        let text = images.join('\n');
 
         // clicking the image toolbar button will lose the selection so we use
         // the captured selection to re-select here
@@ -200,6 +216,7 @@ export default Component.extend({
         // focus editor and place cursor at end if not already focused
         if (!cm.hasFocus()) {
             this.send('focusEditor');
+            text = `\n\n${text}`;
         }
 
         // insert at cursor or replace selection then position cursor at end
@@ -293,13 +310,15 @@ export default Component.extend({
         delete this._onEditorPaneScroll;
     },
 
-    _openImageFileDialog() {
-        // capture the current selection before it's lost by clicking the
-        // file input button
-        this._imageInsertSelection = {
-            anchor: this._editor.codemirror.getCursor('anchor'),
-            head: this._editor.codemirror.getCursor('head')
-        };
+    _openImageFileDialog({captureSelection = true}) {
+        if (captureSelection) {
+            // capture the current selection before it's lost by clicking the
+            // file input button
+            this._imageInsertSelection = {
+                anchor: this._editor.codemirror.getCursor('anchor'),
+                head: this._editor.codemirror.getCursor('head')
+            };
+        }
 
         // trigger the dialog via gh-file-input, when a file is selected it will
         // trigger the onImageFilesSelected closure action
@@ -329,6 +348,8 @@ export default Component.extend({
         if (this.get('_isSplitScreen')) {
             this._disconnectSplitPreview();
         }
+
+        this.removeShortcuts();
 
         this._super(...arguments);
     },
@@ -375,6 +396,11 @@ export default Component.extend({
             }
 
             return false;
+        },
+
+        insertImage() {
+            let captureSelection = this._editor.codemirror.hasFocus();
+            this._openImageFileDialog({captureSelection});
         },
 
         toggleFullScreen() {
