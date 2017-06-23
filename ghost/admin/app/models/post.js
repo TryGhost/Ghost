@@ -193,7 +193,7 @@ export default Model.extend(Comparable, ValidationEngine, {
              *
              * See https://github.com/TryGhost/Ghost/issues/8603#issuecomment-309538395.
              */
-            if (publishedAtBlog.diff(publishedAtUTC.clone().startOf('minutes')) === 0) {
+            if (publishedAtUTC && publishedAtBlog.diff(publishedAtUTC.clone().startOf('minutes')) === 0) {
                 return publishedAtUTC;
             }
 
