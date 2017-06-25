@@ -1,5 +1,10 @@
 // # Excerpt Helper
-// Usage: `{{excerpt}}`, `{{excerpt words="50"}}`, `{{excerpt characters="256"}}`
+// Usage:
+// `{{excerpt}}`
+// `{{excerpt words="50"}}`
+// `{{excerpt characters="256"}}`
+// `{{excerpt characters="256" round="true"}}`
+// `{{excerpt words="50" append="..."}}`
 //
 // Attempts to remove all HTML from the string, and then shortens the result according to the provided option.
 //
@@ -13,9 +18,17 @@ var proxy = require('./proxy'),
 module.exports = function excerpt(options) {
     var truncateOptions = (options || {}).hash || {};
 
-    truncateOptions = _.pick(truncateOptions, ['words', 'characters']);
+    truncateOptions = _.pick(truncateOptions, ['words', 'characters', 'append', 'round']);
     _.keys(truncateOptions).map(function (key) {
-        truncateOptions[key] = parseInt(truncateOptions[key], 10);
+        switch (key) {
+            case "words":
+            case "characters":
+                truncateOptions[key] = parseInt(truncateOptions[key], 10);
+                break;
+            case "round":
+                truncateOptions[key] = String(truncateOptions[key]).toLowerCase() === "true";
+                break;
+        }
     });
 
     return new SafeString(
