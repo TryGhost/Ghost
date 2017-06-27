@@ -12,7 +12,10 @@
                     "page": false,
                     "status": "published",
                     "meta_title": null,
-                    "meta_description": null
+                    "meta_description": null,
+                    "created_by": "5951f5fca366002ebd5dbef7",
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "author_id": "5951f5fca366002ebd5dbef7"
                 },
                 {
                     "title": "Advanced Markdown tips",
@@ -23,7 +26,10 @@
                     "page": false,
                     "status": "published",
                     "meta_title": null,
-                    "meta_description": null
+                    "meta_description": null,
+                    "created_by": "5951f5fca366002ebd5dbef7",
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "author_id": "5951f5fca366002ebd5dbef7"
                 },
                 {
                     "title": "Making your site private",
@@ -34,7 +40,10 @@
                     "page": false,
                     "status": "published",
                     "meta_title": null,
-                    "meta_description": null
+                    "meta_description": null,
+                    "created_by": "5951f5fca366002ebd5dbef7",
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "author_id": "5951f5fca366002ebd5dbef7"
                 },
                 {
                     "title": "Managing Ghost users",
@@ -45,7 +54,10 @@
                     "page": false,
                     "status": "published",
                     "meta_title": null,
-                    "meta_description": null
+                    "meta_description": null,
+                    "created_by": "5951f5fca366002ebd5dbef7",
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "author_id": "5951f5fca366002ebd5dbef7"
                 },
                 {
                     "title": "Organising your content with tags",
@@ -56,7 +68,10 @@
                     "page": false,
                     "status": "published",
                     "meta_title": null,
-                    "meta_description": null
+                    "meta_description": null,
+                    "created_by": "5951f5fca366002ebd5dbef7",
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "author_id": "5951f5fca366002ebd5dbef7"
                 },
                 {
                     "title": "Using the Ghost editor",
@@ -67,7 +82,10 @@
                     "page": false,
                     "status": "published",
                     "meta_title": null,
-                    "meta_description": null
+                    "meta_description": null,
+                    "created_by": "5951f5fca366002ebd5dbef7",
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "author_id": "5951f5fca366002ebd5dbef7"
                 },
                 {
                     "title": "Welcome to Ghost",
@@ -78,7 +96,10 @@
                     "page": false,
                     "status": "published",
                     "meta_title": null,
-                    "meta_description": null
+                    "meta_description": null,
+                    "created_by": "5951f5fca366002ebd5dbef7",
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "author_id": "5951f5fca366002ebd5dbef7"
                 }
             ]
         },
@@ -396,6 +417,13 @@
                     "email": "ghost@example.com",
                     "status": "inactive",
                     "roles": []
+                },
+                {
+                    "id": "5951f5fca366002ebd5dbef7",
+                    "name": "Ghost",
+                    "email": "ghost-author@example.com",
+                    "status": "active",
+                    "roles": ["Author"]
                 }
             ]
         }
