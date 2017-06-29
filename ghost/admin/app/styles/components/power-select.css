@@ -65,6 +65,7 @@
     margin: 0 1px !important;
     padding: 0 !important;
     min-height: 0 !important;
+    width: calc(100% - 8px) !important;
     max-width: 100% !important;
     max-height: none !important;
     border: 0 none !important;
