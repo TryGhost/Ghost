@@ -83,7 +83,17 @@ function postcssPlugins() {
 
     if (isProduction) {
         plugins.push({
-            module: require('cssnano')
+            module: require('cssnano'),
+            // cssnano minifies animations sometimes wrong, so they don't work anymore.
+            // See: https://github.com/ben-eb/gulp-cssnano/issues/33#issuecomment-210518957
+            options: {
+                reduceIdents: {
+                    keyframes: false
+                },
+                discardUnused: {
+                    keyframes: false
+                }
+            }
         });
     }
 
