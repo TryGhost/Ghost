@@ -311,7 +311,7 @@ export default Component.extend(ShortcutsMixin, {
         delete this._onEditorPaneScroll;
     },
 
-    _openImageFileDialog({captureSelection = true}) {
+    _openImageFileDialog({captureSelection = true} = {}) {
         if (captureSelection) {
             // capture the current selection before it's lost by clicking the
             // file input button
