@@ -539,6 +539,7 @@ User = ghostBookshelf.Model.extend({
     isSetup: function isSetup() {
         return this
             .where('status', 'in', activeStates)
+            .where('id', this.ownerUser)
             .count('id')
             .then(function (count) {
                 return !!count;

@@ -87,9 +87,9 @@ describe('User API', function () {
                         should.exist(jsonResponse.users);
                         testUtils.API.checkResponse(jsonResponse, 'users');
 
-                        // owner use when Ghost starts
+                        // owner use + ghost-author user when Ghost starts
                         // and two extra users, see createUser in before
-                        jsonResponse.users.should.have.length(4);
+                        jsonResponse.users.should.have.length(5);
 
                         testUtils.API.checkResponse(jsonResponse.users[0], 'user');
                         testUtils.API.isISO8601(jsonResponse.users[0].last_seen).should.be.true();
@@ -120,9 +120,9 @@ describe('User API', function () {
                         should.exist(jsonResponse.users);
                         testUtils.API.checkResponse(jsonResponse, 'users');
 
-                        jsonResponse.users.should.have.length(4);
+                        jsonResponse.users.should.have.length(5);
                         testUtils.API.checkResponse(jsonResponse.users[0], 'user');
-                        jsonResponse.users[3].status.should.eql(inactiveUser.status);
+                        jsonResponse.users[4].status.should.eql(inactiveUser.status);
                         done();
                     });
             });
@@ -143,7 +143,7 @@ describe('User API', function () {
                         should.exist(jsonResponse.users);
                         testUtils.API.checkResponse(jsonResponse, 'users');
 
-                        jsonResponse.users.should.have.length(4);
+                        jsonResponse.users.should.have.length(5);
                         testUtils.API.checkResponse(jsonResponse.users[0], 'user', 'roles');
                         done();
                     });
