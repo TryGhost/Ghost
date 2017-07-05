@@ -48,8 +48,6 @@ module.exports = function setupBlogApp() {
     blogApp.use(servePublicFile('public/ghost-url.min.js', 'application/javascript', utils.ONE_HOUR_S));
     // Serve sitemap.xsl file
     blogApp.use(servePublicFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
-    // Serve robots.txt if not found in theme
-    blogApp.use(servePublicFile('robots.txt', 'text/plain', utils.ONE_HOUR_S));
 
     // Serve stylesheets for default templates
     blogApp.use(servePublicFile('public/ghost.css', 'text/css', utils.ONE_HOUR_S));
@@ -79,6 +77,9 @@ module.exports = function setupBlogApp() {
     // Theme static assets/files
     blogApp.use(staticTheme());
     debug('Static content done');
+
+    // Serve robots.txt if not found in theme
+    blogApp.use(servePublicFile('robots.txt', 'text/plain', utils.ONE_HOUR_S));
 
     // setup middleware for internal apps
     // @TODO: refactor this to be a proper app middleware hook for internal & external apps
