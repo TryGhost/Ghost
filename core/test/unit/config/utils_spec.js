@@ -41,7 +41,7 @@ describe('UNIT: Config utils', function () {
             changedKey.length.should.eql(0);
         });
 
-        it('ensure we don\' change absolute paths', function () {
+        it('ensure we don\'t change absolute paths', function () {
             var changedKey = [],
                 obj = {
                     database: {
