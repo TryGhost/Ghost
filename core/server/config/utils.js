@@ -34,13 +34,12 @@ exports.makePathsAbsolute = function makePathsAbsolute(obj, parent) {
     _.each(obj, function (configValue, pathsKey) {
         if (_.isObject(configValue)) {
             makePathsAbsolute.bind(self)(configValue, parent + ':' + pathsKey);
-        } else {
-            if (_.isString(configValue) &&
-                (configValue.match(/\/+|\\+/) || configValue === '.') &&
-                (configValue[0] !== '/' && configValue[0] !== '\\')
-            ) {
-                self.set(parent + ':' + pathsKey, path.join(__dirname + '/../../../', configValue));
-            }
+        } else if (
+            _.isString(configValue) &&
+            (configValue.match(/\/+|\\+/) || configValue === '.') &&
+            !path.isAbsolute(configValue)
+        ) {
+            self.set(parent + ':' + pathsKey, path.normalize(path.join(__dirname, '../../..', configValue)));
         }
     });
 };
