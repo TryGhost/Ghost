@@ -250,6 +250,10 @@ input,
     background: rgba(0,0,0,0.2);
 }
 
+.gh-editor-header-small {
+    background: #263238;
+}
+
 .gh-editor .CodeMirror-cursor {
     border-color: #fff;
 }

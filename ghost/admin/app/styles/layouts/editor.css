@@ -170,6 +170,7 @@
     height: 43px;
     padding: 0;
     padding-left: 15px;
+    background-color: #fff;
     border-bottom: var(--lightgrey) 1px solid;
     z-index: 100;
 }
