@@ -1,5 +1,6 @@
 import Controller from 'ember-controller';
 import injectController from 'ember-controller/inject';
+import run from 'ember-runloop';
 import {alias, equal, sort} from 'ember-computed';
 
 export default Controller.extend({
@@ -12,7 +13,7 @@ export default Controller.extend({
     tagContentFocused: equal('keyboardFocus', 'tagContent'),
 
     // TODO: replace with ordering by page count once supported by the API
-    tags: sort('model', function (a, b) {
+    sortedTags: sort('model', function (a, b) {
         let idA = +a.get('id');
         let idB = +b.get('id');
 
@@ -24,6 +25,30 @@ export default Controller.extend({
 
         return 0;
     }),
+
+    scrollTagIntoView(tag) {
+        run.scheduleOnce('afterRender', this, function () {
+            let id = `#gh-tag-${tag.get('id')}`;
+            let element = document.querySelector(id);
+
+            if (element) {
+                let scroll = document.querySelector('.tag-list');
+                let {scrollTop} = scroll;
+                let scrollHeight = scroll.offsetHeight;
+                let element = document.querySelector(id);
+                let elementTop = element.offsetTop;
+                let elementHeight = element.offsetHeight;
+
+                if (elementTop < scrollTop) {
+                    element.scrollIntoView(true);
+                }
+
+                if (elementTop + elementHeight > scrollTop + scrollHeight) {
+                    element.scrollIntoView(false);
+                }
+            }
+        });
+    },
 
     actions: {
         leftMobile() {

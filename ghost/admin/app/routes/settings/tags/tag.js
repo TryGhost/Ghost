@@ -11,6 +11,11 @@ export default AuthenticatedRoute.extend({
         return {tag_slug: model.get('slug')};
     },
 
+    setupController(controller, model) {
+        this._super(...arguments);
+        this.controllerFor('settings.tags').scrollTagIntoView(model);
+    },
+
     // reset the model so that mobile screens react to an empty selectedTag
     deactivate() {
         this._super(...arguments);

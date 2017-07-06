@@ -79,7 +79,8 @@
 }
 
 .gh-contentfilter-menu-dropdown {
-    min-width: 150px;
+    width: 180px;
+    max-height: 220px;
     margin-top: 10px;
     padding: 5px 0 7px 0;
     border: none !important;
@@ -91,6 +92,12 @@
 .gh-contentfilter-menu-dropdown .ember-power-select-search input {
     display: block !important;
     margin: 0 10px !important;
+}
+
+.gh-contentfilter-menu-dropdown .ember-power-select-option {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 

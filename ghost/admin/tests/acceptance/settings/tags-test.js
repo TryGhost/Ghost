@@ -4,6 +4,7 @@ import $ from 'jquery';
 import destroyApp from '../../helpers/destroy-app';
 import run from 'ember-runloop';
 import startApp from '../../helpers/start-app';
+import wait from 'ember-test-helpers/wait';
 import {Response} from 'ember-cli-mirage';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
@@ -79,6 +80,9 @@ describe('Acceptance: Settings - Tags', function () {
 
             await visit('/settings/tags');
 
+            // second wait is needed for the vertical-collection to settle
+            await wait();
+
             // it redirects to first tag
             expect(currentURL(), 'currentURL').to.equal(`/settings/tags/${tag1.slug}`);
 
@@ -125,6 +129,8 @@ describe('Acceptance: Settings - Tags', function () {
                 keyup(38);
             });
 
+            await wait();
+
             // it navigates to previous tag
             expect(currentURL(), 'url after keyboard up arrow').to.equal(`/settings/tags/${tag1.slug}`);
 
@@ -137,6 +143,8 @@ describe('Acceptance: Settings - Tags', function () {
                 keydown(40);
                 keyup(40);
             });
+
+            await wait();
 
             // it navigates to previous tag
             expect(currentURL(), 'url after keyboard down arrow').to.equal(`/settings/tags/${tag2.slug}`);
@@ -203,6 +211,9 @@ describe('Acceptance: Settings - Tags', function () {
 
             await visit('/settings/tags/tag-1');
 
+            // second wait is needed for the vertical-collection to settle
+            await wait();
+
             expect(currentURL(), 'URL after direct load').to.equal('/settings/tags/tag-1');
 
             // it loads all other tags
@@ -218,38 +229,13 @@ describe('Acceptance: Settings - Tags', function () {
                 .to.equal('Tag 1');
         });
 
-        it('has infinite scroll pagination of tags list', async function () {
-            server.createList('tag', 32);
-
-            await visit('settings/tags/tag-0');
-
-            // it loads first page
-            expect(find('.settings-tags .settings-tag').length, 'tag list count on first load')
-                .to.equal(15);
-
-            await find('.tag-list').scrollTop(find('.tag-list-content').height());
-            await triggerEvent('.tag-list', 'scroll');
-
-            // it loads the second page
-            expect(find('.settings-tags .settings-tag').length, 'tag list count on second load')
-                .to.equal(30);
-
-            await find('.tag-list').scrollTop(find('.tag-list-content').height());
-
-            // NOTE: FF has issues with scrolling further in acceptance tests
-            // but works fine outside of tests
-            //
-            // await triggerEvent('.tag-list', 'scroll');
-            //
-            // // it loads the final page
-            // expect(find('.settings-tags .settings-tag').length, 'tag list count on third load')
-            //     .to.equal(32);
-        });
-
         it('shows the internal tag label', async function () {
             server.create('tag', {name: '#internal-tag', slug: 'hash-internal-tag', visibility: 'internal'});
 
             await visit('settings/tags/');
+
+            // second wait is needed for the vertical-collection to settle
+            await wait();
 
             expect(currentURL()).to.equal('/settings/tags/hash-internal-tag');
 
