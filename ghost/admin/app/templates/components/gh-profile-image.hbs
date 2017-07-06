@@ -1,9 +1,9 @@
 <figure class="account-image js-file-upload">
     {{#unless hasUploadedImage}}
-        <div class="placeholder-img" style={{defaultImage}}></div>
-            <div id="account-image" class="gravatar-img" style={{imageBackground}}>
-                <span class="sr-only">User image</span>
-            </div>
+        <div class="placeholder-img" style={{placeholderStyle}}></div>
+        <div id="account-image" class="gravatar-img" style={{avatarStyle}}>
+            <span class="sr-only">User image</span>
+        </div>
     {{/unless}}
 
     <div class="js-img-preview"></div>
