@@ -7,18 +7,19 @@
     </header>
 
     {{#gh-tags-management-container tags=tags selectedTag=selectedTag enteredMobile="enteredMobile" leftMobile="leftMobile" as |container|}}
-        {{#gh-infinite-scroll
-            fetch="loadNextPage"
-            isLoading=isLoading
-            classNames="tag-list"
-            as |checkScroll|
-        }}
+        <div class="tag-list">
             <section class="tag-list-content settings-tags {{if tagListFocused 'keyboard-focused'}}">
-                {{#each tags as |tag|}}
-                    {{gh-tag tag=tag onDelete=(action checkScroll)}}
-                {{/each}}
+                {{#vertical-collection sortedTags
+                    minHeight=67
+                    staticHeight=true
+                    bufferSize=5
+                    containerSelector=".tag-list"
+                    as |tag|
+                }}
+                    {{gh-tag tag=tag}}
+                {{/vertical-collection}}
             </section>
-        {{/gh-infinite-scroll}}
+        </div>
         <section class="settings-menu-container tag-settings {{if tagContentFocused 'keyboard-focused'}} {{if container.displaySettingsPane 'tag-settings-in'}}">
             {{outlet}}
         </section>
