@@ -1,11 +1,11 @@
-import AjaxService from 'ember-ajax/services/ajax';
 import Component from 'ember-component';
-import computed, {notEmpty} from 'ember-computed';
 import injectService from 'ember-service/inject';
+import request from 'ember-ajax/request';
 import run from 'ember-runloop';
 import {htmlSafe} from 'ember-string';
-import {isBlank} from 'ember-utils';
-import {isNotFoundError} from 'ember-ajax/errors';
+import {task, timeout} from 'ember-concurrency';
+
+const ANIMATION_TIMEOUT = 1000;
 
 /**
  * A component to manage a user profile image. By default it just handles picture uploads,
@@ -26,68 +26,28 @@ export default Component.extend({
     size: 180,
     debounce: 300,
 
-    validEmail: '',
     hasUploadedImage: false,
-    ajax: AjaxService.create(),
 
     config: injectService(),
     ghostPaths: injectService(),
 
-    displayGravatar: notEmpty('validEmail'),
+    placeholderStyle: htmlSafe('background-image: url()'),
+    avatarStyle: htmlSafe('display: none'),
+
+    _defaultImageUrl: '',
 
     init() {
         this._super(...arguments);
-        // Fire this immediately in case we're initialized with a valid email
-        this.trySetValidEmail();
+
+        this._defaultImageUrl = `${this.get('ghostPaths.assetRoot')}img/user-image.png`;
+        this._setPlaceholderImage(this._defaultImageUrl);
     },
-
-    defaultImage: computed('ghostPaths', function () {
-        let url = `${this.get('ghostPaths.assetRoot')}/img/user-image.png`;
-        return htmlSafe(`background-image: url(${url})`);
-    }),
-
-    trySetValidEmail() {
-        if (!this.get('isDestroyed')) {
-            let email = this.get('email');
-            this.set('validEmail', validator.isEmail(email) ? email : '');
-        }
-    },
-
-    didReceiveAttrs() {
-        this._super(...arguments);
-        let timeout = parseInt(this.get('throttle') || this.get('debounce'));
-        run.debounce(this, 'trySetValidEmail', timeout);
-    },
-
-    imageBackground: computed('validEmail', 'size', function () {
-        let email = this.get('validEmail');
-        let size = this.get('size');
-        let style = '';
-
-        if (!isBlank(email)) {
-            let gravatarUrl = `//www.gravatar.com/avatar/${window.md5(email)}?s=${size}&d=404`;
-
-            this.get('ajax').request(gravatarUrl)
-                .catch((error) => {
-                    let defaultImageUrl = `url("${this.get('ghostPaths.assetRoot')}/img/user-image.png")`;
-
-                    if (isNotFoundError(error)) {
-                        this.$('.placeholder-img')[0].style.backgroundImage = htmlSafe(defaultImageUrl);
-                    } else {
-                        this.$('.placeholder-img')[0].style.backgroundImage = 'url()';
-                    }
-                });
-
-            style = `background-image: url(${gravatarUrl})`;
-        }
-        return htmlSafe(style);
-    }),
 
     didInsertElement() {
+        this._super(...arguments);
+
         let size = this.get('size');
         let uploadElement = this.$('.js-file-input');
-
-        this._super(...arguments);
 
         // while theoretically the 'add' and 'processalways' functions could be
         // added as properties of the hash passed to fileupload(), for some reason
@@ -103,6 +63,51 @@ export default Component.extend({
         })
         .on('fileuploadadd', run.bind(this, this.queueFile))
         .on('fileuploadprocessalways', run.bind(this, this.triggerPreview));
+    },
+
+    didReceiveAttrs() {
+        this._super(...arguments);
+
+        if (this.get('config.useGravatar')) {
+            this.get('setGravatar').perform();
+        }
+    },
+
+    setGravatar: task(function* () {
+        yield timeout(this.get('debounce'));
+
+        let email = this.get('email');
+
+        if (validator.isEmail(email)) {
+            let size = this.get('size');
+            let gravatarUrl = `//www.gravatar.com/avatar/${window.md5(email)}?s=${size}&d=404`;
+
+            try {
+                // HEAD request is needed otherwise jquery attempts to process
+                // binary data as JSON and throws an error
+                yield request(gravatarUrl, {type: 'HEAD'});
+                // gravatar exists so switch style and let browser load it
+                this._setAvatarImage(gravatarUrl);
+                // wait for fade-in animation to finish before removing placeholder
+                yield timeout(ANIMATION_TIMEOUT);
+                this._setPlaceholderImage('');
+
+            } catch (e) {
+                // gravatar doesn't exist so make sure we're still showing the placeholder
+                this._setPlaceholderImage(this._defaultImageUrl);
+                // then make sure the avatar isn't visible
+                this._setAvatarImage('');
+            }
+        }
+    }).restartable(),
+
+    _setPlaceholderImage(url) {
+        this.set('placeholderStyle', htmlSafe(`background-image: url(${url});`));
+    },
+
+    _setAvatarImage(url) {
+        let display = url ? 'block' : 'none';
+        this.set('avatarStyle', htmlSafe(`background-image: url(${url}); display: ${display}`));
     },
 
     willDestroyElement() {
