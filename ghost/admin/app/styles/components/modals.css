@@ -183,8 +183,10 @@
 @media (min-width: 901px) {
     .modal-body .login-form {
         display: flex;
+        align-items: center;
     }
     .modal-body .login-form .password-wrap {
         flex: 1;
+        margin-right: 10px;
     }
 }

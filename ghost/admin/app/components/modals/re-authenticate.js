@@ -45,16 +45,17 @@ export default ModalComponent.extend(ValidationEngine, {
         this.set('authenticationError', null);
 
         return this.validate({property: 'signin'}).then(() => {
-            this._authenticate().then(() => {
+            return this._authenticate().then(() => {
                 this.get('notifications').closeAlerts();
                 this.send('closeModal');
+                return true;
             }).catch((error) => {
                 if (error && error.errors) {
                     error.errors.forEach((err) => {
                         if (isVersionMismatchError(err)) {
                             return this.get('notifications').showAPIError(error);
                         }
-                        err.message = htmlSafe(err.message);
+                        err.message = htmlSafe(err.context || err.message);
                     });
 
                     this.get('errors').add('password', 'Incorrect password');
@@ -64,6 +65,7 @@ export default ModalComponent.extend(ValidationEngine, {
             });
         }, () => {
             this.get('hasValidated').pushObject('password');
+            return false;
         });
     },
 
@@ -95,9 +97,9 @@ export default ModalComponent.extend(ValidationEngine, {
 
     reauthenticate: task(function* () {
         if (this.get('config.ghostOAuth')) {
-            yield this._oauthConfirm();
+            return yield this._oauthConfirm();
         } else {
-            yield this._passwordConfirm();
+            return yield this._passwordConfirm();
         }
     }).drop(),
 
