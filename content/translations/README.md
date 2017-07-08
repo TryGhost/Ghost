@@ -4,7 +4,7 @@
 
 <a title="By The World Flag [GFDL (http://www.gnu.org/copyleft/fdl.html) or CC BY-SA 4.0-3.0-2.5-2.0-1.0 (http://creativecommons.org/licenses/by-sa/4.0-3.0-2.5-2.0-1.0)], via Wikimedia Commons" href="https://commons.wikimedia.org/wiki/File%3AThe_world_flag_2006.svg"><img width="512" alt="The world flag 2006" src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/The_world_flag_2006.svg/512px-The_world_flag_2006.svg.png" style="margin: 0px 0px 20px 20px" align="right" /></a>
 
-**Ghost 1.0 opens to the whole world!**
+**Ghost opens to the whole world!**
 
 Now Ghost's frontend and themes, that is to say the public side visible to site visitors, are fully translatable. Server side messages are also translatable.
 
@@ -121,33 +121,40 @@ As you can see, it's just plain English on the left, and the language you choose
 
 Dates, with month names, are automatically translated. You don't need to include them in the translation files. 
 
-Another example with [optional features](#optional-advanced-features) (see the related section below) such as placeholders for flexibility, is *worldcasper_es.json*, the complete Spanish file for [WorldCasper &#x27B6;](https://github.com/juan-g/WorldCasper/tree/i18n-translatable-frontend), translatable clone of the default Casper theme:
+Another example with [optional features](#optional-advanced-features) (see the related section below) such as placeholders for flexibility, is *worldcasper2_es.json*, the complete Spanish file for [WorldCasper2 &#x27B6;](https://github.com/juan-g/WorldCasper2/tree/i18n-translatable-frontend), translatable clone of the default Casper 2.0 theme:
 
 ```
 {
-    "worldcasper": {
-        "A 1-post collection": "Una colección de 1 artículo",
-        "A %-post collection": "Una colección de % artículos",
-        "Close": "Cerrar",
+    "worldcasper2": {
+        "A collection of posts": "Una colección de artículos",
+        "A collection of 1 post": "Una colección de 1 artículo",
+        "A collection of % posts": "Una colección de % artículos",
+        "and thought of you!": "y pensé en ti!",
         "Get the latest posts delivered right to your inbox": "Recibe los últimos artículos directamente en tu buzón",
-        "Menu": "Menú",
+        "Hey, saw this on": "¡Hola, vi esto en",
+        "Latest Posts": "Últimos Artículos",
         "No posts": "No hay artículos",
-        " on ": " en ",
-        "or subscribe": "¡O suscríbete",
-        "Proudly published with {ghostlink}": "Publicado con {ghostlink}",
+        "Pin": "Pinea",
+        "Read More": "Lee Más",
         "Read <a href='{url}'>more posts</a> by this author": "Lee <a href='{url}'>más artículos</a> de este autor",
-        "Scroll Down": "Bajar",
-        "Share this post": "Comparte",
+        "Reblog": "Rebloguea",
+        "See all % posts": "Ver todos los % artículos",
+        "Send": "Envía",
+        "Share": "Comparte",
+        "Share this": "Comparte",
+        "Stay up to date! Get all the latest &amp; greatest posts delivered straight to your inbox": "¡Mantente al día! Recibe todos los últimos y mejores artículos directamente en tu buzón",
         "Subscribe": "Suscríbete",
         "Subscribe to": "Suscríbete a",
-        "via RSS": "por RSS",
-        "with Feedly!": "con Feedly!",
-        "Your email address": "Tu correo electrónico",
+        "Tweet": "Tuitea",
+        "WhatsApp": "Wasapea",
+        "youremail@example.com": "tucorreo@ejemplo.com",
         "1 post": "1 artículo",
         "% posts": "% artículos"
     }
 }
 ```
+
+For a translatable clone of the Casper 1.4 theme (versions 1.4 and 2.0 have different designs), see [WorldCasper1 &#x27B6;](https://github.com/juan-g/WorldCasper1/tree/i18n-translatable-frontend).
 
 ## How to Make Any Theme Translatable
 
@@ -169,7 +176,7 @@ Probably, developers of future apps with templates will also use this parameter,
 
 ### 1. Look for text on the theme's .hbs templates
 
-They contain the text to translate, that is the text visible lo site visitors.
+They contain the text to translate, that is the text visible to site visitors.
 
 ### 2. Wrap it in {{t}} translation helpers
 
@@ -223,7 +230,7 @@ And more translations mean more users, therefore more improvements and maintenan
 
 If the theme to translate includes, in style sheets, content text visible to site visitors, you can translate it by override. For example:
 
-File *worldcasper_en.css*
+File *worldcasper1_en.css*
 ```
 .read-next-story .post:before {
     content: "Read This Next";
@@ -233,7 +240,7 @@ File *worldcasper_en.css*
 }
 ```
 
-File *worldcasper_es.css*
+File *worldcasper1_es.css*
 ```
 .read-next-story .post:before {
     content: "Sigue leyendo";
@@ -252,7 +259,7 @@ And, in theme template *default.hbs*, after the rest of style sheets to override
 In this line, the {{asset}} helper can be equivalent in this example to
 
 ```
-{{asset "translations/worldcasper_es.css"}}
+{{asset "translations/worldcasper1_es.css"}}
 ```
 
 That stylesheet line uses replacement placeholders `{theme}` and `{lang}`, and nested helpers `(theme)` and `(lang)`.
