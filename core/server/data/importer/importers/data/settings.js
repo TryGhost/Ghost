@@ -4,7 +4,9 @@ const debug = require('ghost-ignition').debug('importer:settings'),
     Promise = require('bluebird'),
     _ = require('lodash'),
     BaseImporter = require('./base'),
-    models = require('../../../../models');
+    models = require('../../../../models'),
+    defaultSettings = require('../../../schema/default-settings.json'),
+    labsDefaults = JSON.parse(defaultSettings.blog.labs.defaultValue);
 
 class SettingsImporter extends BaseImporter {
     constructor(options) {
@@ -31,6 +33,7 @@ class SettingsImporter extends BaseImporter {
     /**
      * - 'core' and 'theme' are blacklisted
      * - clean up legacy plugin setting references
+     * - handle labs setting
      */
     beforeImport() {
         debug('beforeImport');
@@ -54,6 +57,12 @@ class SettingsImporter extends BaseImporter {
 
         _.each(this.dataToImport, function (obj) {
             obj.key = self.legacySettingsKeyValues[obj.key] || obj.key;
+
+            if (obj.key === 'labs' && obj.value) {
+                // Overwrite the labs setting with our current defaults
+                // Ensures things that are enabled in new versions, are turned on
+                obj.value = JSON.stringify(_.assign({}, JSON.parse(obj.value), labsDefaults));
+            }
         });
 
         return super.beforeImport();

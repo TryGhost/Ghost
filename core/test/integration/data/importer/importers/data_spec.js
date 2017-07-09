@@ -1396,6 +1396,9 @@ describe('Import (new test structure)', function () {
                     settings[9].key.should.eql('default_locale');
                     settings[9].value.should.eql('en');
 
+                    settings[18].key.should.eql('labs');
+                    settings[18].value.should.eql('{"publicAPI":true}');
+
                     // Check post language is null
                     should(firstPost.locale).equal(null);
                     // Check user language is null
