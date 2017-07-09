@@ -53,6 +53,7 @@
                 dropdownClass="gh-contentfilter-menu-dropdown"
                 searchPlaceholder="Search tags"
                 matchTriggerWidth=false
+                optionsComponent="power-select-vertical-collection-options"
                 data-test-tag-select=true
                 as |tag|
             }}
@@ -86,7 +87,6 @@
             {{#each model as |post|}}
                 {{gh-posts-list-item
                     post=post
-                    active=(eq post selectedPost)
                     onDoubleClick="openEditor"
                     data-test-post-id=post.id}}
             {{else}}
@@ -109,16 +109,6 @@
             scrollable=".gh-main"
             triggerOffset=1000}}
     </section>
-
-    {{#if showDeletePostModal}}
-        {{gh-fullscreen-modal "delete-post"
-            model=(hash
-                post=selectedPost
-                onSuccess=(route-action 'onPostDeletion')
-            )
-            close=(action "toggleDeletePostModal")
-            modifier="action wide"}}
-    {{/if}}
 
     {{outlet}}
 </section>

@@ -1,11 +1,10 @@
 import $ from 'jquery';
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import InfinityRoute from 'ember-infinity/mixins/route';
-import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import {assign} from 'ember-platform';
 import {isBlank} from 'ember-utils';
 
-export default AuthenticatedRoute.extend(InfinityRoute, ShortcutsRoute, {
+export default AuthenticatedRoute.extend(InfinityRoute, {
     titleToken: 'Content',
 
     perPage: 30,
@@ -32,7 +31,6 @@ export default AuthenticatedRoute.extend(InfinityRoute, ShortcutsRoute, {
     },
 
     _type: null,
-    _selectedPostIndex: null,
 
     model(params) {
         return this.get('session.user').then((user) => {
@@ -121,50 +119,8 @@ export default AuthenticatedRoute.extend(InfinityRoute, ShortcutsRoute, {
         });
     },
 
-    stepThroughPosts(step) {
-        let currentPost = this.get('controller.selectedPost');
-        let posts = this.get('controller.model');
-        let length = posts.get('length');
-        let newPosition;
-
-        // when the currentPost is deleted we won't be able to use indexOf.
-        // we keep track of the index locally so we can select next after deletion
-        if (this._selectedPostIndex !== null && length) {
-            newPosition = this._selectedPostIndex + step;
-        } else {
-            newPosition = posts.indexOf(currentPost) + step;
-        }
-
-        // if we are on the first or last item
-        // just do nothing (desired behavior is to not
-        // loop around)
-        if (newPosition >= length) {
-            return;
-        } else if (newPosition < 0) {
-            return;
-        }
-
-        this._selectedPostIndex = newPosition;
-        this.set('controller.selectedPost', posts.objectAt(newPosition));
-    },
-
-    shortcuts: {
-        'up, k': 'moveUp',
-        'down, j': 'moveDown',
-        'enter': 'editPost',
-        'c': 'newPost',
-        'command+backspace, ctrl+backspace': 'deletePost'
-    },
-
-    resetController() {
-        this.set('controller.selectedPost', null);
-        this.set('controller.showDeletePostModal', false);
-    },
-
     actions: {
         willTransition() {
-            this._selectedPostIndex = null;
-
             if (this.get('controller')) {
                 this.resetController();
             }
@@ -175,35 +131,6 @@ export default AuthenticatedRoute.extend(InfinityRoute, ShortcutsRoute, {
             $('.content-list').scrollTop(0);
 
             this._super(...arguments);
-        },
-
-        newPost() {
-            this.transitionTo('editor.new');
-        },
-
-        moveUp() {
-            this.stepThroughPosts(-1);
-        },
-
-        moveDown() {
-            this.stepThroughPosts(1);
-        },
-
-        editPost() {
-            let selectedPost = this.get('controller.selectedPost');
-
-            if (selectedPost) {
-                this.transitionTo('editor.edit', selectedPost.get('id'));
-            }
-        },
-
-        deletePost() {
-            this.get('controller').send('toggleDeletePostModal');
-        },
-
-        onPostDeletion() {
-            // select next post (re-select the current index)
-            this.stepThroughPosts(0);
         }
     }
 });

@@ -2,16 +2,17 @@
 import $ from 'jquery';
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
-import PaginationMixin from 'ghost-admin/mixins/pagination';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 
-export default AuthenticatedRoute.extend(CurrentUserSettings, PaginationMixin, ShortcutsRoute, {
+export default AuthenticatedRoute.extend(CurrentUserSettings, ShortcutsRoute, {
     titleToken: 'Settings - Tags',
 
-    paginationModel: 'tag',
-    paginationSettings: {
-        include: 'count.posts',
-        limit: 15
+    perPage: 30,
+    perPageParam: 'limit',
+    totalPagesParam: 'meta.pagination.pages',
+
+    queryParams: {
+        include: 'count.posts'
     },
 
     shortcuts: {
@@ -22,6 +23,7 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, PaginationMixin, S
         c: 'newTag'
     },
 
+    // authors aren't allowed to manage tags
     beforeModel() {
         this._super(...arguments);
 
@@ -29,23 +31,30 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, PaginationMixin, S
             .then(this.transitionAuthor());
     },
 
-    model(params, transition) {
-        return this.loadFirstPage(transition).then(() => {
-            return this.store.filter('tag', (tag) => {
-                return !tag.get('isNew');
-            });
+    // set model to a live array so all tags are shown and created/deleted tags
+    // are automatically added/removed. Also load all tags in the background,
+    // pausing to show the loading spinner if no tags have been loaded yet
+    model() {
+        let promise = this.store.query('tag', {limit: 'all', include: 'count.posts'});
+        let filter = this.store.filter('tag', (tag) => {
+            return !tag.get('isNew');
         });
+
+        if (this.store.peekAll('tag').get('length') === 0) {
+            return promise.then(() => filter);
+        } else {
+            return filter;
+        }
     },
 
     deactivate() {
         this._super(...arguments);
         this.send('resetShortcutsScope');
-        this.send('resetPagination');
     },
 
     stepThroughTags(step) {
         let currentTag = this.modelFor('settings.tags.tag');
-        let tags = this.get('controller.tags');
+        let tags = this.get('controller.sortedTags');
         let length = tags.get('length');
 
         if (currentTag && length) {

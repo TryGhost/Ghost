@@ -17,8 +17,6 @@ export default Controller.extend({
     _hasLoadedTags: false,
     _hasLoadedAuthors: false,
 
-    showDeletePostModal: false,
-
     availableTypes: [{
         name: 'All posts',
         value: null
@@ -101,10 +99,6 @@ export default Controller.extend({
     }),
 
     actions: {
-        toggleDeletePostModal() {
-            this.toggleProperty('showDeletePostModal');
-        },
-
         changeType(type) {
             this.set('type', get(type, 'value'));
         },
