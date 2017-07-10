@@ -25,7 +25,7 @@ ghost().then(function (ghostServer) {
     debug('Starting Ghost');
     // Let Ghost handle starting our server instance.
     return ghostServer.start(parentApp).then(function afterStart() {
-        logging.info('Ghost boot', (Date.now() - startTime)/1000 + 's');
+        logging.info('Ghost boot', (Date.now() - startTime) / 1000 + 's');
 
         // if IPC messaging is enabled, ensure ghost sends message to parent
         // process on successful start
