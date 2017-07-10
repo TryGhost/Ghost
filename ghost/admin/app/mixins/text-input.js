@@ -39,7 +39,7 @@ export default Mixin.create({
         }
 
         // prevent default TAB behaviour if we have a keyEvent for it
-        if (event.keyCode === 9 && this.get('keyEvents.9')) {
+        if (event.keyCode === 9 && typeof this.get('keyEvents.9') === 'function') {
             event.preventDefault();
         }
 
@@ -48,7 +48,7 @@ export default Mixin.create({
 
     keyPress(event) {
         // prevent default ENTER behaviour if we have a keyEvent for it
-        if (event.keyCode === 13 && this.get('keyEvents.13')) {
+        if (event.keyCode === 13 && typeof this.get('keyEvents.13') === 'function') {
             event.preventDefault();
         }
 
