@@ -7,6 +7,10 @@ export default function mockPosts(server) {
     server.post('/posts', function ({posts}) {
         let attrs = this.normalizedRequestAttrs();
 
+        // mirage expects `author` to be a reference but we only have an ID
+        attrs.authorId = attrs.author;
+        delete attrs.author;
+
         if (isBlank(attrs.slug) && !isBlank(attrs.title)) {
             attrs.slug = dasherize(attrs.title);
         }

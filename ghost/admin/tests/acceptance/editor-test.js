@@ -520,5 +520,33 @@ describe('Acceptance: Editor', function() {
             expect(find('select[name="post-setting-author"]').val()).to.equal('2');
             expect(server.db.posts[0].authorId).to.equal(author.id);
         });
+
+        it('autosaves when title loses focus', async function () {
+            let role = server.create('role', {name: 'Administrator'});
+            server.create('user', {name: 'Admin', roles: [role]});
+
+            await visit('/editor');
+
+            // NOTE: there were checks here for the title element having focus
+            // but they were very temperamental whilst running tests in the
+            // browser so they've been left out for now
+
+            expect(
+                currentURL(),
+                'url on initial visit'
+            ).to.equal('/editor');
+
+            await triggerEvent(testSelector('editor-title-input'), 'blur');
+
+            expect(
+                find(testSelector('editor-title-input')).val(),
+                'title value after autosave'
+            ).to.equal('(Untitled)');
+
+            expect(
+                currentURL(),
+                'url after autosave'
+            ).to.equal('/editor/1');
+        });
     });
 });
