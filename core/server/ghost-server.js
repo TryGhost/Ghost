@@ -8,9 +8,10 @@ var debug = require('debug')('ghost:server'),
     _ = require('lodash'),
     errors = require('./errors'),
     events = require('./events'),
+    logging = require('./logging'),
     config = require('./config'),
     utils = require('./utils'),
-    i18n   = require('./i18n'),
+    i18n = require('./i18n'),
     moment = require('moment');
 
 /**
@@ -145,7 +146,7 @@ GhostServer.prototype.restart = function () {
  * To be called after `stop`
  */
 GhostServer.prototype.hammertime = function () {
-    console.log(chalk.green(i18n.t('notices.httpServer.cantTouchThis')));
+    logging.info(chalk.green(i18n.t('notices.httpServer.cantTouchThis')));
 
     return Promise.resolve(this);
 };
@@ -192,34 +193,30 @@ GhostServer.prototype.closeConnections = function () {
 GhostServer.prototype.logStartMessages = function () {
     // Startup & Shutdown messages
     if (config.get('env') === 'production') {
-        console.log(
-            chalk.red('Currently running Ghost 1.0.0 Beta, this is NOT suitable for production! \n'),
-            chalk.white('Please switch to the stable branch. \n'),
-            chalk.white('More information on the Ghost 1.0.0 Beta at: ') + chalk.cyan('https://dev.ghost.org/1-0-0-beta') + '\n',
-            chalk.gray(i18n.t('notices.httpServer.ctrlCToShutDown'))
+        logging.error('\nCurrently running Ghost 1.0.0 Beta, this is NOT suitable for production!\n' +
+            chalk.white('Please switch to the stable branch. \n') +
+            chalk.white('More information on the Ghost 1.0.0 Beta at: ') + chalk.cyan('https://dev.ghost.org/1-0-0-beta') + '\n'
         );
+
+        logging.info(i18n.t('notices.httpServer.ctrlCToShutDown'));
     } else {
-        console.log(
-            chalk.yellow('Welcome to the Ghost 1.0.0 Beta - this version of Ghost is for development only.')
-        );
-        console.log(
-            chalk.green(i18n.t('notices.httpServer.ghostIsRunningIn', {env: config.get('env')})),
-            i18n.t('notices.httpServer.listeningOn'),
-            config.get('server').socket || config.get('server').host + ':' + config.get('server').port,
-            i18n.t('notices.httpServer.urlConfiguredAs', {url: utils.url.urlFor('home', true)}),
-            chalk.gray(i18n.t('notices.httpServer.ctrlCToShutDown'))
-        );
+        logging.warn('Welcome to the Ghost 1.0.0 Beta - this version of Ghost is for development only.');
+        logging.info(i18n.t('notices.httpServer.ghostIsRunningIn', {env: config.get('env')}));
+        logging.info(i18n.t('notices.httpServer.listeningOn', {
+            host: config.get('server').socket || config.get('server').host,
+            port: config.get('server').port
+        }));
+        logging.info(i18n.t('notices.httpServer.urlConfiguredAs', {url: utils.url.urlFor('home', true)}));
+        logging.info(i18n.t('notices.httpServer.ctrlCToShutDown'));
     }
 
     function shutdown() {
-        console.log(chalk.red(i18n.t('notices.httpServer.ghostHasShutdown')));
+        logging.warn(i18n.t('notices.httpServer.ghostHasShutdown'));
 
         if (config.get('env') === 'production') {
-            console.log(
-                i18n.t('notices.httpServer.yourBlogIsNowOffline')
-            );
+            logging.warn(i18n.t('notices.httpServer.yourBlogIsNowOffline'));
         } else {
-            console.log(
+            logging.warn(
                 i18n.t('notices.httpServer.ghostWasRunningFor'),
                 moment.duration(process.uptime(), 'seconds').humanize()
             );
@@ -227,17 +224,16 @@ GhostServer.prototype.logStartMessages = function () {
 
         process.exit(0);
     }
+
     // ensure that Ghost exits correctly on Ctrl+C and SIGTERM
-    process.
-        removeAllListeners('SIGINT').on('SIGINT', shutdown).
-        removeAllListeners('SIGTERM').on('SIGTERM', shutdown);
+    process.removeAllListeners('SIGINT').on('SIGINT', shutdown).removeAllListeners('SIGTERM').on('SIGTERM', shutdown);
 };
 
 /**
  * ### Log Shutdown Messages
  */
 GhostServer.prototype.logShutdownMessages = function () {
-    console.log(chalk.red(i18n.t('notices.httpServer.ghostIsClosingConnections')));
+    logging.warn(i18n.t('notices.httpServer.ghostIsClosingConnections'));
 };
 
 module.exports = GhostServer;
