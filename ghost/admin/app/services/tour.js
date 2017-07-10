@@ -113,7 +113,7 @@ export default Service.extend(Evented, {
         let viewed = this.get('viewed');
 
         if (!viewed.includes(id)) {
-            this.get('viewed').push(id);
+            viewed.pushObject(id);
             this.trigger('viewed', id);
             return this.syncViewed();
         } else {

@@ -121,9 +121,9 @@ const GhTourItemComponent = Component.extend({
     },
 
     willDestroyElement() {
-        this._super(...arguments);
         this.get('tour').off('optOut', this._handleOptOut);
-        this.get('tour').off('viewed', this._handleOptOut);
+        this.get('tour').off('viewed', this._handleViewed);
+        this._super(...arguments);
     },
 
     _removeIfViewed(id) {
