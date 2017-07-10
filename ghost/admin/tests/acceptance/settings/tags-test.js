@@ -10,6 +10,7 @@ import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import {errorOverride, errorReset} from 'ghost-admin/tests/helpers/adapter-error';
 import {expect} from 'chai';
+import {timeout} from 'ember-concurrency';
 
 // Grabbed from keymaster's testing code because Ember's `keyEvent` helper
 // is for some reason not triggering the events in a way that keymaster detects:
@@ -182,6 +183,11 @@ describe('Acceptance: Settings - Tags', function () {
             // save new tag
             await fillIn('.tag-settings-pane input[name="name"]', 'New Tag');
             await triggerEvent('.tag-settings-pane input[name="name"]', 'blur');
+
+            // extra timeout needed for FF on Linux - sometimes it doesn't update
+            // quick enough, especially on Travis, and an extra wait() call
+            // doesn't help
+            await timeout(100);
 
             // it redirects to the new tag's URL
             expect(currentURL(), 'URL after tag creation').to.equal('/settings/tags/new-tag');

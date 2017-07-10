@@ -6,6 +6,7 @@ import Route from 'ember-route';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import injectService from 'ember-service/inject';
+import moment from 'moment';
 import observer from 'ember-metal/observer';
 import run from 'ember-runloop';
 import windowProxy from 'ghost-admin/utils/window-proxy';
@@ -48,14 +49,21 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
             transition.send('loadServerNotifications');
             transition.send('checkForOutdatedDesktopApp');
 
-            // trigger a background refresh of the access token to enable
-            // "infinite" sessions. We also trigger a logout if the refresh
-            // token is invalid to prevent attackers with only the access token
-            // from loading the admin
+            // trigger a background token refresh to enable "infinite" sessions
+            // NOTE: we only do this if the last refresh was > 1 day ago to avoid
+            // potential issues with multiple tabs and concurrent admin loads/refreshes.
+            // see https://github.com/TryGhost/Ghost/issues/8616
             let session = this.get('session.session');
-            let authenticator = session._lookupAuthenticator(session.authenticator);
-            if (authenticator && authenticator.onOnline) {
-                authenticator.onOnline();
+            let expiresIn = session.get('authenticated.expires_in') * 1000;
+            let expiresAt = session.get('authenticated.expires_at');
+            let lastRefresh = moment(expiresAt - expiresIn);
+            let oneDayAgo = moment().subtract(1, 'day');
+
+            if (lastRefresh.isBefore(oneDayAgo)) {
+                let authenticator = session._lookupAuthenticator(session.authenticator);
+                if (authenticator && authenticator.onOnline) {
+                    authenticator.onOnline();
+                }
             }
 
             let featurePromise = this.get('feature').fetch().then(() => {

@@ -48,12 +48,26 @@ describe('Acceptance: Authentication', function () {
             server.create('user', {roles: [role], slug: 'test-user'});
         });
 
-        it('refreshes app tokens on boot', async function () {
+        it('refreshes tokens on boot if last refreshed > 24hrs ago', async function () {
             /* eslint-disable camelcase */
-            authenticateSession(application, {
-                access_token: 'testAccessToken',
-                refresh_token: 'refreshAccessToken'
+            // the tokens here don't matter, we're using the actual oauth
+            // authenticator so we get the tokens back from the mirage endpoint
+            await authenticateSession(application, {
+                access_token: 'access_token',
+                refresh_token: 'refresh_token'
             });
+
+            // authenticating the session above will trigger a token refresh
+            // request so we need to clear it to ensure we aren't testing the
+            // test behaviour instead of application behaviour
+            server.pretender.handledRequests = [];
+
+            // fake a longer session so it appears that we last refreshed > 24hrs ago
+            let {__container__: container} = application;
+            let {session} = container.lookup('service:session');
+            let newSession = session.get('content');
+            newSession.authenticated.expires_in = 172800 * 2;
+            session.get('store').persist(newSession);
             /* eslint-enable camelcase */
 
             await visit('/');
@@ -61,13 +75,36 @@ describe('Acceptance: Authentication', function () {
             let requests = server.pretender.handledRequests;
             let refreshRequest = requests.findBy('url', '/ghost/api/v0.1/authentication/token');
 
-            expect(refreshRequest).to.exist;
+            expect(refreshRequest, 'token refresh request').to.exist;
             expect(refreshRequest.method, 'method').to.equal('POST');
 
             let requestBody = $.deparam(refreshRequest.requestBody);
-            expect(requestBody.grant_type, 'grant_type').to.equal('password');
-            expect(requestBody.username.access_token, 'access_token').to.equal('testAccessToken');
-            expect(requestBody.username.refresh_token, 'refresh_token').to.equal('refreshAccessToken');
+            expect(requestBody.grant_type, 'grant_type').to.equal('refresh_token');
+            expect(requestBody.refresh_token, 'refresh_token').to.equal('MirageRefreshToken');
+        });
+
+        it('doesn\'t refresh tokens on boot if last refreshed < 24hrs ago', async function () {
+            /* eslint-disable camelcase */
+            // the tokens here don't matter, we're using the actual oauth
+            // authenticator so we get the tokens back from the mirage endpoint
+            await authenticateSession(application, {
+                access_token: 'access_token',
+                refresh_token: 'refresh_token'
+            });
+            /* eslint-enable camelcase */
+
+            // authenticating the session above will trigger a token refresh
+            // request so we need to clear it to ensure we aren't testing the
+            // test behaviour instead of application behaviour
+            server.pretender.handledRequests = [];
+
+            // we've only just refreshed tokens above so we should always be < 24hrs
+            await visit('/');
+
+            let requests = server.pretender.handledRequests;
+            let refreshRequest = requests.findBy('url', '/ghost/api/v0.1/authentication/token');
+
+            expect(refreshRequest, 'refresh request').to.not.exist;
         });
     });
 
