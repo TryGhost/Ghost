@@ -162,6 +162,11 @@
 
 .modal-body .login-form .password-wrap input {
     width: 100%;
+    margin-right: 20px;
+}
+
+.modal-body .login-form .gh-btn span {
+    height: 38px;
 }
 
 @media (max-width: 900px) {
@@ -172,6 +177,9 @@
     .modal-body .login-form .password-wrap {
         margin: 0 auto 1em;
         width: 100%;
+    }
+    .modal-body .login-form .password-wrap input {
+        margin-right: 0;
     }
     .modal-body .login-form .gh-btn {
         margin: 0;
