@@ -146,7 +146,7 @@ GhostServer.prototype.restart = function () {
  * To be called after `stop`
  */
 GhostServer.prototype.hammertime = function () {
-    logging.info(chalk.green(i18n.t('notices.httpServer.cantTouchThis')));
+    logging.info(i18n.t('notices.httpServer.cantTouchThis'));
 
     return Promise.resolve(this);
 };
