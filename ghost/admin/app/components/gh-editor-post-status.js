@@ -7,6 +7,7 @@ const SAVE_TIMEOUT_MS = 3000;
 
 export default Component.extend({
     post: null,
+    isNew: reads('post.isNew'),
     isScheduled: reads('post.isScheduled'),
     isSaving: false,
 

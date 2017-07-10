@@ -17,11 +17,13 @@
             </time>
         {{/if}}
         <section class="view-actions">
-            {{gh-publishmenu
-                post=model
-                saveTask=save
-                setSaveType=(action "setSaveType")
-                onOpen=(action "cancelAutosave")}}
+            {{#unless model.isNew}}
+                {{gh-publishmenu
+                    post=model
+                    saveTask=save
+                    setSaveType=(action "setSaveType")
+                    onOpen=(action "cancelAutosave")}}
+            {{/unless}}
 
             <button type="button" class="post-settings" title="Settings" {{action "openSettingsMenu"}} data-test-psm-trigger>
                 {{inline-svg "settings"}}
