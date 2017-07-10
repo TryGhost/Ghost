@@ -108,7 +108,7 @@ archiver-utils@^1.3.0:
     normalize-path "^2.0.0"
     readable-stream "^2.0.0"
 
-archiver@1.3.0, archiver@^1.0.0:
+archiver@1.3.0, archiver@^1.3.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/archiver/-/archiver-1.3.0.tgz#4f2194d6d8f99df3f531e6881f14f15d55faaf22"
   dependencies:
@@ -1906,22 +1906,24 @@ grunt-cli@1.2.0, grunt-cli@~1.2.0:
     nopt "~3.0.6"
     resolve "~1.1.0"
 
-grunt-contrib-clean@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/grunt-contrib-clean/-/grunt-contrib-clean-1.0.0.tgz#6b2ed94117e2c7ffe32ee04578c96fe4625a9b6d"
+grunt-contrib-clean@1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/grunt-contrib-clean/-/grunt-contrib-clean-1.1.0.tgz#564abf2d0378a983a15b9e3f30ee75b738c40638"
   dependencies:
     async "^1.5.2"
     rimraf "^2.5.1"
 
-grunt-contrib-compress@1.3.0:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/grunt-contrib-compress/-/grunt-contrib-compress-1.3.0.tgz#5e5c26a200490823c7f77288afd2d7350d95c63d"
+grunt-contrib-compress@1.4.3:
+  version "1.4.3"
+  resolved "https://registry.yarnpkg.com/grunt-contrib-compress/-/grunt-contrib-compress-1.4.3.tgz#01ceffb9c637f52e7081f463750983d0a3b0fa73"
   dependencies:
-    archiver "^1.0.0"
+    archiver "^1.3.0"
     chalk "^1.1.1"
     lodash "^4.7.0"
-    pretty-bytes "^3.0.1"
+    pretty-bytes "^4.0.2"
     stream-buffers "^2.1.0"
+  optionalDependencies:
+    iltorb "^1.0.13"
 
 grunt-contrib-copy@1.0.0:
   version "1.0.0"
@@ -1930,13 +1932,13 @@ grunt-contrib-copy@1.0.0:
     chalk "^1.1.1"
     file-sync-cmp "^0.1.0"
 
-grunt-contrib-jshint@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/grunt-contrib-jshint/-/grunt-contrib-jshint-1.0.0.tgz#30f405a51de656bfa6eb029b9a464b9fe02a402a"
+grunt-contrib-jshint@1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/grunt-contrib-jshint/-/grunt-contrib-jshint-1.1.0.tgz#369d909b2593c40e8be79940b21340850c7939ac"
   dependencies:
     chalk "^1.1.1"
     hooker "^0.2.3"
-    jshint "~2.9.1"
+    jshint "~2.9.4"
 
 grunt-contrib-symlink@^1.0.0:
   version "1.0.0"
@@ -2125,9 +2127,9 @@ grunt@~0.4.0:
     underscore.string "~2.2.1"
     which "~1.0.5"
 
-gscan@1.1.2:
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-1.1.2.tgz#1b4297a5f3ac16155dc1b550a7a91d684e65bb5f"
+gscan@1.1.3:
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-1.1.3.tgz#22b5cd4333461326563cbdda84a3a687aa1cc8cf"
   dependencies:
     bluebird "3.4.6"
     chalk "1.1.1"
@@ -2377,6 +2379,13 @@ iconv-lite@0.4.15, iconv-lite@~0.4.13:
 iconv-lite@~0.2.11:
   version "0.2.11"
   resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.2.11.tgz#1ce60a3a57864a292d1321ff4609ca4bb965adc8"
+
+iltorb@^1.0.13:
+  version "1.3.4"
+  resolved "https://registry.yarnpkg.com/iltorb/-/iltorb-1.3.4.tgz#cbe7f73aa5e93527dabdeb19bb4f8d0fbdf04a8f"
+  dependencies:
+    nan "^2.6.1"
+    node-pre-gyp "^0.6.34"
 
 image-size@0.5.1:
   version "0.5.1"
@@ -2804,9 +2813,9 @@ jshint-stylish@2.2.1:
     string-length "^1.0.0"
     text-table "^0.2.0"
 
-jshint@2.9.4, jshint@~2.9.1:
-  version "2.9.4"
-  resolved "https://registry.yarnpkg.com/jshint/-/jshint-2.9.4.tgz#5e3ba97848d5290273db514aee47fe24cf592934"
+jshint@2.9.5, jshint@~2.9.4:
+  version "2.9.5"
+  resolved "https://registry.yarnpkg.com/jshint/-/jshint-2.9.5.tgz#1e7252915ce681b40827ee14248c46d34e9aa62c"
   dependencies:
     cli "~1.0.0"
     console-browserify "1.1.x"
@@ -3495,9 +3504,9 @@ mobiledoc-dom-renderer@0.6.5:
   version "0.6.5"
   resolved "https://registry.yarnpkg.com/mobiledoc-dom-renderer/-/mobiledoc-dom-renderer-0.6.5.tgz#56c0302c4f9c30840ab5b9b20dfe905aed1e437b"
 
-mocha@3.3.0:
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/mocha/-/mocha-3.3.0.tgz#d29b7428d3f52c82e2e65df1ecb7064e1aabbfb5"
+mocha@3.4.2:
+  version "3.4.2"
+  resolved "https://registry.yarnpkg.com/mocha/-/mocha-3.4.2.tgz#d0ef4d332126dbf18d0d640c9b382dd48be97594"
   dependencies:
     browser-stdout "1.3.0"
     commander "2.9.0"
@@ -3600,7 +3609,11 @@ mysql@2.13.0, mysql@^2.11.1:
     readable-stream "1.1.14"
     sqlstring "2.2.0"
 
-nan@^2.3.3, nan@~2.4.0:
+nan@^2.3.3, nan@^2.6.1:
+  version "2.6.2"
+  resolved "https://registry.yarnpkg.com/nan/-/nan-2.6.2.tgz#e4ff34e6c95fdfb5aecc08de6596f43605a7db45"
+
+nan@~2.4.0:
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.4.0.tgz#fb3c59d45fe4effe215f0b890f8adf6eb32d2232"
 
@@ -3662,7 +3675,7 @@ nock@9.0.13, nock@^9.0.2:
     propagate "0.4.0"
     qs "^6.0.2"
 
-node-pre-gyp@~0.6.31:
+node-pre-gyp@^0.6.34, node-pre-gyp@~0.6.31:
   version "0.6.34"
   resolved "https://registry.yarnpkg.com/node-pre-gyp/-/node-pre-gyp-0.6.34.tgz#94ad1c798a11d7fc67381b50d47f8cc18d9799f7"
   dependencies:
@@ -4308,11 +4321,9 @@ pretty-bytes@^1.0.0:
     get-stdin "^4.0.1"
     meow "^3.1.0"
 
-pretty-bytes@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/pretty-bytes/-/pretty-bytes-3.0.1.tgz#27d0008d778063a0b4811bb35c79f1bd5d5fbccf"
-  dependencies:
-    number-is-nan "^1.0.0"
+pretty-bytes@^4.0.2:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/pretty-bytes/-/pretty-bytes-4.0.2.tgz#b2bf82e7350d65c6c33aa95aaa5a4f6327f61cd9"
 
 prettyjson@1.1.3:
   version "1.1.3"
