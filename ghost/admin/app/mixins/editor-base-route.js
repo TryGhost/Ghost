@@ -50,9 +50,10 @@ export default Mixin.create(styleBody, ShortcutsRoute, {
             // so we abort the transition and retry after the save has completed.
             if (state.isSaving) {
                 transition.abort();
-                controller.get('generateSlug.last').then(() => {
+                controller.get('saveTasks.last').then(() => {
                     transition.retry();
                 });
+                return;
             }
 
             fromNewToEdit = this.get('routeName') === 'editor.new'

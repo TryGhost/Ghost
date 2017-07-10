@@ -40,7 +40,9 @@ export default Component.extend(SettingsMenuMixin, {
         this._super(...arguments);
 
         this.get('store').query('user', {limit: 'all'}).then((users) => {
-            this.set('authors', users.sortBy('name'));
+            if (!this.get('isDestroyed')) {
+                this.set('authors', users.sortBy('name'));
+            }
         });
 
         this.get('model.author').then((author) => {
