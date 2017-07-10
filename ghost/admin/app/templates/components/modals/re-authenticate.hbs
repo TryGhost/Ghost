@@ -12,7 +12,9 @@
             {{#gh-validation-status-container class="password-wrap" errors=errors property="password" hasValidated=hasValidated}}
                 {{gh-input password class="password" type="password" placeholder="Password" name="password" update=(action (mut password))}}
             {{/gh-validation-status-container}}
-            {{gh-task-button "Log in" task=reauthenticate class="gh-btn gh-btn-blue gh-btn-icon" type="submit"}}
+            <div>
+                {{gh-task-button "Log in" task=reauthenticate class="gh-btn gh-btn-blue gh-btn-icon" type="submit"}}
+            </div>
         </form>
     {{/if}}
 
