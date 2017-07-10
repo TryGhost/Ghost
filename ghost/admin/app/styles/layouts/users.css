@@ -5,6 +5,10 @@
     background: none;
 }
 
+.gh-invited-users .gh-badge {
+    text-transform: none;
+}
+
 .user-list-item-icon {
     flex-shrink: 0;
     display: flex;
