@@ -6,6 +6,7 @@ import computed, {alias} from 'ember-computed';
 import formatMarkdown from 'ghost-admin/utils/format-markdown';
 import injectService from 'ember-service/inject';
 import moment from 'moment';
+import run from 'ember-runloop';
 import {guidFor} from 'ember-metal/utils';
 import {htmlSafe} from 'ember-string';
 import {invokeAction} from 'ember-invoke-action';
@@ -155,7 +156,13 @@ export default Component.extend(SettingsMenuMixin, {
     actions: {
         showSubview() {
             this._super(...arguments);
-            this.set('_showThrobbers', false);
+
+            // Chrome appears to have an animation bug that cancels the slide
+            // transition unless there's a delay between the animation starting
+            // and the throbbers being removed
+            run.later(this, function () {
+                this.set('_showThrobbers', false);
+            }, 50);
         },
 
         closeSubview() {

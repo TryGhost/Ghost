@@ -1,4 +1,4 @@
-{{#gh-tabs-manager selected="showSubview" id="entry-controls" class="settings-menu-container"}}
+{{#gh-tabs-manager selected=(action "showSubview") id="entry-controls" class="settings-menu-container"}}
 <div id="entry-controls">
     <div class="{{if isViewingSubview 'settings-menu-pane-out-left' 'settings-menu-pane-in'}} settings-menu settings-menu-pane">
         <div class="settings-menu-header">
@@ -173,7 +173,7 @@
     {{gh-tour-item "static-post"
         target="label[for='static-page'] p"
         throbberAttachment="middle middle"
-        throbberOffset="0px 75px"
+        throbberOffset="0px 33px"
         popoverTriangleClass="bottom-right"
     }}
 
