@@ -25,6 +25,7 @@ const {testing} = Ember;
 // to know if the model has been changed (`controller.hasDirtyAttributes`)
 const watchedProps = ['model.scratch', 'model.titleScratch', 'model.hasDirtyAttributes', 'model.tags.[]'];
 
+const DEFAULT_TITLE = '(Untitled)';
 const TITLE_DEBOUNCE = testing ? 10 : 700;
 
 PostModel.eachAttribute(function (name) {
@@ -148,7 +149,7 @@ export default Mixin.create({
 
         // Set a default title
         if (!this.get('model.titleScratch').trim()) {
-            this.set('model.titleScratch', '(Untitled)');
+            this.set('model.titleScratch', DEFAULT_TITLE);
         }
 
         this.set('model.title', this.get('model.titleScratch'));
@@ -492,9 +493,9 @@ export default Mixin.create({
 
         model.set('titleScratch', newTitle);
 
-        // if model is not new and title is not '(Untitled)', or model is new and
+        // if model is not new and title is not DEFAULT_TITLE, or model is new and
         // has a title, don't generate a slug
-        if ((!model.get('isNew') || model.get('title')) && newTitle !== '(Untitled)') {
+        if ((!model.get('isNew') || model.get('title')) && newTitle !== DEFAULT_TITLE) {
             return;
         }
 
@@ -508,7 +509,7 @@ export default Mixin.create({
         let title = this.get('model.titleScratch');
 
         // Only set an "untitled" slug once per post
-        if (title === '(Untitled)' && this.get('model.slug')) {
+        if (title === DEFAULT_TITLE && this.get('model.slug')) {
             return;
         }
 
@@ -606,9 +607,12 @@ export default Mixin.create({
             let currentTitle = this.get('model.title');
             let newTitle = this.get('model.titleScratch').trim();
 
-            if (newTitle === currentTitle) {
+            if (currentTitle && newTitle && newTitle === currentTitle) {
                 return;
             }
+
+            // this is necessary to force a save when the title is blank
+            this.set('hasDirtyAttributes', true);
 
             if (this.get('model.isDraft')) {
                 this.send('save', {
