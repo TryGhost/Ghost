@@ -20,7 +20,7 @@ var should = require('should'), // jshint ignore:line
 describe('DB version integrity', function () {
     // Only these variables should need updating
     var currentSchemaHash = 'b613bca0f20e02360487a3c17a9ffcc1',
-        currentFixturesHash = '1c9d28a1fc1320d2f711345458165a7c';
+        currentFixturesHash = 'e9b37667b052e866730c5b8f8448279e';
 
     // If this test is failing, then it is likely a change has been made that requires a DB version bump,
     // and the values above will need updating as confirmation
