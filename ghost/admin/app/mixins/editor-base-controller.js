@@ -3,7 +3,7 @@ import Mixin from 'ember-metal/mixin';
 import PostModel from 'ghost-admin/models/post';
 import RSVP from 'rsvp';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
-import computed, {alias, mapBy, reads} from 'ember-computed';
+import computed, {mapBy, reads} from 'ember-computed';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import injectController from 'ember-controller/inject';
 import injectService from 'ember-service/inject';
@@ -27,6 +27,11 @@ const watchedProps = ['model.scratch', 'model.titleScratch', 'model.hasDirtyAttr
 
 const DEFAULT_TITLE = '(Untitled)';
 const TITLE_DEBOUNCE = testing ? 10 : 700;
+
+// time in ms to save after last content edit
+const AUTOSAVE_TIMEOUT = 3000;
+// time in ms to force a save if the user is continuously typing
+const TIMEDSAVE_TIMEOUT = 60000;
 
 PostModel.eachAttribute(function (name) {
     watchedProps.push(`model.${name}`);
@@ -52,9 +57,6 @@ export default Mixin.create({
     editor: null,
     editorMenuIsOpen: false,
 
-    shouldFocusTitle: alias('model.isNew'),
-    shouldFocusEditor: false,
-
     navIsClosed: reads('application.autoNav'),
 
     init() {
@@ -65,12 +67,12 @@ export default Mixin.create({
     },
 
     _canAutosave: computed('model.{isDraft,isNew}', function () {
-        return !testing && this.get('model.isDraft') && !this.get('model.isNew');
+        return !testing && this.get('model.isDraft');
     }),
 
     // save 3 seconds after the last edit
     _autosave: task(function* () {
-        yield timeout(3000);
+        yield timeout(AUTOSAVE_TIMEOUT);
 
         if (this.get('_canAutosave')) {
             yield this.get('autosave').perform();
@@ -81,7 +83,7 @@ export default Mixin.create({
     _timedSave: task(function* () {
         // eslint-disable-next-line no-constant-condition
         while (!testing && true) {
-            yield timeout(60000);
+            yield timeout(TIMEDSAVE_TIMEOUT);
 
             if (this.get('_canAutosave')) {
                 yield this.get('autosave').perform();
@@ -169,6 +171,12 @@ export default Mixin.create({
                 }
 
                 this.get('model').set('statusScratch', null);
+
+                // redirect to edit route if saving a new record
+                if (isNew && model.get('id')) {
+                    this.replaceRoute('editor.edit', model);
+                    return;
+                }
 
                 return model;
             });
@@ -570,6 +578,12 @@ export default Mixin.create({
         },
 
         toggleLeaveEditorModal(transition) {
+            // cancel autosave when showing the modal to prevent the "leave"
+            // action failing due to deletion of in-flight records
+            if (!this.get('showLeaveEditorModal')) {
+                this.send('cancelAutosave');
+            }
+
             this.set('leaveEditorTransition', transition);
             this.toggleProperty('showLeaveEditorModal');
         },

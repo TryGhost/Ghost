@@ -17,15 +17,5 @@ export default AuthenticatedRoute.extend(base, {
             controller,
             model
         });
-    },
-
-    actions: {
-        willTransition(transition) {
-            // decorate the transition object so the editor.edit route
-            // knows this was the previous active route
-            transition.data.fromNew = true;
-
-            this._super(...arguments);
-        }
     }
 });

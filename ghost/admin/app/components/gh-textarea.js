@@ -48,8 +48,10 @@ export default OneWayTextarea.extend(TextInputMixin, {
 
         // collapse the element first so that we can shrink as well as expand
         // then set the height to match the text height
-        el.style.height = 0;
-        el.style.height = `${el.scrollHeight}px`;
+        if (el) {
+            el.style.height = 0;
+            el.style.height = `${el.scrollHeight}px`;
+        }
     },
 
     _setupAutoExpand() {
