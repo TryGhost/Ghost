@@ -1,8 +1,8 @@
 language: node_js
 # When changing node version also update it on lines 34, 36 and 46.
 node_js:
-  - "4"
   - "6"
+  - "4"
 
 sudo: false
 
@@ -27,7 +27,7 @@ env:
 
 matrix:
   include:
-    - node_js: "4"
+    - node_js: "6"
       env: TEST_SUITE=lint
   fast_finish: true
 
