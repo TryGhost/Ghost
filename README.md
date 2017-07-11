@@ -6,6 +6,7 @@
 The project is maintained by a non-profit organisation called the **Ghost Foundation**, along with an amazing group of independent [contributors](https://github.com/TryGhost/Ghost/contributors). We're trying to make publishing software that changes the shape of online journalism.
 
 - [Ghost.org](https://ghost.org)
+- [Supported Node Versions](https://docs.ghost.org/v1.0.0/docs/supported-node-versions)
 - [Latest Release](https://ghost.org/developers/)
 - [Help & Support](http://help.ghost.org/)
 - [Theme Docs](http://themes.ghost.org/v1.0.0/)
