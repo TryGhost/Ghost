@@ -2,7 +2,6 @@
 // Handles the creation of an HTTP Server for Ghost
 var debug = require('debug')('ghost:server'),
     Promise = require('bluebird'),
-    chalk = require('chalk'),
     fs = require('fs'),
     path = require('path'),
     _ = require('lodash'),
@@ -193,14 +192,10 @@ GhostServer.prototype.closeConnections = function () {
 GhostServer.prototype.logStartMessages = function () {
     // Startup & Shutdown messages
     if (config.get('env') === 'production') {
-        logging.error('\nCurrently running Ghost 1.0.0 Beta, this is NOT suitable for production!\n' +
-            chalk.white('Please switch to the stable branch. \n') +
-            chalk.white('More information on the Ghost 1.0.0 Beta at: ') + chalk.cyan('https://dev.ghost.org/1-0-0-beta') + '\n'
-        );
-
+        logging.info(i18n.t('notices.httpServer.ghostIsRunningIn', {env: config.get('env')}));
+        logging.info(i18n.t('notices.httpServer.yourBlogIsAvailableOn', {url: utils.url.urlFor('home', true)}));
         logging.info(i18n.t('notices.httpServer.ctrlCToShutDown'));
     } else {
-        logging.warn('Welcome to the Ghost 1.0.0 Beta - this version of Ghost is for development only.');
         logging.info(i18n.t('notices.httpServer.ghostIsRunningIn', {env: config.get('env')}));
         logging.info(i18n.t('notices.httpServer.listeningOn', {
             host: config.get('server').socket || config.get('server').host,
