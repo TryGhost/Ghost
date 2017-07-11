@@ -1,8 +1,8 @@
 // # Ghost Startup
 // Orchestrates the startup of Ghost when run from command line.
-console.time('Ghost boot');
 
-var debug = require('debug')('ghost:boot:index'),
+var startTime = Date.now(),
+    debug = require('debug')('ghost:boot:index'),
     ghost, express, logging, errors, utils, parentApp;
 
 debug('First requires...');
@@ -25,7 +25,8 @@ ghost().then(function (ghostServer) {
     debug('Starting Ghost');
     // Let Ghost handle starting our server instance.
     return ghostServer.start(parentApp).then(function afterStart() {
-        console.timeEnd('Ghost boot');
+        logging.info('Ghost boot', (Date.now() - startTime) / 1000 + 's');
+
         // if IPC messaging is enabled, ensure ghost sends message to parent
         // process on successful start
         if (process.send) {
