@@ -538,14 +538,14 @@
         "httpServer": {
             "cantTouchThis": "Can't touch this",
             "ghostIsRunning": "Ghost is running...",
-            "yourBlogIsAvailableOn": "\nYour blog is now available on {url}",
-            "ctrlCToShutDown": "\nCtrl+C to shut down",
+            "yourBlogIsAvailableOn": "Your blog is now available on {url}",
+            "ctrlCToShutDown": "Ctrl+C to shut down",
             "ghostIsRunningIn": "Ghost is running in {env}...",
-            "listeningOn": "\nListening on",
-            "urlConfiguredAs": "\nUrl configured as: {url}",
-            "ghostHasShutdown": "\nGhost has shut down",
-            "yourBlogIsNowOffline": "\nYour blog is now offline",
-            "ghostWasRunningFor": "\nGhost was running for",
+            "listeningOn": "Listening on: {host}:{port}",
+            "urlConfiguredAs": "Url configured as: {url}",
+            "ghostHasShutdown": "Ghost has shut down",
+            "yourBlogIsNowOffline": "Your blog is now offline",
+            "ghostWasRunningFor": "Ghost was running for",
             "ghostIsClosingConnections": "Ghost is closing connections"
         },
         "mail": {
