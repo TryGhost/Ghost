@@ -14,6 +14,7 @@ coreHelpers.asset  = require('./asset');
 coreHelpers.author  = require('./author');
 coreHelpers.body_class  = require('./body_class');
 coreHelpers.content  = require('./content');
+coreHelpers.img_url  = require('./img_url');
 coreHelpers.date  = require('./date');
 coreHelpers.encode  = require('./encode');
 coreHelpers.excerpt  = require('./excerpt');
@@ -93,6 +94,7 @@ registerHelpers = function (adminHbs) {
     registerThemeHelper('author', coreHelpers.author);
     registerThemeHelper('body_class', coreHelpers.body_class);
     registerThemeHelper('content', coreHelpers.content);
+    registerThemeHelper('img_url', coreHelpers.img_url);
     registerThemeHelper('date', coreHelpers.date);
     registerThemeHelper('encode', coreHelpers.encode);
     registerThemeHelper('excerpt', coreHelpers.excerpt);

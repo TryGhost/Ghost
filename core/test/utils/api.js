@@ -63,17 +63,21 @@ function isISO8601(date) {
 function checkResponseValue(jsonResponse, expectedProperties) {
     var providedProperties = _.keys(jsonResponse),
         missing = _.difference(expectedProperties, providedProperties),
-        unexpected = _.difference(providedProperties, expectedProperties);
+        unexpected = _.difference(providedProperties, expectedProperties),
+        expectedPropertiesLength = expectedProperties.length;
 
     _.each(missing, function (prop) {
-        jsonResponse.should.have.property(prop);
-    });
-
-    _.each(unexpected, function (prop) {
         jsonResponse.should.not.have.property(prop);
     });
 
-    providedProperties.length.should.eql(expectedProperties.length);
+    _.each(unexpected, function (prop) {
+        if (prop !== 'feature_image' && prop !== 'profile_image' && prop !== 'cover_image') {
+            jsonResponse.should.not.have.property(prop);
+        } else {
+            expectedPropertiesLength += 1;
+        }
+    });
+    providedProperties.length.should.eql(expectedPropertiesLength);
 }
 
 function checkResponse(jsonResponse, objectType, additionalProperties, missingProperties) {

@@ -488,6 +488,8 @@ Post = ghostBookshelf.Model.extend({
             attrs.url = config.urlPathForPost(attrs);
         }
 
+        attrs = attrs.image ? _.extend(attrs, {feature_image: attrs.image}) : attrs;
+
         return attrs;
     },
     enforcedFilters: function enforcedFilters() {
