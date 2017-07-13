@@ -113,6 +113,10 @@ export default Controller.extend({
 
         changeOrder(order) {
             this.set('order', get(order, 'value'));
+        },
+
+        openEditor(post) {
+            this.transitionToRoute('editor.edit', post.get('id'));
         }
     }
 });

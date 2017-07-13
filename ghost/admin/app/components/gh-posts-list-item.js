@@ -10,6 +10,8 @@ import {isBlank} from 'ember-utils';
 const {Handlebars} = Ember;
 
 export default Component.extend({
+    ghostPaths: injectService(),
+
     tagName: 'li',
     classNames: ['gh-posts-list-item'],
     classNameBindings: ['active'],
@@ -22,7 +24,9 @@ export default Component.extend({
     isPublished: equal('post.status', 'published'),
     isScheduled: equal('post.status', 'scheduled'),
 
-    ghostPaths: injectService(),
+    // closure actions
+    onClick() {},
+    onDoubleClick() {},
 
     authorName: computed('post.author.name', 'post.author.email', function () {
         return this.get('post.author.name') || this.get('post.author.email');
@@ -57,11 +61,11 @@ export default Component.extend({
     },
 
     click() {
-        this.sendAction('onClick', this.get('post'));
+        this.onClick(this.get('post'));
     },
 
     doubleClick() {
-        this.sendAction('onDoubleClick', this.get('post'));
+        this.onDoubleClick(this.get('post'));
     },
 
     scrollIntoView() {

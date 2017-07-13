@@ -52,6 +52,7 @@ describe('Acceptance: Content', function() {
             // Displays all posts + pages
             expect(find(testSelector('post-id')).length, 'all posts count').to.equal(5);
 
+            // show draft posts
             await selectChoose(testSelector('type-select'), 'Draft posts');
 
             // API request is correct
@@ -62,6 +63,7 @@ describe('Acceptance: Content', function() {
             expect(find(testSelector('post-id')).length, 'drafts count').to.equal(1);
             expect(find(testSelector('post-id', draftPost.id)), 'draft post').to.exist;
 
+            // show published posts
             await selectChoose(testSelector('type-select'), 'Published posts');
 
             // API request is correct
@@ -73,6 +75,7 @@ describe('Acceptance: Content', function() {
             expect(find(testSelector('post-id', publishedPost.id)), 'admin published post').to.exist;
             expect(find(testSelector('post-id', authorPost.id)), 'author published post').to.exist;
 
+            // show scheduled posts
             await selectChoose(testSelector('type-select'), 'Scheduled posts');
 
             // API request is correct
@@ -83,6 +86,7 @@ describe('Acceptance: Content', function() {
             expect(find(testSelector('post-id')).length, 'scheduled count').to.equal(1);
             expect(find(testSelector('post-id', scheduledPost.id)), 'scheduled post').to.exist;
 
+            // show pages
             await selectChoose(testSelector('type-select'), 'Pages');
 
             // API request is correct
@@ -93,6 +97,7 @@ describe('Acceptance: Content', function() {
             expect(find(testSelector('post-id')).length, 'pages count').to.equal(1);
             expect(find(testSelector('post-id', publishedPage.id)), 'page post').to.exist;
 
+            // show all posts
             await selectChoose(testSelector('type-select'), 'All posts');
 
             // API request is correct
@@ -100,6 +105,7 @@ describe('Acceptance: Content', function() {
             expect(lastRequest.queryParams.status, '"all" request status param').to.equal('all');
             expect(lastRequest.queryParams.staticPages, '"all" request staticPages param').to.equal('all');
 
+            // show all posts by editor
             await selectChoose(testSelector('author-select'), editor.name);
 
             // API request is correct
@@ -108,12 +114,18 @@ describe('Acceptance: Content', function() {
             expect(lastRequest.queryParams.staticPages, '"all" request staticPages param').to.equal('all');
             expect(lastRequest.queryParams.filter, '"editor" request filter param')
                 .to.equal(`author:${editor.slug}`);
+
             // Displays editor post
             // TODO: implement "filter" param support and fix mirage post->author association
             // expect(find(testSelector('post-id')).length, 'editor post count').to.equal(1);
             // expect(find(testSelector('post-id', authorPost.id)), 'author post').to.exist;
 
             // TODO: test tags dropdown
+
+            // Double-click on a post opens editor
+            await triggerEvent(testSelector('post-id', authorPost.id), 'dblclick');
+
+            expect(currentURL(), 'url after double-click').to.equal(`/editor/${authorPost.id}`);
         });
     });
 
