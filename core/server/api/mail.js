@@ -25,7 +25,7 @@ function sendMail(object) {
         if (mailer.state.usingDirect) {
             notifications.add(
                 {notifications: [{
-                    type: 'warn',
+                    type: 'info',
                     message: [
                         i18n.t('warnings.index.unableToSendEmail'),
                         i18n.t('common.seeLinkForInstructions',
