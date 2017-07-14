@@ -27,6 +27,27 @@
                 "published_by": 2
             },
             {
+                "id": 1,
+                "title": "Written by Joe Bloggs",
+                "slug": "joe-bloggs-post",
+                "markdown": "This is my post!",
+                "html": "<p>Tada!</p>",
+                "image": null,
+                "featured": 0,
+                "page": 0,
+                "status": "published",
+                "language": "en_US",
+                "meta_title": null,
+                "meta_description": null,
+                "author_id": 1,
+                "created_at": 1388318310782,
+                "created_by": 1,
+                "updated_at": 1388318310782,
+                "updated_by": 1,
+                "published_at": 1388318310783,
+                "published_by": 1
+            },
+            {
                 "id": 2,
                 "title": "Brand New Post",
                 "slug": "brand-new-post",
@@ -70,13 +91,13 @@
         "users": [
             {
                 "id": 1,
-                "name": "Joe Bloggs",
-                "slug": "joe-blogs",
-                "email": "jbloggs@example.com",
+                "name": "Rachel The Machine",
+                "slug": "rachel-machine",
+                "email": "rmachine@example.com",
                 "password": "$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6",
                 "image": null,
                 "cover": null,
-                "bio": "A blogger",
+                "bio": "My Bio",
                 "website": null,
                 "location": null,
                 "accessibility": null,
@@ -137,6 +158,16 @@
         "roles": [
             {
                 "id": 1,
+                "uuid": "d2ea9c7f-7e6b-4cae-b009-35c298206853",
+                "name": "Owner",
+                "description": "Administrators",
+                "created_at": 1388318310794,
+                "created_by": 1,
+                "updated_at": 1388318310794,
+                "updated_by": 1
+            },
+            {
+                "id": 2,
                 "uuid": "d2ea9c7f-7e6b-4cae-b009-35c298206852",
                 "name": "Administrator",
                 "description": "Administrators",
@@ -146,7 +177,7 @@
                 "updated_by": 1
             },
             {
-                "id": 2,
+                "id": 3,
                 "uuid": "b0d7d6b0-5b88-45b5-b0e5-a487741b843d",
                 "name": "Editor",
                 "description": "Editors",
@@ -156,7 +187,7 @@
                 "updated_by": 1
             },
             {
-                "id": 3,
+                "id": 4,
                 "uuid": "9f72e817-5490-4ccf-bc78-c557dc9613ca",
                 "name": "Author",
                 "description": "Authors",
@@ -169,7 +200,7 @@
         "roles_users": [
             {
                 "id": 1,
-                "role_id": 3,
+                "role_id": 1,
                 "user_id": 1
             },
             {
