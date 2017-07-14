@@ -201,6 +201,19 @@ invites = {
             });
         }
 
+        function checkIfUserExists(options) {
+            return dataProvider.User.findOne({email: options.data.invites[0].email}, options)
+                .then(function (user) {
+                    if (user) {
+                        return Promise.reject(new errors.ValidationError({
+                            message: i18n.t('errors.api.users.userAlreadyRegistered')
+                        }));
+                    }
+
+                    return options;
+                });
+        }
+
         function fetchLoggedInUser(options) {
             return dataProvider.User.findOne({id: loggedInUser}, _.merge({}, options, {include: ['roles']}))
                 .then(function (user) {
@@ -219,6 +232,7 @@ invites = {
             utils.convertOptions(allowedIncludes),
             fetchLoggedInUser,
             validation,
+            checkIfUserExists,
             destroyOldInvite,
             addInvite
         ];
