@@ -1,8 +1,9 @@
 var Promise         = require('bluebird'),
     _               = require('lodash'),
+    uuid            = require('uuid'),
+    moment          = require('moment'),
     validation      = require('../validation'),
     errors          = require('../../errors'),
-    uuid            = require('uuid'),
     importer        = require('./data-importer'),
     tables          = require('../schema').tables,
     i18n            = require('../../i18n'),
@@ -99,7 +100,19 @@ sanitize = function sanitize(data) {
             var uuidMissing = (!importValues.uuid && tables[tableName].uuid) ? true : false,
                 uuidMalformed = (importValues.uuid && !validation.validator.isUUID(importValues.uuid)) ? true : false,
                 isDuplicate,
+                tempDate,
                 problemTag;
+
+            // CASE: protect invalid dates import
+            _.each(importValues, function iterateThroughImportedValues(value, key) {
+                if (['published_at', 'updated_at', 'created_at'].indexOf(key) !== -1) {
+                    tempDate = moment(importValues[key]);
+
+                    if (!tempDate.isValid()) {
+                        importValues[key] = moment().toDate();
+                    }
+                }
+            });
 
             // Check for correct UUID and fix if necessary
             if (uuidMissing || uuidMalformed) {
