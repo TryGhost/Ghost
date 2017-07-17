@@ -67,7 +67,7 @@ function checkResponseValue(jsonResponse, expectedProperties) {
         expectedPropertiesLength = expectedProperties.length;
 
     _.each(missing, function (prop) {
-        jsonResponse.should.not.have.property(prop);
+        jsonResponse.should.have.property(prop);
     });
 
     _.each(unexpected, function (prop) {
