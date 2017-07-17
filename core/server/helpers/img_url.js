@@ -22,7 +22,7 @@ module.exports = function imgUrl(attr, options) {
     absolute = options && options.hash && options.hash.absolute;
 
     if (attr === undefined) {
-        errors.logWarn(i18n.t('warnings.helpers.img_url.attrIsRequired'));
+        errors.logWarn(i18n.t('warnings.helpers.img_url.missingAttribute'));
         return;
     }
 
