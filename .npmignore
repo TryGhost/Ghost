@@ -12,6 +12,8 @@ content/apps/**
 !content/apps/README.md
 content/data/**
 !content/data/README.md
+content/logs/**
+!content/logs/README.md
 node_modules/**
 **/*.db*
 *.db*
