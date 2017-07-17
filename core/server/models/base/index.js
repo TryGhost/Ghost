@@ -145,7 +145,14 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             if (value !== null
                 && schema.tables[self.tableName].hasOwnProperty(key)
                 && schema.tables[self.tableName][key].type === 'dateTime') {
-                attrs[key] = moment(value).toDate();
+                attrs[key] = moment(value);
+
+                // CASE: if you are somehow able to store 00:00:0000 00:00:00
+                if (attrs[key].isValid()) {
+                    attrs[key] = attrs[key].toDate();
+                } else {
+                    attrs[key] = moment().toDate();
+                }
             }
         });
 
