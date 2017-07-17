@@ -31,5 +31,5 @@ module.exports = function imgUrl(attr, options) {
         return;
     }
 
-    return config.urlFor('image', {image: this[attr]}, absolute);
+    return config.urlFor('image', {image: attr}, absolute);
 };
