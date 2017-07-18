@@ -496,6 +496,9 @@
             "is": {
                 "invalidAttribute": "Invalid or no attribute given to is helper"
             },
+            "img_url": {
+                "missingAttribute": "Attribute is required e.g. \\{\\{img_url feature_image\\}\\}"
+            },
             "navigation": {
                 "invalidData": "navigation data is not an object or is a function",
                 "valuesMustBeDefined": "All values must be defined for label, url and current",

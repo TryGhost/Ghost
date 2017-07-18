@@ -64,6 +64,7 @@ updateConfigCache = function () {
             description: (settingsCache.description && settingsCache.description.value) || '',
             logo: (settingsCache.logo && settingsCache.logo.value) || '',
             cover: (settingsCache.cover && settingsCache.cover.value) || '',
+            cover_image: (settingsCache.cover && settingsCache.cover.value) || '',
             navigation: (settingsCache.navigation && JSON.parse(settingsCache.navigation.value)) || [],
             postsPerPage: (settingsCache.postsPerPage && settingsCache.postsPerPage.value) || 5,
             permalinks: (settingsCache.permalinks && settingsCache.permalinks.value) || '/:slug/',

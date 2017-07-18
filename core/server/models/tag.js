@@ -54,6 +54,7 @@ Tag = ghostBookshelf.Model.extend({
 
         attrs.parent = attrs.parent || attrs.parent_id;
         delete attrs.parent_id;
+        attrs = attrs.image ? _.extend(attrs, {feature_image: attrs.image}) : attrs;
 
         return attrs;
     }

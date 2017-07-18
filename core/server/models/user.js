@@ -139,6 +139,9 @@ User = ghostBookshelf.Model.extend({
             delete attrs.email;
         }
 
+        attrs = attrs.image ? _.extend(attrs, {profile_image: attrs.image}) : attrs;
+        attrs = attrs.cover ? _.extend(attrs, {cover_image: attrs.cover}) : attrs;
+
         return attrs;
     },
 
