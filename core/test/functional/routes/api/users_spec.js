@@ -12,7 +12,7 @@ describe('User API', function () {
         authorAccessToken = '',
         editor, author, ghostServer, inactiveUser;
 
-    before(function (done) {
+    beforeEach(function (done) {
         // starting ghost automatically populates the db
         // TODO: prevent db init, and manage bringing up the DB with fixtures ourselves
         ghost().then(function (_ghostServer) {
@@ -63,7 +63,7 @@ describe('User API', function () {
         }).catch(done);
     });
 
-    after(function () {
+    afterEach(function () {
         return testUtils.clearData()
             .then(function () {
                 return ghostServer.stop();
@@ -430,6 +430,34 @@ describe('User API', function () {
 
                                 done();
                             });
+                    });
+            });
+        });
+
+        describe('Destroy', function () {
+            it('[success] Destroy active user', function (done) {
+                request.delete(testUtils.API.getApiQuery('users/' + editor.id))
+                    .set('Authorization', 'Bearer ' + ownerAccessToken)
+                    .expect(204)
+                    .end(function (err) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        done();
+                    });
+            });
+
+            it('[failure] Destroy unknown user id', function (done) {
+                request.delete(testUtils.API.getApiQuery('users/' + ObjectId.generate()))
+                    .set('Authorization', 'Bearer ' + ownerAccessToken)
+                    .expect(403)
+                    .end(function (err) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        done();
                     });
             });
         });
