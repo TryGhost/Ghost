@@ -415,6 +415,21 @@ describe('User API', function () {
                     });
             });
         });
+
+        describe('Destroy', function () {
+            it('[failure] destroy unknown user', function (done) {
+                request.delete(testUtils.API.getApiQuery('users/458'))
+                    .set('Authorization', 'Bearer ' + ownerAccessToken)
+                    .expect(404)
+                    .end(function (err) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        done();
+                    });
+            });
+        });
     });
 
     describe('As Editor', function () {
