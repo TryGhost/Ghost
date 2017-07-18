@@ -20,9 +20,14 @@ events.on('token.added', function (tokenModel) {
 /**
  * WHEN user get's suspended (status=inactive), we delete his tokens to ensure
  * he can't login anymore
+ *
+ * NOTE:
+ *   - this event get's triggered either on user update (suspended) or if an **active** user get's deleted.
+ *   - if an active user get's deleted, we have to access the previous attributes, because this is how bookshelf works
+ *     if you delete a user.
  */
 events.on('user.deactivated', function (userModel) {
-    var options = {id: userModel.id};
+    var options = {id: userModel.id || userModel.previousAttributes().id};
 
     models.Accesstoken.destroyByUser(options)
         .then(function () {
