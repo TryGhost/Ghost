@@ -20,7 +20,7 @@ var _              = require('lodash'),
     /**
      * There are three user states:
      * 1. active users: everything is allowed
-     * 2. restricted users: imported users, we reset their passport, their are just "locked out from the admin panel"
+     * 2. restricted users: imported users, we reset their passport, they are "locked out from the admin panel"
      * 3. inactivate users: e.g. owner user, suspended users, you can' serve their author page
      *
      * NOTE: warn level is not used right now!
