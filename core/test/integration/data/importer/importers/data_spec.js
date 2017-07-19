@@ -60,7 +60,7 @@ describe('Import', function () {
             }).then(function (importResult) {
                 should.exist(importResult.data.posts);
                 importResult.data.posts.length.should.equal(1);
-                importResult.problems.length.should.eql(2);
+                importResult.problems.length.should.eql(3);
 
                 done();
             }).catch(done);
@@ -89,6 +89,26 @@ describe('Import', function () {
                 importResult.problems.length.should.equal(3);
 
                 importResult.problems[2].message.should.equal('Theme not imported, please upload in Settings - Design');
+
+                done();
+            }).catch(done);
+        });
+
+        it('cares about invalid dates', function (done) {
+            var exportData;
+
+            testUtils.fixtures.loadExportFixture('export-003',{lts:true}).then(function (exported) {
+                exportData = exported;
+                return dataImporter.doImport(exportData);
+            }).then(function (importResult) {
+                should.exist(importResult.data.posts);
+                importResult.data.posts.length.should.equal(1);
+                importResult.problems.length.should.eql(3);
+
+                moment(importResult.data.posts[0].created_at).isValid().should.eql(true);
+                moment(importResult.data.posts[0].updated_at).format().should.eql('2013-10-18T23:58:44Z');
+                moment(importResult.data.posts[0].published_at).format().should.eql('2013-12-29T11:58:30Z');
+                moment(importResult.data.tags[0].updated_at).format().should.eql('2016-07-17T12:02:54Z');
 
                 done();
             }).catch(done);
