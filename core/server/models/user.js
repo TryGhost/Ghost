@@ -17,10 +17,18 @@ var _              = require('lodash'),
     bcryptGenSalt  = Promise.promisify(bcrypt.genSalt),
     bcryptHash     = Promise.promisify(bcrypt.hash),
     bcryptCompare  = Promise.promisify(bcrypt.compare),
-
-    activeStates   = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'],
-    inactiveStates = ['inactive', 'locked'],
-    allStates      = activeStates.concat(inactiveStates),
+    /**
+     * There are three user states:
+     * 1. active users: everything is allowed
+     * 2. restricted users: imported users, we reset their passport, their are just "locked out from the admin panel"
+     * 3. inactivate users: e.g. owner user, suspended users, you can' serve their author page
+     *
+     * NOTE: warn level is not used right now!
+     */
+    activeStates     = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'],
+    restrictedStates = ['locked'],
+    inactiveStates   = ['inactive'],
+    allStates        = activeStates.concat(inactiveStates).concat(restrictedStates),
     User,
     Users;
 
@@ -351,7 +359,7 @@ User = ghostBookshelf.Model.extend({
         }
 
         if (status === 'active') {
-            query.query('whereIn', 'status', activeStates);
+            query.query('whereIn', 'status', activeStates.concat(restrictedStates));
         } else if (status !== 'all') {
             query.query('where', {status: status});
         }
@@ -806,7 +814,8 @@ User = ghostBookshelf.Model.extend({
             }
         });
     },
-    inactiveStates: inactiveStates
+    inactiveStates: inactiveStates,
+    restrictedStates: restrictedStates
 });
 
 Users = ghostBookshelf.Collection.extend({
