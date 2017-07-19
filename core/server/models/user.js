@@ -94,7 +94,7 @@ User = ghostBookshelf.Model.extend({
     },
 
     isActive: function isActive() {
-        return inactiveStates.indexOf(this.get('status')) === -1;
+        return activeStates.indexOf(this.get('status')) !== -1;
     },
 
     isLocked: function isLocked() {
