@@ -285,6 +285,16 @@ fixtures = {
         });
     },
 
+    insertOneUser: function insertOneUser(options) {
+        options = options || {};
+
+        return db.knex('users').insert(DataGenerator.forKnex.createUser({
+            email: options.email,
+            slug: options.slug,
+            status: options.status
+        }));
+    },
+
     // Creates a client, and access and refresh tokens for user with index or 2 by default
     createTokensForUser: function createTokensForUser(index) {
         return db.knex('clients').insert(DataGenerator.forKnex.clients).then(function () {

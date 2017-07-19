@@ -409,12 +409,27 @@ describe('Channel Routes', function () {
     });
 
     describe('Author', function () {
+        var lockedUser = {
+                slug: 'locked-so-what',
+                email: 'locked@example.com',
+                status: 'locked'
+            },
+            suspendedUser = {
+                slug: 'suspended-meeh',
+                email: 'suspended@example.com',
+                status: 'inactive'
+            };
+
         before(function (done) {
             testUtils.clearData().then(function () {
                 // we initialise data, but not a user. No user should be required for navigating the frontend
                 return testUtils.initData();
             }).then(function () {
                 return testUtils.fixtures.overrideOwnerUser('ghost-owner');
+            }).then(function () {
+                return testUtils.fixtures.insertOneUser(lockedUser);
+            }).then(function () {
+                return testUtils.fixtures.insertOneUser(suspendedUser);
             }).then(function () {
                 done();
             }).catch(done);
@@ -440,6 +455,21 @@ describe('Channel Routes', function () {
 
         it('should 404 for unknown author with invalid characters', function (done) {
             request.get('/author/ghost!user^/')
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(404)
+                .expect(/Page not found/)
+                .end(doEnd(done));
+        });
+
+        it('[success] author is locked', function (done) {
+            request.get('/author/' + lockedUser.slug + '/')
+                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect(200)
+                .end(doEnd(done));
+        });
+
+        it('[failure] author is suspended', function (done) {
+            request.get('/author/' + suspendedUser.slug + '/')
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(404)
                 .expect(/Page not found/)
