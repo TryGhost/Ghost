@@ -627,27 +627,6 @@ User = ghostBookshelf.Model.extend({
         return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.models.user.notEnoughPermission')}));
     },
 
-    setWarning: function setWarning(user, options) {
-        var status = user.get('status'),
-            regexp = /warn-(\d+)/i,
-            level;
-
-        if (status === 'active') {
-            user.set('status', 'warn-1');
-            level = 1;
-        } else {
-            level = parseInt(status.match(regexp)[1], 10) + 1;
-            if (level > 4) {
-                user.set('status', 'locked');
-            } else {
-                user.set('status', 'warn-' + level);
-            }
-        }
-        return Promise.resolve(user.save(options)).then(function then() {
-            return 5 - level;
-        });
-    },
-
     // Finds the user by email, and checks the password
     // @TODO: shorten this function and rename...
     check: function check(object) {
