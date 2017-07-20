@@ -282,6 +282,16 @@ describe('Acceptance: Settings - Design', function () {
                             errorDetails: [
                                 {
                                     level: 'error',
+                                    rule: 'Assets such as CSS & JS must use the <code>{{asset}}</code> helper',
+                                    details: '<p>The listed files should be included using the <code>{{asset}}</code> helper.</p>',
+                                    failures: [
+                                        {
+                                            ref: '/assets/javascripts/ui.js'
+                                        }
+                                    ]
+                                },
+                                {
+                                    level: 'error',
                                     rule: 'Templates must contain valid Handlebars.',
                                     failures: [
                                         {
@@ -291,16 +301,6 @@ describe('Acceptance: Settings - Design', function () {
                                         {
                                             ref: 'tag.hbs',
                                             message: 'The partial index_meta could not be found'
-                                        }
-                                    ]
-                                },
-                                {
-                                    level: 'error',
-                                    rule: 'Assets such as CSS & JS must use the <code>{{asset}}</code> helper',
-                                    details: '<p>The listed files should be included using the <code>{{asset}}</code> helper.</p>',
-                                    failures: [
-                                        {
-                                            ref: '/assets/javascripts/ui.js'
                                         }
                                     ]
                                 }
@@ -319,19 +319,21 @@ describe('Acceptance: Settings - Design', function () {
             ).to.equal('Invalid theme');
 
             expect(
-                find('.theme-validation-errors').text(),
+                find('.theme-validation-rule-text').text(),
                 'top-level errors are displayed'
             ).to.match(/Templates must contain valid Handlebars/);
 
+            await click(testSelector('toggle-details'));
+
             expect(
-                find('.theme-validation-errors').text(),
+                find('.theme-validation-details').text(),
                 'top-level errors do not escape HTML'
             ).to.match(/The listed files should be included using the {{asset}} helper/);
 
             expect(
-                find('.theme-validation-errors').text(),
+                find('.theme-validation-list ul li').text(),
                 'individual failures are displayed'
-            ).to.match(/index\.hbs: The partial index_meta could not be found/);
+            ).to.match(/\/assets\/javascripts\/ui\.js/);
 
             // reset to default mirage handlers
             mockThemes(server);
@@ -397,13 +399,15 @@ describe('Acceptance: Settings - Design', function () {
                 'modal title after uploading theme with warnings'
             ).to.equal('Upload successful with warnings/errors!');
 
+            await click(testSelector('toggle-details'));
+
             expect(
-                find('.theme-validation-errors').text(),
+                find('.theme-validation-details').text(),
                 'top-level warnings are displayed'
             ).to.match(/The listed files should be included using the {{asset}} helper/);
 
             expect(
-                find('.theme-validation-errors').text(),
+                find('.theme-validation-list ul li').text(),
                 'individual warning failures are displayed'
             ).to.match(/\/assets\/dist\/img\/apple-touch-icon\.png/);
 
@@ -476,6 +480,16 @@ describe('Acceptance: Settings - Design', function () {
                             errorDetails: [
                                 {
                                     level: 'error',
+                                    rule: 'Assets such as CSS & JS must use the <code>{{asset}}</code> helper',
+                                    details: '<p>The listed files should be included using the <code>{{asset}}</code> helper.</p>',
+                                    failures: [
+                                        {
+                                            ref: '/assets/javascripts/ui.js'
+                                        }
+                                    ]
+                                },
+                                {
+                                    level: 'error',
                                     rule: 'Templates must contain valid Handlebars.',
                                     failures: [
                                         {
@@ -485,16 +499,6 @@ describe('Acceptance: Settings - Design', function () {
                                         {
                                             ref: 'tag.hbs',
                                             message: 'The partial index_meta could not be found'
-                                        }
-                                    ]
-                                },
-                                {
-                                    level: 'error',
-                                    rule: 'Assets such as CSS & JS must use the <code>{{asset}}</code> helper',
-                                    details: '<p>The listed files should be included using the <code>{{asset}}</code> helper.</p>',
-                                    failures: [
-                                        {
-                                            ref: '/assets/javascripts/ui.js'
                                         }
                                     ]
                                 }
@@ -518,15 +522,17 @@ describe('Acceptance: Settings - Design', function () {
                 'top-level errors are displayed in activation errors'
             ).to.match(/Templates must contain valid Handlebars/);
 
+            await click(testSelector('toggle-details'));
+
             expect(
-                find(testSelector('theme-warnings')).text(),
+                find('.theme-validation-details').text(),
                 'top-level errors do not escape HTML in activation errors'
             ).to.match(/The listed files should be included using the {{asset}} helper/);
 
             expect(
-                find(testSelector('theme-warnings')).text(),
+                find('.theme-validation-list ul li').text(),
                 'individual failures are displayed in activation errors'
-            ).to.match(/index\.hbs: The partial index_meta could not be found/);
+            ).to.match(/\/assets\/javascripts\/ui\.js/);
 
             // restore default mirage handlers
             mockThemes(server);
@@ -572,13 +578,15 @@ describe('Acceptance: Settings - Design', function () {
                 'modal title after activating theme with warnings'
             ).to.equal('Activated successful with warnings/errors!');
 
+            await click(testSelector('toggle-details'));
+
             expect(
-                find(testSelector('theme-warnings')).text(),
+                find('.theme-validation-details').text(),
                 'top-level warnings are displayed in activation warnings'
             ).to.match(/The listed files should be included using the {{asset}} helper/);
 
             expect(
-                find(testSelector('theme-warnings')).text(),
+                find('.theme-validation-list ul li').text(),
                 'individual warning failures are displayed in activation warnings'
             ).to.match(/\/assets\/dist\/img\/apple-touch-icon\.png/);
 

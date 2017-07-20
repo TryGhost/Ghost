@@ -17,7 +17,9 @@
             </div>
         {{/if}}
         {{#each fatalErrors as |error|}}
-            {{gh-theme-error-li error=error}}
+            <li class="theme-validation-item">
+                {{gh-theme-error-li error=error}}
+            </li>
         {{/each}}
 
         {{#if errors}}
@@ -27,7 +29,9 @@
             </div>
         {{/if}}
         {{#each errors as |error|}}
-            {{gh-theme-error-li error=error}}
+            <li class="theme-validation-item">
+                {{gh-theme-error-li error=error}}
+            </li>
         {{/each}}
 
         {{#if warnings}}
@@ -36,7 +40,9 @@
             </div>
         {{/if}}
         {{#each warnings as |error|}}
-            {{gh-theme-error-li error=error}}
+            <li class="theme-validation-item">
+                {{gh-theme-error-li error=error}}
+            </li>
         {{/each}}
 
     </ul>
