@@ -253,7 +253,7 @@ describe('Permissions', function () {
                 result.should.not.eql(publicContext);
                 result.should.eql({
                     context: {},
-                    status: 'active'
+                    status: 'all'
                 });
 
                 return permissions.applyPublicRules('users', 'browse', _.extend({}, _.cloneDeep(publicContext), {status: 'active'}));
@@ -265,17 +265,6 @@ describe('Permissions', function () {
 
                 done();
             }).catch(done);
-        });
-
-        it('should throw an error for an inactive user', function (done) {
-            var inactive = {context: {}, status: 'inactive'};
-
-            permissions.applyPublicRules('users', 'browse', _.cloneDeep(inactive)).then(function () {
-                done('Did not throw an error for inactive');
-            }).catch(function (err) {
-                (err instanceof errors.NoPermissionError).should.eql(true);
-                done();
-            });
         });
     });
 

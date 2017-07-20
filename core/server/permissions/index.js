@@ -61,9 +61,7 @@ function applyStatusRules(docName, method, opts) {
     // Enforce status 'active' for users
     if (docName === 'users') {
         if (!opts.status) {
-            return 'active';
-        } else if (opts.status !== 'active') {
-            throw err;
+            return 'all';
         }
     }
 
