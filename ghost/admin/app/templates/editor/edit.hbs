@@ -37,8 +37,8 @@
     --}}
     {{#gh-markdown-editor
         tabindex="2"
-        placeholder="Now begin writing your story..."
-        autofocus=true
+        placeholder="Begin writing your story..."
+        autofocus=model.isNew
         uploadedImageUrls=editor.uploadedImageUrls
         mobiledoc=(readonly model.scratch)
         isFullScreen=editor.isFullScreen
@@ -54,7 +54,7 @@
         <div class="gh-markdown-editor-pane">
             {{gh-textarea model.titleScratch
                 class="gh-editor-title"
-                placeholder="Your Post Title"
+                placeholder="Post Title"
                 tabindex="1"
                 autoExpand=".gh-markdown-editor-pane"
                 focusOut=(action "saveTitle")
