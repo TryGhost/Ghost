@@ -93,11 +93,11 @@
                 <li class="no-posts-box">
                     <div class="no-posts">
                         {{#if showingAll}}
-                            <h3>You Haven't Written Any Posts Yet!</h3>
-                            {{#link-to "editor.new"}}<button type="button" class="gh-btn gh-btn-green gh-btn-lg"><span>Write a new Post</span></button>{{/link-to}}
+                            <h3>You haven't written any stories yet!</h3>
+                            {{#link-to "editor.new"}}<button type="button" class="gh-btn gh-btn-green gh-btn-lg"><span>Write a new Story</span></button>{{/link-to}}
                         {{else}}
-                            <h3>No posts match the current filter</h3>
-                            {{#link-to "posts.index" (query-params type=null author=null tag=null)}}<button type="button" class="gh-btn gh-btn-lg"><span>Show all posts</span></button>{{/link-to}}
+                            <h3>No stories match the current filter</h3>
+                            {{#link-to "posts.index" (query-params type=null author=null tag=null)}}<button type="button" class="gh-btn gh-btn-lg"><span>Show all stories</span></button>{{/link-to}}
                         {{/if}}
                     </div>
                 </li>
