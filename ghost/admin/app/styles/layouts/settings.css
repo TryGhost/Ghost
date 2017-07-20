@@ -354,25 +354,14 @@
 .gh-themes-uploadbtn {
     margin-top: 25px;
 }
-/*Errors */
 
+/*Errors */
 .theme-validation-errors {
     padding-left: 0;
 }
 
 .theme-validation-errors p {
     margin-bottom: 0;
-}
-
-.theme-validation-errors > li {
-    margin-bottom: 1.2em;
-    list-style: none;
-    font-size: 15px;
-}
-
-.theme-validation-errors > li > ul {
-    margin-top: 0.2em;
-    font-size: 13px;
 }
 
 .theme-validation-errordescription {
@@ -385,9 +374,59 @@
 }
 
 .theme-validation-errortype {
-    font-size: 18px;
+    font-size: 1.8rem;
 }
 
 .theme-validation-errortype.fatal {
     color: var(--red);
+}
+
+.theme-validation-item {
+    margin: 0 0 15px;
+    padding: 15px 20px;
+    border: 1px solid #e5eff5;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+}
+
+.theme-validation-item h4 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 500;
+}
+
+.theme-validation-item h6 {
+    font-size: 1.4rem;
+    font-weight: 500;
+}
+
+.theme-validation-toggle-details {
+    display: flex;
+    justify-content: space-between;
+    flex-grow: 1;
+    align-items: center;
+    padding: 0;
+    color: var(--darkgrey);
+    text-decoration: none!important;
+}
+
+.theme-validation-rule-icon {
+    flex-shrink: 0;
+    margin-left: 5px;
+    width: 13px;
+    color: var(--midgrey);
+    transition: all 0.1s ease-out;
+}
+
+.theme-validation-rule-icon svg path {
+    fill: var(--midgrey);
+}
+
+.theme-validation-details {
+    margin-top: 15px;
+}
+
+.theme-validation-list {
+    margin-top: 1em;
 }
