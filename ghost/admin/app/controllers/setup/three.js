@@ -7,6 +7,7 @@ import injectService from 'ember-service/inject';
 import run from 'ember-runloop';
 import {A as emberA} from 'ember-array/utils';
 import {htmlSafe} from 'ember-string';
+import {isInvalidError} from 'ember-ajax/errors';
 import {task, timeout} from 'ember-concurrency';
 
 const {Errors} = DS;
@@ -143,7 +144,7 @@ export default Controller.extend({
     },
 
     invite: task(function* () {
-        let users = this.get('usersArray');
+        let users = this.get('validUsersArray');
 
         if (this.validate() && users.length > 0) {
             this._hasTransitioned = false;
@@ -173,7 +174,7 @@ export default Controller.extend({
     }).drop(),
 
     _saveInvites(authorRole) {
-        let users = this.get('usersArray');
+        let users = this.get('validUsersArray');
 
         return RSVP.Promise.all(
             users.map((user) => {
@@ -187,8 +188,9 @@ export default Controller.extend({
                         email: user,
                         success: invite.get('status') === 'sent'
                     };
-                }).catch(() => {
+                }).catch((error) => {
                     return {
+                        error,
                         email: user,
                         success: false
                     };
@@ -206,6 +208,9 @@ export default Controller.extend({
         invites.forEach((invite) => {
             if (invite.success) {
                 successCount++;
+            } else if (isInvalidError(invite.error)) {
+                message = `${invite.email} was invalid: ${invite.error.errors[0].message}`;
+                notifications.showAlert(message, {type: 'error', delayed: true, key: `signup.send-invitations.${invite.email}`});
             } else {
                 erroredEmails.push(invite.email);
             }
