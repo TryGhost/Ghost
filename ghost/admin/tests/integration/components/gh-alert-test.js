@@ -33,7 +33,7 @@ describe('Integration: Component: gh-alert', function () {
         expect($alert.hasClass('gh-alert-red'), 'success class isn\'t red').to.be.true;
 
         this.set('message.type', 'warn');
-        expect($alert.hasClass('gh-alert-yellow'), 'success class isn\'t yellow').to.be.true;
+        expect($alert.hasClass('gh-alert-blue'), 'success class isn\'t yellow').to.be.true;
 
         this.set('message.type', 'info');
         expect($alert.hasClass('gh-alert-blue'), 'success class isn\'t blue').to.be.true;

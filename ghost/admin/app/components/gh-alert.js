@@ -17,7 +17,7 @@ export default Component.extend({
         typeMapping = {
             success: 'green',
             error: 'red',
-            warn: 'yellow',
+            warn: 'blue',
             info: 'blue'
         };
 
