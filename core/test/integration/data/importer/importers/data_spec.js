@@ -617,11 +617,11 @@ describe('Import (new test structure)', function () {
 
             fetchImported.then(function (importedData) {
                 var posts,
-                    settings,
                     tags,
                     post1,
                     post2,
-                    post3;
+                    post3,
+                    post4;
 
                 // General data checks
                 should.exist(importedData);
@@ -629,7 +629,6 @@ describe('Import (new test structure)', function () {
 
                 // Test posts, settings and tags
                 posts = importedData[0];
-                settings = importedData[1];
                 tags = importedData[2];
 
                 post1 = _.find(posts, function (post) {
@@ -641,12 +640,16 @@ describe('Import (new test structure)', function () {
                 post3 = _.find(posts, function (post) {
                     return post.slug === exportData.data.posts[2].slug;
                 });
+                post4 = _.find(posts, function (post) {
+                    return post.slug === exportData.data.posts[3].slug;
+                });
 
                 // test posts
-                posts.length.should.equal(3, 'Wrong number of posts');
+                posts.length.should.equal(4, 'Wrong number of posts');
                 post1.title.should.equal(exportData.data.posts[0].title);
                 post2.title.should.equal(exportData.data.posts[1].title);
                 post3.title.should.equal(exportData.data.posts[2].title);
+                post4.title.should.equal(exportData.data.posts[3].title);
 
                 // test tags
                 tags.length.should.equal(3, 'should be 3 tags');
@@ -662,7 +665,8 @@ describe('Import (new test structure)', function () {
             );
 
             fetchImported.then(function (importedData) {
-                var user1,
+                var ownerUser,
+                    user1,
                     user2,
                     user3,
                     users,
@@ -676,14 +680,17 @@ describe('Import (new test structure)', function () {
                 users = importedData[0];
                 rolesUsers = importedData[1];
 
-                // we imported 3 users
-                // the original user should be untouched
+                // we imported 4 users
+                // the original owner should be untouched
                 // the two news users should have been created
-                users.length.should.equal(3, 'There should only be three users');
+                users.length.should.equal(4, 'There should only be 4 users');
 
-                // the owner user is first
-                user1 = users[0];
-                // the other two users should have the imported data, but they get inserted in different orders
+                // the original owner user
+                ownerUser = users[0];
+
+                user1 = _.find(users, function (user) {
+                    return user.name === exportData.data.users[0].name;
+                });
                 user2 = _.find(users, function (user) {
                     return user.name === exportData.data.users[1].name;
                 });
@@ -691,9 +698,11 @@ describe('Import (new test structure)', function () {
                     return user.name === exportData.data.users[2].name;
                 });
 
-                user1.email.should.equal(testUtils.DataGenerator.Content.users[0].email);
-                user1.password.should.equal(testUtils.DataGenerator.Content.users[0].password);
-                user1.status.should.equal('active');
+                ownerUser.email.should.equal(testUtils.DataGenerator.Content.users[0].email);
+                ownerUser.password.should.equal(testUtils.DataGenerator.Content.users[0].password);
+                ownerUser.status.should.equal('active');
+
+                user1.email.should.equal(exportData.data.users[0].email);
                 user2.email.should.equal(exportData.data.users[1].email);
                 user3.email.should.equal(exportData.data.users[2].email);
 
@@ -704,17 +713,17 @@ describe('Import (new test structure)', function () {
                 // Newly created users should have created_at/_by and updated_at/_by set to when they were imported
                 user2.created_by.should.equal(user1.id);
                 user2.created_at.should.not.equal(exportData.data.users[1].created_at);
-                user2.updated_by.should.equal(user1.id);
+                user2.updated_by.should.equal(ownerUser.id);
                 user2.updated_at.should.not.equal(exportData.data.users[1].updated_at);
                 user3.created_by.should.equal(user1.id);
                 user3.created_at.should.not.equal(exportData.data.users[2].created_at);
-                user3.updated_by.should.equal(user1.id);
+                user3.updated_by.should.equal(ownerUser.id);
                 user3.updated_at.should.not.equal(exportData.data.users[2].updated_at);
 
-                rolesUsers.length.should.equal(3, 'There should be 3 role relations');
+                rolesUsers.length.should.equal(4, 'There should be 4 role relations');
 
                 _.each(rolesUsers, function (roleUser) {
-                    if (roleUser.user_id === user1.id) {
+                    if (roleUser.user_id === ownerUser.id) {
                         roleUser.role_id.should.equal(testUtils.DataGenerator.Content.roles[3].id, 'Original user should be an owner');
                     }
                     if (roleUser.user_id === user2.id) {
@@ -737,8 +746,8 @@ describe('Import (new test structure)', function () {
             );
 
             fetchImported.then(function (importedData) {
-                var users, user1, user2, user3,
-                    posts, post1, post2, post3,
+                var users, ownerUser, user1, user2, user3,
+                    posts, post1, post2, post3, post4,
                     tags, tag1, tag2, tag3;
 
                 // General data checks
@@ -752,14 +761,25 @@ describe('Import (new test structure)', function () {
 
                 // Grab the users
                 // the owner user is first
-                user1 = users[0];
-                // the other two users should have the imported data, but they get inserted in different orders
+                // This is the owner which is present when the database get's created (not the imported owner)
+                // The imported owner get's transformed into an administrator with a new id
+                ownerUser = users[0];
+
+                // Rachel the Machine (the imported owner)
+                user1 = _.find(users, function (user) {
+                    return user.name === exportData.data.users[0].name;
+                });
+
+                // Josephine Bloggs
                 user2 = _.find(users, function (user) {
                     return user.name === exportData.data.users[1].name;
                 });
+
+                // Smith Wellingsworth
                 user3 = _.find(users, function (user) {
                     return user.name === exportData.data.users[2].name;
                 });
+
                 post1 = _.find(posts, function (post) {
                     return post.slug === exportData.data.posts[0].slug;
                 });
@@ -768,6 +788,9 @@ describe('Import (new test structure)', function () {
                 });
                 post3 = _.find(posts, function (post) {
                     return post.slug === exportData.data.posts[2].slug;
+                });
+                post4 = _.find(posts, function (post) {
+                    return post.slug === exportData.data.posts[3].slug;
                 });
                 tag1 = _.find(tags, function (tag) {
                     return tag.slug === exportData.data.tags[0].slug;
@@ -781,23 +804,25 @@ describe('Import (new test structure)', function () {
 
                 // Check the authors are correct
                 post1.author_id.should.equal(user2.id);
-                post2.author_id.should.equal(user3.id);
-                post3.author_id.should.equal(user1.id);
+                // This ensures that imported owner posts are getting imported with a new id
+                post2.author_id.should.equal(user1.id);
+                post3.author_id.should.equal(user3.id);
+                post4.author_id.should.equal(user1.id);
 
                 // Created by should be what was in the import file
                 post1.created_by.should.equal(user1.id);
-                post2.created_by.should.equal(user3.id);
-                post3.created_by.should.equal(user1.id);
+                post2.created_by.should.equal(user1.id);
+                post3.created_by.should.equal(user3.id);
 
                 // Updated by gets set to the current user
                 post1.updated_by.should.equal(user1.id);
                 post2.updated_by.should.equal(user1.id);
-                post3.updated_by.should.equal(user1.id);
+                post3.updated_by.should.equal(user3.id);
 
                 // Published by should be what was in the import file
                 post1.published_by.should.equal(user2.id);
-                post2.published_by.should.equal(user3.id);
-                post3.published_by.should.equal(user1.id);
+                post2.published_by.should.equal(user1.id);
+                post3.published_by.should.equal(user3.id);
 
                 // Created by should be what was in the import file
                 tag1.created_by.should.equal(user1.id);
@@ -806,7 +831,7 @@ describe('Import (new test structure)', function () {
 
                 // Updated by gets set to the current user
                 tag1.updated_by.should.equal(user1.id);
-                tag2.updated_by.should.equal(user1.id);
+                tag2.updated_by.should.equal(user2.id);
                 tag3.updated_by.should.equal(user1.id);
 
                 done();
@@ -833,13 +858,11 @@ describe('Import (new test structure)', function () {
         it('gets the right data', function (done) {
             var fetchImported = Promise.join(
                 knex('posts').select(),
-                knex('settings').select(),
                 knex('tags').select()
             );
 
             fetchImported.then(function (importedData) {
                 var posts,
-                    settings,
                     tags,
                     post1,
                     post2,
@@ -847,12 +870,11 @@ describe('Import (new test structure)', function () {
 
                 // General data checks
                 should.exist(importedData);
-                importedData.length.should.equal(3, 'Did not get data successfully');
+                importedData.length.should.equal(2, 'Did not get data successfully');
 
                 // Test posts, settings and tags
                 posts = importedData[0];
-                settings = importedData[1];
-                tags = importedData[2];
+                tags = importedData[1];
 
                 post1 = _.find(posts, function (post) {
                     return post.slug === exportData.data.posts[0].slug;
@@ -1013,7 +1035,7 @@ describe('Import (new test structure)', function () {
 
                 // Updated by gets set to the current user
                 post1.updated_by.should.equal(user1.id);
-                post2.updated_by.should.equal(user1.id);
+                post2.updated_by.should.equal(user3.id);
                 post3.updated_by.should.equal(user1.id);
 
                 // Published by should be what was in the import file
@@ -1028,7 +1050,7 @@ describe('Import (new test structure)', function () {
 
                 // Updated by gets set to the current user
                 tag1.updated_by.should.equal(user1.id);
-                tag2.updated_by.should.equal(user1.id);
+                tag2.updated_by.should.equal(user2.id);
                 tag3.updated_by.should.equal(user1.id);
 
                 done();
@@ -1056,13 +1078,11 @@ describe('Import (new test structure)', function () {
         it('gets the right data', function (done) {
             var fetchImported = Promise.join(
                 knex('posts').select(),
-                knex('settings').select(),
                 knex('tags').select()
             );
 
             fetchImported.then(function (importedData) {
                 var posts,
-                    settings,
                     tags,
                     post1,
                     post2,
@@ -1070,12 +1090,11 @@ describe('Import (new test structure)', function () {
 
                 // General data checks
                 should.exist(importedData);
-                importedData.length.should.equal(3, 'Did not get data successfully');
+                importedData.length.should.equal(2, 'Did not get data successfully');
 
                 // Test posts, settings and tags
                 posts = importedData[0];
-                settings = importedData[1];
-                tags = importedData[2];
+                tags = importedData[1];
 
                 post1 = _.find(posts, function (post) {
                     return post.slug === exportData.data.posts[0].slug;
@@ -1121,6 +1140,7 @@ describe('Import (new test structure)', function () {
                 var ownerUser,
                     newUser,
                     existingUser,
+                    importedOwnerUser,
                     users,
                     rolesUsers;
 
@@ -1132,12 +1152,15 @@ describe('Import (new test structure)', function () {
                 users = importedData[0];
                 rolesUsers = importedData[1];
 
-                // we imported 3 users, there were already 4 users, only one of the imported users is new
-                users.length.should.equal(5, 'There should only be three users');
+                // we imported 3 users, there were already 3 users, only one of the imported users is new
+                users.length.should.equal(6, 'There should only be 6 users');
 
-                // the owner user is first
+                // the original owner user is first
                 ownerUser = users[0];
-                // the other two users should have the imported data, but they get inserted in different orders
+
+                importedOwnerUser = _.find(users, function (user) {
+                    return user.name === exportData.data.users[0].name;
+                });
                 newUser = _.find(users, function (user) {
                     return user.name === exportData.data.users[1].name;
                 });
@@ -1157,16 +1180,19 @@ describe('Import (new test structure)', function () {
                 existingUser.status.should.equal('active');
 
                 // Newly created users should have created_at/_by and updated_at/_by set to when they were imported
-                newUser.created_by.should.equal(ownerUser.id);
+                newUser.created_by.should.equal(importedOwnerUser.id);
                 newUser.created_at.should.not.equal(exportData.data.users[1].created_at);
                 newUser.updated_by.should.equal(ownerUser.id);
                 newUser.updated_at.should.not.equal(exportData.data.users[1].updated_at);
 
-                rolesUsers.length.should.equal(5, 'There should be 5 role relations');
+                rolesUsers.length.should.equal(6, 'There should be 6 role relations');
 
                 _.each(rolesUsers, function (roleUser) {
                     if (roleUser.user_id === ownerUser.id) {
                         roleUser.role_id.should.equal(testUtils.DataGenerator.Content.roles[3].id, 'Original user should be an owner');
+                    }
+                    if (roleUser.user_id === importedOwnerUser.id) {
+                        roleUser.role_id.should.equal(testUtils.DataGenerator.Content.roles[0].id, 'Imported owner should be an admin now.');
                     }
                     if (roleUser.user_id === newUser.id) {
                         roleUser.role_id.should.equal(testUtils.DataGenerator.Content.roles[0].id, 'New user should be an admin');
@@ -1188,7 +1214,7 @@ describe('Import (new test structure)', function () {
             );
 
             fetchImported.then(function (importedData) {
-                var users, ownerUser, newUser, existingUser,
+                var users, ownerUser, user2, user3, importedOwnerUser,
                     posts, post1, post2, post3,
                     tags, tag1, tag2, tag3;
 
@@ -1204,11 +1230,14 @@ describe('Import (new test structure)', function () {
                 // Grab the users
                 // the owner user is first
                 ownerUser = users[0];
-                // the other two users should have the imported data, but they get inserted in different orders
-                newUser = _.find(users, function (user) {
+
+                importedOwnerUser = _.find(users, function (user) {
+                    return user.name === exportData.data.users[0].name;
+                });
+                user2 = _.find(users, function (user) {
                     return user.name === exportData.data.users[1].name;
                 });
-                existingUser = _.find(users, function (user) {
+                user3 = _.find(users, function (user) {
                     return user.name === exportData.data.users[2].name;
                 });
                 post1 = _.find(posts, function (post) {
@@ -1231,34 +1260,34 @@ describe('Import (new test structure)', function () {
                 });
 
                 // Check the authors are correct
-                post1.author_id.should.equal(newUser.id);
-                post2.author_id.should.equal(existingUser.id);
-                post3.author_id.should.equal(ownerUser.id);
+                post1.author_id.should.equal(user2.id);
+                post2.author_id.should.equal(importedOwnerUser.id);
+                post3.author_id.should.equal(user3.id);
 
                 // Created by should be what was in the import file
-                post1.created_by.should.equal(ownerUser.id);
-                post2.created_by.should.equal(existingUser.id);
-                post3.created_by.should.equal(ownerUser.id);
+                post1.created_by.should.equal(importedOwnerUser.id);
+                post2.created_by.should.equal(importedOwnerUser.id);
+                post3.created_by.should.equal(user3.id);
 
                 // Updated by gets set to the current user
-                post1.updated_by.should.equal(ownerUser.id);
-                post2.updated_by.should.equal(ownerUser.id);
-                post3.updated_by.should.equal(ownerUser.id);
+                post1.updated_by.should.equal(importedOwnerUser.id);
+                post2.updated_by.should.equal(importedOwnerUser.id);
+                post3.updated_by.should.equal(user3.id);
 
                 // Published by should be what was in the import file
-                post1.published_by.should.equal(newUser.id);
-                post2.published_by.should.equal(existingUser.id);
-                post3.published_by.should.equal(ownerUser.id);
+                post1.published_by.should.equal(user2.id);
+                post2.published_by.should.equal(importedOwnerUser.id);
+                post3.published_by.should.equal(user3.id);
 
                 // Created by should be what was in the import file
-                tag1.created_by.should.equal(ownerUser.id);
-                tag2.created_by.should.equal(newUser.id);
-                tag3.created_by.should.equal(existingUser.id);
+                tag1.created_by.should.equal(importedOwnerUser.id);
+                tag2.created_by.should.equal(user2.id);
+                tag3.created_by.should.equal(user3.id);
 
                 // Updated by gets set to the current user
-                tag1.updated_by.should.equal(ownerUser.id);
-                tag2.updated_by.should.equal(ownerUser.id);
-                tag3.updated_by.should.equal(ownerUser.id);
+                tag1.updated_by.should.equal(importedOwnerUser.id);
+                tag2.updated_by.should.equal(user2.id);
+                tag3.updated_by.should.equal(importedOwnerUser.id);
 
                 done();
             }).catch(done);

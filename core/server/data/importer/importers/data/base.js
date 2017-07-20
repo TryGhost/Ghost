@@ -154,7 +154,7 @@ class Base {
      *  - we update all fields after the import (!)
      */
     afterImport(options) {
-        let self = this, dataToEdit = {}, oldUser;
+        let self = this, dataToEdit = {}, oldUser, context;
 
         debug('afterImport', this.modelName);
 
@@ -164,12 +164,9 @@ class Base {
             }
 
             return Promise.each(['author_id', 'published_by', 'created_by', 'updated_by'], function (key) {
+                // CASE: not all fields exist on each model, skip them if so
                 if (!obj[key]) {
-                    return;
-                }
-
-                if (models.User.isOwnerUser(obj[key])) {
-                    return;
+                    return Promise.resolve();
                 }
 
                 oldUser = _.find(self.users, {id: obj[key]});
@@ -191,7 +188,14 @@ class Base {
                     dataToEdit = {};
                     dataToEdit[key] = userModel.id;
 
-                    return models[self.modelName].edit(dataToEdit, _.extend(options, {id: obj.model.id}));
+                    // CASE: updated_by is taken from the context object
+                    if (key === 'updated_by') {
+                        context = {context: {user: userModel.id}};
+                    } else {
+                        context = {};
+                    }
+
+                    return models[self.modelName].edit(dataToEdit, _.merge({}, options, {id: obj.model.id}, context));
                 });
             });
         });
