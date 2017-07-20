@@ -17,10 +17,13 @@ var _              = require('lodash'),
     bcryptGenSalt  = Promise.promisify(bcrypt.genSalt),
     bcryptHash     = Promise.promisify(bcrypt.hash),
     bcryptCompare  = Promise.promisify(bcrypt.compare),
-
-    activeStates   = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'],
-    inactiveStates = ['inactive', 'locked'],
-    allStates      = activeStates.concat(inactiveStates),
+    activeStates     = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'],
+    /**
+     * inactive: owner user before blog setup, suspended users
+     * locked user: imported users, they get a random passport
+     */
+    inactiveStates   = ['inactive', 'locked'],
+    allStates        = activeStates.concat(inactiveStates),
     User,
     Users;
 
@@ -86,7 +89,7 @@ User = ghostBookshelf.Model.extend({
     },
 
     isActive: function isActive() {
-        return inactiveStates.indexOf(this.get('status')) === -1;
+        return activeStates.indexOf(this.get('status')) !== -1;
     },
 
     isLocked: function isLocked() {
@@ -359,6 +362,7 @@ User = ghostBookshelf.Model.extend({
         options = this.filterOptions(options, 'findOne');
         delete options.include;
         options.include = optInc;
+
         return query.fetch(options);
     },
 
@@ -617,27 +621,6 @@ User = ghostBookshelf.Model.extend({
         }
 
         return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.models.user.notEnoughPermission')}));
-    },
-
-    setWarning: function setWarning(user, options) {
-        var status = user.get('status'),
-            regexp = /warn-(\d+)/i,
-            level;
-
-        if (status === 'active') {
-            user.set('status', 'warn-1');
-            level = 1;
-        } else {
-            level = parseInt(status.match(regexp)[1], 10) + 1;
-            if (level > 4) {
-                user.set('status', 'locked');
-            } else {
-                user.set('status', 'warn-' + level);
-            }
-        }
-        return Promise.resolve(user.save(options)).then(function then() {
-            return 5 - level;
-        });
     },
 
     // Finds the user by email, and checks the password

@@ -568,6 +568,22 @@ describe('Users API', function () {
                         (err instanceof errors.NoPermissionError).should.eql(true);
                     });
                 });
+
+                it('[failure] can\' change my own status to locked', function () {
+                    return UserAPI.edit(
+                        {
+                            users: [
+                                {
+                                    status: 'locked'
+                                }
+                            ]
+                        }, _.extend({}, context.owner, {id: userIdFor.owner})
+                    ).then(function () {
+                        throw new Error('this is not allowed');
+                    }).catch(function (err) {
+                        (err instanceof errors.NoPermissionError).should.eql(true);
+                    });
+                });
             });
 
             describe('as admin', function () {
