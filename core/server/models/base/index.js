@@ -353,7 +353,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * `sanitizeData` ensures that client data is in the correct format for further operations.
      *
      * Dates:
-     * - client dates are sent as ISO format (moment(..).format())
+     * - client dates are sent as ISO 8601 format (moment(..).format())
      * - server dates are in JS Date format
      *   >> when bookshelf fetches data from the database, all dates are in JS Dates
      *   >> see `parse`
