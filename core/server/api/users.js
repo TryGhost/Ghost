@@ -137,9 +137,7 @@ users = {
             return canThis(options.context).edit.user(options.id).then(function () {
                 // CASE: can't edit my own status to inactive or locked
                 if (options.id === options.context.user) {
-                    if (dataProvider.User.inactiveStates.indexOf(options.data.users[0].status) !== -1 ||
-                        dataProvider.User.restrictedStates.indexOf(options.data.users[0].status) !== -1
-                    ) {
+                    if (dataProvider.User.inactiveStates.indexOf(options.data.users[0].status) !== -1) {
                         return Promise.reject(new errors.NoPermissionError({
                             message: i18n.t('errors.api.users.cannotChangeStatus')
                         }));

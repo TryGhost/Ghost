@@ -418,14 +418,15 @@ describe('Channel Routes', function () {
                 slug: 'suspended-meeh',
                 email: 'suspended@example.com',
                 status: 'inactive'
-            };
+            },
+            ownerSlug = 'ghost-owner';
 
         before(function (done) {
             testUtils.clearData().then(function () {
                 // we initialise data, but not a user. No user should be required for navigating the frontend
                 return testUtils.initData();
             }).then(function () {
-                return testUtils.fixtures.overrideOwnerUser('ghost-owner');
+                return testUtils.fixtures.overrideOwnerUser(ownerSlug);
             }).then(function () {
                 return testUtils.fixtures.insertOneUser(lockedUser);
             }).then(function () {
@@ -468,12 +469,35 @@ describe('Channel Routes', function () {
                 .end(doEnd(done));
         });
 
-        it('[failure] author is suspended', function (done) {
+        it('[success] author is suspended', function (done) {
             request.get('/author/' + suspendedUser.slug + '/')
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(404)
-                .expect(/Page not found/)
+                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect(200)
                 .end(doEnd(done));
+        });
+
+        it('[failure] ghost owner before blog setup', function (done) {
+            testUtils.fixtures.changeOwnerUserStatus({
+                slug: ownerSlug,
+                status: 'inactive'
+            }).then(function () {
+                request.get('/author/ghost-owner/')
+                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .expect(200)
+                    .end(doEnd(done));
+            }).catch(done);
+        });
+
+        it('[success] ghost owner after blog setup', function (done) {
+            testUtils.fixtures.changeOwnerUserStatus({
+                slug: ownerSlug,
+                status: 'active'
+            }).then(function () {
+                request.get('/author/ghost-owner/')
+                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .expect(200)
+                    .end(doEnd(done));
+            });
         });
 
         describe('RSS', function () {

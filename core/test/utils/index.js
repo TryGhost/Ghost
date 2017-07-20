@@ -242,6 +242,14 @@ fixtures = {
             .update(user);
     },
 
+    changeOwnerUserStatus: function changeOwnerUserStatus(options) {
+        return db.knex('users')
+            .where('slug', '=', options.slug)
+            .update({
+                status: options.status
+            });
+    },
+
     createUsersWithRoles: function createUsersWithRoles() {
         return db.knex('roles').insert(DataGenerator.forKnex.roles).then(function () {
             return db.knex('users').insert(DataGenerator.forKnex.users);

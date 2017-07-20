@@ -17,18 +17,13 @@ var _              = require('lodash'),
     bcryptGenSalt  = Promise.promisify(bcrypt.genSalt),
     bcryptHash     = Promise.promisify(bcrypt.hash),
     bcryptCompare  = Promise.promisify(bcrypt.compare),
-    /**
-     * There are three user states:
-     * 1. active users: everything is allowed
-     * 2. restricted users: imported users, we reset their passport, they are "locked out from the admin panel"
-     * 3. inactivate users: e.g. owner user, suspended users, you can' serve their author page
-     *
-     * NOTE: warn level is not used right now!
-     */
     activeStates     = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'],
-    restrictedStates = ['locked'],
-    inactiveStates   = ['inactive'],
-    allStates        = activeStates.concat(inactiveStates).concat(restrictedStates),
+    /**
+     * inactive: owner user before blog setup, suspended users
+     * locked user: imported users, they get a random passport
+     */
+    inactiveStates   = ['inactive', 'locked'],
+    allStates        = activeStates.concat(inactiveStates),
     User,
     Users;
 
@@ -359,7 +354,7 @@ User = ghostBookshelf.Model.extend({
         }
 
         if (status === 'active') {
-            query.query('whereIn', 'status', activeStates.concat(restrictedStates));
+            query.query('whereIn', 'status', activeStates);
         } else if (status !== 'all') {
             query.query('where', {status: status});
         }
@@ -367,6 +362,7 @@ User = ghostBookshelf.Model.extend({
         options = this.filterOptions(options, 'findOne');
         delete options.include;
         options.include = optInc;
+
         return query.fetch(options);
     },
 
@@ -793,8 +789,7 @@ User = ghostBookshelf.Model.extend({
             }
         });
     },
-    inactiveStates: inactiveStates,
-    restrictedStates: restrictedStates
+    inactiveStates: inactiveStates
 });
 
 Users = ghostBookshelf.Collection.extend({
