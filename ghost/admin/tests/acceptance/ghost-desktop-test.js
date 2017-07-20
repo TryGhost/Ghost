@@ -57,8 +57,8 @@ describe('Acceptance: Ghost Desktop', function() {
             await visit('/');
 
             // has an alert with matching text
-            expect(find('.gh-alert-yellow').length, 'number of warning alerts').to.equal(1);
-            expect(find('.gh-alert-yellow').text().trim(), 'alert text').to.match(/Your version of Ghost Desktop needs to be manually updated/);
+            expect(find('.gh-alert-blue').length, 'number of warning alerts').to.equal(1);
+            expect(find('.gh-alert-blue').text().trim(), 'alert text').to.match(/Your version of Ghost Desktop needs to be manually updated/);
         });
 
         it('doesn\'t display alert for working version', async function () {
