@@ -39,9 +39,31 @@ export default Component.extend({
         }
     }),
 
-    buttonText:  computed('postState', 'saveType', function() {
-        let postState = this.get('postState');
+    _runningText:  computed('postState', 'saveType', function() {
         let saveType = this.get('saveType');
+        let postState = this.get('postState');
+        let runningText;
+
+        if (postState === 'draft') {
+            runningText = saveType === 'publish' ? 'Publishing' : 'Scheduling';
+        }
+
+        if (postState === 'published') {
+            runningText = saveType === 'publish' ? 'Updating' : 'Unpublishing';
+        }
+
+        if (postState === 'scheduled') {
+            runningText = saveType === 'schedule' ? 'Rescheduling' : 'Unscheduling';
+        }
+
+        return runningText || 'Publishing';
+    }),
+
+    runningText: null,
+
+    buttonText:  computed('postState', 'saveType', function() {
+        let saveType = this.get('saveType');
+        let postState = this.get('postState');
         let buttonText;
 
         if (postState === 'draft') {
@@ -49,11 +71,11 @@ export default Component.extend({
         }
 
         if (postState === 'published') {
-            buttonText = saveType === 'publish' ? 'Update' : 'Un-publish';
+            buttonText = saveType === 'publish' ? 'Update' : 'Unpublish';
         }
 
         if (postState === 'scheduled') {
-            buttonText = saveType === 'schedule' ? 'Re-schedule' : 'Un-schedule';
+            buttonText = saveType === 'schedule' ? 'Reschedule' : 'Unschedule';
         }
 
         return buttonText || 'Publish';
@@ -69,17 +91,20 @@ export default Component.extend({
         }
 
         if (previousStatus === 'published') {
-            buttonText = postState === 'draft' ? 'Un-published' : 'Updated';
+            buttonText = postState === 'draft' ? 'Unpublished' : 'Updated';
         }
 
         if (previousStatus === 'scheduled') {
-            buttonText = postState === 'draft' ? 'Un-scheduled' : 'Re-scheduled';
+            buttonText = postState === 'draft' ? 'Unscheduled' : 'Rescheduled';
         }
 
         return buttonText;
     }),
 
     save: task(function* () {
+        // runningText needs to be declared before the other states change during the
+        // save action.
+        this.set('runningText', this.get('_runningText'));
         this.set('_previousStatus', this.get('post.status'));
         this.get('setSaveType')(this.get('saveType'));
 

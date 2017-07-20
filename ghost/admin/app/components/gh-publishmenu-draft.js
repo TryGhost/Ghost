@@ -35,7 +35,7 @@ export default Component.extend({
                 this.get('setSaveType')(type);
 
                 // when publish: switch to now to avoid validation errors
-                // when schedule: switch  to last valid or new minimum scheduled date
+                // when schedule: switch to last valid or new minimum scheduled date
                 if (type === 'publish') {
                     if (!hasDateError && !hasTimeError) {
                         this._publishedAtBlogTZ = this.get('post.publishedAtBlogTZ');

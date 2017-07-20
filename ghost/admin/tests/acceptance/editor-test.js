@@ -188,7 +188,7 @@ describe('Acceptance: Editor', function() {
             expect(
                 find(testSelector('publishmenu-save')).text().trim(),
                 'published post unpublish button text'
-            ).to.equal('Un-publish');
+            ).to.equal('Unpublish');
 
             // post id 2 is a published post, checking for published post behaviour now
             await visit('/editor/2');
@@ -258,14 +258,14 @@ describe('Acceptance: Editor', function() {
             expect(
                 find(testSelector('publishmenu-save')).text().trim(),
                 'published post unpublish button text'
-            ).to.equal('Un-publish');
+            ).to.equal('Unpublish');
 
             await click(testSelector('publishmenu-save'));
 
             expect(
                 find(testSelector('publishmenu-save')).text().trim(),
                 'publish menu save button updated after published post is unpublished'
-            ).to.equal('Un-published');
+            ).to.equal('Unpublished');
 
             expect(
                 find(testSelector('publishmenu-draft')),
@@ -324,14 +324,14 @@ describe('Acceptance: Editor', function() {
             expect(
                 find(testSelector('publishmenu-save')).text().trim(),
                 'scheduled post button reschedule text'
-            ).to.equal('Re-schedule');
+            ).to.equal('Reschedule');
 
             await click(testSelector('publishmenu-save'));
 
             expect(
                 find(testSelector('publishmenu-save')).text().trim(),
                 'publish menu save button text for a rescheduled post'
-            ).to.equal('Re-scheduled');
+            ).to.equal('Rescheduled');
 
             await click(testSelector('publishmenu-cancel'));
 
@@ -352,14 +352,14 @@ describe('Acceptance: Editor', function() {
             expect(
                 find(testSelector('publishmenu-save')).text().trim(),
                 'publish menu save button updated after scheduled post is unscheduled'
-            ).to.equal('Un-schedule');
+            ).to.equal('Unschedule');
 
             await click(testSelector('publishmenu-save'));
 
             expect(
                 find(testSelector('publishmenu-save')).text().trim(),
                 'publish menu save button updated after scheduled post is unscheduled'
-            ).to.equal('Un-scheduled');
+            ).to.equal('Unscheduled');
 
             await click(testSelector('publishmenu-cancel'));
 

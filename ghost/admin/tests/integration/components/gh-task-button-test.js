@@ -55,6 +55,23 @@ describe('Integration: Component: gh-task-button', function() {
         wait().then(done);
     });
 
+    it('shows running text when passed whilst running', function (done) {
+        this.set('myTask', task(function* () {
+            yield timeout(50);
+        }));
+
+        this.render(hbs`{{gh-task-button task=myTask runningText="Running"}}`);
+
+        this.get('myTask').perform();
+
+        run.later(this, function () {
+            expect(this.$('button')).to.have.descendants('svg');
+            expect(this.$('button')).to.contain('Running');
+        }, 20);
+
+        wait().then(done);
+    });
+
     it('appears disabled whilst running', function (done) {
         this.set('myTask', task(function* () {
             yield timeout(50);
