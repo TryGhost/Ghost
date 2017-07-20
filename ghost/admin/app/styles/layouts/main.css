@@ -489,6 +489,21 @@ body > .ember-view:not(.default-liquid-destination) {
         width: 15px;
         fill: var(--darkgrey);
     }
+
+    /* non-authed pages shouldn't have the mobile bar */
+    .ghost-setup .gh-viewport,
+    .ghost-reset .gh-viewport,
+    .ghost-signup .gh-viewport,
+    .ghost-login .gh-viewport {
+        padding-bottom: 0;
+    }
+
+    .ghost-setup .gh-mobile-nav-bar,
+    .ghost-reset .gh-mobile-nav-bar,
+    .ghost-signup .gh-mobile-nav-bar,
+    .ghost-login .gh-mobile-nav-bar {
+        display: none;
+    }
 }
 
 
