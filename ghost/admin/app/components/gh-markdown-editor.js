@@ -337,7 +337,7 @@ export default Component.extend(ShortcutsMixin, {
         let cm = this._editor.codemirror;
 
         if (cm.getOption('mode') === 'spell-checker') {
-            cm.setOption('mode', 'markdown');
+            cm.setOption('mode', 'gfm');
         } else {
             cm.setOption('mode', 'spell-checker');
         }
@@ -373,7 +373,7 @@ export default Component.extend(ShortcutsMixin, {
             this._editor.codemirror.setOption('dragDrop', false);
 
             // default to spellchecker being off
-            this._editor.codemirror.setOption('mode', 'markdown');
+            this._editor.codemirror.setOption('mode', 'gfm');
 
             // HACK: move the toolbar & status bar elements outside of the
             // editor container so that they can be aligned in fixed positions
