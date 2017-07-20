@@ -231,16 +231,20 @@ export default Component.extend(ShortcutsMixin, {
             let sideBySideButton = this._editor.toolbarElements['side-by-side'];
             let spellcheckButton = this._editor.toolbarElements.spellcheck;
 
-            if (this.get('_isSplitScreen')) {
-                sideBySideButton.classList.add('active');
-            } else {
-                sideBySideButton.classList.remove('active');
+            if (sideBySideButton) {
+                if (this.get('_isSplitScreen')) {
+                    sideBySideButton.classList.add('active');
+                } else {
+                    sideBySideButton.classList.remove('active');
+                }
             }
 
-            if (this._editor.codemirror.getOption('mode') === 'spell-checker') {
-                spellcheckButton.classList.add('active');
-            } else {
-                spellcheckButton.classList.remove('active');
+            if (spellcheckButton) {
+                if (this._editor.codemirror.getOption('mode') === 'spell-checker') {
+                    spellcheckButton.classList.add('active');
+                } else {
+                    spellcheckButton.classList.remove('active');
+                }
             }
         }
     },
@@ -437,10 +441,16 @@ export default Component.extend(ShortcutsMixin, {
                     preview.action(this._editor);
                 }
 
-                previewButton.classList.add('disabled');
+                if (previewButton) {
+                    previewButton.classList.add('disabled');
+                }
+
                 run.scheduleOnce('afterRender', this, this._connectSplitPreview);
             } else {
-                previewButton.classList.remove('disabled');
+                if (previewButton) {
+                    previewButton.classList.remove('disabled');
+                }
+
                 run.scheduleOnce('afterRender', this, this._disconnectSplitPreview);
             }
 
