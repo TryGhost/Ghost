@@ -259,7 +259,7 @@ input,
 }
 
 .gh-logo {
-    filter: invert(100%);
+    filter: invert(100%) brightness(150%);
 }
 
 .gh-canvas-title span path {
