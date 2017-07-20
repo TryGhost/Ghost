@@ -49,6 +49,7 @@ export default Controller.extend(ValidationEngine, {
                 });
                 this.get('notifications').showAlert(resp.passwordreset[0].message, {type: 'warn', delayed: true, key: 'password.reset'});
                 this.get('session').authenticate('authenticator:oauth2', this.get('email'), credentials.newPassword);
+                return true;
             } catch (error) {
                 this.get('notifications').showAPIError(error, {key: 'password.reset'});
             }
@@ -69,7 +70,7 @@ export default Controller.extend(ValidationEngine, {
 
     actions: {
         submit() {
-            this.get('resetPassword').perform();
+            return this.get('resetPassword').perform();
         }
     }
 });
