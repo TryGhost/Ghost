@@ -257,3 +257,11 @@ input,
 .gh-editor .CodeMirror-cursor {
     border-color: #fff;
 }
+
+.gh-logo {
+    filter: invert(100%);
+}
+
+.gh-canvas-title span path {
+    fill: #e5eff5;
+}
