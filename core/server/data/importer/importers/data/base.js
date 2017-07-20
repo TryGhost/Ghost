@@ -54,8 +54,32 @@ class Base {
         });
     }
 
+    /**
+     * Clean invalid values.
+     */
+    sanitizeValues() {
+        let temporaryDate, self = this;
+
+        _.each(this.dataToImport, function (obj) {
+            _.each(_.pick(obj, ['updated_at', 'created_at', 'published_at']), function (value, key) {
+                temporaryDate = new Date(value);
+
+                if (isNaN(temporaryDate)) {
+                    self.problems.push({
+                        message: 'Date is in a wrong format and invalid. It was replaced with the current timestamp.',
+                        help: self.modelName,
+                        context: JSON.stringify(obj)
+                    });
+
+                    obj[key] = new Date().toISOString();
+                }
+            });
+        });
+    }
+
     beforeImport() {
         this.stripProperties(['id']);
+        this.sanitizeValues();
         return Promise.resolve();
     }
 
