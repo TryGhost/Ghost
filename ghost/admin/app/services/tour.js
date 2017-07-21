@@ -54,7 +54,7 @@ export default Service.extend(Evented, {
         }, {
             id: 'static-post',
             title: 'Turning posts into pages',
-            message: 'Static pages are permanent pieces of content which live outside of your usual stream of posts, for example and \'about\' or \'contact\' page.'
+            message: 'Static pages are permanent pieces of content which live outside of your usual stream of posts, for example an \'about\' or \'contact\' page.'
         }, {
             id: 'featured-post',
             title: 'Setting a featured post',
