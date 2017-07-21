@@ -51,6 +51,10 @@
     opacity: 0;
 }
 
+.gh-team .apps-configured .gh-badge {
+    margin-left: 0.75em;
+}
+
 
 /* Role Labels
 /* ---------------------------------------------------------- */

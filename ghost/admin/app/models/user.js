@@ -59,6 +59,7 @@ export default Model.extend(ValidationEngine, {
     }),
 
     isSuspended: equal('status', 'inactive'),
+    isLocked: equal('status', 'locked'),
 
     role: computed('roles', {
         get() {
