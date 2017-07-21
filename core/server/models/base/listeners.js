@@ -26,8 +26,13 @@ events.on('token.added', function (tokenModel) {
  *   - if an active user get's deleted, we have to access the previous attributes, because this is how bookshelf works
  *     if you delete a user.
  */
-events.on('user.deactivated', function (userModel) {
-    var options = {id: userModel.id || userModel.previousAttributes().id};
+events.on('user.deactivated', function (userModel, options) {
+    options = options || {};
+    options = _.merge({}, options, {id: userModel.id || userModel.previousAttributes().id});
+
+    if (options.importing) {
+        return;
+    }
 
     models.Accesstoken.destroyByUser(options)
         .then(function () {
@@ -46,14 +51,20 @@ events.on('user.deactivated', function (userModel) {
  * - reschedule all scheduled posts
  * - draft scheduled posts, when the published_at would be in the past
  */
-events.on('settings.active_timezone.edited', function (settingModel) {
+events.on('settings.active_timezone.edited', function (settingModel, options) {
+    options = options || {};
+    options = _.merge({}, options, {context: {internal: true}});
+
     var newTimezone = settingModel.attributes.value,
         previousTimezone = settingModel._updatedAttributes.value,
-        timezoneOffsetDiff = moment.tz(previousTimezone).utcOffset() - moment.tz(newTimezone).utcOffset(),
-        options = {context: {internal: true}};
+        timezoneOffsetDiff = moment.tz(previousTimezone).utcOffset() - moment.tz(newTimezone).utcOffset();
 
     // CASE: TZ was updated, but did not change
     if (previousTimezone === newTimezone) {
+        return;
+    }
+
+    if (options.importing) {
         return;
     }
 

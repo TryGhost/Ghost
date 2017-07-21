@@ -52,13 +52,13 @@ User = ghostBookshelf.Model.extend({
         }, baseDefaults);
     },
 
-    emitChange: function emitChange(event) {
-        events.emit('user' + '.' + event, this);
+    emitChange: function emitChange(event, options) {
+        events.emit('user' + '.' + event, this, options);
     },
 
-    onDestroyed: function onDestroyed(model) {
+    onDestroyed: function onDestroyed(model, response, options) {
         if (_.includes(activeStates, model.previous('status'))) {
-            model.emitChange('deactivated');
+            model.emitChange('deactivated', options);
         }
 
         model.emitChange('deleted');
@@ -73,12 +73,12 @@ User = ghostBookshelf.Model.extend({
         }
     },
 
-    onUpdated: function onUpdated(model) {
+    onUpdated: function onUpdated(model, response, options) {
         model.statusChanging = model.get('status') !== model.updated('status');
         model.isActive = _.includes(activeStates, model.get('status'));
 
         if (model.statusChanging) {
-            model.emitChange(model.isActive ? 'activated' : 'deactivated');
+            model.emitChange(model.isActive ? 'activated' : 'deactivated', options);
         } else {
             if (model.isActive) {
                 model.emitChange('activated.edited');
