@@ -42,6 +42,7 @@ export default Mixin.create({
     showLeaveEditorModal: false,
     showReAuthenticateModal: false,
     showDeletePostModal: false,
+    shouldFocusEditor: true,
 
     application: injectController(),
     notifications: injectService(),
@@ -72,6 +73,11 @@ export default Mixin.create({
 
     // save 3 seconds after the last edit
     _autosave: task(function* () {
+        // force an instant save on first body edit for new posts
+        if (this.get('_canAutosave') && this.get('model.isNew')) {
+            return this.get('autosave').perform();
+        }
+
         yield timeout(AUTOSAVE_TIMEOUT);
 
         if (this.get('_canAutosave')) {
@@ -501,16 +507,14 @@ export default Mixin.create({
 
         model.set('titleScratch', newTitle);
 
-        // if model is not new and title is not DEFAULT_TITLE, or model is new and
-        // has a title, don't generate a slug
-        if ((!model.get('isNew') || model.get('title')) && newTitle !== DEFAULT_TITLE) {
-            return;
+        // generate a slug if a post is new and doesn't have a title yet or
+        // if the title is still '(Untitled)' and the slug is unaltered.
+        if ((this.get('model.isNew') && !newTitle) || model.get('title') === DEFAULT_TITLE) {
+            // debounce for 700 milliseconds
+            yield timeout(TITLE_DEBOUNCE);
+
+            yield this.get('generateSlug').perform();
         }
-
-        // debounce for 700 milliseconds
-        yield timeout(TITLE_DEBOUNCE);
-
-        yield this.get('generateSlug').perform();
     }).restartable(),
 
     generateSlug: task(function* () {
