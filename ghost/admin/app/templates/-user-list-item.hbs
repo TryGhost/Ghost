@@ -12,6 +12,9 @@
         </div>
         <div class="apps-card-right">
             <div class="apps-configured">
+                {{#if user.isLocked}}
+                    <span class="gh-badge author">Locked</span>
+                {{/if}}
                 {{#unless session.user.isAuthor}}
                     {{#each user.roles as |role|}}
                         <span class="gh-badge {{role.lowerCaseName}}" data-test-role-name>{{role.name}}</span>
