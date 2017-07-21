@@ -209,6 +209,13 @@ class Base {
                     email: oldUser.email,
                     status: 'all'
                 }, options).then(function (userModel) {
+                    // CASE: user could not be imported e.g. multiple roles attached
+                    if (!userModel) {
+                        userModel = {
+                            id: models.User.ownerUser
+                        };
+                    }
+
                     dataToEdit = {};
                     dataToEdit[key] = userModel.id;
 
