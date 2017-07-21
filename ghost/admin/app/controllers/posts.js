@@ -63,7 +63,9 @@ export default Controller.extend({
     }),
 
     availableTags: computed('_availableTags.[]', function () {
-        let tags = this.get('_availableTags');
+        let tags = this.get('_availableTags').filter((tag) => {
+            return tag.get('id') !== null;
+        });
         let options = tags.toArray();
 
         options.unshiftObject({name: 'All tags', slug: null});
