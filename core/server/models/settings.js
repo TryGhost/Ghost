@@ -57,23 +57,23 @@ Settings = ghostBookshelf.Model.extend({
         };
     },
 
-    emitChange: function emitChange(event) {
-        events.emit('settings' + '.' + event, this);
+    emitChange: function emitChange(event, options) {
+        events.emit('settings' + '.' + event, this, options);
     },
 
-    onDestroyed: function onDestroyed(model) {
+    onDestroyed: function onDestroyed(model, response, options) {
         model.emitChange('deleted');
-        model.emitChange(model.attributes.key + '.' + 'deleted');
+        model.emitChange(model.attributes.key + '.' + 'deleted', options);
     },
 
-    onCreated: function onCreated(model) {
+    onCreated: function onCreated(model, response, options) {
         model.emitChange('added');
-        model.emitChange(model.attributes.key + '.' + 'added');
+        model.emitChange(model.attributes.key + '.' + 'added', options);
     },
 
-    onUpdated: function onUpdated(model) {
+    onUpdated: function onUpdated(model, response, options) {
         model.emitChange('edited');
-        model.emitChange(model.attributes.key + '.' + 'edited');
+        model.emitChange(model.attributes.key + '.' + 'edited', options);
     },
 
     onValidate: function onValidate() {
