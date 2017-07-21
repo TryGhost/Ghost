@@ -38,7 +38,7 @@
     {{#gh-markdown-editor
         tabindex="2"
         placeholder="Begin writing your story..."
-        autofocus=model.isNew
+        autofocus=shouldFocusEditor
         uploadedImageUrls=editor.uploadedImageUrls
         mobiledoc=(readonly model.scratch)
         isFullScreen=editor.isFullScreen

@@ -17,15 +17,18 @@
             <form>
             <div class="form-group">
                 <label for="url">Post URL</label>
-                {{#if model.isPublished}}
-                <a class="post-view-link" target="_blank" href="{{model.absoluteUrl}}">
-                    View post {{inline-svg "external"}}
-                </a>
-                {{else}}
-                <a class="post-view-link" target="_blank" href="{{model.previewUrl}}">
-                    Preview {{inline-svg "external"}}
-                </a>
-                {{/if}}
+                {{!-- new posts don't have a preview link --}}
+                {{#unless model.isNew}}
+                    {{#if model.isPublished}}
+                    <a class="post-view-link" target="_blank" href="{{model.absoluteUrl}}">
+                        View post {{inline-svg "external"}}
+                    </a>
+                    {{else}}
+                    <a class="post-view-link" target="_blank" href="{{model.previewUrl}}">
+                        Preview {{inline-svg "external"}}
+                    </a>
+                    {{/if}}
+                {{/unless}}
 
                 <div class="gh-input-icon gh-icon-link">
                     {{inline-svg "link"}}
