@@ -57,8 +57,8 @@
                 placeholder="Post Title"
                 tabindex="1"
                 autoExpand=".gh-markdown-editor-pane"
-                focusOut=(action "saveTitle")
-                update=(action (perform updateTitle))
+                update=(action "updateTitle")
+                focusOut=(action (perform saveTitle))
                 keyEvents=(hash
                     9=(action markdown.focus 'bottom')
                     13=(action markdown.focus 'top')
