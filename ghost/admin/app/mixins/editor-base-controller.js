@@ -1,7 +1,6 @@
 import Ember from 'ember';
 import Mixin from 'ember-metal/mixin';
 import PostModel from 'ghost-admin/models/post';
-import RSVP from 'rsvp';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import computed, {mapBy, reads} from 'ember-computed';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
@@ -16,8 +15,6 @@ import {isInvalidError} from 'ember-ajax/errors';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {task, taskGroup, timeout} from 'ember-concurrency';
 
-const {resolve} = RSVP;
-
 // ember-cli-shims doesn't export Ember.testing
 const {testing} = Ember;
 
@@ -26,7 +23,6 @@ const {testing} = Ember;
 const watchedProps = ['model.scratch', 'model.titleScratch', 'model.hasDirtyAttributes', 'model.tags.[]'];
 
 const DEFAULT_TITLE = '(Untitled)';
-const TITLE_DEBOUNCE = testing ? 10 : 700;
 
 // time in ms to save after last content edit
 const AUTOSAVE_TIMEOUT = 3000;
@@ -67,7 +63,7 @@ export default Mixin.create({
         };
     },
 
-    _canAutosave: computed('model.{isDraft,isNew}', function () {
+    _canAutosave: computed('model.isDraft', function () {
         return !testing && this.get('model.isDraft');
     }),
 
@@ -81,7 +77,7 @@ export default Mixin.create({
         yield timeout(AUTOSAVE_TIMEOUT);
 
         if (this.get('_canAutosave')) {
-            yield this.get('autosave').perform();
+            this.get('autosave').perform();
         }
     }).restartable(),
 
@@ -92,7 +88,7 @@ export default Mixin.create({
             yield timeout(TIMEDSAVE_TIMEOUT);
 
             if (this.get('_canAutosave')) {
-                yield this.get('autosave').perform();
+                this.get('autosave').perform();
             }
         }
     }).drop(),
@@ -100,12 +96,19 @@ export default Mixin.create({
     // separate task for autosave so that it doesn't override a manual save
     autosave: task(function* () {
         if (!this.get('save.isRunning')) {
-            return yield this._savePromise({
+            return yield this.get('save').perform({
                 silent: true,
                 backgroundSave: true
             });
         }
     }).drop(),
+
+    _autosaveRunning: computed('_autosave.isRunning', '_timedSave.isRunning', function () {
+        let autosave = this.get('_autosave.isRunning');
+        let timedsave = this.get('_timedSave.isRunning');
+
+        return autosave || timedsave;
+    }),
 
     // updateSlug and save should always be enqueued so that we don't run into
     // problems with concurrency, for example when Cmd-S is pressed whilst the
@@ -116,21 +119,15 @@ export default Mixin.create({
 
     // save tasks cancels autosave before running, although this cancels the
     // _xSave tasks  that will also cancel the autosave task
-    save: task(function* (options) {
-        this.send('cancelAutosave');
-        return yield this._savePromise(options);
-    }).group('saveTasks'),
-
-    // TODO: convert this into a more ember-concurrency flavour
-    _savePromise(options) {
+    save: task(function* (options = {}) {
         let prevStatus = this.get('model.status');
         let isNew = this.get('model.isNew');
-        let promise, status;
+        let status;
 
-        options = options || {};
+        this.send('cancelAutosave');
 
         if (options.backgroundSave && !this.get('hasDirtyAttributes')) {
-            return RSVP.resolve();
+            return;
         }
 
         if (options.backgroundSave) {
@@ -165,29 +162,31 @@ export default Mixin.create({
         this.set('model.metaDescription', this.get('model.metaDescriptionScratch'));
 
         if (!this.get('model.slug')) {
-            this.get('updateTitle').cancelAll();
+            this.get('saveTitle').cancelAll();
 
-            promise = this.get('generateSlug').perform();
+            yield this.get('generateSlug').perform();
         }
 
-        return resolve(promise).then(() => {
-            return this.get('model').save(options).then((model) => {
-                if (!options.silent) {
-                    this.showSaveNotification(prevStatus, model.get('status'), isNew ? true : false);
-                }
+        try {
+            let model = yield this.get('model').save(options);
 
-                this.get('model').set('statusScratch', null);
+            if (!options.silent) {
+                this.showSaveNotification(prevStatus, model.get('status'), isNew ? true : false);
+            }
 
-                // redirect to edit route if saving a new record
-                if (isNew && model.get('id')) {
+            this.get('model').set('statusScratch', null);
+
+            // redirect to edit route if saving a new record
+            if (isNew && model.get('id')) {
+                if (!this.get('leaveEditorTransition')) {
                     this.replaceRoute('editor.edit', model);
-                    return;
                 }
+                return true;
+            }
 
-                return model;
-            });
+            return model;
 
-        }).catch((error) => {
+        } catch (error) {
             // re-throw if we have a general server error
             if (error && !isInvalidError(error)) {
                 this.send('error', error);
@@ -197,15 +196,15 @@ export default Mixin.create({
             this.set('model.status', prevStatus);
 
             if (!options.silent) {
-                error = error || this.get('model.errors.messages');
-                this.showErrorAlert(prevStatus, this.get('model.status'), error);
+                let errorOrMessages = error || this.get('model.errors.messages');
+                this.showErrorAlert(prevStatus, this.get('model.status'), errorOrMessages);
                 // simulate a validation error for upstream tasks
                 throw undefined;
             }
 
             return this.get('model');
-        });
-    },
+        }
+    }).group('saveTasks'),
 
     /*
      * triggered by a user manually changing slug
@@ -502,20 +501,28 @@ export default Mixin.create({
         notifications.showAlert(message, {type: 'error', delayed: delay, key: 'post.save'});
     },
 
-    updateTitle: task(function* (newTitle) {
+    saveTitle: task(function* () {
         let model = this.get('model');
+        let currentTitle = model.get('title');
+        let newTitle = model.get('titleScratch').trim();
 
-        model.set('titleScratch', newTitle);
+        if (currentTitle && newTitle && newTitle === currentTitle) {
+            return;
+        }
+
+        // this is necessary to force a save when the title is blank
+        this.set('hasDirtyAttributes', true);
 
         // generate a slug if a post is new and doesn't have a title yet or
-        // if the title is still '(Untitled)' and the slug is unaltered.
-        if ((this.get('model.isNew') && !newTitle) || model.get('title') === DEFAULT_TITLE) {
-            // debounce for 700 milliseconds
-            yield timeout(TITLE_DEBOUNCE);
-
+        // if the title is still '(Untitled)'
+        if ((model.get('isNew') && !currentTitle) || currentTitle === DEFAULT_TITLE) {
             yield this.get('generateSlug').perform();
         }
-    }).restartable(),
+
+        if (this.get('model.isDraft')) {
+            yield this.get('autosave').perform();
+        }
+    }),
 
     generateSlug: task(function* () {
         let title = this.get('model.titleScratch');
@@ -582,14 +589,36 @@ export default Mixin.create({
         },
 
         toggleLeaveEditorModal(transition) {
-            // cancel autosave when showing the modal to prevent the "leave"
-            // action failing due to deletion of in-flight records
-            if (!this.get('showLeaveEditorModal')) {
-                this.send('cancelAutosave');
+            let leaveTransition = this.get('leaveEditorTransition');
+
+            if (!transition && this.get('showLeaveEditorModal')) {
+                this.set('showLeaveEditorModal', false);
+                return;
             }
 
-            this.set('leaveEditorTransition', transition);
-            this.toggleProperty('showLeaveEditorModal');
+            if (!leaveTransition || transition.targetName === leaveTransition.targetName) {
+                this.set('leaveEditorTransition', transition);
+
+                // if a save is running, wait for it to finish then transition
+                if (this.get('saveTasks.isRunning')) {
+                    return this.get('saveTasks.last').then(() => {
+                        transition.retry();
+                    });
+                }
+
+                // if an autosave is scheduled, cancel it, save then transition
+                if (this.get('_autosaveRunning')) {
+                    this.send('cancelAutosave');
+                    this.get('autosave').cancelAll();
+
+                    return this.get('autosave').perform().then(() => {
+                        transition.retry();
+                    });
+                }
+
+                // we genuinely have unsaved data, show the modal
+                this.set('showLeaveEditorModal', true);
+            }
         },
 
         leaveEditor() {
@@ -621,23 +650,8 @@ export default Mixin.create({
             return transition.retry();
         },
 
-        saveTitle() {
-            let currentTitle = this.get('model.title');
-            let newTitle = this.get('model.titleScratch').trim();
-
-            if (currentTitle && newTitle && newTitle === currentTitle) {
-                return;
-            }
-
-            // this is necessary to force a save when the title is blank
-            this.set('hasDirtyAttributes', true);
-
-            if (this.get('model.isDraft')) {
-                this.send('save', {
-                    silent: true,
-                    backgroundSave: true
-                });
-            }
+        updateTitle(newTitle) {
+            this.set('model.titleScratch', newTitle);
         },
 
         toggleDeletePostModal() {

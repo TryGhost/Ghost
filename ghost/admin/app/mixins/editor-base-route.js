@@ -46,16 +46,6 @@ export default Mixin.create(styleBody, ShortcutsRoute, {
                 return this._super(...arguments);
             }
 
-            // if a save is in-flight we don't know whether or not it's safe to leave
-            // so we abort the transition and retry after the save has completed.
-            if (state.isSaving) {
-                transition.abort();
-                controller.get('saveTasks.last').then(() => {
-                    transition.retry();
-                });
-                return;
-            }
-
             fromNewToEdit = this.get('routeName') === 'editor.new'
                 && transition.targetName === 'editor.edit'
                 && transition.intent.contexts
@@ -123,6 +113,9 @@ export default Mixin.create(styleBody, ShortcutsRoute, {
         model.set('scratch', model.get('mobiledoc'));
         model.set('titleScratch', model.get('title'));
 
+        // reset the leave editor transition so new->edit will still work
+        controller.set('leaveEditorTransition', null);
+
         this._super(...arguments);
 
         if (tags) {
@@ -132,8 +125,16 @@ export default Mixin.create(styleBody, ShortcutsRoute, {
             controller.set('previousTagNames', []);
         }
 
-        // reset save-on-first-change
-        controller._hasChanged = false;
+        // trigger an immediate autosave timeout if model has changed between
+        // new->edit (typical as first save will only contain the first char)
+        // so that leaving the route waits for save instead of showing the
+        // "Are you sure you want to leave?" modal unexpectedly
+        if (!model.get('isNew') && model.get('hasDirtyAttributes')) {
+            controller.get('_autosave').perform();
+        }
+
+        // reset save-on-first-change (gh-koenig specific)
+        // controller._hasChanged = false;
 
         // attach model-related listeners created in editor-base-route
         this.attachModelHooks(controller, model);

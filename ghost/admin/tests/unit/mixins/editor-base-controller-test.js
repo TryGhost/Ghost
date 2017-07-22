@@ -72,7 +72,7 @@ describe('Unit: Mixin: editor-base-controller', function() {
         });
     });
 
-    describe('updateTitle', function () {
+    describe('saveTitle', function () {
         it('should invoke generateSlug if the post is new and a title has not been set', function (done) {
             let object;
 
@@ -89,8 +89,10 @@ describe('Unit: Mixin: editor-base-controller', function() {
             expect(object.get('model.isNew')).to.be.true;
             expect(object.get('model.titleScratch')).to.not.be.ok;
 
+            object.set('model.titleScratch', 'test');
+
             run(() => {
-                object.get('updateTitle').perform('test');
+                object.get('saveTitle').perform();
             });
 
             wait().then(() => {
@@ -100,12 +102,12 @@ describe('Unit: Mixin: editor-base-controller', function() {
             });
         });
 
-        it('should invoke generateSlug if the post is not new and a title is "(Untitled)"', function (done) {
+        it('should invoke generateSlug if the post is not new and it\'s title is "(Untitled)"', function (done) {
             let object;
 
             run(() => {
                 object = EmberObject.extend(EditorBaseControllerMixin, {
-                    model: EmberObject.create({isNew: false}),
+                    model: EmberObject.create({isNew: false, title: '(Untitled)'}),
                     generateSlug: task(function* () {
                         this.set('model.slug', 'test-slug');
                         yield RSVP.resolve();
@@ -116,12 +118,14 @@ describe('Unit: Mixin: editor-base-controller', function() {
             expect(object.get('model.isNew')).to.be.false;
             expect(object.get('model.titleScratch')).to.not.be.ok;
 
+            object.set('model.titleScratch', 'New Title');
+
             run(() => {
-                object.get('updateTitle').perform('(Untitled)');
+                object.get('saveTitle').perform();
             });
 
             wait().then(() => {
-                expect(object.get('model.titleScratch')).to.equal('(Untitled)');
+                expect(object.get('model.titleScratch')).to.equal('New Title');
                 expect(object.get('model.slug')).to.equal('test-slug');
                 done();
             });
@@ -148,8 +152,10 @@ describe('Unit: Mixin: editor-base-controller', function() {
             expect(object.get('model.title')).to.equal('a title');
             expect(object.get('model.titleScratch')).to.not.be.ok;
 
+            object.set('model.titleScratch', 'test');
+
             run(() => {
-                object.get('updateTitle').perform('test');
+                object.get('saveTitle').perform();
             });
 
             wait().then(() => {
@@ -176,8 +182,10 @@ describe('Unit: Mixin: editor-base-controller', function() {
             expect(object.get('model.isNew')).to.be.false;
             expect(object.get('model.title')).to.not.be.ok;
 
+            object.set('model.titleScratch', 'title');
+
             run(() => {
-                object.get('updateTitle').perform('title');
+                object.get('saveTitle').perform();
             });
 
             wait().then(() => {
