@@ -28,6 +28,7 @@ node_modules/**
 config.js
 core/built/**/*.map
 core/built/**/test-*
+core/built/**/tests-*
 core/client/**
 core/test/**
 CONTRIBUTING.md
