@@ -39,7 +39,7 @@ module.exports = {
     render: function (mobiledoc) {
         var renderer = new Renderer(options),
         rendered = renderer.render(mobiledoc),
-        serializer = new SimpleDom.HTMLSerializer([]),
+        serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap),
         html = serializer.serializeChildren(rendered.result);
         return html;
     }
