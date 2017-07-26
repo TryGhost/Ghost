@@ -10,6 +10,7 @@ export default Component.extend({
     ajax: injectService(),
     ghostPaths: injectService(),
 
+    tagName: '',
     count: '',
 
     _poll: task(function* () {
