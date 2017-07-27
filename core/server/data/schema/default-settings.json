@@ -18,7 +18,7 @@
             "defaultValue": "Ghost"
         },
         "description": {
-            "defaultValue": "Just a blogging platform."
+            "defaultValue": "The professional publishing platform"
         },
         "logo": {
             "defaultValue": "https://casper.ghost.org/v1.0.0/images/ghost-logo.svg"

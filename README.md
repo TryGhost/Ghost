@@ -37,7 +37,7 @@ Other options are also available if you prefer playing around with servers by yo
 
 If you are developing a Ghost theme for your own site or creating themes for others to use we recommend installing Ghost on your own local machine. Luckily we have a brand new Ghost CLI to make this really easy 😄
 
-- [Installing Ghost via the CLI](https://docs.ghost.org/v1.0.0/docs/installing-ghost-via-the-cli)
+- [Installing Ghost via the CLI](https://docs.ghost.org/v1.0.0/docs/install-local)
 - [Theme Developer Docs](http://themes.ghost.org)
 
 
@@ -52,7 +52,7 @@ For anyone wishing to contribute to Ghost or to hack/customise core files we rec
 
 # Staying Up to Date
 
-When a new version of Ghost comes out, you'll want to look over these [upgrade instructions](https://docs.ghost.org/v1.0.0/docs/how-to-upgrade-ghost) for what to do next.
+When a new version of Ghost comes out, you'll want to look over these [upgrade instructions](https://docs.ghost.org/v1.0.0/docs/upgrade) for what to do next.
 
 You can talk to other Ghost users and developers in our [public Slack team](https://ghost.org/slack/) (it's pretty awesome).
 

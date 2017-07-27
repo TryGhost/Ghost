@@ -178,7 +178,7 @@ Post = ghostBookshelf.Model.extend({
             publishedAt = this.get('published_at'),
             publishedAtHasChanged = this.hasDateChanged('published_at', {beforeWrite: true}),
             mobiledoc   = this.get('mobiledoc'),
-            tags = [], ops = [];
+            tags = [], ops = [], markdown, html;
 
         // CASE: disallow published -> scheduled
         // @TODO: remove when we have versioning based on updated_at
@@ -233,7 +233,11 @@ Post = ghostBookshelf.Model.extend({
         ghostBookshelf.Model.prototype.onSaving.call(this, model, attr, options);
 
         if (mobiledoc) {
-            this.set('html', utils.mobiledocConverter.render(JSON.parse(mobiledoc)));
+            // NOTE: using direct markdown parsing through markdown-it for now,
+            // mobiledoc's use of SimpleDom is very fragile with certain HTML
+            markdown = JSON.parse(mobiledoc).cards[0][1].markdown;
+            html = utils.markdownConverter.render(markdown);
+            this.set('html', '<div class="kg-card-markdown">' + html + '</div>');
         }
 
         if (this.hasChanged('html') || !this.get('plaintext')) {
@@ -494,7 +498,9 @@ Post = ghostBookshelf.Model.extend({
     toJSON: function toJSON(options) {
         options = options || {};
 
-        var attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
+        var attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options),
+            oldPostId = attrs.amp,
+            commentId;
 
         attrs = this.formatsToJSON(attrs, options);
 
@@ -506,6 +512,21 @@ Post = ghostBookshelf.Model.extend({
         if (!options.columns || (options.columns && options.columns.indexOf('url') > -1)) {
             attrs.url = utils.url.urlPathForPost(attrs);
         }
+
+        if (oldPostId) {
+            oldPostId = Number(oldPostId);
+
+            if (isNaN(oldPostId)) {
+                commentId = attrs.id;
+            } else {
+                commentId = oldPostId;
+            }
+        } else {
+            commentId = attrs.id;
+        }
+
+        // NOTE: we remember the old post id because of disqus
+        attrs.comment_id = commentId;
 
         return attrs;
     },

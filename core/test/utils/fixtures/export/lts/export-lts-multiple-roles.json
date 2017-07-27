@@ -966,112 +966,113 @@
         "permissions_users": [],
         "posts": [
             {
-                "id": 4756,
-                "uuid": "3be3404b-8474-4789-8c6e-48bbea11c509",
-                "title": "Scheduled post 2 empty markdown",
-                "slug": "scheduled-post2",
-                "markdown": "",
+                "id": 4751,
+                "uuid": "c2ef3b5e-4b48-496b-8a35-ecb04fb5f8a0",
+                "title": "Welcome to this test import. This post has a long title.",
+                "slug": "welcome-to-this-test-import-this-post-has-a-long-title",
+                "markdown": "Welcome to this test import. This post has a long title.",
                 "mobiledoc": null,
-                "html": "<p>This a post scheduled for publication</p>",
+                "html": "<p>Welcome to this test import. This post has a long title.</p>",
                 "amp": null,
-                "image": null,
+                "image": "/content/images/2017/05/post-image.jpg",
                 "featured": 0,
                 "page": 0,
-                "status": "scheduled",
+                "status": "draft",
                 "language": "en_US",
                 "visibility": "public",
                 "meta_title": null,
                 "meta_description": null,
                 "author_id": 1,
-                "created_at": "2017-05-26T10:41:19.000Z",
+                "created_at": "2017-05-20T08:42:02.000Z",
                 "created_by": 1,
-                "updated_at": "2017-05-26T10:42:15.000Z",
+                "updated_at": "2017-05-20T12:01:52.000Z",
                 "updated_by": 1,
-                "published_at": "2017-08-26T10:41:00.000Z",
+                "published_at": null,
                 "published_by": null
             },
             {
-                "id": 4757,
-                "uuid": "3be3404b-8474-4789-8c6e-48bbea11c509",
-                "title": "Scheduled post 3 null markdown",
-                "slug": "scheduled-post3",
-                "markdown": null,
+                "id": 4752,
+                "uuid": "277bbc97-2470-484c-b979-45bce515de46",
+                "title": "About",
+                "slug": "about",
+                "markdown": "This is a draft static page",
                 "mobiledoc": null,
-                "html": "<p>This a post scheduled for publication</p>",
+                "html": "<p>This is a draft static page</p>",
                 "amp": null,
                 "image": null,
                 "featured": 0,
-                "page": 0,
-                "status": "scheduled",
+                "page": 1,
+                "status": "draft",
                 "language": "en_US",
                 "visibility": "public",
                 "meta_title": null,
                 "meta_description": null,
                 "author_id": 1,
-                "created_at": "2017-05-27T10:41:19.000Z",
+                "created_at": "2017-05-21T10:39:50.000Z",
                 "created_by": 1,
-                "updated_at": "2017-05-27T10:42:15.000Z",
+                "updated_at": "2017-05-21T10:40:50.000Z",
                 "updated_by": 1,
-                "published_at": "2017-08-27T10:41:00.000Z",
+                "published_at": null,
                 "published_by": null
             },
             {
-                "id": 4758,
-                "uuid": "3be3404b-8474-4789-8c6e-48bbea11c509",
-                "title": "Scheduled post 4 no html or markdown",
-                "slug": "scheduled-post4",
-                "markdown": null,
+                "id": 4753,
+                "uuid": "a8bf79a3-7252-4feb-ad81-d206fa802f9b",
+                "title": "Published post",
+                "slug": "published-post",
+                "markdown": "This is a published post",
                 "mobiledoc": null,
-                "html": "",
+                "html": "<p>This is a published post</p>",
                 "amp": null,
                 "image": null,
                 "featured": 0,
                 "page": 0,
-                "status": "scheduled",
+                "status": "draft",
                 "language": "en_US",
                 "visibility": "public",
                 "meta_title": null,
                 "meta_description": null,
                 "author_id": 1,
-                "created_at": "2017-05-28T10:41:19.000Z",
+                "created_at": "2017-05-22T10:40:27.000Z",
                 "created_by": 1,
-                "updated_at": "2017-05-28T10:42:15.000Z",
+                "updated_at": "2017-05-22T10:40:37.000Z",
                 "updated_by": 1,
-                "published_at": "2017-08-28T10:41:00.000Z",
+                "published_at": null,
                 "published_by": null
             },
             {
-                "id": 4759,
-                "uuid": "3be3404b-8474-4789-8c6e-48bbea11c509",
-                "title": "Scheduled post 5 null html and markdown",
-                "slug": "scheduled-post5",
-                "markdown": null,
+                "id": 4754,
+                "uuid": "a6dbe1cb-affb-4d62-b69a-6244abf5681c",
+                "title": "Welcome",
+                "slug": "welcome",
+                "markdown": "This is a published static page",
                 "mobiledoc": null,
-                "html": null,
+                "html": "<p>This is a published static page</p>",
                 "amp": null,
                 "image": null,
                 "featured": 0,
                 "page": 0,
-                "status": "scheduled",
+                "status": "published",
                 "language": "en_US",
                 "visibility": "public",
                 "meta_title": null,
                 "meta_description": null,
                 "author_id": 1,
-                "created_at": "2017-05-29T10:41:19.000Z",
+                "created_at": "2017-05-23T10:40:59.000Z",
                 "created_by": 1,
-                "updated_at": "2017-05-29T10:42:15.000Z",
+                "updated_at": "2017-05-23T10:41:09.000Z",
                 "updated_by": 1,
-                "published_at": "2017-08-29T10:41:00.000Z",
-                "published_by": null
+                "published_at": "2017-05-23T10:41:09.000Z",
+                "published_by": 1
             },
             {
-                "id": 4760,
+                "id": 4755,
                 "uuid": "3be3404b-8474-4789-8c6e-48bbea11c509",
-                "title": "Scheduled post 6 no mobiledoc field",
-                "slug": "scheduled-post6",
+                "title": "Scheduled post",
+                "slug": "scheduled-post",
                 "markdown": "This a post scheduled for publication",
-                "html": null,
+                "mobiledoc": null,
+                "html": "<p>This a post scheduled for publication</p>",
                 "amp": null,
                 "image": null,
                 "featured": 0,
@@ -1082,18 +1083,18 @@
                 "meta_title": null,
                 "meta_description": null,
                 "author_id": 1,
-                "created_at": "2017-05-30T10:41:19.000Z",
+                "created_at": "2017-05-24T10:41:19.000Z",
                 "created_by": 1,
-                "updated_at": "2017-05-30T10:42:15.000Z",
+                "updated_at": "2017-05-24T10:42:15.000Z",
                 "updated_by": 1,
-                "published_at": "2017-08-30T10:41:00.000Z",
+                "published_at": "2017-08-24T10:41:00.000Z",
                 "published_by": null
             }
         ],
         "posts_tags": [
             {
                 "id": 3002,
-                "post_id": 4756,
+                "post_id": 4751,
                 "tag_id": 1029,
                 "sort_order": 0
             }
@@ -1153,118 +1154,18 @@
             },
             {
                 "id": 3,
-                "role_id": 3,
-                "user_id": 3
+                "role_id": 4,
+                "user_id": 2
             },
             {
                 "id": 4,
                 "role_id": 3,
-                "user_id": 4
+                "user_id": 3
             },
             {
                 "id": 5,
-                "role_id": 3,
-                "user_id": 5
-            },
-            {
-                "id": 6,
-                "role_id": 3,
-                "user_id": 6
-            },
-            {
-                "id": 7,
-                "role_id": 3,
-                "user_id": 7
-            },
-            {
-                "id": 8,
-                "role_id": 3,
-                "user_id": 8
-            },
-            {
-                "id": 9,
-                "role_id": 3,
-                "user_id": 9
-            },
-            {
-                "id": 10,
-                "role_id": 3,
-                "user_id": 10
-            },
-            {
-                "id": 11,
-                "role_id": 3,
-                "user_id": 11
-            },
-            {
-                "id": 12,
-                "role_id": 3,
-                "user_id": 12
-            },
-            {
-                "id": 13,
-                "role_id": 3,
-                "user_id": 13
-            },
-            {
-                "id": 14,
-                "role_id": 3,
-                "user_id": 14
-            },
-            {
-                "id": 29,
-                "role_id": 3,
-                "user_id": 29
-            },
-            {
-                "id": 30,
-                "role_id": 3,
-                "user_id": 30
-            },
-            {
-                "id": 31,
-                "role_id": 3,
-                "user_id": 31
-            },
-            {
-                "id": 32,
-                "role_id": 3,
-                "user_id": 32
-            },
-            {
-                "id": 33,
-                "role_id": 3,
-                "user_id": 33
-            },
-            {
-                "id": 34,
-                "role_id": 3,
-                "user_id": 34
-            },
-            {
-                "id": 35,
-                "role_id": 3,
-                "user_id": 35
-            },
-            {
-                "id": 36,
-                "role_id": 1,
-                "user_id": 36
-            },
-            {
-                "id": 37,
-                "role_id": 3,
-                "user_id": 37
-            },
-            {
-                "id": 1082,
                 "role_id": 2,
-                "user_id": 1208
-            },
-            {
-                "id": 1083,
-                "role_id": 3,
-                "user_id": 1209
+                "user_id": 3
             }
         ],
         "settings": [
@@ -1349,7 +1250,7 @@
                 "id": 8,
                 "uuid": "c7167c6e-abfb-4977-bba4-00836a871f76",
                 "key": "description",
-                "value": "The professional publishing platform",
+                "value": "Just a blogging platform.",
                 "type": "blog",
                 "created_at": "2016-10-28T13:43:36.000Z",
                 "created_by": 1,
@@ -1604,6 +1505,60 @@
                 "slug": "joe-bloggs-brother",
                 "password": "$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKABC",
                 "email": "jbloggsbrother@example.com",
+                "image": "/content/images/2017/05/authorlogo.jpeg",
+                "cover": "/content/images/2017/05/authorcover.jpeg",
+                "bio": "I'm Joe's brother, the good looking one!",
+                "website": "http://joebloggsbrother.com",
+                "location": null,
+                "facebook": null,
+                "twitter": null,
+                "accessibility": null,
+                "status": "active",
+                "language": "en_US",
+                "visibility": "public",
+                "meta_title": null,
+                "meta_description": null,
+                "tour": null,
+                "last_login": "2017-05-30T10:39:32.000Z",
+                "created_at": "2016-10-28T13:43:36.000Z",
+                "created_by": 1,
+                "updated_at": "2017-05-30T12:02:35.000Z",
+                "updated_by": 1
+            },
+            {
+                "id": 2,
+                "uuid": "1e2a7354-f580-4deb-9801-ca286628125b",
+                "name": "multiple roles",
+                "slug": "muiltple-roles",
+                "password": "$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKABC",
+                "email": "mr@example.com",
+                "image": "/content/images/2017/05/authorlogo.jpeg",
+                "cover": "/content/images/2017/05/authorcover.jpeg",
+                "bio": "I'm Joe's brother, the good looking one!",
+                "website": "http://joebloggsbrother.com",
+                "location": null,
+                "facebook": null,
+                "twitter": null,
+                "accessibility": null,
+                "status": "active",
+                "language": "en_US",
+                "visibility": "public",
+                "meta_title": null,
+                "meta_description": null,
+                "tour": null,
+                "last_login": "2017-05-30T10:39:32.000Z",
+                "created_at": "2016-10-28T13:43:36.000Z",
+                "created_by": 1,
+                "updated_at": "2017-05-30T12:02:35.000Z",
+                "updated_by": 1
+            },
+            {
+                "id": 3,
+                "uuid": "1e2a7354-f580-4deb-9801-ca286628125b",
+                "name": "multiple roles 2",
+                "slug": "muiltple-roles-2",
+                "password": "$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKABC",
+                "email": "mr2@example.com",
                 "image": "/content/images/2017/05/authorlogo.jpeg",
                 "cover": "/content/images/2017/05/authorcover.jpeg",
                 "bio": "I'm Joe's brother, the good looking one!",
