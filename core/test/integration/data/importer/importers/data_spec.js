@@ -1604,4 +1604,58 @@ describe('Import (new test structure)', function () {
             });
         });
     });
+
+    describe('lts: multiple roles attached', function () {
+        var exportData;
+
+        before(function doImport(done) {
+            // initialise the blog with some data
+            testUtils.initFixtures('roles', 'owner', 'settings').then(function () {
+                return testUtils.fixtures.loadExportFixture('export-lts-multiple-roles',
+                    {lts: true}
+                );
+            }).then(function (exported) {
+                exportData = exported;
+                return dataImporter.doImport(exportData);
+            }).then(function () {
+                done();
+            }).catch(done);
+        });
+
+        after(testUtils.teardown);
+
+        it('takes the latest role attached', function (done) {
+            var fetchImported = Promise.join(
+                knex('users').select(),
+                knex('roles_users').select(),
+                knex('roles').select()
+            );
+
+            fetchImported
+                .then(function (importedData) {
+                    should.exist(importedData);
+                    importedData.length.should.equal(3);
+
+                    var users = importedData[0],
+                        rolesUsers = importedData[1],
+                        roles = importedData[2];
+
+                    users.length.should.equal(4);
+
+                    // original owner, search the owner by slug
+                    _.find(rolesUsers, {user_id: _.find(users, {slug: testUtils.DataGenerator.Content.users[0].slug}).id}).role_id.should.eql(_.find(roles, {name: 'Owner'}).id);
+
+                    // first imported user, which was the original owner, now administator
+                    _.find(rolesUsers, {user_id: _.find(users, {slug: exportData.data.users[0].slug}).id}).role_id.should.eql(_.find(roles, {name: 'Administrator'}).id);
+
+                    // second imported users, which has two roles attached, but the last role is the owner role, now administraotr
+                    _.find(rolesUsers, {user_id: _.find(users, {slug: exportData.data.users[1].slug}).id}).role_id.should.eql(_.find(roles, {name: 'Administrator'}).id);
+
+                    // second imported users, which has two roles attached, but the last role is the editor role
+                    _.find(rolesUsers, {user_id: _.find(users, {slug: exportData.data.users[2].slug}).id}).role_id.should.eql(_.find(roles, {name: 'Editor'}).id);
+
+                    done();
+                }).catch(done);
+        });
+    });
 });
