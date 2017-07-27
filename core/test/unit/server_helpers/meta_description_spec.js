@@ -8,7 +8,7 @@ var should = require('should'),
 
 describe('{{meta_description}} helper', function () {
     before(function () {
-        sandbox.stub(settingsCache, 'get').returns('Just a blogging platform.');
+        sandbox.stub(settingsCache, 'get').returns('The professional publishing platform');
     });
 
     after(function () {
@@ -23,7 +23,7 @@ describe('{{meta_description}} helper', function () {
         );
 
         should.exist(rendered);
-        String(rendered).should.equal('Just a blogging platform.');
+        String(rendered).should.equal('The professional publishing platform');
     });
 
     it('returns empty description on paginated page', function () {
