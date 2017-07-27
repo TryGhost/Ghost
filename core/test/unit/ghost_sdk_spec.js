@@ -1,9 +1,8 @@
 var should = require('should'), // jshint ignore:line
-    ghostUrl = require('../../server/public/ghost-url'),
+    ghostSdk = require('../../server/public/ghost-sdk'),
     configUtils = require('../utils/configUtils'),
     utils = require('../../server/utils');
 
-// @TODO: ghostUrl.init was obviously written for this test, get rid of it! (write a route test instead)
 describe('Ghost Ajax Helper', function () {
     beforeEach(function () {
         configUtils.set({
@@ -16,52 +15,52 @@ describe('Ghost Ajax Helper', function () {
     });
 
     it('sets url empty if it is not set on init', function () {
-        ghostUrl.init({
+        ghostSdk.init({
             clientId: '',
             clientSecret: ''
         });
 
-        ghostUrl.url.api().should.equal('');
+        ghostSdk.url.api().should.equal('');
     });
 
     it('renders basic url correctly when no arguments are presented', function () {
-        ghostUrl.init({
+        ghostSdk.init({
             clientId: '',
             clientSecret: '',
             url: utils.url.urlFor('api', {cors: true}, true)
         });
 
-        ghostUrl.url.api().should.equal('//testblog.com/ghost/api/v0.1/');
+        ghostSdk.url.api().should.equal('//testblog.com/ghost/api/v0.1/');
     });
 
     it('strips arguments of forward and trailing slashes correctly', function () {
-        ghostUrl.init({
+        ghostSdk.init({
             clientId: '',
             clientSecret: '',
             url: utils.url.urlFor('api', {cors: true}, true)
         });
 
-        ghostUrl.url.api('a/', '/b', '/c/').should.equal('//testblog.com/ghost/api/v0.1/a/b/c/');
+        ghostSdk.url.api('a/', '/b', '/c/').should.equal('//testblog.com/ghost/api/v0.1/a/b/c/');
     });
 
     it('appends client_id & client_secret to query string automatically', function () {
-        ghostUrl.init({
+        ghostSdk.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
             url: utils.url.urlFor('api', {cors: true}, true)
         });
 
-        ghostUrl.url.api().should.equal('//testblog.com/ghost/api/v0.1/?client_id=ghost-frontend&client_secret=notasecret');
+        ghostSdk.url.api().should.equal('//testblog.com/ghost/api/v0.1/?client_id=ghost-frontend&client_secret=notasecret');
     });
 
     it('generates query parameters correctly', function () {
-        ghostUrl.init({
+        ghostSdk.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
             url: utils.url.urlFor('api', {cors: true}, true)
         });
 
-        var rendered = ghostUrl.url.api({a: 'string', b: 5, c: 'en coded'});
+        var rendered = ghostSdk.url.api({a: 'string', b: 5, c: 'en coded'});
 
         rendered.should.match(/\/\/testblog\.com\/ghost\/api\/v0\.1\/\?/);
         rendered.should.match(/client_id=ghost-frontend/);
@@ -72,7 +71,7 @@ describe('Ghost Ajax Helper', function () {
     });
 
     it('handles null/undefined queryOptions correctly', function () {
-        ghostUrl.init({
+        ghostSdk.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
             url: 'test'
@@ -81,8 +80,8 @@ describe('Ghost Ajax Helper', function () {
         var test = {
                 a: null
             },
-            rendered = ghostUrl.url.api(test.a), // null value
-            rendered2 = ghostUrl.url.api(test.b); // undefined value
+            rendered = ghostSdk.url.api(test.a), // null value
+            rendered2 = ghostSdk.url.api(test.b); // undefined value
 
         rendered.should.match(/test/);
         rendered.should.match(/client_id=ghost-frontend/);
@@ -93,13 +92,13 @@ describe('Ghost Ajax Helper', function () {
     });
 
     it('generates complex query correctly', function () {
-        ghostUrl.init({
+        ghostSdk.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
             url: utils.url.urlFor('api', {cors: true}, true)
         });
 
-        var rendered = ghostUrl.url.api('posts/', '/tags/', '/count', {include: 'tags,tests', page: 2});
+        var rendered = ghostSdk.url.api('posts/', '/tags/', '/count', {include: 'tags,tests', page: 2});
 
         rendered.should.match(/\/\/testblog\.com\/ghost\/api\/v0\.1\/posts\/tags\/count\/\?/);
         rendered.should.match(/client_id=ghost-frontend/);
@@ -113,13 +112,13 @@ describe('Ghost Ajax Helper', function () {
             url: 'https://testblog.com/'
         });
 
-        ghostUrl.init({
+        ghostSdk.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
             url: utils.url.urlFor('api', true)
         });
 
-        var rendered = ghostUrl.url.api('posts/', '/tags/', '/count', {include: 'tags,tests', page: 2});
+        var rendered = ghostSdk.url.api('posts/', '/tags/', '/count', {include: 'tags,tests', page: 2});
 
         rendered.should.match(/https:\/\/testblog\.com\/ghost\/api\/v0\.1\/posts\/tags\/count\/\?/);
         rendered.should.match(/client_id=ghost-frontend/);
@@ -132,13 +131,13 @@ describe('Ghost Ajax Helper', function () {
         configUtils.set({
             url: 'https://testblog.com/blog/'
         });
-        ghostUrl.init({
+        ghostSdk.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
             url: utils.url.urlFor('api', true)
         });
 
-        var rendered = ghostUrl.url.api('posts/', '/tags/', '/count', {include: 'tags,tests', page: 2});
+        var rendered = ghostSdk.url.api('posts/', '/tags/', '/count', {include: 'tags,tests', page: 2});
 
         rendered.should.match(/https:\/\/testblog\.com\/blog\/ghost\/api\/v0\.1\/posts\/tags\/count\/\?/);
         rendered.should.match(/client_id=ghost-frontend/);
@@ -152,14 +151,14 @@ describe('Ghost Ajax Helper', function () {
             url: 'https://testblog.com/blog/'
         });
 
-        ghostUrl.init({
+        ghostSdk.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
             url: utils.url.urlFor('api', {cors: true}, true)
         });
 
-        var rendered = ghostUrl.url.api('posts', {limit: 3}),
-            rendered2 = ghostUrl.url.api('posts', {limit: 3});
+        var rendered = ghostSdk.url.api('posts', {limit: 3}),
+            rendered2 = ghostSdk.url.api('posts', {limit: 3});
 
         rendered.should.equal(rendered2);
     });
