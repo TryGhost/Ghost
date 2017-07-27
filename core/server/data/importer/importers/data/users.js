@@ -30,7 +30,7 @@ class UsersImporter extends BaseImporter {
     beforeImport() {
         debug('beforeImport');
 
-        let self = this, role;
+        let self = this, role, lookup = {};
 
         // Remove legacy field language
         this.dataToImport = _.filter(this.dataToImport, function (data) {
@@ -43,6 +43,19 @@ class UsersImporter extends BaseImporter {
             model.password = globalUtils.uid(50);
             model.status = 'locked';
         });
+
+        // NOTE: sort out duplicated roles based on incremental id
+        _.each(this.roles_users, function (attachedRole) {
+            if (lookup.hasOwnProperty(attachedRole.user_id)) {
+                if (lookup[attachedRole.user_id].id < attachedRole.id) {
+                    lookup[attachedRole.user_id] = attachedRole;
+                }
+            } else {
+                lookup[attachedRole.user_id] = attachedRole;
+            }
+        });
+
+        this.roles_users = _.toArray(lookup);
 
         _.each(this.roles_users, function (attachedRole) {
             role = _.find(self.roles, function (role) {
