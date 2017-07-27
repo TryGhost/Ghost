@@ -19,7 +19,7 @@ function GhostMailer() {
 }
 
 GhostMailer.prototype.from = function () {
-    var from = config.get('mail') && (config.get('mail').from || config.get('mail').fromaddress),
+    var from = config.get('mail') && config.get('mail').from,
         defaultBlogTitle;
 
     // If we don't have a from address at all

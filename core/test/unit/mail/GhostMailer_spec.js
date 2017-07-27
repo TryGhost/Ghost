@@ -204,49 +204,39 @@ describe('Mail: Ghostmailer', function () {
             mailer.from().should.equal('"Test\\"" <ghost@default.com>');
         });
 
-        it('should use mail.from if both from and fromaddress are present', function () {
+        it('should use mail.from', function () {
             // Standard domain
-            configUtils.set({mail: {from: '"bar" <from@default.com>', fromaddress: '"Qux" <fa@default.com>'}});
+            configUtils.set({mail: {from: '"bar" <from@default.com>'}});
 
             mailer = new mail.GhostMailer();
 
             mailer.from().should.equal('"bar" <from@default.com>');
         });
 
-        it('should attach blog title if from or fromaddress are only email addresses', function () {
+        it('should attach blog title', function () {
             sandbox.stub(settingsCache, 'get').returns('Test');
 
-            // from and fromaddress are both set
-            configUtils.set({mail: {from: 'from@default.com', fromaddress: 'fa@default.com'}});
+            configUtils.set({mail: {from: 'from@default.com'}});
 
             mailer = new mail.GhostMailer();
 
             mailer.from().should.equal('"Test" <from@default.com>');
 
             // only from set
-            configUtils.set({mail: {from: 'from@default.com', fromaddress: null}});
+            configUtils.set({mail: {from: 'from@default.com'}});
             mailer.from().should.equal('"Test" <from@default.com>');
-
-            // only fromaddress set
-            configUtils.set({mail: {from: null, fromaddress: 'fa@default.com'}});
-            mailer.from().should.equal('"Test" <fa@default.com>');
         });
 
         it('should ignore theme title if from address is Title <email@address.com> format', function () {
-            // from and fromaddress are both set
-            configUtils.set({mail: {from: '"R2D2" <from@default.com>', fromaddress: '"C3PO" <fa@default.com>'}});
+            configUtils.set({mail: {from: '"R2D2" <from@default.com>'}});
 
             mailer = new mail.GhostMailer();
 
             mailer.from().should.equal('"R2D2" <from@default.com>');
 
             // only from set
-            configUtils.set({mail: {from: '"R2D2" <from@default.com>', fromaddress: null}});
+            configUtils.set({mail: {from: '"R2D2" <from@default.com>'}});
             mailer.from().should.equal('"R2D2" <from@default.com>');
-
-            // only fromaddress set
-            configUtils.set({mail: {from: null, fromaddress: '"C3PO" <fa@default.com>'}});
-            mailer.from().should.equal('"C3PO" <fa@default.com>');
         });
 
         it('should use default title if not theme title is provided', function () {
