@@ -137,6 +137,11 @@ class PostsImporter extends BaseImporter {
                     });
                 }
             }
+
+            // NOTE: we remember the old post id for disqus
+            if (model.id) {
+                model.amp = model.id.toString();
+            }
         });
 
         // NOTE: do after, because model properties are deleted e.g. post.id
