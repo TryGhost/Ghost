@@ -494,7 +494,9 @@ Post = ghostBookshelf.Model.extend({
     toJSON: function toJSON(options) {
         options = options || {};
 
-        var attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
+        var attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options),
+            oldPostId = attrs.amp,
+            commentId;
 
         attrs = this.formatsToJSON(attrs, options);
 
@@ -506,6 +508,21 @@ Post = ghostBookshelf.Model.extend({
         if (!options.columns || (options.columns && options.columns.indexOf('url') > -1)) {
             attrs.url = utils.url.urlPathForPost(attrs);
         }
+
+        if (oldPostId) {
+            oldPostId = Number(oldPostId);
+
+            if (isNaN(oldPostId)) {
+                commentId = attrs.id;
+            } else {
+                commentId = oldPostId;
+            }
+        } else {
+            commentId = attrs.id;
+        }
+
+        // NOTE: we remember the old post id because of disqus
+        attrs.comment_id = commentId;
 
         return attrs;
     },
