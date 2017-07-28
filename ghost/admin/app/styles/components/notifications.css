@@ -25,7 +25,7 @@
     color: #fff;
     font-size: 1.2rem;
     line-height: 1.4em;
-    opacity: 0.8;
+    opacity: 0.88;
     transition: opacity 0.3s ease;
 }
 
@@ -39,6 +39,12 @@
     padding: 10px 15px;
     border-radius: 3px;
     transition: background 0.2s ease;
+}
+
+.gh-notification-title {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
 }
 
 .gh-notification a {
