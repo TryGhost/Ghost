@@ -15992,7 +15992,7 @@ SimpleMDE.prototype.createToolbar = function(items) {
 				var el = toolbarData[key];
 				if(stat[key]) {
 					el.className += " active";
-				} else if(key != "fullscreen" && key != "side-by-side" && key != "spellcheck") {
+				} else if(key != "fullscreen" && key != "side-by-side" && key != "spellcheck" && key != "hemmingway") {
 					el.className = el.className.replace(/\s*active\s*/g, "");
 				}
 			})(key);
