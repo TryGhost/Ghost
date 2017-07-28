@@ -7561,7 +7561,7 @@ simple-is@~0.2.0:
 
 "simplemde@https://github.com/kevinansfield/simplemde-markdown-editor.git#ghost":
   version "1.11.2"
-  resolved "https://github.com/kevinansfield/simplemde-markdown-editor.git#05ba8d8ff395b148258743a31ef7e07ae5579d3e"
+  resolved "https://github.com/kevinansfield/simplemde-markdown-editor.git#42971ea4d997f5bec519c1c68cf63bda6b278cb2"
   dependencies:
     codemirror "*"
     codemirror-spell-checker "*"

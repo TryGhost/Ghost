@@ -3,9 +3,11 @@ import ShortcutsMixin from 'ghost-admin/mixins/shortcuts';
 import computed from 'ember-computed';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import formatMarkdown from 'ghost-admin/utils/format-markdown';
+import injectService from 'ember-service/inject';
 import run from 'ember-runloop';
 import {assign} from 'ember-platform';
 import {copy} from 'ember-metal/utils';
+import {htmlSafe} from 'ember-string';
 import {isEmpty} from 'ember-utils';
 
 const MOBILEDOC_VERSION = '0.3.1';
@@ -24,6 +26,8 @@ export const BLANK_DOC = {
 };
 
 export default Component.extend(ShortcutsMixin, {
+
+    notifications: injectService(),
 
     classNames: ['gh-markdown-editor'],
     classNameBindings: [
@@ -55,6 +59,7 @@ export default Component.extend(ShortcutsMixin, {
     _editor: null,
     _isFullScreen: false,
     _isSplitScreen: false,
+    _isHemmingwayMode: false,
     _isUploading: false,
     _statusbar: null,
     _toolbar: null,
@@ -109,6 +114,14 @@ export default Component.extend(ShortcutsMixin, {
                     title: 'Toggle Spellcheck'
                 },
                 {
+                    name: 'hemmingway',
+                    action: () => {
+                        this._toggleHemmingway();
+                    },
+                    className: 'fa fa-h-square',
+                    title: 'Toggle Hemmingway Mode'
+                },
+                {
                     name: 'guide',
                     action: () => {
                         this.showMarkdownHelp();
@@ -142,6 +155,7 @@ export default Component.extend(ShortcutsMixin, {
         let shortcuts = this.get('shortcuts');
 
         shortcuts[`${ctrlOrCmd}+shift+i`] = {action: 'insertImage'};
+        shortcuts['ctrl+alt+h'] = {action: 'toggleHemmingway'};
     },
 
     // extract markdown content from single markdown card
@@ -230,6 +244,7 @@ export default Component.extend(ShortcutsMixin, {
         if (this._editor) {
             let sideBySideButton = this._editor.toolbarElements['side-by-side'];
             let spellcheckButton = this._editor.toolbarElements.spellcheck;
+            let hemmingwayButton = this._editor.toolbarElements.hemmingway;
 
             if (sideBySideButton) {
                 if (this.get('_isSplitScreen')) {
@@ -244,6 +259,14 @@ export default Component.extend(ShortcutsMixin, {
                     spellcheckButton.classList.add('active');
                 } else {
                     spellcheckButton.classList.remove('active');
+                }
+            }
+
+            if (hemmingwayButton) {
+                if (this._isHemmingwayMode) {
+                    hemmingwayButton.classList.add('active');
+                } else {
+                    hemmingwayButton.classList.remove('active');
                 }
             }
         }
@@ -347,6 +370,32 @@ export default Component.extend(ShortcutsMixin, {
         }
 
         this._updateButtonState();
+    },
+
+    _toggleHemmingway() {
+        let cm = this._editor.codemirror;
+        let extraKeys = cm.getOption('extraKeys');
+        let notificationText = '';
+
+        this._isHemmingwayMode = !this._isHemmingwayMode;
+
+        if (this._isHemmingwayMode) {
+            notificationText = '<span class="gh-notification-title">Hemingway Mode On:</span> Write now; edit later. Backspace disabled.';
+            extraKeys.Backspace = function () {};
+        } else {
+            notificationText = '<span class="gh-notification-title">Hemingway Mode Off:</span> Normal editing restored.';
+            delete extraKeys.Backspace;
+        }
+
+        cm.setOption('extraKeys', extraKeys);
+        this._updateButtonState();
+
+        cm.focus();
+
+        this.get('notifications').showNotification(
+            htmlSafe(notificationText),
+            {key: 'editor.hemmingwaymode'}
+        );
     },
 
     willDestroyElement() {
@@ -458,6 +507,10 @@ export default Component.extend(ShortcutsMixin, {
 
             // go fullscreen when entering split screen mode
             this.send('toggleFullScreen');
+        },
+
+        toggleHemmingway() {
+            this._toggleHemmingway();
         },
 
         // put the toolbar/statusbar elements back so that SimpleMDE doesn't throw
