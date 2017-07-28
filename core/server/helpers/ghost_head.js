@@ -68,7 +68,7 @@ function finaliseStructuredData(metaData) {
 
 function getAjaxHelper(clientId, clientSecret) {
     return '<script type="text/javascript" src="' +
-        getAssetUrl('public/ghost-url.js', true) +
+        getAssetUrl('public/ghost-sdk.js', true) +
         '"></script>\n' +
         '<script type="text/javascript">\n' +
         'ghost.init({\n' +

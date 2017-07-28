@@ -1096,7 +1096,7 @@ describe('{{ghost_head}} helper', function () {
                 {data: {root: {context: []}}}
             ).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.match(/<script type="text\/javascript" src="\/public\/ghost-url\.js\?v=/);
+                rendered.string.should.match(/<script type="text\/javascript" src="\/public\/ghost-sdk\.js\?v=/);
 
                 done();
             });

@@ -43,9 +43,9 @@ module.exports = function setupBlogApp() {
     // @TODO make sure all of these have a local 404 error handler
     // Favicon
     blogApp.use(serveFavicon());
-    // Ghost-Url
-    blogApp.use(servePublicFile('public/ghost-url.js', 'application/javascript', utils.ONE_HOUR_S));
-    blogApp.use(servePublicFile('public/ghost-url.min.js', 'application/javascript', utils.ONE_HOUR_S));
+    // /public/ghost-sdk.js
+    blogApp.use(servePublicFile('public/ghost-sdk.js', 'application/javascript', utils.ONE_HOUR_S));
+    blogApp.use(servePublicFile('public/ghost-sdk.min.js', 'application/javascript', utils.ONE_HOUR_S));
     // Serve sitemap.xsl file
     blogApp.use(servePublicFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
 
