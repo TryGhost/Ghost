@@ -35,6 +35,7 @@ describe('Configuration API', function () {
                 author: 'author',
                 page: 'page',
                 preview: 'p',
+                primaryTagFallback: 'all',
                 private: 'private',
                 subscribe: 'subscribe',
                 amp: 'amp'

@@ -53,14 +53,14 @@ describe('getTitle', function () {
                 name: 'Author Name'
             }
         }, {
-            context: ['author'],
+            context: ['author', 'paged'],
             pagination: {
                 total: 40,
                 page: 3
             }
         });
 
-        title.should.equal('Author Name - Page 3 - My blog title 2');
+        title.should.equal('Author Name - My blog title 2 (Page 3)');
     });
 
     it('should return tag name - blog title if on data tag page no meta_title', function () {
@@ -75,7 +75,7 @@ describe('getTitle', function () {
         title.should.equal('Tag Name - My blog title 3');
     });
 
-    it('should return tag name - page - blog title if on data tag page no meta_title', function () {
+    it('should return tag name - blog title if on data tag page no meta_title (Page #)', function () {
         localSettingsCache.title = 'My blog title 3';
 
         var title = getTitle({
@@ -83,14 +83,14 @@ describe('getTitle', function () {
                 name: 'Tag Name'
             }
         }, {
-            context: ['tag'],
+            context: ['tag', 'paged'],
             pagination: {
                 total: 40,
                 page: 39
             }
         });
 
-        title.should.equal('Tag Name - Page 39 - My blog title 3');
+        title.should.equal('Tag Name - My blog title 3 (Page 39)');
     });
 
     it('should return tag meta_title if in tag data', function () {
@@ -177,6 +177,6 @@ describe('getTitle', function () {
             }
         });
 
-        title.should.equal('My blog title 4 - Page 35');
+        title.should.equal('My blog title 4 (Page 35)');
     });
 });

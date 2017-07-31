@@ -18,6 +18,10 @@ The project is maintained by a non-profit organisation called the **Ghost Founda
 
 &nbsp;
 
+![Ghost](https://user-images.githubusercontent.com/120485/28764244-344050c0-75d5-11e7-9314-45bc4177164e.png)
+
+&nbsp;
+
 # Hosting a live Ghost site
 
 <a href="https://ghost.org/pricing"><img src="https://cloud.githubusercontent.com/assets/120485/18662071/f30da886-7f18-11e6-90f2-42c0ade79fd1.png" alt="Ghost(Pro)" /></a>
@@ -63,4 +67,4 @@ New releases are announced on the [dev blog](http://dev.ghost.org/tag/releases/)
 
 # Copyright & License
 
-Copyright (c) 2013-2017 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2013-2017 Ghost Foundation - Released under the [MIT license](LICENSE). Ghost and the Ghost Logo are trademarks of Ghost Foundation Ltd. Please see our [trademark policy](https://ghost.org/trademark/) for info on acceptable usage.
