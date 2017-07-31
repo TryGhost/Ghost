@@ -85,7 +85,7 @@ describe('Acceptance: Settings - Apps - Slack', function () {
             await fillIn('#slack-settings input[name="slack[url]"]', 'https://hooks.slack.com/services/1275958430');
             await click(testSelector('send-notification-button'));
 
-            expect(find('.gh-alert-blue').length, 'modal element').to.equal(1);
+            expect(find('.gh-notification').length, 'number of notifications').to.equal(1);
             expect(find('#slack-settings .error .response').text().trim(), 'inline validation response')
                 .to.equal('');
 
@@ -100,13 +100,13 @@ describe('Acceptance: Settings - Apps - Slack', function () {
                 });
             });
 
-            await click('.gh-alert-blue .gh-alert-close');
+            await click('.gh-notification .gh-notification-close');
             await click(testSelector('send-notification-button'));
 
             // we shouldn't try to send the test request if the save fails
             let [lastRequest] = server.pretender.handledRequests.slice(-1);
             expect(lastRequest.url).to.not.match(/\/slack\/test/);
-            expect(find('.gh-alert-blue').length, 'check slack alert after api validation error').to.equal(0);
+            expect(find('.gh-notification').length, 'check slack notification after api validation error').to.equal(0);
         });
     });
 });
