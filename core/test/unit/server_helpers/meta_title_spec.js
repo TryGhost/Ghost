@@ -37,7 +37,7 @@ describe('{{meta_title}} helper', function () {
         );
 
         should.exist(rendered);
-        String(rendered).should.equal('Ghost - Page 2');
+        String(rendered).should.equal('Ghost (Page 2)');
     });
 
     it('returns correct title for a post', function () {
@@ -88,7 +88,7 @@ describe('{{meta_title}} helper', function () {
         );
 
         should.exist(rendered);
-        String(rendered).should.equal('Rasper Red - Page 2 - Ghost');
+        String(rendered).should.equal('Rasper Red - Ghost (Page 2)');
     });
 
     it('uses tag meta_title to override default response on tag page', function () {
@@ -128,7 +128,7 @@ describe('{{meta_title}} helper', function () {
         );
 
         should.exist(rendered);
-        String(rendered).should.equal('Donald Duck - Page 2 - Ghost');
+        String(rendered).should.equal('Donald Duck - Ghost (Page 2)');
     });
 
     it('returns correctly escaped title of a post', function () {
