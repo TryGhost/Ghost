@@ -99,7 +99,7 @@ describe('Acceptance: Setup', function () {
             // email field is focused by default
             // NOTE: $('x').is(':focus') doesn't work in phantomjs CLI runner
             // https://github.com/ariya/phantomjs/issues/10427
-            expect(find(testSelector('email-input')).get(0) === document.activeElement, 'email field has focus')
+            expect(find(testSelector('blog-title-input')).get(0) === document.activeElement, 'blog title has focus')
                 .to.be.true;
 
             await click('.gh-btn-green');
