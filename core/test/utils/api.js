@@ -23,8 +23,8 @@ var _               = require('lodash'),
         post:        _(schema.posts).keys()
             // does not return all formats by default
             .without('mobiledoc', 'amp', 'plaintext')
-            // swaps author_id to author, and always returns a computed 'url' property
-            .without('author_id').concat('author', 'url', 'comment_id')
+            // swaps author_id to author, and always returns computed properties: url, comment_id, primary_tag
+            .without('author_id').concat('author', 'url', 'comment_id', 'primary_tag')
             .value(),
         // User API always removes the password field
         user:        _(schema.users).keys().without('password').without('ghost_auth_access_token').value(),
