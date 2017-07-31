@@ -12,6 +12,8 @@
             image=newUrl
             saveButton=false
             update=(action 'fileUploaded')
+            uploadStarted=(action 'isUploading')
+            uploadFinished=(action 'isUploading')
             accept=model.accept
             extensions=model.extensions
             uploadUrl=model.uploadUrl
@@ -21,5 +23,9 @@
 
 <div class="modal-footer">
     <button {{action "closeModal"}} class="gh-btn"><span>Cancel</span></button>
-    {{gh-task-button task=uploadImage class="gh-btn gh-btn-blue right gh-btn-icon" data-test-modal-accept-button=true}}
+    {{#if _isUploading}}
+        <button class="gh-btn gh-btn-blue right gh-btn-icon disabled"><span>Save</span></button>
+    {{else}}
+        {{gh-task-button task=uploadImage class="gh-btn gh-btn-blue right gh-btn-icon" data-test-modal-accept-button=true}}
+    {{/if}}
 </div>
