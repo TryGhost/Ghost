@@ -238,7 +238,7 @@ fixtures = {
         }
 
         return db.knex('users')
-            .where('id', '=', models.User.ownerUser)
+            .where('id', '=', DataGenerator.Content.users[0].id)
             .update(user);
     },
 
