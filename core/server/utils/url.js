@@ -174,14 +174,16 @@ function createUrl(urlPath, absolute, secure) {
 function urlPathForPost(post) {
     var output = '',
         permalinks = settingsCache.get('permalinks'),
+        primaryTagFallback = config.get('routeKeywords').primaryTagFallback,
         publishedAtMoment = moment.tz(post.published_at || Date.now(), settingsCache.get('active_timezone')),
         tags = {
-            year:   function () { return publishedAtMoment.format('YYYY'); },
-            month:  function () { return publishedAtMoment.format('MM'); },
-            day:    function () { return publishedAtMoment.format('DD'); },
+            year: function () { return publishedAtMoment.format('YYYY'); },
+            month: function () { return publishedAtMoment.format('MM'); },
+            day: function () { return publishedAtMoment.format('DD'); },
             author: function () { return post.author.slug; },
-            slug:   function () { return post.slug; },
-            id:     function () { return post.id; }
+            primary_tag: function () { return post.primary_tag ? post.primary_tag.slug : primaryTagFallback; },
+            slug: function () { return post.slug; },
+            id: function () { return post.id; }
         };
 
     if (post.page) {
@@ -191,7 +193,7 @@ function urlPathForPost(post) {
     }
 
     // replace tags like :slug or :year with actual values
-    output = output.replace(/(:[a-z]+)/g, function (match) {
+    output = output.replace(/(:[a-z_]+)/g, function (match) {
         if (_.has(tags, match.substr(1))) {
             return tags[match.substr(1)]();
         }

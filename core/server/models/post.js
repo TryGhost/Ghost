@@ -508,6 +508,11 @@ Post = ghostBookshelf.Model.extend({
             attrs.author = attrs.author || attrs.author_id;
             delete attrs.author_id;
         }
+        // If the current column settings allow it...
+        if (!options.columns || (options.columns && options.columns.indexOf('primary_tag') > -1)) {
+            // ... attach a computed property of primary_tag which is the first tag or null
+            attrs.primary_tag = attrs.tags && attrs.tags.length > 0 ? attrs.tags[0] : null;
+        }
 
         if (!options.columns || (options.columns && options.columns.indexOf('url') > -1)) {
             attrs.url = utils.url.urlPathForPost(attrs);
