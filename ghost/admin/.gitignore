@@ -12,6 +12,7 @@ logs
 results
 
 npm-debug.log*
+yarn-error.log
 .nvmrc
 .bowerrc
 .idea/*
@@ -47,5 +48,4 @@ Session.vim
 /connect.lock
 /coverage/*
 /libpeerconnection.log
-npm-debug.log
 testem.log
