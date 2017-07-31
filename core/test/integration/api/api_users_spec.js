@@ -1321,6 +1321,37 @@ describe('Users API', function () {
                 done(new Error('Admin is not denied transferring ownership.'));
             }).catch(checkForErrorType('NoPermissionError', done));
         });
+
+        it('Blog is still setup', function (done) {
+            // transfer ownership to admin user
+            UserAPI.transferOwnership(
+                {owner: [{id: userIdFor.admin}]},
+                context.owner
+            ).then(function (response) {
+                should.exist(response);
+                return models.User.isSetup();
+            }).then(function (isSetup) {
+                isSetup.should.eql(true);
+                done();
+            }).catch(done);
+        });
+
+        it('Blog is still setup, new owner is locked', function (done) {
+            // transfer ownership to admin user
+            UserAPI.transferOwnership(
+                {owner: [{id: userIdFor.admin}]},
+                context.owner
+            ).then(function (response) {
+                should.exist(response);
+                return models.User.edit({status: 'locked'}, {id: userIdFor.admin});
+            }).then(function (modifiedUser) {
+                modifiedUser.get('status').should.eql('locked');
+                return models.User.isSetup();
+            }).then(function (isSetup) {
+                isSetup.should.eql(true);
+                done();
+            }).catch(done);
+        });
     });
 
     describe('Change Password', function () {
