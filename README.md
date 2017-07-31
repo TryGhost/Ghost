@@ -28,7 +28,7 @@ The project is maintained by a non-profit organisation called the **Ghost Founda
 
 The easiest way to deploy Ghost is with our official **[Ghost(Pro)](https://ghost.org/pricing/)** managed service. You can have a fresh instance up and running in a couple of clicks with a worldwide CDN, backups, security and maintenance all done for you.
 
-Not only will it save you [many hours per month](https://ghost.org/pricing/#why-ghost-pro), but all revenue goes to the Ghost Foundation, which funds the maintenance and further development of Ghost itself. So you’ll be supporting open source software *and* getting a great service **at the same time**! Talk about win/win. :trophy:
+Not only will it save you hours of maintenance per month, but all revenue goes to the Ghost Foundation, which funds the maintenance and further development of Ghost itself. So you’ll be supporting open source software *and* getting a great service **at the same time**! Talk about win/win. :trophy:
 
 ## Self-Hosters
 
