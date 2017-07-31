@@ -15,12 +15,7 @@
                               modifier="action wide"}}
     {{/if}}
 
-    {{#gh-infinite-scroll
-        fetch="loadNextPage"
-        isLoading=isLoading
-        tagName="section"
-        classNames="gh-team"
-    }}
+    <section class="gh-team">
 
     {{!-- Show invited users to everyone except authors --}}
     {{#unless session.user.isAuthor}}
@@ -97,7 +92,12 @@
         </div>
     </section>
 
-    {{/gh-infinite-scroll}}
+    {{infinity-loader
+        infinityModel=activeUsers
+        scrollable=".gh-main"
+        triggerOffset=500}}
+
+    </section>
 
     {{!-- Don't show if we have no suspended users or logged in as an author --}}
     {{#if (and suspendedUsers (not session.user.isAuthor))}}
