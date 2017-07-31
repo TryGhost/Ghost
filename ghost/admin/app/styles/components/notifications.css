@@ -17,14 +17,14 @@
     display: flex;
     margin-top: 5px;
     padding: 4px;
-    width: 220px;
+    width: 240px;
     border: color(var(--blue) l(-10%)) 1px solid;
     background: var(--blue);
     border-radius: 4px;
     box-shadow: rgba(0,0,0,0.06) 0 1px 7px;
     color: #fff;
-    font-size: 1.2rem;
-    line-height: 1.4em;
+    font-size: 1.4rem;
+    line-height: 1.25em;
     opacity: 0.88;
     transition: opacity 0.3s ease;
 }
@@ -39,12 +39,14 @@
     padding: 10px 15px;
     border-radius: 3px;
     transition: background 0.2s ease;
+    color: rgba(255,255,255,0.8);
 }
 
 .gh-notification-title {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
     font-weight: 600;
+    font-size: 1.5rem;
 }
 
 .gh-notification a {
@@ -72,6 +74,10 @@
     height: 7px;
     width: 7px;
     fill: #fff;
+}
+
+.gh-notification-close svg path {
+    stroke-width: 2px;
 }
 
 .gh-notification-close:hover {
