@@ -182,54 +182,57 @@ class Base {
 
         debug('afterImport', this.modelName);
 
-        return Promise.each(this.dataToImport, function (obj) {
-            if (!obj.model) {
-                return;
-            }
+        return models.User.getOwnerUser(options)
+            .then(function (ownerUser) {
+                return Promise.each(self.dataToImport, function (obj) {
+                    if (!obj.model) {
+                        return;
+                    }
 
-            return Promise.each(['author_id', 'published_by', 'created_by', 'updated_by'], function (key) {
-                // CASE: not all fields exist on each model, skip them if so
-                if (!obj[key]) {
-                    return Promise.resolve();
-                }
+                    return Promise.each(['author_id', 'published_by', 'created_by', 'updated_by'], function (key) {
+                        // CASE: not all fields exist on each model, skip them if so
+                        if (!obj[key]) {
+                            return Promise.resolve();
+                        }
 
-                oldUser = _.find(self.users, {id: obj[key]});
+                        oldUser = _.find(self.users, {id: obj[key]});
 
-                if (!oldUser) {
-                    self.problems.push({
-                        message: 'Entry was imported, but we were not able to update user reference field: ' + key,
-                        help: self.modelName,
-                        context: JSON.stringify(obj)
+                        if (!oldUser) {
+                            self.problems.push({
+                                message: 'Entry was imported, but we were not able to update user reference field: ' + key,
+                                help: self.modelName,
+                                context: JSON.stringify(obj)
+                            });
+
+                            return;
+                        }
+
+                        return models.User.findOne({
+                            email: oldUser.email,
+                            status: 'all'
+                        }, options).then(function (userModel) {
+                            // CASE: user could not be imported e.g. multiple roles attached
+                            if (!userModel) {
+                                userModel = {
+                                    id: ownerUser.id
+                                };
+                            }
+
+                            dataToEdit = {};
+                            dataToEdit[key] = userModel.id;
+
+                            // CASE: updated_by is taken from the context object
+                            if (key === 'updated_by') {
+                                context = {context: {user: userModel.id}};
+                            } else {
+                                context = {};
+                            }
+
+                            return models[self.modelName].edit(dataToEdit, _.merge({}, options, {id: obj.model.id}, context));
+                        });
                     });
-
-                    return;
-                }
-
-                return models.User.findOne({
-                    email: oldUser.email,
-                    status: 'all'
-                }, options).then(function (userModel) {
-                    // CASE: user could not be imported e.g. multiple roles attached
-                    if (!userModel) {
-                        userModel = {
-                            id: models.User.ownerUser
-                        };
-                    }
-
-                    dataToEdit = {};
-                    dataToEdit[key] = userModel.id;
-
-                    // CASE: updated_by is taken from the context object
-                    if (key === 'updated_by') {
-                        context = {context: {user: userModel.id}};
-                    } else {
-                        context = {};
-                    }
-
-                    return models[self.modelName].edit(dataToEdit, _.merge({}, options, {id: obj.model.id}, context));
                 });
             });
-        });
     }
 }
 

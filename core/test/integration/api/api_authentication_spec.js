@@ -75,8 +75,9 @@ describe('Authentication API', function () {
                             done(new Error('Setup ran when it should not have.'));
                         }).catch(function (err) {
                             should.exist(err);
-                            err.name.should.equal('InternalServerError');
-                            err.statusCode.should.equal(500);
+                            err.name.should.equal('NotFoundError');
+                            err.message.should.equal('Owner not found');
+                            err.statusCode.should.equal(404);
 
                             done();
                         }).catch(done);

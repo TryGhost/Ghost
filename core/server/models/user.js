@@ -333,7 +333,7 @@ User = ghostBookshelf.Model.extend({
         status = data.status;
         delete data.status;
 
-        options = options || {};
+        options = _.cloneDeep(options || {});
         optInc = options.include;
         options.withRelated = _.union(options.withRelated, options.include);
         data = this.filterData(data);
@@ -538,16 +538,34 @@ User = ghostBookshelf.Model.extend({
 
     /**
      * Right now the setup of the blog depends on the user status.
-     * @TODO: see https://github.com/TryGhost/Ghost/issues/8003
+     * Only if the owner user is `inactive`, then the blog is not setup.
+     * e.g. if you transfer ownership to a locked user, you blog is still setup.
+     *
+     * @TODO: Rename `inactive` status to something else, it's confusing. e.g. requires-setup
+     * @TODO: Depending on the user status results in https://github.com/TryGhost/Ghost/issues/8003
      */
-    isSetup: function isSetup() {
-        return this
-            .where('status', 'in', activeStates)
-            .where('id', this.ownerUser)
-            .count('id')
-            .then(function (count) {
-                return !!count;
+    isSetup: function isSetup(options) {
+        return this.getOwnerUser(options)
+            .then(function (owner) {
+                return owner.get('status') !== 'inactive';
             });
+    },
+
+    getOwnerUser: function getOwnerUser(options) {
+        options = options || {};
+
+        return this.findOne({
+            role: 'Owner',
+            status: 'all'
+        }, options).then(function (owner) {
+            if (!owner) {
+                return Promise.reject(new errors.NotFoundError({
+                    message: i18n.t('errors.models.user.ownerNotFound')
+                }));
+            }
+
+            return owner;
+        });
     },
 
     permissible: function permissible(userModelOrId, action, context, loadedPermissions, hasUserPermission, hasAppPermission) {
