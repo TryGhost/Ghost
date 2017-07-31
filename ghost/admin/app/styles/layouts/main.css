@@ -475,7 +475,7 @@ body > .ember-view:not(.default-liquid-destination) {
     .gh-mobile-nav-bar a,
     .gh-mobile-nav-bar-more {
         height: 55px;
-        padding: 5px 15px;
+        padding: 10px 15px 5px 15px;
         text-align: center;
         cursor: pointer;
         color: var(--darkgrey);
@@ -483,11 +483,17 @@ body > .ember-view:not(.default-liquid-destination) {
         flex-direction: column;
         align-items: center;
         justify-content: space-around;
+        font-size: 1.2rem;
     }
 
-    .gh-mobile-nav-bar svg {
+    .gh-mobile-nav-bar svg,
+    .gh-mobile-nav-bar svg g {
         width: 15px;
         fill: var(--darkgrey);
+    }
+
+    .gh-mobile-nav-bar svg g path {
+        stroke: var(--darkgrey);
     }
 
     /* non-authed pages shouldn't have the mobile bar */

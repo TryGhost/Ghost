@@ -74,9 +74,15 @@ pre {
     background: var(--lightgrey);
 }
 
+hr {
+    border-color: color(var(--lightgrey) l(+5%));
+}
+
 input,
 .gh-input,
-.gh-select {
+.gh-select,
+.selectize-input,
+.gh-select select {
     color: var(--darkgrey);
     border-color: color(var(--lightgrey));
     background: color(var(--lightgrey));
@@ -86,6 +92,13 @@ input,
 .settings-menu-container {
     background: #212A2E;
 }
+
+@media (max-width: 800px) {
+    .gh-mobile-nav-bar {
+        background: #212A2E;
+    }
+}
+
 .gh-menu-toggle {
     border-color: #212A2E;
 }
@@ -172,6 +185,16 @@ input,
 .nav-list {
     border-color: var(--lightgrey);
     background: var(--lightgrey);
+}
+
+.selectize-dropdown,
+.selectize-input,
+.selectize-input input {
+    color: #fff;
+}
+
+.selectize-dropdown .option {
+    color: var(--lightgrey);
 }
 
 .selectize-input,
@@ -264,4 +287,16 @@ input,
 
 .gh-canvas-title span path {
     fill: #e5eff5;
+}
+
+.gh-loading-spinner {
+    border-color: rgba(255,255,255,0.1);
+}
+
+.gh-loading-spinner:before {
+    background: #fff;
+}
+
+.user-cover-edit {
+    color: #fff;
 }
