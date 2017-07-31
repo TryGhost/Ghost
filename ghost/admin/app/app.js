@@ -7,9 +7,7 @@ import Resolver from './resolver';
 import config from './config/environment';
 import loadInitializers from 'ember-load-initializers';
 
-Ember.MODEL_FACTORY_INJECTIONS = true;
-
-let App = Application.extend({
+const App = Application.extend({
     Resolver,
     modulePrefix: config.modulePrefix,
     podModulePrefix: config.podModulePrefix,
