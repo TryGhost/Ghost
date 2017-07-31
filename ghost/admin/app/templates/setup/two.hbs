@@ -71,21 +71,21 @@
 
         {{gh-profile-image email=email setImage=(action "setImage")}}
 
-        {{#gh-form-group errors=errors hasValidated=hasValidated property="email"}}
-            <label for="email">Email address</label>
-            <span class="gh-input-icon gh-icon-mail">
-                {{inline-svg "email"}}
-                {{gh-trim-focus-input email
+        {{#gh-form-group errors=errors hasValidated=hasValidated property="blogTitle"}}
+            <label for="blog-title">Blog title</label>
+            <span class="gh-input-icon gh-icon-content">
+                {{inline-svg "content"}}
+                {{gh-trim-focus-input blogTitle
                     tabindex="1"
-                    type="email"
-                    name="email"
-                    placeholder="Eg. john@example.com"
+                    type="text"
+                    name="blog-title"
+                    placeholder="Eg. The Daily Awesome"
                     autocorrect="off"
-                    focusOut=(action "preValidate" "email")
-                    update=(action (mut email))
-                    data-test-email-input=true}}
+                    focusOut=(action "preValidate" "blogTitle")
+                    update=(action (mut blogTitle))
+                    data-test-blog-title-input=true}}
             </span>
-            {{gh-error-message errors=errors property="email"}}
+            {{gh-error-message errors=errors property="blogTitle"}}
         {{/gh-form-group}}
 
         {{#gh-form-group errors=errors hasValidated=hasValidated property="name"}}
@@ -105,12 +105,29 @@
             {{gh-error-message errors=errors property="name"}}
         {{/gh-form-group}}
 
+        {{#gh-form-group errors=errors hasValidated=hasValidated property="email"}}
+            <label for="email">Email address</label>
+            <span class="gh-input-icon gh-icon-mail">
+                {{inline-svg "email"}}
+                {{gh-input email
+                    tabindex="3"
+                    type="email"
+                    name="email"
+                    placeholder="Eg. john@example.com"
+                    autocorrect="off"
+                    focusOut=(action "preValidate" "email")
+                    update=(action (mut email))
+                    data-test-email-input=true}}
+            </span>
+            {{gh-error-message errors=errors property="email"}}
+        {{/gh-form-group}}
+
         {{#gh-form-group errors=errors hasValidated=hasValidated property="password"}}
             <label for="password">Password</label>
             <span class="gh-input-icon gh-icon-lock">
                 {{inline-svg "lock"}}
                 {{gh-input password
-                    tabindex="3"
+                    tabindex="4"
                     type="password"
                     name="password"
                     placeholder="At least 8 characters"
@@ -120,23 +137,6 @@
                     data-test-password-input=true}}
             </span>
             {{gh-error-message errors=errors property="password"}}
-        {{/gh-form-group}}
-
-        {{#gh-form-group errors=errors hasValidated=hasValidated property="blogTitle"}}
-            <label for="blog-title">Blog title</label>
-            <span class="gh-input-icon gh-icon-content">
-                {{inline-svg "content"}}
-                {{gh-input blogTitle
-                    tabindex="4"
-                    type="text"
-                    name="blog-title"
-                    placeholder="Eg. The Daily Awesome"
-                    autocorrect="off"
-                    focusOut=(action "preValidate" "blogTitle")
-                    update=(action (mut blogTitle))
-                    data-test-blog-title-input=true}}
-            </span>
-            {{gh-error-message errors=errors property="blogTitle"}}
         {{/gh-form-group}}
 
         {{#gh-task-button
