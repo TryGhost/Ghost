@@ -10,6 +10,7 @@ export default ModalComponent.extend({
 
     url: '',
     newUrl: '',
+    _isUploading: false,
 
     config: injectService(),
     notifications: injectService(),
@@ -97,6 +98,10 @@ export default ModalComponent.extend({
 
         confirm() {
             this.get('uploadImage').perform();
+        },
+
+        isUploading() {
+            this.toggleProperty('_isUploading');
         }
     }
 });
