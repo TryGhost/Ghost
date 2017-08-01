@@ -73,6 +73,12 @@
                     plugins="remove_button, drag_drop"}}
             </div>
 
+            {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="customExcerpt"}}
+                <label for="custom-excerpt">Excerpt</label>
+                {{gh-textarea customExcerptScratch class="post-setting-custom-excerpt" id="custom-excerpt" name="post-setting-custom-excerpt" focusOut=(action "setCustomExcerpt" customExcerptScratch) stopEnterKeyDownPropagation="true" update=(action (mut customExcerptScratch)) data-test-field="custom-excerpt"}}
+                {{gh-error-message errors=model.errors property="customExcerpt" data-test-error="custom-excerpt"}}
+            {{/gh-form-group}}
+
             {{#unless session.user.isAuthor}}
             <div class="form-group for-select">
                 <label for="author-list">Author</label>

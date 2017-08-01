@@ -158,6 +158,7 @@ export default Mixin.create({
         }
 
         this.set('model.title', this.get('model.titleScratch'));
+        this.set('model.customExcerpt', this.get('model.customExcerptScratch'));
         this.set('model.metaTitle', this.get('model.metaTitleScratch'));
         this.set('model.metaDescription', this.get('model.metaDescriptionScratch'));
 

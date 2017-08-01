@@ -3,7 +3,7 @@ import moment from 'moment';
 import {isEmpty, isPresent} from 'ember-utils';
 
 export default BaseValidator.create({
-    properties: ['title', 'metaTitle', 'metaDescription', 'publishedAtBlogTime', 'publishedAtBlogDate'],
+    properties: ['title', 'customExcerpt', 'metaTitle', 'metaDescription', 'publishedAtBlogTime', 'publishedAtBlogDate'],
 
     title(model) {
         let title = model.get('title');
@@ -15,6 +15,15 @@ export default BaseValidator.create({
 
         if (!validator.isLength(title, 0, 255)) {
             model.get('errors').add('title', 'Title cannot be longer than 255 characters.');
+            this.invalidate();
+        }
+    },
+
+    customExcerpt(model) {
+        let customExcerpt = model.get('customExcerpt');
+
+        if (!validator.isLength(customExcerpt, 0, 300)) {
+            model.get('errors').add('customExcerpt', 'Excerpt cannot be longer than 300 characters.');
             this.invalidate();
         }
     },
