@@ -16,7 +16,7 @@ describe('getMetaDescription', function () {
         description.should.equal('');
     });
 
-    it('should return data author bio if on root context contains author', function () {
+    it('should not return meta description for author if on root context contains author and no meta description provided', function () {
         var description = getMetaDescription({
             author: {
                 bio: 'Just some hack building code to make the world better.'
@@ -24,7 +24,19 @@ describe('getMetaDescription', function () {
         }, {
             context: ['author']
         });
-        description.should.equal('Just some hack building code to make the world better.');
+        description.should.equal('');
+    });
+
+    it('should return meta description for author if on root context contains author and meta description provided', function () {
+        var description = getMetaDescription({
+            author: {
+                bio: 'Just some hack building code to make the world better.',
+                meta_description: 'Author meta description.'
+            }
+        }, {
+            context: ['author']
+        });
+        description.should.equal('Author meta description.');
     });
 
     it('should return data tag meta description if on root context contains tag', function () {
@@ -38,7 +50,7 @@ describe('getMetaDescription', function () {
         description.should.equal('Best tag ever!');
     });
 
-    it('should return data tag description if no meta description for tag', function () {
+    it('should not return data tag description if no meta description for tag', function () {
         var description = getMetaDescription({
             tag: {
                 meta_description: '',
@@ -47,7 +59,7 @@ describe('getMetaDescription', function () {
         }, {
             context: ['tag']
         });
-        description.should.equal('The normal description');
+        description.should.equal('');
     });
 
     it('should return data post meta description if on root context contains post', function () {

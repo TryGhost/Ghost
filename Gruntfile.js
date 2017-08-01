@@ -68,7 +68,7 @@ var overrides      = require('./core/server/overrides'),
                     }
                 },
                 express: {
-                    files:  ['core/ghost-server.js', 'core/server/**/*.js', 'config.*.json'],
+                    files:  ['core/ghost-server.js', 'core/server/**/*.js', 'config.*.json', '!config.testing.json'],
                     tasks:  ['express:dev'],
                     options: {
                         nospawn: true,

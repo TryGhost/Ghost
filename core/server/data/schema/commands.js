@@ -97,7 +97,7 @@ function getTables(transaction) {
     var client = (transaction || db.knex).client.config.client;
 
     if (_.includes(_.keys(clients), client)) {
-        return clients[client].getTables();
+        return clients[client].getTables(transaction);
     }
 
     return Promise.reject(i18n.t('notices.data.utils.index.noSupportForDatabase', {client: client}));

@@ -12,7 +12,7 @@ If you need help with Ghost or have questions, please use [slack](https://ghost.
 - [feature roadmap](https://trello.com/b/EceUgtCL/ghost-roadmap)
 - [feature wishlist](http://ideas.ghost.org)
 - [slack community](https://ghost.org/slack)
-- [community guidelines](https://ghost.org/about/guidelines/)
+- [community guidelines](https://ghost.org/conduct/)
 - [dev blog](http://dev.ghost.org)
 
 
