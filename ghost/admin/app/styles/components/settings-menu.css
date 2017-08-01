@@ -179,6 +179,15 @@
     stroke: color(var(--red) lightness(-10%));
 }
 
+.settings-menu-content .selectize-input {
+    padding: 7px 12px;
+}
+
+.post-setting-custom-excerpt {
+    font-size: 1.5rem;
+    line-height: 1.35em;
+}
+
 
 /* Background
 /* ---------------------------------------------------------- */

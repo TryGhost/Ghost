@@ -30,6 +30,7 @@ export default Component.extend(SettingsMenuMixin, {
 
     model: null,
     slugValue: boundOneWay('model.slug'),
+    customExcerptScratch: alias('model.customExcerptScratch'),
     metaTitleScratch: alias('model.metaTitleScratch'),
     metaDescriptionScratch: alias('model.metaDescriptionScratch'),
 
@@ -243,6 +244,21 @@ export default Component.extend(SettingsMenuMixin, {
                 post.set('publishedAtBlogTime', time);
                 return post.save();
             }
+        },
+
+        setCustomExcerpt(excerpt) {
+            let model = this.get('model');
+            let currentExcerpt = model.get('customExcerpt');
+
+            if (excerpt === currentExcerpt) {
+                return;
+            }
+
+            model.set('customExcerpt', excerpt);
+
+            return model.validate({property: 'customExcerpt'}).then(() => {
+                return model.save();
+            });
         },
 
         setMetaTitle(metaTitle) {

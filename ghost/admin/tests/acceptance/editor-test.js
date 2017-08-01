@@ -548,5 +548,37 @@ describe('Acceptance: Editor', function() {
                 'url after autosave'
             ).to.equal('/editor/1');
         });
+
+        it('saves post settings fields', async function () {
+            let post = server.create('post');
+
+            await visit(`/editor/${post.id}`);
+
+            // TODO: implement tests for other fields
+
+            // changing custom excerpt auto-saves
+            await click(testSelector('psm-trigger'));
+            await fillIn(testSelector('field', 'custom-excerpt'), 'Testing excerpt');
+            await triggerEvent(testSelector('field', 'custom-excerpt'), 'blur');
+
+            expect(
+                server.db.posts[0].custom_excerpt,
+                'saved excerpt'
+            ).to.equal('Testing excerpt');
+
+            // excerpt has validation
+            await fillIn(testSelector('field', 'custom-excerpt'), Array(302).join('a'));
+            await triggerEvent(testSelector('field', 'custom-excerpt'), 'blur');
+
+            expect(
+                find(testSelector('error', 'custom-excerpt')).text().trim(),
+                'excerpt too long error'
+            ).to.match(/cannot be longer than 300/);
+
+            expect(
+                server.db.posts[0].custom_excerpt,
+                'saved excerpt after validation error'
+            ).to.equal('Testing excerpt');
+        });
     });
 });
