@@ -38,7 +38,7 @@ function getTitle(data, root) {
         title = blogTitle + pageString;
     }
 
-    return (title || '').trim();
+    return (title || '').toString().trim();
 }
 
 module.exports = getTitle;
