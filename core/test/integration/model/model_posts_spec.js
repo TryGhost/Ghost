@@ -62,6 +62,7 @@ describe('Post Model', function () {
             firstPost.updated_by.name.should.equal(DataGenerator.Content.users[0].name);
             firstPost.published_by.name.should.equal(DataGenerator.Content.users[0].name);
             firstPost.tags[0].name.should.equal(DataGenerator.Content.tags[0].name);
+            firstPost.custom_excerpt.should.equal(DataGenerator.Content.posts[0].custom_excerpt);
 
             if (options.formats) {
                 if (options.formats.indexOf('mobiledoc') !== -1) {
@@ -438,6 +439,44 @@ describe('Post Model', function () {
                     should.exist(eventsTriggered['post.published.edited']);
                     should.exist(eventsTriggered['post.edited']);
 
+                    done();
+                }).catch(done);
+            });
+
+            it('[failure] custom excerpt soft limit reached', function (done) {
+                var postId = testUtils.DataGenerator.Content.posts[0].id;
+
+                PostModel.findOne({id: postId}).then(function (results) {
+                    var post;
+                    should.exist(results);
+                    post = results.toJSON();
+                    post.id.should.equal(postId);
+
+                    return PostModel.edit({
+                        custom_excerpt: new Array(302).join('a')
+                    }, _.extend({}, context, {id: postId}));
+                }).then(function () {
+                    done(new Error('expected validation error'));
+                }).catch(function (err) {
+                    (err[0] instanceof errors.ValidationError).should.eql(true);
+                    done();
+                });
+            });
+
+            it('[success] custom excerpt soft limit respected', function (done) {
+                var postId = testUtils.DataGenerator.Content.posts[0].id;
+
+                PostModel.findOne({id: postId}).then(function (results) {
+                    var post;
+                    should.exist(results);
+                    post = results.toJSON();
+                    post.id.should.equal(postId);
+
+                    return PostModel.edit({
+                        custom_excerpt: new Array(300).join('a')
+                    }, _.extend({}, context, {id: postId}));
+                }).then(function (edited) {
+                    edited.get('custom_excerpt').length.should.eql(299);
                     done();
                 }).catch(done);
             });

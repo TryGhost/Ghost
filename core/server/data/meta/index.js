@@ -34,7 +34,7 @@ function getMetaData(data, root) {
         authorUrl: getAuthorUrl(data, true),
         rssUrl: getRssUrl(data, true),
         metaTitle: getTitle(data, root),
-        metaDescription: getDescription(data, root),
+        metaDescription: getDescription(data, root) || null,
         coverImage: {
             url: getCoverImage(data, true)
         },
@@ -67,8 +67,17 @@ function getMetaData(data, root) {
         metaData.blog.logo = result;
 
         // TODO: cleanup these if statements
-        if (data.post && data.post.html) {
-            metaData.excerpt = getExcerpt(data.post.html, {words: 50});
+        if (data.post) {
+            // There's a specific order for description fields (not <meta name="description" /> !!) in structured data
+            // and schema.org which is used the description fields (see https://github.com/TryGhost/Ghost/issues/8793):
+            // 1. CASE: custom_excerpt is populated via the UI
+            // 2. CASE: no custom_excerpt, but meta_description is poplated via the UI
+            // 3. CASE: fall back to automated excerpt of 50 words if neither custom_excerpt nor meta_description is provided
+            var customExcerpt = data.post.custom_excerpt,
+                metaDescription = data.post.meta_description,
+                fallbackExcerpt = data.post.html ? getExcerpt(data.post.html, {words: 50}) : '';
+
+            metaData.excerpt = customExcerpt ? customExcerpt : metaDescription ? metaDescription : fallbackExcerpt;
         }
 
         if (data.post && data.post.author && data.post.author.name) {

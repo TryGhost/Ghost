@@ -85,4 +85,22 @@ describe('{{excerpt}} Helper', function () {
         should.exist(rendered);
         rendered.string.should.equal(expected);
     });
+
+    it('uses custom excerpt if provided instead of truncating html', function () {
+        var html = '<p>Hello <strong>World! It\'s me!</strong></p>',
+            customExcerpt = 'My Custom Excerpt wins!',
+            expected = 'My Custo',
+            rendered = (
+                helpers.excerpt.call(
+                    {
+                        html: html,
+                        custom_excerpt: customExcerpt
+                    },
+                    {hash: {characters: '8'}}
+                )
+            );
+
+        should.exist(rendered);
+        rendered.string.should.equal(expected);
+    });
 });

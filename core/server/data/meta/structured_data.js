@@ -12,7 +12,10 @@ function getStructuredData(metaData) {
         'og:site_name': metaData.blog.title,
         'og:type': metaData.ogType,
         'og:title': metaData.metaTitle,
-        'og:description': metaData.metaDescription || metaData.excerpt,
+        // CASE: metaData.excerpt for post context is populated by either the custom excerpt,
+        // the meta description, or the automated excerpt of 50 words. It is empty for any
+        // other context and *always* uses the provided meta description fields.
+        'og:description': metaData.excerpt || metaData.metaDescription,
         'og:url': metaData.canonicalUrl,
         'og:image': metaData.coverImage.url,
         'article:published_time': metaData.publishedDate,
@@ -22,7 +25,7 @@ function getStructuredData(metaData) {
         'article:author': metaData.authorFacebook ? socialUrls.facebookUrl(metaData.authorFacebook) : undefined,
         'twitter:card': card,
         'twitter:title': metaData.metaTitle,
-        'twitter:description': metaData.metaDescription || metaData.excerpt,
+        'twitter:description': metaData.excerpt || metaData.metaDescription,
         'twitter:url': metaData.canonicalUrl,
         'twitter:image': metaData.coverImage.url,
         'twitter:label1': metaData.authorName ? 'Written by' : undefined,
