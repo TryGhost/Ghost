@@ -76,14 +76,14 @@ describe('{{meta_description}} helper', function () {
         String(rendered).should.equal('');
     });
 
-    it('returns correct description for an author page', function () {
+    it('returns empty description for an author page', function () {
         var rendered = helpers.meta_description.call(
             {author: {bio: 'I am a Duck.'}},
             {data: {root: {context: ['author']}}}
         );
 
         should.exist(rendered);
-        String(rendered).should.equal('I am a Duck.');
+        String(rendered).should.equal('');
     });
 
     it('returns empty description for a paginated author page', function () {
