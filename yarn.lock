@@ -1748,23 +1748,7 @@ ghost-gql@0.0.6:
   dependencies:
     lodash "^4.17.4"
 
-ghost-ignition@2.8.11, ghost-ignition@^2.8.7:
-  version "2.8.11"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-2.8.11.tgz#38a018ca2b63bc57e9f2c9037d45b4714b66eba0"
-  dependencies:
-    bunyan "1.8.5"
-    bunyan-loggly "1.1.0"
-    caller "1.0.1"
-    debug "^2.2.0"
-    find-root "1.0.0"
-    json-stringify-safe "5.0.1"
-    lodash "^4.16.4"
-    moment "^2.15.2"
-    nconf "0.8.4"
-    prettyjson "1.1.3"
-    uuid "^3.0.0"
-
-ghost-ignition@^2.8.12:
+ghost-ignition@2.8.12, ghost-ignition@^2.8.12, ghost-ignition@^2.8.7:
   version "2.8.12"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-2.8.12.tgz#e89e36e7a10a03daf04cb35c20c6c369fbc556f2"
   dependencies:
