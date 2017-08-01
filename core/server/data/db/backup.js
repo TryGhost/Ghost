@@ -22,12 +22,13 @@ writeExportFile = function writeExportFile(exportResult) {
  * does an export, and stores this in a local file
  * @returns {Promise<*>}
  */
-backup = function backup() {
+backup = function backup(options) {
     logging.info('Creating database backup');
+    options = options || {};
 
     var props = {
-        data: exporter.doExport(),
-        filename: exporter.fileName()
+        data: exporter.doExport(options),
+        filename: exporter.fileName(options)
     };
 
     return Promise.props(props)
