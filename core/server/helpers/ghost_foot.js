@@ -11,12 +11,15 @@ var proxy = require('./proxy'),
     filters = proxy.filters,
     settingsCache = proxy.settingsCache;
 
-module.exports = function ghost_foot() {
+module.exports = function ghost_foot(options) {
     var foot = [],
-        codeInjection = settingsCache.get('ghost_foot');
+        globalCodeinjection = settingsCache.get('ghost_foot'),
+        postCodeinjection = options.data.root && options.data.root.post ? options.data.root.post.codeinjection_foot : null;
 
-    if (!_.isEmpty(codeInjection)) {
-        foot.push(codeInjection);
+    if (!_.isEmpty(postCodeinjection)) {
+        foot.push(postCodeinjection);
+    } else if (!_.isEmpty(globalCodeinjection)) {
+        foot.push(globalCodeinjection);
     }
 
     return filters
