@@ -87,7 +87,8 @@ module.exports = function ghost_head(options) {
     var metaData,
         client,
         head = [],
-        codeInjection = settingsCache.get('ghost_head'),
+        globalCodeinjection = settingsCache.get('ghost_head'),
+        postCodeInjection = options.data.root && options.data.root.post ? options.data.root.post.codeinjection_head : null,
         context = this.context ? this.context : null,
         useStructuredData = !config.isPrivacyDisabled('useStructuredData'),
         safeVersion = this.safeVersion,
@@ -155,8 +156,12 @@ module.exports = function ghost_head(options) {
             escapeExpression(metaData.rssUrl) + '" />');
 
         // no code injection for amp context!!!
-        if (!_.includes(context, 'amp') && !_.isEmpty(codeInjection)) {
-            head.push(codeInjection);
+        if (!_.includes(context, 'amp') && (!_.isEmpty(globalCodeinjection) || !_.isEmpty(postCodeInjection))) {
+            if (postCodeInjection) {
+                head.push(postCodeInjection);
+            } else {
+                head.push(globalCodeinjection);
+            }
         }
         return filters.doFilter('ghost_head', head);
     }).then(function (head) {
