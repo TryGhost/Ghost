@@ -43,7 +43,7 @@ describe('{{ghost_foot}} helper', function () {
             }
         }).then(function (rendered) {
             should.exist(rendered);
-            rendered.string.should.not.match(/<script type="text\/javascript">var test = 'I am a variable!'<\/script>/);
+            rendered.string.should.match(/<script type="text\/javascript">var test = 'I am a variable!'<\/script>/);
             rendered.string.should.match(/post-codeinjection/);
 
             done();

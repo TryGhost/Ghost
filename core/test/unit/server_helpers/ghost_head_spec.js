@@ -1189,13 +1189,13 @@ describe('{{ghost_head}} helper', function () {
             }).catch(done);
         });
 
-        it('outputs post codeinjection', function (done) {
+        it('outputs post codeinjection as well', function (done) {
             helpers.ghost_head.call(
                 {safeVersion: '0.3', context: ['paged', 'index']},
                 {data: {root: {context: [], post: {codeinjection_head: 'post-codeinjection'}}}}
             ).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.not.match(/<style>body {background: red;}<\/style>/);
+                rendered.string.should.match(/<style>body {background: red;}<\/style>/);
                 rendered.string.should.match(/post-codeinjection/);
 
                 done();
@@ -1263,6 +1263,12 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('with Ajax Helper', function () {
+        before(function () {
+            configUtils.set({
+                url: 'http://localhost:82832/'
+            });
+        });
+
         it('renders script tag with src', function (done) {
             helpers.ghost_head.call(
                 {safeVersion: '0.3', context: ['paged', 'index'], post: false},

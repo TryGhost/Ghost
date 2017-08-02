@@ -156,11 +156,13 @@ module.exports = function ghost_head(options) {
             escapeExpression(metaData.rssUrl) + '" />');
 
         // no code injection for amp context!!!
-        if (!_.includes(context, 'amp') && (!_.isEmpty(globalCodeinjection) || !_.isEmpty(postCodeInjection))) {
-            if (postCodeInjection) {
-                head.push(postCodeInjection);
-            } else {
+        if (!_.includes(context, 'amp')) {
+            if (!_.isEmpty(globalCodeinjection)) {
                 head.push(globalCodeinjection);
+            }
+
+            if (!_.isEmpty(postCodeInjection)) {
+                head.push(postCodeInjection);
             }
         }
         return filters.doFilter('ghost_head', head);
