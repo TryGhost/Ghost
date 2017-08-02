@@ -6,7 +6,10 @@ var should = require('should'), // jshint ignore:line
 describe('{{excerpt}} Helper', function () {
     it('can render excerpt', function () {
         var html = 'Hello World',
-            rendered = helpers.excerpt.call({html: html});
+            rendered = helpers.excerpt.call({
+                html: html,
+                custom_excerpt: ''
+            });
 
         should.exist(rendered);
         rendered.string.should.equal(html);
@@ -19,7 +22,10 @@ describe('{{excerpt}} Helper', function () {
                 '< test > those<<< test >>> who mistake it &lt;for&gt; binary.',
             expected = 'There are 10 types of people in the world: those who understand trinary, those who ' +
                 'don\'t and those>> who mistake it &lt;for&gt; binary.',
-            rendered = helpers.excerpt.call({html: html});
+            rendered = helpers.excerpt.call({
+                html: html,
+                custom_excerpt: ''
+            });
 
         should.exist(rendered);
         rendered.string.should.equal(expected);
@@ -28,7 +34,10 @@ describe('{{excerpt}} Helper', function () {
     it('strips multiple inline footnotes', function () {
         var html = '<p>Testing<sup id="fnref:1"><a href="#fn:1" rel="footnote">1</a></sup>, my footnotes. And stuff. Footnote<sup id="fnref:2"><a href="#fn:2" rel="footnote">2</a></sup><a href="http://google.com">with a link</a> right after.',
             expected = 'Testing, my footnotes. And stuff. Footnotewith a link right after.',
-            rendered = helpers.excerpt.call({html: html});
+            rendered = helpers.excerpt.call({
+                html: html,
+                custom_excerpt: ''
+            });
 
         should.exist(rendered);
         rendered.string.should.equal(expected);
@@ -38,7 +47,10 @@ describe('{{excerpt}} Helper', function () {
         var html = '<p>Testing<sup id="fnref:1"><a href="#fn:1" rel="footnote">1</a></sup> a very short post with a single footnote.</p>\n' +
                 '<div class="footnotes"><ol><li class="footnote" id="fn:1"><p><a href="https://ghost.org">https://ghost.org</a> <a href="#fnref:1" title="return to article">↩</a></p></li></ol></div>',
             expected = 'Testing a very short post with a single footnote.',
-            rendered = helpers.excerpt.call({html: html});
+            rendered = helpers.excerpt.call({
+                html: html,
+                custom_excerpt: ''
+            });
 
         should.exist(rendered);
         rendered.string.should.equal(expected);
@@ -49,7 +61,10 @@ describe('{{excerpt}} Helper', function () {
             expected = 'Hello World!',
             rendered = (
                 helpers.excerpt.call(
-                    {html: html},
+                    {
+                        html: html,
+                        custom_excerpt: ''
+                    },
                     {hash: {words: '2'}}
                 )
             );
@@ -63,7 +78,10 @@ describe('{{excerpt}} Helper', function () {
             expected = 'Едквюэ опортэат',
             rendered = (
                 helpers.excerpt.call(
-                    {html: html},
+                    {
+                        html: html,
+                        custom_excerpt: ''
+                    },
                     {hash: {words: '2'}}
                 )
             );
@@ -77,7 +95,10 @@ describe('{{excerpt}} Helper', function () {
             expected = 'Hello Wo',
             rendered = (
                 helpers.excerpt.call(
-                    {html: html},
+                    {
+                        html: html,
+                        custom_excerpt: ''
+                    },
                     {hash: {characters: '8'}}
                 )
             );
@@ -89,7 +110,30 @@ describe('{{excerpt}} Helper', function () {
     it('uses custom excerpt if provided instead of truncating html', function () {
         var html = '<p>Hello <strong>World! It\'s me!</strong></p>',
             customExcerpt = 'My Custom Excerpt wins!',
-            expected = 'My Custo',
+            expected = 'My Custom Excerpt wins!',
+            rendered = (
+                helpers.excerpt.call(
+                    {
+                        html: html,
+                        custom_excerpt: customExcerpt
+                    }
+                )
+            );
+
+        should.exist(rendered);
+        rendered.string.should.equal(expected);
+    });
+
+    it('does not truncate custom excerpt if characters options is provided', function () {
+        var html = '<p>Hello <strong>World! It\'s me!</strong></p>',
+            customExcerpt = 'This is a custom excerpt. It should always be rendered in full length and not being cut ' +
+                       'off. The maximum length of a custom excerpt is 300 characters. Enough to tell a bit about ' +
+                       'your story and make a nice summary for your readers. It\s only allowed to truncate anything ' +
+                       'after 300 characters. This give',
+            expected = 'This is a custom excerpt. It should always be rendered in full length and not being cut ' +
+                       'off. The maximum length of a custom excerpt is 300 characters. Enough to tell a bit about ' +
+                       'your story and make a nice summary for your readers. It\s only allowed to truncate anything ' +
+                       'after 300 characters. This give',
             rendered = (
                 helpers.excerpt.call(
                     {
@@ -97,6 +141,30 @@ describe('{{excerpt}} Helper', function () {
                         custom_excerpt: customExcerpt
                     },
                     {hash: {characters: '8'}}
+                )
+            );
+
+        should.exist(rendered);
+        rendered.string.should.equal(expected);
+    });
+
+    it('does not truncate custom excerpt if words options is provided', function () {
+        var html = '<p>Hello <strong>World! It\'s me!</strong></p>',
+            customExcerpt = 'This is a custom excerpt. It should always be rendered in full length and not being cut ' +
+                       'off. The maximum length of a custom excerpt is 300 characters. Enough to tell a bit about ' +
+                       'your story and make a nice summary for your readers. It\s only allowed to truncate anything ' +
+                       'after 300 characters. This give',
+            expected = 'This is a custom excerpt. It should always be rendered in full length and not being cut ' +
+                       'off. The maximum length of a custom excerpt is 300 characters. Enough to tell a bit about ' +
+                       'your story and make a nice summary for your readers. It\s only allowed to truncate anything ' +
+                       'after 300 characters. This give',
+            rendered = (
+                helpers.excerpt.call(
+                    {
+                        html: html,
+                        custom_excerpt: customExcerpt
+                    },
+                    {hash: {words: '10'}}
                 )
             );
 

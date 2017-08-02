@@ -78,15 +78,6 @@ describe('Channel Routes', function () {
                 });
         });
 
-        // @TODO: use theme from fixtures and don't rely on content/themes/casper
-        it.skip('should have a second page', function (done) {
-            request.get('/page/2/')
-                .expect('Content-Type', /html/)
-                .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(200)
-                .end(doEnd(done));
-        });
-
         it('should not have a third page', function (done) {
             request.get('/page/3/')
                 .expect('Cache-Control', testUtils.cacheRules.private)
@@ -147,14 +138,13 @@ describe('Channel Routes', function () {
         });
 
         describe('Paged', function () {
-            // Add enough posts to trigger pages for both the index (5 pp) and rss (15 pp)
-            // insertPosts adds 11 published posts, 1 draft post, 1 published static page and one draft page
-            // we then insert with max 5 which ensures we have 16 published posts
+            // Add enough posts to trigger pages for both the index (25 pp) and rss (15 pp)
+            // @TODO: change this whole thing to use the casper theme from fixtures
             before(function (done) {
                 testUtils.initData().then(function () {
                     return testUtils.fixtures.insertPostsAndTags();
                 }).then(function () {
-                    return testUtils.fixtures.insertMorePosts(5);
+                    return testUtils.fixtures.insertMorePosts(25);
                 }).then(function () {
                     done();
                 }).catch(done);
@@ -171,11 +161,19 @@ describe('Channel Routes', function () {
             });
 
             // @TODO: use theme from fixtures and don't rely on content/themes/casper
-            it.skip('should respond with html', function (done) {
+            it('should respond with html', function (done) {
                 request.get('/page/2/')
                     .expect('Content-Type', /html/)
                     .expect('Cache-Control', testUtils.cacheRules.public)
                     .expect(200)
+                    .end(doEnd(done));
+            });
+
+            it('should not allow chars after the page number', function (done) {
+                request.get('/page/2abc/')
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(404)
+                    .expect(/Page not found/)
                     .end(doEnd(done));
             });
 
