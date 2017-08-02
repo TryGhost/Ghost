@@ -192,5 +192,15 @@ export default [
         created_by: 1,
         updated_at: '2015-10-27T17:39:58.276Z',
         updated_by: 1
+    },
+    {
+        id: 23,
+        created_at: '2017-08-11T06:38:10.000Z',
+        created_by: 1,
+        key: 'unsplash',
+        type: 'blog',
+        updated_at: '2017-08-11T08:00:14.000Z',
+        updated_by: 1,
+        value: '{"applicationId":"","isActive":false}'
     }
 ];

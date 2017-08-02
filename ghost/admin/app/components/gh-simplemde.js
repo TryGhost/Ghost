@@ -66,6 +66,14 @@ export default TextArea.extend({
             this.onChange(this._editor.value());
         });
 
+        this._editor.codemirror.on('focus', () => {
+            this.onFocus();
+        });
+
+        this._editor.codemirror.on('blur', () => {
+            this.onBlur();
+        });
+
         if (this.get('autofocus')) {
             this._editor.codemirror.execCommand('goDocEnd');
         }

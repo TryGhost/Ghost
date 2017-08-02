@@ -24,4 +24,12 @@ export default function () {
         this.use('fade', {duration: 300}),
         this.reverse('fade', {duration: 300})
     );
+
+    // TODO: Maybe animate with explode. gh-unsplash-window should ideally slide in from bottom to top of screen
+    // this.transition(
+    //     this.hasClass('gh-unsplash-window'),
+    //     this.toValue(true),
+    //     this.use('toUp', {duration: 500}),
+    //     this.reverse('toDown', {duration: 500})
+    // );
 }

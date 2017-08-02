@@ -1,0 +1,73 @@
+{{#liquid-wormhole class="unsplash"}}
+    <div class="gh-unsplash {{if ui.hasSideNav "gh-unsplash--with-sidenav"}}">
+        <div class="gh-unsplash-window">
+            <div class="gh-unsplash-container">
+                <a class="gh-unsplash-logo" href="https://unsplash.com/?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit" target="_blank">{{inline-svg "unsplash"}}</a>
+                <div class="gh-unsplash-close" aria-role="button" {{action "close"}}>{{inline-svg "close"}}</div>
+                <header class="gh-unsplash-header">
+                    <h1 class="gh-unsplash-header-title">Unsplash</h1>
+                    <p class="gh-unsplash-header-desc">Beautiful, free photos.<br>
+        Gifted by the world’s most generous community of photographers. 🎁</p>
+                    <span class="gh-input-icon">
+                        {{inline-svg "search"}}
+                        {{gh-input unsplash.searchTerm
+                            class="gh-unsplash-search"
+                            type="text"
+                            name="searchKeyword"
+                            placeholder="Search free high-resolution photos"
+                            tabindex="1"
+                            autocorrect="off"
+                            update=(action "updateSearch" target=unsplash)
+                        }}
+                    </span>
+                </header>
+
+                {{#if unsplash.photos}}
+                    <section class="gh-unsplash-grid">
+                        {{#each unsplash.columns as |photos|}}
+                            <div class="gh-unsplash-grid-column">
+                                {{#each photos as |photo|}}
+                                    {{gh-unsplash-photo photo=photo zoom=(action "zoomPhoto") insert=(action "insert")}}
+                                {{/each}}
+                            </div>
+                        {{/each}}
+                    </section>
+                {{else if (and unsplash.searchTerm (not unsplash.error unsplash.isLoading))}}
+                    <section class="gh-unsplash-error">
+                        <img class="gh-unsplash-error-404" src="assets/img/unsplash-404.png" alt="No photos found" />
+                        <h4>No photos found for '{{unsplash.searchTerm}}'</h4>
+                    </section>
+                {{/if}}
+
+                {{#if unsplash.error}}
+                    {{!-- TODO: add better error styles? --}}
+                    <section class="gh-unsplash-error">
+                        <img class="gh-unsplash-error-404" src="assets/img/unsplash-404.png" alt="Network error" />
+                        <h4>{{unsplash.error}} (<a href="#" {{action "retry"}}>retry</a>)</h4>
+                    </section>
+                {{/if}}
+
+                {{#if unsplash.isLoading}}
+                    <div class="gh-unsplash-loading">
+                        <div class="gh-loading-spinner"></div>
+                    </div>
+                {{/if}}
+
+                {{gh-scroll-trigger
+                    onEnterViewport=(action "loadNextPage")
+                    triggerOffset=1000}}
+            </div>
+        </div>
+    </div>
+
+    {{#if zoomedPhoto}}
+        <div class="gh-unsplash-zoom" {{action "closeZoom"}}>
+            {{gh-unsplash-photo
+                photo=zoomedPhoto
+                zoomed=true
+                zoom=(action "closeZoom")
+                insert=(action "insert")}}
+        </div>
+    {{/if}}
+
+{{/liquid-wormhole}}

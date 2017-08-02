@@ -22,4 +22,14 @@ export default function mockConfiguration(server) {
             }]
         };
     });
+
+    server.get('/configuration/private/', function ({db}) {
+        if (isEmpty(db.private)) {
+            server.loadFixtures('private');
+        }
+
+        return {
+            configuration: [db.private]
+        };
+    });
 }

@@ -2,6 +2,9 @@ import Component from 'ember-component';
 import {invokeAction} from 'ember-invoke-action';
 
 export default Component.extend({
+
+    allowUnsplash: false,
+
     actions: {
         update() {
             if (typeof this.attrs.update === 'function') {

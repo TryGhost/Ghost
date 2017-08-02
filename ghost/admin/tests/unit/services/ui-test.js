@@ -4,7 +4,10 @@ import {setupTest} from 'ember-mocha';
 
 describe('Unit: Service: ui', function() {
     setupTest('service:ui', {
-        needs: ['service:dropdown']
+        needs: [
+            'service:dropdown',
+            'service:mediaQueries'
+        ]
     });
 
     // Replace this with your real tests.

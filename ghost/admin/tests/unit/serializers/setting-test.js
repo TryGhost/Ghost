@@ -11,7 +11,8 @@ describe('Unit:Serializer: setting', function() {
             'transform:facebook-url-user',
             'transform:twitter-url-user',
             'transform:navigation-settings',
-            'transform:slack-settings'
+            'transform:slack-settings',
+            'transform:unsplash-settings'
         ]
     });
 

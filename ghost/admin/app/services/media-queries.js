@@ -1,5 +1,6 @@
-import Service from 'ember-service';
-import run from 'ember-runloop';
+import Evented from '@ember/object/evented';
+import Service from '@ember/service';
+import {run} from '@ember/runloop';
 
 const MEDIA_QUERIES = {
     maxWidth600: '(max-width: 600px)',
@@ -8,7 +9,7 @@ const MEDIA_QUERIES = {
     maxWidth1000: '(max-width: 1000px)'
 };
 
-export default Service.extend({
+export default Service.extend(Evented, {
     init() {
         this._super(...arguments);
         this._handlers = [];
@@ -30,7 +31,8 @@ export default Service.extend({
             let lastValue = this.get(key);
             let newValue = query.matches;
             if (lastValue !== newValue) {
-                this.set(key, query.matches);
+                this.set(key, newValue);
+                this.trigger('change', key, newValue);
             }
         });
         query.addListener(handler);

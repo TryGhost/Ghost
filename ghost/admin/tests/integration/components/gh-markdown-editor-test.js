@@ -21,4 +21,13 @@ describe('Integration: Component: gh-markdown-editor', function() {
         this.render(hbs`{{gh-markdown-editor}}`);
         expect(this.$()).to.have.length(1);
     });
+
+    describe('unsplash', function () {
+        it('has unsplash icon in toolbar if unsplash is active');
+        it('opens unsplash modal when clicked');
+        it('closes unsplash modal when close triggered');
+        it('inserts unsplash image & credit when selected');
+        it('inserts at cursor when editor has focus');
+        it('inserts at end when editor is blurred');
+    });
 });

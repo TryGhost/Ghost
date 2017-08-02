@@ -8,7 +8,7 @@ import run from 'ember-runloop';
 import {assign} from 'ember-platform';
 import {copy} from 'ember-metal/utils';
 import {htmlSafe} from 'ember-string';
-import {isEmpty} from 'ember-utils';
+import {isEmpty, typeOf} from 'ember-utils';
 
 const MOBILEDOC_VERSION = '0.3.1';
 
@@ -27,7 +27,9 @@ export const BLANK_DOC = {
 
 export default Component.extend(ShortcutsMixin, {
 
+    config: injectService(),
     notifications: injectService(),
+    settings: injectService(),
 
     classNames: ['gh-markdown-editor'],
     classNameBindings: [
@@ -57,10 +59,12 @@ export default Component.extend(ShortcutsMixin, {
 
     // Private
     _editor: null,
+    _editorFocused: false,
     _isFullScreen: false,
     _isSplitScreen: false,
     _isHemmingwayMode: false,
     _isUploading: false,
+    _showUnsplash: false,
     _statusbar: null,
     _toolbar: null,
     _uploadedImageUrls: null,
@@ -145,6 +149,28 @@ export default Component.extend(ShortcutsMixin, {
             status: ['words']
         };
 
+        // if unsplash is active insert the toolbar button after the image button
+        // HACK: this settings/config dance is needed because the "override" only
+        // happens when visiting the unsplash app settings route
+        // TODO: move the override logic to the server, client knows too much
+        // about which values should override others
+        let unsplashConfig = this.get('config.unsplashAPI');
+        let unsplashSettings = this.get('settings.unsplash');
+        let unsplash = assign({}, unsplashConfig, unsplashSettings);
+        if (unsplash.isActive) {
+            let image = defaultOptions.toolbar.findBy('name', 'image');
+            let index = defaultOptions.toolbar.indexOf(image) + 1;
+
+            defaultOptions.toolbar.splice(index, 0, {
+                name: 'unsplash',
+                action: () => {
+                    this.send('toggleUnsplash');
+                },
+                className: 'fa fa-camera',
+                title: 'Add Image from Unsplash'
+            });
+        }
+
         return assign(defaultOptions, options);
     }),
 
@@ -154,7 +180,7 @@ export default Component.extend(ShortcutsMixin, {
         this._super(...arguments);
         let shortcuts = this.get('shortcuts');
 
-        shortcuts[`${ctrlOrCmd}+shift+i`] = {action: 'insertImage'};
+        shortcuts[`${ctrlOrCmd}+shift+i`] = {action: 'openImageFileDialog'};
         shortcuts['ctrl+alt+h'] = {action: 'toggleHemmingway'};
     },
 
@@ -201,17 +227,30 @@ export default Component.extend(ShortcutsMixin, {
 
         // loop through urls and generate image markdown
         let images = urls.map((url) => {
-            let filename = url.split('/').pop();
-            let alt = filename;
+            // plain url string, so extract filename from path
+            if (typeOf(url) === 'string') {
+                let filename = url.split('/').pop();
+                let alt = filename;
 
-            // if we have a normal filename.ext, set alt to filename -ext
-            if (filename.lastIndexOf('.') > 0) {
-                alt = filename.slice(0, filename.lastIndexOf('.'));
+                // if we have a normal filename.ext, set alt to filename -ext
+                if (filename.lastIndexOf('.') > 0) {
+                    alt = filename.slice(0, filename.lastIndexOf('.'));
+                }
+
+                return `![${alt}](${url})`;
+
+            // full url object, use attrs we're given
+            } else {
+                let image = `![${url.alt}](${url.url})`;
+
+                if (url.credit) {
+                    image += `\n${url.credit}`;
+                }
+
+                return image;
             }
-
-            return `![${alt}](${url})`;
         });
-        let text = images.join('\n');
+        let text = images.join('\n\n');
 
         // clicking the image toolbar button will lose the selection so we use
         // the captured selection to re-select here
@@ -231,7 +270,7 @@ export default Component.extend(ShortcutsMixin, {
         // focus editor and place cursor at end if not already focused
         if (!cm.hasFocus()) {
             this.send('focusEditor');
-            text = `\n\n${text}`;
+            text = `\n\n${text}\n\n`;
         }
 
         // insert at cursor or replace selection then position cursor at end
@@ -452,9 +491,57 @@ export default Component.extend(ShortcutsMixin, {
             return false;
         },
 
-        insertImage() {
+        // HACK FIXME (PLEASE):
+        // - clicking toolbar buttons will cause the editor to lose focus
+        // - this is painful because we often want to know if the editor has focus
+        //   so that we can insert images and so on in the correct place
+        // - the blur event will always fire before the button action is triggered 😞
+        // - to work around this we track focus state manually and set it to false
+        //   after an arbitrary period that's long enough to allow the button action
+        //   to trigger first
+        // - this _may_ well have unknown issues due to browser differences,
+        //   variations in performance, moon cycles, sun spots, or cosmic rays
+        // - here be 🐲
+        // - (please let it work 🙏)
+        updateFocusState(focused) {
+            if (focused) {
+                this._editorFocused = true;
+            } else {
+                run.later(this, function () {
+                    this._editorFocused = false;
+                }, 100);
+            }
+        },
+
+        openImageFileDialog() {
             let captureSelection = this._editor.codemirror.hasFocus();
             this._openImageFileDialog({captureSelection});
+        },
+
+        toggleUnsplash() {
+            if (this.get('_showUnsplash')) {
+                return this.toggleProperty('_showUnsplash');
+            }
+
+            // capture current selection before it's lost by clicking toolbar btn
+            if (this._editorFocused) {
+                this._imageInsertSelection = {
+                    anchor: this._editor.codemirror.getCursor('anchor'),
+                    head: this._editor.codemirror.getCursor('head')
+                };
+            }
+
+            this.toggleProperty('_showUnsplash');
+        },
+
+        insertUnsplashPhoto(photo) {
+            let image = {
+                alt: photo.description || '',
+                url: photo.urls.regular,
+                credit: `<small>Photo by [${photo.user.name}](${photo.user.links.html}?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit) / [Unsplash](https://unsplash.com/?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit)</small>`
+            };
+
+            this._insertImages([image]);
         },
 
         toggleFullScreen() {

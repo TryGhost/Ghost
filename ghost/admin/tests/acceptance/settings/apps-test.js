@@ -78,5 +78,16 @@ describe('Acceptance: Settings - Apps', function () {
             // has correct url
             expect(currentURL(), 'currentURL').to.equal('/settings/apps/amp');
         });
+        it('it redirects to Unsplash when clicking on the grid', async function () {
+            await visit('/settings/apps');
+
+            // has correct url
+            expect(currentURL(), 'currentURL').to.equal('/settings/apps');
+
+            await click('#unsplash-link');
+
+            // has correct url
+            expect(currentURL(), 'currentURL').to.equal('/settings/apps/unsplash');
+        });
     });
 });

@@ -1,13 +1,20 @@
 import Service from '@ember/service';
 import injectService from 'ember-service/inject';
 import {computed} from '@ember/object';
+import {not, or, reads} from '@ember/object/computed';
 
 export default Service.extend({
     dropdown: injectService(),
+    mediaQueries: injectService(),
 
     autoNav: false,
+    isFullScreen: false,
     showMobileMenu: false,
     showSettingsMenu: false,
+
+    hasSideNav: not('isSideNavHidden'),
+    isMobile: reads('mediaQueries.isMobile'),
+    isSideNavHidden: or('autoNav', 'isFullScreen', 'isMobile'),
 
     autoNavOpen: computed('autoNav', {
         get() {

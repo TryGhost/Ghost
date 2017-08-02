@@ -453,4 +453,11 @@ describe('Integration: Component: gh-image-uploader', function() {
             done();
         });
     });
+
+    describe('unsplash', function () {
+        it('has unsplash icon only when unsplash is active & allowed');
+        it('opens unsplash modal when icon clicked');
+        it('inserts unsplash image when selected');
+        it('closes unsplash modal when close is triggered');
+    });
 });

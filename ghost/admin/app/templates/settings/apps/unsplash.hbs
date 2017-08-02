@@ -1,0 +1,66 @@
+<section class="gh-canvas">
+    <header class="gh-canvas-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>
+            {{#link-to "settings.apps.index"}}Apps{{/link-to}}
+            <span>{{inline-svg "arrow-right"}}</span>
+            Unsplash
+        </h2>
+        <section class="view-actions">
+            {{gh-task-button task=save class="gh-btn gh-btn-blue gh-btn-icon" data-test-save-button=true}}
+        </section>
+    </header>
+
+    <section class="view-container">
+        <br>
+        <section class="app-grid">
+            <div class="app-cell">
+                <img class="app-icon" src="assets/img/unsplashicon.png" />
+            </div>
+            <div class="app-cell">
+                <h3>Unsplash</h3>
+                <p>Beautiful, free photos</p>
+            </div>
+        </section>
+
+        <div class="gh-setting-header">Unsplash configuration</div>
+        <div class="gh-setting" id="unsplash-toggle">
+            <div class="gh-setting-content">
+                <div class="gh-setting-title">Enable Unsplash</div>
+                <div class="gh-setting-desc">Enable <a href="https://unsplash.com" target="_blank">Unsplash</a> image integration for your posts</div>
+            </div>
+            <div class="gh-setting-action">
+                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="isActive" class="right"}}
+                    <div class="for-checkbox">
+                        <label for="isActive" class="checkbox">
+                                {{one-way-checkbox model.isActive id="isActive" name="isActive" type="checkbox" update=(action "update") data-test-checkbox="unsplash"}}
+                                <span class="input-toggle-component"></span>
+                        </label>
+                    </div>
+                    {{gh-error-message errors=model.errors property="isActive"}}
+                {{/gh-form-group}}
+            </div>
+        </div>
+        {{#unless config.unsplashAPI.applicationId}}
+            <form class="app-config-form" id="unsplash-settings" novalidate="novalidate" {{action "save" on="submit"}}>
+                <div class="gh-setting">
+                    <div class="gh-setting-content">
+
+                        <div class="gh-setting-title">Unsplash integration</div>
+                        <div class="gh-setting-desc">Access Unsplash images from within the editor.</div>
+                        <div class="gh-setting-content-extended">
+                            {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="applicationId"}}
+                                {{gh-input model.applicationId name="unsplash" update=(action "updateId") onenter=(action "save") focusOut=(action "validate" "applicationId" target=model) placeholder="0f387e82271755665bd49683e914856b1e34..." data-test-input="unsplash"}}
+                                {{#unless model.errors.applicationId}}
+                                    <p>Set up a new Unsplash application <a href="https://unsplash.com/documentation#registering-your-application" target="_blank">here</a>, and grab the Application ID.</p>
+                                {{else}}
+                                    {{gh-error-message errors=model.errors property="applicationId"}}
+                                {{/unless}}
+                            {{/gh-form-group}}
+                        </div>
+                    </div>
+                </div>
+            </form>
+            {{gh-task-button "Test Application ID" task=sendTestRequest runningText="Validating" successText="Valid Application ID" failureText="Invalid Application Id" class="gh-btn gh-btn-green gh-btn-icon" disabled=testRequestDisabled data-test-button="send-request"}}
+        {{/unless}}
+    </section>
+</section>
