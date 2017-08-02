@@ -2,11 +2,11 @@
     <h1>
         {{#if theme}}
             {{#if hasWarningsOrErrors}}
-                Upload successful with warnings/errors!
+                Upload successful with {{#if validationErrors}}errors{{else}}warnings{{/if}}
             {{else}}
                 Upload successful!
             {{/if}}
-        {{else if validationErrors}}
+        {{else if (or validationErrors fatalValidationErrors)}}
             Invalid theme
         {{else}}
             Upload a theme
@@ -21,8 +21,8 @@
              <ul class="theme-validation-errors">
                 <li>
                     <p>
-                        "{{themeName}}" uploaded successfully but some warnings/errors were detected.
-                        You are still able to use and activate the theme. Here is your report...
+                        "{{themeName}}" uploaded successfully but some {{#if validationErrors}}errors{{else}}warnings{{/if}} were detected.
+                        You are still able to use and activate the theme. Here's your report...
                     </p>
                 </li>
 

@@ -397,7 +397,7 @@ describe('Acceptance: Settings - Design', function () {
             expect(
                 find('.fullscreen-modal h1').text().trim(),
                 'modal title after uploading theme with warnings'
-            ).to.equal('Upload successful with warnings/errors!');
+            ).to.equal('Upload successful with warnings');
 
             await click(testSelector('toggle-details'));
 
@@ -576,7 +576,7 @@ describe('Acceptance: Settings - Design', function () {
             expect(
                 find(testSelector('theme-warnings-title')).text().trim(),
                 'modal title after activating theme with warnings'
-            ).to.equal('Activated successful with warnings/errors!');
+            ).to.equal('Activation successful with warnings');
 
             await click(testSelector('toggle-details'));
 

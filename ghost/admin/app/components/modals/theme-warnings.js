@@ -7,6 +7,7 @@ export default ModalComponent.extend({
     warnings: reads('model.warnings'),
     errors: reads('model.errors'),
     fatalErrors: reads('model.fatalErrors'),
+    canActivate: reads('model.canActivate'),
 
     'data-test-theme-warnings-modal': true
 });

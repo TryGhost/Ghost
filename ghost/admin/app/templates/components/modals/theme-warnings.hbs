@@ -1,5 +1,11 @@
 <header class="modal-header">
-    <h1 data-test-theme-warnings-title>{{title}}</h1>
+    <h1 data-test-theme-warnings-title>
+        {{#unless canActivate}}
+            {{title}}
+        {{else}}
+            {{title}} with {{#if errors}}errors{{else}}warnings{{/if}}
+        {{/unless}}
+    </h1>
 </header>
 <a class="close" href="#" title="Close" {{action "closeModal"}}>{{inline-svg "close"}}<span class="hidden">Close</span></a>
 

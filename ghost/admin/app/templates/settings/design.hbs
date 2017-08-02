@@ -46,10 +46,11 @@
             {{#if showThemeWarningsModal}}
                 {{gh-fullscreen-modal "theme-warnings"
                     model=(hash
-                        title="Activated successful with warnings/errors!"
+                        title="Activation successful"
                         warnings=themeWarnings
                         errors=themeErrors
                         message=message
+                        canActivate=true
                     )
                     close=(action "hideThemeWarningsModal")
                     modifier="action wide"}}
@@ -61,6 +62,7 @@
                         title="Activation failed"
                         errors=themeErrors
                         fatalErrors=themeFatalErrors
+                        canActivate=false
                     )
                     close=(action "hideThemeWarningsModal")
                     modifier="action wide"}}
