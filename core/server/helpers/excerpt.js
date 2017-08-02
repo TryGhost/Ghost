@@ -19,6 +19,13 @@ module.exports = function excerpt(options) {
         truncateOptions[key] = parseInt(truncateOptions[key], 10);
     });
 
+    if (!_.isEmpty(this.custom_excerpt)) {
+        truncateOptions.characters = this.custom_excerpt.length;
+        if (truncateOptions.words) {
+            delete truncateOptions.words;
+        }
+    }
+
     return new SafeString(
         getMetaDataExcerpt(excerptText, truncateOptions)
     );

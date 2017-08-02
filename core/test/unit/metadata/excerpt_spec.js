@@ -56,4 +56,30 @@ describe('getExcerpt', function () {
 
             getExcerpt(html, {characters: '8'}).should.equal(expected);
         });
+
+    it('should fall back to 50 words if not specified',
+        function () {
+            var html = '<p>There are <br />10<br> types<br/> of people in <img src="a">the world:' +
+                    '<img src=b alt="c"> those who <img src="@" onclick="javascript:alert(\'hello\');">' +
+                    'understand trinary</p>, those who don\'t <div style="" class=~/\'-,._?!|#>and' +
+                    '< test > those<<< test >>> who mistake it &lt;for&gt; binary.',
+                expected = 'There are 10 types of people in the world: those who understand trinary, those who ' +
+                    'don\'t and those>> who mistake it &lt;for&gt; binary.';
+
+            getExcerpt(html).should.equal(expected);
+        });
+
+    it('should truncate plain text for custom excerpts',
+        function () {
+            var html = 'This is a custom excerpt. It should always be rendered in full length and not being cut ' +
+                       'off. The maximum length of a custom excerpt is 300 characters. Enough to tell a bit about ' +
+                       'your story and make a nice summary for your readers. It\s only allowed to truncate anything ' +
+                       'after 300 characters. This give',
+                expected = 'This is a custom excerpt. It should always be rendered in full length and not being cut ' +
+                           'off. The maximum length of a custom excerpt is 300 characters. Enough to tell a bit about ' +
+                           'your story and make a nice summary for your readers. It\s only allowed to truncate anything ' +
+                           'after 300 characters. This give';
+
+            getExcerpt(html, {characters: '300'}).should.equal(expected);
+        });
 });
