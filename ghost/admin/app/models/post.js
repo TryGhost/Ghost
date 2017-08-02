@@ -80,6 +80,8 @@ export default Model.extend(Comparable, ValidationEngine, {
     customExcerpt: attr(),
     featured: attr('boolean', {defaultValue: false}),
     featureImage: attr('string'),
+    codeinjectionFoot: attr('string', {defaultValue: ''}),
+    codeinjectionHead: attr('string', {defaultValue: ''}),
     html: attr('string'),
     locale: attr('string'),
     metaDescription: attr('string'),
@@ -116,8 +118,10 @@ export default Model.extend(Comparable, ValidationEngine, {
     publishedAtBlogTime: '',
 
     customExcerptScratch: boundOneWay('customExcerpt'),
-    metaTitleScratch: boundOneWay('metaTitle'),
+    codeinjectionFootScratch: boundOneWay('codeinjectionFoot'),
+    codeinjectionHeadScratch: boundOneWay('codeinjectionHead'),
     metaDescriptionScratch: boundOneWay('metaDescription'),
+    metaTitleScratch: boundOneWay('metaTitle'),
 
     isPublished: equal('status', 'published'),
     isDraft: equal('status', 'draft'),

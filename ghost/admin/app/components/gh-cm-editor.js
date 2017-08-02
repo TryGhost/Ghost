@@ -23,6 +23,12 @@ const CmEditorComponent =  Component.extend(InvokeActionMixin, {
 
     lazyLoader: injectService(),
 
+    didReceiveAttrs() {
+        if (this.get('value') === null || undefined) {
+            this.set('value', '');
+        }
+    },
+
     didInsertElement() {
         this._super(...arguments);
 

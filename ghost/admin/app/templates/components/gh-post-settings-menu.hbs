@@ -1,177 +1,249 @@
-{{#gh-tabs-manager selected=(action "showSubview") id="entry-controls" class="settings-menu-container"}}
-<div id="entry-controls">
-    <div class="{{if isViewingSubview 'settings-menu-pane-out-left' 'settings-menu-pane-in'}} settings-menu settings-menu-pane">
-        <div class="settings-menu-header">
-            <h4>Post Settings</h4>
-            <button class="close settings-menu-header-action" {{action "closeMenus"}} data-test-close-settings-menu>
-                {{inline-svg "close"}}<span class="hidden">Close</span>
-            </button>
-        </div>
-        <div class="settings-menu-content">
-            {{gh-image-uploader-with-preview
-                image=model.featureImage
-                text="Add post image"
-                update=(action "setCoverImage")
-                remove=(action "clearCoverImage")
-            }}
-            <form>
-            <div class="form-group">
-                <label for="url">Post URL</label>
-                {{!-- new posts don't have a preview link --}}
-                {{#unless model.isNew}}
-                    {{#if model.isPublished}}
-                    <a class="post-view-link" target="_blank" href="{{model.absoluteUrl}}">
-                        View post {{inline-svg "external"}}
-                    </a>
+<div class="settings-menu-container">
+    <div id="entry-controls">
+        <div class="{{if isViewingSubview 'settings-menu-pane-out-left' 'settings-menu-pane-in'}} settings-menu settings-menu-pane">
+            <div class="settings-menu-header">
+                <h4>Post Settings</h4>
+                <button class="close settings-menu-header-action" {{action "closeMenus"}} data-test-close-settings-menu>
+                    {{inline-svg "close"}}<span class="hidden">Close</span>
+                </button>
+            </div>
+            <div class="settings-menu-content">
+                {{gh-image-uploader-with-preview
+                    image=model.featureImage
+                    text="Add post image"
+                    update=(action "setCoverImage")
+                    remove=(action "clearCoverImage")
+                }}
+                <form>
+                <div class="form-group">
+                    <label for="url">Post URL</label>
+                    {{!-- new posts don't have a preview link --}}
+                    {{#unless model.isNew}}
+                        {{#if model.isPublished}}
+                        <a class="post-view-link" target="_blank" href="{{model.absoluteUrl}}">
+                            View post {{inline-svg "external"}}
+                        </a>
+                        {{else}}
+                        <a class="post-view-link" target="_blank" href="{{model.previewUrl}}">
+                            Preview {{inline-svg "external"}}
+                        </a>
+                        {{/if}}
+                    {{/unless}}
+
+                    <div class="gh-input-icon gh-icon-link">
+                        {{inline-svg "link"}}
+                        {{gh-input slugValue
+                            class="post-setting-slug"
+                            id="url"
+                            name="post-setting-slug"
+                            focusOut=(action "updateSlug" slugValue)
+                            stopEnterKeyDownPropagation="true"
+                            update=(action (mut slugValue))}}
+                    </div>
+                    {{gh-url-preview slug=slugValue tagName="p" classNames="description"}}
+                </div>
+
+                <div class="form-group">
+                    {{#if (or model.isDraft model.isPublished model.pastScheduledTime)}}
+                        <label>Publish Date</label>
                     {{else}}
-                    <a class="post-view-link" target="_blank" href="{{model.previewUrl}}">
-                        Preview {{inline-svg "external"}}
-                    </a>
+                        <label>Scheduled Date</label>
+                        <p>Use the publish menu to re-schedule</p>
                     {{/if}}
+                    {{gh-date-time-picker
+                        date=model.publishedAtBlogDate
+                        time=model.publishedAtBlogTime
+                        setDate=(action "setPublishedAtBlogDate")
+                        setTime=(action "setPublishedAtBlogTime")
+                        errors=model.errors
+                        dateErrorProperty="publishedAtBlogDate"
+                        timeErrorProperty="publishedAtBlogTime"
+                        maxDate='now'
+                        disabled=model.isScheduled
+                        static=true
+                    }}
+                </div>
+
+                <div class="form-group">
+                    <label for="tag-input">Tags</label>
+                    {{gh-selectize
+                        id="tag-input"
+                        multiple=true
+                        selection=model.tags
+                        content=availableTags
+                        optionValuePath="content.uuid"
+                        optionLabelPath="content.name"
+                        openOnFocus=false
+                        create-item="addTag"
+                        remove-item="removeTag"
+                        plugins="remove_button, drag_drop"}}
+                </div>
+
+                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="customExcerpt"}}
+                    <label for="custom-excerpt">Excerpt</label>
+                    {{gh-textarea customExcerptScratch
+                        class="post-setting-custom-excerpt"
+                        id="custom-excerpt"
+                        name="post-setting-custom-excerpt"
+                        focusOut=(action "setCustomExcerpt" customExcerptScratch)
+                        stopEnterKeyDownPropagation="true"
+                        update=(action (mut customExcerptScratch))
+                        data-test-field="custom-excerpt"}}
+                    {{gh-error-message errors=model.errors property="customExcerpt" data-test-error="custom-excerpt"}}
+                {{/gh-form-group}}
+
+                {{#unless session.user.isAuthor}}
+                <div class="form-group for-select">
+                    <label for="author-list">Author</label>
+                    <span class="gh-input-icon gh-icon-user">
+                        {{inline-svg "user-circle"}}
+                        <span class="gh-select" tabindex="0">
+                        {{one-way-select
+                            selectedAuthor
+                            id="author-list"
+                            name="post-setting-author"
+                            options=authors
+                            optionValuePath="id"
+                            optionLabelPath="name"
+                            update=(action "changeAuthor")
+                        }}
+                        {{inline-svg "arrow-down-small"}}
+                        </span>
+                    </span>
+                </div>
                 {{/unless}}
 
-                <div class="gh-input-icon gh-icon-link">
-                    {{inline-svg "link"}}
-                    {{gh-input slugValue class="post-setting-slug" id="url" name="post-setting-slug" focusOut=(action "updateSlug" slugValue) stopEnterKeyDownPropagation="true" update=(action (mut slugValue))}}
-                </div>
-                {{gh-url-preview slug=slugValue tagName="p" classNames="description"}}
-            </div>
+                <ul class="nav-list nav-list-block">
+                    <li class="nav-list-item" {{action "showSubview" "meta-data"}} data-test-button="meta-data">
+                        <button type="button">
+                            <b>Meta Data</b>
+                            <span>Extra content for SEO and social media.</span>
+                        </button>
+                        {{inline-svg "arrow-right"}}
+                    </li>
+                    <li class="nav-list-item" {{action "showSubview" "codeinjection"}} data-test-button="codeinjection">
+                        <button type="button">
+                            <b>Code Injection</b>
+                            <span>Add styles/scripts to the header & footer.</span>
+                        </button>
+                        {{inline-svg "arrow-right"}}
+                    </li>
+                </ul>
 
-            <div class="form-group">
-                {{#if (or model.isDraft model.isPublished model.pastScheduledTime)}}
-                    <label>Publish Date</label>
-                {{else}}
-                    <label>Scheduled Date</label>
-                    <p>Use the publish menu to re-schedule</p>
+                <div class="form-group for-checkbox">
+                    <label class="checkbox" for="static-page" {{action "togglePage" bubbles="false"}}>
+                        {{one-way-checkbox model.page type="checkbox" name="static-page" id="static-page" class="gh-input post-setting-static-page" update=(action (mut model.page))}}
+                        <span class="input-toggle-component"></span>
+                        <p>Turn this post into a page</p>
+                    </label>
+
+                    <label class="checkbox" for="featured" {{action "toggleFeatured" bubbles="false"}}>
+                        {{one-way-checkbox model.featured type="checkbox" name="featured" id="featured" class="gh-input post-setting-featured" update=(action (mut model.featured))}}
+                        <span class="input-toggle-component"></span>
+                        <p>Feature this post</p>
+                    </label>
+                </div>
+
+                {{#unless model.isNew}}
+                    <button type="button" class="gh-btn gh-btn-link gh-btn-icon settings-menu-delete-button" {{action "deletePost"}}><span>{{inline-svg "trash"}} Delete Post</span></button>
+                {{/unless}}
+
+                </form>
+            </div>{{! .settings-menu-content }}
+        </div>{{! .post-settings-menu }}
+
+        <div class="{{if isViewingSubview 'settings-menu-pane-in' 'settings-menu-pane-out-right'}} settings-menu settings-menu-pane">
+            <div class="active">
+                {{#if isViewingSubview}}
+                    {{#if (eq subview "meta-data")}}
+                        <div class="settings-menu-header subview">
+                            <button {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{inline-svg "arrow-left"}}<span class="hidden">Back</span></button>
+                            <h4>Meta Data</h4>
+                            <div style="width:23px;"></div>
+                        </div>
+
+                        <div class="settings-menu-content">
+                            <form {{action "discardEnter" on="submit"}}>
+                                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="metaTitle"}}
+                                    <label for="meta-title">Meta Title</label>
+                                    {{gh-input metaTitleScratch
+                                        class="post-setting-meta-title"
+                                        id="meta-title"
+                                        name="post-setting-meta-title"
+                                        focusOut=(action "setMetaTitle" metaTitleScratch)
+                                        stopEnterKeyDownPropagation="true"
+                                        update=(action (mut metaTitleScratch))}}
+                                    <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters metaTitleScratch 70}}</p>
+                                    {{gh-error-message errors=model.errors property="metaTitle"}}
+                                {{/gh-form-group}}
+
+                                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="metaDescription"}}
+                                    <label for="meta-description">Meta Description</label>
+                                    {{gh-textarea metaDescriptionScratch
+                                        class="post-setting-meta-description"
+                                        id="meta-description"
+                                        name="post-setting-meta-description"
+                                        focusOut=(action "setMetaDescription" metaDescriptionScratch)
+                                        stopEnterKeyDownPropagation="true"
+                                        update=(action (mut metaDescriptionScratch))}}
+                                    <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters metaDescriptionScratch 156}}</p>
+                                    {{gh-error-message errors=model.errors property="metaDescription"}}
+                                {{/gh-form-group}}
+
+                                <div class="form-group">
+                                    <label>Search Engine Result Preview</label>
+                                    <div class="seo-preview">
+                                        <div class="seo-preview-title">{{seoTitle}}</div>
+                                        <div class="seo-preview-link">{{seoURL}}</div>
+                                        <div class="seo-preview-description">{{seoDescription}}</div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    {{/if}}
+
+                    {{#if (eq subview "codeinjection")}}
+                        <div class="settings-menu-header subview">
+                            <button {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{inline-svg "arrow-left"}}<span class="hidden">Back</span></button>
+                            <h4>Code Injection</h4>
+                            <div style="width:23px;"></div>
+                        </div>
+
+                        <div class="settings-menu-content">
+                            <form {{action "discardEnter" on="submit"}}>
+                                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="codeinjectionHead"}}
+                                    <label for="codeinjection-head">Post Header <code>\{{ghost_head}}</code></label>
+                                    {{gh-cm-editor codeinjectionHeadScratch
+                                        id="post-setting-codeinjection-head"
+                                        class="post-setting-codeinjection"
+                                        name="post-setting-codeinjection-head"
+                                        focusOut=(action "setHeaderInjection" codeinjectionHeadScratch)
+                                        stopEnterKeyDownPropagation="true"
+                                        update=(action (mut codeinjectionHeadScratch))
+                                        data-test-field="codeinjection-head"}}
+                                    {{gh-error-message errors=model.errors property="codeinjectionHead" data-test-error="codeinjection-head"}}
+                                {{/gh-form-group}}
+
+                                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="codeinjectionFoot"}}
+                                    <label for="codeinjection-foot">Post Footer <code>\{{ghost_foot}}</code></label>
+                                    {{gh-cm-editor codeinjectionFootScratch
+                                        id="post-setting-codeinjection-foot"
+                                        class="post-setting-codeinjection"
+                                        name="post-setting-codeinjection-foot"
+                                        focusOut=(action "setFooterInjection" codeinjectionFootScratch)
+                                        stopEnterKeyDownPropagation="true"
+                                        update=(action (mut codeinjectionFootScratch))
+                                        data-test-field="codeinjection-foot"}}
+                                    {{gh-error-message errors=model.errors property="codeinjectionFoot" data-test-error="codeinjection-foot"}}
+                                {{/gh-form-group}}
+                            </form>
+                        </div>
+                    {{/if}}
                 {{/if}}
-                {{gh-date-time-picker
-                    date=model.publishedAtBlogDate
-                    time=model.publishedAtBlogTime
-                    setDate=(action "setPublishedAtBlogDate")
-                    setTime=(action "setPublishedAtBlogTime")
-                    errors=model.errors
-                    dateErrorProperty="publishedAtBlogDate"
-                    timeErrorProperty="publishedAtBlogTime"
-                    maxDate='now'
-                    disabled=model.isScheduled
-                    static=true
-                }}
             </div>
-
-            <div class="form-group">
-                <label for="tag-input">Tags</label>
-                {{gh-selectize
-                    id="tag-input"
-                    multiple=true
-                    selection=model.tags
-                    content=availableTags
-                    optionValuePath="content.uuid"
-                    optionLabelPath="content.name"
-                    openOnFocus=false
-                    create-item="addTag"
-                    remove-item="removeTag"
-                    plugins="remove_button, drag_drop"}}
-            </div>
-
-            {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="customExcerpt"}}
-                <label for="custom-excerpt">Excerpt</label>
-                {{gh-textarea customExcerptScratch class="post-setting-custom-excerpt" id="custom-excerpt" name="post-setting-custom-excerpt" focusOut=(action "setCustomExcerpt" customExcerptScratch) stopEnterKeyDownPropagation="true" update=(action (mut customExcerptScratch)) data-test-field="custom-excerpt"}}
-                {{gh-error-message errors=model.errors property="customExcerpt" data-test-error="custom-excerpt"}}
-            {{/gh-form-group}}
-
-            {{#unless session.user.isAuthor}}
-            <div class="form-group for-select">
-                <label for="author-list">Author</label>
-                <span class="gh-input-icon gh-icon-user">
-                    {{inline-svg "user-circle"}}
-                    <span class="gh-select" tabindex="0">
-                    {{one-way-select
-                        selectedAuthor
-                        id="author-list"
-                        name="post-setting-author"
-                        options=authors
-                        optionValuePath="id"
-                        optionLabelPath="name"
-                        update=(action "changeAuthor")
-                    }}
-                    {{inline-svg "arrow-down-small"}}
-                    </span>
-                </span>
-            </div>
-            {{/unless}}
-
-            <ul class="nav-list nav-list-block">
-                {{#gh-tab tagName="li" classNames="nav-list-item"}}
-                    <button type="button">
-                        <b>Meta Data</b>
-                        <span>Extra content for SEO and social media.</span>
-                    </button>
-                     {{inline-svg "arrow-right"}}
-                {{/gh-tab}}
-            </ul>
-
-            <div class="form-group for-checkbox">
-                <label class="checkbox" for="static-page" {{action "togglePage" bubbles="false"}}>
-                    {{one-way-checkbox model.page type="checkbox" name="static-page" id="static-page" class="gh-input post-setting-static-page" update=(action (mut model.page))}}
-                    <span class="input-toggle-component"></span>
-                    <p>Turn this post into a page</p>
-                </label>
-
-                <label class="checkbox" for="featured" {{action "toggleFeatured" bubbles="false"}}>
-                    {{one-way-checkbox model.featured type="checkbox" name="featured" id="featured" class="gh-input post-setting-featured" update=(action (mut model.featured))}}
-                    <span class="input-toggle-component"></span>
-                    <p>Feature this post</p>
-                </label>
-            </div>
-
-            {{#unless model.isNew}}
-                <button type="button" class="gh-btn gh-btn-link gh-btn-icon settings-menu-delete-button" {{action "deletePost"}}><span>{{inline-svg "trash"}} Delete Post</span></button>
-            {{/unless}}
-
-            </form>
-        </div>{{! .settings-menu-content }}
-    </div>{{! .post-settings-menu }}
-
-    <div class="{{if isViewingSubview 'settings-menu-pane-in' 'settings-menu-pane-out-right'}} settings-menu settings-menu-pane">
-    {{#gh-tab-pane}}
-        {{#if isViewingSubview}}
-        <div class="settings-menu-header subview">
-            <button {{action "closeSubview"}} class="back settings-menu-header-action">{{inline-svg "arrow-left"}}<span class="hidden">Back</span></button>
-            <h4>Meta Data</h4>
-            <div style="width:23px;">{{!flexbox space-between}}</div>
         </div>
-
-        <div class="settings-menu-content">
-            <form {{action "discardEnter" on="submit"}}>
-            {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="metaTitle"}}
-                <label for="meta-title">Meta Title</label>
-                {{gh-input metaTitleScratch class="post-setting-meta-title" id="meta-title" name="post-setting-meta-title" focusOut=(action "setMetaTitle" metaTitleScratch) stopEnterKeyDownPropagation="true" update=(action (mut metaTitleScratch))}}
-                <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters metaTitleScratch 70}}</p>
-                {{gh-error-message errors=model.errors property="metaTitle"}}
-            {{/gh-form-group}}
-
-            {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="metaDescription"}}
-                <label for="meta-description">Meta Description</label>
-                {{gh-textarea metaDescriptionScratch class="post-setting-meta-description" id="meta-description" name="post-setting-meta-description" focusOut=(action "setMetaDescription" metaDescriptionScratch) stopEnterKeyDownPropagation="true" update=(action (mut metaDescriptionScratch))}}
-                <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters metaDescriptionScratch 156}}</p>
-                {{gh-error-message errors=model.errors property="metaDescription"}}
-            {{/gh-form-group}}
-
-            <div class="form-group">
-                <label>Search Engine Result Preview</label>
-                <div class="seo-preview">
-                    <div class="seo-preview-title">{{seoTitle}}</div>
-                    <div class="seo-preview-link">{{seoURL}}</div>
-                    <div class="seo-preview-description">{{seoDescription}}</div>
-                </div>
-            </div>
-            </form>
-        </div>{{! .settings-menu-content }}
-        {{/if}}
-    {{/gh-tab-pane}}
     </div>
 </div>
-{{/gh-tabs-manager}}
 
 {{!--
     _showThrobbers is on a timer so that throbbers don't get positioned until
