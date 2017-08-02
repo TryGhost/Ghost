@@ -2,6 +2,7 @@ import Ember from 'ember';
 import Service from 'ember-service';
 import computed from 'ember-computed';
 import injectService from 'ember-service/inject';
+import {assign} from 'ember-platform';
 import {isBlank} from 'ember-utils';
 
 // ember-cli-shims doesn't export _ProxyMixin
@@ -16,12 +17,20 @@ export default Service.extend(_ProxyMixin, {
     fetch() {
         let configUrl = this.get('ghostPaths.url').api('configuration');
 
-        return this.get('ajax').request(configUrl).then((config) => {
+        return this.get('ajax').request(configUrl).then((publicConfig) => {
             // normalize blogUrl to non-trailing-slash
-            let [{blogUrl}] = config.configuration;
-            config.configuration[0].blogUrl = blogUrl.replace(/\/$/, '');
+            let [{blogUrl}] = publicConfig.configuration;
+            publicConfig.configuration[0].blogUrl = blogUrl.replace(/\/$/, '');
 
-            this.set('content', config.configuration[0]);
+            this.set('content', publicConfig.configuration[0]);
+        });
+    },
+
+    fetchPrivate() {
+        let privateConfigUrl = this.get('ghostPaths.url').api('configuration', 'private');
+
+        return this.get('ajax').request(privateConfigUrl).then((privateConfig) => {
+            assign(this.get('content'), privateConfig.configuration[0]);
         });
     },
 

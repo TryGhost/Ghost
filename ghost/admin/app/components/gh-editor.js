@@ -4,10 +4,12 @@ import {
     IMAGE_EXTENSIONS,
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
+import {inject as injectService} from '@ember/service';
 
 const {debounce} = run;
 
 export default Component.extend({
+    ui: injectService(),
 
     classNameBindings: [
         'isDraggedOver:-drag-over',
@@ -140,6 +142,7 @@ export default Component.extend({
     actions: {
         toggleFullScreen(isFullScreen) {
             this.set('isFullScreen', isFullScreen);
+            this.get('ui').set('isFullScreen', isFullScreen);
             run.scheduleOnce('afterRender', this, this._setHeaderClass);
         },
 

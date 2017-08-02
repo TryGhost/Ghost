@@ -13,6 +13,7 @@ import SignupValidator from 'ghost-admin/validators/signup';
 import SlackIntegrationValidator from 'ghost-admin/validators/slack-integration';
 import SubscriberValidator from 'ghost-admin/validators/subscriber';
 import TagSettingsValidator from 'ghost-admin/validators/tag-settings';
+import UnsplashIntegrationValidator from 'ghost-admin/validators/unsplash-integration';
 import UserValidator from 'ghost-admin/validators/user';
 import ValidatorExtensions from 'ghost-admin/utils/validator-extensions';
 import {A as emberA, isEmberArray} from 'ember-array/utils';
@@ -46,7 +47,8 @@ export default Mixin.create({
         slackIntegration: SlackIntegrationValidator,
         subscriber: SubscriberValidator,
         tag: TagSettingsValidator,
-        user: UserValidator
+        user: UserValidator,
+        unsplashIntegration: UnsplashIntegrationValidator
     },
 
     // This adds the Errors object to the validation engine, and shouldn't affect

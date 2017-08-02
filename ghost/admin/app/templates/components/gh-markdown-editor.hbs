@@ -4,6 +4,8 @@
         placeholder=placeholder
         autofocus=autofocus
         onChange=(action "updateMarkdown")
+        onFocus=(action "updateFocusState" true)
+        onBlur=(action "updateFocusState" false)
         onEditorInit=(action "setEditor")
         onEditorDestroy=(action "destroyEditor")
         options=simpleMDEOptions)
@@ -15,3 +17,9 @@
 <div style="display:none">
     {{gh-file-input multiple=true action=(action onImageFilesSelected) accept=imageMimeTypes}}
 </div>
+
+{{#if _showUnsplash}}
+    {{gh-unsplash
+        insert=(action "insertUnsplashPhoto")
+        close=(action "toggleUnsplash")}}
+{{/if}}

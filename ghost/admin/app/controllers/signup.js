@@ -31,9 +31,13 @@ export default Controller.extend(ValidationEngine, {
         try {
             let authResult = yield this.get('session')
                 .authenticate(authStrategy, ...authentication);
+            let promises = [];
 
-            // fetch settings for synchronous access
-            yield this.get('settings').fetch();
+            promises.pushObject(this.get('settings').fetch());
+            promises.pushObject(this.get('config').fetchPrivate());
+
+            // fetch settings and private config for synchronous access
+            yield RSVP.all(promises);
 
             return authResult;
 

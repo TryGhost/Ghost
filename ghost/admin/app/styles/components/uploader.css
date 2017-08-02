@@ -6,14 +6,14 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 100%;
+    min-height: 130px;
     overflow: hidden;
     margin: 1.6em 0;
-    min-height: 130px;
-    width: 100%;
-    background: #fff;
-    border-radius: 4px;
     color: color(var(--midgrey) l(-18%));
     text-align: center;
+    background: #fff;
+    border-radius: 4px;
     border-radius: 4px;
 }
 
@@ -28,9 +28,9 @@
 
 .gh-image-uploader img {
     display: block;
-    margin: 0 auto;
-    max-width: 100%;
     min-width: 200px;
+    max-width: 100%;
+    margin: 0 auto;
     line-height: 0;
 }
 
@@ -40,28 +40,29 @@
     right: 10px;
     z-index: 300;
     display: block;
+    display: flex;
+    align-items: center;
     padding: 8px;
+    color: #fff;
+    font-size: 13px;
+    line-height: 10px;
+    text-decoration: none;
     background: rgba(0, 0, 0, 0.6);
     border-radius: var(--border-radius);
     box-shadow: rgba(255, 255, 255, 0.2) 0 0 0 1px;
-    color: #fff;
-    text-decoration: none;
-    font-size: 13px;
-    line-height: 10px;
-    display: flex;
-    align-items: center;
 }
 
 .gh-image-uploader .image-cancel svg {
-    fill: #fff;
-    height: 13px;
     width: 13px;
+    height: 13px;
+    fill: #fff;
 }
 
 .gh-image-uploader .upload-form {
     flex-grow: 1;
     display: flex;
     flex-direction: row;
+    width: 100%;
 }
 
 .gh-image-uploader .x-file-input {
@@ -72,21 +73,21 @@
 .gh-image-uploader .x-file-input label {
     flex-grow: 1;
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     outline: none;
 }
 
 .gh-image-uploader .description {
     width: 100%;
-    text-align: center;
     font-size: 1.6rem;
+    text-align: center;
 }
 
 .gh-image-uploader .image-cancel:hover {
-    background: var(--red);
     color: #fff;
     cursor: pointer;
+    background: var(--red);
 }
 
 .gh-image-uploader .failed {
@@ -106,9 +107,9 @@
 
 .gh-image-uploader .progress,
 .gh-progress-container-progress {
+    width: 60%;
     overflow: hidden;
     margin: 0 auto;
-    width: 60%;
     background: linear-gradient(to bottom, #f5f5f5, #f9f9f9);
     border-radius: 12px;
     box-shadow: rgba(0, 0, 0, 0.1) 0 1px 2px inset;
@@ -130,4 +131,29 @@
 .gh-image-uploader .gh-btn-green:last-child {
     margin-top: 1em;
     margin-bottom: 3em;
+}
+
+
+/* Unsplash Button
+/* ---------------------------------------------------------- */
+
+.gh-image-uploader-unsplash {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 36px;
+    height: 36px;
+    padding: 10px;
+    opacity: 0.17;
+    transition: opacity 0.5s ease;
+}
+
+.gh-image-uploader-unsplash:hover {
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.gh-image-uploader-unsplash svg {
+    width: 16px;
 }

@@ -3355,6 +3355,17 @@ ember-factory-for-polyfill@^1.1.0:
   dependencies:
     ember-cli-version-checker "^1.2.0"
 
+ember-fetch@3.2.9:
+  version "3.2.9"
+  resolved "https://registry.yarnpkg.com/ember-fetch/-/ember-fetch-3.2.9.tgz#91670b320acb5993128555ea70ce4d168cb1db26"
+  dependencies:
+    broccoli-funnel "^1.2.0"
+    broccoli-stew "^1.4.2"
+    broccoli-templater "^1.0.0"
+    ember-cli-babel "^6.0.0"
+    node-fetch "^2.0.0-alpha.3"
+    whatwg-fetch "^2.0.3"
+
 ember-fetch@^1.4.2:
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/ember-fetch/-/ember-fetch-1.6.0.tgz#cf93d3f7049c593f14d11b6f0924b746303b7812"

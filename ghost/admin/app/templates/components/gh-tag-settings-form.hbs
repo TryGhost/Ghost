@@ -11,7 +11,8 @@
     <div class="settings-menu-content">
         {{gh-image-uploader-with-preview
             image=tag.featureImage
-            text="Add tag image"
+            text="Upload tag image"
+            allowUnsplash=true
             update=(action "setCoverImage")
             remove=(action "clearCoverImage")}}
         <form>

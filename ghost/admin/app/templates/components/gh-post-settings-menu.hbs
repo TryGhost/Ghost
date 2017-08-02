@@ -10,7 +10,8 @@
             <div class="settings-menu-content">
                 {{gh-image-uploader-with-preview
                     image=model.featureImage
-                    text="Add post image"
+                    text="Upload post image"
+                    allowUnsplash=true
                     update=(action "setCoverImage")
                     remove=(action "clearCoverImage")
                 }}
@@ -231,6 +232,7 @@
                                 {{gh-image-uploader-with-preview
                                     image=model.twitterImage
                                     text="Add Twitter image"
+                                    allowUnsplash=true
                                     update=(action "setTwitterImage")
                                     remove=(action "clearTwitterImage")
                                 }}
@@ -298,6 +300,7 @@
                                 {{gh-image-uploader-with-preview
                                     image=model.ogImage
                                     text="Add Facebook image"
+                                    allowUnsplash=true
                                     update=(action "setOgImage")
                                     remove=(action "clearOgImage")
                                 }}

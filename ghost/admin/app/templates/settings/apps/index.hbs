@@ -53,6 +53,30 @@
                 </article>
                 {{/link-to}}
             </div>
+
+            <div class="apps-grid-cell">
+                {{#link-to "settings.apps.unsplash" id="unsplash-link"}}
+                <article class="apps-card-app">
+                    <div class="apps-card-left">
+                        <figure class="apps-card-app-icon" style="background-image:url(assets/img/unsplashicon.png);background-size:45px;"></figure>
+                        <div class="apps-card-meta">
+                            <h3 class="apps-card-app-title">Unsplash</h3>
+                            <p class="apps-card-app-desc">Beautiful, free photos</p>
+                        </div>
+                    </div>
+                    <div class="gh-card-right">
+                        <div class="apps-configured">
+                            {{#if unsplash.isActive}}
+                                <span class="green">Active</span>
+                            {{else}}
+                                <span>Configure</span>
+                            {{/if}}
+                            {{inline-svg "arrow-right"}}
+                        </div>
+                    </div>
+                </article>
+                {{/link-to}}
+            </div>
         </div>
         <p class="apps-grid-note">(More coming soon!)</p>
     </section>

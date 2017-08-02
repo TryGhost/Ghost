@@ -71,6 +71,8 @@
     "ember-data-filter": "1.13.0",
     "ember-element-resize-detector": "0.1.5",
     "ember-export-application-global": "2.0.0",
+    "ember-fetch": "3.2.9",
+    "ember-in-viewport": "2.1.1",
     "ember-infinity": "0.2.8",
     "ember-inline-svg": "0.1.11",
     "ember-invoke-action": "1.4.0",
