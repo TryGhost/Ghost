@@ -16,10 +16,12 @@ module.exports = function ghost_foot(options) {
         globalCodeinjection = settingsCache.get('ghost_foot'),
         postCodeinjection = options.data.root && options.data.root.post ? options.data.root.post.codeinjection_foot : null;
 
+    if (!_.isEmpty(globalCodeinjection)) {
+        foot.push(globalCodeinjection);
+    }
+
     if (!_.isEmpty(postCodeinjection)) {
         foot.push(postCodeinjection);
-    } else if (!_.isEmpty(globalCodeinjection)) {
-        foot.push(globalCodeinjection);
     }
 
     return filters
