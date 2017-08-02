@@ -3,7 +3,7 @@ import moment from 'moment';
 import {isEmpty, isPresent} from 'ember-utils';
 
 export default BaseValidator.create({
-    properties: ['title', 'customExcerpt', 'metaTitle', 'metaDescription', 'publishedAtBlogTime', 'publishedAtBlogDate'],
+    properties: ['title', 'customExcerpt', 'codeinjectionHead', 'codeinjectionFoot', 'metaTitle', 'metaDescription', 'publishedAtBlogTime', 'publishedAtBlogDate'],
 
     title(model) {
         let title = model.get('title');
@@ -24,6 +24,24 @@ export default BaseValidator.create({
 
         if (!validator.isLength(customExcerpt, 0, 300)) {
             model.get('errors').add('customExcerpt', 'Excerpt cannot be longer than 300 characters.');
+            this.invalidate();
+        }
+    },
+
+    codeinjectionFoot(model) {
+        let codeinjectionFoot = model.get('codeinjectionFoot');
+
+        if (!validator.isLength(codeinjectionFoot, 0, 65535)) {
+            model.get('errors').add('codeinjectionFoot', 'Footer code cannot be longer than 65535 characters.');
+            this.invalidate();
+        }
+    },
+
+    codeinjectionHead(model) {
+        let codeinjectionHead = model.get('codeinjectionHead');
+
+        if (!validator.isLength(codeinjectionHead, 0, 65535)) {
+            model.get('errors').add('codeinjectionHead', 'Header code cannot be longer than 65535 characters.');
             this.invalidate();
         }
     },

@@ -111,6 +111,10 @@
     padding: 0 24px 24px;
 }
 
+.settings-menu-content label code {
+    font-weight: normal;
+}
+
 .settings-menu-content .gh-image-uploader {
     margin: 0 0 1.6rem 0;
 }
@@ -188,6 +192,15 @@
     line-height: 1.35em;
 }
 
+.settings-menu-content .CodeMirror {
+    height: 170px;
+    min-height: 170px;
+    padding: 0;
+}
+
+.settings-menu-content .CodeMirror-scroll {
+    min-height: 170px;
+}
 
 /* Background
 /* ---------------------------------------------------------- */

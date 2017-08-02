@@ -556,15 +556,7 @@ describe('Acceptance: Editor', function() {
 
             // TODO: implement tests for other fields
 
-            // changing custom excerpt auto-saves
             await click(testSelector('psm-trigger'));
-            await fillIn(testSelector('field', 'custom-excerpt'), 'Testing excerpt');
-            await triggerEvent(testSelector('field', 'custom-excerpt'), 'blur');
-
-            expect(
-                server.db.posts[0].custom_excerpt,
-                'saved excerpt'
-            ).to.equal('Testing excerpt');
 
             // excerpt has validation
             await fillIn(testSelector('field', 'custom-excerpt'), Array(302).join('a'));
@@ -578,7 +570,77 @@ describe('Acceptance: Editor', function() {
             expect(
                 server.db.posts[0].custom_excerpt,
                 'saved excerpt after validation error'
+            ).to.be.blank;
+
+            // changing custom excerpt auto-saves
+            await fillIn(testSelector('field', 'custom-excerpt'), 'Testing excerpt');
+            await triggerEvent(testSelector('field', 'custom-excerpt'), 'blur');
+
+            expect(
+                server.db.posts[0].custom_excerpt,
+                'saved excerpt'
             ).to.equal('Testing excerpt');
+
+            // -------
+
+            // open code injection subview
+            await click(testSelector('button', 'codeinjection'));
+
+            // header injection has validation
+            let headerCM = find(`${testSelector('field', 'codeinjection-head')} .CodeMirror`)[0].CodeMirror;
+            await headerCM.setValue(Array(65540).join('a'));
+            await triggerEvent(headerCM.getInputField(), 'blur');
+
+            expect(
+                find(testSelector('error', 'codeinjection-head')).text().trim(),
+                'header injection too long error'
+            ).to.match(/cannot be longer than 65535/);
+
+            expect(
+                server.db.posts[0].codeinjection_head,
+                'saved header injection after validation error'
+            ).to.be.blank;
+
+            // changing header injection auto-saves
+            await headerCM.setValue('<script src="http://example.com/inject-head.js"></script>');
+            await triggerEvent(headerCM.getInputField(), 'blur');
+
+            expect(
+                server.db.posts[0].codeinjection_head,
+                'saved header injection'
+            ).to.equal('<script src="http://example.com/inject-head.js"></script>');
+
+            // footer injection has validation
+            let footerCM = find(`${testSelector('field', 'codeinjection-foot')} .CodeMirror`)[0].CodeMirror;
+            await footerCM.setValue(Array(65540).join('a'));
+            await triggerEvent(footerCM.getInputField(), 'blur');
+
+            expect(
+                find(testSelector('error', 'codeinjection-foot')).text().trim(),
+                'footer injection too long error'
+            ).to.match(/cannot be longer than 65535/);
+
+            expect(
+                server.db.posts[0].codeinjection_foot,
+                'saved footer injection after validation error'
+            ).to.be.blank;
+
+            // changing footer injection auto-saves
+            await footerCM.setValue('<script src="http://example.com/inject-foot.js"></script>');
+            await triggerEvent(footerCM.getInputField(), 'blur');
+
+            expect(
+                server.db.posts[0].codeinjection_foot,
+                'saved footer injection'
+            ).to.equal('<script src="http://example.com/inject-foot.js"></script>');
+
+            // closing subview switches back to main PSM view
+            await click(testSelector('button', 'close-psm-subview'));
+
+            expect(
+                find(testSelector('field', 'codeinjection-head')).length,
+                'header injection not present after closing subview'
+            ).to.equal(0);
         });
     });
 });

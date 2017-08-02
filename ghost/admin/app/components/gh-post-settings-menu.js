@@ -29,10 +29,13 @@ export default Component.extend(SettingsMenuMixin, {
     settings: injectService(),
 
     model: null,
-    slugValue: boundOneWay('model.slug'),
+
     customExcerptScratch: alias('model.customExcerptScratch'),
-    metaTitleScratch: alias('model.metaTitleScratch'),
+    codeinjectionFootScratch: alias('model.codeinjectionFootScratch'),
+    codeinjectionHeadScratch: alias('model.codeinjectionHeadScratch'),
     metaDescriptionScratch: alias('model.metaDescriptionScratch'),
+    metaTitleScratch: alias('model.metaTitleScratch'),
+    slugValue: boundOneWay('model.slug'),
 
     _showSettingsMenu: false,
     _showThrobbers: false,
@@ -157,8 +160,10 @@ export default Component.extend(SettingsMenuMixin, {
     },
 
     actions: {
-        showSubview() {
+        showSubview(subview) {
             this._super(...arguments);
+
+            this.set('subview', subview);
 
             // Chrome appears to have an animation bug that cancels the slide
             // transition unless there's a delay between the animation starting
@@ -170,6 +175,8 @@ export default Component.extend(SettingsMenuMixin, {
 
         closeSubview() {
             this._super(...arguments);
+
+            this.set('subview', null);
             this.get('showThrobbers').perform();
         },
 
@@ -257,6 +264,36 @@ export default Component.extend(SettingsMenuMixin, {
             model.set('customExcerpt', excerpt);
 
             return model.validate({property: 'customExcerpt'}).then(() => {
+                return model.save();
+            });
+        },
+
+        setHeaderInjection(code) {
+            let model = this.get('model');
+            let currentCode = model.get('codeinjectionHead');
+
+            if (code === currentCode) {
+                return;
+            }
+
+            model.set('codeinjectionHead', code);
+
+            return model.validate({property: 'codeinjectionHead'}).then(() => {
+                return model.save();
+            });
+        },
+
+        setFooterInjection(code) {
+            let model = this.get('model');
+            let currentCode = model.get('codeinjectionFoot');
+
+            if (code === currentCode) {
+                return;
+            }
+
+            model.set('codeinjectionFoot', code);
+
+            return model.validate({property: 'codeinjectionFoot'}).then(() => {
                 return model.save();
             });
         },
