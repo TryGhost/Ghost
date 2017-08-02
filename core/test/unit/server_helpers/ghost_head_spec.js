@@ -1189,6 +1189,45 @@ describe('{{ghost_head}} helper', function () {
             }).catch(done);
         });
 
+        it('outputs post codeinjection', function (done) {
+            helpers.ghost_head.call(
+                {safeVersion: '0.3', context: ['paged', 'index']},
+                {data: {root: {context: [], post: {codeinjection_head: 'post-codeinjection'}}}}
+            ).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.not.match(/<style>body {background: red;}<\/style>/);
+                rendered.string.should.match(/post-codeinjection/);
+
+                done();
+            }).catch(done);
+        });
+
+        it('handles post codeinjection being empty', function (done) {
+            helpers.ghost_head.call(
+                {safeVersion: '0.3', context: ['paged', 'index']},
+                {data: {root: {context: [], post: {codeinjection_head: ''}}}}
+            ).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.match(/<style>body {background: red;}<\/style>/);
+                rendered.string.should.not.match(/post-codeinjection/);
+
+                done();
+            }).catch(done);
+        });
+
+        it('handles post codeinjection being null', function (done) {
+            helpers.ghost_head.call(
+                {safeVersion: '0.3', context: ['paged', 'index']},
+                {data: {root: {context: [], post: {codeinjection_head: null}}}}
+            ).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.match(/<style>body {background: red;}<\/style>/);
+                rendered.string.should.not.match(/post-codeinjection/);
+
+                done();
+            }).catch(done);
+        });
+
         it('returns meta tag without injected code for amp context', function (done) {
             var post = {
                 meta_description: 'blog description',

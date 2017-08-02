@@ -23,7 +23,9 @@ module.exports = {
         updated_by: {type: 'string', maxlength: 24, nullable: true},
         published_at: {type: 'dateTime', nullable: true},
         published_by: {type: 'string', maxlength: 24, nullable: true},
-        custom_excerpt: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 300}}}
+        custom_excerpt: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 300}}},
+        codeinjection_head: {type: 'text', maxlength: 65535, nullable: true},
+        codeinjection_foot: {type: 'text', maxlength: 65535, nullable: true}
     },
     users: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
