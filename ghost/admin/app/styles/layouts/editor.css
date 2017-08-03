@@ -409,7 +409,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid blue;
+    border: 2px solid var(--blue);
     content: '';
     z-index: 9999;
     background-color: rgba(255,255,255,0.6);
@@ -422,7 +422,7 @@
 }
 
 .gh-editor-image-upload.-error {
-    border: 2px solid red;
+    border: 2px solid var(--red);
 }
 
 .gh-editor-image-upload-content {
