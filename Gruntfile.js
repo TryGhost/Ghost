@@ -752,12 +752,13 @@ var overrides      = require('./core/server/overrides'),
 
                 grunt.config.set('copy.admin_html', {
                     files: [{
-                        src: '<%= paths.releaseBuild %>/core/server/admin/views/default-prod.html',
-                        dest: '<%= paths.releaseBuild %>/core/server/admin/views/default.html'
+                        cwd: '.',
+                        src: 'core/server/admin/views/default-prod.html',
+                        dest: 'core/server/admin/views/default.html'
                     }]
                 });
 
-                grunt.task.run(['update_submodules:pinned', 'subgrunt:init', 'clean:tmp', 'prod', 'clean:release', 'copy:release', 'copy:admin_html', 'compress:release']);
+                grunt.task.run(['update_submodules:pinned', 'subgrunt:init', 'clean:tmp', 'prod', 'clean:release', 'copy:admin_html', 'copy:release', 'compress:release']);
             }
         );
     };

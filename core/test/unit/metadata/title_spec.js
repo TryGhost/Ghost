@@ -114,6 +114,51 @@ describe('getTitle', function () {
         title.should.equal('My awesome post!');
     });
 
+    it('should return OG post title if in post context', function () {
+        var title = getTitle({
+            post: {
+                title: 'My awesome post!',
+                og_title: 'My Custom Facebook Title'
+            }
+        }, {
+            context: ['post']
+        }, {
+            property: 'og'
+        });
+
+        title.should.equal('My Custom Facebook Title');
+    });
+
+    it('should return twitter post title if in post context', function () {
+        var title = getTitle({
+            post: {
+                title: 'My awesome post!',
+                twitter_title: 'My Custom Twitter Title'
+            }
+        }, {
+            context: ['post']
+        }, {
+            property: 'twitter'
+        });
+
+        title.should.equal('My Custom Twitter Title');
+    });
+
+    it('should not return default post title if in amp context and called with twitter property', function () {
+        var title = getTitle({
+            post: {
+                title: 'My awesome post!',
+                twitter_title: ''
+            }
+        }, {
+            context: ['amp', 'post']
+        }, {
+            property: 'twitter'
+        });
+
+        title.should.equal('');
+    });
+
     it('should return post title if in amp context', function () {
         var title = getTitle({
             post: {

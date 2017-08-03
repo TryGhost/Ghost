@@ -1,5 +1,6 @@
 var _ = require('lodash'),
     hbs = require('express-hbs'),
+    config = require('../config'),
     errors = require('../errors'),
     i18n = require('../i18n'),
     templates = require('../controllers/frontend/templates'),
@@ -81,6 +82,8 @@ _private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, /*jshint un
     // This ensures that no matter what res.render will work here
     if (_.isEmpty(req.app.engines)) {
         req.app.engine('hbs', _private.createHbsEngine());
+        req.app.set('view engine', 'hbs');
+        req.app.set('views', config.get('paths').defaultViews);
     }
 
     res.render(templates.error(err.statusCode), templateData, function renderResponse(err, html) {

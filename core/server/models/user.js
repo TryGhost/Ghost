@@ -110,7 +110,8 @@ User = ghostBookshelf.Model.extend({
 
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 
-        if (self.hasChanged('email') && self.get('email')) {
+        // If the user's email is set & has changed & we are not importing
+        if (self.hasChanged('email') && self.get('email') && !options.importing) {
             tasks.gravatar = (function lookUpGravatar() {
                 return gravatar.lookup({
                     email: self.get('email')

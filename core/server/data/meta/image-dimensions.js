@@ -13,6 +13,7 @@ function getImageDimensions(metaData) {
     var fetch = {
             coverImage: getCachedImageSizeFromUrl(metaData.coverImage.url),
             authorImage: getCachedImageSizeFromUrl(metaData.authorImage.url),
+            ogImage: getCachedImageSizeFromUrl(metaData.ogImage.url),
             // CASE: check if logo has hard coded image dimension. In that case it's an `ico` file, which
             // is not supported by `image-size` and would produce an error
             logo: metaData.blog.logo && metaData.blog.logo.dimensions ? metaData.blog.logo.dimensions : getCachedImageSizeFromUrl(metaData.blog.logo.url)
@@ -24,6 +25,7 @@ function getImageDimensions(metaData) {
         imageObj = {
             coverImage: resolve.coverImage,
             authorImage: resolve.authorImage,
+            ogImage: resolve.ogImage,
             logo: resolve.logo
         };
 
