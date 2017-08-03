@@ -20,6 +20,8 @@ var Promise = require('bluebird'),
     getPublishedDate = require('./published_date'),
     getModifiedDate = require('./modified_date'),
     getOgType = require('./og_type'),
+    getOgImage = require('./og_image'),
+    getTwitterImage = require('./twitter_image'),
     getStructuredData = require('./structured_data'),
     getSchema = require('./schema'),
     getExcerpt = require('./excerpt');
@@ -41,6 +43,14 @@ function getMetaData(data, root) {
         authorImage: {
             url: getAuthorImage(data, true)
         },
+        ogImage: {
+            url: getOgImage(data, true)
+        },
+        ogTitle: getTitle(data, root, {property: 'og'}),
+        ogDescription: getDescription(data, root, {property: 'og'}),
+        twitterImage: getTwitterImage(data, true),
+        twitterTitle: getTitle(data, root, {property: 'twitter'}),
+        twitterDescription: getDescription(data, root, {property: 'twitter'}),
         authorFacebook: getAuthorFacebook(data),
         creatorTwitter: getCreatorTwitter(data),
         keywords: getKeywords(data),
