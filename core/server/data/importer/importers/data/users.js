@@ -41,7 +41,9 @@ class UsersImporter extends BaseImporter {
 
         _.each(this.dataToImport, function (model) {
             model.password = globalUtils.uid(50);
-            model.status = 'locked';
+            if (model.status !== 'inactive') {
+                model.status = 'locked';
+            }
         });
 
         // NOTE: sort out duplicated roles based on incremental id
