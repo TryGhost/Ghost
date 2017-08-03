@@ -73,6 +73,48 @@ describe('getMetaDescription', function () {
         description.should.equal('Best post ever!');
     });
 
+    it('should return OG data post meta description if on root context contains post', function () {
+        var description = getMetaDescription({
+            post: {
+                meta_description: 'Best post ever!',
+                og_description: 'My custom Facebook description!'
+            }
+        }, {
+            context: ['post']
+        }, {
+            property: 'og'
+        });
+        description.should.equal('My custom Facebook description!');
+    });
+
+    it('should not return data post meta description if on root context contains post and called with OG property', function () {
+        var description = getMetaDescription({
+            post: {
+                meta_description: 'Best post ever!',
+                og_description: ''
+            }
+        }, {
+            context: ['post']
+        }, {
+            property: 'og'
+        });
+        description.should.equal('');
+    });
+
+    it('should return Twitter data post meta description if on root context contains post', function () {
+        var description = getMetaDescription({
+            post: {
+                meta_description: 'Best post ever!',
+                twitter_description: 'My custom Twitter description!'
+            }
+        }, {
+            context: ['post']
+        }, {
+            property: 'twitter'
+        });
+        description.should.equal('My custom Twitter description!');
+    });
+
     it('should return data post meta description if on root context contains post for an AMP post', function () {
         var description = getMetaDescription({
             post: {
