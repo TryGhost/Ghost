@@ -25,7 +25,7 @@ frontendRoutes = function frontendRoutes() {
     });
 
     // Post Live Preview
-    router.get(utils.url.urlJoin('/', routeKeywords.preview, ':uuid'), frontend.preview);
+    router.get(utils.url.urlJoin('/', routeKeywords.preview, ':uuid', ':options?'), frontend.preview);
 
     // Channels
     router.use(channels.router());
