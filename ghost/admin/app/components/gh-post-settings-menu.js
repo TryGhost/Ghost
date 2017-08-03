@@ -1,18 +1,14 @@
 import Component from 'ember-component';
-import Ember from 'ember';
 import SettingsMenuMixin from 'ghost-admin/mixins/settings-menu-component';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
-import computed, {alias} from 'ember-computed';
+import computed, {alias, or} from 'ember-computed';
 import formatMarkdown from 'ghost-admin/utils/format-markdown';
 import injectService from 'ember-service/inject';
 import moment from 'moment';
 import run from 'ember-runloop';
 import {guidFor} from 'ember-metal/utils';
-import {htmlSafe} from 'ember-string';
 import {invokeAction} from 'ember-invoke-action';
 import {task, timeout} from 'ember-concurrency';
-
-const {Handlebars} = Ember;
 
 const PSM_ANIMATION_LENGTH = 400;
 
@@ -35,7 +31,19 @@ export default Component.extend(SettingsMenuMixin, {
     codeinjectionHeadScratch: alias('model.codeinjectionHeadScratch'),
     metaDescriptionScratch: alias('model.metaDescriptionScratch'),
     metaTitleScratch: alias('model.metaTitleScratch'),
+    ogDescriptionScratch: alias('model.ogDescriptionScratch'),
+    ogTitleScratch: alias('model.ogTitleScratch'),
+    twitterDescriptionScratch: alias('model.twitterDescriptionScratch'),
+    twitterTitleScratch: alias('model.twitterTitleScratch'),
     slugValue: boundOneWay('model.slug'),
+
+    seoTitle: or('metaTitleScratch', 'model.titleScratch'),
+    twitterImage: or('model.twitterImage', 'model.featureImage'),
+    twitterTitle: or('twitterTitleScratch', 'seoTitle'),
+    twitterDescription: or('twitterDescriptionScratch', 'customExcerptScratch', 'seoDescription'),
+    facebookImage: or('model.ogImage', 'model.featureImage'),
+    facebookTitle: or('ogTitleScratch', 'seoTitle'),
+    facebookDescription: or('ogDescriptionScratch', 'customExcerptScratch', 'seoDescription'),
 
     _showSettingsMenu: false,
     _showThrobbers: false,
@@ -84,27 +92,13 @@ export default Component.extend(SettingsMenuMixin, {
         this.set('_showThrobbers', true);
     }).restartable(),
 
-    seoTitle: computed('model.titleScratch', 'metaTitleScratch', function () {
-        let metaTitle = this.get('metaTitleScratch') || '';
-
-        metaTitle = metaTitle.length > 0 ? metaTitle : this.get('model.titleScratch');
-
-        if (metaTitle.length > 70) {
-            metaTitle = metaTitle.substring(0, 70).trim();
-            metaTitle = Handlebars.Utils.escapeExpression(metaTitle);
-            metaTitle = htmlSafe(`${metaTitle}&hellip;`);
-        }
-
-        return metaTitle;
-    }),
-
     seoDescription: computed('model.scratch', 'metaDescriptionScratch', function () {
         let metaDescription = this.get('metaDescriptionScratch') || '';
         let mobiledoc = this.get('model.scratch');
         let markdown = mobiledoc.cards && mobiledoc.cards[0][1].markdown;
         let placeholder;
 
-        if (metaDescription.length > 0) {
+        if (metaDescription) {
             placeholder = metaDescription;
         } else {
             let div = document.createElement('div');
@@ -114,13 +108,6 @@ export default Component.extend(SettingsMenuMixin, {
             placeholder = div.textContent;
             // Replace new lines and trim
             placeholder = placeholder.replace(/\n+/g, ' ').trim();
-        }
-
-        if (placeholder.length > 156) {
-            // Limit to 156 characters
-            placeholder = placeholder.substring(0, 156).trim();
-            placeholder = Handlebars.Utils.escapeExpression(placeholder);
-            placeholder = htmlSafe(`${placeholder}&hellip;`);
         }
 
         return placeholder;
@@ -134,12 +121,6 @@ export default Component.extend(SettingsMenuMixin, {
         // only append a slash to the URL if the slug exists
         if (seoSlug) {
             seoURL += '/';
-        }
-
-        if (seoURL.length > 70) {
-            seoURL = seoURL.substring(0, 70).trim();
-            seoURL = Handlebars.Utils.escapeExpression(seoURL);
-            seoURL = htmlSafe(`${seoURL}&hellip;`);
         }
 
         return seoURL;
@@ -344,6 +325,98 @@ export default Component.extend(SettingsMenuMixin, {
             });
         },
 
+        setOgTitle(ogTitle) {
+            // Grab the model and current stored facebook title
+            let model = this.get('model');
+            let currentTitle = model.get('ogTitle');
+
+            // If the title entered matches the stored facebook title, do nothing
+            if (currentTitle === ogTitle) {
+                return;
+            }
+
+            // If the title entered is different, set it as the new facebook title
+            model.set('ogTitle', ogTitle);
+
+            // Make sure the facebook title is valid and if so, save it into the model
+            return model.validate({property: 'ogTitle'}).then(() => {
+                if (model.get('isNew')) {
+                    return;
+                }
+
+                return model.save();
+            });
+        },
+
+        setOgDescription(ogDescription) {
+            // Grab the model and current stored facebook description
+            let model = this.get('model');
+            let currentDescription = model.get('ogDescription');
+
+            // If the title entered matches the stored facebook description, do nothing
+            if (currentDescription === ogDescription) {
+                return;
+            }
+
+            // If the description entered is different, set it as the new facebook description
+            model.set('ogDescription', ogDescription);
+
+            // Make sure the facebook description is valid and if so, save it into the model
+            return model.validate({property: 'ogDescription'}).then(() => {
+                if (model.get('isNew')) {
+                    return;
+                }
+
+                return model.save();
+            });
+        },
+
+        setTwitterTitle(twitterTitle) {
+            // Grab the model and current stored twitter title
+            let model = this.get('model');
+            let currentTitle = model.get('twitterTitle');
+
+            // If the title entered matches the stored twitter title, do nothing
+            if (currentTitle === twitterTitle) {
+                return;
+            }
+
+            // If the title entered is different, set it as the new twitter title
+            model.set('twitterTitle', twitterTitle);
+
+            // Make sure the twitter title is valid and if so, save it into the model
+            return model.validate({property: 'twitterTitle'}).then(() => {
+                if (model.get('isNew')) {
+                    return;
+                }
+
+                return model.save();
+            });
+        },
+
+        setTwitterDescription(twitterDescription) {
+            // Grab the model and current stored twitter description
+            let model = this.get('model');
+            let currentDescription = model.get('twitterDescription');
+
+            // If the description entered matches the stored twitter description, do nothing
+            if (currentDescription === twitterDescription) {
+                return;
+            }
+
+            // If the description entered is different, set it as the new twitter description
+            model.set('twitterDescription', twitterDescription);
+
+            // Make sure the twitter description is valid and if so, save it into the model
+            return model.validate({property: 'twitterDescription'}).then(() => {
+                if (model.get('isNew')) {
+                    return;
+                }
+
+                return model.save();
+            });
+        },
+
         setCoverImage(image) {
             this.set('model.featureImage', image);
 
@@ -359,6 +432,58 @@ export default Component.extend(SettingsMenuMixin, {
 
         clearCoverImage() {
             this.set('model.featureImage', '');
+
+            if (this.get('model.isNew')) {
+                return;
+            }
+
+            this.get('model').save().catch((error) => {
+                this.showError(error);
+                this.get('model').rollbackAttributes();
+            });
+        },
+
+        setOgImage(image) {
+            this.set('model.ogImage', image);
+
+            if (this.get('model.isNew')) {
+                return;
+            }
+
+            this.get('model').save().catch((error) => {
+                this.showError(error);
+                this.get('model').rollbackAttributes();
+            });
+        },
+
+        clearOgImage() {
+            this.set('model.ogImage', '');
+
+            if (this.get('model.isNew')) {
+                return;
+            }
+
+            this.get('model').save().catch((error) => {
+                this.showError(error);
+                this.get('model').rollbackAttributes();
+            });
+        },
+
+        setTwitterImage(image) {
+            this.set('model.twitterImage', image);
+
+            if (this.get('model.isNew')) {
+                return;
+            }
+
+            this.get('model').save().catch((error) => {
+                this.showError(error);
+                this.get('model').rollbackAttributes();
+            });
+        },
+
+        clearTwitterImage() {
+            this.set('model.twitterImage', '');
 
             if (this.get('model.isNew')) {
                 return;

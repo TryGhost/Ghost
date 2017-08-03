@@ -23,8 +23,8 @@ fieldset {
 
 legend {
     display: block;
-    margin: 2em 0;
     width: 100%;
+    margin: 2em 0;
     border-bottom: color(var(--lightgrey) l(-5%) s(-10%)) 1px solid;
     color: var(--midgrey);
     font-size: 1.2em;
@@ -56,9 +56,9 @@ input {
 
 .form-group {
     position: relative;
-    margin-bottom: 1.6em;
-    max-width: 700px;
     width: 100%;
+    max-width: 700px;
+    margin-bottom: 1.6em;
     user-select: text;
 }
 
@@ -97,8 +97,8 @@ input {
     top: 50%;
     left: 10px;
     z-index: 2;
-    height: 14px;
     width: 14px;
+    height: 14px;
     fill: color(var(--midgrey) l(+15%));
     transform: translateY(-7px);
 }
@@ -122,16 +122,16 @@ input {
 .gh-select,
 select {
     display: block;
-    padding: 10px 12px;
     width: 100%;
     height: 40px;
+    padding: 10px 12px;
     border: color(var(--lightgrey) l(-5%) s(-10%)) 1px solid;
-    border-radius: var(--border-radius);
     color: color(var(--midgrey) l(-18%));
     font-size: 1.6rem;
     line-height: 1em;
     font-weight: 300;
     user-select: text;
+    border-radius: var(--border-radius);
     transition: border-color 0.15s linear;
 
     -webkit-appearance: none;
@@ -158,11 +158,11 @@ select:focus {
 }
 
 textarea {
+    width: 100%;
+    height: auto;
     min-width: 250px;
     min-height: 10rem;
     max-width: 500px;
-    width: 100%;
-    height: auto;
     line-height: 1.5;
     user-select: text;
     resize: vertical;
@@ -192,7 +192,7 @@ textarea {
     top: 0;
     right: 0;
     bottom: 0;
-    display:none;
+    display: none;
 }
 
 .for-radio .input-toggle-component,
@@ -201,9 +201,9 @@ textarea {
     top: 1px;
     display: inline-block;
     float: left;
-    margin-right: 7px;
     width: 18px;
     height: 18px;
+    margin-right: 7px;
     border: 1px solid color(var(--lightgrey) l(-5%) s(-10%));
     background: #fff;
 }
@@ -282,23 +282,24 @@ textarea {
 .gh-select {
     position: relative;
     display: block;
-    padding: 0;
-    max-width: 100%;
     width: 100%;
+    max-width: 100%;
+    padding: 0;
     border-width: 0;
 }
 
 .gh-select svg {
-    height: 8px;
-    width: 14px;
     position: absolute;
     top: 50%;
     right: 1.2rem;
     left: inherit;
+    width: 14px;
+    height: 8px;
     margin-top: -0.2em;
-    pointer-events: none;
-    speak: none;
     transform: inherit;
+    pointer-events: none;
+
+    speak: none;
 }
 
 .gh-select svg path {
@@ -308,10 +309,10 @@ textarea {
 .gh-select select {
     padding: 10px 12px;
     outline: none;
-    background: #fff;
+    line-height: normal;
     text-indent: 0.01px;
     text-overflow: "";
-    line-height: normal;
+    background: #fff;
 
     appearance: none;
     -webkit-appearance: none;
@@ -332,9 +333,9 @@ textarea {
 /* ---------------------------------------------------------- */
 
 .gh-input-file {
-    font-size: 1.2rem;
     width: auto;
     height: auto;
+    font-size: 1.2rem;
 }
 
 .gh-input-file + .gh-btn {

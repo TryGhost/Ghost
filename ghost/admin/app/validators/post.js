@@ -3,7 +3,20 @@ import moment from 'moment';
 import {isEmpty, isPresent} from 'ember-utils';
 
 export default BaseValidator.create({
-    properties: ['title', 'customExcerpt', 'codeinjectionHead', 'codeinjectionFoot', 'metaTitle', 'metaDescription', 'publishedAtBlogTime', 'publishedAtBlogDate'],
+    properties: [
+        'title',
+        'customExcerpt',
+        'codeinjectionHead',
+        'codeinjectionFoot',
+        'metaTitle',
+        'metaDescription',
+        'ogtitle',
+        'ogDescription',
+        'twitterTitle',
+        'twitterDescription',
+        'publishedAtBlogTime',
+        'publishedAtBlogDate'
+    ],
 
     title(model) {
         let title = model.get('title');
@@ -64,6 +77,41 @@ export default BaseValidator.create({
         }
     },
 
+    ogTitle(model) {
+        let ogTitle = model.get('ogTitle');
+
+        if (!validator.isLength(ogTitle, 0, 300)) {
+            model.get('errors').add('ogTitle', 'Facebook Title cannot be longer than 300 characters.');
+            this.invalidate();
+        }
+    },
+
+    ogDescription(model) {
+        let ogDescription = model.get('ogDescription');
+
+        if (!validator.isLength(ogDescription, 0, 500)) {
+            model.get('errors').add('ogDescription', 'Facebook Description cannot be longer than 500 characters.');
+            this.invalidate();
+        }
+    },
+
+    twitterTitle(model) {
+        let twitterTitle = model.get('twitterTitle');
+
+        if (!validator.isLength(twitterTitle, 0, 300)) {
+            model.get('errors').add('twitterTitle', 'Twitter Title cannot be longer than 300 characters.');
+            this.invalidate();
+        }
+    },
+
+    twitterDescription(model) {
+        let twitterDescription = model.get('twitterDescription');
+
+        if (!validator.isLength(twitterDescription, 0, 500)) {
+            model.get('errors').add('twitterDescription', 'Twitter Description cannot be longer than 500 characters.');
+            this.invalidate();
+        }
+    },
     // for posts which haven't been published before and where the blog date/time
     // is blank we should ignore the validation
     _shouldValidatePublishedAtBlog(model) {

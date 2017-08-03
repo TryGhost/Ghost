@@ -163,6 +163,10 @@ export default Mixin.create({
         this.set('model.headerInjection', this.get('model.headerExcerptScratch'));
         this.set('model.metaTitle', this.get('model.metaTitleScratch'));
         this.set('model.metaDescription', this.get('model.metaDescriptionScratch'));
+        this.set('model.ogTitle', this.get('model.ogTitleScratch'));
+        this.set('model.ogDescription', this.get('model.ogDescriptionScratch'));
+        this.set('model.twitterTitle', this.get('model.twitterTitleScratch'));
+        this.set('model.twitterDescription', this.get('model.twitterDescriptionScratch'));
 
         if (!this.get('model.slug')) {
             this.get('saveTitle').cancelAll();

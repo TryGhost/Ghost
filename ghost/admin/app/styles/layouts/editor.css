@@ -25,16 +25,16 @@
 .label-tag {
     margin-right: 0.3em;
     padding: 0.2em 0.6em 0.3em;
+    color: var(--lightgrey);
+    font-weight: 300;
+    text-align: center;
     background-color: var(--darkgrey);
     border-radius: 0.25em;
-    color: var(--lightgrey);
-    text-align: center;
-    font-weight: 300;
 }
 
 .label-tag.highlight {
-    background: var(--midgrey);
     color: #fff;
+    background: var(--midgrey);
 }
 
 .tag-input {
@@ -57,12 +57,12 @@
 
 .post-settings {
     position: relative;
+    z-index: 1000;
     display: inline-block;
     padding: 15px 0 15px 15px;
     color: var(--midgrey);
-    transition: all 0.15s ease-out 0s;
     line-height: 0;
-    z-index: 1000;
+    transition: all 0.15s ease-out 0s;
 }
 
 .post-settings:hover,
@@ -97,8 +97,8 @@
 
 .post-view-link svg {
     display: inline;
-    height: 10px;
     width: 10px;
+    height: 10px;
     fill: var(--blue);
 }
 
@@ -106,17 +106,19 @@
 /* Post settings meta
 /* ---------------------------------------------------------- */
 
-/* Google Imitation */
+/* Google SERP Preview */
 .seo-preview {
     font-family: Arial, sans-serif;
+    background: #fff;
+    padding: 10px 12px;
 }
 
 .seo-preview-title {
     color: #1e0fbe;
-    text-overflow: ellipses;
-    word-wrap: break-word;
     font-size: 1.8rem;
     line-height: 2.16rem;
+    text-overflow: ellipses;
+    word-wrap: break-word;
 
     -webkit-text-overflow: ellipsis;
 }
@@ -124,17 +126,140 @@
 .seo-preview-link {
     margin: 1px 0 2px 0;
     color: #006621;
-    word-wrap: break-word;
     font-size: 1.3rem;
     line-height: 1.6rem;
+    word-wrap: break-word;
 }
 
 .seo-preview-description {
     color: #545454;
-    word-wrap: break-word;
     font-size: 1.3rem;
     line-height: 1.4;
+    word-wrap: break-word;
 }
+
+/* Facebook Card Preview */
+.gh-og-preview {
+    background: #fff;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1) inset,
+    0 -1px 0 0 rgba(0, 0, 0, 0.06) inset,
+    0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.gh-og-preview-image {
+    width: 100%;
+    height: 160px;
+    background-size: cover;
+    background-position: center center;
+}
+
+.gh-og-preview-content {
+    padding: 10px 12px;
+}
+
+.gh-og-preview-title {
+    max-height: 110px;
+    overflow: hidden;
+    margin-bottom: 5px;
+    font-family: Georgia, serif;
+    font-size: 18px;
+    line-height: 22px;
+    font-weight: 500;
+    word-wrap: break-word;
+}
+
+.gh-og-preview-description {
+    max-height: 80px;
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: -0.1px;
+}
+
+.gh-og-preview-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.gh-og-preview-footer-left {
+    overflow: hidden;
+    padding-top: 18px;
+    color: #90949c;
+    font-size: 11px;
+    line-height: 11px;
+    letter-spacing: -0.1px;
+    text-transform: uppercase;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gh-og-preview-footer-left-divider {
+    padding: 0 5px;
+}
+
+.gh-og-preview-footer-author {
+    color: #3b5998;
+}
+
+
+/* Twitter Card Preview */
+.gh-twitter-preview {
+    overflow: hidden;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #e1e8ed;
+    color: #292f33;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 1.4rem;
+    line-height: 1.3em;
+    background: #fff;
+    border-radius: 0.42857em;
+
+    -webkit-font-smoothing: antialiased;
+}
+
+.gh-twitter-preview-image {
+    width: 100%;
+    height: 160px;
+    background-size: cover;
+    background-position: center center;
+}
+
+.gh-twitter-preview-content {
+    padding: 12px 14px;
+}
+
+.gh-twitter-preview-title {
+    max-height: 1.3em;
+    overflow: hidden;
+    margin: 0 0 0.15em;
+    font-weight: bold;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gh-twitter-preview-description {
+    overflow: hidden;
+    margin-top: 0.32333em;
+}
+
+.gh-twitter-preview-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.35em;
+}
+
+.gh-twitter-preview-footer-left {
+    max-height: 1.3em;
+    overflow: hidden;
+    color: #8899a6;
+    text-transform: lowercase;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 
 
 
@@ -145,9 +270,9 @@
     position: fixed;
     top: 0;
     left: 0;
+    z-index: 1000;
     width: 100%;
     height: 100%;
-    z-index: 1000;
     background-color: white;
 }
 
@@ -159,20 +284,22 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 30px;
     height: 80px;
+    padding: 0 30px;
 }
 @media (max-width: 750px) {
-    .gh-editor-header { padding: 0 4vw; }
+    .gh-editor-header {
+        padding: 0 4vw;
+    }
 }
 
 .gh-editor-header-small {
+    z-index: 100;
     height: 43px;
     padding: 0;
     padding-left: 15px;
-    background-color: #fff;
     border-bottom: var(--lightgrey) 1px solid;
-    z-index: 100;
+    background-color: #fff;
 }
 
 .gh-editor-header-small .gh-publishmenu {
@@ -185,23 +312,23 @@
 
 .gh-editor-status {
     color: var(--midgrey);
-    font-weight: 300;
     font-size: 1.3rem;
+    font-weight: 300;
 }
 
 .gh-editor-container {
     position: absolute;
-    overflow-y: auto;
-    padding: 10vw 4vw;
+    z-index: 0;
     width: 100%;
     height: 100%;
-    z-index: 0;
+    overflow-y: auto;
+    padding: 10vw 4vw;
 }
 
 .gh-editor-inner {
-    margin: 0 auto;
-    max-width: 760px;
     height: 100%;
+    max-width: 760px;
+    margin: 0 auto;
 }
 
 .gh-editor-title {
@@ -210,19 +337,18 @@
     min-height: auto;
     margin-bottom: 2vw;
     border: none;
-    letter-spacing: 0.8px;
-    font-weight: bold;
+    color: var(--darkgrey);
     font-size: 3.2rem;
     line-height: 1.15em;
-    color: var(--darkgrey);
-
+    font-weight: bold;
+    letter-spacing: 0.8px;
 }
 
 .gh-editor-wordcount {
     position: fixed;
-    bottom: 0px;
-    padding:10px;
- }
+    bottom: 0;
+    padding: 10px;
+}
 
 @media (max-width: 1200px) {
     .gh-editor-wordcount {
@@ -243,10 +369,10 @@
 
 .gh-markdown-editor {
     position: relative;
+    z-index: 0;
     width: 100%;
     height: 100vh;
     overflow-y: auto;
-    z-index: 0;
 }
 
 .gh-markdown-editor-pane,
@@ -282,23 +408,25 @@
 }
 
 .gh-editor-footer {
-    height: 46px;
-    min-height: 46px;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    height: 46px;
+    min-height: 46px;
     border-top: var(--lightgrey) 1px solid;
 }
 
 @media (max-width: 800px) {
-    .gh-editor-footer { display: none; }
+    .gh-editor-footer {
+        display: none;
+    }
 }
 
 .gh-editor-footer .editor-toolbar {
     border: none;
-    border-radius: 0;
     background: transparent;
+    border-radius: 0;
     opacity: 1;
 }
 
@@ -312,14 +440,14 @@
 }
 
 .gh-editor .CodeMirror {
-    padding: 0;
     overflow: visible;
+    padding: 0;
     background: transparent;
 }
 
 .gh-editor .CodeMirror-cursor {
-    border-color: var(--blue);
     border-width: 3px;
+    border-color: var(--blue);
 }
 
 /* fix visible scrollbars when OSX is set to show them */
@@ -339,17 +467,17 @@
 .gh-editor .gh-editor-title,
 .gh-editor .CodeMirror-wrap {
     max-width: 760px;
-    margin-left: auto;
     margin-right: auto;
+    margin-left: auto;
     border: none;
     background: transparent;
 }
 
 .gh-editor .CodeMirror pre {
     padding: 0;
+    color: color(var(--darkgrey) l(+5%));
     font-family: “Consolas”, monaco, monospace;
     font-size: 1.6rem;
-    color: color(var(--darkgrey) l(+5%));
 }
 
 @media (max-width: 960px) {
@@ -375,9 +503,9 @@
 
 .gh-editor .editor-preview,
 .gh-markdown-editor-preview {
+    color: color(var(--darkgrey) l(+5%));
     font-family: Georgia, Times, Serif;
     font-size: 1.9rem;
-    color: color(var(--darkgrey) l(+5%));
 }
 
 .gh-editor .editor-preview h1,
@@ -392,7 +520,7 @@
 .gh-markdown-editor-preview h5,
 .gh-editor .editor-preview h6,
 .gh-markdown-editor-preview h6 {
-    font-family:  -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 }
 
 .gh-markdown-editor-preview-title {
@@ -401,17 +529,17 @@
 
 .gh-editor-drop-target,
 .gh-editor-image-upload {
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 100%;
     height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     border: 2px solid var(--blue);
-    content: '';
-    z-index: 9999;
     background-color: rgba(255,255,255,0.6);
 }
 
@@ -427,13 +555,13 @@
 
 .gh-editor-image-upload-content {
     display: flex;
-    align-items: center;
-    justify-content: center;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    max-width: 80%;
     padding: 1em;
     background-color: #fff;
     border-radius: 1em;
-    max-width: 80%;
 }
 
 .gh-editor-image-upload .gh-progress-container-progress {
@@ -451,8 +579,8 @@
 
 .editor-toolbar a.disabled,
 .gh-editor-preview .editor-toolbar a:not(.no-disable) {
-    pointer-events: none;
     color: var(--lightgrey) !important;
+    pointer-events: none;
 }
 
 .editor-toolbar a.disabled:hover {
@@ -464,20 +592,20 @@
     vertical-align: bottom;
 }
 .editor-toolbar .fa-check:before {
-    font-size: 14px;
     position: absolute;
-    line-height: 14px;
     right: 3px;
     bottom: 4px;
+    font-size: 14px;
+    line-height: 14px;
 }
 
 .editor-toolbar .fa-check:after {
-    content: 'abc';
-    font-family: var(--font-family);
+    content: "abc";
     position: absolute;
-    left: 4px;
-    font-size: 9px;
     top: 6px;
+    left: 4px;
+    font-family: var(--font-family);
+    font-size: 9px;
     line-height: 9px;
 }
 
@@ -496,8 +624,8 @@
 }
 
 .editor-toolbar i.separator {
-    border-left: color(var(--lightgrey) l(-3%)) 1px solid;
     border-right: none;
+    border-left: color(var(--lightgrey) l(-3%)) 1px solid;
 }
 
 .editor-toolbar a.active,
