@@ -11,9 +11,9 @@
     right: 0;
     bottom: 0;
     z-index: 500;
-    overflow: hidden;
-    max-width: 100%;
     width: 350px;
+    max-width: 100%;
+    overflow: hidden;
     background: color(var(--lightgrey) l(+4%));
     transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
     transform: translate3d(350px, 0px, 0px);
@@ -30,9 +30,9 @@
     bottom: 0;
     left: 0;
     overflow: auto;
-    -webkit-overflow-scrolling: touch;
     opacity: 1;
     transform: translate3d(0, 0px, 0px);
+    -webkit-overflow-scrolling: touch;
 }
 
 @media (min-width: 901px) {
@@ -80,8 +80,8 @@
 }
 
 .settings-menu-header .close svg {
-    height: 12px;
     width: 12px;
+    height: 12px;
     fill: var(--darkgrey);
 }
 
@@ -96,8 +96,8 @@
 }
 
 .settings-menu-header.subview .back svg {
-    height: 14px;
     width: 14px;
+    height: 14px;
 }
 
 .settings-menu-header.subview .back svg path {
@@ -128,14 +128,19 @@
 }
 
 .settings-menu-content .gh-image-uploader.-with-image {
-    margin-top: 0;
+    width: auto;
     min-height: 50px;
     max-height: 250px;
-    width: auto;
+    margin-top: 0;
 }
 
 .settings-menu-content textarea {
     height: 108px;
+}
+
+.settings-menu-content textarea.gh-input {
+    font-size: 1.5rem;
+    line-height: 1.3em;
 }
 
 .settings-menu-content .nav-list {
@@ -147,9 +152,9 @@
 }
 
 .ghost-url-preview {
+    width: 98%;
     /* Preview never wider than input */
     overflow: hidden;
-    width: 98%;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -171,16 +176,16 @@
 }
 
 .settings-menu-delete-button svg path {
-    fill: var(--red);
     stroke: var(--red);
+    fill: var(--red);
     stroke-width: 1px;
 }
 
 .settings-menu-delete-button:hover,
 .settings-menu-delete-button:hover svg path {
-    color: color(var(--red) lightness(-10%));
-    fill: color(var(--red) lightness(-10%));
     stroke: color(var(--red) lightness(-10%));
+    fill: color(var(--red) lightness(-10%));
+    color: color(var(--red) lightness(-10%));
 }
 
 .settings-menu-content .selectize-input {
@@ -196,6 +201,10 @@
     height: 170px;
     min-height: 170px;
     padding: 0;
+}
+
+.settings-menu-content .CodeMirror:hover {
+    cursor: text;
 }
 
 .settings-menu-content .CodeMirror-scroll {

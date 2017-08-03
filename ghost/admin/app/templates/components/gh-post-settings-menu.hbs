@@ -117,14 +117,28 @@
                     <li class="nav-list-item" {{action "showSubview" "meta-data"}} data-test-button="meta-data">
                         <button type="button">
                             <b>Meta Data</b>
-                            <span>Extra content for SEO and social media.</span>
+                            <span>Extra content for search engines</span>
+                        </button>
+                        {{inline-svg "arrow-right"}}
+                    </li>
+                    <li class="nav-list-item" {{action "showSubview" "twitter-data"}} data-test-button="twitter-data">
+                        <button type="button">
+                            <b>Twitter Card</b>
+                            <span>Customise structured data for Twitter</span>
+                        </button>
+                        {{inline-svg "arrow-right"}}
+                    </li>
+                    <li class="nav-list-item" {{action "showSubview" "facebook-data"}} data-test-button="facebook-data">
+                        <button type="button">
+                            <b>Facebook Card</b>
+                            <span>Customise Open Graph data</span>
                         </button>
                         {{inline-svg "arrow-right"}}
                     </li>
                     <li class="nav-list-item" {{action "showSubview" "codeinjection"}} data-test-button="codeinjection">
                         <button type="button">
                             <b>Code Injection</b>
-                            <span>Add styles/scripts to the header & footer.</span>
+                            <span>Add styles/scripts to the header &amp; footer</span>
                         </button>
                         {{inline-svg "arrow-right"}}
                     </li>
@@ -172,9 +186,10 @@
                                         name="post-setting-meta-title"
                                         focusOut=(action "setMetaTitle" metaTitleScratch)
                                         stopEnterKeyDownPropagation="true"
-                                        update=(action (mut metaTitleScratch))}}
+                                        update=(action (mut metaTitleScratch))
+                                        data-test-field="meta-title"}}
                                     <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters metaTitleScratch 70}}</p>
-                                    {{gh-error-message errors=model.errors property="metaTitle"}}
+                                    {{gh-error-message errors=model.errors property="meta-title"}}
                                 {{/gh-form-group}}
 
                                 {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="metaDescription"}}
@@ -185,19 +200,155 @@
                                         name="post-setting-meta-description"
                                         focusOut=(action "setMetaDescription" metaDescriptionScratch)
                                         stopEnterKeyDownPropagation="true"
-                                        update=(action (mut metaDescriptionScratch))}}
+                                        update=(action (mut metaDescriptionScratch))
+                                        data-test-field="meta-description"}}
                                     <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters metaDescriptionScratch 156}}</p>
-                                    {{gh-error-message errors=model.errors property="metaDescription"}}
+                                    {{gh-error-message errors=model.errors property="meta-description"}}
                                 {{/gh-form-group}}
 
                                 <div class="form-group">
                                     <label>Search Engine Result Preview</label>
                                     <div class="seo-preview">
-                                        <div class="seo-preview-title">{{seoTitle}}</div>
-                                        <div class="seo-preview-link">{{seoURL}}</div>
-                                        <div class="seo-preview-description">{{seoDescription}}</div>
+                                        <div class="seo-preview-title">{{truncate seoTitle 70}}</div>
+                                        <div class="seo-preview-link">{{truncate seoURL 70}}</div>
+                                        <div class="seo-preview-description">{{truncate seoDescription 300}}</div>
                                     </div>
                                 </div>
+                            </form>
+                        </div>
+                    {{/if}}
+
+                    {{#if (eq subview "twitter-data")}}
+                        <div class="settings-menu-header subview">
+                            <button {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{inline-svg "arrow-left"}}<span class="hidden">Back</span></button>
+                            <h4>Twitter Card</h4>
+                            <div style="width:23px;"></div>
+                        </div>
+
+                        <div class="settings-menu-content">
+
+                            <form {{action "discardEnter" on="submit"}}>
+                                {{gh-image-uploader-with-preview
+                                    image=model.twitterImage
+                                    text="Add Twitter image"
+                                    update=(action "setTwitterImage")
+                                    remove=(action "clearTwitterImage")
+                                }}
+                                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="twitterTitle"}}
+                                    <label for="twitter-title">Twitter Title</label>
+                                    {{gh-input twitterTitleScratch
+                                        class="post-setting-twitter-title"
+                                        id="twitter-title"
+                                        name="post-setting-twitter-title"
+                                        placeholder=(truncate twitterTitle 40)
+                                        focusOut=(action "setTwitterTitle" twitterTitleScratch)
+                                        stopEnterKeyDownPropagation="true"
+                                        update=(action (mut twitterTitleScratch))
+                                        data-test-field="twitter-title"}}
+                                    {{gh-error-message errors=model.errors property="twitterTitle" data-test-error="twitter-title"}}
+                                {{/gh-form-group}}
+
+                                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="twitterDescription"}}
+                                    <label for="twitter-description">Twitter Description</label>
+                                    {{gh-textarea twitterDescriptionScratch
+                                        class="post-setting-twitter-description"
+                                        id="twitter-description"
+                                        name="post-setting-twitter-description"
+                                        placeholder=(truncate twitterDescription 155)
+                                        focusOut=(action "setTwitterDescription" twitterDescriptionScratch)
+                                        stopEnterKeyDownPropagation="true"
+                                        update=(action (mut twitterDescriptionScratch))
+                                        data-test-field="twitter-description"}}
+                                    {{gh-error-message errors=model.errors property="twitterDescription" data-test-error="twitter-description"}}
+                                {{/gh-form-group}}
+
+                                <div class="form-group">
+                                    <label>Preview</label>
+                                    <div class="gh-twitter-preview">
+                                        {{#if twitterImage}}
+                                        <div class="gh-twitter-preview-image" style="background-image: url({{twitterImage}});"></div>
+                                        {{/if}}
+                                        <div class="gh-twitter-preview-content">
+                                            <div class="gh-twitter-preview-title">{{twitterTitle}}</div>
+                                            <div class="gh-twitter-preview-description">{{truncate twitterDescription 155}}</div>
+                                            <div class="gh-twitter-preview-footer">
+                                                <div class="gh-twitter-preview-footer-left">
+                                                    {{config.blogDomain}}
+                                                </div>
+                                                <div class="gh-twitter-preview-footer-right">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </form>
+                        </div>
+                    {{/if}}
+
+                    {{#if (eq subview "facebook-data")}}
+                        <div class="settings-menu-header subview">
+                            <button {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{inline-svg "arrow-left"}}<span class="hidden">Back</span></button>
+                            <h4>Facebook Card</h4>
+                            <div style="width:23px;"></div>
+                        </div>
+
+                        <div class="settings-menu-content">
+                            <form {{action "discardEnter" on="submit"}}>
+                                {{gh-image-uploader-with-preview
+                                    image=model.ogImage
+                                    text="Add Facebook image"
+                                    update=(action "setOgImage")
+                                    remove=(action "clearOgImage")
+                                }}
+                                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="ogTitle"}}
+                                    <label for="og-title">Facebook Title</label>
+                                    {{gh-input ogTitleScratch
+                                        class="post-setting-og-title"
+                                        id="og-title"
+                                        name="post-setting-og-title"
+                                        placeholder=(truncate facebookTitle 40)
+                                        focusOut=(action "setOgTitle" ogTitleScratch)
+                                        stopEnterKeyDownPropagation="true"
+                                        update=(action (mut ogTitleScratch))
+                                        data-test-field="og-title"}}
+                                    {{gh-error-message errors=model.errors property="ogTitle" data-test-error="og-title"}}
+                                {{/gh-form-group}}
+
+                                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="ogDescription"}}
+                                    <label for="og-description">Facebook Description</label>
+                                    {{gh-textarea ogDescriptionScratch
+                                        class="post-setting-og-description"
+                                        id="og-description"
+                                        name="post-setting-og-description"
+                                        placeholder=(truncate facebookDescription 160)
+                                        focusOut=(action "setOgDescription" ogDescriptionScratch)
+                                        stopEnterKeyDownPropagation="true"
+                                        update=(action (mut ogDescriptionScratch))
+                                        data-test-field="og-description"}}
+                                    {{gh-error-message errors=model.errors property="ogDescription" data-test-error="og-description"}}
+                                {{/gh-form-group}}
+
+                                <div class="form-group">
+                                    <label>Preview</label>
+                                    <div class="gh-og-preview">
+                                        {{#if facebookImage}}
+                                        <div class="gh-og-preview-image" style="background-image: url({{facebookImage}});"></div>
+                                        {{/if}}
+                                        <div class="gh-og-preview-content">
+                                            <div class="gh-og-preview-title">{{truncate facebookTitle 88}}</div>
+                                            <div class="gh-og-preview-description">{{truncate facebookDescription 300}}</div>
+                                            <div class="gh-og-preview-footer">
+                                                <div class="gh-og-preview-footer-left">
+                                                    {{config.blogDomain}} <span class="gh-og-preview-footer-left-divider">|</span> by <span class="gh-og-preview-footer-author">{{model.author.name}}</span>
+                                                </div>
+                                                <div class="gh-og-preview-footer-right">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                             </form>
                         </div>
                     {{/if}}

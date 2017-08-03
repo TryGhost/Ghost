@@ -641,6 +641,128 @@ describe('Acceptance: Editor', function() {
                 find(testSelector('field', 'codeinjection-head')).length,
                 'header injection not present after closing subview'
             ).to.equal(0);
+
+            // -------
+
+            // open twitter data subview
+            await click(testSelector('button', 'twitter-data'));
+
+            // twitter title has validation
+            await fillIn(testSelector('field', 'twitter-title'), Array(302).join('a'));
+            await triggerEvent(testSelector('field', 'twitter-title'), 'blur');
+
+            expect(
+                find(testSelector('error', 'twitter-title')).text().trim(),
+                'twitter title too long error'
+            ).to.match(/cannot be longer than 300/);
+
+            expect(
+                server.db.posts[0].twitter_title,
+                'saved twitter title after validation error'
+            ).to.be.blank;
+
+            // changing twitter title auto-saves
+            // twitter title has validation
+            await fillIn(testSelector('field', 'twitter-title'), 'Test Twitter Title');
+            await triggerEvent(testSelector('field', 'twitter-title'), 'blur');
+
+            expect(
+                server.db.posts[0].twitter_title,
+                'saved twitter title'
+            ).to.equal('Test Twitter Title');
+
+            // twitter description has validation
+            await fillIn(testSelector('field', 'twitter-description'), Array(505).join('a'));
+            await triggerEvent(testSelector('field', 'twitter-description'), 'blur');
+
+            expect(
+                find(testSelector('error', 'twitter-description')).text().trim(),
+                'twitter description too long error'
+            ).to.match(/cannot be longer than 500/);
+
+            expect(
+                server.db.posts[0].twitter_description,
+                'saved twitter description after validation error'
+            ).to.be.blank;
+
+            // changing twitter description auto-saves
+            // twitter description has validation
+            await fillIn(testSelector('field', 'twitter-description'), 'Test Twitter Description');
+            await triggerEvent(testSelector('field', 'twitter-description'), 'blur');
+
+            expect(
+                server.db.posts[0].twitter_description,
+                'saved twitter description'
+            ).to.equal('Test Twitter Description');
+
+            // closing subview switches back to main PSM view
+            await click(testSelector('button', 'close-psm-subview'));
+
+            expect(
+                find(testSelector('field', 'twitter-title')).length,
+                'twitter title not present after closing subview'
+            ).to.equal(0);
+
+            // -------
+
+            // open facebook data subview
+            await click(testSelector('button', 'facebook-data'));
+
+            // facebook title has validation
+            await fillIn(testSelector('field', 'og-title'), Array(302).join('a'));
+            await triggerEvent(testSelector('field', 'og-title'), 'blur');
+
+            expect(
+                find(testSelector('error', 'og-title')).text().trim(),
+                'facebook title too long error'
+            ).to.match(/cannot be longer than 300/);
+
+            expect(
+                server.db.posts[0].og_title,
+                'saved facebook title after validation error'
+            ).to.be.blank;
+
+            // changing facebook title auto-saves
+            // facebook title has validation
+            await fillIn(testSelector('field', 'og-title'), 'Test Facebook Title');
+            await triggerEvent(testSelector('field', 'og-title'), 'blur');
+
+            expect(
+                server.db.posts[0].og_title,
+                'saved facebook title'
+            ).to.equal('Test Facebook Title');
+
+            // facebook description has validation
+            await fillIn(testSelector('field', 'og-description'), Array(505).join('a'));
+            await triggerEvent(testSelector('field', 'og-description'), 'blur');
+
+            expect(
+                find(testSelector('error', 'og-description')).text().trim(),
+                'facebook description too long error'
+            ).to.match(/cannot be longer than 500/);
+
+            expect(
+                server.db.posts[0].og_description,
+                'saved facebook description after validation error'
+            ).to.be.blank;
+
+            // changing facebook description auto-saves
+            // facebook description has validation
+            await fillIn(testSelector('field', 'og-description'), 'Test Facebook Description');
+            await triggerEvent(testSelector('field', 'og-description'), 'blur');
+
+            expect(
+                server.db.posts[0].og_description,
+                'saved facebook description'
+            ).to.equal('Test Facebook Description');
+
+            // closing subview switches back to main PSM view
+            await click(testSelector('button', 'close-psm-subview'));
+
+            expect(
+                find(testSelector('field', 'og-title')).length,
+                'facebook title not present after closing subview'
+            ).to.equal(0);
         });
     });
 });

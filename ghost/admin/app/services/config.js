@@ -39,5 +39,14 @@ export default Service.extend(_ProxyMixin, {
 
     ghostOAuth: computed('ghostAuthId', function () {
         return !isBlank(this.get('ghostAuthId'));
+    }),
+
+    blogDomain: computed('blogUrl', function () {
+        let blogUrl = this.get('blogUrl');
+        let blogDomain = blogUrl
+            .replace(/^https?:\/\//, '')
+            .replace(/\/?$/, '');
+
+        return blogDomain;
     })
 });
