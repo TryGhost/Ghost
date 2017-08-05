@@ -1,6 +1,6 @@
 # How to get support for Ghost 👨‍👩‍👧‍👦
 
-If you are looking for help, support or the answer to a question, please use **[slack](https://ghost.org/slack)**.
+For **help**, **support** and **questions** please use **[slack](https://slack.ghost.org)**  🚑.
 
 Please **_do not_** raise an issue on GitHub.
 
