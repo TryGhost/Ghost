@@ -1,8 +1,19 @@
 # Welcome to the contributing overview for Ghost!
 
-**Please read our [Full Contributor Guide](https://docs.ghost.org/v1.0.0/docs/contributing)** - it covers everything you'll need to get started as a contributor 😁
+For **help**, **support** and **questions** please use **[slack](https://ghost.org/slack)**  🚑.
 
-If you need help with Ghost or have questions, please use [slack](https://ghost.org/slack) (user documentation is [here](http://help.ghost.org), developer documentation is [here](https://docs.ghost.org/v1.0.0/)). If you're [raising a bug](https://docs.ghost.org/v1.0.0/docs/contributing#bugs) please be sure to [include as much info as possible](https://docs.ghost.org/v1.0.0/docs/contributing#bug-template) so that we can fix it! If you've got some code you want to [pull request](https://docs.ghost.org/v1.0.0/docs/contributing#pull-requests) please [squash commits](https://docs.ghost.org/v1.0.0/docs/git-workflow#section-clean-up-history), use this [commit message format](https://docs.ghost.org/v1.0.0/docs/git-workflow#section-notes-on-writing-good-commit-messages) and check it passes the tests by running `grunt validate`. Thanks for helping us make Ghost better.
+---
+
+If you're [raising a bug](https://docs.ghost.org/v1.0.0/docs/contributing#bugs) 🐛 please be sure to [include as much info as possible](https://docs.ghost.org/v1.0.0/docs/contributing#bug-template) so that we can fix it!
+ 
+---
+
+If you've **got some code** ✨ you want to [pull request](https://docs.ghost.org/v1.0.0/docs/contributing#pull-requests) please use this [commit message format](https://docs.ghost.org/v1.0.0/docs/git-workflow#section-notes-on-writing-good-commit-messages) and check it passes the tests by running `grunt validate`. Thanks for helping us make Ghost better.
+ 
+---
+ 
+**Our [Full Contributor Guide](https://docs.ghost.org/v1.0.0/docs/contributing)** covers everything you'll need to get started as a contributor 😁
+
 
 *Quick Links:*
 - [user documentation](https://help.ghost.org)
@@ -15,6 +26,7 @@ If you need help with Ghost or have questions, please use [slack](https://ghost.
 - [community guidelines](https://ghost.org/conduct/)
 - [dev blog](http://dev.ghost.org)
 
+---
 
 ## Contributor License Agreement
 
