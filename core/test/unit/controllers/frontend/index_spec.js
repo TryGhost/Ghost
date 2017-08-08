@@ -801,5 +801,27 @@ describe('Frontend Controller', function () {
 
             frontend.preview(req, res, failTest(done));
         });
+
+        it('should call redirect if /edit/ (options param) is detected', function (done) {
+            req.params = {uuid: 'abc-1234-01', options: 'edit'};
+            res.redirect = function (url) {
+                res.render.called.should.be.false();
+                url.should.eql('/ghost/editor/1/');
+                done();
+            };
+
+            frontend.preview(req, res, failTest(done));
+        });
+
+        it('should call next for unknown options param detected', function (done) {
+            req.params = {uuid: 'abc-1234-01', options: 'asdsad'};
+
+            frontend.preview(req, res, function (err) {
+                should.not.exist(err);
+                res.render.called.should.be.false();
+                res.redirect.called.should.be.false();
+                done();
+            });
+        });
     });
 });
