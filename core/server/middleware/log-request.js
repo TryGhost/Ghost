@@ -14,7 +14,7 @@ module.exports = function logRequest(req, res, next) {
         req.requestId = requestId;
         req.userId = req.user ? (req.user.id ? req.user.id : req.user) : null;
 
-        if (req.err) {
+        if (req.err && req.err.statusCode !== 404) {
             logging.error({req: req, res: res, err: req.err});
         } else {
             logging.info({req: req, res: res});
