@@ -68,6 +68,7 @@ function apiRoutes() {
     apiRouter.get('/configuration', api.http(api.configuration.read));
     apiRouter.get('/configuration/:key', authenticatePrivate, api.http(api.configuration.read));
     apiRouter.get('/configuration/timezones', authenticatePrivate, api.http(api.configuration.read));
+    apiRouter.get('/configuration/private', authenticatePrivate, api.http(api.configuration.read));
 
     // ## Posts
     apiRouter.get('/posts', authenticatePublic, api.http(api.posts.browse));

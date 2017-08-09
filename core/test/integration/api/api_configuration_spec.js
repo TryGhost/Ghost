@@ -79,4 +79,20 @@ describe('Configuration API', function () {
             done();
         }).catch(done);
     });
+
+    it('can read private config and get all expected properties', function (done) {
+        ConfigurationAPI.read({key: 'private'}).then(function (response) {
+            var props;
+
+            should.exist(response);
+            should.exist(response.configuration);
+            response.configuration.should.be.an.Array().with.lengthOf(1);
+            props = response.configuration[0];
+
+            // value not available, because settings API was not called yet
+            props.hasOwnProperty('unsplashApi').should.eql(false);
+
+            done();
+        }).catch(done);
+    });
 });

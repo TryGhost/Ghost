@@ -15,6 +15,14 @@ function fetchAvailableTimezones() {
     return timezones;
 }
 
+function fetchPrivateConfig() {
+    var unsplashConfig = config.get('unsplash') ? config.get('unsplash').applicationId : '';
+
+    return {
+        unsplashAPI: unsplashConfig
+    };
+}
+
 function getAboutConfig() {
     return {
         version: ghostVersion.full,
@@ -25,15 +33,13 @@ function getAboutConfig() {
 }
 
 function getBaseConfig() {
-    var unsplashConfig = config.get('unsplash') ? config.get('unsplash').applicationId : '';
     return {
         useGravatar:    !config.isPrivacyDisabled('useGravatar'),
         publicAPI:      config.get('publicAPI') === true,
         blogUrl:        utils.url.urlFor('home', true),
         blogTitle:      settingsCache.get('title'),
         routeKeywords:  config.get('routeKeywords'),
-        clientExtensions: config.get('clientExtensions'),
-        unsplashAPI:    unsplashConfig
+        clientExtensions: config.get('clientExtensions')
     };
 }
 
@@ -88,6 +94,11 @@ configuration = {
         // Timezone endpoint
         if (options.key === 'timezones') {
             return Promise.resolve({configuration: [fetchAvailableTimezones()]});
+        }
+
+        // Private configuration config for API keys used by the client
+        if (options.key === 'private') {
+            return Promise.resolve({configuration: [fetchPrivateConfig()]});
         }
 
         return Promise.resolve({configuration: []});
