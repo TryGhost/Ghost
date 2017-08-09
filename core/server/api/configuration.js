@@ -25,13 +25,15 @@ function getAboutConfig() {
 }
 
 function getBaseConfig() {
+    var unsplashConfig = config.get('unsplash') ? config.get('unsplash').applicationId : '';
     return {
         useGravatar:    !config.isPrivacyDisabled('useGravatar'),
         publicAPI:      config.get('publicAPI') === true,
         blogUrl:        utils.url.urlFor('home', true),
         blogTitle:      settingsCache.get('title'),
         routeKeywords:  config.get('routeKeywords'),
-        clientExtensions: config.get('clientExtensions')
+        clientExtensions: config.get('clientExtensions'),
+        unsplashAPI:    unsplashConfig
     };
 }
 
