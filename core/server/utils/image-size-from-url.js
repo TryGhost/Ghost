@@ -79,9 +79,16 @@ module.exports.getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
                             context: imagePath
                         }));
                     }
+                } else if (res.statusCode === 404) {
+                    return reject(new errors.NotFoundError({
+                        message: 'Image not found.',
+                        code: 'IMAGE_SIZE',
+                        statusCode: res.statusCode,
+                        context: imagePath
+                    }));
                 } else {
                     return reject(new errors.InternalServerError({
-                        message: res.statusCode === 404 ? 'Image not found.' : 'Unknown Request error.',
+                        message: 'Unknown Request error.',
                         code: 'IMAGE_SIZE',
                         statusCode: res.statusCode,
                         context: imagePath
