@@ -363,7 +363,6 @@ describe('Contexts', function () {
             // Setup test
             sandbox.stub(labs, 'isSet').returns(true);
             setupContext('/subscribe/');
-
             data.post = {
                 page: false
             };
@@ -381,7 +380,6 @@ describe('Contexts', function () {
             // Setup test
             sandbox.stub(labs, 'isSet').returns(false);
             setupContext('/subscribe/');
-            
             data.post = {
                 page: false
             };
