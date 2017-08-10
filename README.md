@@ -12,7 +12,7 @@ The project is maintained by a non-profit organisation called the **Ghost Founda
 - [Help & Support](http://help.ghost.org/)
 - [Theme Docs](http://themes.ghost.org/v0.11.9/)
 - [API Docs](https://api.ghost.org/v0.11.9/)
-- [Contributing Guide](https://docs.ghost.org/v0.11.9/docs/contributing)
+- [Contributing Guide](https://docs.ghost.org/v0.11/docs/contributing)
 - [Feature Requests](http://ideas.ghost.org/)
 - [Developer Blog](http://dev.ghost.org)
 - [Self-hoster Docs](http://docs.ghost.org/v0.11.9/)
@@ -21,7 +21,7 @@ The project is maintained by a non-profit organisation called the **Ghost Founda
 
 # Important: Node.js version support
 
-See [Supported Node.js versions](https://docs.ghost.org/v0.11.9/docs/supported-node-versions)
+See [Supported Node.js versions](https://docs.ghost.org/v0.11/docs/supported-node-versions)
 
 
 # Hosting a live Ghost site
@@ -36,7 +36,7 @@ Not only will it save you [many hours per month](https://ghost.org/pricing/#why-
 
 Other options are also available if you prefer playing around with servers by yourself, of course. The freedom of choice is in your hands.
 
-- [Self-hosting Guide](https://docs.ghost.org/v0.11.9/docs/getting-started-guide)
+- [Self-hosting Guide](https://docs.ghost.org/v0.11/docs/getting-started-guide)
 
 
 # Theme Developers
@@ -44,9 +44,9 @@ Other options are also available if you prefer playing around with servers by yo
 If you are developing a Ghost theme for your own site or creating themes for others to use we recommend installing Ghost on your own local machine.
 
 1. Install ghost locally...
-    - [Mac](https://docs.ghost.org/v0.11.9/docs/installing-ghost-on-mac)
-    - [Linux](https://docs.ghost.org/v0.11.9/docs/installing-ghost-on-linux)
-    - [Windows](https://docs.ghost.org/v0.11.9/docs/installing-ghost-on-windows)
+    - [Mac](https://docs.ghost.org/v0.11/docs/installing-ghost-on-mac)
+    - [Linux](https://docs.ghost.org/v0.11/docs/installing-ghost-on-linux)
+    - [Windows](https://docs.ghost.org/v0.11/docs/installing-ghost-on-windows)
 2. Start ghost in the `development` environment so it doesn't require a restart after each change to a theme file:
     - `npm start`
     
@@ -57,14 +57,14 @@ If you are developing a Ghost theme for your own site or creating themes for oth
 
 For anyone wishing to contribute to Ghost or to hack/customise core files we recommend following our development setup guides:
 
-- [General Contributor Guide](https://docs.ghost.org/v0.11.9/docs/contributing)
-- [Developer Setup Instructions](https://docs.ghost.org/v0.11.9/docs/working-with-ghost)
-- [Admin Client development guide](https://docs.ghost.org/v0.11.9/docs/working-with-the-admin-client)
+- [General Contributor Guide](https://docs.ghost.org/v0.11/docs/contributing)
+- [Developer Setup Instructions](https://docs.ghost.org/v0.11/docs/working-with-ghost)
+- [Admin Client development guide](https://docs.ghost.org/v0.11/docs/working-with-the-admin-client)
 
 
 # Staying Up to Date
 
-When a new version of Ghost comes out, you'll want to look over these [upgrade instructions](https://docs.ghost.org/v0.11.9/docs/how-to-upgrade-ghost) for what to do next.
+When a new version of Ghost comes out, you'll want to look over these [upgrade instructions](https://docs.ghost.org/v0.11/docs/how-to-upgrade-ghost) for what to do next.
 
 You can talk to other Ghost users and developers in our [public Slack team](https://ghost.org/slack/) (it's pretty awesome).
 

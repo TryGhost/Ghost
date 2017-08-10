@@ -1,11 +1,11 @@
 # Welcome to the contributing overview for Ghost!
 
-**Please read our [Full Contributor Guide](https://docs.ghost.org/v0.11.9/docs/contributing)** - it covers everything you'll need to get started as a contributor 😁
+**Please read our [Full Contributor Guide](https://docs.ghost.org/v0.11/docs/contributing)** - it covers everything you'll need to get started as a contributor 😁
 
 **LTS (0.11.x) / 1.0.0** -
 The [LTS branch](https://github.com/TryGhost/Ghost/tree/lts) keeps track of our long term support for Ghost 0.11.X. We are now working on `1.0` and this lives in the [master branch](https://github.com/TryGhost/Ghost/tree/master).
 
-If you need help with Ghost or have questions, please use [slack](https://ghost.org/slack) (user documentation is [here](http://help.ghost.org), developer documentation is [here](https://docs.ghost.org/v0.11.9/)). If you're [raising a bug](https://docs.ghost.org/v0.11.9/docs/contributing#bugs) please be sure to [include as much info as possible](https://docs.ghost.org/v0.11.9/docs/contributing#bug-template) so that we can fix it! If you've got some code you want to [pull request](https://docs.ghost.org/v0.11.9/docs/contributing#pull-requests) please [squash commits](https://docs.ghost.org/v0.11.9/docs/git-workflow#section-clean-up-history), use this [commit message format](https://docs.ghost.org/v0.11.9/docs/git-workflow#section-notes-on-writing-good-commit-messages) and check it passes the tests by running `grunt validate`. Thanks for helping us make Ghost better.
+If you need help with Ghost or have questions, please use [slack](https://ghost.org/slack) (user documentation is [here](http://help.ghost.org), developer documentation is [here](https://docs.ghost.org/v0.11/)). If you're [raising a bug](https://docs.ghost.org/v0.11/docs/contributing#bugs) please be sure to [include as much info as possible](https://docs.ghost.org/v0.11/docs/contributing#bug-template) so that we can fix it! If you've got some code you want to [pull request](https://docs.ghost.org/v0.11/docs/contributing#pull-requests) please [squash commits](https://docs.ghost.org/v0.11/docs/git-workflow#section-clean-up-history), use this [commit message format](https://docs.ghost.org/v0.11/docs/git-workflow#section-notes-on-writing-good-commit-messages) and check it passes the tests by running `grunt validate`. Thanks for helping us make Ghost better.
 
 *Quick Links:*
 - [user documentation](https://help.ghost.org)

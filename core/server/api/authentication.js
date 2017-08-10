@@ -440,7 +440,7 @@ authentication = {
                             i18n.t(
                                 'errors.api.authentication.unableToSendWelcomeEmail'
                             ),
-                            i18n.t('errors.api.authentication.checkEmailConfigInstructions', {url: 'https://docs.ghost.org/v0.11.9/docs/mail-config'})
+                            i18n.t('errors.api.authentication.checkEmailConfigInstructions', {url: 'https://docs.ghost.org/v0.11/docs/mail-config'})
                         );
                     });
                 })
