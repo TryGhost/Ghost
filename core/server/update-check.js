@@ -23,6 +23,7 @@
 var crypto   = require('crypto'),
     exec     = require('child_process').exec,
     https    = require('https'),
+    http    = require('http'),
     moment   = require('moment'),
     semver   = require('semver'),
     Promise  = require('bluebird'),
@@ -36,7 +37,7 @@ var crypto   = require('crypto'),
     i18n     = require('./i18n'),
     currentVersion = require('./utils/ghost-version').full,
     internal = {context: {internal: true}},
-    checkEndpoint = 'updates.ghost.org';
+    checkEndpoint = config.get('updateCheckUrl') || 'https://updates.ghost.org';
 
 function updateCheckError(err) {
     err = errors.utils.deserialize(err);
@@ -136,7 +137,9 @@ function updateCheckRequest() {
     return updateCheckData().then(function then(reqData) {
         var resData = '',
             headers,
-            req;
+            req,
+            requestHandler,
+            parsedUrl;
 
         reqData = JSON.stringify(reqData);
 
@@ -146,8 +149,12 @@ function updateCheckRequest() {
         };
 
         return new Promise(function p(resolve, reject) {
-            req = https.request({
-                hostname: checkEndpoint,
+            requestHandler = checkEndpoint.indexOf('https') === 0 ? https : http;
+            parsedUrl = url.parse(checkEndpoint);
+
+            req = requestHandler.request({
+                hostname: parsedUrl.hostname,
+                port: parsedUrl.port,
                 method: 'POST',
                 headers: headers
             }, function handler(res) {
