@@ -179,7 +179,7 @@ describe('Frontend Routing', function () {
                     request.get('/content/images/some/file/that/doesnt-exist.jpg')
                         .expect('Cache-Control', testUtils.cacheRules['private'])
                         .expect(404)
-                        .expect(/Page not found/)
+                        .expect(/404 Image not found/)
                         .end(doEnd(done));
                 });
             });
