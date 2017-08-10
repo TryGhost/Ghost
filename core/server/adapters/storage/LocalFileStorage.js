@@ -84,7 +84,11 @@ class LocalFileStore extends StorageBase {
             return serveStatic(self.storagePath, {maxAge: utils.ONE_YEAR_MS, fallthrough: false})(req, res, function (err) {
                 if (err) {
                     if (err.statusCode === 404) {
-                        return next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
+                        return next(new errors.NotFoundError({
+                            message: i18n.t('errors.errors.imageNotFound'),
+                            code: 'STATIC_FILE_NOT_FOUND',
+                            property: err.path
+                        }));
                     }
 
                     return next(new errors.GhostError({err: err}));
