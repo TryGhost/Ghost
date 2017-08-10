@@ -1,8 +1,8 @@
 // # Ghost Configuration
-// Setup your Ghost install for various [environments](https://docs.ghost.org/v0.11.9/docs/configuring-ghost#section-about-environments).
+// Setup your Ghost install for various [environments](https://docs.ghost.org/v0.11/docs/configuring-ghost#section-about-environments).
 
 // Ghost runs in `development` mode by default. Full documentation can be found
-// at https://docs.ghost.org/v0.11.9/docs/configuring-ghost
+// at https://docs.ghost.org/v0.11/docs/configuring-ghost
 
 var path = require('path'),
     config;
@@ -40,7 +40,7 @@ config = {
         // referrerPolicy: 'origin-when-cross-origin',
 
         // Example mail config
-        // Visit https://docs.ghost.org/v0.11.9/docs/mail-config for instructions
+        // Visit https://docs.ghost.org/v0.11/docs/mail-config for instructions
         // ```
         //  mail: {
         //      transport: 'SMTP',

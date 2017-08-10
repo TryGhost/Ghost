@@ -37,7 +37,7 @@ checks = {
             console.error('\x1B[31mERROR: Unsupported version of Node');
             console.error('\x1B[31mGhost needs Node version ' + packages.engines.node +
                           ' you are using version ' + process.versions.node + '\033[0m\n');
-            console.error('\x1B[32mPlease see https://docs.ghost.org/v0.11.9/docs/supported-node-versions for more information\033[0m');
+            console.error('\x1B[32mPlease see https://docs.ghost.org/v0.11/docs/supported-node-versions for more information\033[0m');
 
             process.exit(exitCodes.NODE_VERSION_UNSUPPORTED);
         }
@@ -93,7 +93,7 @@ checks = {
 
         console.error('\x1B[31mERROR: Ghost is unable to start due to missing dependencies:\033[0m\n  ' + errors);
         console.error('\x1B[32m\nPlease run `npm install --production` and try starting Ghost again.');
-        console.error('\x1B[32mHelp and documentation can be found at https://docs.ghost.org/v0.11.9.\033[0m\n');
+        console.error('\x1B[32mHelp and documentation can be found at https://docs.ghost.org/v0.11.\033[0m\n');
 
         process.exit(exitCodes.DEPENDENCIES_MISSING);
     },
@@ -111,7 +111,7 @@ checks = {
             fd,
             errorHeader = '\x1B[31mERROR: Unable to access Ghost\'s content path:\033[0m',
             errorHelp = '\x1B[32mCheck that the content path exists and file system permissions are correct.' +
-                '\nHelp and documentation can be found at https://docs.ghost.org/v0.11.9.\033[0m';
+                '\nHelp and documentation can be found at https://docs.ghost.org/v0.11.\033[0m';
 
         // Get the content path to test.  If it's defined in config.js use that, if not use the default
         try {
@@ -207,7 +207,7 @@ checks = {
             console.error('\x1B[31mERROR: Unable to open sqlite3 database file for read/write\033[0m');
             console.error('  ' + e.message);
             console.error('\n\x1B[32mCheck that the sqlite3 database file permissions allow read and write access.');
-            console.error('Help and documentation can be found at https://docs.ghost.org/v0.11.9.\033[0m');
+            console.error('Help and documentation can be found at https://docs.ghost.org/v0.11.\033[0m');
 
             process.exit(exitCodes.SQLITE_DB_NOT_WRITABLE);
         }
@@ -226,7 +226,7 @@ checks = {
 
         if (!config.mail || !config.mail.transport) {
             console.error('\x1B[31mWARNING: Ghost is attempting to use a direct method to send email. \nIt is recommended that you explicitly configure an email service.\033[0m');
-            console.error('\x1B[32mHelp and documentation can be found at https://docs.ghost.org/v0.11.9/docs/mail-config.\033[0m\n');
+            console.error('\x1B[32mHelp and documentation can be found at https://docs.ghost.org/v0.11/docs/mail-config.\033[0m\n');
         }
     },
 
@@ -262,7 +262,7 @@ checks = {
             } catch (e) {
                 console.error('\x1B[31mERROR: Javascript files have not been built.\033[0m');
                 console.error('\n\x1B[32mPlease read the getting started instructions at:');
-                console.error('https://docs.ghost.org/v0.11.9/docs/getting-started-guide\033[0m');
+                console.error('https://docs.ghost.org/v0.11/docs/getting-started-guide\033[0m');
                 process.exit(exitCodes.BUILT_FILES_DO_NOT_EXIST);
             }
         }
