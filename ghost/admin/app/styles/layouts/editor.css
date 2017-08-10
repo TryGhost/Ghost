@@ -342,6 +342,7 @@
     line-height: 1.15em;
     font-weight: bold;
     letter-spacing: 0.8px;
+    overflow: hidden;
 }
 
 .gh-editor-wordcount {
