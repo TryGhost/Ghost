@@ -24,17 +24,6 @@ module.exports = function setupParentApp() {
 
     parentApp.use(logRequest);
 
-    if (debug.enabled) {
-        // debug keeps a timer, so this is super useful
-        parentApp.use((function () {
-            var reqDebug = require('debug')('ghost:req');
-            return function debugLog(req, res, next) {
-                reqDebug('Request', req.originalUrl);
-                next();
-            };
-        })());
-    }
-
     // enabled gzip compression by default
     if (config.get('compress') !== false) {
         parentApp.use(compress());
