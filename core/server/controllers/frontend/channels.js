@@ -72,9 +72,17 @@ channelRouter = function router() {
 
         // @TODO figure out how to collapse this into a single rule
         channelRouter.get(baseRoute, configChannel, renderChannel);
-        channelRouter.get(pageRoute, configChannel, renderChannel);
-        channelRouter.param('page', handlePageParam);
-        channelRouter.use(rssRouter(configChannel));
+
+        // @TODO improve config and add defaults to make this simpler
+        if (channel.paged !== false) {
+            channelRouter.param('page', handlePageParam);
+            channelRouter.get(pageRoute, configChannel, renderChannel);
+        }
+
+        // @TODO improve config and add defaults to make this simpler
+        if (channel.rss !== false) {
+            channelRouter.use(rssRouter(configChannel));
+        }
 
         if (channel.editRedirect) {
             channelRouter.get('/edit/', function redirect(req, res) {
