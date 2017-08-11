@@ -5,7 +5,6 @@ import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import destroyApp from '../../helpers/destroy-app';
 import mockThemes from 'ghost-admin/mirage/config/themes';
 import startApp from '../../helpers/start-app';
-import testSelector from 'ember-test-selectors';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import {expect} from 'chai';
@@ -50,7 +49,7 @@ describe('Acceptance: Settings - Design', function () {
             await visit('/settings/design');
 
             expect(currentPath()).to.equal('settings.design.index');
-            expect(find(testSelector('save-button')).text().trim(), 'save button text').to.equal('Save');
+            expect(find('[data-test-save-button]').text().trim(), 'save button text').to.equal('Save');
 
             // fixtures contain two nav items, check for three rows as we
             // should have one extra that's blank
@@ -66,7 +65,7 @@ describe('Acceptance: Settings - Design', function () {
             await fillIn('.gh-blognav-url:first input', '/test');
             await triggerEvent('.gh-blognav-url:first input', 'blur');
 
-            await click(testSelector('save-button'));
+            await click('[data-test-save-button]');
 
             let [navSetting] = server.db.settings.where({key: 'navigation'});
 
@@ -83,7 +82,7 @@ describe('Acceptance: Settings - Design', function () {
         it('validates new item correctly on save', async function () {
             await visit('/settings/design');
 
-            await click(testSelector('save-button'));
+            await click('[data-test-save-button]');
 
             expect(
                 find('.gh-blognav-item').length,
@@ -94,7 +93,7 @@ describe('Acceptance: Settings - Design', function () {
             await fillIn('.gh-blognav-url:last input', 'http://invalid domain/');
             await triggerEvent('.gh-blognav-url:last input', 'blur');
 
-            await click(testSelector('save-button'));
+            await click('[data-test-save-button]');
 
             expect(
                 find('.gh-blognav-item').length,
@@ -215,31 +214,31 @@ describe('Acceptance: Settings - Design', function () {
 
             // lists available themes (themes are specified in mirage/fixtures/settings)
             expect(
-                find(testSelector('theme-id')).length,
+                find('[data-test-theme-id]').length,
                 'shows correct number of themes'
             ).to.equal(3);
 
             expect(
-                find(`${testSelector('theme-active', 'true')} ${testSelector('theme-title')}`).text().trim(),
+                find('[data-test-theme-active="true"] [data-test-theme-title]').text().trim(),
                 'Blog theme marked as active'
             ).to.equal('Blog (default)');
 
             // theme upload displays modal
-            await click(testSelector('upload-theme-button'));
+            await click('[data-test-upload-theme-button]');
             expect(
                 find('.fullscreen-modal .modal-content:contains("Upload a theme")').length,
                 'theme upload modal displayed after button click'
             ).to.equal(1);
 
             // cancelling theme upload closes modal
-            await click(`.fullscreen-modal ${testSelector('close-button')}`);
+            await click('.fullscreen-modal [data-test-close-button]');
             expect(
                 find('.fullscreen-modal').length === 0,
                 'upload theme modal is closed when cancelling'
             ).to.be.true;
 
             // theme upload validates mime type
-            await click(testSelector('upload-theme-button'));
+            await click('[data-test-upload-theme-button]');
             await fileUpload('.fullscreen-modal input[type="file"]', ['test'], {type: 'text/csv'});
             expect(
                 find('.fullscreen-modal .failed').text(),
@@ -247,7 +246,7 @@ describe('Acceptance: Settings - Design', function () {
             ).to.match(/is not supported/);
 
             // theme upload validates casper.zip
-            await click(testSelector('upload-try-again-button'));
+            await click('[data-test-upload-try-again-button]');
             await fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'casper.zip', type: 'application/zip'});
             expect(
                 find('.fullscreen-modal .failed').text(),
@@ -262,7 +261,7 @@ describe('Acceptance: Settings - Design', function () {
                     }]
                 });
             });
-            await click(testSelector('upload-try-again-button'));
+            await click('[data-test-upload-try-again-button]');
             await fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'error.zip', type: 'application/zip'});
             expect(
                 find('.fullscreen-modal .failed').text().trim(),
@@ -310,7 +309,7 @@ describe('Acceptance: Settings - Design', function () {
                 });
             });
 
-            await click(testSelector('upload-try-again-button'));
+            await click('[data-test-upload-try-again-button]');
             await fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'bad-theme.zip', type: 'application/zip'});
 
             expect(
@@ -323,7 +322,7 @@ describe('Acceptance: Settings - Design', function () {
                 'top-level errors are displayed'
             ).to.match(/Templates must contain valid Handlebars/);
 
-            await click(testSelector('toggle-details'));
+            await click('[data-test-toggle-details]');
 
             expect(
                 find('.theme-validation-details').text(),
@@ -338,7 +337,7 @@ describe('Acceptance: Settings - Design', function () {
             // reset to default mirage handlers
             mockThemes(server);
 
-            await click(`.fullscreen-modal ${testSelector('try-again-button')}`);
+            await click('.fullscreen-modal [data-test-try-again-button]');
             expect(
                 find('.theme-validation-errors').length,
                 '"Try Again" resets form after theme validation error'
@@ -399,7 +398,7 @@ describe('Acceptance: Settings - Design', function () {
                 'modal title after uploading theme with warnings'
             ).to.equal('Upload successful with warnings');
 
-            await click(testSelector('toggle-details'));
+            await click('[data-test-toggle-details]');
 
             expect(
                 find('.theme-validation-details').text(),
@@ -414,10 +413,10 @@ describe('Acceptance: Settings - Design', function () {
             // reset to default mirage handlers
             mockThemes(server);
 
-            await click(`.fullscreen-modal ${testSelector('close-button')}`);
+            await click('.fullscreen-modal [data-test-close-button]');
 
             // theme upload handles success then close
-            await click(testSelector('upload-theme-button'));
+            await click('[data-test-upload-theme-button]');
             await fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'theme-1.zip', type: 'application/zip'});
 
             expect(
@@ -431,42 +430,42 @@ describe('Acceptance: Settings - Design', function () {
             ).to.match(/"Test 1 - 0\.1" uploaded successfully/);
 
             expect(
-                find(testSelector('theme-id')).length,
+                find('[data-test-theme-id]').length,
                 'number of themes in list grows after upload'
             ).to.equal(5);
 
             expect(
-                find(`${testSelector('theme-active', 'true')} ${testSelector('theme-title')}`).text().trim(),
+                find('[data-test-theme-active="true"] [data-test-theme-title]').text().trim(),
                 'newly uploaded theme is not active'
             ).to.equal('Blog (default)');
 
-            await click(`.fullscreen-modal ${testSelector('close-button')}`);
+            await click('.fullscreen-modal [data-test-close-button]');
 
             // theme upload handles success then activate
-            await click(testSelector('upload-theme-button'));
+            await click('[data-test-upload-theme-button]');
             await fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'theme-2.zip', type: 'application/zip'});
-            await click(`.fullscreen-modal ${testSelector('activate-now-button')}`);
+            await click('.fullscreen-modal [data-test-activate-now-button]');
 
             expect(
-                find(testSelector('theme-id')).length,
+                find('[data-test-theme-id]').length,
                 'number of themes in list grows after upload and activate'
             ).to.equal(6);
 
             expect(
-                find(`${testSelector('theme-active', 'true')} ${testSelector('theme-title')}`).text().trim(),
+                find('[data-test-theme-active="true"] [data-test-theme-title]').text().trim(),
                 'newly uploaded+activated theme is active'
             ).to.equal('Test 2');
 
             // theme activation switches active theme
-            await click(`${testSelector('theme-id', 'casper')} ${testSelector('theme-activate-button')}`);
+            await click('[data-test-theme-id="casper"] [data-test-theme-activate-button]');
 
             expect(
-                find(`${testSelector('theme-id', 'test-2')} .apps-card-app`).hasClass('theme-list-item--active'),
+                find('[data-test-theme-id="test-2"] .apps-card-app').hasClass('theme-list-item--active'),
                 'previously active theme is not active'
             ).to.be.false;
 
             expect(
-                find(`${testSelector('theme-id', 'casper')} .apps-card-app`).hasClass('theme-list-item--active'),
+                find('[data-test-theme-id="casper"] .apps-card-app').hasClass('theme-list-item--active'),
                 'activated theme is active'
             ).to.be.true;
 
@@ -508,21 +507,21 @@ describe('Acceptance: Settings - Design', function () {
                 });
             });
 
-            await click(`${testSelector('theme-id', 'test-2')} ${testSelector('theme-activate-button')}`);
+            await click('[data-test-theme-id="test-2"] [data-test-theme-activate-button]');
 
-            expect(find(testSelector('theme-warnings-modal'))).to.exist;
+            expect(find('[data-test-theme-warnings-modal]')).to.exist;
 
             expect(
-                find(testSelector('theme-warnings-title')).text().trim(),
+                find('[data-test-theme-warnings-title]').text().trim(),
                 'modal title after activating invalid theme'
             ).to.equal('Activation failed');
 
             expect(
-                find(testSelector('theme-warnings')).text(),
+                find('[data-test-theme-warnings]').text(),
                 'top-level errors are displayed in activation errors'
             ).to.match(/Templates must contain valid Handlebars/);
 
-            await click(testSelector('toggle-details'));
+            await click('[data-test-toggle-details]');
 
             expect(
                 find('.theme-validation-details').text(),
@@ -537,8 +536,8 @@ describe('Acceptance: Settings - Design', function () {
             // restore default mirage handlers
             mockThemes(server);
 
-            await click(testSelector('modal-close-button'));
-            expect(find(testSelector('theme-warnings-modal'))).to.not.exist;
+            await click('[data-test-modal-close-button]');
+            expect(find('[data-test-theme-warnings-modal]')).to.not.exist;
 
             // theme activation shows warnings
             server.put('themes/:theme/activate', function ({themes}, {params}) {
@@ -569,16 +568,16 @@ describe('Acceptance: Settings - Design', function () {
                 return {themes: [theme]};
             });
 
-            await click(`${testSelector('theme-id', 'test-2')} ${testSelector('theme-activate-button')}`);
+            await click('[data-test-theme-id="test-2"] [data-test-theme-activate-button]');
 
-            expect(find(testSelector('theme-warnings-modal'))).to.exist;
+            expect(find('[data-test-theme-warnings-modal]')).to.exist;
 
             expect(
-                find(testSelector('theme-warnings-title')).text().trim(),
+                find('[data-test-theme-warnings-title]').text().trim(),
                 'modal title after activating theme with warnings'
             ).to.equal('Activation successful with warnings');
 
-            await click(testSelector('toggle-details'));
+            await click('[data-test-toggle-details]');
 
             expect(
                 find('.theme-validation-details').text(),
@@ -593,39 +592,39 @@ describe('Acceptance: Settings - Design', function () {
             // restore default mirage handlers
             mockThemes(server);
 
-            await click(testSelector('modal-close-button'));
+            await click('[data-test-modal-close-button]');
             // reactivate casper to continue tests
-            await click(`${testSelector('theme-id', 'casper')} ${testSelector('theme-activate-button')}`);
+            await click('[data-test-theme-id="casper"] [data-test-theme-activate-button]');
 
             // theme deletion displays modal
-            await click(`${testSelector('theme-id', 'test-1')} ${testSelector('theme-delete-button')}`);
+            await click('[data-test-theme-id="test-1"] [data-test-theme-delete-button]');
             expect(
-                find(testSelector('delete-theme-modal')).length,
+                find('[data-test-delete-theme-modal]').length,
                 'theme deletion modal displayed after button click'
             ).to.equal(1);
 
             // cancelling theme deletion closes modal
-            await click(`.fullscreen-modal ${testSelector('cancel-button')}`);
+            await click('.fullscreen-modal [data-test-cancel-button]');
             expect(
                 find('.fullscreen-modal').length === 0,
                 'delete theme modal is closed when cancelling'
             ).to.be.true;
 
             // confirming theme deletion closes modal and refreshes list
-            await click(`${testSelector('theme-id', 'test-1')} ${testSelector('theme-delete-button')}`);
-            await click(`.fullscreen-modal ${testSelector('delete-button')}`);
+            await click('[data-test-theme-id="test-1"] [data-test-theme-delete-button]');
+            await click('.fullscreen-modal [data-test-delete-button]');
             expect(
                 find('.fullscreen-modal').length === 0,
                 'delete theme modal closes after deletion'
             ).to.be.true;
 
             expect(
-                find(testSelector('theme-id')).length,
+                find('[data-test-theme-id]').length,
                 'number of themes in list shrinks after delete'
             ).to.equal(5);
 
             expect(
-                find(testSelector('theme-title')).text(),
+                find('[data-test-theme-title]').text(),
                 'correct theme is removed from theme list after deletion'
             ).to.not.match(/Test 1/);
 
@@ -638,8 +637,8 @@ describe('Acceptance: Settings - Design', function () {
                 });
             });
 
-            await click(`${testSelector('theme-id', 'test-2')} ${testSelector('theme-delete-button')}`);
-            await click(`.fullscreen-modal ${testSelector('delete-button')}`);
+            await click('[data-test-theme-id="test-2"] [data-test-theme-delete-button]');
+            await click('.fullscreen-modal [data-test-delete-button]');
 
             expect(
                 find('.fullscreen-modal').length === 0,
@@ -677,13 +676,13 @@ describe('Acceptance: Settings - Design', function () {
             });
 
             await visit('/settings/design');
-            await click(`${testSelector('theme-id', 'foo')} ${testSelector('theme-delete-button')}`);
-            await click(`.fullscreen-modal ${testSelector('delete-button')}`);
+            await click('[data-test-theme-id="foo"] [data-test-theme-delete-button]');
+            await click('.fullscreen-modal [data-test-delete-button]');
 
-            await click(testSelector('upload-theme-button'));
+            await click('[data-test-upload-theme-button]');
             await fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'foo.zip', type: 'application/zip'});
             // this will fail if upload failed because there won't be an activate now button
-            await click(`.fullscreen-modal ${testSelector('activate-now-button')}`);
+            await click('.fullscreen-modal [data-test-activate-now-button]');
         });
     });
 });

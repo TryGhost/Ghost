@@ -2,7 +2,6 @@ import Pretender from 'pretender';
 import hbs from 'htmlbars-inline-precompile';
 import run from 'ember-runloop';
 import sinon from 'sinon';
-import testSelector from 'ember-test-selectors';
 import wait from 'ember-test-helpers/wait';
 import {click, find, findAll} from 'ember-native-dom-helpers';
 import {createFile} from '../../helpers/file-upload';
@@ -194,15 +193,15 @@ describe('Integration: Component: gh-uploader', function() {
             this.set('files', [createFile(), createFile()]);
 
             run.later(() => {
-                expect(find(testSelector('progress-bar'))).to.exist;
-                let progressWidth = parseInt(find(testSelector('progress-bar')).style.width);
+                expect(find('[data-test-progress-bar]')).to.exist;
+                let progressWidth = parseInt(find('[data-test-progress-bar]').style.width);
                 expect(progressWidth).to.be.above(0);
                 expect(progressWidth).to.be.below(100);
             }, 100);
 
             await wait();
 
-            let progressWidth = parseInt(find(testSelector('progress-bar')).style.width);
+            let progressWidth = parseInt(find('[data-test-progress-bar]').style.width);
             expect(progressWidth).to.equal(100);
         });
 

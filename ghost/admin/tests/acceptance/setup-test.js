@@ -2,7 +2,6 @@
 import destroyApp from '../helpers/destroy-app';
 import moment from 'moment';
 import startApp from '../helpers/start-app';
-import testSelector from 'ember-test-selectors';
 import {Response} from 'ember-cli-mirage';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from '../helpers/ember-simple-auth';
@@ -99,7 +98,7 @@ describe('Acceptance: Setup', function () {
             // email field is focused by default
             // NOTE: $('x').is(':focus') doesn't work in phantomjs CLI runner
             // https://github.com/ariya/phantomjs/issues/10427
-            expect(find(testSelector('blog-title-input')).get(0) === document.activeElement, 'blog title has focus')
+            expect(find('[data-test-blog-title-input]').get(0) === document.activeElement, 'blog title has focus')
                 .to.be.true;
 
             await click('.gh-btn-green');
@@ -117,10 +116,10 @@ describe('Acceptance: Setup', function () {
                 .to.equal(1);
 
             // enter valid details and submit
-            await fillIn(testSelector('email-input'), 'test@example.com');
-            await fillIn(testSelector('name-input'), 'Test User');
-            await fillIn(testSelector('password-input'), 'password');
-            await fillIn(testSelector('blog-title-input'), 'Blog Title');
+            await fillIn('[data-test-email-input]', 'test@example.com');
+            await fillIn('[data-test-name-input]', 'Test User');
+            await fillIn('[data-test-password-input]', 'password');
+            await fillIn('[data-test-blog-title-input]', 'Blog Title');
             await click('.gh-btn-green');
 
             // it transitions to step 3
@@ -184,10 +183,10 @@ describe('Acceptance: Setup', function () {
             expect(find('.main-error').text().trim(), 'error text')
                 .to.not.be.blank;
 
-            await fillIn(testSelector('email-input'), 'test@example.com');
-            await fillIn(testSelector('name-input'), 'Test User');
-            await fillIn(testSelector('password-input'), 'password');
-            await fillIn(testSelector('blog-title-input'), 'Blog Title');
+            await fillIn('[data-test-email-input]', 'test@example.com');
+            await fillIn('[data-test-name-input]', 'Test User');
+            await fillIn('[data-test-password-input]', 'password');
+            await fillIn('[data-test-blog-title-input]', 'Blog Title');
 
             // first post - simulated validation error
             await click('.gh-btn-green');
@@ -222,10 +221,10 @@ describe('Acceptance: Setup', function () {
             server.loadFixtures('roles');
 
             await visit('/setup/two');
-            await fillIn(testSelector('email-input'), 'test@example.com');
-            await fillIn(testSelector('name-input'), 'Test User');
-            await fillIn(testSelector('password-input'), 'password');
-            await fillIn(testSelector('blog-title-input'), 'Blog Title');
+            await fillIn('[data-test-email-input]', 'test@example.com');
+            await fillIn('[data-test-name-input]', 'Test User');
+            await fillIn('[data-test-password-input]', 'password');
+            await fillIn('[data-test-blog-title-input]', 'Blog Title');
             await click('.gh-btn-green');
 
             // button should not be spinning
@@ -277,10 +276,10 @@ describe('Acceptance: Setup', function () {
 
             // complete step 2 so we can access step 3
             await visit('/setup/two');
-            await fillIn(testSelector('email-input'), 'test@example.com');
-            await fillIn(testSelector('name-input'), 'Test User');
-            await fillIn(testSelector('password-input'), 'password');
-            await fillIn(testSelector('blog-title-input'), 'Blog Title');
+            await fillIn('[data-test-email-input]', 'test@example.com');
+            await fillIn('[data-test-name-input]', 'Test User');
+            await fillIn('[data-test-password-input]', 'password');
+            await fillIn('[data-test-blog-title-input]', 'Blog Title');
             await click('.gh-btn-green');
 
             // default field/button state
@@ -443,7 +442,7 @@ describe('Acceptance: Setup', function () {
             ).to.equal('Connected: oauthtest@example.com');
 
             await fillIn('input[name="blog-title"]', 'Ghostbusters');
-            await click(testSelector('submit-button'));
+            await click('[data-test-submit-button]');
 
             expect(
                 currentURL(),

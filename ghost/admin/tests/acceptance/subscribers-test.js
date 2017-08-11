@@ -1,7 +1,6 @@
 /* jshint expr:true */
 import destroyApp from '../helpers/destroy-app';
 import startApp from '../helpers/start-app';
-import testSelector from 'ember-test-selectors';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import {expect} from 'chai';
@@ -75,7 +74,7 @@ describe('Acceptance: Subscribers', function() {
                 .to.equal(30);
 
             // it shows the total number of subscribers
-            expect(find(testSelector('total-subscribers')).text().trim(), 'displayed subscribers total')
+            expect(find('[data-test-total-subscribers]').text().trim(), 'displayed subscribers total')
                 .to.equal('(40)');
 
             // it defaults to sorting by created_at desc
@@ -146,7 +145,7 @@ describe('Acceptance: Subscribers', function() {
             //     .to.equal(0);
 
             // the subscriber total is updated
-            expect(find(testSelector('total-subscribers')).text().trim(), 'subscribers total after addition')
+            expect(find('[data-test-total-subscribers]').text().trim(), 'subscribers total after addition')
                 .to.equal('(41)');
 
             // saving a duplicate subscriber
@@ -163,7 +162,7 @@ describe('Acceptance: Subscribers', function() {
                 .to.equal(1);
 
             // the subscriber total is unchanged
-            expect(find(testSelector('total-subscribers')).text().trim(), 'subscribers total after failed add')
+            expect(find('[data-test-total-subscribers]').text().trim(), 'subscribers total after failed add')
                 .to.equal('(41)');
 
             // deleting a subscriber
@@ -193,7 +192,7 @@ describe('Acceptance: Subscribers', function() {
                 .to.not.equal('test@example.com');
 
             // the subscriber total is updated
-            expect(find(testSelector('total-subscribers')).text().trim(), 'subscribers total after addition')
+            expect(find('[data-test-total-subscribers]').text().trim(), 'subscribers total after addition')
                 .to.equal('(40)');
 
             // click the import subscribers button
@@ -224,7 +223,7 @@ describe('Acceptance: Subscribers', function() {
                 .to.equal('Close');
 
             // subscriber total is updated
-            expect(find(testSelector('total-subscribers')).text().trim(), 'subscribers total after import')
+            expect(find('[data-test-total-subscribers]').text().trim(), 'subscribers total after import')
                 .to.equal('(90)');
 
             // table is reset

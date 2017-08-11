@@ -5,7 +5,6 @@ import Service from 'ember-service';
 import hbs from 'htmlbars-inline-precompile';
 import run from 'ember-runloop';
 import sinon from 'sinon';
-import testSelector from 'ember-test-selectors';
 import wait from 'ember-test-helpers/wait';
 import {UnsupportedMediaTypeError} from 'ghost-admin/services/ajax';
 import {createFile, fileUpload} from '../../helpers/file-upload';
@@ -73,12 +72,12 @@ describe('Integration: Component: gh-image-uploader', function() {
 
     it('renders form with supplied alt text', function () {
         this.render(hbs`{{gh-image-uploader image=image altText="text test"}}`);
-        expect(this.$(testSelector('file-input-description')).text().trim()).to.equal('Upload image of "text test"');
+        expect(this.$('[data-test-file-input-description]').text().trim()).to.equal('Upload image of "text test"');
     });
 
     it('renders form with supplied text', function () {
         this.render(hbs`{{gh-image-uploader image=image text="text test"}}`);
-        expect(this.$(testSelector('file-input-description')).text().trim()).to.equal('text test');
+        expect(this.$('[data-test-file-input-description]').text().trim()).to.equal('text test');
     });
 
     it('generates request to correct endpoint', function (done) {

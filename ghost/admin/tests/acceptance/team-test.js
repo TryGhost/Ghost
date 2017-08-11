@@ -3,7 +3,6 @@ import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import destroyApp from '../helpers/destroy-app';
 import moment from 'moment';
 import startApp from '../helpers/start-app';
-import testSelector from 'ember-test-selectors';
 import {Response} from 'ember-cli-mirage';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from '../helpers/ember-simple-auth';
@@ -85,29 +84,29 @@ describe('Acceptance: Team', function () {
 
             // it shows active users in active section
             expect(
-                find(`${testSelector('active-users')} ${testSelector('user-id')}`).length,
+                find('[data-test-active-users] [data-test-user-id]').length,
                 'number of active users'
             ).to.equal(3);
             expect(
-                find(`${testSelector('active-users')} ${testSelector('user-id', user1.id)}`)
+                find(`[data-test-active-users] [data-test-user-id="${user1.id}"]`)
             ).to.exist;
             expect(
-                find(`${testSelector('active-users')} ${testSelector('user-id', user2.id)}`)
+                find(`[data-test-active-users] [data-test-user-id="${user2.id}"]`)
             ).to.exist;
             expect(
-                find(`${testSelector('active-users')} ${testSelector('user-id', admin.id)}`)
+                find(`[data-test-active-users] [data-test-user-id="${admin.id}"]`)
             ).to.exist;
 
             // it shows suspended users in suspended section
             expect(
-                find(`${testSelector('suspended-users')} ${testSelector('user-id')}`).length,
+                find('[data-test-suspended-users] [data-test-user-id]').length,
                 'number of suspended users'
             ).to.equal(1);
             expect(
-                find(`${testSelector('suspended-users')} ${testSelector('user-id', suspendedUser.id)}`)
+                find(`[data-test-suspended-users] [data-test-user-id="${suspendedUser.id}"]`)
             ).to.exist;
 
-            await click(testSelector('user-id', user2.id));
+            await click(`[data-test-user-id="${user2.id}"]`);
 
             // url is correct
             expect(currentURL(), 'url after clicking user').to.equal(`/team/${user2.slug}`);
@@ -117,11 +116,11 @@ describe('Acceptance: Team', function () {
 
             // view title should exist and be linkable and active
             expect(
-                find(`${testSelector('screen-title')} a[href="/ghost/team"]`).hasClass('active'),
+                find('[data-test-screen-title] a[href="/ghost/team"]').hasClass('active'),
                 'has linkable url back to team main page'
             ).to.be.true;
 
-            await click(`${testSelector('screen-title')} a`);
+            await click('[data-test-screen-title] a');
 
             // url should be /team again
             expect(currentURL(), 'url after clicking back').to.equal('/team');
@@ -138,31 +137,31 @@ describe('Acceptance: Team', function () {
 
             // existing users are listed
             expect(
-                find(testSelector('user-id')).length,
+                find('[data-test-user-id]').length,
                 'initial number of active users'
             ).to.equal(2);
 
             expect(
-                find(testSelector('user-id', '1')).find(testSelector('role-name')).text().trim(),
+                find('[data-test-user-id="1"] [data-test-role-name]').text().trim(),
                 'active user\'s role label'
             ).to.equal('Administrator');
 
             // existing invites are shown
             expect(
-                find(testSelector('invite-id')).length,
+                find('[data-test-invite-id]').length,
                 'initial number of invited users'
             ).to.equal(1);
 
             expect(
-                find(testSelector('invite-id', '1')).find(testSelector('invite-description')).text(),
+                find('[data-test-invite-id="1"] [data-test-invite-description]').text(),
                 'expired invite description'
             ).to.match(/expired/);
 
             // remove expired invite
-            await click(`${testSelector('invite-id', '1')} ${testSelector('revoke-button')}`);
+            await click('[data-test-invite-id="1"] [data-test-revoke-button]');
 
             expect(
-                find(testSelector('invite-id')).length,
+                find('[data-test-invite-id]').length,
                 'initial number of invited users'
             ).to.equal(0);
 
@@ -216,28 +215,28 @@ describe('Acceptance: Team', function () {
 
             // invite is displayed, has correct e-mail + role
             expect(
-                find(testSelector('invite-id')).length,
+                find('[data-test-invite-id]').length,
                 'number of invites after first invite'
             ).to.equal(1);
 
             expect(
-                find(testSelector('invite-id', '2')).find(testSelector('email')).text().trim(),
+                find('[data-test-invite-id="2"] [data-test-email]').text().trim(),
                 'displayed email of first invite'
             ).to.equal('invite1@example.com');
 
             expect(
-                find(testSelector('invite-id', '2')).find(testSelector('role-name')).text().trim(),
+                find('[data-test-invite-id="2"] [data-test-role-name]').text().trim(),
                 'displayed role of first invite'
             ).to.equal('Author');
 
             expect(
-                find(testSelector('invite-id', '2')).find(testSelector('invite-description')).text(),
+                find('[data-test-invite-id="2"] [data-test-invite-description]').text(),
                 'new invite description'
             ).to.match(/expires/);
 
             // number of users is unchanged
             expect(
-                find(testSelector('user-id')).length,
+                find('[data-test-user-id]').length,
                 'number of active users after first invite'
             ).to.equal(2);
 
@@ -249,18 +248,18 @@ describe('Acceptance: Team', function () {
 
             // number of invites increases
             expect(
-                find(testSelector('invite-id')).length,
+                find('[data-test-invite-id]').length,
                 'number of invites after second invite'
             ).to.equal(2);
 
             // invite has correct e-mail + role
             expect(
-                find(testSelector('invite-id', '3')).find(testSelector('email')).text().trim(),
+                find('[data-test-invite-id="3"] [data-test-email]').text().trim(),
                 'displayed email of second invite'
             ).to.equal('invite2@example.com');
 
             expect(
-                find(testSelector('invite-id', '3')).find(testSelector('role-name')).text().trim(),
+                find('[data-test-invite-id="3"] [data-test-role-name]').text().trim(),
                 'displayed role of second invite'
             ).to.equal('Editor');
 
@@ -297,11 +296,11 @@ describe('Acceptance: Team', function () {
 
             await click('.fullscreen-modal a.close');
             // revoke latest invite
-            await click(`${testSelector('invite-id', '3')} ${testSelector('revoke-button')}`);
+            await click('[data-test-invite-id="3"] [data-test-revoke-button]');
 
             // number of invites decreases
             expect(
-                find(testSelector('invite-id')).length,
+                find('[data-test-invite-id]').length,
                 'number of invites after revoke'
             ).to.equal(1);
 
@@ -313,7 +312,7 @@ describe('Acceptance: Team', function () {
 
             // correct invite is removed
             expect(
-                find(testSelector('invite-id')).find(testSelector('email')).text().trim(),
+                find('[data-test-invite-id] [data-test-email]').text().trim(),
                 'displayed email of remaining invite'
             ).to.equal('invite1@example.com');
 
@@ -324,12 +323,12 @@ describe('Acceptance: Team', function () {
 
             // new invite should be last in the list
             expect(
-                find(`${testSelector('invite-id')}:last`).find(testSelector('email')).text().trim(),
+                find('[data-test-invite-id]:last [data-test-email]').text().trim(),
                 'last invite email in list'
             ).to.equal('invite3@example.com');
 
             // resend first invite
-            await click(`${testSelector('invite-id', '2')} ${testSelector('resend-button')}`);
+            await click('[data-test-invite-id="2"] [data-test-resend-button]');
 
             // notification is displayed
             expect(
@@ -339,17 +338,17 @@ describe('Acceptance: Team', function () {
 
             // first invite is still at the top
             expect(
-                find(`${testSelector('invite-id')}:first-of-type`).find(testSelector('email')).text().trim(),
+                find('[data-test-invite-id]:first-of-type [data-test-email]').text().trim(),
                 'first invite email in list'
             ).to.equal('invite1@example.com');
 
             // regression test: can revoke a resent invite
-            await click(`${testSelector('invite-id')}:first-of-type ${testSelector('resend-button')}`);
-            await click(`${testSelector('invite-id')}:first-of-type ${testSelector('revoke-button')}`);
+            await click('[data-test-invite-id]:first-of-type [data-test-resend-button]');
+            await click('[data-test-invite-id]:first-of-type [data-test-revoke-button]');
 
             // number of invites decreases
             expect(
-                find(testSelector('invite-id')).length,
+                find('[data-test-invite-id]').length,
                 'number of invites after resend/revoke'
             ).to.equal(1);
 
@@ -362,40 +361,40 @@ describe('Acceptance: Team', function () {
 
         it('can manage suspended users', async function () {
             await visit('/team');
-            await click(testSelector('user-id', suspendedUser.id));
+            await click(`[data-test-user-id="${suspendedUser.id}"]`);
 
-            expect(testSelector('suspended-badge')).to.exist;
+            expect('[data-test-suspended-badge]').to.exist;
 
-            await click(testSelector('user-actions'));
-            await click(testSelector('unsuspend-button'));
-            await click(testSelector('modal-confirm'));
+            await click('[data-test-user-actions]');
+            await click('[data-test-unsuspend-button]');
+            await click('[data-test-modal-confirm]');
 
             // NOTE: there seems to be a timing issue with this test - pausing
             // here confirms that the badge is removed but the andThen is firing
             // before the page is updated
             // andThen(() => {
-            //     expect(testSelector('suspended-badge')).to.not.exist;
+            //     expect('[data-test-suspended-badge]').to.not.exist;
             // });
 
-            await click(testSelector('team-link'));
+            await click('[data-test-team-link]');
 
             // suspendedUser is now in active list
             expect(
-                find(`${testSelector('active-users')} ${testSelector('user-id', suspendedUser.id)}`)
+                find(`[data-test-active-users] [data-test-user-id="${suspendedUser.id}"]`)
             ).to.exist;
 
             // no suspended users
             expect(
-                find(`${testSelector('suspended-users')} ${testSelector('user-id')}`).length
+                find('[data-test-suspended-users] [data-test-user-id]').length
             ).to.equal(0);
 
-            await click(testSelector('user-id', suspendedUser.id));
+            await click(`[data-test-user-id="${suspendedUser.id}"]`);
 
-            await click(testSelector('user-actions'));
-            await click(testSelector('suspend-button'));
-            await click(testSelector('modal-confirm'));
+            await click('[data-test-user-actions]');
+            await click('[data-test-suspend-button]');
+            await click('[data-test-modal-confirm]');
 
-            expect(testSelector('suspended-badge')).to.exist;
+            expect('[data-test-suspended-badge]').to.exist;
         });
 
         it('can delete users', async function () {
@@ -406,7 +405,7 @@ describe('Acceptance: Team', function () {
             user2.posts = [post];
 
             await visit('/team');
-            await click(testSelector('user-id', user1.id));
+            await click(`[data-test-user-id="${user1.id}"]`);
 
             // user deletion displays modal
             await click('button.delete');
@@ -430,7 +429,7 @@ describe('Acceptance: Team', function () {
 
             // deleting a user with posts
             await visit('/team');
-            await click(testSelector('user-id', user2.id));
+            await click(`[data-test-user-id="${user2.id}"]`);
 
             await click('button.delete');
             // user has  posts so should warn about post deletion
@@ -445,7 +444,7 @@ describe('Acceptance: Team', function () {
 
             // deleted user is not in list
             expect(
-                find(testSelector('user-id', user2.id)).length,
+                find(`[data-test-user-id="${user2.id}"]`).length,
                 'deleted user is not in user list after deletion'
             ).to.equal(0);
         });
@@ -469,7 +468,7 @@ describe('Acceptance: Team', function () {
                 expect(currentURL(), 'currentURL').to.equal('/team/test-1');
                 expect(find('.user-details-bottom .first-form-group input.user-name').val(), 'current user name').to.equal('Test User');
 
-                expect(find(testSelector('save-button')).text().trim(), 'save button text').to.equal('Save');
+                expect(find('[data-test-save-button]').text().trim(), 'save button text').to.equal('Save');
 
                 // test empty user name
                 await fillIn('.user-details-bottom .first-form-group input.user-name', '');
@@ -494,9 +493,9 @@ describe('Acceptance: Team', function () {
                 expect(find('.user-details-bottom input[name="user"]').val(), 'slug value is reset to original upon empty string').to.equal('test-1');
 
                 // Save changes
-                await click(testSelector('save-button'));
+                await click('[data-test-save-button]');
 
-                expect(find(testSelector('save-button')).text().trim(), 'save button text').to.equal('Saved');
+                expect(find('[data-test-save-button]').text().trim(), 'save button text').to.equal('Saved');
 
                 // CMD-S shortcut works
                 await fillIn('.user-details-bottom input[name="user"]', 'Test User');

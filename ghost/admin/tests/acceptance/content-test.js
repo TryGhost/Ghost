@@ -1,6 +1,5 @@
 import destroyApp from '../helpers/destroy-app';
 import startApp from '../helpers/start-app';
-import testSelector from 'ember-test-selectors';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {
     authenticateSession,
@@ -50,55 +49,55 @@ describe('Acceptance: Content', function() {
 
             // Not checking request here as it won't be the last request made
             // Displays all posts + pages
-            expect(find(testSelector('post-id')).length, 'all posts count').to.equal(5);
+            expect(find('[data-test-post-id]').length, 'all posts count').to.equal(5);
 
             // show draft posts
-            await selectChoose(testSelector('type-select'), 'Draft posts');
+            await selectChoose('[data-test-type-select]', 'Draft posts');
 
             // API request is correct
             let [lastRequest] = server.pretender.handledRequests.slice(-1);
             expect(lastRequest.queryParams.status, '"drafts" request status param').to.equal('draft');
             expect(lastRequest.queryParams.staticPages, '"drafts" request staticPages param').to.equal('false');
             // Displays draft post
-            expect(find(testSelector('post-id')).length, 'drafts count').to.equal(1);
-            expect(find(testSelector('post-id', draftPost.id)), 'draft post').to.exist;
+            expect(find('[data-test-post-id]').length, 'drafts count').to.equal(1);
+            expect(find(`[data-test-post-id="${draftPost.id}"]`), 'draft post').to.exist;
 
             // show published posts
-            await selectChoose(testSelector('type-select'), 'Published posts');
+            await selectChoose('[data-test-type-select]', 'Published posts');
 
             // API request is correct
             [lastRequest] = server.pretender.handledRequests.slice(-1);
             expect(lastRequest.queryParams.status, '"published" request status param').to.equal('published');
             expect(lastRequest.queryParams.staticPages, '"published" request staticPages param').to.equal('false');
             // Displays three published posts + pages
-            expect(find(testSelector('post-id')).length, 'published count').to.equal(2);
-            expect(find(testSelector('post-id', publishedPost.id)), 'admin published post').to.exist;
-            expect(find(testSelector('post-id', authorPost.id)), 'author published post').to.exist;
+            expect(find('[data-test-post-id]').length, 'published count').to.equal(2);
+            expect(find(`[data-test-post-id="${publishedPost.id}"]`), 'admin published post').to.exist;
+            expect(find(`[data-test-post-id="${authorPost.id}"]`), 'author published post').to.exist;
 
             // show scheduled posts
-            await selectChoose(testSelector('type-select'), 'Scheduled posts');
+            await selectChoose('[data-test-type-select]', 'Scheduled posts');
 
             // API request is correct
             [lastRequest] = server.pretender.handledRequests.slice(-1);
             expect(lastRequest.queryParams.status, '"scheduled" request status param').to.equal('scheduled');
             expect(lastRequest.queryParams.staticPages, '"scheduled" request staticPages param').to.equal('false');
             // Displays scheduled post
-            expect(find(testSelector('post-id')).length, 'scheduled count').to.equal(1);
-            expect(find(testSelector('post-id', scheduledPost.id)), 'scheduled post').to.exist;
+            expect(find('[data-test-post-id]').length, 'scheduled count').to.equal(1);
+            expect(find(`[data-test-post-id="${scheduledPost.id}"]`), 'scheduled post').to.exist;
 
             // show pages
-            await selectChoose(testSelector('type-select'), 'Pages');
+            await selectChoose('[data-test-type-select]', 'Pages');
 
             // API request is correct
             [lastRequest] = server.pretender.handledRequests.slice(-1);
             expect(lastRequest.queryParams.status, '"pages" request status param').to.equal('all');
             expect(lastRequest.queryParams.staticPages, '"pages" request staticPages param').to.equal('true');
             // Displays page
-            expect(find(testSelector('post-id')).length, 'pages count').to.equal(1);
-            expect(find(testSelector('post-id', publishedPage.id)), 'page post').to.exist;
+            expect(find('[data-test-post-id]').length, 'pages count').to.equal(1);
+            expect(find(`[data-test-post-id="${publishedPage.id}"]`), 'page post').to.exist;
 
             // show all posts
-            await selectChoose(testSelector('type-select'), 'All posts');
+            await selectChoose('[data-test-type-select]', 'All posts');
 
             // API request is correct
             [lastRequest] = server.pretender.handledRequests.slice(-1);
@@ -106,7 +105,7 @@ describe('Acceptance: Content', function() {
             expect(lastRequest.queryParams.staticPages, '"all" request staticPages param').to.equal('all');
 
             // show all posts by editor
-            await selectChoose(testSelector('author-select'), editor.name);
+            await selectChoose('[data-test-author-select]', editor.name);
 
             // API request is correct
             [lastRequest] = server.pretender.handledRequests.slice(-1);
@@ -117,13 +116,13 @@ describe('Acceptance: Content', function() {
 
             // Displays editor post
             // TODO: implement "filter" param support and fix mirage post->author association
-            // expect(find(testSelector('post-id')).length, 'editor post count').to.equal(1);
-            // expect(find(testSelector('post-id', authorPost.id)), 'author post').to.exist;
+            // expect(find('[data-test-post-id]').length, 'editor post count').to.equal(1);
+            // expect(find(`[data-test-post-id="${authorPost.id}"]`), 'author post').to.exist;
 
             // TODO: test tags dropdown
 
             // Double-click on a post opens editor
-            await triggerEvent(testSelector('post-id', authorPost.id), 'dblclick');
+            await triggerEvent(`[data-test-post-id="${authorPost.id}"]`, 'dblclick');
 
             expect(currentURL(), 'url after double-click').to.equal(`/editor/${authorPost.id}`);
         });
@@ -148,15 +147,15 @@ describe('Acceptance: Content', function() {
         it('only fetches the author\'s posts', async function () {
             await visit('/');
             // trigger a filter request so we can grab the posts API request easily
-            await selectChoose(testSelector('type-select'), 'Published posts');
+            await selectChoose('[data-test-type-select]', 'Published posts');
 
             // API request includes author filter
             let [lastRequest] = server.pretender.handledRequests.slice(-1);
             expect(lastRequest.queryParams.filter).to.equal(`author:${author.slug}`);
 
             // only author's post is shown
-            expect(find(testSelector('post-id')).length, 'post count').to.equal(1);
-            expect(find(testSelector('post-id', authorPost.id)), 'author post').to.exist;
+            expect(find('[data-test-post-id]').length, 'post count').to.equal(1);
+            expect(find(`[data-test-post-id="${authorPost.id}"]`), 'author post').to.exist;
         });
     });
 });
