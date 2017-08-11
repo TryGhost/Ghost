@@ -3,7 +3,6 @@ import $ from 'jquery';
 import hbs from 'htmlbars-inline-precompile';
 import run from 'ember-runloop';
 import sinon from 'sinon';
-import testSelector from 'ember-test-selectors';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupComponentTest} from 'ember-mocha';
@@ -29,10 +28,10 @@ describe('Integration: Component: gh-theme-table', function() {
             deleteTheme=(action actionHandler)
         }}`);
 
-        expect(this.$(testSelector('themes-list')).length, 'themes list is present').to.equal(1);
-        expect(this.$(testSelector('theme-id')).length, 'number of rows').to.equal(4);
+        expect(this.$('[data-test-themes-list]').length, 'themes list is present').to.equal(1);
+        expect(this.$('[data-test-theme-id]').length, 'number of rows').to.equal(4);
 
-        let packageNames = this.$(testSelector('theme-title')).map((i, name) => {
+        let packageNames = this.$('[data-test-theme-title]').map((i, name) => {
             return $(name).text().trim();
         }).toArray();
 
@@ -47,37 +46,37 @@ describe('Integration: Component: gh-theme-table', function() {
         ]);
 
         expect(
-            this.$(testSelector('theme-active', 'true')).find(testSelector('theme-title')).text().trim(),
+            this.$('[data-test-theme-active="true"]').find('[data-test-theme-title]').text().trim(),
             'active theme is highlighted'
         ).to.equal('Daring');
 
         expect(
-            this.$(testSelector('theme-activate-button')).length === 3,
+            this.$('[data-test-theme-activate-button]').length === 3,
             'non-active themes have an activate link'
         ).to.be.true;
 
         expect(
-            this.$(testSelector('theme-active', 'true')).find(testSelector('theme-activate-button')).length === 0,
+            this.$('[data-test-theme-active="true"]').find('[data-test-theme-activate-button]').length === 0,
             'active theme doesn\'t have an activate link'
         ).to.be.true;
 
         expect(
-            this.$(testSelector('theme-download-button')).length,
+            this.$('[data-test-theme-download-button]').length,
             'all themes have a download link'
         ).to.equal(4);
 
         expect(
-            this.$(testSelector('theme-id', 'foo')).find(testSelector('theme-delete-button')).length === 1,
+            this.$('[data-test-theme-id="foo"]').find('[data-test-theme-delete-button]').length === 1,
             'non-active, non-casper theme has delete link'
         ).to.be.true;
 
         expect(
-            this.$(testSelector('theme-id', 'casper')).find(testSelector('theme-delete-button')).length === 0,
+            this.$('[data-test-theme-id="casper"]').find('[data-test-theme-delete-button]').length === 0,
             'casper doesn\'t have delete link'
         ).to.be.true;
 
         expect(
-            this.$(testSelector('theme-active', 'true')).find(testSelector('theme-delete-button')).length === 0,
+            this.$('[data-test-theme-active="true"]').find('[data-test-theme-delete-button]').length === 0,
             'active theme doesn\'t have delete link'
         ).to.be.true;
     });
@@ -101,7 +100,7 @@ describe('Integration: Component: gh-theme-table', function() {
         }}`);
 
         run(() => {
-            this.$(`${testSelector('theme-id', 'Bar')} ${testSelector('theme-delete-button')}`).click();
+            this.$('[data-test-theme-id="Bar"] [data-test-theme-delete-button]').click();
         });
 
         expect(deleteAction.calledOnce).to.be.true;
@@ -127,7 +126,7 @@ describe('Integration: Component: gh-theme-table', function() {
         }}`);
 
         run(() => {
-            this.$(`${testSelector('theme-id', 'Foo')} ${testSelector('theme-download-button')}`).click();
+            this.$('[data-test-theme-id="Foo"] [data-test-theme-download-button]').click();
         });
 
         expect(downloadAction.calledOnce).to.be.true;
@@ -153,7 +152,7 @@ describe('Integration: Component: gh-theme-table', function() {
         }}`);
 
         run(() => {
-            this.$(`${testSelector('theme-id', 'Bar')} ${testSelector('theme-activate-button')}`).click();
+            this.$('[data-test-theme-id="Bar"] [data-test-theme-activate-button]').click();
         });
 
         expect(activateAction.calledOnce).to.be.true;
@@ -178,7 +177,7 @@ describe('Integration: Component: gh-theme-table', function() {
             deleteTheme=(action actionHandler)
         }}`);
 
-        let packageNames = this.$(testSelector('theme-title')).map((i, name) => {
+        let packageNames = this.$('[data-test-theme-title]').map((i, name) => {
             return $(name).text().trim();
         }).toArray();
 

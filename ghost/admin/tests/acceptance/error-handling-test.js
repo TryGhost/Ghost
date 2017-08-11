@@ -2,7 +2,6 @@
 import Mirage from 'ember-cli-mirage';
 import destroyApp from '../helpers/destroy-app';
 import startApp from '../helpers/start-app';
-import testSelector from 'ember-test-selectors';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import {expect} from 'chai';
@@ -44,8 +43,8 @@ describe('Acceptance: Error Handling', function() {
 
                 await visit('/');
                 await click('.posts-list li:nth-of-type(2) a'); // select second post
-                await click(testSelector('publishmenu-trigger'));
-                await click(testSelector('publishmenu-save')); // "Save post"
+                await click('[data-test-publishmenu-trigger]');
+                await click('[data-test-publishmenu-save]'); // "Save post"
 
                 // has the refresh to update alert
                 expect(find('.gh-alert').length).to.equal(1);
@@ -131,8 +130,8 @@ describe('Acceptance: Error Handling', function() {
             server.create('post');
 
             await visit('/editor/1');
-            await click(testSelector('publishmenu-trigger'));
-            await click(testSelector('publishmenu-save'));
+            await click('[data-test-publishmenu-trigger]');
+            await click('[data-test-publishmenu-save]');
 
             andThen(() => {
                 expect(find('.gh-alert').length).to.equal(1);
@@ -145,8 +144,8 @@ describe('Acceptance: Error Handling', function() {
             server.del('/themes/foo/', htmlErrorResponse);
 
             await visit('/settings/design');
-            await click(`${testSelector('theme-id', 'foo')} ${testSelector('theme-delete-button')}`);
-            await click(`.fullscreen-modal ${testSelector('delete-button')}`);
+            await click('[data-test-theme-id="foo"] [data-test-theme-delete-button]');
+            await click('.fullscreen-modal [data-test-delete-button]');
 
             andThen(() => {
                 expect(find('.gh-alert').length).to.equal(1);

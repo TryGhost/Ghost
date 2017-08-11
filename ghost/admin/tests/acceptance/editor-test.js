@@ -4,7 +4,6 @@ import destroyApp from '../helpers/destroy-app';
 import moment from 'moment';
 import sinon from 'sinon';
 import startApp from '../helpers/start-app';
-import testSelector from 'ember-test-selectors';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import {expect} from 'chai';
@@ -83,110 +82,110 @@ describe('Acceptance: Editor', function() {
                 .to.equal('/editor/1');
 
             // open post settings menu
-            await click(testSelector('psm-trigger'));
+            await click('[data-test-psm-trigger]');
 
             // should error, if the publish time is in the wrong format
-            await fillIn(testSelector('date-time-picker-time-input'), 'foo');
-            await triggerEvent(testSelector('date-time-picker-time-input'), 'blur');
+            await fillIn('[data-test-date-time-picker-time-input]', 'foo');
+            await triggerEvent('[data-test-date-time-picker-time-input]', 'blur');
 
-            expect(find(testSelector('date-time-picker-error')).text().trim(), 'inline error response for invalid time')
+            expect(find('[data-test-date-time-picker-error]').text().trim(), 'inline error response for invalid time')
                 .to.equal('Must be in format: "15:00"');
 
             // should error, if the publish time is in the future
             // NOTE: date must be selected first, changing the time first will save
             // with the new time
-            await datepickerSelect(testSelector('date-time-picker-datepicker'), moment.tz('Etc/UTC'));
-            await fillIn(testSelector('date-time-picker-time-input'), futureTime.format('HH:mm'));
-            await triggerEvent(testSelector('date-time-picker-time-input'), 'blur');
+            await datepickerSelect('[data-test-date-time-picker-datepicker]', moment.tz('Etc/UTC'));
+            await fillIn('[data-test-date-time-picker-time-input]', futureTime.format('HH:mm'));
+            await triggerEvent('[data-test-date-time-picker-time-input]', 'blur');
 
-            expect(find(testSelector('date-time-picker-error')).text().trim(), 'inline error response for future time')
+            expect(find('[data-test-date-time-picker-error]').text().trim(), 'inline error response for future time')
                 .to.equal('Must be in the past');
 
             // closing the PSM will reset the invalid date/time
-            await click(testSelector('close-settings-menu'));
-            await click(testSelector('psm-trigger'));
+            await click('[data-test-close-settings-menu]');
+            await click('[data-test-psm-trigger]');
 
             expect(
-                find(testSelector('date-time-picker-error')).text().trim(),
+                find('[data-test-date-time-picker-error]').text().trim(),
                 'date picker error after closing PSM'
             ).to.equal('');
 
             expect(
-                find(testSelector('date-time-picker-date-input')).val(),
+                find('[data-test-date-time-picker-date-input]').val(),
                 'PSM date value after closing with invalid date'
             ).to.equal(moment(post1.publishedAt).format('MM/DD/YYYY'));
 
             expect(
-                find(testSelector('date-time-picker-time-input')).val(),
+                find('[data-test-date-time-picker-time-input]').val(),
                 'PSM time value after closing with invalid date'
             ).to.equal(moment(post1.publishedAt).format('HH:mm'));
 
             // saves the post with the new date
             let validTime = moment('2017-04-09 12:00');
-            await fillIn(testSelector('date-time-picker-time-input'), validTime.format('HH:mm'));
-            await triggerEvent(testSelector('date-time-picker-time-input'), 'blur');
-            await datepickerSelect(testSelector('date-time-picker-datepicker'), validTime);
+            await fillIn('[data-test-date-time-picker-time-input]', validTime.format('HH:mm'));
+            await triggerEvent('[data-test-date-time-picker-time-input]', 'blur');
+            await datepickerSelect('[data-test-date-time-picker-datepicker]', validTime);
 
             // hide psm
-            await click(testSelector('psm-trigger'));
+            await click('[data-test-psm-trigger]');
 
             // checking the flow of the saving button for a draft
             expect(
-                find(testSelector('publishmenu-trigger')).text().trim(),
+                find('[data-test-publishmenu-trigger]').text().trim(),
                 'draft publish button text'
             ).to.equal('Publish');
 
             expect(
-                find(testSelector('editor-post-status')).text().trim(),
+                find('[data-test-editor-post-status]').text().trim(),
                 'draft status text'
             ).to.equal('Draft');
 
             // click on publish now
-            await click(testSelector('publishmenu-trigger'));
+            await click('[data-test-publishmenu-trigger]');
 
             expect(
-                find(testSelector('publishmenu-draft')),
+                find('[data-test-publishmenu-draft]'),
                 'draft publish menu is shown'
             ).to.exist;
 
-            await click(testSelector('publishmenu-scheduled-option'));
+            await click('[data-test-publishmenu-scheduled-option]');
 
             expect(
-                find(testSelector('publishmenu-save')).text().trim(),
+                find('[data-test-publishmenu-save]').text().trim(),
                 'draft post schedule button text'
             ).to.equal('Schedule');
 
-            await click(testSelector('publishmenu-published-option'));
+            await click('[data-test-publishmenu-published-option]');
 
             expect(
-                find(testSelector('publishmenu-save')).text().trim(),
+                find('[data-test-publishmenu-save]').text().trim(),
                 'draft post publish button text'
             ).to.equal('Publish');
 
             // Publish the post
-            await click(testSelector('publishmenu-save'));
+            await click('[data-test-publishmenu-save]');
 
             expect(
-                find(testSelector('publishmenu-save')).text().trim(),
+                find('[data-test-publishmenu-save]').text().trim(),
                 'publish menu save button updated after draft is published'
             ).to.equal('Published');
 
             expect(
-                find(testSelector('publishmenu-published')),
+                find('[data-test-publishmenu-published]'),
                 'publish menu is shown after draft published'
             ).to.exist;
 
             expect(
-                find(testSelector('editor-post-status')).text().trim(),
+                find('[data-test-editor-post-status]').text().trim(),
                 'post status updated after draft published'
             ).to.equal('Published');
 
-            await click(testSelector('publishmenu-cancel'));
-            await click(testSelector('publishmenu-trigger'));
-            await click(testSelector('publishmenu-unpublished-option'));
+            await click('[data-test-publishmenu-cancel]');
+            await click('[data-test-publishmenu-trigger]');
+            await click('[data-test-publishmenu-unpublished-option]');
 
             expect(
-                find(testSelector('publishmenu-save')).text().trim(),
+                find('[data-test-publishmenu-save]').text().trim(),
                 'published post unpublish button text'
             ).to.equal('Unpublish');
 
@@ -194,31 +193,31 @@ describe('Acceptance: Editor', function() {
             await visit('/editor/2');
 
             expect(currentURL(), 'currentURL').to.equal('/editor/2');
-            expect(find(testSelector('date-time-picker-date-input')).val()).to.equal('12/19/2015');
-            expect(find(testSelector('date-time-picker-time-input')).val()).to.equal('16:25');
+            expect(find('[data-test-date-time-picker-date-input]').val()).to.equal('12/19/2015');
+            expect(find('[data-test-date-time-picker-time-input]').val()).to.equal('16:25');
 
             // saves the post with a new date
-            await datepickerSelect(testSelector('date-time-picker-datepicker'), moment('2016-05-10 10:00'));
-            await fillIn(testSelector('date-time-picker-time-input'), '10:00');
-            await triggerEvent(testSelector('date-time-picker-time-input'), 'blur');
+            await datepickerSelect('[data-test-date-time-picker-datepicker]', moment('2016-05-10 10:00'));
+            await fillIn('[data-test-date-time-picker-time-input]', '10:00');
+            await triggerEvent('[data-test-date-time-picker-time-input]', 'blur');
             // saving
-            await click(testSelector('publishmenu-trigger'));
+            await click('[data-test-publishmenu-trigger]');
 
             expect(
-                find(testSelector('publishmenu-save')).text().trim(),
+                find('[data-test-publishmenu-save]').text().trim(),
                 'published button text'
             ).to.equal('Update');
 
-            await click(testSelector('publishmenu-save'));
+            await click('[data-test-publishmenu-save]');
 
             expect(
-                find(testSelector('publishmenu-save')).text().trim(),
+                find('[data-test-publishmenu-save]').text().trim(),
                 'publish menu save button updated after published post is updated'
             ).to.equal('Updated');
 
             // go to settings to change the timezone
             await visit('/settings/general');
-            await click(testSelector('toggle-timezone'));
+            await click('[data-test-toggle-timezone]');
 
             expect(currentURL(), 'currentURL for settings')
                 .to.equal('/settings/general');
@@ -242,139 +241,139 @@ describe('Acceptance: Editor', function() {
                 .to.equal('/editor/2');
 
             expect(
-                find(testSelector('date-time-picker-date-input')).val(),
+                find('[data-test-date-time-picker-date-input]').val(),
                 'date after timezone change'
             ).to.equal('05/10/2016');
 
             expect(
-                find(testSelector('date-time-picker-time-input')).val(),
+                find('[data-test-date-time-picker-time-input]').val(),
                 'time after timezone change'
             ).to.equal('22:00');
 
             // unpublish
-            await click(testSelector('publishmenu-trigger'));
-            await click(testSelector('publishmenu-unpublished-option'));
+            await click('[data-test-publishmenu-trigger]');
+            await click('[data-test-publishmenu-unpublished-option]');
 
             expect(
-                find(testSelector('publishmenu-save')).text().trim(),
+                find('[data-test-publishmenu-save]').text().trim(),
                 'published post unpublish button text'
             ).to.equal('Unpublish');
 
-            await click(testSelector('publishmenu-save'));
+            await click('[data-test-publishmenu-save]');
 
             expect(
-                find(testSelector('publishmenu-save')).text().trim(),
+                find('[data-test-publishmenu-save]').text().trim(),
                 'publish menu save button updated after published post is unpublished'
             ).to.equal('Unpublished');
 
             expect(
-                find(testSelector('publishmenu-draft')),
+                find('[data-test-publishmenu-draft]'),
                 'draft menu is shown after unpublished'
             ).to.exist;
 
             expect(
-                find(testSelector('editor-post-status')).text().trim(),
+                find('[data-test-editor-post-status]').text().trim(),
                 'post status updated after unpublished'
             ).to.equal('Draft');
 
             // schedule post
-            await click(testSelector('publishmenu-cancel'));
-            await click(testSelector('publishmenu-trigger'));
+            await click('[data-test-publishmenu-cancel]');
+            await click('[data-test-publishmenu-trigger]');
 
             let newFutureTime = moment.tz('Pacific/Kwajalein').add(10, 'minutes');
-            await click(testSelector('publishmenu-scheduled-option'));
+            await click('[data-test-publishmenu-scheduled-option]');
 
             expect(
-                find(testSelector('publishmenu-save')).text().trim(),
+                find('[data-test-publishmenu-save]').text().trim(),
                 'draft post, schedule button text'
             ).to.equal('Schedule');
 
-            await datepickerSelect(`${testSelector('publishmenu-draft')} ${testSelector('date-time-picker-datepicker')}`, newFutureTime);
-            await click(testSelector('publishmenu-save'));
+            await datepickerSelect('[data-test-publishmenu-draft] [data-test-date-time-picker-datepicker]', newFutureTime);
+            await click('[data-test-publishmenu-save]');
 
             expect(
-                find(testSelector('publishmenu-save')).text().trim(),
+                find('[data-test-publishmenu-save]').text().trim(),
                 'publish menu save button updated after draft is scheduled'
             ).to.equal('Scheduled');
 
-            await click(testSelector('publishmenu-cancel'));
+            await click('[data-test-publishmenu-cancel]');
 
             expect(
-                find(testSelector('publishmenu-scheduled')),
+                find('[data-test-publishmenu-scheduled]'),
                 'publish menu is not shown after closed'
             ).to.not.exist;
 
             // expect countdown to show warning, that post will be published in x minutes
-            expect(find(testSelector('schedule-countdown')).text().trim(), 'notification countdown')
+            expect(find('[data-test-schedule-countdown]').text().trim(), 'notification countdown')
                 .to.contain('Post will be published in');
 
             expect(
-                find(testSelector('publishmenu-trigger')).text().trim(),
+                find('[data-test-publishmenu-trigger]').text().trim(),
                 'scheduled publish button text'
             ).to.equal('Scheduled');
 
             expect(
-                find(testSelector('editor-post-status')).text().trim(),
+                find('[data-test-editor-post-status]').text().trim(),
                 'scheduled post status'
             ).to.equal('Scheduled');
 
             // Re-schedule
-            await click(testSelector('publishmenu-trigger'));
-            await click(testSelector('publishmenu-scheduled-option'));
+            await click('[data-test-publishmenu-trigger]');
+            await click('[data-test-publishmenu-scheduled-option]');
             expect(
-                find(testSelector('publishmenu-save')).text().trim(),
+                find('[data-test-publishmenu-save]').text().trim(),
                 'scheduled post button reschedule text'
             ).to.equal('Reschedule');
 
-            await click(testSelector('publishmenu-save'));
+            await click('[data-test-publishmenu-save]');
 
             expect(
-                find(testSelector('publishmenu-save')).text().trim(),
+                find('[data-test-publishmenu-save]').text().trim(),
                 'publish menu save button text for a rescheduled post'
             ).to.equal('Rescheduled');
 
-            await click(testSelector('publishmenu-cancel'));
+            await click('[data-test-publishmenu-cancel]');
 
             expect(
-                find(testSelector('publishmenu-scheduled')),
+                find('[data-test-publishmenu-scheduled]'),
                 'publish menu is not shown after closed'
             ).to.not.exist;
 
             expect(
-                find(testSelector('editor-post-status')).text().trim(),
+                find('[data-test-editor-post-status]').text().trim(),
                 'scheduled status text'
             ).to.equal('Scheduled');
 
             // unschedule
-            await click(testSelector('publishmenu-trigger'));
-            await click(testSelector('publishmenu-draft-option'));
+            await click('[data-test-publishmenu-trigger]');
+            await click('[data-test-publishmenu-draft-option]');
 
             expect(
-                find(testSelector('publishmenu-save')).text().trim(),
+                find('[data-test-publishmenu-save]').text().trim(),
                 'publish menu save button updated after scheduled post is unscheduled'
             ).to.equal('Unschedule');
 
-            await click(testSelector('publishmenu-save'));
+            await click('[data-test-publishmenu-save]');
 
             expect(
-                find(testSelector('publishmenu-save')).text().trim(),
+                find('[data-test-publishmenu-save]').text().trim(),
                 'publish menu save button updated after scheduled post is unscheduled'
             ).to.equal('Unscheduled');
 
-            await click(testSelector('publishmenu-cancel'));
+            await click('[data-test-publishmenu-cancel]');
 
             expect(
-                find(testSelector('publishmenu-trigger')).text().trim(),
+                find('[data-test-publishmenu-trigger]').text().trim(),
                 'publish button text after unschedule'
             ).to.equal('Publish');
 
             expect(
-                find(testSelector('editor-post-status')).text().trim(),
+                find('[data-test-editor-post-status]').text().trim(),
                 'status text after unschedule'
             ).to.equal('Draft');
 
             expect(
-                find(testSelector('schedule-countdown')),
+                find('[data-test-schedule-countdown]'),
                 'scheduled countdown after unschedule'
             ).to.not.exist;
         });
@@ -394,12 +393,12 @@ describe('Acceptance: Editor', function() {
 
             await visit(`/editor/${post.id}`);
 
-            await click(testSelector('publishmenu-trigger'));
-            await click(testSelector('publishmenu-scheduled-option'));
-            await datepickerSelect(`${testSelector('publishmenu-draft')} ${testSelector('date-time-picker-datepicker')}`, plusTenMin);
-            await fillIn(`${testSelector('publishmenu-draft')} ${testSelector('date-time-picker-time-input')}`, plusTenMin.format('HH:mm'));
-            await triggerEvent(`${testSelector('publishmenu-draft')} ${testSelector('date-time-picker-time-input')}`, 'blur');
-            await click(testSelector('publishmenu-save'));
+            await click('[data-test-publishmenu-trigger]');
+            await click('[data-test-publishmenu-scheduled-option]');
+            await datepickerSelect('[data-test-publishmenu-draft] [data-test-date-time-picker-datepicker]', plusTenMin);
+            await fillIn('[data-test-publishmenu-draft] [data-test-date-time-picker-time-input]', plusTenMin.format('HH:mm'));
+            await triggerEvent('[data-test-publishmenu-draft] [data-test-date-time-picker-time-input]', 'blur');
+            await click('[data-test-publishmenu-save]');
 
             expect(
                 find('.gh-alert').length,
@@ -421,9 +420,9 @@ describe('Acceptance: Editor', function() {
             expect(currentURL(), 'currentURL')
                 .to.equal('/editor/1');
 
-            await fillIn(testSelector('editor-title-input'), Array(260).join('a'));
-            await click(testSelector('publishmenu-trigger'));
-            await click(testSelector('publishmenu-save'));
+            await fillIn('[data-test-editor-title-input]', Array(260).join('a'));
+            await click('[data-test-publishmenu-trigger]');
+            await click('[data-test-publishmenu-save]');
 
             expect(
                 find('.gh-alert').length,
@@ -488,15 +487,15 @@ describe('Acceptance: Editor', function() {
 
             expect(currentURL(), 'currentURL')
                 .to.equal('/editor/1');
-            expect(find(testSelector('date-time-picker-date-input')).val(), 'scheduled date')
+            expect(find('[data-test-date-time-picker-date-input]').val(), 'scheduled date')
                 .to.equal(compareDateString);
-            expect(find(testSelector('date-time-picker-time-input')).val(), 'scheduled time')
+            expect(find('[data-test-date-time-picker-time-input]').val(), 'scheduled time')
                 .to.equal(compareTimeString);
             // Dropdown menu should be 'Update Post' and 'Unschedule'
-            expect(find(testSelector('publishmenu-trigger')).text().trim(), 'text in save button for scheduled post')
+            expect(find('[data-test-publishmenu-trigger]').text().trim(), 'text in save button for scheduled post')
                 .to.equal('Scheduled');
             // expect countdown to show warning, that post will be published in x minutes
-            expect(find(testSelector('schedule-countdown')).text().trim(), 'notification countdown')
+            expect(find('[data-test-schedule-countdown]').text().trim(), 'notification countdown')
                 .to.contain('Post will be published in');
         });
 
@@ -536,10 +535,10 @@ describe('Acceptance: Editor', function() {
                 'url on initial visit'
             ).to.equal('/editor');
 
-            await triggerEvent(testSelector('editor-title-input'), 'blur');
+            await triggerEvent('[data-test-editor-title-input]', 'blur');
 
             expect(
-                find(testSelector('editor-title-input')).val(),
+                find('[data-test-editor-title-input]').val(),
                 'title value after autosave'
             ).to.equal('(Untitled)');
 
@@ -556,14 +555,14 @@ describe('Acceptance: Editor', function() {
 
             // TODO: implement tests for other fields
 
-            await click(testSelector('psm-trigger'));
+            await click('[data-test-psm-trigger]');
 
             // excerpt has validation
-            await fillIn(testSelector('field', 'custom-excerpt'), Array(302).join('a'));
-            await triggerEvent(testSelector('field', 'custom-excerpt'), 'blur');
+            await fillIn('[data-test-field="custom-excerpt"]', Array(302).join('a'));
+            await triggerEvent('[data-test-field="custom-excerpt"]', 'blur');
 
             expect(
-                find(testSelector('error', 'custom-excerpt')).text().trim(),
+                find('[data-test-error="custom-excerpt"]').text().trim(),
                 'excerpt too long error'
             ).to.match(/cannot be longer than 300/);
 
@@ -573,8 +572,8 @@ describe('Acceptance: Editor', function() {
             ).to.be.blank;
 
             // changing custom excerpt auto-saves
-            await fillIn(testSelector('field', 'custom-excerpt'), 'Testing excerpt');
-            await triggerEvent(testSelector('field', 'custom-excerpt'), 'blur');
+            await fillIn('[data-test-field="custom-excerpt"]', 'Testing excerpt');
+            await triggerEvent('[data-test-field="custom-excerpt"]', 'blur');
 
             expect(
                 server.db.posts[0].custom_excerpt,
@@ -584,15 +583,15 @@ describe('Acceptance: Editor', function() {
             // -------
 
             // open code injection subview
-            await click(testSelector('button', 'codeinjection'));
+            await click('[data-test-button="codeinjection"]');
 
             // header injection has validation
-            let headerCM = find(`${testSelector('field', 'codeinjection-head')} .CodeMirror`)[0].CodeMirror;
+            let headerCM = find('[data-test-field="codeinjection-head"] .CodeMirror')[0].CodeMirror;
             await headerCM.setValue(Array(65540).join('a'));
             await triggerEvent(headerCM.getInputField(), 'blur');
 
             expect(
-                find(testSelector('error', 'codeinjection-head')).text().trim(),
+                find('[data-test-error="codeinjection-head"]').text().trim(),
                 'header injection too long error'
             ).to.match(/cannot be longer than 65535/);
 
@@ -611,12 +610,12 @@ describe('Acceptance: Editor', function() {
             ).to.equal('<script src="http://example.com/inject-head.js"></script>');
 
             // footer injection has validation
-            let footerCM = find(`${testSelector('field', 'codeinjection-foot')} .CodeMirror`)[0].CodeMirror;
+            let footerCM = find('[data-test-field="codeinjection-foot"] .CodeMirror')[0].CodeMirror;
             await footerCM.setValue(Array(65540).join('a'));
             await triggerEvent(footerCM.getInputField(), 'blur');
 
             expect(
-                find(testSelector('error', 'codeinjection-foot')).text().trim(),
+                find('[data-test-error="codeinjection-foot"]').text().trim(),
                 'footer injection too long error'
             ).to.match(/cannot be longer than 65535/);
 
@@ -635,24 +634,24 @@ describe('Acceptance: Editor', function() {
             ).to.equal('<script src="http://example.com/inject-foot.js"></script>');
 
             // closing subview switches back to main PSM view
-            await click(testSelector('button', 'close-psm-subview'));
+            await click('[data-test-button="close-psm-subview"]');
 
             expect(
-                find(testSelector('field', 'codeinjection-head')).length,
+                find('[data-test-field="codeinjection-head"]').length,
                 'header injection not present after closing subview'
             ).to.equal(0);
 
             // -------
 
             // open twitter data subview
-            await click(testSelector('button', 'twitter-data'));
+            await click('[data-test-button="twitter-data"]');
 
             // twitter title has validation
-            await fillIn(testSelector('field', 'twitter-title'), Array(302).join('a'));
-            await triggerEvent(testSelector('field', 'twitter-title'), 'blur');
+            await fillIn('[data-test-field="twitter-title"]', Array(302).join('a'));
+            await triggerEvent('[data-test-field="twitter-title"]', 'blur');
 
             expect(
-                find(testSelector('error', 'twitter-title')).text().trim(),
+                find('[data-test-error="twitter-title"]').text().trim(),
                 'twitter title too long error'
             ).to.match(/cannot be longer than 300/);
 
@@ -663,8 +662,8 @@ describe('Acceptance: Editor', function() {
 
             // changing twitter title auto-saves
             // twitter title has validation
-            await fillIn(testSelector('field', 'twitter-title'), 'Test Twitter Title');
-            await triggerEvent(testSelector('field', 'twitter-title'), 'blur');
+            await fillIn('[data-test-field="twitter-title"]', 'Test Twitter Title');
+            await triggerEvent('[data-test-field="twitter-title"]', 'blur');
 
             expect(
                 server.db.posts[0].twitter_title,
@@ -672,11 +671,11 @@ describe('Acceptance: Editor', function() {
             ).to.equal('Test Twitter Title');
 
             // twitter description has validation
-            await fillIn(testSelector('field', 'twitter-description'), Array(505).join('a'));
-            await triggerEvent(testSelector('field', 'twitter-description'), 'blur');
+            await fillIn('[data-test-field="twitter-description"]', Array(505).join('a'));
+            await triggerEvent('[data-test-field="twitter-description"]', 'blur');
 
             expect(
-                find(testSelector('error', 'twitter-description')).text().trim(),
+                find('[data-test-error="twitter-description"]').text().trim(),
                 'twitter description too long error'
             ).to.match(/cannot be longer than 500/);
 
@@ -687,8 +686,8 @@ describe('Acceptance: Editor', function() {
 
             // changing twitter description auto-saves
             // twitter description has validation
-            await fillIn(testSelector('field', 'twitter-description'), 'Test Twitter Description');
-            await triggerEvent(testSelector('field', 'twitter-description'), 'blur');
+            await fillIn('[data-test-field="twitter-description"]', 'Test Twitter Description');
+            await triggerEvent('[data-test-field="twitter-description"]', 'blur');
 
             expect(
                 server.db.posts[0].twitter_description,
@@ -696,24 +695,24 @@ describe('Acceptance: Editor', function() {
             ).to.equal('Test Twitter Description');
 
             // closing subview switches back to main PSM view
-            await click(testSelector('button', 'close-psm-subview'));
+            await click('[data-test-button="close-psm-subview"]');
 
             expect(
-                find(testSelector('field', 'twitter-title')).length,
+                find('[data-test-field="twitter-title"]').length,
                 'twitter title not present after closing subview'
             ).to.equal(0);
 
             // -------
 
             // open facebook data subview
-            await click(testSelector('button', 'facebook-data'));
+            await click('[data-test-button="facebook-data"]');
 
             // facebook title has validation
-            await fillIn(testSelector('field', 'og-title'), Array(302).join('a'));
-            await triggerEvent(testSelector('field', 'og-title'), 'blur');
+            await fillIn('[data-test-field="og-title"]', Array(302).join('a'));
+            await triggerEvent('[data-test-field="og-title"]', 'blur');
 
             expect(
-                find(testSelector('error', 'og-title')).text().trim(),
+                find('[data-test-error="og-title"]').text().trim(),
                 'facebook title too long error'
             ).to.match(/cannot be longer than 300/);
 
@@ -724,8 +723,8 @@ describe('Acceptance: Editor', function() {
 
             // changing facebook title auto-saves
             // facebook title has validation
-            await fillIn(testSelector('field', 'og-title'), 'Test Facebook Title');
-            await triggerEvent(testSelector('field', 'og-title'), 'blur');
+            await fillIn('[data-test-field="og-title"]', 'Test Facebook Title');
+            await triggerEvent('[data-test-field="og-title"]', 'blur');
 
             expect(
                 server.db.posts[0].og_title,
@@ -733,11 +732,11 @@ describe('Acceptance: Editor', function() {
             ).to.equal('Test Facebook Title');
 
             // facebook description has validation
-            await fillIn(testSelector('field', 'og-description'), Array(505).join('a'));
-            await triggerEvent(testSelector('field', 'og-description'), 'blur');
+            await fillIn('[data-test-field="og-description"]', Array(505).join('a'));
+            await triggerEvent('[data-test-field="og-description"]', 'blur');
 
             expect(
-                find(testSelector('error', 'og-description')).text().trim(),
+                find('[data-test-error="og-description"]').text().trim(),
                 'facebook description too long error'
             ).to.match(/cannot be longer than 500/);
 
@@ -748,8 +747,8 @@ describe('Acceptance: Editor', function() {
 
             // changing facebook description auto-saves
             // facebook description has validation
-            await fillIn(testSelector('field', 'og-description'), 'Test Facebook Description');
-            await triggerEvent(testSelector('field', 'og-description'), 'blur');
+            await fillIn('[data-test-field="og-description"]', 'Test Facebook Description');
+            await triggerEvent('[data-test-field="og-description"]', 'blur');
 
             expect(
                 server.db.posts[0].og_description,
@@ -757,10 +756,10 @@ describe('Acceptance: Editor', function() {
             ).to.equal('Test Facebook Description');
 
             // closing subview switches back to main PSM view
-            await click(testSelector('button', 'close-psm-subview'));
+            await click('[data-test-button="close-psm-subview"]');
 
             expect(
-                find(testSelector('field', 'og-title')).length,
+                find('[data-test-field="og-title"]').length,
                 'facebook title not present after closing subview'
             ).to.equal(0);
         });

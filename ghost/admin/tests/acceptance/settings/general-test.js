@@ -5,7 +5,6 @@ import destroyApp from '../../helpers/destroy-app';
 import mockUploads from '../../../mirage/config/uploads';
 import run from 'ember-runloop';
 import startApp from '../../helpers/start-app';
-import testSelector from 'ember-test-selectors';
 import wait from 'ember-test-helpers/wait';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
@@ -71,18 +70,18 @@ describe('Acceptance: Settings - General', function () {
                 .to.be.true;
 
             expect(
-                find(testSelector('save-button')).text().trim(),
+                find('[data-test-save-button]').text().trim(),
                 'save button text'
             ).to.equal('Save settings');
 
             expect(
-                find(testSelector('dated-permalinks-checkbox')).prop('checked'),
+                find('[data-test-dated-permalinks-checkbox]').prop('checked'),
                 'date permalinks checkbox'
             ).to.be.false;
 
-            await click(testSelector('toggle-pub-info'));
-            await fillIn(testSelector('title-input'), 'New Blog Title');
-            await click(testSelector('save-button'));
+            await click('[data-test-toggle-pub-info]');
+            await fillIn('[data-test-title-input]', 'New Blog Title');
+            await click('[data-test-save-button]');
             expect(document.title, 'page title').to.equal('Settings - General - New Blog Title');
 
             // blog icon upload
@@ -90,24 +89,24 @@ describe('Acceptance: Settings - General', function () {
 
             // has fixture icon
             expect(
-                find(testSelector('icon-img')).attr('src'),
+                find('[data-test-icon-img]').attr('src'),
                 'initial icon src'
             ).to.equal('/content/images/2014/Feb/favicon.ico');
 
             // delete removes icon + shows button
-            await click(testSelector('delete-image', 'icon'));
+            await click('[data-test-delete-image="icon"]');
             expect(
-                find(testSelector('icon-img')),
+                find('[data-test-icon-img]'),
                 'icon img after removal'
             ).to.not.exist;
             expect(
-                find(testSelector('image-upload-btn', 'icon')),
+                find('[data-test-image-upload-btn="icon"]'),
                 'icon upload button after removal'
             ).to.exist;
 
             // select file
             fileUpload(
-                testSelector('file-input', 'icon'),
+                '[data-test-file-input="icon"]',
                 ['test'],
                 {name: 'pub-icon.ico', type: 'image/x-icon'}
             );
@@ -115,7 +114,7 @@ describe('Acceptance: Settings - General', function () {
             // check progress bar exists during upload
             run.later(() => {
                 expect(
-                    find(`${testSelector('setting', 'icon')} ${testSelector('progress-bar')}`),
+                    find('[data-test-setting="icon"] [data-test-progress-bar]'),
                     'icon upload progress bar'
                 ).to.exist;
             }, 50);
@@ -123,11 +122,11 @@ describe('Acceptance: Settings - General', function () {
             // wait for upload to finish and check image is shown
             await wait();
             expect(
-                find(testSelector('icon-img')).attr('src'),
+                find('[data-test-icon-img]').attr('src'),
                 'icon img after upload'
             ).to.match(/pub-icon\.ico$/);
             expect(
-                find(testSelector('image-upload-btn', 'icon')),
+                find('[data-test-image-upload-btn="icon"]'),
                 'icon upload button after upload'
             ).to.not.exist;
 
@@ -140,14 +139,14 @@ describe('Acceptance: Settings - General', function () {
                     }]
                 };
             }, 422);
-            await click(testSelector('delete-image', 'icon'));
+            await click('[data-test-delete-image="icon"]');
             await fileUpload(
-                testSelector('file-input', 'icon'),
+                '[data-test-file-input="icon"]',
                 ['test'],
                 {name: 'pub-icon.ico', type: 'image/x-icon'}
             );
             expect(
-                find(testSelector('error', 'icon')).text().trim(),
+                find('[data-test-error="icon"]').text().trim(),
                 'failed icon upload message'
             ).to.equal('Wrong icon size');
 
@@ -159,24 +158,24 @@ describe('Acceptance: Settings - General', function () {
 
             // has fixture icon
             expect(
-                find(testSelector('logo-img')).attr('src'),
+                find('[data-test-logo-img]').attr('src'),
                 'initial logo src'
             ).to.equal('/content/images/2013/Nov/logo.png');
 
             // delete removes logo + shows button
-            await click(testSelector('delete-image', 'logo'));
+            await click('[data-test-delete-image="logo"]');
             expect(
-                find(testSelector('logo-img')),
+                find('[data-test-logo-img]'),
                 'logo img after removal'
             ).to.not.exist;
             expect(
-                find(testSelector('image-upload-btn', 'logo')),
+                find('[data-test-image-upload-btn="logo"]'),
                 'logo upload button after removal'
             ).to.exist;
 
             // select file
             fileUpload(
-                testSelector('file-input', 'logo'),
+                '[data-test-file-input="logo"]',
                 ['test'],
                 {name: 'pub-logo.png', type: 'image/png'}
             );
@@ -184,7 +183,7 @@ describe('Acceptance: Settings - General', function () {
             // check progress bar exists during upload
             run.later(() => {
                 expect(
-                    find(`${testSelector('setting', 'logo')} ${testSelector('progress-bar')}`),
+                    find('[data-test-setting="logo"] [data-test-progress-bar]'),
                     'logo upload progress bar'
                 ).to.exist;
             }, 50);
@@ -192,11 +191,11 @@ describe('Acceptance: Settings - General', function () {
             // wait for upload to finish and check image is shown
             await wait();
             expect(
-                find(testSelector('logo-img')).attr('src'),
+                find('[data-test-logo-img]').attr('src'),
                 'logo img after upload'
             ).to.match(/pub-logo\.png$/);
             expect(
-                find(testSelector('image-upload-btn', 'logo')),
+                find('[data-test-image-upload-btn="logo"]'),
                 'logo upload button after upload'
             ).to.not.exist;
 
@@ -209,14 +208,14 @@ describe('Acceptance: Settings - General', function () {
                     }]
                 };
             }, 422);
-            await click(testSelector('delete-image', 'logo'));
+            await click('[data-test-delete-image="logo"]');
             await fileUpload(
-                testSelector('file-input', 'logo'),
+                '[data-test-file-input="logo"]',
                 ['test'],
                 {name: 'pub-logo.png', type: 'image/png'}
             );
             expect(
-                find(testSelector('error', 'logo')).text().trim(),
+                find('[data-test-error="logo"]').text().trim(),
                 'failed logo upload message'
             ).to.equal('Wrong logo size');
 
@@ -228,24 +227,24 @@ describe('Acceptance: Settings - General', function () {
 
             // has fixture icon
             expect(
-                find(testSelector('cover-img')).attr('src'),
+                find('[data-test-cover-img]').attr('src'),
                 'initial coverImage src'
             ).to.equal('/content/images/2014/Feb/cover.jpg');
 
             // delete removes coverImage + shows button
-            await click(testSelector('delete-image', 'coverImage'));
+            await click('[data-test-delete-image="coverImage"]');
             expect(
-                find(testSelector('coverImage-img')),
+                find('[data-test-coverImage-img]'),
                 'coverImage img after removal'
             ).to.not.exist;
             expect(
-                find(testSelector('image-upload-btn', 'coverImage')),
+                find('[data-test-image-upload-btn="coverImage"]'),
                 'coverImage upload button after removal'
             ).to.exist;
 
             // select file
             fileUpload(
-                testSelector('file-input', 'coverImage'),
+                '[data-test-file-input="coverImage"]',
                 ['test'],
                 {name: 'pub-coverImage.png', type: 'image/png'}
             );
@@ -253,7 +252,7 @@ describe('Acceptance: Settings - General', function () {
             // check progress bar exists during upload
             run.later(() => {
                 expect(
-                    find(`${testSelector('setting', 'coverImage')} ${testSelector('progress-bar')}`),
+                    find('[data-test-setting="coverImage"] [data-test-progress-bar]'),
                     'coverImage upload progress bar'
                 ).to.exist;
             }, 50);
@@ -261,11 +260,11 @@ describe('Acceptance: Settings - General', function () {
             // wait for upload to finish and check image is shown
             await wait();
             expect(
-                find(testSelector('cover-img')).attr('src'),
+                find('[data-test-cover-img]').attr('src'),
                 'coverImage img after upload'
             ).to.match(/pub-coverImage\.png$/);
             expect(
-                find(testSelector('image-upload-btn', 'coverImage')),
+                find('[data-test-image-upload-btn="coverImage"]'),
                 'coverImage upload button after upload'
             ).to.not.exist;
 
@@ -278,14 +277,14 @@ describe('Acceptance: Settings - General', function () {
                     }]
                 };
             }, 422);
-            await click(testSelector('delete-image', 'coverImage'));
+            await click('[data-test-delete-image="coverImage"]');
             await fileUpload(
-                testSelector('file-input', 'coverImage'),
+                '[data-test-file-input="coverImage"]',
                 ['test'],
                 {name: 'pub-coverImage.png', type: 'image/png'}
             );
             expect(
-                find(testSelector('error', 'coverImage')).text().trim(),
+                find('[data-test-error="coverImage"]').text().trim(),
                 'failed coverImage upload message'
             ).to.equal('Wrong coverImage size');
 
@@ -294,7 +293,7 @@ describe('Acceptance: Settings - General', function () {
 
             // CMD-S shortcut works
             // -------------------------------------------------------------- //
-            await fillIn(testSelector('title-input'), 'CMD-S Test');
+            await fillIn('[data-test-title-input]', 'CMD-S Test');
             await triggerEvent('.gh-app', 'keydown', {
                 keyCode: 83, // s
                 metaKey: ctrlOrCmd === 'command',
@@ -309,7 +308,7 @@ describe('Acceptance: Settings - General', function () {
 
         it('renders timezone selector correctly', async function () {
             await visit('/settings/general');
-            await click(testSelector('toggle-timezone'));
+            await click('[data-test-toggle-timezone]');
 
             expect(currentURL(), 'currentURL').to.equal('/settings/general');
 
@@ -318,7 +317,7 @@ describe('Acceptance: Settings - General', function () {
             find('#activeTimezone option[value="Africa/Cairo"]').prop('selected', true);
 
             await triggerEvent('#activeTimezone', 'change');
-            await click(testSelector('save-button'));
+            await click('[data-test-save-button]');
             expect(find('#activeTimezone option:selected').text().trim()).to.equal('(GMT +2:00) Cairo, Egypt');
         });
 
@@ -326,151 +325,151 @@ describe('Acceptance: Settings - General', function () {
             await visit('/settings/general');
 
             // handles private blog settings correctly
-            expect(find(testSelector('private-checkbox')).prop('checked'), 'isPrivate checkbox').to.be.false;
+            expect(find('[data-test-private-checkbox]').prop('checked'), 'isPrivate checkbox').to.be.false;
 
-            await click(testSelector('private-checkbox'));
+            await click('[data-test-private-checkbox]');
 
-            expect(find(testSelector('private-checkbox')).prop('checked'), 'isPrivate checkbox').to.be.true;
-            expect(find(testSelector('password-input')).length, 'password input').to.equal(1);
-            expect(find(testSelector('password-input')).val(), 'password default value').to.not.equal('');
+            expect(find('[data-test-private-checkbox]').prop('checked'), 'isPrivate checkbox').to.be.true;
+            expect(find('[data-test-password-input]').length, 'password input').to.equal(1);
+            expect(find('[data-test-password-input]').val(), 'password default value').to.not.equal('');
 
-            await fillIn(testSelector('password-input'), '');
-            await triggerEvent(testSelector('password-input'), 'blur');
+            await fillIn('[data-test-password-input]', '');
+            await triggerEvent('[data-test-password-input]', 'blur');
 
-            expect(find(testSelector('password-error')).text().trim(), 'empty password error')
+            expect(find('[data-test-password-error]').text().trim(), 'empty password error')
                 .to.equal('Password must be supplied');
 
-            await fillIn(testSelector('password-input'), 'asdfg');
-            await triggerEvent(testSelector('password-input'), 'blur');
+            await fillIn('[data-test-password-input]', 'asdfg');
+            await triggerEvent('[data-test-password-input]', 'blur');
 
-            expect(find(testSelector('password-error')).text().trim(), 'present password error')
+            expect(find('[data-test-password-error]').text().trim(), 'present password error')
                 .to.equal('');
         });
 
         it('handles social blog settings correctly', async function () {
             await visit('/settings/general');
-            await click(testSelector('toggle-social'));
+            await click('[data-test-toggle-social]');
 
             // validates a facebook url correctly
             // loads fixtures and performs transform
-            expect(find(testSelector('facebook-input')).val(), 'initial facebook value')
+            expect(find('[data-test-facebook-input]').val(), 'initial facebook value')
                 .to.equal('https://www.facebook.com/test');
 
-            await triggerEvent(testSelector('facebook-input'), 'focus');
-            await triggerEvent(testSelector('facebook-input'), 'blur');
+            await triggerEvent('[data-test-facebook-input]', 'focus');
+            await triggerEvent('[data-test-facebook-input]', 'blur');
 
             // regression test: we still have a value after the input is
             // focused and then blurred without any changes
-            expect(find(testSelector('facebook-input')).val(), 'facebook value after blur with no change')
+            expect(find('[data-test-facebook-input]').val(), 'facebook value after blur with no change')
                 .to.equal('https://www.facebook.com/test');
 
-            await fillIn(testSelector('facebook-input'), 'facebook.com/username');
-            await triggerEvent(testSelector('facebook-input'), 'blur');
+            await fillIn('[data-test-facebook-input]', 'facebook.com/username');
+            await triggerEvent('[data-test-facebook-input]', 'blur');
 
-            expect(find(testSelector('facebook-input')).val()).to.be.equal('https://www.facebook.com/username');
-            expect(find(testSelector('facebook-error')).text().trim(), 'inline validation response')
+            expect(find('[data-test-facebook-input]').val()).to.be.equal('https://www.facebook.com/username');
+            expect(find('[data-test-facebook-error]').text().trim(), 'inline validation response')
                 .to.equal('');
 
-            await fillIn(testSelector('facebook-input'), 'facebook.com/pages/some-facebook-page/857469375913?ref=ts');
-            await triggerEvent(testSelector('facebook-input'), 'blur');
+            await fillIn('[data-test-facebook-input]', 'facebook.com/pages/some-facebook-page/857469375913?ref=ts');
+            await triggerEvent('[data-test-facebook-input]', 'blur');
 
-            expect(find(testSelector('facebook-input')).val()).to.be.equal('https://www.facebook.com/pages/some-facebook-page/857469375913?ref=ts');
-            expect(find(testSelector('facebook-error')).text().trim(), 'inline validation response')
+            expect(find('[data-test-facebook-input]').val()).to.be.equal('https://www.facebook.com/pages/some-facebook-page/857469375913?ref=ts');
+            expect(find('[data-test-facebook-error]').text().trim(), 'inline validation response')
                 .to.equal('');
 
-            await fillIn(testSelector('facebook-input'), '*(&*(%%))');
-            await triggerEvent(testSelector('facebook-input'), 'blur');
+            await fillIn('[data-test-facebook-input]', '*(&*(%%))');
+            await triggerEvent('[data-test-facebook-input]', 'blur');
 
-            expect(find(testSelector('facebook-error')).text().trim(), 'inline validation response')
+            expect(find('[data-test-facebook-error]').text().trim(), 'inline validation response')
                 .to.equal('The URL must be in a format like https://www.facebook.com/yourPage');
 
-            await fillIn(testSelector('facebook-input'), 'http://github.com/username');
-            await triggerEvent(testSelector('facebook-input'), 'blur');
+            await fillIn('[data-test-facebook-input]', 'http://github.com/username');
+            await triggerEvent('[data-test-facebook-input]', 'blur');
 
-            expect(find(testSelector('facebook-input')).val()).to.be.equal('https://www.facebook.com/username');
-            expect(find(testSelector('facebook-error')).text().trim(), 'inline validation response')
+            expect(find('[data-test-facebook-input]').val()).to.be.equal('https://www.facebook.com/username');
+            expect(find('[data-test-facebook-error]').text().trim(), 'inline validation response')
                 .to.equal('');
 
-            await fillIn(testSelector('facebook-input'), 'http://github.com/pages/username');
-            await triggerEvent(testSelector('facebook-input'), 'blur');
+            await fillIn('[data-test-facebook-input]', 'http://github.com/pages/username');
+            await triggerEvent('[data-test-facebook-input]', 'blur');
 
-            expect(find(testSelector('facebook-input')).val()).to.be.equal('https://www.facebook.com/pages/username');
-            expect(find(testSelector('facebook-error')).text().trim(), 'inline validation response')
+            expect(find('[data-test-facebook-input]').val()).to.be.equal('https://www.facebook.com/pages/username');
+            expect(find('[data-test-facebook-error]').text().trim(), 'inline validation response')
                 .to.equal('');
 
-            await fillIn(testSelector('facebook-input'), 'testuser');
-            await triggerEvent(testSelector('facebook-input'), 'blur');
+            await fillIn('[data-test-facebook-input]', 'testuser');
+            await triggerEvent('[data-test-facebook-input]', 'blur');
 
-            expect(find(testSelector('facebook-input')).val()).to.be.equal('https://www.facebook.com/testuser');
-            expect(find(testSelector('facebook-error')).text().trim(), 'inline validation response')
+            expect(find('[data-test-facebook-input]').val()).to.be.equal('https://www.facebook.com/testuser');
+            expect(find('[data-test-facebook-error]').text().trim(), 'inline validation response')
                 .to.equal('');
 
-            await fillIn(testSelector('facebook-input'), 'ab99');
-            await triggerEvent(testSelector('facebook-input'), 'blur');
+            await fillIn('[data-test-facebook-input]', 'ab99');
+            await triggerEvent('[data-test-facebook-input]', 'blur');
 
-            expect(find(testSelector('facebook-input')).val()).to.be.equal('https://www.facebook.com/ab99');
-            expect(find(testSelector('facebook-error')).text().trim(), 'inline validation response')
+            expect(find('[data-test-facebook-input]').val()).to.be.equal('https://www.facebook.com/ab99');
+            expect(find('[data-test-facebook-error]').text().trim(), 'inline validation response')
                 .to.equal('');
 
-            await fillIn(testSelector('facebook-input'), 'page/ab99');
-            await triggerEvent(testSelector('facebook-input'), 'blur');
+            await fillIn('[data-test-facebook-input]', 'page/ab99');
+            await triggerEvent('[data-test-facebook-input]', 'blur');
 
-            expect(find(testSelector('facebook-input')).val()).to.be.equal('https://www.facebook.com/page/ab99');
-            expect(find(testSelector('facebook-error')).text().trim(), 'inline validation response')
+            expect(find('[data-test-facebook-input]').val()).to.be.equal('https://www.facebook.com/page/ab99');
+            expect(find('[data-test-facebook-error]').text().trim(), 'inline validation response')
                 .to.equal('');
 
-            await fillIn(testSelector('facebook-input'), 'page/*(&*(%%))');
-            await triggerEvent(testSelector('facebook-input'), 'blur');
+            await fillIn('[data-test-facebook-input]', 'page/*(&*(%%))');
+            await triggerEvent('[data-test-facebook-input]', 'blur');
 
-            expect(find(testSelector('facebook-input')).val()).to.be.equal('https://www.facebook.com/page/*(&*(%%))');
-            expect(find(testSelector('facebook-error')).text().trim(), 'inline validation response')
+            expect(find('[data-test-facebook-input]').val()).to.be.equal('https://www.facebook.com/page/*(&*(%%))');
+            expect(find('[data-test-facebook-error]').text().trim(), 'inline validation response')
                 .to.equal('');
 
             // validates a twitter url correctly
 
             // loads fixtures and performs transform
-            expect(find(testSelector('twitter-input')).val(), 'initial twitter value')
+            expect(find('[data-test-twitter-input]').val(), 'initial twitter value')
                 .to.equal('https://twitter.com/test');
 
-            await triggerEvent(testSelector('twitter-input'), 'focus');
-            await triggerEvent(testSelector('twitter-input'), 'blur');
+            await triggerEvent('[data-test-twitter-input]', 'focus');
+            await triggerEvent('[data-test-twitter-input]', 'blur');
 
             // regression test: we still have a value after the input is
             // focused and then blurred without any changes
-            expect(find(testSelector('twitter-input')).val(), 'twitter value after blur with no change')
+            expect(find('[data-test-twitter-input]').val(), 'twitter value after blur with no change')
                 .to.equal('https://twitter.com/test');
 
-            await fillIn(testSelector('twitter-input'), 'twitter.com/username');
-            await triggerEvent(testSelector('twitter-input'), 'blur');
+            await fillIn('[data-test-twitter-input]', 'twitter.com/username');
+            await triggerEvent('[data-test-twitter-input]', 'blur');
 
-            expect(find(testSelector('twitter-input')).val()).to.be.equal('https://twitter.com/username');
-            expect(find(testSelector('twitter-error')).text().trim(), 'inline validation response')
+            expect(find('[data-test-twitter-input]').val()).to.be.equal('https://twitter.com/username');
+            expect(find('[data-test-twitter-error]').text().trim(), 'inline validation response')
                 .to.equal('');
 
-            await fillIn(testSelector('twitter-input'), '*(&*(%%))');
-            await triggerEvent(testSelector('twitter-input'), 'blur');
+            await fillIn('[data-test-twitter-input]', '*(&*(%%))');
+            await triggerEvent('[data-test-twitter-input]', 'blur');
 
-            expect(find(testSelector('twitter-error')).text().trim(), 'inline validation response')
+            expect(find('[data-test-twitter-error]').text().trim(), 'inline validation response')
                 .to.equal('The URL must be in a format like https://twitter.com/yourUsername');
 
-            await fillIn(testSelector('twitter-input'), 'http://github.com/username');
-            await triggerEvent(testSelector('twitter-input'), 'blur');
+            await fillIn('[data-test-twitter-input]', 'http://github.com/username');
+            await triggerEvent('[data-test-twitter-input]', 'blur');
 
-            expect(find(testSelector('twitter-input')).val()).to.be.equal('https://twitter.com/username');
-            expect(find(testSelector('twitter-error')).text().trim(), 'inline validation response')
+            expect(find('[data-test-twitter-input]').val()).to.be.equal('https://twitter.com/username');
+            expect(find('[data-test-twitter-error]').text().trim(), 'inline validation response')
                 .to.equal('');
 
-            await fillIn(testSelector('twitter-input'), 'thisusernamehasmorethan15characters');
-            await triggerEvent(testSelector('twitter-input'), 'blur');
+            await fillIn('[data-test-twitter-input]', 'thisusernamehasmorethan15characters');
+            await triggerEvent('[data-test-twitter-input]', 'blur');
 
-            expect(find(testSelector('twitter-error')).text().trim(), 'inline validation response')
+            expect(find('[data-test-twitter-error]').text().trim(), 'inline validation response')
                 .to.equal('Your Username is not a valid Twitter Username');
 
-            await fillIn(testSelector('twitter-input'), 'testuser');
-            await triggerEvent(testSelector('twitter-input'), 'blur');
+            await fillIn('[data-test-twitter-input]', 'testuser');
+            await triggerEvent('[data-test-twitter-input]', 'blur');
 
-            expect(find(testSelector('twitter-input')).val()).to.be.equal('https://twitter.com/testuser');
-            expect(find(testSelector('twitter-error')).text().trim(), 'inline validation response')
+            expect(find('[data-test-twitter-input]').val()).to.be.equal('https://twitter.com/testuser');
+            expect(find('[data-test-twitter-error]').text().trim(), 'inline validation response')
                 .to.equal('');
         });
     });

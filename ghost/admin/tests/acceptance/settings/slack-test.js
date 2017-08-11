@@ -3,7 +3,6 @@ import Mirage from 'ember-cli-mirage';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import destroyApp from '../../helpers/destroy-app';
 import startApp from '../../helpers/start-app';
-import testSelector from 'ember-test-selectors';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import {expect} from 'chai';
@@ -61,13 +60,13 @@ describe('Acceptance: Settings - Apps - Slack', function () {
             expect(currentURL(), 'currentURL').to.equal('/settings/apps/slack');
 
             await fillIn('#slack-settings input[name="slack[url]"]', 'notacorrecturl');
-            await click(testSelector('save-button'));
+            await click('[data-test-save-button]');
 
             expect(find('#slack-settings .error .response').text().trim(), 'inline validation response')
                 .to.equal('The URL must be in a format like https://hooks.slack.com/services/<your personal key>');
 
             // CMD-S shortcut works
-            await fillIn(testSelector('slack-url-input'), 'https://hooks.slack.com/services/1275958430');
+            await fillIn('[data-test-slack-url-input]', 'https://hooks.slack.com/services/1275958430');
             await triggerEvent('.gh-app', 'keydown', {
                 keyCode: 83, // s
                 metaKey: ctrlOrCmd === 'command',
@@ -83,7 +82,7 @@ describe('Acceptance: Settings - Apps - Slack', function () {
                 .to.equal('');
 
             await fillIn('#slack-settings input[name="slack[url]"]', 'https://hooks.slack.com/services/1275958430');
-            await click(testSelector('send-notification-button'));
+            await click('[data-test-send-notification-button]');
 
             expect(find('.gh-notification').length, 'number of notifications').to.equal(1);
             expect(find('#slack-settings .error .response').text().trim(), 'inline validation response')
@@ -101,7 +100,7 @@ describe('Acceptance: Settings - Apps - Slack', function () {
             });
 
             await click('.gh-notification .gh-notification-close');
-            await click(testSelector('send-notification-button'));
+            await click('[data-test-send-notification-button]');
 
             // we shouldn't try to send the test request if the save fails
             let [lastRequest] = server.pretender.handledRequests.slice(-1);

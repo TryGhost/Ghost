@@ -2,7 +2,6 @@
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import destroyApp from '../../helpers/destroy-app';
 import startApp from '../../helpers/start-app';
-import testSelector from 'ember-test-selectors';
 import {
     afterEach,
     beforeEach,
@@ -65,13 +64,13 @@ describe('Acceptance: Settings - Apps - AMP', function () {
             expect(currentURL(), 'currentURL').to.equal('/settings/apps/amp');
 
             // AMP is enabled by default
-            expect(find(testSelector('amp-checkbox')).prop('checked'), 'AMP checkbox').to.be.true;
+            expect(find('[data-test-amp-checkbox]').prop('checked'), 'AMP checkbox').to.be.true;
 
-            await click(testSelector('amp-checkbox'));
+            await click('[data-test-amp-checkbox]');
 
-            expect(find(testSelector('amp-checkbox')).prop('checked'), 'AMP checkbox').to.be.false;
+            expect(find('[data-test-amp-checkbox]').prop('checked'), 'AMP checkbox').to.be.false;
 
-            await click(testSelector('save-button'));
+            await click('[data-test-save-button]');
 
             let [lastRequest] = server.pretender.handledRequests.slice(-1);
             let params = JSON.parse(lastRequest.requestBody);
@@ -79,7 +78,7 @@ describe('Acceptance: Settings - Apps - AMP', function () {
             expect(params.settings.findBy('key', 'amp').value).to.equal(false);
 
             // CMD-S shortcut works
-            await click(testSelector('amp-checkbox'));
+            await click('[data-test-amp-checkbox]');
             await triggerEvent('.gh-app', 'keydown', {
                 keyCode: 83, // s
                 metaKey: ctrlOrCmd === 'command',
@@ -91,7 +90,7 @@ describe('Acceptance: Settings - Apps - AMP', function () {
             let [newRequest] = server.pretender.handledRequests.slice(-1);
             params = JSON.parse(newRequest.requestBody);
 
-            expect(find(testSelector('amp-checkbox')).prop('checked'), 'AMP checkbox').to.be.true;
+            expect(find('[data-test-amp-checkbox]').prop('checked'), 'AMP checkbox').to.be.true;
             expect(params.settings.findBy('key', 'amp').value).to.equal(true);
         });
     });
