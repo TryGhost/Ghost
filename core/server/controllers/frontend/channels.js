@@ -46,7 +46,7 @@ rssRouter = function rssRouter(channelConfig) {
         baseRoute = '/rss/';
 
     router.get(baseRoute, stack);
-    router.get(baseRoute + ':page/', stack);
+    router.get(config.urlJoin(baseRoute, ':page(\\d+)/'), stack);
     router.get('/feed/', function redirectToRSS(req, res) {
         return utils.redirect301(res, config.paths.subdir + req.baseUrl + baseRoute);
     });
@@ -65,7 +65,7 @@ channelRouter = function router() {
 
     var channelsRouter = express.Router({mergeParams: true}),
         baseRoute = '/',
-        pageRoute = '/' + config.routeKeywords.page + '/:page/';
+        pageRoute = config.urlJoin('/', config.routeKeywords.page, ':page(\\d+)/');
 
     _.each(channelConfig.list(), function (channel) {
         var channelRouter = express.Router({mergeParams: true}),

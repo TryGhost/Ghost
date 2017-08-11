@@ -161,6 +161,14 @@ describe('Channel Routes', function () {
                     .end(doEnd(done));
             });
 
+            it('should not allow chars after the page number', function (done) {
+                request.get('/page/2abc/')
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(404)
+                    .expect(/Page not found/)
+                    .end(doEnd(done));
+            });
+
             it('should redirect page 1', function (done) {
                 request.get('/page/1/')
                     .expect('Location', '/')
