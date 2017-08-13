@@ -161,16 +161,17 @@ generate = function generate(req, res, next) {
     // Initialize RSS
     var pageParam = req.params.page !== undefined ? req.params.page : 1,
         slugParam = req.params.slug,
-        baseUrl   = getBaseUrl(req, slugParam);
+        baseUrl   = getBaseUrl(req, slugParam),
+        channelConfig = res.locals.channel;
 
     // Ensure we at least have an empty object for postOptions
-    req.channelConfig.postOptions = req.channelConfig.postOptions || {};
+    channelConfig.postOptions = channelConfig.postOptions || {};
     // Set page on postOptions for the query made later
-    req.channelConfig.postOptions.page = pageParam;
+    channelConfig.postOptions.page = pageParam;
 
-    req.channelConfig.slugParam = slugParam;
+    channelConfig.slugParam = slugParam;
 
-    return getData(req.channelConfig).then(function then(data) {
+    return getData(channelConfig).then(function then(data) {
         var maxPage = data.results.meta.pagination.pages;
 
         // If page is greater than number of pages we have, redirect to last page
