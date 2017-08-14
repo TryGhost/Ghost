@@ -30,7 +30,7 @@ labs.enabledHelper = function enabledHelper(options, callback) {
         help: i18n.t('warnings.helpers.seeLink', {url: options.helpUrl})
     };
 
-    logging.error(new errors.GhostError(errDetails));
+    logging.error(new errors.DisabledFeatureError(errDetails));
 
     errString = new SafeString(
         '<script>console.error("' + _.values(errDetails).join(' ') + '");</script>'
