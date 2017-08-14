@@ -1,29 +1,26 @@
-{{#gh-app showSettingsMenu=showSettingsMenu}}
+{{#gh-app showSettingsMenu=ui.showSettingsMenu}}
     {{#gh-skip-link anchor=".gh-main"}}Skip to main content{{/gh-skip-link}}
 
     {{gh-alerts notify="topNotificationChange"}}
 
-    <div class="gh-viewport {{if autoNav 'gh-autonav'}} {{if showSettingsMenu 'settings-menu-expanded'}} {{if showMobileMenu 'mobile-menu-expanded'}}">
+    <div class="gh-viewport {{if ui.autoNav 'gh-autonav'}} {{if ui.showSettingsMenu 'settings-menu-expanded'}} {{if ui.showMobileMenu 'mobile-menu-expanded'}}">
         {{#if showNavMenu}}
             {{gh-nav-menu
-                open=autoNavOpen
+                open=ui.autoNavOpen
                 icon=settings.settledIcon
-                toggleMaximise="toggleAutoNav"
-                openAutoNav="openAutoNav"
-                showMarkdownHelp="toggleMarkdownHelpModal"
-                closeMobileMenu="closeMobileMenu"}}
+                showMarkdownHelp="toggleMarkdownHelpModal"}}
         {{/if}}
 
-        {{#gh-main onMouseEnter="closeAutoNav" data-notification-count=topNotificationCount}}
+        {{#gh-main onMouseEnter=(action "closeAutoNav" target=ui) data-notification-count=topNotificationCount}}
             {{outlet}}
         {{/gh-main}}
 
 
         {{gh-notifications}}
 
-        {{gh-content-cover onClick="closeMenus" onMouseEnter="closeAutoNav"}}
+        {{gh-content-cover}}
 
-        {{gh-mobile-nav-bar openMobileMenu="openMobileMenu"}}
+        {{gh-mobile-nav-bar}}
     </div>{{!gh-viewport}}
 {{/gh-app}}
 

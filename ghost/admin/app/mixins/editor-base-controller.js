@@ -44,6 +44,7 @@ export default Mixin.create({
     notifications: injectService(),
     clock: injectService(),
     slugGenerator: injectService(),
+    ui: injectService(),
 
     wordcount: 0,
     cards: [], // for apps
@@ -587,14 +588,6 @@ export default Mixin.create({
             }
         },
 
-        closeNavMenu() {
-            this.get('application').send('closeAutoNav');
-        },
-
-        closeMenus() {
-            this.get('application').send('closeMenus');
-        },
-
         toggleLeaveEditorModal(transition) {
             let leaveTransition = this.get('leaveEditorTransition');
 
@@ -673,10 +666,6 @@ export default Mixin.create({
 
         setWordcount(wordcount) {
             this.set('wordcount', wordcount);
-        },
-
-        toggleAutoNav() {
-            this.get('application').send('toggleAutoNav');
         }
     }
 });

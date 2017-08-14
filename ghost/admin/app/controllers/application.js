@@ -1,11 +1,12 @@
-import Controller from 'ember-controller';
-import computed from 'ember-computed';
-import injectService from 'ember-service/inject';
+import Controller from '@ember/controller';
+import {computed} from '@ember/object';
+import {inject as injectService} from '@ember/service';
 
 export default Controller.extend({
     dropdown: injectService(),
     session: injectService(),
     settings: injectService(),
+    ui: injectService(),
 
     showNavMenu: computed('currentPath', 'session.isAuthenticated', 'session.user.isFulfilled', function () {
         // we need to defer showing the navigation menu until the session.user
@@ -19,45 +20,11 @@ export default Controller.extend({
     }),
 
     topNotificationCount: 0,
-    showMobileMenu: false,
-    showSettingsMenu: false,
     showMarkdownHelpModal: false,
-
-    autoNav: false,
-    autoNavOpen: computed('autoNav', {
-        get() {
-            return false;
-        },
-        set(key, value) {
-            if (this.get('autoNav')) {
-                return value;
-            }
-            return false;
-        }
-    }),
 
     actions: {
         topNotificationChange(count) {
             this.set('topNotificationCount', count);
-        },
-
-        toggleAutoNav() {
-            this.toggleProperty('autoNav');
-        },
-
-        openAutoNav() {
-            this.set('autoNavOpen', true);
-        },
-
-        closeAutoNav() {
-            if (this.get('autoNavOpen')) {
-                this.get('dropdown').closeDropdowns();
-            }
-            this.set('autoNavOpen', false);
-        },
-
-        closeMobileMenu() {
-            this.set('showMobileMenu', false);
         }
     }
 });

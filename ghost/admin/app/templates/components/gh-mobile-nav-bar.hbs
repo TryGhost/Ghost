@@ -5,5 +5,5 @@
     {{#link-to "posts" classNames="gh-nav-main-content"}}{{inline-svg "content"}}Content{{/link-to}}
 {{/if}}
 {{#link-to "team" classNames="gh-nav-main-users"}}{{inline-svg "account-group"}}Team{{/link-to}}
-<div class="gh-mobile-nav-bar-more" {{action "openMobileMenu"}}>{{inline-svg "icon" class="icon-gh"}}More</div>
+<div class="gh-mobile-nav-bar-more" {{action "openMobileMenu" target=ui}}>{{inline-svg "icon" class="icon-gh"}}More</div>
 {{yield}}

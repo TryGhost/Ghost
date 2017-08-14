@@ -25,7 +25,7 @@
                     onOpen=(action "cancelAutosave")}}
             {{/unless}}
 
-            <button type="button" class="post-settings" title="Settings" {{action "openSettingsMenu"}} data-test-psm-trigger>
+            <button type="button" class="post-settings" title="Settings" {{action "openSettingsMenu" target=ui}} data-test-psm-trigger>
                 {{inline-svg "settings"}}
             </button>
         </section>
@@ -151,9 +151,7 @@
 {{#liquid-wormhole}}
     {{gh-post-settings-menu
         model=model
-        showSettingsMenu=application.showSettingsMenu
-        closeNavMenu=(action "closeNavMenu")
-        closeMenus=(action "closeMenus")
+        showSettingsMenu=ui.showSettingsMenu
         deletePost=(action "toggleDeletePostModal")
         updateSlug=updateSlug
     }}

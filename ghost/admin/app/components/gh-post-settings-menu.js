@@ -7,7 +7,6 @@ import injectService from 'ember-service/inject';
 import moment from 'moment';
 import run from 'ember-runloop';
 import {guidFor} from 'ember-metal/utils';
-import {invokeAction} from 'ember-invoke-action';
 import {task, timeout} from 'ember-concurrency';
 
 const PSM_ANIMATION_LENGTH = 400;
@@ -23,6 +22,7 @@ export default Component.extend(SettingsMenuMixin, {
     slugGenerator: injectService(),
     session: injectService(),
     settings: injectService(),
+    ui: injectService(),
 
     model: null,
 
@@ -493,14 +493,6 @@ export default Component.extend(SettingsMenuMixin, {
                 this.showError(error);
                 this.get('model').rollbackAttributes();
             });
-        },
-
-        closeNavMenu() {
-            invokeAction(this, 'closeNavMenu');
-        },
-
-        closeMenus() {
-            invokeAction(this, 'closeMenus');
         },
 
         changeAuthor(newAuthor) {

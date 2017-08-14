@@ -30,12 +30,12 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
 
     config: injectService(),
     feature: injectService(),
-    dropdown: injectService(),
     lazyLoader: injectService(),
     notifications: injectService(),
     settings: injectService(),
     upgradeNotification: injectService(),
     tour: injectService(),
+    ui: injectService(),
 
     beforeModel() {
         return this.get('config').fetch();
@@ -129,20 +129,8 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
     },
 
     actions: {
-        openMobileMenu() {
-            this.controller.set('showMobileMenu', true);
-        },
-
-        openSettingsMenu() {
-            this.controller.set('showSettingsMenu', true);
-        },
-
         closeMenus() {
-            this.get('dropdown').closeDropdowns();
-            this.controller.setProperties({
-                showSettingsMenu: false,
-                showMobileMenu: false
-            });
+            this.get('ui').closeMenus();
         },
 
         didTransition() {

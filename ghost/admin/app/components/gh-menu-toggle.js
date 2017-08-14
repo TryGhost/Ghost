@@ -19,6 +19,10 @@ export default Component.extend({
     isMobile: reads('mediaQueries.isMobile'),
     maximise: false,
 
+    // closure actions
+    desktopAction() {},
+    mobileAction() {},
+
     iconClass: computed('maximise', 'isMobile', function () {
         if (this.get('maximise') && !this.get('isMobile')) {
             return 'icon-maximise';
@@ -29,10 +33,10 @@ export default Component.extend({
 
     click() {
         if (this.get('isMobile')) {
-            this.sendAction('mobileAction');
+            this.mobileAction();
         } else {
             this.toggleProperty('maximise');
-            this.sendAction('desktopAction');
+            this.desktopAction();
         }
     }
 });
