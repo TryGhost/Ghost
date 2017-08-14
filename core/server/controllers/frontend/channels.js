@@ -35,7 +35,7 @@ function handlePageParam(req, res, next, page) {
 
 rssRouter = function rssRouter(channelConfig) {
     function rssConfigMiddleware(req, res, next) {
-        req.channelConfig.isRSS = true;
+        res.locals.channel.isRSS = true;
         next();
     }
 
@@ -57,7 +57,7 @@ rssRouter = function rssRouter(channelConfig) {
 channelRouter = function router() {
     function channelConfigMiddleware(channel) {
         return function doChannelConfig(req, res, next) {
-            req.channelConfig = _.cloneDeep(channel);
+            res.locals.channel = _.cloneDeep(channel);
             next();
         };
     }

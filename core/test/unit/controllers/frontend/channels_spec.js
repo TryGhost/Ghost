@@ -29,7 +29,8 @@ describe('Channels', function () {
     // Run a test which should result in a render
     function testChannelRender(props, assertions, done) {
         res = {
-            redirect: sandbox.spy()
+            redirect: sandbox.spy(),
+            locals: {}
         };
 
         res.render = function (view) {
@@ -47,7 +48,8 @@ describe('Channels', function () {
     function testChannelRedirect(props, assertions, done) {
         res = {
             render: sandbox.spy(),
-            set: sandbox.spy()
+            set: sandbox.spy(),
+            locals: {}
         };
 
         res.redirect = function (status, path) {
@@ -66,7 +68,8 @@ describe('Channels', function () {
         res = {
             redirect: sandbox.spy(),
             render: sandbox.spy(),
-            set: sandbox.spy()
+            set: sandbox.spy(),
+            locals: {}
         };
 
         _.extend(req, props);
