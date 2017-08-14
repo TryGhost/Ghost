@@ -166,7 +166,7 @@ export default Component.extend({
         // NOTE: for...of loop results in a transpilation that errors in Edge,
         // once we drop IE11 support we should be able to use native for...of
         for (let i = 0; i < files.length; i++) {
-            uploads.push(this.get('_uploadFile').perform(files[i]));
+            uploads.push(this.get('_uploadFile').perform(files[i], i));
         }
 
         // populates this.errors and this.uploadUrls
@@ -179,7 +179,7 @@ export default Component.extend({
         this.onComplete(this.get('uploadUrls'));
     }).drop(),
 
-    _uploadFile: task(function* (file) {
+    _uploadFile: task(function* (file, index) {
         let ajax = this.get('ajax');
         let formData = this._getFormData(file);
         let url = `${ghostPaths().apiRoot}${this.get('uploadUrl')}`;
@@ -219,7 +219,7 @@ export default Component.extend({
                 url: uploadUrl
             };
 
-            this.get('uploadUrls').pushObject(result);
+            this.get('uploadUrls')[index] = result;
             this.onUploadSuccess(result);
 
             return true;

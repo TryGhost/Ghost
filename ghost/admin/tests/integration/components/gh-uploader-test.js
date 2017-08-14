@@ -137,6 +137,29 @@ describe('Integration: Component: gh-uploader', function() {
             expect(results[0].fileName).to.equal('file2.png');
         });
 
+        it('onComplete returns results in same order as selected', async function () {
+            // first request has a delay to simulate larger file
+            server.post('/ghost/api/v0.1/uploads/', function () {
+                // second request has no delay to simulate small file
+                stubSuccessfulUpload(server, 0);
+
+                return [200, {'Content-Type': 'application/json'}, '"/content/images/test.png"'];
+            }, 100);
+
+            this.set('uploadsFinished', sinon.spy());
+
+            this.render(hbs`{{#gh-uploader files=files onComplete=(action uploadsFinished)}}{{/gh-uploader}}`);
+            this.set('files', [
+                createFile(['test'], {name: 'file1.png'}), // large - finishes last
+                createFile(['test'], {name: 'file2.png'})  // small - finishes first
+            ]);
+            await wait();
+
+            let [results] = this.get('uploadsFinished').getCall(0).args;
+            expect(results.length).to.equal(2);
+            expect(results[0].fileName).to.equal('file1.png');
+        });
+
         it('doesn\'t allow new files to be set whilst uploading', async function () {
             let errorSpy = sinon.spy(console, 'error');
             stubSuccessfulUpload(server, 100);
