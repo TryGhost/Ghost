@@ -54,6 +54,13 @@ var ghostErrors = {
             errorType: 'ThemeValidationError',
             errorDetails: {}
         }, options));
+    },
+    UpdateError: function UpdateError(options) {
+        GhostError.call(this, _.merge({
+            statusCode: 400,
+            errorType: 'UpdateError',
+            errorDetails: {}
+        }, options));
     }
 };
 
