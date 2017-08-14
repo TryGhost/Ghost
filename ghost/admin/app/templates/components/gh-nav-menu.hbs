@@ -1,4 +1,4 @@
-{{gh-menu-toggle desktopAction="toggleAutoNav" mobileAction="closeMobileMenu"}}
+{{gh-menu-toggle desktopAction=(action "toggleAutoNav" target=ui) mobileAction=(action "closeMobileMenu" target=ui)}}
 {{#gh-basic-dropdown horizontalPosition="right" calculatePosition=userDropdownPosition as |dropdown|}}
     {{#dropdown.trigger tagName="header" class="gh-nav-menu"}}
         <div class="gh-nav-menu-icon" style={{iconStyle}}></div>
@@ -91,7 +91,7 @@
 <footer class="gh-nav-foot">
     <a class="gh-nav-foot-sitelink" href="{{config.blogUrl}}/" target="_blank">View site {{inline-svg "external"}}</a>
 </footer>
-<div class="gh-autonav-toggle" {{action "openAutoNav" on="mouseEnter"}}></div>
+<div class="gh-autonav-toggle" {{action "openAutoNav" on="mouseEnter" target=ui}}></div>
 
 {{gh-tour-item "getting-started"
     target=".gh-menu-toggle"

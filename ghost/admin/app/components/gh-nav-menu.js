@@ -6,10 +6,11 @@ import {htmlSafe} from 'ember-string';
 
 export default Component.extend({
     config: injectService(),
-    session: injectService(),
-    ghostPaths: injectService(),
     feature: injectService(),
+    ghostPaths: injectService(),
     routing: injectService('-routing'),
+    session: injectService(),
+    ui: injectService(),
 
     tagName: 'nav',
     classNames: ['gh-nav'],
@@ -74,20 +75,8 @@ export default Component.extend({
     },
 
     actions: {
-        toggleAutoNav() {
-            this.sendAction('toggleMaximise');
-        },
-
         showMarkdownHelp() {
             this.sendAction('showMarkdownHelp');
-        },
-
-        closeMobileMenu() {
-            this.sendAction('closeMobileMenu');
-        },
-
-        openAutoNav() {
-            this.sendAction('openAutoNav');
         }
     }
 });

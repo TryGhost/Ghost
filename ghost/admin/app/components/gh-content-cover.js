@@ -6,23 +6,25 @@ should be closed when the user clicks elsewhere.
 
 Example:
 ```
-{{gh-content-cover onClick="closeMenus" onMouseEnter="closeAutoNav"}}
+{{gh-content-cover}}
 ```
 **/
 
 import Component from 'ember-component';
+import {inject as injectService} from '@ember/service';
 
 export default Component.extend({
+    ui: injectService(),
+
     classNames: ['content-cover'],
 
-    onClick: null,
     onMouseEnter: null,
 
     click() {
-        this.sendAction('onClick');
+        this.get('ui').closeMenus();
     },
 
     mouseEnter() {
-        this.sendAction('onMouseEnter');
+        this.get('ui').closeAutoNav();
     }
 });
