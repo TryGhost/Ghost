@@ -2,12 +2,18 @@ var should = require('should'),
     supertest = require('supertest'),
     testUtils = require('../../../utils'),
     path = require('path'),
+    sinon = require('sinon'),
     config = require('../../../../../core/server/config'),
+    models = require('../../../../../core/server/models'),
+    fs = require('fs'),
+    _ = require('lodash'),
     ghost = testUtils.startGhost,
-    request;
+    request,
+
+    sandbox = sinon.sandbox.create();
 
 describe('DB API', function () {
-    var accesstoken = '', ghostServer;
+    var accesstoken = '', ghostServer, clients, backupClient, schedulerClient, backupQuery, schedulerQuery, fsStub;
 
     before(function (done) {
         // starting ghost automatically populates the db
@@ -21,8 +27,18 @@ describe('DB API', function () {
             return testUtils.doAuth(request);
         }).then(function (token) {
             accesstoken = token;
+            return models.Client.findAll();
+        }).then(function (result) {
+            clients = result.toJSON();
+            backupClient = _.find(clients, {slug: 'ghost-backup'});
+            schedulerClient = _.find(clients, {slug: 'ghost-scheduler'});
+
             done();
         }).catch(done);
+    });
+
+    afterEach(function () {
+        sandbox.restore();
     });
 
     after(function () {
@@ -93,6 +109,42 @@ describe('DB API', function () {
                 if (err) {
                     return done(err);
                 }
+
+                done();
+            });
+    });
+
+    it('export can be triggered by backup client', function (done) {
+        backupQuery = '?client_id=' + backupClient.slug + '&client_secret=' + backupClient.secret;
+        fsStub = sandbox.stub(fs, 'writeFile').yields();
+        request.post(testUtils.API.getApiQuery('db/backup' + backupQuery))
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                res.body.should.match(/content\/data/);
+                fsStub.calledOnce.should.eql(true);
+
+                done();
+            });
+    });
+
+    it('export can be triggered by backup client', function (done) {
+        schedulerQuery = '?client_id=' + schedulerClient.slug + '&client_secret=' + schedulerClient.secret;
+        fsStub = sandbox.stub(fs, 'writeFile').yields();
+        request.post(testUtils.API.getApiQuery('db/backup' + schedulerQuery))
+            .expect('Content-Type', /json/)
+            .expect(403)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                should.exist(res.body.errors);
+                res.body.errors[0].errorType.should.eql('NoPermissionError');
+                fsStub.called.should.eql(false);
 
                 done();
             });

@@ -298,7 +298,8 @@ User = ghostBookshelf.Model.extend({
             validOptions = {
                 findOne: ['withRelated', 'status'],
                 setup: ['id'],
-                edit: ['withRelated', 'id'],
+                edit: ['withRelated', 'id', 'overrideOptions'],
+                add: ['overrideOptions'],
                 findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status'],
                 findAll: ['filter']
             };
