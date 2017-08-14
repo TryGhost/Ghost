@@ -1,5 +1,5 @@
 // # API routes
-var debug = require('debug')('ghost:api'),
+var debug = require('ghost-ignition').debug('api'),
     express = require('express'),
     tmpdir = require('os').tmpdir,
 

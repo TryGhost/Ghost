@@ -1,6 +1,6 @@
 // # Ghost Server
 // Handles the creation of an HTTP Server for Ghost
-var debug = require('debug')('ghost:server'),
+var debug = require('ghost-ignition').debug('server'),
     Promise = require('bluebird'),
     fs = require('fs'),
     path = require('path'),
