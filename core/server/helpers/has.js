@@ -40,6 +40,14 @@ function evaluateIntegerMatch(expr, integer) {
     }, false);
 }
 
+function evaluateStringMatch(expr, str, ci) {
+    if (ci) {
+        return expr && str && expr.toLocaleLowerCase() === str.toLocaleLowerCase();
+    }
+
+    return expr === str;
+}
+
 module.exports = function has(options) {
     options = options || {};
     options.hash = options.hash || {};
@@ -48,16 +56,22 @@ module.exports = function has(options) {
         author = this.author ? this.author.name : null,
         number = options.data.number,
         index = options.data.index,
+        slug = this.slug,
+        id = this.id,
         tagList = options.hash.tag || false,
         authorList = options.hash.author || false,
         numberList = options.hash.number || false,
         indexList = options.hash.index || false,
+        slugParam = options.hash.slug || false,
+        idParam = options.hash.id || false,
         tagsOk,
         authorOk,
         numberOk,
-        indexOk;
+        indexOk,
+        slugOk,
+        idOk;
 
-    if (!tagList && !authorList && !numberList && !indexList) {
+    if (!tagList && !authorList && !numberList && !indexList && !slugParam && !idParam) {
         logging.warn(i18n.t('warnings.helpers.has.invalidAttribute'));
         return;
     }
@@ -66,8 +80,10 @@ module.exports = function has(options) {
     authorOk = authorList && evaluateAuthorList(authorList, author) || false;
     numberOk = numberList && evaluateIntegerMatch(numberList, number) || false;
     indexOk = indexList && evaluateIntegerMatch(indexList, index) || false;
+    slugOk = slugParam && evaluateStringMatch(slugParam, slug, true) || false;
+    idOk = idParam && evaluateStringMatch(idParam, id, true) || false;
 
-    if (tagsOk || authorOk || numberOk || indexOk) {
+    if (tagsOk || authorOk || numberOk || indexOk || slugOk || idOk) {
         return options.fn(this);
     }
     return options.inverse(this);
