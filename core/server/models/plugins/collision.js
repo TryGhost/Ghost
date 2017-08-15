@@ -55,7 +55,7 @@ module.exports = function (Bookshelf) {
 
                 if (Object.keys(changed).length) {
                     if (clientUpdatedAt.diff(serverUpdatedAt) !== 0) {
-                        return Promise.reject(new errors.InternalServerError({
+                        return Promise.reject(new errors.UpdateCollisionError({
                             message: 'Saving failed! Someone else is editing this post.',
                             code: 'UPDATE_COLLISION'
                         }));
