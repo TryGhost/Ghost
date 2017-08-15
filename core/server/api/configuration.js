@@ -16,7 +16,7 @@ function fetchAvailableTimezones() {
 }
 
 function fetchPrivateConfig() {
-    var unsplashConfig = config.get('unsplash') ? config.get('unsplash').applicationId : '';
+    var unsplashConfig = config.get('unsplash') || {};
 
     return {
         unsplashAPI: unsplashConfig
