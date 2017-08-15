@@ -344,4 +344,68 @@ describe('{{#has}} helper', function () {
             inverse.callCount.should.eql(5);
         });
     });
+
+    describe('slug match', function () {
+        it('matches on an exact slug (pass)', function () {
+            thisCtx = {slug: 'welcome'};
+
+            // {{#has slug="welcome"}}
+            callHasHelper(thisCtx, {slug: 'welcome'});
+
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
+
+        it('matches on an exact slug (fail)', function () {
+            thisCtx = {slug: 'welcome'};
+
+            // {{#has slug="welcome-to-ghost"}}
+            callHasHelper(thisCtx, {slug: 'welcome-to-ghost'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+
+        it('fails gracefully if there is no slug (fail)', function () {
+            thisCtx = {};
+
+            // {{#has slug="welcome-to-ghost"}}
+            callHasHelper(thisCtx, {slug: 'welcome-to-ghost'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+    });
+
+    describe('id match', function () {
+        it('matches on an exact id (pass)', function () {
+            thisCtx = {id: '5981fbed98141579627e9a5a'};
+
+            // {{#has id="5981fbed98141579627e9a5a"}}
+            callHasHelper(thisCtx, {id: '5981fbed98141579627e9a5a'});
+
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
+
+        it('matches on an exact id (fail)', function () {
+            thisCtx = {id: '5981fbed98141579627e9a5a'};
+
+            // {{#has id="5981fbed98141579627e9a5a"}}
+            callHasHelper(thisCtx, {id: '5981fbed98141579627e9abc'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+
+        it('fails gracefully if there is no id (fail)', function () {
+            thisCtx = {};
+
+            // {{#has id="5981fbed98141579627e9a5a"}}
+            callHasHelper(thisCtx, {id: '5981fbed98141579627e9abc'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+    });
 });
