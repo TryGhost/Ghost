@@ -244,7 +244,6 @@ Post = ghostBookshelf.Model.extend({
             this.set('plaintext', htmlToText.fromString(this.get('html'), {
                 wordwrap: 80,
                 ignoreImage: true,
-                linkHrefBaseUrl: utils.url.urlFor('home').replace(/\/$/, ''),
                 hideLinkHrefIfSameAsText: true,
                 preserveNewlines: true,
                 returnDomByDefault: true,
