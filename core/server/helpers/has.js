@@ -29,14 +29,14 @@ function evaluateAuthorList(expr, author) {
     return _.includes(authorList, author.toLocaleLowerCase());
 }
 
-function evaluateNumberList(expr, number) {
+function evaluateIntegerMatch(expr, integer) {
     var nthMatch = expr.match(/^nth:(\d+)/);
     if (nthMatch) {
-        return number % parseInt(nthMatch[1], 10) === 0;
+        return integer % parseInt(nthMatch[1], 10) === 0;
     }
 
-    return expr.split(',').reduce(function (bool, _number) {
-        return bool || parseInt(_number, 10) === number;
+    return expr.split(',').reduce(function (bool, _integer) {
+        return bool || parseInt(_integer, 10) === integer;
     }, false);
 }
 
@@ -64,8 +64,8 @@ module.exports = function has(options) {
 
     tagsOk = tagList && evaluateTagList(tagList, tags) || false;
     authorOk = authorList && evaluateAuthorList(authorList, author) || false;
-    numberOk = numberList && evaluateNumberList(numberList, number) || false;
-    indexOk = indexList && evaluateNumberList(indexList, index) || false;
+    numberOk = numberList && evaluateIntegerMatch(numberList, number) || false;
+    indexOk = indexList && evaluateIntegerMatch(indexList, index) || false;
 
     if (tagsOk || authorOk || numberOk || indexOk) {
         return options.fn(this);
