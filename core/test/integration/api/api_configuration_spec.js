@@ -89,8 +89,9 @@ describe('Configuration API', function () {
             response.configuration.should.be.an.Array().with.lengthOf(1);
             props = response.configuration[0];
 
-            // value not available, because settings API was not called yet
-            props.hasOwnProperty('unsplashApi').should.eql(false);
+            // property is set, but value not available, because settings API was not called yet
+            props.should.have.property('unsplashAPI').which.is.an.Object();
+            props.unsplashAPI.should.be.empty();
 
             done();
         }).catch(done);
