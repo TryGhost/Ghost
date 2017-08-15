@@ -80,6 +80,9 @@
         },
         "slack": {
             "defaultValue": "[{\"url\":\"\"}]"
+        },
+        "unsplash": {
+            "defaultValue": ""
         }
     },
     "theme": {
