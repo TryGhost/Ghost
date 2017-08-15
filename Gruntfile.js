@@ -78,7 +78,7 @@ var overrides      = require('./core/server/overrides'),
             },
 
             // ### grunt-express-server
-            // Start a Ghost expess server for use in development and testing
+            // Start a Ghost express server for use in development and testing
             express: {
                 options: {
                     script: 'index.js',

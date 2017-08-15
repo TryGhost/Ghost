@@ -4,14 +4,14 @@
 
 /*global require, module */
 
-var debug = require('debug')('ghost:channels:single'),
-    api         = require('../../api'),
-    utils       = require('../../utils'),
-    filters     = require('../../filters'),
-    templates   = require('./templates'),
+var debug = require('ghost-ignition').debug('channels:single'),
+    api = require('../../api'),
+    utils = require('../../utils'),
+    filters = require('../../filters'),
+    templates = require('./templates'),
     handleError = require('./error'),
     formatResponse = require('./format-response'),
-    postLookup     = require('./post-lookup'),
+    postLookup = require('./post-lookup'),
     setResponseContext = require('./context'),
     setRequestIsSecure = require('./secure'),
 

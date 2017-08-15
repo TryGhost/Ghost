@@ -1,6 +1,6 @@
 var fs = require('fs-extra'),
     _ = require('lodash'),
-    debug = require('debug')('ghost:custom-redirects'),
+    debug = require('ghost-ignition').debug('custom-redirects'),
     config = require('../config'),
     errors = require('../errors'),
     logging = require('../logging');

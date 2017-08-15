@@ -1,7 +1,7 @@
 // It's important to keep the requires absolutely minimal here,
 // As this cache is used in SO many other areas, we may open ourselves to
 // circular dependency bugs.
-var debug = require('debug')('ghost:settings:cache'),
+var debug = require('ghost-ignition').debug('settings:cache'),
     _ = require('lodash'),
     events = require('../events'),
     /**

@@ -1,4 +1,4 @@
-var debug = require('debug')('ghost:themes'),
+var debug = require('ghost-ignition').debug('themes'),
     events = require('../events'),
     errors = require('../errors'),
     logging = require('../logging'),

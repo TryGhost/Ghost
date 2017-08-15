@@ -1,15 +1,15 @@
-var debug = require('debug')('ghost:channels:render'),
-    _           = require('lodash'),
-    errors      = require('../../errors'),
-    i18n        = require('../../i18n'),
-    filters     = require('../../filters'),
-    safeString  = require('../../utils/index').safeString,
-    handleError        = require('./error'),
-    fetchData          = require('./fetch-data'),
-    formatResponse     = require('./format-response'),
+var debug = require('ghost-ignition').debug('channels:render'),
+    _ = require('lodash'),
+    errors = require('../../errors'),
+    i18n = require('../../i18n'),
+    filters = require('../../filters'),
+    safeString = require('../../utils/index').safeString,
+    handleError = require('./error'),
+    fetchData = require('./fetch-data'),
+    formatResponse = require('./format-response'),
     setResponseContext = require('./context'),
     setRequestIsSecure = require('./secure'),
-    templates          = require('./templates');
+    templates = require('./templates');
 
 function renderChannel(req, res, next) {
     debug('renderChannel called');

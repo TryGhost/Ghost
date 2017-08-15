@@ -1,6 +1,6 @@
 // # Themes API
 // RESTful API for Themes
-var debug = require('debug')('ghost:api:themes'),
+var debug = require('ghost-ignition').debug('api:themes'),
     Promise = require('bluebird'),
     fs = require('fs-extra'),
     errors = require('../errors'),

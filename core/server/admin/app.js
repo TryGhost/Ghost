@@ -1,4 +1,4 @@
-var debug = require('debug')('ghost:admin'),
+var debug = require('ghost-ignition').debug('admin'),
     config = require('../config'),
     express = require('express'),
     // Admin only middleware
