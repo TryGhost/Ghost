@@ -1,5 +1,6 @@
 var fs = require('fs-extra'),
     _ = require('lodash'),
+    debug = require('ghost-ignition').debug('custom-redirects'),
     config = require('../config'),
     errors = require('../errors'),
     logging = require('../logging');
@@ -10,6 +11,7 @@ var fs = require('fs-extra'),
  * file loads synchronously, because we need to register the routes before anything else
  */
 module.exports = function redirects(blogApp) {
+    debug('redirects loading');
     try {
         var redirects = fs.readFileSync(config.getContentPath('data') + '/redirects.json', 'utf-8');
         redirects = JSON.parse(redirects);
@@ -58,4 +60,6 @@ module.exports = function redirects(blogApp) {
             }));
         }
     }
+
+    debug('redirects loaded');
 };

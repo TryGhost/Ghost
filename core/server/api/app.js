@@ -1,5 +1,5 @@
 // # API routes
-var debug = require('debug')('ghost:api'),
+var debug = require('ghost-ignition').debug('api'),
     express = require('express'),
     tmpdir = require('os').tmpdir,
 
@@ -67,7 +67,6 @@ function apiRoutes() {
     // ## Configuration
     apiRouter.get('/configuration', api.http(api.configuration.read));
     apiRouter.get('/configuration/:key', authenticatePrivate, api.http(api.configuration.read));
-    apiRouter.get('/configuration/timezones', authenticatePrivate, api.http(api.configuration.read));
 
     // ## Posts
     apiRouter.get('/posts', authenticatePublic, api.http(api.posts.browse));

@@ -1,4 +1,4 @@
-var debug = require('debug')('ghost:app'),
+var debug = require('ghost-ignition').debug('app'),
     express = require('express'),
 
     // app requires
@@ -23,17 +23,6 @@ module.exports = function setupParentApp() {
     parentApp.enable('trust proxy');
 
     parentApp.use(logRequest);
-
-    if (debug.enabled) {
-        // debug keeps a timer, so this is super useful
-        parentApp.use((function () {
-            var reqDebug = require('debug')('ghost:req');
-            return function debugLog(req, res, next) {
-                reqDebug('Request', req.originalUrl);
-                next();
-            };
-        })());
-    }
 
     // enabled gzip compression by default
     if (config.get('compress') !== false) {
