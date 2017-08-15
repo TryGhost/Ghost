@@ -1,4 +1,4 @@
-var debug = require('debug')('ghost:admin:controller'),
+var debug = require('ghost-ignition').debug('admin:controller'),
     _ = require('lodash'),
     path = require('path'),
     config = require('../config'),

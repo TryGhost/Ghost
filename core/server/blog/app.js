@@ -1,4 +1,4 @@
-var debug = require('debug')('ghost:blog'),
+var debug = require('ghost-ignition').debug('blog'),
     path = require('path'),
 
     // App requires

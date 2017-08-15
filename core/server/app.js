@@ -1,4 +1,4 @@
-var debug = require('debug')('ghost:app'),
+var debug = require('ghost-ignition').debug('app'),
     express = require('express'),
 
     // app requires
