@@ -45,7 +45,7 @@ describe('{{#get}} helper', function () {
             result().should.be.an.Object().with.property(
                 'string',
                 '<script>console.error("The {{get}} helper is not available. ' +
-                'The Public API labs flag must be enabled if you wish to use the {{get}} helper. ' +
+                'The Public API flag must be enabled in labs if you wish to use the {{get}} helper. ' +
                 'See https://help.ghost.org/hc/en-us/articles/115000301672-Public-API-Beta");</script>'
             );
 
