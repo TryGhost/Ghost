@@ -47,14 +47,17 @@ module.exports = function has(options) {
     var tags = _.map(this.tags, 'name'),
         author = this.author ? this.author.name : null,
         number = options.data.number,
+        index = options.data.index,
         tagList = options.hash.tag || false,
         authorList = options.hash.author || false,
         numberList = options.hash.number || false,
+        indexList = options.hash.index || false,
         tagsOk,
         authorOk,
-        numberOk;
+        numberOk,
+        indexOk;
 
-    if (!tagList && !authorList && !numberList) {
+    if (!tagList && !authorList && !numberList && !indexList) {
         logging.warn(i18n.t('warnings.helpers.has.invalidAttribute'));
         return;
     }
@@ -62,8 +65,9 @@ module.exports = function has(options) {
     tagsOk = tagList && evaluateTagList(tagList, tags) || false;
     authorOk = authorList && evaluateAuthorList(authorList, author) || false;
     numberOk = numberList && evaluateNumberList(numberList, number) || false;
+    indexOk = indexList && evaluateNumberList(indexList, index) || false;
 
-    if (tagsOk || authorOk || numberOk) {
+    if (tagsOk || authorOk || numberOk || indexOk) {
         return options.fn(this);
     }
     return options.inverse(this);
