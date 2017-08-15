@@ -40,3 +40,4 @@ SECURITY.md
 bower_components/**
 .editorconfig
 gulpfile.js
+!content/themes/casper/gulpfile.js
