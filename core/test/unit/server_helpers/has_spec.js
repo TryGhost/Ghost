@@ -156,4 +156,192 @@ describe('{{#has}} helper', function () {
             inverse.called.should.be.true();
         });
     });
+
+    describe('number match (1-based index)', function () {
+        it('will match on an exact number (pass)', function () {
+            handlebarsOptions.data = {number: 6};
+
+            callHasHelper(thisCtx, {number: '6'});
+
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
+
+        it('will match on an exact number (fail)', function () {
+            handlebarsOptions.data = {number: 5};
+
+            callHasHelper(thisCtx, {number: '6'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+
+        it('will match on an exact number (loop)', function () {
+            for (var number = 1; number < 9; number += 1) {
+                handlebarsOptions.data = {number: number};
+                // Will match 6
+                callHasHelper(thisCtx, {number: '6'});
+            }
+
+            fn.calledOnce.should.be.true();
+            inverse.called.should.be.true();
+            inverse.callCount.should.eql(7);
+        });
+
+        it('will match on a number list (pass)', function () {
+            handlebarsOptions.data = {number: 6};
+
+            callHasHelper(thisCtx, {number: '1, 3, 6,12'});
+
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
+
+        it('will match on a number list (fail)', function () {
+            handlebarsOptions.data = {number: 5};
+
+            callHasHelper(thisCtx, {number: '1, 3, 6,12'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+
+        it('will match on a number list (loop)', function () {
+            for (var number = 1; number < 9; number += 1) {
+                handlebarsOptions.data = {number: number};
+                // Will match 1, 3, 6
+                callHasHelper(thisCtx, {number: '1, 3, 6,12'});
+            }
+
+            fn.called.should.be.true();
+            fn.callCount.should.eql(3);
+            inverse.called.should.be.true();
+            inverse.callCount.should.eql(5);
+        });
+
+        it('will match on a nth pattern (pass)', function () {
+            handlebarsOptions.data = {number: 6};
+
+            callHasHelper(thisCtx, {number: 'nth:3'});
+
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
+
+        it('will match on a nth pattern (fail)', function () {
+            handlebarsOptions.data = {number: 5};
+
+            callHasHelper(thisCtx, {number: 'nth:3'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+
+        it('will match on a nth pattern (loop)', function () {
+            for (var number = 1; number < 9; number += 1) {
+                handlebarsOptions.data = {number: number};
+                // Will match 3 & 6
+                callHasHelper(thisCtx, {number: 'nth:3'});
+            }
+
+            fn.called.should.be.true();
+            fn.callCount.should.eql(2);
+            inverse.called.should.be.true();
+            inverse.callCount.should.eql(6);
+        });
+    });
+
+    describe('index match (0-based index)', function () {
+        it('will match on an exact index (pass)', function () {
+            handlebarsOptions.data = {index: 6};
+
+            callHasHelper(thisCtx, {index: '6'});
+
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
+
+        it('will match on an exact index (fail)', function () {
+            handlebarsOptions.data = {index: 5};
+
+            callHasHelper(thisCtx, {index: '6'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+
+        it('will match on an exact index (loop)', function () {
+            for (var index = 0; index < 8; index += 1) {
+                handlebarsOptions.data = {index: index};
+                // Will match 6
+                callHasHelper(thisCtx, {index: '6'});
+            }
+
+            fn.calledOnce.should.be.true();
+            inverse.called.should.be.true();
+            inverse.callCount.should.eql(7);
+        });
+
+        it('will match on an index list (pass)', function () {
+            handlebarsOptions.data = {index: 6};
+
+            callHasHelper(thisCtx, {index: '1, 3, 6,12'});
+
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
+
+        it('will match on an index list (fail)', function () {
+            handlebarsOptions.data = {index: 5};
+
+            callHasHelper(thisCtx, {index: '1, 3, 6,12'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+
+        it('will match on an index list (loop)', function () {
+            for (var index = 0; index < 8; index += 1) {
+                handlebarsOptions.data = {index: index};
+                // Will match 1, 3, 6
+                callHasHelper(thisCtx, {index: '1, 3, 6,12'});
+            }
+
+            fn.called.should.be.true();
+            fn.callCount.should.eql(3);
+            inverse.called.should.be.true();
+            inverse.callCount.should.eql(5);
+        });
+
+        it('will match on a nth pattern (pass)', function () {
+            handlebarsOptions.data = {index: 6};
+
+            callHasHelper(thisCtx, {index: 'nth:3'});
+
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
+
+        it('will match on a nth pattern (fail)', function () {
+            handlebarsOptions.data = {index: 5};
+
+            callHasHelper(thisCtx, {index: 'nth:3'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+
+        it('will match on a nth pattern (loop)', function () {
+            for (var index = 0; index < 8; index += 1) {
+                handlebarsOptions.data = {index: index};
+                // Will match 0, 3, 6
+                callHasHelper(thisCtx, {index: 'nth:3'});
+            }
+
+            fn.called.should.be.true();
+            fn.callCount.should.eql(3);
+            inverse.called.should.be.true();
+            inverse.callCount.should.eql(5);
+        });
+    });
 });
