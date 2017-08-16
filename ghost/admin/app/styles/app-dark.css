@@ -34,6 +34,7 @@
 @import "components/publishmenu.css";
 @import "components/popovers.css";
 @import "components/tour.css";
+@import "components/unsplash.css";
 
 
 /* Layouts: Groups of Components
@@ -127,7 +128,8 @@ input,
     stroke: var(--darkgrey);
 }
 
-.gh-main {
+.gh-main,
+.gh-unsplash-window {
     background: #263238;
 }
 
@@ -281,7 +283,8 @@ input,
     border-color: #fff;
 }
 
-.gh-logo {
+.gh-logo,
+.gh-unsplash-logo {
     filter: invert(100%) brightness(150%);
 }
 
@@ -299,4 +302,8 @@ input,
 
 .user-cover-edit {
     color: #fff;
+}
+
+.gh-unsplash-zoom {
+    background: rgba(0,0,0,0.8);
 }
