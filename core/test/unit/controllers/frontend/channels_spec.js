@@ -30,13 +30,20 @@ describe('Channels', function () {
     function testChannelRender(props, assertions, done) {
         res = {
             redirect: sandbox.spy(),
-            locals: {}
+            locals: {
+                // Fake the ghost locals middleware, which doesn't happen when calling a channel router directly
+                relativeUrl: props.url
+            }
         };
 
-        res.render = function (view) {
-            assertions(view);
-            res.redirect.called.should.be.false();
-            done();
+        res.render = function (view, data) {
+            try {
+                assertions.call(this, view, data);
+                res.redirect.called.should.be.false();
+                done();
+            } catch (err) {
+                done(err);
+            }
         };
 
         _.extend(req, props);
@@ -49,13 +56,20 @@ describe('Channels', function () {
         res = {
             render: sandbox.spy(),
             set: sandbox.spy(),
-            locals: {}
+            locals: {
+                // Fake the ghost locals middleware, which doesn't happen when calling a channel router directly
+                relativeUrl: props.url
+            }
         };
 
         res.redirect = function (status, path) {
-            assertions(status, path);
-            res.render.called.should.be.false();
-            done();
+            try {
+                assertions.call(this, status, path);
+                res.render.called.should.be.false();
+                done();
+            } catch (err) {
+                done(err);
+            }
         };
 
         _.extend(req, props);
@@ -69,16 +83,23 @@ describe('Channels', function () {
             redirect: sandbox.spy(),
             render: sandbox.spy(),
             set: sandbox.spy(),
-            locals: {}
+            locals: {
+                // Fake the ghost locals middleware, which doesn't happen when calling a channel router directly
+                relativeUrl: props.url
+            }
         };
 
         _.extend(req, props);
 
         channelRouter(req, res, function (empty) {
-            assertions(empty);
-            res.redirect.called.should.be.false();
-            res.render.called.should.be.false();
-            done();
+            try {
+                assertions.call(this, empty);
+                res.redirect.called.should.be.false();
+                res.render.called.should.be.false();
+                done();
+            } catch (err) {
+                done(err);
+            }
         });
     }
 
@@ -141,6 +162,11 @@ describe('Channels', function () {
             testChannelRender({url: '/'}, function (view) {
                 should.exist(view);
                 view.should.eql('index');
+
+                should.exist(this.locals);
+                this.locals.should.have.property('context').which.is.an.Array();
+                this.locals.context.should.containEql('index');
+
                 postAPIStub.calledOnce.should.be.true();
             }, done);
         });
@@ -151,6 +177,11 @@ describe('Channels', function () {
             testChannelRender({url: '/'}, function (view) {
                 should.exist(view);
                 view.should.eql('home');
+
+                should.exist(this.locals);
+                this.locals.should.have.property('context').which.is.an.Array();
+                this.locals.context.should.containEql('index');
+
                 postAPIStub.calledOnce.should.be.true();
             }, done);
         });
@@ -160,6 +191,11 @@ describe('Channels', function () {
                 testChannelRender({url: '/page/2/'}, function (view) {
                     should.exist(view);
                     view.should.eql('index');
+
+                    should.exist(this.locals);
+                    this.locals.should.have.property('context').which.is.an.Array();
+                    this.locals.context.should.containEql('index');
+
                     postAPIStub.calledOnce.should.be.true();
                 }, done);
             });
@@ -168,6 +204,11 @@ describe('Channels', function () {
                 testChannelRender({url: '/page/2/'}, function (view) {
                     should.exist(view);
                     view.should.eql('index');
+
+                    should.exist(this.locals);
+                    this.locals.should.have.property('context').which.is.an.Array();
+                    this.locals.context.should.containEql('index');
+
                     postAPIStub.calledOnce.should.be.true();
                 }, done);
             });
@@ -176,6 +217,11 @@ describe('Channels', function () {
                 testChannelRender({url: '/page/3/'}, function (view) {
                     should.exist(view);
                     view.should.eql('index');
+
+                    should.exist(this.locals);
+                    this.locals.should.have.property('context').which.is.an.Array();
+                    this.locals.context.should.containEql('index');
+
                     postAPIStub.calledOnce.should.be.true();
                 }, done);
             });
@@ -261,6 +307,11 @@ describe('Channels', function () {
             testChannelRender({url: '/tag/my-tag/'}, function (view) {
                 should.exist(view);
                 view.should.eql('index');
+
+                should.exist(this.locals);
+                this.locals.should.have.property('context').which.is.an.Array();
+                this.locals.context.should.containEql('tag');
+
                 postAPIStub.calledOnce.should.be.true();
                 tagAPIStub.calledOnce.should.be.true();
             }, done);
@@ -272,6 +323,11 @@ describe('Channels', function () {
             testChannelRender({url: '/tag/my-tag/'}, function (view) {
                 should.exist(view);
                 view.should.eql('tag');
+
+                should.exist(this.locals);
+                this.locals.should.have.property('context').which.is.an.Array();
+                this.locals.context.should.containEql('tag');
+
                 postAPIStub.calledOnce.should.be.true();
                 tagAPIStub.calledOnce.should.be.true();
             }, done);
@@ -284,6 +340,11 @@ describe('Channels', function () {
             testChannelRender({url: '/tag/my-tag/'}, function (view) {
                 should.exist(view);
                 view.should.eql('tag-my-tag');
+
+                should.exist(this.locals);
+                this.locals.should.have.property('context').which.is.an.Array();
+                this.locals.context.should.containEql('tag');
+
                 postAPIStub.calledOnce.should.be.true();
                 tagAPIStub.calledOnce.should.be.true();
             }, done);
@@ -304,6 +365,11 @@ describe('Channels', function () {
                 testChannelRender({url: '/tag/my-tag/page/2/'}, function (view) {
                     should.exist(view);
                     view.should.eql('tag');
+
+                    should.exist(this.locals);
+                    this.locals.should.have.property('context').which.is.an.Array();
+                    this.locals.context.should.containEql('tag');
+
                     postAPIStub.calledOnce.should.be.true();
                 }, done);
             });
@@ -315,6 +381,11 @@ describe('Channels', function () {
                 testChannelRender({url: '/tag/my-tag/page/2/'}, function (view) {
                     should.exist(view);
                     view.should.eql('tag-my-tag');
+
+                    should.exist(this.locals);
+                    this.locals.should.have.property('context').which.is.an.Array();
+                    this.locals.context.should.containEql('tag');
+
                     postAPIStub.calledOnce.should.be.true();
                 }, done);
             });
@@ -331,6 +402,11 @@ describe('Channels', function () {
                 testChannelRender({url: '/tag/my-tag/page/3/'}, function (view) {
                     should.exist(view);
                     view.should.eql('index');
+
+                    should.exist(this.locals);
+                    this.locals.should.have.property('context').which.is.an.Array();
+                    this.locals.context.should.containEql('tag');
+
                     postAPIStub.calledOnce.should.be.true();
                 }, done);
             });

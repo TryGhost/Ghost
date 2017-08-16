@@ -38,11 +38,11 @@ describe('Contexts', function () {
         res.locals.relativeUrl = url;
 
         if (channel && _.isString(channel)) {
-            req.channelConfig = channelConfig.get(channel);
+            res.locals.channel = channelConfig.get(channel);
         } else if (channel && _.isNumber(channel)) {
             pageParam = channel;
         } else if (channel) {
-            req.channelConfig = channel;
+            res.locals.channel = channel;
         }
 
         if (pageParam) {
