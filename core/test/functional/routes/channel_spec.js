@@ -251,6 +251,32 @@ describe('Channel Routes', function () {
 
         after(testUtils.teardown);
 
+        it('should return HTML for valid route', function (done) {
+            request.get('/tag/getting-started/')
+                .expect(200)
+                .expect('Content-Type', /html/)
+                .expect('Content-Type', /html/)
+                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    var $ = cheerio.load(res.text);
+
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    should.not.exist(res.headers['X-CSRF-Token']);
+                    should.not.exist(res.headers['set-cookie']);
+                    should.exist(res.headers.date);
+
+                    // @TODO: use theme from fixtures and don't rely on content/themes/casper
+                    $('body').attr('class').should.eql('tag-template tag-getting-started');
+
+                    done();
+                });
+        });
+
         it('should 404 for /tag/ route', function (done) {
             request.get('/tag/')
                 .expect('Cache-Control', testUtils.cacheRules.private)
