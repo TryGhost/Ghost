@@ -1,18 +1,14 @@
-var uuid = require('uuid'),
-    logging = require('../logging');
+var logging = require('../logging');
 
 /**
  * @TODO:
  * - move middleware to ignition?
  */
 module.exports = function logRequest(req, res, next) {
-    var startTime = Date.now(),
-        requestId = uuid.v1();
+    var startTime = Date.now();
 
     function logResponse() {
         res.responseTime = (Date.now() - startTime) + 'ms';
-        req.requestId = requestId;
-        req.userId = req.user ? (req.user.id ? req.user.id : req.user) : null;
 
         if (req.err && req.err.statusCode !== 404) {
             logging.error({req: req, res: res, err: req.err});
