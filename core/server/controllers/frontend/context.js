@@ -53,8 +53,8 @@ function setResponseContext(req, res, data) {
     }
 
     // Each page can only have at most one of these
-    if (req.channelConfig) {
-        res.locals.context.push(req.channelConfig.name);
+    if (res.locals.channel) {
+        res.locals.context.push(res.locals.channel.name);
     } else if (privatePattern.test(res.locals.relativeUrl)) {
         res.locals.context.push('private');
     } else if (subscribePattern.test(res.locals.relativeUrl) && labs.isSet('subscribers') === true) {
