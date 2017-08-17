@@ -311,3 +311,7 @@ input,
 .gh-unsplash-zoom {
     background: rgba(0,0,0,0.8);
 }
+
+.gh-contributors a:before {
+    color: var(--lightgrey);
+}
