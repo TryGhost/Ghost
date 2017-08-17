@@ -1,5 +1,6 @@
 var debug = require('ghost-ignition').debug('blog'),
     path = require('path'),
+    express = require('express'),
 
     // App requires
     config = require('../config'),
@@ -12,12 +13,14 @@ var debug = require('ghost-ignition').debug('blog'),
     // routes
     routes = require('./routes'),
 
-    // local middleware
+    // Global/shared middleware
     cacheControl = require('../middleware/cache-control'),
     urlRedirects = require('../middleware/url-redirects'),
     errorHandler = require('../middleware/error-handler'),
     maintenance = require('../middleware/maintenance'),
     prettyURLs = require('../middleware/pretty-urls'),
+
+    // local middleware
     servePublicFile = require('../middleware/serve-public-file'),
     staticTheme = require('../middleware/static-theme'),
     customRedirects = require('../middleware/custom-redirects'),
@@ -29,7 +32,7 @@ var debug = require('ghost-ignition').debug('blog'),
 module.exports = function setupBlogApp() {
     debug('Blog setup start');
 
-    var blogApp = require('express')();
+    var blogApp = express();
 
     // ## App - specific code
     // set the view engine
