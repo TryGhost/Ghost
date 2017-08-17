@@ -69,6 +69,7 @@ table td,
 }
 
 .ember-light-table .lt-column .lt-sort-icon {
+    display: inline-block;
     float: none;
     margin-left: 0.3rem;
 }
@@ -87,8 +88,7 @@ table td,
     background-size: 10px, auto, contain;
     background-repeat: no-repeat;
     height: 9px;
-    position: absolute;
-    left: -3px;
-    bottom: 3px;
     width: 15px;
+    top: 1px;
+    position: relative;
 }

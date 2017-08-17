@@ -47,7 +47,7 @@ export default Controller.extend(PaginationMixin, {
         let direction = this.get('direction');
 
         return [{
-            label: 'Email address',
+            label: 'Email Address',
             valuePath: 'email',
             sorted: order === 'email',
             ascending: direction === 'asc',
