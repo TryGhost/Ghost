@@ -1,13 +1,11 @@
-var express         = require('express'),
-    path            = require('path'),
-    config          = require('../config'),
-    frontend        = require('../controllers/frontend'),
-    channels        = require('../controllers/frontend/channels'),
-    utils           = require('../utils'),
+var express = require('express'),
+    path = require('path'),
+    config = require('../config'),
+    frontend = require('../controllers/frontend'),
+    channels = require('../controllers/frontend/channels'),
+    utils = require('../utils');
 
-    frontendRoutes;
-
-frontendRoutes = function frontendRoutes() {
+module.exports = function frontendRoutes() {
     var router = express.Router(),
         routeKeywords = config.get('routeKeywords');
 
@@ -44,5 +42,3 @@ frontendRoutes = function frontendRoutes() {
 
     return router;
 };
-
-module.exports = frontendRoutes;
