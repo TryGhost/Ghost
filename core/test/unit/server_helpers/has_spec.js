@@ -249,6 +249,24 @@ describe('{{#has}} helper', function () {
             inverse.called.should.be.true();
             inverse.callCount.should.eql(6);
         });
+
+        it('fails gracefully if there is no number property', function () {
+            handlebarsOptions.data = {};
+
+            callHasHelper(thisCtx, {number: 'nth:3'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+
+        it('fails gracefully if there is no data property', function () {
+            handlebarsOptions.data = null;
+
+            callHasHelper(thisCtx, {number: 'nth:3'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
     });
 
     describe('index match (0-based index)', function () {
@@ -343,6 +361,15 @@ describe('{{#has}} helper', function () {
             inverse.called.should.be.true();
             inverse.callCount.should.eql(5);
         });
+
+        it('fails gracefully if there is no index property', function () {
+            handlebarsOptions.data = {};
+
+            callHasHelper(thisCtx, {index: 'nth:3'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
     });
 
     describe('slug match', function () {
@@ -403,6 +430,254 @@ describe('{{#has}} helper', function () {
 
             // {{#has id="5981fbed98141579627e9a5a"}}
             callHasHelper(thisCtx, {id: '5981fbed98141579627e9abc'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+    });
+
+    describe('any match', function () {
+        it('matches on a single property (pass)', function () {
+            thisCtx = {
+                twitter: 'foo',
+                facebook: '',
+                website: null
+            };
+
+            // {{#has any="twitter"}}
+            callHasHelper(thisCtx, {any: 'twitter'});
+
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
+
+        it('matches on a single property (fail)', function () {
+            thisCtx = {
+                twitter: 'foo',
+                facebook: '',
+                website: null
+            };
+
+            // {{#has any="facebook"}}
+            callHasHelper(thisCtx, {any: 'facebook'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+
+        it('matches on multiple properties (pass)', function () {
+            thisCtx = {
+                twitter: 'foo',
+                facebook: '',
+                website: null
+            };
+
+            // {{#has any="twitter, facebook,website"}}
+            callHasHelper(thisCtx, {any: 'twitter, facebook,website'});
+
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
+
+        it('matches on multiple properties (fail)', function () {
+            thisCtx = {
+                twitter: 'foo',
+                facebook: '',
+                website: null
+            };
+
+            // {{#has any="facebook,website, foo"}}
+            callHasHelper(thisCtx, {any: 'facebook,website, foo'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+
+        it('matches on global properties (pass)', function () {
+            thisCtx = {};
+            handlebarsOptions.data = {
+                blog: {
+                    twitter: 'foo',
+                    facebook: '',
+                    website: null
+                }
+            };
+
+            // {{#has any="@blog.twitter, @blog.facebook,@blog.website"}}
+            callHasHelper(thisCtx, {any: '@blog.twitter, @blog.facebook,@blog.website'});
+
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
+
+        it('matches on global properties (fail)', function () {
+            thisCtx = {};
+            handlebarsOptions.data = {
+                blog: {
+                    twitter: 'foo',
+                    facebook: '',
+                    website: null
+                }
+            };
+
+            // {{#has any="@blog.facebook,@blog.website, @blog.foo"}}
+            callHasHelper(thisCtx, {any: '@blog.facebook,@blog.website, @not.foo'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+
+        it('matches on path expressions (pass)', function () {
+            thisCtx = {
+                author: {
+                    twitter: 'foo',
+                    facebook: '',
+                    website: null
+                }
+            };
+
+            // {{#has any="author.twitter, author.facebook,author.website"}}
+            callHasHelper(thisCtx, {any: 'author.twitter, author.facebook,author.website'});
+
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
+
+        it('matches on path expressions (fail)', function () {
+            thisCtx = {
+                author: {
+                    twitter: 'foo',
+                    facebook: '',
+                    website: null
+                }
+            };
+
+            // {{#has any="author.facebook,author.website, author.foo"}}
+            callHasHelper(thisCtx, {any: 'author.facebook,author.website, fred.foo'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+    });
+
+    describe('all match', function () {
+        it('matches on a single property (pass)', function () {
+            thisCtx = {
+                twitter: 'foo',
+                facebook: 'bar',
+                website: null
+            };
+
+            // {{#has all="twitter"}}
+            callHasHelper(thisCtx, {all: 'twitter'});
+
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
+
+        it('matches on a single property (fail)', function () {
+            thisCtx = {
+                twitter: 'foo',
+                facebook: 'bar',
+                website: null
+            };
+
+            // {{#has all="website"}}
+            callHasHelper(thisCtx, {all: 'website'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+
+        it('matches on multiple properties (pass)', function () {
+            thisCtx = {
+                twitter: 'foo',
+                facebook: 'bar',
+                website: null
+            };
+
+            // {{#has all="twitter, facebook"}}
+            callHasHelper(thisCtx, {all: 'twitter, facebook'});
+
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
+
+        it('matches on multiple properties (fail)', function () {
+            thisCtx = {
+                twitter: 'foo',
+                facebook: 'bar',
+                website: null
+            };
+
+            // {{#has all="facebook,website, foo"}}
+            callHasHelper(thisCtx, {all: 'facebook,website, foo'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+
+        it('matches on global properties (pass)', function () {
+            thisCtx = {};
+            handlebarsOptions.data = {
+                blog: {
+                    twitter: 'foo',
+                    facebook: 'bar',
+                    website: null
+                }
+            };
+
+            // {{#has all="@blog.twitter, @blog.facebook"}}
+            callHasHelper(thisCtx, {all: '@blog.twitter, @blog.facebook'});
+
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
+
+        it('matches on global properties (fail)', function () {
+            thisCtx = {};
+            handlebarsOptions.data = {
+                blog: {
+                    twitter: 'foo',
+                    facebook: 'bar',
+                    website: null
+                }
+            };
+
+            // {{#has all="@blog.facebook,@blog.website, @blog.foo"}}
+            callHasHelper(thisCtx, {all: '@blog.facebook,@blog.website, @not.foo'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+
+        it('matches on path expressions (pass)', function () {
+            thisCtx = {
+                author: {
+                    twitter: 'foo',
+                    facebook: 'bar',
+                    website: null
+                }
+            };
+
+            // {{#has all="author.twitter, author.facebook"}}
+            callHasHelper(thisCtx, {all: 'author.twitter, author.facebook'});
+
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
+
+        it('matches on path expressions (fail)', function () {
+            thisCtx = {
+                author: {
+                    twitter: 'foo',
+                    facebook: 'bar',
+                    website: null
+                }
+            };
+
+            // {{#has all="author.facebook,author.website, author.foo"}}
+            callHasHelper(thisCtx, {all: 'author.facebook,author.website, fred.foo'});
 
             fn.called.should.be.false();
             inverse.called.should.be.true();
