@@ -114,7 +114,12 @@
 .apps-card-meta {
     display: flex;
     flex-direction: column;
-    padding: 0 70px 0 0;
+    padding-right: 70px;
+}
+@media (max-width: 500px) {
+    .apps-card-meta {
+        padding-right: 20px;
+    }
 }
 
 .apps-card-app-title {
@@ -125,6 +130,11 @@
     font-size: 1.7rem;
     line-height: 1.15em;
     font-weight: bold;
+}
+@media (max-width: 500px) {
+    .apps-card-app-title {
+        font-size: 1.5rem;
+    }
 }
 
 

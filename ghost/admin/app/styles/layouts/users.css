@@ -51,6 +51,11 @@
     opacity: 0;
 }
 
+.gh-team .apps-configured {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
 .gh-team .apps-configured .gh-badge {
     margin-left: 0.75em;
 }
