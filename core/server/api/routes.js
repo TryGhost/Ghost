@@ -89,6 +89,9 @@ module.exports = function apiRoutes() {
     apiRouter.put('/subscribers/:id', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.edit));
     apiRouter.del('/subscribers/:id', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.destroy));
 
+    // ## Mailchimp
+    apiRouter.get('/mailchimp/lists', mw.authenticatePrivate, api.http(api.mailchimp.fetchLists));
+
     // ## Roles
     apiRouter.get('/roles/', mw.authenticatePrivate, api.http(api.roles.browse));
 
