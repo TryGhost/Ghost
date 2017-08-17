@@ -226,6 +226,10 @@ input,
     background: var(--lightgrey);
 }
 
+.gh-image-uploader .description {
+    color: var(--midgrey);
+}
+
 .gh-main > section.gh-editor-fullscreen {
     background: color(#212A2E l(+2%));
 }
