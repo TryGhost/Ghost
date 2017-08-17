@@ -7,9 +7,10 @@ var should = require('should'),
     testUtils = require('../../utils'),
     config = configUtils.config,
     path = require('path'),
+    rewire = require('rewire'),
 
     // stuff we are testing
-    blogIcon = require('../../../server/utils/blog-icon'),
+    blogIcon = rewire('../../../server/utils/blog-icon'),
 
     sandbox = sinon.sandbox.create();
 
@@ -21,6 +22,7 @@ describe('Blog Icon', function () {
     afterEach(function () {
         configUtils.restore();
         sandbox.restore();
+        rewire('../../../server/utils/blog-icon');
     });
 
     describe('getIconUrl', function () {
@@ -135,13 +137,56 @@ describe('Blog Icon', function () {
         });
     });
 
-    describe.skip('getIconDimensions', function () {
-        it('[success] returns icon dimensions', function (done) {
-            done();
+    describe('getIconDimensions', function () {
+        it('[success] returns .ico dimensions', function (done) {
+            blogIcon.getIconDimensions(path.join(__dirname, '../../utils/fixtures/images/favicon.ico'))
+                .then(function (result) {
+                    should.exist(result);
+                    result.should.eql({
+                        width: 48,
+                        height:48
+                    });
+                    done();
+                }).catch(done);
+        });
+
+        it('[success] returns .png dimensions', function (done) {
+            blogIcon.getIconDimensions(path.join(__dirname, '../../utils/fixtures/images/favicon.png'))
+                .then(function (result) {
+                    should.exist(result);
+                    result.should.eql({
+                        width: 100,
+                        height:100
+                    });
+                    done();
+                }).catch(done);
+        });
+
+        it('[success] returns .ico dimensions for icon with multiple sizes', function (done) {
+            blogIcon.getIconDimensions(path.join(__dirname, '../../utils/fixtures/images/favicon_multi_sizes.ico'))
+                .then(function (result) {
+                    should.exist(result);
+                    result.should.eql({
+                        width: 64,
+                        height:64
+                    });
+                    done();
+                }).catch(done);
         });
 
         it('[failure] return error message', function (done) {
-            done();
+            var sizeOfStub = sandbox.stub();
+
+            sizeOfStub.throws({error: 'image-size could not find dimensions'});
+
+            blogIcon.__set__('sizeOf', sizeOfStub);
+
+            blogIcon.getIconDimensions(path.join(__dirname, '../../utils/fixtures/images/favicon_multi_sizes.ico'))
+                .catch(function (error) {
+                    should.exist(error);
+                    error.message.should.eql('Could not fetch icon dimensions.');
+                    done();
+                });
         });
     });
 });
