@@ -83,6 +83,9 @@
         },
         "unsplash": {
             "defaultValue": ""
+        },
+        "mailchimp": {
+            "defaultValue": "{\"isActive\": false, \"apiKey\": \"\", \"selectedList\": {\"id\": \"\", \"name\": \"\"}}"
         }
     },
     "theme": {
