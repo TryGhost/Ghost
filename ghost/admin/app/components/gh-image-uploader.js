@@ -20,6 +20,7 @@ export const IMAGE_EXTENSIONS = ['gif', 'jpg', 'jpeg', 'png', 'svg'];
 
 export default Component.extend({
     ajax: injectService(),
+    config: injectService(),
     notifications: injectService(),
     settings: injectService(),
 
