@@ -324,14 +324,16 @@ _.extend(ImportManager.prototype, {
      * Each importer gets passed the data from importData which has the key matching its type - i.e. it only gets the
      * data that it should import. Each importer then handles actually importing that data into Ghost
      * @param {ImportData} importData
+     * @param {importOptions} importOptions to allow override of certain import features such as locking a user
      * @returns {Promise(ImportData)}
      */
-    doImport: function (importData) {
+    doImport: function (importData, importOptions) {
+        importOptions = importOptions || {};
         var ops = [];
         _.each(this.importers, function (importer) {
             if (importData.hasOwnProperty(importer.type)) {
                 ops.push(function () {
-                    return importer.doImport(importData[importer.type]);
+                    return importer.doImport(importData[importer.type], importOptions);
                 });
             }
         });
@@ -353,9 +355,11 @@ _.extend(ImportManager.prototype, {
      * Import From File
      * The main method of the ImportManager, call this to kick everything off!
      * @param {File} file
+     * @param {importOptions} importOptions to allow override of certain import features such as locking a user
      * @returns {Promise}
      */
-    importFromFile: function (file) {
+    importFromFile: function (file, importOptions) {
+        importOptions = importOptions || {};
         var self = this;
 
         // Step 1: Handle converting the file to usable data
@@ -365,7 +369,7 @@ _.extend(ImportManager.prototype, {
         }).then(function (importData) {
             // Step 3: Actually do the import
             // @TODO: It would be cool to have some sort of dry run flag here
-            return self.doImport(importData);
+            return self.doImport(importData, importOptions);
         }).then(function (importData) {
             // Step 4: Report on the import
             return self.generateReport(importData)
