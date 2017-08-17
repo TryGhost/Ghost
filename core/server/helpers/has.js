@@ -6,7 +6,8 @@
 var proxy = require('./proxy'),
     _ = require('lodash'),
     logging = proxy.logging,
-    i18n = proxy.i18n;
+    i18n = proxy.i18n,
+    validAttrs = ['tag', 'author', 'slug', 'id', 'number', 'index'];
 
 function evaluateTagList(expr, tags) {
     return expr.split(',').map(function (v) {
@@ -51,40 +52,32 @@ function evaluateStringMatch(expr, str, ci) {
 module.exports = function has(options) {
     options = options || {};
     options.hash = options.hash || {};
+    options.data = options.data || {};
 
-    var tags = _.map(this.tags, 'name'),
-        author = this.author ? this.author.name : null,
-        number = options.data.number,
-        index = options.data.index,
-        slug = this.slug,
-        id = this.id,
-        tagList = options.hash.tag || false,
-        authorList = options.hash.author || false,
-        numberList = options.hash.number || false,
-        indexList = options.hash.index || false,
-        slugParam = options.hash.slug || false,
-        idParam = options.hash.id || false,
-        tagsOk,
-        authorOk,
-        numberOk,
-        indexOk,
-        slugOk,
-        idOk;
+    var self = this,
+        attrs = _.pick(options.hash, validAttrs),
+        checks = {
+            tag: function () { return attrs.tag && evaluateTagList(attrs.tag, _.map(self.tags, 'name')) || false; },
+            author: function () { return attrs.author && evaluateAuthorList(attrs.author, _.get(self, 'author.name')) || false; },
+            number: function () { return attrs.number && evaluateIntegerMatch(attrs.number, options.data.number) || false; },
+            index: function () { return attrs.index && evaluateIntegerMatch(attrs.index, options.data.index) || false; },
+            slug: function () { return attrs.slug && evaluateStringMatch(attrs.slug, self.slug, true) || false; },
+            id: function () { return attrs.id && evaluateStringMatch(attrs.id, self.id, true) || false; }
+        },
+        result;
 
-    if (!tagList && !authorList && !numberList && !indexList && !slugParam && !idParam) {
+    if (_.isEmpty(attrs)) {
         logging.warn(i18n.t('warnings.helpers.has.invalidAttribute'));
         return;
     }
 
-    tagsOk = tagList && evaluateTagList(tagList, tags) || false;
-    authorOk = authorList && evaluateAuthorList(authorList, author) || false;
-    numberOk = numberList && evaluateIntegerMatch(numberList, number) || false;
-    indexOk = indexList && evaluateIntegerMatch(indexList, index) || false;
-    slugOk = slugParam && evaluateStringMatch(slugParam, slug, true) || false;
-    idOk = idParam && evaluateStringMatch(idParam, id, true) || false;
+    result = _.some(attrs, function (value, attr) {
+        return checks[attr]();
+    });
 
-    if (tagsOk || authorOk || numberOk || indexOk || slugOk || idOk) {
+    if (result) {
         return options.fn(this);
     }
+
     return options.inverse(this);
 };
