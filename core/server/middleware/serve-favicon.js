@@ -49,6 +49,10 @@ function serveFavicon() {
                     return res.redirect(302, utils.url.urlFor({relativeUrl: '/favicon' + originalExtension}));
                 }
 
+                if (filePath.match(/^http(s)?:\/\//i)) {
+                    return res.redirect(302, filePath);
+                }
+
                 storage.getStorage()
                     .read({path: filePath})
                     .then(function readFile(buf) {
