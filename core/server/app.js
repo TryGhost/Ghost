@@ -1,16 +1,16 @@
 var debug = require('ghost-ignition').debug('app'),
     express = require('express'),
 
-    // app requires
-    config          = require('./config'),
+    // App requires
+    config = require('./config'),
 
     // middleware
-    compress        = require('compression'),
-    netjet          = require('netjet'),
+    compress = require('compression'),
+    netjet = require('netjet'),
 
     // local middleware
-    ghostLocals     = require('./middleware/ghost-locals'),
-    logRequest      = require('./middleware/log-request');
+    ghostLocals = require('./middleware/ghost-locals'),
+    logRequest = require('./middleware/log-request');
 
 module.exports = function setupParentApp() {
     debug('ParentApp setup start');

@@ -1,10 +1,9 @@
-var ICO             = require('icojs'),
+var sizeOf          = require('image-size'),
     errors          = require('../errors'),
     url             = require('./url'),
     Promise         = require('bluebird'),
     i18n            = require('../i18n'),
     settingsCache   = require('../settings/cache'),
-    fs              = require('fs'),
     _               = require('lodash'),
     path            = require('path'),
     config          = require('../config'),
@@ -24,31 +23,23 @@ var ICO             = require('icojs'),
  */
 getIconDimensions = function getIconDimensions(path) {
     return new Promise(function getIconSize(resolve, reject) {
-        var arrayBuffer;
+        var dimensions;
 
         try {
-            arrayBuffer = new Uint8Array(fs.readFileSync(path)).buffer;
-        } catch (error) {
-            return reject(error);
-        }
+            dimensions = sizeOf(path);
 
-        ICO.parse(arrayBuffer).then(function (response) {
-            // CASE: ico file contains only one size
-            if (response.length === 1) {
-                return resolve({
-                    width: response[0].width,
-                    height: response[0].height
-                });
-            } else {
-                // CASE: ico file contains multiple sizes, return only the max size
-                return resolve({
-                    width: _.maxBy(response, function (w) {return w.width;}).width,
-                    height: _.maxBy(response, function (h) {return h.height;}).height
-                });
+            if (dimensions.images) {
+                dimensions.width = _.maxBy(dimensions.images, function (w) {return w.width;}).width;
+                dimensions.height = _.maxBy(dimensions.images, function (h) {return h.height;}).height;
             }
-        }).catch(function (err) {
+
+            return resolve({
+                width: dimensions.width,
+                height: dimensions.height
+            });
+        } catch (err) {
             return reject(new errors.ValidationError({message: i18n.t('errors.utils.blogIcon.error', {file: path, error: err.message})}));
-        });
+        }
     });
 };
 
