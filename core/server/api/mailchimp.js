@@ -32,9 +32,7 @@ mailchimp = {
 
             mailchimp = new Mailchimp(apiKey);
 
-            return mailchimp.get({
-                path: '/lists'
-            });
+            return mailchimp.get('/lists', {fields: 'lists.id,lists.name,total_items'});
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -44,19 +42,7 @@ mailchimp = {
         ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
-        return pipeline(tasks, options).then(function formatResponse(result) {
-            // remove details that the client doesn't need
-            var lists = _.map(result.lists, function (list) {
-                return {
-                    id: list.id,
-                    name: list.name
-                };
-            });
-
-            return {
-                lists: lists
-            };
-        }).catch(function handleMailchimpError(error) {
+        return pipeline(tasks, options).catch(function handleMailchimpError(error) {
             // TODO: return a custom error type here?
             if (error.title === 'API Key Invalid' || error.message.indexOf('invalid api key') > -1) {
                 throw new errors.ValidationError({
