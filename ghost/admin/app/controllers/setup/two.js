@@ -8,8 +8,6 @@ import {isInvalidError} from 'ember-ajax/errors';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {task} from 'ember-concurrency';
 
-const {Promise} = RSVP;
-
 export default Controller.extend(ValidationEngine, {
     ajax: injectService(),
     application: injectController(),
@@ -95,22 +93,27 @@ export default Controller.extend(ValidationEngine, {
      * @return {Ember.RSVP.Promise} A promise that takes care of both calls
      */
     _sendImage(user) {
-        let image = this.get('profileImage');
+        let formData = new FormData();
+        let imageFile = this.get('profileImage');
+        let uploadUrl = this.get('ghostPaths.url').api('uploads');
 
-        return new Promise((resolve, reject) => {
-            image.formData = {};
-            return image.submit()
-                .done((response) => {
-                    let usersUrl = this.get('ghostPaths.url').api('users', user.id.toString());
-                    user.profile_image = response;
+        formData.append('uploadimage', imageFile, imageFile.name);
 
-                    return this.get('ajax').put(usersUrl, {
-                        data: {
-                            users: [user]
-                        }
-                    }).then(resolve).catch(reject);
-                })
-                .fail(reject);
+        return this.get('ajax').post(uploadUrl, {
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: 'text'
+        }).then((response) => {
+            let imageUrl = JSON.parse(response);
+            let usersUrl = this.get('ghostPaths.url').api('users', user.id.toString());
+            user.profile_image = imageUrl;
+
+            return this.get('ajax').put(usersUrl, {
+                data: {
+                    users: [user]
+                }
+            });
         });
     },
 
@@ -225,19 +228,17 @@ export default Controller.extend(ValidationEngine, {
             return this._sendImage(result.users[0])
             .then(() => {
                 // fetch settings and private config for synchronous access before transitioning
-                return RSVP.all(promises)
-                    .then(() => {
-                        return this.transitionToRoute('setup.three');
-                    });
+                return RSVP.all(promises).then(() => {
+                    return this.transitionToRoute('setup.three');
+                });
             }).catch((resp) => {
                 this.get('notifications').showAPIError(resp, {key: 'setup.blog-details'});
             });
         } else {
             // fetch settings and private config for synchronous access before transitioning
-            return RSVP.all(promises)
-                .then(() => {
-                    return this.transitionToRoute('setup.three');
-                });
+            return RSVP.all(promises).then(() => {
+                return this.transitionToRoute('setup.three');
+            });
         }
     },
 

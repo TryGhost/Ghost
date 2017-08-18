@@ -10,8 +10,6 @@ import {assign} from 'ember-platform';
 import {isEmberArray} from 'ember-array/utils';
 import {task} from 'ember-concurrency';
 
-const {Promise} = RSVP;
-
 export default Controller.extend(ValidationEngine, {
     ajax: injectService(),
     config: injectService(),
@@ -25,7 +23,7 @@ export default Controller.extend(ValidationEngine, {
     validationType: 'signup',
 
     flowErrors: '',
-    image: null,
+    profileImage: null,
 
     authenticate: task(function* (authStrategy, authentication) {
         try {
@@ -154,23 +152,30 @@ export default Controller.extend(ValidationEngine, {
     },
 
     _sendImage() {
-        let image = this.get('image');
+        let formData = new FormData();
+        let imageFile = this.get('profileImage');
+        let uploadUrl = this.get('ghostPaths.url').api('uploads');
 
-        if (image) {
+        if (imageFile) {
+            formData.append('uploadimage', imageFile, imageFile.name);
+
             return this.get('session.user').then((user) => {
-                return new Promise((resolve, reject) => {
-                    image.formData = {};
-                    return image.submit()
-                        .done((response) => {
-                            let usersUrl = this.get('ghostPaths.url').api('users', user.id.toString());
-                            user.image = response;
-                            return this.get('ajax').put(usersUrl, {
-                                data: {
-                                    users: [user]
-                                }
-                            }).then(resolve).catch(reject);
-                        })
-                        .fail(reject);
+                return this.get('ajax').post(uploadUrl, {
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    dataType: 'text'
+                }).then((response) => {
+                    let imageUrl = JSON.parse(response);
+                    let usersUrl = this.get('ghostPaths.url').api('users', user.id.toString());
+                    // eslint-disable-next-line
+                    user.profile_image = imageUrl;
+
+                    return this.get('ajax').put(usersUrl, {
+                        data: {
+                            users: [user]
+                        }
+                    });
                 });
             });
         }
