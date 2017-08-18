@@ -1,7 +1,7 @@
+import $ from 'jquery';
 import Component from 'ember-component';
 import injectService from 'ember-service/inject';
 import request from 'ember-ajax/request';
-import run from 'ember-runloop';
 import {htmlSafe} from 'ember-string';
 import {task, timeout} from 'ember-concurrency';
 
@@ -26,7 +26,11 @@ export default Component.extend({
     size: 180,
     debounce: 300,
 
+    imageFile: null,
     hasUploadedImage: false,
+
+    // closure actions
+    setImage() {},
 
     config: injectService(),
     ghostPaths: injectService(),
@@ -43,33 +47,37 @@ export default Component.extend({
         this._setPlaceholderImage(this._defaultImageUrl);
     },
 
-    didInsertElement() {
-        this._super(...arguments);
-
-        let size = this.get('size');
-        let uploadElement = this.$('.js-file-input');
-
-        // while theoretically the 'add' and 'processalways' functions could be
-        // added as properties of the hash passed to fileupload(), for some reason
-        // they needed to be placed in an on() call for the add method to work correctly
-        uploadElement.fileupload({
-            url: this.get('ghostPaths.url').api('uploads'),
-            dropZone: this.$('.js-img-dropzone'),
-            previewMaxHeight: size,
-            previewMaxWidth: size,
-            previewCrop: true,
-            maxNumberOfFiles: 1,
-            autoUpload: false
-        })
-        .on('fileuploadadd', run.bind(this, this.queueFile))
-        .on('fileuploadprocessalways', run.bind(this, this.triggerPreview));
-    },
-
     didReceiveAttrs() {
         this._super(...arguments);
 
         if (this.get('config.useGravatar')) {
             this.get('setGravatar').perform();
+        }
+    },
+
+    dragOver(event) {
+        if (!event.dataTransfer) {
+            return;
+        }
+
+        // this is needed to work around inconsistencies with dropping files
+        // from Chrome's downloads bar
+        let eA = event.dataTransfer.effectAllowed;
+        event.dataTransfer.dropEffect = (eA === 'move' || eA === 'linkMove') ? 'move' : 'copy';
+
+        event.stopPropagation();
+        event.preventDefault();
+    },
+
+    dragLeave(event) {
+        event.preventDefault();
+    },
+
+    drop(event) {
+        event.preventDefault();
+
+        if (event.dataTransfer.files) {
+            this.send('imageSelected', event.dataTransfer.files);
         }
     },
 
@@ -110,16 +118,6 @@ export default Component.extend({
         this.set('avatarStyle', htmlSafe(`background-image: url(${url}); display: ${display}`));
     },
 
-    willDestroyElement() {
-        let $input = this.$('.js-file-input');
-
-        this._super(...arguments);
-
-        if ($input.length && $input.data()['blueimp-fileupload']) {
-            $input.fileupload('destroy');
-        }
-    },
-
     queueFile(e, data) {
         let fileName = data.files[0].name;
 
@@ -128,15 +126,40 @@ export default Component.extend({
         }
     },
 
-    triggerPreview(e, data) {
-        let file = data.files[data.index];
+    actions: {
+        imageSelected(fileList) {
+            // eslint-disable-next-line
+            let imageFile = fileList[0];
 
-        if (file.preview) {
-            this.set('hasUploadedImage', true);
-            // necessary jQuery code because file.preview is a raw DOM object
-            // potential todo: rename 'gravatar-img' class in the CSS to be something
-            // that both the gravatar and the image preview can use that's not so confusing
-            this.$('.js-img-preview').empty().append(this.$(file.preview).addClass('gravatar-img'));
+            if (imageFile) {
+                let reader = new FileReader();
+
+                this.set('imageFile', imageFile);
+                this.setImage(imageFile);
+
+                reader.addEventListener('load', () => {
+                    let dataURL = reader.result;
+                    this.set('previewDataURL', dataURL);
+                }, false);
+
+                reader.readAsDataURL(imageFile);
+            }
+        },
+
+        openFileDialog(event) {
+            let fileInput = $(event.target)
+                .closest('figure')
+                .find('input[type="file"]');
+
+            if (fileInput.length > 0) {
+                // reset file input value before clicking so that the same image
+                // can be selected again
+                fileInput.value = '';
+
+                // simulate click to open file dialog
+                // using jQuery because IE11 doesn't support MouseEvent
+                $(fileInput).click();
+            }
         }
     }
 });

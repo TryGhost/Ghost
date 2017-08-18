@@ -186,11 +186,6 @@ module.exports = function (defaults) {
     app.import('bower_components/jquery-ui/ui/draggable.js');
     app.import('bower_components/jquery-ui/ui/droppable.js');
     app.import('bower_components/jquery-ui/ui/sortable.js');
-
-    app.import('bower_components/jquery-file-upload/js/jquery.fileupload.js');
-    app.import('bower_components/blueimp-load-image/js/load-image.all.min.js');
-    app.import('bower_components/jquery-file-upload/js/jquery.fileupload-process.js');
-    app.import('bower_components/jquery-file-upload/js/jquery.fileupload-image.js');
     app.import('bower_components/google-caja/html-css-sanitizer-bundle.js');
     app.import('bower_components/jqueryui-touch-punch/jquery.ui.touch-punch.js');
 

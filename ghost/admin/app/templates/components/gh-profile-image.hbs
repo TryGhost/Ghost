@@ -1,16 +1,25 @@
-<figure class="account-image js-file-upload">
-    {{#unless hasUploadedImage}}
+<figure class="account-image">
+
+    {{#unless previewDataURL}}
         <div class="placeholder-img" style={{placeholderStyle}}></div>
         <div id="account-image" class="gravatar-img" style={{avatarStyle}}>
             <span class="sr-only">User image</span>
         </div>
     {{/unless}}
 
-    <div class="js-img-preview"></div>
+    {{#if previewDataURL}}
+        <img src={{previewDataURL}} class="gravatar-img">
+    {{/if}}
 
-    <span class="edit-account-image js-img-dropzone">
+    <span class="edit-account-image" onclick={{action "openFileDialog"}} role="button">
         {{inline-svg "photos"}}
         <span class="sr-only">Upload an image</span>
     </span>
-    <input type="file" class="file-uploader js-file-input" name="uploadimage">
+
+    {{gh-file-input
+        alt=null
+        name="uploadimage"
+        multiple=false
+        action=(action "imageSelected")
+        accept=imageMimeTypes}}
 </figure>
