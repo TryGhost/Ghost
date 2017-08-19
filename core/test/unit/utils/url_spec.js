@@ -1,5 +1,4 @@
-// jshint unused: false
-var should = require('should'),
+var should = require('should'), /* jshint ignore:line */
     sinon = require('sinon'),
     _ = require('lodash'),
     moment = require('moment-timezone'),
@@ -7,7 +6,6 @@ var should = require('should'),
     settingsCache = require('../../../server/settings/cache'),
     configUtils = require('../../utils/configUtils'),
     testUtils = require('../../utils'),
-    config = configUtils.config,
 
     sandbox = sinon.sandbox.create();
 
