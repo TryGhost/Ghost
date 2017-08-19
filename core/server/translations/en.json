@@ -66,7 +66,7 @@
         },
         "middleware": {
             "api": {
-                "versionMismatch": "Request for version {requestVersion} does not match current version {currentVersion}."
+                "versionMismatch": "Client request for {clientVersion} does not match server version {serverVersion}."
             },
             "auth": {
                 "clientAuthenticationFailed": "Client Authentication Failed",
