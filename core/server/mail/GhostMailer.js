@@ -6,15 +6,29 @@ var _          = require('lodash'),
     config     = require('../config'),
     settingsCache = require('../settings/cache'),
     i18n       = require('../i18n'),
-    utils      = require('../utils');
+    utils      = require('../utils'),
+    logging    = require('../logging'),
+    errors     = require('../errors');
 
 function GhostMailer() {
     var nodemailer = require('nodemailer'),
-        transport = config.get('mail') && config.get('mail').transport || 'direct',
+        transport = config.get('mail') && config.get('mail').transport.toLowerCase() || 'direct',
         options = config.get('mail') && _.clone(config.get('mail').options) || {};
 
     this.state = {};
-    this.transport = nodemailer.createTransport(transport, options);
+
+    if (transport === 'smtp' || transport === 'direct') {
+        this.transport = nodemailer.createTransport(transport === 'direct' ? _.extend(options, { direct: true }) : options);
+    } else {
+        try {
+            var provider = require('nodemailer-' + transport + '-transport');
+        } catch (err) {
+            logging.error(new errors.EmailError({ message: 'Specified email provider ' + transport + ' not found.' }))
+        }
+
+        this.transport = nodemailer.createTransport(provider(options));
+    }
+
     this.state.usingDirect = transport === 'direct';
 }
 
