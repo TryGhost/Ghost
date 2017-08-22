@@ -209,7 +209,7 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         name: {type: 'string', maxlength: 191, nullable: true},
         email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
-        status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'pending', validations: {isIn: [['subscribed', 'pending', 'unsubscribed']]}},
+        status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'pending', validations: {isIn: [['subscribed', 'pending', 'unsubscribed', 'cleaned']]}},
         post_id: {type: 'string', maxlength: 24, nullable: true},
         subscribed_url: {type: 'string', maxlength: 2000, nullable: true, validations: {isEmptyOrURL: true}},
         subscribed_referrer: {type: 'string', maxlength: 2000, nullable: true, validations: {isEmptyOrURL: true}},

@@ -83,6 +83,7 @@
     "passport-http-bearer": "1.0.1",
     "passport-oauth2-client-password": "0.1.2",
     "path-match": "1.2.4",
+    "request": "2.81.0",
     "rss": "1.2.2",
     "sanitize-html": "1.14.1",
     "semver": "5.4.1",
