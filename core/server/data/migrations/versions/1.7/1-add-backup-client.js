@@ -18,7 +18,7 @@ module.exports = function addGhostBackupClient(options) {
         .then(function (client) {
             if (!client) {
                 logging.info(message);
-                return fixtures.utils.addFixturesForModel({name: "Client", entries: [backupClient]}, localOptions);
+                return fixtures.utils.addFixturesForModel({name: 'Client', entries: [backupClient]}, localOptions);
             } else {
                 logging.warn(message);
                 return Promise.resolve();
