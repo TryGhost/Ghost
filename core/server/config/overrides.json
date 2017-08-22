@@ -31,7 +31,7 @@
         "primaryTagFallback": "all"
     },
     "slugs": {
-        "reserved": ["admin", "app", "apps", "archive", "archives", "categories",
+        "reserved": ["admin", "app", "apps", "categories",
             "category", "dashboard", "feed", "ghost-admin", "login", "logout",
             "page", "pages", "post", "posts", "public", "register", "setup",
             "signin", "signout", "signup", "user", "users", "wp-admin", "wp-login"],
