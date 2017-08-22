@@ -78,6 +78,7 @@
     "nodemailer": "^4.0.1",
     "nodemailer-mailgun-transport": "^1.3.5",
     "nodemailer-ses-transport": "^1.5.1",
+    "nodemailer-stub-transport": "^1.1.0",
     "oauth2orize": "1.8.0",
     "passport": "0.3.2",
     "passport-ghost": "2.3.1",

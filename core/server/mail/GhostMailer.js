@@ -12,24 +12,29 @@ var _          = require('lodash'),
 
 function GhostMailer() {
     var nodemailer = require('nodemailer'),
-        transport = config.get('mail') && config.get('mail').transport.toLowerCase() || 'direct',
+        transportType = config.get('mail') && config.get('mail').transport || 'direct',
         options = config.get('mail') && _.clone(config.get('mail').options) || {};
 
     this.state = {};
 
-    if (transport === 'smtp' || transport === 'direct') {
-        this.transport = nodemailer.createTransport(transport === 'direct' ? _.extend(options, { direct: true }) : options);
+    if (transportType === 'SMTP' || transportType === 'direct') {
+        this.transport = nodemailer.createTransport(transportType === 'direct' ? _.extend(options, { direct: true }) : options);
     } else {
         try {
-            var provider = require('nodemailer-' + transport + '-transport');
+            var provider = require('nodemailer-' + transportType.toLowerCase() + '-transport');
+
+            if (!_.isFunction(provider)) {
+                throw new Error('Provider not found.');
+            }
         } catch (err) {
-            logging.error(new errors.EmailError({ message: 'Specified email provider ' + transport + ' not found.' }))
+            logging.error(new errors.EmailError({ message: 'Specified email provider ' + transportType + ' not found.' }))
         }
 
         this.transport = nodemailer.createTransport(provider(options));
     }
 
-    this.state.usingDirect = transport === 'direct';
+    this.transportType = transportType.toUpperCase();
+    this.state.usingDirect = transportType === 'direct';
 }
 
 GhostMailer.prototype.from = function () {
@@ -84,7 +89,7 @@ GhostMailer.prototype.send = function (message) {
                 return reject(new Error(error));
             }
 
-            if (self.transport.transportType !== 'DIRECT') {
+            if (self.transportType !== 'DIRECT') {
                 return resolve(response);
             }
 
