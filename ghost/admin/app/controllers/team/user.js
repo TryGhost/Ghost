@@ -1,12 +1,13 @@
-import Controller from 'ember-controller';
+import Controller from '@ember/controller';
 import Ember from 'ember';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
-import computed, {alias, and, not, or, readOnly} from 'ember-computed';
-import injectService from 'ember-service/inject';
 import isNumber from 'ghost-admin/utils/isNumber';
-import run from 'ember-runloop';
-import {htmlSafe} from 'ember-string';
-import {isEmberArray} from 'ember-array/utils';
+import {alias, and, not, or, readOnly} from '@ember/object/computed';
+import {computed} from '@ember/object';
+import {htmlSafe} from '@ember/string';
+import {inject as injectService} from '@ember/service';
+import {isArray as isEmberArray} from '@ember/array';
+import {run} from '@ember/runloop';
 import {task, taskGroup} from 'ember-concurrency';
 
 // ember-cli-shims doesn't export this

@@ -1,14 +1,10 @@
 /* jshint expr:true */
-import Ember from 'ember';
+import EmberObject from '@ember/object';
 import NavItem from 'ghost-admin/models/navigation-item';
 import {assert, expect} from 'chai';
 import {describe, it} from 'mocha';
+import {run} from '@ember/runloop';
 import {setupTest} from 'ember-mocha';
-
-const {
-    run,
-    Object: EmberObject
-} = Ember;
 
 // const navSettingJSON = `[
 //     {"label":"Home","url":"/"},

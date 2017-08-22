@@ -1,4 +1,4 @@
-import Route from 'ember-route';
+import Route from '@ember/routing/route';
 
 Route.reopen({
     actions: {

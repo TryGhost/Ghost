@@ -1,10 +1,10 @@
-import Component from 'ember-component';
-import computed from 'ember-computed';
-import run from 'ember-runloop';
 import $ from 'jquery';
+import Component from '@ember/component';
 import Tools from '../options/default-tools';
 import layout from '../templates/components/koenig-slash-menu';
+import {computed} from '@ember/object';
 import {getPositionFromRange} from '../lib/utils';
+import {run} from '@ember/runloop';
 
 const ROW_LENGTH = 4;
 

@@ -1,20 +1,20 @@
-import Component from 'ember-component';
-import layout from '../../templates/components/card-markdown';
-import {formatMarkdown} from '../../lib/format-markdown';
-import injectService from 'ember-service/inject';
-import {invokeAction} from 'ember-invoke-action';
-import {isEmberArray} from 'ember-array/utils';
-import {isBlank} from 'ember-utils';
-import computed from 'ember-computed';
-import observer from 'ember-metal/observer';
-import run from 'ember-runloop';
+import Component from '@ember/component';
 import counter from 'ghost-admin/utils/word-count';
+import layout from '../../templates/components/card-markdown';
 import {
+    UnsupportedMediaTypeError,
     isRequestEntityTooLargeError,
     isUnsupportedMediaTypeError,
-    isVersionMismatchError,
-    UnsupportedMediaTypeError
+    isVersionMismatchError
 } from 'ghost-admin/services/ajax';
+import {computed} from '@ember/object';
+import {formatMarkdown} from '../../lib/format-markdown';
+import {inject as injectService} from '@ember/service';
+import {invokeAction} from 'ember-invoke-action';
+import {isBlank} from '@ember/utils';
+import {isArray as isEmberArray} from '@ember/array';
+import {observer} from '@ember/object';
+import {run} from '@ember/runloop';
 /* legacyConverter.makeHtml(_.toString(this.get('markdown'))) */
 
 export default Component.extend({

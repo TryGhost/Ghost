@@ -1,7 +1,7 @@
-import Component from 'ember-component';
 import $ from 'jquery';
-import layout from '../templates/components/koenig-toolbar-newitem';
+import Component from '@ember/component';
 import Tools from '../options/default-tools';
+import layout from '../templates/components/koenig-toolbar-newitem';
 
 export default Component.extend({
     layout,

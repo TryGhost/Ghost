@@ -1,18 +1,19 @@
 import Ember from 'ember';
-import Mixin from 'ember-metal/mixin';
+import Mixin from '@ember/object/mixin';
 import PostModel from 'ghost-admin/models/post';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
-import computed, {mapBy, reads} from 'ember-computed';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
-import injectController from 'ember-controller/inject';
-import injectService from 'ember-service/inject';
 import isNumber from 'ghost-admin/utils/isNumber';
 import moment from 'moment';
-import {htmlSafe} from 'ember-string';
-import {isBlank} from 'ember-utils';
-import {isEmberArray} from 'ember-array/utils';
+import {computed} from '@ember/object';
+import {htmlSafe} from '@ember/string';
+import {inject as injectController} from '@ember/controller';
+import {inject as injectService} from '@ember/service';
+import {isBlank} from '@ember/utils';
+import {isArray as isEmberArray} from '@ember/array';
 import {isInvalidError} from 'ember-ajax/errors';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
+import {mapBy, reads} from '@ember/object/computed';
 import {task, taskGroup, timeout} from 'ember-concurrency';
 
 // ember-cli-shims doesn't export Ember.testing

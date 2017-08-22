@@ -1,14 +1,14 @@
-import Component from 'ember-component';
+import Component from '@ember/component';
 import ShortcutsMixin from 'ghost-admin/mixins/shortcuts';
-import computed from 'ember-computed';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import formatMarkdown from 'ghost-admin/utils/format-markdown';
-import injectService from 'ember-service/inject';
-import run from 'ember-runloop';
-import {assign} from 'ember-platform';
-import {copy} from 'ember-metal/utils';
-import {htmlSafe} from 'ember-string';
-import {isEmpty, typeOf} from 'ember-utils';
+import {assign} from '@ember/polyfills';
+import {computed} from '@ember/object';
+import {copy} from '@ember/object/internals';
+import {htmlSafe} from '@ember/string';
+import {inject as injectService} from '@ember/service';
+import {isEmpty, typeOf} from '@ember/utils';
+import {run} from '@ember/runloop';
 
 const MOBILEDOC_VERSION = '0.3.1';
 

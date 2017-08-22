@@ -1,11 +1,11 @@
 /* global key */
 /* eslint-disable camelcase */
-import Component from 'ember-component';
+import Component from '@ember/component';
 import RSVP from 'rsvp';
-import computed from 'ember-computed';
-import injectService from 'ember-service/inject';
-import run from 'ember-runloop';
-import {isBlank, isEmpty} from 'ember-utils';
+import {computed} from '@ember/object';
+import {inject as injectService} from '@ember/service';
+import {isBlank, isEmpty} from '@ember/utils';
+import {run} from '@ember/runloop';
 
 export function computedGroup(category) {
     return computed('content', 'currentSearch', function () {

@@ -1,7 +1,7 @@
-import TextField from 'ember-components/text-field';
-import computed from 'ember-computed';
-import run from 'ember-runloop';
+import TextField from '@ember/component/text-field';
 import {InvokeActionMixin} from 'ember-invoke-action';
+import {computed} from '@ember/object';
+import {run} from '@ember/runloop';
 
 let joinUrlParts = function (url, path) {
     if (path[0] !== '/' && url.slice(-1) !== '/') {

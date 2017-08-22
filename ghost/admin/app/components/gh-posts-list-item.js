@@ -1,12 +1,12 @@
 import $ from 'jquery';
-import Component from 'ember-component';
+import Component from '@ember/component';
 import Ember from 'ember';
-import computed, {alias, equal} from 'ember-computed';
-import injectService from 'ember-service/inject';
-import {htmlSafe} from 'ember-string';
-import {isBlank} from 'ember-utils';
+import {alias, equal} from '@ember/object/computed';
+import {computed} from '@ember/object';
+import {htmlSafe} from '@ember/string';
+import {inject as injectService} from '@ember/service';
+import {isBlank} from '@ember/utils';
 
-// ember-cli-shims doesn't export these
 const {Handlebars} = Ember;
 
 export default Component.extend({

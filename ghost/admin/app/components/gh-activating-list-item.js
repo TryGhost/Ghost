@@ -1,5 +1,5 @@
-import Component from 'ember-component';
-import {schedule} from 'ember-runloop';
+import Component from '@ember/component';
+import {schedule} from '@ember/runloop';
 
 export default Component.extend({
     tagName: 'li',

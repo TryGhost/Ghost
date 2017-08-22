@@ -1,8 +1,8 @@
-import Mixin from 'ember-metal/mixin';
+import Mixin from '@ember/object/mixin';
 import RSVP from 'rsvp';
-import computed from 'ember-computed';
-import injectService from 'ember-service/inject';
-import {assign} from 'ember-platform';
+import {assign} from '@ember/polyfills';
+import {computed} from '@ember/object';
+import {inject as injectService} from '@ember/service';
 
 let defaultPaginationSettings = {
     page: 1,

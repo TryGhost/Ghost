@@ -1,7 +1,7 @@
-import Controller from 'ember-controller';
-import injectController from 'ember-controller/inject';
-import run from 'ember-runloop';
-import {alias, equal, sort} from 'ember-computed';
+import Controller from '@ember/controller';
+import {alias, equal, sort} from '@ember/object/computed';
+import {inject as injectController} from '@ember/controller';
+import {run} from '@ember/runloop';
 
 export default Controller.extend({
 

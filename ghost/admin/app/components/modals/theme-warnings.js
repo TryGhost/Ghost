@@ -1,5 +1,5 @@
 import ModalComponent from 'ghost-admin/components/modals/base';
-import {reads} from 'ember-computed';
+import {reads} from '@ember/object/computed';
 
 export default ModalComponent.extend({
     title: reads('model.title'),

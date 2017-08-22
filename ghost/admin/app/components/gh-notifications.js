@@ -1,6 +1,6 @@
-import Component from 'ember-component';
-import injectService from 'ember-service/inject';
-import {alias} from 'ember-computed';
+import Component from '@ember/component';
+import {alias} from '@ember/object/computed';
+import {inject as injectService} from '@ember/service';
 
 export default Component.extend({
     tagName: 'aside',

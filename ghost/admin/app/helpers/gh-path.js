@@ -1,6 +1,6 @@
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
-import {helper} from 'ember-helper';
-import {htmlSafe} from 'ember-string';
+import {helper} from '@ember/component/helper';
+import {htmlSafe} from '@ember/string';
 
 // Handlebars Helper {{gh-path}}
 // Usage: Assume 'http://www.myghostblog.org/myblog/'

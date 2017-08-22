@@ -1,6 +1,6 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
-import injectService from 'ember-service/inject';
 import styleBody from 'ghost-admin/mixins/style-body';
+import {inject as injectService} from '@ember/service';
 
 export default AuthenticatedRoute.extend(styleBody, {
     titleToken: 'About',

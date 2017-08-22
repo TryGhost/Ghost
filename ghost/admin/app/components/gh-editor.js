@@ -1,10 +1,10 @@
-import Component from 'ember-component';
-import run from 'ember-runloop';
+import Component from '@ember/component';
 import {
     IMAGE_EXTENSIONS,
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
 import {inject as injectService} from '@ember/service';
+import {run} from '@ember/runloop';
 
 const {debounce} = run;
 

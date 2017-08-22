@@ -1,9 +1,9 @@
 /* jshint expr:true */
 import hbs from 'htmlbars-inline-precompile';
-import run from 'ember-runloop';
 import wait from 'ember-test-helpers/wait';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
+import {run} from '@ember/runloop';
 import {setupComponentTest} from 'ember-mocha';
 import {task, timeout} from 'ember-concurrency';
 

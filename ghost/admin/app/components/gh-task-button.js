@@ -1,8 +1,9 @@
-import Component from 'ember-component';
-import computed, {reads} from 'ember-computed';
-import observer from 'ember-metal/observer';
+import Component from '@ember/component';
+import {computed} from '@ember/object';
 import {invokeAction} from 'ember-invoke-action';
-import {isBlank} from 'ember-utils';
+import {isBlank} from '@ember/utils';
+import {observer} from '@ember/object';
+import {reads} from '@ember/object/computed';
 import {task, timeout} from 'ember-concurrency';
 
 /**

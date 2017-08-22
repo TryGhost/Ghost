@@ -13,6 +13,7 @@ module.exports = {
         'plugin:ember-suave/recommended'
     ],
     plugins: [
+        'ember',
         'sort-imports-es6-autofix'
     ],
     rules: {
@@ -27,7 +28,8 @@ module.exports = {
         'ember-suave/require-access-in-comments': 'off',
         'sort-imports-es6-autofix/sort-imports-es6': ['error', {
             memberSyntaxSortOrder: ['none', 'all', 'single', 'multiple']
-        }]
+        }],
+        'ember/no-old-shims': ['error']
     },
     globals: {
         validator: false

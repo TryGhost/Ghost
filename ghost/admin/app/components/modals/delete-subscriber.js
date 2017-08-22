@@ -1,5 +1,5 @@
 import ModalComponent from 'ghost-admin/components/modals/base';
-import {alias} from 'ember-computed';
+import {alias} from '@ember/object/computed';
 import {invokeAction} from 'ember-invoke-action';
 import {task} from 'ember-concurrency';
 

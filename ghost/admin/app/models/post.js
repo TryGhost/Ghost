@@ -3,16 +3,18 @@ import Model from 'ember-data/model';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import attr from 'ember-data/attr';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
-import computed, {equal, filterBy} from 'ember-computed';
-import injectService from 'ember-service/inject';
 import moment from 'moment';
-import observer from 'ember-metal/observer';
 import {BLANK_DOC} from 'ghost-admin/components/gh-markdown-editor';
 import {belongsTo, hasMany} from 'ember-data/relationships';
-import {isBlank} from 'ember-utils';
+import {compare} from '@ember/utils';
+import {computed} from '@ember/object';
+import {equal, filterBy} from '@ember/object/computed';
+import {inject as injectService} from '@ember/service';
+import {isBlank} from '@ember/utils';
+import {observer} from '@ember/object';
 
 // ember-cli-shims doesn't export these so we must get them manually
-const {Comparable, compare} = Ember;
+const {Comparable} = Ember;
 
 function statusCompare(postA, postB) {
     let status1 = postA.get('status');

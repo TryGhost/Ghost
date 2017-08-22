@@ -1,8 +1,8 @@
 /* jshint expr:true */
-import Service from 'ember-service';
+import Service from '@ember/service';
 import hbs from 'htmlbars-inline-precompile';
 import {describe, it} from 'mocha';
-import {A as emberA} from 'ember-array/utils';
+import {A as emberA} from '@ember/array';
 import {expect} from 'chai';
 import {setupComponentTest} from 'ember-mocha';
 

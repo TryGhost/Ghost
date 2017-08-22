@@ -1,7 +1,7 @@
 import RSVP from 'rsvp';
 import SessionService from 'ember-simple-auth/services/session';
-import computed from 'ember-computed';
-import injectService from 'ember-service/inject';
+import {computed} from '@ember/object';
+import {inject as injectService} from '@ember/service';
 
 export default SessionService.extend({
     feature: injectService(),

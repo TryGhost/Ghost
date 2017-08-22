@@ -1,10 +1,10 @@
 import $ from 'jquery';
 import hbs from 'htmlbars-inline-precompile';
-import run from 'ember-runloop';
 import {clickTrigger} from '../../helpers/ember-basic-dropdown';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {find} from 'ember-native-dom-helpers';
+import {run} from '@ember/runloop';
 import {setupComponentTest} from 'ember-mocha';
 
 describe('Integration: Component: gh-basic-dropdown', function() {

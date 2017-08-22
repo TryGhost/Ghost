@@ -1,11 +1,7 @@
-import Ember from 'ember';
+import EmberObject from '@ember/object';
 import {describe, it} from 'mocha';
+import {run} from '@ember/runloop';
 import {setupTest} from 'ember-mocha';
-
-const {
-    run,
-    Object: EmberObject
-} = Ember;
 
 describe('Unit: Controller: settings/general', function () {
     setupTest('controller:settings/general', {

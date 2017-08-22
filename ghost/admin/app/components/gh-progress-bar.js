@@ -1,5 +1,5 @@
-import Component from 'ember-component';
-import {htmlSafe} from 'ember-string';
+import Component from '@ember/component';
+import {htmlSafe} from '@ember/string';
 
 export default Component.extend({
     tagName: '',

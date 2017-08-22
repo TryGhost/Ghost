@@ -1,7 +1,7 @@
-import Component from 'ember-component';
-import injectService from 'ember-service/inject';
-import observer from 'ember-metal/observer';
-import {alias} from 'ember-computed';
+import Component from '@ember/component';
+import {alias} from '@ember/object/computed';
+import {inject as injectService} from '@ember/service';
+import {observer} from '@ember/object';
 
 export default Component.extend({
     tagName: 'aside',

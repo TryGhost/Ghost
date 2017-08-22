@@ -1,11 +1,11 @@
-import Component from 'ember-component';
-import EmberObject from 'ember-object';
+import Component from '@ember/component';
+import EmberObject from '@ember/object';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
-import injectService from 'ember-service/inject';
-import run from 'ember-runloop';
 import {all, task} from 'ember-concurrency';
-import {isEmberArray} from 'ember-array/utils';
-import {isEmpty} from 'ember-utils';
+import {inject as injectService} from '@ember/service';
+import {isArray as isEmberArray} from '@ember/array';
+import {isEmpty} from '@ember/utils';
+import {run} from '@ember/runloop';
 
 // TODO: this is designed to be a more re-usable/composable upload component, it
 // should be able to replace the duplicated upload logic in:

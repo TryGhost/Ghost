@@ -1,10 +1,10 @@
 import $ from 'jquery';
-import Controller from 'ember-controller';
+import Controller from '@ember/controller';
 import RSVP from 'rsvp';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
-import injectController from 'ember-controller/inject';
-import injectService from 'ember-service/inject';
-import {isEmberArray} from 'ember-array/utils';
+import {inject as injectController} from '@ember/controller';
+import {inject as injectService} from '@ember/service';
+import {isArray as isEmberArray} from '@ember/array';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {task} from 'ember-concurrency';
 

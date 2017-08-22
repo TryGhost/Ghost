@@ -3,12 +3,12 @@ import $ from 'jquery';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import destroyApp from '../../helpers/destroy-app';
 import mockUploads from '../../../mirage/config/uploads';
-import run from 'ember-runloop';
 import startApp from '../../helpers/start-app';
 import wait from 'ember-test-helpers/wait';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import {expect} from 'chai';
+import {run} from '@ember/runloop';
 
 describe('Acceptance: Settings - General', function () {
     let application;

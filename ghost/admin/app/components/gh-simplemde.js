@@ -1,9 +1,9 @@
 /* global SimpleMDE */
 import Ember from 'ember';
-import TextArea from 'ember-components/text-area';
-import computed from 'ember-computed';
-import {assign} from 'ember-platform';
-import {isEmpty} from 'ember-utils';
+import TextArea from '@ember/component/text-area';
+import {assign} from '@ember/polyfills';
+import {computed} from '@ember/object';
+import {isEmpty} from '@ember/utils';
 
 // ember-cli-shims doesn't export Ember.testing
 const {testing} = Ember;

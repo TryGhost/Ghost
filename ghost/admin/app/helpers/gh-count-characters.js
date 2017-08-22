@@ -1,5 +1,5 @@
-import {helper} from 'ember-helper';
-import {htmlSafe} from 'ember-string';
+import {helper} from '@ember/component/helper';
+import {htmlSafe} from '@ember/string';
 
 export function countCharacters(params) {
     if (!params || !params.length) {

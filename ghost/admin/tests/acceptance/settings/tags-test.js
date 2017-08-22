@@ -2,7 +2,6 @@
 /* eslint-disable camelcase */
 import $ from 'jquery';
 import destroyApp from '../../helpers/destroy-app';
-import run from 'ember-runloop';
 import startApp from '../../helpers/start-app';
 import wait from 'ember-test-helpers/wait';
 import {Response} from 'ember-cli-mirage';
@@ -10,6 +9,7 @@ import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import {errorOverride, errorReset} from 'ghost-admin/tests/helpers/adapter-error';
 import {expect} from 'chai';
+import {run} from '@ember/runloop';
 import {timeout} from 'ember-concurrency';
 
 // Grabbed from keymaster's testing code because Ember's `keyEvent` helper

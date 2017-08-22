@@ -1,6 +1,6 @@
-import Controller from 'ember-controller';
-import injectService from 'ember-service/inject';
-import {sort} from 'ember-computed';
+import Controller from '@ember/controller';
+import {inject as injectService} from '@ember/service';
+import {sort} from '@ember/object/computed';
 
 export default Controller.extend({
 

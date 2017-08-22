@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import Ember from 'ember';
-import {copy} from 'ember-metal/utils';
-import EmberObject from 'ember-object';
+import EmberObject from '@ember/object';
+import {copy} from '@ember/object/internals';
 
 const {uuid} = Ember;
 

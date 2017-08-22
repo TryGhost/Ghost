@@ -1,11 +1,11 @@
 import $ from 'jquery';
-import Controller from 'ember-controller';
+import Controller from '@ember/controller';
 import PaginationMixin from 'ghost-admin/mixins/pagination';
 import Table from 'ember-light-table';
-import computed from 'ember-computed';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
-import injectService from 'ember-service/inject';
-import {assign} from 'ember-platform';
+import {assign} from '@ember/polyfills';
+import {computed} from '@ember/object';
+import {inject as injectService} from '@ember/service';
 
 export default Controller.extend(PaginationMixin, {
 

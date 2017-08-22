@@ -1,8 +1,8 @@
 /* eslint camelcase: [2, {properties: "never"}] */
 import Model from 'ember-data/model';
 import attr from 'ember-data/attr';
-import injectService from 'ember-service/inject';
 import {belongsTo} from 'ember-data/relationships';
+import {inject as injectService} from '@ember/service';
 
 export default Model.extend({
     token: attr('string'),

@@ -1,14 +1,14 @@
 import $ from 'jquery';
-import Controller from 'ember-controller';
-import computed from 'ember-computed';
-import injectService from 'ember-service/inject';
-import observer from 'ember-metal/observer';
+import Controller from '@ember/controller';
 import randomPassword from 'ghost-admin/utils/random-password';
-import run from 'ember-runloop';
 import {
     IMAGE_EXTENSIONS,
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
+import {computed} from '@ember/object';
+import {inject as injectService} from '@ember/service';
+import {observer} from '@ember/object';
+import {run} from '@ember/runloop';
 import {task} from 'ember-concurrency';
 
 export default Controller.extend({

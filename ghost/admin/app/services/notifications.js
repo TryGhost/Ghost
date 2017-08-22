@@ -1,15 +1,15 @@
-import Service from 'ember-service';
-import get from 'ember-metal/get';
-import injectService from 'ember-service/inject';
-import set from 'ember-metal/set';
-import {dasherize} from 'ember-string';
-import {A as emberA, isEmberArray} from 'ember-array/utils';
-import {filter} from 'ember-computed';
-import {isBlank} from 'ember-utils';
+import Service from '@ember/service';
+import {dasherize} from '@ember/string';
+import {A as emberA, isArray as isEmberArray} from '@ember/array';
+import {filter} from '@ember/object/computed';
+import {get} from '@ember/object';
+import {inject as injectService} from '@ember/service';
+import {isBlank} from '@ember/utils';
 import {
     isMaintenanceError,
     isVersionMismatchError
 } from 'ghost-admin/services/ajax';
+import {set} from '@ember/object';
 
 // Notification keys take the form of "noun.verb.message", eg:
 //

@@ -1,13 +1,13 @@
 /* jshint expr:true */
-import EmberObject from 'ember-object';
+import EmberObject from '@ember/object';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
-import run from 'ember-runloop';
 import {
     describe,
     it
 } from 'mocha';
-// import validator from 'ghost-admin/validators/tag-settings';
 import {expect} from 'chai';
+// import validator from 'ghost-admin/validators/tag-settings';
+import {run} from '@ember/runloop';
 
 const Tag = EmberObject.extend(ValidationEngine, {
     validationType: 'tag',

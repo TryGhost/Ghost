@@ -1,9 +1,9 @@
-import Component from 'ember-component';
+import Component from '@ember/component';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
-import injectService from 'ember-service/inject';
 import moment from 'moment';
 import {InvokeActionMixin} from 'ember-invoke-action';
 import {formatDate} from 'ghost-admin/utils/date-formatting';
+import {inject as injectService} from '@ember/service';
 
 export default Component.extend(InvokeActionMixin, {
     tagName: 'span',

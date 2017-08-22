@@ -1,6 +1,6 @@
-import Route from 'ember-route';
-import injectService from 'ember-service/inject';
+import Route from '@ember/routing/route';
 import styleBody from 'ghost-admin/mixins/style-body';
+import {inject as injectService} from '@ember/service';
 
 export default Route.extend(styleBody, {
     titleToken: 'Setup',

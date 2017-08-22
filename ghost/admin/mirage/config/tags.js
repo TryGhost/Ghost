@@ -1,5 +1,5 @@
-import {dasherize} from 'ember-string';
-import {isBlank} from 'ember-utils';
+import {dasherize} from '@ember/string';
+import {isBlank} from '@ember/utils';
 import {paginatedResponse} from '../utils';
 
 export default function mockTags(server) {

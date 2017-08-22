@@ -1,11 +1,12 @@
 import $ from 'jquery';
-import Controller from 'ember-controller';
+import Controller from '@ember/controller';
 import NavigationItem from 'ghost-admin/models/navigation-item';
 import RSVP from 'rsvp';
-import computed, {notEmpty} from 'ember-computed';
-import injectService from 'ember-service/inject';
-import {isEmpty} from 'ember-utils';
+import {computed} from '@ember/object';
+import {inject as injectService} from '@ember/service';
+import {isEmpty} from '@ember/utils';
 import {isThemeValidationError} from 'ghost-admin/services/ajax';
+import {notEmpty} from '@ember/object/computed';
 import {task} from 'ember-concurrency';
 
 export default Controller.extend({

@@ -1,6 +1,6 @@
 import Service from '@ember/service';
 import fetch from 'fetch';
-import injectService from 'ember-service/inject';
+import {inject as injectService} from '@ember/service';
 import {isEmpty} from '@ember/utils';
 import {or} from '@ember/object/computed';
 import {reject, resolve} from 'rsvp';

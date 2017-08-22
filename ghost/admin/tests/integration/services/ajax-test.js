@@ -1,6 +1,6 @@
 import Pretender from 'pretender';
 import RSVP from 'rsvp';
-import Service from 'ember-service';
+import Service from '@ember/service';
 import config from 'ghost-admin/config/environment';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';

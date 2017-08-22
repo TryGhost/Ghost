@@ -1,6 +1,6 @@
-import Component from 'ember-component';
-import layout from '../templates/components/koenig-menu-item';
+import Component from '@ember/component';
 import Range from 'mobiledoc-kit/utils/cursor/range';
+import layout from '../templates/components/koenig-menu-item';
 
 export default Component.extend({
     layout,
