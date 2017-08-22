@@ -22,12 +22,14 @@ class UsersImporter extends BaseImporter {
     }
 
     /**
-     * - all imported users are locked and get a random password
+     * - by default all imported users are locked and get a random password
      * - they have to follow the password forgotten flow
      * - we add the role by name [supported by the user model, see User.add]
      *   - background: if you import roles, but they exist already, the related user roles reference to an old model id
+     *
+     *   If importOptions object is supplied with a property of importPersistUser then the user status is not locked
      */
-    beforeImport() {
+    beforeImport(importOptions) {
         debug('beforeImport');
 
         let self = this, role, lookup = {};
@@ -39,12 +41,14 @@ class UsersImporter extends BaseImporter {
 
         this.dataToImport = this.dataToImport.map(self.legacyMapper);
 
-        _.each(this.dataToImport, function (model) {
-            model.password = globalUtils.uid(50);
-            if (model.status !== 'inactive') {
-                model.status = 'locked';
-            }
-        });
+        if (importOptions.importPersistUser !== true) {
+            _.each(this.dataToImport, function (model) {
+                model.password = globalUtils.uid(50);
+                if (model.status !== 'inactive') {
+                    model.status = 'locked';
+                }
+            });
+        }
 
         // NOTE: sort out duplicated roles based on incremental id
         _.each(this.roles_users, function (attachedRole) {

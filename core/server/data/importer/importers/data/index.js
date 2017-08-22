@@ -30,24 +30,28 @@ DataImporter = {
         return importData;
     },
 
-    doImport: function doImport(importData) {
-        var ops = [], errors = [], results = [], options = {
+    // Allow importing with an options object that is passed through the importer
+    doImport: function doImport(importData, importOptions) {
+        var ops = [], errors = [], results = [], modelOptions = {
             importing: true,
             context: {
                 internal: true
             }
         };
 
+        if (importOptions && importOptions.importPersistUser) {
+            modelOptions.importPersistUser = importOptions.importPersistUser;
+        }
         this.init(importData);
 
         return models.Base.transaction(function (transacting) {
-            options.transacting = transacting;
+            modelOptions.transacting = transacting;
 
             _.each(importers, function (importer) {
                 ops.push(function doModelImport() {
-                    return importer.beforeImport(options)
+                    return importer.beforeImport(modelOptions, importOptions)
                         .then(function () {
-                            return importer.doImport(options)
+                            return importer.doImport(modelOptions)
                                 .then(function (_results) {
                                     results = results.concat(_results);
                                 });
@@ -57,7 +61,7 @@ DataImporter = {
 
             _.each(importers, function (importer) {
                 ops.push(function afterImport() {
-                    return importer.afterImport(options);
+                    return importer.afterImport(modelOptions);
                 });
             });
 

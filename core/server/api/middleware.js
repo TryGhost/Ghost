@@ -32,3 +32,16 @@ module.exports.authenticatePrivate = [
     cors,
     prettyURLs
 ];
+
+/**
+ * Authentication for client endpoints
+ */
+module.exports.authenticateClient = function authenticateClient(client) {
+    return [
+        auth.authenticate.authenticateClient,
+        auth.authenticate.authenticateUser,
+        auth.authorize.requiresAuthorizedClient(client),
+        cors,
+        prettyURLs
+    ];
+};

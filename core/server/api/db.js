@@ -7,6 +7,10 @@ var Promise          = require('bluebird'),
     models           = require('../models'),
     errors           = require('../errors'),
     utils            = require('./utils'),
+    path             = require('path'),
+    fs               = require('fs'),
+    utilsUrl         = require('../utils/url'),
+    config           = require('../config'),
     pipeline         = require('../utils/pipeline'),
     docName          = 'db',
     db;
@@ -17,6 +21,29 @@ var Promise          = require('bluebird'),
  * **See:** [API Methods](index.js.html#api%20methods)
  */
 db = {
+    /**
+     * ### Archive Content
+     * Generate the JSON to export - for Moya only
+     *
+     * @public
+     * @returns {Promise} Ghost Export JSON format
+     */
+    backupContent: function () {
+        var props = {
+            data: exporter.doExport(),
+            filename: exporter.fileName()
+        };
+
+        return Promise.props(props)
+            .then(function successMessage(exportResult) {
+                var filename = path.resolve(utilsUrl.urlJoin(config.get('paths').contentPath, 'data', exportResult.filename));
+
+                return Promise.promisify(fs.writeFile)(filename, JSON.stringify(exportResult.data))
+                    .then(function () {
+                        return filename;
+                    });
+            });
+    },
     /**
      * ### Export Content
      * Generate the JSON to export
