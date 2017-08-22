@@ -175,6 +175,8 @@ module.exports = function apiRoutes() {
         api.http(api.uploads.add)
     );
 
+    apiRouter.post('/db/backup',  mw.authenticateClient('Ghost Backup'), api.http(api.db.backupContent));
+
     apiRouter.post('/uploads/icon',
         mw.authenticatePrivate,
         upload.single('uploadimage'),

@@ -154,6 +154,11 @@ User = ghostBookshelf.Model.extend({
                 return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.passwordDoesNotComplyLength')}));
             }
 
+            // An import with importOptions supplied can prevent re-hashing a user password
+            if (options.importPersistUser) {
+                return;
+            }
+
             tasks.hashPassword = (function hashPassword() {
                 return generatePasswordHash(self.get('password'))
                     .then(function (hash) {
@@ -298,7 +303,8 @@ User = ghostBookshelf.Model.extend({
             validOptions = {
                 findOne: ['withRelated', 'status'],
                 setup: ['id'],
-                edit: ['withRelated', 'id'],
+                edit: ['withRelated', 'id', 'importPersistUser'],
+                add: ['importPersistUser'],
                 findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status'],
                 findAll: ['filter']
             };

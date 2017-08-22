@@ -25,6 +25,17 @@ authorize = {
                 return next(new errors.NoPermissionError({message: i18n.t('errors.middleware.auth.pleaseSignIn')}));
             }
         }
+    },
+
+    // Requires the authenticated client to match specific client
+    requiresAuthorizedClient: function requiresAuthorizedClient(client) {
+        return function doAuthorizedClient(req, res, next) {
+            if (!req.client || !req.client.name || req.client.name !== client) {
+                return next(new errors.NoPermissionError({message: i18n.t('errors.permissions.noPermissionToAction')}));
+            }
+
+            return next();
+        };
     }
 };
 
