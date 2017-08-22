@@ -1,13 +1,13 @@
 /* jshint expr:true */
+import hbs from 'htmlbars-inline-precompile';
+import sinon from 'sinon';
+import {
+    EMPTY_DOC,
+    testEditorInput,
+    testEditorInputTimeout
+} from '../../helpers/editor-helpers';
 import {describe, it} from 'mocha';
 import {setupComponentTest} from 'ember-mocha';
-import hbs from 'htmlbars-inline-precompile';
-import {
-    testEditorInput,
-    testEditorInputTimeout,
-    EMPTY_DOC
-} from '../../helpers/editor-helpers';
-import sinon from 'sinon';
 
 describe('gh-koenig: Integration: Component: gh-koenig', function () {
     setupComponentTest('gh-koenig', {

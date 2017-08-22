@@ -1,4 +1,4 @@
-import Service from 'ember-service';
+import Service from '@ember/service';
 import hbs from 'htmlbars-inline-precompile';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';

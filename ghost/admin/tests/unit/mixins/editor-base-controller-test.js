@@ -1,14 +1,14 @@
 /* jshint expr:true */
 import EditorBaseControllerMixin from 'ghost-admin/mixins/editor-base-controller';
-import EmberObject from 'ember-object';
+import EmberObject from '@ember/object';
 import RSVP from 'rsvp';
-import run from 'ember-runloop';
 import wait from 'ember-test-helpers/wait';
 import {
     describe,
     it
 } from 'mocha';
 import {expect} from 'chai';
+import {run} from '@ember/runloop';
 import {task} from 'ember-concurrency';
 
 describe('Unit: Mixin: editor-base-controller', function() {

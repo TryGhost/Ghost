@@ -3,13 +3,13 @@ import $ from 'jquery';
 import OAuth2Authenticator from 'ghost-admin/authenticators/oauth2';
 import destroyApp from '../helpers/destroy-app';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
-import run from 'ember-runloop';
 import startApp from '../helpers/start-app';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Response} from 'ember-cli-mirage';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import {expect} from 'chai';
+import {run} from '@ember/runloop';
 
 const Ghost = ghostPaths();
 

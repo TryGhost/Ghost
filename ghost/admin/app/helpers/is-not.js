@@ -1,4 +1,4 @@
-import {helper} from 'ember-helper';
+import {helper} from '@ember/component/helper';
 
 export function isNot(params) {
     return !params;

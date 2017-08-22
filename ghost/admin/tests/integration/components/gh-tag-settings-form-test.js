@@ -1,12 +1,12 @@
 /* jshint expr:true */
 import DS from 'ember-data';
-import EmberObject from 'ember-object';
-import Service from 'ember-service';
+import EmberObject from '@ember/object';
+import Service from '@ember/service';
 import hbs from 'htmlbars-inline-precompile';
-import run from 'ember-runloop';
 import wait from 'ember-test-helpers/wait';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
+import {run} from '@ember/runloop';
 import {setupComponentTest} from 'ember-mocha';
 
 const {Errors} = DS;

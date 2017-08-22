@@ -1,4 +1,4 @@
-import HashLocation from 'ember-locations/hash';
+import HashLocation from '@ember/routing/hash-location';
 
 let trailingHash = HashLocation.extend({
     formatURL() {

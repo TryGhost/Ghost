@@ -1,6 +1,6 @@
 import {Response} from 'ember-cli-mirage';
-import {dasherize} from 'ember-string';
-import {isBlank} from 'ember-utils';
+import {dasherize} from '@ember/string';
+import {isBlank} from '@ember/utils';
 import {paginateModelArray} from '../utils';
 
 export default function mockPosts(server) {

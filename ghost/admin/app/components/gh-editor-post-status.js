@@ -1,5 +1,6 @@
-import Component from 'ember-component';
-import computed, {reads} from 'ember-computed';
+import Component from '@ember/component';
+import {computed} from '@ember/object';
+import {reads} from '@ember/object/computed';
 import {task, timeout} from 'ember-concurrency';
 
 // TODO: reduce when in testing mode

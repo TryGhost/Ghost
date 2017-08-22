@@ -1,5 +1,5 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
-import injectService from 'ember-service/inject';
+import {inject as injectService} from '@ember/service';
 
 export default AuthenticatedRoute.extend({
     mediaQueries: injectService(),

@@ -1,8 +1,5 @@
-import Component from 'ember-component';
-import computed from 'ember-computed';
+import Component from '@ember/component';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
-import injectService from 'ember-service/inject';
-import run from 'ember-runloop';
 import {
     UnsupportedMediaTypeError,
     isRequestEntityTooLargeError,
@@ -10,10 +7,13 @@ import {
     isVersionMismatchError
 } from 'ghost-admin/services/ajax';
 import {assign} from '@ember/polyfills';
-import {htmlSafe} from 'ember-string';
+import {computed} from '@ember/object';
+import {htmlSafe} from '@ember/string';
+import {inject as injectService} from '@ember/service';
 import {invokeAction} from 'ember-invoke-action';
-import {isBlank} from 'ember-utils';
-import {isEmberArray} from 'ember-array/utils';
+import {isBlank} from '@ember/utils';
+import {isArray as isEmberArray} from '@ember/array';
+import {run} from '@ember/runloop';
 
 export const IMAGE_MIME_TYPES = 'image/gif,image/jpg,image/jpeg,image/png,image/svg+xml';
 export const IMAGE_EXTENSIONS = ['gif', 'jpg', 'jpeg', 'png', 'svg'];

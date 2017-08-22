@@ -1,13 +1,13 @@
 /* jshint expr:true */
-import EmberObject from 'ember-object';
-import get from 'ember-metal/get';
-import run from 'ember-runloop';
+import EmberObject from '@ember/object';
 import sinon from 'sinon';
 import {AjaxError, InvalidError} from 'ember-ajax/errors';
 import {ServerUnreachableError} from 'ghost-admin/services/ajax';
 import {describe, it} from 'mocha';
-import {A as emberA} from 'ember-array/utils';
+import {A as emberA} from '@ember/array';
 import {expect} from 'chai';
+import {get} from '@ember/object';
+import {run} from '@ember/runloop';
 import {setupTest} from 'ember-mocha';
 
 describe('Unit: Service: notifications', function () {

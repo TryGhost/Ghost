@@ -1,7 +1,7 @@
-import Controller from 'ember-controller';
+import Controller from '@ember/controller';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
-import computed from 'ember-computed';
-import injectService from 'ember-service/inject';
+import {computed} from '@ember/object';
+import {inject as injectService} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default Controller.extend(ValidationEngine, {

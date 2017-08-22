@@ -1,6 +1,6 @@
-import EmberObject from 'ember-object';
-import run from 'ember-runloop';
+import EmberObject from '@ember/object';
 import {describe, it} from 'mocha';
+import {run} from '@ember/runloop';
 import {setupModelTest} from 'ember-mocha';
 
 describe('Unit: Model: post', function () {

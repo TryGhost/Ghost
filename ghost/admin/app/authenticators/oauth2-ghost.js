@@ -1,9 +1,9 @@
 import Oauth2Authenticator from './oauth2';
 import RSVP from 'rsvp';
-import run from 'ember-runloop';
-import {assign} from 'ember-platform';
-import {isEmpty} from 'ember-utils';
-import {wrap} from 'ember-array/utils';
+import {assign} from '@ember/polyfills';
+import {isEmpty} from '@ember/utils';
+import {run} from '@ember/runloop';
+import {makeArray as wrap} from '@ember/array';
 
 export default Oauth2Authenticator.extend({
     // TODO: all this is doing is changing the `data` structure, we should

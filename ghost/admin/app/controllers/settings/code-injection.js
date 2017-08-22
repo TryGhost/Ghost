@@ -1,5 +1,5 @@
-import Controller from 'ember-controller';
-import injectService from 'ember-service/inject';
+import Controller from '@ember/controller';
+import {inject as injectService} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default Controller.extend({

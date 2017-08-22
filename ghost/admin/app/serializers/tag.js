@@ -1,8 +1,6 @@
 /* eslint-disable camelcase */
 import ApplicationSerializer from 'ghost-admin/serializers/application';
-import Ember from 'ember';
-
-const {String: {pluralize}} = Ember;
+import {pluralize} from 'ember-inflector';
 
 export default ApplicationSerializer.extend({
     attrs: {

@@ -1,6 +1,6 @@
 import {Collection, RestSerializer} from 'ember-cli-mirage';
 import {pluralize} from 'ember-cli-mirage/utils/inflector';
-import {underscore} from 'ember-string';
+import {underscore} from '@ember/string';
 
 export default RestSerializer.extend({
     keyForAttribute(attr) {

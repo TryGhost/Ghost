@@ -1,6 +1,6 @@
-import Component from 'ember-component';
+import Component from '@ember/component';
 import Ember from 'ember';
-import injectService from 'ember-service/inject';
+import {inject as injectService} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
 const {testing} = Ember;

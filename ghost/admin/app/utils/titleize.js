@@ -1,4 +1,4 @@
-import {capitalize} from 'ember-string';
+import {capitalize} from '@ember/string';
 const lowerWords = [
     'of', 'a', 'the', 'and', 'an', 'or', 'nor', 'but', 'is', 'if',
     'then', 'else', 'when', 'at', 'from', 'by', 'on', 'off', 'for',

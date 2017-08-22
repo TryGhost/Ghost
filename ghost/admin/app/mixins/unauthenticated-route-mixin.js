@@ -1,5 +1,5 @@
-import Mixin from 'ember-metal/mixin';
-import injectService from 'ember-service/inject';
+import Mixin from '@ember/object/mixin';
+import {inject as injectService} from '@ember/service';
 
 export default Mixin.create({
 

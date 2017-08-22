@@ -1,7 +1,7 @@
 import Ember from 'ember';
-import Service from 'ember-service';
+import Service from '@ember/service';
 import moment from 'moment';
-import run from 'ember-runloop';
+import {run} from '@ember/runloop';
 
 // ember-cli-shims doesn't export Ember.testing
 const {testing} = Ember;

@@ -2,9 +2,10 @@
 import Model from 'ember-data/model';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import attr from 'ember-data/attr';
-import computed, {equal} from 'ember-computed';
-import injectService from 'ember-service/inject';
+import {computed} from '@ember/object';
+import {equal} from '@ember/object/computed';
 import {hasMany} from 'ember-data/relationships';
+import {inject as injectService} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default Model.extend(ValidationEngine, {

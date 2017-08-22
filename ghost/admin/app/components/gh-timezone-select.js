@@ -1,8 +1,9 @@
-import Component from 'ember-component';
-import computed, {mapBy} from 'ember-computed';
-import injectService from 'ember-service/inject';
+import Component from '@ember/component';
 import moment from 'moment';
+import {computed} from '@ember/object';
+import {inject as injectService} from '@ember/service';
 import {invokeAction} from 'ember-invoke-action';
+import {mapBy} from '@ember/object/computed';
 
 export default Component.extend({
     classNames: ['form-group', 'for-select'],

@@ -1,6 +1,6 @@
-import Component from 'ember-component';
+import Component from '@ember/component';
 import moment from 'moment';
-import {isEmpty} from 'ember-utils';
+import {isEmpty} from '@ember/utils';
 
 export default Component.extend({
 

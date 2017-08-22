@@ -1,7 +1,7 @@
 import Pretender from 'pretender';
-import run from 'ember-runloop';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
+import {run} from '@ember/runloop';
 import {setupModelTest} from 'ember-mocha';
 
 describe('Unit: Model: invite', function() {

@@ -1,7 +1,7 @@
-import Controller from 'ember-controller';
-import injectService from 'ember-service/inject';
-import {alias} from 'ember-computed';
-import {empty} from 'ember-computed';
+import Controller from '@ember/controller';
+import {alias} from '@ember/object/computed';
+import {empty} from '@ember/object/computed';
+import {inject as injectService} from '@ember/service';
 import {isInvalidError} from 'ember-ajax/errors';
 import {task} from 'ember-concurrency';
 

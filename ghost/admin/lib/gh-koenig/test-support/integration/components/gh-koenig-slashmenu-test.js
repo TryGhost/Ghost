@@ -1,16 +1,16 @@
 /* jshint expr:true */
-import {expect} from 'chai';
-import {describe, it} from 'mocha';
-import {setupComponentTest} from 'ember-mocha';
+import $ from 'jquery';
 import hbs from 'htmlbars-inline-precompile';
 import {
+    EMPTY_DOC,
     findEditor,
     focusEditor,
     inputText,
-    waitForRender,
-    EMPTY_DOC
+    waitForRender
 } from '../../helpers/editor-helpers';
-import $ from 'jquery';
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
+import {setupComponentTest} from 'ember-mocha';
 
 describe('gh-koenig: Integration: Component: gh-koenig-slashmenu', function () {
     setupComponentTest('gh-koenig-slashmenu', {

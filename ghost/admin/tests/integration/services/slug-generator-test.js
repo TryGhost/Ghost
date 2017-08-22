@@ -1,5 +1,5 @@
 import Pretender from 'pretender';
-import {dasherize} from 'ember-string';
+import {dasherize} from '@ember/string';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';

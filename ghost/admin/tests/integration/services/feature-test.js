@@ -1,12 +1,10 @@
-import Ember from 'ember';
+import EmberError from '@ember/error';
 import FeatureService, {feature} from 'ghost-admin/services/feature';
 import Pretender from 'pretender';
-import run from 'ember-runloop';
 import wait from 'ember-test-helpers/wait';
 import {describe, it} from 'mocha';
+import {run} from '@ember/runloop';
 import {setupTest} from 'ember-mocha';
-
-const {Error: EmberError} = Ember;
 
 function stubSettings(server, labs, validSave = true) {
     let settings = [

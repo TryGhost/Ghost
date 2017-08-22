@@ -1,5 +1,5 @@
-import Mixin from 'ember-metal/mixin';
-import {isBlank} from 'ember-utils';
+import Mixin from '@ember/object/mixin';
+import {isBlank} from '@ember/utils';
 
 export default Mixin.create({
     buildURL(_modelName, _id, _snapshot, _requestType, query) {

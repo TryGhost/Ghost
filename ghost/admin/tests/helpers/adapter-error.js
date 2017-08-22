@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import Test from 'ember-test';
+import Test from 'ember-test'; // eslint-disable-line
 
 // This is needed for testing error responses in acceptance tests
 // See http://williamsbdev.com/posts/testing-rsvp-errors-handled-globally/

@@ -1,8 +1,8 @@
-import Evented from 'ember-evented';
+import Evented from '@ember/object/evented';
 import RSVP from 'rsvp';
-import Service from 'ember-service';
-import computed from 'ember-computed';
-import injectService from 'ember-service/inject';
+import Service from '@ember/service';
+import {computed} from '@ember/object';
+import {inject as injectService} from '@ember/service';
 
 export default Service.extend(Evented, {
 

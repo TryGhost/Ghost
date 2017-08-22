@@ -1,5 +1,5 @@
 import ModalComponent from 'ghost-admin/components/modals/base';
-import {A as emberA} from 'ember-array/utils';
+import {A as emberA} from '@ember/array';
 import {isInvalidError} from 'ember-ajax/errors';
 import {task} from 'ember-concurrency';
 

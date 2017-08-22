@@ -1,22 +1,22 @@
-import Ember from 'ember';
-import Component from 'ember-component';
-import run from 'ember-runloop';
-import layout from '../templates/components/gh-koenig';
+import $ from 'jquery';
+import Component from '@ember/component';
 import Editor from 'mobiledoc-kit/editor/editor';
-import {MOBILEDOC_VERSION} from 'mobiledoc-kit/renderers/mobiledoc';
+import Ember from 'ember';
+import counter from 'ghost-admin/utils/word-count';
 import createCardFactory from '../lib/card-factory';
+import defaultCards from '../cards/index';
+import layout from '../templates/components/gh-koenig';
 import registerKeyCommands from '../options/key-commands';
 import registerTextExpansions from '../options/text-expansions';
-import defaultCards from '../cards/index';
+import {MOBILEDOC_VERSION} from 'mobiledoc-kit/renderers/mobiledoc';
+import {assign} from '@ember/polyfills';
 import {
-    getCardFromDoc,
     checkIfClickEventShouldCloseCard,
+    getCardFromDoc,
     getPositionOnScreenFromRange
 } from '../lib/utils';
-import counter from 'ghost-admin/utils/word-count';
-import $ from 'jquery';
-import computed from 'ember-computed';
-import {assign} from 'ember-platform';
+import {computed} from '@ember/object';
+import {run} from '@ember/runloop';
 
 // ember-cli-shims doesn't export Ember.testing
 const {testing} = Ember;

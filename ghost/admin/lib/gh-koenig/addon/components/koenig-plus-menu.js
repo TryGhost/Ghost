@@ -1,10 +1,10 @@
-import Component from 'ember-component';
-import computed from 'ember-computed';
-import run from 'ember-runloop';
+import $ from 'jquery';
+import Component from '@ember/component';
+import Range from 'mobiledoc-kit/utils/cursor/range';
 import Tools from '../options/default-tools';
 import layout from '../templates/components/koenig-plus-menu';
-import Range from 'mobiledoc-kit/utils/cursor/range';
-import $ from 'jquery';
+import {computed} from '@ember/object';
+import {run} from '@ember/runloop';
 
 const ROW_LENGTH = 4;
 

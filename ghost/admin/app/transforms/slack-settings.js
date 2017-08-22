@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import SlackObject from 'ghost-admin/models/slack-integration';
 import Transform from 'ember-data/transform';
-import {A as emberA, isEmberArray} from 'ember-array/utils';
+import {A as emberA, isArray as isEmberArray} from '@ember/array';
 
 export default Transform.extend({
     deserialize(serialized) {

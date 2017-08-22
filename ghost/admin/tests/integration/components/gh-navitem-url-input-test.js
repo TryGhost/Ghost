@@ -1,11 +1,10 @@
 /* jshint scripturl:true */
-import Ember from 'ember';
+import $ from 'jquery';
 import hbs from 'htmlbars-inline-precompile';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
+import {run} from '@ember/runloop';
 import {setupComponentTest} from 'ember-mocha';
-
-const {$, run} = Ember;
 
 // we want baseUrl to match the running domain so relative URLs are
 // handled as expected (browser auto-sets the domain when using a.href)

@@ -1,7 +1,7 @@
-import Component from 'ember-component';
-import run from 'ember-runloop';
+import Component from '@ember/component';
 import {invokeAction} from 'ember-invoke-action';
-import {isBlank} from 'ember-utils';
+import {isBlank} from '@ember/utils';
+import {run} from '@ember/runloop';
 
 export default Component.extend({
     open() {

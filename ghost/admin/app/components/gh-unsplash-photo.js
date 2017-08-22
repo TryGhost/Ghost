@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import Component from 'ember-component';
+import Component from '@ember/component';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
 

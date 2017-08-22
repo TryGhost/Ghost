@@ -1,11 +1,11 @@
 import AjaxService from 'ember-ajax/services/ajax';
-import computed from 'ember-computed';
 import config from 'ghost-admin/config/environment';
-import get from 'ember-metal/get';
-import injectService from 'ember-service/inject';
 import {AjaxError, isAjaxError} from 'ember-ajax/errors';
-import {isEmberArray} from 'ember-array/utils';
-import {isNone} from 'ember-utils';
+import {computed} from '@ember/object';
+import {get} from '@ember/object';
+import {inject as injectService} from '@ember/service';
+import {isArray as isEmberArray} from '@ember/array';
+import {isNone} from '@ember/utils';
 
 const JSONContentType = 'application/json';
 

@@ -1,4 +1,4 @@
-import TextField from 'ember-components/text-field';
+import TextField from '@ember/component/text-field';
 
 TextField.reopen({
     attributeBindings: ['autofocus']

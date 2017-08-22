@@ -1,4 +1,4 @@
-import Service from 'ember-service';
+import Service from '@ember/service';
 
 export default Service.extend({
     content: ''

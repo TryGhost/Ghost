@@ -1,14 +1,14 @@
 import $ from 'jquery';
-import Controller from 'ember-controller';
+import Controller from '@ember/controller';
 import RSVP from 'rsvp';
-import injectService from 'ember-service/inject';
-import run from 'ember-runloop';
 import {
     UnsupportedMediaTypeError,
     isUnsupportedMediaTypeError
 } from 'ghost-admin/services/ajax';
-import {isBlank} from 'ember-utils';
-import {isEmberArray} from 'ember-array/utils';
+import {inject as injectService} from '@ember/service';
+import {isBlank} from '@ember/utils';
+import {isArray as isEmberArray} from '@ember/array';
+import {run} from '@ember/runloop';
 import {task} from 'ember-concurrency';
 
 const {Promise} = RSVP;

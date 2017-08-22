@@ -1,14 +1,15 @@
 import ModalComponent from 'ghost-admin/components/modals/base';
-import computed, {mapBy, or} from 'ember-computed';
-import get from 'ember-metal/get';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
-import injectService from 'ember-service/inject';
-import run from 'ember-runloop';
 import {
     UnsupportedMediaTypeError,
     isThemeValidationError
 } from 'ghost-admin/services/ajax';
+import {computed} from '@ember/object';
+import {get} from '@ember/object';
+import {inject as injectService} from '@ember/service';
 import {invokeAction} from 'ember-invoke-action';
+import {mapBy, or} from '@ember/object/computed';
+import {run} from '@ember/runloop';
 
 export default ModalComponent.extend({
 

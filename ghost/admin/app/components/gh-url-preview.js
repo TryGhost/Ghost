@@ -1,6 +1,6 @@
-import Component from 'ember-component';
-import computed from 'ember-computed';
-import injectService from 'ember-service/inject';
+import Component from '@ember/component';
+import {computed} from '@ember/object';
+import {inject as injectService} from '@ember/service';
 
 /*
 Example usage:

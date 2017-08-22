@@ -1,8 +1,8 @@
-import Component from 'ember-component';
+import Component from '@ember/component';
 import calculatePosition from 'ember-basic-dropdown/utils/calculate-position';
-import computed from 'ember-computed';
-import injectService from 'ember-service/inject';
-import {htmlSafe} from 'ember-string';
+import {computed} from '@ember/object';
+import {htmlSafe} from '@ember/string';
+import {inject as injectService} from '@ember/service';
 
 export default Component.extend({
     config: injectService(),

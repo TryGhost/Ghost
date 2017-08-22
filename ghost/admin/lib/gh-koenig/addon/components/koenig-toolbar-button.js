@@ -1,6 +1,6 @@
-import Component from 'ember-component';
-import computed from 'ember-computed';
+import Component from '@ember/component';
 import layout from '../templates/components/koenig-toolbar-button';
+import {computed} from '@ember/object';
 
 export default Component.extend({
     layout,

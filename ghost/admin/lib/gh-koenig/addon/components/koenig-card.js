@@ -1,6 +1,6 @@
-import Component from 'ember-component';
+import Component from '@ember/component';
 import layout from '../templates/components/koenig-card';
-import run from 'ember-runloop';
+import {run} from '@ember/runloop';
 
 export default Component.extend({
     layout,

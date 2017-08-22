@@ -1,4 +1,4 @@
-import Mixin from 'ember-metal/mixin';
+import Mixin from '@ember/object/mixin';
 import ShortcutsMixin from 'ghost-admin/mixins/shortcuts';
 
 /**

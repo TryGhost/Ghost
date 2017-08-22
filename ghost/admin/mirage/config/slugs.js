@@ -1,4 +1,4 @@
-import {dasherize} from 'ember-string';
+import {dasherize} from '@ember/string';
 
 export default function mockSlugs(server) {
     server.get('/slugs/post/:slug/', function (schema, request) {

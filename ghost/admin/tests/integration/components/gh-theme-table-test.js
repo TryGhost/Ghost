@@ -1,10 +1,10 @@
 /* jshint expr:true */
 import $ from 'jquery';
 import hbs from 'htmlbars-inline-precompile';
-import run from 'ember-runloop';
 import sinon from 'sinon';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
+import {run} from '@ember/runloop';
 import {setupComponentTest} from 'ember-mocha';
 
 describe('Integration: Component: gh-theme-table', function() {

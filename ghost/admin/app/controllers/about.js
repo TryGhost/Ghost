@@ -1,5 +1,5 @@
-import Controller from 'ember-controller';
-import computed from 'ember-computed';
+import Controller from '@ember/controller';
+import {computed} from '@ember/object';
 
 export default Controller.extend({
     updateNotificationCount: 0,

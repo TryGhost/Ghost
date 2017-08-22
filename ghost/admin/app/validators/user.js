@@ -1,5 +1,5 @@
 import BaseValidator from './base';
-import {isBlank} from 'ember-utils';
+import {isBlank} from '@ember/utils';
 
 export default BaseValidator.create({
     properties: ['name', 'bio', 'email', 'location', 'website', 'roles'],

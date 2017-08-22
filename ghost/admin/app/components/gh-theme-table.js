@@ -1,6 +1,6 @@
-import Component from 'ember-component';
-import computed from 'ember-computed';
-import get from 'ember-metal/get';
+import Component from '@ember/component';
+import {computed} from '@ember/object';
+import {get} from '@ember/object';
 
 export default Component.extend({
 

@@ -1,12 +1,13 @@
-import Component from 'ember-component';
+import Component from '@ember/component';
 import SettingsMenuMixin from 'ghost-admin/mixins/settings-menu-component';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
-import computed, {alias, or} from 'ember-computed';
 import formatMarkdown from 'ghost-admin/utils/format-markdown';
-import injectService from 'ember-service/inject';
 import moment from 'moment';
-import run from 'ember-runloop';
-import {guidFor} from 'ember-metal/utils';
+import {alias, or} from '@ember/object/computed';
+import {computed} from '@ember/object';
+import {guidFor} from '@ember/object/internals';
+import {inject as injectService} from '@ember/service';
+import {run} from '@ember/runloop';
 import {task, timeout} from 'ember-concurrency';
 
 const PSM_ANIMATION_LENGTH = 400;

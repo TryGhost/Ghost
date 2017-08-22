@@ -1,4 +1,4 @@
-import {isEmpty} from 'ember-utils';
+import {isEmpty} from '@ember/utils';
 
 export default function mockConfiguration(server) {
     server.get('/configuration/', function ({db}) {

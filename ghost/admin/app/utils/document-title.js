@@ -1,7 +1,7 @@
-import Route from 'ember-route';
-import Router from 'ember-router';
-import on from 'ember-evented/on';
-import {isEmberArray} from 'ember-array/utils';
+import Route from '@ember/routing/route';
+import Router from '@ember/routing/router';
+import {isArray as isEmberArray} from '@ember/array';
+import {on} from '@ember/object/evented';
 
 export default function () {
     Route.reopen({

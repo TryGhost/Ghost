@@ -1,8 +1,8 @@
 /* jshint expr:true */
-import {expect} from 'chai';
 import {describe, it} from 'mocha';
-import {setupComponentTest} from 'ember-mocha';
 import {editorShim} from '../../utils';
+import {expect} from 'chai';
+import {setupComponentTest} from 'ember-mocha';
 
 describe('gh-koenig: Unit: Component: koenig-toolbar-newitem', function () {
     setupComponentTest('koenig-toolbar-newitem', {

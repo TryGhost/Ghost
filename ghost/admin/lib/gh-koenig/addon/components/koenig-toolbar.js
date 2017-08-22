@@ -1,11 +1,11 @@
-import Component from 'ember-component';
-import computed from 'ember-computed';
-import run from 'ember-runloop';
 import $ from 'jquery';
-import layout from '../templates/components/koenig-toolbar';
-import cajaSanitizers from '../lib/caja-sanitizers';
+import Component from '@ember/component';
 import Tools from '../options/default-tools';
+import cajaSanitizers from '../lib/caja-sanitizers';
+import layout from '../templates/components/koenig-toolbar';
+import {computed} from '@ember/object';
 import {getPositionFromRange} from '../lib/utils';
+import {run} from '@ember/runloop';
 
 export default Component.extend({
     layout,

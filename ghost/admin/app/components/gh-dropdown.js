@@ -1,8 +1,8 @@
-import Component from 'ember-component';
+import Component from '@ember/component';
 import DropdownMixin from 'ghost-admin/mixins/dropdown-mixin';
-import computed from 'ember-computed';
-import injectService from 'ember-service/inject';
-import run from 'ember-runloop';
+import {computed} from '@ember/object';
+import {inject as injectService} from '@ember/service';
+import {run} from '@ember/runloop';
 
 export default Component.extend(DropdownMixin, {
     classNames: 'dropdown',

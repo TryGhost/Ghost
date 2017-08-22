@@ -1,6 +1,6 @@
 import BaseValidator from './base';
 import moment from 'moment';
-import {isEmpty, isPresent} from 'ember-utils';
+import {isEmpty, isPresent} from '@ember/utils';
 
 export default BaseValidator.create({
     properties: [

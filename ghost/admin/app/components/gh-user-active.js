@@ -1,11 +1,10 @@
-import Component from 'ember-component';
+import Component from '@ember/component';
 import Ember from 'ember';
-import computed from 'ember-computed';
-import injectService from 'ember-service/inject';
 import moment from 'moment';
-import {htmlSafe} from 'ember-string';
+import {computed} from '@ember/object';
+import {htmlSafe} from '@ember/string';
+import {inject as injectService} from '@ember/service';
 
-// ember-cli-shims doesn't export these
 const {Handlebars} = Ember;
 
 export default Component.extend({

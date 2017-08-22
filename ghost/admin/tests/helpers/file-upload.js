@@ -1,6 +1,6 @@
 /* global Blob */
 import $ from 'jquery';
-import Test from 'ember-test';
+import {registerAsyncHelper} from '@ember/test';
 
 export function createFile(content = ['test'], options = {}) {
     let {
@@ -24,7 +24,7 @@ export function fileUpload($element, content, options) {
     $element.trigger(event);
 }
 
-export default Test.registerAsyncHelper('fileUpload', function(app, selector, content, options) {
+export default registerAsyncHelper('fileUpload', function(app, selector, content, options) {
     let file = createFile(content, options);
 
     return triggerEvent(

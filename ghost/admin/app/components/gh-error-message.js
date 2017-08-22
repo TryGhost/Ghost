@@ -1,6 +1,7 @@
-import Component from 'ember-component';
-import computed, {notEmpty} from 'ember-computed';
-import {isEmpty} from 'ember-utils';
+import Component from '@ember/component';
+import {computed} from '@ember/object';
+import {isEmpty} from '@ember/utils';
+import {notEmpty} from '@ember/object/computed';
 
 /**
  * Renders one random error message when passed a DS.Errors object

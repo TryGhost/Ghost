@@ -1,9 +1,9 @@
 import Ember from 'ember';
-import Service from 'ember-service';
-import computed from 'ember-computed';
-import injectService from 'ember-service/inject';
-import {assign} from 'ember-platform';
-import {isBlank} from 'ember-utils';
+import Service from '@ember/service';
+import {assign} from '@ember/polyfills';
+import {computed} from '@ember/object';
+import {inject as injectService} from '@ember/service';
+import {isBlank} from '@ember/utils';
 
 // ember-cli-shims doesn't export _ProxyMixin
 const {_ProxyMixin} = Ember;

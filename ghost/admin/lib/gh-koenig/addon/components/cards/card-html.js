@@ -1,9 +1,9 @@
-import Component from 'ember-component';
-import layout from '../../templates/components/card-html';
-import computed from 'ember-computed';
-import observer from 'ember-metal/observer';
-import {invokeAction} from 'ember-invoke-action';
+import Component from '@ember/component';
 import counter from 'ghost-admin/utils/word-count';
+import layout from '../../templates/components/card-html';
+import {computed} from '@ember/object';
+import {invokeAction} from 'ember-invoke-action';
+import {observer} from '@ember/object';
 
 export default Component.extend({
     layout,

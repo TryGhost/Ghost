@@ -1,8 +1,8 @@
 import $ from 'jquery';
 import Ember from 'ember';
 import RSVP from 'rsvp';
-import Service from 'ember-service';
-import injectService from 'ember-service/inject';
+import Service from '@ember/service';
+import {inject as injectService} from '@ember/service';
 
 const {testing} = Ember;
 

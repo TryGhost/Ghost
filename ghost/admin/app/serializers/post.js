@@ -1,9 +1,7 @@
 /* eslint-disable camelcase */
 import ApplicationSerializer from 'ghost-admin/serializers/application';
 import EmbeddedRecordsMixin from 'ember-data/serializers/embedded-records-mixin';
-import Ember from 'ember';
-
-const {String: {pluralize}} = Ember;
+import {pluralize} from 'ember-inflector';
 
 export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
     // settings for the EmbeddedRecordsMixin.

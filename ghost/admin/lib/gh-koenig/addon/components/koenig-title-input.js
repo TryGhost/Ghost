@@ -1,7 +1,7 @@
-import Component from 'ember-component';
-import run from 'ember-runloop';
 import $ from 'jquery';
+import Component from '@ember/component';
 import layout from '../templates/components/koenig-title-input';
+import {run} from '@ember/runloop';
 
 export default Component.extend({
     layout,

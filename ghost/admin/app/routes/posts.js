@@ -1,8 +1,8 @@
 import $ from 'jquery';
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import InfinityRoute from 'ember-infinity/mixins/route';
-import {assign} from 'ember-platform';
-import {isBlank} from 'ember-utils';
+import {assign} from '@ember/polyfills';
+import {isBlank} from '@ember/utils';
 
 export default AuthenticatedRoute.extend(InfinityRoute, {
     titleToken: 'Content',

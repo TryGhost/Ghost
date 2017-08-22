@@ -1,8 +1,8 @@
-import Component from 'ember-component';
-import computed from 'ember-computed';
 import $ from 'jquery';
-import layout from '../templates/components/koenig-toolbar-blockitem';
+import Component from '@ember/component';
 import Tools from '../options/default-tools';
+import layout from '../templates/components/koenig-toolbar-blockitem';
+import {computed} from '@ember/object';
 
 export default Component.extend({
     layout,

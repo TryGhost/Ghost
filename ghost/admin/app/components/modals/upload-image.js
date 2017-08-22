@@ -1,8 +1,8 @@
 import ModalComponent from 'ghost-admin/components/modals/base';
 import cajaSanitizers from 'ghost-admin/utils/caja-sanitizers';
-import computed from 'ember-computed';
-import injectService from 'ember-service/inject';
-import {isEmpty} from 'ember-utils';
+import {computed} from '@ember/object';
+import {inject as injectService} from '@ember/service';
+import {isEmpty} from '@ember/utils';
 import {task} from 'ember-concurrency';
 
 export default ModalComponent.extend({

@@ -1,6 +1,6 @@
 /* jshint expr:true */
-import {expect} from 'chai';
 import {describe, it} from 'mocha';
+import {expect} from 'chai';
 import {setupComponentTest} from 'ember-mocha';
 
 describe('gh-koenig: Unit: Component: koenig-toolbar-button', function () {

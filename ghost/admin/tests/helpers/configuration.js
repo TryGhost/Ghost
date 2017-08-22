@@ -1,4 +1,4 @@
-import {isEmpty} from 'ember-utils';
+import {isEmpty} from '@ember/utils';
 
 export function enableGhostOAuth(server) {
     if (isEmpty(server.db.configurations)) {

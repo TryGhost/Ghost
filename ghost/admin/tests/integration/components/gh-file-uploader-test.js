@@ -1,15 +1,15 @@
 /* jshint expr:true */
 import $ from 'jquery';
 import Pretender from 'pretender';
-import Service from 'ember-service';
+import Service from '@ember/service';
 import hbs from 'htmlbars-inline-precompile';
-import run from 'ember-runloop';
 import sinon from 'sinon';
 import wait from 'ember-test-helpers/wait';
 import {UnsupportedMediaTypeError} from 'ghost-admin/services/ajax';
 import {createFile, fileUpload} from '../../helpers/file-upload';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
+import {run} from '@ember/runloop';
 import {setupComponentTest} from 'ember-mocha';
 
 const notificationsStub = Service.extend({

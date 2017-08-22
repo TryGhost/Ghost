@@ -1,4 +1,4 @@
-import {helper} from 'ember-helper';
+import {helper} from '@ember/component/helper';
 
 // Handlebars Helper {{gh-user-can-admin}} group users by admin and owner using if, or group them author using unless
 // Usage: call helper as with aparameter of session.user

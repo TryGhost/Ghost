@@ -1,6 +1,6 @@
 import Service from '@ember/service';
-import injectService from 'ember-service/inject';
 import {computed} from '@ember/object';
+import {inject as injectService} from '@ember/service';
 import {not, or, reads} from '@ember/object/computed';
 
 export default Service.extend({

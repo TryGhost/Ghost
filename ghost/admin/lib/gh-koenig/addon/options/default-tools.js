@@ -1,4 +1,4 @@
-import set from 'ember-metal/set';
+import {set} from '@ember/object';
 
 export default function (editor, toolbar) {
     return [

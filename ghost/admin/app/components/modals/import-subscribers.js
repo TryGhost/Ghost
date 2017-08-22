@@ -1,6 +1,6 @@
 import ModalComponent from 'ghost-admin/components/modals/base';
-import computed from 'ember-computed';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
+import {computed} from '@ember/object';
 import {invokeAction} from 'ember-invoke-action';
 
 export default ModalComponent.extend({

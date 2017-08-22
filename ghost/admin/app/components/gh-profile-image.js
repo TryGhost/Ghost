@@ -1,8 +1,8 @@
 import $ from 'jquery';
-import Component from 'ember-component';
-import injectService from 'ember-service/inject';
+import Component from '@ember/component';
 import request from 'ember-ajax/request';
-import {htmlSafe} from 'ember-string';
+import {htmlSafe} from '@ember/string';
+import {inject as injectService} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
 const ANIMATION_TIMEOUT = 1000;

@@ -1,4 +1,4 @@
-import computed from 'ember-computed';
+import {computed} from '@ember/object';
 
 /**
  * Defines a property similarly to `Ember.computed.oneway`,

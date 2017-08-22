@@ -1,7 +1,8 @@
 import $ from 'jquery';
-import Component from 'ember-component';
-import computed, {reads} from 'ember-computed';
-import injectService from 'ember-service/inject';
+import Component from '@ember/component';
+import {computed} from '@ember/object';
+import {inject as injectService} from '@ember/service';
+import {reads} from '@ember/object/computed';
 import {task} from 'ember-concurrency';
 
 export default Component.extend({

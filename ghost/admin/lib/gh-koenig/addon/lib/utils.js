@@ -1,5 +1,5 @@
-import RSVP from 'rsvp';
 import $ from 'jquery';
+import RSVP from 'rsvp';
 
 // searches through the editor to see if it can find the current card
 // as selected in the DOM.
