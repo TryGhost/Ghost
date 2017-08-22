@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "1.6.2",
+  "version": "1.7.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "amperize": "0.3.4",
+    "analytics-node": "2.4.1",
     "archiver": "1.3.0",
     "bcryptjs": "2.4.3",
     "bluebird": "3.5.0",
