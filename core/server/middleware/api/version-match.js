@@ -1,13 +1,19 @@
-var errors = require('../../errors'),
+var semver = require('semver'),
+    errors = require('../../errors'),
     i18n = require('../../i18n');
 
 function checkVersionMatch(req, res, next) {
-    var requestVersion = req.get('X-Ghost-Version'),
-        currentVersion = res.locals.safeVersion;
+    var clientVersion = req.get('X-Ghost-Version'),
+        serverVersion = res.locals.version,
+        constraint = '^' + clientVersion + '.0';
 
-    if (requestVersion && requestVersion !== currentVersion) {
+    // no error when client is on an earlier minor version than server
+    // error when client is on a later minor version than server
+    // always error when the major version is different
+
+    if (clientVersion && !semver.satisfies(serverVersion, constraint)) {
         return next(new errors.VersionMismatchError({
-            message: i18n.t('errors.middleware.api.versionMismatch', {requestVersion: requestVersion, currentVersion: currentVersion})
+            message: i18n.t('errors.middleware.api.versionMismatch', {clientVersion: clientVersion, serverVersion: serverVersion})
         }));
     }
 
