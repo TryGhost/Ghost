@@ -71,6 +71,11 @@ function init() {
         // Setup our collection of express apps
         parentApp = require('./app')();
 
+        // Initialise analytics events
+        if (config.get('segment:key')) {
+            require('./analytics-events').init();
+        }
+
         debug('Express Apps done');
     }).then(function () {
         return auth.validation.validate({
