@@ -1,9 +1,9 @@
 var util = require('util'),
     moment = require('moment'),
     request = require('superagent'),
-    SchedulingBase = require(__dirname + '/SchedulingBase'),
-    errors = require(__dirname + '/../../errors'),
-    logging = require(__dirname + '/../../logging');
+    SchedulingBase = require('./SchedulingBase'),
+    errors = require('../../errors'),
+    logging = require('../../logging');
 
 /**
  * allJobs is a sorted list by time attribute

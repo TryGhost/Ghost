@@ -1,11 +1,11 @@
 var Promise = require('bluebird'),
     moment = require('moment'),
-    localUtils = require(__dirname + '/../utils'),
-    events = require(__dirname + '/../../../events'),
-    errors = require(__dirname + '/../../../errors'),
-    models = require(__dirname + '/../../../models'),
-    schedules = require(__dirname + '/../../../api/schedules'),
-    utils = require(__dirname + '/../../../utils'),
+    localUtils = require('../utils'),
+    events = require('../../../events'),
+    errors = require('../../../errors'),
+    models = require('../../../models'),
+    schedules = require('../../../api/schedules'),
+    utils = require('../../../utils'),
     _private = {};
 
 _private.normalize = function normalize(options) {

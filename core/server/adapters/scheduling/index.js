@@ -1,4 +1,4 @@
-var postScheduling = require(__dirname + '/post-scheduling');
+var postScheduling = require('./post-scheduling');
 
 /**
  * scheduling modules:

@@ -2,7 +2,7 @@ var should = require('should'),
     sinon = require('sinon'),
     Promise = require('bluebird'),
     moment = require('moment'),
-    config = require(__dirname + '/../../../../../server/config'),
+    config = require('../../../../../server/config'),
     testUtils = require(config.get('paths').corePath + '/test/utils'),
     errors = require(config.get('paths').corePath + '/server/errors'),
     events = require(config.get('paths').corePath + '/server/events'),
@@ -11,7 +11,7 @@ var should = require('should'),
     schedulingUtils = require(config.get('paths').corePath + '/server/adapters/scheduling/utils'),
     SchedulingDefault = require(config.get('paths').corePath + '/server/adapters/scheduling/SchedulingDefault'),
     postScheduling = require(config.get('paths').corePath + '/server/adapters/scheduling/post-scheduling'),
-    generalUtils = require(__dirname + '/../../../../../server/utils'),
+    generalUtils = require('../../../../../server/utils'),
 
     sandbox = sinon.sandbox.create();
 
