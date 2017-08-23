@@ -1,14 +1,17 @@
 // # Tag API
 // RESTful API for the Tag resource
-var Promise      = require('bluebird'),
-    _            = require('lodash'),
-    fs           = require('fs'),
-    dataProvider = require('../models'),
-    errors       = require('../errors'),
-    utils        = require('./utils'),
-    serverUtils  = require('../utils'),
-    pipeline     = require('../utils/pipeline'),
-    i18n         = require('../i18n'),
+var Promise       = require('bluebird'),
+    Mailchimp     = require('mailchimp-api-v3'),
+    _             = require('lodash'),
+    crypto        = require('crypto'),
+    fs            = require('fs'),
+    dataProvider  = require('../models'),
+    errors        = require('../errors'),
+    utils         = require('./utils'),
+    serverUtils   = require('../utils'),
+    pipeline      = require('../utils/pipeline'),
+    i18n          = require('../i18n'),
+    settingsCache = require('../settings/cache'),
 
     docName      = 'subscribers',
     subscribers;
@@ -118,11 +121,62 @@ subscribers = {
                 });
         }
 
+        /**
+         * ### MailChimp list member creation
+         *
+         * TODO: this will probably need to be pushed into a background queue
+         * so that subscriber creation response isn't dependent on MailChimp's
+         * API response
+         *
+         * @param  {Subscriber} result the newly created subscriber
+         * @return {Subscruber} result
+         */
+        function pushToMailChimp(result) {
+            var settings = settingsCache.get('mailchimp');
+
+            // TODO: check if the subscriber is actually new or just returned
+            // because it's an external request and the email already existed
+            if (settings.isActive) {
+                var mailchimp = new Mailchimp(settings.apiKey),
+                    email = result.get('email').toLowerCase(),
+                    emailHash = crypto.createHash('md5').update(email).digest('hex');
+
+                return mailchimp.request({
+                    method: 'put',
+                    path: '/lists/{list_id}/members/{subscriber_hash}',
+                    path_params: {
+                        list_id: settings.activeList.id,
+                        subscriber_hash: emailHash
+                    },
+                    body: {
+                        email_address: result.get('email'),
+                        status_if_new: 'pending', // send confirmation e-mail if new
+                        status: result.get('status')
+                    }
+                }).then(function (mailChimpResults) {
+                    // TODO: logging - we want to log the result of the API
+                    // request somewhere
+                    console.log('MailChimp list member created/updated');
+
+                    return result;
+                }).catch(function (error) {
+                    // TODO: proper logging - we don't want to throw an error
+                    // because this is a "background" task but we do want to log
+                    // that the API request failed somewhere
+                    console.log(error);
+                    return result;
+                });
+            }
+
+            return result;
+        }
+
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             utils.validate(docName),
             utils.handlePermissions(docName, 'add'),
-            doQuery
+            doQuery,
+            pushToMailChimp
         ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next

@@ -14,6 +14,9 @@ var Mailchimp       = require('mailchimp-api-v3'),
 // TODO: used for debugging, can be removed later
 // require('request').debug = true;
 
+// TODO: the error messages from MailChimp are always in English which is a
+// departure from the usual i18n translated messages - is this something we
+// need to address?
 handleMailchimpError = function handleMailchimpError(error) {
     // TODO: return a custom error type here?
     if (error.title === 'API Key Invalid' || error.message.indexOf('invalid api key') > -1) {
