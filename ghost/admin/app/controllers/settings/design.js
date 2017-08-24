@@ -64,6 +64,7 @@ export default Controller.extend({
         newNavItem.set('isNew', false);
         navItems.pushObject(newNavItem);
         this.set('newNavItem', NavigationItem.create({isNew: true}));
+        $('.gh-blognav-line:last input:first').focus();
     },
 
     _deleteTheme() {
