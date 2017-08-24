@@ -28,8 +28,26 @@ module.exports.filter = function visibilityFilter(items, visibility, explicit, f
     }, memo);
 };
 
+module.exports.first = function visibilityFirstMatch(items, visibility, explicit) {
+    if (_.includes(visibility, 'all')) {
+        if (_.isArray(items)) {
+            return _.head(items);
+        } else {
+            return items[_.keys(items)[0]];
+        }
+    }
+
+    return _.find(items, function (item) {
+        if (!item.visibility && !explicit || _.includes(visibility, item.visibility)) {
+            return true;
+        }
+
+        return false;
+    });
+};
+
 module.exports.parser = function visibilityParser(options) {
-    if (!options.hash.visibility) {
+    if (!_.get(options, 'hash.visibility')) {
         return ['public'];
     }
 

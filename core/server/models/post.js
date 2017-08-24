@@ -11,6 +11,7 @@ var _               = require('lodash'),
     config          = require('../config'),
     utils           = require('../utils'),
     baseUtils       = require('./base/utils'),
+    visibility      = require('../utils/visibility'),
     i18n            = require('../i18n'),
     Post,
     Posts;
@@ -509,8 +510,8 @@ Post = ghostBookshelf.Model.extend({
         }
         // If the current column settings allow it...
         if (!options.columns || (options.columns && options.columns.indexOf('primary_tag') > -1)) {
-            // ... attach a computed property of primary_tag which is the first tag or null
-            attrs.primary_tag = attrs.tags && attrs.tags.length > 0 ? attrs.tags[0] : null;
+            // ... attach a computed property of primary_tag which is the first public tag or null
+            attrs.primary_tag = visibility.first(attrs.tags, ['public']) || null;
         }
 
         if (!options.columns || (options.columns && options.columns.indexOf('url') > -1)) {
