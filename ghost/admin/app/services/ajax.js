@@ -120,6 +120,7 @@ let ajaxService = AjaxService.extend({
         let headers = {};
 
         headers['X-Ghost-Version'] = config.APP.version;
+        headers['App-Pragma'] = 'no-cache';
 
         if (session.get('isAuthenticated')) {
             session.authorize('authorizer:oauth2', (headerName, headerValue) => {
