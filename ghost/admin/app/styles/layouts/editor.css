@@ -158,6 +158,7 @@
 }
 
 .gh-og-preview-title {
+    color: #1d2129;
     max-height: 110px;
     overflow: hidden;
     margin-bottom: 5px;
@@ -169,6 +170,7 @@
 }
 
 .gh-og-preview-description {
+    color: #4b4f56;
     max-height: 80px;
     overflow: hidden;
     font-size: 12px;
@@ -201,7 +203,6 @@
 .gh-og-preview-footer-author {
     color: #3b5998;
 }
-
 
 /* Twitter Card Preview */
 .gh-twitter-preview {
@@ -259,8 +260,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-
-
 
 
 /* NEW editor
