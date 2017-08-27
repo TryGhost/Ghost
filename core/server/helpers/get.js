@@ -103,7 +103,7 @@ get = function get(resource, options) {
         apiMethod;
 
     if (!options.fn) {
-        data.error = i18n.t('warnings.helpers.get.mustBeCalledAsBlock');
+        data.error = i18n.t('warnings.helpers.get.mustBeCalledAsBlock', {helperName: 'get'});
         logging.warn(data.error);
         return Promise.resolve();
     }
@@ -136,6 +136,7 @@ get = function get(resource, options) {
             blockParams: blockParams
         });
     }).catch(function error(err) {
+        logging.error(err);
         data.error = err.message;
         return options.inverse(self, {data: data});
     });
