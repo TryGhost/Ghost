@@ -1,10 +1,13 @@
 var _ = require('lodash'),
     settingsCache = require('../../settings/cache');
 
-function getDescription(data, root) {
+function getDescription(data, root, options) {
     var description = '',
+        postSdDescription,
         context = root ? root.context : null,
         blogDescription = settingsCache.get('description');
+
+    options = options ? options : {};
 
     // We only return meta_description if provided. Only exception is the Blog
     // description, which doesn't rely on meta_description.
@@ -22,7 +25,12 @@ function getDescription(data, root) {
     } else if (_.includes(context, 'tag') && data.tag) {
         description = data.tag.meta_description || '';
     } else if ((_.includes(context, 'post') || _.includes(context, 'page')) && data.post) {
-        description = data.post.meta_description || '';
+        if (options && options.property) {
+            postSdDescription = options.property + '_description';
+            description = data.post[postSdDescription] || '';
+        } else {
+            description = data.post.meta_description || '';
+        }
     }
 
     return (description || '').trim();

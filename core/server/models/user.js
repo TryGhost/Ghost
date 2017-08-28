@@ -110,7 +110,8 @@ User = ghostBookshelf.Model.extend({
 
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 
-        if (self.hasChanged('email') && self.get('email')) {
+        // If the user's email is set & has changed & we are not importing
+        if (self.hasChanged('email') && self.get('email') && !options.importing) {
             tasks.gravatar = (function lookUpGravatar() {
                 return gravatar.lookup({
                     email: self.get('email')
@@ -151,6 +152,11 @@ User = ghostBookshelf.Model.extend({
 
             if (!validatePasswordLength(this.get('password'))) {
                 return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.passwordDoesNotComplyLength')}));
+            }
+
+            // An import with importOptions supplied can prevent re-hashing a user password
+            if (options.importPersistUser) {
+                return;
             }
 
             tasks.hashPassword = (function hashPassword() {
@@ -297,7 +303,8 @@ User = ghostBookshelf.Model.extend({
             validOptions = {
                 findOne: ['withRelated', 'status'],
                 setup: ['id'],
-                edit: ['withRelated', 'id'],
+                edit: ['withRelated', 'id', 'importPersistUser'],
+                add: ['importPersistUser'],
                 findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status'],
                 findAll: ['filter']
             };

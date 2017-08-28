@@ -134,6 +134,12 @@
                     "slug":             "ghost-scheduler",
                     "status":           "enabled",
                     "type":             "web"
+                },
+                {
+                    "name": "Ghost Backup",
+                    "slug": "ghost-backup",
+                    "status": "enabled",
+                    "type": "web"
                 }
             ]
         },

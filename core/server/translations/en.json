@@ -66,7 +66,7 @@
         },
         "middleware": {
             "api": {
-                "versionMismatch": "Request for version {requestVersion} does not match current version {currentVersion}."
+                "versionMismatch": "Client request for {clientVersion} does not match server version {serverVersion}."
             },
             "auth": {
                 "clientAuthenticationFailed": "Client Authentication Failed",
@@ -473,6 +473,7 @@
             "whilstTryingToRender": "whilst trying to render an error page for the error: ",
             "renderingErrorPage": "Rendering Error Page",
             "caughtProcessingError": "Ghost caught a processing error in the middleware layer.",
+            "imageNotFound": "Image not found",
             "pageNotFound": "Page not found",
             "resourceNotFound": "Resource not found"
         }
@@ -484,7 +485,7 @@
         },
         "helpers": {
             "helperNotAvailable": "The \\{\\{{helperName}\\}\\} helper is not available.",
-            "flagMustBeEnabled": "The {flagName} labs flag must be enabled if you wish to use the \\{\\{{helperName}\\}\\} helper.",
+            "flagMustBeEnabled": "The {flagName} flag must be enabled in labs if you wish to use the \\{\\{{helperName}\\}\\} helper.",
             "seeLink": "See {url}",
             "foreach": {
                 "iteratorNeeded": "Need to pass an iterator to #foreach"

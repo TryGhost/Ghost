@@ -78,7 +78,7 @@ var overrides      = require('./core/server/overrides'),
             },
 
             // ### grunt-express-server
-            // Start a Ghost expess server for use in development and testing
+            // Start a Ghost express server for use in development and testing
             express: {
                 options: {
                     script: 'index.js',
@@ -729,8 +729,8 @@ var overrides      = require('./core/server/overrides'),
         // ### Release
         // Run `grunt release` to create a Ghost release zip file.
         // Uses the files specified by `.npmignore` to know what should and should not be included.
-        // Runs the asset generation tasks for both development and production so that the release can be used in
-        // either environment, and packages all the files up into a zip.
+        // Runs the asset generation tasks for production and duplicates default-prod.html to default.html
+        // so it can be run in either production or development, and packages all the files up into a zip.
         grunt.registerTask('release',
             'Release task - creates a final built zip\n' +
             ' - Do our standard build steps \n' +
@@ -750,7 +750,15 @@ var overrides      = require('./core/server/overrides'),
                     dest: '<%= paths.releaseBuild %>/'
                 });
 
-                grunt.task.run(['init', 'prod', 'clean:release', 'copy:release', 'compress:release']);
+                grunt.config.set('copy.admin_html', {
+                    files: [{
+                        cwd: '.',
+                        src: 'core/server/admin/views/default-prod.html',
+                        dest: 'core/server/admin/views/default.html'
+                    }]
+                });
+
+                grunt.task.run(['update_submodules:pinned', 'subgrunt:init', 'clean:tmp', 'prod', 'clean:release', 'copy:admin_html', 'copy:release', 'compress:release']);
             }
         );
     };

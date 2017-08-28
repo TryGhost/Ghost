@@ -1,5 +1,6 @@
 var _ = require('lodash'),
     hbs = require('express-hbs'),
+    config = require('../config'),
     errors = require('../errors'),
     i18n = require('../i18n'),
     templates = require('../controllers/frontend/templates'),
@@ -70,20 +71,32 @@ _private.JSONErrorRenderer = function JSONErrorRenderer(err, req, res, /*jshint 
     });
 };
 
-_private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, /*jshint unused:false */ next) {
+_private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, next) {
+    // If the error code is explicitly set to STATIC_FILE_NOT_FOUND,
+    // Skip trying to render an HTML error, and move on to the basic error renderer
+    // I looked at doing this with accepts headers, but the internet is a crazy place...
+    // A better long term solution might be to do this based on extension
+    if (err.code === 'STATIC_FILE_NOT_FOUND') {
+        return next(err);
+    }
+
     var templateData = {
         message: err.message,
         code: err.statusCode,
         errorDetails: err.errorDetails || []
-    };
+    },
+    template = templates.error(err.statusCode);
 
     // It can be that something went wrong with the theme or otherwise loading handlebars
     // This ensures that no matter what res.render will work here
     if (_.isEmpty(req.app.engines)) {
+        template = 'error';
         req.app.engine('hbs', _private.createHbsEngine());
+        req.app.set('view engine', 'hbs');
+        req.app.set('views', config.get('paths').defaultViews);
     }
 
-    res.render(templates.error(err.statusCode), templateData, function renderResponse(err, html) {
+    res.render(template, templateData, function renderResponse(err, html) {
         if (!err) {
             return res.send(html);
         }
@@ -98,6 +111,10 @@ _private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, /*jshint un
             err.statusCode + ' ' + '<pre>' + escapeExpression(err.message || err) + '</pre>'
         );
     });
+};
+
+_private.BasicErorRenderer = function BasicErrorRenderer(err, req, res, /*jshint unused:false */ next) {
+    return res.send(res.statusCode + ' ' + err.message);
 };
 
 errorHandler.resourceNotFound = function resourceNotFound(req, res, next) {
@@ -121,7 +138,9 @@ errorHandler.handleHTMLResponse = [
     // Make sure the error can be served
     _private.prepareError,
     // Render the error using HTML format
-    _private.HTMLErrorRenderer
+    _private.HTMLErrorRenderer,
+    // Fall back to basic if HTML is not explicitly accepted
+    _private.BasicErorRenderer
 ];
 
 module.exports = errorHandler;

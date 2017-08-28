@@ -1,17 +1,21 @@
-var debug = require('debug')('ghost:admin'),
-    config = require('../config'),
+var debug = require('ghost-ignition').debug('admin'),
     express = require('express'),
+
+    // App requires
+    config = require('../config'),
+    utils = require('../utils'),
+
+    // Middleware
     // Admin only middleware
     adminMiddleware = require('./middleware'),
+    serveStatic = require('express').static,
 
-    // Global/shared middleware?
+    // Global/shared middleware
     cacheControl = require('../middleware/cache-control'),
     urlRedirects = require('../middleware/url-redirects'),
     errorHandler = require('../middleware/error-handler'),
     maintenance = require('../middleware/maintenance'),
-    prettyURLs = require('../middleware/pretty-urls'),
-    serveStatic = require('express').static,
-    utils = require('../utils');
+    prettyURLs = require('../middleware/pretty-urls');
 
 module.exports = function setupAdminApp() {
     debug('Admin setup start');

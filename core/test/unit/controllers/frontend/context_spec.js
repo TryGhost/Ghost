@@ -1,9 +1,13 @@
 var should = require('should'),
+    sinon = require('sinon'),
     _ = require('lodash'),
 
     // Stuff we are testing
     channelConfig = require('../../../../server/controllers/frontend/channel-config'),
-    setResponseContext = require('../../../../server/controllers/frontend/context');
+    setResponseContext = require('../../../../server/controllers/frontend/context'),
+    labs = require('../../../../server/utils/labs'),
+
+    sandbox = sinon.sandbox.create();
 
 describe('Contexts', function () {
     var req, res, data, setupContext;
@@ -19,6 +23,10 @@ describe('Contexts', function () {
         data = {};
     });
 
+    afterEach(function () {
+        sandbox.restore();
+    });
+
     /**
      * A context is created based on the URL, and the channel config if we're rendering
      * any part of a channel
@@ -30,11 +38,11 @@ describe('Contexts', function () {
         res.locals.relativeUrl = url;
 
         if (channel && _.isString(channel)) {
-            req.channelConfig = channelConfig.get(channel);
+            res.locals.channel = channelConfig.get(channel);
         } else if (channel && _.isNumber(channel)) {
             pageParam = channel;
         } else if (channel) {
-            req.channelConfig = channel;
+            res.locals.channel = channel;
         }
 
         if (pageParam) {
@@ -352,9 +360,13 @@ describe('Contexts', function () {
     });
 
     describe('Subscribe', function () {
-        it('should correctly identify /subscribe/ as the subscribe route', function () {
+        it('should identify /subscribe/ as the subscribe route if labs flag set', function () {
             // Setup test
+            sandbox.stub(labs, 'isSet').returns(true);
             setupContext('/subscribe/');
+            data.post = {
+                page: false
+            };
 
             // Execute test
             setResponseContext(req, res, data);
@@ -363,6 +375,23 @@ describe('Contexts', function () {
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(1);
             res.locals.context[0].should.eql('subscribe');
+        });
+
+        it('should not identify /subscribe/ as subscribe route if labs flag NOT set', function () {
+            // Setup test
+            sandbox.stub(labs, 'isSet').returns(false);
+            setupContext('/subscribe/');
+            data.post = {
+                page: false
+            };
+
+            // Execute test
+            setResponseContext(req, res, data);
+
+            // Check context
+            should.exist(res.locals.context);
+            res.locals.context.should.be.an.Array().with.lengthOf(1);
+            res.locals.context[0].should.eql('post');
         });
     });
 

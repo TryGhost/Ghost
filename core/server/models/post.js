@@ -244,7 +244,6 @@ Post = ghostBookshelf.Model.extend({
             this.set('plaintext', htmlToText.fromString(this.get('html'), {
                 wordwrap: 80,
                 ignoreImage: true,
-                linkHrefBaseUrl: utils.url.urlFor('home').replace(/\/$/, ''),
                 hideLinkHrefIfSameAsText: true,
                 preserveNewlines: true,
                 returnDomByDefault: true,
@@ -510,8 +509,12 @@ Post = ghostBookshelf.Model.extend({
         }
         // If the current column settings allow it...
         if (!options.columns || (options.columns && options.columns.indexOf('primary_tag') > -1)) {
-            // ... attach a computed property of primary_tag which is the first tag or null
-            attrs.primary_tag = attrs.tags && attrs.tags.length > 0 ? attrs.tags[0] : null;
+            // ... attach a computed property of primary_tag which is the first tag if it is public, else null
+            if (attrs.tags && attrs.tags.length > 0 && attrs.tags[0].visibility === 'public') {
+                attrs.primary_tag = attrs.tags[0];
+            } else {
+                attrs.primary_tag = null;
+            }
         }
 
         if (!options.columns || (options.columns && options.columns.indexOf('url') > -1)) {

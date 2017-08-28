@@ -4,14 +4,14 @@
 
 /*global require, module */
 
-var debug = require('debug')('ghost:channels:single'),
-    api         = require('../../api'),
-    utils       = require('../../utils'),
-    filters     = require('../../filters'),
-    templates   = require('./templates'),
+var debug = require('ghost-ignition').debug('channels:single'),
+    api = require('../../api'),
+    utils = require('../../utils'),
+    filters = require('../../filters'),
+    templates = require('./templates'),
     handleError = require('./error'),
     formatResponse = require('./format-response'),
-    postLookup     = require('./post-lookup'),
+    postLookup = require('./post-lookup'),
     setResponseContext = require('./context'),
     setRequestIsSecure = require('./secure'),
 
@@ -47,6 +47,14 @@ frontendControllers = {
             var post = result.posts[0];
 
             if (!post) {
+                return next();
+            }
+
+            if (req.params.options && req.params.options.toLowerCase() === 'edit') {
+                // CASE: last param is of url is /edit, redirect to admin
+                return res.redirect(utils.url.urlJoin(utils.url.urlFor('admin'), 'editor', post.id, '/'));
+            } else if (req.params.options) {
+                // CASE: unknown options param detected. Ignore and end in 404.
                 return next();
             }
 

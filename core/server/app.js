@@ -1,16 +1,16 @@
-var debug = require('debug')('ghost:app'),
+var debug = require('ghost-ignition').debug('app'),
     express = require('express'),
 
-    // app requires
-    config          = require('./config'),
+    // App requires
+    config = require('./config'),
 
     // middleware
-    compress        = require('compression'),
-    netjet          = require('netjet'),
+    compress = require('compression'),
+    netjet = require('netjet'),
 
     // local middleware
-    ghostLocals     = require('./middleware/ghost-locals'),
-    logRequest      = require('./middleware/log-request');
+    ghostLocals = require('./middleware/ghost-locals'),
+    logRequest = require('./middleware/log-request');
 
 module.exports = function setupParentApp() {
     debug('ParentApp setup start');
@@ -23,17 +23,6 @@ module.exports = function setupParentApp() {
     parentApp.enable('trust proxy');
 
     parentApp.use(logRequest);
-
-    if (debug.enabled) {
-        // debug keeps a timer, so this is super useful
-        parentApp.use((function () {
-            var reqDebug = require('debug')('ghost:req');
-            return function debugLog(req, res, next) {
-                reqDebug('Request', req.originalUrl);
-                next();
-            };
-        })());
-    }
 
     // enabled gzip compression by default
     if (config.get('compress') !== false) {

@@ -24,8 +24,12 @@ describe('Render Channel', function () {
 
     describe('Tag config', function () {
         var req = {
-                channelConfig: channelConfig('tag'),
                 params: {}
+            },
+            res = {
+                locals: {
+                    channel: channelConfig('tag')
+                }
             },
             promise = {
                 then: function () {
@@ -45,7 +49,7 @@ describe('Render Channel', function () {
                 return promise;
             });
 
-            renderChannel(req);
+            renderChannel(req, res);
         });
     });
 });

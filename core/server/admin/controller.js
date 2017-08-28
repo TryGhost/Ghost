@@ -1,4 +1,4 @@
-var debug = require('debug')('ghost:admin:controller'),
+var debug = require('ghost-ignition').debug('admin:controller'),
     _ = require('lodash'),
     path = require('path'),
     config = require('../config'),
@@ -27,7 +27,7 @@ module.exports = function adminController(req, res) {
             location: 'upgrade.new-version-available',
             dismissible: false,
             message: i18n.t('notices.controllers.newVersionAvailable',
-                            {version: updateVersion, link: '<a href="https://docs.ghost.org/v1.0.0/docs/installing-ghost-via-the-cli" target="_blank">Click here</a>'})};
+                            {version: updateVersion, link: '<a href="https://docs.ghost.org/docs/upgrade" target="_blank">Click here</a>'})};
 
         return api.notifications.browse({context: {internal: true}}).then(function then(results) {
             if (!_.some(results.notifications, {message: notification.message})) {

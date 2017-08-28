@@ -12,6 +12,7 @@
  */
 
 var config = require('../../config'),
+    labs = require('../../utils/labs'),
 
     // Context patterns, should eventually come from Channel configuration
     privatePattern = new RegExp('^\\/' + config.get('routeKeywords').private + '\\/'),
@@ -52,11 +53,11 @@ function setResponseContext(req, res, data) {
     }
 
     // Each page can only have at most one of these
-    if (req.channelConfig) {
-        res.locals.context.push(req.channelConfig.name);
+    if (res.locals.channel) {
+        res.locals.context.push(res.locals.channel.name);
     } else if (privatePattern.test(res.locals.relativeUrl)) {
         res.locals.context.push('private');
-    } else if (subscribePattern.test(res.locals.relativeUrl)) {
+    } else if (subscribePattern.test(res.locals.relativeUrl) && labs.isSet('subscribers') === true) {
         res.locals.context.push('subscribe');
     } else if (data && data.post && data.post.page) {
         res.locals.context.push('page');

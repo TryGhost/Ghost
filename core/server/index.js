@@ -13,7 +13,7 @@
 require('./overrides');
 
 // Module dependencies
-var debug = require('debug')('ghost:boot:init'),
+var debug = require('ghost-ignition').debug('boot:init'),
 // Config should be first require, as it triggers the initial load of the config files
     config = require('./config'),
     Promise = require('bluebird'),
@@ -70,6 +70,11 @@ function init() {
 
         // Setup our collection of express apps
         parentApp = require('./app')();
+
+        // Initialise analytics events
+        if (config.get('segment:key')) {
+            require('./analytics-events').init();
+        }
 
         debug('Express Apps done');
     }).then(function () {
