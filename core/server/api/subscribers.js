@@ -126,7 +126,7 @@ subscribers = {
          *
          * TODO: this will probably need to be pushed into a background queue
          * so that subscriber creation response isn't dependent on MailChimp's
-         * API response although it does seem very quick so far
+         * API response
          *
          * @param  {Subscriber} result the newly created subscriber
          * @return {Subscruber} result

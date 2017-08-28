@@ -408,9 +408,6 @@
                 },
                 "notAllowedToInviteOwner": "Not allowed to invite an owner user.",
                 "notAllowedToInvite": "Not allowed to invite this role."
-            },
-            "webhooks": {
-                "webhookNotFound": "No webhook exists at this URL"
             }
         },
         "data": {

@@ -93,10 +93,6 @@ module.exports = function apiRoutes() {
     apiRouter.get('/mailchimp/lists', mw.authenticatePrivate, api.http(api.mailchimp.fetchLists));
     apiRouter.get('/mailchimp/sync', mw.authenticatePrivate, api.http(api.mailchimp.sync));
 
-    // ## Webhooks
-    apiRouter.get('/webhooks/:key*', api.http(api.webhooks.trigger));
-    apiRouter.post('/webhooks/:key*', api.http(api.webhooks.trigger));
-
     // ## Roles
     apiRouter.get('/roles/', mw.authenticatePrivate, api.http(api.roles.browse));
 

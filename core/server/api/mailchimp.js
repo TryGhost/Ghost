@@ -240,21 +240,6 @@ mailchimp = {
         ];
 
         return pipeline(tasks, options).catch(handleMailchimpError);
-    },
-
-    webhook(options) {
-        // param will have a leading '/' so get rid of that then split
-        var path = options[0].substr(1).split('/'),
-            settings = settingsCache.get('mailchimp');
-
-        // TODO: match path against saved webhook id
-        // - decide whether we want to use the webhook ID or some other
-        //   random hash to hide the webhook address from potential attach
-        if (path[0] === 'list' && path[1] === settings.webhookId) {
-
-        }
-
-        return Promise.resolve({});
     }
 };
 
