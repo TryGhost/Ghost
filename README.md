@@ -4,15 +4,15 @@
 The project is maintained by a non-profit organisation called the **Ghost Foundation**, along with an amazing group of independent [contributors](https://github.com/TryGhost/Ghost/contributors). We're trying to make publishing software that changes the shape of online journalism.
 
 - [Ghost.org](https://ghost.org)
-- [Supported Node Versions](https://docs.ghost.org/v1.0.0/docs/supported-node-versions)
+- [Supported Node Versions](https://docs.ghost.org/v1/docs/supported-node-versions)
 - [Latest Release](https://ghost.org/developers/)
 - [Help & Support](http://help.ghost.org/)
-- [Theme Docs](http://themes.ghost.org/v1.0.0/)
+- [Theme Docs](http://themes.ghost.org/v1/)
 - [API Docs](https://api.ghost.org/)
-- [Contributing Guide](https://docs.ghost.org/v1.0.0/docs/contributing)
+- [Contributing Guide](https://docs.ghost.org/v1/docs/contributing)
 - [Feature Requests](http://ideas.ghost.org/)
 - [Developer Blog](http://dev.ghost.org)
-- [Self-hoster Docs](http://docs.ghost.org/v1.0.0/)
+- [Self-hoster Docs](http://docs.ghost.org/v1/)
 
 **NOTE: If you’re stuck, can’t get something working or need some help, please head on over and join our [Slack community](https://ghost.org/slack/) rather than opening an issue.**
 
@@ -34,14 +34,14 @@ Not only will it save you hours of maintenance per month, but all revenue goes t
 
 Other options are also available if you prefer playing around with servers by yourself, of course. The freedom of choice is in your hands.
 
-- [Self-hosting Guide](https://docs.ghost.org/v1.0.0/docs/getting-started-guide)
+- [Self-hosting Guide](https://docs.ghost.org/v1/docs/getting-started-guide)
 
 
 # Theme Developers
 
 If you are developing a Ghost theme for your own site or creating themes for others to use we recommend installing Ghost on your own local machine. Luckily we have a brand new Ghost CLI to make this really easy 😄
 
-- [Installing Ghost via the CLI](https://docs.ghost.org/v1.0.0/docs/install-local)
+- [Installing Ghost via the CLI](https://docs.ghost.org/v1/docs/install-local)
 - [Theme Developer Docs](http://themes.ghost.org)
 
 
@@ -49,14 +49,14 @@ If you are developing a Ghost theme for your own site or creating themes for oth
 
 For anyone wishing to contribute to Ghost or to hack/customise core files we recommend following our development setup guides:
 
-- [General Contributor Guide](https://docs.ghost.org/v1.0.0/docs/contributing)
-- [Developer Setup Instructions](https://docs.ghost.org/v1.0.0/docs/working-with-ghost)
-- [Admin Client development guide](https://docs.ghost.org/v1.0.0/docs/working-with-the-admin-client)
+- [General Contributor Guide](https://docs.ghost.org/v1/docs/contributing)
+- [Developer Setup Instructions](https://docs.ghost.org/v1/docs/working-with-ghost)
+- [Admin Client development guide](https://docs.ghost.org/v1/docs/working-with-the-admin-client)
 
 
 # Staying Up to Date
 
-When a new version of Ghost comes out, you'll want to look over these [upgrade instructions](https://docs.ghost.org/v1.0.0/docs/upgrade) for what to do next.
+When a new version of Ghost comes out, you'll want to look over these [upgrade instructions](https://docs.ghost.org/v1/docs/upgrade) for what to do next.
 
 You can talk to other Ghost users and developers in our [public Slack team](https://ghost.org/slack/) (it's pretty awesome).
 
