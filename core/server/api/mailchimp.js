@@ -19,7 +19,7 @@ var Mailchimp       = require('mailchimp-api-v3'),
 // need to address?
 handleMailchimpError = function handleMailchimpError(error) {
     // TODO: return a custom error type here?
-    if (error.title === 'API Key Invalid' || error.message.indexOf('invalid api key') > -1) {
+    if (error.title === 'API Key Invalid' || (error.message && error.message.indexOf('invalid api key') > -1)) {
         throw new errors.ValidationError({
             code: 'MAILCHIMP',
             message: error.title || error.message,
@@ -41,11 +41,7 @@ handleMailchimpError = function handleMailchimpError(error) {
         });
     }
 
-    // TODO: keep this or just `throw error`?
-    throw new errors.InternalServerError({
-        code: 'MAILCHIMP',
-        message: error.message
-    });
+    throw error;
 };
 
 mailchimp = {
@@ -110,136 +106,168 @@ mailchimp = {
      * TODO:
      * - [x] fix create members request
      * - [x] return stats
-     * - [ ] error handling
+     * - [ ] logging
      *
      * Flow:
      * - fetch all MailChimp list members
+     * - update status of subscribers for known e-mail addresses
      * - create subscribers for unknown e-mail addresses
-     * - update name and status of subscribers for known e-mail addresses
-     * - push all subscribers to MailChimp
+     * - push new subscribers to MailChimp
      *
      * @return {[type]} [description]
      */
     sync: function sync(options) {
         var tasks;
 
-        function doQuery(options) {
-            var settings = settingsCache.get('mailchimp'),
-                mailchimp = new Mailchimp(settings.apiKey),
-                stats = {
-                    subscribers: {
-                        updated: 0,
-                        created: 0
-                    },
-                    mailchimp: {
-                        created: 0,
-                        errored: 0
-                    }
+        // TODO: this method of pipelining feels weird because each function
+        // in the pipeline has a side-effect of modifying `options` instead of
+        // returning a new object.
+
+        // the options object is passed along the pipeline being updated by each
+        // function. Here we set up properties that are needed later
+        function prepareOptions(options) {
+            options.settings = settingsCache.get('mailchimp');
+            options.mailchimp = new Mailchimp(options.settings.apiKey);
+            options.mailchimpErrors = [];
+            options.stats = {
+                subscribers: {
+                    updated: 0,
+                    created: 0
                 },
-                mailchimpErrors = [];
+                mailchimp: {
+                    created: 0,
+                    errored: 0
+                }
+            };
 
-            // grab all subscribers from the DB ready for comparisons/updates
-            return dataProvider.Subscriber.findAll().then(function performSync(subscribers) {
-                // fetch all members, use a batch query because a normal get query
-                // may time out. Assumes no list has more then 100m members 😬
-                return mailchimp.batch({
-                    method: 'get',
-                    path: '/lists/{list_id}/members',
-                    path_params: {
-                        list_id: settings.activeList.id
-                    },
-                    query: {
-                        count: 100000000,
-                        fields: 'total_items,members.email_address,members.status'
-                    }
-                }).then(function updateOrCreateSubscribers(result) {
-                    var updateAndCreatePromises = [];
+            return options;
+        }
 
-                    // for each member, find a matching subscriber and update.
-                    _.forEach(result.members, function (member) {
-                        var subscriber = subscribers.findWhere({email: member.email_address});
-
-                        if (subscriber) {
-                            if (subscriber.get('status') !== member.status) {
-                                // we have a local subscriber for this member but
-                                // the status doesn't match so perform an update
-
-                                // TODO: we may want to transform the status values here,
-                                // MailChimp will return one of:
-                                // pending, subscribed, cleaned, unsubscribed
-                                subscriber.set('status', member.status);
-
-                                updateAndCreatePromises.push(subscriber.save());
-
-                                stats.subscribers.updated += 1;
-                            }
-
-                            // remove the model from the collection so we can use the
-                            // remaining models to create new list members later
-                            subscribers.remove(subscriber);
-
-                        } else if (!subscriber) {
-                            // member doesn't have local subscriber, create one
-                            updateAndCreatePromises.push(dataProvider.Subscriber.add({
-                                email: member.email_address,
-                                status: member.status
-                            }));
-
-                            stats.subscribers.created += 1;
-                        }
-                    });
-
-                    return Promise.all(updateAndCreatePromises);
-                }).then(function createNewListMembers() {
-                    var members = [];
-
-                    // subscribers is now an array of subscribers that do not
-                    // have a corresponding MailChimp record so we add them all
-                    // to the `members` arrary used in a "Batch sub/unsub" request
-                    subscribers.forEach(function (subscriber) {
-                        members.push({
-                            email_address: subscriber.get('email'),
-                            // TODO: we may want to transform the status values here,
-                            // MailChimp expects one of:
-                            // pending, subscribed, cleaned, unsubscribed
-                            status: subscriber.get('status')
-                        })
-                    });
-
-                    if (members.length > 0) {
-                        return mailchimp.request({
-                            method: 'post',
-                            path: '/lists/{list_id}',
-                            path_params: {
-                                list_id: settings.activeList.id
-                            },
-                            body: {
-                                members: members,
-                                update_existing: false
-                            }
-                        }).then(function (results) {
-                            stats.mailchimp.created = results.total_created;
-                            stats.mailchimp.errored = results.error_count;
-                            mailchimpErrors = results.errors;
-                        });
-                    } else {
-                        Promise.resolve({});
-                    }
-                }).then(function returnStats() {
-                    return {
-                        stats: stats,
-                        errors: mailchimpErrors
-                    }
-                });
+        // get all subscribers from the local database - used for comparing
+        // against MailChimp list members
+        function getSubscribers(options) {
+            return dataProvider.Subscriber.findAll().then(function (subscribers) {
+                options.subscribers = subscribers;
+                return options;
             });
         }
 
+        // query all MailChimp list members (assumes no more than 1m members) -
+        // used to create new local subscribers and as source-of-truth when
+        // updating subscriber statuses
+        function getMailchimpListMembers(options) {
+            return options.mailchimp.batch({
+                method: 'get',
+                path: '/lists/{list_id}/members',
+                path_params: {
+                    list_id: options.settings.activeList.id
+                },
+                query: {
+                    count: 100000000,
+                    fields: 'total_items,members.email_address,members.status'
+                }
+            }).then(function (result) {
+                options.listMembers = result.members;
+                return options;
+            });
+        }
+
+        // use MailChimp member details to update or create local subscribers
+        function updateOrCreateSubscribers(options) {
+            var updateAndCreatePromises = [];
+
+            // for each member, find a matching subscriber and update.
+            _.forEach(options.listMembers, function (member) {
+                var subscriber = options.subscribers.findWhere({email: member.email_address});
+
+                // we have a local subscriber for this e-mail address
+                if (subscriber) {
+                    // only update if the MailChimp status has changed
+                    if (subscriber.get('status') !== member.status) {
+                        // TODO: we may want to transform the status values here,
+                        // MailChimp will return one of:
+                        // pending, subscribed, cleaned, unsubscribed
+                        subscriber.set('status', member.status);
+
+                        updateAndCreatePromises.push(subscriber.save());
+
+                        options.stats.subscribers.updated += 1;
+                    }
+
+                    // remove the subscriber from the collection so we can use the
+                    // remaining subscribers to create new list members later
+                    options.subscribers.remove(subscriber);
+
+                // no local subscriber for this e-mail, let's create one
+                } else {
+                    updateAndCreatePromises.push(dataProvider.Subscriber.add({
+                        email: member.email_address,
+                        status: member.status
+                    }));
+
+                    options.stats.subscribers.created += 1;
+                }
+            });
+
+            return Promise.all(updateAndCreatePromises).then(function () {
+                return options;
+            });
+        }
+
+        // options.subscribers at this point only includes subscribers that
+        // do not exist in the MailChimp list, use these subscribers to create
+        // the MailChimp list members
+        function createNewMailchimpListMembers(options) {
+            var members = [];
+
+            options.subscribers.forEach(function (subscriber) {
+                members.push({
+                    email_address: subscriber.get('email'),
+                    // TODO: we may want to transform the status values here,
+                    // MailChimp expects one of:
+                    // pending, subscribed, cleaned, unsubscribed
+                    status: subscriber.get('status')
+                });
+            });
+
+            if (members.length > 0) {
+                return options.mailchimp.request({
+                    method: 'post',
+                    path: '/lists/{list_id}',
+                    path_params: {
+                        list_id: settings.activeList.id
+                    },
+                    body: {
+                        members: members,
+                        update_existing: false
+                    }
+                }).then(function (results) {
+                    options.stats.mailchimp.created = results.total_created;
+                    options.stats.mailchimp.errored = results.error_count;
+                    options.mailchimpErrors = results.errors;
+
+                    return options;
+                });
+            } else {
+                Promise.resolve(options);
+            }
+        }
+
         tasks = [
-            // TODO: validation/permissions - how does this work for non-model endpoints?
-            doQuery
+            // TODO: restrict so it's only runnable via the scheduler
+            prepareOptions,
+            getSubscribers,
+            getMailchimpListMembers,
+            updateOrCreateSubscribers,
+            createNewMailchimpListMembers
         ];
 
-        return pipeline(tasks, options).catch(handleMailchimpError);
+        return pipeline(tasks, options).then(function returnStats() {
+            return {
+                stats: options.stats,
+                errors: options.mailchimpErrors
+            }
+        }).catch(handleMailchimpError);
     }
 };
 
