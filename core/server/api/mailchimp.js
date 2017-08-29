@@ -7,9 +7,7 @@ var Mailchimp       = require('mailchimp-api-v3'),
     errors          = require('../errors'),
     pipeline        = require('../utils/pipeline'),
     settingsCache   = require('../settings/cache'),
-    utils           = require('../utils'),
 
-    docName = 'mailchimp',
     mailchimp,
     handleMailchimpError;
 
@@ -282,7 +280,7 @@ mailchimp = {
             return {
                 stats: options.stats,
                 errors: options.mailchimpErrors
-            }
+            };
         }).catch(handleMailchimpError);
     }
 };

@@ -132,14 +132,14 @@ subscribers = {
          * @return {Subscruber} result
          */
         function pushToMailChimp(result) {
-            var settings = settingsCache.get('mailchimp');
+            var settings = settingsCache.get('mailchimp'), mailchimp, email, emailHash;
 
             // TODO: check if the subscriber is actually new or just returned
             // because it's an external request and the email already existed
             if (settings.isActive) {
-                var mailchimp = new Mailchimp(settings.apiKey),
-                    email = result.get('email').toLowerCase(),
-                    emailHash = crypto.createHash('md5').update(email).digest('hex');
+                mailchimp = new Mailchimp(settings.apiKey);
+                email = result.get('email').toLowerCase();
+                emailHash = crypto.createHash('md5').update(email).digest('hex');
 
                 return mailchimp.request({
                     method: 'put',
@@ -156,7 +156,7 @@ subscribers = {
                 }).then(function (mailChimpResults) {
                     // TODO: logging - we want to log the result of the API
                     // request somewhere
-                    console.log('MailChimp list member created/updated');
+                    console.log('MailChimp list member created/updated', mailChimpResults);
 
                     return result;
                 }).catch(function (error) {

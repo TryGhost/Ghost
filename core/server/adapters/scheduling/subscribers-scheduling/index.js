@@ -2,12 +2,10 @@ var Promise = require('bluebird'),
     moment = require('moment'),
     debug = require('ghost-ignition').debug('subscribers-scheduling'),
     localUtils = require(__dirname + '/../utils'),
-    config = require(__dirname + '/../../../config'),
     events = require(__dirname + '/../../../events'),
     errors = require(__dirname + '/../../../errors'),
     settingsCache = require(__dirname + '/../../../settings/cache'),
     models = require(__dirname + '/../../../models'),
-    schedules = require(__dirname + '/../../../api/schedules'),
     utils = require(__dirname + '/../../../utils'),
     _private = {};
 
@@ -67,8 +65,6 @@ exports.init = function init(options) {
             adapter.run();
         })
         .then(function () {
-            var nextSyncAtMoment = moment(settingsCache.get('mailchimp').nextSyncAt);
-
             /**
              * CASE:
              * On bootstrap we trigger the subscriber sync if an app for that is enabled.
