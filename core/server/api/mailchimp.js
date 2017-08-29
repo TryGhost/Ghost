@@ -261,6 +261,8 @@ mailchimp = {
             return dataProvider.Settings.findOne({key: 'mailchimp'}, options)
                 .then(function (response) {
                     var mailchimpConfig = JSON.parse(response.attributes.value);
+
+                    mailchimpConfig.lastSyncAt = moment().valueOf();
                     mailchimpConfig.nextSyncAt = moment().add(config.get('times:syncSubscribersInMin') || 1440, 'minutes').valueOf();
 
                     return dataProvider.Settings.edit([{key: 'mailchimp', value: JSON.stringify(mailchimpConfig)}], options);
