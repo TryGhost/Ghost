@@ -270,7 +270,6 @@ mailchimp = {
         }
 
         tasks = [
-            // TODO: restrict so it's only runnable via the scheduler
             prepareOptions,
             getSubscribers,
             getMailchimpListMembers,
