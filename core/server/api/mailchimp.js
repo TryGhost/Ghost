@@ -146,7 +146,7 @@ mailchimp = {
         // get all subscribers from the local database - used for comparing
         // against MailChimp list members
         function getSubscribers(options) {
-            return dataProvider.Subscriber.findAll().then(function (subscribers) {
+            return dataProvider.Subscriber.findAll(options).then(function (subscribers) {
                 options.subscribers = subscribers;
                 return options;
             });
@@ -203,7 +203,7 @@ mailchimp = {
                     updateAndCreatePromises.push(dataProvider.Subscriber.add({
                         email: member.email_address,
                         status: member.status
-                    }));
+                    }), options);
 
                     options.stats.subscribers.created += 1;
                 }
