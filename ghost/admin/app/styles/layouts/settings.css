@@ -276,6 +276,11 @@
     border-radius: inherit;
 }
 
+.settings-code-editor .CodeMirror-scroll {
+   overflow: hidden !important;
+   margin-right: 0;
+}
+
 .settings-code-editor .cm-s-xq-light span.cm-meta {
     color: #000;
 }
