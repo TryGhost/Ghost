@@ -121,6 +121,10 @@ mailchimp = {
     sync: function sync(options) {
         var tasks;
 
+        if (!settingsCache.get('mailchimp').isActive) {
+            return Promise.resolve();
+        }
+
         // TODO: this method of pipelining feels weird because each function
         // in the pipeline has a side-effect of modifying `options` instead of
         // returning a new object.
