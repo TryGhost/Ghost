@@ -1,10 +1,11 @@
 import Transform from 'ember-data/transform';
 
 export default Transform.extend({
-    deserialize(serialised) {
-        return JSON.parse(serialised);
+    deserialize(serialized) {
+        let _serialized = serialized === '' ? null : serialized;
+        return JSON.parse(_serialized);
     },
-    serialize(deserialised) {
-        return deserialised ? JSON.stringify(deserialised) : null;
+    serialize(deserialized) {
+        return deserialized ? JSON.stringify(deserialized) : null;
     }
 });
