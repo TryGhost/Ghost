@@ -85,7 +85,7 @@
             "defaultValue": ""
         },
         "mailchimp": {
-            "defaultValue": "{\"isActive\": false, \"apiKey\": \"\", \"activeList\": {}}"
+            "defaultValue": "{\"isActive\": false, \"apiKey\": \"\", \"activeList\": {}, \"nextSyncAt\": \"\"}"
         }
     },
     "theme": {
