@@ -1,6 +1,8 @@
 var Mailchimp       = require('mailchimp-api-v3'),
     Promise         = require('bluebird'),
     _               = require('lodash'),
+    moment          = require('moment'),
+    config          = require('../config'),
     dataProvider    = require('../models'),
     errors          = require('../errors'),
     pipeline        = require('../utils/pipeline'),
@@ -253,13 +255,24 @@ mailchimp = {
             }
         }
 
+        function setSyncDate(options) {
+            return dataProvider.Settings.findOne({key: 'mailchimp'}, options)
+                .then(function (response) {
+                    var mailchimpConfig = JSON.parse(response.attributes.value);
+                    mailchimpConfig.nextSyncAt = moment().add(config.get('times:syncSubscribersInMin') || 1440, 'minutes').valueOf();
+
+                    return dataProvider.Settings.edit([{key: 'mailchimp', value: JSON.stringify(mailchimpConfig)}], options);
+                });
+        }
+
         tasks = [
             // TODO: restrict so it's only runnable via the scheduler
             prepareOptions,
             getSubscribers,
             getMailchimpListMembers,
             updateOrCreateSubscribers,
-            createNewMailchimpListMembers
+            createNewMailchimpListMembers,
+            setSyncDate
         ];
 
         return pipeline(tasks, options).then(function returnStats() {
