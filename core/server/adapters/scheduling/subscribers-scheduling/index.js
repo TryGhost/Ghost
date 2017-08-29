@@ -109,7 +109,22 @@ exports.init = function init(options) {
                     return;
                 }
 
-                // NOTE: It doesn't matter if the apiKey or if the active list changes, because the target sync endpoint uses updated data.
+                // CASE: You change the mail chimp list. Trigger immediate sync.
+                if (updatedMailchimpConfig.activeList.id !== mailchimpConfig.activeList.id) {
+                    // CASE: Data was never synced. E.g. you enable mailchimp for the first time. Sync either happens right now or in a bit.
+                    if (!nextSyncAtMoment.isValid()) {
+                        return;
+                    }
+
+                    return adapter.reschedule(_private.normalize({
+                        apiUrl: apiUrl,
+                        client: client,
+                        time: moment().valueOf(),
+                        oldTime: nextSyncAtMoment.valueOf()
+                    }));
+                }
+
+                // NOTE: It doesn't matter if the apiKey changes, because the target sync endpoint uses updated data.
                 // CASE: App was never synced. Sync now.
                 // CASE: You disable/enable the app without restarting Ghost.
                 if (!nextSyncAtMoment.isValid() || !updatedMailchimpConfig.isActive) {
