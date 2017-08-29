@@ -8,7 +8,7 @@
         <div class="gh-editor-status">
             {{gh-editor-post-status
                 post=model
-                isSaving=autosave.isRunning
+                isSaving=(or autosave.isRunning saveTasks.isRunning)
             }}
         </div>
         {{#if scheduleCountdown}}

@@ -1,10 +1,13 @@
 import Component from '@ember/component';
+import Ember from 'ember';
 import {computed} from '@ember/object';
 import {reads} from '@ember/object/computed';
 import {task, timeout} from 'ember-concurrency';
 
+const {testing} = Ember;
+
 // TODO: reduce when in testing mode
-const SAVE_TIMEOUT_MS = 3000;
+const SAVE_TIMEOUT_MS = testing ? 0 : 3000;
 
 export default Component.extend({
     post: null,
