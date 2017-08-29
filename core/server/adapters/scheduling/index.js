@@ -1,4 +1,5 @@
-var postScheduling = require(__dirname + '/post-scheduling');
+var postScheduling = require('./post-scheduling'),
+    subscribersScheduling = require('./subscribers-scheduling');
 
 /**
  * scheduling modules:
@@ -7,5 +8,8 @@ var postScheduling = require(__dirname + '/post-scheduling');
 exports.init = function init(options) {
     options = options || {};
 
-    return postScheduling.init(options);
+    return postScheduling.init(options)
+        .then(function () {
+            return subscribersScheduling.init(options);
+        });
 };
