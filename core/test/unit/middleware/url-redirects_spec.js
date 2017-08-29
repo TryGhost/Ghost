@@ -214,6 +214,11 @@ describe('UNIT: url redirects', function () {
         urlRedirects(req, res, next);
         next.called.should.be.false();
         res.redirect.calledWith(301, 'https://admin.default.com:2368/blog/ghost').should.be.true();
+
+        req.secure = true;
+        host = 'admin.default.com:2368';
+        urlRedirects(req, res, next);
+        next.called.should.be.true();
         done();
     });
 
@@ -236,6 +241,64 @@ describe('UNIT: url redirects', function () {
         urlRedirects(req, res, next);
         next.called.should.be.false();
         res.redirect.calledWith(301, 'https://admin.default.com:2368/ghost?test=true').should.be.true();
+        done();
+    });
+
+    it('[redirect] same url and admin url, but different protocol.', function (done) {
+        configUtils.set({
+            url: 'http://default.com:2368',
+            admin: {
+                url: 'https://default.com:2368'
+            }
+        });
+
+        host = 'default.com:2368';
+        res.isAdmin = true;
+
+        req.originalUrl = '/ghost';
+        urlRedirects(req, res, next);
+        next.called.should.be.false();
+        res.redirect.calledWith(301, 'https://default.com:2368/ghost').should.be.true();
+
+        req.secure = true;
+        urlRedirects(req, res, next);
+        next.called.should.be.true();
+        done();
+    });
+
+    it('[no redirect] different url and admin url, but different protocol.', function (done) {
+        configUtils.set({
+            url: 'http://blog.ghost.org',
+            admin: {
+                url: 'http://something.com'
+            }
+        });
+
+        host = 'something.com';
+        res.isAdmin = true;
+        req.secure = false;
+
+        req.originalUrl = '/ghost';
+        urlRedirects(req, res, next);
+        next.called.should.be.true();
+        done();
+    });
+
+    it('[no redirect] different url and admin url, but different protocol.', function (done) {
+        configUtils.set({
+            url: 'http://blog.ghost.org',
+            admin: {
+                url: 'http://something.com'
+            }
+        });
+
+        host = 'something.com';
+        res.isAdmin = true;
+        req.secure = true;
+
+        req.originalUrl = '/ghost';
+        urlRedirects(req, res, next);
+        next.called.should.be.true();
         done();
     });
 });
