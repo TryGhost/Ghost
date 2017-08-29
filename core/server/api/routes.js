@@ -48,6 +48,11 @@ module.exports = function apiRoutes() {
         auth.authenticate.authenticateUser
     ], api.http(api.schedules.publishPost));
 
+    apiRouter.get('/schedules/subscribers/sync', [
+        auth.authenticate.authenticateClient,
+        auth.authenticate.authenticateUser
+    ], api.http(api.schedules.syncSubscribers));
+
     // ## Settings
     apiRouter.get('/settings', mw.authenticatePrivate, api.http(api.settings.browse));
     apiRouter.get('/settings/:key', mw.authenticatePrivate, api.http(api.settings.read));
@@ -91,7 +96,6 @@ module.exports = function apiRoutes() {
 
     // ## Mailchimp
     apiRouter.get('/mailchimp/lists', mw.authenticatePrivate, api.http(api.mailchimp.fetchLists));
-    apiRouter.get('/mailchimp/sync', mw.authenticatePrivate, api.http(api.mailchimp.sync));
 
     // ## Roles
     apiRouter.get('/roles/', mw.authenticatePrivate, api.http(api.roles.browse));
