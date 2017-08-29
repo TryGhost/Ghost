@@ -53,5 +53,5 @@ export default Model.extend(ValidationEngine, {
         if (this.get('isNew') && !this.get('isSaving')) {
             this.setVisibility();
         }
-    })
+    }).on('init')
 });
