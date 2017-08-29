@@ -2,6 +2,7 @@ var _ = require('lodash'),
     Promise = require('bluebird'),
     moment = require('moment'),
     config = require('../config'),
+    mailchimp = require('./mailchimp'),
     pipeline = require(config.get('paths').corePath + '/server/utils/pipeline'),
     dataProvider = require(config.get('paths').corePath + '/server/models'),
     i18n = require(config.get('paths').corePath + '/server/i18n'),
@@ -97,4 +98,17 @@ exports.getScheduledPosts = function readPosts(options) {
                 });
         }
     ], options);
+};
+
+/**
+ * Sync subscribers. Right now there is only one app integration available: mailchimp.
+ */
+exports.syncSubscribers = function syncSubscribers(options) {
+    // CASE: only the scheduler client is allowed to publish (hardcoded because of missing client permission system)
+    if (!options.context || !options.context.client || options.context.client !== 'ghost-scheduler') {
+        return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.permissions.noPermissionToAction')}));
+    }
+
+    options.context = {internal: true};
+    return mailchimp.sync(options);
 };
