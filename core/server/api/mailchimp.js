@@ -249,7 +249,7 @@ mailchimp = {
                     return options;
                 });
             } else {
-                Promise.resolve(options);
+                return Promise.resolve(options);
             }
         }
 
