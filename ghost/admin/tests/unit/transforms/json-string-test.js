@@ -4,10 +4,6 @@ import {setupTest} from 'ember-mocha';
 
 describe('Unit: Transform: json-string', function() {
     setupTest('transform:json-string', {});
-    it('exists', function() {
-        let transform = this.subject();
-        expect(transform).to.be.ok;
-    });
 
     it('serialises an Object to a JSON String', function() {
         let transform = this.subject();
@@ -19,5 +15,10 @@ describe('Unit: Transform: json-string', function() {
         let transform = this.subject();
         let obj = {one: 'one', two: 'two'};
         expect(transform.deserialize(JSON.stringify(obj))).to.deep.equal(obj);
+    });
+
+    it('handles deserializing a blank string', function () {
+        let transform = this.subject();
+        expect(transform.deserialize('')).to.equal(null);
     });
 });
