@@ -235,7 +235,7 @@ mailchimp = {
                     method: 'post',
                     path: '/lists/{list_id}',
                     path_params: {
-                        list_id: settings.activeList.id
+                        list_id: options.settings.activeList.id
                     },
                     body: {
                         members: members,
