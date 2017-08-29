@@ -16,7 +16,8 @@ var Promise = require('bluebird'),
 _private.normalize = function normalize(options) {
     var apiUrl = options.apiUrl,
         client = options.client,
-        time = options.time || moment().valueOf();
+        time = options.time || moment().valueOf(),
+        oldTime = options.oldTime;
 
     debug('Add sync job for:', moment(time).format('YYYY-MM-DD HH:mm:ss'));
 
@@ -24,7 +25,8 @@ _private.normalize = function normalize(options) {
         time: time,
         url: _private.getUrl({client: client, apiUrl: apiUrl}),
         extra: {
-            httpMethod: 'GET'
+            httpMethod: 'GET',
+            oldTime: oldTime
         }
     };
 };
@@ -68,11 +70,19 @@ exports.init = function init(options) {
             /**
              * CASE:
              * On bootstrap we trigger the subscriber sync if an app for that is enabled.
+             *
              * Note: Right now there is only one app, that's why we ask for this app directly.
              * If we support multiple apps, we can generalise this e.g. apps.getActive({type: ...})
+             *
+             * Note: Ensure we delete the old job. E.g. you restart Ghost twice. (only important for Pro scheduling)
              */
             if (settingsCache.get('mailchimp').isActive) {
-                adapter.reschedule(_private.normalize({apiUrl: apiUrl, client: client, time: settingsCache.get('mailchimp').nextSyncAt}));
+                adapter.reschedule(_private.normalize({
+                    apiUrl: apiUrl,
+                    client: client,
+                    time: settingsCache.get('mailchimp').nextSyncAt,
+                    oldTime: moment(settingsCache.get('mailchimp').nextSyncAt).add(5, 'seconds').valueOf()
+                }));
             }
         })
         .then(function () {
