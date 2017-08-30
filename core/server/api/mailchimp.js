@@ -258,14 +258,14 @@ mailchimp = {
         }
 
         function setSyncDate(options) {
-            return dataProvider.Settings.findOne({key: 'mailchimp'}, options)
+            return dataProvider.Settings.findOne({key: 'scheduling'}, options)
                 .then(function (response) {
-                    var mailchimpConfig = JSON.parse(response.attributes.value);
+                    var schedulingConfig = JSON.parse(response.attributes.value);
 
-                    mailchimpConfig.lastSyncAt = moment().valueOf();
-                    mailchimpConfig.nextSyncAt = moment().add(config.get('times:syncSubscribersInMin') || 1440, 'minutes').valueOf();
+                    schedulingConfig.subscribers.lastSyncAt = moment().valueOf();
+                    schedulingConfig.subscribers.nextSyncAt = moment().add(config.get('times:syncSubscribersInMin') || 1440, 'minutes').valueOf();
 
-                    return dataProvider.Settings.edit([{key: 'mailchimp', value: JSON.stringify(mailchimpConfig)}], options);
+                    return dataProvider.Settings.edit([{key: 'scheduling', value: JSON.stringify(schedulingConfig)}], options);
                 });
         }
 

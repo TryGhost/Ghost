@@ -85,7 +85,11 @@
             "defaultValue": ""
         },
         "mailchimp": {
-            "defaultValue": "{\"isActive\": false, \"apiKey\": \"\", \"activeList\": {}, \"lastSyncAt\": \"\", \"nextSyncAt\": \"\"}"
+            "defaultValue": "{\"isActive\": false, \"apiKey\": \"\", \"activeList\": {}}"
+        },
+        "scheduling": {
+            "defaultValue": "{\"readonly\": true, \"subscribers\": {\"lastSyncAt\": \"\", \"nextSyncAt\": \"\"}}",
+            "readonly": true
         }
     },
     "theme": {

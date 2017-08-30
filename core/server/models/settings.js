@@ -116,16 +116,24 @@ Settings = ghostBookshelf.Model.extend({
             item = self.filterData(item);
 
             return Settings.forge({key: item.key}).fetch(options).then(function then(setting) {
-                var saveData = {};
+                var saveData = {},
+                    defaultSetting = _.find(getDefaultSettings(), {key: item.key});
 
                 if (setting) {
                     if (item.hasOwnProperty('value')) {
                         saveData.value = item.value;
                     }
+
                     // Internal context can overwrite type (for fixture migrations)
                     if (options.context && options.context.internal && item.hasOwnProperty('type')) {
                         saveData.type = item.type;
                     }
+
+                    // CASE: Can't edit readonly settings.
+                    if (!options.context.internal && defaultSetting.hasOwnProperty('readonly') && defaultSetting.readonly === true) {
+                        return Promise.reject(new errors.NoPermissionError());
+                    }
+
                     // it's allowed to edit all attributes in case of importing/migrating
                     if (options.importing) {
                         saveData = item;

@@ -80,20 +80,34 @@ exports.init = function init(options) {
                 adapter.reschedule(_private.normalize({
                     apiUrl: apiUrl,
                     client: client,
-                    time: settingsCache.get('mailchimp').nextSyncAt,
-                    oldTime: moment(settingsCache.get('mailchimp').nextSyncAt).add(5, 'seconds').valueOf()
+                    time: settingsCache.get('scheduling').subscribers.nextSyncAt,
+                    oldTime: moment(settingsCache.get('scheduling').subscribers.nextSyncAt).add(5, 'seconds').valueOf()
                 }));
             }
         })
         .then(function () {
-            // CASE: App get's activated or modified. Ensure we trigger a sync.
+            // Ensure we reinsert the sync job.
+            events.on('settings.scheduling.edited', function (object) {
+                var schedulingConfig = JSON.parse(object.get('value')),
+                    updatedSchedulingConfig = JSON.parse(object.updated('value')),
+                    nextSyncAtMoment = moment(schedulingConfig.subscribers.nextSyncAt);
+
+                if (!settingsCache.get('mailchimp').isActive) {
+                    return;
+                }
+
+                // CASE: NextSyncAt has changed, trigger the next job for tomorrow.
+                if (updatedSchedulingConfig.subscribers.nextSyncAt !== schedulingConfig.subscribers.nextSyncAt) {
+                    return adapter.schedule(_private.normalize({apiUrl: apiUrl, client: client, time: nextSyncAtMoment.valueOf()}));
+                }
+            });
+
             // Note: Hardcoded for mail chimp, because we don't offer multiple integrations yet.
-            events.onMany([
-                'settings.mailchimp.edited'
-            ], function (object) {
+            events.on('settings.mailchimp.edited', function (object) {
                 var mailchimpConfig = JSON.parse(object.get('value')),
                     updatedMailchimpConfig = JSON.parse(object.updated('value')),
-                    nextSyncAtMoment = moment(mailchimpConfig.nextSyncAt);
+                    schedulingConfig = settingsCache.get('scheduling').subscribers,
+                    nextSyncAtMoment = moment(schedulingConfig.nextSyncAt);
 
                 // CASE: App is inactive.
                 if (!mailchimpConfig.isActive) {
@@ -109,7 +123,7 @@ exports.init = function init(options) {
                     return;
                 }
 
-                // CASE: You change the mail chimp list. Trigger immediate sync.
+                // CASE: You change the mailchimp list. Trigger immediate sync.
                 if (updatedMailchimpConfig.activeList.id !== mailchimpConfig.activeList.id) {
                     // CASE: Data was never synced. E.g. you enable mailchimp for the first time. Sync either happens right now or in a bit.
                     if (!nextSyncAtMoment.isValid()) {
@@ -129,11 +143,6 @@ exports.init = function init(options) {
                 // CASE: You disable/enable the app without restarting Ghost.
                 if (!nextSyncAtMoment.isValid() || !updatedMailchimpConfig.isActive) {
                     return adapter.schedule(_private.normalize({apiUrl: apiUrl, client: client, time: moment().valueOf()}));
-                }
-
-                // CASE: NextSyncAt has changed, trigger the next job for tomorrow.
-                if (updatedMailchimpConfig.nextSyncAt !== mailchimpConfig.nextSyncAt) {
-                    return adapter.schedule(_private.normalize({apiUrl: apiUrl, client: client, time: nextSyncAtMoment.valueOf()}));
                 }
             });
         });

@@ -7,6 +7,7 @@ var should = require('should'),
     db = require('../../../server/data/db'),
     events = require('../../../server/events'),
     context = testUtils.context.admin,
+    internalContext = testUtils.context.internal,
     sandbox = sinon.sandbox.create();
 
 describe('Settings Model', function () {
@@ -84,6 +85,45 @@ describe('Settings Model', function () {
 
                 done();
             }).catch(done);
+        });
+
+        it('can edit readonly settings if internal context', function (done) {
+            SettingsModel.findAll().then(function (results) {
+                should.exist(results);
+
+                results.length.should.be.above(0);
+
+                return SettingsModel.edit({key: 'scheduling', value: 'new value'}, internalContext);
+            }).then(function (edited) {
+                should.exist(edited);
+
+                edited.length.should.equal(1);
+
+                edited = edited[0];
+
+                edited.attributes.key.should.equal('scheduling');
+                edited.attributes.value.should.equal('new value');
+
+                eventSpy.calledTwice.should.be.true();
+                eventSpy.firstCall.calledWith('settings.edited').should.be.true();
+                eventSpy.secondCall.calledWith('settings.scheduling.edited').should.be.true();
+
+                done();
+            }).catch(done);
+        });
+
+        it('can\'t edit readonly settings if internal context', function (done) {
+            SettingsModel.findAll().then(function (results) {
+                should.exist(results);
+
+                results.length.should.be.above(0);
+
+                return SettingsModel.edit({key: 'scheduling', value: 'new value'}, context);
+            }).then(function () {
+                done(new Error('Expected error when editing a readonly key.'));
+            }).catch(function () {
+                done();
+            });
         });
 
         it('can edit multiple', function (done) {
