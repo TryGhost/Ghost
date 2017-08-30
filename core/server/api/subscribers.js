@@ -1,14 +1,14 @@
 // # Tag API
 // RESTful API for the Tag resource
-var Promise       = require('bluebird'),
-    _             = require('lodash'),
-    fs            = require('fs'),
-    dataProvider  = require('../models'),
-    errors        = require('../errors'),
-    utils         = require('./utils'),
-    serverUtils   = require('../utils'),
-    pipeline      = require('../utils/pipeline'),
-    i18n          = require('../i18n'),
+var Promise      = require('bluebird'),
+    _            = require('lodash'),
+    fs           = require('fs'),
+    dataProvider = require('../models'),
+    errors       = require('../errors'),
+    utils        = require('./utils'),
+    serverUtils  = require('../utils'),
+    pipeline     = require('../utils/pipeline'),
+    i18n         = require('../i18n'),
 
     docName      = 'subscribers',
     subscribers;
