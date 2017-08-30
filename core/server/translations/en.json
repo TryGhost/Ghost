@@ -219,7 +219,8 @@
             "settings": {
                 "valueCannotBeBlank": "Value in [settings.key] cannot be blank.",
                 "unableToFindSetting": "Unable to find setting to update: {key}",
-                "unableToFindDefaultSetting": "Unable to find default setting: {key}"
+                "unableToFindDefaultSetting": "Unable to find default setting: {key}",
+                "notEnoughPermission": "You do not have permission to edit {key}."
             },
             "user": {
                 "missingContext": "missing context",
@@ -344,6 +345,7 @@
                 "labsColumnCouldNotBeParsed": "The column with key \"labs\" could not be parsed as JSON",
                 "tryUpdatingLabs": "Please try updating a setting on the labs page, or manually editing your DB",
                 "noPermissionToEditSettings": "You do not have permission to edit settings.",
+                "noPermissionToEditReadonlySettingKey": "You do not have permission to edit {key}. Readonly property.",
                 "noPermissionToReadSettings": "You do not have permission to read settings."
             },
             "slugs": {
