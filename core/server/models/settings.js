@@ -131,7 +131,7 @@ Settings = ghostBookshelf.Model.extend({
 
                     // CASE: Can't edit readonly settings.
                     if (!options.context.internal && defaultSetting.hasOwnProperty('readonly') && defaultSetting.readonly === true) {
-                        return Promise.reject(new errors.NoPermissionError());
+                        return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.models.settings.notEnoughPermission', {key: item.key})}));
                     }
 
                     // it's allowed to edit all attributes in case of importing/migrating
