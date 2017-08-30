@@ -76,9 +76,9 @@ mailchimp = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            // TODO: validation/permissions - how does this work for non-model endpoints?
-            // utils.validate(docName),
-            // utils.handlePermissions(docName, 'fetchLists'),
+            // NOTE: Mailchimp has only one endpoint to fetch the lists. No need to add a migration to add permissions for that.
+            // We simply use the settings permissions, because mailchimp is a setting.
+            apiUtils.handlePermissions('setting', 'read'),
             doQuery
         ];
 
