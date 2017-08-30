@@ -17,15 +17,19 @@ _private.normalize = function normalize(options) {
     var apiUrl = options.apiUrl,
         client = options.client,
         time = options.time || moment().valueOf(),
+        email = options.email,
+        method = email ? 'POST' : 'GET',
+        url = _private.getUrl({client: client, apiUrl: apiUrl, email: email}),
         oldTime = options.oldTime;
 
-    debug('Add sync job for:', moment(time).format('YYYY-MM-DD HH:mm:ss'));
+
+    debug('Add sync job for:', moment(time).format('YYYY-MM-DD HH:mm:ss'), url);
 
     return {
         time: time,
-        url: _private.getUrl({client: client, apiUrl: apiUrl}),
+        url: url,
         extra: {
-            httpMethod: 'GET',
+            httpMethod: method,
             oldTime: oldTime
         }
     };
@@ -33,9 +37,17 @@ _private.normalize = function normalize(options) {
 
 _private.getUrl = function getUrl(options) {
     var client = options.client,
-        apiUrl = options.apiUrl;
+        apiUrl = options.apiUrl,
+        email = options.email,
+        url;
 
-    return utils.url.urlJoin(apiUrl, 'schedules', 'subscribers', 'sync') + '?client_id=' + client.get('slug') + '&client_secret=' + client.get('secret');
+    if (!email) {
+        url = utils.url.urlJoin(apiUrl, 'schedules', 'subscribers', 'sync');
+    } else {
+        url = utils.url.urlJoin(apiUrl, 'schedules', 'subscribers', 'add', email);
+    }
+
+    return url + '?client_id=' + client.get('slug') + '&client_secret=' + client.get('secret');
 };
 
 _private.loadClient = function loadClient() {
@@ -71,7 +83,7 @@ exports.init = function init(options) {
              * CASE:
              * On bootstrap we trigger the subscriber sync if an app for that is enabled.
              *
-             * Note: Right now there is only one app, that's why we ask for this app directly.
+             * NOTE: Right now there is only one app, that's why we ask for this app directly.
              * If we support multiple apps, we can generalise this e.g. apps.getActive({type: ...})
              *
              * Note: Ensure we delete the old job. E.g. you restart Ghost twice. (only important for Pro scheduling)
@@ -102,7 +114,7 @@ exports.init = function init(options) {
                 }
             });
 
-            // Note: Hardcoded for mail chimp, because we don't offer multiple integrations yet.
+            // NOTE: Hardcoded for mail chimp, because we don't offer multiple integrations yet.
             events.on('settings.mailchimp.edited', function (object) {
                 var mailchimpConfig = JSON.parse(object.get('value')),
                     updatedMailchimpConfig = JSON.parse(object.updated('value')),
@@ -144,6 +156,24 @@ exports.init = function init(options) {
                 if (!nextSyncAtMoment.isValid() || !updatedMailchimpConfig.isActive) {
                     return adapter.schedule(_private.normalize({apiUrl: apiUrl, client: client, time: moment().valueOf()}));
                 }
+            });
+
+            /**
+             * Every time a subscriber is added to the local database, we sync the subscriber with the app which is active.
+             * NOTE: We only support mailchimp at the moment.
+             */
+            events.on('subscriber.added', function (object, options) {
+                // CASE: If you are adding a subscriber internally, do not sync this. Only when adding via admin/frontend.
+                if (options && options.context && options.context.internal) {
+                    return;
+                }
+
+                return adapter.schedule(_private.normalize({
+                    apiUrl: apiUrl,
+                    client: client,
+                    time: moment().valueOf(),
+                    email: object.get('email')
+                }));
             });
         });
 };
