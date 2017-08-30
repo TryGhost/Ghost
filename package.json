@@ -46,6 +46,7 @@
     "fs-extra": "2.1.2",
     "ghost-gql": "0.0.6",
     "glob": "5.0.15",
+    "got": "7.1.0",
     "gscan": "0.2.4",
     "html-to-text": "3.2.0",
     "image-size": "0.5.1",
