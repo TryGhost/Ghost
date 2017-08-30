@@ -29,7 +29,9 @@ _private.normalize = function normalize(options) {
         url: url,
         extra: {
             httpMethod: method,
-            oldTime: oldTime
+            oldTime: oldTime,
+            // NOTE: 300 seconds is long, but subscriber sync can take a while.
+            timeoutInMS: 1000 * 300
         }
     };
 };
