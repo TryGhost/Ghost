@@ -10,6 +10,12 @@ _private.redirectUrl = function redirectUrl(options) {
         query = options.query,
         parts = url.parse(redirectTo);
 
+    // CASE: ensure we always add a trailing slash to reduce the number of redirects
+    // e.g. you are redirected from example.com/ghost to admin.example.com/ghost and Ghost would detect a missing slash and redirect you to /ghost/
+    if (!path.match(/\/$/)) {
+        path += '/';
+    }
+
     return url.format({
         protocol: parts.protocol,
         hostname: parts.hostname,
