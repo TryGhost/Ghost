@@ -191,7 +191,7 @@ mailchimp = {
                     updateAndCreatePromises.push(dataProvider.Subscriber.add({
                         email: member.email_address,
                         status: member.status
-                    }), options);
+                    }, options));
 
                     options.stats.subscribers.created += 1;
                 }
