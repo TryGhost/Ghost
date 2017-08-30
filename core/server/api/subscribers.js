@@ -2,7 +2,6 @@
 // RESTful API for the Tag resource
 var Promise       = require('bluebird'),
     _             = require('lodash'),
-    crypto        = require('crypto'),
     fs            = require('fs'),
     dataProvider  = require('../models'),
     errors        = require('../errors'),
@@ -10,7 +9,6 @@ var Promise       = require('bluebird'),
     serverUtils   = require('../utils'),
     pipeline      = require('../utils/pipeline'),
     i18n          = require('../i18n'),
-    settingsCache = require('../settings/cache'),
 
     docName      = 'subscribers',
     subscribers;

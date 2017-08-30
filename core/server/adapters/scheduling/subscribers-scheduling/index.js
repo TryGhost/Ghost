@@ -22,7 +22,6 @@ _private.normalize = function normalize(options) {
         url = _private.getUrl({client: client, apiUrl: apiUrl, email: email}),
         oldTime = options.oldTime;
 
-
     debug('Add sync job for:', moment(time).format('YYYY-MM-DD HH:mm:ss'), url);
 
     return {
