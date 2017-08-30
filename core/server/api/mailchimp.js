@@ -95,18 +95,14 @@ mailchimp = {
      * records and only push new subscribers back to MailChimp.
      *
      * NOTE: we will need to re-visit this when Ghost has more subscription
-     * management features
-     *
-     * TODO:
-     * - [x] fix create members request
-     * - [x] return stats
-     * - [ ] logging
+     * management features.
      *
      * Flow:
      * - fetch all MailChimp list members
      * - update status of subscribers for known e-mail addresses
      * - create subscribers for unknown e-mail addresses
      * - push new subscribers to MailChimp
+     * - update sync properties
      *
      * @return {[type]} [description]
      */
@@ -117,12 +113,10 @@ mailchimp = {
             return Promise.resolve();
         }
 
-        // TODO: this method of pipelining feels weird because each function
-        // in the pipeline has a side-effect of modifying `options` instead of
-        // returning a new object.
+        logging.info('Mailchimp: Start sync.');
 
-        // the options object is passed along the pipeline being updated by each
-        // function. Here we set up properties that are needed later
+        // The options object is passed along the pipeline being updated by each
+        // function. Here we set up properties that are needed later.
         function prepareOptions(options) {
             options.settings = settingsCache.get('mailchimp');
             options.mailchimp = new Mailchimp(options.settings.apiKey);
@@ -164,7 +158,7 @@ mailchimp = {
                     count: 100000000,
                     fields: 'total_items,members.email_address,members.status'
                 }
-            }).then(function (result) {
+            }, {verbose: false}).then(function (result) {
                 options.listMembers = result.members;
                 return options;
             });
@@ -237,6 +231,14 @@ mailchimp = {
                     options.stats.mailchimp.errored = results.error_count;
                     options.mailchimpErrors = results.errors;
 
+                    if (options.mailchimpErrors && options.mailchimpErrors.length) {
+                        logging.error(new errors.InternalServerError({
+                            code: 'MAILCHIMP',
+                            message: 'Mailchimp errors on member creation.',
+                            errorDetails: options.mailchimpErrors
+                        }));
+                    }
+
                     return options;
                 });
             } else {
@@ -266,6 +268,9 @@ mailchimp = {
         ];
 
         return pipeline(tasks, options).then(function returnStats() {
+            // NOTE: logging the stats can mess up the logs very much.
+            logging.info('Mailchimp: Sync was successful.');
+
             return {
                 stats: options.stats,
                 errors: options.mailchimpErrors
