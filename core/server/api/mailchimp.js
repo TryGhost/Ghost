@@ -11,14 +11,8 @@ var Mailchimp       = require('mailchimp-api-v3'),
     mailchimp,
     handleMailchimpError;
 
-// TODO: used for debugging, can be removed later
-// require('request').debug = true;
-
-// TODO: the error messages from MailChimp are always in English which is a
-// departure from the usual i18n translated messages - is this something we
-// need to address?
+// NOTE: the error messages from MailChimp are always in English.
 handleMailchimpError = function handleMailchimpError(error) {
-    // TODO: return a custom error type here?
     if (error.title === 'API Key Invalid' || (error.message && error.message.indexOf('invalid api key') > -1)) {
         throw new errors.ValidationError({
             code: 'MAILCHIMP',
@@ -188,13 +182,9 @@ mailchimp = {
                 if (subscriber) {
                     // only update if the MailChimp status has changed
                     if (subscriber.get('status') !== member.status) {
-                        // TODO: we may want to transform the status values here,
-                        // MailChimp will return one of:
                         // pending, subscribed, cleaned, unsubscribed
                         subscriber.set('status', member.status);
-
                         updateAndCreatePromises.push(subscriber.save());
-
                         options.stats.subscribers.updated += 1;
                     }
 
@@ -227,9 +217,6 @@ mailchimp = {
             options.subscribers.forEach(function (subscriber) {
                 members.push({
                     email_address: subscriber.get('email'),
-                    // TODO: we may want to transform the status values here,
-                    // MailChimp expects one of:
-                    // pending, subscribed, cleaned, unsubscribed
                     status: subscriber.get('status')
                 });
             });
