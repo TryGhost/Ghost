@@ -101,7 +101,8 @@ exports.getScheduledPosts = function readPosts(options) {
 };
 
 /**
- * Sync subscribers. Right now there is only one app integration available: mailchimp.
+ * Sync subscribers.
+ * NOTE: Right now there is only one app integration available, mailchimp.
  */
 exports.syncSubscribers = function syncSubscribers(options) {
     // CASE: only the scheduler client is allowed to publish (hardcoded because of missing client permission system)
@@ -111,4 +112,18 @@ exports.syncSubscribers = function syncSubscribers(options) {
 
     options.context = {internal: true};
     return mailchimp.sync(options);
+};
+
+/**
+ * Add subscriber.
+ * NOTE: Right now there is only one app integration available, mailchimp.
+ */
+exports.addSubscriber = function addSubscriber(data, options) {
+    // CASE: only the scheduler client is allowed to publish (hardcoded because of missing client permission system)
+    if (!options.context || !options.context.client || options.context.client !== 'ghost-scheduler') {
+        return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.permissions.noPermissionToAction')}));
+    }
+
+    options.context = {internal: true};
+    return mailchimp.addMember(data, options);
 };
