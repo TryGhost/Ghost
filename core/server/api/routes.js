@@ -53,6 +53,11 @@ module.exports = function apiRoutes() {
         auth.authenticate.authenticateUser
     ], api.http(api.schedules.syncSubscribers));
 
+    apiRouter.post('/schedules/subscribers/add/:email', [
+        auth.authenticate.authenticateClient,
+        auth.authenticate.authenticateUser
+    ], api.http(api.schedules.addSubscriber));
+
     // ## Settings
     apiRouter.get('/settings', mw.authenticatePrivate, api.http(api.settings.browse));
     apiRouter.get('/settings/:key', mw.authenticatePrivate, api.http(api.settings.read));
