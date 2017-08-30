@@ -87,6 +87,50 @@ mailchimp = {
     },
 
     /**
+     * Add a single member to your mailchimp list.
+     */
+    addMember: function addMember(data, options) {
+        if (!settingsCache.get('mailchimp').isActive) {
+            return Promise.resolve();
+        }
+
+        var email = options.email,
+            mailchimpConfig = settingsCache.get('mailchimp'),
+            mailchimp = new Mailchimp(mailchimpConfig.apiKey),
+            emailHash = crypto.createHash('md5').update(email.toLowerCase()).digest('hex');
+
+        return mailchimp.request({
+            method: 'put',
+            path: '/lists/{list_id}/members/{subscriber_hash}',
+            path_params: {
+                list_id: mailchimpConfig.activeList.id,
+                subscriber_hash: emailHash
+            },
+            body: {
+                email_address: email,
+                // NOTE: sends confirmation e-mail if new
+                status_if_new: 'pending',
+                status: 'pending'
+            }
+        }).then(function () {
+            logging.info('Mailchimp: Added member.', email);
+
+            return dataProvider.Subscriber.findOne({email: email}, options)
+                .then(function (subscriber) {
+                    if (!subscriber) {
+                        throw new errors.NotFoundError({
+                            message: i18n.t('errors.api.subscribers.subscriberNotFound'),
+                            context: email
+                        });
+                    }
+
+                    subscriber.set('status', 'pending');
+                    return subscriber.save(options);
+                });
+        }).catch(handleMailchimpError);
+    },
+
+    /**
      * ### Sync Subscribers with Mailchimp list members
      *
      * Other than adding new subscribers, Ghost doesn't have any way of
