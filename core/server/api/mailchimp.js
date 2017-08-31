@@ -13,12 +13,12 @@ var Mailchimp = require('mailchimp-api-v3'),
     settingsCache = require('../settings/cache'),
 
     mailchimp,
-    handleMailchimpError;
+    getMailchimpError;
 
 // NOTE: the error messages from MailChimp are always in English.
-handleMailchimpError = function handleMailchimpError(error) {
+getMailchimpError = function getMailchimpError(error) {
     if (error.title === 'API Key Invalid' || (error.message && error.message.indexOf('invalid api key') > -1)) {
-        throw new errors.ValidationError({
+        return new errors.ValidationError({
             code: 'MAILCHIMP',
             message: error.title || error.message,
             statusCode: 422,
@@ -26,20 +26,21 @@ handleMailchimpError = function handleMailchimpError(error) {
         });
     }
 
-    // general catch-all for Mailchimp API errors
-    if (error.title) {
-        throw new errors.InternalServerError({
+    if (error.status === 404) {
+        return new errors.NotFoundError({
             code: 'MAILCHIMP',
             message: error.title,
-            statusCode: error.status || 500,
-            context: {
-                detail: error.detail + ' (' + error.type + ')',
-                errors: error.errors
-            }
+            statusCode: 404,
+            context:  error.detail + ' (' + error.type + ')'
         });
     }
 
-    throw error;
+    return new errors.InternalServerError({
+        code: 'MAILCHIMP',
+        message: error.title,
+        context: error.detail + ' (' + error.type + ')',
+        errorDetails: error.errors
+    });
 };
 
 mailchimp = {
@@ -87,7 +88,10 @@ mailchimp = {
         ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
-        return pipeline(tasks, options).catch(handleMailchimpError);
+        return pipeline(tasks, options)
+            .catch(function (err) {
+                throw getMailchimpError(err);
+            });
     },
 
     /**
@@ -131,7 +135,10 @@ mailchimp = {
                     subscriber.set('status', 'pending');
                     return subscriber.save(options);
                 });
-        }).catch(handleMailchimpError);
+        }).catch(function (err) {
+            logging.error(getMailchimpError(err));
+            return Promise.resolve();
+        });
     },
 
     /**
