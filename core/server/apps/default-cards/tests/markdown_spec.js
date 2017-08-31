@@ -29,6 +29,6 @@ describe('Markdown card', function () {
         };
 
         var serializer = new SimpleDom.HTMLSerializer([]);
-        serializer.serialize(card.render(opts)).should.match('<div class="kg-card-markdown"><h1 id="heading">HEADING</h1>\n<h2>Heading 2&gt;</h2></div>');
+        serializer.serialize(card.render(opts)).should.match('<div class="kg-card-markdown"><h1 id="heading">HEADING</h1>\n<h2>Heading 2></div>');
     });
 });
