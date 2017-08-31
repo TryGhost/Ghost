@@ -162,7 +162,7 @@ mailchimp = {
      * @return {[type]} [description]
      */
     sync: function sync(options) {
-        var tasks;
+        var tasks, mailchimpError;
 
         if (!settingsCache.get('mailchimp').isActive) {
             return Promise.resolve();
@@ -241,7 +241,7 @@ mailchimp = {
                     // remaining subscribers to create new list members later
                     options.subscribers.remove(subscriber);
 
-                // no local subscriber for this e-mail, let's create one
+                    // no local subscriber for this e-mail, let's create one
                 } else {
                     updateAndCreatePromises.push(dataProvider.Subscriber.add({
                         email: member.email_address,
@@ -301,36 +301,53 @@ mailchimp = {
             }
         }
 
-        function setSyncDate(options) {
-            return dataProvider.Settings.findOne({key: 'scheduling'}, options)
-                .then(function (response) {
-                    var schedulingConfig = JSON.parse(response.attributes.value);
-
-                    schedulingConfig.subscribers.lastSyncAt = moment().valueOf();
-                    schedulingConfig.subscribers.nextSyncAt = moment().add(config.get('times:syncSubscribersInMin') || 1440, 'minutes').valueOf();
-
-                    return dataProvider.Settings.edit([{key: 'scheduling', value: JSON.stringify(schedulingConfig)}], options);
-                });
-        }
-
         tasks = [
             prepareOptions,
             getSubscribers,
             getMailchimpListMembers,
             updateOrCreateSubscribers,
-            createNewMailchimpListMembers,
-            setSyncDate
+            createNewMailchimpListMembers
         ];
 
-        return pipeline(tasks, options).then(function returnStats() {
-            // NOTE: logging the stats can mess up the logs very much.
-            logging.info('Mailchimp: Sync was successful.');
+        return pipeline(tasks, options)
+            .then(function returnStats() {
+                // NOTE: logging the stats can mess up the logs very much.
+                logging.info('Mailchimp: Sync was successful.');
 
-            return {
-                stats: options.stats,
-                errors: options.mailchimpErrors
-            };
-        }).catch(handleMailchimpError);
+                return {
+                    stats: options.stats,
+                    errors: options.mailchimpErrors
+                };
+            })
+            .catch(function (err) {
+                mailchimpError = getMailchimpError(err);
+                logging.error(mailchimpError);
+
+                // The scheduler will retry. Simply update the error message and sync next time.
+                // e.g. mailchimp does not exist, api key is wrong (no need to try again)
+                // e.g. if mailchimp takes too long, doesn't matter it will continue at mailchimp.
+                return Promise.resolve();
+            })
+            .finally(function () {
+                return dataProvider.Settings.findOne({key: 'scheduling'}, options)
+                    .then(function (response) {
+                        var schedulingConfig = JSON.parse(response.attributes.value);
+
+                        schedulingConfig.subscribers.lastSyncAt = moment().valueOf();
+                        schedulingConfig.subscribers.nextSyncAt = moment().add(config.get('times:syncSubscribersInMin') || 1440, 'minutes').valueOf();
+
+                        if (mailchimpError) {
+                            schedulingConfig.subscribers.error = mailchimpError.message;
+                        } else {
+                            schedulingConfig.subscribers.error = '';
+                        }
+
+                        return dataProvider.Settings.edit([{
+                            key: 'scheduling',
+                            value: JSON.stringify(schedulingConfig)
+                        }], options);
+                    });
+            });
     }
 };
 
