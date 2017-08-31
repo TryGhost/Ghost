@@ -178,7 +178,7 @@ Post = ghostBookshelf.Model.extend({
             publishedAt = this.get('published_at'),
             publishedAtHasChanged = this.hasDateChanged('published_at', {beforeWrite: true}),
             mobiledoc   = this.get('mobiledoc'),
-            tags = [], ops = [], markdown, html;
+            tags = [], ops = [];
 
         // CASE: disallow published -> scheduled
         // @TODO: remove when we have versioning based on updated_at
@@ -233,11 +233,7 @@ Post = ghostBookshelf.Model.extend({
         ghostBookshelf.Model.prototype.onSaving.call(this, model, attr, options);
 
         if (mobiledoc) {
-            // NOTE: using direct markdown parsing through markdown-it for now,
-            // mobiledoc's use of SimpleDom is very fragile with certain HTML
-            markdown = JSON.parse(mobiledoc).cards[0][1].markdown;
-            html = utils.markdownConverter.render(markdown);
-            this.set('html', '<div class="kg-card-markdown">' + html + '</div>');
+            this.set('html', utils.mobiledocConverter.render(JSON.parse(mobiledoc)));
         }
 
         if (this.hasChanged('html') || !this.get('plaintext')) {
