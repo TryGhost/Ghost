@@ -536,7 +536,7 @@ authentication = {
                         logging.error(new errors.EmailError({
                             err: error,
                             context: i18n.t('errors.api.authentication.unableToSendWelcomeEmail'),
-                            help: i18n.t('errors.api.authentication.checkEmailConfigInstructions', {url: 'http://docs.ghost.org/v1.0.0/docs/mail-config'})
+                            help: i18n.t('errors.api.authentication.checkEmailConfigInstructions', {url: 'http://docs.ghost.org/v1/docs/mail-config'})
                         }));
                     });
                 })
