@@ -7,7 +7,9 @@ var Promise = require('bluebird'),
     settingsCache = require(__dirname + '/../../../settings/cache'),
     models = require(__dirname + '/../../../models'),
     utils = require(__dirname + '/../../../utils'),
-    _private = {};
+    _private = {
+        staticTimestampPast: 1504166713386
+    };
 
 /**
  * If the `time` attribute is in the past, it doesn't matter because the scheduler can handle this and executes the url immediately.
@@ -87,19 +89,30 @@ exports.init = function init(options) {
              * NOTE: Right now there is only one app, that's why we ask for this app directly.
              * If we support multiple apps, we can generalise this e.g. apps.getActive({type: ...})
              *
-             * Note: Ensure we delete the old job. E.g. you restart Ghost twice. (only important for Pro scheduling)
+             * NOTE: Ensure we delete the old job. E.g. you restart Ghost twice. (only important for Pro scheduling)
              */
             if (settingsCache.get('mailchimp').isActive) {
+                var nextSyncAtMoment = moment(settingsCache.get('scheduling').subscribers.nextSyncAt);
+
+                debug('Delete sync job.');
+
+                // CASE: Was never synced, sync now!
+                if (!nextSyncAtMoment.isValid()) {
+                    nextSyncAtMoment = moment(_private.staticTimestampPast);
+                }
+
+                // NOTE: reschedule without the old timestamp, because the default scheduler handles job deletion based on url+time.
+                // That would mean no job is scheduled, because the timestamp would be equal for deleting and adding.
+                // Rescheduling on Pro is url based.
                 adapter.reschedule(_private.normalize({
                     apiUrl: apiUrl,
                     client: client,
-                    time: settingsCache.get('scheduling').subscribers.nextSyncAt,
-                    oldTime: moment(settingsCache.get('scheduling').subscribers.nextSyncAt).add(5, 'seconds').valueOf()
+                    time: nextSyncAtMoment.valueOf()
                 }));
             }
         })
         .then(function () {
-            // Ensure we reinsert the sync job.
+            // CASE: Ensure we re-insert the sync job.
             events.on('settings.scheduling.edited', function (object) {
                 var schedulingConfig = JSON.parse(object.get('value')),
                     updatedSchedulingConfig = JSON.parse(object.updated('value')),
@@ -111,7 +124,11 @@ exports.init = function init(options) {
 
                 // CASE: NextSyncAt has changed, trigger the next job for tomorrow.
                 if (updatedSchedulingConfig.subscribers.nextSyncAt !== schedulingConfig.subscribers.nextSyncAt) {
-                    return adapter.schedule(_private.normalize({apiUrl: apiUrl, client: client, time: nextSyncAtMoment.valueOf()}));
+                    return adapter.schedule(_private.normalize({
+                        apiUrl: apiUrl,
+                        client: client,
+                        time: nextSyncAtMoment.valueOf()
+                    }));
                 }
             });
 
@@ -122,40 +139,54 @@ exports.init = function init(options) {
                     schedulingConfig = settingsCache.get('scheduling').subscribers,
                     nextSyncAtMoment = moment(schedulingConfig.nextSyncAt);
 
-                // CASE: App is inactive.
+                // CASE: App get's deactivated or is already deactivated. Ensure we delete the job.
                 if (!mailchimpConfig.isActive) {
-                    if (nextSyncAtMoment.isValid()) {
-                        debug('Delete sync job.');
-
-                        adapter._deleteJob({
-                            time: nextSyncAtMoment.valueOf(),
-                            url: _private.getUrl({client: client, apiUrl: apiUrl})
-                        });
+                    if (!updatedMailchimpConfig.isActive) {
+                        return;
                     }
+
+                    if (!nextSyncAtMoment.isValid()) {
+                        nextSyncAtMoment = moment(_private.staticTimestampPast);
+                    }
+
+                    debug('Delete sync job.');
+
+                    adapter.unschedule({
+                        time: nextSyncAtMoment.valueOf(),
+                        url: _private.getUrl({client: client, apiUrl: apiUrl})
+                    });
 
                     return;
                 }
 
-                // CASE: You change the mailchimp list. Trigger immediate sync.
-                if (updatedMailchimpConfig.activeList.id !== mailchimpConfig.activeList.id) {
-                    // CASE: Data was never synced. E.g. you enable mailchimp for the first time. Sync either happens right now or in a bit.
-                    if (!nextSyncAtMoment.isValid()) {
-                        return;
-                    }
+                // CASE: App was never synced. No active list. No nextSyncAt. Sync now!
+                if (!nextSyncAtMoment.isValid() && !updatedMailchimpConfig.activeList.id) {
+                    return adapter.schedule(_private.normalize({
+                        apiUrl: apiUrl,
+                        client: client,
+                        time: _private.staticTimestampPast
+                    }));
+                }
 
+                // CASE: You change the mailchimp list. Trigger immediate sync.
+                // Only if the list changed. Initial sync happened already.
+                if (nextSyncAtMoment.isValid() && updatedMailchimpConfig.activeList.id !== mailchimpConfig.activeList.id) {
                     return adapter.reschedule(_private.normalize({
                         apiUrl: apiUrl,
                         client: client,
-                        time: moment().valueOf(),
+                        time: _private.staticTimestampPast,
                         oldTime: nextSyncAtMoment.valueOf()
                     }));
                 }
 
-                // NOTE: It doesn't matter if the apiKey changes, because the target sync endpoint uses updated data.
-                // CASE: App was never synced. Sync now.
-                // CASE: You disable/enable the app without restarting Ghost.
-                if (!nextSyncAtMoment.isValid() || !updatedMailchimpConfig.isActive) {
-                    return adapter.schedule(_private.normalize({apiUrl: apiUrl, client: client, time: moment().valueOf()}));
+                // CASE: You disable/enable the app without restarting Ghost. Was inactive before.
+                if (!updatedMailchimpConfig.isActive) {
+                    return adapter.reschedule(_private.normalize({
+                        apiUrl: apiUrl,
+                        client: client,
+                        time: _private.staticTimestampPast,
+                        oldTime: nextSyncAtMoment.valueOf()
+                    }));
                 }
             });
 
@@ -172,7 +203,7 @@ exports.init = function init(options) {
                 return adapter.schedule(_private.normalize({
                     apiUrl: apiUrl,
                     client: client,
-                    time: moment().valueOf(),
+                    time: _private.staticTimestampPast,
                     email: object.get('email')
                 }));
             });
