@@ -1,7 +1,8 @@
 var _ = require('lodash'),
     Promise = require('bluebird'),
     SchedulingBase = require(__dirname + '/SchedulingBase'),
-    errors = require(__dirname + '/../../errors');
+    errors = require(__dirname + '/../../errors'),
+    cache = {};
 
 exports.createAdapter = function (options) {
     options = options || {};
@@ -13,6 +14,10 @@ exports.createAdapter = function (options) {
 
     if (!activeAdapter) {
         return Promise.reject(new errors.IncorrectUsageError({message: 'Please provide an active adapter.'}));
+    }
+
+    if (cache.hasOwnProperty(activeAdapter)) {
+        return cache[activeAdapter];
     }
 
     /**
@@ -67,6 +72,8 @@ exports.createAdapter = function (options) {
     if (_.xor(adapter.requiredFns, Object.keys(_.pick(Object.getPrototypeOf(adapter), adapter.requiredFns))).length) {
         return Promise.reject(new errors.IncorrectUsageError({message: 'Your adapter does not provide the minimum required functions.'}));
     }
+
+    cache[activeAdapter] = adapter;
 
     return Promise.resolve(adapter);
 };
