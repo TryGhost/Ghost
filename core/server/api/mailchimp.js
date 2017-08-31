@@ -211,7 +211,8 @@ mailchimp = {
                 },
                 query: {
                     count: 100000000,
-                    fields: 'total_items,members.email_address,members.status'
+                    // NOTE: members.timestamp_signup is always an empty string
+                    fields: 'total_items,members.email_address,members.status,,members.timestamp_opt'
                 }
             }, {verbose: false}).then(function (result) {
                 options.listMembers = result.members;
@@ -245,8 +246,9 @@ mailchimp = {
                 } else {
                     updateAndCreatePromises.push(dataProvider.Subscriber.add({
                         email: member.email_address,
-                        status: member.status
-                    }, options));
+                        status: member.status,
+                        created_at: moment(!_.isEmpty(member.timestamp_opt) ? member.timestamp_opt : undefined).toDate()
+                    }, _.extend(options, {importing: true})));
 
                     options.stats.subscribers.created += 1;
                 }
