@@ -225,26 +225,45 @@ describe('Subscribers Scheduler', function () {
             });
     });
 
-    it('[events] mailchimp settings change', function () {
-        settingsCache.set('mailchimp', {value: {isActive: true}});
-
+    it('[events] mailchimp settings changed: app is not active', function () {
         return subscribersScheduler.init({apiUrl: apiUrl})
             .then(function () {
                 adapterStub.run.calledOnce.should.eql(true);
                 adapterStub.schedule.called.should.eql(false);
-                adapterStub.reschedule.calledOnce.should.eql(true);
+                adapterStub.reschedule.called.should.eql(false);
                 adapterStub._deleteJob.called.should.eql(false);
-                adapterStub.reschedule.reset();
                 adapterStub.run.reset();
 
-                return models.Subscriber.add({
-                    email: 'test@ghost.org',
-                    status: 'subscribed'
-                }, testUtils.context.internal);
+                return models.Settings.edit([{
+                    key: 'mailchimp',
+                    value: JSON.stringify({isActive: false, apiKey: 'key', activeList: {id: '123'}})
+                }], testUtils.context.admin);
             })
             .then(function () {
                 adapterStub.run.called.should.eql(false);
                 adapterStub.schedule.called.should.eql(false);
+                adapterStub.reschedule.called.should.eql(false);
+                adapterStub._deleteJob.called.should.eql(false);
+            });
+    });
+
+    it('[events] mailchimp settings changed: app is active for the first time', function () {
+        return subscribersScheduler.init({apiUrl: apiUrl})
+            .then(function () {
+                adapterStub.run.calledOnce.should.eql(true);
+                adapterStub.schedule.called.should.eql(false);
+                adapterStub.reschedule.called.should.eql(false);
+                adapterStub._deleteJob.called.should.eql(false);
+                adapterStub.run.reset();
+
+                return models.Settings.edit([{
+                    key: 'mailchimp',
+                    value: JSON.stringify({isActive: true, apiKey: 'key', activeList: {id: '123'}})
+                }], testUtils.context.admin);
+            })
+            .then(function () {
+                adapterStub.run.called.should.eql(false);
+                adapterStub.schedule.called.should.eql(true);
                 adapterStub.reschedule.called.should.eql(false);
                 adapterStub._deleteJob.called.should.eql(false);
             });
