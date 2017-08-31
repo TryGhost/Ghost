@@ -11,6 +11,8 @@ var sinon = require('sinon'),
     testUtils = require('../../../../utils'),
     sandbox = sinon.sandbox.create();
 
+should.equal(true, true);
+
 describe('Subscribers Scheduler', function () {
     var adapterStub, clientStub, apiUrl = 'http://example.ghost.org', localEvents = {};
 
@@ -37,7 +39,11 @@ describe('Subscribers Scheduler', function () {
         });
 
         sandbox.stub(events, 'emit', function (key, data, options) {
-            localEvents[key] && localEvents[key](data, options);
+            if (!localEvents[key]) {
+                return;
+            }
+
+            localEvents[key](data, options);
         });
     });
 
