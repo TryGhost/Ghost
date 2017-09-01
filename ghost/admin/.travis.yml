@@ -21,11 +21,7 @@ cache:
 
 addons:
   firefox: "latest"
-  apt:
-    sources:
-      - google-chrome
-    packages:
-      - google-chrome-stable
+  chrome: "stable"
 
 install:
   - npm i -g yarn

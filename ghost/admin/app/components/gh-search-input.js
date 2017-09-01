@@ -36,7 +36,7 @@ export default Component.extend({
     tags: computedGroup('Tags'),
 
     _store: injectService('store'),
-    _routing: injectService('-routing'),
+    router: injectService('router'),
     ajax: injectService(),
     notifications: injectService(),
 
@@ -174,17 +174,17 @@ export default Component.extend({
 
             if (selected.category === 'Posts' || selected.category === 'Pages') {
                 let id = selected.id.replace('post.', '');
-                this.get('_routing.router').transitionTo('editor.edit', id);
+                this.get('router').transitionTo('editor.edit', id);
             }
 
             if (selected.category === 'Users') {
                 let id = selected.id.replace('user.', '');
-                this.get('_routing.router').transitionTo('team.user', id);
+                this.get('router').transitionTo('team.user', id);
             }
 
             if (selected.category === 'Tags') {
                 let id = selected.id.replace('tag.', '');
-                this.get('_routing.router').transitionTo('settings.tags.tag', id);
+                this.get('router').transitionTo('settings.tags.tag', id);
             }
         },
 

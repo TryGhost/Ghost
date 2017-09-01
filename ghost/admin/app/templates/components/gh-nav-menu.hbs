@@ -46,7 +46,7 @@
         <li>{{#link-to "editor.new" classNames="gh-nav-main-editor"}}{{inline-svg "pen"}}New story{{/link-to}}</li>
         <li>
             {{!-- clicking the Content link whilst on the content screen should reset the filter --}}
-            {{#if (eq routing.currentRouteName "posts.index")}}
+            {{#if (eq router.currentRouteName "posts.index")}}
                 {{#link-to "posts" (query-params type=null author=null tag=null order=null) classNames="gh-nav-main-content active"}}{{inline-svg "content"}}Stories{{/link-to}}
             {{else}}
                 {{#link-to "posts" classNames="gh-nav-main-content"}}{{inline-svg "content"}}Stories{{/link-to}}

@@ -79,13 +79,13 @@
             {{#if session.user.isAuthor}}
                 {{#with session.user as |user|}}
                     {{#gh-user-active user=user as |component|}}
-                        {{partial 'user-list-item'}}
+                        {{gh-user-list-item user=user}}
                     {{/gh-user-active}}
                 {{/with}}
             {{else}}
                 {{#each sortedActiveUsers key="id" as |user|}}
                     {{#gh-user-active user=user as |component|}}
-                        {{partial 'user-list-item'}}
+                        {{gh-user-list-item user=user}}
                     {{/gh-user-active}}
                 {{/each}}
             {{/if}}
@@ -106,7 +106,7 @@
         <div class="apps-grid">
             {{#each sortedSuspendedUsers key="id" as |user|}}
                 {{#gh-user-active user=user as |component|}}
-                    {{partial 'user-list-item'}}
+                    {{gh-user-list-item user=user}}
                 {{/gh-user-active}}
             {{/each}}
         </div>
