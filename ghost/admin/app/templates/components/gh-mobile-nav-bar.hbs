@@ -1,5 +1,5 @@
 {{#link-to "editor.new" classNames="gh-nav-main-editor"}}{{inline-svg "pen"}}New story{{/link-to}}
-{{#if (eq routing.currentRouteName "posts.index")}}
+{{#if (eq router.currentRouteName "posts.index")}}
     {{#link-to "posts" (query-params type=null) classNames="gh-nav-main-content active"}}{{inline-svg "content"}}Stories{{/link-to}}
 {{else}}
     {{#link-to "posts" classNames="gh-nav-main-content"}}{{inline-svg "content"}}Content{{/link-to}}

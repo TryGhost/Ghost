@@ -9,7 +9,6 @@ export default ModalComponent.extend({
     onSuccess: alias('model.onSuccess'),
 
     notifications: injectService(),
-    routing: injectService('-routing'),
 
     _deletePost() {
         let post = this.get('post');

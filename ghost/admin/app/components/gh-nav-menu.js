@@ -8,7 +8,7 @@ export default Component.extend({
     config: injectService(),
     feature: injectService(),
     ghostPaths: injectService(),
-    routing: injectService('-routing'),
+    router: injectService('router'),
     session: injectService(),
     ui: injectService(),
 

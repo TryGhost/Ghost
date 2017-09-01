@@ -112,7 +112,7 @@ export default ModalComponent.extend({
                 this.set('validationErrors', get(theme, 'errors'));
             }
 
-            this.set('hasWarningsOrErrors', this.get('validationErrors').length || this.get('validationWarnings').length);
+            this.set('hasWarningsOrErrors', this.get('validationErrors.length') || this.get('validationWarnings.length'));
 
             // invoke the passed in confirm action
             invokeAction(this, 'model.uploadSuccess', theme);
