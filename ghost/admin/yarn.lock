@@ -8890,7 +8890,7 @@ testem@1.15.0:
     tap-parser "^5.1.0"
     xmldom "^0.1.19"
 
-testem@^1.18.0:
+testem@1.18.4, testem@^1.18.0:
   version "1.18.4"
   resolved "https://registry.yarnpkg.com/testem/-/testem-1.18.4.tgz#e45fed922bec2f54a616c43f11922598ac97eb41"
   dependencies:

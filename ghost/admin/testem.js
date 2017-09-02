@@ -11,5 +11,16 @@ module.exports = {
     launch_in_dev: [
         'Chrome',
         'Firefox'
-    ]
+    ],
+    browser_args: {
+        chrome: {
+            mode: 'ci',
+            args: [
+                '--disable-gpu',
+                '--headless',
+                '--remote-debugging-port=9222',
+                '--window-size=1440,900'
+            ]
+        }
+    }
 };
