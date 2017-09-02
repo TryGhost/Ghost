@@ -117,6 +117,7 @@
     "postcss-custom-properties": "6.1.0",
     "postcss-easy-import": "2.1.0",
     "simplemde": "https://github.com/kevinansfield/simplemde-markdown-editor.git#ghost",
+    "testem": "1.18.4",
     "top-gh-contribs": "2.0.4",
     "torii": "0.8.2",
     "walk-sync": "0.3.2"
