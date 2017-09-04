@@ -10,6 +10,12 @@ _private.redirectUrl = function redirectUrl(options) {
         query = options.query,
         parts = url.parse(redirectTo);
 
+    // CASE: ensure we always add a trailing slash to reduce the number of redirects
+    // e.g. you are redirected from example.com/ghost to admin.example.com/ghost and Ghost would detect a missing slash and redirect you to /ghost/
+    if (!path.match(/\/$/)) {
+        path += '/';
+    }
+
     return url.format({
         protocol: parts.protocol,
         hostname: parts.hostname,
@@ -22,6 +28,8 @@ _private.redirectUrl = function redirectUrl(options) {
 _private.getAdminRedirectUrl = function getAdminRedirectUrl(options) {
     var blogHostWithProtocol = utils.url.urlFor('home', true),
         adminHostWithProtocol = utils.url.urlFor('admin', true),
+        adminHostWithoutProtocol = adminHostWithProtocol.replace(/(^\w+:|^)\/\//, ''),
+        blogHostWithoutProtocol = blogHostWithProtocol.replace(/(^\w+:|^)\/\//, ''),
         requestedHost = options.requestedHost,
         requestedUrl = options.requestedUrl,
         queryParameters = options.queryParameters,
@@ -30,7 +38,11 @@ _private.getAdminRedirectUrl = function getAdminRedirectUrl(options) {
     debug('getAdminRedirectUrl', requestedHost, requestedUrl, adminHostWithProtocol);
 
     // CASE: we only redirect the admin access if `admin.url` is configured
-    if (adminHostWithProtocol !== utils.url.urlJoin(blogHostWithProtocol, 'ghost/')) {
+    // If url and admin.url are not equal AND the requested host does not match, redirect.
+    // The first condition is the most important, because it ensures that you have a custom admin url configured,
+    // because we don't force an admin redirect if you have a custom url configured, but no admin url.
+    if (adminHostWithoutProtocol !== utils.url.urlJoin(blogHostWithoutProtocol, 'ghost/') &&
+        adminHostWithoutProtocol !== utils.url.urlJoin(requestedHost, utils.url.getSubdir(), 'ghost/')) {
         debug('redirect because admin host does not match');
 
         return _private.redirectUrl({

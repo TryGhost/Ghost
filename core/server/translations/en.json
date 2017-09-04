@@ -487,11 +487,11 @@
             "helperNotAvailable": "The \\{\\{{helperName}\\}\\} helper is not available.",
             "flagMustBeEnabled": "The {flagName} flag must be enabled in labs if you wish to use the \\{\\{{helperName}\\}\\} helper.",
             "seeLink": "See {url}",
+            "mustBeCalledAsBlock": "The \\{\\{{helperName}\\}\\} helper must be called as a block. E.g.  \\{\\{#{helperName}\\}\\} \\{\\{/{helperName}\\}\\}",
             "foreach": {
                 "iteratorNeeded": "Need to pass an iterator to #foreach"
             },
             "get": {
-                "mustBeCalledAsBlock": "Get helper must be called as a block",
                 "invalidResource": "Invalid resource given to get helper"
             },
             "has": {
@@ -521,7 +521,8 @@
                 "valuesMustBeDefined": "All values must be defined for empty, singular and plural"
             },
             "img_url": {
-                "attrIsRequired": "Attribute is required e.g. \\{\\{img_url feature_image\\}\\}"
+                "attrIsRequired": "Attribute is required e.g. \\{\\{img_url feature_image\\}\\}",
+                "attrIsUnknown": "Attribute passed to \\{\\{img_url\\}\\} is unknown"
             },
             "template": {
                 "templateNotFound": "Template {name} not found."
