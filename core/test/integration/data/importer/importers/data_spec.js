@@ -1450,6 +1450,8 @@ describe('Import (new test structure)', function () {
 
                     // Check post language is null
                     should(firstPost.locale).equal(null);
+                    // Check post id has been inserted into amp column
+                    should(firstPost.amp).equal(exportData.data.posts[0].id.toString());
                     // Check user language is null
                     should(users[1].locale).equal(null);
 
@@ -1656,6 +1658,32 @@ describe('Import (new test structure)', function () {
 
                     done();
                 }).catch(done);
+        });
+    });
+
+    describe('1.0: basic import test', function () {
+        var exportData;
+
+        before(function doImport() {
+            // initialize the blog with some data
+            return testUtils.initFixtures('roles', 'owner', 'settings').then(function () {
+                return testUtils.fixtures.loadExportFixture('export-basic-test');
+            }).then(function (exported) {
+                exportData = exported.db[0];
+                return dataImporter.doImport(exportData);
+            });
+        });
+
+        after(testUtils.teardown);
+
+        it('keeps the value of the amp field', function () {
+            return knex('posts').select().then(function (posts) {
+                should.exist(posts);
+
+                posts.length.should.eql(exportData.data.posts.length);
+                posts[0].amp.should.eql(exportData.data.posts[0].amp);
+                posts[1].amp.should.eql(exportData.data.posts[1].id);
+            });
         });
     });
 });
