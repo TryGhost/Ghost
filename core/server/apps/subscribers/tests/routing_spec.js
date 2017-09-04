@@ -1,7 +1,6 @@
 var supertest = require('supertest'),
     should = require('should'),
     testUtils = require('../../../../test/utils'),
-    labs = require('../../../utils/labs'),
     config = require('../../../config'),
     ghost = testUtils.startGhost;
 
