@@ -10,12 +10,7 @@ import {
     it
 } from 'mocha';
 import {authenticateSession, invalidateSession} from '../helpers/ember-simple-auth';
-import {enableGhostOAuth} from '../helpers/configuration';
 import {expect} from 'chai';
-import {
-    stubFailedOAuthConnect,
-    stubSuccessfulOAuthConnect
-} from '../helpers/oauth';
 
 describe('Acceptance: Signin', function() {
     let application;
@@ -117,44 +112,6 @@ describe('Acceptance: Signin', function() {
             await fillIn('[name="password"]', 'testpass');
             await click('.gh-btn-blue');
             expect(currentURL(), 'currentURL').to.equal('/');
-        });
-    });
-
-    describe('using Ghost OAuth', function () {
-        beforeEach(function () {
-            enableGhostOAuth(server);
-        });
-
-        it('can sign in successfully', async function () {
-            server.loadFixtures('roles');
-            stubSuccessfulOAuthConnect(application);
-
-            await visit('/signin');
-
-            expect(currentURL(), 'current url').to.equal('/signin');
-
-            expect(
-                find('button.login').text().trim(),
-                'login button text'
-            ).to.equal('Sign in with Ghost');
-
-            await click('button.login');
-
-            expect(currentURL(), 'url after connect').to.equal('/');
-        });
-
-        it('handles a failed connect', async function () {
-            stubFailedOAuthConnect(application);
-
-            await visit('/signin');
-            await click('button.login');
-
-            expect(currentURL(), 'current url').to.equal('/signin');
-
-            expect(
-                find('.main-error').text().trim(),
-                'sign-in error'
-            ).to.match(/Authentication with Ghost\.org denied or failed/i);
         });
     });
 });

@@ -1,33 +1,16 @@
 /* eslint-disable camelcase */
-import $ from 'jquery';
 import {Response} from 'ember-cli-mirage';
 import {isBlank} from '@ember/utils';
 
 export default function mockAuthentication(server) {
-    server.post('/authentication/token', function ({roles, users}, {requestBody}) {
-        let params = $.deparam(requestBody);
-
-        if (params.grant_type === 'authorization_code') {
-            // OAuth sign-in
-            if (!users.all().models.length) {
-                let role = roles.findBy({name: 'Owner'});
-                server.create('user', {email: 'oauthtest@example.com', roles: [role]});
-            }
-
-            return {
-                access_token: 'MirageAccessToken',
-                expires_in: 172800,
-                refresh_token: 'MirageRefreshToken'
-            };
-        } else {
-            // Password sign-in
-            return {
-                access_token: 'MirageAccessToken',
-                expires_in: 172800,
-                refresh_token: 'MirageRefreshToken',
-                token_type: 'Bearer'
-            };
-        }
+    server.post('/authentication/token', function () {
+        // Password sign-in
+        return {
+            access_token: 'MirageAccessToken',
+            expires_in: 172800,
+            refresh_token: 'MirageRefreshToken',
+            token_type: 'Bearer'
+        };
     });
 
     server.post('/authentication/passwordreset', function (schema, request) {

@@ -5,18 +5,14 @@
 
 <div class="modal-body {{if authenticationError 'error'}}">
 
-    {{#if config.ghostOAuth}}
-        {{gh-task-button "Sign in with Ghost" task=reauthenticate class="login gh-btn gh-btn-blue gh-btn-block gh-btn-icon" tabindex="3" autoWidth="false"}}
-    {{else}}
-        <form id="login" class="login-form" method="post" novalidate="novalidate" {{action "confirm" on="submit"}}>
-            {{#gh-validation-status-container class="password-wrap" errors=errors property="password" hasValidated=hasValidated}}
-                {{gh-input password class="password" type="password" placeholder="Password" name="password" update=(action (mut password))}}
-            {{/gh-validation-status-container}}
-            <div>
-                {{gh-task-button "Log in" task=reauthenticate class="gh-btn gh-btn-blue gh-btn-icon" type="submit"}}
-            </div>
-        </form>
-    {{/if}}
+    <form id="login" class="login-form" method="post" novalidate="novalidate" {{action "confirm" on="submit"}}>
+        {{#gh-validation-status-container class="password-wrap" errors=errors property="password" hasValidated=hasValidated}}
+            {{gh-input password class="password" type="password" placeholder="Password" name="password" update=(action (mut password))}}
+        {{/gh-validation-status-container}}
+        <div>
+            {{gh-task-button "Log in" task=reauthenticate class="gh-btn gh-btn-blue gh-btn-icon" type="submit"}}
+        </div>
+    </form>
 
    {{#if authenticationError}}
      <p class="response">{{authenticationError}}</p>

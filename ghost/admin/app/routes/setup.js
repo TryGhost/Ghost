@@ -17,11 +17,8 @@ export default Route.extend(styleBody, {
     beforeModel() {
         this._super(...arguments);
 
-        // with OAuth auth users are authenticated on step 2 so we
-        // can't use the session.isAuthenticated shortcut
-        if (!this.get('config.ghostOAuth') && this.get('session.isAuthenticated')) {
-            this.transitionTo('posts');
-            return;
+        if (this.get('session.isAuthenticated')) {
+            return this.transitionTo('posts');
         }
 
         let authUrl = this.get('ghostPaths.url').api('authentication', 'setup');

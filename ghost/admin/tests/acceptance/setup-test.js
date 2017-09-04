@@ -5,12 +5,7 @@ import startApp from '../helpers/start-app';
 import {Response} from 'ember-cli-mirage';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from '../helpers/ember-simple-auth';
-import {enableGhostOAuth} from '../helpers/configuration';
 import {expect} from 'chai';
-import {
-    stubFailedOAuthConnect,
-    stubSuccessfulOAuthConnect
-} from '../helpers/oauth';
 
 describe('Acceptance: Setup', function () {
     let application;
@@ -361,105 +356,6 @@ describe('Acceptance: Setup', function () {
             // it displays failure alert
             expect(find('.gh-alert-red').length, 'number of failure alerts')
                 .to.equal(1);
-        });
-    });
-
-    describe('using Ghost OAuth', function () {
-        beforeEach(function () {
-            // mimic a new install
-            server.get('/authentication/setup/', function () {
-                return {
-                    setup: [
-                        {status: false}
-                    ]
-                };
-            });
-
-            // ensure we have settings (to pass validation) and roles available
-            enableGhostOAuth(server);
-            server.loadFixtures('settings');
-            server.loadFixtures('roles');
-        });
-
-        it('displays the connect form and validates', async function () {
-            invalidateSession(application);
-
-            await visit('/setup');
-
-            // it redirects to step one
-            expect(
-                currentURL(),
-                'url after accessing /setup'
-            ).to.equal('/setup/one');
-
-            await click('.gh-btn-green');
-
-            expect(
-                find('button.login').text().trim(),
-                'login button text'
-            ).to.equal('Sign in with Ghost');
-
-            await click('.gh-btn-green');
-
-            let sessionFG = find('button.login').closest('.form-group');
-            let titleFG = find('input[name="blog-title"]').closest('.form-group');
-
-            // session is validated
-            expect(
-                sessionFG.hasClass('error'),
-                'session form group has error class'
-            ).to.be.true;
-
-            expect(
-                sessionFG.find('.response').text().trim(),
-                'session validation text'
-            ).to.match(/Please connect a Ghost\.org account/i);
-
-            // blog title is validated
-            expect(
-                titleFG.hasClass('error'),
-                'title form group has error class'
-            ).to.be.true;
-
-            expect(
-                titleFG.find('.response').text().trim(),
-                'title validation text'
-            ).to.match(/please enter a blog title/i);
-
-            // TODO: test that connecting clears session validation error
-            // TODO: test that typing in blog title clears validation error
-        });
-
-        it('can connect and setup successfully', async function () {
-            stubSuccessfulOAuthConnect(application);
-
-            await visit('/setup/two');
-            await click('button.login');
-
-            expect(
-                find('button.login').text().trim(),
-                'login button text when connected'
-            ).to.equal('Connected: oauthtest@example.com');
-
-            await fillIn('input[name="blog-title"]', 'Ghostbusters');
-            await click('[data-test-submit-button]');
-
-            expect(
-                currentURL(),
-                'url after submitting'
-            ).to.equal('/setup/three');
-        });
-
-        it('handles failed connect', async function () {
-            stubFailedOAuthConnect(application);
-
-            await visit('/setup/two');
-            await click('button.login');
-
-            expect(
-                find('.main-error').text().trim(),
-                'error text after failed oauth connect'
-            ).to.match(/authentication with ghost\.org denied or failed/i);
         });
     });
 });

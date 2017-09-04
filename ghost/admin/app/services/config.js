@@ -3,7 +3,6 @@ import Service from '@ember/service';
 import {assign} from '@ember/polyfills';
 import {computed} from '@ember/object';
 import {inject as injectService} from '@ember/service';
-import {isBlank} from '@ember/utils';
 
 // ember-cli-shims doesn't export _ProxyMixin
 const {_ProxyMixin} = Ember;
@@ -44,10 +43,6 @@ export default Service.extend(_ProxyMixin, {
 
             return timezonesObj;
         });
-    }),
-
-    ghostOAuth: computed('ghostAuthId', function () {
-        return !isBlank(this.get('ghostAuthId'));
     }),
 
     blogDomain: computed('blogUrl', function () {

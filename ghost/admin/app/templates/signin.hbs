@@ -1,66 +1,53 @@
 <div class="gh-flow">
     <div class="gh-flow-content-wrap">
         <section class="gh-flow-content">
-            {{#if config.ghostOAuth}}
-                <header>
-                    <h1>{{config.blogTitle}}</h1>
-                </header>
-            {{/if}}
-
             <form id="login" method="post" class="gh-signin" novalidate="novalidate" {{action "authenticate" on="submit"}}>
-                {{#if config.ghostOAuth}}
-                    {{gh-task-button "Sign in with Ghost"
-                        task=authenticateWithGhostOrg
-                        class="login gh-btn gh-btn-blue gh-btn-block gh-btn-icon"
-                        tabindex="3"}}
-                {{else}}
-                    {{#gh-form-group errors=model.errors hasValidated=hasValidated property="identification"}}
-                        <span class="gh-input-icon gh-icon-mail">
-                            {{inline-svg "email"}}
-                            {{gh-trim-focus-input model.identification
-                                class="email"
-                                type="email"
-                                placeholder="Email Address"
-                                name="identification"
-                                autocapitalize="off"
-                                autocorrect="off"
-                                tabindex="1"
-                                focusOut=(action "validate" "identification")
-                                update=(action (mut model.identification))}}
-                        </span>
-                    {{/gh-form-group}}
-                    {{#gh-form-group errors=model.errors hasValidated=hasValidated property="password"}}
-                        <span class="gh-input-icon gh-icon-lock forgotten-wrap">
-                            {{inline-svg "lock"}}
-                            {{gh-input model.password
-                                class="password"
-                                type="password"
-                                placeholder="Password"
-                                name="password"
-                                tabindex="2"
-                                autocorrect="off"
-                                update=(action (mut model.password))}}
+                {{#gh-form-group errors=model.errors hasValidated=hasValidated property="identification"}}
+                    <span class="gh-input-icon gh-icon-mail">
+                        {{inline-svg "email"}}
+                        {{gh-trim-focus-input model.identification
+                            class="email"
+                            type="email"
+                            placeholder="Email Address"
+                            name="identification"
+                            autocapitalize="off"
+                            autocorrect="off"
+                            tabindex="1"
+                            focusOut=(action "validate" "identification")
+                            update=(action (mut model.identification))}}
+                    </span>
+                {{/gh-form-group}}
+                {{#gh-form-group errors=model.errors hasValidated=hasValidated property="password"}}
+                    <span class="gh-input-icon gh-icon-lock forgotten-wrap">
+                        {{inline-svg "lock"}}
+                        {{gh-input model.password
+                            class="password"
+                            type="password"
+                            placeholder="Password"
+                            name="password"
+                            tabindex="2"
+                            autocorrect="off"
+                            update=(action (mut model.password))}}
 
-                            {{#gh-task-button
-                                task=forgotten
-                                class="forgotten-link gh-btn gh-btn-link gh-btn-icon"
-                                tabindex="4"
-                                type="button"
-                                successClass=""
-                                failureClass=""
-                                as |task|
-                            }}
-                                <span>{{#if task.isRunning}}{{inline-svg "spinner" class="gh-spinner"}}{{else}}Forgot?{{/if}}</span>
-                            {{/gh-task-button}}
-                        </span>
-                    {{/gh-form-group}}
+                        {{#gh-task-button
+                            task=forgotten
+                            class="forgotten-link gh-btn gh-btn-link gh-btn-icon"
+                            tabindex="4"
+                            type="button"
+                            successClass=""
+                            failureClass=""
+                            as |task|
+                        }}
+                            <span>{{#if task.isRunning}}{{inline-svg "spinner" class="gh-spinner"}}{{else}}Forgot?{{/if}}</span>
+                        {{/gh-task-button}}
+                    </span>
+                {{/gh-form-group}}
 
-                    {{gh-task-button "Sign in"
-                        task=validateAndAuthenticate
-                        class="login gh-btn gh-btn-blue gh-btn-block gh-btn-icon"
-                        type="submit"
-                        tabindex="3"}}
-                {{/if}}
+                {{gh-task-button "Sign in"
+                    task=validateAndAuthenticate
+                    class="login gh-btn gh-btn-blue gh-btn-block gh-btn-icon"
+                    type="submit"
+                    tabindex="3"}}
             </form>
 
             <p class="main-error">{{{if flowErrors flowErrors "&nbsp;"}}}</p>

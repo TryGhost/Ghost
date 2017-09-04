@@ -7,12 +7,7 @@ import {
     describe,
     it
 } from 'mocha';
-import {enableGhostOAuth} from '../helpers/configuration';
 import {expect} from 'chai';
-import {
-    stubFailedOAuthConnect,
-    stubSuccessfulOAuthConnect
-} from '../helpers/oauth';
 
 describe('Acceptance: Signup', function() {
     let application;
@@ -130,55 +125,4 @@ describe('Acceptance: Signup', function() {
     it('redirects if already logged in');
     it('redirects with alert on invalid token');
     it('redirects with alert on non-existant or expired token');
-
-    describe('using Ghost OAuth', function () {
-        beforeEach(function () {
-            enableGhostOAuth(server);
-
-            let {invites, users} = server.schema;
-
-            let user = users.create({name: 'Test Invite Creator'});
-
-            invites.create({
-                email: 'kevin+test2@ghost.org',
-                createdBy: user.id
-            });
-        });
-
-        it('can sign up sucessfully', async function () {
-            stubSuccessfulOAuthConnect(application);
-
-            // token details:
-            // "1470346017929|kevin+test2@ghost.org|2cDnQc3g7fQTj9nNK4iGPSGfvomkLdXf68FuWgS66Ug="
-            await visit('/signup/MTQ3MDM0NjAxNzkyOXxrZXZpbit0ZXN0MkBnaG9zdC5vcmd8MmNEblFjM2c3ZlFUajluTks0aUdQU0dmdm9ta0xkWGY2OEZ1V2dTNjZVZz0');
-
-            expect(currentPath()).to.equal('signup');
-
-            expect(
-                find('.gh-flow-content header p').text().trim(),
-                'form header text'
-            ).to.equal('Accept your invite from Test Invite Creator');
-
-            await click('button.login');
-
-            expect(currentPath()).to.equal('posts.index');
-        });
-
-        it('handles failed connect', async function () {
-            stubFailedOAuthConnect(application);
-
-            // token details:
-            // "1470346017929|kevin+test2@ghost.org|2cDnQc3g7fQTj9nNK4iGPSGfvomkLdXf68FuWgS66Ug="
-            await visit('/signup/MTQ3MDM0NjAxNzkyOXxrZXZpbit0ZXN0MkBnaG9zdC5vcmd8MmNEblFjM2c3ZlFUajluTks0aUdQU0dmdm9ta0xkWGY2OEZ1V2dTNjZVZz0');
-
-            await click('button.login');
-
-            expect(currentPath()).to.equal('signup');
-
-            expect(
-                find('.main-error').text().trim(),
-                'flow error text'
-            ).to.match(/authentication with ghost\.org denied or failed/i);
-        });
-    });
 });

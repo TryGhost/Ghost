@@ -236,12 +236,5 @@
                 </fieldset>
             </form> {{! change password form }}
         {{/if}}
-
-        {{!-- when using Ghost OAuth, users trying to change email/pass need to visit my.ghost.org --}}
-        {{#if showMyGhostLink}}
-            <div class="user-profile">
-                <p class="gh-box gh-box-info">{{inline-svg "lock"}} To change your login details please visit <a href="https://my.ghost.org/account" target="_blank">https://my.ghost.org/account</a></p>
-            </div>
-        {{/if}}
     </div>
 </section>

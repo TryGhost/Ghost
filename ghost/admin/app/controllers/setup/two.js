@@ -16,7 +16,6 @@ export default Controller.extend(ValidationEngine, {
     notifications: injectService(),
     session: injectService(),
     settings: injectService(),
-    torii: injectService(),
 
     // ValidationEngine settings
     validationType: 'setup',
@@ -30,32 +29,8 @@ export default Controller.extend(ValidationEngine, {
     password: null,
 
     setup: task(function* () {
-        if (this.get('config.ghostOAuth')) {
-            return yield this._oauthSetup();
-        } else {
-            return yield this._passwordSetup();
-        }
+        return yield this._passwordSetup();
     }),
-
-    // TODO: remove duplication with controllers/signin
-    authenticateWithGhostOrg: task(function* () {
-        let authStrategy = 'authenticator:oauth2-ghost';
-
-        this.set('flowErrors', '');
-
-        try {
-            let authentication = yield this.get('torii')
-                .open('ghost-oauth2', {type: 'setup'});
-
-            yield this.get('authenticate').perform(authStrategy, [authentication]);
-
-            return true;
-
-        } catch (error) {
-            this.set('flowErrors', 'Authentication with Ghost.org denied or failed');
-            throw error;
-        }
-    }).drop(),
 
     authenticate: task(function* (authStrategy, authentication) {
         // we don't want to redirect after sign-in during setup
@@ -163,41 +138,6 @@ export default Controller.extend(ValidationEngine, {
             });
         }).catch(() => {
             this.set('flowErrors', 'Please fill out the form to setup your blog.');
-        });
-    },
-
-    // NOTE: for OAuth ghost is in the "setup completed" step as soon
-    // as a user has been authenticated so we need to use the standard settings
-    // update to set the blog title before redirecting
-    _oauthSetup() {
-        let blogTitle = this.get('blogTitle');
-        let config = this.get('config');
-
-        this.get('hasValidated').addObjects(['blogTitle', 'session']);
-
-        return this.validate().then(() => {
-            return this.get('settings').fetch()
-                .then((settings) => {
-                    settings.set('title', blogTitle);
-
-                    return settings.save()
-                        .then((settings) => {
-                            // update the config so that the blog title shown in
-                            // the nav bar is also updated
-                            config.set('blogTitle', settings.get('title'));
-
-                            // this.blogCreated is used by step 3 to check if step 2
-                            // has been completed
-                            this.set('blogCreated', true);
-                            return this._afterAuthentication(settings);
-                        })
-                        .catch((error) => {
-                            this._handleSaveError(error);
-                        });
-                })
-                .finally(() => {
-                    this.set('session.skipAuthSuccessHandler', undefined);
-                });
         });
     },
 
