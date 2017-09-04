@@ -139,7 +139,10 @@ class PostsImporter extends BaseImporter {
             }
 
             // NOTE: we remember the old post id for disqus
-            if (model.id) {
+            // We also check if amp already exists to prevent
+            // overwriting any comment ids from a 1.0 export
+            // (see https://github.com/TryGhost/Ghost/issues/8963)
+            if (model.id && !model.amp) {
                 model.amp = model.id.toString();
             }
         });
