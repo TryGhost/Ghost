@@ -20,7 +20,6 @@ export default Controller.extend(ValidationEngine, {
     notifications: injectService(),
     session: injectService(),
     settings: injectService(),
-    torii: injectService(),
 
     flowErrors: '',
 
@@ -89,24 +88,6 @@ export default Controller.extend(ValidationEngine, {
 
         } catch (error) {
             this.set('flowErrors', 'Please fill out the form to sign in.');
-        }
-    }).drop(),
-
-    // TODO: remove duplication with controllers/setup/two
-    authenticateWithGhostOrg: task(function* () {
-        let authStrategy = 'authenticator:oauth2-ghost';
-
-        this.set('flowErrors', '');
-
-        try {
-            let authentication = yield this.get('torii')
-                .open('ghost-oauth2', {type: 'signin'});
-
-            return yield this.get('authenticate').perform(authStrategy, [authentication]);
-
-        } catch (error) {
-            this.set('flowErrors', 'Authentication with Ghost.org denied or failed');
-            throw error;
         }
     }).drop(),
 

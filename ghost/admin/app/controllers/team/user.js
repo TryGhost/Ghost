@@ -36,10 +36,12 @@ export default Controller.extend({
     email: readOnly('model.email'),
     slugValue: boundOneWay('model.slug'),
 
-    isNotOwnersProfile: not('user.isOwner'),
-    isAdminUserOnOwnerProfile: and('currentUser.isAdmin', 'user.isOwner'),
     canAssignRoles: or('currentUser.isAdmin', 'currentUser.isOwner'),
+    canChangeEmail: not('isAdminUserOnOwnerProfile'),
+    canChangePassword: not('isAdminUserOnOwnerProfile'),
     canMakeOwner: and('currentUser.isOwner', 'isNotOwnProfile', 'user.isAdmin'),
+    isAdminUserOnOwnerProfile: and('currentUser.isAdmin', 'user.isOwner'),
+    isNotOwnersProfile: not('user.isOwner'),
     rolesDropdownIsVisible: and('isNotOwnProfile', 'canAssignRoles', 'isNotOwnersProfile'),
     userActionsAreVisible: or('deleteUserActionIsVisible', 'canMakeOwner'),
 
@@ -47,14 +49,6 @@ export default Controller.extend({
         return this.get('user.id') === this.get('currentUser.id');
     }),
     isNotOwnProfile: not('isOwnProfile'),
-    showMyGhostLink: and('config.ghostOAuth', 'isOwnProfile'),
-
-    canChangeEmail: computed('config.ghostOAuth', 'isAdminUserOnOwnerProfile', function () {
-        let ghostOAuth = this.get('config.ghostOAuth');
-        let isAdminUserOnOwnerProfile = this.get('isAdminUserOnOwnerProfile');
-
-        return !ghostOAuth && !isAdminUserOnOwnerProfile;
-    }),
 
     deleteUserActionIsVisible: computed('currentUser', 'canAssignRoles', 'user', function () {
         if ((this.get('canAssignRoles') && this.get('isNotOwnProfile') && !this.get('user.isOwner'))
@@ -62,10 +56,6 @@ export default Controller.extend({
             || this.get('user.isAuthor')))) {
             return true;
         }
-    }),
-
-    canChangePassword: computed('config.ghostOAuth', 'isAdminUserOnOwnerProfile', function () {
-        return !this.get('config.ghostOAuth') && !this.get('isAdminUserOnOwnerProfile');
     }),
 
     // duplicated in gh-user-active -- find a better home and consolidate?

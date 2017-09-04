@@ -3017,7 +3017,7 @@ ember-cli-babel@6.8.2, ember-cli-babel@^6.0.0, ember-cli-babel@^6.0.0-beta.10, e
     clone "^2.0.0"
     ember-cli-version-checker "^2.0.0"
 
-ember-cli-babel@^5.0.0, ember-cli-babel@^5.1.3, ember-cli-babel@^5.1.5, ember-cli-babel@^5.1.6, ember-cli-babel@^5.1.7:
+ember-cli-babel@^5.0.0, ember-cli-babel@^5.1.5, ember-cli-babel@^5.1.6, ember-cli-babel@^5.1.7:
   version "5.2.4"
   resolved "https://registry.yarnpkg.com/ember-cli-babel/-/ember-cli-babel-5.2.4.tgz#5ce4f46b08ed6f6d21e878619fb689719d6e8e13"
   dependencies:
@@ -9037,15 +9037,6 @@ top-gh-contribs@2.0.4:
     bluebird "^3.3.5"
     lodash "^4.11.1"
     request "^2.72.0"
-
-torii@0.8.2:
-  version "0.8.2"
-  resolved "https://registry.yarnpkg.com/torii/-/torii-0.8.2.tgz#60688b5ce0bc148dedf764df3c4c41f55da3f866"
-  dependencies:
-    broccoli-funnel "^1.0.1"
-    broccoli-merge-trees "^1.1.1"
-    broccoli-string-replace "^0.1.1"
-    ember-cli-babel "^5.1.3"
 
 tough-cookie@~2.3.0:
   version "2.3.2"

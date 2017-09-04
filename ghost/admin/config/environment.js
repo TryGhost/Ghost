@@ -35,9 +35,7 @@ module.exports = function (environment) {
 
         moment: {
             includeTimezone: 'all'
-        },
-
-        torii: { }
+        }
     };
 
     if (environment === 'development') {

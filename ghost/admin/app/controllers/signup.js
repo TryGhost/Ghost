@@ -5,7 +5,6 @@ import {
     VersionMismatchError,
     isVersionMismatchError
 } from 'ghost-admin/services/ajax';
-import {assign} from '@ember/polyfills';
 import {inject as injectService} from '@ember/service';
 import {isArray as isEmberArray} from '@ember/array';
 import {task} from 'ember-concurrency';
@@ -17,7 +16,6 @@ export default Controller.extend(ValidationEngine, {
     notifications: injectService(),
     session: injectService(),
     settings: injectService(),
-    torii: injectService(),
 
     // ValidationEngine settings
     validationType: 'signup',
@@ -67,27 +65,6 @@ export default Controller.extend(ValidationEngine, {
                 this.get('notifications').showAlert('There was a problem on the server.', {type: 'error', key: 'session.authenticate.failed'});
                 throw error;
             }
-        }
-    }).drop(),
-
-    authenticateWithGhostOrg: task(function* () {
-        let authStrategy = 'authenticator:oauth2-ghost';
-        let inviteToken = this.get('model.token');
-        let email = this.get('model.email');
-
-        this.set('flowErrors', '');
-
-        try {
-            let authentication = yield this.get('torii')
-                .open('ghost-oauth2', {email, type: 'invite'});
-
-            authentication = assign(authentication, {inviteToken});
-
-            return yield this.get('authenticate').perform(authStrategy, [authentication]);
-
-        } catch (error) {
-            this.set('flowErrors', 'Authentication with Ghost.org denied or failed');
-            throw error;
         }
     }).drop(),
 

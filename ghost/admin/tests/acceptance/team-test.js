@@ -6,7 +6,6 @@ import startApp from '../helpers/start-app';
 import {Response} from 'ember-cli-mirage';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from '../helpers/ember-simple-auth';
-import {enableGhostOAuth} from '../helpers/configuration';
 import {errorOverride, errorReset} from '../helpers/adapter-error';
 import {expect} from 'chai';
 
@@ -712,34 +711,6 @@ describe('Acceptance: Team', function () {
                     find('.gh-notifications .gh-notification').length,
                     'password saved notification is displayed'
                 ).to.equal(1);
-            });
-        });
-
-        describe('using Ghost OAuth', function () {
-            beforeEach(function () {
-                enableGhostOAuth(server);
-            });
-
-            it('doesn\'t show the password reset form', async function () {
-                await visit(`/team/${admin.slug}`);
-
-                // ensure that the normal form is displayed so we don't get
-                // false positives
-                expect(
-                    find('input#user-slug').length,
-                    'profile form is displayed'
-                ).to.equal(1);
-
-                // check that the password form is hidden
-                expect(
-                    find('#password-reset').length,
-                    'presence of password reset form'
-                ).to.equal(0);
-
-                expect(
-                    find('#user-password-new').length,
-                    'presence of new password field'
-                ).to.equal(0);
             });
         });
 

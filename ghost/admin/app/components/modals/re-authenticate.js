@@ -15,7 +15,6 @@ export default ModalComponent.extend(ValidationEngine, {
     config: injectService(),
     notifications: injectService(),
     session: injectService(),
-    torii: injectService(),
 
     identification: computed('session.user.email', function () {
         return this.get('session.user.email');
@@ -69,38 +68,8 @@ export default ModalComponent.extend(ValidationEngine, {
         });
     },
 
-    _oauthConfirm() {
-        // TODO: remove duplication between signin/signup/re-auth
-        let authStrategy = 'authenticator:oauth2-ghost';
-
-        this.toggleProperty('submitting');
-        this.set('authenticationError', '');
-
-        return this.get('torii')
-            .open('ghost-oauth2', {type: 'signin'})
-            .then((authentication) => {
-                this.get('session').set('skipAuthSuccessHandler', true);
-
-                this.get('session').authenticate(authStrategy, authentication).finally(() => {
-                    this.get('session').set('skipAuthSuccessHandler', undefined);
-
-                    this.toggleProperty('submitting');
-                    this.get('notifications').closeAlerts();
-                    this.send('closeModal');
-                });
-            })
-            .catch(() => {
-                this.toggleProperty('submitting');
-                this.set('authenticationError', 'Authentication with Ghost.org denied or failed');
-            });
-    },
-
     reauthenticate: task(function* () {
-        if (this.get('config.ghostOAuth')) {
-            return yield this._oauthConfirm();
-        } else {
-            return yield this._passwordConfirm();
-        }
+        return yield this._passwordConfirm();
     }).drop(),
 
     actions: {
