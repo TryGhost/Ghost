@@ -142,6 +142,7 @@ describe('Themes', function () {
 
                     // Check labs config
                     templateOptions.data.labs.should.be.an.Object();
+                    templateOptions.data.labs.subscribers.should.eql(true);
 
                     // Check res.locals
                     should.not.exist(res.locals.secure);

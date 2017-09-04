@@ -1,11 +1,9 @@
 var supertest = require('supertest'),
     should = require('should'),
-    sinon = require('sinon'),
     testUtils = require('../../../../test/utils'),
     labs = require('../../../utils/labs'),
     config = require('../../../config'),
-    ghost = testUtils.startGhost,
-    sandbox = sinon.sandbox.create();
+    ghost = testUtils.startGhost;
 
 describe('Subscriber: Routing', function () {
     var ghostServer, request;
@@ -26,18 +24,6 @@ describe('Subscriber: Routing', function () {
 
     after(function () {
         return ghostServer.stop();
-    });
-
-    before(function () {
-        sandbox.stub(labs, 'isSet', function (key) {
-            if (key === 'subscribers') {
-                return true;
-            }
-        });
-    });
-
-    after(function () {
-        sandbox.restore();
     });
 
     describe('GET', function () {
