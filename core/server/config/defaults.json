@@ -19,8 +19,8 @@
         "level": "info",
         "rotation": {
             "enabled": false,
-            "period": "1w",
-            "count": 100
+            "period": "1d",
+            "count": 10
         },
         "transports": ["stdout"]
     },
