@@ -1,13 +1,13 @@
-var sizeOf          = require('image-size'),
-    errors          = require('../errors'),
-    url             = require('./url'),
-    Promise         = require('bluebird'),
-    i18n            = require('../i18n'),
-    settingsCache   = require('../settings/cache'),
-    _               = require('lodash'),
-    path            = require('path'),
-    config          = require('../config'),
-    utils          = require('../utils'),
+var sizeOf = require('image-size'),
+    errors = require('../errors'),
+    url = require('./url'),
+    Promise = require('bluebird'),
+    i18n = require('../i18n'),
+    settingsCache = require('../settings/cache'),
+    _ = require('lodash'),
+    path = require('path'),
+    config = require('../config'),
+    storageUtils = require('../adapters/storage/utils'),
     getIconDimensions,
     isIcoImageType,
     getIconType,
@@ -105,8 +105,7 @@ getIconPath = function getIconPath() {
     var blogIcon = settingsCache.get('icon');
 
     if (blogIcon) {
-        // The '/' in urlJoin is necessary to add the '/' to `content/images`, if no subdirectory is setup
-        return blogIcon.replace(new RegExp('^' + utils.url.urlJoin(utils.url.getSubdir(), '/', utils.url.STATIC_IMAGE_URL_PREFIX)), '');
+        return storageUtils.getLocalFileStoragePath(blogIcon);
     } else {
         return path.join(config.get('paths:publicFilePath'), 'favicon.ico');
     }

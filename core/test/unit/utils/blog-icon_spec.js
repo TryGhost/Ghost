@@ -144,7 +144,7 @@ describe('Blog Icon', function () {
                     should.exist(result);
                     result.should.eql({
                         width: 48,
-                        height:48
+                        height: 48
                     });
                     done();
                 }).catch(done);
@@ -156,7 +156,7 @@ describe('Blog Icon', function () {
                     should.exist(result);
                     result.should.eql({
                         width: 100,
-                        height:100
+                        height: 100
                     });
                     done();
                 }).catch(done);
@@ -168,7 +168,7 @@ describe('Blog Icon', function () {
                     should.exist(result);
                     result.should.eql({
                         width: 64,
-                        height:64
+                        height: 64
                     });
                     done();
                 }).catch(done);
