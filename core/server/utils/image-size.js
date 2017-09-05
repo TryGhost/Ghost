@@ -29,11 +29,15 @@ function isLocalImage(imagePath) {
  * @param {Object} buffer
  * @returns {Object} dimensions
  */
-function fetchDimensionsFromBuffer(buffer) {
+function fetchDimensionsFromBuffer(options) {
+    var buffer = options.buffer,
+        imagePath = options.imagePath;
+
     try {
         // Using the Buffer rather than an URL requires to use sizeOf synchronously.
         // See https://github.com/image-size/image-size#asynchronous
         dimensions = sizeOf(buffer);
+
         // CASE: `.ico` files might have multiple images and therefore multiple sizes.
         // We return the largest size found (image-size default is the first size found)
         if (dimensions.images) {
@@ -48,7 +52,8 @@ function fetchDimensionsFromBuffer(buffer) {
     } catch (err) {
         return Promise.reject(new errors.InternalServerError({
             code: 'IMAGE_SIZE',
-            err: err
+            err: err,
+            context: imagePath
         }));
     }
 }
@@ -109,16 +114,10 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
         imagePath,
         requestOptions
     ).then(function (response) {
-        try {
-            // response.body contains the buffer of the image file
-            return Promise.resolve(fetchDimensionsFromBuffer(response.body));
-        } catch (err) {
-            return Promise.reject(new errors.InternalServerError({
-                code: 'IMAGE_SIZE',
-                err: err,
-                context: imagePath.href
-            }));
-        }
+        return fetchDimensionsFromBuffer({
+            buffer: response.body,
+            imagePath: imagePath.href
+        });
     }).catch(function (err) {
         if (err.statusCode === 404) {
             return Promise.reject(new errors.NotFoundError({
@@ -166,21 +165,17 @@ getImageSizeFromFilePath = function getImageSizeFromFilePath(imagePath) {
     imagePath = utils.url.urlFor('image', {image: imagePath}, true);
     imageObject.url = imagePath;
 
-    imagePath = getLocalFileStoragePath(imagePath);
+    imagePath = storageUtils.getLocalFileStoragePath(imagePath);
 
     return storage.getStorage()
         .read({path: imagePath})
         .then(function readFile(buf) {
-            try {
-                return Promise.resolve(fetchDimensionsFromBuffer(buf));
-            } catch (err) {
-                return Promise.reject(new errors.InternalServerError({
-                    code: 'IMAGE_SIZE',
-                    err: err,
-                    context: imagePath
-                }));
-            }
-        }).catch(function (err) {
+            return fetchDimensionsFromBuffer({
+                buffer: buf,
+                imagePath: imagePath
+            });
+        })
+        .catch(function (err) {
             return Promise.reject(new errors.InternalServerError({
                 message: err.message,
                 code: 'IMAGE_SIZE',
