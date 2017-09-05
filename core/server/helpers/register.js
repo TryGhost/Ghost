@@ -19,7 +19,10 @@ function asyncHelperWrapper(hbs, name, fn) {
         }).catch(function asyncHelperError(err) {
             var wrappedErr = err instanceof errors.GhostError ? err : new errors.IncorrectUsageError({
                     err: err,
-                    context: 'registerAsyncThemeHelper: ' + name
+                    context: 'registerAsyncThemeHelper: ' + name,
+                    errorDetails: {
+                        originalError: err
+                    }
                 }),
                 result = config.get('env') === 'development' ? wrappedErr : '';
 
