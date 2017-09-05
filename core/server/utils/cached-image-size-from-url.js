@@ -1,8 +1,8 @@
 var Promise = require('bluebird'),
-    size = require('./image-size-from-url'),
+    sizeOf = require('./image-size'),
     logging = require('../logging'),
     errors = require('../errors'),
-    getImageSizeFromUrl = size.getImageSizeFromUrl,
+    getImageSizeFromUrl = sizeOf.getImageSizeFromUrl,
     imageSizeCache = {};
 
 /**
