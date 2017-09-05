@@ -200,6 +200,11 @@ exports.init = function init(options) {
                     return;
                 }
 
+                // CASE: Mailchimp is not active.
+                if (!settingsCache.get('mailchimp').isActive) {
+                    return;
+                }
+
                 return adapter.schedule(_private.normalize({
                     apiUrl: apiUrl,
                     client: client,
