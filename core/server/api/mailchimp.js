@@ -21,7 +21,16 @@ getMailchimpError = function getMailchimpError(error) {
         return new errors.ValidationError({
             code: 'MAILCHIMP',
             message: error.title || error.message,
-            statusCode: 422,
+            context: error.detail && error.detail + ' (' + error.type + ')'
+        });
+    }
+
+    // CASE: If you register a subscriber too often for too many lists, this mail is banned. Mailchimp title is `Invalid Resource`.
+    // See https://developer.mailchimp.com/documentation/mailchimp/guides/error-glossary.
+    if (error.message && error.message.indexOf('has signed up to a lot of lists very recently') !== -1) {
+        return new errors.BadRequestError({
+            code: 'MAILCHIMP',
+            message: error.title || error.message,
             context: error.detail && error.detail + ' (' + error.type + ')'
         });
     }
