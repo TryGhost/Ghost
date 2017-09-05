@@ -262,8 +262,33 @@ mailchimp = {
         // options.subscribers at this point only includes subscribers that
         // do not exist in the MailChimp list, use these subscribers to create
         // the MailChimp list members
+        // NOTE: Adding members is limited to 500 per API request. Do it in batches.
         function createNewMailchimpListMembers(options) {
-            var members = [];
+            var members = [],
+                batches = [],
+                mailchimpLimitPerRequest = 1,
+                generateBatches = function getBatches() {
+                    if (!members.length) {
+                        return;
+                    }
+
+                    var localMembers = members.slice(0, mailchimpLimitPerRequest);
+                    members = members.splice(mailchimpLimitPerRequest);
+
+                    batches.push({
+                        method: 'post',
+                        path: '/lists/{list_id}',
+                        path_params: {
+                            list_id: options.settings.activeList.id
+                        },
+                        body: {
+                            members: localMembers,
+                            update_existing: false
+                        }
+                    });
+
+                    generateBatches();
+                };
 
             options.subscribers.forEach(function (subscriber) {
                 members.push({
@@ -273,26 +298,21 @@ mailchimp = {
             });
 
             if (members.length > 0) {
-                return options.mailchimp.request({
-                    method: 'post',
-                    path: '/lists/{list_id}',
-                    path_params: {
-                        list_id: options.settings.activeList.id
-                    },
-                    body: {
-                        members: members,
-                        update_existing: false
-                    }
-                }).then(function (results) {
-                    options.stats.mailchimp.created = results.total_created;
-                    options.stats.mailchimp.errored = results.error_count;
-                    options.mailchimpErrors = results.errors;
+                generateBatches();
+
+                return options.mailchimp.batch(batches, {verbose: false, unpack: true, wait: true, interval: 3 * 1000}).then(function (results) {
+                    // `results` is an array with all batch results.
+                    _.each(results, function (result) {
+                        options.stats.mailchimp.created = options.stats.mailchimp.created + result.total_created;
+                        options.stats.mailchimp.errored = options.stats.mailchimp.errored + result.error_count;
+                        options.mailchimpErrors = options.mailchimpErrors.concat(result.errors);
+                    });
 
                     if (options.mailchimpErrors && options.mailchimpErrors.length) {
                         logging.error(new errors.InternalServerError({
                             code: 'MAILCHIMP',
                             message: 'Mailchimp errors on member creation.',
-                            errorDetails: options.mailchimpErrors
+                            errorDetails: JSON.stringify(options.mailchimpErrors)
                         }));
                     }
 
@@ -342,6 +362,10 @@ mailchimp = {
                             schedulingConfig.subscribers.error = mailchimpError.message;
                         } else {
                             schedulingConfig.subscribers.error = '';
+                        }
+
+                        if (options.mailchimpErrors && options.mailchimpErrors.length) {
+                            schedulingConfig.subscribers.error = JSON.stringify(options.mailchimpErrors);
                         }
 
                         return dataProvider.Settings.edit([{
