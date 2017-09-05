@@ -68,38 +68,37 @@ function getMetaData(data, root) {
             navigation: settingsCache.get('navigation'),
             icon: settingsCache.get('icon'),
             cover_image: settingsCache.get('cover_image'),
-            logo: settingsCache.get('logo'),
+            logo: getBlogLogo(),
             amp: settingsCache.get('amp')
         }
-    };
+    },
+        customExcerpt,
+        metaDescription,
+        fallbackExcerpt;
 
-    return Promise.props(getBlogLogo()).then(function (result) {
-        metaData.blog.logo = result;
+    // TODO: cleanup these if statements
+    if (data.post) {
+        // There's a specific order for description fields (not <meta name="description" /> !!) in structured data
+        // and schema.org which is used the description fields (see https://github.com/TryGhost/Ghost/issues/8793):
+        // 1. CASE: custom_excerpt is populated via the UI
+        // 2. CASE: no custom_excerpt, but meta_description is poplated via the UI
+        // 3. CASE: fall back to automated excerpt of 50 words if neither custom_excerpt nor meta_description is provided
+        customExcerpt = data.post.custom_excerpt;
+        metaDescription = data.post.meta_description;
+        fallbackExcerpt = data.post.html ? getExcerpt(data.post.html, {words: 50}) : '';
 
-        // TODO: cleanup these if statements
-        if (data.post) {
-            // There's a specific order for description fields (not <meta name="description" /> !!) in structured data
-            // and schema.org which is used the description fields (see https://github.com/TryGhost/Ghost/issues/8793):
-            // 1. CASE: custom_excerpt is populated via the UI
-            // 2. CASE: no custom_excerpt, but meta_description is poplated via the UI
-            // 3. CASE: fall back to automated excerpt of 50 words if neither custom_excerpt nor meta_description is provided
-            var customExcerpt = data.post.custom_excerpt,
-                metaDescription = data.post.meta_description,
-                fallbackExcerpt = data.post.html ? getExcerpt(data.post.html, {words: 50}) : '';
+        metaData.excerpt = customExcerpt ? customExcerpt : metaDescription ? metaDescription : fallbackExcerpt;
+    }
 
-            metaData.excerpt = customExcerpt ? customExcerpt : metaDescription ? metaDescription : fallbackExcerpt;
-        }
+    if (data.post && data.post.author && data.post.author.name) {
+        metaData.authorName = data.post.author.name;
+    }
 
-        if (data.post && data.post.author && data.post.author.name) {
-            metaData.authorName = data.post.author.name;
-        }
+    return Promise.props(getImageDimensions(metaData)).then(function () {
+        metaData.structuredData = getStructuredData(metaData);
+        metaData.schema = getSchema(metaData, data);
 
-        return Promise.props(getImageDimensions(metaData)).then(function () {
-            metaData.structuredData = getStructuredData(metaData);
-            metaData.schema = getSchema(metaData, data);
-
-            return metaData;
-        });
+        return metaData;
     }).catch(function (err) {
         logging.error(err);
         return metaData;
