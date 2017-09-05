@@ -3,7 +3,7 @@ var should = require('should'),
     Promise = require('bluebird'),
     rewire = require('rewire'),
 
-// Stuff we are testing
+    // Stuff we are testing
     getCachedImageSizeFromUrl = rewire('../../../server/utils/cached-image-size-from-url'),
 
     sandbox = sinon.sandbox.create();
@@ -30,7 +30,7 @@ describe('getCachedImageSizeFromUrl', function () {
             type: 'jpg'
         }));
 
-        getCachedImageSizeFromUrl.__set__('getImageSizeFromUrl', sizeOfStub);
+        getCachedImageSizeFromUrl.__set__('imageSize.getImageSizeFromUrl', sizeOfStub);
 
         getCachedImageSizeFromUrl(url).then(function () {
             // first call to get result from `getImageSizeFromUrl`
@@ -61,7 +61,7 @@ describe('getCachedImageSizeFromUrl', function () {
 
         sizeOfStub.returns(new Promise.reject('error'));
 
-        getCachedImageSizeFromUrl.__set__('getImageSizeFromUrl', sizeOfStub);
+        getCachedImageSizeFromUrl.__set__('imageSize.getImageSizeFromUrl', sizeOfStub);
 
         getCachedImageSizeFromUrl(url)
             .then(function () {
