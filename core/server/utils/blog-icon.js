@@ -7,7 +7,7 @@ var sizeOf = require('image-size'),
     _ = require('lodash'),
     path = require('path'),
     config = require('../config'),
-    getLocalFileStoragePath = require('../adapters/storage/utils/get-local-file-storage-path'),
+    storageUtils = require('../adapters/storage/utils'),
     getIconDimensions,
     isIcoImageType,
     getIconType,
@@ -105,7 +105,7 @@ getIconPath = function getIconPath() {
     var blogIcon = settingsCache.get('icon');
 
     if (blogIcon) {
-        return getLocalFileStoragePath(blogIcon);
+        return storageUtils.getLocalFileStoragePath(blogIcon);
     } else {
         return path.join(config.get('paths:publicFilePath'), 'favicon.ico');
     }

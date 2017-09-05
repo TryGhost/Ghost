@@ -7,7 +7,7 @@ var sizeOf = require('image-size'),
     config = require('../config'),
     storage = require('../adapters/storage'),
     _ = require('lodash'),
-    getLocalFileStoragePath = require('../adapters/storage/utils/get-local-file-storage-path'),
+    storageUtils = require('../adapters/storage/utils'),
     dimensions,
     imageObject = {},
     getImageSizeFromUrl,
@@ -26,7 +26,7 @@ function isLocalImage(imagePath) {
 
 /**
  * @description processes the Buffer result of an image file
- * @param {Object} buffer
+ * @param {Object} options
  * @returns {Object} dimensions
  */
 function fetchDimensionsFromBuffer(options) {

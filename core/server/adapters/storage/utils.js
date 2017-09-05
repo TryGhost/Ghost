@@ -1,4 +1,8 @@
-var utils = require('../../../utils');
+var globalUtils = require('../../utils');
+
+/**
+ * @TODO: move `index.js` to here - e.g. storageUtils.getStorage
+ */
 
 /**
  * Sanitizes a given URL or path for an image to be readable by the local file storage
@@ -8,18 +12,16 @@ var utils = require('../../../utils');
  * @description Takes a url or filepath and returns a filepath with is readable
  * for the local file storage.
  */
-function getLocalFileStoragePath(imagePath) {
-    if (imagePath.match(new RegExp('^' + utils.url.urlJoin(utils.url.urlFor('home', true), utils.url.getSubdir(), '/', utils.url.STATIC_IMAGE_URL_PREFIX)))) {
+exports.getLocalFileStoragePath = function getLocalFileStoragePath(imagePath) {
+    if (imagePath.match(new RegExp('^' + globalUtils.url.urlJoin(globalUtils.url.urlFor('home', true), globalUtils.url.getSubdir(), '/', globalUtils.url.STATIC_IMAGE_URL_PREFIX)))) {
         // Storage needs the path without `/content/images/` prefix
         // The '/' in urlJoin is necessary to add the '/' to `content/images`, if no subdirectory is setup
-        return imagePath.replace(new RegExp('^' + utils.url.urlJoin(utils.url.urlFor('home', true), utils.url.getSubdir(), '/', utils.url.STATIC_IMAGE_URL_PREFIX)), '');
-    } else if (imagePath.match(new RegExp('^' + utils.url.urlJoin(utils.url.getSubdir(), '/', utils.url.STATIC_IMAGE_URL_PREFIX)))) {
+        return imagePath.replace(new RegExp('^' + globalUtils.url.urlJoin(globalUtils.url.urlFor('home', true), globalUtils.url.getSubdir(), '/', globalUtils.url.STATIC_IMAGE_URL_PREFIX)), '');
+    } else if (imagePath.match(new RegExp('^' + globalUtils.url.urlJoin(globalUtils.url.getSubdir(), '/', globalUtils.url.STATIC_IMAGE_URL_PREFIX)))) {
         // Storage needs the path without `/content/images/` prefix
         // The '/' in urlJoin is necessary to add the '/' to `content/images`, if no subdirectory is setup
-        return imagePath.replace(new RegExp('^' + utils.url.urlJoin(utils.url.getSubdir(), '/', utils.url.STATIC_IMAGE_URL_PREFIX)), '');
+        return imagePath.replace(new RegExp('^' + globalUtils.url.urlJoin(globalUtils.url.getSubdir(), '/', globalUtils.url.STATIC_IMAGE_URL_PREFIX)), '');
     } else {
         return imagePath;
     }
-}
-
-module.exports = getLocalFileStoragePath;
+};
