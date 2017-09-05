@@ -79,6 +79,7 @@ function handleSource(req, res, next) {
 
 function storeSubscriber(req, res, next) {
     req.body.status = 'subscribed';
+    req.body.source = 'subscribed_button';
 
     if (_.isEmpty(req.body.email)) {
         return next(new errors.ValidationError({message: 'Email cannot be blank.'}));

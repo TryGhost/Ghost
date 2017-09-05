@@ -7,6 +7,7 @@ var should = require('should'),
     _ = require('lodash'),
     context = testUtils.context,
     errors = require('../../../server/errors'),
+    models = require('../../../server/models'),
     serverUtils = require('../../../server/utils'),
     apiUtils = require('../../../server/api/utils'),
     SubscribersAPI = require('../../../server/api/subscribers'),
@@ -38,6 +39,7 @@ describe('Subscribers API', function () {
                     should.exist(results);
                     should.exist(results.subscribers);
                     results.subscribers.length.should.be.above(0);
+                    _.find(results.subscribers, {email: newSubscriber.email}).source.should.eql('manual');
                     done();
                 }).catch(done);
         });
@@ -269,6 +271,16 @@ describe('Subscribers API', function () {
                     result.meta.stats.imported.should.eql(1);
                     result.meta.stats.duplicates.should.eql(1);
                     result.meta.stats.invalid.should.eql(1);
+
+                    return models.Subscriber.findAll();
+                })
+                .then(function (response) {
+                    response.models.length.should.eql(2);
+                    response.models[0].get('email').should.eql(testUtils.DataGenerator.Content.subscribers[0].email);
+                    response.models[0].get('source').should.eql('manual');
+
+                    response.models[1].get('email').should.eql(scope.values[0].email);
+                    response.models[1].get('source').should.eql('csv_import');
                     done();
                 })
                 .catch(done);

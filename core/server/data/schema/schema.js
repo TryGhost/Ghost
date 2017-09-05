@@ -215,6 +215,7 @@ module.exports = {
         subscribed_referrer: {type: 'string', maxlength: 2000, nullable: true, validations: {isEmptyOrURL: true}},
         unsubscribed_url: {type: 'string', maxlength: 2000, nullable: true, validations: {isEmptyOrURL: true}},
         unsubscribed_at: {type: 'dateTime', nullable: true},
+        source: {type: 'string', maxlength: 50, validations: {isIn: [['manual', 'csv_import', 'app_import', 'subscribed_button']]}, defaultTo: 'manual'},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},

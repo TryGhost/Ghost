@@ -2,6 +2,7 @@ var supertest = require('supertest'),
     should = require('should'),
     testUtils = require('../../../../test/utils'),
     config = require('../../../config'),
+    models = require('../../../models'),
     ghost = testUtils.startGhost;
 
 describe('Subscriber: Routing', function () {
@@ -50,7 +51,14 @@ describe('Subscriber: Routing', function () {
                     should.not.exist(err);
                     res.text.should.containEql('Subscribed!');
                     res.text.should.containEql('test@ghost.org');
-                    done();
+
+                    models.Subscriber.findOne({email: 'test@ghost.org'})
+                        .then(function (model) {
+                            model.get('source').should.eql('subscribed_button');
+                            model.get('status').should.eql('subscribed');
+                            done();
+                        })
+                        .catch(done);
                 });
         });
 

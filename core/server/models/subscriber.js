@@ -15,7 +15,8 @@ Subscriber = ghostBookshelf.Model.extend({
 
     defaults: function defaults() {
         return {
-            status: 'subscribed'
+            status: 'subscribed',
+            source: 'manual'
         };
     },
 

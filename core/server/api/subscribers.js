@@ -278,7 +278,7 @@ subscribers = {
             }).then(function (result) {
                 return Promise.all(result.map(function (entry) {
                     return subscribers.add(
-                        {subscribers: [{email: entry.email}]},
+                        {subscribers: [{email: entry.email, source: 'csv_import'}]},
                         {context: options.context}
                     ).reflect();
                 })).each(function (inspection) {
