@@ -18,7 +18,9 @@
     "logging": {
         "level": "info",
         "rotation": {
-            "enabled": false
+            "enabled": false,
+            "period": "1d",
+            "count": 10
         },
         "transports": ["stdout"]
     },
