@@ -54,7 +54,8 @@ SchedulingDefault.prototype.unschedule = function (object) {
  */
 SchedulingDefault.prototype.run = function () {
     var self = this,
-        timeout = null;
+        timeout = null,
+        recursiveRun;
 
     if (this.isRunning) {
         return;
@@ -62,27 +63,30 @@ SchedulingDefault.prototype.run = function () {
 
     this.isRunning = true;
 
-    timeout = setTimeout(function () {
-        var times = Object.keys(self.allJobs),
-            nextJobs = {};
+    recursiveRun = function recursiveRun() {
+        timeout = setTimeout(function () {
+            var times = Object.keys(self.allJobs),
+                nextJobs = {};
 
-        times.every(function (time) {
-            if (moment(Number(time)).diff(moment(), 'minutes') <= self.offsetInMinutes) {
-                nextJobs[time] = self.allJobs[time];
-                delete self.allJobs[time];
-                return true;
-            }
+            times.every(function (time) {
+                if (moment(Number(time)).diff(moment(), 'minutes') <= self.offsetInMinutes) {
+                    nextJobs[time] = self.allJobs[time];
+                    delete self.allJobs[time];
+                    return true;
+                }
 
-            // break!
-            return false;
-        });
+                // break!
+                return false;
+            });
 
-        clearTimeout(timeout);
-        self._execute(nextJobs);
+            clearTimeout(timeout);
+            self._execute(nextJobs);
 
-        // recursive!
-        self.run();
-    }, self.runTimeoutInMs);
+            recursiveRun();
+        }, self.runTimeoutInMs);
+    };
+
+    recursiveRun();
 };
 
 /**

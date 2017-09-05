@@ -84,6 +84,20 @@ describe('Scheduling Default Adapter', function () {
             scope.adapter.run();
         });
 
+        it('ensure recursive run works', function (done) {
+            sandbox.spy(scope.adapter, '_execute');
+
+            scope.adapter.allJobs = {};
+            scope.adapter.runTimeoutInMs = 500;
+            scope.adapter.offsetInMinutes = 2;
+            scope.adapter.run();
+
+            setTimeout(function () {
+                scope.adapter._execute.callCount.should.be.greaterThan(1);
+                done();
+            }, 2000);
+        });
+
         it('execute', function (done) {
             var pinged = 0,
                 jobs = 3,
