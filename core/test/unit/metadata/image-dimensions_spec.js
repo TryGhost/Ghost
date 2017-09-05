@@ -115,7 +115,7 @@ describe('getImageDimensions', function () {
         }).catch(done);
     });
 
-    it('should not try to fetch image dimensions for logo if already set', function (done) {
+    it('should fake image dimension for publisher.logo if file is too big and square', function (done) {
         var metaData = {
             coverImage: {
                 url: 'http://mysite.com/content/image/mypostcoverimage.jpg'
@@ -128,120 +128,7 @@ describe('getImageDimensions', function () {
             },
             blog: {
                 logo: {
-                    url: 'http://mysite.com/author/image/url/favicon.ico',
-                    dimensions: {
-                        width: 60,
-                        height: 60
-                    }
-                }
-            }
-        };
-
-        sizeOfStub.returns({
-            width: 480,
-            height: 80,
-            type: 'jpg'
-        });
-
-        getImageDimensions.__set__('getCachedImageSizeFromUrl', sizeOfStub);
-
-        getImageDimensions(metaData).then(function (result) {
-            should.exist(result);
-            sizeOfStub.calledWith(metaData.coverImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.authorImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.ogImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.blog.logo.url).should.be.false();
-            result.coverImage.should.have.property('dimensions');
-            result.coverImage.should.have.property('url');
-            result.coverImage.dimensions.should.have.property('height', 80);
-            result.coverImage.dimensions.should.have.property('width', 480);
-            result.authorImage.should.have.property('dimensions');
-            result.authorImage.should.have.property('url');
-            result.authorImage.dimensions.should.have.property('height', 80);
-            result.authorImage.dimensions.should.have.property('width', 480);
-            result.ogImage.should.have.property('dimensions');
-            result.ogImage.should.have.property('url');
-            result.ogImage.dimensions.should.have.property('height', 80);
-            result.ogImage.dimensions.should.have.property('width', 480);
-            result.blog.logo.should.have.property('dimensions');
-            result.blog.logo.should.have.property('url');
-            result.blog.logo.dimensions.should.have.property('height', 60);
-            result.blog.logo.dimensions.should.have.property('width', 60);
-            done();
-        }).catch(done);
-    });
-
-    it('should fake image dimension for publisher.logo if .ico file is too big', function (done) {
-        var metaData = {
-            coverImage: {
-                url: 'http://mysite.com/content/image/mypostcoverimage.jpg'
-            },
-            authorImage: {
-                url: 'http://mysite.com/author/image/url/me.jpg'
-            },
-            ogImage: {
-                url: 'http://mysite.com/content/image/super-facebook-image.jpg'
-            },
-            blog: {
-                logo: {
-                    url: 'http://mysite.com/author/image/url/favicon.ico',
-                    dimensions: {
-                        width: 128,
-                        height: 128
-                    }
-                }
-            }
-        };
-
-        sizeOfStub.returns({
-            width: 480,
-            height: 480,
-            type: 'jpg'
-        });
-
-        getImageDimensions.__set__('getCachedImageSizeFromUrl', sizeOfStub);
-
-        getImageDimensions(metaData).then(function (result) {
-            should.exist(result);
-            sizeOfStub.calledWith(metaData.coverImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.authorImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.ogImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.blog.logo.url).should.be.false();
-            result.coverImage.should.have.property('dimensions');
-            result.coverImage.should.have.property('url');
-            result.coverImage.dimensions.should.have.property('height', 480);
-            result.coverImage.dimensions.should.have.property('width', 480);
-            result.authorImage.should.have.property('dimensions');
-            result.authorImage.should.have.property('url');
-            result.authorImage.dimensions.should.have.property('height', 480);
-            result.authorImage.dimensions.should.have.property('width', 480);
-            result.ogImage.should.have.property('dimensions');
-            result.ogImage.should.have.property('url');
-            result.ogImage.dimensions.should.have.property('height', 480);
-            result.ogImage.dimensions.should.have.property('width', 480);
-            result.blog.logo.should.have.property('dimensions');
-            result.blog.logo.should.have.property('url');
-            result.blog.logo.dimensions.should.have.property('height', 60);
-            result.blog.logo.dimensions.should.have.property('width', 60);
-
-            done();
-        }).catch(done);
-    });
-
-    it('should fake image dimension for publisher.logo if non-.ico file is too big and square', function (done) {
-        var metaData = {
-            coverImage: {
-                url: 'http://mysite.com/content/image/mypostcoverimage.jpg'
-            },
-            authorImage: {
-                url: 'http://mysite.com/author/image/url/me.jpg'
-            },
-            ogImage: {
-                url: 'http://mysite.com/content/image/super-facebook-image.jpg'
-            },
-            blog: {
-                logo: {
-                    url: 'http://mysite.com/author/image/url/favicon.png'
+                    url: 'http://mysite.com/author/image/url/favicon.ico'
                 }
             }
         };

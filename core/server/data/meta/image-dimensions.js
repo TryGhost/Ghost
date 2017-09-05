@@ -14,9 +14,7 @@ function getImageDimensions(metaData) {
             coverImage: getCachedImageSizeFromUrl(metaData.coverImage.url),
             authorImage: getCachedImageSizeFromUrl(metaData.authorImage.url),
             ogImage: getCachedImageSizeFromUrl(metaData.ogImage.url),
-            // CASE: check if logo has hard coded image dimension. In that case it's an `ico` file, which
-            // is not supported by `image-size` and would produce an error
-            logo: metaData.blog.logo && metaData.blog.logo.dimensions ? metaData.blog.logo.dimensions : getCachedImageSizeFromUrl(metaData.blog.logo.url)
+            logo: getCachedImageSizeFromUrl(metaData.blog.logo.url)
         };
 
     return Promise.props(fetch).then(function (resolve) {
@@ -43,11 +41,8 @@ function getImageDimensions(metaData) {
                                 height: key.height
                             }
                         });
-                    } else if ((metaData.blog.logo && metaData.blog.logo.dimensions) || key.width === key.height) {
-                        // CASES:
-                        // 1. .ico files have image dimensions assigned already. If they're not
-                        // within the requirements of Google, we fake them...
-                        // 2. the logo (non-ico) is too large, but it is a square. We fake it as well...
+                    } else if (key.width === key.height) {
+                        // CASE: the logo is too large, but it is a square. We fake it...
                         _.assign(metaData.blog[value], {
                             dimensions: {
                                 width: 60,
