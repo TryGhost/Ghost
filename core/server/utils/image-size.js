@@ -1,8 +1,7 @@
 var debug = require('ghost-ignition').debug('utils:image-size'),
     sizeOf = require('image-size'),
-    url = require('url'),
     Promise = require('bluebird'),
-    got = require('got'),
+    request = require('../utils/request'),
     utils = require('../utils'),
     errors = require('../errors'),
     config = require('../config'),
@@ -102,7 +101,6 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
         }
     }
 
-    imagePath = url.parse(imagePath);
     requestOptions = {
         headers: {
             'User-Agent': 'Mozilla/5.0'
@@ -111,7 +109,7 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
         encoding: null
     };
 
-    return got(
+    return request(
         imagePath,
         requestOptions
     ).then(function (response) {
