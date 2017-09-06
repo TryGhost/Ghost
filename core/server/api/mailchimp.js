@@ -246,7 +246,7 @@ mailchimp = {
                     if (subscriber.get('status') !== member.status) {
                         // pending, subscribed, cleaned, unsubscribed
                         subscriber.set('status', member.status);
-                        updateAndCreatePromises.push(subscriber.save());
+                        updateAndCreatePromises.push(subscriber.save(options));
                         options.stats.subscribers.updated += 1;
                     }
 
