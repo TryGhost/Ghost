@@ -322,7 +322,7 @@ mailchimp = {
                     });
 
                     if (options.mailchimpErrors && options.mailchimpErrors.length) {
-                        logging.error(new errors.InternalServerError({
+                        logging.error(new errors.ValidationError({
                             code: 'MAILCHIMP',
                             message: 'Mailchimp errors on member creation.',
                             errorDetails: JSON.stringify(options.mailchimpErrors)
