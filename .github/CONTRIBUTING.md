@@ -5,13 +5,13 @@ For **help**, **support** and **questions** please use **[slack](https://slack.g
 ---
 
 If you're [raising a bug](https://docs.ghost.org/v1/docs/contributing#bugs) 🐛 please be sure to [include as much info as possible](https://docs.ghost.org/v1/docs/contributing#bug-template) so that we can fix it!
- 
+
 ---
 
 If you've **got some code** ✨ you want to [pull request](https://docs.ghost.org/v1/docs/contributing#pull-requests) please use this [commit message format](https://docs.ghost.org/v1/docs/git-workflow#section-notes-on-writing-good-commit-messages) and check it passes the tests by running `grunt validate`. Thanks for helping us make Ghost better.
- 
+
 ---
- 
+
 **Our [Full Contributor Guide](https://docs.ghost.org/v1/docs/contributing)** covers everything you'll need to get started as a contributor 😁
 
 
@@ -22,7 +22,6 @@ If you've **got some code** ✨ you want to [pull request](https://docs.ghost.or
 - [api documentation](https://api.ghost.org)
 - [self-hoster guide](http://docs.ghost.org/v1/)
 - [feature roadmap](https://trello.com/b/EceUgtCL/ghost-roadmap)
-- [feature wishlist](http://ideas.ghost.org)
 - [community guidelines](https://ghost.org/conduct/)
 - [dev blog](http://dev.ghost.org)
 
