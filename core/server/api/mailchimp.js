@@ -38,7 +38,7 @@ getMailchimpError = function getMailchimpError(error) {
     if (error.status === 404) {
         return new errors.NotFoundError({
             code: 'MAILCHIMP',
-            message: error.title,
+            message: error.title || error.message,
             statusCode: 404,
             context:  error.detail + ' (' + error.type + ')'
         });
@@ -46,7 +46,7 @@ getMailchimpError = function getMailchimpError(error) {
 
     return new errors.InternalServerError({
         code: 'MAILCHIMP',
-        message: error.title,
+        message: error.title || error.message,
         context: error.detail + ' (' + error.type + ')',
         errorDetails: error.errors
     });
