@@ -37,6 +37,12 @@ describe('Settings Model', function () {
 
                 results.length.should.be.above(0);
 
+                results.forEach(function (setting) {
+                    if (setting.get('key') === 'labs') {
+                        JSON.parse(setting.get('value')).should.eql({publicAPI: true, subscribers: true});
+                    }
+                });
+
                 done();
             }).catch(done);
         });
@@ -62,6 +68,15 @@ describe('Settings Model', function () {
             }).catch(done);
         });
 
+        it('can findOne: labs', function (done) {
+            SettingsModel.findOne({key: 'labs'})
+                .then(function (found) {
+                    JSON.parse(found.get('value')).should.eql({publicAPI: true, subscribers: true});
+                    done();
+                })
+                .catch(done);
+        });
+
         it('can edit single', function (done) {
             SettingsModel.findAll().then(function (results) {
                 should.exist(results);
@@ -85,6 +100,31 @@ describe('Settings Model', function () {
 
                 done();
             }).catch(done);
+        });
+
+        it('can edit single: labs', function (done) {
+            return SettingsModel.edit({key: 'labs', value: JSON.stringify({publicAPI: true})}, context)
+                .then(function (edited) {
+                    should.exist(edited);
+                    edited.length.should.equal(1);
+                    edited = edited[0];
+
+                    edited.attributes.key.should.equal('labs');
+                    JSON.parse(edited.attributes.value).should.eql({publicAPI: true, subscribers: true});
+
+                    return SettingsModel.edit({key: 'labs', value: JSON.stringify({publicAPI: true, subscribers: false})}, context);
+                })
+                .then(function (edited) {
+                    should.exist(edited);
+                    edited.length.should.equal(1);
+                    edited = edited[0];
+
+                    edited.attributes.key.should.equal('labs');
+                    JSON.parse(edited.attributes.value).should.eql({publicAPI: true, subscribers: true});
+
+                    done();
+                })
+                .catch(done);
         });
 
         it('can edit readonly settings if internal context', function (done) {

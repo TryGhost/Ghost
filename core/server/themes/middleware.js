@@ -75,10 +75,6 @@ themeMiddleware.updateTemplateData = function updateTemplateData(req, res, next)
     // so that templates can choose to render https or http 'url', see url utility
     res.locals.secure = req.secure;
 
-    // @TODO: remove in next major release
-    // NOTE: We enabled subscribers by default in 1.9. Hardcoded to avoid breaking any themes.
-    labsData.subscribers = true;
-
     // @TODO: only do this if something changed?
     hbs.updateTemplateOptions({
         data: {
