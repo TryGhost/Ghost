@@ -131,22 +131,25 @@ mailchimp = {
             }
         }).then(function () {
             logging.info('Mailchimp: Added member.', email);
-
+        }).catch(function (err) {
+            logging.error(getMailchimpError(err));
+            return Promise.resolve();
+        }).finally(function () {
+            // @TODO: future improvment, store the error message inside the subscriber
             return dataProvider.Subscriber.findOne({email: email}, options)
                 .then(function (subscriber) {
                     if (!subscriber) {
-                        throw new errors.NotFoundError({
+                        logging.error(new errors.NotFoundError({
                             message: i18n.t('errors.api.subscribers.subscriberNotFound'),
                             context: email
-                        });
+                        }));
+
+                        return;
                     }
 
                     subscriber.set('status', 'pending');
                     return subscriber.save(options);
                 });
-        }).catch(function (err) {
-            logging.error(getMailchimpError(err));
-            return Promise.resolve();
         });
     },
 
