@@ -9,10 +9,7 @@
         "nextUpdateCheck": {
             "defaultValue": null
         },
-        "displayUpdateNotification": {
-            "defaultValue": null
-        },
-        "seenNotifications": {
+        "notifications": {
             "defaultValue": "[]"
         },
         "migrations": {
