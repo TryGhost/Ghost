@@ -204,26 +204,61 @@ function updateCheckRequest() {
  * Handles the response from the update check
  * Does three things with the information received:
  * 1. Updates the time we can next make a check
- * 2. Checks if the version in the response is new, and updates the notification setting
- * 3. Create custom notifications is response from UpdateCheck as "messages" array which has the following structure:
+ * 2. Create custom notifications is response from UpdateCheck as "messages" array which has the following structure:
  *
  * "messages": [{
  *   "id": ed9dc38c-73e5-4d72-a741-22b11f6e151a,
  *   "version": "0.5.x",
- *   "content": "<p>Hey there! 0.6 is available, visit <a href=\"https://ghost.org/download\">Ghost.org</a> to grab your copy now<!/p>"
+ *   "content": "<p>Hey there! 0.6 is available, visit <a href=\"https://ghost.org/download\">Ghost.org</a> to grab your copy now<!/p>",
+ *   "dismissible": true | false,
+ *   "top": true | false
  * ]}
+ *
+ * Example for grouped custom notifications in config:
+ *
+ * notificationGroups: ['migration', 'something']
+ *
+ * 'all' is a reserved name for general custom notifications.
  *
  * @param {Object} response
  * @return {Promise}
  */
 function updateCheckResponse(response) {
-    return Promise.all([
-        api.settings.edit({settings: [{key: 'nextUpdateCheck', value: response.next_check}]}, internal),
-        api.settings.edit({settings: [{key: 'displayUpdateNotification', value: response.version}]}, internal)
-    ]).then(function () {
-        var messages = response.messages || [];
-        return Promise.map(messages, createCustomNotification);
-    });
+    var notifications = [],
+        notificationGroups = (config.notificationGroups || []).concat(['all']);
+
+    return api.settings.edit({settings: [{key: 'nextUpdateCheck', value: response.next_check}]}, internal)
+        .then(function () {
+            // CASE: Update Check Service returns multiple notifications.
+            if (_.isArray(response)) {
+                notifications = response;
+            } else if ((response.hasOwnProperty('notifications') && _.isArray(response.notifications))) {
+                notifications = response.notifications;
+            } else {
+                notifications = [response];
+            }
+
+            // CASE: Hook into received notifications and decide whether you are allowed to receive custom group messages.
+            if (notificationGroups.length) {
+                notifications = notifications.filter(function (notification) {
+                    if (!notification.custom) {
+                        return true;
+                    }
+
+                    return _.includes(notificationGroups.map(function (groupIdentifier) {
+                        if (notification.version.match(new RegExp(groupIdentifier))) {
+                            return true;
+                        }
+
+                        return false;
+                    }), true) === true;
+                });
+            }
+
+            return Promise.each(notifications, function (notification) {
+                return Promise.map(notification.messages || [], createCustomNotification);
+            });
+        });
 }
 
 function updateCheck() {
