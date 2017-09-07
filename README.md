@@ -10,7 +10,6 @@ The project is maintained by a non-profit organisation called the **Ghost Founda
 - [Theme Docs](http://themes.ghost.org/v1/)
 - [API Docs](https://api.ghost.org/)
 - [Contributing Guide](https://docs.ghost.org/v1/docs/contributing)
-- [Feature Requests](http://ideas.ghost.org/)
 - [Developer Blog](http://dev.ghost.org)
 - [Self-hoster Docs](http://docs.ghost.org/v1/)
 
