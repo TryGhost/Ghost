@@ -23,8 +23,10 @@
 var crypto   = require('crypto'),
     exec     = require('child_process').exec,
     https    = require('https'),
+    http     = require('http'),
+    uuid     = require('uuid'),
     moment   = require('moment'),
-    semver   = require('semver'),
+    querystring = require('querystring'),
     Promise  = require('bluebird'),
     _        = require('lodash'),
     url      = require('url'),
@@ -56,29 +58,22 @@ function updateCheckError(error) {
  * @return {*|Promise}
  */
 function createCustomNotification(message) {
-    if (!semver.satisfies(currentVersion, message.version)) {
+    if (!message || !message.content) {
         return Promise.resolve();
     }
 
     var notification = {
-        status: 'alert',
-        type: 'info',
+        status: message.status || 'alert',
+        type: message.type || 'info',
         custom: true,
-        uuid: message.id,
-        dismissible: true,
+        id: message.id || uuid.v1(),
+        dismissible: message.hasOwnProperty('dismissible') ? message.dismissible : true,
+        // NOTE: not used in LTS
+        top: true,
         message: message.content
-    },
-    getAllNotifications = api.notifications.browse({context: {internal: true}}),
-    getSeenNotifications = api.settings.read(_.extend({key: 'seenNotifications'}, internal));
+    };
 
-    return Promise.join(getAllNotifications, getSeenNotifications, function joined(all, seen) {
-        var isSeen      = _.includes(JSON.parse(seen.settings[0].value || []), notification.uuid),
-            isDuplicate = _.some(all.notifications, {message: notification.message});
-
-        if (!isSeen && !isDuplicate) {
-            return api.notifications.add({notifications: [notification]}, {context: {internal: true}});
-        }
-    });
+    return api.notifications.add({notifications: [notification]}, {context: {internal: true}});
 }
 
 function updateCheckData() {
