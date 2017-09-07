@@ -230,41 +230,22 @@ function updateCheck() {
     // CASE: The check will not happen if your NODE_ENV is not in the allowed defined environments.
     if (_.indexOf(allowedCheckEnvironments, process.env.NODE_ENV) === -1) {
         return Promise.resolve();
-    } else {
-        return api.settings.read(_.extend({key: 'nextUpdateCheck'}, internal)).then(function then(result) {
+    }
+
+    return api.settings.read(_.extend({key: 'nextUpdateCheck'}, internal))
+        .then(function then(result) {
             var nextUpdateCheck = result.settings[0];
 
+            // CASE: Next update check should happen now?
             if (nextUpdateCheck && nextUpdateCheck.value && nextUpdateCheck.value > moment().unix()) {
-                // It's not time to check yet
-                return;
-            } else {
-                // We need to do a check
-                return updateCheckRequest()
-                    .then(updateCheckResponse)
-                    .catch(updateCheckError);
+                return Promise.resolve();
             }
-        }).catch(updateCheckError);
-    }
-}
 
-function showUpdateNotification() {
-    return api.settings.read(_.extend({key: 'displayUpdateNotification'}, internal)).then(function then(response) {
-        var display = response.settings[0];
-
-        // Version 0.4 used boolean to indicate the need for an update. This special case is
-        // translated to the version string.
-        // TODO: remove in future version.
-        if (display.value === 'false' || display.value === 'true' || display.value === '1' || display.value === '0') {
-            display.value = '0.4.0';
-        }
-
-        if (display && display.value && currentVersion && semver.gt(display.value, currentVersion)) {
-            return display.value;
-        }
-
-        return false;
-    });
+            return updateCheckRequest()
+                .then(updateCheckResponse)
+                .catch(updateCheckError);
+        })
+        .catch(updateCheckError);
 }
 
 module.exports = updateCheck;
-module.exports.showUpdateNotification = showUpdateNotification;
