@@ -35,7 +35,6 @@ var crypto   = require('crypto'),
     i18n     = require('./i18n'),
     internal = {context: {internal: true}},
     allowedCheckEnvironments = ['development', 'production'],
-    checkEndpoint = 'updates.ghost.org',
     currentVersion = config.ghostVersion;
 
 function updateCheckError(error) {
@@ -131,25 +130,43 @@ function updateCheckData() {
     }).catch(updateCheckError);
 }
 
+/**
+ * With the privacy setting `useUpdateCheck` you can control if you want to expose data from your blog to the
+ * Update Check Service. Enabled or disabled, you will receive the latest notification available from the service.
+ */
 function updateCheckRequest() {
     return updateCheckData().then(function then(reqData) {
         var resData = '',
-            headers,
-            req;
-
-        reqData = JSON.stringify(reqData);
-
-        headers = {
-            'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(reqData)
-        };
+            req,
+            requestHandler,
+            reqObj,
+            checkEndpoint = config.updateCheckUrl || 'https://updates.ghost.org',
+            checkMethod = config.isPrivacyDisabled('useUpdateCheck') ? 'GET' : 'POST',
+            headers = {
+                'Content-Type': 'application/json'
+            };
 
         return new Promise(function p(resolve, reject) {
-            req = https.request({
-                hostname: checkEndpoint,
-                method: 'POST',
+            requestHandler = checkEndpoint.indexOf('https') === 0 ? https : http;
+            checkEndpoint = url.parse(checkEndpoint);
+
+            reqObj = {
+                hostname: checkEndpoint.hostname,
+                port: checkEndpoint.port,
+                method: checkMethod,
                 headers: headers
-            }, function handler(res) {
+            };
+
+            if (checkMethod === 'POST') {
+                reqData = JSON.stringify(reqData);
+                headers['Content-Length'] = Buffer.byteLength(reqData);
+            } else {
+                reqObj.path = '/?' + querystring.stringify({
+                    ghost_version: reqData.ghost_version
+                });
+            }
+
+            req = requestHandler.request(reqObj, function handler(res) {
                 res.on('error', function onError(error) { reject(error); });
                 res.on('data', function onData(chunk) { resData += chunk; });
                 res.on('end', function onEnd() {
@@ -174,7 +191,10 @@ function updateCheckRequest() {
                 reject(error);
             });
 
-            req.write(reqData);
+            if (checkMethod === 'POST') {
+                req.write(reqData);
+            }
+
             req.end();
         });
     });
