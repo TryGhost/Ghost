@@ -2,21 +2,25 @@
 <p>{{subText}}</p>
 
 <section class="gh-content-entry-meta">
-        {{#if isPublished}}
-            {{#if post.page}}
-                <span class="gh-content-status-draft gh-badge gh-badge-black">Page</span>
-            {{else}}
-                <span class="gh-content-status-published">Published</span>
-            {{/if}}
+    {{#if isPublished}}
+        {{#if post.page}}
+            <span class="gh-content-status-draft gh-badge gh-badge-black">Page</span>
         {{else}}
-            {{#if isScheduled}}
-                <span class="gh-content-status-draft gh-badge">Scheduled</span>
-            {{else}}
-                <span class="gh-content-status-draft gh-badge gh-badge-red">Draft</span>
-            {{/if}}
+            <span class="gh-content-status-published">Published</span>
         {{/if}}
+    {{else if isScheduled}}
+        <span class="gh-content-status-draft gh-badge">Scheduled</span>
+    {{else}}
+        <span class="gh-content-status-draft gh-badge gh-badge-red">Draft</span>
+    {{/if}}
 
-        by <span class="gh-content-entry-author">{{authorName}}</span> &mdash;
-        Last edited {{gh-format-timeago post.updatedAtUTC}}
+    by <span class="gh-content-entry-author">{{authorName}}</span> &mdash;
 
+    {{#if isPublished}}
+        {{gh-format-post-time post.publishedAtUTC published=true}}
+    {{else if isScheduled}}
+        <span class="green">Will go live {{gh-format-post-time post.publishedAtUTC scheduled=true}}</span>
+    {{else}}
+        Last edited {{gh-format-post-time post.updatedAtUTC draft=true}}
+    {{/if}}
 </section>

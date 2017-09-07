@@ -113,15 +113,15 @@ describe('Acceptance: Editor', function() {
             expect(
                 find('[data-test-date-time-picker-date-input]').val(),
                 'PSM date value after closing with invalid date'
-            ).to.equal(moment(post1.publishedAt).format('MM/DD/YYYY'));
+            ).to.equal(moment(post1.publishedAt).tz('Etc/UTC').format('MM/DD/YYYY'));
 
             expect(
                 find('[data-test-date-time-picker-time-input]').val(),
                 'PSM time value after closing with invalid date'
-            ).to.equal(moment(post1.publishedAt).format('HH:mm'));
+            ).to.equal(moment(post1.publishedAt).tz('Etc/UTC').format('HH:mm'));
 
             // saves the post with the new date
-            let validTime = moment('2017-04-09 12:00');
+            let validTime = moment('2017-04-09 12:00').tz('Etc/UTC');
             await fillIn('[data-test-date-time-picker-time-input]', validTime.format('HH:mm'));
             await triggerEvent('[data-test-date-time-picker-time-input]', 'blur');
             await datepickerSelect('[data-test-date-time-picker-datepicker]', validTime);
