@@ -227,13 +227,8 @@ function updateCheckResponse(response) {
 }
 
 function updateCheck() {
-    // The check will not happen if:
-    // 1. updateCheck is defined as false in config.js
-    // 2. we've already done a check this session
-    // 3. we're not in production or development mode
-    // TODO: need to remove config.updateCheck in favor of config.privacy.updateCheck in future version (it is now deprecated)
-    if (config.updateCheck === false || config.isPrivacyDisabled('useUpdateCheck') || _.indexOf(allowedCheckEnvironments, process.env.NODE_ENV) === -1) {
-        // No update check
+    // CASE: The check will not happen if your NODE_ENV is not in the allowed defined environments.
+    if (_.indexOf(allowedCheckEnvironments, process.env.NODE_ENV) === -1) {
         return Promise.resolve();
     } else {
         return api.settings.read(_.extend({key: 'nextUpdateCheck'}, internal)).then(function then(result) {
