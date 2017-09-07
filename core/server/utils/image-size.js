@@ -1,4 +1,5 @@
-var sizeOf = require('image-size'),
+var debug = require('ghost-ignition').debug('utils:image-size'),
+    sizeOf = require('image-size'),
     url = require('url'),
     Promise = require('bluebird'),
     got = require('got'),
@@ -114,6 +115,8 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
         imagePath,
         requestOptions
     ).then(function (response) {
+        debug('Image fetched (URL):', imagePath.href);
+
         return fetchDimensionsFromBuffer({
             buffer: response.body,
             imagePath: imagePath.href
@@ -170,6 +173,8 @@ getImageSizeFromFilePath = function getImageSizeFromFilePath(imagePath) {
     return storage.getStorage()
         .read({path: imagePath})
         .then(function readFile(buf) {
+            debug('Image fetched (storage):', imagePath);
+
             return fetchDimensionsFromBuffer({
                 buffer: buf,
                 imagePath: imagePath
