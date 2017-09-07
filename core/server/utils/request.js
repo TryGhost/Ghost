@@ -13,12 +13,14 @@ module.exports = function request(url, options) {
         }));
     }
 
-    return got(
-        url,
-        options
-    ).then(function (response) {
-        return Promise.resolve(response);
-    }).catch(function (err) {
-        return Promise.reject(err);
+    return new Promise(function (resolve, reject) {
+        return got(
+            url,
+            options
+        ).then(function (response) {
+            return resolve(response);
+        }).catch(function (err) {
+            return reject(err);
+        });
     });
 };
