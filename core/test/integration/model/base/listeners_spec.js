@@ -331,4 +331,70 @@ describe('Models: listeners', function () {
             });
         });
     });
+
+    describe('on notifications changed', function () {
+        it('nothing to delete', function (done) {
+            var notifications = JSON.stringify([
+                {
+                    addedAt: moment().subtract(1, 'week').valueOf(),
+                    seen: true
+                },
+                {
+                    addedAt: moment().subtract(2, 'month').valueOf(),
+                    seen: true
+                },
+                {
+                    addedAt: moment().subtract(1, 'day').valueOf(),
+                    seen: false
+                }
+            ]);
+
+            models.Settings.edit({key: 'notifications', value: notifications}, testUtils.context.internal)
+                .then(function () {
+                    eventsToRemember['settings.notifications.edited']({
+                        attributes: {
+                            value: notifications
+                        }
+                    });
+
+                    return models.Settings.findOne({key: 'notifications'}, testUtils.context.internal);
+                }).then(function (model) {
+                    JSON.parse(model.get('value')).length.should.eql(3);
+                    done();
+                }).catch(done);
+        });
+
+        it('expect deletion', function (done) {
+            var notifications = JSON.stringify([
+                {
+                    message: 'keep-1',
+                    addedAt: moment().subtract(1, 'week').valueOf(),
+                    seen: true
+                },
+                {
+                    message: 'delete-me',
+                    addedAt: moment().subtract(3, 'month').valueOf(),
+                    seen: true
+                },
+                {
+                    message: 'keep-2',
+                    addedAt: moment().subtract(1, 'day').valueOf(),
+                    seen: false
+                }
+            ]);
+
+            models.Settings.edit({key: 'notifications', value: notifications}, testUtils.context.internal)
+                .then(function () {
+                    setTimeout(function () {
+                        return models.Settings.findOne({key: 'notifications'}, testUtils.context.internal)
+                            .then(function (model) {
+                                JSON.parse(model.get('value')).length.should.eql(2);
+                                done();
+                            })
+                            .catch(done);
+                    }, 1000);
+                })
+                .catch(done);
+        });
+    });
 });
