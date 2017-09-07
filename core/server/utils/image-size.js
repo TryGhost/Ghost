@@ -8,7 +8,6 @@ var debug = require('ghost-ignition').debug('utils:image-size'),
     storage = require('../adapters/storage'),
     _ = require('lodash'),
     storageUtils = require('../adapters/storage/utils'),
-    dimensions,
     imageObject = {},
     getImageSizeFromUrl,
     getImageSizeFromFilePath;
@@ -31,7 +30,8 @@ function isLocalImage(imagePath) {
  */
 function fetchDimensionsFromBuffer(options) {
     var buffer = options.buffer,
-        imagePath = options.imagePath;
+        imagePath = options.imagePath,
+        dimensions;
 
     try {
         // Using the Buffer rather than an URL requires to use sizeOf synchronously.
@@ -89,7 +89,7 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
 
     if (isLocalImage(imagePath)) {
         // don't make a request for a locally stored image
-        return Promise.resolve(getImageSizeFromFilePath(imagePath));
+        return getImageSizeFromFilePath(imagePath);
     }
 
     // check if we got an url without any protocol
@@ -113,35 +113,40 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
         imagePath,
         requestOptions
     ).then(function (response) {
-        debug('Image fetched (URL):', imagePath.href);
+        debug('Image fetched (URL):', imagePath);
 
         return fetchDimensionsFromBuffer({
             buffer: response.body,
-            imagePath: imagePath.href
+            imagePath: imagePath
         });
+    }).catch({code: 'URL_MISSING_INVALID'}, function (err) {
+        return Promise.reject(new errors.InternalServerError({
+            message: err.message,
+            code: 'IMAGE_SIZE',
+            statusCode: err.statusCode,
+            context: err.url || imagePath
+        }));
+    }).catch({code: 'ETIMEDOUT'}, {statusCode: 408}, function (err) {
+        return Promise.reject(new errors.InternalServerError({
+            message: 'Request timed out.',
+            code: 'IMAGE_SIZE',
+            statusCode: err.statusCode,
+            context: err.url || imagePath
+        }));
+    }).catch({code: 'ENOENT'}, {statusCode: 404}, function (err) {
+        return Promise.reject(new errors.NotFoundError({
+            message: 'Image not found.',
+            code: 'IMAGE_SIZE',
+            statusCode: err.statusCode,
+            context: err.url || imagePath
+        }));
     }).catch(function (err) {
-        if (err.statusCode === 404) {
-            return Promise.reject(new errors.NotFoundError({
-                message: 'Image not found.',
-                code: 'IMAGE_SIZE',
-                statusCode: err.statusCode,
-                context: err.url || imagePath.href || imagePath
-            }));
-        } else if (err.code === 'ETIMEDOUT') {
-            return Promise.reject(new errors.InternalServerError({
-                message: 'Request timed out.',
-                code: 'IMAGE_SIZE',
-                statusCode: err.statusCode,
-                context: err.url || imagePath.href || imagePath
-            }));
-        } else {
-            return Promise.reject(new errors.InternalServerError({
-                message: 'Unknown Request error.',
-                code: 'IMAGE_SIZE',
-                statusCode: err.statusCode,
-                context: err.url || imagePath.href || imagePath
-            }));
-        }
+        return Promise.reject(new errors.InternalServerError({
+            message: 'Unknown Request error.',
+            code: 'IMAGE_SIZE',
+            statusCode: err.statusCode,
+            context: err.url || imagePath
+        }));
     });
 };
 
@@ -177,8 +182,14 @@ getImageSizeFromFilePath = function getImageSizeFromFilePath(imagePath) {
                 buffer: buf,
                 imagePath: imagePath
             });
-        })
-        .catch(function (err) {
+        }).catch({code: 'ENOENT'}, function (err) {
+            return Promise.reject(new errors.NotFoundError({
+                message: err.message,
+                code: 'IMAGE_SIZE',
+                err: err,
+                context: imagePath
+            }));
+        }).catch(function (err) {
             return Promise.reject(new errors.InternalServerError({
                 message: err.message,
                 code: 'IMAGE_SIZE',
