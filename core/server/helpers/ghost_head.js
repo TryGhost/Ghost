@@ -9,6 +9,7 @@
 var proxy = require('./proxy'),
     _ = require('lodash'),
     Promise = require('bluebird'),
+    debug = require('ghost-ignition').debug('ghost_head'),
 
     getMetaData = proxy.metaData.get,
     getAssetUrl = proxy.metaData.getAssetUrl,
@@ -80,6 +81,7 @@ function getAjaxHelper(clientId, clientSecret) {
 }
 
 module.exports = function ghost_head(options) {
+    debug('begin');
     // if server error page do nothing
     if (this.statusCode >= 500) {
         return;
@@ -101,7 +103,9 @@ module.exports = function ghost_head(options) {
         favicon = blogIconUtils.getIconUrl(),
         iconType = blogIconUtils.getIconType(favicon);
 
+    debug('preparation complete, begin fetch');
     return Promise.props(fetch).then(function (response) {
+        debug('end fetch');
         client = response.client;
         metaData = response.metaData;
 
@@ -168,6 +172,7 @@ module.exports = function ghost_head(options) {
         }
         return filters.doFilter('ghost_head', head);
     }).then(function (head) {
+        debug('end');
         return new SafeString(head.join('\n    ').trim());
     }).catch(function handleError(err) {
         logging.error(err);
