@@ -17,6 +17,7 @@ var proxy = require('./proxy'),
     filters = proxy.filters,
     labs = proxy.labs,
     api = proxy.api,
+    logging = proxy.logging,
     settingsCache = proxy.settingsCache,
     config = proxy.config,
     blogIconUtils = proxy.blogIcon;
@@ -167,6 +168,11 @@ module.exports = function ghost_head(options) {
         }
         return filters.doFilter('ghost_head', head);
     }).then(function (head) {
+        return new SafeString(head.join('\n    ').trim());
+    }).catch(function handleError(err) {
+        logging.error(err);
+
+        // Return what we have so far (currently nothing)
         return new SafeString(head.join('\n    ').trim());
     });
 };
