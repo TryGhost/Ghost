@@ -89,29 +89,20 @@ module.exports = function ghost_head(options) {
         return;
     }
 
-    var metaData,
-        client,
-        head = [],
+    var head = [],
         globalCodeinjection = settingsCache.get('ghost_head'),
         postCodeInjection = options.data.root && options.data.root.post ? options.data.root.post.codeinjection_head : null,
         context = this.context ? this.context : null,
         useStructuredData = !config.isPrivacyDisabled('useStructuredData'),
         safeVersion = this.safeVersion,
         referrerPolicy = config.get('referrerPolicy') ? config.get('referrerPolicy') : 'no-referrer-when-downgrade',
-        fetch = {
-            metaData: getMetaData(this, options.data.root),
-            client: getClient()
-        },
         favicon = blogIconUtils.getIconUrl(),
         iconType = blogIconUtils.getIconType(favicon);
 
     debug('preparation complete, begin fetch');
     return Promise
-        .props(fetch)
-        .then(function handleData(response) {
+        .join(getMetaData(this, options.data.root), getClient(), function handleData(metaData, client) {
             debug('end fetch');
-            client = response.client;
-            metaData = response.metaData;
 
             if (context) {
                 // head is our main array that holds our meta data
