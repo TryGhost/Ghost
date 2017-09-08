@@ -27,9 +27,11 @@ function getCachedImageSizeFromUrl(url) {
 
             return Promise.resolve(imageSizeCache[url]);
         }).catch(errors.NotFoundError, {code: 'ENOENT'}, function () {
+            debug('Cached image (not found):', url);
             // in case of error we just attach the url
             return Promise.resolve(imageSizeCache[url] = url);
         }).catch(function (err) {
+            debug('Cached image (error):', url);
             logging.error(err);
 
             // in case of error we just attach the url

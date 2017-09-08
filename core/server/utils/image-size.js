@@ -1,5 +1,6 @@
 var debug = require('ghost-ignition').debug('utils:image-size'),
     sizeOf = require('image-size'),
+    url = require('url'),
     Promise = require('bluebird'),
     request = require('../utils/request'),
     utils = require('../utils'),
@@ -8,7 +9,6 @@ var debug = require('ghost-ignition').debug('utils:image-size'),
     storage = require('../adapters/storage'),
     _ = require('lodash'),
     storageUtils = require('../adapters/storage/utils'),
-    imageObject = {},
     getImageSizeFromUrl,
     getImageSizeFromFilePath;
 
@@ -31,7 +31,10 @@ function isLocalImage(imagePath) {
 function fetchDimensionsFromBuffer(options) {
     var buffer = options.buffer,
         imagePath = options.imagePath,
+        imageObject = {},
         dimensions;
+
+    imageObject.url = imagePath;
 
     try {
         // Using the Buffer rather than an URL requires to use sizeOf synchronously.
@@ -83,9 +86,8 @@ function fetchDimensionsFromBuffer(options) {
  */
 getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
     var requestOptions,
+        parsedUrl = url.parse(imagePath),
         timeout = config.get('times:getImageSizeTimeoutInMS') || 10000;
-
-    imageObject.url = imagePath;
 
     if (isLocalImage(imagePath)) {
         // don't make a request for a locally stored image
@@ -93,12 +95,10 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
     }
 
     // check if we got an url without any protocol
-    if (imagePath.indexOf('http') === -1) {
-        // our gravatar urls start with '//' in that case add 'http:'
-        if (imagePath.indexOf('//') === 0) {
-            // it's a gravatar url
-            imagePath = 'http:' + imagePath;
-        }
+    if (!parsedUrl.protocol) {
+        // CASE: our gravatar URLs start with '//' and we need to add 'http:'
+        // to make the request work
+        imagePath = 'http:' + imagePath;
     }
 
     requestOptions = {
@@ -117,7 +117,9 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
 
         return fetchDimensionsFromBuffer({
             buffer: response.body,
-            imagePath: imagePath
+            // we need to return the URL that's accessible for network requests as this imagePath
+            // value will be used as the URL for structured data
+            imagePath: parsedUrl.href
         });
     }).catch({code: 'URL_MISSING_INVALID'}, function (err) {
         return Promise.reject(new errors.InternalServerError({
@@ -168,18 +170,22 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
  * @returns {object} imageObject or error
  */
 getImageSizeFromFilePath = function getImageSizeFromFilePath(imagePath) {
-    imagePath = utils.url.urlFor('image', {image: imagePath}, true);
-    imageObject.url = imagePath;
+    var filePath;
 
-    imagePath = storageUtils.getLocalFileStoragePath(imagePath);
+    imagePath = utils.url.urlFor('image', {image: imagePath}, true);
+
+    // get the storage readable filePath
+    filePath = storageUtils.getLocalFileStoragePath(imagePath);
 
     return storage.getStorage()
-        .read({path: imagePath})
+        .read({path: filePath})
         .then(function readFile(buf) {
-            debug('Image fetched (storage):', imagePath);
+            debug('Image fetched (storage):', filePath);
 
             return fetchDimensionsFromBuffer({
                 buffer: buf,
+                // we need to return the URL that's accessible for network requests as this imagePath
+                // value will be used as the URL for structured data
                 imagePath: imagePath
             });
         }).catch({code: 'ENOENT'}, function (err) {
@@ -187,14 +193,20 @@ getImageSizeFromFilePath = function getImageSizeFromFilePath(imagePath) {
                 message: err.message,
                 code: 'IMAGE_SIZE',
                 err: err,
-                context: imagePath
+                context: {
+                    originalPath: imagePath,
+                    reqFilePath: filePath
+                }
             }));
         }).catch(function (err) {
             return Promise.reject(new errors.InternalServerError({
                 message: err.message,
                 code: 'IMAGE_SIZE',
                 err: err,
-                context: imagePath
+                context: {
+                    originalPath: imagePath,
+                    reqFilePath: filePath
+                }
             }));
         });
 };
