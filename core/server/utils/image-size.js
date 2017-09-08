@@ -124,28 +124,28 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
     }).catch({code: 'URL_MISSING_INVALID'}, function (err) {
         return Promise.reject(new errors.InternalServerError({
             message: err.message,
-            code: 'IMAGE_SIZE',
+            code: 'IMAGE_SIZE_URL',
             statusCode: err.statusCode,
             context: err.url || imagePath
         }));
     }).catch({code: 'ETIMEDOUT'}, {statusCode: 408}, function (err) {
         return Promise.reject(new errors.InternalServerError({
             message: 'Request timed out.',
-            code: 'IMAGE_SIZE',
+            code: 'IMAGE_SIZE_URL',
             statusCode: err.statusCode,
             context: err.url || imagePath
         }));
     }).catch({code: 'ENOENT'}, {statusCode: 404}, function (err) {
         return Promise.reject(new errors.NotFoundError({
             message: 'Image not found.',
-            code: 'IMAGE_SIZE',
+            code: 'IMAGE_SIZE_URL',
             statusCode: err.statusCode,
             context: err.url || imagePath
         }));
     }).catch(function (err) {
         return Promise.reject(new errors.InternalServerError({
             message: 'Unknown Request error.',
-            code: 'IMAGE_SIZE',
+            code: 'IMAGE_SIZE_URL',
             statusCode: err.statusCode,
             context: err.url || imagePath
         }));
@@ -191,7 +191,7 @@ getImageSizeFromFilePath = function getImageSizeFromFilePath(imagePath) {
         }).catch({code: 'ENOENT'}, function (err) {
             return Promise.reject(new errors.NotFoundError({
                 message: err.message,
-                code: 'IMAGE_SIZE',
+                code: 'IMAGE_SIZE_STORAGE',
                 err: err,
                 context: {
                     originalPath: imagePath,
@@ -201,7 +201,7 @@ getImageSizeFromFilePath = function getImageSizeFromFilePath(imagePath) {
         }).catch(function (err) {
             return Promise.reject(new errors.InternalServerError({
                 message: err.message,
-                code: 'IMAGE_SIZE',
+                code: 'IMAGE_SIZE_STORAGE',
                 err: err,
                 context: {
                     originalPath: imagePath,
