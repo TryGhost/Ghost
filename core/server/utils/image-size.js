@@ -143,6 +143,9 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
             context: err.url || imagePath
         }));
     }).catch(function (err) {
+        if (err instanceof errors.GhostError) {
+            return Promise.reject(err);
+        }
         return Promise.reject(new errors.InternalServerError({
             message: 'Unknown Request error.',
             code: 'IMAGE_SIZE_URL',
@@ -199,6 +202,9 @@ getImageSizeFromFilePath = function getImageSizeFromFilePath(imagePath) {
                 }
             }));
         }).catch(function (err) {
+            if (err instanceof errors.GhostError) {
+                return Promise.reject(err);
+            }
             return Promise.reject(new errors.InternalServerError({
                 message: err.message,
                 code: 'IMAGE_SIZE_STORAGE',
