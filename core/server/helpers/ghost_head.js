@@ -8,7 +8,6 @@
 
 var proxy = require('./proxy'),
     _ = require('lodash'),
-    Promise = require('bluebird'),
     debug = require('ghost-ignition').debug('ghost_head'),
 
     getMetaData = proxy.metaData.get,
@@ -16,32 +15,10 @@ var proxy = require('./proxy'),
     escapeExpression = proxy.escapeExpression,
     SafeString = proxy.SafeString,
     filters = proxy.filters,
-    labs = proxy.labs,
-    api = proxy.api,
     logging = proxy.logging,
     settingsCache = proxy.settingsCache,
     config = proxy.config,
     blogIconUtils = proxy.blogIcon;
-
-function getClient() {
-    if (labs.isSet('publicAPI') === true) {
-        return api.clients
-            .read({slug: 'ghost-frontend'})
-            .then(function handleClient(client) {
-                client = client.clients[0];
-
-                if (client.status === 'enabled') {
-                    return {
-                        id: client.slug,
-                        secret: client.secret
-                    };
-                }
-
-                return {};
-            });
-    }
-    return Promise.resolve({});
-}
 
 function writeMetaTag(property, content, type) {
     type = type || property.substring(0, 7) === 'twitter' ? 'name' : 'property';
@@ -95,6 +72,7 @@ module.exports = function ghost_head(options) {
         globalCodeinjection = settingsCache.get('ghost_head'),
         postCodeInjection = dataRoot && dataRoot.post ? dataRoot.post.codeinjection_head : null,
         context = dataRoot._locals.context ? dataRoot._locals.context : null,
+        client = options.data.root._locals.client,
         useStructuredData = !config.isPrivacyDisabled('useStructuredData'),
         safeVersion = dataRoot._locals.safeVersion,
         referrerPolicy = config.get('referrerPolicy') ? config.get('referrerPolicy') : 'no-referrer-when-downgrade',
@@ -102,8 +80,8 @@ module.exports = function ghost_head(options) {
         iconType = blogIconUtils.getIconType(favicon);
 
     debug('preparation complete, begin fetch');
-    return Promise
-        .join(getMetaData(this, dataRoot), getClient(), function handleData(metaData, client) {
+    return getMetaData(this, dataRoot)
+        .then(function handleMetaData(metaData) {
             debug('end fetch');
 
             if (context) {
