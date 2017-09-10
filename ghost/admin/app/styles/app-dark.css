@@ -315,3 +315,8 @@ input,
 .gh-contributors a:before {
     color: var(--lightgrey);
 }
+
+.settings-menu-content .for-radio .input-toggle-component,
+.settings-menu-content .for-checkbox .input-toggle-component {
+    background: var(--lightgrey);
+}

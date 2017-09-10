@@ -213,6 +213,12 @@
     margin-right: 0;
 }
 
+.settings-menu-content .for-radio .input-toggle-component,
+.settings-menu-content .for-checkbox .input-toggle-component {
+    background: #fff;
+}
+
+
 /* Background
 /* ---------------------------------------------------------- */
 
