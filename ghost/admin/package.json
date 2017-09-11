@@ -110,7 +110,6 @@
     "markdown-it-footnote": "3.0.1",
     "markdown-it-lazy-headers": "0.1.3",
     "markdown-it-mark": "2.0.0",
-    "markdown-it-named-headers": "0.0.4",
     "matchdep": "2.0.0",
     "password-generator": "2.1.0",
     "postcss-color-function": "4.0.0",
