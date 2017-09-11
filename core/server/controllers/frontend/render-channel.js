@@ -45,6 +45,7 @@ function renderChannel(req, res, next) {
             // Do final data formatting and then render
             result.posts = posts;
             result = formatResponse.channel(result);
+
             setResponseContext(req, res);
             debug('Rendering view: ' + view);
             res.render(view, result);

@@ -15,11 +15,12 @@ var path                = require('path'),
 function controller(req, res) {
     var templateName = 'subscribe',
         defaultTemplate = path.resolve(__dirname, 'views', templateName + '.hbs'),
+        view = templates.pickTemplate(templateName, defaultTemplate),
         data = req.body;
 
     setResponseContext(req, res);
 
-    return res.render(templates.pickTemplate(templateName, defaultTemplate), data);
+    return res.render(view, data);
 }
 
 /**
