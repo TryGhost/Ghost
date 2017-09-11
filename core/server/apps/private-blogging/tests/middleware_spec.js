@@ -4,7 +4,6 @@ var should = require('should'), // jshint ignore:line
     crypto = require('crypto'),
     Promise = require('bluebird'),
     api = require('../../../api'),
-    errors = require('../../../errors'),
     fs = require('fs'),
 
     privateBlogging = require('../lib/middleware'),
