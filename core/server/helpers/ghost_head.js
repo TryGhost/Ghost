@@ -91,18 +91,19 @@ module.exports = function ghost_head(options) {
     }
 
     var head = [],
+        dataRoot = options.data.root,
         globalCodeinjection = settingsCache.get('ghost_head'),
-        postCodeInjection = options.data.root && options.data.root.post ? options.data.root.post.codeinjection_head : null,
-        context = this.context ? this.context : null,
+        postCodeInjection = dataRoot && dataRoot.post ? dataRoot.post.codeinjection_head : null,
+        context = dataRoot._locals.context ? dataRoot._locals.context : null,
         useStructuredData = !config.isPrivacyDisabled('useStructuredData'),
-        safeVersion = this.safeVersion,
+        safeVersion = dataRoot._locals.safeVersion,
         referrerPolicy = config.get('referrerPolicy') ? config.get('referrerPolicy') : 'no-referrer-when-downgrade',
         favicon = blogIconUtils.getIconUrl(),
         iconType = blogIconUtils.getIconType(favicon);
 
     debug('preparation complete, begin fetch');
     return Promise
-        .join(getMetaData(this, options.data.root), getClient(), function handleData(metaData, client) {
+        .join(getMetaData(this, dataRoot), getClient(), function handleData(metaData, client) {
             debug('end fetch');
 
             if (context) {
