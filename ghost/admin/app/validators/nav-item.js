@@ -21,7 +21,7 @@ export default BaseValidator.create({
         /* eslint-disable camelcase */
         let validatorOptions = {require_protocol: true};
         /* eslint-enable camelcase */
-        let urlRegex = new RegExp(/^(\/|#|[a-zA-Z0-9\-]+:)/);
+        let urlRegex = new RegExp(/^(\/|#|[a-zA-Z0-9-]+:)/);
 
         if (validator.empty(url)) {
             model.get('errors').add('url', 'You must specify a URL or relative path');

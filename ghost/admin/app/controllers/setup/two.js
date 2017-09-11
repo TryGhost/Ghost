@@ -166,14 +166,14 @@ export default Controller.extend(ValidationEngine, {
 
         if (this.get('profileImage')) {
             return this._sendImage(result.users[0])
-            .then(() => {
-                // fetch settings and private config for synchronous access before transitioning
-                return RSVP.all(promises).then(() => {
-                    return this.transitionToRoute('setup.three');
+                .then(() => {
+                    // fetch settings and private config for synchronous access before transitioning
+                    return RSVP.all(promises).then(() => {
+                        return this.transitionToRoute('setup.three');
+                    });
+                }).catch((resp) => {
+                    this.get('notifications').showAPIError(resp, {key: 'setup.blog-details'});
                 });
-            }).catch((resp) => {
-                this.get('notifications').showAPIError(resp, {key: 'setup.blog-details'});
-            });
         } else {
             // fetch settings and private config for synchronous access before transitioning
             return RSVP.all(promises).then(() => {

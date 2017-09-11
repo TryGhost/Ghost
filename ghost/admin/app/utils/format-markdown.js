@@ -46,10 +46,10 @@ let md = markdownit({
     breaks: true,
     linkify: true
 })
-.use(markdownitFootnote)
-.use(markdownitLazyHeaders)
-.use(markdownitMark)
-.use(markdownitNamedHeaders);
+    .use(markdownitFootnote)
+    .use(markdownitLazyHeaders)
+    .use(markdownitMark)
+    .use(markdownitNamedHeaders);
 
 export default function formatMarkdown(_markdown, replaceJS = true) {
     let markdown = _markdown || '';

@@ -4,10 +4,10 @@ import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import destroyApp from '../../helpers/destroy-app';
 import startApp from '../../helpers/start-app';
 import {
-  afterEach,
-  beforeEach,
-  describe,
-  it
+    afterEach,
+    beforeEach,
+    describe,
+    it
 } from 'mocha';
 import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import {expect} from 'chai';
