@@ -4,8 +4,8 @@ import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupComponentTest} from 'ember-mocha';
 
-describe('Integration: Component: modals/delete-subscriber', function() {
-    setupComponentTest('modals/delete-subscriber', {
+describe('Integration: Component: modal-delete-subscriber', function() {
+    setupComponentTest('modal-delete-subscriber', {
         integration: true
     });
 
@@ -14,12 +14,12 @@ describe('Integration: Component: modals/delete-subscriber', function() {
         // Handle any actions with this.on('myAction', function(val) { ... });
         // Template block usage:
         // this.render(hbs`
-        //   {{#modals/delete-subscriber}}
+        //   {{#modal-delete-subscriber}}
         //     template content
-        //   {{/modals/delete-subscriber}}
+        //   {{/modal-delete-subscriber}}
         // `);
 
-        this.render(hbs`{{modals/delete-subscriber}}`);
+        this.render(hbs`{{modal-delete-subscriber}}`);
         expect(this.$()).to.have.length(1);
     });
 });

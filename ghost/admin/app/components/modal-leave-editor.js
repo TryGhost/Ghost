@@ -1,4 +1,4 @@
-import ModalComponent from 'ghost-admin/components/modals/base';
+import ModalComponent from 'ghost-admin/components/modal-base';
 import {invokeAction} from 'ember-invoke-action';
 
 export default ModalComponent.extend({

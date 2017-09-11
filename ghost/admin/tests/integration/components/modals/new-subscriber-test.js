@@ -4,8 +4,8 @@ import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupComponentTest} from 'ember-mocha';
 
-describe('Integration: Component: modals/new-subscriber', function() {
-    setupComponentTest('modals/new-subscriber', {
+describe('Integration: Component: modal-new-subscriber', function() {
+    setupComponentTest('modal-new-subscriber', {
         integration: true
     });
 
@@ -14,12 +14,12 @@ describe('Integration: Component: modals/new-subscriber', function() {
         // Handle any actions with this.on('myAction', function(val) { ... });
         // Template block usage:
         // this.render(hbs`
-        //   {{#modals/new-subscriber}}
+        //   {{#modal-new-subscriber}}
         //     template content
-        //   {{/modals/new-subscriber}}
+        //   {{/modal-new-subscriber}}
         // `);
 
-        this.render(hbs`{{modals/new-subscriber}}`);
+        this.render(hbs`{{modal-new-subscriber}}`);
         expect(this.$()).to.have.length(1);
     });
 });

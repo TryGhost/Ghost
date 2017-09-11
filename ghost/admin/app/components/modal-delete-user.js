@@ -1,14 +1,13 @@
-import ModalComponent from 'ghost-admin/components/modals/base';
+import ModalComponent from 'ghost-admin/components/modal-base';
 import {alias} from '@ember/object/computed';
 import {invokeAction} from 'ember-invoke-action';
 import {task} from 'ember-concurrency';
 
 export default ModalComponent.extend({
 
-    theme: alias('model.theme'),
-    download: alias('model.download'),
+    user: alias('model'),
 
-    deleteTheme: task(function* () {
+    deleteUser: task(function* () {
         try {
             yield invokeAction(this, 'confirm');
         } finally {
@@ -18,7 +17,7 @@ export default ModalComponent.extend({
 
     actions: {
         confirm() {
-            this.get('deleteTheme').perform();
+            this.get('deleteUser').perform();
         }
     }
 });

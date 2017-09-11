@@ -15,7 +15,7 @@ const FullScreenModalComponent = Component.extend({
     dropdown: injectService(),
 
     modalPath: computed('modal', function () {
-        return `modals/${this.get('modal') || 'unknown'}`;
+        return `modal-${this.get('modal') || 'unknown'}`;
     }),
 
     modalClasses: computed('modifiers', function () {

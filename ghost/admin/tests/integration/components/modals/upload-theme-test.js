@@ -4,8 +4,8 @@ import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupComponentTest} from 'ember-mocha';
 
-describe('Integration: Component: modals/upload-theme', function() {
-    setupComponentTest('modals/upload-theme', {
+describe('Integration: Component: modal-upload-theme', function() {
+    setupComponentTest('modal-upload-theme', {
         integration: true
     });
 
@@ -14,12 +14,12 @@ describe('Integration: Component: modals/upload-theme', function() {
         // Handle any actions with this.on('myAction', function(val) { ... });
         // Template block usage:
         // this.render(hbs`
-        //   {{#modals/upload-theme}}
+        //   {{#modal-upload-theme}}
         //     template content
-        //   {{/modals/upload-theme}}
+        //   {{/modal-upload-theme}}
         // `);
 
-        this.render(hbs`{{modals/upload-theme}}`);
+        this.render(hbs`{{modal-upload-theme}}`);
         expect(this.$()).to.have.length(1);
     });
 });
