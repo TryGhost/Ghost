@@ -6,7 +6,6 @@ var _           = require('lodash'),
     Promise     = require('bluebird'),
     config      = require('../../../config'),
     api         = require('../../../api'),
-    errors      = require('../../../errors'),
     utils       = require('../../../utils'),
     i18n        = require('../../../i18n'),
     privateRoute = '/' + config.get('routeKeywords').private + '/',
@@ -50,12 +49,7 @@ privateBlogging = {
             return next();
         }
 
-        // take care of rss and sitemap 404s
-        if (req.path.lastIndexOf('/rss/', 0) === 0 ||
-            req.path.lastIndexOf('/rss/') === req.url.length - 5 ||
-            (req.path.lastIndexOf('/sitemap', 0) === 0 && req.path.lastIndexOf('.xml') === req.path.length - 4)) {
-            return next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
-        } else if (req.url.lastIndexOf('/robots.txt', 0) === 0) {
+        if (req.url.lastIndexOf('/robots.txt', 0) === 0) {
             fs.readFile(path.resolve(__dirname, '../', 'robots.txt'), function readFile(err, buf) {
                 if (err) {
                     return next(err);
