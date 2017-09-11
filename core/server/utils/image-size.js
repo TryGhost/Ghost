@@ -196,7 +196,8 @@ getImageSizeFromFilePath = function getImageSizeFromFilePath(imagePath) {
                 message: err.message,
                 code: 'IMAGE_SIZE_STORAGE',
                 err: err,
-                context: {
+                context: filePath,
+                errorDetails: {
                     originalPath: imagePath,
                     reqFilePath: filePath
                 }
@@ -209,7 +210,8 @@ getImageSizeFromFilePath = function getImageSizeFromFilePath(imagePath) {
                 message: err.message,
                 code: 'IMAGE_SIZE_STORAGE',
                 err: err,
-                context: {
+                context: filePath,
+                errorDetails: {
                     originalPath: imagePath,
                     reqFilePath: filePath
                 }
