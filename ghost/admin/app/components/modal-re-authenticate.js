@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import ModalComponent from 'ghost-admin/components/modals/base';
+import ModalComponent from 'ghost-admin/components/modal-base';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';

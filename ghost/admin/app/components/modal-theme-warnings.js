@@ -1,4 +1,4 @@
-import ModalComponent from 'ghost-admin/components/modals/base';
+import ModalComponent from 'ghost-admin/components/modal-base';
 import {reads} from '@ember/object/computed';
 
 export default ModalComponent.extend({

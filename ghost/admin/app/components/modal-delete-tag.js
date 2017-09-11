@@ -1,13 +1,18 @@
-import ModalComponent from 'ghost-admin/components/modals/base';
+import ModalComponent from 'ghost-admin/components/modal-base';
 import {alias} from '@ember/object/computed';
+import {computed} from '@ember/object';
 import {invokeAction} from 'ember-invoke-action';
 import {task} from 'ember-concurrency';
 
 export default ModalComponent.extend({
 
-    user: alias('model'),
+    tag: alias('model'),
 
-    suspendUser: task(function* () {
+    postInflection: computed('tag.count.posts', function () {
+        return this.get('tag.count.posts') > 1 ? 'posts' : 'post';
+    }),
+
+    deleteTag: task(function* () {
         try {
             yield invokeAction(this, 'confirm');
         } finally {
@@ -17,7 +22,7 @@ export default ModalComponent.extend({
 
     actions: {
         confirm() {
-            return this.get('suspendUser').perform();
+            this.get('deleteTag').perform();
         }
     }
 });

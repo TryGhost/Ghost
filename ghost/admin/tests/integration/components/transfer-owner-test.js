@@ -7,7 +7,7 @@ import {expect} from 'chai';
 import {run} from '@ember/runloop';
 import {setupComponentTest} from 'ember-mocha';
 
-describe('Integration: Component: modals/transfer-owner', function() {
+describe('Integration: Component: modal-transfer-owner', function() {
     setupComponentTest('transfer-owner', {
         integration: true
     });
@@ -21,7 +21,7 @@ describe('Integration: Component: modals/transfer-owner', function() {
         this.on('confirm', confirm);
         this.on('closeModal', closeModal);
 
-        this.render(hbs`{{modals/transfer-owner confirm=(action 'confirm') closeModal=(action 'closeModal')}}`);
+        this.render(hbs`{{modal-transfer-owner confirm=(action 'confirm') closeModal=(action 'closeModal')}}`);
 
         run(() => {
             this.$('.gh-btn.gh-btn-red').click();

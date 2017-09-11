@@ -1,4 +1,4 @@
-import ModalComponent from 'ghost-admin/components/modals/base';
+import ModalComponent from 'ghost-admin/components/modal-base';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {
     UnsupportedMediaTypeError,
@@ -126,7 +126,7 @@ export default ModalComponent.extend({
 
                 // to have a proper grouping of fatal errors and none fatal, we need to check
                 // our errors for the fatal property
-                if (errors.length > 0) {
+                if (errors && errors.length > 0) {
                     for (let i = 0; i < errors.length; i++) {
                         if (errors[i].fatal) {
                             fatalErrors.push(errors[i]);
