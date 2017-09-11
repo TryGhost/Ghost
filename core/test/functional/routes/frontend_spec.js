@@ -786,6 +786,26 @@ describe('Frontend Routing', function () {
                         });
                 });
 
+                it('with query params', function (done) {
+                    request.get('/topic?something=good')
+                        .expect(302)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('/?something=good');
+                            doEnd(done)(err, res);
+                        });
+                });
+
+                it('with query params', function (done) {
+                    request.get('/post/10/a-nice-blog-post?a=b')
+                        .expect(302)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('/a-nice-blog-post?a=b');
+                            doEnd(done)(err, res);
+                        });
+                });
+
                 it('should not redirect', function (done) {
                     request.get('/post/a-nice-blog-post/')
                         .end(function (err, res) {
