@@ -4,7 +4,6 @@ var should = require('should'), // jshint ignore:line
     crypto = require('crypto'),
     Promise = require('bluebird'),
     api = require('../../../api'),
-    errors = require('../../../errors'),
     fs = require('fs'),
 
     privateBlogging = require('../lib/middleware'),
@@ -33,7 +32,7 @@ describe('Private Blogging', function () {
             req = {};
             res = {};
             apiSettingsStub = sandbox.stub(api.settings, 'read');
-            next = sinon.spy();
+            next = sandbox.spy();
         });
 
         it('checkIsPrivate should call next if not private', function (done) {
@@ -79,7 +78,7 @@ describe('Private Blogging', function () {
 
             it('isPrivateSessionAuth should redirect if blog is not private', function () {
                 res = {
-                    redirect: sinon.spy(),
+                    redirect: sandbox.spy(),
                     isPrivateBlog: false
                 };
                 privateBlogging.isPrivateSessionAuth(req, res, next);
@@ -89,7 +88,6 @@ describe('Private Blogging', function () {
 
         describe('private', function () {
             beforeEach(function () {
-                res.isPrivateBlog = true;
                 res = {
                     status: function () {
                         return this;
@@ -98,8 +96,11 @@ describe('Private Blogging', function () {
                     },
                     set: function () {
                     },
+                    redirect: sandbox.spy(),
                     isPrivateBlog: true
                 };
+
+                req.session = {};
             });
 
             it('filterPrivateRoutes should call next if admin', function () {
@@ -114,70 +115,65 @@ describe('Private Blogging', function () {
                 next.called.should.be.true();
             });
 
-            it('filterPrivateRoutes should throw 404 if url is sitemap', function () {
+            it('filterPrivateRoutes: sitemap redirects to /private', function () {
                 req.path = req.url = '/sitemap.xml';
-                var next = function next(err) {
-                    (err instanceof errors.NotFoundError).should.eql(true);
-                };
 
-                privateBlogging.filterPrivateRoutes(req, res, next);
+                return privateBlogging.filterPrivateRoutes(req, res, next)
+                    .then(function () {
+                        res.redirect.calledOnce.should.be.true();
+                    });
             });
 
-            it('filterPrivateRoutes should throw 404 if url is sitemap with param', function () {
+            it('filterPrivateRoutes: sitemap with params redirects to /private', function () {
                 req.url = '/sitemap.xml?weird=param';
                 req.path = '/sitemap.xml';
 
-                var next = function next(err) {
-                    (err instanceof errors.NotFoundError).should.eql(true);
-                };
-
-                privateBlogging.filterPrivateRoutes(req, res, next);
+                return privateBlogging.filterPrivateRoutes(req, res, next)
+                    .then(function () {
+                        res.redirect.calledOnce.should.be.true();
+                    });
             });
 
-            it('filterPrivateRoutes should throw 404 if url is rss', function () {
+            it('filterPrivateRoutes: rss redirects to /private', function () {
                 req.path = req.url = '/rss/';
 
-                var next = function next(err) {
-                    (err instanceof errors.NotFoundError).should.eql(true);
-                };
-
-                privateBlogging.filterPrivateRoutes(req, res, next);
+                return privateBlogging.filterPrivateRoutes(req, res, next)
+                    .then(function () {
+                        res.redirect.calledOnce.should.be.true();
+                    });
             });
 
-            it('filterPrivateRoutes should throw 404 if url is author rss', function () {
+            it('filterPrivateRoutes: author rss redirects to /private', function () {
                 req.path = req.url = '/author/halfdan/rss/';
 
-                var next = function next(err) {
-                    (err instanceof errors.NotFoundError).should.eql(true);
-                };
-
-                privateBlogging.filterPrivateRoutes(req, res, next);
+                return privateBlogging.filterPrivateRoutes(req, res, next)
+                    .then(function () {
+                        res.redirect.calledOnce.should.be.true();
+                    });
             });
 
-            it('filterPrivateRoutes should throw 404 if url is tag rss', function () {
+            it('filterPrivateRoutes: tag rss redirects to /private', function () {
                 req.path = req.url = '/tag/slimer/rss/';
 
-                var next = function next(err) {
-                    (err instanceof errors.NotFoundError).should.eql(true);
-                };
-
-                privateBlogging.filterPrivateRoutes(req, res, next);
+                return privateBlogging.filterPrivateRoutes(req, res, next)
+                    .then(function () {
+                        res.redirect.calledOnce.should.be.true();
+                    });
             });
 
-            it('filterPrivateRoutes should throw 404 if url is rss plus something', function () {
+            it('filterPrivateRoutes: rss plus something redirects to /private', function () {
                 req.path = req.url = '/rss/sometag';
 
-                var next = function next(err) {
-                    (err instanceof errors.NotFoundError).should.eql(true);
-                };
-
-                privateBlogging.filterPrivateRoutes(req, res, next);
+                return privateBlogging.filterPrivateRoutes(req, res, next)
+                    .then(function () {
+                        res.redirect.calledOnce.should.be.true();
+                    });
             });
 
             it('filterPrivateRoutes should render custom robots.txt', function () {
                 req.url = req.path = '/robots.txt';
-                res.writeHead = sinon.spy();
-                res.end = sinon.spy();
+                res.writeHead = sandbox.spy();
+                res.end = sandbox.spy();
                 sandbox.stub(fs, 'readFile', function (file, cb) {
                     cb(null, 'User-agent: * Disallow: /');
                 });
@@ -223,7 +219,7 @@ describe('Private Blogging', function () {
                         token: 'wrongpassword',
                         salt: Date.now().toString()
                     };
-                    res.redirect = sinon.spy();
+                    res.redirect = sandbox.spy();
 
                     privateBlogging.authenticatePrivateSession(req, res, next).then(function () {
                         res.redirect.called.should.be.true();
