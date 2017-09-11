@@ -16,7 +16,7 @@ let joinUrlParts = function (url, path) {
 let isRelative = function (url) {
     // "protocol://", "//example.com", "scheme:", "#anchor", & invalid paths
     // should all be treated as absolute
-    return !url.match(/\s/) && !validator.isURL(url) && !url.match(/^(\/\/|#|[a-zA-Z0-9\-]+:)/);
+    return !url.match(/\s/) && !validator.isURL(url) && !url.match(/^(\/\/|#|[a-zA-Z0-9-]+:)/);
 };
 
 export default TextField.extend(InvokeActionMixin, {
@@ -121,7 +121,7 @@ export default TextField.extend(InvokeActionMixin, {
 
         // if relative to baseUrl, remove the base url before sending to action
         if (!isAnchorLink && isOnSameHost && isRelativeToBasePath) {
-            url = url.replace(/^[a-zA-Z0-9\-]+:/, '');
+            url = url.replace(/^[a-zA-Z0-9-]+:/, '');
             url = url.replace(/^\/\//, '');
             url = url.replace(baseUrlParts.host, '');
             url = url.replace(baseUrlParts.pathname, '');
@@ -136,7 +136,7 @@ export default TextField.extend(InvokeActionMixin, {
                     url = `/${url}`;
                 }
 
-                if (!url.match(/\/$/) && !url.match(/[\.#\?]/)) {
+                if (!url.match(/\/$/) && !url.match(/[.#?]/)) {
                     url = `${url}/`;
                 }
             }

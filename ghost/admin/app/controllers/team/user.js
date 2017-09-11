@@ -258,13 +258,13 @@ export default Controller.extend({
             }
 
             // TODO: put the validation here into a validator
-            if (newUrl.match(/(?:facebook\.com\/)(\S+)/) || newUrl.match(/([a-z\d\.]+)/i)) {
+            if (newUrl.match(/(?:facebook\.com\/)(\S+)/) || newUrl.match(/([a-z\d.]+)/i)) {
                 let username = [];
 
                 if (newUrl.match(/(?:facebook\.com\/)(\S+)/)) {
                     [, username] = newUrl.match(/(?:facebook\.com\/)(\S+)/);
                 } else {
-                    [, username] = newUrl.match(/(?:https\:\/\/|http\:\/\/)?(?:www\.)?(?:\w+\.\w+\/+)?(\S+)/mi);
+                    [, username] = newUrl.match(/(?:https:\/\/|http:\/\/)?(?:www\.)?(?:\w+\.\w+\/+)?(\S+)/mi);
                 }
 
                 // check if we have a /page/username or without
@@ -272,8 +272,8 @@ export default Controller.extend({
                     // we got a page url, now save the username without the / in the beginning
 
                     [, username] = username.match(/^(?:\/)?(pages?\/\S+)/mi);
-                } else if (username.match(/^(http|www)|(\/)/) || !username.match(/^([a-z\d\.]{1,50})$/mi)) {
-                    errMessage = !username.match(/^([a-z\d\.]{1,50})$/mi) ? 'Your Username is not a valid Facebook Username' : 'The URL must be in a format like https://www.facebook.com/yourUsername';
+                } else if (username.match(/^(http|www)|(\/)/) || !username.match(/^([a-z\d.]{1,50})$/mi)) {
+                    errMessage = !username.match(/^([a-z\d.]{1,50})$/mi) ? 'Your Username is not a valid Facebook Username' : 'The URL must be in a format like https://www.facebook.com/yourUsername';
 
                     this.get('user.errors').add('facebook', errMessage);
                     this.get('user.hasValidated').pushObject('facebook');
@@ -327,7 +327,7 @@ export default Controller.extend({
             }
 
             // TODO: put the validation here into a validator
-            if (newUrl.match(/(?:twitter\.com\/)(\S+)/) || newUrl.match(/([a-z\d\.]+)/i)) {
+            if (newUrl.match(/(?:twitter\.com\/)(\S+)/) || newUrl.match(/([a-z\d.]+)/i)) {
                 let username = [];
 
                 if (newUrl.match(/(?:twitter\.com\/)(\S+)/)) {
@@ -337,8 +337,8 @@ export default Controller.extend({
                 }
 
                 // check if username starts with http or www and show error if so
-                if (username.match(/^(http|www)|(\/)/) || !username.match(/^[a-z\d\.\_]{1,15}$/mi)) {
-                    errMessage = !username.match(/^[a-z\d\.\_]{1,15}$/mi) ? 'Your Username is not a valid Twitter Username' : 'The URL must be in a format like https://twitter.com/yourUsername';
+                if (username.match(/^(http|www)|(\/)/) || !username.match(/^[a-z\d._]{1,15}$/mi)) {
+                    errMessage = !username.match(/^[a-z\d._]{1,15}$/mi) ? 'Your Username is not a valid Twitter Username' : 'The URL must be in a format like https://twitter.com/yourUsername';
 
                     this.get('user.errors').add('twitter', errMessage);
                     this.get('user.hasValidated').pushObject('twitter');

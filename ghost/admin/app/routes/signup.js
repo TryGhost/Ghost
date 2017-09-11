@@ -27,7 +27,7 @@ export default Route.extend(styleBody, UnauthenticatedRouteMixin, {
 
     model(params) {
         let model = EmberObject.create();
-        let re = /^(?:[A-Za-z0-9_\-]{4})*(?:[A-Za-z0-9_\-]{2}|[A-Za-z0-9_\-]{3})?$/;
+        let re = /^(?:[A-Za-z0-9_-]{4})*(?:[A-Za-z0-9_-]{2}|[A-Za-z0-9_-]{3})?$/;
         let email,
             tokenText;
 

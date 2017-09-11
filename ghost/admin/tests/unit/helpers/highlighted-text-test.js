@@ -1,11 +1,11 @@
 /* jshint expr:true */
 import {
-  describe,
-  it
+    describe,
+    it
 } from 'mocha';
 import {expect} from 'chai';
 import {
-  highlightedText
+    highlightedText
 } from 'ghost-admin/helpers/highlighted-text';
 
 describe('Unit: Helper: highlighted-text', function() {
