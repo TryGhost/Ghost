@@ -1,16 +1,15 @@
 // # Tag API
 // RESTful API for the Tag resource
-var Promise      = require('bluebird'),
-    _            = require('lodash'),
-    fs           = require('fs'),
-    dataProvider = require('../models'),
-    errors       = require('../errors'),
-    utils        = require('./utils'),
-    serverUtils  = require('../utils'),
-    pipeline     = require('../utils/pipeline'),
-    i18n         = require('../i18n'),
-
-    docName      = 'subscribers',
+var Promise = require('bluebird'),
+    _ = require('lodash'),
+    fs = require('fs'),
+    pipeline = require('../utils/pipeline'),
+    globalUtils = require('../utils'),
+    apiUtils = require('./utils'),
+    models = require('../models'),
+    errors = require('../errors'),
+    i18n = require('../i18n'),
+    docName = 'subscribers',
     subscribers;
 
 /**
@@ -34,13 +33,13 @@ subscribers = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return dataProvider.Subscriber.findPage(options);
+            return models.Subscriber.findPage(options);
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName, {opts: utils.browseDefaultOptions}),
-            utils.handlePermissions(docName, 'browse'),
+            apiUtils.validate(docName, {opts: apiUtils.browseDefaultOptions}),
+            apiUtils.handlePermissions(docName, 'browse'),
             doQuery
         ];
 
@@ -64,13 +63,13 @@ subscribers = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return dataProvider.Subscriber.findOne(options.data, _.omit(options, ['data']));
+            return models.Subscriber.findOne(options.data, _.omit(options, ['data']));
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName, {attrs: attrs}),
-            utils.handlePermissions(docName, 'read'),
+            apiUtils.validate(docName, {attrs: attrs}),
+            apiUtils.handlePermissions(docName, 'read'),
             doQuery
         ];
 
@@ -99,7 +98,7 @@ subscribers = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return dataProvider.Subscriber.getByEmail(options.data.subscribers[0].email)
+            return models.Subscriber.getByEmail(options.data.subscribers[0].email)
                 .then(function (subscriber) {
                     if (subscriber && options.context.external) {
                         // we don't expose this information
@@ -108,7 +107,7 @@ subscribers = {
                         return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.subscribers.subscriberAlreadyExists')}));
                     }
 
-                    return dataProvider.Subscriber.add(options.data.subscribers[0], _.omit(options, ['data'])).catch(function (error) {
+                    return models.Subscriber.add(options.data.subscribers[0], _.omit(options, ['data'])).catch(function (error) {
                         if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
                             return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.subscribers.subscriberAlreadyExists')}));
                         }
@@ -120,8 +119,8 @@ subscribers = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName),
-            utils.handlePermissions(docName, 'add'),
+            apiUtils.validate(docName),
+            apiUtils.handlePermissions(docName, 'add'),
             doQuery
         ];
 
@@ -149,13 +148,13 @@ subscribers = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return dataProvider.Subscriber.edit(options.data.subscribers[0], _.omit(options, ['data']));
+            return models.Subscriber.edit(options.data.subscribers[0], _.omit(options, ['data']));
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName, {opts: utils.idDefaultOptions}),
-            utils.handlePermissions(docName, 'edit'),
+            apiUtils.validate(docName, {opts: apiUtils.idDefaultOptions}),
+            apiUtils.handlePermissions(docName, 'edit'),
             doQuery
         ];
 
@@ -187,13 +186,13 @@ subscribers = {
          * @param {Object} options
          */
         function doQuery(options) {
-            return dataProvider.Subscriber.destroy(options).return(null);
+            return models.Subscriber.destroy(options).return(null);
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName, {opts: utils.idDefaultOptions}),
-            utils.handlePermissions(docName, 'destroy'),
+            apiUtils.validate(docName, {opts: apiUtils.idDefaultOptions}),
+            apiUtils.handlePermissions(docName, 'destroy'),
             doQuery
         ];
 
@@ -239,7 +238,7 @@ subscribers = {
 
         // Export data, otherwise send error 500
         function exportSubscribers() {
-            return dataProvider.Subscriber.findAll(options).then(function (data) {
+            return models.Subscriber.findAll(options).then(function (data) {
                 return formatCSV(data.toJSON(options));
             }).catch(function (err) {
                 return Promise.reject(new errors.GhostError({err: err}));
@@ -247,7 +246,7 @@ subscribers = {
         }
 
         tasks = [
-            utils.handlePermissions(docName, 'browse'),
+            apiUtils.handlePermissions(docName, 'browse'),
             exportSubscribers
         ];
 
@@ -272,7 +271,7 @@ subscribers = {
                 invalid = 0,
                 duplicates = 0;
 
-            return serverUtils.readCSV({
+            return globalUtils.readCSV({
                 path: filePath,
                 columnsToExtract: [{name: 'email', lookup: /email/i}]
             }).then(function (result) {
@@ -309,7 +308,7 @@ subscribers = {
         }
 
         tasks = [
-            utils.handlePermissions(docName, 'add'),
+            apiUtils.handlePermissions(docName, 'add'),
             importCSV
         ];
 

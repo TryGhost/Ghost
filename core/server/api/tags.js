@@ -1,14 +1,13 @@
 // # Tag API
 // RESTful API for the Tag resource
-var Promise      = require('bluebird'),
-    _            = require('lodash'),
-    dataProvider = require('../models'),
-    errors       = require('../errors'),
-    utils        = require('./utils'),
-    pipeline     = require('../utils/pipeline'),
-    i18n         = require('../i18n'),
-
-    docName      = 'tags',
+var Promise = require('bluebird'),
+    _ = require('lodash'),
+    pipeline = require('../utils/pipeline'),
+    apiUtils = require('./utils'),
+    models = require('../models'),
+    errors = require('../errors'),
+    i18n = require('../i18n'),
+    docName = 'tags',
     allowedIncludes = ['count.posts'],
     tags;
 
@@ -33,14 +32,14 @@ tags = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return dataProvider.Tag.findPage(options);
+            return models.Tag.findPage(options);
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName, {opts: utils.browseDefaultOptions}),
-            utils.handlePublicPermissions(docName, 'browse'),
-            utils.convertOptions(allowedIncludes),
+            apiUtils.validate(docName, {opts: apiUtils.browseDefaultOptions}),
+            apiUtils.handlePublicPermissions(docName, 'browse'),
+            apiUtils.convertOptions(allowedIncludes),
             doQuery
         ];
 
@@ -64,14 +63,14 @@ tags = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return dataProvider.Tag.findOne(options.data, _.omit(options, ['data']));
+            return models.Tag.findOne(options.data, _.omit(options, ['data']));
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName, {attrs: attrs}),
-            utils.handlePublicPermissions(docName, 'read'),
-            utils.convertOptions(allowedIncludes),
+            apiUtils.validate(docName, {attrs: attrs}),
+            apiUtils.handlePublicPermissions(docName, 'read'),
+            apiUtils.convertOptions(allowedIncludes),
             doQuery
         ];
 
@@ -100,14 +99,14 @@ tags = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return dataProvider.Tag.add(options.data.tags[0], _.omit(options, ['data']));
+            return models.Tag.add(options.data.tags[0], _.omit(options, ['data']));
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName),
-            utils.handlePermissions(docName, 'add'),
-            utils.convertOptions(allowedIncludes),
+            apiUtils.validate(docName),
+            apiUtils.handlePermissions(docName, 'add'),
+            apiUtils.convertOptions(allowedIncludes),
             doQuery
         ];
 
@@ -136,14 +135,14 @@ tags = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return dataProvider.Tag.edit(options.data.tags[0], _.omit(options, ['data']));
+            return models.Tag.edit(options.data.tags[0], _.omit(options, ['data']));
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName, {opts: utils.idDefaultOptions}),
-            utils.handlePermissions(docName, 'edit'),
-            utils.convertOptions(allowedIncludes),
+            apiUtils.validate(docName, {opts: apiUtils.idDefaultOptions}),
+            apiUtils.handlePermissions(docName, 'edit'),
+            apiUtils.convertOptions(allowedIncludes),
             doQuery
         ];
 
@@ -175,14 +174,14 @@ tags = {
          * @param {Object} options
          */
         function deleteTag(options) {
-            return dataProvider.Tag.destroy(options).return(null);
+            return models.Tag.destroy(options).return(null);
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName, {opts: utils.idDefaultOptions}),
-            utils.handlePermissions(docName, 'destroy'),
-            utils.convertOptions(allowedIncludes),
+            apiUtils.validate(docName, {opts: apiUtils.idDefaultOptions}),
+            apiUtils.handlePermissions(docName, 'destroy'),
+            apiUtils.convertOptions(allowedIncludes),
             deleteTag
         ];
 
