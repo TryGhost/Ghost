@@ -1,7 +1,7 @@
 // # Settings API
 // RESTful API for the Setting resource
 var _            = require('lodash'),
-    dataProvider = require('../models'),
+    models       = require('../models'),
     Promise      = require('bluebird'),
     canThis      = require('../permissions').canThis,
     errors       = require('../errors'),
@@ -225,7 +225,7 @@ settings = {
         return canEditAllSettings(object.settings, options).then(function () {
             return utils.checkObject(object, docName).then(function (checkedData) {
                 options.user = self.user;
-                return dataProvider.Settings.edit(checkedData.settings, options);
+                return models.Settings.edit(checkedData.settings, options);
             }).then(function (settingsModelsArray) {
                 // Instead of a standard bookshelf collection, Settings.edit returns an array of Settings Models.
                 // We convert this to JSON, by calling toJSON on each Model (using invokeMap for ease)

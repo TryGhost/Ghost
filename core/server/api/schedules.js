@@ -3,7 +3,7 @@ var _ = require('lodash'),
     moment = require('moment'),
     config = require('../config'),
     pipeline = require(config.get('paths').corePath + '/server/utils/pipeline'),
-    dataProvider = require(config.get('paths').corePath + '/server/models'),
+    models = require(config.get('paths').corePath + '/server/models'),
     i18n = require(config.get('paths').corePath + '/server/i18n'),
     errors = require(config.get('paths').corePath + '/server/errors'),
     apiPosts = require(config.get('paths').corePath + '/server/api/posts'),
@@ -39,7 +39,7 @@ exports.publishPost = function publishPost(object, options) {
         function (cleanOptions) {
             cleanOptions.status = 'scheduled';
 
-            return dataProvider.Base.transaction(function (transacting) {
+            return models.Base.transaction(function (transacting) {
                 cleanOptions.transacting = transacting;
                 cleanOptions.forUpdate = true;
 
@@ -91,7 +91,7 @@ exports.getScheduledPosts = function readPosts(options) {
                 cleanOptions.filter += '+created_at:<=\'' + moment(cleanOptions.to).format('YYYY-MM-DD HH:mm:ss') + '\'';
             }
 
-            return dataProvider.Post.findAll(cleanOptions)
+            return models.Post.findAll(cleanOptions)
                 .then(function (result) {
                     return Promise.resolve({posts: result.models});
                 });

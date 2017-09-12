@@ -1,6 +1,6 @@
 // # Slug API
 // RESTful API for the Slug resource
-var dataProvider = require('../models'),
+var mdoels       = require('../models'),
     errors       = require('../errors'),
     Promise      = require('bluebird'),
     pipeline     = require('../utils/pipeline'),
@@ -32,10 +32,10 @@ slugs = {
 
         // `allowedTypes` is used to define allowed slug types and map them against its model class counterpart
         allowedTypes = {
-            post: dataProvider.Post,
-            tag: dataProvider.Tag,
-            user: dataProvider.User,
-            app: dataProvider.App
+            post: mdoels.Post,
+            tag: mdoels.Tag,
+            user: mdoels.User,
+            app: mdoels.App
         };
 
         /**
@@ -58,7 +58,7 @@ slugs = {
          * @returns {Object} options
          */
         function modelQuery(options) {
-            return dataProvider.Base.Model.generateSlug(allowedTypes[options.type], options.data.name, {status: 'all'});
+            return mdoels.Base.Model.generateSlug(allowedTypes[options.type], options.data.name, {status: 'all'});
         }
 
         // Push all of our tasks into a `tasks` array in the correct order

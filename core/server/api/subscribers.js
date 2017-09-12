@@ -3,7 +3,7 @@
 var Promise      = require('bluebird'),
     _            = require('lodash'),
     fs           = require('fs'),
-    dataProvider = require('../models'),
+    models       = require('../models'),
     errors       = require('../errors'),
     utils        = require('./utils'),
     serverUtils  = require('../utils'),
@@ -34,7 +34,7 @@ subscribers = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return dataProvider.Subscriber.findPage(options);
+            return models.Subscriber.findPage(options);
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -64,7 +64,7 @@ subscribers = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return dataProvider.Subscriber.findOne(options.data, _.omit(options, ['data']));
+            return models.Subscriber.findOne(options.data, _.omit(options, ['data']));
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -99,7 +99,7 @@ subscribers = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return dataProvider.Subscriber.getByEmail(options.data.subscribers[0].email)
+            return models.Subscriber.getByEmail(options.data.subscribers[0].email)
                 .then(function (subscriber) {
                     if (subscriber && options.context.external) {
                         // we don't expose this information
@@ -108,7 +108,7 @@ subscribers = {
                         return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.subscribers.subscriberAlreadyExists')}));
                     }
 
-                    return dataProvider.Subscriber.add(options.data.subscribers[0], _.omit(options, ['data'])).catch(function (error) {
+                    return models.Subscriber.add(options.data.subscribers[0], _.omit(options, ['data'])).catch(function (error) {
                         if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
                             return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.subscribers.subscriberAlreadyExists')}));
                         }
@@ -149,7 +149,7 @@ subscribers = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return dataProvider.Subscriber.edit(options.data.subscribers[0], _.omit(options, ['data']));
+            return models.Subscriber.edit(options.data.subscribers[0], _.omit(options, ['data']));
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -187,7 +187,7 @@ subscribers = {
          * @param {Object} options
          */
         function doQuery(options) {
-            return dataProvider.Subscriber.destroy(options).return(null);
+            return models.Subscriber.destroy(options).return(null);
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -239,7 +239,7 @@ subscribers = {
 
         // Export data, otherwise send error 500
         function exportSubscribers() {
-            return dataProvider.Subscriber.findAll(options).then(function (data) {
+            return models.Subscriber.findAll(options).then(function (data) {
                 return formatCSV(data.toJSON(options));
             }).catch(function (err) {
                 return Promise.reject(new errors.GhostError({err: err}));

@@ -2,7 +2,7 @@
 // RESTful API for the Post resource
 var Promise         = require('bluebird'),
     _               = require('lodash'),
-    dataProvider    = require('../models'),
+    models          = require('../models'),
     errors          = require('../errors'),
     utils           = require('./utils'),
     pipeline        = require('../utils/pipeline'),
@@ -55,14 +55,14 @@ posts = {
          * @returns {Object} options
          */
         function modelQuery(options) {
-            return dataProvider.Post.findPage(options);
+            return models.Post.findPage(options);
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             utils.validate(docName, {opts: permittedOptions}),
             utils.handlePublicPermissions(docName, 'browse'),
-            utils.convertOptions(allowedIncludes, dataProvider.Post.allowedFormats),
+            utils.convertOptions(allowedIncludes, models.Post.allowedFormats),
             modelQuery
         ];
 
@@ -89,14 +89,14 @@ posts = {
          * @returns {Object} options
          */
         function modelQuery(options) {
-            return dataProvider.Post.findOne(options.data, _.omit(options, ['data']));
+            return models.Post.findOne(options.data, _.omit(options, ['data']));
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             utils.validate(docName, {attrs: attrs, opts: options.opts || []}),
             utils.handlePublicPermissions(docName, 'read'),
-            utils.convertOptions(allowedIncludes, dataProvider.Post.allowedFormats),
+            utils.convertOptions(allowedIncludes, models.Post.allowedFormats),
             modelQuery
         ];
 
@@ -130,7 +130,7 @@ posts = {
          * @returns {Object} options
          */
         function modelQuery(options) {
-            return dataProvider.Post.edit(options.data.posts[0], _.omit(options, ['data']));
+            return models.Post.edit(options.data.posts[0], _.omit(options, ['data']));
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -177,7 +177,7 @@ posts = {
          * @returns {Object} options
          */
         function modelQuery(options) {
-            return dataProvider.Post.add(options.data.posts[0], _.omit(options, ['data']));
+            return models.Post.add(options.data.posts[0], _.omit(options, ['data']));
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -216,7 +216,7 @@ posts = {
          * @param  {Object} options
          */
         function deletePost(options) {
-            var Post = dataProvider.Post,
+            var Post = models.Post,
                 data = _.defaults({status: 'all'}, options),
                 fetchOpts = _.defaults({require: true, columns: 'id'}, options);
 

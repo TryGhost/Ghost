@@ -2,7 +2,7 @@
 // RESTful API for the Role resource
 var Promise         = require('bluebird'),
     canThis         = require('../permissions').canThis,
-    dataProvider    = require('../models'),
+    models          = require('../models'),
     pipeline        = require('../utils/pipeline'),
     utils           = require('./utils'),
     docName         = 'roles',
@@ -39,7 +39,7 @@ roles = {
          * @returns {Object} options
          */
         function modelQuery(options) {
-            return dataProvider.Role.findAll(options);
+            return models.Role.findAll(options);
         }
 
         // Push all of our tasks into a `tasks` array in the correct order

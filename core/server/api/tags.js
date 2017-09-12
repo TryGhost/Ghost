@@ -2,7 +2,7 @@
 // RESTful API for the Tag resource
 var Promise      = require('bluebird'),
     _            = require('lodash'),
-    dataProvider = require('../models'),
+    models       = require('../models'),
     errors       = require('../errors'),
     utils        = require('./utils'),
     pipeline     = require('../utils/pipeline'),
@@ -33,7 +33,7 @@ tags = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return dataProvider.Tag.findPage(options);
+            return models.Tag.findPage(options);
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -64,7 +64,7 @@ tags = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return dataProvider.Tag.findOne(options.data, _.omit(options, ['data']));
+            return models.Tag.findOne(options.data, _.omit(options, ['data']));
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -100,7 +100,7 @@ tags = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return dataProvider.Tag.add(options.data.tags[0], _.omit(options, ['data']));
+            return models.Tag.add(options.data.tags[0], _.omit(options, ['data']));
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -136,7 +136,7 @@ tags = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return dataProvider.Tag.edit(options.data.tags[0], _.omit(options, ['data']));
+            return models.Tag.edit(options.data.tags[0], _.omit(options, ['data']));
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -175,7 +175,7 @@ tags = {
          * @param {Object} options
          */
         function deleteTag(options) {
-            return dataProvider.Tag.destroy(options).return(null);
+            return models.Tag.destroy(options).return(null);
         }
 
         // Push all of our tasks into a `tasks` array in the correct order

@@ -1,7 +1,7 @@
 var _ = require('lodash'),
     Promise = require('bluebird'),
     pipeline = require('../utils/pipeline'),
-    dataProvider = require('../models'),
+    models = require('../models'),
     settings = require('./settings'),
     mail = require('./../mail'),
     apiMail = require('./mail'),
@@ -19,7 +19,7 @@ invites = {
         var tasks;
 
         function modelQuery(options) {
-            return dataProvider.Invite.findPage(options);
+            return models.Invite.findPage(options);
         }
 
         tasks = [
@@ -37,7 +37,7 @@ invites = {
             tasks;
 
         function modelQuery(options) {
-            return dataProvider.Invite.findOne(options.data, _.omit(options, ['data']));
+            return models.Invite.findOne(options.data, _.omit(options, ['data']));
         }
 
         tasks = [
@@ -61,7 +61,7 @@ invites = {
         var tasks;
 
         function modelQuery(options) {
-            return dataProvider.Invite.findOne({id: options.id}, _.omit(options, ['data']))
+            return models.Invite.findOne({id: options.id}, _.omit(options, ['data']))
                 .then(function (invite) {
                     if (!invite) {
                         throw new errors.NotFoundError({message: i18n.t('errors.api.invites.inviteNotFound')});
@@ -90,7 +90,7 @@ invites = {
         function addInvite(options) {
             var data = options.data;
 
-            return dataProvider.Invite.add(data.invites[0], _.omit(options, 'data'))
+            return models.Invite.add(data.invites[0], _.omit(options, 'data'))
                 .then(function (_invite) {
                     invite = _invite;
 
@@ -127,7 +127,7 @@ invites = {
                     return apiMail.send(payload, {context: {internal: true}});
                 }).then(function () {
                     options.id = invite.id;
-                    return dataProvider.Invite.edit({status: 'sent'}, options);
+                    return models.Invite.edit({status: 'sent'}, options);
                 }).then(function () {
                     invite.set('status', 'sent');
                     var inviteAsJSON = invite.toJSON();
@@ -146,7 +146,7 @@ invites = {
         function destroyOldInvite(options) {
             var data = options.data;
 
-            return dataProvider.Invite.findOne({email: data.invites[0].email}, _.omit(options, 'data'))
+            return models.Invite.findOne({email: data.invites[0].email}, _.omit(options, 'data'))
                 .then(function (invite) {
                     if (!invite) {
                         return Promise.resolve(options);
@@ -173,7 +173,7 @@ invites = {
             // We cannot use permissible because we don't have access to the role_id!!!
             // Adding a permissible function to the invite model, doesn't give us much context of the invite we would like to add
             // As we are looking forward to replace the permission system completely, we do not add a hack here
-            return dataProvider.Role.findOne({id: options.data.invites[0].role_id}).then(function (roleToInvite) {
+            return models.Role.findOne({id: options.data.invites[0].role_id}).then(function (roleToInvite) {
                 if (!roleToInvite) {
                     return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.invites.roleNotFound')}));
                 }
@@ -202,7 +202,7 @@ invites = {
         }
 
         function checkIfUserExists(options) {
-            return dataProvider.User.findOne({email: options.data.invites[0].email}, options)
+            return models.User.findOne({email: options.data.invites[0].email}, options)
                 .then(function (user) {
                     if (user) {
                         return Promise.reject(new errors.ValidationError({
@@ -215,7 +215,7 @@ invites = {
         }
 
         function fetchLoggedInUser(options) {
-            return dataProvider.User.findOne({id: loggedInUser}, _.merge({}, options, {include: ['roles']}))
+            return models.User.findOne({id: loggedInUser}, _.merge({}, options, {include: ['roles']}))
                 .then(function (user) {
                     if (!user) {
                         return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.users.userNotFound')}));

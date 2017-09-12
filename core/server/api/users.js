@@ -2,7 +2,7 @@
 // RESTful API for the User resource
 var Promise         = require('bluebird'),
     _               = require('lodash'),
-    dataProvider    = require('../models'),
+    models          = require('../models'),
     canThis         = require('../permissions').canThis,
     errors          = require('../errors'),
     events          = require('../events'),
@@ -38,7 +38,7 @@ users = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return dataProvider.User.findPage(options);
+            return models.User.findPage(options);
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -75,7 +75,7 @@ users = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return dataProvider.User.findOne(options.data, _.omit(options, ['data']));
+            return models.User.findOne(options.data, _.omit(options, ['data']));
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -137,7 +137,7 @@ users = {
             return canThis(options.context).edit.user(options.id).then(function () {
                 // CASE: can't edit my own status to inactive or locked
                 if (options.id === options.context.user) {
-                    if (dataProvider.User.inactiveStates.indexOf(options.data.users[0].status) !== -1) {
+                    if (models.User.inactiveStates.indexOf(options.data.users[0].status) !== -1) {
                         return Promise.reject(new errors.NoPermissionError({
                             message: i18n.t('errors.api.users.cannotChangeStatus')
                         }));
@@ -154,7 +154,7 @@ users = {
                     roleId = role.id || role,
                     editedUserId = options.id;
 
-                return dataProvider.User.findOne(
+                return models.User.findOne(
                     {id: options.context.user, status: 'all'}, {include: ['roles']}
                 ).then(function (contextUser) {
                     var contextRoleId = contextUser.related('roles').toJSON(options)[0].id;
@@ -165,7 +165,7 @@ users = {
                         }));
                     }
 
-                    return dataProvider.User.findOne({role: 'Owner'}).then(function (owner) {
+                    return models.User.findOne({role: 'Owner'}).then(function (owner) {
                         if (contextUser.id !== owner.id) {
                             if (editedUserId === owner.id) {
                                 if (owner.related('roles').at(0).id !== roleId) {
@@ -198,7 +198,7 @@ users = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return dataProvider.User.edit(options.data.users[0], _.omit(options, ['data']));
+            return models.User.edit(options.data.users[0], _.omit(options, ['data']));
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -250,15 +250,15 @@ users = {
          * @param {Object} options
          */
         function deleteUser(options) {
-            return dataProvider.Base.transaction(function (t) {
+            return models.Base.transaction(function (t) {
                 options.transacting = t;
 
                 return Promise.all([
-                    dataProvider.Accesstoken.destroyByUser(options),
-                    dataProvider.Refreshtoken.destroyByUser(options),
-                    dataProvider.Post.destroyByAuthor(options)
+                    models.Accesstoken.destroyByUser(options),
+                    models.Refreshtoken.destroyByUser(options),
+                    models.Post.destroyByAuthor(options)
                 ]).then(function () {
-                    return dataProvider.User.destroy(options);
+                    return models.User.destroy(options);
                 }).return(null);
             }).catch(function (err) {
                 return Promise.reject(new errors.NoPermissionError({
@@ -327,7 +327,7 @@ users = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return dataProvider.User.changePassword(
+            return models.User.changePassword(
                 options.data.password[0],
                 _.omit(options, ['data'])
             );
@@ -363,7 +363,7 @@ users = {
          * @returns {Object} options
          */
         function handlePermissions(options) {
-            return dataProvider.Role.findOne({name: 'Owner'}).then(function (ownerRole) {
+            return models.Role.findOne({name: 'Owner'}).then(function (ownerRole) {
                 return canThis(options.context).assign.role(ownerRole);
             }).then(function () {
                 return options;
@@ -377,7 +377,7 @@ users = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return dataProvider.User.transferOwnership(options.data.owner[0], _.omit(options, ['data']));
+            return models.User.transferOwnership(options.data.owner[0], _.omit(options, ['data']));
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
