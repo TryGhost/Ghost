@@ -20,7 +20,11 @@ var debug = require('ghost-ignition').debug('utils:image-size'),
 function isLocalImage(imagePath) {
     imagePath = utils.url.urlFor('image', {image: imagePath}, true);
 
-    return imagePath.match(new RegExp('^' + utils.url.urlJoin(utils.url.urlFor('home', true), utils.url.getSubdir(), '/', utils.url.STATIC_IMAGE_URL_PREFIX)));
+    if (imagePath) {
+        return imagePath.match(new RegExp('^' + utils.url.urlJoin(utils.url.urlFor('home', true), utils.url.getSubdir(), '/', utils.url.STATIC_IMAGE_URL_PREFIX)));
+    } else {
+        return false;
+    }
 }
 
 /**
@@ -86,13 +90,20 @@ function fetchDimensionsFromBuffer(options) {
  */
 getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
     var requestOptions,
-        parsedUrl = url.parse(imagePath),
+        parsedUrl,
         timeout = config.get('times:getImageSizeTimeoutInMS') || 10000;
 
     if (isLocalImage(imagePath)) {
         // don't make a request for a locally stored image
         return getImageSizeFromFilePath(imagePath);
     }
+
+    // CASE: pre 1.0 users were able to use an asset path for their blog logo
+    if (imagePath.match(/^\/assets/)) {
+        imagePath = utils.url.urlJoin(utils.url.urlFor('home', true), utils.url.getSubdir(), '/', imagePath);
+    }
+
+    parsedUrl = url.parse(imagePath);
 
     // check if we got an url without any protocol
     if (!parsedUrl.protocol) {
@@ -101,6 +112,7 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
         imagePath = 'http:' + imagePath;
     }
 
+    debug('requested imagePath:', imagePath);
     requestOptions = {
         headers: {
             'User-Agent': 'Mozilla/5.0'
