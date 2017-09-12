@@ -2,12 +2,11 @@
 // RESTful API for the Client resource
 var Promise = require('bluebird'),
     _ = require('lodash'),
+    pipeline = require('../utils/pipeline'),
+    apiUtils = require('./utils'),
     models = require('../models'),
     errors = require('../errors'),
-    utils = require('./utils'),
-    pipeline = require('../utils/pipeline'),
     i18n = require('../i18n'),
-
     docName = 'clients',
     clients;
 
@@ -41,7 +40,7 @@ clients = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName, {attrs: attrs}),
+            apiUtils.validate(docName, {attrs: attrs}),
             // TODO: add permissions
             // utils.handlePublicPermissions(docName, 'read'),
             doQuery

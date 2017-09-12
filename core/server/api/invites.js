@@ -1,15 +1,15 @@
-var _ = require('lodash'),
-    Promise = require('bluebird'),
+var Promise = require('bluebird'),
+    _ = require('lodash'),
     pipeline = require('../utils/pipeline'),
-    models = require('../models'),
-    settings = require('./settings'),
     mail = require('./../mail'),
-    apiMail = require('./mail'),
     globalUtils = require('../utils'),
-    utils = require('./utils'),
+    apiUtils = require('./utils'),
+    models = require('../models'),
     errors = require('../errors'),
-    logging = require('../logging'),
     i18n = require('../i18n'),
+    logging = require('../logging'),
+    mailAPI = require('./mail'),
+    settingsAPI = require('./settings'),
     docName = 'invites',
     allowedIncludes = ['created_by', 'updated_by'],
     invites;
@@ -23,9 +23,9 @@ invites = {
         }
 
         tasks = [
-            utils.validate(docName, {opts: utils.browseDefaultOptions}),
-            utils.handlePublicPermissions(docName, 'browse'),
-            utils.convertOptions(allowedIncludes),
+            apiUtils.validate(docName, {opts: apiUtils.browseDefaultOptions}),
+            apiUtils.handlePublicPermissions(docName, 'browse'),
+            apiUtils.convertOptions(allowedIncludes),
             modelQuery
         ];
 
@@ -41,9 +41,9 @@ invites = {
         }
 
         tasks = [
-            utils.validate(docName, {attrs: attrs}),
-            utils.handlePublicPermissions(docName, 'read'),
-            utils.convertOptions(allowedIncludes),
+            apiUtils.validate(docName, {attrs: attrs}),
+            apiUtils.handlePublicPermissions(docName, 'read'),
+            apiUtils.convertOptions(allowedIncludes),
             modelQuery
         ];
 
@@ -72,9 +72,9 @@ invites = {
         }
 
         tasks = [
-            utils.validate(docName, {opts: utils.idDefaultOptions}),
-            utils.handlePermissions(docName, 'destroy'),
-            utils.convertOptions(allowedIncludes),
+            apiUtils.validate(docName, {opts: apiUtils.idDefaultOptions}),
+            apiUtils.handlePermissions(docName, 'destroy'),
+            apiUtils.convertOptions(allowedIncludes),
             modelQuery
         ];
 
@@ -94,7 +94,7 @@ invites = {
                 .then(function (_invite) {
                     invite = _invite;
 
-                    return settings.read({key: 'title'});
+                    return settingsAPI.read({key: 'title'});
                 })
                 .then(function (response) {
                     var adminUrl = globalUtils.url.urlFor('admin', true);
@@ -124,7 +124,7 @@ invites = {
                         }]
                     };
 
-                    return apiMail.send(payload, {context: {internal: true}});
+                    return mailAPI.send(payload, {context: {internal: true}});
                 }).then(function () {
                     options.id = invite.id;
                     return models.Invite.edit({status: 'sent'}, options);
@@ -227,9 +227,9 @@ invites = {
         }
 
         tasks = [
-            utils.validate(docName, {opts: ['email']}),
-            utils.handlePermissions(docName, 'add'),
-            utils.convertOptions(allowedIncludes),
+            apiUtils.validate(docName, {opts: ['email']}),
+            apiUtils.handlePermissions(docName, 'add'),
+            apiUtils.convertOptions(allowedIncludes),
             fetchLoggedInUser,
             validation,
             checkIfUserExists,

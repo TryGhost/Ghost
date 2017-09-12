@@ -1,19 +1,15 @@
 // # Settings API
 // RESTful API for the Setting resource
-var _ = require('lodash'),
+var Promise = require('bluebird'),
+    _ = require('lodash'),
     models = require('../models'),
-    Promise = require('bluebird'),
     canThis = require('../permissions').canThis,
+    apiUtils = require('./utils'),
     errors = require('../errors'),
-    utils = require('./utils'),
     i18n = require('../i18n'),
-
+    settingsCache = require('../settings/cache'),
     docName = 'settings',
     settings,
-
-    settingsCache = require('../settings/cache'),
-
-    settingsFilter,
     settingsResult,
     canEditAllSettings,
 
@@ -223,7 +219,7 @@ settings = {
         });
 
         return canEditAllSettings(object.settings, options).then(function () {
-            return utils.checkObject(object, docName).then(function (checkedData) {
+            return apiUtils.checkObject(object, docName).then(function (checkedData) {
                 options.user = self.user;
                 return models.Settings.edit(checkedData.settings, options);
             }).then(function (settingsModelsArray) {

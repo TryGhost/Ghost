@@ -2,12 +2,11 @@
 // RESTful API for the Post resource
 var Promise = require('bluebird'),
     _ = require('lodash'),
+    pipeline = require('../utils/pipeline'),
+    apiUtils = require('./utils'),
     models = require('../models'),
     errors = require('../errors'),
-    utils = require('./utils'),
-    pipeline = require('../utils/pipeline'),
     i18n = require('../i18n'),
-
     docName = 'posts',
     allowedIncludes = [
         'created_by', 'updated_by', 'published_by', 'author', 'tags', 'fields',
@@ -46,7 +45,7 @@ posts = {
         if (options && options.context && (options.context.user || options.context.internal)) {
             extraOptions.push('staticPages');
         }
-        permittedOptions = utils.browseDefaultOptions.concat(extraOptions);
+        permittedOptions = apiUtils.browseDefaultOptions.concat(extraOptions);
 
         /**
          * ### Model Query
@@ -60,9 +59,9 @@ posts = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName, {opts: permittedOptions}),
-            utils.handlePublicPermissions(docName, 'browse'),
-            utils.convertOptions(allowedIncludes, models.Post.allowedFormats),
+            apiUtils.validate(docName, {opts: permittedOptions}),
+            apiUtils.handlePublicPermissions(docName, 'browse'),
+            apiUtils.convertOptions(allowedIncludes, models.Post.allowedFormats),
             modelQuery
         ];
 
@@ -94,9 +93,9 @@ posts = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName, {attrs: attrs, opts: options.opts || []}),
-            utils.handlePublicPermissions(docName, 'read'),
-            utils.convertOptions(allowedIncludes, models.Post.allowedFormats),
+            apiUtils.validate(docName, {attrs: attrs, opts: options.opts || []}),
+            apiUtils.handlePublicPermissions(docName, 'read'),
+            apiUtils.convertOptions(allowedIncludes, models.Post.allowedFormats),
             modelQuery
         ];
 
@@ -135,9 +134,9 @@ posts = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName, {opts: utils.idDefaultOptions.concat(options.opts || [])}),
-            utils.handlePermissions(docName, 'edit'),
-            utils.convertOptions(allowedIncludes),
+            apiUtils.validate(docName, {opts: apiUtils.idDefaultOptions.concat(options.opts || [])}),
+            apiUtils.handlePermissions(docName, 'edit'),
+            apiUtils.convertOptions(allowedIncludes),
             modelQuery
         ];
 
@@ -182,9 +181,9 @@ posts = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName),
-            utils.handlePermissions(docName, 'add'),
-            utils.convertOptions(allowedIncludes),
+            apiUtils.validate(docName),
+            apiUtils.handlePermissions(docName, 'add'),
+            apiUtils.convertOptions(allowedIncludes),
             modelQuery
         ];
 
@@ -229,9 +228,9 @@ posts = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName, {opts: utils.idDefaultOptions}),
-            utils.handlePermissions(docName, 'destroy'),
-            utils.convertOptions(allowedIncludes),
+            apiUtils.validate(docName, {opts: apiUtils.idDefaultOptions}),
+            apiUtils.handlePermissions(docName, 'destroy'),
+            apiUtils.convertOptions(allowedIncludes),
             deletePost
         ];
 

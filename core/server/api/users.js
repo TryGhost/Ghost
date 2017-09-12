@@ -2,12 +2,12 @@
 // RESTful API for the User resource
 var Promise = require('bluebird'),
     _ = require('lodash'),
-    models = require('../models'),
+    pipeline = require('../utils/pipeline'),
+    apiUtils = require('./utils'),
     canThis = require('../permissions').canThis,
+    models = require('../models'),
     errors = require('../errors'),
     events = require('../events'),
-    utils = require('./utils'),
-    pipeline = require('../utils/pipeline'),
     i18n = require('../i18n'),
     docName = 'users',
     // TODO: implement created_by, updated_by
@@ -28,7 +28,7 @@ users = {
      */
     browse: function browse(options) {
         var extraOptions = ['status'],
-            permittedOptions = utils.browseDefaultOptions.concat(extraOptions),
+            permittedOptions = apiUtils.browseDefaultOptions.concat(extraOptions),
             tasks;
 
         /**
@@ -43,9 +43,9 @@ users = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName, {opts: permittedOptions}),
-            utils.handlePublicPermissions(docName, 'browse'),
-            utils.convertOptions(allowedIncludes),
+            apiUtils.validate(docName, {opts: permittedOptions}),
+            apiUtils.handlePublicPermissions(docName, 'browse'),
+            apiUtils.convertOptions(allowedIncludes),
             doQuery
         ];
 
@@ -80,9 +80,9 @@ users = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName, {attrs: attrs}),
-            utils.handlePublicPermissions(docName, 'read'),
-            utils.convertOptions(allowedIncludes),
+            apiUtils.validate(docName, {attrs: attrs}),
+            apiUtils.handlePublicPermissions(docName, 'read'),
+            apiUtils.convertOptions(allowedIncludes),
             doQuery
         ];
 
@@ -108,7 +108,7 @@ users = {
      */
     edit: function edit(object, options) {
         var extraOptions = ['editRoles'],
-            permittedOptions = extraOptions.concat(utils.idDefaultOptions),
+            permittedOptions = extraOptions.concat(apiUtils.idDefaultOptions),
             tasks;
 
         if (object.users && object.users[0] && object.users[0].roles && object.users[0].roles[0]) {
@@ -203,9 +203,9 @@ users = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName, {opts: permittedOptions}),
+            apiUtils.validate(docName, {opts: permittedOptions}),
             handlePermissions,
-            utils.convertOptions(allowedIncludes),
+            apiUtils.convertOptions(allowedIncludes),
             doQuery
         ];
 
@@ -269,9 +269,9 @@ users = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName, {opts: utils.idDefaultOptions}),
+            apiUtils.validate(docName, {opts: apiUtils.idDefaultOptions}),
             handlePermissions,
-            utils.convertOptions(allowedIncludes),
+            apiUtils.convertOptions(allowedIncludes),
             deleteUser
         ];
 
@@ -289,7 +289,7 @@ users = {
         var tasks;
 
         function validateRequest() {
-            return utils.validate('password')(object, options)
+            return apiUtils.validate('password')(object, options)
                 .then(function (options) {
                     var data = options.data.password[0];
 
@@ -337,7 +337,7 @@ users = {
         tasks = [
             validateRequest,
             handlePermissions,
-            utils.convertOptions(allowedIncludes),
+            apiUtils.convertOptions(allowedIncludes),
             doQuery
         ];
 
@@ -382,9 +382,9 @@ users = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate('owner'),
+            apiUtils.validate('owner'),
             handlePermissions,
-            utils.convertOptions(allowedIncludes),
+            apiUtils.convertOptions(allowedIncludes),
             doQuery
         ];
 

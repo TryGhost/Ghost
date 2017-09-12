@@ -3,13 +3,12 @@
 var Promise = require('bluebird'),
     _ = require('lodash'),
     fs = require('fs'),
+    pipeline = require('../utils/pipeline'),
+    globalUtils = require('../utils'),
+    apiUtils = require('./utils'),
     models = require('../models'),
     errors = require('../errors'),
-    utils = require('./utils'),
-    serverUtils = require('../utils'),
-    pipeline = require('../utils/pipeline'),
     i18n = require('../i18n'),
-
     docName = 'subscribers',
     subscribers;
 
@@ -39,8 +38,8 @@ subscribers = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName, {opts: utils.browseDefaultOptions}),
-            utils.handlePermissions(docName, 'browse'),
+            apiUtils.validate(docName, {opts: apiUtils.browseDefaultOptions}),
+            apiUtils.handlePermissions(docName, 'browse'),
             doQuery
         ];
 
@@ -69,8 +68,8 @@ subscribers = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName, {attrs: attrs}),
-            utils.handlePermissions(docName, 'read'),
+            apiUtils.validate(docName, {attrs: attrs}),
+            apiUtils.handlePermissions(docName, 'read'),
             doQuery
         ];
 
@@ -120,8 +119,8 @@ subscribers = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName),
-            utils.handlePermissions(docName, 'add'),
+            apiUtils.validate(docName),
+            apiUtils.handlePermissions(docName, 'add'),
             doQuery
         ];
 
@@ -154,8 +153,8 @@ subscribers = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName, {opts: utils.idDefaultOptions}),
-            utils.handlePermissions(docName, 'edit'),
+            apiUtils.validate(docName, {opts: apiUtils.idDefaultOptions}),
+            apiUtils.handlePermissions(docName, 'edit'),
             doQuery
         ];
 
@@ -192,8 +191,8 @@ subscribers = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName, {opts: utils.idDefaultOptions}),
-            utils.handlePermissions(docName, 'destroy'),
+            apiUtils.validate(docName, {opts: apiUtils.idDefaultOptions}),
+            apiUtils.handlePermissions(docName, 'destroy'),
             doQuery
         ];
 
@@ -247,7 +246,7 @@ subscribers = {
         }
 
         tasks = [
-            utils.handlePermissions(docName, 'browse'),
+            apiUtils.handlePermissions(docName, 'browse'),
             exportSubscribers
         ];
 
@@ -272,7 +271,7 @@ subscribers = {
                 invalid = 0,
                 duplicates = 0;
 
-            return serverUtils.readCSV({
+            return globalUtils.readCSV({
                 path: filePath,
                 columnsToExtract: [{name: 'email', lookup: /email/i}]
             }).then(function (result) {
@@ -309,7 +308,7 @@ subscribers = {
         }
 
         tasks = [
-            utils.handlePermissions(docName, 'add'),
+            apiUtils.handlePermissions(docName, 'add'),
             importCSV
         ];
 

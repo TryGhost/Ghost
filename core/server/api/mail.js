@@ -3,12 +3,12 @@
 
 var Promise = require('bluebird'),
     pipeline = require('../utils/pipeline'),
-    errors = require('../errors'),
-    mail = require('../mail'),
+    apiUtils = require('./utils'),
     models = require('../models'),
-    utils = require('./utils'),
-    notifications = require('./notifications'),
+    errors = require('../errors'),
     i18n = require('../i18n'),
+    mail = require('../mail'),
+    notificationsAPI = require('./notifications'),
     docName = 'mail',
     mailer,
     apiMail;
@@ -23,7 +23,7 @@ function sendMail(object) {
 
     return mailer.send(object.mail[0].message).catch(function (err) {
         if (mailer.state.usingDirect) {
-            notifications.add(
+            notificationsAPI.add(
                 {notifications: [{
                     type: 'warn',
                     message: [
@@ -84,7 +84,7 @@ apiMail = {
         }
 
         tasks = [
-            utils.handlePermissions(docName, 'send'),
+            apiUtils.handlePermissions(docName, 'send'),
             send,
             formatResponse
         ];

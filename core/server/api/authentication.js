@@ -1,19 +1,19 @@
-var _ = require('lodash'),
+var Promise = require('bluebird'),
+    _ = require('lodash'),
     validator = require('validator'),
-    Promise = require('bluebird'),
     pipeline = require('../utils/pipeline'),
-    settings = require('./settings'),
     mail = require('./../mail'),
-    apiMail = require('./mail'),
     globalUtils = require('../utils'),
-    utils = require('./utils'),
-    errors = require('../errors'),
+    apiUtils = require('./utils'),
     models = require('../models'),
-    logging = require('../logging'),
-    events = require('../events'),
     config = require('../config'),
+    errors = require('../errors'),
+    events = require('../events'),
     i18n = require('../i18n'),
+    logging = require('../logging'),
     spamPrevention = require('../middleware/api/spam-prevention'),
+    mailAPI = require('./mail'),
+    settingsAPI = require('./settings'),
     authentication,
     tokenSecurity = {};
 
@@ -61,7 +61,7 @@ function setupTasks(setupData) {
     var tasks;
 
     function validateData(setupData) {
-        return utils.checkObject(setupData, 'setup').then(function then(checked) {
+        return apiUtils.checkObject(setupData, 'setup').then(function then(checked) {
             var data = checked.setup[0];
 
             return {
@@ -109,7 +109,7 @@ function setupTasks(setupData) {
             {key: 'description', value: i18n.t('common.api.authentication.sampleBlogDescription')}
         ];
 
-        return settings.edit({settings: userSettings}, context).return(user);
+        return settingsAPI.edit({settings: userSettings}, context).return(user);
     }
 
     function formatResponse(user) {
@@ -141,7 +141,7 @@ authentication = {
         var tasks;
 
         function validateRequest(object) {
-            return utils.checkObject(object, 'passwordreset').then(function then(data) {
+            return apiUtils.checkObject(object, 'passwordreset').then(function then(data) {
                 var email = data.passwordreset[0].email;
 
                 if (typeof email !== 'string' || !validator.isEmail(email)) {
@@ -158,7 +158,7 @@ authentication = {
             var options = {context: {internal: true}},
                 dbHash, token;
 
-            return settings.read(_.merge({key: 'db_hash'}, options))
+            return settingsAPI.read(_.merge({key: 'db_hash'}, options))
                 .then(function fetchedSettings(response) {
                     dbHash = response.settings[0].value;
 
@@ -205,7 +205,7 @@ authentication = {
                     }]
                 };
 
-                return apiMail.send(payload, {context: {internal: true}});
+                return mailAPI.send(payload, {context: {internal: true}});
             });
         }
 
@@ -238,7 +238,7 @@ authentication = {
         var tasks, tokenIsCorrect, dbHash, options = {context: {internal: true}}, tokenParts;
 
         function validateRequest() {
-            return utils.validate('passwordreset')(object, options)
+            return apiUtils.validate('passwordreset')(object, options)
                 .then(function (options) {
                     var data = options.data.passwordreset[0];
 
@@ -286,7 +286,7 @@ authentication = {
                 oldPassword = data.oldPassword,
                 newPassword = data.newPassword;
 
-            return settings.read(_.merge({key: 'db_hash'}, options))
+            return settingsAPI.read(_.merge({key: 'db_hash'}, options))
                 .then(function fetchedSettings(response) {
                     dbHash = response.settings[0].value;
 
@@ -355,7 +355,7 @@ authentication = {
         var tasks, invite, options = {context: {internal: true}};
 
         function validateInvitation(invitation) {
-            return utils.checkObject(invitation, 'invitation')
+            return apiUtils.checkObject(invitation, 'invitation')
                 .then(function () {
                     if (!invitation.invitation[0].token) {
                         return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.authentication.noTokenProvided')}));
@@ -532,7 +532,7 @@ authentication = {
                             }]
                         };
 
-                    apiMail.send(payload, {context: {internal: true}}).catch(function (error) {
+                    mailAPI.send(payload, {context: {internal: true}}).catch(function (error) {
                         logging.error(new errors.EmailError({
                             err: error,
                             context: i18n.t('errors.api.authentication.unableToSendWelcomeEmail'),
