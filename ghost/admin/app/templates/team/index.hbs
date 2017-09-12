@@ -79,13 +79,13 @@
             {{#if session.user.isAuthor}}
                 {{#with session.user as |user|}}
                     {{#gh-user-active user=user as |component|}}
-                        {{gh-user-list-item user=user}}
+                        {{gh-user-list-item user=user component=component}}
                     {{/gh-user-active}}
                 {{/with}}
             {{else}}
                 {{#each sortedActiveUsers key="id" as |user|}}
                     {{#gh-user-active user=user as |component|}}
-                        {{gh-user-list-item user=user}}
+                        {{gh-user-list-item user=user component=component}}
                     {{/gh-user-active}}
                 {{/each}}
             {{/if}}
