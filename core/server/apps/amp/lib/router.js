@@ -14,6 +14,7 @@ var path                = require('path'),
 function controller(req, res, next) {
     var templateName = 'amp',
         defaultTemplate = path.resolve(__dirname, 'views', templateName + '.hbs'),
+        view = templates.pickTemplate(templateName, defaultTemplate),
         data = req.body || {};
 
     if (res.error) {
@@ -22,12 +23,14 @@ function controller(req, res, next) {
 
     setResponseContext(req, res, data);
 
-    // we have to check the context. Our context must be ['post', 'amp'], otherwise we won't render the template
-    if (_.includes(res.locals.context, 'post') && _.includes(res.locals.context, 'amp')) {
-        return res.render(templates.pickTemplate(templateName, defaultTemplate), data);
+    // Context check:
+    // Our context must be ['post', 'amp'], otherwise we won't render the template
+    // This prevents AMP from being rendered for pages
+    if (_.intersection(res.locals.context, ['post', 'amp']).length < 2) {
+        return next();
     }
 
-    return next();
+    return res.render(view, data);
 }
 
 function getPostData(req, res, next) {

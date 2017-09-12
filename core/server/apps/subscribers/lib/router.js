@@ -9,17 +9,18 @@ var path                = require('path'),
     errors              = require('../../../errors'),
     validator           = require('../../../data/validation').validator,
     templates           = require('../../../controllers/frontend/templates'),
-    postlookup          = require('../../../controllers/frontend/post-lookup'),
+    postLookup          = require('../../../controllers/frontend/post-lookup'),
     setResponseContext  = require('../../../controllers/frontend/context');
 
 function controller(req, res) {
     var templateName = 'subscribe',
         defaultTemplate = path.resolve(__dirname, 'views', templateName + '.hbs'),
+        view = templates.pickTemplate(templateName, defaultTemplate),
         data = req.body;
 
     setResponseContext(req, res);
 
-    return res.render(templates.pickTemplate(templateName, defaultTemplate), data);
+    return res.render(view, data);
 }
 
 /**
@@ -60,7 +61,7 @@ function handleSource(req, res, next) {
     delete req.body.location;
     delete req.body.referrer;
 
-    postlookup(req.body.subscribed_url)
+    postLookup(req.body.subscribed_url)
         .then(function (result) {
             if (result && result.post) {
                 req.body.post_id = result.post.id;

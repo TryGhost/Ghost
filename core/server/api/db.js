@@ -1,18 +1,18 @@
 // # DB API
 // API for DB operations
-var Promise          = require('bluebird'),
-    exporter         = require('../data/export'),
-    importer         = require('../data/importer'),
-    backupDatabase   = require('../data/db/backup'),
-    models           = require('../models'),
-    errors           = require('../errors'),
-    utils            = require('./utils'),
-    path             = require('path'),
-    fs               = require('fs'),
-    utilsUrl         = require('../utils/url'),
-    config           = require('../config'),
-    pipeline         = require('../utils/pipeline'),
-    docName          = 'db',
+var Promise = require('bluebird'),
+    path = require('path'),
+    fs = require('fs'),
+    pipeline = require('../utils/pipeline'),
+    apiUtils = require('./utils'),
+    exporter = require('../data/export'),
+    importer = require('../data/importer'),
+    backupDatabase = require('../data/db/backup'),
+    models = require('../models'),
+    config = require('../config'),
+    errors = require('../errors'),
+    utilsUrl = require('../utils/url'),
+    docName = 'db',
     db;
 
 /**
@@ -67,7 +67,7 @@ db = {
         }
 
         tasks = [
-            utils.handlePermissions(docName, 'exportContent'),
+            apiUtils.handlePermissions(docName, 'exportContent'),
             exportContent
         ];
 
@@ -94,7 +94,7 @@ db = {
         }
 
         tasks = [
-            utils.handlePermissions(docName, 'importContent'),
+            apiUtils.handlePermissions(docName, 'importContent'),
             importContent
         ];
 
@@ -129,7 +129,7 @@ db = {
         }
 
         tasks = [
-            utils.handlePermissions(docName, 'deleteAllContent'),
+            apiUtils.handlePermissions(docName, 'deleteAllContent'),
             backupDatabase,
             deleteContent
         ];

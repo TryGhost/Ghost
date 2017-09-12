@@ -11,6 +11,7 @@ var path                = require('path'),
 function controller(req, res) {
     var templateName = 'private',
         defaultTemplate = path.resolve(__dirname, 'views', templateName + '.hbs'),
+        view = templates.pickTemplate(templateName, defaultTemplate),
         data = {};
 
     if (res.error) {
@@ -19,7 +20,7 @@ function controller(req, res) {
 
     setResponseContext(req, res);
 
-    return res.render(templates.pickTemplate(templateName, defaultTemplate), data);
+    return res.render(view, data);
 }
 
 // password-protected frontend route
