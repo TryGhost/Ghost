@@ -3,6 +3,7 @@ var _               = require('lodash'),
     uuid            = require('uuid'),
     moment          = require('moment'),
     Promise         = require('bluebird'),
+    ObjectId        = require('bson-objectid'),
     sequence        = require('../utils/sequence'),
     errors          = require('../errors'),
     htmlToText      = require('html-to-text'),
@@ -518,12 +519,19 @@ Post = ghostBookshelf.Model.extend({
         }
 
         if (oldPostId) {
-            oldPostId = Number(oldPostId);
-
-            if (isNaN(oldPostId)) {
-                commentId = attrs.id;
-            } else {
+            // CASE: You create a new post on 1.X, you enable disqus. You export your content, you import your content on a different instance.
+            // This time, the importer remembers your old post id in the amp field as ObjectId.
+            if (ObjectId.isValid(oldPostId)) {
                 commentId = oldPostId;
+            } else {
+                oldPostId = Number(oldPostId);
+
+                // CASE: You import an old post id from your LTS blog. Stored in the amp field.
+                if (!isNaN(oldPostId)) {
+                    commentId = oldPostId.toString();
+                } else {
+                    commentId = attrs.id;
+                }
             }
         } else {
             commentId = attrs.id;
