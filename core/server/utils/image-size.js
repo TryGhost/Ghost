@@ -2,15 +2,13 @@ var debug = require('ghost-ignition').debug('utils:image-size'),
     sizeOf = require('image-size'),
     url = require('url'),
     Promise = require('bluebird'),
-    got = require('got'),
+    request = require('../utils/request'),
     utils = require('../utils'),
     errors = require('../errors'),
     config = require('../config'),
     storage = require('../adapters/storage'),
     _ = require('lodash'),
     storageUtils = require('../adapters/storage/utils'),
-    dimensions,
-    imageObject = {},
     getImageSizeFromUrl,
     getImageSizeFromFilePath;
 
@@ -22,7 +20,11 @@ var debug = require('ghost-ignition').debug('utils:image-size'),
 function isLocalImage(imagePath) {
     imagePath = utils.url.urlFor('image', {image: imagePath}, true);
 
-    return imagePath.match(new RegExp('^' + utils.url.urlJoin(utils.url.urlFor('home', true), utils.url.getSubdir(), '/', utils.url.STATIC_IMAGE_URL_PREFIX)));
+    if (imagePath) {
+        return imagePath.match(new RegExp('^' + utils.url.urlJoin(utils.url.urlFor('home', true), utils.url.getSubdir(), '/', utils.url.STATIC_IMAGE_URL_PREFIX)));
+    } else {
+        return false;
+    }
 }
 
 /**
@@ -32,7 +34,11 @@ function isLocalImage(imagePath) {
  */
 function fetchDimensionsFromBuffer(options) {
     var buffer = options.buffer,
-        imagePath = options.imagePath;
+        imagePath = options.imagePath,
+        imageObject = {},
+        dimensions;
+
+    imageObject.url = imagePath;
 
     try {
         // Using the Buffer rather than an URL requires to use sizeOf synchronously.
@@ -84,25 +90,29 @@ function fetchDimensionsFromBuffer(options) {
  */
 getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
     var requestOptions,
+        parsedUrl,
         timeout = config.get('times:getImageSizeTimeoutInMS') || 10000;
-
-    imageObject.url = imagePath;
 
     if (isLocalImage(imagePath)) {
         // don't make a request for a locally stored image
-        return Promise.resolve(getImageSizeFromFilePath(imagePath));
+        return getImageSizeFromFilePath(imagePath);
     }
+
+    // CASE: pre 1.0 users were able to use an asset path for their blog logo
+    if (imagePath.match(/^\/assets/)) {
+        imagePath = utils.url.urlJoin(utils.url.urlFor('home', true), utils.url.getSubdir(), '/', imagePath);
+    }
+
+    parsedUrl = url.parse(imagePath);
 
     // check if we got an url without any protocol
-    if (imagePath.indexOf('http') === -1) {
-        // our gravatar urls start with '//' in that case add 'http:'
-        if (imagePath.indexOf('//') === 0) {
-            // it's a gravatar url
-            imagePath = 'http:' + imagePath;
-        }
+    if (!parsedUrl.protocol) {
+        // CASE: our gravatar URLs start with '//' and we need to add 'http:'
+        // to make the request work
+        imagePath = 'http:' + imagePath;
     }
 
-    imagePath = url.parse(imagePath);
+    debug('requested imagePath:', imagePath);
     requestOptions = {
         headers: {
             'User-Agent': 'Mozilla/5.0'
@@ -111,39 +121,49 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
         encoding: null
     };
 
-    return got(
+    return request(
         imagePath,
         requestOptions
     ).then(function (response) {
-        debug('Image fetched (URL):', imagePath.href);
+        debug('Image fetched (URL):', imagePath);
 
         return fetchDimensionsFromBuffer({
             buffer: response.body,
-            imagePath: imagePath.href
+            // we need to return the URL that's accessible for network requests as this imagePath
+            // value will be used as the URL for structured data
+            imagePath: parsedUrl.href
         });
+    }).catch({code: 'URL_MISSING_INVALID'}, function (err) {
+        return Promise.reject(new errors.InternalServerError({
+            message: err.message,
+            code: 'IMAGE_SIZE_URL',
+            statusCode: err.statusCode,
+            context: err.url || imagePath
+        }));
+    }).catch({code: 'ETIMEDOUT'}, {statusCode: 408}, function (err) {
+        return Promise.reject(new errors.InternalServerError({
+            message: 'Request timed out.',
+            code: 'IMAGE_SIZE_URL',
+            statusCode: err.statusCode,
+            context: err.url || imagePath
+        }));
+    }).catch({code: 'ENOENT'}, {statusCode: 404}, function (err) {
+        return Promise.reject(new errors.NotFoundError({
+            message: 'Image not found.',
+            code: 'IMAGE_SIZE_URL',
+            statusCode: err.statusCode,
+            context: err.url || imagePath
+        }));
     }).catch(function (err) {
-        if (err.statusCode === 404) {
-            return Promise.reject(new errors.NotFoundError({
-                message: 'Image not found.',
-                code: 'IMAGE_SIZE',
-                statusCode: err.statusCode,
-                context: err.url || imagePath.href || imagePath
-            }));
-        } else if (err.code === 'ETIMEDOUT') {
-            return Promise.reject(new errors.InternalServerError({
-                message: 'Request timed out.',
-                code: 'IMAGE_SIZE',
-                statusCode: err.statusCode,
-                context: err.url || imagePath.href || imagePath
-            }));
-        } else {
-            return Promise.reject(new errors.InternalServerError({
-                message: 'Unknown Request error.',
-                code: 'IMAGE_SIZE',
-                statusCode: err.statusCode,
-                context: err.url || imagePath.href || imagePath
-            }));
+        if (err instanceof errors.GhostError) {
+            return Promise.reject(err);
         }
+        return Promise.reject(new errors.InternalServerError({
+            message: 'Unknown Request error.',
+            code: 'IMAGE_SIZE_URL',
+            statusCode: err.statusCode,
+            context: err.url || imagePath
+        }));
     });
 };
 
@@ -165,27 +185,48 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
  * @returns {object} imageObject or error
  */
 getImageSizeFromFilePath = function getImageSizeFromFilePath(imagePath) {
-    imagePath = utils.url.urlFor('image', {image: imagePath}, true);
-    imageObject.url = imagePath;
+    var filePath;
 
-    imagePath = storageUtils.getLocalFileStoragePath(imagePath);
+    imagePath = utils.url.urlFor('image', {image: imagePath}, true);
+
+    // get the storage readable filePath
+    filePath = storageUtils.getLocalFileStoragePath(imagePath);
 
     return storage.getStorage()
-        .read({path: imagePath})
+        .read({path: filePath})
         .then(function readFile(buf) {
-            debug('Image fetched (storage):', imagePath);
+            debug('Image fetched (storage):', filePath);
 
             return fetchDimensionsFromBuffer({
                 buffer: buf,
+                // we need to return the URL that's accessible for network requests as this imagePath
+                // value will be used as the URL for structured data
                 imagePath: imagePath
             });
-        })
-        .catch(function (err) {
+        }).catch({code: 'ENOENT'}, function (err) {
+            return Promise.reject(new errors.NotFoundError({
+                message: err.message,
+                code: 'IMAGE_SIZE_STORAGE',
+                err: err,
+                context: filePath,
+                errorDetails: {
+                    originalPath: imagePath,
+                    reqFilePath: filePath
+                }
+            }));
+        }).catch(function (err) {
+            if (err instanceof errors.GhostError) {
+                return Promise.reject(err);
+            }
             return Promise.reject(new errors.InternalServerError({
                 message: err.message,
-                code: 'IMAGE_SIZE',
+                code: 'IMAGE_SIZE_STORAGE',
                 err: err,
-                context: imagePath
+                context: filePath,
+                errorDetails: {
+                    originalPath: imagePath,
+                    reqFilePath: filePath
+                }
             }));
         });
 };

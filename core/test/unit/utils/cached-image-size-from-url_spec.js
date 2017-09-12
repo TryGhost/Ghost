@@ -22,7 +22,9 @@ describe('getCachedImageSizeFromUrl', function () {
     });
 
     it('should read from cache, if dimensions for image are fetched already', function (done) {
-        var url = 'http://mysite.com/content/image/mypostcoverimage.jpg';
+        var url = 'http://mysite.com/content/image/mypostcoverimage.jpg',
+            cachedImagedSizeResult,
+            imageSizeSpy;
 
         sizeOfStub.returns(new Promise.resolve({
             width: 50,
@@ -32,7 +34,10 @@ describe('getCachedImageSizeFromUrl', function () {
 
         getCachedImageSizeFromUrl.__set__('imageSize.getImageSizeFromUrl', sizeOfStub);
 
-        getCachedImageSizeFromUrl(url).then(function () {
+        imageSizeSpy = getCachedImageSizeFromUrl.__get__('imageSize.getImageSizeFromUrl');
+
+        cachedImagedSizeResult = Promise.resolve(getCachedImageSizeFromUrl(url));
+        cachedImagedSizeResult.then(function () {
             // first call to get result from `getImageSizeFromUrl`
             cachedImagedSize = getCachedImageSizeFromUrl.__get__('imageSizeCache');
             should.exist(cachedImagedSize);
@@ -41,9 +46,13 @@ describe('getCachedImageSizeFromUrl', function () {
             cachedImagedSize[url].width.should.be.equal(50);
             should.exist(cachedImagedSize[url].height);
             cachedImagedSize[url].height.should.be.equal(50);
+
             // second call to check if values get returned from cache
-            getCachedImageSizeFromUrl(url).then(function () {
+            cachedImagedSizeResult = Promise.resolve(getCachedImageSizeFromUrl(url));
+            cachedImagedSizeResult.then(function () {
                 cachedImagedSize = getCachedImageSizeFromUrl.__get__('imageSizeCache');
+                imageSizeSpy.calledOnce.should.be.true();
+                imageSizeSpy.calledTwice.should.be.false();
                 should.exist(cachedImagedSize);
                 cachedImagedSize.should.have.property(url);
                 should.exist(cachedImagedSize[url].width);
@@ -57,14 +66,15 @@ describe('getCachedImageSizeFromUrl', function () {
     });
 
     it('can handle image-size errors', function (done) {
-        var url = 'http://mysite.com/content/image/mypostcoverimage.jpg';
+        var url = 'http://mysite.com/content/image/mypostcoverimage.jpg',
+            cachedImagedSizeResult;
 
         sizeOfStub.returns(new Promise.reject('error'));
 
         getCachedImageSizeFromUrl.__set__('imageSize.getImageSizeFromUrl', sizeOfStub);
 
-        getCachedImageSizeFromUrl(url)
-            .then(function () {
+        cachedImagedSizeResult = Promise.resolve(getCachedImageSizeFromUrl(url));
+        cachedImagedSizeResult.then(function () {
                 cachedImagedSize = getCachedImageSizeFromUrl.__get__('imageSizeCache');
                 should.exist(cachedImagedSize);
                 cachedImagedSize.should.have.property(url);

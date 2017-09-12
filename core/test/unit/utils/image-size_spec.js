@@ -139,6 +139,45 @@ describe('Image Size', function () {
             }).catch(done);
         });
 
+        it('[success] should return image dimensions asset path images', function (done) {
+            var url = '/assets/img/logo.png?v=d30c3d1e41',
+                urlForStub,
+                urlGetSubdirStub,
+                expectedImageObject =
+                {
+                    height: 100,
+                    url: 'http://myblog.com/assets/img/logo.png?v=d30c3d1e41',
+                    width: 100
+                };
+
+            urlForStub = sandbox.stub(utils.url, 'urlFor');
+            urlForStub.withArgs('home').returns('http://myblog.com/');
+            urlGetSubdirStub = sandbox.stub(utils.url, 'getSubdir');
+            urlGetSubdirStub.returns('');
+
+            requestMock = nock('http://myblog.com')
+                .get('/assets/img/logo.png?v=d30c3d1e41')
+                .reply(200, {
+                    body: '<Buffer 2c be a4 40 f7 87 73 1e 57 2c c1 e4 0d 79 03 95 42 f0 42 2e 41 95 27 c9 5c 35 a7 71 2c 09 5a 57 d3 04 1e 83 03 28 07 96 b0 c8 88 65 07 7a d1 d6 63 50>'
+                });
+
+            sizeOfStub = sandbox.stub();
+            sizeOfStub.returns({width: 100, height: 100, type: 'svg'});
+            imageSize.__set__('sizeOf', sizeOfStub);
+
+            result = imageSize.getImageSizeFromUrl(url).then(function (res) {
+                requestMock.isDone().should.be.true();
+                should.exist(res);
+                should.exist(res.width);
+                res.width.should.be.equal(expectedImageObject.width);
+                should.exist(res.height);
+                res.height.should.be.equal(expectedImageObject.height);
+                should.exist(res.url);
+                res.url.should.be.equal(expectedImageObject.url);
+                done();
+            }).catch(done);
+        });
+
         it('[success] should return image dimensions for gravatar images request', function (done) {
             var url = '//www.gravatar.com/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=250&d=mm&r=x',
                 expectedImageObject =
