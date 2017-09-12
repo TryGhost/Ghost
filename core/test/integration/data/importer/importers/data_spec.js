@@ -128,7 +128,7 @@ describe('Import', function () {
                 // Grab the data from tables
                 return Promise.all([
                     knex('users').select(),
-                    knex('posts').select(),
+                    models.Post.findPage(testUtils.context.internal),
                     knex('settings').select(),
                     knex('tags').select(),
                     knex('subscribers').select()
@@ -139,7 +139,7 @@ describe('Import', function () {
                 importedData.length.should.equal(5, 'Did not get data successfully');
 
                 var users = importedData[0],
-                    posts = importedData[1],
+                    posts = importedData[1].posts,
                     settings = importedData[2],
                     tags = importedData[3],
                     subscribers = importedData[4];
@@ -151,8 +151,8 @@ describe('Import', function () {
 
                 // import no longer requires all data to be dropped, and adds posts
                 posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
-                posts[0].status.should.eql('published');
-                posts[1].status.should.eql('scheduled');
+                posts[0].status.should.eql('scheduled');
+                posts[1].status.should.eql('published');
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
