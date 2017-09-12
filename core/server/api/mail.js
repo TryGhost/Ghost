@@ -1,15 +1,15 @@
 // # Mail API
 // API for sending Mail
 
-var Promise       = require('bluebird'),
-    pipeline      = require('../utils/pipeline'),
-    errors        = require('../errors'),
-    mail          = require('../mail'),
-    Models        = require('../models'),
-    utils         = require('./utils'),
+var Promise = require('bluebird'),
+    pipeline = require('../utils/pipeline'),
+    errors = require('../errors'),
+    mail = require('../mail'),
+    models = require('../models'),
+    utils = require('./utils'),
     notifications = require('./notifications'),
-    i18n          = require('../i18n'),
-    docName       = 'mail',
+    i18n = require('../i18n'),
+    docName = 'mail',
     mailer,
     apiMail;
 
@@ -108,7 +108,7 @@ apiMail = {
          */
 
         function modelQuery() {
-            return Models.User.findOne({id: options.context.user});
+            return models.User.findOne({id: options.context.user});
         }
 
         /**

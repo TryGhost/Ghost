@@ -1,14 +1,14 @@
 // # Settings API
 // RESTful API for the Setting resource
-var _            = require('lodash'),
-    models       = require('../models'),
-    Promise      = require('bluebird'),
-    canThis      = require('../permissions').canThis,
-    errors       = require('../errors'),
-    utils        = require('./utils'),
-    i18n         = require('../i18n'),
+var _ = require('lodash'),
+    models = require('../models'),
+    Promise = require('bluebird'),
+    canThis = require('../permissions').canThis,
+    errors = require('../errors'),
+    utils = require('./utils'),
+    i18n = require('../i18n'),
 
-    docName      = 'settings',
+    docName = 'settings',
     settings,
 
     settingsCache = require('../settings/cache'),

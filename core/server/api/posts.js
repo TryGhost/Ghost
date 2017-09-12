@@ -1,14 +1,14 @@
 // # Posts API
 // RESTful API for the Post resource
-var Promise         = require('bluebird'),
-    _               = require('lodash'),
-    models          = require('../models'),
-    errors          = require('../errors'),
-    utils           = require('./utils'),
-    pipeline        = require('../utils/pipeline'),
-    i18n            = require('../i18n'),
+var Promise = require('bluebird'),
+    _ = require('lodash'),
+    models = require('../models'),
+    errors = require('../errors'),
+    utils = require('./utils'),
+    pipeline = require('../utils/pipeline'),
+    i18n = require('../i18n'),
 
-    docName         = 'posts',
+    docName = 'posts',
     allowedIncludes = [
         'created_by', 'updated_by', 'published_by', 'author', 'tags', 'fields',
         'next', 'previous', 'next.author', 'next.tags', 'previous.author', 'previous.tags'

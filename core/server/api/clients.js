@@ -1,14 +1,14 @@
 // # Client API
 // RESTful API for the Client resource
-var Promise      = require('bluebird'),
-    _            = require('lodash'),
-    models       = require('../models'),
-    errors       = require('../errors'),
-    utils        = require('./utils'),
-    pipeline     = require('../utils/pipeline'),
-    i18n         = require('../i18n'),
+var Promise = require('bluebird'),
+    _ = require('lodash'),
+    models = require('../models'),
+    errors = require('../errors'),
+    utils = require('./utils'),
+    pipeline = require('../utils/pipeline'),
+    i18n = require('../i18n'),
 
-    docName      = 'clients',
+    docName = 'clients',
     clients;
 
 /**

@@ -1,15 +1,15 @@
 // # Users API
 // RESTful API for the User resource
-var Promise         = require('bluebird'),
-    _               = require('lodash'),
-    models          = require('../models'),
-    canThis         = require('../permissions').canThis,
-    errors          = require('../errors'),
-    events          = require('../events'),
-    utils           = require('./utils'),
-    pipeline        = require('../utils/pipeline'),
-    i18n            = require('../i18n'),
-    docName         = 'users',
+var Promise = require('bluebird'),
+    _ = require('lodash'),
+    models = require('../models'),
+    canThis = require('../permissions').canThis,
+    errors = require('../errors'),
+    events = require('../events'),
+    utils = require('./utils'),
+    pipeline = require('../utils/pipeline'),
+    i18n = require('../i18n'),
+    docName = 'users',
     // TODO: implement created_by, updated_by
     allowedIncludes = ['count.posts', 'permissions', 'roles', 'roles.permissions'],
     users;

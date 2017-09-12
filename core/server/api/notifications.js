@@ -1,15 +1,15 @@
 // # Notifications API
 // RESTful API for creating notifications
-var Promise            = require('bluebird'),
-    _                  = require('lodash'),
-    ObjectId           = require('bson-objectid'),
-    permissions        = require('../permissions'),
-    errors             = require('../errors'),
-    settings           = require('./settings'),
-    utils              = require('./utils'),
-    pipeline           = require('../utils/pipeline'),
-    canThis            = permissions.canThis,
-    i18n               = require('../i18n'),
+var Promise = require('bluebird'),
+    _ = require('lodash'),
+    ObjectId = require('bson-objectid'),
+    permissions = require('../permissions'),
+    errors = require('../errors'),
+    settings = require('./settings'),
+    utils = require('./utils'),
+    pipeline = require('../utils/pipeline'),
+    canThis = permissions.canThis,
+    i18n = require('../i18n'),
 
     // Holds the persistent notifications
     notificationsStore = [],
