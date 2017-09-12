@@ -83,6 +83,13 @@
         },
         "unsplash": {
             "defaultValue": ""
+        },
+        "mailchimp": {
+            "defaultValue": "{\"isActive\": false, \"apiKey\": \"\", \"activeList\": {}}"
+        },
+        "scheduling": {
+            "defaultValue": "{\"readonly\": true, \"subscribers\": {\"lastSyncAt\": \"\", \"nextSyncAt\": \"\", \"error\": \"\"}}",
+            "readonly": true
         }
     },
     "theme": {

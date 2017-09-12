@@ -45,6 +45,16 @@ function getDefaultSettings() {
     return defaultSettings;
 }
 
+/**
+ * In 1.9 we enabled subscribers by default.
+ * But to avoid breaking external clients or themes, we keep to labs flag.
+ * Hardcoded to true.
+ * @TODO: Remove in next major release.
+ */
+function overrideLabs(model) {
+    model.set('value', JSON.stringify(_.merge(JSON.parse(model.get('value')), {subscribers: true})));
+}
+
 // Each setting is saved as a separate row in the database,
 // but the overlying API treats them as a single key:value mapping
 Settings = ghostBookshelf.Model.extend({
@@ -74,6 +84,30 @@ Settings = ghostBookshelf.Model.extend({
     onUpdated: function onUpdated(model, response, options) {
         model.emitChange('edited');
         model.emitChange(model.attributes.key + '.' + 'edited', options);
+    },
+
+    onUpdating: function (model) {
+        if (model.get('key') === 'labs') {
+            overrideLabs(model);
+        }
+    },
+
+    onFetched: function onFetched(model) {
+        if (model.get('key') === 'labs') {
+            overrideLabs(model);
+        }
+    },
+
+    onFetchedCollection: function onFetchedCollection(response) {
+        if (!response.models) {
+            return;
+        }
+
+        _.each(response.models, function (model) {
+            if (model.get('key') === 'labs') {
+                overrideLabs(model);
+            }
+        });
     },
 
     onValidate: function onValidate() {
@@ -116,16 +150,24 @@ Settings = ghostBookshelf.Model.extend({
             item = self.filterData(item);
 
             return Settings.forge({key: item.key}).fetch(options).then(function then(setting) {
-                var saveData = {};
+                var saveData = {},
+                    defaultSetting = _.find(getDefaultSettings(), {key: item.key});
 
                 if (setting) {
                     if (item.hasOwnProperty('value')) {
                         saveData.value = item.value;
                     }
+
                     // Internal context can overwrite type (for fixture migrations)
                     if (options.context && options.context.internal && item.hasOwnProperty('type')) {
                         saveData.type = item.type;
                     }
+
+                    // CASE: Can't edit readonly settings.
+                    if (!options.context.internal && defaultSetting.hasOwnProperty('readonly') && defaultSetting.readonly === true) {
+                        return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.models.settings.notEnoughPermission', {key: item.key})}));
+                    }
+
                     // it's allowed to edit all attributes in case of importing/migrating
                     if (options.importing) {
                         saveData = item;

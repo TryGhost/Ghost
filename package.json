@@ -63,6 +63,7 @@
     "knex": "0.12.9",
     "knex-migrator": "2.1.5",
     "lodash": "4.17.4",
+    "mailchimp-api-v3": "1.7.0",
     "markdown-it": "8.3.2",
     "markdown-it-footnote": "3.0.1",
     "markdown-it-lazy-headers": "0.1.3",

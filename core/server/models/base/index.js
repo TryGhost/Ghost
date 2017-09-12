@@ -84,6 +84,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             'fetching',
             'fetching:collection',
             'fetched',
+            'fetched:collection',
             'creating',
             'created',
             'updating',

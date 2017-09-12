@@ -13,11 +13,7 @@ var express = require('express'),
     // Handling uploads & imports
     tmpdir = require('os').tmpdir,
     upload = require('multer')({dest: tmpdir()}),
-    validation = require('../middleware/validation'),
-
-    // Temporary
-    // @TODO find a more appy way to do this!
-    labs = require('../middleware/labs');
+    validation = require('../middleware/validation');
 
 // @TODO refactor/clean this up - how do we want the routing to work long term?
 module.exports = function apiRoutes() {
@@ -48,6 +44,16 @@ module.exports = function apiRoutes() {
         auth.authenticate.authenticateUser
     ], api.http(api.schedules.publishPost));
 
+    apiRouter.get('/schedules/subscribers/sync', [
+        auth.authenticate.authenticateClient,
+        auth.authenticate.authenticateUser
+    ], api.http(api.schedules.syncSubscribers));
+
+    apiRouter.post('/schedules/subscribers/add/:email', [
+        auth.authenticate.authenticateClient,
+        auth.authenticate.authenticateUser
+    ], api.http(api.schedules.addSubscriber));
+
     // ## Settings
     apiRouter.get('/settings', mw.authenticatePrivate, api.http(api.settings.browse));
     apiRouter.get('/settings/:key', mw.authenticatePrivate, api.http(api.settings.read));
@@ -75,19 +81,21 @@ module.exports = function apiRoutes() {
     apiRouter.del('/tags/:id', mw.authenticatePrivate, api.http(api.tags.destroy));
 
     // ## Subscribers
-    apiRouter.get('/subscribers', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.browse));
-    apiRouter.get('/subscribers/csv', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.exportCSV));
+    apiRouter.get('/subscribers', mw.authenticatePrivate, api.http(api.subscribers.browse));
+    apiRouter.get('/subscribers/csv', mw.authenticatePrivate, api.http(api.subscribers.exportCSV));
     apiRouter.post('/subscribers/csv',
-        labs.subscribers,
         mw.authenticatePrivate,
         upload.single('subscribersfile'),
         validation.upload({type: 'subscribers'}),
         api.http(api.subscribers.importCSV)
     );
-    apiRouter.get('/subscribers/:id', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.read));
-    apiRouter.post('/subscribers', labs.subscribers, mw.authenticatePublic, api.http(api.subscribers.add));
-    apiRouter.put('/subscribers/:id', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.edit));
-    apiRouter.del('/subscribers/:id', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.destroy));
+    apiRouter.get('/subscribers/:id', mw.authenticatePrivate, api.http(api.subscribers.read));
+    apiRouter.post('/subscribers', mw.authenticatePublic, api.http(api.subscribers.add));
+    apiRouter.put('/subscribers/:id', mw.authenticatePrivate, api.http(api.subscribers.edit));
+    apiRouter.del('/subscribers/:id', mw.authenticatePrivate, api.http(api.subscribers.destroy));
+
+    // ## Mailchimp
+    apiRouter.get('/mailchimp/lists', mw.authenticatePrivate, api.http(api.mailchimp.fetchLists));
 
     // ## Roles
     apiRouter.get('/roles/', mw.authenticatePrivate, api.http(api.roles.browse));

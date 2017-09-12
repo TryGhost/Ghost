@@ -9,18 +9,19 @@ var ghostBookshelf = require('./base'),
 Subscriber = ghostBookshelf.Model.extend({
     tableName: 'subscribers',
 
-    emitChange: function emitChange(event) {
-        events.emit('subscriber' + '.' + event, this);
+    emitChange: function emitChange(event, options) {
+        events.emit('subscriber' + '.' + event, this, options);
     },
 
     defaults: function defaults() {
         return {
-            status: 'subscribed'
+            status: 'subscribed',
+            source: 'manual'
         };
     },
 
-    onCreated: function onCreated(model) {
-        model.emitChange('added');
+    onCreated: function onCreated(model, attributes, options) {
+        model.emitChange('added', options);
     },
 
     onUpdated: function onUpdated(model) {

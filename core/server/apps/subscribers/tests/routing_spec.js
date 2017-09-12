@@ -1,11 +1,9 @@
 var supertest = require('supertest'),
     should = require('should'),
-    sinon = require('sinon'),
     testUtils = require('../../../../test/utils'),
-    labs = require('../../../utils/labs'),
     config = require('../../../config'),
-    ghost = testUtils.startGhost,
-    sandbox = sinon.sandbox.create();
+    models = require('../../../models'),
+    ghost = testUtils.startGhost;
 
 describe('Subscriber: Routing', function () {
     var ghostServer, request;
@@ -26,18 +24,6 @@ describe('Subscriber: Routing', function () {
 
     after(function () {
         return ghostServer.stop();
-    });
-
-    before(function () {
-        sandbox.stub(labs, 'isSet', function (key) {
-            if (key === 'subscribers') {
-                return true;
-            }
-        });
-    });
-
-    after(function () {
-        sandbox.restore();
     });
 
     describe('GET', function () {
@@ -65,7 +51,14 @@ describe('Subscriber: Routing', function () {
                     should.not.exist(err);
                     res.text.should.containEql('Subscribed!');
                     res.text.should.containEql('test@ghost.org');
-                    done();
+
+                    models.Subscriber.findOne({email: 'test@ghost.org'})
+                        .then(function (model) {
+                            model.get('source').should.eql('subscribed_button');
+                            model.get('status').should.eql('subscribed');
+                            done();
+                        })
+                        .catch(done);
                 });
         });
 
