@@ -23,8 +23,9 @@ function controller(req, res, next) {
 
     setResponseContext(req, res, data);
 
-    // Context check
+    // Context check:
     // Our context must be ['post', 'amp'], otherwise we won't render the template
+    // This prevents AMP from being rendered for pages
     if (_.intersection(res.locals.context, ['post', 'amp']).length < 2) {
         return next();
     }
