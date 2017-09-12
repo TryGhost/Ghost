@@ -1,5 +1,6 @@
 var fs = require('fs-extra'),
     _ = require('lodash'),
+    url = require('url'),
     debug = require('ghost-ignition').debug('custom-redirects'),
     config = require('../config'),
     errors = require('../errors'),
@@ -43,13 +44,17 @@ module.exports = function redirects(blogApp) {
             }
 
             blogApp.get(new RegExp(redirect.from), function (req, res) {
-                var maxAge = redirect.permanent ? config.get('caching:customRedirects:maxAge') : 0;
+                var maxAge = redirect.permanent ? config.get('caching:customRedirects:maxAge') : 0,
+                    parsedUrl = url.parse(req.originalUrl);
 
                 res.set({
                     'Cache-Control': 'public, max-age=' + maxAge
                 });
 
-                res.redirect(redirect.permanent ? 301 : 302, req.originalUrl.replace(new RegExp(redirect.from), redirect.to));
+                res.redirect(redirect.permanent ? 301 : 302, url.format({
+                    pathname: parsedUrl.pathname.replace(new RegExp(redirect.from), redirect.to),
+                    search: parsedUrl.search
+                }));
             });
         });
     } catch (err) {
