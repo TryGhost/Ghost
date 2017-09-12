@@ -1,13 +1,12 @@
 // # Configuration API
 // RESTful API for browsing the configuration
-var _                  = require('lodash'),
-    config             = require('../config'),
-    settingsCache      = require('../settings/cache'),
-    ghostVersion       = require('../utils/ghost-version'),
-    models             = require('../models'),
-    Promise            = require('bluebird'),
-    utils              = require('../utils'),
-
+var Promise = require('bluebird'),
+    _ = require('lodash'),
+    apiUtils = require('../utils'),
+    models = require('../models'),
+    config = require('../config'),
+    settingsCache = require('../settings/cache'),
+    ghostVersion = require('../utils/ghost-version'),
     configuration;
 
 function fetchAvailableTimezones() {
@@ -36,7 +35,7 @@ function getBaseConfig() {
     return {
         useGravatar:    !config.isPrivacyDisabled('useGravatar'),
         publicAPI:      config.get('publicAPI') === true,
-        blogUrl:        utils.url.urlFor('home', true),
+        blogUrl:        apiUtils.url.urlFor('home', true),
         blogTitle:      settingsCache.get('title'),
         routeKeywords:  config.get('routeKeywords'),
         clientExtensions: config.get('clientExtensions')
