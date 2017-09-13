@@ -1,6 +1,7 @@
 var should = require('should'),
     supertest = require('supertest'),
     testUtils = require('../../../utils'),
+    configUtils = require('../../../utils/configUtils'),
     _ = require('lodash'),
     config = require('../../../../../core/server/config'),
     ghost = testUtils.startGhost,
@@ -27,6 +28,10 @@ describe('Public API', function () {
             .then(function () {
                 return ghostServer.stop();
             });
+    });
+
+    afterEach(function () {
+        configUtils.restore();
     });
 
     it('browse posts', function (done) {
@@ -79,6 +84,27 @@ describe('Public API', function () {
                 testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                 _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
+                done();
+            });
+    });
+
+    it('ensure origin header on redirect is not getting lost', function (done) {
+        // NOTE: force a redirect to the admin url
+        configUtils.set('admin:url', 'http://localhost:9999');
+
+        request.get(testUtils.API.getApiQuery('posts?client_id=ghost-test&client_secret=not_available'))
+            .set('Origin', 'https://example.com')
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(301)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                res.headers.vary.should.eql('Origin, Accept, Accept-Encoding');
+                res.headers.location.should.eql('http://localhost:9999/ghost/api/v0.1/posts/?client_id=ghost-test&client_secret=not_available');
+                should.exist(res.headers['access-control-allow-origin']);
+                should.not.exist(res.headers['x-cache-invalidate']);
                 done();
             });
     });

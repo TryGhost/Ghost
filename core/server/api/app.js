@@ -13,7 +13,6 @@ var debug = require('ghost-ignition').debug('api'),
     // Shared
     bodyParser = require('body-parser'), // global, shared
     cacheControl = require('../middleware/cache-control'), // global, shared
-    urlRedirects = require('../middleware/url-redirects'),
     maintenance = require('../middleware/maintenance'), // global, shared
     errorHandler = require('../middleware/error-handler'); // global, shared
 
@@ -36,10 +35,6 @@ module.exports = function setupApiApp() {
 
     // send 503 json response in case of maintenance
     apiApp.use(maintenance);
-
-    // Force SSL if required
-    // must happen AFTER asset loading and BEFORE routing
-    apiApp.use(urlRedirects);
 
     // Check version matches for API requests, depends on res.locals.safeVersion being set
     // Therefore must come after themeHandler.ghostLocals, for now
