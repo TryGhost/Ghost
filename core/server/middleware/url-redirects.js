@@ -95,7 +95,7 @@ urlRedirects = function urlRedirects(req, res, next) {
     var redirectFn = res.isAdmin ? _private.getAdminRedirectUrl : _private.getBlogRedirectUrl,
         redirectUrl = redirectFn({
             requestedHost: req.get('host'),
-            requestedUrl: req.originalUrl || req.url,
+            requestedUrl: url.parse(req.originalUrl || req.url).pathname,
             queryParameters: req.query,
             secure: req.secure
         });
