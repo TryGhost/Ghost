@@ -1,6 +1,11 @@
 
-
-These file contains the collabration instructions for team spark members.
+Project Plans:
+    - Depending upon the syllabus covered in class we will have weekly tasks assigned in between us.
+    - When our work got completed we need to raise a pull request to merge these changes to teamsparkuno repository.
+    - We will have a formal discussion on the pull requests and everyone needs to defend their works.
+    - If we all agree upon the discussion we will merge the change to teamsparkuno repository.
+    - We will meet two times in a week to discuss about the work flow and help each other if we have any doubts.
+    - Everyone will have all access permissions.
 
 Normal work flow steps:
 1. Fork teamsparkuno/Ghost(https://github.com/teamsparkuno/Ghost) repository to your Software Assurance class Git account as you did in your GitHub Primer tutorial.
