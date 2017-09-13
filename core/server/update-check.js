@@ -248,7 +248,8 @@ function showUpdateNotification() {
     return api.settings.read(_.extend({key: 'display_update_notification'}, internal)).then(function then(response) {
         var display = response.settings[0];
 
-        if (display && display.value && currentVersion && semver.gt(display.value, currentVersion)) {
+        // @TODO: We only show minor/major releases. This is a temporary fix. #5071 is coming soon.
+        if (display && display.value && currentVersion && semver.patch(display.value) === 0) {
             return display.value;
         }
 
