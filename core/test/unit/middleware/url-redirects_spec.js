@@ -244,6 +244,28 @@ describe('UNIT: url redirects', function () {
         done();
     });
 
+    it('[redirect] original url has search params', function (done) {
+        configUtils.set({
+            url: 'http://default.com:2368',
+            admin: {
+                url: 'https://admin.default.com:2368'
+            }
+        });
+
+        host = 'default.com:2368';
+        res.isAdmin = true;
+
+        req.originalUrl = '/ghost/something?a=b';
+        req.query = {
+            a: 'b'
+        };
+
+        urlRedirects(req, res, next);
+        next.called.should.be.false();
+        res.redirect.calledWith(301, 'https://admin.default.com:2368/ghost/something/?a=b').should.be.true();
+        done();
+    });
+
     it('[redirect] same url and admin url, but different protocol.', function (done) {
         configUtils.set({
             url: 'http://default.com:2368',
