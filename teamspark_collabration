@@ -1,0 +1,26 @@
+
+
+These file contains the collabration instructions for team spark members.
+
+Normal work flow steps:
+1. Fork teamsparkuno/Ghost(https://github.com/teamsparkuno/Ghost) repository to your Software Assurance class Git account as you did in your GitHub Primer tutorial.
+
+    Please look into step 6 in the link below to know more information about how to fork a respository.
+    https://robinagandhi.github.io/swa/pages/github.html#step-6-fork-repository
+    
+2. Clone your forked repository to you local computer.
+
+  Please look into step 3 in the link below to know more information about how to clone a repository onto local computer.
+  https://robinagandhi.github.io/swa/pages/github.html#step-3-clone-a-repository
+  
+3. Do your changes in you local computer and push changes to your class git account.
+
+  Please look into step 4 in the link below to know more information about how to push changes from local repository to your remote git repository.
+  https://robinagandhi.github.io/swa/pages/github.html#step-4-push-changes
+
+4. Raise a pull request to teamsparkuno/Ghost repository to merge the changes to teamsparkuno repository.
+
+  Please look into step 7 in the link below to know more information about how to raise a pull request.
+  https://robinagandhi.github.io/swa/pages/github.html#step-7-make-a-pull-request
+ 
+
