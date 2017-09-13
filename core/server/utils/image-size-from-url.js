@@ -15,9 +15,8 @@
 // If the request fails or image-size is not able to read the file, we reject with error.
 
 var sizeOf = require('image-size'),
-    url = require('url'),
     Promise = require('bluebird'),
-    got = require('got'),
+    request = require('../utils/request'),
     config = require('../config'),
     dimensions;
 
@@ -45,7 +44,6 @@ module.exports.getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
         }
     }
 
-    imagePath = url.parse(imagePath);
     requestOptions = {
         headers: {
             'User-Agent': 'Mozilla/5.0'
@@ -54,7 +52,7 @@ module.exports.getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
         encoding: null
     };
 
-    return got(
+    return request(
         imagePath,
         requestOptions
     ).then(function (response) {
