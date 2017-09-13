@@ -27,6 +27,10 @@ Normal work flow steps:
   
 Suggestions:
 1. Commit often in you local repository as you finished some work.
+2. Push your work frequently to your class git account.
+2. Sync your fork with the teamsaprkuno repository when you are behind commits. 
+    Please follow below link to get more information about how to sync the fork.
+    https://www.sitepoint.com/quick-tip-sync-your-fork-with-the-original-without-the-cli/
 
  
 
