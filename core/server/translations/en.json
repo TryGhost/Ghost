@@ -127,6 +127,10 @@
                     "context": "Theme name: {name}",
                     "help": "Valid package.json will be required in future. Please see {url}"
                 }
+            },
+            "request": {
+                "message": "URL empty or invalid.",
+                "context": "{url}"
             }
         },
         "config": {
