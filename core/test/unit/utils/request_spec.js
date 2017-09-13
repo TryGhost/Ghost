@@ -98,7 +98,7 @@ describe('Request', function () {
         result = request(url, options)
             .catch(function (err) {
                 should.exist(err);
-                err.message.should.be.equal('URL empty or invalid.');
+                err.message.should.be.equal('URL empty or invalid: test');
                 done();
             });
     });
@@ -114,7 +114,7 @@ describe('Request', function () {
         result = request(url, options)
             .catch(function (err) {
                 should.exist(err);
-                err.message.should.be.equal('URL empty or invalid.');
+                err.message.should.be.equal('URL empty or invalid: ');
                 done();
             });
     });

@@ -129,8 +129,13 @@
                 }
             },
             "request": {
-                "message": "URL empty or invalid.",
-                "context": "{url}"
+                "message": "URL empty or invalid: {url}"
+            },
+            "imageSize": {
+                "imageSizeDimensions": "Could not read image dimensions. Message: {message}",
+                "requestTimedOut": "Request timed out: {url}",
+                "imageNotFound": "Image not found: {url}",
+                "unknownRequestError": "Unknown request error: {url}"
             }
         },
         "config": {

@@ -8,8 +8,7 @@ var got = require('got'),
 module.exports = function request(url, options) {
     if (_.isEmpty(url) || !validator.isURL(url)) {
         return Promise.reject(new errors.InternalServerError(
-            i18n.t('errors.utils.request.message'),
-            i18n.t('errors.utils.request.context', {url: url})
+            i18n.t('errors.utils.request.message', {url: url})
         ));
     }
 
