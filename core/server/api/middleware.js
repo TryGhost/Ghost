@@ -1,13 +1,15 @@
 var prettyURLs = require('../middleware/pretty-urls'),
     cors = require('../middleware/api/cors'),
+    urlRedirects = require('../middleware/url-redirects'),
     auth = require('../auth');
 
 /**
  * Auth Middleware Packages
  *
  * IMPORTANT
- * - cors middleware MUST happen before pretty urls, because otherwise cors header can get lost
+ * - cors middleware MUST happen before pretty urls, because otherwise cors header can get lost on redirect
  * - cors middleware MUST happen after authenticateClient, because authenticateClient reads the trusted domains
+ * - url redirects MUST happen after cors, otherwise cors header can get lost on redirect
  */
 
 /**
@@ -19,6 +21,7 @@ module.exports.authenticatePublic = [
     // This is a labs-enabled middleware
     auth.authorize.requiresAuthorizedUserPublicAPI,
     cors,
+    urlRedirects,
     prettyURLs
 ];
 
@@ -30,6 +33,7 @@ module.exports.authenticatePrivate = [
     auth.authenticate.authenticateUser,
     auth.authorize.requiresAuthorizedUser,
     cors,
+    urlRedirects,
     prettyURLs
 ];
 
@@ -42,6 +46,7 @@ module.exports.authenticateClient = function authenticateClient(client) {
         auth.authenticate.authenticateUser,
         auth.authorize.requiresAuthorizedClient(client),
         cors,
+        urlRedirects,
         prettyURLs
     ];
 };

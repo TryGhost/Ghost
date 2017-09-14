@@ -1,13 +1,12 @@
 // # API Utils
 // Shared helpers for working with the API
 var Promise = require('bluebird'),
-    _       = require('lodash'),
-    path    = require('path'),
-    errors  = require('../errors'),
+    _ = require('lodash'),
+    path = require('path'),
     permissions = require('../permissions'),
-    validation  = require('../data/validation'),
-    i18n    = require('../i18n'),
-
+    validation = require('../data/validation'),
+    errors = require('../errors'),
+    i18n = require('../i18n'),
     utils;
 
 utils = {

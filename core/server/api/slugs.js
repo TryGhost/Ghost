@@ -1,13 +1,12 @@
 // # Slug API
 // RESTful API for the Slug resource
-var dataProvider = require('../models'),
-    errors       = require('../errors'),
-    Promise      = require('bluebird'),
-    pipeline     = require('../utils/pipeline'),
-    utils        = require('./utils'),
-    i18n         = require('../i18n'),
-    docName      = 'slugs',
-
+var Promise = require('bluebird'),
+    pipeline = require('../utils/pipeline'),
+    apiUtils = require('./utils'),
+    models = require('../models'),
+    errors = require('../errors'),
+    i18n = require('../i18n'),
+    docName = 'slugs',
     slugs,
     allowedTypes;
 
@@ -32,10 +31,10 @@ slugs = {
 
         // `allowedTypes` is used to define allowed slug types and map them against its model class counterpart
         allowedTypes = {
-            post: dataProvider.Post,
-            tag: dataProvider.Tag,
-            user: dataProvider.User,
-            app: dataProvider.App
+            post: models.Post,
+            tag: models.Tag,
+            user: models.User,
+            app: models.App
         };
 
         /**
@@ -58,13 +57,13 @@ slugs = {
          * @returns {Object} options
          */
         function modelQuery(options) {
-            return dataProvider.Base.Model.generateSlug(allowedTypes[options.type], options.data.name, {status: 'all'});
+            return models.Base.Model.generateSlug(allowedTypes[options.type], options.data.name, {status: 'all'});
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName, {opts: opts, attrs: attrs}),
-            utils.handlePermissions(docName, 'generate'),
+            apiUtils.validate(docName, {opts: opts, attrs: attrs}),
+            apiUtils.handlePermissions(docName, 'generate'),
             checkAllowedTypes,
             modelQuery
         ];

@@ -128,7 +128,7 @@ describe('Import', function () {
                 // Grab the data from tables
                 return Promise.all([
                     knex('users').select(),
-                    knex('posts').select(),
+                    models.Post.findPage(testUtils.context.internal),
                     knex('settings').select(),
                     knex('tags').select(),
                     knex('subscribers').select()
@@ -139,7 +139,7 @@ describe('Import', function () {
                 importedData.length.should.equal(5, 'Did not get data successfully');
 
                 var users = importedData[0],
-                    posts = importedData[1],
+                    posts = importedData[1].posts,
                     settings = importedData[2],
                     tags = importedData[3],
                     subscribers = importedData[4];
@@ -151,8 +151,8 @@ describe('Import', function () {
 
                 // import no longer requires all data to be dropped, and adds posts
                 posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
-                posts[0].status.should.eql('published');
-                posts[1].status.should.eql('scheduled');
+                posts[0].status.should.eql('scheduled');
+                posts[1].status.should.eql('published');
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
@@ -272,7 +272,7 @@ describe('Import', function () {
                 // Grab the data from tables
                 return Promise.all([
                     knex('users').select(),
-                    knex('posts').select(),
+                    models.Post.findPage(testUtils.context.internal),
                     knex('settings').select(),
                     knex('tags').select()
                 ]);
@@ -282,7 +282,7 @@ describe('Import', function () {
                 importedData.length.should.equal(4, 'Did not get data successfully');
 
                 var users = importedData[0],
-                    posts = importedData[1],
+                    posts = importedData[1].posts,
                     settings = importedData[2],
                     tags = importedData[3];
 
@@ -299,6 +299,7 @@ describe('Import', function () {
 
                 // import no longer requires all data to be dropped, and adds posts
                 posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
+                posts[0].comment_id.should.eql(exportData.data.posts[0].id.toString());
 
                 // active_theme should NOT have been overridden
                 _.find(settings, {key: 'active_theme'}).value.should.equal('casper', 'Wrong theme');
@@ -1677,12 +1678,15 @@ describe('Import (new test structure)', function () {
         after(testUtils.teardown);
 
         it('keeps the value of the amp field', function () {
-            return knex('posts').select().then(function (posts) {
-                should.exist(posts);
+            return models.Post.findPage(_.merge({formats: 'amp'}, testUtils.context.internal)).then(function (response) {
+                should.exist(response.posts);
 
-                posts.length.should.eql(exportData.data.posts.length);
-                posts[0].amp.should.eql(exportData.data.posts[0].amp);
-                posts[1].amp.should.eql(exportData.data.posts[1].id);
+                response.posts.length.should.eql(exportData.data.posts.length);
+                response.posts[0].amp.should.eql(exportData.data.posts[1].id);
+                response.posts[1].amp.should.eql(exportData.data.posts[0].amp);
+
+                response.posts[0].comment_id.should.eql(response.posts[0].amp);
+                response.posts[1].comment_id.should.eql(response.posts[1].amp);
             });
         });
     });
