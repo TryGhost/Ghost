@@ -2,8 +2,8 @@ var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     rewire = require('rewire'),
     Promise = require('bluebird'),
-    config = require(__dirname + '/../../../../server/config'),
-    postScheduling = require(__dirname + '/../../../../server/adapters/scheduling/post-scheduling'),
+    config = require('../../../../server/config'),
+    postScheduling = require('../../../../server/adapters/scheduling/post-scheduling'),
 
     sandbox = sinon.sandbox.create();
 

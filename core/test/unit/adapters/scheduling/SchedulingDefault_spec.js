@@ -1,6 +1,6 @@
 var should = require('should'),
     sinon = require('sinon'),
-    config = require(__dirname + '/../../../../server/config'),
+    config = require('../../../../server/config'),
     moment = require('moment'),
     _ = require('lodash'),
     express = require('express'),

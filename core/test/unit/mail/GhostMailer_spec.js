@@ -57,7 +57,7 @@ describe('Mail: Ghostmailer', function () {
         mailer = new mail.GhostMailer();
 
         mailer.should.have.property('transport');
-        mailer.transport.transportType.should.eql('SMTP');
+        mailer.transportType.should.eql('SMTP');
         mailer.transport.sendMail.should.be.a.Function();
     });
 
@@ -67,7 +67,7 @@ describe('Mail: Ghostmailer', function () {
         mailer = new mail.GhostMailer();
 
         mailer.should.have.property('transport');
-        mailer.transport.transportType.should.eql('DIRECT');
+        mailer.transportType.should.eql('DIRECT');
     });
 
     it('sends valid message successfully ', function (done) {
@@ -75,7 +75,7 @@ describe('Mail: Ghostmailer', function () {
 
         mailer = new mail.GhostMailer();
 
-        mailer.transport.transportType.should.eql('STUB');
+        mailer.transportType.should.eql('STUB');
 
         mailer.send(mailDataNoServer).then(function (response) {
             should.exist(response.message);
@@ -91,7 +91,7 @@ describe('Mail: Ghostmailer', function () {
 
         mailer = new mail.GhostMailer();
 
-        mailer.transport.transportType.should.eql('STUB');
+        mailer.transportType.should.eql('STUB');
 
         mailer.send(mailDataNoServer).then(function () {
             done(new Error('Stub did not error'));
@@ -131,7 +131,7 @@ describe('Mail: Ghostmailer', function () {
         });
 
         it('return correct failure message for domain doesn\'t exist', function (done) {
-            mailer.transport.transportType.should.eql('DIRECT');
+            mailer.transportType.should.eql('DIRECT');
 
             mailer.send(mailDataNoDomain).then(function () {
                 done(new Error('Error message not shown.'));
@@ -142,7 +142,7 @@ describe('Mail: Ghostmailer', function () {
         });
 
         it('return correct failure message for no mail server at this address', function (done) {
-            mailer.transport.transportType.should.eql('DIRECT');
+            mailer.transportType.should.eql('DIRECT');
 
             mailer.send(mailDataNoServer).then(function () {
                 done(new Error('Error message not shown.'));
@@ -153,7 +153,7 @@ describe('Mail: Ghostmailer', function () {
         });
 
         it('return correct failure message for incomplete data', function (done) {
-            mailer.transport.transportType.should.eql('DIRECT');
+            mailer.transportType.should.eql('DIRECT');
 
             mailer.send(mailDataIncomplete).then(function () {
                 done(new Error('Error message not shown.'));
