@@ -33,6 +33,37 @@ describe('Ghost Ajax Helper', function () {
         ghostSdk.url.api().should.equal('//testblog.com/ghost/api/v0.1/');
     });
 
+    it('blog url is https', function () {
+        configUtils.set({
+            url: 'https://testblog.com/'
+        });
+
+        ghostSdk.init({
+            clientId: '',
+            clientSecret: '',
+            url: utils.url.urlFor('api', {cors: true}, true)
+        });
+
+        ghostSdk.url.api().should.equal('https://testblog.com/ghost/api/v0.1/');
+    });
+
+    it('admin url is https', function () {
+        configUtils.set({
+            url: 'http://testblog.com/',
+            admin: {
+                url: 'https://admin.testblog.com'
+            }
+        });
+
+        ghostSdk.init({
+            clientId: '',
+            clientSecret: '',
+            url: utils.url.urlFor('api', {cors: true}, true)
+        });
+
+        ghostSdk.url.api().should.equal('https://admin.testblog.com/ghost/api/v0.1/');
+    });
+
     it('strips arguments of forward and trailing slashes correctly', function () {
         ghostSdk.init({
             clientId: '',
