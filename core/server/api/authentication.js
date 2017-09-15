@@ -532,13 +532,11 @@ authentication = {
                             }]
                         };
 
-                    mailAPI.send(payload, {context: {internal: true}}).catch(function (error) {
-                        logging.error(new errors.EmailError({
-                            err: error,
-                            context: i18n.t('errors.api.authentication.unableToSendWelcomeEmail'),
-                            help: i18n.t('errors.api.authentication.checkEmailConfigInstructions', {url: 'http://docs.ghost.org/v1/docs/mail-config'})
-                        }));
-                    });
+                    mailAPI.send(payload, {context: {internal: true}})
+                        .catch(function (err) {
+                            err.context = i18n.t('errors.api.authentication.unableToSendWelcomeEmail');
+                            logging.error(err);
+                        });
                 })
                 .return(setupUser);
         }

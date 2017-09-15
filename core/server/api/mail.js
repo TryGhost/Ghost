@@ -5,7 +5,6 @@ var Promise = require('bluebird'),
     pipeline = require('../utils/pipeline'),
     apiUtils = require('./utils'),
     models = require('../models'),
-    errors = require('../errors'),
     i18n = require('../i18n'),
     mail = require('../mail'),
     notificationsAPI = require('./notifications'),
@@ -36,7 +35,7 @@ function sendMail(object) {
             );
         }
 
-        return Promise.reject(new errors.EmailError({err: err}));
+        return Promise.reject(err);
     });
 }
 
