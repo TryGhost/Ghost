@@ -450,12 +450,42 @@ describe('Url', function () {
             utils.url.urlFor('api', true).should.eql('https://my-ghost-blog.com/ghost/api/v0.1/');
         });
 
-        it('api: cors should return no protocol', function () {
+        it('[api url] blog url is http: cors should return no protocol', function () {
             configUtils.set({
                 url: 'http://my-ghost-blog.com'
             });
 
             utils.url.urlFor('api', {cors: true}, true).should.eql('//my-ghost-blog.com/ghost/api/v0.1/');
+        });
+
+        it('[api url] admin url is http: cors should return no protocol', function () {
+            configUtils.set({
+                url: 'http://my-ghost-blog.com',
+                admin: {
+                    url: 'http://admin.ghost.example'
+                }
+            });
+
+            utils.url.urlFor('api', {cors: true}, true).should.eql('//admin.ghost.example/ghost/api/v0.1/');
+        });
+
+        it('[api url] admin url is https: should return with protocol', function () {
+            configUtils.set({
+                url: 'https://my-ghost-blog.com',
+                admin: {
+                    url: 'https://admin.ghost.example'
+                }
+            });
+
+            utils.url.urlFor('api', {cors: true}, true).should.eql('https://admin.ghost.example/ghost/api/v0.1/');
+        });
+
+        it('[api url] blog url is https: should return with protocol', function () {
+            configUtils.set({
+                url: 'https://my-ghost-blog.com'
+            });
+
+            utils.url.urlFor('api', {cors: true}, true).should.eql('https://my-ghost-blog.com/ghost/api/v0.1/');
         });
     });
 

@@ -316,10 +316,13 @@ function urlFor(context, data, absolute) {
     } else if (context === 'api') {
         urlPath = getAdminUrl() || getBlogUrl();
 
-        // CASE: with or without protocol?
+        // CASE: with or without protocol? If your blog url (or admin url) is configured to http, it's still possible that e.g. nginx allows both https+http.
+        // So it depends how you serve your blog. The main focus here is to avoid cors problems.
         // @TODO: rename cors
         if (data && data.cors) {
-            urlPath = urlPath.replace(/^.*?:\/\//g, '//');
+            if (!urlPath.match(/^https:/)) {
+                urlPath = urlPath.replace(/^.*?:\/\//g, '//');
+            }
         }
 
         if (absolute) {
