@@ -49,7 +49,8 @@ GhostMailer.prototype.getDomain = function () {
 GhostMailer.prototype.send = function (message) {
     var self = this,
         to,
-        help = i18n.t('errors.api.authentication.checkEmailConfigInstructions', {url: 'http://docs.ghost.org/v1/docs/mail-config'});
+        help = i18n.t('errors.api.authentication.checkEmailConfigInstructions', {url: 'http://docs.ghost.org/v1/docs/mail-config'}),
+        errorMessage = i18n.t('errors.mail.failedSendingEmail.error');
 
     // important to clone message as we modify it
     message = _.clone(message) || {};
@@ -72,7 +73,10 @@ GhostMailer.prototype.send = function (message) {
     return new Promise(function (resolve, reject) {
         self.transport.sendMail(message, function (err, response) {
             if (err) {
+                errorMessage += i18n.t('errors.mail.reason', {reason: err.message || err});
+
                 return reject(new errors.EmailError({
+                    message: errorMessage,
                     err: err,
                     help: help
                 }));
@@ -83,24 +87,19 @@ GhostMailer.prototype.send = function (message) {
             }
 
             response.statusHandler.once('failed', function (data) {
-                var reason = i18n.t('errors.mail.failedSendingEmail.error');
-
                 if (data.error && data.error.errno === 'ENOTFOUND') {
-                    reason += i18n.t('errors.mail.noMailServerAtAddress.error', {domain: data.domain});
+                    errorMessage += i18n.t('errors.mail.noMailServerAtAddress.error', {domain: data.domain});
                 }
-                reason += '.';
 
                 return reject(new errors.EmailError({
-                    message: reason,
+                    message: errorMessage,
                     help: help
                 }));
             });
 
             response.statusHandler.once('requeue', function (data) {
-                var errorMessage = i18n.t('errors.mail.messageNotSent.error');
-
                 if (data.error && data.error.message) {
-                    errorMessage += i18n.t('errors.general.moreInfo', {info: data.error.message});
+                    errorMessage += i18n.t('errors.mail.reason', {reason: data.error.message});
                 }
 
                 return reject(new errors.EmailError({
