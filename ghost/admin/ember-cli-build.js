@@ -134,6 +134,13 @@ module.exports = function (defaults) {
             enabled: true,
             extensions: ['js', 'css', 'png', 'jpg', 'jpeg', 'gif', 'map']
         },
+        minifyJS: {
+            options: {
+                output: {
+                    semicolons: true
+                }
+            }
+        },
         nodeAssets: {
             'blueimp-md5': {
                 import: ['js/md5.js']
