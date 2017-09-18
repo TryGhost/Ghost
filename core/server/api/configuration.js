@@ -46,8 +46,6 @@ function getBaseConfig() {
  * ## Configuration API Methods
  *
  * We need to load the client credentials dynamically.
- * For example: on bootstrap ghost-auth get's created and if we load them here in parallel,
- * it can happen that we won't get any client credentials or wrong credentials.
  *
  * **See:** [API Methods](index.js.html#api%20methods)
  */
@@ -61,26 +59,14 @@ configuration = {
      */
     read: function read(options) {
         options = options || {};
-        var ops = {};
 
         if (!options.key) {
-            ops.ghostAdmin = models.Client.findOne({slug: 'ghost-admin'});
-
-            if (config.get('auth:type') === 'ghost') {
-                ops.ghostAuth = models.Client.findOne({slug: 'ghost-auth'});
-            }
-
-            return Promise.props(ops)
-                .then(function (result) {
+            return models.Client.findOne({slug: 'ghost-admin'})
+                .then(function (ghostAdmin) {
                     var configuration = getBaseConfig();
 
-                    configuration.clientId = result.ghostAdmin.get('slug');
-                    configuration.clientSecret = result.ghostAdmin.get('secret');
-
-                    if (config.get('auth:type') === 'ghost') {
-                        configuration.ghostAuthId = result.ghostAuth && result.ghostAuth.get('uuid') || 'not-available';
-                        configuration.ghostAuthUrl = config.get('auth:url');
-                    }
+                    configuration.clientId = ghostAdmin.get('slug');
+                    configuration.clientSecret = ghostAdmin.get('secret');
 
                     return {configuration: [configuration]};
                 });

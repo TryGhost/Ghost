@@ -8,9 +8,6 @@
             "database" : "ghost"
         }
     },
-    "auth": {
-        "type": "password"
-    },
     "paths": {
         "contentPath": "content/"
     },

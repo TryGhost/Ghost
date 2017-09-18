@@ -12,9 +12,6 @@
             "database" : "ghost_testing"
         }
     },
-    "auth": {
-        "type": "password"
-    },
     "logging": {
         "level": "fatal"
     },

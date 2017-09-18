@@ -18,9 +18,6 @@ describe('Configuration API', function () {
     should.exist(ConfigurationAPI);
 
     it('can read basic config and get all expected properties', function (done) {
-        configUtils.set('auth:type', 'ghost');
-        configUtils.set('auth:url', 'https://auth.ghost.com');
-
         ConfigurationAPI.read().then(function (response) {
             var props;
 
@@ -45,14 +42,9 @@ describe('Configuration API', function () {
             props.publicAPI.should.eql(false);
             props.clientId.should.eql('ghost-admin');
             props.clientSecret.should.eql('not_available');
-            props.ghostAuthUrl.should.eql('https://auth.ghost.com');
 
             // value not available, because settings API was not called yet
             props.hasOwnProperty('blogTitle').should.eql(true);
-
-            // uuid
-            props.hasOwnProperty('ghostAuthId').should.eql(true);
-
             done();
         }).catch(done);
     });

@@ -11,9 +11,6 @@
     "server": {
         "port": 2369
     },
-    "auth": {
-        "type": "password"
-    },
     "logging": {
         "level": "fatal"
     },

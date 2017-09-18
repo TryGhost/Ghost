@@ -322,7 +322,7 @@ bluebird@3.4.6:
   version "3.4.6"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.4.6.tgz#01da8d821d87813d158967e743d5fe6c62cf8c0f"
 
-bluebird@3.5.0, bluebird@^3.0.5, bluebird@^3.4.1, bluebird@^3.4.3, bluebird@^3.4.6:
+bluebird@3.5.0, bluebird@^3.0.5, bluebird@^3.4.3, bluebird@^3.4.6:
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.0.tgz#791420d7f551eea2897453a8a77653f96606d67c"
 
@@ -3168,7 +3168,7 @@ lodash@4.16.3:
   version "4.16.3"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.16.3.tgz#0ba761439529127c7a38c439114ca153efa999a2"
 
-lodash@4.17.4, lodash@^4.13.1, lodash@^4.14.0, lodash@^4.16.4, lodash@^4.16.6, lodash@^4.17.4, lodash@^4.6.0, lodash@^4.7.0, lodash@^4.8.0, lodash@~4.17.2:
+lodash@4.17.4, lodash@^4.13.1, lodash@^4.14.0, lodash@^4.16.4, lodash@^4.17.4, lodash@^4.6.0, lodash@^4.7.0, lodash@^4.8.0, lodash@~4.17.2:
   version "4.17.4"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.4.tgz#78203a4d1c328ae1d86dca6460e369b57f4055ae"
 
@@ -3773,10 +3773,6 @@ oauth2orize@1.8.0:
     uid2 "0.0.x"
     utils-merge "1.x.x"
 
-oauth@0.9.x:
-  version "0.9.15"
-  resolved "https://registry.yarnpkg.com/oauth/-/oauth-0.9.15.tgz#bd1fefaf686c96b75475aed5196412ff60cfb9c1"
-
 object-assign@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/object-assign/-/object-assign-3.0.0.tgz#9bedd5ca0897949bca47e7ff408062d549f587f2"
@@ -3892,15 +3888,6 @@ parseurl@~1.3.0, parseurl@~1.3.1:
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/parseurl/-/parseurl-1.3.1.tgz#c8ab8c9223ba34888aa64a297b28853bec18da56"
 
-passport-ghost@2.3.1:
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/passport-ghost/-/passport-ghost-2.3.1.tgz#0dfa63d725bb7c8902acf91219b34b053f7cea9a"
-  dependencies:
-    bluebird "^3.4.1"
-    ghost-ignition "^2.8.7"
-    lodash "^4.16.6"
-    passport-oauth2 "1.1.2"
-
 passport-http-bearer@1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/passport-http-bearer/-/passport-http-bearer-1.0.1.tgz#147469ea3669e2a84c6167ef99dbb77e1f0098a8"
@@ -3912,14 +3899,6 @@ passport-oauth2-client-password@0.1.2:
   resolved "https://registry.yarnpkg.com/passport-oauth2-client-password/-/passport-oauth2-client-password-0.1.2.tgz#4f378b678b92d16dbbd233a6c706520093e561ba"
   dependencies:
     passport-strategy "1.x.x"
-
-passport-oauth2@1.1.2:
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/passport-oauth2/-/passport-oauth2-1.1.2.tgz#bd7163b1b6090371868dc4ef6f9f2e1e4cc4b948"
-  dependencies:
-    oauth "0.9.x"
-    passport-strategy "1.x.x"
-    uid2 "0.0.x"
 
 passport-strategy@1.x.x:
   version "1.0.0"

@@ -7,9 +7,6 @@
         },
         "debug": false
     },
-    "auth": {
-        "type": "password"
-    },
     "paths": {
         "contentPath": "content/"
     },
