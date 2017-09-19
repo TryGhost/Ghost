@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "1.8.6",
+  "version": "1.8.7",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -78,7 +78,6 @@
     "nodemailer": "0.7.1",
     "oauth2orize": "1.8.0",
     "passport": "0.3.2",
-    "passport-ghost": "2.3.1",
     "passport-http-bearer": "1.0.1",
     "passport-oauth2-client-password": "0.1.2",
     "path-match": "1.2.4",

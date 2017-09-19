@@ -13,7 +13,7 @@ var Promise = require('bluebird'),
  * This access token auto expires and get's cleaned up on bootstrap (see oauth.js).
  */
 _private.decreaseOldAccessTokenExpiry = function decreaseOldAccessTokenExpiry(data, options) {
-    debug('decreaseOldAccessTokenExpiry', data, options);
+    debug('decreaseOldAccessTokenExpiry', data);
 
     if (!data.token) {
         return Promise.resolve();
@@ -32,7 +32,7 @@ _private.decreaseOldAccessTokenExpiry = function decreaseOldAccessTokenExpiry(da
 };
 
 _private.destroyOldRefreshToken = function destroyOldRefreshToken(options) {
-    debug('destroyOldRefreshToken', options);
+    debug('destroyOldRefreshToken', options.token);
 
     if (!options.token) {
         return Promise.resolve();

@@ -17,7 +17,6 @@ var debug = require('ghost-ignition').debug('boot:init'),
 // Config should be first require, as it triggers the initial load of the config files
     config = require('./config'),
     Promise = require('bluebird'),
-    logging = require('./logging'),
     i18n = require('./i18n'),
     models = require('./models'),
     permissions = require('./permissions'),
@@ -29,7 +28,6 @@ var debug = require('ghost-ignition').debug('boot:init'),
     GhostServer = require('./ghost-server'),
     scheduling = require('./adapters/scheduling'),
     settings = require('./settings'),
-    settingsCache = require('./settings/cache'),
     themes = require('./themes'),
     utils = require('./utils');
 
@@ -78,25 +76,9 @@ function init() {
 
         debug('Express Apps done');
     }).then(function () {
-        return auth.validation.validate({
-            authType: config.get('auth:type')
-        });
-    }).then(function () {
-        // runs asynchronous
-        auth.init({
-            authType: config.get('auth:type'),
-            ghostAuthUrl: config.get('auth:url'),
-            redirectUri: utils.url.urlFor('admin', true),
-            clientUri: utils.url.urlFor('home', true),
-            clientName: settingsCache.get('title'),
-            clientDescription: settingsCache.get('description')
-        }).then(function (response) {
-            parentApp.use(response.auth);
-        }).catch(function onAuthError(err) {
-            logging.error(err);
-        });
-    }).then(function () {
+        parentApp.use(auth.init());
         debug('Auth done');
+
         return new GhostServer(parentApp);
     }).then(function (_ghostServer) {
         ghostServer = _ghostServer;
