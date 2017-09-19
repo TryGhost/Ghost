@@ -14,14 +14,6 @@ function fetchAvailableTimezones() {
     return timezones;
 }
 
-function fetchPrivateConfig() {
-    var unsplashConfig = config.get('unsplash') || {};
-
-    return {
-        unsplashAPI: unsplashConfig
-    };
-}
-
 function getAboutConfig() {
     return {
         version: ghostVersion.full,
@@ -79,11 +71,6 @@ configuration = {
         // Timezone endpoint
         if (options.key === 'timezones') {
             return Promise.resolve({configuration: [fetchAvailableTimezones()]});
-        }
-
-        // Private configuration config for API keys used by the client
-        if (options.key === 'private') {
-            return Promise.resolve({configuration: [fetchPrivateConfig()]});
         }
 
         return Promise.resolve({configuration: []});
