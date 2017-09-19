@@ -96,7 +96,7 @@ describe('Mail: Ghostmailer', function () {
         mailer.send(mailDataNoServer).then(function () {
             done(new Error('Stub did not error'));
         }).catch(function (error) {
-            error.message.should.eql('Error: Stub made a boo boo :(');
+            error.message.should.containEql('Stub made a boo boo :(');
             done();
         }).catch(done);
     });
@@ -113,7 +113,7 @@ describe('Mail: Ghostmailer', function () {
             descriptors.forEach(function (d) {
                 d.isFulfilled().should.be.false();
                 d.reason().should.be.an.instanceOf(Error);
-                d.reason().message.should.eql('Error: Incomplete message data.');
+                d.reason().message.should.eql('Incomplete message data.');
             });
             done();
         }).catch(done);
@@ -136,7 +136,7 @@ describe('Mail: Ghostmailer', function () {
             mailer.send(mailDataNoDomain).then(function () {
                 done(new Error('Error message not shown.'));
             }, function (error) {
-                error.message.should.startWith('Error: Failed to send email');
+                error.message.should.startWith('Failed to send email.');
                 done();
             }).catch(done);
         });
@@ -147,7 +147,7 @@ describe('Mail: Ghostmailer', function () {
             mailer.send(mailDataNoServer).then(function () {
                 done(new Error('Error message not shown.'));
             }, function (error) {
-                error.message.should.eql('Error: Failed to send email.');
+                error.message.should.eql('Failed to send email.');
                 done();
             }).catch(done);
         });
@@ -158,7 +158,7 @@ describe('Mail: Ghostmailer', function () {
             mailer.send(mailDataIncomplete).then(function () {
                 done(new Error('Error message not shown.'));
             }, function (error) {
-                error.message.should.eql('Error: Incomplete message data.');
+                error.message.should.eql('Incomplete message data.');
                 done();
             }).catch(done);
         });

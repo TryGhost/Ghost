@@ -167,7 +167,6 @@
         },
         "general": {
             "maintenance": "Ghost is currently undergoing maintenance, please wait a moment then retry.",
-            "moreInfo": "\nMore info: {info}",
             "requiredOnFuture": "This will be required in future. Please see {link}",
             "internalError": "Something went wrong."
         },
@@ -185,17 +184,15 @@
         },
         "mail": {
             "incompleteMessageData": {
-                "error": "Error: Incomplete message data."
+                "error": "Incomplete message data."
             },
             "failedSendingEmail": {
-                "error": "Error: Failed to send email"
+                "error": "Failed to send email."
             },
             "noMailServerAtAddress": {
-                "error": " - no mail server found at {domain}"
+                "error": " No mail server found at {domain}."
             },
-            "messageNotSent": {
-                "error": "Error: Message could not be sent"
-            }
+            "reason": " Reason: {reason}."
         },
         "models": {
             "subscriber": {
