@@ -1,6 +1,7 @@
 <div class="gh-date-time-picker">
     {{#power-datepicker
         selected=_date
+        center=_date
         onSelect=(action "setDate" value="date")
         renderInPlace=true
         disabled=disabled as |dp|
