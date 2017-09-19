@@ -82,7 +82,7 @@
             "defaultValue": "[{\"url\":\"\"}]"
         },
         "unsplash": {
-            "defaultValue": ""
+            "defaultValue": "{\"isActive\": true}"
         }
     },
     "theme": {
