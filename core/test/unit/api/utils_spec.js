@@ -607,7 +607,90 @@ describe('API Utils', function () {
                 .then(function (res) {
                     permsStub.callCount.should.eql(1);
                     testStub.callCount.should.eql(1);
+                    testStub.firstCall.args.length.should.eql(2);
                     testStub.firstCall.args[0].should.eql(5);
+                    testStub.firstCall.args[1].should.eql({});
+
+                    res.should.eql(testObj);
+
+                    done();
+                })
+                .catch(done);
+        });
+
+        it('should ignore unsafe attrs if none are provided', function (done) {
+            var testStub = sandbox.stub().returns(new Promise.resolve()),
+                permsStub = sandbox.stub(permissions, 'canThis', function () {
+                    return {
+                        testing: {
+                            test: testStub
+                        }
+                    };
+                }),
+                permsFunc = apiUtils.handlePermissions('tests', 'testing', ['foo']),
+                testObj = {data: {tests: [{}]}, id: 5};
+
+            permsFunc(testObj)
+                .then(function (res) {
+                    permsStub.callCount.should.eql(1);
+                    testStub.callCount.should.eql(1);
+                    testStub.firstCall.args.length.should.eql(2);
+                    testStub.firstCall.args[0].should.eql(5);
+                    testStub.firstCall.args[1].should.eql({});
+
+                    res.should.eql(testObj);
+
+                    done();
+                })
+                .catch(done);
+        });
+
+        it('should ignore unsafe attrs if they are provided but not present', function (done) {
+            var testStub = sandbox.stub().returns(new Promise.resolve()),
+                permsStub = sandbox.stub(permissions, 'canThis', function () {
+                    return {
+                        testing: {
+                            test: testStub
+                        }
+                    };
+                }),
+                permsFunc = apiUtils.handlePermissions('tests', 'testing', ['foo']),
+                testObj = {foo: 'bar', id: 5};
+
+            permsFunc(testObj)
+                .then(function (res) {
+                    permsStub.callCount.should.eql(1);
+                    testStub.callCount.should.eql(1);
+                    testStub.firstCall.args.length.should.eql(2);
+                    testStub.firstCall.args[0].should.eql(5);
+                    testStub.firstCall.args[1].should.eql({});
+
+                    res.should.eql(testObj);
+
+                    done();
+                })
+                .catch(done);
+        });
+
+        it('should pass through unsafe attrs if they DO exist', function (done) {
+            var testStub = sandbox.stub().returns(new Promise.resolve()),
+                permsStub = sandbox.stub(permissions, 'canThis', function () {
+                    return {
+                        testing: {
+                            test: testStub
+                        }
+                    };
+                }),
+                permsFunc = apiUtils.handlePermissions('tests', 'testing', ['foo']),
+                testObj = {data: {tests: [{foo: 'bar'}]}, id: 5};
+
+            permsFunc(testObj)
+                .then(function (res) {
+                    permsStub.callCount.should.eql(1);
+                    testStub.callCount.should.eql(1);
+                    testStub.firstCall.args.length.should.eql(2);
+                    testStub.firstCall.args[0].should.eql(5);
+                    testStub.firstCall.args[1].should.eql({foo: 'bar'});
 
                     res.should.eql(testObj);
 
