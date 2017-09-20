@@ -2,7 +2,7 @@ var _ = require('lodash'),
     Promise = require('bluebird'),
     Models = require('../models'),
     errors = require('../errors'),
-    i18n   = require('../i18n'),
+    i18n = require('../i18n'),
     effective;
 
 effective = {

@@ -1,12 +1,12 @@
 // canThis(someUser).edit.posts([id]|[[ids]])
 // canThis(someUser).edit.post(somePost|somePostId)
 
-var _                   = require('lodash'),
-    Promise             = require('bluebird'),
-    errors              = require('../errors'),
-    Models              = require('../models'),
-    effectivePerms      = require('./effective'),
-    i18n                = require('../i18n'),
+var _ = require('lodash'),
+    Promise = require('bluebird'),
+    errors = require('../errors'),
+    Models = require('../models'),
+    effectivePerms = require('./effective'),
+    i18n = require('../i18n'),
     init,
     refresh,
     canThis,
