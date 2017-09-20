@@ -4,7 +4,7 @@
 var _ = require('lodash'),
     Promise = require('bluebird'),
     errors = require('../errors'),
-    Models = require('../models'),
+    models = require('../models'),
     effectivePerms = require('./effective'),
     i18n = require('../i18n'),
     init,
@@ -117,13 +117,13 @@ CanThisResult = function () {
 
 CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, context, permissionLoad) {
     var objectTypeModelMap = {
-        post:       Models.Post,
-        role:       Models.Role,
-        user:       Models.User,
-        permission: Models.Permission,
-        setting:    Models.Settings,
-        subscriber: Models.Subscriber,
-        invite:     Models.Invite
+        post:       models.Post,
+        role:       models.Role,
+        user:       models.User,
+        permission: models.Permission,
+        setting:    models.Settings,
+        subscriber: models.Subscriber,
+        invite:     models.Invite
     };
 
     // Iterate through the object types, i.e. ['post', 'tag', 'user']
@@ -276,7 +276,7 @@ init = refresh = function (options) {
     options = options || {};
 
     // Load all the permissions
-    return Models.Permission.findAll(options).then(function (perms) {
+    return models.Permission.findAll(options).then(function (perms) {
         var seenActions = {};
 
         exported.actionsMap = {};

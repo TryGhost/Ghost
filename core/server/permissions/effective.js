@@ -1,13 +1,13 @@
 var _ = require('lodash'),
     Promise = require('bluebird'),
-    Models = require('../models'),
+    models = require('../models'),
     errors = require('../errors'),
     i18n = require('../i18n'),
     effective;
 
 effective = {
     user: function (id) {
-        return Models.User.findOne({id: id, status: 'all'}, {include: ['permissions', 'roles', 'roles.permissions']})
+        return models.User.findOne({id: id, status: 'all'}, {include: ['permissions', 'roles', 'roles.permissions']})
             .then(function (foundUser) {
                 // CASE: {context: {user: id}} where the id is not in our database
                 if (!foundUser) {
@@ -42,7 +42,7 @@ effective = {
     },
 
     app: function (appName) {
-        return Models.App.findOne({name: appName}, {withRelated: ['permissions']})
+        return models.App.findOne({name: appName}, {withRelated: ['permissions']})
             .then(function (foundApp) {
                 if (!foundApp) {
                     return [];
