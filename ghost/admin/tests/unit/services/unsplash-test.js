@@ -32,7 +32,6 @@ describe('Unit: Service: unsplash', function() {
         expect(service).to.be.ok;
     });
 
-    it('can send a test request');
     it('can load new');
     it('can load next page');
 

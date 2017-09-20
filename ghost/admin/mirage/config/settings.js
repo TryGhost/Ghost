@@ -29,7 +29,13 @@ export default function mockSettings(server) {
 
         newSettings.forEach((newSetting) => {
             let {key} = newSetting;
-            db.settings.update({key}, newSetting);
+
+            if (db.settings.where({key}).length > 0) {
+                db.settings.update({key}, newSetting);
+            } else {
+                newSetting.type = newSetting.type || 'blog';
+                db.settings.insert(newSetting);
+            }
         });
 
         return {
