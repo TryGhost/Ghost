@@ -3,7 +3,7 @@ var should = require('should'),
     testUtils = require('../../utils'),
     Promise = require('bluebird'),
     _ = require('lodash'),
-    Models = require('../../../server/models'),
+    models = require('../../../server/models'),
     errors = require('../../../server/errors'),
     permissions = require('../../../server/permissions'),
 
@@ -16,7 +16,7 @@ describe.only('Permissions', function () {
 
     describe('actions map', function () {
         before(function () {
-            Models.init();
+            models.init();
         });
 
         beforeEach(function () {
@@ -24,8 +24,8 @@ describe.only('Permissions', function () {
                 return testUtils.DataGenerator.forKnex.createPermission(testPerm);
             });
 
-            sandbox.stub(Models.Permission, 'findAll', function () {
-                return Promise.resolve(Models.Permissions.forge(permissions));
+            sandbox.stub(models.Permission, 'findAll', function () {
+                return Promise.resolve(models.Permissions.forge(permissions));
             });
         });
 
