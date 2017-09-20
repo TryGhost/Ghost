@@ -149,15 +149,7 @@ export default Component.extend(ShortcutsMixin, {
             status: ['words']
         };
 
-        // if unsplash is active insert the toolbar button after the image button
-        // HACK: this settings/config dance is needed because the "override" only
-        // happens when visiting the unsplash app settings route
-        // TODO: move the override logic to the server, client knows too much
-        // about which values should override others
-        let unsplashConfig = this.get('config.unsplashAPI');
-        let unsplashSettings = this.get('settings.unsplash');
-        let unsplash = assign({}, unsplashConfig, unsplashSettings);
-        if (unsplash.isActive) {
+        if (this.get('settings.unsplash.isActive')) {
             let image = defaultOptions.toolbar.findBy('name', 'image');
             let index = defaultOptions.toolbar.indexOf(image) + 1;
 

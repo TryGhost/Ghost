@@ -22,8 +22,7 @@ export default AuthenticatedRoute.extend(styleBody, {
         // - isActive: use as default but allow settings override
         // - applicationId: total override, no field is shown if present
         let unsplash = UnsplashObject.create({
-            isActive: this.get('config.unsplashAPI.isActive') || false,
-            applicationId: ''
+            isActive: true
         });
 
         settings.set('unsplash', unsplash);

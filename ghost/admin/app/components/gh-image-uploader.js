@@ -6,7 +6,6 @@ import {
     isUnsupportedMediaTypeError,
     isVersionMismatchError
 } from 'ghost-admin/services/ajax';
-import {assign} from '@ember/polyfills';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
 import {inject as injectService} from '@ember/service';
@@ -77,18 +76,6 @@ export default Component.extend({
         }
 
         return htmlSafe(`width: ${width}`);
-    }),
-
-    // HACK: this settings/config dance is needed because the "override" only
-    // happens when visiting the unsplash app settings route
-    // TODO: move the override logic to the server, client knows too much
-    // about which values should override others
-    unsplash: computed('config.unsplashAPI', 'settings.unsplash', function () {
-        let unsplashConfig = this.get('config.unsplashAPI');
-        let unsplashSettings = this.get('settings.unsplash');
-        let unsplash = assign({}, unsplashConfig, unsplashSettings);
-
-        return unsplash;
     }),
 
     didReceiveAttrs() {

@@ -61,17 +61,6 @@ export default Service.extend({
         }
     },
 
-    sendTestRequest(testApplicationId) {
-        let url = `${API_URL}/photos/random`;
-        let headers = {};
-
-        headers.Authorization = `Client-ID ${testApplicationId}`;
-        headers['Accept-Version'] = API_VERSION;
-
-        return fetch(url, {headers})
-            .then((response) => this._checkStatus(response));
-    },
-
     actions: {
         updateSearch(term) {
             if (term === this.get('searchTerm')) {
