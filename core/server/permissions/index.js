@@ -9,7 +9,6 @@ var _ = require('lodash'),
     effectivePerms = require('./effective'),
     parseContext = require('./parse-context'),
     init,
-    refresh,
     canThis,
     CanThisResult,
     exported;
@@ -185,7 +184,7 @@ canThis = function (context) {
     return result.beginCheck(context);
 };
 
-init = refresh = function (options) {
+init = function (options) {
     options = options || {};
 
     // Load all the permissions
@@ -224,7 +223,6 @@ init = refresh = function (options) {
 
 module.exports = exported = {
     init: init,
-    refresh: refresh,
     canThis: canThis,
     // @TODO: Make it so that we don't need to export these
     parseContext: parseContext,
