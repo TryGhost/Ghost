@@ -9,7 +9,7 @@ var should = require('should'),
 
     sandbox = sinon.sandbox.create();
 
-describe('Permissions', function () {
+describe.only('Permissions', function () {
     afterEach(function () {
         sandbox.restore();
     });
@@ -109,6 +109,24 @@ describe('Permissions', function () {
             permissions.parseContext('internal').should.eql({
                 internal: true,
                 external: false,
+                user: null,
+                app: null,
+                public: false
+            });
+        });
+
+        it('should return external if external provided', function () {
+            permissions.parseContext({external: true}).should.eql({
+                internal: false,
+                external: true,
+                user: null,
+                app: null,
+                public: false
+            });
+
+            permissions.parseContext('external').should.eql({
+                internal: false,
+                external: true,
                 user: null,
                 app: null,
                 public: false
