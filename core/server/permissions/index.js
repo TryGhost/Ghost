@@ -3,10 +3,10 @@
 
 var _ = require('lodash'),
     Promise = require('bluebird'),
-    errors = require('../errors'),
     models = require('../models'),
-    effectivePerms = require('./effective'),
+    errors = require('../errors'),
     i18n = require('../i18n'),
+    effectivePerms = require('./effective'),
     init,
     refresh,
     canThis,
