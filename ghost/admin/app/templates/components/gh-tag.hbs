@@ -8,6 +8,10 @@
         {{/if}}
 
         <p class="tag-description">{{tag.description}}</p>
-        <span class="tags-count">{{tag.count.posts}}</span>
+        <span class="tags-count">
+            {{#link-to "posts" (query-params type=null author=null tag=tag.slug order=null)}}
+                {{tag.count.posts}}
+            {{/link-to}}
+        </span>
     {{/link-to}}
 </div>
