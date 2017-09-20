@@ -57,6 +57,10 @@
         "themes": {
             "extensions": [".zip"],
             "contentTypes": ["application/zip", "application/x-zip-compressed", "application/octet-stream"]
+        },
+        "redirects": {
+            "extensions": [".json"],
+            "contentTypes": ["application/json"]
         }
     },
     "times": {
