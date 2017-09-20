@@ -6,6 +6,7 @@ var should = require('should'),
     Models = require('../../server/models'),
     errors = require('../../server/errors'),
     permissions = require('../../server/permissions'),
+    parseContext = require('../../server/permissions/parse-context'),
 
     sandbox = sinon.sandbox.create();
 
@@ -44,14 +45,14 @@ describe.only('Permissions', function () {
 
     describe('parseContext', function () {
         it('should return public for no context', function () {
-            permissions.parseContext().should.eql({
+            parseContext().should.eql({
                 internal: false,
                 external: false,
                 user: null,
                 app: null,
                 public: true
             });
-            permissions.parseContext({}).should.eql({
+            parseContext({}).should.eql({
                 internal: false,
                 external: false,
                 user: null,
@@ -61,14 +62,14 @@ describe.only('Permissions', function () {
         });
 
         it('should return public for random context', function () {
-            permissions.parseContext('public').should.eql({
+            parseContext('public').should.eql({
                 internal: false,
                 external: false,
                 user: null,
                 app: null,
                 public: true
             });
-            permissions.parseContext({client: 'thing'}).should.eql({
+            parseContext({client: 'thing'}).should.eql({
                 internal: false,
                 external: false,
                 user: null,
@@ -78,7 +79,7 @@ describe.only('Permissions', function () {
         });
 
         it('should return user if user populated', function () {
-            permissions.parseContext({user: 1}).should.eql({
+            parseContext({user: 1}).should.eql({
                 internal: false,
                 external: false,
                 user: 1,
@@ -88,7 +89,7 @@ describe.only('Permissions', function () {
         });
 
         it('should return app if app populated', function () {
-            permissions.parseContext({app: 5}).should.eql({
+            parseContext({app: 5}).should.eql({
                 internal: false,
                 external: false,
                 user: null,
@@ -98,7 +99,7 @@ describe.only('Permissions', function () {
         });
 
         it('should return internal if internal provided', function () {
-            permissions.parseContext({internal: true}).should.eql({
+            parseContext({internal: true}).should.eql({
                 internal: true,
                 external: false,
                 user: null,
@@ -106,7 +107,7 @@ describe.only('Permissions', function () {
                 public: false
             });
 
-            permissions.parseContext('internal').should.eql({
+            parseContext('internal').should.eql({
                 internal: true,
                 external: false,
                 user: null,
@@ -116,7 +117,7 @@ describe.only('Permissions', function () {
         });
 
         it('should return external if external provided', function () {
-            permissions.parseContext({external: true}).should.eql({
+            parseContext({external: true}).should.eql({
                 internal: false,
                 external: true,
                 user: null,
@@ -124,7 +125,7 @@ describe.only('Permissions', function () {
                 public: false
             });
 
-            permissions.parseContext('external').should.eql({
+            parseContext('external').should.eql({
                 internal: false,
                 external: true,
                 user: null,

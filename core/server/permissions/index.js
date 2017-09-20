@@ -7,6 +7,7 @@ var _ = require('lodash'),
     errors = require('../errors'),
     i18n = require('../i18n'),
     effectivePerms = require('./effective'),
+    parseContext = require('./parse-context'),
     init,
     refresh,
     canThis,
@@ -20,39 +21,6 @@ function hasActionsMap() {
         /*jslint unparam:true*/
         return Object.hasOwnProperty.call(exported.actionsMap, key);
     });
-}
-
-function parseContext(context) {
-    // Parse what's passed to canThis.beginCheck for standard user and app scopes
-    var parsed = {
-        internal: false,
-        external: false,
-        user: null,
-        app: null,
-        public: true
-    };
-
-    if (context && (context === 'external' || context.external)) {
-        parsed.external = true;
-        parsed.public = false;
-    }
-
-    if (context && (context === 'internal' || context.internal)) {
-        parsed.internal = true;
-        parsed.public = false;
-    }
-
-    if (context && context.user) {
-        parsed.user = context.user;
-        parsed.public = false;
-    }
-
-    if (context && context.app) {
-        parsed.app = context.app;
-        parsed.public = false;
-    }
-
-    return parsed;
 }
 
 function applyStatusRules(docName, method, opts) {
@@ -313,6 +281,7 @@ module.exports = exported = {
     init: init,
     refresh: refresh,
     canThis: canThis,
+    // @TODO: Make it so that we don't need to export these
     parseContext: parseContext,
     applyPublicRules: applyPublicRules,
     actionsMap: {}
