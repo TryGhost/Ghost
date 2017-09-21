@@ -4,10 +4,13 @@
 // tested with the unit tests
 var should = require('should'),
     supertest = require('supertest'),
+    sinon = require('sinon'),
     testUtils = require('../../utils'),
     cheerio = require('cheerio'),
     config = require('../../../../core/server/config'),
+    settingsCache = require('../../../../core/server/settings/cache'),
     ghost = testUtils.startGhost,
+    sandbox = sinon.sandbox.create(),
     request;
 
 describe('Channel Routes', function () {
@@ -29,6 +32,16 @@ describe('Channel Routes', function () {
     }
 
     before(function (done) {
+        // Default is always casper. We use the old compatible 1.4 casper theme for these tests. Available in the test content folder.
+        var originalSettingsCacheGetFn = settingsCache.get;
+        sandbox.stub(settingsCache, 'get', function (key, options) {
+            if (key === 'active_theme') {
+                return 'casper-1.4';
+            }
+
+            return originalSettingsCacheGetFn(key, options);
+        });
+
         ghost().then(function (_ghostServer) {
             ghostServer = _ghostServer;
             return ghostServer.start();
@@ -45,6 +58,7 @@ describe('Channel Routes', function () {
     after(testUtils.teardown);
 
     after(function () {
+        sandbox.restore();
         return ghostServer.stop();
     });
 
@@ -66,13 +80,12 @@ describe('Channel Routes', function () {
                     should.not.exist(res.headers['set-cookie']);
                     should.exist(res.headers.date);
 
-                    // @TODO: use theme from fixtures and don't rely on content/themes/casper
                     $('title').text().should.equal('Ghost');
-                    // $('.content .post').length.should.equal(5);
-                    // $('.poweredby').text().should.equal('Proudly published with Ghost');
-                    // $('body.home-template').length.should.equal(1);
-                    // $('article.post').length.should.equal(5);
-                    // $('article.tag-getting-started').length.should.equal(5);
+                    $('.content .post').length.should.equal(5);
+                    $('.poweredby').text().should.equal('Proudly published with Ghost');
+                    $('body.home-template').length.should.equal(1);
+                    $('article.post').length.should.equal(5);
+                    $('article.tag-getting-started').length.should.equal(5);
 
                     done();
                 });
@@ -139,7 +152,6 @@ describe('Channel Routes', function () {
 
         describe('Paged', function () {
             // Add enough posts to trigger pages for both the index (25 pp) and rss (15 pp)
-            // @TODO: change this whole thing to use the casper theme from fixtures
             before(function (done) {
                 testUtils.initData().then(function () {
                     return testUtils.fixtures.insertPostsAndTags();
@@ -160,7 +172,6 @@ describe('Channel Routes', function () {
                     .end(doEnd(done));
             });
 
-            // @TODO: use theme from fixtures and don't rely on content/themes/casper
             it('should respond with html', function (done) {
                 request.get('/page/2/')
                     .expect('Content-Type', /html/)
@@ -186,7 +197,8 @@ describe('Channel Routes', function () {
             });
 
             it('should 404 if page too high', function (done) {
-                request.get('/page/5/')
+                // We have 7 default welcome posts + 8 fixture posts + 25 more posts = 40 (5 pages per post is default). So the 9th page 404's.
+                request.get('/page/9/')
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(404)
                     .expect(/Page not found/)
@@ -270,8 +282,11 @@ describe('Channel Routes', function () {
                     should.not.exist(res.headers['set-cookie']);
                     should.exist(res.headers.date);
 
-                    // @TODO: use theme from fixtures and don't rely on content/themes/casper
-                    $('body').attr('class').should.eql('tag-template tag-getting-started');
+                    $('body').attr('class').should.eql('tag-template tag-getting-started nav-closed');
+                    $('.content .post').length.should.equal(5);
+                    $('.poweredby').text().should.equal('Proudly published with Ghost');
+                    $('article.post').length.should.equal(5);
+                    $('article.tag-getting-started').length.should.equal(5);
 
                     done();
                 });
@@ -345,8 +360,7 @@ describe('Channel Routes', function () {
                     .end(doEnd(done));
             });
 
-            // @TODO: use theme from fixtures and don't rely on content/themes/casper
-            it.skip('should respond with html', function (done) {
+            it('should respond with html', function (done) {
                 request.get('/tag/injection/page/2/')
                     .expect('Content-Type', /html/)
                     .expect('Cache-Control', testUtils.cacheRules.public)
@@ -569,8 +583,7 @@ describe('Channel Routes', function () {
                     .end(doEnd(done));
             });
 
-            // @TODO: use theme from fixtures and don't rely on content/themes/casper
-            it.skip('should respond with html', function (done) {
+            it('should respond with html', function (done) {
                 request.get('/author/ghost-owner/page/2/')
                     .expect('Content-Type', /html/)
                     .expect('Cache-Control', testUtils.cacheRules.public)
