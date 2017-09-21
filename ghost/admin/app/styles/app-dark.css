@@ -308,6 +308,10 @@ input,
     color: #fff;
 }
 
+.gh-unsplash-search:focus {
+    background-color: color(var(--lightgrey));
+}
+
 .gh-unsplash-zoom {
     background: rgba(0,0,0,0.8);
 }
