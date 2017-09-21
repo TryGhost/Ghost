@@ -13,6 +13,18 @@ describe.only('Permissions', function () {
         sandbox.restore();
     });
 
+    /**
+     * Default test actionMap looks like this:
+     * {
+     *   browse: [ 'post' ],
+     *   edit: [ 'post', 'tag', 'user', 'page' ],
+     *   add: [ 'post', 'user', 'page' ],
+     *   destroy: [ 'post', 'user' ]
+     * }
+     *
+     * @param {object} options
+     * @return {Array|*}
+     */
     function loadFakePermissions(options) {
         options = options || {};
 
@@ -51,7 +63,12 @@ describe.only('Permissions', function () {
             permissions.init().then(function (actionsMap) {
                 should.exist(actionsMap);
 
-                actionsMap.edit.sort().should.eql(['post', 'tag', 'user', 'page'].sort());
+                _.keys(actionsMap).should.eql(['browse', 'edit', 'add', 'destroy']);
+
+                actionsMap.browse.should.eql(['post']);
+                actionsMap.edit.should.eql(['post', 'tag', 'user', 'page']);
+                actionsMap.add.should.eql(['post', 'user', 'page']);
+                actionsMap.destroy.should.eql(['post', 'user']);
 
                 actionsMap.should.equal(permissions.actionsMap);
 
@@ -65,7 +82,12 @@ describe.only('Permissions', function () {
             permissions.init().then(function (actionsMap) {
                 should.exist(actionsMap);
 
-                actionsMap.edit.sort().should.eql(['post', 'tag', 'user', 'page'].sort());
+                _.keys(actionsMap).should.eql(['browse', 'edit', 'add', 'destroy']);
+
+                actionsMap.browse.should.eql(['post']);
+                actionsMap.edit.should.eql(['post', 'tag', 'user', 'page']);
+                actionsMap.add.should.eql(['post', 'user', 'page']);
+                actionsMap.destroy.should.eql(['post', 'user']);
 
                 actionsMap.should.equal(permissions.actionsMap);
 
