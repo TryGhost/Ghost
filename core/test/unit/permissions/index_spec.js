@@ -4,7 +4,6 @@ var should = require('should'),
     Promise = require('bluebird'),
     _ = require('lodash'),
     models = require('../../../server/models'),
-    errors = require('../../../server/errors'),
     permissions = require('../../../server/permissions'),
 
     sandbox = sinon.sandbox.create();
@@ -14,22 +13,55 @@ describe.only('Permissions', function () {
         sandbox.restore();
     });
 
-    describe('actions map', function () {
+    function loadFakePermissions(options) {
+        options = options || {};
+
+        var fixturePermissions = testUtils.DataGenerator.Content.permissions,
+            extraPerm = {
+                name: 'test',
+                action_type: 'edit',
+                object_type: 'post'
+            };
+
+        if (options.extra) {
+            fixturePermissions.push(extraPerm);
+        }
+
+        return _.map(fixturePermissions, function (testPerm) {
+            return testUtils.DataGenerator.forKnex.createPermission(testPerm);
+        });
+    }
+
+    describe('Init (build actions map)', function () {
+        var fakePermissions = [];
+
         before(function () {
             models.init();
         });
 
         beforeEach(function () {
-            var permissions = _.map(testUtils.DataGenerator.Content.permissions, function (testPerm) {
-                return testUtils.DataGenerator.forKnex.createPermission(testPerm);
-            });
-
             sandbox.stub(models.Permission, 'findAll', function () {
-                return Promise.resolve(models.Permissions.forge(permissions));
+                return Promise.resolve(models.Permissions.forge(fakePermissions));
             });
         });
 
         it('can load an actions map from existing permissions', function (done) {
+            fakePermissions = loadFakePermissions();
+
+            permissions.init().then(function (actionsMap) {
+                should.exist(actionsMap);
+
+                actionsMap.edit.sort().should.eql(['post', 'tag', 'user', 'page'].sort());
+
+                actionsMap.should.equal(permissions.actionsMap);
+
+                done();
+            }).catch(done);
+        });
+
+        it('can load an actions map from existing permissions, and deduplicate', function (done) {
+            fakePermissions = loadFakePermissions({extra: true});
+
             permissions.init().then(function (actionsMap) {
                 should.exist(actionsMap);
 
