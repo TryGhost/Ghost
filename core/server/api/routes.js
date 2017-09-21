@@ -191,5 +191,14 @@ module.exports = function apiRoutes() {
     apiRouter.post('/invites', mw.authenticatePrivate, api.http(api.invites.add));
     apiRouter.del('/invites/:id', mw.authenticatePrivate, api.http(api.invites.destroy));
 
+    // ## Redirects (JSON based)
+    apiRouter.get('/redirects/json', mw.authenticatePrivate, api.http(api.redirects.download));
+    apiRouter.post('/redirects/json',
+        mw.authenticatePrivate,
+        upload.single('redirects'),
+        validation.upload({type: 'redirects'}),
+        api.http(api.redirects.upload)
+    );
+
     return apiRouter;
 };

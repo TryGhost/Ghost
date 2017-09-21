@@ -1,6 +1,8 @@
 var unidecode  = require('unidecode'),
     _          = require('lodash'),
     config = require('../config'),
+    errors = require('../errors'),
+    i18n = require('../i18n'),
     utils,
     getRandomInt;
 
@@ -111,6 +113,28 @@ utils = {
         /*jslint unparam:true*/
         res.set({'Cache-Control': 'public, max-age=' + config.get('caching:301:maxAge')});
         res.redirect(301, path);
+    },
+
+    /**
+     * NOTE: No separate utils file, because redirects won't live forever in a JSON file, see V2 of https://github.com/TryGhost/Ghost/issues/7707
+     */
+    validateRedirects: function validateRedirects(redirects) {
+        if (!_.isArray(redirects)) {
+            throw new errors.ValidationError({
+                message: i18n.t('errors.utils.redirectsWrongFormat'),
+                help: 'https://docs.ghost.org/docs/redirects'
+            });
+        }
+
+        _.each(redirects, function (redirect) {
+            if (!redirect.from || !redirect.to) {
+                throw new errors.ValidationError({
+                    message: i18n.t('errors.utils.redirectsWrongFormat'),
+                    context: JSON.stringify(redirect),
+                    help: 'https://docs.ghost.org/docs/redirects'
+                });
+            }
+        });
     },
 
     readCSV: require('./read-csv'),

@@ -40,7 +40,7 @@ module.exports = function setupBlogApp() {
 
     // you can extend Ghost with a custom redirects file
     // see https://github.com/TryGhost/Ghost/issues/7707
-    customRedirects(blogApp);
+    customRedirects.use(blogApp);
 
     // Static content/assets
     // @TODO make sure all of these have a local 404 error handler

@@ -19,6 +19,7 @@ var _ = require('lodash'),
     settings = require('./settings'),
     tags = require('./tags'),
     invites = require('./invites'),
+    redirects = require('./redirects'),
     clients = require('./clients'),
     users = require('./users'),
     slugs = require('./slugs'),
@@ -34,7 +35,8 @@ var _ = require('lodash'),
     cacheInvalidationHeader,
     locationHeader,
     contentDispositionHeaderExport,
-    contentDispositionHeaderSubscribers;
+    contentDispositionHeaderSubscribers,
+    contentDispositionHeaderRedirects;
 
 function isActiveThemeUpdate(method, endpoint, result) {
     if (endpoint === 'themes') {
@@ -169,6 +171,10 @@ contentDispositionHeaderSubscribers = function contentDispositionHeaderSubscribe
     return Promise.resolve('Attachment; filename="subscribers.' + datetime + '.csv"');
 };
 
+contentDispositionHeaderRedirects = function contentDispositionHeaderRedirects() {
+    return Promise.resolve('Attachment; filename="redirects.json"');
+};
+
 addHeaders = function addHeaders(apiMethod, req, res, result) {
     var cacheInvalidation,
         location,
@@ -206,6 +212,18 @@ addHeaders = function addHeaders(apiMethod, req, res, result) {
                 res.set({
                     'Content-Disposition': header,
                     'Content-Type': 'text/csv'
+                });
+            });
+    }
+
+    // Add Redirects Content-Disposition Header
+    if (apiMethod === redirects.download) {
+        contentDisposition = contentDispositionHeaderRedirects()
+            .then(function contentDispositionHeaderRedirects(header) {
+                res.set({
+                    'Content-Disposition': header,
+                    'Content-Type': 'application/json',
+                    'Content-Length': JSON.stringify(result).length
                 });
             });
     }
@@ -293,7 +311,8 @@ module.exports = {
     uploads: uploads,
     slack: slack,
     themes: themes,
-    invites: invites
+    invites: invites,
+    redirects: redirects
 };
 
 /**
