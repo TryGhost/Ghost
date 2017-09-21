@@ -1,0 +1,17 @@
+<div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+        {{#foreach navigation}}
+            <li class="nav-{{slug}}{{#if current}} nav-current{{/if}}"><a href="{{url absolute="true"}}">{{label}}</a></li>
+        {{/foreach}}
+    </ul>
+    {{#if @labs.subscribers}}
+        <a class="subscribe-button" href="{{@blog.url}}/subscribe/">Subscribe</a>
+    {{else}}
+        <a class="subscribe-button icon-feed" href="{{@blog.url}}/rss/">Subscribe</a>
+    {{/if}}
+</div>
+<span class="nav-cover"></span>
