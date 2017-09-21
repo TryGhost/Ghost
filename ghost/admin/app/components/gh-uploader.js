@@ -69,7 +69,7 @@ export default Component.extend({
     onComplete() {},
     onFailed() {},
     onStart() {},
-    onUploadFail() {},
+    onUploadFailure() {},
     onUploadSuccess() {},
 
     // Optional closure actions
@@ -240,7 +240,7 @@ export default Component.extend({
 
             // TODO: check for or expose known error types?
             this.get('errors').pushObject(result);
-            this.onUploadFail(result);
+            this.onUploadFailure(result);
         }
     }),
 

@@ -51,7 +51,7 @@
                 <div class="gh-setting-desc">Download all of your posts and settings in a single, glorious JSON file</div>
             </div>
             <div class="gh-setting-action">
-                <button type="button" class="gh-btn gh-btn-hover-blue" {{action "exportData"}}><span>Export</span></button>
+                <button type="button" class="gh-btn gh-btn-hover-blue" {{action "downloadFile" "db"}}><span>Export</span></button>
             </div>
         </div>
         <div class="gh-setting">
@@ -102,6 +102,52 @@
             <div class="gh-setting-action">
                 <div class="for-checkbox">{{gh-feature-flag "subscribers"}}</div>
             </div>
+        </div>
+        <div class="gh-setting">
+            {{#gh-uploader
+                files=redirectsUpload
+                extensions=jsonExtension
+                uploadUrl="/redirects/json/"
+                paramName="redirects"
+                onUploadSuccess=(perform redirectUploadResult true)
+                onUploadFailure=(perform redirectUploadResult false)
+                as |uploader|
+            }}
+            <div class="gh-setting-content">
+                <div class="gh-setting-title">Redirects</div>
+                <div class="gh-setting-desc">Configure redirects for old or moved content, more info in <a href="https://docs.ghost.org/v1/docs/redirects">the docs</a></div>
+                {{#each uploader.errors as |error|}}
+                    <div class="gh-setting-error" data-test-error="redirects">{{error.message}}</div>
+                {{/each}}
+            </div>
+            <div class="gh-setting-action" style="display: flex; flex-direction: column">
+                {{#if uploader.isUploading}}
+                    {{uploader.progressBar}}
+                {{else}}
+                    <button
+                        type="button"
+                        class="gh-btn gh-btn-icon {{if redirectSuccess "gh-btn-green"}} {{if redirectFailure "gh-btn-red"}}"
+                        onclick={{action "triggerFileDialog"}}
+                        data-test-button="upload-redirects"
+                    >
+                        <span>
+                            {{#if redirectSuccess}}
+                                {{inline-svg "check-circle"}} Uploaded
+                            {{else if redirectFailure}}
+                                {{inline-svg "retry"}} Upload Failed
+                            {{else}}
+                                Upload redirects JSON
+                            {{/if}}
+                        </span>
+                    </button>
+                    <span><a href="#" {{action "downloadFile" "redirects/json"}} data-test-link="download-redirects">Download current redirects</a></span>
+                {{/if}}
+
+                <div style="display:none">
+                    {{gh-file-input multiple=false action=(action (mut redirectsUpload)) accept=jsonMimeType data-test-file-input="redirects"}}
+                </div>
+            </div>
+            {{/gh-uploader}}
         </div>
 
     </section>

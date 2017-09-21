@@ -110,7 +110,7 @@ export default Controller.extend({
             if (fileInput.length > 0) {
                 // reset file input value before clicking so that the same image
                 // can be selected again
-                fileInput.value = '';
+                fileInput.val('');
 
                 // simulate click to open file dialog
                 // using jQuery because IE11 doesn't support MouseEvent

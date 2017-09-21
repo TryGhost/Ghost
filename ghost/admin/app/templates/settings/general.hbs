@@ -63,11 +63,9 @@
             <div class="gh-setting-content">
                 <div class="gh-setting-title">Publication icon</div>
                 <div class="gh-setting-desc">A square, social icon used in the UI of your publication, at least 60x60px</div>
-                {{#if uploader.errors}}
-                    {{#each uploader.errors as |error|}}
-                        <div class="gh-setting-error" data-test-error="icon">{{error.message}}</div>
-                    {{/each}}
-                {{/if}}
+                {{#each uploader.errors as |error|}}
+                    <div class="gh-setting-error" data-test-error="icon">{{error.message}}</div>
+                {{/each}}
             </div>
             <div class="gh-setting-action gh-setting-action-smallimg">
                 {{#if uploader.isUploading}}
@@ -98,11 +96,9 @@
             <div class="gh-setting-content">
                 <div class="gh-setting-title">Publication logo</div>
                 <div class="gh-setting-desc">The primary logo for your brand displayed across your theme, should be transparent and at least 600px x 72px</div>
-                {{#if uploader.errors}}
-                    {{#each uploader.errors as |error|}}
-                        <div class="gh-setting-error" data-test-error="logo">{{error.message}}</div>
-                    {{/each}}
-                {{/if}}
+                {{#each uploader.errors as |error|}}
+                    <div class="gh-setting-error" data-test-error="logo">{{error.message}}</div>
+                {{/each}}
             </div>
             <div class="gh-setting-action gh-setting-action-smallimg">
                 {{#if uploader.isUploading}}
@@ -133,11 +129,9 @@
             <div class="gh-setting-content">
                 <div class="gh-setting-title">Publication cover</div>
                 <div class="gh-setting-desc">An optional large background image for your site</div>
-                {{#if uploader.errors}}
-                    {{#each uploader.errors as |error|}}
-                        <div class="gh-setting-error" data-test-error="coverImage">{{error.message}}</div>
-                    {{/each}}
-                {{/if}}
+                {{#each uploader.errors as |error|}}
+                    <div class="gh-setting-error" data-test-error="coverImage">{{error.message}}</div>
+                {{/each}}
             </div>
             <div class="gh-setting-action gh-setting-action-largeimg">
                 {{#if uploader.isUploading}}
