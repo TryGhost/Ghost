@@ -763,5 +763,16 @@ describe('Acceptance: Editor', function() {
                 'facebook title not present after closing subview'
             ).to.equal(0);
         });
+
+        it('has unsplash icon when server doesn\'t return unsplash settings key', async function () {
+            server.createList('post', 1);
+
+            await visit('/editor/1');
+
+            expect(
+                find('.editor-toolbar .fa-camera'),
+                'unsplash toolbar button'
+            ).to.exist;
+        });
     });
 });
