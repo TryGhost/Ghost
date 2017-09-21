@@ -40,7 +40,7 @@ describe('Utils: zip-folder', function () {
                         return done(err);
                     }
 
-                    files.length.should.eql(10);
+                    files.length.should.eql(12);
                     done();
                 });
             });

@@ -124,7 +124,7 @@ describe('DB API', function () {
                 if (err) {
                     return done(err);
                 }
-                res.body.should.match(/content\/data/);
+                res.body.should.match(/data/);
                 fsStub.calledOnce.should.eql(true);
 
                 done();
