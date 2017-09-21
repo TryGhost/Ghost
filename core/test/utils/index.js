@@ -835,6 +835,7 @@ startGhost = function startGhost() {
 
     // Copy all themes into the new test content folder. Default active theme is always casper. If you want to use a different theme, you have to set the active theme (e.g. stub)
     fs.copySync(path.join(__dirname, 'fixtures', 'themes'), path.join(contentFolderForTests, 'themes'));
+    fs.copySync(path.join(__dirname, 'fixtures', 'data'), path.join(contentFolderForTests, 'data'));
 
     return knexMigrator.reset()
         .then(function initialiseDatabase() {
