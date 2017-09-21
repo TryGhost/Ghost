@@ -9,6 +9,18 @@ var should = require('should'),
     sandbox = sinon.sandbox.create();
 
 describe.only('Permissions', function () {
+    var fakePermissions = [];
+
+    before(function () {
+        models.init();
+    });
+
+    beforeEach(function () {
+        sandbox.stub(models.Permission, 'findAll', function () {
+            return Promise.resolve(models.Permissions.forge(fakePermissions));
+        });
+    });
+
     afterEach(function () {
         sandbox.restore();
     });
@@ -44,19 +56,13 @@ describe.only('Permissions', function () {
         });
     }
 
+    describe('No init (no action map)', function () {
+        it('throws an error without init', function () {
+            permissions.canThis.should.throw(/No actions map found/);
+        });
+    });
+
     describe('Init (build actions map)', function () {
-        var fakePermissions = [];
-
-        before(function () {
-            models.init();
-        });
-
-        beforeEach(function () {
-            sandbox.stub(models.Permission, 'findAll', function () {
-                return Promise.resolve(models.Permissions.forge(fakePermissions));
-            });
-        });
-
         it('can load an actions map from existing permissions', function (done) {
             fakePermissions = loadFakePermissions();
 
@@ -93,6 +99,37 @@ describe.only('Permissions', function () {
 
                 done();
             }).catch(done);
+        });
+    });
+
+    describe('CanThis', function () {
+        beforeEach(function () {
+            fakePermissions = loadFakePermissions();
+
+            return permissions.init();
+        });
+
+        it('canThisResult gets build properly', function () {
+            var canThisResult = permissions.canThis();
+
+            canThisResult.browse.should.be.an.Object();
+            canThisResult.browse.post.should.be.a.Function();
+
+            canThisResult.edit.should.be.an.Object();
+            canThisResult.edit.post.should.be.a.Function();
+            canThisResult.edit.tag.should.be.a.Function();
+            canThisResult.edit.user.should.be.a.Function();
+            canThisResult.edit.page.should.be.a.Function();
+
+
+            canThisResult.add.should.be.an.Object();
+            canThisResult.add.post.should.be.a.Function();
+            canThisResult.add.user.should.be.a.Function();
+            canThisResult.add.page.should.be.a.Function();
+
+            canThisResult.destroy.should.be.an.Object();
+            canThisResult.destroy.post.should.be.a.Function();
+            canThisResult.destroy.user.should.be.a.Function();
         });
     });
 
