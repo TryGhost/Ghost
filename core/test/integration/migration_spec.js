@@ -157,6 +157,12 @@ describe('Database Migration (special functions)', function () {
             permissions[47].should.be.AssignedToRoles(['Administrator', 'Editor']);
             permissions[48].name.should.eql('Delete invites');
             permissions[48].should.be.AssignedToRoles(['Administrator', 'Editor']);
+
+            // Redirects
+            permissions[49].name.should.eql('Download redirects');
+            permissions[49].should.be.AssignedToRoles(['Administrator']);
+            permissions[50].name.should.eql('Upload redirects');
+            permissions[50].should.be.AssignedToRoles(['Administrator']);
         });
 
         describe('Populate', function () {
@@ -218,7 +224,7 @@ describe('Database Migration (special functions)', function () {
                     result.roles.at(3).get('name').should.eql('Owner');
 
                     // Permissions
-                    result.permissions.length.should.eql(49);
+                    result.permissions.length.should.eql(51);
                     result.permissions.toJSON().should.be.CompletePermissions();
 
                     done();

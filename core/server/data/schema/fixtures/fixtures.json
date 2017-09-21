@@ -411,6 +411,16 @@
                     "name": "Delete invites",
                     "action_type": "destroy",
                     "object_type": "invite"
+                },
+                {
+                    "name": "Download redirects",
+                    "action_type": "download",
+                    "object_type": "redirect"
+                },
+                {
+                    "name": "Upload redirects",
+                    "action_type": "upload",
+                    "object_type": "redirect"
                 }
             ]
         },
@@ -460,7 +470,8 @@
                     "role": "all",
                     "client": "all",
                     "subscriber": "all",
-                    "invite": "all"
+                    "invite": "all",
+                    "redirect": "all"
                 },
                 "Editor": {
                     "post": "all",
