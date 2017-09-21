@@ -375,13 +375,13 @@ describe('Integration: Component: gh-uploader', function() {
             expect(failures[0].message).to.equal('Error: No upload for you');
         });
 
-        it('triggers onUploadFail when each upload fails', async function () {
+        it('triggers onUploadFailure when each upload fails', async function () {
             this.set('uploadFail', sinon.spy());
 
             this.render(hbs`
                 {{#gh-uploader
                     files=files
-                    onUploadFail=(action uploadFail)}}
+                    onUploadFailure=(action uploadFail)}}
                 {{/gh-uploader}}
             `);
             this.set('files', [

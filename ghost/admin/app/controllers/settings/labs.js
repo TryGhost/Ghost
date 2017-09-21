@@ -1,5 +1,6 @@
 import $ from 'jquery';
 import Controller from '@ember/controller';
+import Ember from 'ember';
 import RSVP from 'rsvp';
 import {
     UnsupportedMediaTypeError,
@@ -9,8 +10,9 @@ import {inject as injectService} from '@ember/service';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
 import {run} from '@ember/runloop';
-import {task} from 'ember-concurrency';
+import {task, timeout} from 'ember-concurrency';
 
+const {testing} = Ember;
 const {Promise} = RSVP;
 
 export default Controller.extend({
@@ -21,6 +23,8 @@ export default Controller.extend({
     uploadButtonText: 'Import',
 
     importMimeType: ['application/json', 'application/zip', 'application/x-zip-compressed'],
+    jsonExtension: ['json'],
+    jsonMimeType: ['application/json'],
 
     ajax: injectService(),
     config: injectService(),
@@ -82,6 +86,17 @@ export default Controller.extend({
         } catch (error) {
             notifications.showAPIError(error, {key: 'test-email:send'});
         }
+    }).drop(),
+
+    redirectUploadResult: task(function* (success) {
+        this.set('redirectSuccess', success);
+        this.set('redirectFailure', !success);
+
+        yield timeout(testing ? 100 : 5000);
+
+        this.set('redirectSuccess', null);
+        this.set('redirectFailure', null);
+        return true;
     }).drop(),
 
     reset() {
@@ -152,8 +167,8 @@ export default Controller.extend({
             });
         },
 
-        exportData() {
-            let dbUrl = this.get('ghostPaths.url').api('db');
+        downloadFile(url) {
+            let dbUrl = this.get('ghostPaths.url').api(url);
             let accessToken = this.get('session.data.authenticated.access_token');
             let downloadURL = `${dbUrl}?access_token=${accessToken}`;
             let iframe = $('#iframeDownload');
@@ -167,6 +182,28 @@ export default Controller.extend({
 
         toggleDeleteAllModal() {
             this.toggleProperty('showDeleteAllModal');
+        },
+
+        /**
+         * Opens a file selection dialog - Triggered by "Upload x" buttons,
+         * searches for the hidden file input within the .gh-setting element
+         * containing the clicked button then simulates a click
+         * @param  {MouseEvent} event - MouseEvent fired by the button click
+         */
+        triggerFileDialog(event) {
+            let fileInput = $(event.target)
+                .closest('.gh-setting')
+                .find('input[type="file"]');
+
+            if (fileInput.length > 0) {
+                // reset file input value before clicking so that the same image
+                // can be selected again
+                fileInput.val('');
+
+                // simulate click to open file dialog
+                // using jQuery because IE11 doesn't support MouseEvent
+                $(fileInput).click();
+            }
         }
     }
 });

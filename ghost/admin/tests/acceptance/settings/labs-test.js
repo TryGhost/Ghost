@@ -2,9 +2,11 @@
 import $ from 'jquery';
 import destroyApp from '../../helpers/destroy-app';
 import startApp from '../../helpers/start-app';
+// import wait from 'ember-test-helpers/wait';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import {expect} from 'chai';
+// import {timeout} from 'ember-concurrency';
 
 describe('Acceptance: Settings - Labs', function() {
     let application;
@@ -70,6 +72,119 @@ describe('Acceptance: Settings - Labs', function() {
 
             await click('.fullscreen-modal .modal-footer .gh-btn');
             expect(find('.fullscreen-modal').length, 'modal element').to.equal(0);
+        });
+
+        it('can upload/download redirects', async function () {
+            await visit('/settings/labs');
+
+            // successful upload
+            server.post('/redirects/json/', {}, 200);
+
+            await fileUpload(
+                '[data-test-file-input="redirects"]',
+                ['test'],
+                {name: 'redirects.json', type: 'application/json'}
+            );
+
+            // TODO: tests for the temporary success/failure state have been
+            // disabled because they were randomly failing
+
+            // this should be half-way through button reset timeout
+            // await timeout(50);
+            //
+            // // shows success button
+            // let button = find('[data-test-button="upload-redirects"]');
+            // expect(button.length, 'no of success buttons').to.equal(1);
+            // expect(
+            //     button.hasClass('gh-btn-green'),
+            //     'success button is green'
+            // ).to.be.true;
+            // expect(
+            //     button.text().trim(),
+            //     'success button text'
+            // ).to.have.string('Uploaded');
+            //
+            // await wait();
+
+            // returned to normal button
+            let button = find('[data-test-button="upload-redirects"]');
+            expect(button.length, 'no of post-success buttons').to.equal(1);
+            expect(
+                button.hasClass('gh-btn-green'),
+                'post-success button doesn\'t have success class'
+            ).to.be.false;
+            expect(
+                button.text().trim(),
+                'post-success button text'
+            ).to.have.string('Upload redirects');
+
+            // failed upload
+            server.post('/redirects/json/', {
+                errors: [{
+                    errorType: 'BadRequestError',
+                    message: 'Test failure message'
+                }]
+            }, 400);
+
+            await fileUpload(
+                '[data-test-file-input="redirects"]',
+                ['test'],
+                {name: 'redirects-bad.json', type: 'application/json'}
+            );
+
+            // TODO: tests for the temporary success/failure state have been
+            // disabled because they were randomly failing
+
+            // this should be half-way through button reset timeout
+            // await timeout(50);
+            //
+            // shows failure button
+            // button = find('[data-test-button="upload-redirects"]');
+            // expect(button.length, 'no of failure buttons').to.equal(1);
+            // expect(
+            //     button.hasClass('gh-btn-red'),
+            //     'failure button is red'
+            // ).to.be.true;
+            // expect(
+            //     button.text().trim(),
+            //     'failure button text'
+            // ).to.have.string('Upload Failed');
+            //
+            // await wait();
+
+            // shows error message
+            expect(
+                find('[data-test-error="redirects"]').text().trim(),
+                'upload error text'
+            ).to.have.string('Test failure message');
+
+            // returned to normal button
+            button = find('[data-test-button="upload-redirects"]');
+            expect(button.length, 'no of post-failure buttons').to.equal(1);
+            expect(
+                button.hasClass('gh-btn-red'),
+                'post-failure button doesn\'t have failure class'
+            ).to.be.false;
+            expect(
+                button.text().trim(),
+                'post-failure button text'
+            ).to.have.string('Upload redirects');
+
+            // successful upload clears error
+            server.post('/redirects/json/', {}, 200);
+            await fileUpload(
+                '[data-test-file-input="redirects"]',
+                ['test'],
+                {name: 'redirects-bad.json', type: 'application/json'}
+            );
+
+            expect(find('[data-test-error="redirects"]')).to.not.exist;
+
+            // can download redirects.json
+            await click('[data-test-link="download-redirects"]');
+
+            let iframe = $('#iframeDownload');
+            expect(iframe.attr('src')).to.have.string('/redirects/json/');
         });
     });
 });
