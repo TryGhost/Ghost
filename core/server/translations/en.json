@@ -108,6 +108,9 @@
                 "missingTheme": "The currently active theme \"{theme}\" is missing.",
                 "invalidTheme": "The currently active theme \"{theme}\" is invalid.",
                 "themeHasErrors": "The currently active theme \"{theme}\" has errors, but will still work."
+            },
+            "redirects": {
+                "register": "Could not register custom redirects."
             }
         },
         "utils": {
@@ -119,7 +122,8 @@
             },
             "blogIcon": {
                 "error": "Could not fetch icon dimensions."
-            }
+            },
+            "redirectsWrongFormat": "Incorrect redirects file format."
         },
         "config": {
             "couldNotLocateConfigFile": {
@@ -167,9 +171,9 @@
         },
         "general": {
             "maintenance": "Ghost is currently undergoing maintenance, please wait a moment then retry.",
-            "moreInfo": "\nMore info: {info}",
             "requiredOnFuture": "This will be required in future. Please see {link}",
-            "internalError": "Something went wrong."
+            "internalError": "Something went wrong.",
+            "jsonParse": "Could not parse JSON: {context}."
         },
         "httpServer": {
             "addressInUse": {
@@ -185,17 +189,15 @@
         },
         "mail": {
             "incompleteMessageData": {
-                "error": "Error: Incomplete message data."
+                "error": "Incomplete message data."
             },
             "failedSendingEmail": {
-                "error": "Error: Failed to send email"
+                "error": "Failed to send email."
             },
             "noMailServerAtAddress": {
-                "error": " - no mail server found at {domain}"
+                "error": " No mail server found at {domain}."
             },
-            "messageNotSent": {
-                "error": "Error: Message could not be sent"
-            }
+            "reason": " Reason: {reason}."
         },
         "models": {
             "subscriber": {
