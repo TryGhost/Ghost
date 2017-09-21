@@ -4,6 +4,7 @@ var Promise = require('bluebird'),
     fs = require('fs-extra'),
     path = require('path'),
     Module = require('module'),
+    os = require('os'),
     debug = require('ghost-ignition').debug('test'),
     ObjectId = require('bson-objectid'),
     uuid = require('uuid'),
@@ -20,6 +21,7 @@ var Promise = require('bluebird'),
     sequence = require('../../server/utils/sequence'),
     themes = require('../../server/themes'),
     DataGenerator = require('./fixtures/data-generator'),
+    configUtils = require('./configUtils'),
     filterData = require('./fixtures/filter-param'),
     API = require('./api'),
     fork = require('./fork'),
@@ -815,6 +817,23 @@ unmockNotExistingModule = function unmockNotExistingModule() {
  * 2. start ghost
  */
 startGhost = function startGhost() {
+    var contentFolderForTests = path.join(os.tmpdir(), uuid.v1(), 'ghost-test');
+
+    /**
+     * We never use the root content folder for testing!
+     * We use a tmp folder.
+     * @TODO: add testUtils.stopServer and ensure we remove the tmp folder.
+     */
+    configUtils.set('paths:contentPath', contentFolderForTests);
+
+    fs.ensureDirSync(contentFolderForTests);
+    fs.ensureDirSync(path.join(contentFolderForTests, 'data'));
+    fs.ensureDirSync(path.join(contentFolderForTests, 'themes'));
+    fs.ensureDirSync(path.join(contentFolderForTests, 'images'));
+    fs.ensureDirSync(path.join(contentFolderForTests, 'logs'));
+    fs.ensureDirSync(path.join(contentFolderForTests, 'adapters'));
+    fs.copySync(path.join(__dirname, 'fixtures', 'themes', 'casper'), path.join(contentFolderForTests, 'themes', 'casper'));
+
     return knexMigrator.reset()
         .then(function initialiseDatabase() {
             return knexMigrator.init();
