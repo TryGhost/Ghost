@@ -8,8 +8,10 @@ var should = require('should'),
 
     sandbox = sinon.sandbox.create();
 
-describe.only('Permissions', function () {
-    var fakePermissions = [];
+describe('Permissions', function () {
+    var fakePermissions = [],
+        findPostSpy,
+        findTagSpy;
 
     before(function () {
         models.init();
@@ -18,6 +20,14 @@ describe.only('Permissions', function () {
     beforeEach(function () {
         sandbox.stub(models.Permission, 'findAll', function () {
             return Promise.resolve(models.Permissions.forge(fakePermissions));
+        });
+
+        findPostSpy = sandbox.stub(models.Post, 'findOne', function () {
+            return Promise.resolve(models.Posts.forge(testUtils.DataGenerator.Content.posts[0]));
+        });
+
+        findTagSpy = sandbox.stub(models.Tag, 'findOne', function () {
+            return Promise.resolve({});
         });
     });
 
@@ -121,7 +131,6 @@ describe.only('Permissions', function () {
             canThisResult.edit.user.should.be.a.Function();
             canThisResult.edit.page.should.be.a.Function();
 
-
             canThisResult.add.should.be.an.Object();
             canThisResult.add.post.should.be.a.Function();
             canThisResult.add.user.should.be.a.Function();
@@ -131,28 +140,148 @@ describe.only('Permissions', function () {
             canThisResult.destroy.post.should.be.a.Function();
             canThisResult.destroy.user.should.be.a.Function();
         });
+
+        describe('Non user/app permissions', function () {
+            // TODO change to using fake models in tests!
+            // Permissions need to be NOT fundamentally baked into Ghost, but a separate module, at some point
+            // It can depend on bookshelf, but should NOT use hard coded model knowledge.
+            describe('with permissible calls (post model)', function () {
+                it('No context: does not allow edit post (no model)', function (done) {
+                    permissions
+                        .canThis() // no context
+                        .edit
+                        .post() // post id
+                        .then(function () {
+                            done(new Error('was able to edit post without permission'));
+                        })
+                        .catch(function (err) {
+                            err.errorType.should.eql('NoPermissionError');
+
+                            findPostSpy.callCount.should.eql(0);
+                            done();
+                        });
+                });
+
+                it('No context: does not allow edit post (model syntax)', function (done) {
+                    permissions
+                        .canThis() // no context
+                        .edit
+                        .post({id: 1}) // post id in model syntax
+                        .then(function () {
+                            done(new Error('was able to edit post without permission'));
+                        })
+                        .catch(function (err) {
+                            err.errorType.should.eql('NoPermissionError');
+
+                            findPostSpy.callCount.should.eql(1);
+                            findPostSpy.firstCall.args[0].should.eql({id: 1, status: 'all'});
+                            done();
+                        });
+                });
+
+                it('No context: does not allow edit post (model ID syntax)', function (done) {
+                    permissions
+                        .canThis({}) // no context
+                        .edit
+                        .post(1) // post id using number syntax
+                        .then(function () {
+                            done(new Error('was able to edit post without permission'));
+                        })
+                        .catch(function (err) {
+                            err.errorType.should.eql('NoPermissionError');
+
+                            findPostSpy.callCount.should.eql(1);
+                            findPostSpy.firstCall.args[0].should.eql({id: 1, status: 'all'});
+                            done();
+                        });
+                });
+
+                it('Internal context: instantly grants permissions', function (done) {
+                    permissions
+                        .canThis({internal: true}) // internal context
+                        .edit
+                        .post({id: 1}) // post id
+                        .then(function () {
+                            // We don't get this far, permissions are instantly granted for internal
+                            findPostSpy.callCount.should.eql(0);
+                            done();
+                        })
+                        .catch(function () {
+                            done(new Error('Should allow editing post with { internal: true }'));
+                        });
+                });
+
+                it('External context: does not grant permissions', function (done) {
+                    permissions
+                        .canThis({external: true}) // internal context
+                        .edit
+                        .post({id: 1}) // post id
+                        .then(function () {
+                            done(new Error('was able to edit post without permission'));
+                        })
+                        .catch(function (err) {
+                            err.errorType.should.eql('NoPermissionError');
+
+                            findPostSpy.callCount.should.eql(1);
+                            findPostSpy.firstCall.args[0].should.eql({id: 1, status: 'all'});
+                            done();
+                        });
+                });
+            });
+
+            describe('without permissible (tag model)', function () {
+                it('No context: does not allow edit tag (model syntax)', function (done) {
+                    permissions
+                        .canThis() // no context
+                        .edit
+                        .tag({id: 1}) // tag id in model syntax
+                        .then(function () {
+                            done(new Error('was able to edit tag without permission'));
+                        })
+                        .catch(function (err) {
+                            err.errorType.should.eql('NoPermissionError');
+
+                            // We don't look up tags
+                            findTagSpy.callCount.should.eql(0);
+                            done();
+                        });
+                });
+
+                it('Internal context: instantly grants permissions', function (done) {
+                    permissions
+                        .canThis({internal: true}) // internal context
+                        .edit
+                        .tag({id: 1}) // tag id
+                        .then(function () {
+                            // We don't look up tags
+                            findTagSpy.callCount.should.eql(0);
+                            done();
+                        })
+                        .catch(function () {
+                            done(new Error('Should allow editing post with { internal: true }'));
+                        });
+                });
+
+                it('External context: does not grant permissions', function (done) {
+                    permissions
+                        .canThis({external: true}) // internal context
+                        .edit
+                        .tag({id: 1}) // tag id
+                        .then(function () {
+                            done(new Error('was able to edit tag without permission'));
+                        })
+                        .catch(function (err) {
+                            err.errorType.should.eql('NoPermissionError');
+
+                            findTagSpy.callCount.should.eql(0);
+                            done();
+                        });
+                });
+            });
+        });
     });
 
     // @TODO: move to integrations or stub
-    // it('does not allow edit post without permission', function (done) {
-    //    var fakePage = {
-    //        id: 1
-    //    };
-
-    //    permissions.init()
-    //        .then(function () {
-    //            var canThisResult = permissions.canThis({id: 1});
-
-    //            should.exist(canThisResult.edit);
-    //            should.exist(canThisResult.edit.post);
-
-    //            return canThisResult.edit.page(fakePage);
-    //        })
-    //        .then(function () {
-    //            done(new Error('was able to edit post without permission'));
-    //        }).catch(done);
-    // });
-
     // it('allows edit post with permission', function (done) {
     //    var fakePost = {
     //        id: '1'
@@ -328,42 +457,6 @@ describe.only('Permissions', function () {
     //        })
     //        .catch(function () {
     //            done(new Error('Did not allow an edit of post 1'));
-    //        });
-    // });
-
-    // it('checks for null context passed and rejects', function (done) {
-    //    permissions.canThis(undefined)
-    //        .edit
-    //        .post(1)
-    //        .then(function () {
-    //            done(new Error('Should not allow editing post'));
-    //        })
-    //        .catch(done);
-    // });
-
-    // it('allows \'internal\' to be passed for internal requests', function (done) {
-    //    // Using tag here because post implements the custom permissible interface
-    //    permissions.canThis('internal')
-    //        .edit
-    //        .tag(1)
-    //        .then(function () {
-    //            done();
-    //        })
-    //        .catch(function () {
-    //            done(new Error('Should allow editing post with "internal"'));
-    //        });
-    // });
-
-    // it('allows { internal: true } to be passed for internal requests', function (done) {
-    //     // Using tag here because post implements the custom permissible interface
-    //     permissions.canThis({internal: true})
-    //        .edit
-    //        .tag(1)
-    //        .then(function () {
-    //            done();
-    //        })
-    //        .catch(function () {
-    //            done(new Error('Should allow editing post with { internal: true }'));
     //        });
     // });
 });
