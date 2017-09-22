@@ -14,13 +14,19 @@
             </div>
             <div class="gh-setting-action">
                 <form id="settings-import" enctype="multipart/form-data">
-                    {{gh-file-upload id="importfile" classNames="flex" uploadButtonText=uploadButtonText onUpload="onUpload" acceptEncoding=importMimeType}}
+                    {{gh-file-upload
+                        id="importfile"
+                        classNames="flex"
+                        uploadButtonText=uploadButtonText
+                        onUpload=(action "onUpload")
+                        acceptEncoding=importMimeType
+                        data-test-file-input="import"}}
                 </form>
             </div>
         </div>
 
         {{#if importErrors}}
-            <div class="gh-import-errors {{if importSuccessful "gh-import-errors-warning"}}">
+            <div class="gh-import-errors {{if importSuccessful "gh-import-errors-warning"}}" data-test-import-errors>
                 <div class="gh-import-errors-title">
                     {{#if importSuccessful}}
                         Import successful with warnings
@@ -30,13 +36,13 @@
                 </div>
 
                 {{#each importErrors as |error|}}
-                    <div class="gh-import-error">
-                        <p class="gh-import-error-message">
+                    <div class="gh-import-error" data-test-import-error>
+                        <p class="gh-import-error-message" data-test-import-error-message>
                             {{#if error.help}}{{error.help}}: {{/if}}{{error.message}}
                         </p>
 
                         {{#if error.context}}
-                            <div class="gh-import-error-entry">
+                            <div class="gh-import-error-entry" data-test-import-error-context>
                                 <pre>{{error.context}}</pre>
                             </div>
                         {{/if}}

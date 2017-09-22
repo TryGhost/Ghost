@@ -4,6 +4,7 @@ import Ember from 'ember';
 import RSVP from 'rsvp';
 import {
     UnsupportedMediaTypeError,
+    isRequestEntityTooLargeError,
     isUnsupportedMediaTypeError
 } from 'ghost-admin/services/ajax';
 import {inject as injectService} from '@ember/service';
@@ -154,7 +155,7 @@ export default Controller.extend({
                     });
                 });
             }).catch((response) => {
-                if (isUnsupportedMediaTypeError(response)) {
+                if (isUnsupportedMediaTypeError(response) || isRequestEntityTooLargeError(response)) {
                     this.set('importErrors', [response]);
                     return;
                 }
