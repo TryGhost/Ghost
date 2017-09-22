@@ -37,6 +37,9 @@ effective = {
                     });
                 });
 
+                // @TODO fix this!
+                // Permissions is an array of models
+                // Roles is a JSON array
                 return {permissions: allPerms, roles: user.roles};
             });
     },
