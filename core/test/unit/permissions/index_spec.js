@@ -5,6 +5,7 @@ var should = require('should'),
     _ = require('lodash'),
     models = require('../../../server/models'),
     permissions = require('../../../server/permissions'),
+    effective = require('../../../server/permissions/effective'),
 
     sandbox = sinon.sandbox.create();
 
@@ -23,7 +24,7 @@ describe('Permissions', function () {
         });
 
         findPostSpy = sandbox.stub(models.Post, 'findOne', function () {
-            return Promise.resolve(models.Posts.forge(testUtils.DataGenerator.Content.posts[0]));
+            return Promise.resolve(models.Post.forge(testUtils.DataGenerator.Content.posts[0]));
         });
 
         findTagSpy = sandbox.stub(models.Tag, 'findOne', function () {
@@ -264,7 +265,7 @@ describe('Permissions', function () {
 
                 it('External context: does not grant permissions', function (done) {
                     permissions
-                        .canThis({external: true}) // internal context
+                        .canThis({external: true}) // external context
                         .edit
                         .tag({id: 1}) // tag id
                         .then(function () {
@@ -279,184 +280,349 @@ describe('Permissions', function () {
                 });
             });
         });
+
+        describe('User-based permissions', function () {
+            // TODO change to using fake models in tests!
+            // Permissions need to be NOT fundamentally baked into Ghost, but a separate module, at some point
+            // It can depend on bookshelf, but should NOT use hard coded model knowledge.
+            // We use the tag model here because it doesn't have permissible, once that changes, these tests must also change
+            it('No permissions: cannot edit tag (no permissible function on model)', function (done) {
+                var effectiveUserStub = sandbox.stub(effective, 'user', function () {
+                    // Fake the response from effective.user, which contains permissions and roles
+                    return Promise.resolve({
+                        permissions: [],
+                        roles: undefined
+                    });
+                });
+
+                permissions
+                    .canThis({user: {}}) // user context
+                    .edit
+                    .tag({id: 1}) // tag id in model syntax
+                    .then(function () {
+                        done(new Error('was able to edit tag without permission'));
+                    })
+                    .catch(function (err) {
+                        effectiveUserStub.callCount.should.eql(1);
+                        err.errorType.should.eql('NoPermissionError');
+                        done();
+                    });
+            });
+
+            it('With permissions: can edit specific tag (no permissible function on model)', function (done) {
+                var effectiveUserStub = sandbox.stub(effective, 'user', function () {
+                    // Fake the response from effective.user, which contains permissions and roles
+                    return Promise.resolve({
+                        permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
+                        roles: undefined
+                    });
+                });
+
+                permissions
+                    .canThis({user: {}}) // user context
+                    .edit
+                    .tag({id: 1}) // tag id in model syntax
+                    .then(function (res) {
+                        effectiveUserStub.callCount.should.eql(1);
+                        should.not.exist(res);
+                        done();
+                    })
+                    .catch(done);
+            });
+
+            it('With permissions: can edit non-specific tag (no permissible function on model)', function (done) {
+                var effectiveUserStub = sandbox.stub(effective, 'user', function () {
+                    // Fake the response from effective.user, which contains permissions and roles
+                    return Promise.resolve({
+                        permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
+                        roles: undefined
+                    });
+                });
+
+                permissions
+                    .canThis({user: {}}) // user context
+                    .edit
+                    .tag() // tag id in model syntax
+                    .then(function (res) {
+                        effectiveUserStub.callCount.should.eql(1);
+                        should.not.exist(res);
+                        done();
+                    })
+                    .catch(done);
+            });
+
+            it('Specific permissions: can edit correct specific tag (no permissible function on model)', function (done) {
+                var effectiveUserStub = sandbox.stub(effective, 'user', function () {
+                    // Fake the response from effective.user, which contains permissions and roles
+                    return Promise.resolve({
+                        permissions: models.Permissions.forge([
+                            {
+                                id: 'abc123',
+                                name: 'test',
+                                action_type: 'edit',
+                                object_type: 'tag',
+                                object_id: 1
+                            }
+                        ]).models,
+                        roles: undefined
+                    });
+                });
+
+                permissions
+                    .canThis({user: {}}) // user context
+                    .edit
+                    .tag({id: 1}) // tag id in model syntax
+                    .then(function (res) {
+                        effectiveUserStub.callCount.should.eql(1);
+                        should.not.exist(res);
+                        done();
+                    })
+                    .catch(done);
+            });
+
+            it('Specific permissions: cannot edit incorrect specific tag (no permissible function on model)', function (done) {
+                var effectiveUserStub = sandbox.stub(effective, 'user', function () {
+                    // Fake the response from effective.user, which contains permissions and roles
+                    return Promise.resolve({
+                        permissions: models.Permissions.forge([
+                            {
+                                id: 'abc123',
+                                name: 'test',
+                                action_type: 'edit',
+                                object_type: 'tag',
+                                object_id: 1
+                            }
+                        ]).models,
+                        roles: undefined
+                    });
+                });
+
+                permissions
+                    .canThis({user: {}}) // user context
+                    .edit
+                    .tag({id: 10}) // tag id in model syntax
+                    .then(function () {
+                        done(new Error('was able to edit tag without permission'));
+                    })
+                    .catch(function (err) {
+                        effectiveUserStub.callCount.should.eql(1);
+                        err.errorType.should.eql('NoPermissionError');
+                        done();
+                    });
+            });
+
+            // @TODO fix this case - it makes no sense?!
+            it('Specific permissions: CAN edit non-specific tag (no permissible function on model) @TODO fix this', function (done) {
+                var effectiveUserStub = sandbox.stub(effective, 'user', function () {
+                    // Fake the response from effective.user, which contains permissions and roles
+                    return Promise.resolve({
+                        permissions: models.Permissions.forge([
+                            {
+                                id: 'abc123',
+                                name: 'test',
+                                action_type: 'edit',
+                                object_type: 'tag',
+                                object_id: 1
+                            }
+                        ]).models,
+                        roles: undefined
+                    });
+                });
+
+                permissions
+                    .canThis({user: {}}) // user context
+                    .edit
+                    .tag() // tag id in model syntax
+                    .then(function (res) {
+                        effectiveUserStub.callCount.should.eql(1);
+                        should.not.exist(res);
+                        done();
+                    })
+                    .catch(done);
+            });
+
+            it('With owner role: can edit tag (no permissible function on model)', function (done) {
+                var effectiveUserStub = sandbox.stub(effective, 'user', function () {
+                    // Fake the response from effective.user, which contains permissions and roles
+                    return Promise.resolve({
+                        permissions: [],
+                        // This should be JSON, so no need to run it through the model layer. 3 === owner
+                        roles: [testUtils.DataGenerator.Content.roles[3]]
+                    });
+                });
+
+                permissions
+                    .canThis({user: {}}) // user context
+                    .edit
+                    .tag({id: 1}) // tag id in model syntax
+                    .then(function (res) {
+                        effectiveUserStub.callCount.should.eql(1);
+                        should.not.exist(res);
+                        done();
+                    })
+                    .catch(done);
+            });
+        });
+
+        describe('App-based permissions (requires user as well)', function () {
+            // @TODO: revisit this - do we really need to have USER permissions AND app permissions?
+            it('No permissions: cannot edit tag with app only (no permissible function on model)', function (done) {
+                var effectiveAppStub = sandbox.stub(effective, 'app', function () {
+                    // Fake the response from effective.app, which contains an empty array for this case
+                    return Promise.resolve([]);
+                });
+
+                permissions
+                    .canThis({app: {}}) // app context
+                    .edit
+                    .tag({id: 1}) // tag id in model syntax
+                    .then(function () {
+                        done(new Error('was able to edit tag without permission'));
+                    })
+                    .catch(function (err) {
+                        effectiveAppStub.callCount.should.eql(1);
+                        err.errorType.should.eql('NoPermissionError');
+                        done();
+                    });
+            });
+
+            it('No permissions: cannot edit tag (no permissible function on model)', function (done) {
+                var effectiveAppStub = sandbox.stub(effective, 'app', function () {
+                        // Fake the response from effective.app, which contains an empty array for this case
+                        return Promise.resolve([]);
+                    }),
+                    effectiveUserStub = sandbox.stub(effective, 'user', function () {
+                        // Fake the response from effective.user, which contains permissions and roles
+                        return Promise.resolve({
+                            permissions: [],
+                            roles: undefined
+                        });
+                    });
+
+                permissions
+                    .canThis({app: {}, user: {}}) // app context
+                    .edit
+                    .tag({id: 1}) // tag id in model syntax
+                    .then(function () {
+                        done(new Error('was able to edit tag without permission'));
+                    })
+                    .catch(function (err) {
+                        effectiveAppStub.callCount.should.eql(1);
+                        effectiveUserStub.callCount.should.eql(1);
+                        err.errorType.should.eql('NoPermissionError');
+                        done();
+                    });
+            });
+
+            it('With permissions: can edit specific tag (no permissible function on model)', function (done) {
+                var effectiveAppStub = sandbox.stub(effective, 'app', function () {
+                        // Fake the response from effective.app, which contains permissions only
+                        return Promise.resolve({
+                            permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models
+                        });
+                    }),
+                    effectiveUserStub = sandbox.stub(effective, 'user', function () {
+                        // Fake the response from effective.user, which contains permissions and roles
+                        return Promise.resolve({
+                            permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
+                            roles: undefined
+                        });
+                    });
+
+                permissions
+                    .canThis({app: {}, user: {}}) // app context
+                    .edit
+                    .tag({id: 1}) // tag id in model syntax
+                    .then(function (res) {
+                        effectiveAppStub.callCount.should.eql(1);
+                        effectiveUserStub.callCount.should.eql(1);
+                        should.not.exist(res);
+                        done();
+                    })
+                    .catch(done);
+            });
+
+            it('With permissions: can edit non-specific tag (no permissible function on model)', function (done) {
+                var effectiveAppStub = sandbox.stub(effective, 'app', function () {
+                        // Fake the response from effective.app, which contains permissions only
+                        return Promise.resolve({
+                            permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models
+                        });
+                    }),
+                    effectiveUserStub = sandbox.stub(effective, 'user', function () {
+                        // Fake the response from effective.user, which contains permissions and roles
+                        return Promise.resolve({
+                            permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
+                            roles: undefined
+                        });
+                    });
+
+                permissions
+                    .canThis({app: {}, user: {}}) // app context
+                    .edit
+                    .tag() // tag id in model syntax
+                    .then(function (res) {
+                        effectiveAppStub.callCount.should.eql(1);
+                        effectiveUserStub.callCount.should.eql(1);
+                        should.not.exist(res);
+                        done();
+                    })
+                    .catch(done);
+            });
+        });
     });
 
-    // @TODO: move to integrations or stub
-    // it('allows edit post with permission', function (done) {
-    //    var fakePost = {
-    //        id: '1'
-    //    };
+    describe('permissible (overridden)', function () {
+        it('can use permissible function on model to forbid something (post model)', function (done) {
+            var effectiveUserStub = sandbox.stub(effective, 'user', function () {
+                    // Fake the response from effective.user, which contains permissions and roles
+                    return Promise.resolve({
+                        permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
+                        roles: undefined
+                    });
+                }),
+                permissibleStub = sandbox.stub(models.Post, 'permissible', function () {
+                    return Promise.reject({message: 'Hello World!'});
+                });
 
-    //    permissions.init()
-    //        .then(function () {
-    //            return Models.User.findOne({id: 1});
-    //        })
-    //        .then(function (foundUser) {
-    //            var newPerm = new Models.Permission({
-    //                name: 'test3 edit post',
-    //                action_type: 'edit',
-    //                object_type: 'post'
-    //            });
+            permissions
+                .canThis({user: {}}) // user context
+                .edit
+                .post({id: 1}) // tag id in model syntax
+                .then(function () {
+                    done(new Error('was able to edit post without permission'));
+                })
+                .catch(function (err) {
+                    permissibleStub.callCount.should.eql(1);
+                    effectiveUserStub.callCount.should.eql(1);
+                    err.message.should.eql('Hello World!');
+                    done();
+                });
+        });
 
-    //            return newPerm.save(null, context).then(function () {
-    //                return foundUser.permissions().attach(newPerm);
-    //            });
-    //        })
-    //        .then(function () {
-    //            return Models.User.findOne({id: 1}, { withRelated: ['permissions']});
-    //        })
-    //        .then(function (updatedUser) {
+        it('can use permissible function on model to allow something (post model)', function (done) {
+            var effectiveUserStub = sandbox.stub(effective, 'user', function () {
+                    // Fake the response from effective.user, which contains permissions and roles
+                    return Promise.resolve({
+                        permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
+                        roles: undefined
+                    });
+                }),
+                permissibleStub = sandbox.stub(models.Post, 'permissible', function () {
+                    return Promise.resolve();
+                });
 
-    //            // TODO: Verify updatedUser.related('permissions') has the permission?
-    //            var canThisResult = permissions.canThis(updatedUser.id);
-
-    //            should.exist(canThisResult.edit);
-    //            should.exist(canThisResult.edit.post);
-
-    //            return canThisResult.edit.post(fakePost);
-    //        })
-    //        .then(function () {
-    //            done();
-    //        }).catch(done);
-    // });
-
-    // it('can use permissible function on Model to allow something', function (done) {
-    //    var testUser,
-    //        permissibleStub = sandbox.stub(Models.Post, 'permissible', function () {
-    //            return Promise.resolve();
-    //        });
-
-    //    testUtils.insertAuthorUser()
-    //        .then(function () {
-    //            return Models.User.findAll();
-    //        })
-    //        .then(function (foundUser) {
-    //            testUser = foundUser.models[1];
-
-    //            return permissions.canThis({user: testUser.id}).edit.post(123);
-    //        })
-    //        .then(function () {
-    //            permissibleStub.restore();
-    //            permissibleStub.calledWith(123, { user: testUser.id, app: null, internal: false })
-    //                .should.equal(true);
-
-    //            done();
-    //        })
-    //        .catch(function () {
-    //            permissibleStub.restore();
-
-    //            done(new Error('did not allow testUser'));
-    //        });
-    // });
-
-    // it('can use permissible function on Model to forbid something', function (done) {
-    //    var testUser,
-    //        permissibleStub = sandbox.stub(Models.Post, 'permissible', function () {
-    //            return Promise.reject();
-    //        });
-
-    //    testUtils.insertAuthorUser()
-    //        .then(function () {
-    //            return Models.User.findAll();
-    //        })
-    //        .then(function (foundUser) {
-    //            testUser = foundUser.models[1];
-
-    //            return permissions.canThis({user: testUser.id}).edit.post(123);
-    //        })
-    //        .then(function () {
-
-    //            permissibleStub.restore();
-    //            done(new Error('Allowed testUser to edit post'));
-    //        })
-    //        .catch(function () {
-    //            permissibleStub.calledWith(123, { user: testUser.id, app: null, internal: false })
-    //                .should.equal(true);
-    //            permissibleStub.restore();
-    //            done();
-    //        });
-    // });
-
-    // it('can get effective user permissions', function (done) {
-    //    effectivePerms.user(1).then(function (effectivePermissions) {
-    //        should.exist(effectivePermissions);
-
-    //        effectivePermissions.length.should.be.above(0);
-
-    //        done();
-    //    }).catch(done);
-    // });
-
-    // it('can check an apps effective permissions', function (done) {
-    //    effectivePerms.app('Kudos')
-    //        .then(function (effectivePermissions) {
-    //            should.exist(effectivePermissions);
-
-    //            effectivePermissions.length.should.be.above(0);
-
-    //            done();
-    //        })
-    //        .catch(done);
-    // });
-
-    // it('does not allow an app to edit a post without permission', function (done) {
-    //    // Change the author of the post so the author override doesn't affect the test
-    //    Models.Post.edit({'author_id': 2}, _.extend(context, {id: 1}))
-    //        .then(function (updatedPost) {
-    //            // Add user permissions
-    //            return Models.User.findOne({id: 1})
-    //                .then(function (foundUser) {
-    //                    var newPerm = new Models.Permission({
-    //                        name: 'app test edit post',
-    //                        action_type: 'edit',
-    //                        object_type: 'post'
-    //                    });
-
-    //                    return newPerm.save(null, context).then(function () {
-    //                        return foundUser.permissions().attach(newPerm).then(function () {
-    //                            return Promise.all([updatedPost, foundUser]);
-    //                        });
-    //                    });
-    //                });
-    //        })
-    //        .then(function (results) {
-    //            var updatedPost = results[0],
-    //                updatedUser = results[1];
-
-    //            return permissions.canThis({ user: updatedUser.id })
-    //                .edit
-    //                .post(updatedPost.id)
-    //                .then(function () {
-    //                    return results;
-    //                })
-    //                .catch(function (err) {
-    //                    /*jshint unused:false */
-    //                    done(new Error('Did not allow user 1 to edit post 1'));
-    //                });
-    //        })
-    //        .then(function (results) {
-    //            var updatedPost = results[0],
-    //                updatedUser = results[1];
-
-    //            // Confirm app cannot edit it.
-    //            return permissions.canThis({ app: 'Hemingway', user: updatedUser.id })
-    //                .edit
-    //                .post(updatedPost.id)
-    //                .then(function () {
-    //                    done(new Error('Allowed an edit of post 1'));
-    //                }).catch(done);
-    //        }).catch(done);
-    // });
-
-    // it('allows an app to edit a post with permission', function (done) {
-    //    permissions.canThis({ app: 'Kudos', user: 1 })
-    //        .edit
-    //        .post(1)
-    //        .then(function () {
-    //            done();
-    //        })
-    //        .catch(function () {
-    //            done(new Error('Did not allow an edit of post 1'));
-    //        });
-    // });
+            permissions
+                .canThis({user: {}}) // user context
+                .edit
+                .post({id: 1}) // tag id in model syntax
+                .then(function (res) {
+                    permissibleStub.callCount.should.eql(1);
+                    effectiveUserStub.callCount.should.eql(1);
+                    should.not.exist(res);
+                    done();
+                })
+                .catch(done);
+        });
+    });
 });
