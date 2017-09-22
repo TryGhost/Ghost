@@ -60,7 +60,7 @@
         },
         "redirects": {
             "extensions": [".json"],
-            "contentTypes": ["application/json"]
+            "contentTypes": ["application/octet-stream", "application/json"]
         }
     },
     "times": {

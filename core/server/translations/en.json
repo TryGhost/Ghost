@@ -335,6 +335,10 @@
                 "notFound": "Job not found.",
                 "publishInThePast": "Use the force flag to publish a post in the past."
             },
+            "redirects": {
+                "missingFile": "Please select a JSON file.",
+                "invalidFile": "Please select a valid JSON file to import."
+            },
             "settings": {
                 "problemFindingSetting": "Problem finding setting: {key}",
                 "accessCoreSettingFromExtReq": "Attempted to access core setting from external request",
