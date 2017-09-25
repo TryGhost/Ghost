@@ -1,11 +1,12 @@
-var should      = require('should'),
-    _           = require('lodash'),
-    rewire      = require('rewire'),
-    uuid        = require('uuid'),
-    testUtils   = require('../utils'),
-    configUtils      = require('../utils/configUtils'),
-    packageInfo      = require('../../../package'),
-    updateCheck      = rewire('../../server/update-check'),
+var should = require('should'),
+    _ = require('lodash'),
+    rewire = require('rewire'),
+    uuid = require('uuid'),
+    testUtils = require('../utils'),
+    configUtils = require('../utils/configUtils'),
+    packageInfo = require('../../../package'),
+    updateCheck = rewire('../../server/update-check'),
+    settingsCache = require('../../server/settings/cache'),
     NotificationsAPI = require('../../server/api/notifications');
 
 describe('Update Check', function () {
@@ -22,7 +23,7 @@ describe('Update Check', function () {
             configUtils.restore();
         });
 
-        beforeEach(testUtils.setup('owner', 'posts', 'perms:setting', 'perms:user', 'perms:init'));
+        beforeEach(testUtils.setup('owner', 'settings', 'posts', 'perms:setting', 'perms:user', 'perms:init'));
 
         afterEach(testUtils.teardown);
 
@@ -100,6 +101,106 @@ describe('Update Check', function () {
                 should.not.exist(_.find(results.notifications, {uuid: message.id}));
                 done();
             }).catch(done);
+        });
+    });
+
+    describe('Show notification', function () {
+        var currentVersionOrig;
+
+        before(function () {
+            currentVersionOrig = updateCheck.__get__('currentVersion');
+        });
+
+        after(function () {
+            updateCheck.__set__('currentVersion', currentVersionOrig);
+        });
+
+        beforeEach(testUtils.setup('settings', 'perms:setting', 'perms:notification', 'perms:init'));
+
+        afterEach(testUtils.teardown);
+
+        it('should show update notification', function (done) {
+            var showUpdateNotification = updateCheck.__get__('showUpdateNotification');
+
+            updateCheck.__set__('currentVersion', '1.7.1');
+            settingsCache.set('display_update_notification', {value: '1.9.0'});
+
+            showUpdateNotification()
+                .then(function (result) {
+                    result.should.eql('1.9.0');
+                    done();
+                })
+                .catch(done);
+        });
+
+        it('should show update notification', function (done) {
+            var showUpdateNotification = updateCheck.__get__('showUpdateNotification');
+
+            updateCheck.__set__('currentVersion', '1.7.1');
+            settingsCache.set('display_update_notification', {value: '2.0.0'});
+
+            showUpdateNotification()
+                .then(function (result) {
+                    result.should.eql('2.0.0');
+                    done();
+                })
+                .catch(done);
+        });
+
+        it('should not show update notification: latest minor release is not greater than your Ghost version', function (done) {
+            var showUpdateNotification = updateCheck.__get__('showUpdateNotification');
+
+            updateCheck.__set__('currentVersion', '1.9.0');
+            settingsCache.set('display_update_notification', {value: '1.9.0'});
+
+            showUpdateNotification()
+                .then(function (result) {
+                    result.should.eql(false);
+                    done();
+                })
+                .catch(done);
+        });
+
+        it('should not show update notification: latest minor release is not greater than your Ghost version', function (done) {
+            var showUpdateNotification = updateCheck.__get__('showUpdateNotification');
+
+            updateCheck.__set__('currentVersion', '1.9.1');
+            settingsCache.set('display_update_notification', {value: '1.9.1'});
+
+            showUpdateNotification()
+                .then(function (result) {
+                    result.should.eql(false);
+                    done();
+                })
+                .catch(done);
+        });
+
+        it('should not show update notification: latest release is a patch', function (done) {
+            var showUpdateNotification = updateCheck.__get__('showUpdateNotification');
+
+            updateCheck.__set__('currentVersion', '1.9.0');
+            settingsCache.set('display_update_notification', {value: '1.9.1'});
+
+            showUpdateNotification()
+                .then(function (result) {
+                    result.should.eql(false);
+                    done();
+                })
+                .catch(done);
+        });
+
+        it('should not show update notification: latest release is a patch', function (done) {
+            var showUpdateNotification = updateCheck.__get__('showUpdateNotification');
+
+            updateCheck.__set__('currentVersion', '1.9.1');
+            settingsCache.set('display_update_notification', {value: '1.9.0'});
+
+            showUpdateNotification()
+                .then(function (result) {
+                    result.should.eql(false);
+                    done();
+                })
+                .catch(done);
         });
     });
 });
