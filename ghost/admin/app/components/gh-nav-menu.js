@@ -61,6 +61,13 @@ export default Component.extend({
             return;
         }
 
+        this._icon = icon;
+
+        if (icon && icon.match(/^https?:\/\//i)) {
+            this.set('iconStyle', htmlSafe(`background-image: url(${icon})`));
+            return;
+        }
+
         let subdirRegExp = new RegExp(`^${this.get('ghostPaths.subdir')}`);
         let blogIcon = icon ? icon : 'favicon.ico';
         let iconUrl;
@@ -71,7 +78,6 @@ export default Component.extend({
         iconUrl += `?t=${(new Date()).valueOf()}`;
 
         this.set('iconStyle', htmlSafe(`background-image: url(${iconUrl})`));
-        this._icon = icon;
     },
 
     actions: {
