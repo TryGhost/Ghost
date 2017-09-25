@@ -87,8 +87,8 @@ describe('Redirects API', function () {
 
     describe('Upload', function () {
         describe('Ensure re-registering redirects works', function () {
-            var startGhost = function () {
-                    return ghost().then(function (_ghostServer) {
+            var startGhost = function (options) {
+                    return ghost(options).then(function (_ghostServer) {
                         ghostServer = _ghostServer;
                         return ghostServer.start();
                     }).then(function () {
@@ -107,6 +107,50 @@ describe('Redirects API', function () {
                 };
 
             afterEach(stopGhost);
+
+            it('no redirects file exists', function (done) {
+                return startGhost({redirectsFile: false})
+                    .then(function () {
+                        return new Promise(function (resolve) {
+                            setTimeout(resolve, 100);
+                        });
+                    })
+                    .then(function () {
+                        return request
+                            .get('/my-old-blog-post/')
+                            .expect(404);
+                    })
+                    .then(function () {
+                        // Provide a redirects file in the root directory of the content test folder
+                        fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects-init.json'), JSON.stringify([{from: 'k', to: 'l'}]));
+
+                        return new Promise(function (resolve) {
+                            setTimeout(resolve, 100);
+                        });
+                    })
+                    .then(function () {
+                        return request
+                            .post(testUtils.API.getApiQuery('redirects/json/?client_id=ghost-admin&client_secret=not_available'))
+                            .set('Authorization', 'Bearer ' + accesstoken)
+                            .set('Origin', testUtils.API.getURL())
+                            .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects-init.json'))
+                            .expect('Content-Type', /application\/json/)
+                            .expect(200);
+                    })
+                    .then(function () {
+                        return request
+                            .get('/k/')
+                            .expect(302);
+                    })
+                    .then(function (response) {
+                        response.headers.location.should.eql('/l');
+
+                        var dataFiles = fs.readdirSync(config.getContentPath('data'));
+                        dataFiles.join(',').match(/(redirects)/g).length.should.eql(1);
+                        done();
+                    })
+                    .catch(done);
+            });
 
             it('override', function (done) {
                 return startGhost()
@@ -162,6 +206,30 @@ describe('Redirects API', function () {
                     })
                     .then(function (response) {
                         response.headers.location.should.eql('/d');
+
+                        var dataFiles = fs.readdirSync(config.getContentPath('data'));
+                        dataFiles.join(',').match(/(redirects)/g).length.should.eql(2);
+
+                        // Provide another redirects file in the root directory of the content test folder
+                        fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects-something.json'), JSON.stringify([{from: 'e', to: 'b'}]));
+
+                        return new Promise(function (resolve) {
+                            setTimeout(resolve, 1000 * 2);
+                        });
+                    })
+                    .then(function () {
+                        // Override redirects file again and ensure the backup file works twice
+                        return request
+                            .post(testUtils.API.getApiQuery('redirects/json/?client_id=ghost-admin&client_secret=not_available'))
+                            .set('Authorization', 'Bearer ' + accesstoken)
+                            .set('Origin', testUtils.API.getURL())
+                            .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects-something.json'))
+                            .expect('Content-Type', /application\/json/)
+                            .expect(200);
+                    })
+                    .then(function () {
+                        var dataFiles = fs.readdirSync(config.getContentPath('data'));
+                        dataFiles.join(',').match(/(redirects)/g).length.should.eql(3);
                         done();
                     })
                     .catch(done);

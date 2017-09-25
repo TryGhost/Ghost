@@ -816,7 +816,9 @@ unmockNotExistingModule = function unmockNotExistingModule() {
  * 1. sephiroth init db
  * 2. start ghost
  */
-startGhost = function startGhost() {
+startGhost = function startGhost(options) {
+    options = options || {redirectsFile: true};
+
     var contentFolderForTests = path.join(os.tmpdir(), uuid.v1(), 'ghost-test');
 
     /**
@@ -835,7 +837,10 @@ startGhost = function startGhost() {
 
     // Copy all themes into the new test content folder. Default active theme is always casper. If you want to use a different theme, you have to set the active theme (e.g. stub)
     fs.copySync(path.join(__dirname, 'fixtures', 'themes'), path.join(contentFolderForTests, 'themes'));
-    fs.copySync(path.join(__dirname, 'fixtures', 'data'), path.join(contentFolderForTests, 'data'));
+
+    if (options.redirectsFile) {
+        fs.copySync(path.join(__dirname, 'fixtures', 'data', 'redirects.json'), path.join(contentFolderForTests, 'data', 'redirects.json'));
+    }
 
     return knexMigrator.reset()
         .then(function initialiseDatabase() {
