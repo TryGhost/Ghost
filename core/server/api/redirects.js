@@ -1,7 +1,8 @@
 'use strict';
 
-const fs = require('fs'),
+const fs = require('fs-extra'),
     Promise = require('bluebird'),
+    moment = require('moment'),
     path = require('path'),
     config = require('../config'),
     errors = require('../errors'),
@@ -51,20 +52,30 @@ redirectsAPI = {
             });
     },
     upload: function upload(options) {
-        let redirectsPath = path.join(config.getContentPath('data'), 'redirects.json');
+        let redirectsPath = path.join(config.getContentPath('data'), 'redirects.json'),
+            backupRedirectsPath = path.join(config.getContentPath('data'), `redirects-${moment().format('YYYY-MM-DD-HH-mm-ss')}.json`);
 
         return apiUtils.handlePermissions('redirects', 'upload')(options)
-            .then(function () {
-                return Promise.promisify(fs.unlink)(redirectsPath)
-                    .catch(function handleError(err) {
-                        // CASE: ignore file not found
-                        if (err.code === 'ENOENT') {
-                            return Promise.resolve();
+            .then(function backupOldRedirectsFile() {
+                return Promise.promisify(fs.pathExists)(redirectsPath)
+                    .then(function (exists) {
+                        if (!exists) {
+                            return null;
                         }
 
-                        throw err;
+                        return Promise.promisify(fs.pathExists)(backupRedirectsPath)
+                            .then(function (exists) {
+                                if (!exists) {
+                                    return null;
+                                }
+
+                                return Promise.promisify(fs.unlink)(backupRedirectsPath);
+                            })
+                            .then(function () {
+                                return Promise.promisify(fs.move)(redirectsPath, backupRedirectsPath);
+                            });
                     })
-                    .finally(function overrideFile() {
+                    .then(function overrideFile() {
                         return _private.readRedirectsFile(options.path)
                             .then(function (content) {
                                 globalUtils.validateRedirects(content);
