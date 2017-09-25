@@ -99,6 +99,7 @@
     display: flex;
     flex-direction: column;
     margin: 0 0 0 15px;
+    width: 100%;
 }
 
 .gh-publishmenu-radio-label {
@@ -142,6 +143,9 @@
     align-items: center;
     justify-content: space-between;
 }
+.gh-date-time-picker .ember-basic-dropdown{
+    width: 100%;
+}
 
 .gh-date-time-picker-date,
 .gh-date-time-picker-time {
@@ -158,7 +162,7 @@
 
 .gh-date-time-picker-time {
     margin-left: 10px;
-    width: 170px;
+    width: calc(100% - 4px);
 }
 
 .gh-date-time-picker-date.error,
