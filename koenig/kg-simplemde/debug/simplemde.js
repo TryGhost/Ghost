@@ -14651,8 +14651,14 @@ var CodeMirrorSpellChecker = require("codemirror-spell-checker");
 var marked;
 
 
-// Some variables
-var isMac = /Mac/.test(navigator.platform);
+// Platform/Browser detection
+// borrowed from https://github.com/codemirror/CodeMirror/blob/master/src/util/browser.js
+var userAgent = navigator.userAgent;
+var platform = navigator.platform;
+var edge = /Edge\/(\d+)/.exec(userAgent);
+var ios = !edge && /AppleWebKit/.test(userAgent) && /Mobile\/\w+/.test(userAgent);
+var mac = ios || /Mac/.test(platform);
+var windows = /win/i.test(platform);
 
 // Mapping of actions that can be bound to keyboard shortcuts or toolbar buttons
 var bindings = {
@@ -14719,7 +14725,7 @@ var isMobile = function() {
  * Fix shortcut. Mac use Command, others use Ctrl.
  */
 function fixShortcut(name) {
-	if(isMac) {
+	if(mac) {
 		name = name.replace("Ctrl", "Cmd");
 	} else {
 		name = name.replace("Cmd", "Ctrl");
@@ -14739,7 +14745,7 @@ function createIcon(options, enableTooltips, shortcuts) {
 	if(options.title && enableTooltips) {
 		el.title = createTootlip(options.title, options.action, shortcuts);
 
-		if(isMac) {
+		if(mac) {
 			el.title = el.title.replace("Ctrl", "⌘");
 			el.title = el.title.replace("Alt", "⌥");
 		}
@@ -16091,6 +16097,12 @@ SimpleMDE.prototype.render = function(el) {
 	keyMaps["Esc"] = function(cm) {
 		if(cm.getOption("fullScreen")) toggleFullScreen(self);
 	};
+
+	// match Windows Home/End behaviour
+	if(windows) {
+		keyMaps["Home"] = "goLineLeftSmart";
+		keyMaps["End"] = "goLineRight";
+	}
 
 	document.addEventListener("keydown", function(e) {
 		e = e || window.event;
