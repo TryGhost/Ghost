@@ -324,3 +324,8 @@ input,
 .settings-menu-content .for-checkbox .input-toggle-component {
     background: var(--lightgrey);
 }
+
+.gh-box {
+    background: var(--lightgrey);
+    color: var(--darkgrey);
+}
