@@ -1,6 +1,7 @@
 var should = require('should'),
     sinon = require('sinon'),
     rewire = require('rewire'),
+    _ = require('lodash'),
 
 // Thing we're testing
     filter = rewire('../../../server/models/plugins/filter'),
@@ -12,7 +13,7 @@ var should = require('should'),
 describe('Filter', function () {
     before(function () {
         models.init();
-        ghostBookshelf = models.Base;
+        ghostBookshelf = _.cloneDeep(models.Base);
     });
 
     beforeEach(function () {
