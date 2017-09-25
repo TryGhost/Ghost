@@ -14,6 +14,30 @@ describe('API Utils', function () {
         sandbox.restore();
     });
 
+    it('exports', function () {
+        // @TODO reduce the number of methods that are here!
+        _.keys(apiUtils).should.eql([
+            'globalDefaultOptions',
+            'dataDefaultOptions',
+            'browseDefaultOptions',
+            'idDefaultOptions',
+            'validate',
+            'validateOptions',
+            'detectPublicContext',
+            'applyPublicPermissions',
+            'handlePublicPermissions',
+            'handlePermissions',
+            'trimAndLowerCase',
+            'prepareInclude',
+            'prepareFields',
+            'prepareFormats',
+            'convertOptions',
+            'checkObject',
+            'checkFileExists',
+            'checkFileIsValid'
+        ]);
+    });
+
     describe('Default Options', function () {
         it('should provide a set of default options', function () {
             apiUtils.globalDefaultOptions.should.eql(['context', 'include']);
