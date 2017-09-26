@@ -303,4 +303,142 @@ describe('Public API', function () {
                 done();
             });
     });
+
+    it('browse users', function (done) {
+        request.get(testUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available'))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                var jsonResponse = res.body;
+                should.exist(jsonResponse.users);
+                testUtils.API.checkResponse(jsonResponse, 'users');
+                jsonResponse.users.should.have.length(2);
+
+                // We don't expose the email address.
+                testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, ['email']);
+                done();
+            });
+    });
+
+    it('browse users: ignores fetching roles', function (done) {
+        request.get(testUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available&include=roles'))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                var jsonResponse = res.body;
+                should.exist(jsonResponse.users);
+                testUtils.API.checkResponse(jsonResponse, 'users');
+                jsonResponse.users.should.have.length(2);
+
+                // We don't expose the email address.
+                testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, ['email']);
+                done();
+            });
+    });
+
+    it('browse user by slug: ignores fetching roles', function (done) {
+        request.get(testUtils.API.getApiQuery('users/slug/ghost/?client_id=ghost-admin&client_secret=not_available&include=roles'))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                var jsonResponse = res.body;
+
+                should.exist(jsonResponse.users);
+                jsonResponse.users.should.have.length(1);
+
+                // We don't expose the email address.
+                testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, ['email']);
+                done();
+            });
+    });
+
+    it('browse user by id: ignores fetching roles', function (done) {
+        request.get(testUtils.API.getApiQuery('users/1/?client_id=ghost-admin&client_secret=not_available&include=roles'))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                var jsonResponse = res.body;
+
+                should.exist(jsonResponse.users);
+                jsonResponse.users.should.have.length(1);
+
+                // We don't expose the email address.
+                testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, ['email']);
+                done();
+            });
+    });
+
+    it('browse users: post count', function (done) {
+        request.get(testUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available&include=count.posts'))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                var jsonResponse = res.body;
+                should.exist(jsonResponse.users);
+                testUtils.API.checkResponse(jsonResponse, 'users');
+                jsonResponse.users.should.have.length(2);
+
+                // We don't expose the email address.
+                testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], ['email']);
+                done();
+            });
+    });
+
+    it('browse users: wrong data type for include', function (done) {
+        request.get(testUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available&include={}'))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                var jsonResponse = res.body;
+                should.exist(jsonResponse.users);
+                testUtils.API.checkResponse(jsonResponse, 'users');
+                jsonResponse.users.should.have.length(2);
+
+                // We don't expose the email address.
+                testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, ['email']);
+                done();
+            });
+    });
 });
