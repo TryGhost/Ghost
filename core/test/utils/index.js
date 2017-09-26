@@ -40,6 +40,7 @@ var Promise = require('bluebird'),
     setup,
     doAuth,
     createUser,
+    createPost,
     login,
     togglePermalinks,
     startGhost,
@@ -679,6 +680,20 @@ createUser = function createUser(options) {
         });
 };
 
+createPost = function createPost(options) {
+    var post = DataGenerator.forKnex.createPost(options.post);
+
+    if (options.author) {
+        post.author_id = options.author.id;
+    }
+
+    return db.knex('posts')
+        .insert(post)
+        .then(function () {
+            return post;
+        });
+};
+
 login = function login(request) {
     // CASE: by default we use the owner to login
     if (!request.user) {
@@ -857,6 +872,7 @@ module.exports = {
     setup: setup,
     doAuth: doAuth,
     createUser: createUser,
+    createPost: createPost,
     login: login,
     togglePermalinks: togglePermalinks,
 
