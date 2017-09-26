@@ -1286,6 +1286,5 @@ describe('Post API', function () {
                     });
             });
         });
-
     });
 });
