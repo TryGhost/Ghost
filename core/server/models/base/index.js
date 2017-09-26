@@ -385,7 +385,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @return {Object} The filtered results of `options`.
      */
     filterOptions: function filterOptions(options, methodName) {
-        var permittedOptions = this.permittedOptions(methodName, options),
+        var permittedOptions = this.permittedOptions(methodName),
             filteredOptions = _.pick(options, permittedOptions);
 
         return filteredOptions;
