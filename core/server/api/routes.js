@@ -57,7 +57,8 @@ module.exports = function apiRoutes() {
     apiRouter.get('/users', mw.authenticatePublic, api.http(api.users.browse));
     apiRouter.get('/users/:id', mw.authenticatePublic, api.http(api.users.read));
     apiRouter.get('/users/slug/:slug', mw.authenticatePublic, api.http(api.users.read));
-    apiRouter.get('/users/email/:email', mw.authenticatePublic, api.http(api.users.read));
+    // NOTE: We don't expose any email addresses via the public api.
+    apiRouter.get('/users/email/:email', mw.authenticatePrivate, api.http(api.users.read));
 
     apiRouter.put('/users/password', mw.authenticatePrivate, api.http(api.users.changePassword));
     apiRouter.put('/users/owner', mw.authenticatePrivate, api.http(api.users.transferOwnership));
