@@ -45,8 +45,9 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
 
         // Create the 'handler' for the object type;
         // the '.post()' in canThis(user).edit.post()
-        objTypeHandlers[objType] = function (modelOrId) {
+        objTypeHandlers[objType] = function (modelOrId, unsafeAttrs) {
             var modelId;
+            unsafeAttrs = unsafeAttrs || {};
 
             // If it's an internal request, resolve immediately
             if (context.internal) {
@@ -105,7 +106,7 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
                 // Offer a chance for the TargetModel to override the results
                 if (TargetModel && _.isFunction(TargetModel.permissible)) {
                     return TargetModel.permissible(
-                        modelId, actType, context, loadedPermissions, hasUserPermission, hasAppPermission
+                        modelId, actType, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission
                     );
                 }
 

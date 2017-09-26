@@ -583,7 +583,7 @@ User = ghostBookshelf.Model.extend({
         });
     },
 
-    permissible: function permissible(userModelOrId, action, context, loadedPermissions, hasUserPermission, hasAppPermission) {
+    permissible: function permissible(userModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission) {
         var self = this,
             userModel = userModelOrId,
             origArgs;
