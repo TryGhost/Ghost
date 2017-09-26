@@ -165,6 +165,7 @@ export default Service.extend({
         headers.Authorization = `Client-ID ${this.get('applicationId')}`;
         headers['Accept-Version'] = API_VERSION;
         headers['App-Pragma'] = 'no-cache';
+        headers['X-Unsplash-Cache'] = true;
 
         return fetch(url, {headers})
             .then((response) => this._checkStatus(response))
