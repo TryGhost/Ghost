@@ -3,15 +3,39 @@ var should = require('should'),
     _ = require('lodash'),
     Promise = require('bluebird'),
     ObjectId = require('bson-objectid'),
-    permissions = require('../../server/permissions'),
-    errors = require('../../server/errors'),
-    apiUtils = require('../../server/api/utils'),
+    permissions = require('../../../server/permissions'),
+    errors = require('../../../server/errors'),
+    apiUtils = require('../../../server/api/utils'),
 
     sandbox = sinon.sandbox.create();
 
 describe('API Utils', function () {
     afterEach(function () {
         sandbox.restore();
+    });
+
+    it('exports', function () {
+        // @TODO reduce the number of methods that are here!
+        _.keys(apiUtils).should.eql([
+            'globalDefaultOptions',
+            'dataDefaultOptions',
+            'browseDefaultOptions',
+            'idDefaultOptions',
+            'validate',
+            'validateOptions',
+            'detectPublicContext',
+            'applyPublicPermissions',
+            'handlePublicPermissions',
+            'handlePermissions',
+            'trimAndLowerCase',
+            'prepareInclude',
+            'prepareFields',
+            'prepareFormats',
+            'convertOptions',
+            'checkObject',
+            'checkFileExists',
+            'checkFileIsValid'
+        ]);
     });
 
     describe('Default Options', function () {
@@ -503,6 +527,93 @@ describe('API Utils', function () {
                 err.errorType.should.eql('NoPermissionError');
                 done();
             });
+        });
+    });
+
+    describe('handlePermissions', function () {
+        it('should require a docName', function () {
+            apiUtils.handlePermissions.should.throwError();
+        });
+
+        it('should return a function', function () {
+            apiUtils.handlePermissions('test').should.be.a.Function();
+        });
+
+        it('should handle an unknown rejection', function (done) {
+            var testStub = sandbox.stub().returns(new Promise.reject()),
+                permsStub = sandbox.stub(permissions, 'canThis', function () {
+                    return {
+                        testing: {
+                            test: testStub
+                        }
+                    };
+                }),
+                permsFunc = apiUtils.handlePermissions('tests', 'testing');
+
+            permsFunc({})
+                .then(function () {
+                    done(new Error('Should have thrown an error'));
+                })
+                .catch(function (err) {
+                    permsStub.callCount.should.eql(1);
+                    testStub.callCount.should.eql(1);
+                    err.errorType.should.eql('InternalServerError');
+
+                    done();
+                });
+        });
+
+        it('should handle a NoPermissions rejection', function (done) {
+            var testStub = sandbox.stub().returns(new Promise.reject(
+                    new errors.NoPermissionError()
+                )),
+                permsStub = sandbox.stub(permissions, 'canThis', function () {
+                    return {
+                        testing: {
+                            test: testStub
+                        }
+                    };
+                }),
+                permsFunc = apiUtils.handlePermissions('tests', 'testing');
+
+            permsFunc({})
+                .then(function () {
+                    done(new Error('Should have thrown an error'));
+                })
+                .catch(function (err) {
+                    permsStub.callCount.should.eql(1);
+                    testStub.callCount.should.eql(1);
+
+                    err.errorType.should.eql('NoPermissionError');
+                    err.message.should.match(/testing/);
+                    err.message.should.match(/tests/);
+                    done();
+                });
+        });
+
+        it('should handle success', function (done) {
+            var testStub = sandbox.stub().returns(new Promise.resolve()),
+                permsStub = sandbox.stub(permissions, 'canThis', function () {
+                    return {
+                        testing: {
+                            test: testStub
+                        }
+                    };
+                }),
+                permsFunc = apiUtils.handlePermissions('tests', 'testing'),
+                testObj = {foo: 'bar', id: 5};
+
+            permsFunc(testObj)
+                .then(function (res) {
+                    permsStub.callCount.should.eql(1);
+                    testStub.callCount.should.eql(1);
+                    testStub.firstCall.args[0].should.eql(5);
+
+                    res.should.eql(testObj);
+
+                    done();
+                })
+                .catch(done);
         });
     });
 });
