@@ -172,12 +172,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     /**
-     * all supported databases (pg, sqlite, mysql) return different values
+     * all supported databases (sqlite, mysql) return different values
      *
      * sqlite:
      *   - knex returns a UTC String
-     * pg:
-     *   - has an active UTC session through knex and returns UTC Date
      * mysql:
      *   - knex wraps the UTC value into a local JS Date
      */
@@ -188,7 +186,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             if (value !== null
                 && schema.tables[self.tableName].hasOwnProperty(key)
                 && schema.tables[self.tableName][key].type === 'dateTime') {
-                attrs[key] = moment(value).toDate();
+                attrs[key] = moment(value).startOf('seconds').toDate();
             }
         });
 
