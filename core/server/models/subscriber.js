@@ -59,7 +59,7 @@ Subscriber = ghostBookshelf.Model.extend({
         return options;
     },
 
-    permissible: function permissible(postModelOrId, action, context, loadedPermissions, hasUserPermission, hasAppPermission) {
+    permissible: function permissible(postModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission) {
         // CASE: external is only allowed to add and edit subscribers
         if (context.external) {
             if (['add', 'edit'].indexOf(action) !== -1) {
