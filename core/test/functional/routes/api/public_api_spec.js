@@ -373,6 +373,22 @@ describe('Public API', function () {
             });
     });
 
+    it('[unsupported] browse user by email', function (done) {
+        request
+            .get(testUtils.API.getApiQuery('users/email/ghost-author@ghost.org/?client_id=ghost-admin&client_secret=not_available'))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(403)
+            .end(function (err) {
+                if (err) {
+                    return done(err);
+                }
+
+                done();
+            });
+    });
+
     it('browse user by id: ignores fetching roles', function (done) {
         request.get(testUtils.API.getApiQuery('users/1/?client_id=ghost-admin&client_secret=not_available&include=roles'))
             .set('Origin', testUtils.API.getURL())
