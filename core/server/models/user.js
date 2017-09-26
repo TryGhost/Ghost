@@ -295,8 +295,8 @@ User = ghostBookshelf.Model.extend({
     * @param {String} methodName The name of the method to check valid options for.
     * @return {Array} Keys allowed in the `options` hash of the model's method.
     */
-    permittedOptions: function permittedOptions(methodName, options) {
-        var permittedOptionsToReturn = ghostBookshelf.Model.permittedOptions(),
+    permittedOptions: function permittedOptions(methodName) {
+        var options = ghostBookshelf.Model.permittedOptions(),
 
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
@@ -310,18 +310,10 @@ User = ghostBookshelf.Model.extend({
             };
 
         if (validOptions[methodName]) {
-            permittedOptionsToReturn = permittedOptionsToReturn.concat(validOptions[methodName]);
+            options = options.concat(validOptions[methodName]);
         }
 
-        // CASE: The `include` paramater is allowed when using the public API, but not the `roles` value.
-        // Otherwise we expose too much information.
-        if (options && options.context && options.context.public) {
-            if (options.include && options.include.indexOf('roles') !== -1) {
-                options.include.splice(options.include.indexOf('roles'), 1);
-            }
-        }
-
-        return permittedOptionsToReturn;
+        return options;
     },
 
     /**
@@ -351,11 +343,7 @@ User = ghostBookshelf.Model.extend({
         options = _.cloneDeep(options || {});
         optInc = options.include;
         options.withRelated = _.union(options.withRelated, options.include);
-
         data = this.filterData(data);
-        options = this.filterOptions(options, 'findOne');
-        delete options.include;
-        options.include = optInc;
 
         // Support finding by role
         if (lookupRole) {
@@ -377,6 +365,10 @@ User = ghostBookshelf.Model.extend({
         } else if (status !== 'all') {
             query.query('where', {status: status});
         }
+
+        options = this.filterOptions(options, 'findOne');
+        delete options.include;
+        options.include = optInc;
 
         return query.fetch(options);
     },
