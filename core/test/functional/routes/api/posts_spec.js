@@ -1287,4 +1287,98 @@ describe('Post API', function () {
             });
         });
     });
+
+    describe('As Author', function () {
+        var authorAccessToken, author;
+
+        before(function (done) {
+            // starting ghost automatically populates the db
+            // TODO: prevent db init, and manage bringing up the DB with fixtures ourselves
+            ghost().then(function (_ghostServer) {
+                ghostServer = _ghostServer;
+                return ghostServer.start();
+            }).then(function () {
+                request = supertest.agent(config.get('url'));
+            }).then(function () {
+                // create author
+                return testUtils.createUser({
+                    user: testUtils.DataGenerator.forKnex.createUser({email: 'test+2@ghost.org'}),
+                    role: testUtils.DataGenerator.Content.roles[2]
+                });
+            }).then(function (_author) {
+                request.user = author = _author;
+                return testUtils.doAuth(request, 'posts');
+            }).then(function (token) {
+                authorAccessToken = token;
+                done();
+            }).catch(done);
+        });
+
+        after(function () {
+            return testUtils.clearData()
+                .then(function () {
+                    return ghostServer.stop();
+                });
+        });
+
+        describe('Edit', function () {
+            var postId;
+
+            before(function () {
+                return testUtils
+                    .createPost({
+                        post: {
+                            title: 'Author\'s test post',
+                            slug: 'author-post'
+                        },
+                        author: author
+                    })
+                    .then(function (post) {
+                        postId = post.id;
+                    });
+            });
+
+            it('can edit own post', function (done) {
+                request.get(testUtils.API.getApiQuery('posts/' + postId + '/?include=tags'))
+                    .set('Authorization', 'Bearer ' + authorAccessToken)
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        var jsonResponse = res.body,
+                            changedTitle = 'My new Title',
+                            changedAuthor = ObjectId.generate();
+
+                        should.exist(jsonResponse.posts[0]);
+                        jsonResponse.posts[0].title = changedTitle;
+                        jsonResponse.posts[0].author = changedAuthor;
+
+                        request.put(testUtils.API.getApiQuery('posts/' + postId + '/'))
+                            .set('Authorization', 'Bearer ' + authorAccessToken)
+                            .send(jsonResponse)
+                            .expect('Content-Type', /json/)
+                            .expect('Cache-Control', testUtils.cacheRules.private)
+                            .expect(200)
+                            .end(function (err, res) {
+                                if (err) {
+                                    return done(err);
+                                }
+
+                                var putBody = res.body;
+                                res.headers['x-cache-invalidate'].should.eql('/*');
+                                should.exist(putBody);
+                                putBody.posts[0].title.should.eql(changedTitle);
+                                putBody.posts[0].author.should.eql(changedAuthor);
+
+                                testUtils.API.checkResponse(putBody.posts[0], 'post');
+                                done();
+                            });
+                    });
+            });
+        });
+    });
 });
