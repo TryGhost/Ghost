@@ -1,14 +1,14 @@
 // canThis(someUser).edit.posts([id]|[[ids]])
 // canThis(someUser).edit.post(somePost|somePostId)
 
-var _                   = require('lodash'),
-    Promise             = require('bluebird'),
-    errors              = require('../errors'),
-    Models              = require('../models'),
-    effectivePerms      = require('./effective'),
-    i18n                = require('../i18n'),
+var _ = require('lodash'),
+    Promise = require('bluebird'),
+    models = require('../models'),
+    errors = require('../errors'),
+    i18n = require('../i18n'),
+    effectivePerms = require('./effective'),
+    parseContext = require('./parse-context'),
     init,
-    refresh,
     canThis,
     CanThisResult,
     exported;
@@ -22,94 +22,6 @@ function hasActionsMap() {
     });
 }
 
-function parseContext(context) {
-    // Parse what's passed to canThis.beginCheck for standard user and app scopes
-    var parsed = {
-        internal: false,
-        external: false,
-        user: null,
-        app: null,
-        public: true
-    };
-
-    if (context && (context === 'external' || context.external)) {
-        parsed.external = true;
-        parsed.public = false;
-    }
-
-    if (context && (context === 'internal' || context.internal)) {
-        parsed.internal = true;
-        parsed.public = false;
-    }
-
-    if (context && context.user) {
-        parsed.user = context.user;
-        parsed.public = false;
-    }
-
-    if (context && context.app) {
-        parsed.app = context.app;
-        parsed.public = false;
-    }
-
-    return parsed;
-}
-
-function applyStatusRules(docName, method, opts) {
-    var err = new errors.NoPermissionError({message: i18n.t('errors.permissions.applyStatusRules.error', {docName: docName})});
-
-    // Enforce status 'active' for users
-    if (docName === 'users') {
-        if (!opts.status) {
-            return 'all';
-        }
-    }
-
-    // Enforce status 'published' for posts
-    if (docName === 'posts') {
-        if (!opts.status) {
-            return 'published';
-        } else if (
-            method === 'read'
-            && (opts.status === 'draft' || opts.status === 'all')
-            && _.isString(opts.uuid) && _.isUndefined(opts.id) && _.isUndefined(opts.slug)
-        ) {
-            // public read requests can retrieve a draft, but only by UUID
-            return opts.status;
-        } else if (opts.status !== 'published') {
-            // any other parameter would make this a permissions error
-            throw err;
-        }
-    }
-
-    return opts.status;
-}
-
-/**
- * API Public Permission Rules
- * This method enforces the rules for public requests
- * @param {String} docName
- * @param {String} method (read || browse)
- * @param {Object} options
- * @returns {Object} options
- */
-function applyPublicRules(docName, method, options) {
-    try {
-        // If this is a public context
-        if (parseContext(options.context).public === true) {
-            if (method === 'browse') {
-                options.status = applyStatusRules(docName, method, options);
-            } else if (method === 'read') {
-                options.data.status = applyStatusRules(docName, method, options.data);
-            }
-        }
-
-        return Promise.resolve(options);
-    } catch (err) {
-        return Promise.reject(err);
-    }
-}
-
 // Base class for canThis call results
 CanThisResult = function () {
     return;
@@ -117,13 +29,13 @@ CanThisResult = function () {
 
 CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, context, permissionLoad) {
     var objectTypeModelMap = {
-        post:       Models.Post,
-        role:       Models.Role,
-        user:       Models.User,
-        permission: Models.Permission,
-        setting:    Models.Settings,
-        subscriber: Models.Subscriber,
-        invite:     Models.Invite
+        post:       models.Post,
+        role:       models.Role,
+        user:       models.User,
+        permission: models.Permission,
+        setting:    models.Settings,
+        subscriber: models.Subscriber,
+        invite:     models.Invite
     };
 
     // Iterate through the object types, i.e. ['post', 'tag', 'user']
@@ -272,11 +184,11 @@ canThis = function (context) {
     return result.beginCheck(context);
 };
 
-init = refresh = function (options) {
+init = function (options) {
     options = options || {};
 
     // Load all the permissions
-    return Models.Permission.findAll(options).then(function (perms) {
+    return models.Permission.findAll(options).then(function (perms) {
         var seenActions = {};
 
         exported.actionsMap = {};
@@ -311,9 +223,9 @@ init = refresh = function (options) {
 
 module.exports = exported = {
     init: init,
-    refresh: refresh,
     canThis: canThis,
+    // @TODO: Make it so that we don't need to export these
     parseContext: parseContext,
-    applyPublicRules: applyPublicRules,
+    applyPublicRules: require('./public'),
     actionsMap: {}
 };

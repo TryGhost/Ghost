@@ -62,8 +62,6 @@ module.exports = function apiRoutes() {
     apiRouter.put('/users/password', mw.authenticatePrivate, api.http(api.users.changePassword));
     apiRouter.put('/users/owner', mw.authenticatePrivate, api.http(api.users.transferOwnership));
     apiRouter.put('/users/:id', mw.authenticatePrivate, api.http(api.users.edit));
-
-    apiRouter.post('/users', mw.authenticatePrivate, api.http(api.users.add));
     apiRouter.del('/users/:id', mw.authenticatePrivate, api.http(api.users.destroy));
 
     // ## Tags
