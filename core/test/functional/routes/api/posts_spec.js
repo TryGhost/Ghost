@@ -1321,25 +1321,120 @@ describe('Post API', function () {
                 });
         });
 
+        describe('Add', function () {
+            it('can add own post', function (done) {
+                var post = {
+                    title: 'Freshly added',
+                    slug: 'freshly-added',
+                    author_id: author.id
+                };
+
+                request.post(testUtils.API.getApiQuery('posts/'))
+                    .set('Authorization', 'Bearer ' + authorAccessToken)
+                    .send({posts: [post]})
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(201)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        var postBody = res.body;
+
+                        res.headers['x-cache-invalidate'].should.eql('/p/' + postBody.posts[0].uuid + '/');
+                        should.exist(postBody);
+
+                        testUtils.API.checkResponse(postBody.posts[0], 'post');
+                        done();
+                    });
+            });
+
+            it('CANNOT add post with other author ID', function (done) {
+                var post = {
+                    title: 'Freshly added',
+                    slug: 'freshly-added',
+                    author_id: 1
+                };
+
+                request.post(testUtils.API.getApiQuery('posts/'))
+                    .set('Authorization', 'Bearer ' + authorAccessToken)
+                    .send({posts: [post]})
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(403)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        should.exist(res.body.errors);
+                        res.body.errors[0].errorType.should.eql('NoPermissionError');
+                        done();
+                    });
+            });
+        });
+
         describe('Edit', function () {
-            var postId;
+            var authorPostId;
 
             before(function () {
-                return testUtils
-                    .createPost({
+                return testUtils.createPost({
                         post: {
                             title: 'Author\'s test post',
-                            slug: 'author-post'
-                        },
-                        author: author
+                            slug: 'author-post',
+                            author_id: author.id
+                        }
                     })
                     .then(function (post) {
-                        postId = post.id;
+                        authorPostId = post.id;
                     });
             });
 
             it('can edit own post', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/' + postId + '/?include=tags'))
+                request.get(testUtils.API.getApiQuery('posts/' + authorPostId + '/?include=tags'))
+                    .set('Authorization', 'Bearer ' + authorAccessToken)
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        var jsonResponse = res.body,
+                            changedTitle = 'My new Title',
+                            changedSlug = 'my-new-slug';
+
+                        should.exist(jsonResponse.posts[0]);
+                        jsonResponse.posts[0].title = changedTitle;
+                        jsonResponse.posts[0].slug = changedSlug;
+
+                        request.put(testUtils.API.getApiQuery('posts/' + authorPostId + '/'))
+                            .set('Authorization', 'Bearer ' + authorAccessToken)
+                            .send(jsonResponse)
+                            .expect('Content-Type', /json/)
+                            .expect('Cache-Control', testUtils.cacheRules.private)
+                            .expect(200)
+                            .end(function (err, res) {
+                                if (err) {
+                                    return done(err);
+                                }
+
+                                var putBody = res.body;
+                                res.headers['x-cache-invalidate'].should.eql('/*');
+                                should.exist(putBody);
+                                putBody.posts[0].title.should.eql(changedTitle);
+                                putBody.posts[0].slug.should.eql(changedSlug);
+
+                                testUtils.API.checkResponse(putBody.posts[0], 'post');
+                                done();
+                            });
+                    });
+            });
+
+            it('CANNOT change author of own post', function (done) {
+                request.get(testUtils.API.getApiQuery('posts/' + authorPostId + '/?include=tags'))
                     .set('Authorization', 'Bearer ' + authorAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -1357,24 +1452,56 @@ describe('Post API', function () {
                         jsonResponse.posts[0].title = changedTitle;
                         jsonResponse.posts[0].author = changedAuthor;
 
-                        request.put(testUtils.API.getApiQuery('posts/' + postId + '/'))
+                        request.put(testUtils.API.getApiQuery('posts/' + authorPostId + '/'))
                             .set('Authorization', 'Bearer ' + authorAccessToken)
                             .send(jsonResponse)
                             .expect('Content-Type', /json/)
                             .expect('Cache-Control', testUtils.cacheRules.private)
-                            .expect(200)
+                            .expect(403)
                             .end(function (err, res) {
                                 if (err) {
                                     return done(err);
                                 }
 
-                                var putBody = res.body;
-                                res.headers['x-cache-invalidate'].should.eql('/*');
-                                should.exist(putBody);
-                                putBody.posts[0].title.should.eql(changedTitle);
-                                putBody.posts[0].author.should.eql(changedAuthor);
+                                should.exist(res.body.errors);
+                                res.body.errors[0].errorType.should.eql('NoPermissionError');
+                                done();
+                            });
+                    });
+            });
 
-                                testUtils.API.checkResponse(putBody.posts[0], 'post');
+            it('CANNOT become author of other post', function (done) {
+                request.get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?include=tags'))
+                    .set('Authorization', 'Bearer ' + authorAccessToken)
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        var jsonResponse = res.body,
+                            changedTitle = 'My new Title',
+                            changedAuthor = author.id;
+
+                        should.exist(jsonResponse.posts[0]);
+                        jsonResponse.posts[0].title = changedTitle;
+                        jsonResponse.posts[0].author = changedAuthor;
+
+                        request.put(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/'))
+                            .set('Authorization', 'Bearer ' + authorAccessToken)
+                            .send(jsonResponse)
+                            .expect('Content-Type', /json/)
+                            .expect('Cache-Control', testUtils.cacheRules.private)
+                            .expect(403)
+                            .end(function (err, res) {
+                                if (err) {
+                                    return done(err);
+                                }
+
+                                should.exist(res.body.errors);
+                                res.body.errors[0].errorType.should.eql('NoPermissionError');
                                 done();
                             });
                     });
