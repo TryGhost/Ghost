@@ -12,7 +12,7 @@ var Promise = require('bluebird'),
         'created_by', 'updated_by', 'published_by', 'author', 'tags', 'fields',
         'next', 'previous', 'next.author', 'next.tags', 'previous.author', 'previous.tags'
     ],
-    unsafeAttrs = ['author', 'author_id'],
+    unsafeAttrs = ['author_id'],
     posts;
 
 /**
