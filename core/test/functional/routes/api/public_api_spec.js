@@ -373,6 +373,52 @@ describe('Public API', function () {
             });
     });
 
+    it('browse user by slug: count.posts', function (done) {
+        request.get(testUtils.API.getApiQuery('users/slug/ghost/?client_id=ghost-admin&client_secret=not_available&include=count.posts'))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                var jsonResponse = res.body;
+
+                should.exist(jsonResponse.users);
+                jsonResponse.users.should.have.length(1);
+
+                // We don't expose the email address.
+                testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], ['email']);
+                done();
+            });
+    });
+
+    it('browse user by id: count.posts', function (done) {
+        request.get(testUtils.API.getApiQuery('users/1/?client_id=ghost-admin&client_secret=not_available&include=count.posts'))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                var jsonResponse = res.body;
+
+                should.exist(jsonResponse.users);
+                jsonResponse.users.should.have.length(1);
+
+                // We don't expose the email address.
+                testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], ['email']);
+                done();
+            });
+    });
+
     it('[unsupported] browse user by email', function (done) {
         request
             .get(testUtils.API.getApiQuery('users/email/ghost-author@ghost.org/?client_id=ghost-admin&client_secret=not_available'))
