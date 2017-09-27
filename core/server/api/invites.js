@@ -37,7 +37,18 @@ invites = {
             tasks;
 
         function modelQuery(options) {
-            return models.Invite.findOne(options.data, _.omit(options, ['data']));
+            return models.Invite.findOne(options.data, _.omit(options, ['data']))
+                .then(function onModelResponse(model) {
+                    if (!model) {
+                        return Promise.reject(new errors.NotFoundError({
+                            message: i18n.t('errors.api.invites.inviteNotFound')
+                        }));
+                    }
+
+                    return {
+                        invites: [model.toJSON(options)]
+                    };
+                });
         }
 
         tasks = [
@@ -47,14 +58,7 @@ invites = {
             modelQuery
         ];
 
-        return pipeline(tasks, options)
-            .then(function formatResponse(result) {
-                if (result) {
-                    return {invites: [result.toJSON(options)]};
-                }
-
-                return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.invites.inviteNotFound')}));
-            });
+        return pipeline(tasks, options);
     },
 
     destroy: function destroy(options) {
@@ -131,7 +135,10 @@ invites = {
                 }).then(function () {
                     invite.set('status', 'sent');
                     var inviteAsJSON = invite.toJSON();
-                    return {invites: [inviteAsJSON]};
+
+                    return {
+                        invites: [inviteAsJSON]
+                    };
                 }).catch(function (error) {
                     if (error && error.errorType === 'EmailError') {
                         error.message = i18n.t('errors.api.invites.errorSendingEmail.error', {message: error.message}) + ' ' +

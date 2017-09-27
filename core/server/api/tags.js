@@ -63,7 +63,18 @@ tags = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return models.Tag.findOne(options.data, _.omit(options, ['data']));
+            return models.Tag.findOne(options.data, _.omit(options, ['data']))
+                .then(function onModelResponse(model) {
+                    if (!model) {
+                        return Promise.reject(new errors.NotFoundError({
+                            message: i18n.t('errors.api.tags.tagNotFound')
+                        }));
+                    }
+
+                    return {
+                        tags: [model.toJSON(options)]
+                    };
+                });
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -75,13 +86,7 @@ tags = {
         ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
-        return pipeline(tasks, options).then(function formatResponse(result) {
-            if (result) {
-                return {tags: [result.toJSON(options)]};
-            }
-
-            return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.tags.tagNotFound')}));
-        });
+        return pipeline(tasks, options);
     },
 
     /**
@@ -99,7 +104,12 @@ tags = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return models.Tag.add(options.data.tags[0], _.omit(options, ['data']));
+            return models.Tag.add(options.data.tags[0], _.omit(options, ['data']))
+                .then(function onModelResponse(model) {
+                    return {
+                        tags: [model.toJSON(options)]
+                    };
+                });
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -111,11 +121,7 @@ tags = {
         ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
-        return pipeline(tasks, object, options).then(function formatResponse(result) {
-            var tag = result.toJSON(options);
-
-            return {tags: [tag]};
-        });
+        return pipeline(tasks, object, options);
     },
 
     /**
@@ -135,7 +141,18 @@ tags = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return models.Tag.edit(options.data.tags[0], _.omit(options, ['data']));
+            return models.Tag.edit(options.data.tags[0], _.omit(options, ['data']))
+                .then(function onModelResponse(model) {
+                    if (!model) {
+                        return Promise.reject(new errors.NotFoundError({
+                            message: i18n.t('errors.api.tags.tagNotFound')
+                        }));
+                    }
+
+                    return {
+                        tags: [model.toJSON(options)]
+                    };
+                });
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -147,15 +164,7 @@ tags = {
         ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
-        return pipeline(tasks, object, options).then(function formatResponse(result) {
-            if (result) {
-                var tag = result.toJSON(options);
-
-                return {tags: [tag]};
-            }
-
-            return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.tags.tagNotFound')}));
-        });
+        return pipeline(tasks, object, options);
     },
 
     /**

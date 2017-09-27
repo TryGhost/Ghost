@@ -63,7 +63,18 @@ subscribers = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return models.Subscriber.findOne(options.data, _.omit(options, ['data']));
+            return models.Subscriber.findOne(options.data, _.omit(options, ['data']))
+                .then(function onModelResponse(model) {
+                    if (!model) {
+                        return Promise.reject(new errors.NotFoundError({
+                            message: i18n.t('errors.api.subscribers.subscriberNotFound')
+                        }));
+                    }
+
+                    return {
+                        subscribers: [model.toJSON(options)]
+                    };
+                });
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -74,13 +85,7 @@ subscribers = {
         ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
-        return pipeline(tasks, options).then(function formatResponse(result) {
-            if (result) {
-                return {subscribers: [result.toJSON(options)]};
-            }
-
-            return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.subscribers.subscriberNotFound')}));
-        });
+        return pipeline(tasks, options);
     },
 
     /**
@@ -114,6 +119,11 @@ subscribers = {
 
                         return Promise.reject(error);
                     });
+                })
+                .then(function onModelResponse(model) {
+                    return {
+                        subscribers: [model.toJSON(options)]
+                    };
                 });
         }
 
@@ -125,10 +135,7 @@ subscribers = {
         ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
-        return pipeline(tasks, object, options).then(function formatResponse(result) {
-            var subscriber = result.toJSON(options);
-            return {subscribers: [subscriber]};
-        });
+        return pipeline(tasks, object, options);
     },
 
     /**
@@ -148,7 +155,18 @@ subscribers = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return models.Subscriber.edit(options.data.subscribers[0], _.omit(options, ['data']));
+            return models.Subscriber.edit(options.data.subscribers[0], _.omit(options, ['data']))
+                .then(function onModelResponse(model) {
+                    if (!model) {
+                        return Promise.reject(new errors.NotFoundError({
+                            message: i18n.t('errors.api.subscribers.subscriberNotFound')
+                        }));
+                    }
+
+                    return {
+                        subscribers: [model.toJSON(options)]
+                    };
+                });
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -159,15 +177,7 @@ subscribers = {
         ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
-        return pipeline(tasks, object, options).then(function formatResponse(result) {
-            if (result) {
-                var subscriber = result.toJSON(options);
-
-                return {subscribers: [subscriber]};
-            }
-
-            return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.subscribers.subscriberNotFound')}));
-        });
+        return pipeline(tasks, object, options);
     },
 
     /**
