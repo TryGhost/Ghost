@@ -316,9 +316,9 @@ User = ghostBookshelf.Model.extend({
             permittedOptionsToReturn = permittedOptionsToReturn.concat(validOptions[methodName]);
         }
 
-        // CASE: The `include` paramater is allowed when using the public API, but not the `roles` value.
+        // CASE: The `include` parameter is allowed when using the public API, but not the `roles` value.
         // Otherwise we expose too much information.
-        if (options && options.context && options.context.public) {
+        if (this.isPublicContext(options)) {
             if (options.include && options.include.indexOf('roles') !== -1) {
                 options.include.splice(options.include.indexOf('roles'), 1);
             }
