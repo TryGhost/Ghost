@@ -74,17 +74,19 @@ function getChannelTemplateHierarchy(channelOpts) {
  */
 function getSingleTemplateHierarchy(postObject) {
     var templateList = ['post'],
-        type = 'post';
+        slugTemplate = 'post-' + postObject.slug;
 
     if (postObject.page) {
         templateList.unshift('page');
-        type = 'page';
+        slugTemplate = 'page-' + postObject.slug;
     }
 
-    templateList.unshift(type + '-' + postObject.slug);
+    templateList.unshift(slugTemplate);
 
     if (postObject.custom_template) {
-        templateList.unshift(postObject.custom_template);
+        if (themes.getActive() && !themes.getActive().hasTemplate(slugTemplate)) {
+            templateList.unshift(postObject.custom_template);
+        }
     }
 
     return templateList;
