@@ -57,7 +57,18 @@ slugs = {
          * @returns {Object} options
          */
         function modelQuery(options) {
-            return models.Base.Model.generateSlug(allowedTypes[options.type], options.data.name, {status: 'all'});
+            return models.Base.Model.generateSlug(allowedTypes[options.type], options.data.name, {status: 'all'})
+                .then(function onModelResponse(slug) {
+                    if (!slug) {
+                        return Promise.reject(new errors.GhostError({
+                            message: i18n.t('errors.api.slugs.couldNotGenerateSlug')
+                        }));
+                    }
+
+                    return {
+                        slugs: [{slug: slug}]
+                    };
+                });
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -69,13 +80,7 @@ slugs = {
         ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
-        return pipeline(tasks, options).then(function (slug) {
-            if (!slug) {
-                return Promise.reject(new errors.GhostError({message: i18n.t('errors.api.slugs.couldNotGenerateSlug')}));
-            }
-
-            return {slugs: [{slug: slug}]};
-        });
+        return pipeline(tasks, options);
     }
 };
 

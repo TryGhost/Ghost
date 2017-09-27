@@ -35,7 +35,19 @@ clients = {
         function doQuery(options) {
             // only User Agent (type = `ua`) clients are available at the moment.
             options.data = _.extend(options.data, {type: 'ua'});
-            return models.Client.findOne(options.data, _.omit(options, ['data']));
+
+            return models.Client.findOne(options.data, _.omit(options, ['data']))
+                .then(function onModelResponse(model) {
+                    if (!model) {
+                        return Promise.reject(new errors.NotFoundError({
+                            message: i18n.t('common.api.clients.clientNotFound')
+                        }));
+                    }
+
+                    return {
+                        clients: [model.toJSON(options)]
+                    };
+                });
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -47,13 +59,7 @@ clients = {
         ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
-        return pipeline(tasks, options).then(function formatResponse(result) {
-            if (result) {
-                return {clients: [result.toJSON(options)]};
-            }
-
-            return Promise.reject(new errors.NotFoundError({message: i18n.t('common.api.clients.clientNotFound')}));
-        });
+        return pipeline(tasks, options);
     }
 };
 

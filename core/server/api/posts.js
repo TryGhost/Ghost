@@ -89,7 +89,18 @@ posts = {
          * @returns {Object} options
          */
         function modelQuery(options) {
-            return models.Post.findOne(options.data, _.omit(options, ['data']));
+            return models.Post.findOne(options.data, _.omit(options, ['data']))
+                .then(function onModelResponse(model) {
+                    if (!model) {
+                        return Promise.reject(new errors.NotFoundError({
+                            message: i18n.t('errors.api.posts.postNotFound')
+                        }));
+                    }
+
+                    return {
+                        posts: [model.toJSON(options)]
+                    };
+                });
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -101,14 +112,7 @@ posts = {
         ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
-        return pipeline(tasks, options).then(function formatResponse(result) {
-            // @TODO make this a formatResponse task?
-            if (result) {
-                return {posts: [result.toJSON(options)]};
-            }
-
-            return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.posts.postNotFound')}));
-        });
+        return pipeline(tasks, options);
     },
 
     /**
@@ -130,7 +134,27 @@ posts = {
          * @returns {Object} options
          */
         function modelQuery(options) {
-            return models.Post.edit(options.data.posts[0], _.omit(options, ['data']));
+            return models.Post.edit(options.data.posts[0], _.omit(options, ['data']))
+                .then(function onModelResponse(model) {
+                    if (!model) {
+                        return Promise.reject(new errors.NotFoundError({
+                            message: i18n.t('errors.api.posts.postNotFound')
+                        }));
+                    }
+
+                    var post = model.toJSON(options);
+
+                    // If previously was not published and now is (or vice versa), signal the change
+                    // @TODO: `statusChanged` get's added for the API headers only. Reconsider this.
+                    post.statusChanged = false;
+                    if (model.updated('status') !== model.get('status')) {
+                        post.statusChanged = true;
+                    }
+
+                    return {
+                        posts: [post]
+                    };
+                });
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -142,20 +166,7 @@ posts = {
         ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
-        return pipeline(tasks, object, options).then(function formatResponse(result) {
-            if (result) {
-                var post = result.toJSON(options);
-
-                // If previously was not published and now is (or vice versa), signal the change
-                post.statusChanged = false;
-                if (result.updated('status') !== result.get('status')) {
-                    post.statusChanged = true;
-                }
-                return {posts: [post]};
-            }
-
-            return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.posts.postNotFound')}));
-        });
+        return pipeline(tasks, object, options);
     },
 
     /**
@@ -177,7 +188,17 @@ posts = {
          * @returns {Object} options
          */
         function modelQuery(options) {
-            return models.Post.add(options.data.posts[0], _.omit(options, ['data']));
+            return models.Post.add(options.data.posts[0], _.omit(options, ['data']))
+                .then(function onModelResponse(model) {
+                    var post = model.toJSON(options);
+
+                    if (post.status === 'published') {
+                        // When creating a new post that is published right now, signal the change
+                        post.statusChanged = true;
+                    }
+
+                    return {posts: [post]};
+                });
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -189,15 +210,7 @@ posts = {
         ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
-        return pipeline(tasks, object, options).then(function formatResponse(result) {
-            var post = result.toJSON(options);
-
-            if (post.status === 'published') {
-                // When creating a new post that is published right now, signal the change
-                post.statusChanged = true;
-            }
-            return {posts: [post]};
-        });
+        return pipeline(tasks, object, options);
     },
 
     /**
