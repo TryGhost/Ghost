@@ -83,7 +83,7 @@ cacheInvalidationHeader = function cacheInvalidationHeader(req, result) {
         if (endpoint === 'schedules' && subdir === 'posts') {
             return INVALIDATE_ALL;
         }
-        if (['settings', 'users', 'db', 'tags'].indexOf(endpoint) > -1) {
+        if (['settings', 'users', 'db', 'tags', 'redirects'].indexOf(endpoint) > -1) {
             return INVALIDATE_ALL;
         } else if (endpoint === 'posts') {
             if (method === 'DELETE') {

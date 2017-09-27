@@ -55,6 +55,7 @@ describe('Redirects API', function () {
 
                     res.headers['content-disposition'].should.eql('Attachment; filename="redirects.json"');
                     res.headers['content-type'].should.eql('application/json; charset=utf-8');
+                    should.not.exist(res.headers['x-cache-invalidate']);
 
                     // API returns an empty file with the correct file structure (empty [])
                     res.headers['content-length'].should.eql('2');
@@ -137,7 +138,9 @@ describe('Redirects API', function () {
                             .expect('Content-Type', /application\/json/)
                             .expect(200);
                     })
-                    .then(function () {
+                    .then(function (res) {
+                        res.headers['x-cache-invalidate'].should.eql('/*');
+
                         return request
                             .get('/k/')
                             .expect(302);
@@ -194,7 +197,9 @@ describe('Redirects API', function () {
                             .expect('Content-Type', /application\/json/)
                             .expect(200);
                     })
-                    .then(function () {
+                    .then(function (res) {
+                        res.headers['x-cache-invalidate'].should.eql('/*');
+
                         return request
                             .get('/my-old-blog-post/')
                             .expect(404);
