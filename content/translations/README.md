@@ -6,7 +6,7 @@
 
 **Ghost opens to the whole world!**
 
-Now Ghost's frontend and themes, that is to say the public side visible to site visitors, are fully translatable. Server side messages are also translatable.
+Now Ghost's frontend and themes, that is to say the public side visible to site visitors, are fully translatable. Server side messages are also optionally translatable.
 
 And it's as easy as writing, using only English and any other language you wish. You don't need to be a programmer: anyone can do it, and it takes very little time.
 
@@ -27,19 +27,26 @@ You need:
  
 The translation files for your target language can be already included, or maybe not yet, by the theme.
 
-For example, for Spanish (language tag "`es`"), and an example theme that we can call "`mytheme`", the four **translation files** are:
+For example, for Spanish (language tag "`es`"), and an example theme that we can call "`mytheme`", the one or two **translation files** are:
+
+- In the theme folder *content/themes/mytheme/assets/locales* (each theme's files):
+  - *es.json* - to translate the theme's *.hbs* templates
 
 - In the content folder *content/translations* (common files for Ghost core and all themes):
-  - *es.json* - for backend server side messages from *.js* files, usually for admins
-  - *frontend_es.json* - for frontend core *.hbs* templates, shared by all themes
+  - *es.json* - optional file for backend server side messages from *.js* files, usually for admins
 
-- In the theme folder *content/themes/mytheme/assets/translations* (each theme's files):
-  - *mytheme_es.css* - optional file to translate CSS content text visible to site visitors
-  - *mytheme_es.json* - to translate the theme's *.hbs* templates
+Also, to translate frontend core *.hbs* templates, shared by all themes, three **core templates** should be overridden by copies included within the theme:
 
+- In the theme folder *content/themes/mytheme*:
+  - *subscribe.hbs* - copy of *core/server/apps/subscribers/lib/views/subscribe.hbs*
+
+- In the theme folder *content/themes/mytheme/partials*:
+  - *pagination.hbs* - copy of *core/server/helpers/tpl/pagination.hbs*
+  - *subscribe_form.hbs* - copy of *core/server/helpers/tpl/subscribe_form.hbs*
+ 
 ### If you choose a translatable theme that includes your target language
 
-Simply verify that the translation files are in place, and then activate the new language:
+Simply verify that the files are in place, and then activate the new language:
 
 **Ghost's Settings > General > Language**
 
@@ -57,15 +64,13 @@ See the section below: [*How to Make Any Theme Translatable*](#how-to-make-any-t
 
 ### 1. Copy the default English files
 
-They are four files, that you can find in these folders:
+They are one of two files, that you can find in these folders:
+
+- *content/themes/mytheme/assets/locales*
+  - *en.json* - copy for frontend and theme translation
 
 - *core/server/translations*
-  - *en.json*
-  - *frontend_en.json*
-
-- *content/themes/mytheme/assets/translations*
-  - *mytheme_en.css*
-  - *mytheme_en.json*
+  - *en.json* - copy optionally, for server side messages
 
 ### 2. Rename the language files
 
@@ -75,13 +80,11 @@ Just change the default `en` language tag to the desired language.
 
 Edit the files you are interested in with any plain text editor. Usually they manage the international `UTF-8` encoding well.
 
-In the case that for now you only want to translate the public frontend and theme, that is the copies of *frontend_en.json* and *mytheme_en.json*, then the content of the renamed copy of *en.json* for backend messages for admins can stay in English, but should be included with the new file name. The *.css* file is only needed if the theme includes CSS text visible to site visitors.
-
-For example, the complete *frontend_en.json* default English file is the following:
+An example with [optional features](#optional-advanced-features) (see the related section below) such as placeholders for flexibility, is the complete default English file *en.json* for [WorldCasper2 &#x27B6;](https://github.com/juan-g/WorldCasper2/tree/i18n-translatable-frontend), translatable clone of the default Casper 2.0 theme:
 
 ```
 {
-    "frontend": {
+    "worldcasper2": {
         "Back": "Back",
         "Newer Posts": "Newer Posts",
         "of": "of",
@@ -92,16 +95,32 @@ For example, the complete *frontend_en.json* default English file is the followi
         "Subscribed!": "Subscribed!",
         "with the email address": "with the email address",
         "Your email address": "Your email address",
-        "You've successfully subscribed to": "You've successfully subscribed to"
+        "You've successfully subscribed to": "You've successfully subscribed to",
+        "A collection of posts": "A collection of posts",
+        "A collection of 1 post": "A collection of 1 post",
+        "A collection of % posts": "A collection of % posts",
+        "Get the latest posts delivered right to your inbox": "Get the latest posts delivered right to your inbox",
+        "Latest Posts": "Latest Posts",
+        "No posts": "No posts",
+        "Read More": "Read More",
+        "Read <a href='{url}'>more posts</a> by this author": "Read <a href='{url}'>more posts</a> by this author",
+        "See all % posts": "See all % posts",
+        "Share this": "Share this",
+        "Stay up to date! Get all the latest &amp; greatest posts delivered straight to your inbox": "Stay up to date! Get all the latest &amp; greatest posts delivered straight to your inbox",
+        "Subscribe": "Subscribe",
+        "Subscribe to": "Subscribe to",
+        "youremail@example.com": "youremail@example.com",
+        "1 post": "1 post",
+        "% posts": "% posts"
     }
 }
 ```
 
-And edited to translate for example into Spanish as *frontend_es.json*:
+And edited to translate for example into Spanish as *es.json*:
 
 ```
 {
-    "frontend": {
+    "worldcasper2": {
         "Back": "Volver",
         "Newer Posts": "Artículos Siguientes",
         "of": "de",
@@ -112,41 +131,20 @@ And edited to translate for example into Spanish as *frontend_es.json*:
         "Subscribed!": "¡Suscrito!",
         "with the email address": "con el correo electrónico",
         "Your email address": "Tu correo electrónico",
-        "You've successfully subscribed to": "Te has suscrito con éxito a"
-    }
-}
-```
-
-As you can see, it's just plain English on the left, and the language you choose on the right, without any code involved.
-
-Dates, with month names, are automatically translated. You don't need to include them in the translation files. 
-
-Another example with [optional features](#optional-advanced-features) (see the related section below) such as placeholders for flexibility, is *worldcasper2_es.json*, the complete Spanish file for [WorldCasper2 &#x27B6;](https://github.com/juan-g/WorldCasper2/tree/i18n-translatable-frontend), translatable clone of the default Casper 2.0 theme:
-
-```
-{
-    "worldcasper2": {
+        "You've successfully subscribed to": "Te has suscrito con éxito a",
         "A collection of posts": "Una colección de artículos",
         "A collection of 1 post": "Una colección de 1 artículo",
         "A collection of % posts": "Una colección de % artículos",
-        "and thought of you!": "y pensé en ti!",
         "Get the latest posts delivered right to your inbox": "Recibe los últimos artículos directamente en tu buzón",
-        "Hey, saw this on": "¡Hola, vi esto en",
         "Latest Posts": "Últimos Artículos",
         "No posts": "No hay artículos",
-        "Pin": "Pinea",
         "Read More": "Lee Más",
         "Read <a href='{url}'>more posts</a> by this author": "Lee <a href='{url}'>más artículos</a> de este autor",
-        "Reblog": "Rebloguea",
         "See all % posts": "Ver todos los % artículos",
-        "Send": "Envía",
-        "Share": "Comparte",
         "Share this": "Comparte",
         "Stay up to date! Get all the latest &amp; greatest posts delivered straight to your inbox": "¡Mantente al día! Recibe todos los últimos y mejores artículos directamente en tu buzón",
         "Subscribe": "Suscríbete",
         "Subscribe to": "Suscríbete a",
-        "Tweet": "Tuitea",
-        "WhatsApp": "Wasapea",
         "youremail@example.com": "tucorreo@ejemplo.com",
         "1 post": "1 artículo",
         "% posts": "% artículos"
@@ -154,11 +152,17 @@ Another example with [optional features](#optional-advanced-features) (see the r
 }
 ```
 
+As you can see, it's just plain English on the left, and the language you choose on the right, without any code involved.
+
+Optionally, any translation key can be used on the left and on the templates, but readable English is advisable for simplicity and to take advantage of fallback to the text inside the `{{t}}` translation helper when no translation is available.
+
+Dates, with month names, are automatically translated. You don't need to include them in the translation files. 
+
 For a translatable clone of the Casper 1.4 theme (versions 1.4 and 2.0 have different designs), see [WorldCasper1 &#x27B6;](https://github.com/juan-g/WorldCasper1/tree/i18n-translatable-frontend).
 
 ## How to Make Any Theme Translatable
 
-Ghost's themes use a very simple translation system, just for themes. On the other hand, server side messages for admins have a different system and will continue to use code in *.js* files such as `i18n.t('warnings.helpers.pagination.nextPrevValuesMustBeNumeric')`. However, to design and customize themes, just plain English is more user friendly.
+Ghost's themes use a very simple translation system, just for themes. On the other hand, server side messages for admins have a different system and will continue to use code in *.js* files with translation keys, such as `i18n.t('warnings.helpers.pagination.nextPrevValuesMustBeNumeric')`. However, to design and customize themes, just plain English is more user friendly, even when any translation key can also optionally be used.
 
 For example, in *.hbs* theme templates:
 
@@ -166,17 +170,9 @@ For example, in *.hbs* theme templates:
 {{t "Get the latest posts delivered right to your inbox"}}
 ```
 
-The few sentences in *.hbs* core frontend templates need a `where` parameter, not needed for themes:
-
-```
-{{t "You've successfully subscribed to" where="frontend"}}
-```
-
-Probably, developers of future apps with templates will also use this parameter, e.g. `where="myapp"` (there will likely be one theme and several apps enabled at the same time).
-
 ### 1. Look for text on the theme's .hbs templates
 
-They contain the text to translate, that is the text visible to site visitors.
+They contain the text to translate, that is the text visible to site visitors. This includes the copies overriding three core frontend templates.
 
 ### 2. Wrap it in {{t}} translation helpers
 
@@ -186,22 +182,31 @@ Just copy and paste `{{t "` to the left, and `"}}` to the rigth.
 
 Do all these three steps for each text, before going to the next, to remember to add all of them to the translation file.
 
-For now, just quickly write the English default file *mytheme_en.json*. Later you can translate it as explained before.
+For now, just quickly write the English default file *assets/locales/en.json*. Later you can translate it as explained before.
 
-Naturally, replace `mytheme` with the simplified name of your theme (like the theme folder). In the future, it can be as well the name of a Ghost app with templates to translate.
-
-Although the English version will work for themes even without default English file (because of fallback to the text inside the `{{t}}` translation helper when no translation is available), it's advisable to include the default *mytheme_en.json* anyway, because:
+Although the English version will work for themes even without default English file (because of the mentioned fallback to the text inside the `{{t}}` translation helper when no translation is available), it's advisable to include the default *assets/locales/en.json* anyway, because:
 
 - It will be much easier for users to [add and contribute languages](#how-to-add-any-language) by copying and editing the default file, as explained in the previous section.
 - Even for sites in English, Ghost users will be able to customize any theme texts by simply editing the default English file, without modifying the theme templates.
 
 If you have the translation files of another Ghost theme, surely part of the texts will be common, and you can copy them and their translations.
 
-To easily start a new translation file, copy the following into it:
+To easily start a new translation file, copy the following into it, which includes the texts from overridden core frontend templates, common for all themes:
 
 ```
 {
     "": {
+        "Back": "",
+        "Newer Posts": "",
+        "of": "",
+        "Older Posts": "",
+        "Page": "",
+        "Subscribe": "",
+        "Subscribe to": "",
+        "Subscribed!": "",
+        "with the email address": "",
+        "Your email address": "",
+        "You've successfully subscribed to": "",
         "": "",
         "": "",
         "": "",
@@ -226,49 +231,11 @@ And more translations mean more users, therefore more improvements and maintenan
 
 ## Optional Advanced Features
 
-### Translation of CSS content text
-
-If the theme to translate includes, in style sheets, content text visible to site visitors, you can translate it by override. For example:
-
-File *worldcasper1_en.css*
-```
-.read-next-story .post:before {
-    content: "Read This Next";
-}
-.read-next-story.prev .post:before {
-    content: "You Might Enjoy";
-}
-```
-
-File *worldcasper1_es.css*
-```
-.read-next-story .post:before {
-    content: "Sigue leyendo";
-}
-.read-next-story.prev .post:before {
-    content: "Te puede gustar";
-}
-```
-
-And, in theme template *default.hbs*, after the rest of style sheets to override
-
-```
-<link rel="stylesheet" type="text/css" href="{{asset "translations/{theme}_{lang}.css" theme=(theme) lang=(lang)}}" />
-```
-
-In this line, the {{asset}} helper can be equivalent in this example to
-
-```
-{{asset "translations/worldcasper1_es.css"}}
-```
-
-That stylesheet line uses replacement placeholders `{theme}` and `{lang}`, and nested helpers `(theme)` and `(lang)`.
-
 ### Replacement placeholders
 
 For example:
 
-In file *mytheme_es.json*
+In theme translation file *es.json*
 
 ```
 "Proudly published with {ghostlink}": "Publicado con {ghostlink}",
@@ -294,7 +261,7 @@ See [Handlebars subexpressions &#x27B6;](http://handlebarsjs.com/expressions.htm
 
 For example:
 
-In file *mytheme_es.json*
+In theme translation file *es.json*
 
 ```
 " on ": " en ",
@@ -322,7 +289,7 @@ which, when translated, is equivalent to
 
 For example:
 
-In file *mytheme_es.json*
+In theme translaion file *es.json*
 
 ```
 "Read <a href='{url}'>more posts</a> by this author": "Lee <a href='{url}'>más artículos</a> de este autor",
@@ -340,7 +307,7 @@ Here, the `{url}` placeholder is replaced by the value of the `(url)` nested hel
 
 For example:
 
-In file *mytheme_es.json*
+In theme translation file *es.json*
 
 ```
 "No posts": "No hay artículos",
@@ -365,6 +332,46 @@ several `(t)` nested translation helpers (instead of normal `{{t}}` helpers) can
 ```
 6 artículos
 ```
+
+### CSS content text override
+
+Although Ghost's i18n system (translation helpers) doesn't apply to CSS, sometimes themes include, in style sheets, content text visible to site visitors.
+
+In this case, you can translate it by a normal CSS override. For example for Casper 1.4 and its translatable clone WorldCasper1:
+
+File *en.css* (that can be used as a model to translate)
+```
+.read-next-story .post:before {
+    content: "Read This Next";
+}
+.read-next-story.prev .post:before {
+    content: "You Might Enjoy";
+}
+```
+
+File *es.css* (optional file to translate CSS content text visible to site visitors)
+```
+.read-next-story .post:before {
+    content: "Sigue leyendo";
+}
+.read-next-story.prev .post:before {
+    content: "Te puede gustar";
+}
+```
+
+And, in theme template *default.hbs*, after the rest of style sheets to override
+
+```
+<link rel="stylesheet" type="text/css" href="{{asset "locales/{lang}.css" lang=(lang)}}" />
+```
+
+In this line, the {{asset}} helper can be equivalent in this example to
+
+```
+{{asset "locales/es.css"}}
+```
+
+That stylesheet line uses the replacement placeholder `{lang}`, and the nested helper `(lang)`.
 
 ## What's Coming Next
 

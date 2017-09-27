@@ -37,7 +37,7 @@
                                     </g>
                                 </g>
                             </svg>
-                            {{t "Back" where="frontend"}}
+                            Back
                         </a>
                     </nav>
                 </header>
@@ -46,24 +46,24 @@
                     <section class="gh-flow-content">
                         {{^if success}}
                             <header>
-                                <h1>{{t "Subscribe to" where="frontend"}} {{@blog.title}}</h1>
+                                <h1>Subscribe to {{@blog.title}}</h1>
                             </header>
 
                             {{subscribe_form
                                 form_class="gh-signin"
                                 input_class="gh-input"
                                 button_class="gh-btn gh-btn-blue gh-btn-block"
-                                placeholder=(t "Your email address" where="frontend")
+                                placeholder="Your email address"
                                 autofocus="true"
                             }}
                         {{else}}
                             <header>
-                                <h1>{{t "Subscribed!" where="frontend"}}</h1>
+                                <h1>Subscribed!</h1>
                             </header>
 
                             <p>
-                                {{t "You've successfully subscribed to" where="frontend"}} <em>{{@blog.title}}</em>
-                                {{t "with the email address" where="frontend"}} <em>{{email}}</em>.
+                                You've successfully subscribed to <em>{{@blog.title}}</em>
+                                with the email address <em>{{email}}</em>.
                             </p>
                         {{/if}}
                     </section>
