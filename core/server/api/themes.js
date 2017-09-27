@@ -31,6 +31,18 @@ themes = {
             });
     },
 
+    // @TODO: permissions for read themes
+    read: function (options) {
+        return apiUtils
+            // Permissions
+            .handlePermissions('themes', 'browse')(options)
+            // Main action
+            .then(function makeApiResult() {
+                // Return JSON result
+                return themeUtils.toJSON(settingsCache.get('active_theme'));
+            });
+    },
+
     activate: function activate(options) {
         var themeName = options.name,
             newSettings = [{
