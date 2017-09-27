@@ -26,20 +26,17 @@ themes = {
             .handlePermissions('themes', 'browse')(options)
             // Main action
             .then(function makeApiResult() {
-                // Return JSON result
-                return themeUtils.toJSON();
-            });
-    },
+                if (options.name) {
+                    if (!themeList.get(options.name)) {
+                        throw new errors.NotFoundError({
+                            message: i18n.t('errors.api.themes.themeDoesNotExist')
+                        });
+                    }
 
-    // @TODO: permissions for read themes
-    read: function (options) {
-        return apiUtils
-            // Permissions
-            .handlePermissions('themes', 'browse')(options)
-            // Main action
-            .then(function makeApiResult() {
-                // Return JSON result
-                return themeUtils.toJSON(settingsCache.get('active_theme'));
+                    return themeUtils.toJSON(options.name);
+                }
+
+                return themeUtils.toJSON();
             });
     },
 
