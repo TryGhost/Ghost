@@ -7,7 +7,6 @@ var Promise = require('bluebird'),
     canThis = require('../permissions').canThis,
     models = require('../models'),
     errors = require('../errors'),
-    events = require('../events'),
     i18n = require('../i18n'),
     docName = 'users',
     // TODO: implement created_by, updated_by
@@ -60,11 +59,10 @@ users = {
      */
     read: function read(options) {
         var attrs = ['id', 'slug', 'status', 'email', 'role'],
-            tasks,
-            isMe = options.id === 'me';
+            tasks;
 
         // Special handling for /users/me request
-        if (isMe && options.context && options.context.user) {
+        if (options.id === 'me' && options.context && options.context.user) {
             options.id = options.context.user;
         }
 
@@ -89,10 +87,6 @@ users = {
         // Pipeline calls each task passing the result of one to be the arguments for the next
         return pipeline(tasks, options).then(function formatResponse(result) {
             if (result) {
-                if (isMe) {
-                    events.emit('read:users:me', result);
-                }
-
                 return {users: [result.toJSON(options)]};
             }
 
