@@ -42,6 +42,9 @@ class ActiveTheme {
         this._packageInfo = loadedTheme['package.json'];
         this._partials =  checkedTheme.partials;
 
+        // filtered by gscan e.g. custom-about.hbs or post-slug.hbs
+        this._customTemplates = checkedTheme.customTemplates;
+
         // @TODO: get gscan to return a template collection for us
         this._templates = _.reduce(checkedTheme.files, function (templates, entry) {
             var tplMatch = entry.file.match(/(^[^\/]+).hbs$/);
@@ -57,6 +60,10 @@ class ActiveTheme {
 
     get name() {
         return this._name;
+    }
+
+    get customTemplates() {
+        return this._customTemplates;
     }
 
     get path() {
