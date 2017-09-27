@@ -203,6 +203,17 @@ User = ghostBookshelf.Model.extend({
             delete attrs.email;
         }
 
+        // We don't expose these fields when fetching data via the public API.
+        if (this.isPublicContext(options)) {
+            delete attrs.created_at;
+            delete attrs.created_by;
+            delete attrs.updated_at;
+            delete attrs.updated_by;
+            delete attrs.last_seen;
+            delete attrs.status;
+            delete attrs.ghost_auth_id;
+        }
+
         return attrs;
     },
 
