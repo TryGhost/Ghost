@@ -163,12 +163,6 @@
     color: var(--darkgrey);
 }
 
-@media (max-width: 400px) {
-    .gh-posts-list-item a {
-        padding: 15px;
-    }
-}
-
 @media (max-width: 900px) {
     .gh-posts-list-item a {
         padding-right: 40px;

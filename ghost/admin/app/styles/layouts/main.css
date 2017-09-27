@@ -314,6 +314,8 @@ body > .ember-view:not(.default-liquid-destination) {
         transform: translate3d(0,0,0);
     }
     .mobile-menu-expanded .content-cover {
+        width: 20vw;
+        cursor: pointer;
         transform: translate3d(80vw, 0, 0);
     }
 
