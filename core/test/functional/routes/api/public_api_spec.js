@@ -322,7 +322,7 @@ describe('Public API', function () {
                 jsonResponse.users.should.have.length(2);
 
                 // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, ['email']);
+                testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
                 done();
             });
     });
@@ -345,7 +345,7 @@ describe('Public API', function () {
                 jsonResponse.users.should.have.length(2);
 
                 // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, ['email']);
+                testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
                 done();
             });
     });
@@ -368,7 +368,7 @@ describe('Public API', function () {
                 jsonResponse.users.should.have.length(1);
 
                 // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, ['email']);
+                testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
                 done();
             });
     });
@@ -391,7 +391,7 @@ describe('Public API', function () {
                 jsonResponse.users.should.have.length(1);
 
                 // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], ['email']);
+                testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], null, null, {public: true});
                 done();
             });
     });
@@ -414,7 +414,7 @@ describe('Public API', function () {
                 jsonResponse.users.should.have.length(1);
 
                 // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], ['email']);
+                testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], null, null, {public: true});
                 done();
             });
     });
@@ -453,7 +453,7 @@ describe('Public API', function () {
                 jsonResponse.users.should.have.length(1);
 
                 // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, ['email']);
+                testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
                 done();
             });
     });
@@ -476,7 +476,7 @@ describe('Public API', function () {
                 jsonResponse.users.should.have.length(2);
 
                 // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], ['email']);
+                testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], null, null, {public: true});
                 done();
             });
     });
@@ -499,7 +499,7 @@ describe('Public API', function () {
                 jsonResponse.users.should.have.length(2);
 
                 // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, ['email']);
+                testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
                 done();
             });
     });
