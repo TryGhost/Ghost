@@ -16,8 +16,7 @@
  * No properties marked with an _ should be used directly.
  *
  */
-var _ = require('lodash'),
-    join = require('path').join,
+var join = require('path').join,
     themeConfig = require('./config'),
     config = require('../config'),
     engine = require('./engine'),

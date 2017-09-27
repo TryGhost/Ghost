@@ -128,15 +128,78 @@ describe('Themes API (Forked)', function () {
                     jsonResponse.themes[0].package.should.be.an.Object().with.properties('name', 'version');
                     jsonResponse.themes[0].active.should.be.false();
 
-                    testUtils.API.checkResponse(jsonResponse.themes[1], 'theme');
+                    testUtils.API.checkResponse(jsonResponse.themes[1], 'theme', 'templates');
                     jsonResponse.themes[1].name.should.eql('casper');
                     jsonResponse.themes[1].package.should.be.an.Object().with.properties('name', 'version');
                     jsonResponse.themes[1].active.should.be.true();
+                    jsonResponse.themes[1].templates.should.eql([]);
 
                     testUtils.API.checkResponse(jsonResponse.themes[2], 'theme');
                     jsonResponse.themes[2].name.should.eql('test-theme');
                     jsonResponse.themes[2].package.should.be.an.Object().with.properties('name', 'version');
                     jsonResponse.themes[2].active.should.be.false();
+
+                    done();
+                });
+        });
+
+        it('get active theme by name', function (done) {
+            request
+                .get(testUtils.API.getApiQuery('themes/casper/'))
+                .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    var jsonResponse = res.body;
+                    should.exist(jsonResponse.themes);
+                    testUtils.API.checkResponse(jsonResponse, 'themes');
+                    jsonResponse.themes.length.should.eql(1);
+
+                    testUtils.API.checkResponse(jsonResponse.themes[0], 'theme', 'templates');
+                    jsonResponse.themes[0].name.should.eql('casper');
+                    jsonResponse.themes[0].package.should.be.an.Object().with.properties('name', 'version');
+                    jsonResponse.themes[0].active.should.be.true();
+
+                    done();
+                });
+        });
+
+        it('get non active theme by name', function (done) {
+            request
+                .get(testUtils.API.getApiQuery('themes/test-theme/'))
+                .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    var jsonResponse = res.body;
+                    should.exist(jsonResponse.themes);
+                    testUtils.API.checkResponse(jsonResponse, 'themes');
+                    jsonResponse.themes.length.should.eql(1);
+
+                    testUtils.API.checkResponse(jsonResponse.themes[0], 'theme');
+                    jsonResponse.themes[0].name.should.eql('test-theme');
+                    jsonResponse.themes[0].package.should.be.an.Object().with.properties('name', 'version');
+                    jsonResponse.themes[0].active.should.be.false();
+
+                    done();
+                });
+        });
+
+        it('[failure] get theme by name', function (done) {
+            request
+                .get(testUtils.API.getApiQuery('themes/other/'))
+                .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
+                .expect(404)
+                .end(function (err) {
+                    if (err) {
+                        return done(err);
+                    }
 
                     done();
                 });
@@ -218,7 +281,7 @@ describe('Themes API (Forked)', function () {
                                     // Casper should be present and still active
                                     casperTheme = _.find(jsonResponse.themes, {name: 'casper'});
                                     should.exist(casperTheme);
-                                    testUtils.API.checkResponse(casperTheme, 'theme');
+                                    testUtils.API.checkResponse(casperTheme, 'theme', 'templates');
                                     casperTheme.active.should.be.true();
 
                                     // The added theme should be here
@@ -276,7 +339,7 @@ describe('Themes API (Forked)', function () {
                             // Casper should be present and still active
                             casperTheme = _.find(jsonResponse.themes, {name: 'casper'});
                             should.exist(casperTheme);
-                            testUtils.API.checkResponse(casperTheme, 'theme');
+                            testUtils.API.checkResponse(casperTheme, 'theme', 'templates');
                             casperTheme.active.should.be.true();
 
                             // The deleted theme should not be here
@@ -340,7 +403,7 @@ describe('Themes API (Forked)', function () {
 
                     casperTheme = _.find(jsonResponse.themes, {name: 'casper'});
                     should.exist(casperTheme);
-                    testUtils.API.checkResponse(casperTheme, 'theme');
+                    testUtils.API.checkResponse(casperTheme, 'theme', 'templates');
                     casperTheme.active.should.be.true();
 
                     testTheme = _.find(jsonResponse.themes, {name: 'test-theme'});
@@ -368,7 +431,7 @@ describe('Themes API (Forked)', function () {
 
                             testTheme = _.find(jsonResponse.themes, {name: 'test-theme'});
                             should.exist(testTheme);
-                            testUtils.API.checkResponse(testTheme, 'theme', ['warnings']);
+                            testUtils.API.checkResponse(testTheme, 'theme', ['warnings', 'templates']);
                             testTheme.active.should.be.true();
                             testTheme.warnings.should.be.an.Array();
 
@@ -492,7 +555,7 @@ describe('Themes API (Forked)', function () {
 
                     testTheme = _.find(jsonResponse.themes, {name: 'test-theme'});
                     should.exist(testTheme);
-                    testUtils.API.checkResponse(testTheme, 'theme', ['warnings']);
+                    testUtils.API.checkResponse(testTheme, 'theme', ['warnings', 'templates']);
                     testTheme.active.should.be.true();
                     testTheme.warnings.should.be.an.Array();
 
