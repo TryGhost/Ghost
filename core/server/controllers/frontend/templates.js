@@ -66,8 +66,8 @@ function getChannelTemplateHierarchy(channelOpts) {
  *
  * Fetch the ordered list of templates that can be used to render this request.
  * 'post' is the default / fallback
- * For posts: [post-:slug, post]
- * For pages: [page-:slug, page, post]
+ * For posts: [custom-*, post-:slug, post]
+ * For pages: [custom-*, page-:slug, page, post]
  *
  * @param {Object} postObject
  * @returns {String[]}
@@ -82,6 +82,11 @@ function getSingleTemplateHierarchy(postObject) {
     }
 
     templateList.unshift(type + '-' + postObject.slug);
+
+    if (postObject.custom_template) {
+        // @TODO: reconsider saving .hbs extension
+        templateList.unshift(postObject.custom_template.replace('.hbs', ''));
+    }
 
     return templateList;
 }
