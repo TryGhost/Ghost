@@ -103,7 +103,9 @@ notifications = {
                 }
             });
 
-            return addedNotifications;
+            return {
+                notifications: addedNotifications
+            };
         }
 
         tasks = [
@@ -112,9 +114,7 @@ notifications = {
             saveNotifications
         ];
 
-        return pipeline(tasks, object, options).then(function formatResponse(result) {
-            return {notifications: result};
-        });
+        return pipeline(tasks, object, options);
     },
 
     /**
