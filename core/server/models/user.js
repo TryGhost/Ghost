@@ -336,7 +336,6 @@ User = ghostBookshelf.Model.extend({
     findOne: function findOne(dataToClone, options) {
         var query,
             status,
-            optInc,
             data = _.cloneDeep(dataToClone),
             lookupRole = data.role;
 
@@ -348,14 +347,9 @@ User = ghostBookshelf.Model.extend({
         status = data.status;
         delete data.status;
 
-        options = _.cloneDeep(options || {});
-        optInc = options.include;
-        options.withRelated = _.union(options.withRelated, options.include);
-
         data = this.filterData(data);
         options = this.filterOptions(options, 'findOne');
-        delete options.include;
-        options.include = optInc;
+        options.withRelated = _.union(options.withRelated, options.include);
 
         // Support finding by role
         if (lookupRole) {
