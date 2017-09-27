@@ -84,8 +84,7 @@ function getSingleTemplateHierarchy(postObject) {
     templateList.unshift(type + '-' + postObject.slug);
 
     if (postObject.custom_template) {
-        // @TODO: reconsider saving .hbs extension
-        templateList.unshift(postObject.custom_template.replace('.hbs', ''));
+        templateList.unshift(postObject.custom_template);
     }
 
     return templateList;

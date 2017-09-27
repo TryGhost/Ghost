@@ -42,17 +42,11 @@ class ActiveTheme {
         this._packageInfo = loadedTheme['package.json'];
         this._partials =  checkedTheme.partials;
 
-        // filtered by gscan e.g. custom-about.hbs or post-slug.hbs
-        this._customTemplates = checkedTheme.customTemplates;
+        // all custom .hbs templates (e.g. custom-about)
+        this._customTemplates = checkedTheme.templates.custom;
 
-        // @TODO: get gscan to return a template collection for us
-        this._templates = _.reduce(checkedTheme.files, function (templates, entry) {
-            var tplMatch = entry.file.match(/(^[^\/]+).hbs$/);
-            if (tplMatch) {
-                templates.push(tplMatch[1]);
-            }
-            return templates;
-        }, []);
+        // all .hbs templates
+        this._templates = checkedTheme.templates.all;
 
         // Create a theme config object
         this._config = themeConfig.create(this._packageInfo);
