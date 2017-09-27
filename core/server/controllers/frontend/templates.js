@@ -69,19 +69,19 @@ function getChannelTemplateHierarchy(channelOpts) {
  * For posts: [post-:slug, post]
  * For pages: [page-:slug, page, post]
  *
- * @param {Object} single
+ * @param {Object} postObject
  * @returns {String[]}
  */
-function getSingleTemplateHierarchy(single) {
+function getSingleTemplateHierarchy(postObject) {
     var templateList = ['post'],
         type = 'post';
 
-    if (single.page) {
+    if (postObject.page) {
         templateList.unshift('page');
         type = 'page';
     }
 
-    templateList.unshift(type + '-' + single.slug);
+    templateList.unshift(type + '-' + postObject.slug);
 
     return templateList;
 }
@@ -117,8 +117,8 @@ function pickTemplate(templateList, fallback) {
     return template;
 }
 
-function getTemplateForSingle(single) {
-    var templateList = getSingleTemplateHierarchy(single),
+function getTemplateForSingle(postObject) {
+    var templateList = getSingleTemplateHierarchy(postObject),
         fallback = templateList[templateList.length - 1];
     return pickTemplate(templateList, fallback);
 }
