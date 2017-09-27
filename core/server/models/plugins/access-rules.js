@@ -13,11 +13,14 @@ module.exports = function (Bookshelf) {
         _context: null,
 
         /**
-         * ## Is Public Context?
-         * A helper to determine if this is a public request or not
+         * A model method/helper to determine if this is a public request or not.
          * @returns {boolean}
          */
-        isPublicContext: function isPublicContext() {
+        isPublicContext: function isPublicContext(options) {
+            if (options) {
+                return Model.isPublicContext(options);
+            }
+
             return !!(this._context && this._context.public);
         },
 
@@ -27,8 +30,22 @@ module.exports = function (Bookshelf) {
     },
     {
         /**
+         * A static method to determine if this is a public request or not.
+         * @returns {boolean}
+         */
+        isPublicContext: function isPublicContext(options) {
+            if (options && options.context && options.context.public) {
+                return true;
+            }
+
+            return false;
+        },
+
+        /**
          * ## Forge
          * Ensure that context gets set as part of the forge
+         *
+         * @TODO: We almost never use `.forge(options)` - reconsider.
          *
          * @param {object} attributes
          * @param {object} options
