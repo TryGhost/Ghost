@@ -312,6 +312,52 @@ describe('User API', function () {
                     });
             });
 
+            it('can retrieve a user by slug with count.posts', function (done) {
+                request.get(testUtils.API.getApiQuery('users/slug/joe-bloggs/?include=count.posts'))
+                    .set('Authorization', 'Bearer ' + ownerAccessToken)
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        should.not.exist(res.headers['x-cache-invalidate']);
+                        var jsonResponse = res.body;
+                        should.exist(jsonResponse.users);
+                        should.not.exist(jsonResponse.meta);
+
+                        jsonResponse.users.should.have.length(1);
+                        testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count']);
+
+                        done();
+                    });
+            });
+
+            it('can retrieve a user by id with count.posts', function (done) {
+                request.get(testUtils.API.getApiQuery('users/1/?include=count.posts'))
+                    .set('Authorization', 'Bearer ' + ownerAccessToken)
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        should.not.exist(res.headers['x-cache-invalidate']);
+                        var jsonResponse = res.body;
+                        should.exist(jsonResponse.users);
+                        should.not.exist(jsonResponse.meta);
+
+                        jsonResponse.users.should.have.length(1);
+                        testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count']);
+
+                        done();
+                    });
+            });
+
             it('can\'t retrieve non existent user by id', function (done) {
                 request.get(testUtils.API.getApiQuery('users/' + ObjectId.generate() + '/'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
