@@ -12,6 +12,7 @@ var Promise = require('bluebird'),
         'created_by', 'updated_by', 'published_by', 'author', 'tags', 'fields',
         'next', 'previous', 'next.author', 'next.tags', 'previous.author', 'previous.tags'
     ],
+    unsafeAttrs = ['author_id'],
     posts;
 
 /**
@@ -60,7 +61,7 @@ posts = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             apiUtils.validate(docName, {opts: permittedOptions}),
-            apiUtils.handlePublicPermissions(docName, 'browse'),
+            apiUtils.handlePublicPermissions(docName, 'browse', unsafeAttrs),
             apiUtils.convertOptions(allowedIncludes, models.Post.allowedFormats),
             modelQuery
         ];
@@ -94,7 +95,7 @@ posts = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             apiUtils.validate(docName, {attrs: attrs, opts: options.opts || []}),
-            apiUtils.handlePublicPermissions(docName, 'read'),
+            apiUtils.handlePublicPermissions(docName, 'read', unsafeAttrs),
             apiUtils.convertOptions(allowedIncludes, models.Post.allowedFormats),
             modelQuery
         ];
@@ -135,7 +136,7 @@ posts = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             apiUtils.validate(docName, {opts: apiUtils.idDefaultOptions.concat(options.opts || [])}),
-            apiUtils.handlePermissions(docName, 'edit'),
+            apiUtils.handlePermissions(docName, 'edit', unsafeAttrs),
             apiUtils.convertOptions(allowedIncludes),
             modelQuery
         ];
@@ -182,7 +183,7 @@ posts = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             apiUtils.validate(docName),
-            apiUtils.handlePermissions(docName, 'add'),
+            apiUtils.handlePermissions(docName, 'add', unsafeAttrs),
             apiUtils.convertOptions(allowedIncludes),
             modelQuery
         ];
@@ -229,7 +230,7 @@ posts = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             apiUtils.validate(docName, {opts: apiUtils.idDefaultOptions}),
-            apiUtils.handlePermissions(docName, 'destroy'),
+            apiUtils.handlePermissions(docName, 'destroy', unsafeAttrs),
             apiUtils.convertOptions(allowedIncludes),
             deletePost
         ];
