@@ -1,7 +1,7 @@
 // # Plural Helper
 // Usage example: `{{plural ../pagination.total empty='No posts' singular='1 post' plural='% posts'}}`
 // or for translatable themes, with (t) translation helper's subexpressions:
-// `{{plural ../pagination.total empty=(t "mytheme" "No posts") singular=(t "mytheme" "1 post") plural=(t "mytheme" "% posts")}}`
+// `{{plural ../pagination.total empty=(t "No posts") singular=(t "1 post") plural=(t "% posts")}}`
 //
 // Pluralises strings depending on item count
 //

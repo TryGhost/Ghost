@@ -1,6 +1,6 @@
 // # Asset helper
 // Usage: `{{asset "css/screen.css"}}`, `{{asset "css/screen.css" ghost="true"}}`,
-// `{{asset "translations/{theme}_{lang}.css" theme=(theme) lang=(lang)}}`
+// `{{asset "locales/{lang}.css" lang=(lang)}}`
 //
 // Returns the path to the specified asset. The ghost flag outputs the asset path for the Ghost admin
 var proxy = require('./proxy'),

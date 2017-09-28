@@ -32,7 +32,6 @@ coreHelpers.next_post = require('./prev_next');
 coreHelpers.reading_time = require('./reading_time');
 coreHelpers.t = require('./t');
 coreHelpers.tags = require('./tags');
-coreHelpers.theme = require('./theme');
 coreHelpers.title = require('./title');
 coreHelpers.twitter_url = require('./twitter_url');
 coreHelpers.url = require('./url');
@@ -61,7 +60,6 @@ registerAllCoreHelpers = function registerAllCoreHelpers() {
     registerThemeHelper('reading_time', coreHelpers.reading_time);
     registerThemeHelper('t', coreHelpers.t);
     registerThemeHelper('tags', coreHelpers.tags);
-    registerThemeHelper('theme', coreHelpers.theme);
     registerThemeHelper('title', coreHelpers.title);
     registerThemeHelper('twitter_url', coreHelpers.twitter_url);
     registerThemeHelper('facebook_url', coreHelpers.facebook_url);
