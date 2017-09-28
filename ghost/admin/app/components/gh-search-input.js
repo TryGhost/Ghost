@@ -14,9 +14,9 @@ export function computedGroup(category) {
         }
 
         return this.get('content').filter((item) => {
-            let search = new RegExp(this.get('currentSearch'), 'ig');
+            let search = this.get('currentSearch').toString().toLowerCase();
 
-            return (item.category === category) && item.title.match(search);
+            return (item.category === category) && (item.title.toString().toLowerCase().indexOf(search) >= 0);
         });
     });
 }
