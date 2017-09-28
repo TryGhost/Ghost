@@ -54,6 +54,10 @@ export default Service.extend({
         return reject();
     },
 
+    retryLastRequest() {
+        return this.get('_retryLastRequest').perform();
+    },
+
     changeColumnCount(newColumnCount) {
         if (newColumnCount !== this.get('columnCount')) {
             this.set('columnCount', newColumnCount);
