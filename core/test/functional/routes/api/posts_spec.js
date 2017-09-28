@@ -766,6 +766,7 @@ describe('Post API', function () {
                         should.exist(jsonResponse.posts[0]);
                         jsonResponse.posts[0].title = changedTitle;
                         jsonResponse.posts[0].author = changedAuthor;
+                        jsonResponse.posts[0].custom_template = 'custom-about';
 
                         request.put(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/'))
                             .set('Authorization', 'Bearer ' + ownerAccessToken)
@@ -783,6 +784,8 @@ describe('Post API', function () {
                                 should.exist(putBody);
                                 putBody.posts[0].title.should.eql(changedTitle);
                                 putBody.posts[0].author.should.eql(changedAuthor);
+                                putBody.posts[0].status.should.eql('published');
+                                putBody.posts[0].custom_template.should.eql('custom-about');
 
                                 testUtils.API.checkResponse(putBody.posts[0], 'post');
                                 done();
