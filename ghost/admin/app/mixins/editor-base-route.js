@@ -39,20 +39,18 @@ export default Mixin.create(styleBody, ShortcutsRoute, {
             let controllerIsDirty = controller.get('hasDirtyAttributes');
             let model = controller.get('model');
             let state = model.getProperties('isDeleted', 'isSaving', 'hasDirtyAttributes', 'isNew');
-            let deletedWithoutChanges,
-                fromNewToEdit;
 
             if (this.get('upgradeStatus.isRequired')) {
                 return this._super(...arguments);
             }
 
-            fromNewToEdit = this.get('routeName') === 'editor.new'
+            let fromNewToEdit = this.get('routeName') === 'editor.new'
                 && transition.targetName === 'editor.edit'
                 && transition.intent.contexts
                 && transition.intent.contexts[0]
                 && transition.intent.contexts[0].id === model.get('id');
 
-            deletedWithoutChanges = state.isDeleted
+            let deletedWithoutChanges = state.isDeleted
                 && (state.isSaving || !state.hasDirtyAttributes);
 
             if (!fromNewToEdit && !deletedWithoutChanges && controllerIsDirty) {
