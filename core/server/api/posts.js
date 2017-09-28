@@ -79,7 +79,9 @@ posts = {
      * @return {Promise<Post>} Post
      */
     read: function read(options) {
-        var attrs = ['id', 'slug', 'status', 'uuid', 'formats'],
+        var attrs = ['id', 'slug', 'status', 'uuid'],
+            // NOTE: the scheduler API uses the post API and forwards custom options
+            extraAllowedOptions = options.opts || ['formats'],
             tasks;
 
         /**
@@ -105,7 +107,7 @@ posts = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            apiUtils.validate(docName, {attrs: attrs, opts: options.opts || []}),
+            apiUtils.validate(docName, {attrs: attrs, opts: extraAllowedOptions}),
             apiUtils.handlePublicPermissions(docName, 'read', unsafeAttrs),
             apiUtils.convertOptions(allowedIncludes, models.Post.allowedFormats),
             modelQuery
@@ -125,7 +127,9 @@ posts = {
      * @return {Promise(Post)} Edited Post
      */
     edit: function edit(object, options) {
-        var tasks;
+        var tasks,
+            // NOTE: the scheduler API uses the post API and forwards custom options
+            extraAllowedOptions = options.opts || [];
 
         /**
          * ### Model Query
@@ -159,7 +163,7 @@ posts = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            apiUtils.validate(docName, {opts: apiUtils.idDefaultOptions.concat(options.opts || [])}),
+            apiUtils.validate(docName, {opts: apiUtils.idDefaultOptions.concat(extraAllowedOptions)}),
             apiUtils.handlePermissions(docName, 'edit', unsafeAttrs),
             apiUtils.convertOptions(allowedIncludes),
             modelQuery
