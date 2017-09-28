@@ -56,7 +56,7 @@ describe('Users API', function () {
         var userData = testUtils.DataGenerator.forModel.users[0];
 
         models.User.check({email: userData.email, password: userData.password}).then(function (user) {
-            return UserAPI.read({id: user.id});
+            return UserAPI.read(_.merge({id: user.id}, context.internal));
         }).then(function (response) {
             response.users[0].created_at.should.be.an.instanceof(Date);
             response.users[0].updated_at.should.be.an.instanceof(Date);
@@ -67,15 +67,15 @@ describe('Users API', function () {
     });
 
     describe('Browse', function () {
-        function checkBrowseResponse(response, count, additional, missing) {
+        function checkBrowseResponse(response, count, additional, missing, only, options) {
             should.exist(response);
             testUtils.API.checkResponse(response, 'users');
             should.exist(response.users);
             response.users.should.have.length(count);
-            testUtils.API.checkResponse(response.users[0], 'user', additional, missing);
-            testUtils.API.checkResponse(response.users[1], 'user', additional, missing);
-            testUtils.API.checkResponse(response.users[2], 'user', additional, missing);
-            testUtils.API.checkResponse(response.users[3], 'user', additional, missing);
+            testUtils.API.checkResponse(response.users[0], 'user', additional, missing, only, options);
+            testUtils.API.checkResponse(response.users[1], 'user', additional, missing, only, options);
+            testUtils.API.checkResponse(response.users[2], 'user', additional, missing, only, options);
+            testUtils.API.checkResponse(response.users[3], 'user', additional, missing, only, options);
         }
 
         it('Owner can browse', function (done) {
@@ -108,7 +108,7 @@ describe('Users API', function () {
 
         it('No-auth CAN browse, but only gets filtered active users', function (done) {
             UserAPI.browse().then(function (response) {
-                checkBrowseResponse(response, 7, null, ['email']);
+                checkBrowseResponse(response, 7, null, null, null, {public: true});
                 done();
             }).catch(done);
         });
@@ -220,20 +220,18 @@ describe('Users API', function () {
     });
 
     describe('Read', function () {
-        function checkReadResponse(response, noEmail) {
+        function checkReadResponse(response, noEmail, additional, missing, only, options) {
             should.exist(response);
             should.not.exist(response.meta);
             should.exist(response.users);
             response.users[0].id.should.eql(testUtils.DataGenerator.Content.users[0].id);
 
             if (noEmail) {
-                // Email should be missing
-                testUtils.API.checkResponse(response.users[0], 'user', [], ['email']);
-                should.not.exist(response.users[0].email);
+                testUtils.API.checkResponse(response.users[0], 'user', additional, missing, only, options);
             } else {
-                testUtils.API.checkResponse(response.users[0], 'user');
+                testUtils.API.checkResponse(response.users[0], 'user', additional, missing, only, options);
+                response.users[0].created_at.should.be.an.instanceof(Date);
             }
-            response.users[0].created_at.should.be.an.instanceof(Date);
         }
 
         it('Owner can read', function (done) {
@@ -268,7 +266,7 @@ describe('Users API', function () {
 
         it('No-auth can read', function (done) {
             UserAPI.read({id: userIdFor.owner}).then(function (response) {
-                checkReadResponse(response, true);
+                checkReadResponse(response, true, null, null, null, {public: true});
                 done();
             }).catch(done);
         });

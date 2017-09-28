@@ -192,12 +192,26 @@ User = ghostBookshelf.Model.extend({
         options = options || {};
 
         var attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
+
         // remove password hash for security reasons
         delete attrs.password;
         delete attrs.ghost_auth_access_token;
 
+        // NOTE: We don't expose the email address for for external, app and public context.
+        // @TODO: Why? External+Public is actually the same context? Was also mentioned here https://github.com/TryGhost/Ghost/issues/9043
         if (!options || !options.context || (!options.context.user && !options.context.internal)) {
             delete attrs.email;
+        }
+
+        // We don't expose these fields when fetching data via the public API.
+        if (options && options.context && options.context.public) {
+            delete attrs.created_at;
+            delete attrs.created_by;
+            delete attrs.updated_at;
+            delete attrs.updated_by;
+            delete attrs.last_seen;
+            delete attrs.status;
+            delete attrs.ghost_auth_id;
         }
 
         return attrs;
@@ -313,7 +327,7 @@ User = ghostBookshelf.Model.extend({
             permittedOptionsToReturn = permittedOptionsToReturn.concat(validOptions[methodName]);
         }
 
-        // CASE: The `include` paramater is allowed when using the public API, but not the `roles` value.
+        // CASE: The `include` parameter is allowed when using the public API, but not the `roles` value.
         // Otherwise we expose too much information.
         if (options && options.context && options.context.public) {
             if (options.include && options.include.indexOf('roles') !== -1) {
