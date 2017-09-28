@@ -204,7 +204,7 @@ User = ghostBookshelf.Model.extend({
         }
 
         // We don't expose these fields when fetching data via the public API.
-        if (this.isPublicContext(options)) {
+        if (options && options.context && options.context.public) {
             delete attrs.created_at;
             delete attrs.created_by;
             delete attrs.updated_at;
@@ -329,7 +329,7 @@ User = ghostBookshelf.Model.extend({
 
         // CASE: The `include` parameter is allowed when using the public API, but not the `roles` value.
         // Otherwise we expose too much information.
-        if (this.isPublicContext(options)) {
+        if (options && options.context && options.context.public) {
             if (options.include && options.include.indexOf('roles') !== -1) {
                 options.include.splice(options.include.indexOf('roles'), 1);
             }
