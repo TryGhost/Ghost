@@ -71,27 +71,29 @@ export default Mixin.create({
 
     // save 3 seconds after the last edit
     _autosave: task(function* () {
+        if (!this.get('_canAutosave')) {
+            return;
+        }
+
         // force an instant save on first body edit for new posts
-        if (this.get('_canAutosave') && this.get('model.isNew')) {
+        if (this.get('model.isNew')) {
             return this.get('autosave').perform();
         }
 
         yield timeout(AUTOSAVE_TIMEOUT);
-
-        if (this.get('_canAutosave')) {
-            this.get('autosave').perform();
-        }
+        this.get('autosave').perform();
     }).restartable(),
 
     // save at 60 seconds even if the user doesn't stop typing
     _timedSave: task(function* () {
+        if (!this.get('_canAutosave')) {
+            return;
+        }
+
         // eslint-disable-next-line no-constant-condition
         while (!testing && true) {
             yield timeout(TIMEDSAVE_TIMEOUT);
-
-            if (this.get('_canAutosave')) {
-                this.get('autosave').perform();
-            }
+            this.get('autosave').perform();
         }
     }).drop(),
 
