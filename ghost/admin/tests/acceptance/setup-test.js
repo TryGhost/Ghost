@@ -238,8 +238,8 @@ describe('Acceptance: Setup', function () {
             invalidateSession(application);
             server.loadFixtures('roles');
 
-            server.post('/invites', function ({invites}, request) {
-                let [params] = JSON.parse(request.requestBody).invites;
+            server.post('/invites/', function ({invites}) {
+                let attrs = this.normalizedRequestAttrs();
 
                 postCount++;
 
@@ -256,17 +256,15 @@ describe('Acceptance: Setup', function () {
                 }
 
                 // TODO: duplicated from mirage/config/invites - extract method?
-                /* eslint-disable camelcase */
-                params.token = `${invites.all().models.length}-token`;
-                params.expires = moment.utc().add(1, 'day').valueOf();
-                params.created_at = moment.utc().format();
-                params.created_by = 1;
-                params.updated_at = moment.utc().format();
-                params.updated_by = 1;
-                params.status = 'sent';
-                /* eslint-enable camelcase */
+                attrs.token = `${invites.all().models.length}-token`;
+                attrs.expires = moment.utc().add(1, 'day').valueOf();
+                attrs.createdAt = moment.utc().format();
+                attrs.createdBy = 1;
+                attrs.updatedAt = moment.utc().format();
+                attrs.updatedBy = 1;
+                attrs.status = 'sent';
 
-                return invites.create(params);
+                return invites.create(attrs);
             });
 
             // complete step 2 so we can access step 3

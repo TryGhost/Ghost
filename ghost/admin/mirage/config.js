@@ -72,6 +72,10 @@ export function testConfig() {
         };
     });
 
+    this.head('http://www.gravatar.com/avatar/:md5', function () {
+        return '';
+    }, 200);
+
     this.get('http://www.gravatar.com/avatar/:md5', function () {
         return '';
     }, 200);

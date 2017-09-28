@@ -5,8 +5,8 @@ import {paginatedResponse} from '../utils';
 export default function mockSubscribers(server) {
     server.get('/subscribers/', paginatedResponse('subscribers'));
 
-    server.post('/subscribers/', function ({subscribers}, request) {
-        let [attrs] = JSON.parse(request.requestBody).subscribers;
+    server.post('/subscribers/', function ({subscribers}) {
+        let attrs = this.normalizedRequestAttrs();
         let subscriber = subscribers.findBy({email: attrs.email});
 
         if (subscriber) {
@@ -18,8 +18,8 @@ export default function mockSubscribers(server) {
                 }]
             });
         } else {
-            attrs.created_at = new Date();
-            attrs.created_by = 0;
+            attrs.createdAt = new Date();
+            attrs.createdBy = 0;
 
             return subscribers.create(attrs);
         }
