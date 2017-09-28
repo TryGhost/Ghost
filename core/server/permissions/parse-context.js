@@ -15,6 +15,7 @@ module.exports = function parseContext(context) {
         public: true
     };
 
+    // NOTE: We use the `external` context for subscribers only at the moment.
     if (context && (context === 'external' || context.external)) {
         parsed.external = true;
         parsed.public = false;

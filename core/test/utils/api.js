@@ -1,44 +1,59 @@
-var _               = require('lodash'),
-    url             = require('url'),
-    moment          = require('moment'),
-    config          = require('../../server/config'),
-    schema          = require('../../server/data/schema').tables,
-    ApiRouteBase    = '/ghost/api/v0.1/',
-    host            = config.get('server').host,
-    port            = config.get('server').port,
-    protocol        = 'http://',
+var _ = require('lodash'),
+    url = require('url'),
+    moment = require('moment'),
+    config = require('../../server/config'),
+    schema = require('../../server/data/schema').tables,
+    ApiRouteBase = '/ghost/api/v0.1/',
+    host = config.get('server').host,
+    port = config.get('server').port,
+    protocol = 'http://',
     expectedProperties = {
         // API top level
-        posts:         ['posts', 'meta'],
-        tags:          ['tags', 'meta'],
-        users:         ['users', 'meta'],
-        settings:      ['settings', 'meta'],
-        subscribers:   ['subscribers', 'meta'],
-        roles:         ['roles'],
-        pagination:    ['page', 'limit', 'pages', 'total', 'next', 'prev'],
-        slugs:         ['slugs'],
-        slug:          ['slug'],
-        // object / model level
-        // Post API
-        post:        _(schema.posts).keys()
-            // does not return all formats by default
+        posts: ['posts', 'meta'],
+        tags: ['tags', 'meta'],
+        users: ['users', 'meta'],
+        settings: ['settings', 'meta'],
+        subscribers: ['subscribers', 'meta'],
+        roles: ['roles'],
+        pagination: ['page', 'limit', 'pages', 'total', 'next', 'prev'],
+        slugs: ['slugs'],
+        slug: ['slug'],
+        post: _(schema.posts)
+            .keys()
+            // by default we only return html
             .without('mobiledoc', 'amp', 'plaintext')
             // swaps author_id to author, and always returns computed properties: url, comment_id, primary_tag
             .without('author_id').concat('author', 'url', 'comment_id', 'primary_tag')
             .value(),
-        // User API always removes the password field
-        user:        _(schema.users).keys().without('password').without('ghost_auth_access_token').value(),
+        user: {
+            default: _(schema.users).keys().without('password').without('ghost_auth_access_token').value(),
+            public: _(schema.users)
+                .keys()
+                .without(
+                    'password',
+                    'email',
+                    'ghost_auth_access_token',
+                    'ghost_auth_id',
+                    'created_at',
+                    'created_by',
+                    'updated_at',
+                    'updated_by',
+                    'last_seen',
+                    'status'
+                )
+                .value()
+        },
         // Tag API swaps parent_id to parent
-        tag:         _(schema.tags).keys().without('parent_id').concat('parent').value(),
-        setting:     _.keys(schema.settings),
+        tag: _(schema.tags).keys().without('parent_id').concat('parent').value(),
+        setting: _.keys(schema.settings),
         subscriber: _.keys(schema.subscribers),
         accesstoken: _.keys(schema.accesstokens),
-        role:        _.keys(schema.roles),
-        permission:  _.keys(schema.permissions),
+        role: _.keys(schema.roles),
+        permission: _.keys(schema.permissions),
         notification: ['type', 'message', 'status', 'id', 'dismissible', 'location'],
-        theme:        ['name', 'package', 'active'],
-        themes:       ['themes'],
-        invites:      _(schema.invites).keys().without('token').value()
+        theme: ['name', 'package', 'active'],
+        themes: ['themes'],
+        invites: _(schema.invites).keys().without('token').value()
     };
 
 function getApiQuery(route) {
@@ -83,8 +98,11 @@ function checkResponseValue(jsonResponse, expectedProperties) {
     providedProperties.length.should.eql(expectedProperties.length);
 }
 
-function checkResponse(jsonResponse, objectType, additionalProperties, missingProperties, onlyProperties) {
-    var checkProperties = expectedProperties[objectType];
+// @TODO: support options pattern only, it's annoying to call checkResponse(null, null, null, something)
+function checkResponse(jsonResponse, objectType, additionalProperties, missingProperties, onlyProperties, options) {
+    options = options || {};
+
+    var checkProperties = options.public ? (expectedProperties[objectType].public || expectedProperties[objectType]) : (expectedProperties[objectType].default || expectedProperties[objectType]);
 
     checkProperties = onlyProperties ? onlyProperties : checkProperties;
     checkProperties = additionalProperties ? checkProperties.concat(additionalProperties) : checkProperties;
