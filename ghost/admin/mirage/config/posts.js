@@ -56,8 +56,8 @@ export default function mockPosts(server) {
     });
 
     // Handle embedded author in post
-    server.put('/posts/:id/', ({posts}, request) => {
-        let {posts: [post]} = JSON.parse(request.requestBody);
+    server.put('/posts/:id/', function ({posts}, request) {
+        let post = this.normalizedRequestAttrs();
         let {author} = post;
         delete post.author;
 

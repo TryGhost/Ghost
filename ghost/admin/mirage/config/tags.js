@@ -3,8 +3,8 @@ import {isBlank} from '@ember/utils';
 import {paginatedResponse} from '../utils';
 
 export default function mockTags(server) {
-    server.post('/tags/', function ({tags}, {requestBody}) {
-        let [attrs] = JSON.parse(requestBody).tags;
+    server.post('/tags/', function ({tags}) {
+        let attrs = this.normalizedRequestAttrs();
 
         if (isBlank(attrs.slug) && !isBlank(attrs.name)) {
             attrs.slug = dasherize(attrs.name);

@@ -567,7 +567,7 @@ describe('Acceptance: Editor', function() {
             ).to.match(/cannot be longer than 300/);
 
             expect(
-                server.db.posts[0].custom_excerpt,
+                server.db.posts.find(post.id).customExcerpt,
                 'saved excerpt after validation error'
             ).to.be.blank;
 
@@ -576,7 +576,7 @@ describe('Acceptance: Editor', function() {
             await triggerEvent('[data-test-field="custom-excerpt"]', 'blur');
 
             expect(
-                server.db.posts[0].custom_excerpt,
+                server.db.posts.find(post.id).customExcerpt,
                 'saved excerpt'
             ).to.equal('Testing excerpt');
 
@@ -596,7 +596,7 @@ describe('Acceptance: Editor', function() {
             ).to.match(/cannot be longer than 65535/);
 
             expect(
-                server.db.posts[0].codeinjection_head,
+                server.db.posts.find(post.id).codeinjectionHead,
                 'saved header injection after validation error'
             ).to.be.blank;
 
@@ -605,7 +605,7 @@ describe('Acceptance: Editor', function() {
             await triggerEvent(headerCM.getInputField(), 'blur');
 
             expect(
-                server.db.posts[0].codeinjection_head,
+                server.db.posts.find(post.id).codeinjectionHead,
                 'saved header injection'
             ).to.equal('<script src="http://example.com/inject-head.js"></script>');
 
@@ -620,7 +620,7 @@ describe('Acceptance: Editor', function() {
             ).to.match(/cannot be longer than 65535/);
 
             expect(
-                server.db.posts[0].codeinjection_foot,
+                server.db.posts.find(post.id).codeinjectionFoot,
                 'saved footer injection after validation error'
             ).to.be.blank;
 
@@ -629,7 +629,7 @@ describe('Acceptance: Editor', function() {
             await triggerEvent(footerCM.getInputField(), 'blur');
 
             expect(
-                server.db.posts[0].codeinjection_foot,
+                server.db.posts.find(post.id).codeinjectionFoot,
                 'saved footer injection'
             ).to.equal('<script src="http://example.com/inject-foot.js"></script>');
 
@@ -656,7 +656,7 @@ describe('Acceptance: Editor', function() {
             ).to.match(/cannot be longer than 300/);
 
             expect(
-                server.db.posts[0].twitter_title,
+                server.db.posts.find(post.id).twitterTitle,
                 'saved twitter title after validation error'
             ).to.be.blank;
 
@@ -666,7 +666,7 @@ describe('Acceptance: Editor', function() {
             await triggerEvent('[data-test-field="twitter-title"]', 'blur');
 
             expect(
-                server.db.posts[0].twitter_title,
+                server.db.posts.find(post.id).twitterTitle,
                 'saved twitter title'
             ).to.equal('Test Twitter Title');
 
@@ -680,7 +680,7 @@ describe('Acceptance: Editor', function() {
             ).to.match(/cannot be longer than 500/);
 
             expect(
-                server.db.posts[0].twitter_description,
+                server.db.posts.find(post.id).twitterDescription,
                 'saved twitter description after validation error'
             ).to.be.blank;
 
@@ -690,7 +690,7 @@ describe('Acceptance: Editor', function() {
             await triggerEvent('[data-test-field="twitter-description"]', 'blur');
 
             expect(
-                server.db.posts[0].twitter_description,
+                server.db.posts.find(post.id).twitterDescription,
                 'saved twitter description'
             ).to.equal('Test Twitter Description');
 
@@ -717,7 +717,7 @@ describe('Acceptance: Editor', function() {
             ).to.match(/cannot be longer than 300/);
 
             expect(
-                server.db.posts[0].og_title,
+                server.db.posts.find(post.id).ogTitle,
                 'saved facebook title after validation error'
             ).to.be.blank;
 
@@ -727,7 +727,7 @@ describe('Acceptance: Editor', function() {
             await triggerEvent('[data-test-field="og-title"]', 'blur');
 
             expect(
-                server.db.posts[0].og_title,
+                server.db.posts.find(post.id).ogTitle,
                 'saved facebook title'
             ).to.equal('Test Facebook Title');
 
@@ -741,7 +741,7 @@ describe('Acceptance: Editor', function() {
             ).to.match(/cannot be longer than 500/);
 
             expect(
-                server.db.posts[0].og_description,
+                server.db.posts.find(post.id).ogDescription,
                 'saved facebook description after validation error'
             ).to.be.blank;
 
@@ -751,7 +751,7 @@ describe('Acceptance: Editor', function() {
             await triggerEvent('[data-test-field="og-description"]', 'blur');
 
             expect(
-                server.db.posts[0].og_description,
+                server.db.posts.find(post.id).ogDescription,
                 'saved facebook description'
             ).to.equal('Test Facebook Description');
 
