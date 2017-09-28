@@ -171,12 +171,15 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * - ensure `created_by` never changes
      * - the bookshelf `timestamps` plugin sets `updated_at` automatically
      *
-     * Exceptions: importing data or internal context
+     * Exceptions:
+     *   - importing data
+     *   - internal context
+     *   - if no context
      */
     onUpdating: function onUpdating(newObj, attr, options) {
         this.set('updated_by', this.contextUser(options));
 
-        if (!this.isInternalContext(options) && !options.importing) {
+        if (options && options.context && !options.internal && !options.importing) {
             if (newObj.hasDateChanged('created_at', {beforeWrite: true})) {
                 newObj.set('created_at', this.previous('created_at'));
             }

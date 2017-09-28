@@ -21,23 +21,11 @@ module.exports = function (Bookshelf) {
             return !!(this._context && this._context.public);
         },
 
-        isInternalContext: function isInternalContext(options) {
-            if (options) {
-                return Model.isInternalContext(options);
-            }
-
+        isInternalContext: function isInternalContext() {
             return !!(this._context && this._context.internal);
         }
     },
     {
-        /**
-         * Static method to figure out if internal context.
-         * @returns {boolean}
-         */
-        isInternalContext: function isInternalContext(options) {
-            return options && options.context && options.context.internal;
-        },
-
         /**
          * ## Forge
          * Ensure that context gets set as part of the forge

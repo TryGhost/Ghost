@@ -123,7 +123,7 @@ Settings = ghostBookshelf.Model.extend({
                         saveData.value = item.value;
                     }
                     // Internal context can overwrite type (for fixture migrations)
-                    if (self.isInternalContext(options) && item.hasOwnProperty('type')) {
+                    if (options.context && options.context.internal && item.hasOwnProperty('type')) {
                         saveData.type = item.type;
                     }
                     // it's allowed to edit all attributes in case of importing/migrating
