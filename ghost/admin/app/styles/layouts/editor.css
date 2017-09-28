@@ -476,7 +476,7 @@
 .gh-editor .CodeMirror pre {
     padding: 0;
     color: color(var(--darkgrey) l(+5%));
-    font-family: “Consolas”, monaco, monospace;
+    font-family: "Consolas", monaco, monospace;
     font-size: 1.6rem;
 }
 
