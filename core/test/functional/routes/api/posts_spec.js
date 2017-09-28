@@ -360,6 +360,30 @@ describe('Post API', function () {
                     });
             });
 
+            it('can retrieve multiple post formats', function (done) {
+                request
+                    .get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?formats=plaintext,mobiledoc,amp'))
+                    .set('Authorization', 'Bearer ' + ownerAccessToken)
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        should.not.exist(res.headers['x-cache-invalidate']);
+                        var jsonResponse = res.body;
+                        should.exist(jsonResponse.posts);
+                        jsonResponse.posts.should.have.length(1);
+                        jsonResponse.posts[0].id.should.equal(testUtils.DataGenerator.Content.posts[0].id);
+
+                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['mobiledoc', 'plaintext', 'amp'], ['html']);
+
+                        done();
+                    });
+            });
+
             it('can retrieve a post by slug', function (done) {
                 request.get(testUtils.API.getApiQuery('posts/slug/welcome/'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
