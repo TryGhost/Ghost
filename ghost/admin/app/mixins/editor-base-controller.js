@@ -595,6 +595,7 @@ export default Mixin.create({
             let leaveTransition = this.get('leaveEditorTransition');
 
             if (!transition && this.get('showLeaveEditorModal')) {
+                this.set('leaveEditorTransition', null);
                 this.set('showLeaveEditorModal', false);
                 return;
             }
