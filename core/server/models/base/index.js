@@ -125,15 +125,28 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return validation.validateSchema(this.tableName, this.toJSON());
     },
 
+    /**
+     * Adding resources implies setting these properties on the server side
+     * - set `created_by` based on the context
+     * - set `updated_by` based on the context
+     * - the bookshelf `timestamps` plugin sets `created_at` and `updated_at`
+     *   - if plugin is disabled (e.g. import) we have a fallback condition
+     *
+     * Exceptions: internal context or importing
+     */
     onCreating: function onCreating(newObj, attr, options) {
         // id = 0 is still a valid value for external usage
         if (_.isUndefined(newObj.id) || _.isNull(newObj.id)) {
             newObj.setId();
         }
 
-        if (schema.tables[this.tableName].hasOwnProperty('created_by') && !this.get('created_by')) {
-            this.set('created_by', this.contextUser(options));
+        if (schema.tables[this.tableName].hasOwnProperty('created_by')) {
+            if (!options.importing || (options.importing && !this.get('created_by'))) {
+                this.set('created_by', this.contextUser(options));
+            }
         }
+
+        this.set('updated_by', this.contextUser(options));
 
         if (!newObj.get('created_at')) {
             newObj.set('created_at', new Date());
@@ -144,13 +157,37 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
     },
 
-    onSaving: function onSaving(newObj, attr, options) {
+    onSaving: function onSaving(newObj) {
         // Remove any properties which don't belong on the model
         this.attributes = this.pick(this.permittedAttributes());
         // Store the previous attributes so we can tell what was updated later
         this._updatedAttributes = newObj.previousAttributes();
+    },
 
+    /**
+     * Changing resources implies setting these properties on the server side
+     * - set `updated_by` based on the context
+     * - ensure `created_at` never changes
+     * - ensure `created_by` never changes
+     * - the bookshelf `timestamps` plugin sets `updated_at` automatically
+     *
+     * Exceptions:
+     *   - importing data
+     *   - internal context
+     *   - if no context
+     */
+    onUpdating: function onUpdating(newObj, attr, options) {
         this.set('updated_by', this.contextUser(options));
+
+        if (options && options.context && !options.internal && !options.importing) {
+            if (newObj.hasDateChanged('created_at', {beforeWrite: true})) {
+                newObj.set('created_at', this.previous('created_at'));
+            }
+
+            if (newObj.hasChanged('created_by')) {
+                newObj.set('created_by', this.previous('created_by'));
+            }
+        }
     },
 
     /**
