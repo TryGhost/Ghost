@@ -810,7 +810,7 @@ Post = ghostBookshelf.Model.extend({
             });
     }),
 
-    permissible: function permissible(postModelOrId, action, context, loadedPermissions, hasUserPermission, hasAppPermission) {
+    permissible: function permissible(postModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission) {
         var self = this,
             postModel = postModelOrId,
             origArgs;
@@ -830,8 +830,23 @@ Post = ghostBookshelf.Model.extend({
             });
         }
 
-        if (postModel) {
-            // If this is the author of the post, allow it.
+        function isChanging(attr) {
+            return unsafeAttrs[attr] && unsafeAttrs[attr] !== postModel.get(attr);
+        }
+
+        function actorIsAuthor(loadedPermissions) {
+            return loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Author'});
+        }
+
+        function isOwner() {
+            return unsafeAttrs.author_id && unsafeAttrs.author_id === context.user;
+        }
+
+        if (actorIsAuthor(loadedPermissions) && action === 'edit' && isChanging('author_id')) {
+            hasUserPermission = false;
+        } else if (actorIsAuthor(loadedPermissions) && action === 'add') {
+            hasUserPermission = isOwner();
+        } else if (postModel) {
             hasUserPermission = hasUserPermission || context.user === postModel.get('author_id');
         }
 

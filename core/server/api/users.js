@@ -7,7 +7,6 @@ var Promise = require('bluebird'),
     canThis = require('../permissions').canThis,
     models = require('../models'),
     errors = require('../errors'),
-    events = require('../events'),
     i18n = require('../i18n'),
     docName = 'users',
     // TODO: implement created_by, updated_by
@@ -60,11 +59,10 @@ users = {
      */
     read: function read(options) {
         var attrs = ['id', 'slug', 'status', 'email', 'role'],
-            tasks,
-            isMe = options.id === 'me';
+            tasks;
 
         // Special handling for /users/me request
-        if (isMe && options.context && options.context.user) {
+        if (options.id === 'me' && options.context && options.context.user) {
             options.id = options.context.user;
         }
 
@@ -75,7 +73,18 @@ users = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return models.User.findOne(options.data, _.omit(options, ['data']));
+            return models.User.findOne(options.data, _.omit(options, ['data']))
+                .then(function onModelResponse(model) {
+                    if (!model) {
+                        return Promise.reject(new errors.NotFoundError({
+                            message: i18n.t('errors.api.users.userNotFound')
+                        }));
+                    }
+
+                    return {
+                        users: [model.toJSON(options)]
+                    };
+                });
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -87,17 +96,7 @@ users = {
         ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
-        return pipeline(tasks, options).then(function formatResponse(result) {
-            if (result) {
-                if (isMe) {
-                    events.emit('read:users:me', result);
-                }
-
-                return {users: [result.toJSON(options)]};
-            }
-
-            return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.users.userNotFound')}));
-        });
+        return pipeline(tasks, options);
     },
 
     /**
@@ -198,7 +197,18 @@ users = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return models.User.edit(options.data.users[0], _.omit(options, ['data']));
+            return models.User.edit(options.data.users[0], _.omit(options, ['data']))
+                .then(function onModelResponse(model) {
+                    if (!model) {
+                        return Promise.reject(new errors.NotFoundError({
+                            message: i18n.t('errors.api.users.userNotFound')
+                        }));
+                    }
+
+                    return {
+                        users: [model.toJSON(options)]
+                    };
+                });
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -209,13 +219,7 @@ users = {
             doQuery
         ];
 
-        return pipeline(tasks, object, options).then(function formatResponse(result) {
-            if (result) {
-                return {users: [result.toJSON(options)]};
-            }
-
-            return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.users.userNotFound')}));
-        });
+        return pipeline(tasks, object, options);
     },
 
     /**
@@ -330,7 +334,11 @@ users = {
             return models.User.changePassword(
                 options.data.password[0],
                 _.omit(options, ['data'])
-            );
+            ).then(function onModelResponse() {
+                return Promise.resolve({
+                    password: [{message: i18n.t('notices.api.users.pwdChangedSuccessfully')}]
+                });
+            });
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -342,9 +350,7 @@ users = {
         ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
-        return pipeline(tasks, object, options).then(function formatResponse() {
-            return Promise.resolve({password: [{message: i18n.t('notices.api.users.pwdChangedSuccessfully')}]});
-        });
+        return pipeline(tasks, object, options);
     },
 
     /**
@@ -377,7 +383,14 @@ users = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return models.User.transferOwnership(options.data.owner[0], _.omit(options, ['data']));
+            return models.User.transferOwnership(options.data.owner[0], _.omit(options, ['data']))
+                .then(function onModelResponse(model) {
+                    // NOTE: model returns json object already
+                    // @TODO: why?
+                    return {
+                        users: model
+                    };
+                });
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -389,9 +402,7 @@ users = {
         ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
-        return pipeline(tasks, object, options).then(function formatResult(result) {
-            return Promise.resolve({users: result});
-        });
+        return pipeline(tasks, object, options);
     }
 };
 
