@@ -1,8 +1,9 @@
 var should = require('should'),
     supertest = require('supertest'),
-    testUtils = require('../../../utils'),
+    moment = require('moment'),
     _ = require('lodash'),
     ObjectId = require('bson-objectid'),
+    testUtils = require('../../../utils'),
     config = require('../../../../../core/server/config'),
     ghost = testUtils.startGhost,
     markdownToMobiledoc = testUtils.DataGenerator.markdownToMobiledoc,
@@ -703,6 +704,47 @@ describe('Post API', function () {
                             });
                     });
             });
+
+            it('check which fields can be added', function (done) {
+                var newPost = {
+                    status: 'draft',
+                    title: 'title',
+                    mobiledoc: markdownToMobiledoc('my post'),
+                    created_at: moment().subtract(2, 'days').toDate(),
+                    updated_at: moment().subtract(2, 'days').toDate(),
+                    created_by: ObjectId.generate(),
+                    updated_by: ObjectId.generate()
+                };
+
+                request
+                    .post(testUtils.API.getApiQuery('posts/'))
+                    .set('Authorization', 'Bearer ' + ownerAccessToken)
+                    .send({posts: [newPost]})
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(201)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        var response = res.body;
+                        res.headers.location.should.equal('/ghost/api/v0.1/posts/' + response.posts[0].id + '/?status=draft');
+                        should.exist(response.posts);
+                        response.posts.length.should.be.above(0);
+
+                        response.posts[0].title.should.eql(newPost.title);
+                        response.posts[0].status.should.eql(newPost.status);
+
+                        response.posts[0].created_at.should.not.eql(newPost.created_at.toISOString());
+                        response.posts[0].updated_at.should.not.eql(newPost.updated_at.toISOString());
+                        response.posts[0].updated_by.should.not.eql(newPost.updated_by);
+                        response.posts[0].created_by.should.not.eql(newPost.created_by);
+
+                        testUtils.API.checkResponse(response.posts[0], 'post');
+                        done();
+                    });
+            });
         });
 
         // ## edit
@@ -1096,6 +1138,55 @@ describe('Post API', function () {
                                 jsonResponse = res.body;
                                 should.exist(jsonResponse.errors);
                                 testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
+                                done();
+                            });
+                    });
+            });
+
+            it('check which fields can be modified', function (done) {
+                var existingPostData, modifiedPostData;
+
+                request
+                    .get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/'))
+                    .set('Authorization', 'Bearer ' + ownerAccessToken)
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        var jsonResponse = res.body;
+                        should.exist(jsonResponse.posts[0]);
+                        existingPostData = _.cloneDeep(jsonResponse.posts[0]);
+                        modifiedPostData = _.cloneDeep(jsonResponse);
+
+                        modifiedPostData.posts[0].created_by = ObjectId.generate();
+                        modifiedPostData.posts[0].updated_by = ObjectId.generate();
+                        modifiedPostData.posts[0].created_at = moment().add(2, 'days').format();
+                        modifiedPostData.posts[0].updated_at = moment().add(2, 'days').format();
+
+                        request
+                            .put(testUtils.API.getApiQuery('posts/' + modifiedPostData.posts[0].id + '/'))
+                            .set('Authorization', 'Bearer ' + ownerAccessToken)
+                            .send(modifiedPostData)
+                            .expect('Content-Type', /json/)
+                            .expect('Cache-Control', testUtils.cacheRules.private)
+                            .expect(200)
+                            .end(function (err, res) {
+                                if (err) {
+                                    return done(err);
+                                }
+
+                                var jsonResponse = res.body;
+                                should.exist(jsonResponse.posts[0]);
+
+                                // We expect that the changed properties aren't changed, they are still the same than before.
+                                jsonResponse.posts[0].created_by.should.eql(existingPostData.created_by);
+                                jsonResponse.posts[0].updated_by.should.eql(existingPostData.updated_by);
+                                jsonResponse.posts[0].created_at.should.eql(existingPostData.created_at);
+                                // `updated_at` is automatically set, but it's not the date we send to override.
+                                jsonResponse.posts[0].updated_at.should.not.eql(modifiedPostData.updated_at);
                                 done();
                             });
                     });
