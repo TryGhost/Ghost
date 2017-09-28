@@ -20,7 +20,7 @@ var supportedLocales = ['en'],
     // Language tags in HTML and XML
     // https://www.w3.org/International/articles/language-tags/
     //
-    // The corresponding translation files should be at e.g. content/translations/es.json
+    // The corresponding translation files should be at e.g. content/locales/es.json
     // and content/themes/mytheme/assets/locales/es.json, etc.
     currentLocale,
     activeTheme,
@@ -147,13 +147,18 @@ I18n = {
         // and English default is used for core; settings are available shortly after, allowing
         // full internationalization of core and theme.
 
-        var blosTheme, hasBuiltInLocaleData, IntlPolyfill;
+        var blosTheme, hasBuiltInLocaleData, IntlPolyfill, backendTranslations;
 
         if (blos === undefined) {
             // If not in memory, load translations for core and theme.
             i18nCore = true;
             i18nTheme = true;
         }
+
+        // Switch to enable/disable translations of back-end messages from core .js files.
+        // - true: enabled; optional files like content/locales/es.json, etc. are used when available.
+        // - false: disabled; only the default English file core/server/translations/en.json is used.
+        backendTranslations = true;
 
         currentLocale = settingsCache.get('default_locale') || 'en';
         activeTheme = settingsCache.get('active_theme') || '';
@@ -163,15 +168,15 @@ I18n = {
         // to i18n.init() doesn't read again the default English file for core if already in memory).
         if (i18nCore) {
             // Reading translation file for core .js files.
-            if (currentLocale === 'en') {
+            if (currentLocale === 'en' || !backendTranslations) {
                 blos = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', 'en.json'));
             } else {
                 // Preventing missing file.
                 try {
-                    blos = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'content', 'translations', currentLocale + '.json'));
+                    blos = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'content', 'locales', currentLocale + '.json'));
                 } catch (err) {
                     if (err.code === 'ENOENT') {
-                        logging.warn('File content/translations/' + currentLocale + '.json not found! Falling back to default core/server/translations/en.json.');
+                        logging.warn('File content/locales/' + currentLocale + '.json not found! Falling back to default core/server/translations/en.json.');
                         blos = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', 'en.json'));
                     } else {
                         throw err;
