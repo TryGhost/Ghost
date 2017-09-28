@@ -6,7 +6,7 @@
 
 **Ghost opens to the whole world!**
 
-Now Ghost's frontend and themes, that is to say the public side visible to site visitors, are fully translatable. Server side messages are also optionally translatable.
+Now Ghost's front-end and themes, that is to say the public side visible to site visitors, are fully translatable.
 
 And it's as easy as writing, using only English and any other language you wish. You don't need to be a programmer: anyone can do it, and it takes very little time.
 
@@ -23,19 +23,17 @@ As a summary, depending on the different situations, this is how to do it.
 
 You need:
 - a translatable theme
-- and translation files 
+- a translation file
+- and copies of three core templates
  
-The translation files for your target language can be already included, or maybe not yet, by the theme.
+The translation file for your target language can be already included, or maybe not yet, by the theme.
 
-For example, for Spanish (language tag "`es`"), and an example theme that we can call "`mytheme`", the one or two **translation files** are:
+For example, for Spanish (language tag "`es`"), and an example theme that we can call "`mytheme`", the **translation file** is:
 
 - In the theme folder *content/themes/mytheme/assets/locales* (each theme's files):
   - *es.json* - to translate the theme's *.hbs* templates
 
-- In the content folder *content/translations* (common files for Ghost core and all themes):
-  - *es.json* - optional file for backend server side messages from *.js* files, usually for admins
-
-Also, to translate frontend core *.hbs* templates, shared by all themes, three **core templates** should be overridden by copies included within the theme:
+Also, to translate front-end core *.hbs* templates, shared by all themes, three **core templates** should be overridden by copies included within the theme:
 
 - In the theme folder *content/themes/mytheme*:
   - *subscribe.hbs* - copy of *core/server/apps/subscribers/lib/views/subscribe.hbs*
@@ -62,25 +60,22 @@ See the section below: [*How to Make Any Theme Translatable*](#how-to-make-any-t
 
 ## How to Add Any Language
 
-### 1. Copy the default English files
+### 1. Copy the default English file
 
-They are one of two files, that you can find in these folders:
+If the theme is already translatable, you can likely find the default file in this folder:
 
 - *content/themes/mytheme/assets/locales*
-  - *en.json* - copy for frontend and theme translation
+  - *en.json* - copy it for front-end and theme translation
 
-- *core/server/translations*
-  - *en.json* - copy optionally, for server side messages
-
-### 2. Rename the language files
+### 2. Rename the language file
 
 Just change the default `en` language tag to the desired language.
 
 ### 3. Translate the included sentences
 
-Edit the files you are interested in with any plain text editor. Usually they manage the international `UTF-8` encoding well.
+Edit the renamed translation file with any plain text editor. Usually they manage the international `UTF-8` encoding well. And place the file in the *assets/locales* folder of your theme.
 
-An example with [optional features](#optional-advanced-features) (see the related section below) such as placeholders for flexibility, is the complete default English file *en.json* for [WorldCasper2 &#x27B6;](https://github.com/juan-g/WorldCasper2/tree/i18n-translatable-frontend), translatable clone of the default Casper 2.0 theme:
+An example with [optional features](#optional-advanced-features) (see the related section below) such as placeholders for flexibility, is the complete default English file *en.json* for [WorldCasper2 &#x27B6;](https://github.com/juan-g/WorldCasper2/tree/i18n-translatable-frontend), translatable clone of the default Casper 2.x theme:
 
 ```
 {
@@ -158,7 +153,7 @@ Optionally, any translation key can be used on the left and on the templates, bu
 
 Dates, with month names, are automatically translated. You don't need to include them in the translation files. 
 
-For a translatable clone of the Casper 1.4 theme (versions 1.4 and 2.0 have different designs), see [WorldCasper1 &#x27B6;](https://github.com/juan-g/WorldCasper1/tree/i18n-translatable-frontend).
+For a translatable clone of the Casper 1.4 theme (versions 1.4 and 2.x have different designs), see [WorldCasper1 &#x27B6;](https://github.com/juan-g/WorldCasper1/tree/i18n-translatable-frontend).
 
 ## How to Make Any Theme Translatable
 
@@ -172,7 +167,7 @@ For example, in *.hbs* theme templates:
 
 ### 1. Look for text on the theme's .hbs templates
 
-They contain the text to translate, that is the text visible to site visitors. This includes the copies overriding three core frontend templates.
+They contain the text to translate, that is the text visible to site visitors. This also includes the copies overriding three core front-end templates.
 
 ### 2. Wrap it in {{t}} translation helpers
 
@@ -191,7 +186,7 @@ Although the English version will work for themes even without default English f
 
 If you have the translation files of another Ghost theme, surely part of the texts will be common, and you can copy them and their translations.
 
-To easily start a new translation file, copy the following into it, which includes the texts from overridden core frontend templates, common for all themes:
+To easily start a first translation file, copy the following into it, which includes the texts from overridden core front-end templates, common for all themes:
 
 ```
 {
@@ -332,6 +327,24 @@ several `(t)` nested translation helpers (instead of normal `{{t}}` helpers) can
 ```
 6 artículos
 ```
+
+### Translation of back-end messages
+
+Server side messages are also optionally translatable.
+
+For example, for Spanish (language tag "`es`"), and an example theme that we can call "`mytheme`", the translation file is:
+
+- In the content folder *content/locales* (common files for Ghost core and all themes):
+  - *es.json* - optional file for back-end server side messages from *.js* files, usually for admins
+
+To add any language, copy the default English file, that you can find in this folder:
+
+- *core/server/translations*
+  - *en.json* - copy optionally, for server side messages
+
+Then, rename the language file, just changing the default `en` language tag to the desired language.
+
+Finally, translate the included sentences, and place the file in the *content/locales* folder.
 
 ### CSS content text override
 
