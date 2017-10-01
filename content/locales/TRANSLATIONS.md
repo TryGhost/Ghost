@@ -23,8 +23,9 @@ As a summary, depending on the different situations, this is how to do it.
 
 You need:
 - a translatable theme
-- a translation file
-- and copies of three core templates
+- and a translation file
+
+A theme is translatable when its *.hbs* templates have all their visible English texts wrapped in `{{t}}` translation helpers. Translatable themes also include copies of three overridden core templates, as explained in [*How to Make Any Theme Translatable*](#how-to-make-any-theme-translatable).
  
 The translation file for your target language can be already included, or maybe not yet, by the theme.
 
@@ -32,19 +33,10 @@ For example, for Spanish (language tag "`es`"), and an example theme that we can
 
 - In the theme folder *content/themes/mytheme/assets/locales* (each theme's files):
   - *es.json* - to translate the theme's *.hbs* templates
-
-Also, to translate front-end core *.hbs* templates, shared by all themes, three **core templates** should be overridden by copies included within the theme:
-
-- In the theme folder *content/themes/mytheme*:
-  - *subscribe.hbs* - copy of *core/server/apps/subscribers/lib/views/subscribe.hbs*
-
-- In the theme folder *content/themes/mytheme/partials*:
-  - *pagination.hbs* - copy of *core/server/helpers/tpl/pagination.hbs*
-  - *subscribe_form.hbs* - copy of *core/server/helpers/tpl/subscribe_form.hbs*
  
 ### If you choose a translatable theme that includes your target language
 
-Simply verify that the files are in place, and then activate the new language:
+Simply verify that the *.json* translation file is in place, and then activate the new language:
 
 **Ghost's Settings > General > Language**
 
@@ -147,9 +139,9 @@ And edited to translate for example into Spanish as *es.json*:
 }
 ```
 
-As you can see, it's just plain English on the left, and the language you choose on the right, without any code involved.
+As you can see, it's usually just plain English on the left, and the language you choose on the right. Any code is optional and not required.
 
-Optionally, any translation key can be used on the left and on the templates, but readable English is advisable for simplicity and to take advantage of fallback to the text inside the `{{t}}` translation helper when no translation is available.
+For example, optionally, any translation key can be used on the left and on the templates, but readable English is advisable for simplicity and to take advantage of fallback to the text inside the `{{t}}` translation helper when no translation is available.
 
 Dates, with month names, are automatically translated. You don't need to include them in the translation files. 
 
@@ -165,15 +157,26 @@ For example, in *.hbs* theme templates:
 {{t "Get the latest posts delivered right to your inbox"}}
 ```
 
-### 1. Look for text on the theme's .hbs templates
+### 1. Copy three core templates into the theme
 
-They contain the text to translate, that is the text visible to site visitors. This also includes the copies overriding three core front-end templates.
+To translate front-end core *.hbs* templates, shared by all themes, three core templates should be overridden by copies included within the theme:
 
-### 2. Wrap it in {{t}} translation helpers
+- In the theme folder *content/themes/mytheme*:
+  - *subscribe.hbs* - copy of *core/server/apps/subscribers/lib/views/subscribe.hbs*
+
+- In the theme folder *content/themes/mytheme/partials*:
+  - *pagination.hbs* - copy of *core/server/helpers/tpl/pagination.hbs*
+  - *subscribe_form.hbs* - copy of *core/server/helpers/tpl/subscribe_form.hbs*
+
+### 2. Look for text on the theme's .hbs templates
+
+They contain the English text to translate, that is the text visible to site visitors. This also includes the copies overriding three core front-end templates.
+
+### 3. Wrap it in {{t}} translation helpers
 
 Just copy and paste `{{t "` to the left, and `"}}` to the rigth.
 
-### 3. Copy and paste each text into the translation file
+### 4. Copy and paste each text into the translation file
 
 Do all these three steps for each text, before going to the next, to remember to add all of them to the translation file.
 
@@ -218,7 +221,7 @@ To easily start a first translation file, copy the following into it, which incl
 
 For most texts, that's all and your theme is translatable now, although you can also use [optional features](#optional-advanced-features) (see related section below).
 
-### 4. Share it with the theme maintainers
+### 5. Share it with the theme maintainers
 
 If you send the adapted theme and language files to the maintainers, there is a good chance that they will keep the translatability for the next versions.
 
