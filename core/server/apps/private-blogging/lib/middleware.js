@@ -57,6 +57,13 @@ privateBlogging = {
             });
         }
 
+        // CASE: any route which ends with /:hash/rss is allowed to pass without a session.
+        // e.g. useful for private RSS feed urls
+        if (req.path.match(new RegExp('/' + settingsCache.get('global_hash') + '/rss/')) !== -1) {
+            req.url = req.url.replace(settingsCache.get('global_hash') + '/', '');
+            return next();
+        }
+
         privateBlogging.authenticatePrivateSession(req, res, next);
     },
 
