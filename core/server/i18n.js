@@ -5,6 +5,8 @@ var supportedLocales    = ['en'],
     fs                  = require('fs'),
     chalk               = require('chalk'),
     MessageFormat       = require('intl-messageformat'),
+    logging             = require('./logging'),
+    errors              = require('./errors'),
 
     // TODO: fetch this dynamically based on overall blog settings (`key = "default_locale"`) in the `settings` table
     currentLocale       = 'en',
@@ -68,12 +70,11 @@ I18n = {
             matchingString = matchingString[key] || {};
         });
 
-        if (_.isEqual(matchingString, {})) {
-            console.error('Unable to find matching path [' + msgPath + '] in locale file.\n');
-            matchingString = 'i18n error: path "' + msgPath + '" was not found.';
-        } else if (_.isObject(matchingString)) {
-            console.error('Path [' + msgPath + '] is too broad.\n');
-            matchingString = 'i18n error: path "' + msgPath + '" is too broad.';
+        if (_.isObject(matchingString) || _.isEqual(matchingString, {})) {
+            logging.error(new errors.IncorrectUsageError({
+                message: `i18n error: path "${msgPath}" was not found`
+            }));
+            matchingString = blos.errors.errors.anErrorOccurred;
         }
 
         return matchingString;
