@@ -71,7 +71,7 @@ I18n = {
         if (_.isEqual(matchingString, {})) {
             console.error('Unable to find matching path [' + msgPath + '] in locale file.\n');
             matchingString = 'i18n error: path "' + msgPath + '" was not found.';
-        } else if(_.isObject(matchingString)) {
+        } else if (_.isObject(matchingString)) {
             console.error('Path [' + msgPath + '] is too broad.\n');
             matchingString = 'i18n error: path "' + msgPath + '" is too broad.';
         }
