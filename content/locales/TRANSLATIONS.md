@@ -40,7 +40,7 @@ Simply verify that the *.json* translation file is in place, and then activate t
 
 **Ghost's Settings > General > Language**
 
-Just enter the [language tag &#x27B6;](https://www.w3schools.com/tags/ref_language_codes.asp) of the files to use (e.g.: `es` for Spanish, `fr` for French, `zh` for Chinese, `ja` for Japanese, `en-US` for American English, etc.) and click on the *Save settings* button. That's all folks!
+Just enter the [language/locale tag &#x27B6;](https://www.w3schools.com/tags/ref_language_codes.asp) of the files to use (e.g.: `es` for Spanish, `fr` for French, `zh` for Chinese, `ja` for Japanese, `en-US` for American English, etc.) and click on the *Save settings* button. That's all folks!
 
 ### If the theme is already translatable, but does not include the language
 
@@ -221,7 +221,18 @@ To easily start a first translation file, copy the following into it, which incl
 
 For most texts, that's all and your theme is translatable now, although you can also use [optional features](#optional-advanced-features) (see related section below).
 
-### 5. Share it with the theme maintainers
+### 5. Declare language in HTML
+
+It's advisable to add the HTML `lang` attribute to the `<html>` tag at the start of the theme's *default.hbs* template, using Ghost's `{{lang}}` helper:
+
+```
+<html lang="{{lang}}">
+
+```
+
+In this way, when setting a language on the admin panel, `{{lang}}` will be automatically replaced on the site with the corresponding language/locale tag (e.g. `en`, `es`, `fr`, `zh`, `ja`, `en-US`, etc.).
+
+### 6. Share the translatable theme with the theme maintainers
 
 If you send the adapted theme and language files to the maintainers, there is a good chance that they will keep the translatability for the next versions.
 
