@@ -111,8 +111,11 @@ function createIcon(options, enableTooltips, shortcuts) {
 	if(options.title && enableTooltips) {
 		el.title = createTootlip(options.title, options.action, shortcuts);
 
-		if(mac) {
+		if(mac && !options.useCtrlOnMac) {
 			el.title = el.title.replace("Ctrl", "⌘");
+		}
+
+		if(mac) {
 			el.title = el.title.replace("Alt", "⌥");
 		}
 	}
