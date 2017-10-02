@@ -4,6 +4,7 @@ var fs = require('fs'),
     path = require('path'),
     config = require('../../../config'),
     utils = require('../../../utils'),
+    errors = require('../../../errors'),
     i18n = require('../../../i18n'),
     settingsCache = require('../../../settings/cache'),
     privateRoute = '/' + config.get('routeKeywords').private + '/',
@@ -57,14 +58,22 @@ privateBlogging = {
             });
         }
 
-        // CASE: any route which ends with /:hash/rss is allowed to pass without a session.
-        // e.g. useful for private RSS feed urls
+        // CASE: Allow private RSS feed urls.
         if (req.path.match(new RegExp('/' + settingsCache.get('global_hash') + '/rss/')) !== -1) {
             req.url = req.url.replace(settingsCache.get('global_hash') + '/', '');
             return next();
         }
 
-        privateBlogging.authenticatePrivateSession(req, res, next);
+        privateBlogging.authenticatePrivateSession(req, res, function onSessionVerified() {
+            // CASE: RSS is disabled for private blogging e.g. they create overhead
+            if (req.path.lastIndexOf('/rss/', 0) === 0 || req.path.lastIndexOf('/rss/') === req.url.length - 5) {
+                return next(new errors.NotFoundError({
+                    message: i18n.t('errors.errors.pageNotFound')
+                }));
+            }
+
+            next();
+        });
     },
 
     authenticatePrivateSession: function authenticatePrivateSession(req, res, next) {
