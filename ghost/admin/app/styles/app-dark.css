@@ -333,3 +333,7 @@ input,
 .CodeMirror .cm-spell-error:not(.cm-url):not(.cm-comment):not(.cm-tag):not(.cm-word) {
     background: rgba(255, 0, 0, .30);
 }
+
+.CodeMirror .CodeMirror-code .cm-string {
+    color: color(#183691 l(+25%));
+}
