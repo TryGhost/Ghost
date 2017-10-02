@@ -45,11 +45,20 @@ utils = {
      * @return {String}
      * @api private
      */
-    uid: function (len) {
+    uid: function (len, options) {
+        options = options || {};
+
         var buf = [],
             chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
-            charlen = chars.length,
+            charlen,
             i;
+
+        // lowercase alphanumeric
+        if (options.lca) {
+            chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+        }
+
+        charlen = chars.length;
 
         for (i = 0; i < len; i = i + 1) {
             buf.push(chars[getRandomInt(0, charlen - 1)]);

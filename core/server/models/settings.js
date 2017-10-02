@@ -6,6 +6,7 @@ var Settings,
     errors         = require('../errors'),
     events         = require('../events'),
     i18n           = require('../i18n'),
+    globalUtils    = require('../utils'),
     validation     = require('../data/validation'),
 
     internalContext = {context: {internal: true}},
@@ -19,7 +20,8 @@ function parseDefaultSettings() {
     var defaultSettingsInCategories = require('../data/schema/').defaultSettings,
         defaultSettingsFlattened = {},
         dynamicDefault = {
-            db_hash: uuid.v4()
+            db_hash: uuid.v4(),
+            global_hash: globalUtils.uid(15, {lca: true})
         };
 
     _.each(defaultSettingsInCategories, function each(settings, categoryName) {
