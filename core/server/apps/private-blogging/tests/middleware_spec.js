@@ -259,19 +259,50 @@ describe('Private Blogging', function () {
                     (next.firstCall.args[0] instanceof errors.NotFoundError).should.eql(true);
                 });
 
-                it('filterPrivateRoutes should 404 for all rss requests', function () {
-                    settingsStub.withArgs('public_hash').returns('777aaa');
+                it('filterPrivateRoutes: allow private rss feed', function () {
+                    settingsStub.withArgs('global_hash').returns('777aaa');
 
                     var salt = Date.now().toString();
                     req.url = req.originalUrl = req.path = '/777aaa/rss/';
                     req.params = {};
 
                     res.isPrivateBlog = true;
-                    res.render = sandbox.spy();
                     res.locals = {};
 
                     privateBlogging.filterPrivateRoutes(req, res, next);
-                    res.render.called.should.be.true();
+                    next.called.should.be.true();
+                    req.url.should.eql('/rss/');
+                });
+
+                it('filterPrivateRoutes: allow private rss feed e.g. tags', function () {
+                    settingsStub.withArgs('global_hash').returns('777aaa');
+
+                    var salt = Date.now().toString();
+                    req.url = req.originalUrl = req.path = '/tag/getting-started/777aaa/rss/';
+                    req.params = {};
+
+                    res.isPrivateBlog = true;
+                    res.locals = {};
+
+                    privateBlogging.filterPrivateRoutes(req, res, next);
+                    next.called.should.be.true();
+                    req.url.should.eql('/tag/getting-started/rss/');
+                });
+
+                it('[failure] filterPrivateRoutes: allow private rss feed e.g. tags', function () {
+                    settingsStub.withArgs('global_hash').returns('777aaa');
+
+                    var salt = Date.now().toString();
+                    req.url = req.originalUrl = req.path = '/tag/getting-started/rss/';
+                    req.params = {};
+
+                    res.isPrivateBlog = true;
+                    res.locals = {};
+
+                    res.redirect = sandbox.spy();
+
+                    privateBlogging.filterPrivateRoutes(req, res, next);
+                    res.redirect.called.should.be.true();
                 });
             });
         });

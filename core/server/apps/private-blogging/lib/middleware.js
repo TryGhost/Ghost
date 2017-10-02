@@ -37,7 +37,7 @@ privateBlogging = {
         })(req, res, next);
     },
 
-    filterPrivateRoutes: function filterPrivateRoutes(req, res, next) {
+    filterPrivateRoutes: function excludePrivateRoutes(req, res, next) {
         if (res.isAdmin || !res.isPrivateBlog || req.url.lastIndexOf(privateRoute, 0) === 0) {
             return next();
         }
@@ -59,11 +59,12 @@ privateBlogging = {
         }
 
         // CASE: Allow private RSS feed urls.
-        if (req.path.match(new RegExp('/' + settingsCache.get('global_hash') + '/rss/')) !== -1) {
+        if (req.path.indexOf(settingsCache.get('global_hash') + '/rss') !== -1) {
             req.url = req.url.replace(settingsCache.get('global_hash') + '/', '');
             return next();
         }
 
+        // NOTE: Redirect to /private if the session does not exist.
         privateBlogging.authenticatePrivateSession(req, res, function onSessionVerified() {
             // CASE: RSS is disabled for private blogging e.g. they create overhead
             if (req.path.lastIndexOf('/rss/', 0) === 0 || req.path.lastIndexOf('/rss/') === req.url.length - 5) {
