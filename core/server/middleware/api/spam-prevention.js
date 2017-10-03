@@ -26,7 +26,7 @@ var moment = require('moment'),
     spamConfigKeys = ['freeRetries', 'minWait', 'maxWait', 'lifetime'];
 
 handleStoreError = function handleStoreError(err) {
-    var customError = new errors.NoPermissionError({
+    var customError = new errors.InternalServerError({
         message: 'Unknown error',
         err: err.parent ? err.parent : err
     });
@@ -36,7 +36,6 @@ handleStoreError = function handleStoreError(err) {
     // we are using reset as synchronous call, so we have to log the error if it occurs
     // there is no way to try/catch, because the reset operation happens asynchronous
     if (!err.next) {
-        err.level = 'critical';
         logging.error(err);
         return;
     }
