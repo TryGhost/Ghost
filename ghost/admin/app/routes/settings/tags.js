@@ -7,14 +7,6 @@ import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 export default AuthenticatedRoute.extend(CurrentUserSettings, ShortcutsRoute, {
     titleToken: 'Settings - Tags',
 
-    perPage: 30,
-    perPageParam: 'limit',
-    totalPagesParam: 'meta.pagination.pages',
-
-    queryParams: {
-        include: 'count.posts'
-    },
-
     shortcuts: {
         'up, k': 'moveUp',
         'down, j': 'moveDown',
