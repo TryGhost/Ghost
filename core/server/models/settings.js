@@ -2,6 +2,7 @@ var Settings,
     Promise        = require('bluebird'),
     _              = require('lodash'),
     uuid           = require('uuid'),
+    crypto         = require('crypto'),
     ghostBookshelf = require('./base'),
     errors         = require('../errors'),
     events         = require('../events'),
@@ -21,7 +22,7 @@ function parseDefaultSettings() {
         defaultSettingsFlattened = {},
         dynamicDefault = {
             db_hash: uuid.v4(),
-            global_hash: globalUtils.uid(15, {lca: true})
+            global_hash: crypto.randomBytes(20).toString('hex')
         };
 
     _.each(defaultSettingsInCategories, function each(settings, categoryName) {
