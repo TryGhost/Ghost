@@ -1,47 +1,39 @@
-var _           = require('lodash'),
-    fs          = require('fs'),
-    session     = require('cookie-session'),
-    crypto      = require('crypto'),
-    path        = require('path'),
-    Promise     = require('bluebird'),
-    config      = require('../../../config'),
-    api         = require('../../../api'),
-    utils       = require('../../../utils'),
-    i18n        = require('../../../i18n'),
+var fs = require('fs'),
+    session = require('cookie-session'),
+    crypto = require('crypto'),
+    path = require('path'),
+    config = require('../../../config'),
+    utils = require('../../../utils'),
+    i18n = require('../../../i18n'),
+    settingsCache = require('../../../settings/cache'),
     privateRoute = '/' + config.get('routeKeywords').private + '/',
     privateBlogging;
 
 function verifySessionHash(salt, hash) {
     if (!salt || !hash) {
-        return Promise.resolve(false);
+        return false;
     }
 
-    return api.settings.read({context: {internal: true}, key: 'password'}).then(function then(response) {
-        var hasher = crypto.createHash('sha256');
-
-        hasher.update(response.settings[0].value + salt, 'utf8');
-
-        return hasher.digest('hex') === hash;
-    });
+    var hasher = crypto.createHash('sha256');
+    hasher.update(settingsCache.get('password') + salt, 'utf8');
+    return hasher.digest('hex') === hash;
 }
 
 privateBlogging = {
     checkIsPrivate: function checkIsPrivate(req, res, next) {
-        return api.settings.read({context: {internal: true}, key: 'is_private'}).then(function then(response) {
-            var pass = response.settings[0];
+        var isPrivateBlog = settingsCache.get('is_private');
 
-            if (_.isEmpty(pass.value) || pass.value === 'false') {
-                res.isPrivateBlog = false;
-                return next();
-            }
+        if (!isPrivateBlog) {
+            res.isPrivateBlog = false;
+            return next();
+        }
 
-            res.isPrivateBlog = true;
+        res.isPrivateBlog = true;
 
-            return session({
-                maxAge: utils.ONE_MONTH_MS,
-                signed: false
-            })(req, res, next);
-        });
+        return session({
+            maxAge: utils.ONE_MONTH_MS,
+            signed: false
+        })(req, res, next);
     },
 
     filterPrivateRoutes: function filterPrivateRoutes(req, res, next) {
@@ -50,7 +42,7 @@ privateBlogging = {
         }
 
         if (req.url.lastIndexOf('/robots.txt', 0) === 0) {
-            fs.readFile(path.resolve(__dirname, '../', 'robots.txt'), function readFile(err, buf) {
+            return fs.readFile(path.resolve(__dirname, '../', 'robots.txt'), function readFile(err, buf) {
                 if (err) {
                     return next(err);
                 }
@@ -63,25 +55,24 @@ privateBlogging = {
 
                 res.end(buf);
             });
-        } else {
-            return privateBlogging.authenticatePrivateSession(req, res, next);
         }
+
+        privateBlogging.authenticatePrivateSession(req, res, next);
     },
 
     authenticatePrivateSession: function authenticatePrivateSession(req, res, next) {
         var hash = req.session.token || '',
             salt = req.session.salt || '',
+            isVerified = verifySessionHash(salt, hash),
             url;
 
-        return verifySessionHash(salt, hash).then(function then(isVerified) {
-            if (isVerified) {
-                return next();
-            } else {
-                url = utils.url.urlFor({relativeUrl: privateRoute});
-                url += req.url === '/' ? '' : '?r=' + encodeURIComponent(req.url);
-                return res.redirect(url);
-            }
-        });
+        if (isVerified) {
+            return next();
+        } else {
+            url = utils.url.urlFor({relativeUrl: privateRoute});
+            url += req.url === '/' ? '' : '?r=' + encodeURIComponent(req.url);
+            return res.redirect(url);
+        }
     },
 
     // This is here so a call to /private/ after a session is verified will redirect to home;
@@ -91,16 +82,15 @@ privateBlogging = {
         }
 
         var hash = req.session.token || '',
-            salt = req.session.salt || '';
+            salt = req.session.salt || '',
+            isVerified = verifySessionHash(salt, hash);
 
-        return verifySessionHash(salt, hash).then(function then(isVerified) {
-            if (isVerified) {
-                // redirect to home if user is already authenticated
-                return res.redirect(utils.url.urlFor('home', true));
-            } else {
-                return next();
-            }
-        });
+        if (isVerified) {
+            // redirect to home if user is already authenticated
+            return res.redirect(utils.url.urlFor('home', true));
+        } else {
+            return next();
+        }
     },
 
     authenticateProtection: function authenticateProtection(req, res, next) {
@@ -109,27 +99,24 @@ privateBlogging = {
             return next();
         }
 
-        var bodyPass = req.body.password;
+        var bodyPass = req.body.password,
+            pass = settingsCache.get('password'),
+            hasher = crypto.createHash('sha256'),
+            salt = Date.now().toString(),
+            forward = req.query && req.query.r ? req.query.r : '/';
 
-        return api.settings.read({context: {internal: true}, key: 'password'}).then(function then(response) {
-            var pass = response.settings[0],
-                hasher = crypto.createHash('sha256'),
-                salt = Date.now().toString(),
-                forward = req.query && req.query.r ? req.query.r : '/';
+        if (pass === bodyPass) {
+            hasher.update(bodyPass + salt, 'utf8');
+            req.session.token = hasher.digest('hex');
+            req.session.salt = salt;
 
-            if (pass.value === bodyPass) {
-                hasher.update(bodyPass + salt, 'utf8');
-                req.session.token = hasher.digest('hex');
-                req.session.salt = salt;
-
-                return res.redirect(utils.url.urlFor({relativeUrl: decodeURIComponent(forward)}));
-            } else {
-                res.error = {
-                    message: i18n.t('errors.middleware.privateblogging.wrongPassword')
-                };
-                return next();
-            }
-        });
+            return res.redirect(utils.url.urlFor({relativeUrl: decodeURIComponent(forward)}));
+        } else {
+            res.error = {
+                message: i18n.t('errors.middleware.privateblogging.wrongPassword')
+            };
+            return next();
+        }
     }
 };
 
