@@ -1,4 +1,4 @@
-var MarkdownIt  = require('markdown-it'),
+var MarkdownIt = require('markdown-it'),
     converter = new MarkdownIt({
         html: true,
         breaks: true,
@@ -43,6 +43,11 @@ var MarkdownIt  = require('markdown-it'),
         };
         // jscs:enable
     });
+
+// configure linkify-it
+converter.linkify.set({
+    fuzzyLink: false
+});
 
 module.exports = {
     render: function (markdown) {
