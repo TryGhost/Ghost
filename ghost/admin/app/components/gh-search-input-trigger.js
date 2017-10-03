@@ -1,7 +1,5 @@
 import Component from '@ember/component';
-import {invokeAction} from 'ember-invoke-action';
 import {isBlank} from '@ember/utils';
-import {run} from '@ember/runloop';
 
 export default Component.extend({
     open() {
@@ -12,21 +10,32 @@ export default Component.extend({
         this.get('select.actions').close();
     },
 
+    _focusInput() {
+        this.$('input')[0].focus();
+    },
+
     actions: {
         captureMouseDown(e) {
             e.stopPropagation();
         },
 
         search(term) {
+            // open dropdown if not open and term is present
+            // close dropdown if open and term is blank
             if (isBlank(term) === this.get('select.isOpen')) {
-                run.scheduleOnce('afterRender', this, isBlank(term) ? this.close : this.open);
+                isBlank(term) ? this.close() : this.open();
+
+                // ensure focus isn't lost when dropdown is closed
+                if (isBlank(term)) {
+                    this._focusInput();
+                }
             }
 
-            invokeAction(this, 'select.actions.search', term);
+            this.get('select').actions.search(term);
         },
 
         focusInput() {
-            this.$('input')[0].focus();
+            this._focusInput();
         },
 
         resetInput() {
