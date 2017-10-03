@@ -8,6 +8,12 @@ Tag = ghostBookshelf.Model.extend({
 
     tableName: 'tags',
 
+    defaults: function defaults() {
+        return {
+            visibility: 'public'
+        };
+    },
+
     emitChange: function emitChange(event) {
         events.emit('tag' + '.' + event, this);
     },
@@ -24,11 +30,16 @@ Tag = ghostBookshelf.Model.extend({
         model.emitChange('deleted');
     },
 
-    onSaving: function onSaving(newPage, attr, options) {
+    onSaving: function onSaving(newTag, attr, options) {
         /*jshint unused:false*/
         var self = this;
 
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
+
+        // name: #later slug: hash-later
+        if (/^#/.test(newTag.get('name'))) {
+            this.set('visibility', 'internal');
+        }
 
         if (this.hasChanged('slug') || !this.get('slug')) {
             // Pass the new slug through the generator to strip illegal characters, detect duplicates

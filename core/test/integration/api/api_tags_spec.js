@@ -1,6 +1,5 @@
 var should = require('should'),
     testUtils = require('../../utils'),
-    Promise = require('bluebird'),
     _ = require('lodash'),
     // Stuff we are testing
     context = testUtils.context,
@@ -28,7 +27,6 @@ describe('Tags API', function () {
 
         beforeEach(function () {
             newTag = _.clone(_.omit(testUtils.DataGenerator.forKnex.createTag(testUtils.DataGenerator.Content.tags[0]), 'id'));
-            Promise.resolve(newTag);
         });
 
         it('can add a tag (admin)', function (done) {
@@ -47,6 +45,21 @@ describe('Tags API', function () {
                     should.exist(results);
                     should.exist(results.tags);
                     results.tags.length.should.be.above(0);
+                    results.tags[0].visibility.should.eql('public');
+                    done();
+                }).catch(done);
+        });
+
+        it('add internal tag', function (done) {
+            TagAPI
+                .add({tags: [{name: '#test'}]}, testUtils.context.editor)
+                .then(function (results) {
+                    should.exist(results);
+                    should.exist(results.tags);
+                    results.tags.length.should.be.above(0);
+                    results.tags[0].visibility.should.eql('internal');
+                    results.tags[0].name.should.eql('#test');
+                    results.tags[0].slug.should.eql('hash-test');
                     done();
                 }).catch(done);
         });
