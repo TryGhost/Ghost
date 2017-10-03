@@ -30,7 +30,7 @@ export default Component.extend({
     contentExpiresAt: false,
     currentSearch: '',
 
-    posts: computedGroup('Posts'),
+    posts: computedGroup('Stories'),
     pages: computedGroup('Pages'),
     users: computedGroup('Users'),
     tags: computedGroup('Tags'),
@@ -66,7 +66,7 @@ export default Component.extend({
         let groups = [];
 
         if (!isEmpty(this.get('posts'))) {
-            groups.pushObject({groupName: 'Posts', options: this.get('posts')});
+            groups.pushObject({groupName: 'Stories', options: this.get('posts')});
         }
 
         if (!isEmpty(this.get('pages'))) {
@@ -95,7 +95,7 @@ export default Component.extend({
                 return {
                     id: `post.${post.id}`,
                     title: post.title,
-                    category: post.page ? 'Pages' : 'Posts'
+                    category: post.page ? 'Pages' : 'Stories'
                 };
             }));
         }).catch((error) => {
@@ -172,7 +172,7 @@ export default Component.extend({
                 return;
             }
 
-            if (selected.category === 'Posts' || selected.category === 'Pages') {
+            if (selected.category === 'Stories' || selected.category === 'Pages') {
                 let id = selected.id.replace('post.', '');
                 this.get('router').transitionTo('editor.edit', id);
             }
